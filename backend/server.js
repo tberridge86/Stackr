@@ -113,7 +113,6 @@ app.get('/price', async (req, res) => {
 
     const token = await getToken();
 
-    // search a slightly bigger pool, then clean it
     const ebayRes = await fetch(
       `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&limit=25&sort=price`,
       {
@@ -138,8 +137,6 @@ app.get('/price', async (req, res) => {
 
       if (!price) return false;
       if (titleLooksBad(title)) return false;
-
-      // knock out obviously extreme values that are often junk
       if (price < 0.5) return false;
       if (price > 10000) return false;
 
