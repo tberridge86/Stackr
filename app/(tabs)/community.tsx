@@ -1,26 +1,38 @@
+import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet, Text, ScrollView, Pressable, View } from 'react-native';
-
-function CommunityCard({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardSubtitle}>{subtitle}</Text>
-    </Pressable>
-  );
-}
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+} from 'react-native';
 
 export default function CommunityScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.heading}>Community</Text>
-        <Text style={styles.subheading}>Discover collectors, shops, and local card activity.</Text>
+        <Text style={styles.subheading}>
+          Friends, activity, and social posts will live here.
+        </Text>
 
-        <View style={styles.grid}>
-          <CommunityCard title="Nearby Sellers" subtitle="Find local card sellers and shops" />
-          <CommunityCard title="Featured Collectors" subtitle="Explore community profiles" />
-          <CommunityCard title="Events" subtitle="See local meetups and card events" />
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Coming next</Text>
+          <Text style={styles.cardText}>
+            Friend requests, activity posts, and social updates like:
+          </Text>
+          <Text style={styles.bullet}>• Tom got his chase card</Text>
+          <Text style={styles.bullet}>• Tom completed Perfect Order</Text>
+          <Text style={styles.bullet}>• Tom listed Charizard for trade</Text>
+          <Text style={styles.bullet}>• Liam added 12 cards to 151</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Planned sections</Text>
+          <Text style={styles.bullet}>• Friends</Text>
+          <Text style={styles.bullet}>• Activity feed</Text>
+          <Text style={styles.bullet}>• Social posts</Text>
+          <Text style={styles.bullet}>• Likes and comments</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -28,19 +40,34 @@ export default function CommunityScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#0b0f2a' },
-  container: { padding: 20, paddingBottom: 120 },
+  safe: { flex: 1, backgroundColor: '#080b1d' },
+  container: { padding: 18, paddingBottom: 120 },
   heading: { color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 8 },
-  subheading: { color: '#aab3d1', fontSize: 15, lineHeight: 22, marginBottom: 20 },
-  grid: { gap: 14 },
+  subheading: { color: '#AAB3D1', fontSize: 15, lineHeight: 22, marginBottom: 20 },
+
   card: {
-    backgroundColor: '#151b45',
+    backgroundColor: '#121938',
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(255,255,255,0.05)',
+    marginBottom: 14,
   },
-  cardPressed: { transform: [{ scale: 0.98 }], opacity: 0.92 },
-  cardTitle: { color: '#fff', fontSize: 18, fontWeight: '700', marginBottom: 6 },
-  cardSubtitle: { color: '#aab3d1', fontSize: 14, lineHeight: 20 },
+  cardTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  cardText: {
+    color: '#AAB3D1',
+    fontSize: 14,
+    marginBottom: 10,
+    lineHeight: 20,
+  },
+  bullet: {
+    color: '#D7DCF2',
+    fontSize: 14,
+    marginBottom: 6,
+  },
 });

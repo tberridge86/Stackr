@@ -96,6 +96,32 @@ function ActionTile({
   );
 }
 
+function BinderShelfTile({ onPress }: { onPress?: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.binderShelfTile, pressed && styles.cardPressed]}>
+      <View style={styles.binderSpine} />
+      <View style={styles.binderCover}>
+        <View style={styles.binderLabelStrip}>
+          <Text style={styles.binderLabelText}>BINDER</Text>
+        </View>
+
+        <View style={styles.binderContent}>
+          <View style={styles.binderIconWrap}>
+            <Ionicons name="folder-open-outline" size={22} color="#FFD166" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.binderTitle}>My Binders</Text>
+            <Text style={styles.binderSubtitle}>
+              Open your themed collection folders
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#94A0C9" />
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
 export default function HubScreen() {
   const { trackedSetIds } = useCollection();
   const [allSets, setAllSets] = useState<PokemonSet[]>([]);
@@ -124,6 +150,20 @@ export default function HubScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.topBar}>
+          <View>
+            <Text style={styles.topBarBrand}>PocketVault</Text>
+            <Text style={styles.topBarSubtitle}>Collector dashboard</Text>
+          </View>
+
+          <Pressable
+            onPress={() => router.push('/profile')}
+            style={({ pressed }) => [styles.profileButton, pressed && styles.cardPressed]}
+          >
+            <Ionicons name="person-circle-outline" size={28} color="#ffffff" />
+          </Pressable>
+        </View>
+
         <View style={styles.heroCard}>
           <View style={styles.heroGlow} />
           <Text style={styles.brand}>PocketVault</Text>
@@ -172,26 +212,27 @@ export default function HubScreen() {
         </View>
 
         <View style={styles.actionGrid}>
-          <ActionTile
-            icon="albums-outline"
-            title="Binder"
-            subtitle="View owned cards"
-            onPress={() => router.push('/binder')}
-          />
+          <BinderShelfTile onPress={() => router.push('/binder')} />
+
           <ActionTile
             icon="swap-horizontal"
             title="Trade Hub"
             subtitle="Manage trade cards"
+            onPress={() => router.push('/trade')}
           />
+
           <ActionTile
             icon="stats-chart"
             title="Market"
-            subtitle="Check values"
+            subtitle="Track prices and sold values"
+            onPress={() => router.push('/market')}
           />
+
           <ActionTile
-            icon="book-outline"
+            icon="desktop-outline"
             title="Pokédex"
             subtitle="Explore entries"
+            onPress={() => router.push('/pokedex')}
           />
         </View>
       </ScrollView>
@@ -202,6 +243,34 @@ export default function HubScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#080b1d' },
   container: { padding: 18, paddingBottom: 120 },
+
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  topBarBrand: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  topBarSubtitle: {
+    color: '#94A0C9',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  profileButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#121938',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+
   heroCard: {
     backgroundColor: '#111735',
     borderRadius: 26,
@@ -365,9 +434,67 @@ const styles = StyleSheet.create({
     backgroundColor: '#0b0f2a',
     width: '72%',
   },
+
   actionGrid: {
     gap: 12,
   },
+  binderShelfTile: {
+    flexDirection: 'row',
+    borderRadius: 22,
+    overflow: 'hidden',
+    minHeight: 92,
+    backgroundColor: '#121938',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  binderSpine: {
+    width: 18,
+    backgroundColor: '#2563eb',
+  },
+  binderCover: {
+    flex: 1,
+    padding: 14,
+    justifyContent: 'center',
+  },
+  binderLabelStrip: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    marginBottom: 10,
+  },
+  binderLabelText: {
+    color: '#AAB3D1',
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+  },
+  binderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  binderIconWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,209,102,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  binderTitle: {
+    color: '#ffffff',
+    fontSize: 17,
+    fontWeight: '800',
+    marginBottom: 3,
+  },
+  binderSubtitle: {
+    color: '#94A0C9',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+
   actionTile: {
     backgroundColor: '#121938',
     borderRadius: 18,

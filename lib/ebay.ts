@@ -1,6 +1,6 @@
 export async function fetchEbayPrice(query: string) {
   const res = await fetch(
-    `https://https://pocketvault-6a5w.onrender.com/price?q=${encodeURIComponent(query)}`
+    `https://pocketvault-6a5w.onrender.com/price?q=${encodeURIComponent(query)}`
   );
 
   if (!res.ok) {

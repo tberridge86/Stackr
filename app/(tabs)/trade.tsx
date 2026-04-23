@@ -1,507 +1,453 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  ScrollView,
-  Pressable,
   View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+  Alert,
   Image,
 } from 'react-native';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { fetchAllSets, fetchCardsForSet, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
+import { useFocusEffect, router } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
+import {
+  getCachedCardSync,
+  getCachedCardsForSet,
+} from '../../lib/pokemonTcgCache';
+import { supabase } from '../../lib/supabase';
 
-type TradeGroup = {
-  set: PokemonSet;
-  cards: PokemonCard[];
-};
-
-function extractSetIdFromCardId(cardId: string) {
-  const parts = cardId.split('-');
-  return parts.slice(0, -1).join('-');
-}
+type SegmentKey = 'marketplace' | 'myListings' | 'myOffers';
 
 export default function TradeScreen() {
+  const [segment, setSegment] = useState<SegmentKey>('marketplace');
+  const [cardDetailsMap, setCardDetailsMap] = useState<Record<string, any>>({});
+  const [myUserId, setMyUserId] = useState<string>('');
+
   const {
-    tradeCardIds,
-    wishlistCardIds,
-    toggleTradeCard,
-    toggleWishlistCard,
-    getMeta,
+    marketplaceListings,
+    myListings,
+    tradeLoading,
+    tradeError,
+    refreshTrade,
+    archiveListing,
   } = useTrade();
 
-  const [tradeGroups, setTradeGroups] = useState<TradeGroup[]>([]);
-  const [wishlistGroups, setWishlistGroups] = useState<TradeGroup[]>([]);
-  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const loadUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      setMyUserId(user?.id ?? '');
+    };
+
+    loadUser();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshTrade();
+    }, [refreshTrade])
+  );
+
+  const currentData = useMemo(() => {
+    if (segment === 'marketplace') return marketplaceListings;
+    if (segment === 'myListings') return myListings;
+    return [];
+  }, [segment, marketplaceListings, myListings]);
 
   useEffect(() => {
-    const loadTradeData = async () => {
-      try {
-        const allSets = await fetchAllSets();
+    let mounted = true;
 
-        const tradeSetIds = Array.from(new Set(tradeCardIds.map(extractSetIdFromCardId)));
-        const wishlistSetIds = Array.from(new Set(wishlistCardIds.map(extractSetIdFromCardId)));
-        const allNeededSetIds = Array.from(new Set([...tradeSetIds, ...wishlistSetIds]));
+    const loadDetails = async () => {
+      const nextMap: Record<string, any> = {};
 
-        const cardResults = await Promise.all(
-          allNeededSetIds.map(async (setId) => {
-            const cards = await fetchCardsForSet(setId);
-            return { setId, cards };
-          })
-        );
+      for (const item of currentData) {
+        const setId = item.set_id;
+        const cardId = item.card_id;
 
-        const cardsBySet = Object.fromEntries(
-          cardResults.map((entry) => [entry.setId, entry.cards])
-        );
+        if (!setId || !cardId) continue;
 
-        const nextTradeGroups: TradeGroup[] = tradeSetIds
-          .map((setId) => {
-            const set = allSets.find((s) => s.id === setId);
-            if (!set) return null;
+        let found = getCachedCardSync(setId, cardId);
 
-            const cards = (cardsBySet[setId] ?? []).filter((card) =>
-              tradeCardIds.includes(card.id)
-            );
+        if (!found) {
+          const cards = await getCachedCardsForSet(setId);
+          found = cards.find((c) => c.id === cardId) ?? null;
+        }
 
-            if (cards.length === 0) return null;
+        if (found) {
+          nextMap[item.id] = found;
+        }
+      }
 
-            return { set, cards };
-          })
-          .filter(Boolean) as TradeGroup[];
-
-        const nextWishlistGroups: TradeGroup[] = wishlistSetIds
-          .map((setId) => {
-            const set = allSets.find((s) => s.id === setId);
-            if (!set) return null;
-
-            const cards = (cardsBySet[setId] ?? []).filter((card) =>
-              wishlistCardIds.includes(card.id)
-            );
-
-            if (cards.length === 0) return null;
-
-            return { set, cards };
-          })
-          .filter(Boolean) as TradeGroup[];
-
-        setTradeGroups(nextTradeGroups);
-        setWishlistGroups(nextWishlistGroups);
-      } catch (error) {
-        console.log('Failed to load trade screen', error);
-      } finally {
-        setLoading(false);
+      if (mounted) {
+        setCardDetailsMap(nextMap);
       }
     };
 
-    loadTradeData();
-  }, [tradeCardIds, wishlistCardIds]);
+    if (currentData.length) {
+      loadDetails();
+    } else {
+      setCardDetailsMap({});
+    }
 
-  const tradeCount = useMemo(
-    () => tradeGroups.reduce((sum, group) => sum + group.cards.length, 0),
-    [tradeGroups]
-  );
+    return () => {
+      mounted = false;
+    };
+  }, [currentData]);
 
-  const wishlistCount = useMemo(
-    () => wishlistGroups.reduce((sum, group) => sum + group.cards.length, 0),
-    [wishlistGroups]
-  );
+  const handleArchive = async (listingId: string) => {
+    try {
+      await archiveListing(listingId);
+      Alert.alert('Archived', 'Listing archived successfully.');
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Could not archive listing.';
+      Alert.alert('Error', message);
+    }
+  };
 
-  const ListingCard = ({
-    card,
-    set,
-    mode,
-  }: {
-    card: PokemonCard;
-    set: PokemonSet;
-    mode: 'trade' | 'wanted';
-  }) => {
-    const isTrade = mode === 'trade';
-    const meta = getMeta(card.id);
+  const handleMakeOffer = (item: any) => {
+    const isMyListing = item.user_id === myUserId;
+
+    if (isMyListing) {
+      Alert.alert('Not allowed', "You can't offer on your own card.");
+      return;
+    }
+
+    router.push({
+      pathname: '/offer/new',
+      params: {
+        listingId: item.id,
+        targetUserId: item.user_id,
+        cardId: item.card_id,
+        setId: item.set_id ?? '',
+      },
+    });
+  };
+
+  const renderSegmentButton = (key: SegmentKey, label: string) => {
+    const active = segment === key;
 
     return (
-      <View style={styles.listingCard}>
-        <Pressable
-          onPress={() => router.push(`/card/${card.id}?setId=${set.id}`)}
-          style={({ pressed }) => [styles.listingMain, pressed && styles.cardPressed]}
+      <TouchableOpacity
+        onPress={() => setSegment(key)}
+        style={{
+          flex: 1,
+          paddingVertical: 10,
+          paddingHorizontal: 8,
+          marginHorizontal: 4,
+          borderRadius: 12,
+          backgroundColor: active ? '#2a2a2a' : '#151515',
+          borderWidth: 1,
+          borderColor: active ? '#4b5563' : '#262626',
+        }}
+      >
+        <Text
+          style={{
+            color: 'white',
+            textAlign: 'center',
+            fontWeight: '700',
+          }}
         >
-          <View style={styles.imageWrap}>
-            {card.images?.small ? (
-              <Image
-                source={{ uri: card.images.small }}
-                style={styles.cardImage}
-                resizeMode="contain"
-              />
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderListing = ({ item }: { item: any }) => {
+    const sellerName = item?.profiles?.collector_name || 'Collector';
+    const cardDetails = cardDetailsMap[item.id];
+    const imageUri = cardDetails?.images?.small ?? null;
+    const cardName = cardDetails?.name ?? item.card_id ?? 'Unknown card';
+    const setName = cardDetails?.set?.name ?? item.set_id ?? 'Unknown set';
+    const isMyListing = item.user_id === myUserId;
+
+    return (
+      <View
+        style={{
+          backgroundColor: '#161616',
+          borderRadius: 16,
+          padding: 14,
+          marginBottom: 12,
+          borderWidth: 1,
+          borderColor: '#262626',
+        }}
+      >
+        <TouchableOpacity
+          onPress={() =>
+            router.push({
+              pathname: '/card/[id]',
+              params: {
+                id: item.card_id,
+                setId: item.set_id ?? '',
+              },
+            })
+          }
+          style={{ flexDirection: 'row' }}
+        >
+          {imageUri ? (
+            <Image
+              source={{ uri: imageUri }}
+              style={{
+                width: 72,
+                height: 100,
+                borderRadius: 10,
+                marginRight: 12,
+                backgroundColor: '#0f0f0f',
+              }}
+              resizeMode="cover"
+            />
+          ) : (
+            <View
+              style={{
+                width: 72,
+                height: 100,
+                borderRadius: 10,
+                marginRight: 12,
+                backgroundColor: '#0f0f0f',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ color: '#888', fontSize: 12 }}>No image</Text>
+            </View>
+          )}
+
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                color: 'white',
+                fontSize: 16,
+                fontWeight: '700',
+                marginBottom: 4,
+              }}
+            >
+              {cardName}
+            </Text>
+
+            <Text style={{ color: '#b3b3b3', marginBottom: 4 }}>
+              {setName}
+            </Text>
+
+            {!!item.condition && (
+              <Text style={{ color: '#9ca3af', marginBottom: 4 }}>
+                {item.condition}
+              </Text>
+            )}
+
+            {item.custom_value != null ? (
+              <Text style={{ color: '#86efac', marginBottom: 4 }}>
+                £{item.custom_value}
+              </Text>
             ) : (
-              <View style={styles.cardImageFallback}>
-                <Ionicons name="image-outline" size={24} color="#7987b3" />
-              </View>
+              <Text style={{ color: '#93c5fd', marginBottom: 4 }}>
+                Open to offers
+              </Text>
+            )}
+
+            {segment === 'marketplace' ? (
+              <TouchableOpacity
+                onPress={() => router.push(`/user/${item.user_id}`)}
+              >
+                <Text style={{ color: '#7dd3fc', marginTop: 2 }}>
+                  {sellerName}
+                  {isMyListing ? ' • Your listing' : ''}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={{ color: '#9ca3af', marginTop: 2 }}>
+                Status: {item.status}
+              </Text>
             )}
           </View>
+        </TouchableOpacity>
 
-          <View style={styles.listingTextWrap}>
-            <Text style={styles.cardName} numberOfLines={2}>
-              {card.name}
+        {!!item.notes && (
+          <Text style={{ color: '#cfcfcf', marginTop: 10 }}>{item.notes}</Text>
+        )}
+
+        {segment === 'marketplace' && !isMyListing && (
+          <TouchableOpacity
+            onPress={() => handleMakeOffer(item)}
+            style={{
+              marginTop: 12,
+              backgroundColor: '#2563eb',
+              borderRadius: 12,
+              paddingVertical: 12,
+            }}
+          >
+            <Text
+              style={{
+                color: 'white',
+                textAlign: 'center',
+                fontWeight: '700',
+              }}
+            >
+              Make Offer
             </Text>
+          </TouchableOpacity>
+        )}
 
-            <Text style={styles.cardSet} numberOfLines={1}>
-              {set.name}
+        {segment === 'marketplace' && isMyListing && (
+          <View
+            style={{
+              marginTop: 12,
+              backgroundColor: '#1f274d',
+              borderRadius: 12,
+              paddingVertical: 12,
+            }}
+          >
+            <Text
+              style={{
+                color: '#AAB3D1',
+                textAlign: 'center',
+                fontWeight: '700',
+              }}
+            >
+              Your listing
             </Text>
-
-            <Text style={styles.cardMeta} numberOfLines={1}>
-              #{card.number} {card.rarity ? `· ${card.rarity}` : ''}
-            </Text>
-
-            {meta.condition ? (
-              <Text style={styles.metaText}>Condition: {meta.condition}</Text>
-            ) : null}
-
-            {meta.value ? (
-              <Text style={styles.metaText}>£{meta.value}</Text>
-            ) : null}
-
-            {meta.notes ? (
-              <Text style={styles.notesText} numberOfLines={2}>
-                {meta.notes}
-              </Text>
-            ) : null}
-
-            <View style={styles.marketRow}>
-              <View style={[styles.statusBadge, isTrade ? styles.tradeBadge : styles.wantedBadge]}>
-                <Ionicons
-                  name={isTrade ? 'swap-horizontal' : 'heart'}
-                  size={12}
-                  color="#0b0f2a"
-                />
-                <Text style={styles.statusBadgeText}>
-                  {isTrade ? 'For Trade' : 'Wanted'}
-                </Text>
-              </View>
-
-              <View style={styles.viewListingBadge}>
-                <Ionicons name="open-outline" size={12} color="#FFD166" />
-                <Text style={styles.viewListingText}>Details</Text>
-              </View>
-            </View>
           </View>
-        </Pressable>
+        )}
 
-        <Pressable
-          onPress={() =>
-            isTrade ? toggleTradeCard(card.id) : toggleWishlistCard(card.id)
-          }
-          style={({ pressed }) => [
-            styles.removeButton,
-            pressed && styles.removeButtonPressed,
-          ]}
-        >
-          <Ionicons name="close-circle" size={16} color="#FF8B8B" />
-          <Text style={styles.removeButtonText}>
-            {isTrade ? 'Remove trade' : 'Remove wanted'}
+        {segment === 'myListings' && item.status === 'active' && (
+          <TouchableOpacity
+            onPress={() => handleArchive(item.id)}
+            style={{
+              marginTop: 12,
+              backgroundColor: '#3a1f1f',
+              borderRadius: 12,
+              paddingVertical: 12,
+            }}
+          >
+            <Text
+              style={{
+                color: 'white',
+                textAlign: 'center',
+                fontWeight: '700',
+              }}
+            >
+              Archive Listing
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
+
+  const renderEmpty = () => {
+    if (segment === 'marketplace') {
+      return (
+        <View style={{ paddingVertical: 50 }}>
+          <Text style={{ color: '#a3a3a3', textAlign: 'center' }}>
+            No active marketplace listings yet.
           </Text>
-        </Pressable>
+        </View>
+      );
+    }
+
+    if (segment === 'myListings') {
+      return (
+        <View style={{ paddingVertical: 50 }}>
+          <Text style={{ color: '#a3a3a3', textAlign: 'center' }}>
+            You have no listings yet.
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={{ paddingVertical: 30 }}>
+        <Text style={{ color: '#a3a3a3', textAlign: 'center', marginBottom: 12 }}>
+          View offers you’ve sent and received.
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => router.push('/offers')}
+          style={{
+            backgroundColor: '#2563eb',
+            borderRadius: 12,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            alignSelf: 'center',
+          }}
+        >
+          <Text style={{ color: 'white', fontWeight: '700' }}>
+            Open Offers
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={styles.heading}>Trade</Text>
-        <Text style={styles.subheading}>
-          Manage your trade stock and wishlist like a marketplace inventory.
-        </Text>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: '#0b0b0b',
+        paddingHorizontal: 16,
+        paddingTop: 16,
+      }}
+    >
+      <Text
+        style={{
+          color: 'white',
+          fontSize: 26,
+          fontWeight: '800',
+          marginBottom: 16,
+        }}
+      >
+        Trade
+      </Text>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{tradeCount}</Text>
-            <Text style={styles.statLabel}>For Trade</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{wishlistCount}</Text>
-            <Text style={styles.statLabel}>Wanted</Text>
-          </View>
+      <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+        {renderSegmentButton('marketplace', 'Marketplace')}
+        {renderSegmentButton('myListings', 'My Listings')}
+        {renderSegmentButton('myOffers', 'My Offers')}
+      </View>
+
+      {!!tradeError && (
+        <View
+          style={{
+            backgroundColor: '#2a1414',
+            borderColor: '#4b1d1d',
+            borderWidth: 1,
+            borderRadius: 12,
+            padding: 12,
+            marginBottom: 12,
+          }}
+        >
+          <Text style={{ color: '#fca5a5' }}>{tradeError}</Text>
         </View>
+      )}
 
-        {loading ? (
-          <View style={styles.placeholderCard}>
-            <Text style={styles.placeholderTitle}>Loading trade lists...</Text>
-            <Text style={styles.placeholderText}>Gathering your marked cards.</Text>
-          </View>
-        ) : (
-          <>
-            <Text style={styles.sectionTitle}>For Trade</Text>
-            {tradeGroups.length === 0 ? (
-              <View style={styles.placeholderCard}>
-                <Text style={styles.placeholderTitle}>No trade cards yet</Text>
-                <Text style={styles.placeholderText}>
-                  Open a card and mark it as “For Trade”.
-                </Text>
-              </View>
-            ) : (
-              tradeGroups.map((group) => (
-                <View key={`trade-${group.set.id}`} style={styles.groupSection}>
-                  <View style={styles.groupHeader}>
-                    <Text style={styles.groupTitle}>{group.set.name}</Text>
-                    <Text style={styles.groupMeta}>{group.cards.length} cards</Text>
-                  </View>
-
-                  <View style={styles.listingsWrap}>
-                    {group.cards.map((card) => (
-                      <ListingCard
-                        key={card.id}
-                        card={card}
-                        set={group.set}
-                        mode="trade"
-                      />
-                    ))}
-                  </View>
-                </View>
-              ))
-            )}
-
-            <Text style={[styles.sectionTitle, { marginTop: 24 }]}>Wanted</Text>
-            {wishlistGroups.length === 0 ? (
-              <View style={styles.placeholderCard}>
-                <Text style={styles.placeholderTitle}>No wanted cards yet</Text>
-                <Text style={styles.placeholderText}>
-                  Open a card and add it to your wishlist.
-                </Text>
-              </View>
-            ) : (
-              wishlistGroups.map((group) => (
-                <View key={`wish-${group.set.id}`} style={styles.groupSection}>
-                  <View style={styles.groupHeader}>
-                    <Text style={styles.groupTitle}>{group.set.name}</Text>
-                    <Text style={styles.groupMeta}>{group.cards.length} cards</Text>
-                  </View>
-
-                  <View style={styles.listingsWrap}>
-                    {group.cards.map((card) => (
-                      <ListingCard
-                        key={card.id}
-                        card={card}
-                        set={group.set}
-                        mode="wanted"
-                      />
-                    ))}
-                  </View>
-                </View>
-              ))
-            )}
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+      {segment === 'myOffers' ? (
+        renderEmpty()
+      ) : tradeLoading && currentData.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      ) : (
+        <FlatList
+          data={currentData}
+          keyExtractor={(item) => item.id}
+          renderItem={renderListing}
+          contentContainerStyle={{
+            paddingBottom: 40,
+            flexGrow: currentData.length === 0 ? 1 : 0,
+          }}
+          refreshControl={
+            <RefreshControl
+              refreshing={tradeLoading}
+              onRefresh={refreshTrade}
+              tintColor="#ffffff"
+            />
+          }
+          ListEmptyComponent={renderEmpty}
+        />
+      )}
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#080b1d' },
-  container: { padding: 18, paddingBottom: 120 },
-  heading: { color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 8 },
-  subheading: { color: '#AAB3D1', fontSize: 15, lineHeight: 22, marginBottom: 20 },
-
-  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 22 },
-  statCard: {
-    flex: 1,
-    backgroundColor: '#111735',
-    borderRadius: 18,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  statValue: {
-    color: '#FFD166',
-    fontSize: 20,
-    fontWeight: '900',
-    marginBottom: 4,
-  },
-  statLabel: {
-    color: '#91A0C8',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  sectionTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 12,
-  },
-
-  placeholderCard: {
-    backgroundColor: '#121938',
-    borderRadius: 18,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  placeholderTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 6,
-  },
-  placeholderText: {
-    color: '#AAB3D1',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-
-  groupSection: {
-    marginBottom: 20,
-  },
-  groupHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-    alignItems: 'center',
-  },
-  groupTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
-    flex: 1,
-    marginRight: 10,
-  },
-  groupMeta: {
-    color: '#FFD166',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-
-  listingsWrap: {
-    gap: 12,
-  },
-
-  listingCard: {
-    backgroundColor: '#121938',
-    borderRadius: 18,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  listingMain: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  imageWrap: {
-    width: 78,
-    marginRight: 12,
-  },
-  cardImage: {
-    width: '100%',
-    height: 108,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-  },
-  cardImageFallback: {
-    width: '100%',
-    height: 108,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  listingTextWrap: {
-    flex: 1,
-  },
-  cardName: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  cardSet: {
-    color: '#FFD166',
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  cardMeta: {
-    color: '#94A0C9',
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  metaText: {
-    color: '#AAB3D1',
-    fontSize: 11,
-    marginBottom: 4,
-  },
-  notesText: {
-    color: '#8f9bc2',
-    fontSize: 11,
-    lineHeight: 16,
-    marginBottom: 8,
-  },
-
-  marketRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  tradeBadge: {
-    backgroundColor: '#FFD166',
-  },
-  wantedBadge: {
-    backgroundColor: '#FFB5C9',
-  },
-  statusBadgeText: {
-    color: '#0b0f2a',
-    fontSize: 11,
-    fontWeight: '900',
-  },
-  viewListingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    backgroundColor: 'rgba(255,209,102,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,209,102,0.16)',
-  },
-  viewListingText: {
-    color: '#FFD166',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-
-  removeButton: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.05)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    alignSelf: 'flex-start',
-  },
-  removeButtonPressed: {
-    opacity: 0.75,
-  },
-  removeButtonText: {
-    color: '#FF8B8B',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-
-  cardPressed: {
-    transform: [{ scale: 0.985 }],
-    opacity: 0.94,
-  },
-});

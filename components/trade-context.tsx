@@ -1,5 +1,18 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  MarketplaceListing,
+  fetchMarketplaceListings,
+  fetchMyListings,
+  archiveMarketplaceListing,
+} from '../lib/marketplace';
 
 type TradeCardMeta = {
   condition?: string;
@@ -12,15 +25,21 @@ type TradeContextType = {
   wishlistCardIds: string[];
   tradeMeta: Record<string, TradeCardMeta>;
 
+  marketplaceListings: MarketplaceListing[];
+  myListings: MarketplaceListing[];
+  tradeLoading: boolean;
+  tradeError: string | null;
+
   toggleTradeCard: (cardId: string) => void;
   toggleWishlistCard: (cardId: string) => void;
-
   updateTradeMeta: (cardId: string, data: Partial<TradeCardMeta>) => void;
 
   getMeta: (cardId: string) => TradeCardMeta;
-
   isForTrade: (cardId: string) => boolean;
   isWanted: (cardId: string) => boolean;
+
+  refreshTrade: () => Promise<void>;
+  archiveListing: (listingId: string) => Promise<void>;
 };
 
 const TradeContext = createContext<TradeContextType | null>(null);
@@ -34,6 +53,11 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [wishlistCardIds, setWishlistCardIds] = useState<string[]>([]);
   const [tradeMeta, setTradeMeta] = useState<Record<string, TradeCardMeta>>({});
   const [loaded, setLoaded] = useState(false);
+
+  const [marketplaceListings, setMarketplaceListings] = useState<MarketplaceListing[]>([]);
+  const [myListings, setMyListings] = useState<MarketplaceListing[]>([]);
+  const [tradeLoading, setTradeLoading] = useState(false);
+  const [tradeError, setTradeError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -53,6 +77,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         setLoaded(true);
       }
     };
+
     load();
   }, []);
 
@@ -64,11 +89,48 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.setItem(META_STORAGE_KEY, JSON.stringify(tradeMeta));
   }, [tradeCardIds, wishlistCardIds, tradeMeta, loaded]);
 
+  const refreshTrade = useCallback(async () => {
+    try {
+      setTradeError(null);
+      setTradeLoading(true);
+
+      const [marketplace, mine] = await Promise.all([
+        fetchMarketplaceListings(),
+        fetchMyListings(),
+      ]);
+
+      setMarketplaceListings(marketplace);
+      setMyListings(mine);
+    } catch (err) {
+      console.log('refreshTrade failed', err);
+      setTradeError(err instanceof Error ? err.message : 'Failed to refresh trade data');
+    } finally {
+      setTradeLoading(false);
+    }
+  }, []);
+
+  const archiveListing = useCallback(
+    async (listingId: string) => {
+      await archiveMarketplaceListing(listingId);
+      await refreshTrade();
+    },
+    [refreshTrade]
+  );
+
+  useEffect(() => {
+    refreshTrade();
+  }, [refreshTrade]);
+
   const value = useMemo(
     () => ({
       tradeCardIds,
       wishlistCardIds,
       tradeMeta,
+
+      marketplaceListings,
+      myListings,
+      tradeLoading,
+      tradeError,
 
       toggleTradeCard: (cardId: string) => {
         setTradeCardIds((prev) =>
@@ -100,8 +162,21 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
       isForTrade: (cardId: string) => tradeCardIds.includes(cardId),
       isWanted: (cardId: string) => wishlistCardIds.includes(cardId),
+
+      refreshTrade,
+      archiveListing,
     }),
-    [tradeCardIds, wishlistCardIds, tradeMeta]
+    [
+      tradeCardIds,
+      wishlistCardIds,
+      tradeMeta,
+      marketplaceListings,
+      myListings,
+      tradeLoading,
+      tradeError,
+      refreshTrade,
+      archiveListing,
+    ]
   );
 
   return <TradeContext.Provider value={value}>{children}</TradeContext.Provider>;

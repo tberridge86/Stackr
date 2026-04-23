@@ -29,11 +29,25 @@ export default function TabLayout() {
         tabBarIcon: ({ color, size, focused }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'ellipse';
 
-          if (route.name === 'trade') iconName = focused ? 'swap-horizontal' : 'swap-horizontal-outline';
-          if (route.name === 'community') iconName = focused ? 'people' : 'people-outline';
-          if (route.name === 'index') iconName = focused ? 'home' : 'home-outline';
-          if (route.name === 'market') iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-          if (route.name === 'pokedex') iconName = focused ? 'book' : 'book-outline';
+          if (route.name === 'trade') {
+            iconName = focused ? 'swap-horizontal' : 'swap-horizontal-outline';
+          }
+
+          if (route.name === 'community') {
+            iconName = focused ? 'people' : 'people-outline';
+          }
+
+          if (route.name === 'index') {
+            iconName = focused ? 'home' : 'home-outline';
+          }
+
+          if (route.name === 'binder') {
+            iconName = focused ? 'folder' : 'folder-outline';
+          }
+
+          if (route.name === 'pokedex') {
+            iconName = focused ? 'desktop' : 'desktop-outline';
+          }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -48,8 +62,11 @@ export default function TabLayout() {
       <Tabs.Screen name="trade" options={{ title: 'Trade' }} />
       <Tabs.Screen name="community" options={{ title: 'Community' }} />
       <Tabs.Screen name="index" options={{ title: 'Hub' }} />
-      <Tabs.Screen name="market" options={{ title: 'Market' }} />
+      <Tabs.Screen name="binder" options={{ title: 'Binder' }} />
       <Tabs.Screen name="pokedex" options={{ title: 'Pokédex' }} />
+
+      <Tabs.Screen name="profile" options={{ href: null }} />
+      <Tabs.Screen name="market" options={{ href: null }} />
       <Tabs.Screen name="explore" options={{ href: null }} />
     </Tabs>
   );

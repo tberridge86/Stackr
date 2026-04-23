@@ -3,12 +3,16 @@
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
- "scripts": {
-  "start": "node server.js",
-  "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts"
-},
+  "scripts": {
+    "start": "node server.js",
+    "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts"
+  },
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
     "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
   }
 }
