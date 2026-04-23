@@ -5,8 +5,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const EBAY_CLIENT_ID = 'TomBerri-pocketva-PRD-a84c0e5fe-afeb98cd';
-const EBAY_CLIENT_SECRET = 'REMOVED_BY_INCIDENT_20260729';
+const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
+const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const PORT = process.env.PORT || 3001;
 
@@ -74,11 +74,6 @@ function summarisePrices(prices) {
 
 function buildCardQuery({ name = '', setName = '', number = '' }) {
   return [name, setName, number, 'pokemon card']
-    .map((v) => String(v || '').trim())
-    .filter(Boolean)
-    .join(' ');
-}
-  return [name, setName, number]
     .map((v) => String(v || '').trim())
     .filter(Boolean)
     .join(' ');
@@ -168,10 +163,6 @@ app.get('/', (req, res) => {
   res.send('PocketVault API is running');
 });
 
-/**
- * Legacy route
- * Example: /price?q=pikachu base set 58
- */
 app.get('/price', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
@@ -191,11 +182,6 @@ app.get('/price', async (req, res) => {
   }
 });
 
-/**
- * App route
- * Example:
- * /api/price/ebay?cardId=xy7-54&name=Pikachu&setName=Base%20Set&number=58
- */
 app.get('/api/price/ebay', async (req, res) => {
   try {
     const cardId = String(req.query.cardId || '').trim();
