@@ -141,8 +141,7 @@ const getBestTcgLow = (card: PokemonCard): number | null => {
 }
 
 export default function MarketScreen() {
-  console.log('API URL:', process.env.EXPO_PUBLIC_PRICE_API_URL)
-
+  
   const [query, setQuery] = useState('')
   const [searching, setSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([])
@@ -580,9 +579,6 @@ export default function MarketScreen() {
         ListHeaderComponent={
           <View style={styles.headerWrap}>
             <Text style={styles.title}>Market</Text>
-            <Text style={{ color: '#FFFFFF', marginTop: 6 }}>
-              API: {process.env.EXPO_PUBLIC_PRICE_API_URL || 'NOT FOUND'}
-            </Text>
             <Text style={styles.subtitle}>
               Search cards, watch prices, and track daily movement.
             </Text>

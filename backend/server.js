@@ -73,6 +73,11 @@ function summarisePrices(prices) {
 }
 
 function buildCardQuery({ name = '', setName = '', number = '' }) {
+  return [name, setName, number, 'pokemon card']
+    .map((v) => String(v || '').trim())
+    .filter(Boolean)
+    .join(' ');
+}
   return [name, setName, number]
     .map((v) => String(v || '').trim())
     .filter(Boolean)
