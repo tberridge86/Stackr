@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import fetch from 'node-fetch';
 
 const app = express();
 app.use(cors());
@@ -220,7 +221,22 @@ app.get('/api/price/ebay', async (req, res) => {
     });
   }
 });
+app.get('/test-ebay-token', async (req, res) => {
+  try {
+    const token = await getToken();
 
+    return res.json({
+      ok: true,
+      tokenPreview: `${token.slice(0, 10)}...`,
+    });
+  } catch (error) {
+    console.error('Token test failed:', error);
+    return res.status(500).json({
+      ok: false,
+      error: error.message,
+    });
+  }
+});
 app.listen(PORT, () => {
   console.log(`eBay backend listening on port ${PORT}`);
 });
