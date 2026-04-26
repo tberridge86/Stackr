@@ -19,29 +19,44 @@ const PORT = process.env.PORT || 3001;
 
 const ebayAgent = new https.Agent({
   lookup: (hostname, options, callback) => {
-    dns.resolve4(hostname, (err, addresses) => {
-      if (err) {
-        callback(err);
+    dns.resolve4(hostname, (ipv4Err, ipv4Addresses) => {
+      if (ipv4Addresses && ipv4Addresses.length > 0) {
+        if (options?.all) {
+          callback(
+            null,
+            ipv4Addresses.map((address) => ({
+              address,
+              family: 4,
+            }))
+          );
+          return;
+        }
+
+        callback(null, ipv4Addresses[0], 4);
         return;
       }
 
-      if (!addresses || addresses.length === 0) {
-        callback(new Error(`No IPv4 addresses found for ${hostname}`));
-        return;
-      }
+      dns.resolve6(hostname, (ipv6Err, ipv6Addresses) => {
+        if (ipv6Addresses && ipv6Addresses.length > 0) {
+          if (options?.all) {
+            callback(
+              null,
+              ipv6Addresses.map((address) => ({
+                address,
+                family: 6,
+              }))
+            );
+            return;
+          }
 
-      if (options?.all) {
+          callback(null, ipv6Addresses[0], 6);
+          return;
+        }
+
         callback(
-          null,
-          addresses.map((address) => ({
-            address,
-            family: 4,
-          }))
+          ipv4Err || ipv6Err || new Error(`No DNS records found for ${hostname}`)
         );
-        return;
-      }
-
-      callback(null, addresses[0], 4);
+      });
     });
   },
 });
