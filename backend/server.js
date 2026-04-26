@@ -20,7 +20,27 @@ const PORT = process.env.PORT || 3001;
 const ebayAgent = new https.Agent({
   lookup: (hostname, options, callback) => {
     dns.resolve4(hostname, (err, addresses) => {
-      if (err) return callback(err);
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      if (!addresses || addresses.length === 0) {
+        callback(new Error(`No IPv4 addresses found for ${hostname}`));
+        return;
+      }
+
+      if (options?.all) {
+        callback(
+          null,
+          addresses.map((address) => ({
+            address,
+            family: 4,
+          }))
+        );
+        return;
+      }
+
       callback(null, addresses[0], 4);
     });
   },
