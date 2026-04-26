@@ -16,7 +16,7 @@ const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const PORT = process.env.PORT || 3001;
 
-function getErrorMessage(error: unknown) {
+function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
@@ -54,12 +54,12 @@ function titleLooksBad(title = '') {
   return blockedTerms.some((term) => t.includes(term));
 }
 
-function numberFromPrice(value: unknown) {
+function numberFromPrice(value) {
   const num = parseFloat(String(value));
   return Number.isFinite(num) ? num : null;
 }
 
-function summarisePrices(prices: number[]) {
+function summarisePrices(prices) {
   if (!prices.length) {
     return {
       low: null,
@@ -82,15 +82,7 @@ function summarisePrices(prices: number[]) {
   };
 }
 
-function buildCardQuery({
-  name = '',
-  setName = '',
-  number = '',
-}: {
-  name?: string;
-  setName?: string;
-  number?: string;
-}) {
+function buildCardQuery({ name = '', setName = '', number = '' }) {
   return [name, setName, number, 'pokemon card']
     .map((v) => String(v || '').trim())
     .filter(Boolean)
@@ -106,9 +98,7 @@ async function getToken() {
     `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
   ).toString('base64');
 
-  const tokenUrl = 'https://api.ebay.com/identity/v1/oauth2/token';
-
-  const res = await fetch(tokenUrl, {
+  const res = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -125,7 +115,7 @@ async function getToken() {
     throw new Error(`Token request failed (${res.status}): ${text}`);
   }
 
-  const data = (await res.json()) as { access_token?: string };
+  const data = await res.json();
 
   if (!data.access_token) {
     throw new Error('Token response did not include access_token');
@@ -134,7 +124,7 @@ async function getToken() {
   return data.access_token;
 }
 
-async function fetchEbaySummary(query: string) {
+async function fetchEbaySummary(query) {
   const token = await getToken();
 
   const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
@@ -153,10 +143,10 @@ async function fetchEbaySummary(query: string) {
     throw new Error(`Browse search failed (${ebayRes.status}): ${text}`);
   }
 
-  const data = (await ebayRes.json()) as any;
+  const data = await ebayRes.json();
   const items = data.itemSummaries || [];
 
-  const cleaned = items.filter((item: any) => {
+  const cleaned = items.filter((item) => {
     const title = item.title || '';
     const price = numberFromPrice(item.price?.value);
 
@@ -169,8 +159,8 @@ async function fetchEbaySummary(query: string) {
   });
 
   const prices = cleaned
-    .map((item: any) => numberFromPrice(item.price?.value))
-    .filter((p: number | null): p is number => p !== null);
+    .map((item) => numberFromPrice(item.price?.value))
+    .filter((p) => p !== null);
 
   const summary = summarisePrices(prices);
 
