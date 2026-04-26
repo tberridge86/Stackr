@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
+import dns from 'dns';
+
+dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
 app.use(cors());
