@@ -1,11 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
-import dns from 'dns';
-import https from 'https';
-
-dns.setServers(['1.1.1.1', '8.8.8.8']);
-dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
 
@@ -145,8 +140,7 @@ async function getToken() {
 
   const res = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
     method: 'POST',
-    agent: ebayAgent,
-    headers: {
+        headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       Authorization: `Basic ${basic}`,
     },
@@ -178,8 +172,7 @@ async function fetchEbaySummary(query) {
   )}&limit=25&sort=price`;
 
   const ebayRes = await fetch(url, {
-    agent: ebayAgent,
-    headers: {
+        headers: {
       Authorization: `Bearer ${token}`,
       'X-EBAY-C-MARKETPLACE-ID': EBAY_MARKETPLACE_ID,
     },
