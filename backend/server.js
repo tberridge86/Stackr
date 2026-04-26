@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
 import dns from 'dns';
+import https from 'https';
 
 dns.setServers(['1.1.1.1', '8.8.8.8']);
 dns.setDefaultResultOrder('ipv4first');
@@ -15,6 +16,15 @@ const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const PORT = process.env.PORT || 3001;
+
+const ebayAgent = new https.Agent({
+  lookup: (hostname, options, callback) => {
+    dns.resolve4(hostname, (err, addresses) => {
+      if (err) return callback(err);
+      callback(null, addresses[0], 4);
+    });
+  },
+});
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -100,6 +110,7 @@ async function getToken() {
 
   const res = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
     method: 'POST',
+    agent: ebayAgent,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       Authorization: `Basic ${basic}`,
@@ -132,6 +143,7 @@ async function fetchEbaySummary(query) {
   )}&limit=25&sort=price`;
 
   const ebayRes = await fetch(url, {
+    agent: ebayAgent,
     headers: {
       Authorization: `Bearer ${token}`,
       'X-EBAY-C-MARKETPLACE-ID': EBAY_MARKETPLACE_ID,
@@ -190,8 +202,8 @@ app.get('/debug-env', (req, res) => {
 
 app.get('/debug-dns', async (req, res) => {
   try {
-    const ebayLookup = await dns.promises.lookup('api.ebay.com');
-    const googleLookup = await dns.promises.lookup('google.com');
+    const ebayLookup = await dns.promises.resolve4('api.ebay.com');
+    const googleLookup = await dns.promises.resolve4('google.com');
 
     return res.json({
       ok: true,
