@@ -3,9 +3,11 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import dns from 'dns';
 
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
@@ -13,6 +15,10 @@ const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const PORT = process.env.PORT || 3001;
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
 
 function titleLooksBad(title = '') {
   const t = title.toLowerCase();
@@ -48,12 +54,12 @@ function titleLooksBad(title = '') {
   return blockedTerms.some((term) => t.includes(term));
 }
 
-function numberFromPrice(value) {
-  const num = parseFloat(value);
+function numberFromPrice(value: unknown) {
+  const num = parseFloat(String(value));
   return Number.isFinite(num) ? num : null;
 }
 
-function summarisePrices(prices) {
+function summarisePrices(prices: number[]) {
   if (!prices.length) {
     return {
       low: null,
@@ -76,7 +82,15 @@ function summarisePrices(prices) {
   };
 }
 
-function buildCardQuery({ name = '', setName = '', number = '' }) {
+function buildCardQuery({
+  name = '',
+  setName = '',
+  number = '',
+}: {
+  name?: string;
+  setName?: string;
+  number?: string;
+}) {
   return [name, setName, number, 'pokemon card']
     .map((v) => String(v || '').trim())
     .filter(Boolean)
@@ -92,7 +106,9 @@ async function getToken() {
     `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
   ).toString('base64');
 
-  const res = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
+  const tokenUrl = 'https://api.ebay.com/identity/v1/oauth2/token';
+
+  const res = await fetch(tokenUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -106,35 +122,41 @@ async function getToken() {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Token request failed: ${text}`);
+    throw new Error(`Token request failed (${res.status}): ${text}`);
   }
 
-  const data = await res.json();
+  const data = (await res.json()) as { access_token?: string };
+
+  if (!data.access_token) {
+    throw new Error('Token response did not include access_token');
+  }
+
   return data.access_token;
 }
 
-async function fetchEbaySummary(query) {
+async function fetchEbaySummary(query: string) {
   const token = await getToken();
 
-  const ebayRes = await fetch(
-    `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(query)}&limit=25&sort=price`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'X-EBAY-C-MARKETPLACE-ID': EBAY_MARKETPLACE_ID,
-      },
-    }
-  );
+  const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
+    query
+  )}&limit=25&sort=price`;
+
+  const ebayRes = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'X-EBAY-C-MARKETPLACE-ID': EBAY_MARKETPLACE_ID,
+    },
+  });
 
   if (!ebayRes.ok) {
     const text = await ebayRes.text();
-    throw new Error(`Browse search failed: ${text}`);
+    throw new Error(`Browse search failed (${ebayRes.status}): ${text}`);
   }
 
-  const data = await ebayRes.json();
+  const data = (await ebayRes.json()) as any;
   const items = data.itemSummaries || [];
 
-  const cleaned = items.filter((item) => {
+  const cleaned = items.filter((item: any) => {
     const title = item.title || '';
     const price = numberFromPrice(item.price?.value);
 
@@ -147,8 +169,8 @@ async function fetchEbaySummary(query) {
   });
 
   const prices = cleaned
-    .map((item) => numberFromPrice(item.price?.value))
-    .filter((p) => p !== null);
+    .map((item: any) => numberFromPrice(item.price?.value))
+    .filter((p: number | null): p is number => p !== null);
 
   const summary = summarisePrices(prices);
 
@@ -167,6 +189,51 @@ app.get('/', (req, res) => {
   res.send('PocketVault API is running');
 });
 
+app.get('/debug-env', (req, res) => {
+  res.json({
+    ok: true,
+    hasEbayClientId: Boolean(EBAY_CLIENT_ID),
+    hasEbayClientSecret: Boolean(EBAY_CLIENT_SECRET),
+    marketplace: EBAY_MARKETPLACE_ID,
+  });
+});
+
+app.get('/debug-dns', async (req, res) => {
+  try {
+    const ebayLookup = await dns.promises.lookup('api.ebay.com');
+    const googleLookup = await dns.promises.lookup('google.com');
+
+    return res.json({
+      ok: true,
+      ebayLookup,
+      googleLookup,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: getErrorMessage(error),
+    });
+  }
+});
+
+app.get('/test-ebay-token', async (req, res) => {
+  try {
+    const token = await getToken();
+
+    return res.json({
+      ok: true,
+      tokenPreview: `${token.slice(0, 10)}...`,
+    });
+  } catch (error) {
+    console.error('Token test failed:', error);
+
+    return res.status(500).json({
+      ok: false,
+      error: getErrorMessage(error),
+    });
+  }
+});
+
 app.get('/price', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
@@ -179,9 +246,10 @@ app.get('/price', async (req, res) => {
     return res.json(summary);
   } catch (error) {
     console.error('Legacy /price route error:', error);
+
     return res.status(500).json({
       error: 'Failed to fetch eBay price',
-      detail: error.message,
+      detail: getErrorMessage(error),
     });
   }
 });
@@ -218,28 +286,14 @@ app.get('/api/price/ebay', async (req, res) => {
     });
   } catch (error) {
     console.error('/api/price/ebay route error:', error);
+
     return res.status(500).json({
       error: 'Failed to fetch eBay pricing',
-      detail: error.message,
+      detail: getErrorMessage(error),
     });
   }
 });
-app.get('/test-ebay-token', async (req, res) => {
-  try {
-    const token = await getToken();
 
-    return res.json({
-      ok: true,
-      tokenPreview: `${token.slice(0, 10)}...`,
-    });
-  } catch (error) {
-    console.error('Token test failed:', error);
-    return res.status(500).json({
-      ok: false,
-      error: error.message,
-    });
-  }
-});
 app.listen(PORT, () => {
   console.log(`eBay backend listening on port ${PORT}`);
 });
