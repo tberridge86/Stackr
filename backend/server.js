@@ -12,50 +12,6 @@ const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const PORT = process.env.PORT || 3001;
 
-const ebayAgent = new https.Agent({
-  lookup: (hostname, options, callback) => {
-    dns.resolve4(hostname, (ipv4Err, ipv4Addresses) => {
-      if (ipv4Addresses && ipv4Addresses.length > 0) {
-        if (options?.all) {
-          callback(
-            null,
-            ipv4Addresses.map((address) => ({
-              address,
-              family: 4,
-            }))
-          );
-          return;
-        }
-
-        callback(null, ipv4Addresses[0], 4);
-        return;
-      }
-
-      dns.resolve6(hostname, (ipv6Err, ipv6Addresses) => {
-        if (ipv6Addresses && ipv6Addresses.length > 0) {
-          if (options?.all) {
-            callback(
-              null,
-              ipv6Addresses.map((address) => ({
-                address,
-                family: 6,
-              }))
-            );
-            return;
-          }
-
-          callback(null, ipv6Addresses[0], 6);
-          return;
-        }
-
-        callback(
-          ipv4Err || ipv6Err || new Error(`No DNS records found for ${hostname}`)
-        );
-      });
-    });
-  },
-});
-
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
