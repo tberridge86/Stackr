@@ -67,6 +67,20 @@ function titleLooksBad(title = '') {
     'digital',
     'code card',
     'gift',
+    'celebrations',
+'gold',
+'foil etched',
+'fan art',
+'novelty',
+'keychain',
+'fridge magnet',
+'magnet',
+'solid metal',
+'metal',
+'resin',
+'coaster',
+'plastic card',
+'read description',
   ];
 
   return blockedTerms.some((term) => t.includes(term));
