@@ -447,6 +447,30 @@ app.post('/api/scan/tcg', async (req, res) => {
   }
 });
 
+app.get('/debug-ximilar', async (req, res) => {
+  try {
+    if (!XIMILAR_API_TOKEN) {
+      return res.status(500).json({ ok: false, error: 'Missing token' });
+    }
+
+    const testRes = await fetch('https://api.ximilar.com/account/v2/details/', {
+      method: 'GET',
+      headers: {
+        Authorization: `Token ${XIMILAR_API_TOKEN}`,
+      },
+    });
+
+    const text = await testRes.text();
+
+    return res.status(testRes.status).send(text);
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: getErrorMessage(error),
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`PocketVault backend listening on port ${PORT}`);
 });
