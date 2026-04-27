@@ -54,6 +54,16 @@ function titleLooksBad(title = '') {
 'stickers',
 'sticker',
 'artbox',
+'choose your cards',
+'choose your card',
+'choose card',
+'choose individual card',
+'random',
+'guaranteed holo',
+'bundle',
+'bulk',
+'stickers',
+'sticker',
   ];
 
   return blockedTerms.some((term) => t.includes(term));
