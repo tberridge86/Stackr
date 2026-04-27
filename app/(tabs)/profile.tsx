@@ -18,6 +18,16 @@ import {
   getCachedCardSync,
   getCachedCardsForSet,
 } from '../../lib/pokemonTcgCache';
+  const TYPE_COLOR_MAP: Record<string, string> = {
+  water: '#78C8F0',
+  fire: '#F5AC78',
+  grass: '#A7DB8D',
+  electric: '#FAE078',
+  psychic: '#FA92B2',
+  dark: '#705848',
+  dragon: '#7038F8',
+};
+
 
 function TopLoaderCard({ label, card }: { label: string; card: any | null }) {
   return (
@@ -64,7 +74,8 @@ export default function ProfileScreen() {
 
   const avatar = useMemo(() => {
     return (
-      AVATAR_PRESETS.find((a) => a.key === profile?.avatar_preset) ?? null
+      AVATAR_PRESETS.find((a) => a.key === profile?.avatar_preset) ??
+      null
     );
   }, [profile?.avatar_preset]);
 
@@ -105,15 +116,13 @@ export default function ProfileScreen() {
         if (mounted) setShowcaseLoading(false);
       }
     };
-
+  
     loadShowcaseCards();
 
     return () => {
       mounted = false;
     };
-  }, 
-  [profile]
-);
+  }, [profile]);
 
   if (loading) {
     return (
@@ -148,7 +157,8 @@ export default function ProfileScreen() {
         style={[
           styles.heroCard,
           {
-            backgroundColor: background?.colors?.[0] ?? '#1b1f3a',
+            backgroundColor:
+  TYPE_COLOR_MAP[profile?.pokemon_type ?? 'water'] ?? '#1b1f3a'
           },
         ]}
       >
@@ -158,7 +168,9 @@ export default function ProfileScreen() {
               <Image source={avatar.image} style={styles.avatar} />
             ) : (
               <View style={styles.avatarFallback}>
-                <Ionicons name="person" size={34} color="#fff" />
+                <Text style={styles.initialsText}>
+                  {profile.collector_name?.[0]?.toUpperCase() ?? '?'}
+                </Text>
               </View>
             )}
           </View>
@@ -183,7 +195,6 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
-      {/* Showcase */}
       <View style={styles.section}>
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Showcase</Text>
@@ -198,7 +209,6 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Quick Access */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Access</Text>
 
@@ -270,17 +280,34 @@ const styles = StyleSheet.create({
   },
 
   avatarWrap: {
-    width: 86,
-    height: 86,
+    width: 90,
+    height: 90,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+
+  avatar: {
+    width: '100%',
+    height: '100%',
+  },
+
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  avatar: { width: 82, height: 82 },
-
-  avatarFallback: { justifyContent: 'center', alignItems: 'center' },
+  initialsText: {
+    color: '#0b0f2a',
+    fontSize: 30,
+    fontWeight: '900',
+  },
 
   editButton: {
     flexDirection: 'row',

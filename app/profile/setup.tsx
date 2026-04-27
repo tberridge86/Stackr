@@ -229,8 +229,8 @@ export default function ProfileSetupScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.bg },
   container: { padding: 20, paddingBottom: 120 },
-  heading: { color: '#fff', fontSize: 30, fontWeight: '900', marginBottom: 6 },
-  subheading: { color: '#AAB3D1', marginBottom: 18 },
+  heading: { color: '#0b0f2a', fontSize: 30, fontWeight: '900', marginBottom: 6 },
+  subheading: { color: '#0b0f2a', marginBottom: 18 },
 
   previewWrap: {
     marginBottom: 20,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   initialsText: {
-    color: '#fff',
+    color: '#0b0f2a',
     fontSize: 40,
     fontWeight: '900',
   },
@@ -313,14 +313,14 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    color: '#fff',
+    color: '#0b0f2a',
     fontWeight: '800',
     marginBottom: 8,
     marginTop: 12,
   },
   input: {
     backgroundColor: theme.colors.card,
-    color: '#fff',
+    color: '#0b0f2a',
     borderRadius: 12,
     padding: 14,
   },
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   optionText: {
-    color: '#fff',
+    color: '#0b0f2a',
     fontWeight: '700',
   },
 
