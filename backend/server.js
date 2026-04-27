@@ -5,11 +5,12 @@ import fetch from 'node-fetch';
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
+const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const PORT = process.env.PORT || 3001;
 
 function getErrorMessage(error) {
@@ -48,21 +49,13 @@ function titleLooksBad(title = '') {
     'empty box',
     'display box',
     'choose your card',
-    'heavily played',
-'hp',
-'played',
-'poor condition',
-'damaged',
-'crease',
-'bent',
-'ink',
-'marked',
-'wear',
     'choose your cards',
     'choose card',
     'choose individual card',
     'choose a card',
     'pick your card',
+    'you choose',
+    'choose',
     'singles common uncommon',
     'common uncommon',
     'random',
@@ -77,22 +70,29 @@ function titleLooksBad(title = '') {
     'digital',
     'code card',
     'gift',
-    'celebrations',
-'gold',
-'foil etched',
-'fan art',
-'novelty',
-'keychain',
-'fridge magnet',
-'magnet',
-'solid metal',
-'metal',
-'resin',
-'coaster',
-'plastic card',
-'read description',
-'you choose',
-'choose',
+    'gold',
+    'foil etched',
+    'novelty',
+    'keychain',
+    'fridge magnet',
+    'magnet',
+    'solid metal',
+    'metal',
+    'resin',
+    'coaster',
+    'plastic card',
+    'read description',
+    'heavily played',
+    'poor condition',
+    'damaged',
+    'creased',
+    'crease',
+    'bent',
+    'inked',
+    'marked',
+    'written on',
+    'torn',
+    'water damaged',
   ];
 
   return blockedTerms.some((term) => t.includes(term));
@@ -138,9 +138,7 @@ function titleLooksGoodForQuery(title = '', query = '') {
     if (!hasCardName) return false;
   }
 
-  if (cardNumber && !t.includes(cardNumber)) {
-    return false;
-  }
+  if (cardNumber && !t.includes(cardNumber)) return false;
 
   return true;
 }
@@ -236,7 +234,7 @@ async function fetchEbaySummary(query) {
   const data = await ebayRes.json();
   const items = data.itemSummaries || [];
 
-    const cleaned = items.filter((item) => {
+  const cleaned = items.filter((item) => {
     const title = item.title || '';
     const price = numberFromPrice(item.price?.value);
 
@@ -256,9 +254,7 @@ async function fetchEbaySummary(query) {
   const sortedPrices = [...prices].sort((a, b) => a - b);
 
   const trimmedPrices =
-    sortedPrices.length >= 5
-      ? sortedPrices.slice(1, -1)
-      : sortedPrices;
+    sortedPrices.length >= 5 ? sortedPrices.slice(1, -1) : sortedPrices;
 
   const summary = summarisePrices(trimmedPrices);
 
@@ -281,6 +277,46 @@ async function fetchEbaySummary(query) {
   };
 }
 
+async function scanWithXimilar(imageUrl) {
+  if (!XIMILAR_API_TOKEN) {
+    throw new Error('Missing XIMILAR_API_TOKEN');
+  }
+
+  const ximilarRes = await fetch(
+    'https://api.ximilar.com/collectibles/v2/tcg_id',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Token ${XIMILAR_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        records: [
+          {
+            _url: imageUrl,
+          },
+        ],
+      }),
+    }
+  );
+
+  const data = await ximilarRes.json();
+
+  if (!ximilarRes.ok) {
+    return {
+      ok: false,
+      status: ximilarRes.status,
+      data,
+    };
+  }
+
+  return {
+    ok: true,
+    status: ximilarRes.status,
+    data,
+  };
+}
+
 app.get('/', (req, res) => {
   res.send('PocketVault API is running');
 });
@@ -290,6 +326,7 @@ app.get('/debug-env', (req, res) => {
     ok: true,
     hasEbayClientId: Boolean(EBAY_CLIENT_ID),
     hasEbayClientSecret: Boolean(EBAY_CLIENT_SECRET),
+    hasXimilarToken: Boolean(XIMILAR_API_TOKEN),
     marketplace: EBAY_MARKETPLACE_ID,
   });
 });
@@ -358,6 +395,32 @@ app.get('/api/price/ebay', async (req, res) => {
   }
 });
 
+app.post('/scan', async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Missing imageUrl' });
+    }
+
+    const result = await scanWithXimilar(imageUrl);
+
+    if (!result.ok) {
+      return res.status(result.status).json({
+        error: 'Ximilar request failed',
+        detail: result.data,
+      });
+    }
+
+    return res.json(result.data);
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Scan failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
 app.post('/api/scan/tcg', async (req, res) => {
   try {
     const { imageUrl } = req.body;
@@ -366,38 +429,16 @@ app.post('/api/scan/tcg', async (req, res) => {
       return res.status(400).json({ error: 'Missing imageUrl' });
     }
 
-    if (!process.env.XIMILAR_API_TOKEN) {
-      return res.status(500).json({ error: 'Missing XIMILAR_API_TOKEN' });
-    }
+    const result = await scanWithXimilar(imageUrl);
 
-    const ximilarRes = await fetch(
-      'https://api.ximilar.com/collectibles/v2/tcg_id',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Token ${process.env.XIMILAR_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          records: [
-            {
-              _url: imageUrl,
-            },
-          ],
-        }),
-      }
-    );
-
-    const data = await ximilarRes.json();
-
-    if (!ximilarRes.ok) {
-      return res.status(ximilarRes.status).json({
+    if (!result.ok) {
+      return res.status(result.status).json({
         error: 'Ximilar request failed',
-        detail: data,
+        detail: result.data,
       });
     }
 
-    return res.json(data);
+    return res.json(result.data);
   } catch (error) {
     return res.status(500).json({
       error: 'Failed to scan card',
@@ -407,5 +448,5 @@ app.post('/api/scan/tcg', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`eBay backend listening on port ${PORT}`);
+  console.log(`PocketVault backend listening on port ${PORT}`);
 });
