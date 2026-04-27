@@ -87,16 +87,19 @@ export default function BinderLibraryScreen() {
 
 const scanCardWithAI = async (imageUrl: string) => {
   try {
-    const res = await fetch(
-      `${process.env.EXPO_PUBLIC_PRICE_API_URL}/scan`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ imageUrl }),
-      }
-    );
+    const baseUrl = process.env.EXPO_PUBLIC_PRICE_API_URL;
+
+    if (!baseUrl) {
+      throw new Error('Missing EXPO_PUBLIC_PRICE_API_URL');
+    }
+
+    const res = await fetch(`${baseUrl.replace(/\/$/, '')}/api/scan/tcg`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ imageUrl }),
+    });
 
     if (!res.ok) {
       const text = await res.text();
