@@ -148,8 +148,8 @@ async function fetchEbaySummary(query) {
 
     if (!price) return false;
     if (titleLooksBad(title)) return false;
-    if (price < 0.5) return false;
-    if (price > 10000) return false;
+    if (price < 5) return false;
+    if (price > 5000) return false;
 
     return true;
   });
