@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -83,30 +84,6 @@ const formatCurrency = (value: number | null | undefined) => {
   return `£${value.toFixed(2)}`;
 };
 
-const getBestTcgMid = (card: any): number | null => {
-  const prices = card?.tcgplayer?.prices;
-  if (!prices) return null;
-
-  for (const key of ['holofoil', 'reverseHolofoil', 'normal']) {
-    const mid = prices[key]?.mid;
-    if (typeof mid === 'number') return mid;
-  }
-
-  return null;
-};
-
-const getBestTcgLow = (card: any): number | null => {
-  const prices = card?.tcgplayer?.prices;
-  if (!prices) return null;
-
-  for (const key of ['holofoil', 'reverseHolofoil', 'normal']) {
-    const low = prices[key]?.low;
-    if (typeof low === 'number') return low;
-  }
-
-  return null;
-};
-
 export default function BinderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const binderId = Array.isArray(id) ? id[0] : id;
@@ -114,6 +91,7 @@ export default function BinderDetailScreen() {
   const [binder, setBinder] = useState<BinderRecord | null>(null);
   const [cards, setCards] = useState<BinderCardWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scanning, setScanning] = useState(false);
 
   const [sortMode, setSortMode] = useState<SortMode>('binder');
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -160,6 +138,38 @@ export default function BinderDetailScreen() {
     baseScale.setValue(1);
     pinchScale.setValue(1);
     lastScale.current = 1;
+  };
+
+  const handleScanCard = async () => {
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert('Camera permission needed', 'Please allow camera access.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: false,
+        quality: 0.8,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+
+      setScanning(true);
+
+      console.log('Captured image:', result.assets[0].uri);
+
+      Alert.alert(
+        'Photo captured',
+        'Camera capture is working. Next step is uploading this image so Ximilar can scan it.'
+      );
+    } catch (error) {
+      console.log('Scan failed', error);
+      Alert.alert('Scan failed', 'Could not scan this card.');
+    } finally {
+      setScanning(false);
+    }
   };
 
   const modalPanResponder = useRef(
@@ -421,7 +431,8 @@ export default function BinderDetailScreen() {
   };
 
   const openCardDetail = (item: BinderCardWithDetails) => {
-    setSelectedCard(item);
+    const latestCard = cards.find((card) => card.id === item.id) ?? item;
+    setSelectedCard(latestCard);
     setDetailVisible(true);
   };
 
@@ -801,10 +812,6 @@ export default function BinderDetailScreen() {
           {cardName}
         </Text>
 
-        <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }}>
-          {item.owned ? 'Owned' : 'Missing'}
-        </Text>
-
         {(forTrade || wanted) && (
           <View style={{ flexDirection: 'row', gap: 4, marginTop: 5 }}>
             {forTrade && (
@@ -931,6 +938,23 @@ export default function BinderDetailScreen() {
 
         {renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
         {renderShowcaseStrip('chase', 'Chase Cards')}
+
+        <TouchableOpacity
+          onPress={handleScanCard}
+          disabled={scanning}
+          style={{
+            backgroundColor: theme.colors.secondary,
+            borderRadius: 14,
+            paddingVertical: 13,
+            alignItems: 'center',
+            marginBottom: 12,
+            opacity: scanning ? 0.6 : 1,
+          }}
+        >
+          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
+            {scanning ? 'Scanning...' : 'Scan Card'}
+          </Text>
+        </TouchableOpacity>
 
         {binder.type === 'custom' && (
           <TouchableOpacity
@@ -1297,26 +1321,31 @@ export default function BinderDetailScreen() {
 
                     <View style={boxStyle}>
                       <Text style={boxTitleStyle}>Market Value</Text>
+
                       <Row
-                        label="TCG Low"
-                        value={formatCurrency(getBestTcgLow(modalCard))}
+                        label="eBay"
+                        value={formatCurrency(selectedCard?.ebay_price)}
                       />
+
                       <Row
-                        label="TCG Mid"
-                        value={formatCurrency(getBestTcgMid(modalCard))}
+                        label="TCG"
+                        value={formatCurrency(selectedCard?.tcg_price)}
                       />
+
                       <Row
-                        label="Cardmarket Trend"
-                        value={formatCurrency(
-                          modalCard?.cardmarket?.prices?.trendPrice ?? null
-                        )}
+                        label="CardMarket"
+                        value={formatCurrency(selectedCard?.cardmarket_price)}
                       />
-                      <Row
-                        label="Cardmarket 30d Avg"
-                        value={formatCurrency(
-                          modalCard?.cardmarket?.prices?.avg30 ?? null
-                        )}
-                      />
+
+                      <Text
+                        style={{
+                          color: theme.colors.textSoft,
+                          fontSize: 11,
+                          marginTop: 8,
+                        }}
+                      >
+                        Updated daily
+                      </Text>
                     </View>
 
                     <View style={boxStyle}>

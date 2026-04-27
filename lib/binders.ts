@@ -34,6 +34,12 @@ export type BinderCardRecord = {
   slot_order: number;
   owned: boolean;
   notes: string;
+
+  ebay_price: number | null;
+  tcg_price: number | null;
+  cardmarket_price: number | null;
+  last_price_update: string | null;
+
   created_at: string;
 };
 

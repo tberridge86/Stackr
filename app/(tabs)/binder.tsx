@@ -1,3 +1,4 @@
+import { uploadCardScan } from '../../lib/storage';
 import { theme } from '../../lib/theme';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -7,7 +8,9 @@ import {
   ActivityIndicator,
   RefreshControl,
   Pressable,
+  Alert,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -50,6 +53,7 @@ export default function BinderLibraryScreen() {
   const [counts, setCounts] = useState<BinderCardCountMap>({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>('recent');
+  const [scanning, setScanning] = useState(false);
 
   const load = async () => {
     try {
@@ -80,6 +84,69 @@ export default function BinderLibraryScreen() {
       load();
     }, [])
   );
+
+const scanCardWithAI = async (imageUrl: string) => {
+  try {
+    const res = await fetch(
+      `${process.env.EXPO_PUBLIC_PRICE_API_URL}/scan`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl }),
+      }
+    );
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.log('AI scan failed', error);
+    throw error;
+  }
+};
+
+  const handleScanCard = async () => {
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert('Camera permission needed', 'Please allow camera access.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: false,
+        quality: 0.8,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+
+      setScanning(true);
+
+      const imageUrl = await uploadCardScan(result.assets[0].uri);
+
+console.log('Uploaded image URL:', imageUrl);
+
+const scanResult = await scanCardWithAI(imageUrl);
+
+console.log('Scan result:', scanResult);
+
+Alert.alert(
+  'Card detected',
+  `${scanResult.name} (${scanResult.set_name})`
+);
+    } catch (error) {
+      console.log('Scan failed', error);
+      Alert.alert('Scan failed', 'Could not scan this card.');
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const sortedBinders = useMemo(() => {
     const list = [...binders];
@@ -344,6 +411,23 @@ export default function BinderLibraryScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          onPress={handleScanCard}
+          disabled={scanning}
+          style={{
+            backgroundColor: theme.colors.secondary,
+            borderRadius: 14,
+            paddingVertical: 13,
+            alignItems: 'center',
+            marginBottom: 14,
+            opacity: scanning ? 0.6 : 1,
+          }}
+        >
+          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
+            {scanning ? 'Scanning...' : 'Scan Card'}
+          </Text>
+        </TouchableOpacity>
 
         <View style={{ marginBottom: 10 }}>
           <Text
