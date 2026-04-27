@@ -45,6 +45,15 @@ function titleLooksBad(title = '') {
     'booster box',
     'empty box',
     'display box',
+    'choose your card',
+'choose individual card',
+'choose a card',
+'pick your card',
+'singles common uncommon',
+'common uncommon',
+'stickers',
+'sticker',
+'artbox',
   ];
 
   return blockedTerms.some((term) => t.includes(term));
