@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import { fetchLivePricesForCardIds } from '../lib/pricing';
 import { fetchEbayPrice } from '../lib/ebay';
 
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, finishing job...');
+});
 type EbayResponse = {
   low?: number | string | null;
   average?: number | string | null;
@@ -155,12 +158,15 @@ async function runDailyMarketSnapshot() {
   console.log('✅ Binder card prices updated');
 }
 
-runDailyMarketSnapshot()
-  .then(() => {
-    console.log('🎉 Daily market snapshot job finished');
+async function main() {
+  try {
+    await runDailyMarketSnapshot();
+    console.log('🎉 Job complete');
     process.exit(0);
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error('❌ Daily snapshot job failed:', error);
     process.exit(1);
-  });
+  }
+}
+
+main();
