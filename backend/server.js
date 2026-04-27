@@ -172,6 +172,7 @@ async function fetchEbaySummary(query) {
     price: item.price?.value,
   })),
 };
+}
 
 app.get('/', (req, res) => {
   res.send('PocketVault API is running');
