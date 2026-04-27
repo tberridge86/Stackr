@@ -81,6 +81,8 @@ function titleLooksBad(title = '') {
 'coaster',
 'plastic card',
 'read description',
+'you choose',
+'choose',
   ];
 
   return blockedTerms.some((term) => t.includes(term));
@@ -214,7 +216,7 @@ async function fetchEbaySummary(query) {
 
     if (!price) return false;
     if (titleLooksBad(title)) return false;
-    if (!titleLooksGoodForQuery(title, query)) return false;
+    if (!title.toLowerCase().includes(query.split(' ')[0].toLowerCase())) return false;
     if (price < 5) return false;
     if (price > 5000) return false;
 
