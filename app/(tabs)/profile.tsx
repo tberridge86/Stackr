@@ -1,3 +1,4 @@
+import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -151,8 +152,9 @@ export default function ProfileScreen() {
     );
   }
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <ScrollView contentContainerStyle={styles.content}>
       <View
         style={[
           styles.heroCard,
@@ -230,12 +232,13 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+  </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.bg },
-  content: { padding: 16, paddingBottom: 120 },
+  content: { padding: 18, paddingBottom: 120 },
 
   centered: {
     flex: 1,
@@ -359,8 +362,8 @@ const styles = StyleSheet.create({
 
   topLoaderOuter: {
     backgroundColor: '#d8dde6',
-    borderRadius: 18,
-    padding: 10,
+    borderRadius: 16,
+    padding: 8,
     width: '100%',
   },
 
