@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
@@ -12,6 +13,10 @@ const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const PORT = process.env.PORT || 3001;
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
@@ -469,6 +474,70 @@ app.get('/debug-ximilar', async (req, res) => {
       error: getErrorMessage(error),
     });
   }
+});
+
+// ===============================
+// TRADE: MARK AS SENT
+// ===============================
+app.post('/api/trade/sent', async (req, res) => {
+  const { trade_id, user_id } = req.body;
+
+  const { data: trade } = await supabase
+    .from('trades')
+    .select('*')
+    .eq('id', trade_id)
+    .single();
+
+  if (!trade) return res.status(400).json({ error: 'Trade not found' });
+
+  const isSeller = trade.seller_id === user_id;
+  const updateField = isSeller ? 'seller_sent' : 'buyer_sent';
+
+  const { error } = await supabase
+    .from('trades')
+    .update({ [updateField]: true })
+    .eq('id', trade_id);
+
+  if (error) return res.status(400).json({ error });
+
+  res.json({ success: true });
+});
+
+// ===============================
+// TRADE: MARK AS RECEIVED
+// ===============================
+app.post('/api/trade/received', async (req, res) => {
+  const { trade_id, user_id } = req.body;
+
+  const { data: trade } = await supabase
+    .from('trades')
+    .select('*')
+    .eq('id', trade_id)
+    .single();
+
+  if (!trade) return res.status(400).json({ error: 'Trade not found' });
+
+  const isSeller = trade.seller_id === user_id;
+  const updateField = isSeller ? 'seller_received' : 'buyer_received';
+
+  const updated = await supabase
+    .from('trades')
+    .update({ [updateField]: true })
+    .eq('id', trade_id)
+    .select()
+    .single();
+
+  const t = updated.data;
+
+  // AUTO COMPLETE TRADE
+  if (t.buyer_received && t.seller_received) {
+    await supabase
+      .from('trades')
+      .update({ status: 'completed' })
+      .eq('id', trade_id);
+  }
+
+  res.json(updated.data);
 });
 
 app.listen(PORT, () => {
