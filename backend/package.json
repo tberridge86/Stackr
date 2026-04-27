@@ -6,12 +6,12 @@
   "scripts": {
     "start": "node server.js",
     "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts"
-  }
-  ,
-    "engines": {
-  "node": "20.x"
+  },
+  "engines": {
+    "node": "20.x"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.105.0",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.21.2",
