@@ -141,6 +141,14 @@ export default function BinderDetailScreen() {
   };
 
   const handleScanCard = async () => {
+ Alert.alert(
+    'Coming soon',
+    'Card scanning is built into the app architecture, but this feature is coming soon.'
+  );
+
+  return;
+
+
     try {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
 
