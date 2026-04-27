@@ -33,10 +33,12 @@ function titleLooksBad(title = '') {
     'proxy',
     'replica',
     'reprint',
+    'custom',
     'custom card',
     'fan art',
     'fanart',
     'bundle',
+    'bulk',
     'job lot',
     'joblot',
     'lot of',
@@ -46,27 +48,59 @@ function titleLooksBad(title = '') {
     'empty box',
     'display box',
     'choose your card',
-'choose individual card',
-'choose a card',
-'pick your card',
-'singles common uncommon',
-'common uncommon',
-'stickers',
-'sticker',
-'artbox',
-'choose your cards',
-'choose your card',
-'choose card',
-'choose individual card',
-'random',
-'guaranteed holo',
-'bundle',
-'bulk',
-'stickers',
-'sticker',
+    'choose your cards',
+    'choose card',
+    'choose individual card',
+    'choose a card',
+    'pick your card',
+    'singles common uncommon',
+    'common uncommon',
+    'random',
+    'guaranteed holo',
+    'sticker',
+    'stickers',
+    'artbox',
+    'gold foil',
+    'black metal',
+    'metal card',
+    'oversized',
+    'digital',
+    'code card',
+    'gift',
   ];
 
   return blockedTerms.some((term) => t.includes(term));
+}
+
+function titleLooksGoodForQuery(title = '', query = '') {
+  const t = title.toLowerCase();
+  const q = query.toLowerCase();
+
+  let score = 0;
+
+  const words = q
+    .split(/\s+/)
+    .map((word) => word.trim())
+    .filter(Boolean);
+
+  for (const word of words) {
+    if (word.length >= 3 && t.includes(word)) {
+      score += 1;
+    }
+  }
+
+  if (t.includes('pokemon') || t.includes('pokémon')) score += 1;
+  if (t.includes('card')) score += 1;
+  if (t.includes('holo')) score += 1;
+  if (t.includes('wotc')) score += 1;
+  if (t.includes('base set')) score += 2;
+
+  const numberMatch = q.match(/\b\d+\/\d+\b/);
+  if (numberMatch && t.includes(numberMatch[0])) {
+    score += 4;
+  }
+
+  return score >= 5;
 }
 
 function numberFromPrice(value) {
@@ -85,21 +119,20 @@ function summarisePrices(prices) {
   }
 
   const sorted = [...prices].sort((a, b) => a - b);
-  const low = sorted[0];
-  const high = sorted[sorted.length - 1];
-  const average = sorted.reduce((sum, p) => sum + p, 0) / sorted.length;
 
   return {
-    low: Number(low.toFixed(2)),
-    average: Number(average.toFixed(2)),
-    high: Number(high.toFixed(2)),
+    low: Number(sorted[0].toFixed(2)),
+    average: Number(
+      (sorted.reduce((sum, price) => sum + price, 0) / sorted.length).toFixed(2)
+    ),
+    high: Number(sorted[sorted.length - 1].toFixed(2)),
     count: sorted.length,
   };
 }
 
 function buildCardQuery({ name = '', setName = '', number = '' }) {
   return [name, setName, number, 'pokemon card']
-    .map((v) => String(v || '').trim())
+    .map((value) => String(value || '').trim())
     .filter(Boolean)
     .join(' ');
 }
@@ -115,7 +148,7 @@ async function getToken() {
 
   const res = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
     method: 'POST',
-        headers: {
+    headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       Authorization: `Basic ${basic}`,
     },
@@ -144,10 +177,10 @@ async function fetchEbaySummary(query) {
 
   const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
     query
-  )}&limit=25&sort=price`;
+  )}&limit=50&sort=price`;
 
   const ebayRes = await fetch(url, {
-        headers: {
+    headers: {
       Authorization: `Bearer ${token}`,
       'X-EBAY-C-MARKETPLACE-ID': EBAY_MARKETPLACE_ID,
     },
@@ -167,6 +200,7 @@ async function fetchEbaySummary(query) {
 
     if (!price) return false;
     if (titleLooksBad(title)) return false;
+    if (!titleLooksGoodForQuery(title, query)) return false;
     if (price < 5) return false;
     if (price > 5000) return false;
 
@@ -175,7 +209,7 @@ async function fetchEbaySummary(query) {
 
   const prices = cleaned
     .map((item) => numberFromPrice(item.price?.value))
-    .filter((p) => p !== null);
+    .filter((price) => price !== null);
 
   const summary = summarisePrices(prices);
 
@@ -186,11 +220,16 @@ async function fetchEbaySummary(query) {
     average: summary.average,
     high: summary.high,
     count: summary.count,
+    rawCount: items.length,
     sampleTitles: items.slice(0, 10).map((item) => ({
-    title: item.title,
-    price: item.price?.value,
-  })),
-};
+      title: item.title,
+      price: item.price?.value,
+    })),
+    acceptedTitles: cleaned.slice(0, 10).map((item) => ({
+      title: item.title,
+      price: item.price?.value,
+    })),
+  };
 }
 
 app.get('/', (req, res) => {
@@ -206,24 +245,6 @@ app.get('/debug-env', (req, res) => {
   });
 });
 
-app.get('/debug-dns', async (req, res) => {
-  try {
-    const ebayLookup = await dns.promises.resolve4('api.ebay.com');
-    const googleLookup = await dns.promises.resolve4('google.com');
-
-    return res.json({
-      ok: true,
-      ebayLookup,
-      googleLookup,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: getErrorMessage(error),
-    });
-  }
-});
-
 app.get('/test-ebay-token', async (req, res) => {
   try {
     const token = await getToken();
@@ -233,8 +254,6 @@ app.get('/test-ebay-token', async (req, res) => {
       tokenPreview: `${token.slice(0, 10)}...`,
     });
   } catch (error) {
-    console.error('Token test failed:', error);
-
     return res.status(500).json({
       ok: false,
       error: getErrorMessage(error),
@@ -253,8 +272,6 @@ app.get('/price', async (req, res) => {
     const summary = await fetchEbaySummary(query);
     return res.json(summary);
   } catch (error) {
-    console.error('Legacy /price route error:', error);
-
     return res.status(500).json({
       error: 'Failed to fetch eBay price',
       detail: getErrorMessage(error),
@@ -275,14 +292,6 @@ app.get('/api/price/ebay', async (req, res) => {
       return res.status(400).json({ error: 'Missing card search details' });
     }
 
-    console.log('eBay API request:', {
-      cardId,
-      name,
-      setName,
-      number,
-      query,
-    });
-
     const summary = await fetchEbaySummary(query);
 
     return res.json({
@@ -293,8 +302,6 @@ app.get('/api/price/ebay', async (req, res) => {
       ...summary,
     });
   } catch (error) {
-    console.error('/api/price/ebay route error:', error);
-
     return res.status(500).json({
       error: 'Failed to fetch eBay pricing',
       detail: getErrorMessage(error),
