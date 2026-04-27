@@ -29,6 +29,8 @@ import { supabase } from '../../lib/supabase';
 type MainTab = 'trading' | 'marketplace';
 type SegmentKey = 'marketplaceListings' | 'myListings' | 'myOffers';
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 const cardShadow = {
   shadowColor: '#000',
   shadowOpacity: 0.05,
@@ -43,6 +45,7 @@ const [segment, setSegment] = useState<SegmentKey>('marketplaceListings');
 const [cardDetailsMap, setCardDetailsMap] = useState<Record<string, any>>({});
 
 const [myUserId, setMyUserId] = useState<string>('');
+const [activeTrades, setActiveTrades] = useState<Record<string, any>>({});
 
 // 👇 MODAL STATE
 const [selectedListing, setSelectedListing] = useState<any | null>(null);
@@ -291,6 +294,10 @@ const openTradeCardDetail = (item: any) => {
     const setName = cardDetails?.set?.name ?? item.set_id ?? 'Unknown set';
     const isMyListing = item.user_id === myUserId;
 
+    const trade = activeTrades[item.id];
+        const isSeller = trade?.seller_id === myUserId;
+
+
     return (
       <View
         style={{
@@ -406,74 +413,110 @@ const openTradeCardDetail = (item: any) => {
           </Text>
         )}
 
-        {segment === 'marketplaceListings' && !isMyListing && (
-          <TouchableOpacity
-            onPress={() => handleMakeOffer(item)}
-            style={{
-              marginTop: 12,
-              backgroundColor: theme.colors.primary,
-              borderRadius: 12,
-              paddingVertical: 12,
-            }}
-          >
-            <Text
-              style={{
-                color: '#FFFFFF',
-                textAlign: 'center',
-                fontWeight: '900',
-              }}
-            >
-              Make Offer
-            </Text>
-          </TouchableOpacity>
-        )}
+        const trade = activeTrades[item.id];
+        const isSeller = trade?.seller_id === myUserId;
 
-        {segment === 'marketplaceListings' && isMyListing && (
-          <View
-            style={{
-              marginTop: 12,
-              backgroundColor: theme.colors.surface,
-              borderRadius: 12,
-              paddingVertical: 12,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text
-              style={{
-                color: theme.colors.textSoft,
-                textAlign: 'center',
-                fontWeight: '800',
-              }}
-            >
-              Your listing
-            </Text>
-          </View>
-        )}
+{trade ? (
+  <View
+    style={{
+      marginTop: 12,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 12,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    }}
+  >
+    <Text
+      style={{
+        color: theme.colors.text,
+        fontWeight: '900',
+        marginBottom: 8,
+      }}
+    >
+      {trade.status === 'completed'
+        ? '✅ Trade completed'
+        : '📦 Trade in progress'}
+    </Text>
 
-        {segment === 'myListings' && (
-          <TouchableOpacity
-            onPress={() => handleArchive(item.id)}
-            style={{
-              marginTop: 12,
-              backgroundColor: '#FEE2E2',
-              borderRadius: 12,
-              paddingVertical: 12,
-              borderWidth: 1,
-              borderColor: '#FCA5A5',
-            }}
-          >
-            <Text
-              style={{
-                color: '#991B1B',
-                textAlign: 'center',
-                fontWeight: '900',
-              }}
-            >
-              Remove from Trade
-            </Text>
-          </TouchableOpacity>
-        )}
+    {/* MARK AS SENT */}
+    {((isSeller && !trade.seller_sent) ||
+      (!isSeller && !trade.buyer_sent)) && (
+      <TouchableOpacity
+        onPress={() => markSent(trade.id)}
+        style={{
+          backgroundColor: theme.colors.primary,
+          borderRadius: 10,
+          paddingVertical: 10,
+          marginBottom: 8,
+        }}
+      >
+        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '900' }}>
+          Mark as Sent
+        </Text>
+      </TouchableOpacity>
+    )}
+
+    {/* MARK AS RECEIVED */}
+    {((isSeller && trade.seller_sent && !trade.seller_received) ||
+      (!isSeller && trade.buyer_sent && !trade.buyer_received)) && (
+      <TouchableOpacity
+        onPress={() => markReceived(trade.id)}
+        style={{
+          backgroundColor: '#22C55E',
+          borderRadius: 10,
+          paddingVertical: 10,
+        }}
+      >
+        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '900' }}>
+          Mark as Received
+        </Text>
+      </TouchableOpacity>
+    )}
+  </View>
+) : segment === 'marketplaceListings' && !isMyListing ? (
+  <TouchableOpacity
+    onPress={() => handleMakeOffer(item)}
+    style={{
+      marginTop: 12,
+      backgroundColor: theme.colors.primary,
+      borderRadius: 12,
+      paddingVertical: 12,
+    }}
+  >
+    <Text
+      style={{
+        color: '#FFFFFF',
+        textAlign: 'center',
+        fontWeight: '900',
+      }}
+    >
+      Make Offer
+    </Text>
+  </TouchableOpacity>
+) : segment === 'myListings' ? (
+  <TouchableOpacity
+    onPress={() => handleArchive(item.id)}
+    style={{
+      marginTop: 12,
+      backgroundColor: '#FEE2E2',
+      borderRadius: 12,
+      paddingVertical: 12,
+      borderWidth: 1,
+      borderColor: '#FCA5A5',
+    }}
+  >
+    <Text
+      style={{
+        color: '#991B1B',
+        textAlign: 'center',
+        fontWeight: '900',
+      }}
+    >
+      Remove from Trade
+    </Text>
+  </TouchableOpacity>
+) : null}
       </View>
     );
   };
