@@ -1,7 +1,7 @@
+import { theme } from '../../lib/theme';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ActivityIndicator,
   Image,
@@ -10,6 +10,7 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
+import { Text } from '../../components/Text';
 import { useLocalSearchParams } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
 import { useProfile } from '../../components/profile-context';
@@ -42,20 +43,20 @@ type PokemonCard = {
   evolvesFrom?: string;
   flavorText?: string;
   rules?: string[];
-  attacks?: Array<{
+  attacks?: {
     name?: string;
     damage?: string;
     text?: string;
     cost?: string[];
-  }>;
-  weaknesses?: Array<{
+  }[];
+  weaknesses?: {
     type?: string;
     value?: string;
-  }>;
-  resistances?: Array<{
+  }[];
+  resistances?: {
     type?: string;
     value?: string;
-  }>;
+  }[];
   retreatCost?: string[];
   convertedRetreatCost?: number;
   tcgplayer?: {
@@ -638,7 +639,7 @@ export default function CardDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0b0b',
+    backgroundColor: theme.colors.bg,
   },
   content: {
     padding: 16,
@@ -646,34 +647,34 @@ const styles = StyleSheet.create({
   },
   centered: {
     flex: 1,
-    backgroundColor: '#0b0b0b',
+    backgroundColor: theme.colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   loadingText: {
-    color: '#d4d4d4',
+    color: theme.colors.textSoft,
     marginTop: 12,
     fontSize: 14,
   },
   errorTitle: {
-    color: 'white',
+    color: theme.colors.text,
     fontSize: 22,
     fontWeight: '800',
     marginBottom: 8,
   },
   errorText: {
-    color: '#a3a3a3',
+    color: theme.colors.textSoft,
     textAlign: 'center',
     fontSize: 14,
   },
   heroCard: {
-    backgroundColor: '#151515',
+    backgroundColor: theme.colors.card,
     borderRadius: 20,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#262626',
+    borderColor: theme.colors.border,
     alignItems: 'center',
   },
   cardImage: {
@@ -685,20 +686,20 @@ const styles = StyleSheet.create({
     height: 320,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#101010',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
   },
   imageFallbackText: {
-    color: '#888',
+    color: theme.colors.textSoft,
   },
   title: {
-    color: 'white',
+    color: theme.colors.text,
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 6,
   },
   subtitle: {
-    color: '#a3a3a3',
+    color: theme.colors.textSoft,
     fontSize: 15,
     marginBottom: 12,
   },
@@ -708,10 +709,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   metaChip: {
-    color: '#e5e5e5',
-    backgroundColor: '#1f1f1f',
+    color: theme.colors.text,
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: '#303030',
+    borderColor: theme.colors.border,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 6,
@@ -726,24 +727,24 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    backgroundColor: '#1d1d1d',
+    backgroundColor: theme.colors.card,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 10,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#2d2d2d',
+    borderColor: theme.colors.border,
   },
   actionButtonActive: {
-    backgroundColor: '#17321f',
-    borderColor: '#28553a',
+    backgroundColor: '#DCFCE7',
+    borderColor: '#86EFAC',
   },
   actionButtonActiveAlt: {
-    backgroundColor: '#1f2940',
-    borderColor: '#30486f',
+    backgroundColor: '#F0ECFF',
+    borderColor: theme.colors.primary,
   },
   actionButtonText: {
-    color: 'white',
+    color: theme.colors.text,
     textAlign: 'center',
     fontWeight: '700',
     fontSize: 13,
@@ -759,21 +760,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   favoriteButton: {
-    backgroundColor: '#FFD166',
+    backgroundColor: theme.colors.secondary,
     marginRight: 8,
   },
   favoriteButtonActive: {
-    backgroundColor: '#f6c94b',
+    backgroundColor: theme.colors.secondary,
   },
   chaseButton: {
-    backgroundColor: '#ef4444',
+    backgroundColor: theme.colors.primary,
     marginLeft: 8,
   },
   chaseButtonActive: {
-    backgroundColor: '#dc2626',
+    backgroundColor: theme.colors.primary,
   },
   showcaseButtonText: {
-    color: '#0b0f2a',
+    color: '#FFFFFF',
     textAlign: 'center',
     fontWeight: '800',
     fontSize: 13,
@@ -782,20 +783,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    color: 'white',
+    color: theme.colors.text,
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 10,
   },
   infoCard: {
-    backgroundColor: '#151515',
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#262626',
+    borderColor: theme.colors.border,
   },
   label: {
-    color: '#d4d4d4',
+    color: theme.colors.text,
     fontSize: 14,
     marginBottom: 8,
     fontWeight: '700',
@@ -806,30 +807,30 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   choiceChip: {
-    backgroundColor: '#1f1f1f',
+    backgroundColor: theme.colors.surface,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#303030',
+    borderColor: theme.colors.border,
     paddingHorizontal: 10,
     paddingVertical: 8,
     marginRight: 8,
     marginBottom: 8,
   },
   choiceChipActive: {
-    backgroundColor: '#1f2940',
-    borderColor: '#3b82f6',
+    backgroundColor: '#F0ECFF',
+    borderColor: theme.colors.primary,
   },
   choiceChipText: {
-    color: 'white',
+    color: theme.colors.text,
     fontWeight: '600',
     fontSize: 12,
   },
   input: {
-    backgroundColor: '#101010',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: '#2d2d2d',
+    borderColor: theme.colors.border,
     borderRadius: 12,
-    color: 'white',
+    color: theme.colors.text,
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 14,
@@ -839,17 +840,17 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   marketplaceButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: theme.colors.primary,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 14,
     marginBottom: 18,
   },
   marketplaceButtonDisabled: {
-    backgroundColor: '#334155',
+    backgroundColor: theme.colors.textSoft,
   },
   marketplaceButtonText: {
-    color: 'white',
+    color: '#FFFFFF',
     textAlign: 'center',
     fontWeight: '800',
     fontSize: 14,
@@ -861,30 +862,30 @@ const styles = StyleSheet.create({
   },
   marketButton: {
     flex: 1,
-    backgroundColor: '#101010',
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: '#2d2d2d',
+    borderColor: theme.colors.border,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 8,
   },
   marketButtonLabel: {
-    color: '#9ca3af',
+    color: theme.colors.textSoft,
     textAlign: 'center',
     fontSize: 12,
     marginBottom: 4,
   },
   marketButtonValue: {
-    color: 'white',
+    color: theme.colors.text,
     textAlign: 'center',
     fontWeight: '700',
   },
   marketHint: {
-    color: '#9ca3af',
+    color: theme.colors.textSoft,
     fontSize: 12,
   },
   infoLine: {
-    color: '#d4d4d4',
+    color: theme.colors.textSoft,
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 6,
@@ -893,7 +894,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   attackTitle: {
-    color: 'white',
+    color: theme.colors.text,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 6,

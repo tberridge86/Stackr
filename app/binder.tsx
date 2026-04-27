@@ -1,3 +1,4 @@
+import { theme } from '../lib/theme';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -148,7 +149,7 @@ export default function BinderScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#080b1d',
+    backgroundColor: theme.colors.bg,
   },
   container: {
     padding: 18,
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   placeholderCard: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
@@ -247,7 +248,7 @@ const styles = StyleSheet.create({
   },
   cardTile: {
     width: '31%',
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 8,
     borderWidth: 1,

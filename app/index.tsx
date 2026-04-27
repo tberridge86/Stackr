@@ -1,3 +1,4 @@
+import { theme } from '../lib/theme';
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
@@ -26,7 +27,7 @@ export default function Index() {
   }, [user, authLoading, profile, profileLoading]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#080b1d' }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.bg }}>
       <ActivityIndicator />
     </View>
   );

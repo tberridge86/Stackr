@@ -1,33 +1,68 @@
-import React, { useCallback, useState } from 'react';
+import { theme } from '../../lib/theme';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  Pressable,
 } from 'react-native';
+import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { fetchBinders, fetchBinderCards, BinderRecord } from '../../lib/binders';
 
 type BinderCardCountMap = Record<string, { owned: number; total: number }>;
 
+type SortKey =
+  | 'recent'
+  | 'alphabetical'
+  | 'completionHigh'
+  | 'completionLow'
+  | 'ownedHigh'
+  | 'ownedLow';
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: 'recent', label: 'Recent' },
+  { key: 'alphabetical', label: 'A-Z' },
+  { key: 'completionHigh', label: 'Most complete' },
+  { key: 'completionLow', label: 'Least complete' },
+  { key: 'ownedHigh', label: 'Most cards' },
+  { key: 'ownedLow', label: 'Fewest cards' },
+];
+
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+};
+
+const formatCurrency = (value?: number | null) => {
+  if (value === null || value === undefined) return '—';
+  return `£${Number(value).toFixed(2)}`;
+};
+
 export default function BinderLibraryScreen() {
   const [binders, setBinders] = useState<BinderRecord[]>([]);
   const [counts, setCounts] = useState<BinderCardCountMap>({});
   const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<SortKey>('recent');
 
   const load = async () => {
     try {
       setLoading(true);
+
       const data = await fetchBinders();
       setBinders(data);
 
       const entries = await Promise.all(
         data.map(async (binder) => {
           const cards = await fetchBinderCards(binder.id);
-          const owned = cards.filter((c) => c.owned).length;
+          const owned = cards.filter((card) => card.owned).length;
+
           return [binder.id, { owned, total: cards.length }] as const;
         })
       );
@@ -46,8 +81,79 @@ export default function BinderLibraryScreen() {
     }, [])
   );
 
+  const sortedBinders = useMemo(() => {
+    const list = [...binders];
+
+    const getProgress = (binderId: string) => {
+      const progress = counts[binderId] ?? { owned: 0, total: 0 };
+      return progress.total ? progress.owned / progress.total : 0;
+    };
+
+    const getOwned = (binderId: string) => counts[binderId]?.owned ?? 0;
+
+    if (sortBy === 'alphabetical') {
+      list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    if (sortBy === 'completionHigh') {
+      list.sort((a, b) => getProgress(b.id) - getProgress(a.id));
+    }
+
+    if (sortBy === 'completionLow') {
+      list.sort((a, b) => getProgress(a.id) - getProgress(b.id));
+    }
+
+    if (sortBy === 'ownedHigh') {
+      list.sort((a, b) => getOwned(b.id) - getOwned(a.id));
+    }
+
+    if (sortBy === 'ownedLow') {
+      list.sort((a, b) => getOwned(a.id) - getOwned(b.id));
+    }
+
+    return list;
+  }, [binders, counts, sortBy]);
+
+  const renderSortButton = (option: { key: SortKey; label: string }) => {
+    const active = sortBy === option.key;
+
+    return (
+      <Pressable
+        key={option.key}
+        onPress={() => setSortBy(option.key)}
+        style={{
+          backgroundColor: active ? theme.colors.secondary : theme.colors.card,
+          borderRadius: 999,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+          borderWidth: 1,
+          borderColor: active ? theme.colors.secondary : theme.colors.border,
+          marginRight: 8,
+          marginBottom: 8,
+        }}
+      >
+        <Text
+          style={{
+            color: active ? theme.colors.text : theme.colors.textSoft,
+            fontSize: 12,
+            fontWeight: '900',
+          }}
+        >
+          {option.label}
+        </Text>
+      </Pressable>
+    );
+  };
+
   const renderBinder = ({ item }: { item: BinderRecord }) => {
     const progress = counts[item.id] ?? { owned: 0, total: 0 };
+
+    const percentage = progress.total
+      ? Math.round((progress.owned / progress.total) * 100)
+      : 0;
+
+    const mainValue =
+      item.ebay_value ?? item.tcg_value ?? item.cardmarket_value ?? null;
 
     return (
       <TouchableOpacity
@@ -62,16 +168,17 @@ export default function BinderLibraryScreen() {
           borderRadius: 22,
           overflow: 'hidden',
           marginBottom: 14,
-          minHeight: 122,
-          backgroundColor: '#121938',
+          minHeight: 160,
+          backgroundColor: theme.colors.card,
           borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.05)',
+          borderColor: theme.colors.border,
+          ...cardShadow,
         }}
       >
         <View
           style={{
             width: 20,
-            backgroundColor: item.color,
+            backgroundColor: item.color || theme.colors.primary,
           }}
         />
 
@@ -86,18 +193,20 @@ export default function BinderLibraryScreen() {
             <View
               style={{
                 alignSelf: 'flex-start',
-                backgroundColor: 'rgba(255,255,255,0.06)',
+                backgroundColor: theme.colors.surface,
                 paddingHorizontal: 10,
                 paddingVertical: 4,
                 borderRadius: 999,
                 marginBottom: 10,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
               }}
             >
               <Text
                 style={{
-                  color: '#AAB3D1',
+                  color: theme.colors.textSoft,
                   fontSize: 10,
-                  fontWeight: '800',
+                  fontWeight: '900',
                   letterSpacing: 0.8,
                 }}
               >
@@ -105,29 +214,83 @@ export default function BinderLibraryScreen() {
               </Text>
             </View>
 
-            <Text style={{ color: 'white', fontSize: 20, fontWeight: '800' }}>
+            <Text
+              style={{
+                color: theme.colors.text,
+                fontSize: 20,
+                fontWeight: '900',
+              }}
+            >
               {item.name}
             </Text>
 
-            <Text style={{ color: '#AAB3D1', marginTop: 6 }}>
-              {progress.owned} / {progress.total} owned
+            <Text style={{ color: theme.colors.textSoft, marginTop: 6 }}>
+              {progress.owned} / {progress.total} owned · {percentage}%
             </Text>
+
+            <View
+              style={{
+                marginTop: 10,
+                padding: 10,
+                borderRadius: 14,
+                backgroundColor: theme.colors.surface,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+              }}
+            >
+              <Text
+                style={{
+                  color: theme.colors.textSoft,
+                  fontSize: 11,
+                  fontWeight: '900',
+                  marginBottom: 4,
+                  letterSpacing: 0.5,
+                }}
+              >
+                ESTIMATED VALUE
+              </Text>
+
+              <Text
+                style={{
+                  color: theme.colors.text,
+                  fontSize: 18,
+                  fontWeight: '900',
+                }}
+              >
+                {formatCurrency(mainValue)}
+              </Text>
+
+              <Text
+                style={{
+                  color: theme.colors.textSoft,
+                  fontSize: 12,
+                  marginTop: 6,
+                  lineHeight: 18,
+                }}
+              >
+                eBay: {formatCurrency(item.ebay_value)} · TCG:{' '}
+                {formatCurrency(item.tcg_value)} · CardMarket:{' '}
+                {formatCurrency(item.cardmarket_value)}
+              </Text>
+            </View>
           </View>
 
           <View
             style={{
               height: 8,
               borderRadius: 999,
-              backgroundColor: 'rgba(255,255,255,0.08)',
+              backgroundColor: theme.colors.surface,
               overflow: 'hidden',
               marginTop: 14,
             }}
           >
             <View
               style={{
-                width: progress.total ? `${(progress.owned / progress.total) * 100}%` : '0%',
+                width: progress.total
+                  ? `${(progress.owned / progress.total) * 100}%`
+                  : '0%',
                 height: '100%',
-                backgroundColor: item.color,
+                backgroundColor: item.color || theme.colors.primary,
                 borderRadius: 999,
               }}
             />
@@ -138,7 +301,10 @@ export default function BinderLibraryScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0b0b0b' }} edges={['top']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.colors.bg }}
+      edges={['top']}
+    >
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
         <View
           style={{
@@ -148,55 +314,94 @@ export default function BinderLibraryScreen() {
             marginBottom: 16,
           }}
         >
-          <View>
-            <Text style={{ color: 'white', fontSize: 28, fontWeight: '800' }}>
+          <View style={{ flex: 1, paddingRight: 12 }}>
+            <Text
+              style={{
+                color: theme.colors.text,
+                fontSize: 28,
+                fontWeight: '900',
+              }}
+            >
               Binder
             </Text>
-            <Text style={{ color: '#AAB3D1', marginTop: 4 }}>
-              Your shelf of custom and official binders
+
+            <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
+              Your shelf of official sets and custom collections
             </Text>
           </View>
 
           <TouchableOpacity
             onPress={() => router.push('/binder/new')}
             style={{
-              backgroundColor: '#2563eb',
+              backgroundColor: theme.colors.primary,
               paddingHorizontal: 14,
               paddingVertical: 10,
               borderRadius: 12,
             }}
           >
-            <Text style={{ color: 'white', fontWeight: '800' }}>New Binder</Text>
+            <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>
+              New Binder
+            </Text>
           </TouchableOpacity>
+        </View>
+
+        <View style={{ marginBottom: 10 }}>
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 16,
+              fontWeight: '900',
+              marginBottom: 10,
+            }}
+          >
+            Sort binders
+          </Text>
+
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {SORT_OPTIONS.map(renderSortButton)}
+          </View>
         </View>
 
         {loading ? (
           <View style={{ flex: 1, justifyContent: 'center' }}>
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={theme.colors.primary} size="large" />
           </View>
         ) : (
           <FlatList
-            data={binders}
+            data={sortedBinders}
             keyExtractor={(item) => item.id}
             renderItem={renderBinder}
             refreshControl={
-              <RefreshControl refreshing={loading} onRefresh={load} tintColor="#fff" />
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={load}
+                tintColor={theme.colors.primary}
+              />
             }
             contentContainerStyle={{
               paddingBottom: 120,
-              flexGrow: binders.length === 0 ? 1 : 0,
+              flexGrow: sortedBinders.length === 0 ? 1 : 0,
             }}
             ListEmptyComponent={
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={{ color: '#AAB3D1', textAlign: 'center', fontSize: 15 }}>
-                  No binders yet.
-                </Text>
+              <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
                 <Text
                   style={{
-                    color: '#7f89b0',
+                    color: theme.colors.text,
+                    textAlign: 'center',
+                    fontSize: 16,
+                    fontWeight: '900',
+                  }}
+                >
+                  No binders yet.
+                </Text>
+
+                <Text
+                  style={{
+                    color: theme.colors.textSoft,
                     textAlign: 'center',
                     fontSize: 13,
                     marginTop: 8,
+                    lineHeight: 20,
                   }}
                 >
                   Create your first official set binder or a themed custom one.

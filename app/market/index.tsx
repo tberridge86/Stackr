@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { theme } from '../../lib/theme';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Image,
   Modal,
+  PanResponder,
   Pressable,
   RefreshControl,
   SafeAreaView,
@@ -12,89 +15,105 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native'
-import { supabase } from '../../lib/supabase'
+} from 'react-native';
+import { BlurView } from 'expo-blur';
+import { supabase } from '../../lib/supabase';
 
 type PokemonCard = {
-  id: string
-  name: string
-  number?: string
-  rarity?: string
+  id: string;
+  name: string;
+  number?: string;
+  rarity?: string;
   images?: {
-    small?: string
-    large?: string
-  }
+    small?: string;
+    large?: string;
+  };
   set?: {
-    id?: string
-    name?: string
-    series?: string
-  }
+    id?: string;
+    name?: string;
+    series?: string;
+  };
   tcgplayer?: {
     prices?: Record<
       string,
       {
-        low?: number
-        mid?: number
-        high?: number
-        market?: number
+        low?: number;
+        mid?: number;
+        high?: number;
+        market?: number;
       }
-    >
-  }
+    >;
+  };
   cardmarket?: {
     prices?: {
-      averageSellPrice?: number
-      trendPrice?: number
-      lowPriceExPlus?: number
-      avg1?: number
-      avg7?: number
-      avg30?: number
-      reverseHoloTrend?: number
-      lowPrice?: number
-    }
-  }
-}
+      averageSellPrice?: number;
+      trendPrice?: number;
+      lowPriceExPlus?: number;
+      avg1?: number;
+      avg7?: number;
+      avg30?: number;
+      reverseHoloTrend?: number;
+      lowPrice?: number;
+    };
+  };
+};
 
 type WatchlistRow = {
-  id?: string
-  user_id?: string
-  card_id: string
-  set_id?: string | null
-  created_at?: string
-}
+  id?: string;
+  user_id?: string;
+  card_id: string;
+  set_id?: string | null;
+  created_at?: string;
+};
 
 type WatchlistPriceState = {
-  latestPrice: number | null
-  previousPrice: number | null
-  change: number | null
-  hasHistory: boolean
-}
+  latestPrice: number | null;
+  previousPrice: number | null;
+  change: number | null;
+  percentChange: number | null;
+  hasHistory: boolean;
+};
 
-type WatchlistPriceMap = Record<string, WatchlistPriceState>
+type WatchlistPriceMap = Record<string, WatchlistPriceState>;
 
 type EbayDetailData = {
-  low?: number | null
-  average?: number | null
-  high?: number | null
-  count?: number | null
-} | null
+  low?: number | null;
+  average?: number | null;
+  high?: number | null;
+  count?: number | null;
+} | null;
 
-const POKEMON_TCG_API = 'https://api.pokemontcg.io/v2/cards'
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL || ''
+const POKEMON_TCG_API = 'https://api.pokemontcg.io/v2/cards';
+const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL || '';
+
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+};
 
 const formatCurrency = (value: number | null | undefined) => {
-  if (value == null || Number.isNaN(value)) return '--'
-  return `£${value.toFixed(2)}`
-}
+  if (value == null || Number.isNaN(value)) return '--';
+  return `£${value.toFixed(2)}`;
+};
 
 const formatDelta = (value: number | null | undefined) => {
-  if (value == null || Number.isNaN(value)) return '--'
-  const sign = value > 0 ? '+' : ''
-  return `${sign}£${value.toFixed(2)}`
-}
+  if (value == null || Number.isNaN(value)) return '--';
+  const sign = value > 0 ? '+' : '';
+  return `${sign}£${value.toFixed(2)}`;
+};
+
+const formatPercent = (value: number | null | undefined) => {
+  if (value == null || Number.isNaN(value)) return '--';
+  const sign = value > 0 ? '+' : '';
+  return `(${sign}${value.toFixed(1)}%)`;
+};
 
 const getBestTcgMid = (card: PokemonCard): number | null => {
-  const prices = card?.tcgplayer?.prices
-  if (!prices) return null
+  const prices = card?.tcgplayer?.prices;
+  if (!prices) return null;
 
   const preferredOrder = [
     'holofoil',
@@ -102,23 +121,23 @@ const getBestTcgMid = (card: PokemonCard): number | null => {
     'normal',
     '1stEditionHolofoil',
     '1stEditionNormal',
-  ]
+  ];
 
   for (const key of preferredOrder) {
-    const mid = prices[key]?.mid
-    if (typeof mid === 'number') return mid
+    const mid = prices[key]?.mid;
+    if (typeof mid === 'number') return mid;
   }
 
   for (const value of Object.values(prices)) {
-    if (typeof value?.mid === 'number') return value.mid
+    if (typeof value?.mid === 'number') return value.mid;
   }
 
-  return null
-}
+  return null;
+};
 
 const getBestTcgLow = (card: PokemonCard): number | null => {
-  const prices = card?.tcgplayer?.prices
-  if (!prices) return null
+  const prices = card?.tcgplayer?.prices;
+  if (!prices) return null;
 
   const preferredOrder = [
     'holofoil',
@@ -126,219 +145,266 @@ const getBestTcgLow = (card: PokemonCard): number | null => {
     'normal',
     '1stEditionHolofoil',
     '1stEditionNormal',
-  ]
+  ];
 
   for (const key of preferredOrder) {
-    const low = prices[key]?.low
-    if (typeof low === 'number') return low
+    const low = prices[key]?.low;
+    if (typeof low === 'number') return low;
   }
 
   for (const value of Object.values(prices)) {
-    if (typeof value?.low === 'number') return value.low
+    if (typeof value?.low === 'number') return value.low;
   }
 
-  return null
-}
+  return null;
+};
 
 export default function MarketScreen() {
-  
-  const [query, setQuery] = useState('')
-  const [searching, setSearching] = useState(false)
-  const [searchResults, setSearchResults] = useState<PokemonCard[]>([])
-  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null)
-  const [detailVisible, setDetailVisible] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
+  const [query, setQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
 
-  const [userId, setUserId] = useState<string | null>(null)
+  const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [detailEbayData, setDetailEbayData] = useState<EbayDetailData>(null);
+  const [detailPriceLoading, setDetailPriceLoading] = useState(false);
 
-  const [watchlist, setWatchlist] = useState<WatchlistRow[]>([])
-  const [watchlistLoading, setWatchlistLoading] = useState(true)
-  const [watchlistPriceMap, setWatchlistPriceMap] = useState<WatchlistPriceMap>({})
-  const [loadingWatchlistPrices, setLoadingWatchlistPrices] = useState(false)
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [detailEbayData, setDetailEbayData] = useState<EbayDetailData>(null)
-  const [detailPriceLoading, setDetailPriceLoading] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null);
+  const [watchlist, setWatchlist] = useState<WatchlistRow[]>([]);
+  const [watchlistLoading, setWatchlistLoading] = useState(true);
 
-  const [watchlistCards, setWatchlistCards] = useState<PokemonCard[]>([])
-  const [watchlistCardsLoading, setWatchlistCardsLoading] = useState(false)
+  const [watchlistCards, setWatchlistCards] = useState<PokemonCard[]>([]);
+  const [watchlistCardsLoading, setWatchlistCardsLoading] = useState(false);
+
+  const [watchlistPriceMap, setWatchlistPriceMap] =
+    useState<WatchlistPriceMap>({});
+  const [loadingWatchlistPrices, setLoadingWatchlistPrices] = useState(false);
+
+  const translateY = useRef(new Animated.Value(0)).current;
 
   const watchedCardIds = useMemo(() => {
-    return new Set(watchlist.map((item) => item.card_id))
-  }, [watchlist])
+    return new Set(watchlist.map((item) => item.card_id));
+  }, [watchlist]);
 
   const isWatching = useCallback(
     (cardId: string) => watchedCardIds.has(cardId),
     [watchedCardIds]
-  )
+  );
 
-  const getCurrentUser = async () => {
-    const { data, error } = await supabase.auth.getUser()
-    if (error) {
-      console.error('Error getting user:', error)
-      setUserId(null)
-      return
-    }
-    setUserId(data.user?.id ?? null)
-  }
+  const closeDetail = useCallback(() => {
+    Animated.timing(translateY, {
+      toValue: 700,
+      duration: 180,
+      useNativeDriver: true,
+    }).start(() => {
+      translateY.setValue(0);
+      setDetailVisible(false);
+      setSelectedCard(null);
+      setDetailEbayData(null);
+    });
+  }, [translateY]);
 
-  const loadWatchlistPriceChanges = async (watchedCards: { card_id: string }[]) => {
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gesture) => {
+          return gesture.dy > 8 && Math.abs(gesture.dy) > Math.abs(gesture.dx);
+        },
+        onPanResponderMove: (_, gesture) => {
+          if (gesture.dy > 0) {
+            translateY.setValue(gesture.dy);
+          }
+        },
+        onPanResponderRelease: (_, gesture) => {
+          if (gesture.dy > 130 || gesture.vy > 1.2) {
+            closeDetail();
+          } else {
+            Animated.spring(translateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              tension: 80,
+              friction: 10,
+            }).start();
+          }
+        },
+      }),
+    [closeDetail, translateY]
+  );
+
+  const loadWatchlistPriceChanges = async (
+    watchedCards: { card_id: string }[]
+  ) => {
     try {
       if (!watchedCards?.length) {
-        setWatchlistPriceMap({})
-        return
+        setWatchlistPriceMap({});
+        return;
       }
 
-      setLoadingWatchlistPrices(true)
+      setLoadingWatchlistPrices(true);
 
-      const cardIds = [...new Set(watchedCards.map((c) => c.card_id).filter(Boolean))]
+      const cardIds = [
+        ...new Set(watchedCards.map((card) => card.card_id).filter(Boolean)),
+      ];
 
       const { data, error } = await supabase
         .from('market_price_snapshots')
         .select('card_id, ebay_average, tcg_mid, snapshot_at')
         .in('card_id', cardIds)
-        .order('snapshot_at', { ascending: false })
+        .order('snapshot_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading watchlist price snapshots:', error)
-        return
+        console.error('Error loading watchlist price snapshots:', error);
+        return;
       }
 
-      const grouped: Record<string, any[]> = {}
+      const grouped: Record<string, any[]> = {};
 
       for (const row of data || []) {
-        if (!grouped[row.card_id]) grouped[row.card_id] = []
+        if (!grouped[row.card_id]) grouped[row.card_id] = [];
         if (grouped[row.card_id].length < 2) {
-          grouped[row.card_id].push(row)
+          grouped[row.card_id].push(row);
         }
       }
 
-      const nextMap: WatchlistPriceMap = {}
+      const nextMap: WatchlistPriceMap = {};
 
       for (const cardId of cardIds) {
-        const snapshots = grouped[cardId] || []
-        const latest = snapshots[0]
-        const previous = snapshots[1]
+        const snapshots = grouped[cardId] || [];
+        const latest = snapshots[0];
+        const previous = snapshots[1];
 
-        const latestPrice = latest?.ebay_average ?? latest?.tcg_mid ?? null
-        const previousPrice = previous?.ebay_average ?? previous?.tcg_mid ?? null
+        const latestPrice = latest?.ebay_average ?? latest?.tcg_mid ?? null;
+        const previousPrice =
+          previous?.ebay_average ?? previous?.tcg_mid ?? null;
+
+        const change =
+          latestPrice != null && previousPrice != null
+            ? latestPrice - previousPrice
+            : null;
+
+        const percentChange =
+          change != null && previousPrice != null && previousPrice !== 0
+            ? (change / previousPrice) * 100
+            : null;
 
         nextMap[cardId] = {
           latestPrice,
           previousPrice,
-          change:
-            latestPrice != null && previousPrice != null
-              ? latestPrice - previousPrice
-              : null,
+          change,
+          percentChange,
           hasHistory: snapshots.length > 1,
-        }
+        };
       }
 
-      setWatchlistPriceMap(nextMap)
+      setWatchlistPriceMap(nextMap);
     } catch (err) {
-      console.error('Unexpected error loading watchlist price changes:', err)
+      console.error('Unexpected error loading watchlist price changes:', err);
     } finally {
-      setLoadingWatchlistPrices(false)
+      setLoadingWatchlistPrices(false);
     }
-  }
+  };
 
   const loadWatchlist = async () => {
     try {
-      setWatchlistLoading(true)
+      setWatchlistLoading(true);
 
-      const { data: authData } = await supabase.auth.getUser()
-      const currentUserId = authData.user?.id ?? null
-      setUserId(currentUserId)
+      const { data: authData } = await supabase.auth.getUser();
+      const currentUserId = authData.user?.id ?? null;
+      setUserId(currentUserId);
 
       if (!currentUserId) {
-        setWatchlist([])
-        setWatchlistPriceMap({})
-        return
+        setWatchlist([]);
+        setWatchlistPriceMap({});
+        return;
       }
 
       const { data, error } = await supabase
         .from('market_watchlist')
         .select('*')
         .eq('user_id', currentUserId)
-        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading watchlist:', error)
-        return
+        console.error('Error loading watchlist:', error);
+        return;
       }
 
-      const rows = (data || []) as WatchlistRow[]
-      setWatchlist(rows)
-      await loadWatchlistPriceChanges(rows)
+      const rows = (data || []) as WatchlistRow[];
+      setWatchlist(rows);
+      await loadWatchlistPriceChanges(rows);
     } catch (err) {
-      console.error('Unexpected error loading watchlist:', err)
+      console.error('Unexpected error loading watchlist:', err);
     } finally {
-      setWatchlistLoading(false)
+      setWatchlistLoading(false);
     }
-  }
+  };
 
   const searchCards = async () => {
     try {
       if (!query.trim()) {
-        setSearchResults([])
-        return
+        setSearchResults([]);
+        return;
       }
 
-      setSearching(true)
+      setSearching(true);
 
-      const cleanQuery = query.trim().replace(/"/g, '')
-      const url = `${POKEMON_TCG_API}?q=name:${encodeURIComponent(cleanQuery)}*&orderBy=set.releaseDate&pageSize=30`
+      const cleanQuery = query.trim().replace(/"/g, '');
+      const url = `${POKEMON_TCG_API}?q=name:${encodeURIComponent(
+        cleanQuery
+      )}*&orderBy=set.releaseDate&pageSize=30`;
 
-      const response = await fetch(url)
-      const json = await response.json()
+      const response = await fetch(url);
+      const json = await response.json();
+      const cards = Array.isArray(json?.data) ? json.data : [];
 
-      const cards = Array.isArray(json?.data) ? json.data : []
-      setSearchResults(cards)
+      setSearchResults(cards);
     } catch (err) {
-      console.error('Error searching cards:', err)
+      console.error('Error searching cards:', err);
     } finally {
-      setSearching(false)
+      setSearching(false);
     }
-  }
+  };
 
   const fetchDetailEbayData = async (card: PokemonCard) => {
     try {
       if (!PRICE_API_URL) {
-        setDetailEbayData(null)
-        return
+        setDetailEbayData(null);
+        return;
       }
 
-      setDetailPriceLoading(true)
-      setDetailEbayData(null)
+      setDetailPriceLoading(true);
+      setDetailEbayData(null);
 
       const params = new URLSearchParams({
         cardId: card.id,
         name: card.name || '',
         setName: card.set?.name || '',
         number: card.number || '',
-      })
+      });
 
-      const url = `${PRICE_API_URL}/api/price/ebay?${params.toString()}`
-      console.log('eBay request URL:', url)
-
-      const response = await fetch(url)
-      const rawText = await response.text()
-
-      console.log('eBay status:', response.status)
-      console.log('eBay raw response:', rawText.slice(0, 500))
+      const url = `${PRICE_API_URL}/api/price/ebay?${params.toString()}`;
+      const response = await fetch(url);
+      const rawText = await response.text();
 
       if (!response.ok) {
-        console.error('eBay endpoint returned non-200 response')
-        setDetailEbayData(null)
-        return
+        console.error(
+          'eBay endpoint returned non-200 response:',
+          response.status,
+          rawText
+        );
+        setDetailEbayData(null);
+        return;
       }
 
-      let json: any
+      let json: any;
       try {
-        json = JSON.parse(rawText)
-      } catch (parseError) {
-        console.error('API returned non-JSON:', rawText.slice(0, 500))
-        setDetailEbayData(null)
-        return
+        json = JSON.parse(rawText);
+      } catch {
+        console.error('API returned non-JSON:', rawText.slice(0, 500));
+        setDetailEbayData(null);
+        return;
       }
 
       setDetailEbayData({
@@ -346,157 +412,165 @@ export default function MarketScreen() {
         average: json?.average ?? null,
         high: json?.high ?? null,
         count: json?.count ?? null,
-      })
+      });
     } catch (err) {
-      console.error('Error fetching eBay data:', err)
-      setDetailEbayData(null)
+      console.error('Error fetching eBay data:', err);
+      setDetailEbayData(null);
     } finally {
-      setDetailPriceLoading(false)
+      setDetailPriceLoading(false);
     }
-  }
+  };
 
   const openCardDetail = async (card: PokemonCard) => {
-    setSelectedCard(card)
-    setDetailVisible(true)
-    await fetchDetailEbayData(card)
-  }
+    translateY.setValue(0);
+    setSelectedCard(card);
+    setDetailVisible(true);
+    await fetchDetailEbayData(card);
+  };
 
   const addToWatchlist = async (card: PokemonCard) => {
     try {
-      if (!userId) return
+      if (!userId) return;
 
-      const payload = {
+      const { error } = await supabase.from('market_watchlist').insert({
         user_id: userId,
         card_id: card.id,
         set_id: card.set?.id ?? null,
-      }
-
-      const { error } = await supabase.from('market_watchlist').insert(payload)
+      });
 
       if (error) {
-        console.error('Error adding to watchlist:', error)
-        return
+        console.error('Error adding to watchlist:', error);
+        return;
       }
 
-      await loadWatchlist()
+      await loadWatchlist();
     } catch (err) {
-      console.error('Unexpected error adding to watchlist:', err)
+      console.error('Unexpected error adding to watchlist:', err);
     }
-  }
+  };
 
   const removeFromWatchlist = async (card: PokemonCard) => {
     try {
-      if (!userId) return
+      if (!userId) return;
 
       const { error } = await supabase
         .from('market_watchlist')
         .delete()
         .eq('user_id', userId)
-        .eq('card_id', card.id)
+        .eq('card_id', card.id);
 
       if (error) {
-        console.error('Error removing from watchlist:', error)
-        return
+        console.error('Error removing from watchlist:', error);
+        return;
       }
 
-      await loadWatchlist()
+      await loadWatchlist();
     } catch (err) {
-      console.error('Unexpected error removing from watchlist:', err)
+      console.error('Unexpected error removing from watchlist:', err);
     }
-  }
+  };
 
   const toggleWatchlist = async (card: PokemonCard) => {
     if (isWatching(card.id)) {
-      await removeFromWatchlist(card)
+      await removeFromWatchlist(card);
     } else {
-      await addToWatchlist(card)
+      await addToWatchlist(card);
     }
-  }
+  };
 
   const fetchCardsByIds = async (cardIds: string[]) => {
-    if (!cardIds.length) return []
+    if (!cardIds.length) return [];
 
-    const chunks: string[][] = []
+    const chunks: string[][] = [];
     for (let i = 0; i < cardIds.length; i += 20) {
-      chunks.push(cardIds.slice(i, i + 20))
+      chunks.push(cardIds.slice(i, i + 20));
     }
 
-    const allCards: PokemonCard[] = []
+    const allCards: PokemonCard[] = [];
 
     for (const chunk of chunks) {
-      const q = chunk.map((id) => `id:${id}`).join(' OR ')
-      const url = `${POKEMON_TCG_API}?q=${encodeURIComponent(q)}&pageSize=20`
-      const response = await fetch(url)
-      const json = await response.json()
+      const q = chunk.map((id) => `id:${id}`).join(' OR ');
+      const url = `${POKEMON_TCG_API}?q=${encodeURIComponent(q)}&pageSize=20`;
+      const response = await fetch(url);
+      const json = await response.json();
+
       if (Array.isArray(json?.data)) {
-        allCards.push(...json.data)
+        allCards.push(...json.data);
       }
     }
 
-    return allCards
-  }
+    return allCards;
+  };
 
   const loadWatchlistCards = async () => {
     try {
       if (!watchlist.length) {
-        setWatchlistCards([])
-        return
+        setWatchlistCards([]);
+        return;
       }
 
-      setWatchlistCardsLoading(true)
-      const cards = await fetchCardsByIds(watchlist.map((w) => w.card_id))
-      setWatchlistCards(cards)
+      setWatchlistCardsLoading(true);
+      const cards = await fetchCardsByIds(watchlist.map((w) => w.card_id));
+      setWatchlistCards(cards);
     } catch (err) {
-      console.error('Error loading watchlist card data:', err)
+      console.error('Error loading watchlist card data:', err);
     } finally {
-      setWatchlistCardsLoading(false)
+      setWatchlistCardsLoading(false);
     }
-  }
+  };
 
   const onRefresh = async () => {
     try {
-      setRefreshing(true)
-      await loadWatchlist()
-      await loadWatchlistCards()
+      setRefreshing(true);
+      await loadWatchlist();
+      await loadWatchlistCards();
     } finally {
-      setRefreshing(false)
+      setRefreshing(false);
     }
-  }
+  };
 
   useEffect(() => {
-    getCurrentUser()
-    loadWatchlist()
-  }, [])
+    loadWatchlist();
+  }, []);
 
   useEffect(() => {
-    loadWatchlistCards()
-  }, [watchlist])
+    loadWatchlistCards();
+  }, [watchlist]);
 
   const renderPriceChange = (cardId: string) => {
-    const priceData = watchlistPriceMap[cardId]
+    const priceData = watchlistPriceMap[cardId];
 
     if (!priceData) {
-      return <Text style={styles.marketPriceSubtle}>--</Text>
+      return <Text style={styles.marketPriceSubtle}>--</Text>;
     }
 
-    const { latestPrice, change, hasHistory } = priceData
+    const { latestPrice, change, percentChange, hasHistory } = priceData;
 
-    let deltaStyle = styles.marketPriceNeutral
+    let deltaStyle = styles.marketPriceNeutral;
     if (change != null) {
-      if (change > 0) deltaStyle = styles.marketPriceUp
-      if (change < 0) deltaStyle = styles.marketPriceDown
+      if (change > 0) deltaStyle = styles.marketPriceUp;
+      if (change < 0) deltaStyle = styles.marketPriceDown;
     }
 
     return (
-      <View style={styles.marketPriceRow}>
-        <Text style={styles.marketPriceValue}>{formatCurrency(latestPrice)}</Text>
-        <Text style={deltaStyle}>{hasHistory ? formatDelta(change) : '--'}</Text>
+      <View style={styles.marketPriceBlock}>
+        <Text style={styles.marketPriceValue}>
+          {formatCurrency(latestPrice)}
+        </Text>
+
+        {hasHistory ? (
+          <Text style={deltaStyle}>
+            {formatDelta(change)} {formatPercent(percentChange)}
+          </Text>
+        ) : (
+          <Text style={styles.marketPriceNeutral}>--</Text>
+        )}
       </View>
-    )
-  }
+    );
+  };
 
   const renderCard = ({ item }: { item: PokemonCard }) => {
-    const watching = isWatching(item.id)
+    const watching = isWatching(item.id);
 
     return (
       <Pressable style={styles.card} onPress={() => openCardDetail(item)}>
@@ -518,27 +592,37 @@ export default function MarketScreen() {
 
           <View style={styles.inlinePriceRow}>
             <Text style={styles.inlinePriceLabel}>TCG</Text>
-            <Text style={styles.inlinePriceValue}>{formatCurrency(getBestTcgMid(item))}</Text>
+            <Text style={styles.inlinePriceValue}>
+              {formatCurrency(getBestTcgMid(item))}
+            </Text>
           </View>
 
           <Pressable
             style={[styles.watchButton, watching && styles.watchButtonActive]}
             onPress={() => toggleWatchlist(item)}
           >
-            <Text style={[styles.watchButtonText, watching && styles.watchButtonTextActive]}>
+            <Text
+              style={[
+                styles.watchButtonText,
+                watching && styles.watchButtonTextActive,
+              ]}
+            >
               {watching ? '✓ Watching' : 'Watch'}
             </Text>
           </Pressable>
         </View>
       </Pressable>
-    )
-  }
+    );
+  };
 
   const renderWatchlistCard = ({ item }: { item: PokemonCard }) => {
-    const watching = isWatching(item.id)
+    const watching = isWatching(item.id);
 
     return (
-      <Pressable style={styles.watchlistCard} onPress={() => openCardDetail(item)}>
+      <Pressable
+        style={styles.watchlistCard}
+        onPress={() => openCardDetail(item)}
+      >
         <Image
           source={{ uri: item.images?.small || item.images?.large }}
           style={styles.watchlistImage}
@@ -558,17 +642,25 @@ export default function MarketScreen() {
           {renderPriceChange(item.id)}
 
           <Pressable
-            style={[styles.watchButtonSmall, watching && styles.watchButtonActive]}
+            style={[
+              styles.watchButtonSmall,
+              watching && styles.watchButtonActive,
+            ]}
             onPress={() => toggleWatchlist(item)}
           >
-            <Text style={[styles.watchButtonText, watching && styles.watchButtonTextActive]}>
+            <Text
+              style={[
+                styles.watchButtonText,
+                watching && styles.watchButtonTextActive,
+              ]}
+            >
               {watching ? '✓ Watching' : 'Watch'}
             </Text>
           </Pressable>
         </View>
       </Pressable>
-    )
-  }
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -588,11 +680,12 @@ export default function MarketScreen() {
                 value={query}
                 onChangeText={setQuery}
                 placeholder="Search card name..."
-                placeholderTextColor="#7C8AA0"
+                placeholderTextColor={theme.colors.textSoft}
                 style={styles.searchInput}
                 returnKeyType="search"
                 onSubmitEditing={searchCards}
               />
+
               <Pressable style={styles.searchButton} onPress={searchCards}>
                 <Text style={styles.searchButtonText}>Search</Text>
               </Pressable>
@@ -600,18 +693,23 @@ export default function MarketScreen() {
 
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Watchlist</Text>
-              {loadingWatchlistPrices || watchlistLoading || watchlistCardsLoading ? (
-                <ActivityIndicator color="#94A3B8" />
+
+              {loadingWatchlistPrices ||
+              watchlistLoading ||
+              watchlistCardsLoading ? (
+                <ActivityIndicator color={theme.colors.textSoft} />
               ) : null}
             </View>
 
             {!userId ? (
               <View style={styles.emptyBox}>
-                <Text style={styles.emptyText}>Sign in to use your market watchlist.</Text>
+                <Text style={styles.emptyText}>
+                  Sign in to use your market watchlist.
+                </Text>
               </View>
             ) : watchlistCardsLoading || watchlistLoading ? (
               <View style={styles.emptyBox}>
-                <ActivityIndicator color="#94A3B8" />
+                <ActivityIndicator color={theme.colors.textSoft} />
               </View>
             ) : watchlistCards.length === 0 ? (
               <View style={styles.emptyBox}>
@@ -630,168 +728,211 @@ export default function MarketScreen() {
 
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Search Results</Text>
-              {searching ? <ActivityIndicator color="#94A3B8" /> : null}
+
+              {searching ? (
+                <ActivityIndicator color={theme.colors.textSoft} />
+              ) : null}
             </View>
           </View>
         }
         ListEmptyComponent={
           searching ? (
             <View style={styles.emptyBox}>
-              <ActivityIndicator color="#94A3B8" />
+              <ActivityIndicator color={theme.colors.textSoft} />
             </View>
           ) : (
             <View style={styles.emptyBox}>
               <Text style={styles.emptyText}>
-                Search for a Pokémon card to view pricing and add it to your watchlist.
+                Search for a Pokémon card to view pricing and add it to your
+                watchlist.
               </Text>
             </View>
           )
         }
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
 
       <Modal
         visible={detailVisible}
-        animationType="slide"
-        onRequestClose={() => setDetailVisible(false)}
+        transparent
+        animationType="fade"
+        onRequestClose={closeDetail}
       >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Card Details</Text>
-            <Pressable onPress={() => setDetailVisible(false)} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </Pressable>
-          </View>
+        <BlurView intensity={95} tint="dark" style={styles.blurFill}>
+          <Pressable style={styles.modalBackdrop} onPress={closeDetail} />
 
-          <ScrollView contentContainerStyle={styles.modalContent}>
-            {selectedCard ? (
-              <>
-                <Image
-                  source={{ uri: selectedCard.images?.large || selectedCard.images?.small }}
-                  style={styles.detailImage}
-                  resizeMode="contain"
-                />
+          <SafeAreaView style={styles.blurSafeArea}>
+            <Animated.View
+              style={[
+                styles.sheetContainer,
+                {
+                  transform: [{ translateY }],
+                },
+              ]}
+              {...panResponder.panHandlers}
+            >
+              <ScrollView
+                contentContainerStyle={styles.sheetContent}
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.modalHandle} />
 
-                <Text style={styles.detailName}>{selectedCard.name}</Text>
-                <Text style={styles.detailMeta}>
-                  {selectedCard.set?.name || 'Unknown set'}
-                  {selectedCard.number ? ` • #${selectedCard.number}` : ''}
-                </Text>
+                {selectedCard ? (
+                  <>
+                    <Image
+                      source={{
+                        uri:
+                          selectedCard.images?.large ||
+                          selectedCard.images?.small,
+                      }}
+                      style={styles.detailImage}
+                      resizeMode="contain"
+                    />
 
-                <Pressable
-                  style={[
-                    styles.watchButtonLarge,
-                    isWatching(selectedCard.id) && styles.watchButtonActive,
-                  ]}
-                  onPress={() => toggleWatchlist(selectedCard)}
-                >
-                  <Text
-                    style={[
-                      styles.watchButtonText,
-                      isWatching(selectedCard.id) && styles.watchButtonTextActive,
-                    ]}
-                  >
-                    {isWatching(selectedCard.id) ? '✓ Watching' : 'Watch'}
-                  </Text>
-                </Pressable>
+                    <View style={styles.detailPanel}>
+                      <Text style={styles.detailName}>{selectedCard.name}</Text>
 
-                <View style={styles.priceSection}>
-                  <Text style={styles.priceSectionTitle}>TCGPlayer</Text>
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceLabel}>Low</Text>
-                    <Text style={styles.priceValue}>
-                      {formatCurrency(getBestTcgLow(selectedCard))}
-                    </Text>
-                  </View>
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceLabel}>Mid</Text>
-                    <Text style={styles.priceValue}>
-                      {formatCurrency(getBestTcgMid(selectedCard))}
-                    </Text>
-                  </View>
-                </View>
+                      <Text style={styles.detailMeta}>
+                        {selectedCard.set?.name || 'Unknown set'}
+                        {selectedCard.number ? ` • #${selectedCard.number}` : ''}
+                      </Text>
 
-                <View style={styles.priceSection}>
-                  <Text style={styles.priceSectionTitle}>Cardmarket</Text>
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceLabel}>Trend</Text>
-                    <Text style={styles.priceValue}>
-                      {formatCurrency(selectedCard.cardmarket?.prices?.trendPrice ?? null)}
-                    </Text>
-                  </View>
-                  <View style={styles.priceRow}>
-                    <Text style={styles.priceLabel}>30d Avg</Text>
-                    <Text style={styles.priceValue}>
-                      {formatCurrency(selectedCard.cardmarket?.prices?.avg30 ?? null)}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.priceSection}>
-                  <Text style={styles.priceSectionTitle}>eBay Sold</Text>
-
-                  {detailPriceLoading ? (
-                    <ActivityIndicator color="#94A3B8" />
-                  ) : (
-                    <>
-                      <View style={styles.priceRow}>
-                        <Text style={styles.priceLabel}>Low</Text>
-                        <Text style={styles.priceValue}>
-                          {formatCurrency(detailEbayData?.low ?? null)}
+                      <Pressable
+                        style={[
+                          styles.watchButtonLarge,
+                          isWatching(selectedCard.id) && styles.watchButtonActive,
+                        ]}
+                        onPress={() => toggleWatchlist(selectedCard)}
+                      >
+                        <Text
+                          style={[
+                            styles.watchButtonText,
+                            isWatching(selectedCard.id) &&
+                              styles.watchButtonTextActive,
+                          ]}
+                        >
+                          {isWatching(selectedCard.id) ? '✓ Watching' : 'Watch'}
                         </Text>
+                      </Pressable>
+
+                      <View style={styles.priceSection}>
+                        <Text style={styles.priceSectionTitle}>TCGPlayer</Text>
+
+                        <View style={styles.priceRow}>
+                          <Text style={styles.priceLabel}>Low</Text>
+                          <Text style={styles.priceValue}>
+                            {formatCurrency(getBestTcgLow(selectedCard))}
+                          </Text>
+                        </View>
+
+                        <View style={styles.priceRow}>
+                          <Text style={styles.priceLabel}>Mid</Text>
+                          <Text style={styles.priceValue}>
+                            {formatCurrency(getBestTcgMid(selectedCard))}
+                          </Text>
+                        </View>
                       </View>
-                      <View style={styles.priceRow}>
-                        <Text style={styles.priceLabel}>Average</Text>
-                        <Text style={styles.priceValue}>
-                          {formatCurrency(detailEbayData?.average ?? null)}
-                        </Text>
+
+                      <View style={styles.priceSection}>
+                        <Text style={styles.priceSectionTitle}>Cardmarket</Text>
+
+                        <View style={styles.priceRow}>
+                          <Text style={styles.priceLabel}>Trend</Text>
+                          <Text style={styles.priceValue}>
+                            {formatCurrency(
+                              selectedCard.cardmarket?.prices?.trendPrice ??
+                                null
+                            )}
+                          </Text>
+                        </View>
+
+                        <View style={styles.priceRow}>
+                          <Text style={styles.priceLabel}>30d Avg</Text>
+                          <Text style={styles.priceValue}>
+                            {formatCurrency(
+                              selectedCard.cardmarket?.prices?.avg30 ?? null
+                            )}
+                          </Text>
+                        </View>
                       </View>
-                      <View style={styles.priceRow}>
-                        <Text style={styles.priceLabel}>High</Text>
-                        <Text style={styles.priceValue}>
-                          {formatCurrency(detailEbayData?.high ?? null)}
-                        </Text>
+
+                      <View style={styles.priceSection}>
+                        <Text style={styles.priceSectionTitle}>eBay Sold</Text>
+
+                        {detailPriceLoading ? (
+                          <ActivityIndicator color={theme.colors.textSoft} />
+                        ) : (
+                          <>
+                            <View style={styles.priceRow}>
+                              <Text style={styles.priceLabel}>Low</Text>
+                              <Text style={styles.priceValue}>
+                                {formatCurrency(detailEbayData?.low ?? null)}
+                              </Text>
+                            </View>
+
+                            <View style={styles.priceRow}>
+                              <Text style={styles.priceLabel}>Average</Text>
+                              <Text style={styles.priceValue}>
+                                {formatCurrency(
+                                  detailEbayData?.average ?? null
+                                )}
+                              </Text>
+                            </View>
+
+                            <View style={styles.priceRow}>
+                              <Text style={styles.priceLabel}>High</Text>
+                              <Text style={styles.priceValue}>
+                                {formatCurrency(detailEbayData?.high ?? null)}
+                              </Text>
+                            </View>
+
+                            <View style={styles.priceRow}>
+                              <Text style={styles.priceLabel}>Sales count</Text>
+                              <Text style={styles.priceValue}>
+                                {detailEbayData?.count ?? '--'}
+                              </Text>
+                            </View>
+                          </>
+                        )}
                       </View>
-                      <View style={styles.priceRow}>
-                        <Text style={styles.priceLabel}>Sales count</Text>
-                        <Text style={styles.priceValue}>{detailEbayData?.count ?? '--'}</Text>
-                      </View>
-                    </>
-                  )}
-                </View>
-              </>
-            ) : null}
-          </ScrollView>
-        </SafeAreaView>
+                    </View>
+                  </>
+                ) : null}
+              </ScrollView>
+            </Animated.View>
+          </SafeAreaView>
+        </BlurView>
       </Modal>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1220',
+    backgroundColor: theme.colors.bg,
   },
   listContent: {
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   headerWrap: {
     paddingHorizontal: 16,
-    paddingTop: 12,
+    paddingTop: 22,
     paddingBottom: 10,
   },
   title: {
     fontSize: 30,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: theme.colors.text,
   },
   subtitle: {
     marginTop: 6,
     fontSize: 14,
     lineHeight: 20,
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
   },
   searchRow: {
     flexDirection: 'row',
@@ -801,17 +942,17 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#111A2B',
-    color: '#FFFFFF',
+    backgroundColor: theme.colors.card,
+    color: theme.colors.text,
     borderWidth: 1,
-    borderColor: '#22314D',
+    borderColor: theme.colors.border,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
   },
   searchButton: {
-    backgroundColor: '#2563EB',
+    backgroundColor: theme.colors.primary,
     borderRadius: 14,
     paddingHorizontal: 16,
     justifyContent: 'center',
@@ -832,18 +973,22 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: theme.colors.text,
   },
   emptyBox: {
-    backgroundColor: '#111A2B',
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 18,
     justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 16,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...cardShadow,
   },
   emptyText: {
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -852,46 +997,46 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   watchlistCard: {
-    width: 270,
+    width: 290,
     flexDirection: 'row',
-    backgroundColor: '#111A2B',
+    backgroundColor: theme.colors.card,
     borderRadius: 18,
     padding: 12,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#1C2A44',
+    borderColor: theme.colors.border,
+    alignItems: 'flex-start',
+    ...cardShadow,
   },
   watchlistImage: {
     width: 82,
     height: 114,
     borderRadius: 10,
-    backgroundColor: '#0F172A',
+    backgroundColor: theme.colors.surface,
   },
   watchlistInfo: {
     flex: 1,
     marginLeft: 12,
-    justifyContent: 'space-between',
   },
   watchlistName: {
-    color: '#FFFFFF',
+    color: theme.colors.text,
     fontSize: 16,
     fontWeight: '800',
   },
   watchlistSet: {
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
     fontSize: 13,
     marginTop: 4,
   },
-  marketPriceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+  marketPriceBlock: {
     marginTop: 10,
+    marginBottom: 10,
+    gap: 4,
   },
   marketPriceValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: theme.colors.text,
   },
   marketPriceUp: {
     fontSize: 14,
@@ -906,28 +1051,29 @@ const styles = StyleSheet.create({
   marketPriceNeutral: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
   },
   marketPriceSubtle: {
     fontSize: 14,
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
     marginTop: 6,
   },
   card: {
     flexDirection: 'row',
     marginHorizontal: 16,
     marginBottom: 12,
-    backgroundColor: '#111A2B',
+    backgroundColor: theme.colors.card,
     borderRadius: 18,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#1C2A44',
+    borderColor: theme.colors.border,
+    ...cardShadow,
   },
   cardImage: {
     width: 86,
     height: 120,
     borderRadius: 12,
-    backgroundColor: '#0F172A',
+    backgroundColor: theme.colors.surface,
   },
   cardInfo: {
     flex: 1,
@@ -935,12 +1081,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardName: {
-    color: '#FFFFFF',
+    color: theme.colors.text,
     fontSize: 16,
     fontWeight: '800',
   },
   cardMeta: {
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
     fontSize: 13,
     marginTop: 4,
   },
@@ -951,116 +1097,118 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   inlinePriceLabel: {
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
     fontSize: 13,
     fontWeight: '700',
   },
   inlinePriceValue: {
-    color: '#FFFFFF',
+    color: theme.colors.text,
     fontSize: 15,
     fontWeight: '700',
   },
   watchButton: {
     marginTop: 12,
     alignSelf: 'flex-start',
-    backgroundColor: '#1E293B',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: theme.colors.border,
   },
   watchButtonSmall: {
     marginTop: 12,
     alignSelf: 'flex-start',
-    backgroundColor: '#1E293B',
+    backgroundColor: theme.colors.surface,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: theme.colors.border,
   },
   watchButtonLarge: {
     marginTop: 16,
     alignSelf: 'flex-start',
-    backgroundColor: '#1E293B',
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: theme.colors.border,
   },
   watchButtonActive: {
-    backgroundColor: '#DCFCE7',
-    borderColor: '#86EFAC',
+    backgroundColor: theme.colors.secondary,
+    borderColor: theme.colors.secondary,
   },
   watchButtonText: {
-    color: '#FFFFFF',
+    color: theme.colors.text,
     fontWeight: '700',
     fontSize: 14,
   },
   watchButtonTextActive: {
-    color: '#166534',
+    color: theme.colors.text,
   },
-  modalContainer: {
+  blurFill: {
     flex: 1,
-    backgroundColor: '#0B1220',
+    backgroundColor: 'rgba(0,0,0,0.18)',
   },
-  modalHeader: {
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  blurSafeArea: {
+    flex: 1,
+  },
+  sheetContainer: {
+    flex: 1,
+  },
+  sheetContent: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1C2A44',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingTop: 14,
+    paddingBottom: 44,
   },
-  modalTitle: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  closeButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#1E293B',
-  },
-  closeButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  modalContent: {
-    padding: 16,
-    paddingBottom: 40,
+  modalHandle: {
+    alignSelf: 'center',
+    width: 42,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    marginBottom: 20,
   },
   detailImage: {
     width: '100%',
-    height: 360,
-    backgroundColor: '#111A2B',
-    borderRadius: 18,
+    height: 330,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginBottom: 18,
+  },
+  detailPanel: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...cardShadow,
   },
   detailName: {
-    marginTop: 16,
-    color: '#FFFFFF',
+    color: theme.colors.text,
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '900',
   },
   detailMeta: {
     marginTop: 6,
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
     fontSize: 15,
   },
   priceSection: {
     marginTop: 18,
-    backgroundColor: '#111A2B',
+    backgroundColor: theme.colors.surface,
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#1C2A44',
+    borderColor: theme.colors.border,
   },
   priceSectionTitle: {
-    color: '#FFFFFF',
+    color: theme.colors.text,
     fontSize: 16,
     fontWeight: '800',
     marginBottom: 10,
@@ -1071,12 +1219,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   priceLabel: {
-    color: '#94A3B8',
+    color: theme.colors.textSoft,
     fontSize: 14,
   },
   priceValue: {
-    color: '#FFFFFF',
+    color: theme.colors.text,
     fontSize: 14,
     fontWeight: '700',
   },
-})
+});

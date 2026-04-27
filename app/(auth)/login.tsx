@@ -1,3 +1,4 @@
+import { theme } from '../../lib/theme';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -7,6 +8,9 @@ import {
   TextInput,
   Pressable,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -78,82 +82,102 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <Text style={styles.title}>PocketVault</Text>
-        <Text style={styles.subtitle}>Sign in or create an account</Text>
-
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#8f9bc2"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-        />
-
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor="#8f9bc2"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-        />
-
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        {message ? <Text style={styles.message}>{message}</Text> : null}
-
-        <Pressable
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
+      <KeyboardAvoidingView
+        style={styles.keyboard}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          {loading ? (
-            <ActivityIndicator color="#0b0f2a" />
-          ) : (
-            <Text style={styles.buttonText}>Login</Text>
-          )}
-        </Pressable>
+          <View style={styles.container}>
+            <Text style={styles.title}>PocketVault</Text>
+            <Text style={styles.subtitle}>Sign in or create an account</Text>
 
-        <Pressable
-          style={[styles.secondaryButton, loading && styles.buttonDisabled]}
-          onPress={handleSignup}
-          disabled={loading}
-        >
-          <Text style={styles.secondaryText}>Create account</Text>
-        </Pressable>
-      </View>
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor={theme.colors.textSoft}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              style={styles.input}
+            />
+
+            <TextInput
+              placeholder="Password"
+              placeholderTextColor={theme.colors.textSoft}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.input}
+            />
+
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {message ? <Text style={styles.message}>{message}</Text> : null}
+
+            <Pressable
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.buttonText}>Login</Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              style={[styles.secondaryButton, loading && styles.buttonDisabled]}
+              onPress={handleSignup}
+              disabled={loading}
+            >
+              <Text style={styles.secondaryText}>Create account</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#080b1d' },
-  container: {
+  safe: {
     flex: 1,
+    backgroundColor: theme.colors.bg,
+  },
+  keyboard: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
+  },
+  container: {
     padding: 24,
   },
   title: {
-    color: '#fff',
+    color: theme.colors.text,
     fontSize: 32,
     fontWeight: '900',
     marginBottom: 6,
   },
   subtitle: {
-    color: '#AAB3D1',
+    color: theme.colors.textSoft,
     marginBottom: 24,
   },
   input: {
-    backgroundColor: '#121938',
-    color: '#fff',
+    backgroundColor: theme.colors.card,
+    color: theme.colors.text,
     borderRadius: 12,
     padding: 14,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   button: {
-    backgroundColor: '#FFD166',
+    backgroundColor: theme.colors.primary,
     padding: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -163,7 +187,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   buttonText: {
-    color: '#0b0f2a',
+    color: '#FFFFFF',
     fontWeight: '900',
   },
   secondaryButton: {
@@ -171,7 +195,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryText: {
-    color: '#FFD166',
+    color: theme.colors.primary,
     fontWeight: '700',
   },
   error: {
@@ -179,7 +203,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   message: {
-    color: '#5ED3A1',
+    color: '#22C55E',
     marginBottom: 10,
   },
 });

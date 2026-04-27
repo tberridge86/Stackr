@@ -1,38 +1,40 @@
-import { supabase } from '../../lib/supabase';
+import { theme } from '../../lib/theme';
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  StyleSheet,
-  Text,
   View,
-  Pressable,
   ScrollView,
-  Image,
+  TouchableOpacity,
+  ActivityIndicator,
   TextInput,
+  Image,
+  Alert,
+  StyleSheet,
 } from 'react-native';
+import { Text } from '../../components/Text';
 import { router, useLocalSearchParams } from 'expo-router';
-import { fetchAllSets, fetchCardsForSet, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
-import { useTrade } from '../../components/trade-context';
-import { useOffers } from '../../components/offer-context';
-import { fetchEbayPrice } from '../../lib/ebay';
+import { supabase } from '../../lib/supabase';
+import { createTradeOffer } from '../../lib/tradeOffers';
+import { getCachedCardSync } from '../../lib/pokemonTcgCache';
 
-type OfferedCardOption = {
-  card: PokemonCard;
-  set: PokemonSet;
+type CashPayer = 'sender' | 'receiver';
+
+type TradeCardOption = {
+  id: string;
+  card_id: string;
+  set_id: string | null;
+  name: string;
+  image_url: string | null;
+  set_name?: string | null;
+  number?: string | null;
 };
 
-type PriceSummary = {
-  low: string | null;
-  average: string | null;
-  high: string | null;
-  count: number;
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
 };
-
-function toNumber(value?: string | null) {
-  if (!value) return null;
-  const num = parseFloat(value);
-  return Number.isFinite(num) ? num : null;
-}
 
 export default function NewOfferScreen() {
   const params = useLocalSearchParams<{
@@ -42,652 +44,587 @@ export default function NewOfferScreen() {
     setId?: string;
   }>();
 
-  const targetCardId = typeof params.cardId === 'string' ? params.cardId : '';
-  const targetSetId = typeof params.setId === 'string' ? params.setId : '';
+  const listingId = Array.isArray(params.listingId)
+    ? params.listingId[0]
+    : params.listingId;
 
-  const { tradeCardIds, getMeta } = useTrade();
-  const { createOffer } = useOffers();
+  const targetUserId = Array.isArray(params.targetUserId)
+    ? params.targetUserId[0]
+    : params.targetUserId;
 
-  const [targetCard, setTargetCard] = useState<PokemonCard | null>(null);
-  const [targetSet, setTargetSet] = useState<PokemonSet | null>(null);
-  const [offeredCards, setOfferedCards] = useState<OfferedCardOption[]>([]);
-  const [selectedOfferIds, setSelectedOfferIds] = useState<string[]>([]);
-  const [cashTopUp, setCashTopUp] = useState('');
-  const [note, setNote] = useState('');
+  const cardId = Array.isArray(params.cardId) ? params.cardId[0] : params.cardId;
+  const setId = Array.isArray(params.setId) ? params.setId[0] : params.setId;
+
   const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
-  const [targetPrice, setTargetPrice] = useState<PriceSummary | null>(null);
-  const [offeredPriceMap, setOfferedPriceMap] = useState<Record<string, PriceSummary>>({});
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [targetCard, setTargetCard] = useState<TradeCardOption | null>(null);
+  const [myTradeCards, setMyTradeCards] = useState<TradeCardOption[]>([]);
+  const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+
+  const [cashAmount, setCashAmount] = useState('');
+  const [cashPayer, setCashPayer] = useState<CashPayer>('sender');
+  const [paypalRecipient, setPaypalRecipient] = useState('');
+  const [message, setMessage] = useState('');
+
+  const cashAmountNumber = useMemo(() => {
+    const cleaned = cashAmount.replace(/[£,]/g, '').trim();
+    const parsed = Number(cleaned);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }, [cashAmount]);
+
+  const cashInvolved = cashAmountNumber > 0;
 
   useEffect(() => {
-    let mounted = true;
+    loadScreen();
+  }, []);
 
-    const load = async () => {
-      try {
-        const allSets = await fetchAllSets();
+  async function loadScreen() {
+    try {
+      setLoading(true);
 
-        const foundTargetSet = allSets.find((s) => s.id === targetSetId) ?? null;
-        if (!mounted) return;
-        setTargetSet(foundTargetSet);
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-        let foundTargetCard: PokemonCard | null = null;
+      if (userError) throw userError;
 
-        if (targetSetId) {
-          const targetCards = await fetchCardsForSet(targetSetId);
-          foundTargetCard = targetCards.find((c) => c.id === targetCardId) ?? null;
-          if (!mounted) return;
-          setTargetCard(foundTargetCard);
-        }
-
-        const tradeSetIds = Array.from(
-          new Set(
-            tradeCardIds.map((tradeId) => {
-              const parts = tradeId.split('-');
-              return parts.slice(0, -1).join('-');
-            })
-          )
+      if (!user) {
+        Alert.alert(
+          'Sign in required',
+          'You need to be signed in to make trade offers.'
         );
-
-        const optionResults = await Promise.all(
-          tradeSetIds.map(async (tradeSetId) => {
-            const set = allSets.find((s) => s.id === tradeSetId);
-            if (!set) return [];
-
-            const cards = await fetchCardsForSet(tradeSetId);
-            return cards
-              .filter((c) => tradeCardIds.includes(c.id))
-              .map((c) => ({ card: c, set }));
-          })
-        );
-
-        const flatOptions = optionResults.flat();
-        if (!mounted) return;
-        setOfferedCards(flatOptions);
-
-        if (foundTargetCard && foundTargetSet) {
-          try {
-            const query = `${foundTargetCard.name} ${foundTargetSet.name} ${foundTargetCard.number ?? ''}`.trim();
-            const data = await fetchEbayPrice(query);
-
-            if (mounted) {
-              setTargetPrice({
-                low: data.low ?? null,
-                average: data.average ?? null,
-                high: data.high ?? null,
-                count: data.count ?? 0,
-              });
-            }
-          } catch (error) {
-            console.log('Failed to fetch target price', error);
-          }
-        }
-
-        const priceEntries = await Promise.all(
-          flatOptions.map(async (option) => {
-            try {
-              const query = `${option.card.name} ${option.set.name} ${option.card.number ?? ''}`.trim();
-              const data = await fetchEbayPrice(query);
-
-              return [
-                option.card.id,
-                {
-                  low: data.low ?? null,
-                  average: data.average ?? null,
-                  high: data.high ?? null,
-                  count: data.count ?? 0,
-                } satisfies PriceSummary,
-              ] as const;
-            } catch {
-              return [
-                option.card.id,
-                {
-                  low: null,
-                  average: null,
-                  high: null,
-                  count: 0,
-                } satisfies PriceSummary,
-              ] as const;
-            }
-          })
-        );
-
-        if (!mounted) return;
-        setOfferedPriceMap(Object.fromEntries(priceEntries));
-      } catch (error) {
-        console.log('Failed to load offer builder', error);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        router.replace('/offer');
+        return;
       }
-    };
 
-    load();
+      setCurrentUserId(user.id);
 
-    return () => {
-      mounted = false;
-    };
-  }, [targetCardId, targetSetId, tradeCardIds]);
-
-  const selectedOffers = useMemo(() => {
-    return offeredCards.filter((option) => selectedOfferIds.includes(option.card.id));
-  }, [offeredCards, selectedOfferIds]);
-
-  const selectedCustomTotal = useMemo(() => {
-    let total = 0;
-    let hasAny = false;
-
-    for (const option of selectedOffers) {
-      const meta = getMeta(option.card.id);
-      const custom = toNumber(meta?.value);
-      if (custom !== null) {
-        total += custom;
-        hasAny = true;
+      if (!listingId || !targetUserId || !cardId) {
+        Alert.alert(
+          'Missing trade details',
+          'This offer is missing listing information.'
+        );
+        router.replace('/offer');
+        return;
       }
+
+      const target = await buildTargetCard(cardId, setId ?? null);
+      setTargetCard(target);
+
+      const ownCards = await fetchMyTradeCards(user.id);
+      setMyTradeCards(ownCards);
+    } catch (error: any) {
+      console.error('Failed to load offer screen:', error);
+      Alert.alert(
+        'Could not load offer',
+        error?.message ?? 'Something went wrong.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function buildTargetCard(
+    cardIdValue: string,
+    setIdValue: string | null
+  ): Promise<TradeCardOption> {
+    const cached = getCachedCardSync(cardIdValue) as any;
+
+    if (cached) {
+      return {
+        id: cardIdValue,
+        card_id: cardIdValue,
+        set_id: setIdValue ?? cached?.set?.id ?? null,
+        name: cached?.name ?? cardIdValue,
+        image_url: cached?.images?.small ?? cached?.images?.large ?? null,
+        set_name: cached?.set?.name ?? null,
+        number: cached?.number ?? null,
+      };
     }
 
-    return hasAny ? +total.toFixed(2) : null;
-  }, [selectedOffers, getMeta]);
+    const { data } = await supabase
+      .from('card_previews')
+      .select('card_id, name, image_url, set_id, set_name, number')
+      .eq('card_id', cardIdValue)
+      .maybeSingle();
 
-  const selectedMarketTotal = useMemo(() => {
-    let total = 0;
-    let hasAny = false;
+    return {
+      id: cardIdValue,
+      card_id: cardIdValue,
+      set_id: setIdValue ?? data?.set_id ?? null,
+      name: data?.name ?? cardIdValue,
+      image_url: data?.image_url ?? null,
+      set_name: data?.set_name ?? null,
+      number: data?.number ?? null,
+    };
+  }
 
-    for (const option of selectedOffers) {
-      const market = toNumber(offeredPriceMap[option.card.id]?.average);
-      if (market !== null) {
-        total += market;
-        hasAny = true;
-      }
-    }
+  async function fetchMyTradeCards(userId: string): Promise<TradeCardOption[]> {
+    const { data: flags, error: flagsError } = await supabase
+      .from('user_card_flags')
+      .select('id, card_id, set_id')
+      .eq('user_id', userId)
+      .eq('flag_type', 'trade')
+      .order('created_at', { ascending: false });
 
-    return hasAny ? +total.toFixed(2) : null;
-  }, [selectedOffers, offeredPriceMap]);
+    if (flagsError) throw flagsError;
 
-  const targetMarket = toNumber(targetPrice?.average);
-  const offeredBestValue = selectedCustomTotal ?? selectedMarketTotal;
+    if (!flags || flags.length === 0) return [];
 
-  const suggestedTopUp =
-    targetMarket !== null && offeredBestValue !== null
-      ? Math.max(0, +(targetMarket - offeredBestValue).toFixed(2))
-      : null;
+    const cardIds = flags.map((flag: any) => flag.card_id);
 
-  const toggleOfferCard = (cardId: string) => {
-    setSelectedOfferIds((prev) =>
-      prev.includes(cardId)
-        ? prev.filter((id) => id !== cardId)
-        : [...prev, cardId]
+    const { data: previews, error: previewsError } = await supabase
+      .from('card_previews')
+      .select('card_id, name, image_url, set_id, set_name, number')
+      .in('card_id', cardIds);
+
+    if (previewsError) throw previewsError;
+
+    const previewMap = new Map(
+      (previews ?? []).map((preview: any) => [preview.card_id, preview])
     );
-  };
 
-  const useSuggestedTopUp = () => {
-    if (suggestedTopUp === null) return;
-    setCashTopUp(suggestedTopUp.toFixed(2));
-  };
+    return flags.map((flag: any) => {
+      const preview = previewMap.get(flag.card_id) as any;
+      const cached = getCachedCardSync(flag.card_id) as any;
 
-const submitOffer = async () => {
-  if (!targetCard || !targetSet || selectedOffers.length === 0) return;
+      return {
+        id: flag.id,
+        card_id: flag.card_id,
+        set_id: flag.set_id ?? preview?.set_id ?? cached?.set?.id ?? null,
+        name: preview?.name ?? cached?.name ?? flag.card_id,
+        image_url:
+          preview?.image_url ??
+          cached?.images?.small ??
+          cached?.images?.large ??
+          null,
+        set_name: preview?.set_name ?? cached?.set?.name ?? null,
+        number: preview?.number ?? cached?.number ?? null,
+      };
+    });
+  }
 
-  const listingId = typeof params.listingId === 'string' ? params.listingId : '';
-  const toUserId = typeof params.targetUserId === 'string' ? params.targetUserId : '';
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return;
-
-  await createOffer({
-    listingId,
-    fromUserId: user.id,
-    toUserId,
-    targetCardId: targetCard.id,
-    targetSetId: targetSet.id,
-    offeredCards: selectedOffers.map((option) => ({
-      cardId: option.card.id,
-      setId: option.set.id,
-    })),
-    cashTopUp,
-    note,
-  });
-
-  router.replace('/offers');
-};
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.center}>
-          <Text style={styles.heading}>Loading offer builder...</Text>
-        </View>
-      </SafeAreaView>
+  function toggleCard(cardIdValue: string) {
+    setSelectedCardIds((current) =>
+      current.includes(cardIdValue)
+        ? current.filter((id) => id !== cardIdValue)
+        : [...current, cardIdValue]
     );
   }
 
-  if (!targetCard || !targetSet) {
+  async function sendOffer() {
+    try {
+      if (!currentUserId || !targetUserId || !listingId || !cardId) {
+        Alert.alert(
+          'Missing details',
+          'This offer is missing required trade information.'
+        );
+        return;
+      }
+
+      if (selectedCardIds.length === 0 && !cashInvolved) {
+        Alert.alert('Empty offer', 'Add at least one card or a cash amount.');
+        return;
+      }
+
+      if (cashInvolved && !paypalRecipient.trim()) {
+        Alert.alert(
+          'PayPal details needed',
+          'Add the PayPal.me username or PayPal email for the person receiving cash.'
+        );
+        return;
+      }
+
+      setSending(true);
+
+      const selectedCards = myTradeCards.filter((card) =>
+        selectedCardIds.includes(card.card_id)
+      );
+
+      await createTradeOffer({
+        listingId,
+        senderUserId: currentUserId,
+        receiverUserId: targetUserId,
+        requestedCards: [
+          {
+            cardId,
+            setId: targetCard?.set_id ?? setId ?? null,
+            quantity: 1,
+          },
+        ],
+        offeredCards: selectedCards.map((card) => ({
+          cardId: card.card_id,
+          setId: card.set_id,
+          quantity: 1,
+        })),
+        cash: cashInvolved
+          ? {
+              amount: cashAmountNumber,
+              currency: 'GBP',
+              payer: cashPayer,
+              recipientPaypal: paypalRecipient.trim(),
+              paymentStatus: 'not_sent',
+            }
+          : null,
+        message: message.trim() || null,
+      } as any);
+
+      Alert.alert('Offer sent', 'Your trade offer has been sent.');
+      router.replace('/offer');
+    } catch (error: any) {
+      console.error('Failed to send trade offer:', error);
+      Alert.alert(
+        'Could not send offer',
+        error?.message ?? 'Something went wrong.'
+      );
+    } finally {
+      setSending(false);
+    }
+  }
+
+  if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.center}>
-          <Text style={styles.heading}>Target card not found</Text>
-        </View>
-      </SafeAreaView>
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator color={theme.colors.primary} />
+        <Text style={styles.loadingText}>Loading offer...</Text>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.headerRow}>
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>‹</Text>
-          </Pressable>
-          <View style={styles.headerTextWrap}>
-            <Text style={styles.heading}>Make Offer</Text>
-            <Text style={styles.subheading}>Multi-card offer with optional cash top-up</Text>
-          </View>
-        </View>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>Make an Offer</Text>
+      <Text style={styles.subtitle}>
+        Choose cards, add cash if needed, and send your offer.
+      </Text>
 
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Target card</Text>
-          <View style={styles.targetRow}>
-            {targetCard.images?.small ? (
-              <Image source={{ uri: targetCard.images.small }} style={styles.targetImage} resizeMode="contain" />
-            ) : null}
-            <View style={styles.targetText}>
-              <Text style={styles.cardTitle}>{targetCard.name}</Text>
+      <Section title="Card you want">
+        {targetCard ? (
+          <View style={styles.cardRow}>
+            {targetCard.image_url ? (
+              <Image source={{ uri: targetCard.image_url }} style={styles.cardImage} />
+            ) : (
+              <View style={styles.cardImagePlaceholder} />
+            )}
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardName}>{targetCard.name}</Text>
               <Text style={styles.cardMeta}>
-                {targetSet.name} · #{targetCard.number}
+                {targetCard.set_name ?? targetCard.set_id ?? 'Unknown set'}
+                {targetCard.number ? ` · ${targetCard.number}` : ''}
               </Text>
+            </View>
+          </View>
+        ) : (
+          <Text style={styles.muted}>Target card could not be loaded.</Text>
+        )}
+      </Section>
 
-              {targetPrice?.average ? (
-                <View style={styles.priceSummaryBox}>
-                  <Text style={styles.priceSummaryLabel}>Market guide</Text>
-                  <Text style={styles.priceSummaryMain}>£{targetPrice.average}</Text>
-                  <Text style={styles.priceSummarySub}>
-                    Low £{targetPrice.low ?? 'N/A'} · High £{targetPrice.high ?? 'N/A'}
+      <Section title="Cards you are offering">
+        {myTradeCards.length === 0 ? (
+          <Text style={styles.muted}>
+            You have no cards currently marked for trade.
+          </Text>
+        ) : (
+          myTradeCards.map((card) => {
+            const selected = selectedCardIds.includes(card.card_id);
+
+            return (
+              <TouchableOpacity
+                key={`${card.id}-${card.card_id}`}
+                onPress={() => toggleCard(card.card_id)}
+                style={[
+                  styles.selectCardRow,
+                  selected && styles.selectCardRowActive,
+                ]}
+              >
+                {card.image_url ? (
+                  <Image source={{ uri: card.image_url }} style={styles.smallCardImage} />
+                ) : (
+                  <View style={styles.smallCardImagePlaceholder} />
+                )}
+
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.cardName}>{card.name}</Text>
+                  <Text style={styles.cardMeta}>
+                    {card.set_name ?? card.set_id ?? 'Unknown set'}
+                    {card.number ? ` · ${card.number}` : ''}
                   </Text>
                 </View>
-              ) : null}
-            </View>
-          </View>
-        </View>
 
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Choose your offer cards</Text>
-
-          <View style={styles.optionList}>
-            {offeredCards.length === 0 ? (
-              <Text style={styles.emptyText}>You do not have any cards marked For Trade yet.</Text>
-            ) : (
-              offeredCards.map((option) => {
-                const selected = selectedOfferIds.includes(option.card.id);
-                const meta = getMeta(option.card.id);
-                const price = offeredPriceMap[option.card.id];
-
-                return (
-                  <Pressable
-                    key={option.card.id}
-                    onPress={() => toggleOfferCard(option.card.id)}
-                    style={[styles.optionCard, selected && styles.optionCardSelected]}
-                  >
-                    {option.card.images?.small ? (
-                      <Image source={{ uri: option.card.images.small }} style={styles.optionImage} resizeMode="contain" />
-                    ) : null}
-                    <View style={styles.optionText}>
-                      <Text style={styles.cardTitle}>{option.card.name}</Text>
-                      <Text style={styles.cardMeta}>
-                        {option.set.name} · #{option.card.number}
-                      </Text>
-                      {meta.value ? (
-                        <Text style={styles.smallMeta}>Your ask: £{meta.value}</Text>
-                      ) : null}
-                      {price?.average ? (
-                        <Text style={styles.smallMeta}>Market: £{price.average}</Text>
-                      ) : null}
-                      {meta.condition ? (
-                        <Text style={styles.smallMeta}>Condition: {meta.condition}</Text>
-                      ) : null}
-                    </View>
-                  </Pressable>
-                );
-              })
-            )}
-          </View>
-        </View>
-
-        {selectedOffers.length > 0 && (
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>Offer comparison</Text>
-
-            <View style={styles.compareRow}>
-              <View style={styles.compareBox}>
-                <Text style={styles.compareLabel}>Target market</Text>
-                <Text style={styles.compareValue}>
-                  {targetMarket !== null ? `£${targetMarket.toFixed(2)}` : 'N/A'}
+                <Text style={[styles.selectText, selected && styles.selectTextActive]}>
+                  {selected ? 'Selected' : 'Add'}
                 </Text>
-              </View>
-
-              <View style={styles.compareBox}>
-                <Text style={styles.compareLabel}>Your offer value</Text>
-                <Text style={styles.compareValue}>
-                  {offeredBestValue !== null ? `£${offeredBestValue.toFixed(2)}` : 'N/A'}
-                </Text>
-                {selectedCustomTotal !== null ? (
-                  <Text style={styles.compareSub}>Using combined custom values</Text>
-                ) : selectedMarketTotal !== null ? (
-                  <Text style={styles.compareSub}>Using combined market values</Text>
-                ) : null}
-              </View>
-            </View>
-
-            {suggestedTopUp !== null ? (
-              <View style={styles.suggestedBox}>
-                <Text style={styles.suggestedLabel}>Suggested cash top-up</Text>
-                <Text style={styles.suggestedValue}>
-                  {suggestedTopUp > 0 ? `£${suggestedTopUp.toFixed(2)}` : 'No top-up needed'}
-                </Text>
-
-                {suggestedTopUp > 0 ? (
-                  <Pressable style={styles.suggestedButton} onPress={useSuggestedTopUp}>
-                    <Text style={styles.suggestedButtonText}>Use suggested amount</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            ) : (
-              <View style={styles.suggestedBox}>
-                <Text style={styles.suggestedLabel}>Suggested cash top-up</Text>
-                <Text style={styles.suggestedValue}>Not enough pricing data yet</Text>
-              </View>
-            )}
-
-            <Text style={styles.inputLabel}>Cash top-up (£)</Text>
-            <TextInput
-              value={cashTopUp}
-              onChangeText={setCashTopUp}
-              placeholder="Optional"
-              placeholderTextColor="#8f9bc2"
-              keyboardType="numeric"
-              style={styles.input}
-            />
-
-            <Text style={styles.inputLabel}>Message</Text>
-            <TextInput
-              value={note}
-              onChangeText={setNote}
-              placeholder="Optional note for review"
-              placeholderTextColor="#8f9bc2"
-              multiline
-              style={[styles.input, styles.notesInput]}
-            />
-
-            <View style={styles.summaryBox}>
-              <Text style={styles.summaryTitle}>Offer summary</Text>
-              <Text style={styles.summaryText}>
-                Cards offered: {selectedOffers.length}
-              </Text>
-              {selectedOffers.map((option) => (
-                <Text key={option.card.id} style={styles.summaryText}>
-                  • {option.card.name}
-                </Text>
-              ))}
-              {cashTopUp ? (
-                <Text style={styles.summaryText}>Cash top-up: £{cashTopUp}</Text>
-              ) : null}
-            </View>
-
-            <Pressable style={styles.submitButton} onPress={submitOffer}>
-              <Text style={styles.submitButtonText}>Send Offer</Text>
-            </Pressable>
-          </View>
+              </TouchableOpacity>
+            );
+          })
         )}
-      </ScrollView>
-    </SafeAreaView>
+      </Section>
+
+      <Section title="Cash offer optional">
+        <TextInput
+          value={cashAmount}
+          onChangeText={setCashAmount}
+          placeholder="Amount, for example 15"
+          placeholderTextColor={theme.colors.textSoft}
+          keyboardType="decimal-pad"
+          style={styles.input}
+        />
+
+        <View style={styles.toggleRow}>
+          <TouchableOpacity
+            onPress={() => setCashPayer('sender')}
+            style={[
+              styles.toggleButton,
+              cashPayer === 'sender' && styles.toggleButtonActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.toggleText,
+                cashPayer === 'sender' && styles.toggleTextActive,
+              ]}
+            >
+              I pay cash
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setCashPayer('receiver')}
+            style={[
+              styles.toggleButton,
+              cashPayer === 'receiver' && styles.toggleButtonActive,
+            ]}
+          >
+            <Text
+              style={[
+                styles.toggleText,
+                cashPayer === 'receiver' && styles.toggleTextActive,
+              ]}
+            >
+              They pay cash
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {cashInvolved ? (
+          <TextInput
+            value={paypalRecipient}
+            onChangeText={setPaypalRecipient}
+            placeholder="PayPal.me username or PayPal email"
+            placeholderTextColor={theme.colors.textSoft}
+            autoCapitalize="none"
+            style={styles.input}
+          />
+        ) : null}
+      </Section>
+
+      <Section title="Message">
+        <TextInput
+          value={message}
+          onChangeText={setMessage}
+          placeholder="Add a short message..."
+          placeholderTextColor={theme.colors.textSoft}
+          multiline
+          style={[styles.input, styles.messageInput]}
+        />
+      </Section>
+
+      <TouchableOpacity
+        onPress={sendOffer}
+        disabled={sending}
+        style={[styles.sendButton, sending && styles.disabled]}
+      >
+        {sending ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <Text style={styles.sendButtonText}>Send Offer</Text>
+        )}
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {children}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#080b1d' },
-  container: { padding: 18, paddingBottom: 120 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 999,
+  loadingScreen: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#10162f',
-    marginRight: 12,
+    backgroundColor: theme.colors.bg,
   },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 24,
-    lineHeight: 24,
-    marginTop: -2,
+  loadingText: {
+    color: theme.colors.textSoft,
+    marginTop: 12,
   },
-  headerTextWrap: {
+  screen: {
     flex: 1,
+    backgroundColor: theme.colors.bg,
   },
-  heading: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: '800',
-  },
-  subheading: {
-    color: '#a8b0cb',
-    marginTop: 4,
-    fontSize: 13,
-  },
-
-  sectionCard: {
-    backgroundColor: '#0f1731',
-    borderRadius: 18,
+  content: {
     padding: 16,
+    paddingBottom: 40,
+  },
+  title: {
+    color: theme.colors.text,
+    fontSize: 28,
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  subtitle: {
+    color: theme.colors.textSoft,
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  section: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    padding: 14,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#1b2750',
+    borderColor: theme.colors.border,
+    ...cardShadow,
   },
   sectionTitle: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '800',
-    marginBottom: 14,
+    color: theme.colors.text,
+    fontSize: 18,
+    fontWeight: '900',
+    marginBottom: 12,
   },
-
-  targetRow: {
+  cardRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  targetImage: {
-    width: 110,
-    height: 154,
-    borderRadius: 12,
-    marginRight: 14,
-    backgroundColor: '#0a1024',
-  },
-  targetText: {
-    flex: 1,
-  },
-
-  optionList: {
+    alignItems: 'center',
     gap: 12,
   },
-  optionCard: {
+  selectCardRow: {
     flexDirection: 'row',
-    backgroundColor: '#0a1024',
-    borderRadius: 14,
+    alignItems: 'center',
+    gap: 12,
     padding: 10,
+    borderRadius: 14,
+    marginBottom: 10,
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: '#16224a',
+    borderColor: theme.colors.border,
   },
-  optionCardSelected: {
-    borderColor: '#4da3ff',
-    backgroundColor: '#12204a',
+  selectCardRowActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: '#F0ECFF',
   },
-  optionImage: {
-    width: 74,
-    height: 104,
-    borderRadius: 10,
-    marginRight: 12,
-    backgroundColor: '#09101f',
+  cardImage: {
+    width: 76,
+    height: 106,
+    borderRadius: 8,
+    backgroundColor: theme.colors.surface,
   },
-  optionText: {
-    flex: 1,
-    justifyContent: 'center',
+  cardImagePlaceholder: {
+    width: 76,
+    height: 106,
+    borderRadius: 8,
+    backgroundColor: theme.colors.surface,
   },
-
-  cardTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '800',
+  smallCardImage: {
+    width: 52,
+    height: 72,
+    borderRadius: 6,
+    backgroundColor: theme.colors.surface,
+  },
+  smallCardImagePlaceholder: {
+    width: 52,
+    height: 72,
+    borderRadius: 6,
+    backgroundColor: theme.colors.surface,
+  },
+  cardName: {
+    color: theme.colors.text,
+    fontSize: 15,
+    fontWeight: '900',
   },
   cardMeta: {
-    color: '#a8b0cb',
-    marginTop: 4,
-    fontSize: 13,
-  },
-  smallMeta: {
-    color: '#d2d9f0',
-    marginTop: 4,
-    fontSize: 12,
-  },
-  emptyText: {
-    color: '#a8b0cb',
-    fontSize: 14,
-  },
-
-  priceSummaryBox: {
-    marginTop: 12,
-    backgroundColor: '#101b38',
-    borderRadius: 12,
-    padding: 12,
-  },
-  priceSummaryLabel: {
-    color: '#a8b0cb',
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  priceSummaryMain: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '800',
-  },
-  priceSummarySub: {
-    color: '#bfc8e8',
+    color: theme.colors.textSoft,
     fontSize: 12,
     marginTop: 4,
   },
-
-  compareRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 14,
-  },
-  compareBox: {
-    flex: 1,
-    backgroundColor: '#0a1024',
-    borderRadius: 14,
-    padding: 14,
-  },
-  compareLabel: {
-    color: '#8ea0d1',
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  compareValue: {
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: '800',
-  },
-  compareSub: {
-    color: '#a8b0cb',
-    fontSize: 12,
-    marginTop: 6,
-  },
-
-  suggestedBox: {
-    backgroundColor: '#101b38',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 14,
-  },
-  suggestedLabel: {
-    color: '#8ea0d1',
-    fontSize: 12,
-  },
-  suggestedValue: {
-    color: '#fff',
-    fontSize: 22,
-    fontWeight: '800',
-    marginTop: 6,
-  },
-  suggestedButton: {
-    marginTop: 10,
-    backgroundColor: '#2563eb',
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    alignSelf: 'flex-start',
-  },
-  suggestedButtonText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-
-  inputLabel: {
-    color: '#d9e0f7',
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 8,
+  muted: {
+    color: theme.colors.textSoft,
+    lineHeight: 20,
   },
   input: {
-    backgroundColor: '#0a1024',
-    borderWidth: 1,
-    borderColor: '#1a2b5f',
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.text,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    color: '#fff',
-    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 12,
   },
-  notesInput: {
+  messageInput: {
     minHeight: 90,
     textAlignVertical: 'top',
   },
-
-  summaryBox: {
-    backgroundColor: '#0a1024',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 14,
+  toggleRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
   },
-  summaryTitle: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  summaryText: {
-    color: '#d0d8f2',
-    fontSize: 13,
-    marginBottom: 4,
-  },
-
-  submitButton: {
-    backgroundColor: '#2563eb',
-    borderRadius: 14,
-    paddingVertical: 14,
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     alignItems: 'center',
   },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: 15,
+  toggleButtonActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary,
+  },
+  toggleText: {
+    color: theme.colors.textSoft,
     fontWeight: '800',
+  },
+  toggleTextActive: {
+    color: '#FFFFFF',
+  },
+  selectText: {
+    color: theme.colors.textSoft,
+    fontWeight: '900',
+  },
+  selectTextActive: {
+    color: theme.colors.primary,
+  },
+  sendButton: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '900',
+  },
+  disabled: {
+    opacity: 0.6,
   },
 });

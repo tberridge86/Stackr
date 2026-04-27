@@ -1,3 +1,4 @@
+import { theme } from '../../lib/theme';
 import React, { useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -226,7 +227,7 @@ export default function ProfileSetupScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#080b1d' },
+  safe: { flex: 1, backgroundColor: theme.colors.bg },
   container: { padding: 20, paddingBottom: 120 },
   heading: { color: '#fff', fontSize: 30, fontWeight: '900', marginBottom: 6 },
   subheading: { color: '#AAB3D1', marginBottom: 18 },
@@ -318,7 +319,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   input: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     color: '#fff',
     borderRadius: 12,
     padding: 14,
@@ -362,7 +363,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   optionChip: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,

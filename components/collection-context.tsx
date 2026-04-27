@@ -1,66 +1,91 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { fetchAllSets } from '../lib/pokemonTcg';
+import { createBinder, deleteBinder, fetchBinders } from '../lib/binders';
 
 type CollectionContextType = {
   trackedSetIds: string[];
-  toggleTrackedSet: (setId: string) => void;
+  loadingTrackedSets: boolean;
+  toggleTrackedSet: (setId: string) => Promise<void>;
   isTracked: (setId: string) => boolean;
+  refreshTrackedSets: () => Promise<void>;
 };
 
 const CollectionContext = createContext<CollectionContextType | null>(null);
 
-const STORAGE_KEY = 'trackedSetIds';
-
 export function CollectionProvider({ children }: { children: React.ReactNode }) {
   const [trackedSetIds, setTrackedSetIds] = useState<string[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [loadingTrackedSets, setLoadingTrackedSets] = useState(true);
 
-  useEffect(() => {
-    const loadTracked = async () => {
-      try {
-        const saved = await AsyncStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          setTrackedSetIds(JSON.parse(saved));
-        } else {
-          setTrackedSetIds(['sv3pt5', 'base1', 'base2', 'base3']);
-        }
-      } catch (error) {
-        console.log('Failed to load tracked sets', error);
-      } finally {
-        setLoaded(true);
-      }
-    };
+  const refreshTrackedSets = useCallback(async () => {
+    try {
+      setLoadingTrackedSets(true);
 
-    loadTracked();
+      const binders = await fetchBinders();
+
+      const officialSetIds = binders
+        .filter((binder) => binder.type === 'official' && binder.source_set_id)
+        .map((binder) => binder.source_set_id as string);
+
+      setTrackedSetIds(officialSetIds);
+    } catch (error) {
+      console.log('Failed to load tracked sets from binders', error);
+      setTrackedSetIds([]);
+    } finally {
+      setLoadingTrackedSets(false);
+    }
   }, []);
 
   useEffect(() => {
-    if (!loaded) return;
+    refreshTrackedSets();
+  }, [refreshTrackedSets]);
 
-    const saveTracked = async () => {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(trackedSetIds));
-      } catch (error) {
-        console.log('Failed to save tracked sets', error);
+  const toggleTrackedSet = useCallback(
+    async (setId: string) => {
+      const binders = await fetchBinders();
+
+      const existingBinder = binders.find(
+        (binder) =>
+          binder.type === 'official' &&
+          binder.source_set_id === setId
+      );
+
+      if (existingBinder) {
+        await deleteBinder(existingBinder.id);
+        await refreshTrackedSets();
+        return;
       }
-    };
 
-    saveTracked();
-  }, [trackedSetIds, loaded]);
+      const sets = await fetchAllSets();
+      const selectedSet = sets.find((set) => set.id === setId);
+
+      await createBinder({
+        name: selectedSet?.name ?? setId,
+        color: '#2563eb',
+        type: 'official',
+        sourceSetId: setId,
+      });
+
+      await refreshTrackedSets();
+    },
+    [refreshTrackedSets]
+  );
 
   const value = useMemo(
     () => ({
       trackedSetIds,
-      toggleTrackedSet: (setId: string) => {
-        setTrackedSetIds((prev) =>
-          prev.includes(setId)
-            ? prev.filter((id) => id !== setId)
-            : [...prev, setId]
-        );
-      },
+      loadingTrackedSets,
+      toggleTrackedSet,
       isTracked: (setId: string) => trackedSetIds.includes(setId),
+      refreshTrackedSets,
     }),
-    [trackedSetIds]
+    [trackedSetIds, loadingTrackedSets, toggleTrackedSet, refreshTrackedSets]
   );
 
   return (
@@ -72,8 +97,10 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
 
 export function useCollection() {
   const ctx = useContext(CollectionContext);
+
   if (!ctx) {
     throw new Error('useCollection must be used inside CollectionProvider');
   }
+
   return ctx;
 }

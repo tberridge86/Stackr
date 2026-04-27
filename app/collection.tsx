@@ -1,3 +1,4 @@
+import { theme } from '../lib/theme';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet, Text, View, Pressable, ScrollView, Image, TextInput } from 'react-native';
@@ -193,7 +194,7 @@ export default function CollectionScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#080b1d' },
+  safe: { flex: 1, backgroundColor: theme.colors.bg },
   container: { padding: 18, paddingBottom: 120 },
   headerRow: {
     flexDirection: 'row',
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   searchWrap: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -274,7 +275,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   card: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     color: '#FFD166',
   },
   emptyCard: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,

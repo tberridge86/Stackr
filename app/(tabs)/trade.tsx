@@ -1,14 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { BlurView } from 'expo-blur';
+import { theme } from '../../lib/theme';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
   RefreshControl,
   Alert,
   Image,
+  Modal,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Animated,
+  PanResponder,
 } from 'react-native';
+import { Text } from '../../components/Text';
 import { useFocusEffect, router } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
 import {
@@ -17,21 +26,90 @@ import {
 } from '../../lib/pokemonTcgCache';
 import { supabase } from '../../lib/supabase';
 
-type SegmentKey = 'marketplace' | 'myListings' | 'myOffers';
+type MainTab = 'trading' | 'marketplace';
+type SegmentKey = 'marketplaceListings' | 'myListings' | 'myOffers';
+
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+};
 
 export default function TradeScreen() {
-  const [segment, setSegment] = useState<SegmentKey>('marketplace');
-  const [cardDetailsMap, setCardDetailsMap] = useState<Record<string, any>>({});
-  const [myUserId, setMyUserId] = useState<string>('');
+ const [mainTab, setMainTab] = useState<MainTab>('trading');
+const [segment, setSegment] = useState<SegmentKey>('marketplaceListings');
+const [cardDetailsMap, setCardDetailsMap] = useState<Record<string, any>>({});
 
-  const {
-    marketplaceListings,
-    myListings,
-    tradeLoading,
-    tradeError,
-    refreshTrade,
-    archiveListing,
-  } = useTrade();
+const [myUserId, setMyUserId] = useState<string>('');
+
+// 👇 MODAL STATE
+const [selectedListing, setSelectedListing] = useState<any | null>(null);
+const [selectedCard, setSelectedCard] = useState<any | null>(null);
+const [detailVisible, setDetailVisible] = useState(false);
+
+// 👇 ANIMATION
+const translateY = useRef(new Animated.Value(0)).current;
+
+// 👇 TRADE DATA
+const {
+  marketplaceListings,
+  myListings,
+  tradeLoading,
+  tradeError,
+  refreshTrade,
+  archiveListing,
+} = useTrade();
+
+const closeDetail = useCallback(() => {
+  Animated.timing(translateY, {
+    toValue: 700,
+    duration: 180,
+    useNativeDriver: true,
+  }).start(() => {
+    translateY.setValue(0);
+    setDetailVisible(false);
+    setSelectedListing(null);
+    setSelectedCard(null);
+  });
+}, [translateY]);
+
+const panResponder = useMemo(
+  () =>
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => {
+        return gesture.dy > 8 && Math.abs(gesture.dy) > Math.abs(gesture.dx);
+      },
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) {
+          translateY.setValue(gesture.dy);
+        }
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 130 || gesture.vy > 1.2) {
+          closeDetail();
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 80,
+            friction: 10,
+          }).start();
+        }
+      },
+    }),
+  [closeDetail, translateY]
+);
+
+const openTradeCardDetail = (item: any) => {
+  const cardDetails = cardDetailsMap[item.id];
+
+  translateY.setValue(0);
+  setSelectedListing(item);
+  setSelectedCard(cardDetails ?? null);
+  setDetailVisible(true);
+};
 
   useEffect(() => {
     const loadUser = async () => {
@@ -52,7 +130,7 @@ export default function TradeScreen() {
   );
 
   const currentData = useMemo(() => {
-    if (segment === 'marketplace') return marketplaceListings;
+    if (segment === 'marketplaceListings') return marketplaceListings;
     if (segment === 'myListings') return myListings;
     return [];
   }, [segment, marketplaceListings, myListings]);
@@ -67,30 +145,47 @@ export default function TradeScreen() {
         const setId = item.set_id;
         const cardId = item.card_id;
 
-        if (!setId || !cardId) continue;
+        if (!cardId) continue;
 
-        let found = getCachedCardSync(setId, cardId);
+        let found = setId ? getCachedCardSync(setId, cardId) : null;
 
-        if (!found) {
+        if (!found && setId) {
           const cards = await getCachedCardsForSet(setId);
-          found = cards.find((c) => c.id === cardId) ?? null;
+          found = cards.find((card) => card.id === cardId) ?? null;
         }
 
         if (found) {
           nextMap[item.id] = found;
+          continue;
+        }
+
+        const { data } = await supabase
+          .from('card_previews')
+          .select('card_id, name, set_name, image_url')
+          .eq('card_id', cardId)
+          .maybeSingle();
+
+        if (data) {
+          nextMap[item.id] = {
+            id: data.card_id,
+            name: data.name,
+            set: {
+              id: setId,
+              name: data.set_name ?? setId,
+            },
+            images: {
+              small: data.image_url,
+              large: data.image_url,
+            },
+          };
         }
       }
 
-      if (mounted) {
-        setCardDetailsMap(nextMap);
-      }
+      if (mounted) setCardDetailsMap(nextMap);
     };
 
-    if (currentData.length) {
-      loadDetails();
-    } else {
-      setCardDetailsMap({});
-    }
+    if (currentData.length) loadDetails();
+    else setCardDetailsMap({});
 
     return () => {
       mounted = false;
@@ -100,10 +195,11 @@ export default function TradeScreen() {
   const handleArchive = async (listingId: string) => {
     try {
       await archiveListing(listingId);
-      Alert.alert('Archived', 'Listing archived successfully.');
+      await refreshTrade();
+      Alert.alert('Removed', 'This card has been removed from trade.');
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Could not archive listing.';
+        err instanceof Error ? err.message : 'Could not remove listing.';
       Alert.alert('Error', message);
     }
   };
@@ -127,6 +223,35 @@ export default function TradeScreen() {
     });
   };
 
+  const renderMainTabButton = (key: MainTab, label: string) => {
+    const active = mainTab === key;
+
+    return (
+      <TouchableOpacity
+        onPress={() => setMainTab(key)}
+        style={{
+          flex: 1,
+          paddingVertical: 12,
+          borderRadius: 16,
+          backgroundColor: active ? theme.colors.primary : theme.colors.card,
+          borderWidth: 1,
+          borderColor: active ? theme.colors.primary : theme.colors.border,
+        }}
+      >
+        <Text
+          style={{
+            color: active ? '#FFFFFF' : theme.colors.textSoft,
+            textAlign: 'center',
+            fontWeight: '900',
+            fontSize: 15,
+          }}
+        >
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
   const renderSegmentButton = (key: SegmentKey, label: string) => {
     const active = segment === key;
 
@@ -139,16 +264,17 @@ export default function TradeScreen() {
           paddingHorizontal: 8,
           marginHorizontal: 4,
           borderRadius: 12,
-          backgroundColor: active ? '#2a2a2a' : '#151515',
+          backgroundColor: active ? theme.colors.secondary : theme.colors.card,
           borderWidth: 1,
-          borderColor: active ? '#4b5563' : '#262626',
+          borderColor: active ? theme.colors.secondary : theme.colors.border,
         }}
       >
         <Text
           style={{
-            color: 'white',
+            color: active ? theme.colors.text : theme.colors.textSoft,
             textAlign: 'center',
-            fontWeight: '700',
+            fontWeight: '800',
+            fontSize: 12,
           }}
         >
           {label}
@@ -168,24 +294,17 @@ export default function TradeScreen() {
     return (
       <View
         style={{
-          backgroundColor: '#161616',
-          borderRadius: 16,
+          backgroundColor: theme.colors.card,
+          borderRadius: 18,
           padding: 14,
           marginBottom: 12,
           borderWidth: 1,
-          borderColor: '#262626',
+          borderColor: theme.colors.border,
+          ...cardShadow,
         }}
       >
         <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: '/card/[id]',
-              params: {
-                id: item.card_id,
-                setId: item.set_id ?? '',
-              },
-            })
-          }
+          onPress={() => openTradeCardDetail(item)}
           style={{ flexDirection: 'row' }}
         >
           {imageUri ? (
@@ -196,7 +315,7 @@ export default function TradeScreen() {
                 height: 100,
                 borderRadius: 10,
                 marginRight: 12,
-                backgroundColor: '#0f0f0f',
+                backgroundColor: theme.colors.surface,
               }}
               resizeMode="cover"
             />
@@ -207,83 +326,101 @@ export default function TradeScreen() {
                 height: 100,
                 borderRadius: 10,
                 marginRight: 12,
-                backgroundColor: '#0f0f0f',
+                backgroundColor: theme.colors.surface,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ color: '#888', fontSize: 12 }}>No image</Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+                No image
+              </Text>
             </View>
           )}
 
           <View style={{ flex: 1 }}>
             <Text
               style={{
-                color: 'white',
+                color: theme.colors.text,
                 fontSize: 16,
-                fontWeight: '700',
+                fontWeight: '900',
                 marginBottom: 4,
               }}
+              numberOfLines={2}
             >
               {cardName}
             </Text>
 
-            <Text style={{ color: '#b3b3b3', marginBottom: 4 }}>
+            <Text
+              style={{ color: theme.colors.textSoft, marginBottom: 4 }}
+              numberOfLines={1}
+            >
               {setName}
             </Text>
 
             {!!item.condition && (
-              <Text style={{ color: '#9ca3af', marginBottom: 4 }}>
-                {item.condition}
+              <Text style={{ color: theme.colors.textSoft, marginBottom: 4 }}>
+                Condition: {item.condition}
               </Text>
             )}
 
             {item.custom_value != null ? (
-              <Text style={{ color: '#86efac', marginBottom: 4 }}>
-                £{item.custom_value}
+              <Text
+                style={{
+                  color: '#22C55E',
+                  marginBottom: 4,
+                  fontWeight: '800',
+                }}
+              >
+                £{Number(item.custom_value).toFixed(2)}
               </Text>
             ) : (
-              <Text style={{ color: '#93c5fd', marginBottom: 4 }}>
+              <Text
+                style={{
+                  color: theme.colors.primary,
+                  marginBottom: 4,
+                  fontWeight: '800',
+                }}
+              >
                 Open to offers
               </Text>
             )}
 
-            {segment === 'marketplace' ? (
-              <TouchableOpacity
-                onPress={() => router.push(`/user/${item.user_id}`)}
-              >
-                <Text style={{ color: '#7dd3fc', marginTop: 2 }}>
+            {segment === 'marketplaceListings' ? (
+              <TouchableOpacity onPress={() => router.push(`/user/${item.user_id}`)}>
+                <Text style={{ color: theme.colors.primary, marginTop: 2 }}>
                   {sellerName}
                   {isMyListing ? ' • Your listing' : ''}
                 </Text>
               </TouchableOpacity>
             ) : (
-              <Text style={{ color: '#9ca3af', marginTop: 2 }}>
-                Status: {item.status}
+              <Text style={{ color: theme.colors.textSoft, marginTop: 2 }}>
+                Listed for trade
               </Text>
             )}
           </View>
         </TouchableOpacity>
 
         {!!item.notes && (
-          <Text style={{ color: '#cfcfcf', marginTop: 10 }}>{item.notes}</Text>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 10 }}>
+            {item.notes}
+          </Text>
         )}
 
-        {segment === 'marketplace' && !isMyListing && (
+        {segment === 'marketplaceListings' && !isMyListing && (
           <TouchableOpacity
             onPress={() => handleMakeOffer(item)}
             style={{
               marginTop: 12,
-              backgroundColor: '#2563eb',
+              backgroundColor: theme.colors.primary,
               borderRadius: 12,
               paddingVertical: 12,
             }}
           >
             <Text
               style={{
-                color: 'white',
+                color: '#FFFFFF',
                 textAlign: 'center',
-                fontWeight: '700',
+                fontWeight: '900',
               }}
             >
               Make Offer
@@ -291,20 +428,22 @@ export default function TradeScreen() {
           </TouchableOpacity>
         )}
 
-        {segment === 'marketplace' && isMyListing && (
+        {segment === 'marketplaceListings' && isMyListing && (
           <View
             style={{
               marginTop: 12,
-              backgroundColor: '#1f274d',
+              backgroundColor: theme.colors.surface,
               borderRadius: 12,
               paddingVertical: 12,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
             }}
           >
             <Text
               style={{
-                color: '#AAB3D1',
+                color: theme.colors.textSoft,
                 textAlign: 'center',
-                fontWeight: '700',
+                fontWeight: '800',
               }}
             >
               Your listing
@@ -312,24 +451,26 @@ export default function TradeScreen() {
           </View>
         )}
 
-        {segment === 'myListings' && item.status === 'active' && (
+        {segment === 'myListings' && (
           <TouchableOpacity
             onPress={() => handleArchive(item.id)}
             style={{
               marginTop: 12,
-              backgroundColor: '#3a1f1f',
+              backgroundColor: '#FEE2E2',
               borderRadius: 12,
               paddingVertical: 12,
+              borderWidth: 1,
+              borderColor: '#FCA5A5',
             }}
           >
             <Text
               style={{
-                color: 'white',
+                color: '#991B1B',
                 textAlign: 'center',
-                fontWeight: '700',
+                fontWeight: '900',
               }}
             >
-              Archive Listing
+              Remove from Trade
             </Text>
           </TouchableOpacity>
         )}
@@ -338,46 +479,189 @@ export default function TradeScreen() {
   };
 
   const renderEmpty = () => {
-    if (segment === 'marketplace') {
-      return (
-        <View style={{ paddingVertical: 50 }}>
-          <Text style={{ color: '#a3a3a3', textAlign: 'center' }}>
-            No active marketplace listings yet.
-          </Text>
-        </View>
-      );
-    }
-
-    if (segment === 'myListings') {
-      return (
-        <View style={{ paddingVertical: 50 }}>
-          <Text style={{ color: '#a3a3a3', textAlign: 'center' }}>
-            You have no listings yet.
-          </Text>
-        </View>
-      );
-    }
+    const text =
+      segment === 'marketplaceListings'
+        ? 'No active trade listings yet.'
+        : 'You have no cards marked for trade yet.';
 
     return (
+      <View style={{ paddingVertical: 50 }}>
+        <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
+          {text}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderOffersShortcut = () => {
+    return (
       <View style={{ paddingVertical: 30 }}>
-        <Text style={{ color: '#a3a3a3', textAlign: 'center', marginBottom: 12 }}>
-          View offers you’ve sent and received.
+        <Text
+          style={{
+            color: theme.colors.textSoft,
+            textAlign: 'center',
+            marginBottom: 12,
+          }}
+        >
+          View and manage your trade offers.
         </Text>
 
         <TouchableOpacity
-          onPress={() => router.push('/offers')}
+          onPress={() => router.push('/offer')}
           style={{
-            backgroundColor: '#2563eb',
+            backgroundColor: theme.colors.primary,
             borderRadius: 12,
             paddingVertical: 12,
             paddingHorizontal: 16,
             alignSelf: 'center',
           }}
         >
-          <Text style={{ color: 'white', fontWeight: '700' }}>
-            Open Offers
-          </Text>
+          <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Open Offers</Text>
         </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderTrading = () => {
+    return (
+      <>
+        <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+          {renderSegmentButton('marketplaceListings', 'Listings')}
+          {renderSegmentButton('myListings', 'Mine')}
+          {renderSegmentButton('myOffers', 'Offers')}
+        </View>
+
+        {!!tradeError && (
+          <View
+            style={{
+              backgroundColor: '#FEE2E2',
+              borderColor: '#FCA5A5',
+              borderWidth: 1,
+              borderRadius: 12,
+              padding: 12,
+              marginBottom: 12,
+            }}
+          >
+            <Text style={{ color: '#991B1B' }}>{tradeError}</Text>
+          </View>
+        )}
+
+        {segment === 'myOffers' ? (
+          renderOffersShortcut()
+        ) : tradeLoading && currentData.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        ) : (
+          <FlatList
+            data={currentData}
+            keyExtractor={(item) => item.id}
+            renderItem={renderListing}
+            contentContainerStyle={{
+              paddingBottom: 200,
+              flexGrow: currentData.length === 0 ? 1 : 0,
+            }}
+            refreshControl={
+              <RefreshControl
+                refreshing={tradeLoading}
+                onRefresh={refreshTrade}
+                tintColor={theme.colors.primary}
+              />
+            }
+            ListEmptyComponent={renderEmpty}
+          />
+        )}
+      </>
+    );
+  };
+
+  const renderMarketplace = () => {
+    return (
+      <View>
+        <View
+          style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 20,
+            padding: 18,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            marginBottom: 14,
+            ...cardShadow,
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 20,
+              fontWeight: '900',
+            }}
+          >
+            Price Tracker
+          </Text>
+
+          <Text
+            style={{
+              color: theme.colors.textSoft,
+              marginTop: 8,
+              lineHeight: 20,
+            }}
+          >
+            Search cards, watch prices, and track daily movement using eBay and
+            snapshot data.
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => router.push('/market')}
+            style={{
+              marginTop: 16,
+              backgroundColor: theme.colors.primary,
+              borderRadius: 14,
+              paddingVertical: 13,
+            }}
+          >
+            <Text
+              style={{
+                color: '#FFFFFF',
+                textAlign: 'center',
+                fontWeight: '900',
+              }}
+            >
+              Open Marketplace
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 20,
+            padding: 18,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            ...cardShadow,
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 18,
+              fontWeight: '900',
+            }}
+          >
+            Coming next
+          </Text>
+
+          {[
+            'Top movers today',
+            'Watchlist trends',
+            'Collection value graph',
+            'Price alerts',
+          ].map((item) => (
+            <Text key={item} style={{ color: theme.colors.textSoft, marginTop: 8 }}>
+              • {item}
+            </Text>
+          ))}
+        </View>
       </View>
     );
   };
@@ -386,68 +670,289 @@ export default function TradeScreen() {
     <View
       style={{
         flex: 1,
-        backgroundColor: '#0b0b0b',
+        backgroundColor: theme.colors.bg,
         paddingHorizontal: 16,
-        paddingTop: 16,
+        paddingTop: 42,
       }}
     >
       <Text
         style={{
-          color: 'white',
-          fontSize: 26,
-          fontWeight: '800',
+          color: theme.colors.text,
+          fontSize: 30,
+          fontWeight: '900',
+          marginBottom: 6,
+        }}
+      >
+        Market
+      </Text>
+
+      <Text
+        style={{
+          color: theme.colors.textSoft,
+          fontSize: 14,
           marginBottom: 16,
         }}
       >
-        Trade
+        Trading, offers, prices, and card movement.
       </Text>
 
-      <View style={{ flexDirection: 'row', marginBottom: 16 }}>
-        {renderSegmentButton('marketplace', 'Marketplace')}
-        {renderSegmentButton('myListings', 'My Listings')}
-        {renderSegmentButton('myOffers', 'My Offers')}
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: 10,
+          marginBottom: 16,
+        }}
+      >
+        {renderMainTabButton('trading', 'Trading')}
+        {renderMainTabButton('marketplace', 'Marketplace')}
       </View>
 
-      {!!tradeError && (
-        <View
-          style={{
-            backgroundColor: '#2a1414',
-            borderColor: '#4b1d1d',
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 12,
-            marginBottom: 12,
-          }}
-        >
-          <Text style={{ color: '#fca5a5' }}>{tradeError}</Text>
-        </View>
-      )}
+      {mainTab === 'trading' ? renderTrading() : renderMarketplace()}
 
-      {segment === 'myOffers' ? (
-        renderEmpty()
-      ) : tradeLoading && currentData.length === 0 ? (
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color="#ffffff" />
-        </View>
-      ) : (
-        <FlatList
-          data={currentData}
-          keyExtractor={(item) => item.id}
-          renderItem={renderListing}
+ <Modal
+  visible={detailVisible}
+  transparent
+  animationType="fade"
+  onRequestClose={closeDetail}
+>
+  <BlurView intensity={95} tint="dark" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.18)' }}>
+    <Pressable style={StyleSheet.absoluteFillObject} onPress={closeDetail} />
+
+    <SafeAreaView style={{ flex: 1 }}>
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={{
+          flex: 1,
+          transform: [{ translateY }],
+        }}
+      >
+        <ScrollView
           contentContainerStyle={{
-            paddingBottom: 40,
-            flexGrow: currentData.length === 0 ? 1 : 0,
+            paddingHorizontal: 16,
+            paddingTop: 14,
+            paddingBottom: 44,
           }}
-          refreshControl={
-            <RefreshControl
-              refreshing={tradeLoading}
-              onRefresh={refreshTrade}
-              tintColor="#ffffff"
-            />
-          }
-          ListEmptyComponent={renderEmpty}
-        />
-      )}
+          showsVerticalScrollIndicator={false}
+        >
+          <View
+            style={{
+              alignSelf: 'center',
+              width: 42,
+              height: 5,
+              borderRadius: 999,
+              backgroundColor: 'rgba(255,255,255,0.55)',
+              marginBottom: 20,
+            }}
+          />
+
+          {selectedCard || selectedListing ? (
+            <>
+              {selectedCard?.images?.large || selectedCard?.images?.small ? (
+                <Image
+                  source={{
+                    uri: selectedCard.images?.large || selectedCard.images?.small,
+                  }}
+                  style={{
+                    width: '100%',
+                    height: 330,
+                    borderRadius: 20,
+                    alignSelf: 'center',
+                    marginBottom: 18,
+                  }}
+                  resizeMode="contain"
+                />
+              ) : (
+                <View
+                  style={{
+                    width: '100%',
+                    height: 330,
+                    borderRadius: 20,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: theme.colors.card,
+                    marginBottom: 18,
+                  }}
+                >
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>
+                    No image
+                  </Text>
+                </View>
+              )}
+
+              <View
+                style={{
+                  backgroundColor: theme.colors.card,
+                  borderRadius: 22,
+                  padding: 16,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  ...cardShadow,
+                }}
+              >
+                <Text
+                  style={{
+                    color: theme.colors.text,
+                    fontSize: 24,
+                    fontWeight: '900',
+                  }}
+                >
+                  {selectedCard?.name ?? selectedListing?.card_id ?? 'Unknown card'}
+                </Text>
+
+                <Text
+                  style={{
+                    marginTop: 6,
+                    color: theme.colors.textSoft,
+                    fontSize: 15,
+                    marginBottom: 14,
+                  }}
+                >
+                  {selectedCard?.set?.name ?? selectedListing?.set_id ?? 'Unknown set'}
+                  {selectedCard?.number ? ` • #${selectedCard.number}` : ''}
+                </Text>
+
+                <View
+                  style={{
+                    marginTop: 8,
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 16,
+                    padding: 14,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>
+                      Condition
+                    </Text>
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontSize: 14,
+                        fontWeight: '800',
+                      }}
+                    >
+                      {selectedListing?.condition ?? 'Not specified'}
+                    </Text>
+                  </View>
+
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>
+                      Value
+                    </Text>
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontSize: 14,
+                        fontWeight: '800',
+                      }}
+                    >
+                      {selectedListing?.custom_value != null
+                        ? `£${Number(selectedListing.custom_value).toFixed(2)}`
+                        : 'Open to offers'}
+                    </Text>
+                  </View>
+                </View>
+
+                {!!selectedListing?.notes && (
+                  <View
+                    style={{
+                      marginTop: 14,
+                      backgroundColor: theme.colors.surface,
+                      borderRadius: 16,
+                      padding: 14,
+                      borderWidth: 1,
+                      borderColor: theme.colors.border,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontSize: 16,
+                        fontWeight: '800',
+                        marginBottom: 8,
+                      }}
+                    >
+                      Notes
+                    </Text>
+                    <Text
+                      style={{
+                        color: theme.colors.textSoft,
+                        fontSize: 14,
+                        lineHeight: 20,
+                      }}
+                    >
+                      {selectedListing.notes}
+                    </Text>
+                  </View>
+                )}
+
+                {selectedListing?.user_id !== myUserId ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      closeDetail();
+                      handleMakeOffer(selectedListing);
+                    }}
+                    style={{
+                      marginTop: 16,
+                      backgroundColor: theme.colors.primary,
+                      borderRadius: 14,
+                      paddingVertical: 13,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: '#FFFFFF',
+                        textAlign: 'center',
+                        fontWeight: '900',
+                      }}
+                    >
+                      Make Offer
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View
+                    style={{
+                      marginTop: 16,
+                      backgroundColor: theme.colors.surface,
+                      borderRadius: 14,
+                      paddingVertical: 13,
+                      borderWidth: 1,
+                      borderColor: theme.colors.border,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: theme.colors.textSoft,
+                        textAlign: 'center',
+                        fontWeight: '900',
+                      }}
+                    >
+                      Your listing
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </>
+          ) : null}
+        </ScrollView>
+      </Animated.View>
+    </SafeAreaView>
+  </BlurView>
+</Modal>
+      
     </View>
   );
 }

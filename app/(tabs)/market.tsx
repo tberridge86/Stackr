@@ -1,7 +1,7 @@
+import { theme } from '../../lib/theme';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
+import { Text } from '../../components/Text';
 import { useFocusEffect, router } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
 import {

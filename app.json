@@ -6,27 +6,43 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "pocketvaultnative",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0b0f2a"
-    },
+    "plugins": [
+  [
+    "expo-splash-screen",
+    {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff",
+      "imageWidth": 400
+    }
+  ]
+],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tommo86.pocketvaultnative",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#0b0f2a"
+        "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.tommo86.pocketvaultnative"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2e729a1c-5747-4209-a7df-0f6fc69410dc"
+      }
     }
   }
 }

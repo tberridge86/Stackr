@@ -22,53 +22,47 @@ export type MarketplaceListing = {
   } | null;
 };
 
-export async function fetchMarketplaceListings(): Promise<MarketplaceListing[]> {
-  const { data: listings, error: listingsError } = await supabase
-    .from('marketplace_listings')
-    .select(`
-      id,
-      user_id,
-      card_id,
-      set_id,
-      custom_value,
-      condition,
-      notes,
-      status,
-      created_at,
-      updated_at
-    `)
-    .eq('status', 'active')
-    .order('created_at', { ascending: false });
+function mapFlagToListing(row: any): MarketplaceListing {
+  return {
+    id: row.id,
+    user_id: row.user_id,
+    card_id: row.card_id,
+    set_id: row.set_id ?? null,
+    custom_value: row.value ? Number(row.value) : null,
+    condition: row.condition ?? null,
+    notes: row.notes ?? null,
+    status: 'active',
+    created_at: row.created_at,
+    updated_at: row.updated_at ?? null,
+  };
+}
 
-  if (listingsError) {
-    throw new Error(listingsError.message);
-  }
-
-  const safeListings = (listings as MarketplaceListing[] | null) ?? [];
-
+async function attachProfiles(
+  listings: MarketplaceListing[]
+): Promise<MarketplaceListing[]> {
   const uniqueUserIds = Array.from(
-    new Set(safeListings.map((listing) => listing.user_id).filter(Boolean))
+    new Set(listings.map((listing) => listing.user_id).filter(Boolean))
   );
 
   if (uniqueUserIds.length === 0) {
-    return safeListings;
+    return listings;
   }
 
-  const { data: profiles, error: profilesError } = await supabase
+  const { data: profiles, error } = await supabase
     .from('profiles')
-    .select(`
+    .select(
+      `
       id,
       collector_name,
       avatar_url,
       avatar_preset,
       pokemon_type,
       background_key
-    `)
+    `
+    )
     .in('id', uniqueUserIds);
 
-  if (profilesError) {
-    throw new Error(profilesError.message);
-  }
+  if (error) throw new Error(error.message);
 
   const profileMap = new Map(
     (profiles ?? []).map((profile: any) => [
@@ -83,10 +77,36 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[]> 
     ])
   );
 
-  return safeListings.map((listing) => ({
+  return listings.map((listing) => ({
     ...listing,
     profiles: profileMap.get(listing.user_id) ?? null,
   }));
+}
+
+export async function fetchMarketplaceListings(): Promise<MarketplaceListing[]> {
+  const { data, error } = await supabase
+    .from('user_card_flags')
+    .select(
+      `
+      id,
+      user_id,
+      card_id,
+      set_id,
+      condition,
+      notes,
+      value,
+      created_at,
+      updated_at
+    `
+    )
+    .eq('flag_type', 'trade')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  const listings = ((data ?? []) as any[]).map(mapFlagToListing);
+
+  return attachProfiles(listings);
 }
 
 export async function fetchMyListings(): Promise<MarketplaceListing[]> {
@@ -95,66 +115,33 @@ export async function fetchMyListings(): Promise<MarketplaceListing[]> {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError) {
-    throw new Error(userError.message);
-  }
+  if (userError) throw new Error(userError.message);
+  if (!user) return [];
 
-  if (!user) {
-    return [];
-  }
-
-  const { data: listings, error: listingsError } = await supabase
-    .from('marketplace_listings')
-    .select(`
+  const { data, error } = await supabase
+    .from('user_card_flags')
+    .select(
+      `
       id,
       user_id,
       card_id,
       set_id,
-      custom_value,
       condition,
       notes,
-      status,
+      value,
       created_at,
       updated_at
-    `)
+    `
+    )
     .eq('user_id', user.id)
+    .eq('flag_type', 'trade')
     .order('created_at', { ascending: false });
 
-  if (listingsError) {
-    throw new Error(listingsError.message);
-  }
+  if (error) throw new Error(error.message);
 
-  const safeListings = (listings as MarketplaceListing[] | null) ?? [];
+  const listings = ((data ?? []) as any[]).map(mapFlagToListing);
 
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select(`
-      id,
-      collector_name,
-      avatar_url,
-      avatar_preset,
-      pokemon_type,
-      background_key
-    `)
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (profileError) {
-    throw new Error(profileError.message);
-  }
-
-  return safeListings.map((listing) => ({
-    ...listing,
-    profiles: profile
-      ? {
-          collector_name: profile.collector_name ?? null,
-          avatar_url: profile.avatar_url ?? null,
-          avatar_preset: profile.avatar_preset ?? null,
-          pokemon_type: profile.pokemon_type ?? null,
-          background_key: profile.background_key ?? null,
-        }
-      : null,
-  }));
+  return attachProfiles(listings);
 }
 
 export async function createMarketplaceListing(input: {
@@ -169,49 +156,46 @@ export async function createMarketplaceListing(input: {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError) {
-    throw new Error(userError.message);
-  }
+  if (userError) throw new Error(userError.message);
 
   if (!user) {
     throw new Error('You must be signed in to list a card.');
   }
 
   const { data: existing, error: existingError } = await supabase
-    .from('marketplace_listings')
+    .from('user_card_flags')
     .select('id')
     .eq('user_id', user.id)
     .eq('card_id', input.card_id)
-    .eq('status', 'active')
+    .eq('flag_type', 'trade')
     .maybeSingle();
 
-  if (existingError) {
-    throw new Error(existingError.message);
-  }
+  if (existingError) throw new Error(existingError.message);
 
   if (existing) {
-    throw new Error('This card already has an active marketplace listing.');
+    throw new Error('This card is already marked for trade.');
   }
 
   const { data, error } = await supabase
-    .from('marketplace_listings')
+    .from('user_card_flags')
     .insert({
       user_id: user.id,
       card_id: input.card_id,
       set_id: input.set_id ?? null,
-      custom_value: input.custom_value ?? null,
+      flag_type: 'trade',
+      value:
+        input.custom_value == null || Number.isNaN(input.custom_value)
+          ? null
+          : String(input.custom_value),
       condition: input.condition ?? null,
       notes: input.notes ?? null,
-      status: 'active',
     })
     .select()
     .single();
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 
-  return data as MarketplaceListing;
+  return mapFlagToListing(data);
 }
 
 export async function archiveMarketplaceListing(listingId: string) {
@@ -220,28 +204,25 @@ export async function archiveMarketplaceListing(listingId: string) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError) {
-    throw new Error(userError.message);
-  }
+  if (userError) throw new Error(userError.message);
 
   if (!user) {
     throw new Error('You must be signed in to archive a listing.');
   }
 
   const { data, error } = await supabase
-    .from('marketplace_listings')
-    .update({
-      status: 'archived',
-      updated_at: new Date().toISOString(),
-    })
+    .from('user_card_flags')
+    .delete()
     .eq('id', listingId)
     .eq('user_id', user.id)
+    .eq('flag_type', 'trade')
     .select()
     .single();
 
-  if (error) {
-    throw new Error(error.message);
-  }
+  if (error) throw new Error(error.message);
 
-  return data as MarketplaceListing;
+  return {
+    ...mapFlagToListing(data),
+    status: 'archived',
+  };
 }

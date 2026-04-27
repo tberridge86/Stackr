@@ -1,3 +1,4 @@
+import { theme } from '../lib/theme';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -344,7 +345,7 @@ export default function OffersScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#080b1d' },
+  safe: { flex: 1, backgroundColor: theme.colors.bg },
   container: { padding: 18, paddingBottom: 120 },
 
   headerRow: {
@@ -356,7 +357,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -378,7 +379,7 @@ const styles = StyleSheet.create({
   },
   segmentButton: {
     flex: 1,
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 12,
     paddingVertical: 10,
     alignItems: 'center',
@@ -420,7 +421,7 @@ const styles = StyleSheet.create({
     color: '#AAB3D1',
   },
   emptyCard: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
@@ -430,7 +431,7 @@ const styles = StyleSheet.create({
   },
 
   offerCard: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 18,
     padding: 16,
     marginBottom: 14,

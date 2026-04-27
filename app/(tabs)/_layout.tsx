@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../../lib/theme';
 
 export default function TabLayout() {
   return (
@@ -8,32 +9,33 @@ export default function TabLayout() {
       initialRouteName="index"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#FFD166',
-        tabBarInactiveTintColor: '#7f89b0',
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textSoft,
         tabBarStyle: {
-          backgroundColor: '#0d122b',
-          borderTopWidth: 0,
-          height: 82,
-          paddingTop: 10,
-          paddingBottom: 12,
-          position: 'absolute',
-          left: 14,
-          right: 14,
-          bottom: 14,
-          borderRadius: 24,
+  backgroundColor: theme.colors.card,
+  borderTopColor: theme.colors.border,
+  borderTopWidth: 1,
+  height: 80,
+  paddingTop: 8,
+  paddingBottom: 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.08,
+          shadowRadius: 14,
+          shadowOffset: { width: 0, height: 5 },
+          elevation: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '700',
+          fontWeight: '800',
         },
         tabBarIcon: ({ color, size, focused }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'ellipse';
 
           if (route.name === 'trade') {
-            iconName = focused ? 'swap-horizontal' : 'swap-horizontal-outline';
+            iconName = focused ? 'storefront' : 'storefront-outline';
           }
 
-          if (route.name === 'community') {
+          if (route.name === 'community/index') {
             iconName = focused ? 'people' : 'people-outline';
           }
 
@@ -42,7 +44,7 @@ export default function TabLayout() {
           }
 
           if (route.name === 'binder') {
-            iconName = focused ? 'folder' : 'folder-outline';
+            iconName = focused ? 'book' : 'book-outline';
           }
 
           if (route.name === 'pokedex') {
@@ -55,12 +57,18 @@ export default function TabLayout() {
           paddingVertical: 2,
         },
         sceneStyle: {
-          backgroundColor: '#080b1d',
+          backgroundColor: theme.colors.bg,
         },
       })}
     >
-      <Tabs.Screen name="trade" options={{ title: 'Trade' }} />
-      <Tabs.Screen name="community" options={{ title: 'Community' }} />
+      <Tabs.Screen name="trade" options={{ title: 'Market' }} />
+      <Tabs.Screen
+        name="community/index"
+        options={{
+          title: 'Social',
+          tabBarLabel: 'Social',
+        }}
+      />
       <Tabs.Screen name="index" options={{ title: 'Hub' }} />
       <Tabs.Screen name="binder" options={{ title: 'Binder' }} />
       <Tabs.Screen name="pokedex" options={{ title: 'Pokédex' }} />

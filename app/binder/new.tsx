@@ -1,201 +1,257 @@
-import React, { useMemo, useState } from 'react';
+import { theme } from '../../lib/theme';
+import React, { useEffect, useState } from 'react';
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Alert,
+  ActivityIndicator,
+  FlatList,
 } from 'react-native';
+import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { fetchAllSets } from '../../lib/pokemonTcg';
+import { fetchAllSets, PokemonSet } from '../../lib/pokemonTcg';
 import { createBinder } from '../../lib/binders';
 
-const COLORS = ['#2563eb', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4'];
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+};
 
 export default function NewBinderScreen() {
   const [name, setName] = useState('');
-  const [color, setColor] = useState(COLORS[0]);
-  const [type, setType] = useState<'official' | 'custom'>('custom');
-  const [sets, setSets] = useState<any[]>([]);
-  const [selectedSetId, setSelectedSetId] = useState('');
-  const [loadingSets, setLoadingSets] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [color, setColor] = useState(theme.colors.primary);
+  const [type, setType] = useState<'official' | 'custom'>('official');
 
-  const selectedSetName = useMemo(
-    () => sets.find((s) => s.id === selectedSetId)?.name ?? 'Choose a set',
-    [sets, selectedSetId]
-  );
+  const [sets, setSets] = useState<PokemonSet[]>([]);
+  const [selectedSet, setSelectedSet] = useState<PokemonSet | null>(null);
 
-  const loadSets = async () => {
-    try {
-      if (sets.length) return;
-      setLoadingSets(true);
-      const data = await fetchAllSets();
-      setSets(data);
-    } catch (error) {
-      console.log('Failed to load sets', error);
-    } finally {
-      setLoadingSets(false);
-    }
+  const [loadingSets, setLoadingSets] = useState(true);
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchAllSets();
+        setSets(data);
+      } catch (err) {
+        console.log('Failed to load sets', err);
+      } finally {
+        setLoadingSets(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  const handleSelectSet = (set: PokemonSet) => {
+    setSelectedSet(set);
+    setName(set.name);
   };
 
-  const saveBinder = async () => {
+  const handleCreate = async () => {
+    if (creating) return;
+
+    if (!name.trim()) {
+      console.log('Name required');
+      return;
+    }
+
     try {
-      if (!name.trim()) {
-        Alert.alert('Missing name', 'Give your binder a name.');
-        return;
-      }
-
-      if (type === 'official' && !selectedSetId) {
-        Alert.alert('Missing set', 'Choose a set for the official binder.');
-        return;
-      }
-
-      setSaving(true);
+      setCreating(true);
 
       const binder = await createBinder({
-        name: name.trim(),
+        name,
         color,
         type,
-        sourceSetId: type === 'official' ? selectedSetId : null,
+        sourceSetId: type === 'official' ? selectedSet?.id : null,
       });
 
-      router.replace({
-        pathname: '/binder/[id]',
-        params: { id: binder.id },
-      });
-    } catch (error: any) {
-      Alert.alert('Error', error?.message ?? 'Could not create binder.');
+      router.replace(`/binder/${binder.id}`);
+    } catch (err) {
+      console.log('Create binder failed', err);
     } finally {
-      setSaving(false);
+      setCreating(false);
     }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0b0b0b' }} edges={['top']}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
-        <Text style={{ color: 'white', fontSize: 28, fontWeight: '800', marginBottom: 16 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <View style={{ flex: 1, padding: 16 }}>
+        <Text
+          style={{
+            color: theme.colors.text,
+            fontSize: 28,
+            fontWeight: '900',
+          }}
+        >
           New Binder
         </Text>
 
-        <Text style={{ color: '#d4d4d4', marginBottom: 8 }}>Binder name</Text>
-        <TextInput
-          value={name}
-          onChangeText={setName}
-          placeholder="My Psyducks"
-          placeholderTextColor="#777"
+        <Text
           style={{
-            backgroundColor: '#151515',
-            color: 'white',
-            borderRadius: 14,
-            paddingHorizontal: 14,
-            paddingVertical: 14,
+            color: theme.colors.textSoft,
+            marginTop: 6,
             marginBottom: 18,
           }}
-        />
+        >
+          Create an official set binder or your own custom collection.
+        </Text>
 
-        <Text style={{ color: '#d4d4d4', marginBottom: 8 }}>Type</Text>
-        <View style={{ flexDirection: 'row', marginBottom: 18 }}>
-          {(['custom', 'official'] as const).map((item) => {
-            const active = item === type;
-            return (
-              <TouchableOpacity
-                key={item}
-                onPress={() => setType(item)}
-                style={{
-                  backgroundColor: active ? '#2563eb' : '#151515',
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
-                  borderRadius: 12,
-                  marginRight: 10,
-                }}
-              >
-                <Text style={{ color: 'white', fontWeight: '700' }}>
-                  {item === 'custom' ? 'Custom Binder' : 'Official Set Binder'}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <View
+          style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 20,
+            padding: 14,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            ...cardShadow,
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontWeight: '900',
+              marginBottom: 10,
+            }}
+          >
+            Binder type
+          </Text>
 
-        <Text style={{ color: '#d4d4d4', marginBottom: 8 }}>Colour</Text>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 18 }}>
-          {COLORS.map((item) => {
-            const active = item === color;
-            return (
-              <TouchableOpacity
-                key={item}
-                onPress={() => setColor(item)}
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 12,
-                  backgroundColor: item,
-                  marginRight: 10,
-                  marginBottom: 10,
-                  borderWidth: active ? 3 : 0,
-                  borderColor: 'white',
-                }}
-              />
-            );
-          })}
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {['official', 'custom'].map((t) => {
+              const active = type === t;
+
+              return (
+                <TouchableOpacity
+                  key={t}
+                  onPress={() => setType(t as 'official' | 'custom')}
+                  style={{
+                    flex: 1,
+                    backgroundColor: active
+                      ? theme.colors.primary
+                      : theme.colors.surface,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: active
+                      ? theme.colors.primary
+                      : theme.colors.border,
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: active ? '#FFFFFF' : theme.colors.textSoft,
+                      fontWeight: '900',
+                    }}
+                  >
+                    {t.toUpperCase()}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Binder name"
+            placeholderTextColor={theme.colors.textSoft}
+            style={{
+              backgroundColor: theme.colors.surface,
+              color: theme.colors.text,
+              marginTop: 16,
+              padding: 14,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              fontWeight: '700',
+            }}
+          />
         </View>
 
         {type === 'official' && (
-          <>
-            <Text style={{ color: '#d4d4d4', marginBottom: 8 }}>Set</Text>
-
-            <TouchableOpacity
-              onPress={loadSets}
+          <View style={{ marginTop: 18, flex: 1 }}>
+            <Text
               style={{
-                backgroundColor: '#151515',
-                borderRadius: 14,
-                paddingHorizontal: 14,
-                paddingVertical: 14,
-                marginBottom: 12,
+                color: theme.colors.text,
+                fontWeight: '900',
+                marginBottom: 10,
+                fontSize: 16,
               }}
             >
-              <Text style={{ color: 'white' }}>
-                {loadingSets ? 'Loading sets...' : selectedSetName}
-              </Text>
-            </TouchableOpacity>
+              Select set
+            </Text>
 
-            {sets.slice(0, 30).map((set) => (
-              <TouchableOpacity
-                key={set.id}
-                onPress={() => setSelectedSetId(set.id)}
-                style={{
-                  backgroundColor: selectedSetId === set.id ? '#1f2940' : '#151515',
-                  borderRadius: 12,
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
-                  marginBottom: 8,
+            {loadingSets ? (
+              <ActivityIndicator color={theme.colors.primary} />
+            ) : (
+              <FlatList
+                data={sets}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 14 }}
+                renderItem={({ item }) => {
+                  const active = selectedSet?.id === item.id;
+
+                  return (
+                    <TouchableOpacity
+                      onPress={() => handleSelectSet(item)}
+                      style={{
+                        padding: 14,
+                        borderRadius: 14,
+                        marginBottom: 8,
+                        backgroundColor: active
+                          ? theme.colors.secondary
+                          : theme.colors.card,
+                        borderWidth: 1,
+                        borderColor: active
+                          ? theme.colors.secondary
+                          : theme.colors.border,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: theme.colors.text,
+                          fontWeight: '900',
+                        }}
+                      >
+                        {item.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
                 }}
-              >
-                <Text style={{ color: 'white', fontWeight: '700' }}>{set.name}</Text>
-                <Text style={{ color: '#AAB3D1', marginTop: 4 }}>{set.series}</Text>
-              </TouchableOpacity>
-            ))}
-          </>
+              />
+            )}
+          </View>
         )}
 
         <TouchableOpacity
-          onPress={saveBinder}
-          disabled={saving}
+          onPress={handleCreate}
+          disabled={creating}
           style={{
-            backgroundColor: '#2563eb',
-            borderRadius: 14,
-            paddingVertical: 14,
-            marginTop: 18,
+            backgroundColor: theme.colors.primary,
+            marginTop: 14,
+            padding: 16,
+            borderRadius: 16,
+            alignItems: 'center',
+            opacity: creating ? 0.6 : 1,
           }}
         >
-          <Text style={{ color: 'white', textAlign: 'center', fontWeight: '800' }}>
-            {saving ? 'Creating...' : 'Create Binder'}
-          </Text>
+          {creating ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>
+              Create Binder
+            </Text>
+          )}
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

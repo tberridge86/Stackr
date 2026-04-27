@@ -1,3 +1,4 @@
+import { theme } from '../../lib/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
 
@@ -31,20 +32,20 @@ export default function CollectionScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#0b0f2a',
+    backgroundColor: theme.colors.bg, // ✅ FIXED
   },
   container: {
     padding: 20,
     paddingBottom: 120,
   },
   heading: {
-    color: '#ffffff',
+    color: theme.colors.text,
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 8,
   },
   subheading: {
-    color: '#aab3d1',
+    color: theme.colors.textSoft, // ✅ FIXED
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 20,
@@ -53,24 +54,24 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   card: {
-    backgroundColor: '#151b45',
+    backgroundColor: theme.colors.card, // ✅ FIXED
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: theme.colors.border, // ✅ FIXED
   },
   cardPressed: {
     transform: [{ scale: 0.98 }],
     opacity: 0.92,
   },
   cardTitle: {
-    color: '#ffffff',
+    color: theme.colors.text,
     fontSize: 17,
     fontWeight: '700',
     marginBottom: 6,
   },
   cardMeta: {
-    color: '#FFD166',
+    color: theme.colors.secondary, // ✅ FIXED (this was your yellow)
     fontSize: 14,
     fontWeight: '600',
   },

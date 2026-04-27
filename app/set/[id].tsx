@@ -1,3 +1,4 @@
+import { theme } from '../../lib/theme';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -366,7 +367,7 @@ export default function SetDetailScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#080b1d',
+    backgroundColor: theme.colors.bg,
   },
   listContent: {
     padding: 18,
@@ -390,7 +391,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   searchWrap: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -461,7 +462,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   filterChip: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -486,7 +487,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   rarityChip: {
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 12,
@@ -524,7 +525,7 @@ const styles = StyleSheet.create({
   },
   cardTile: {
     width: '48%',
-    backgroundColor: '#121938',
+    backgroundColor: theme.colors.card,
     borderRadius: 18,
     padding: 12,
     borderWidth: 1,

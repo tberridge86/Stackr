@@ -1,28 +1,57 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { supabase } from '../lib/supabase';
 
-export type OfferStatus = 'pending' | 'accepted' | 'declined';
+export type OfferStatus =
+  | 'sent'
+  | 'accepted'
+  | 'declined'
+  | 'cancelled'
+  | 'payment_required'
+  | 'payment_sent'
+  | 'payment_confirmed'
+  | 'shipped'
+  | 'received'
+  | 'completed'
+  | 'disputed';
 
 export type OfferedCardRef = {
   cardId: string;
-  setId: string;
+  setId: string | null;
 };
 
 export type TradeOffer = {
   id: string;
-  listingId?: string;
+  listingId?: string | null;
   fromUserId: string;
   toUserId: string;
-  targetCardId: string;
-  targetSetId: string;
+  senderId: string;
+  receiverId: string;
   offeredCards: OfferedCardRef[];
+  requestedCards: OfferedCardRef[];
   cashTopUp: string;
   note: string;
+  message: string;
   status: OfferStatus;
   createdAt: string;
 };
 
-type CreateOfferInput = Omit<TradeOffer, 'id' | 'status' | 'createdAt'>;
+type CreateOfferInput = {
+  listingId?: string | null;
+  fromUserId: string;
+  toUserId: string;
+  targetCardId?: string;
+  targetSetId?: string | null;
+  offeredCards: OfferedCardRef[];
+  requestedCards?: OfferedCardRef[];
+  cashTopUp?: string;
+  note?: string;
+};
 
 type OfferContextType = {
   offers: TradeOffer[];
@@ -36,16 +65,44 @@ type OfferContextType = {
 const OfferContext = createContext<OfferContextType | null>(null);
 
 function mapOfferRow(row: any): TradeOffer {
+  const cards = Array.isArray(row.trade_offer_cards)
+    ? row.trade_offer_cards
+    : [];
+
+  const offeredCards = cards
+    .filter((card: any) => card.owner_id === row.sender_id)
+    .map((card: any) => ({
+      cardId: card.card_id,
+      setId: card.set_id ?? null,
+    }));
+
+  const requestedCards = cards
+    .filter((card: any) => card.owner_id === row.receiver_id)
+    .map((card: any) => ({
+      cardId: card.card_id,
+      setId: card.set_id ?? null,
+    }));
+
+  const cash = Array.isArray(row.trade_cash_terms)
+    ? row.trade_cash_terms[0]
+    : row.trade_cash_terms;
+
   return {
     id: row.id,
-    listingId: row.listing_id ?? undefined,
-    fromUserId: row.from_user_id,
-    toUserId: row.to_user_id,
-    targetCardId: row.target_card_id,
-    targetSetId: row.target_set_id,
-    offeredCards: Array.isArray(row.offered_cards) ? row.offered_cards : [],
-    cashTopUp: row.cash_top_up ?? '',
-    note: row.note ?? '',
+    listingId: row.listing_id ?? null,
+
+    fromUserId: row.sender_id,
+    toUserId: row.receiver_id,
+
+    senderId: row.sender_id,
+    receiverId: row.receiver_id,
+
+    offeredCards,
+    requestedCards,
+
+    cashTopUp: cash?.amount ? String(cash.amount) : '',
+    note: row.message ?? '',
+    message: row.message ?? '',
     status: row.status,
     createdAt: row.created_at,
   };
@@ -73,8 +130,14 @@ export function OfferProvider({ children }: { children: React.ReactNode }) {
 
       const { data, error } = await supabase
         .from('trade_offers')
-        .select('*')
-        .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+        .select(
+          `
+          *,
+          trade_offer_cards (*),
+          trade_cash_terms (*)
+        `
+        )
+        .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -112,19 +175,76 @@ export function OfferProvider({ children }: { children: React.ReactNode }) {
       offersLoading,
 
       createOffer: async (input: CreateOfferInput) => {
-        const { error } = await supabase.from('trade_offers').insert({
-          listing_id: input.listingId ?? null,
-          from_user_id: input.fromUserId,
-          to_user_id: input.toUserId,
-          target_card_id: input.targetCardId,
-          target_set_id: input.targetSetId,
-          offered_cards: input.offeredCards,
-          cash_top_up: input.cashTopUp,
-          note: input.note,
-          status: 'pending',
-        });
+        const hasCash =
+          input.cashTopUp != null &&
+          input.cashTopUp.trim() !== '' &&
+          Number(input.cashTopUp) > 0;
 
-        if (error) throw error;
+        const { data: offer, error: offerError } = await supabase
+          .from('trade_offers')
+          .insert({
+            listing_id: input.listingId ?? null,
+            sender_id: input.fromUserId,
+            receiver_id: input.toUserId,
+            status: hasCash ? 'payment_required' : 'sent',
+            message: input.note ?? null,
+          })
+          .select()
+          .single();
+
+        if (offerError) throw offerError;
+
+        const requestedCards =
+          input.requestedCards && input.requestedCards.length > 0
+            ? input.requestedCards
+            : input.targetCardId
+              ? [
+                  {
+                    cardId: input.targetCardId,
+                    setId: input.targetSetId ?? null,
+                  },
+                ]
+              : [];
+
+        const cardRows = [
+          ...input.offeredCards.map((card) => ({
+            offer_id: offer.id,
+            owner_id: input.fromUserId,
+            card_id: card.cardId,
+            set_id: card.setId ?? null,
+            quantity: 1,
+          })),
+          ...requestedCards.map((card) => ({
+            offer_id: offer.id,
+            owner_id: input.toUserId,
+            card_id: card.cardId,
+            set_id: card.setId ?? null,
+            quantity: 1,
+          })),
+        ];
+
+        if (cardRows.length > 0) {
+          const { error: cardsError } = await supabase
+            .from('trade_offer_cards')
+            .insert(cardRows);
+
+          if (cardsError) throw cardsError;
+        }
+
+        if (hasCash) {
+          const { error: cashError } = await supabase
+            .from('trade_cash_terms')
+            .insert({
+              offer_id: offer.id,
+              payer_id: input.fromUserId,
+              recipient_id: input.toUserId,
+              amount: Number(input.cashTopUp),
+              currency: 'GBP',
+              payment_status: 'required',
+            });
+
+          if (cashError) throw cashError;
+        }
 
         await refreshOffers();
       },
@@ -132,7 +252,10 @@ export function OfferProvider({ children }: { children: React.ReactNode }) {
       updateOfferStatus: async (offerId: string, status: OfferStatus) => {
         const { error } = await supabase
           .from('trade_offers')
-          .update({ status })
+          .update({
+            status,
+            updated_at: new Date().toISOString(),
+          })
           .eq('id', offerId);
 
         if (error) throw error;
@@ -161,8 +284,10 @@ export function OfferProvider({ children }: { children: React.ReactNode }) {
 
 export function useOffers() {
   const ctx = useContext(OfferContext);
+
   if (!ctx) {
     throw new Error('useOffers must be used inside OfferProvider');
   }
+
   return ctx;
 }

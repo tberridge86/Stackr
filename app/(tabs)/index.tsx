@@ -1,74 +1,77 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { theme } from '../../lib/theme';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
+  Dimensions,
   StyleSheet,
-  Text,
   View,
   Pressable,
   ScrollView,
-  Image,
 } from 'react-native';
+import { Text } from '../../components/Text';
+import { LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import { useCollection } from '../../components/collection-context';
 import { fetchAllSets, PokemonSet } from '../../lib/pokemonTcg';
+import { fetchBinders, fetchBinderCards } from '../../lib/binders';
+import { supabase } from '../../lib/supabase';
+import { createActivityPost } from '../../lib/activity';
 
-function StatPill({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+type ChartRange = '1D' | '7D' | '30D' | 'ALL';
+type ChartMode = 'TCG' | 'EBAY' | 'BOTH';
+
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+};
+
+function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.statPill}>
+    <View style={styles.statCard}>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
 }
 
-function SetCard({
-  set,
-  accent,
+function ActivityRow({
+  icon,
+  title,
+  subtitle,
+  time,
+  positive,
 }: {
-  set: PokemonSet;
-  accent?: boolean;
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  subtitle: string;
+  time: string;
+  positive?: boolean | null;
 }) {
   return (
-    <Pressable
-      onPress={() => router.push(`/set/${set.id}`)}
-      style={({ pressed }) => [
-        styles.setCard,
-        accent && styles.setCardAccent,
-        pressed && styles.cardPressed,
-      ]}
-    >
-      <View style={styles.setCardTop}>
-        <View style={styles.setCardTitleWrap}>
-          {set.images?.logo ? (
-            <Image source={{ uri: set.images.logo }} style={styles.setLogo} resizeMode="contain" />
-          ) : (
-            <Text style={[styles.setCardTitle, accent && styles.setCardTitleAccent]}>
-              {set.name}
-            </Text>
-          )}
-          <Text style={[styles.setCardSubtitle, accent && styles.setCardSubtitleAccent]}>
-            {set.total} cards · {set.series}
-          </Text>
-        </View>
-
-        <Ionicons
-          name="chevron-forward"
-          size={18}
-          color={accent ? '#0b0f2a' : '#94a0c9'}
-        />
+    <View style={styles.activityRow}>
+      <View style={styles.activityIconWrap}>
+        <Ionicons name={icon} size={18} color={theme.colors.primary} />
       </View>
 
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, accent && styles.progressFillAccent]} />
+      <View style={styles.activityTextWrap}>
+        <Text style={styles.activityTitle}>{title}</Text>
+        <Text
+          style={[
+            styles.activitySubtitle,
+            positive === true && styles.positiveText,
+            positive === false && styles.negativeText,
+          ]}
+        >
+          {subtitle}
+        </Text>
       </View>
-    </Pressable>
+
+      <Text style={styles.activityTime}>{time}</Text>
+    </View>
   );
 }
 
@@ -84,48 +87,141 @@ function ActionTile({
   onPress?: () => void;
 }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.actionTile, pressed && styles.cardPressed]}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.actionTile, pressed && styles.cardPressed]}
+    >
       <View style={styles.actionIconWrap}>
-        <Ionicons name={icon} size={18} color="#FFD166" />
+        <Ionicons name={icon} size={20} color={theme.colors.primary} />
       </View>
+
       <View style={styles.actionTextWrap}>
         <Text style={styles.actionTitle}>{title}</Text>
         <Text style={styles.actionSubtitle}>{subtitle}</Text>
       </View>
+
+      <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
     </Pressable>
   );
 }
 
-function BinderShelfTile({ onPress }: { onPress?: () => void }) {
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.binderShelfTile, pressed && styles.cardPressed]}>
-      <View style={styles.binderSpine} />
-      <View style={styles.binderCover}>
-        <View style={styles.binderLabelStrip}>
-          <Text style={styles.binderLabelText}>BINDER</Text>
-        </View>
+const formatMoney = (value: number) => `£${value.toFixed(2)}`;
 
-        <View style={styles.binderContent}>
-          <View style={styles.binderIconWrap}>
-            <Ionicons name="folder-open-outline" size={22} color="#FFD166" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.binderTitle}>My Binders</Text>
-            <Text style={styles.binderSubtitle}>
-              Open your themed collection folders
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="#94A0C9" />
-        </View>
-      </View>
-    </Pressable>
-  );
-}
+const formatSignedMoney = (value: number) => {
+  const sign = value > 0 ? '+' : '';
+  return `${sign}£${value.toFixed(2)}`;
+};
+
+const formatSignedPercent = (value: number) => {
+  const sign = value > 0 ? '+' : '';
+  return `${sign}${value.toFixed(1)}%`;
+};
+
+const getRangeStartDate = (range: ChartRange) => {
+  if (range === 'ALL') return null;
+
+  const date = new Date();
+
+  if (range === '1D') date.setDate(date.getDate() - 1);
+  if (range === '7D') date.setDate(date.getDate() - 7);
+  if (range === '30D') date.setDate(date.getDate() - 30);
+
+  return date.toISOString();
+};
+
+const getPriceFromSnapshot = (
+  row: any,
+  source: 'tcg' | 'ebay'
+): number | null => {
+  const price = source === 'tcg' ? row?.tcg_mid : row?.ebay_average;
+  return typeof price === 'number' ? price : null;
+};
+
+const getPriceFromPokemonCard = (card: any): number | null => {
+  const prices = card?.tcgplayer?.prices;
+  if (!prices) return null;
+
+  const preferred = [
+    'holofoil',
+    'reverseHolofoil',
+    'normal',
+    '1stEditionHolofoil',
+    '1stEditionNormal',
+  ];
+
+  for (const key of preferred) {
+    const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  for (const entry of Object.values(prices) as any[]) {
+    const value = entry?.market ?? entry?.mid ?? entry?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  return null;
+};
+
+const fetchLivePricesForCardIds = async (cardIds: string[]) => {
+  const chunks: string[][] = [];
+
+  for (let i = 0; i < cardIds.length; i += 20) {
+    chunks.push(cardIds.slice(i, i + 20));
+  }
+
+  const priceMap: Record<string, number> = {};
+
+  for (const chunk of chunks) {
+    const q = chunk.map((id) => `id:${id}`).join(' OR ');
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20`;
+
+    const response = await fetch(url);
+    const json = await response.json();
+
+    for (const card of json?.data ?? []) {
+      const price = getPriceFromPokemonCard(card);
+      if (typeof price === 'number') {
+        priceMap[card.id] = price;
+      }
+    }
+  }
+
+  return priceMap;
+};
+
+const normaliseChartValues = (values: number[]) =>
+  values.length >= 2 ? values : values.length === 1 ? [values[0], values[0]] : [0, 0];
 
 export default function HubScreen() {
   const { trackedSetIds } = useCollection();
+
   const [allSets, setAllSets] = useState<PokemonSet[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [chartRange, setChartRange] = useState<ChartRange>('7D');
+  const [chartMode, setChartMode] = useState<ChartMode>('TCG');
+
+  const [chartData, setChartData] = useState<{
+    tcg: number[];
+    ebay: number[];
+  }>({
+    tcg: [],
+    ebay: [],
+  });
+
+  const [collectionTotal, setCollectionTotal] = useState(0);
+  const [collectionChangeAmount, setCollectionChangeAmount] = useState(0);
+  const [collectionChangePercent, setCollectionChangePercent] = useState(0);
+
+  const [ownedCardCount, setOwnedCardCount] = useState(0);
+  const [unpricedCardCount, setUnpricedCardCount] = useState(0);
+  const [watchlistCount, setWatchlistCount] = useState(0);
+
+  const valuePostKeyRef = useRef<string | null>(null);
+
+  const screenWidth = Dimensions.get('window').width;
+  const collectionUp = collectionChangeAmount >= 0;
+  const collectionValue = formatMoney(collectionTotal);
 
   useEffect(() => {
     const loadSets = async () => {
@@ -142,10 +238,283 @@ export default function HubScreen() {
     loadSets();
   }, []);
 
-  const trackedSets = useMemo(
-    () => allSets.filter((set) => trackedSetIds.includes(set.id)),
-    [allSets, trackedSetIds]
+  useEffect(() => {
+    const loadWatchlistCount = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          setWatchlistCount(0);
+          return;
+        }
+
+        const { count, error } = await supabase
+          .from('market_watchlist')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        setWatchlistCount(count ?? 0);
+      } catch (error) {
+        console.log('Failed to load watchlist count', error);
+        setWatchlistCount(0);
+      }
+    };
+
+    loadWatchlistCount();
+  }, []);
+
+  useEffect(() => {
+    const loadCollectionValue = async () => {
+      try {
+        const binders = await fetchBinders();
+
+        const allCards = (
+          await Promise.all(binders.map((binder) => fetchBinderCards(binder.id)))
+        ).flat();
+
+        const ownedCards = allCards.filter((card) => card.owned);
+        setOwnedCardCount(ownedCards.length);
+
+        const cardIds = [
+          ...new Set(
+            ownedCards.map((card: any) => card.api_card_id || card.card_id)
+          ),
+        ];
+
+        const storedCardIds = [...new Set(ownedCards.map((card) => card.card_id))];
+
+        if (!storedCardIds.length) {
+          setCollectionTotal(0);
+          setCollectionChangeAmount(0);
+          setCollectionChangePercent(0);
+          setUnpricedCardCount(0);
+          setChartData({ tcg: [], ebay: [] });
+          return;
+        }
+
+        let snapshotQuery = supabase
+          .from('market_price_snapshots')
+          .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
+          .in('card_id', storedCardIds)
+          .order('snapshot_at', { ascending: true });
+
+        const rangeStart = getRangeStartDate(chartRange);
+
+        if (rangeStart) {
+          snapshotQuery = snapshotQuery.gte('snapshot_at', rangeStart);
+        }
+
+        const { data, error } = await snapshotQuery;
+
+        if (error) throw error;
+
+        const groupedByCard: Record<string, any[]> = {};
+        const groupedByDay: Record<
+          string,
+          {
+            tcg: Record<string, number>;
+            ebay: Record<string, number>;
+          }
+        > = {};
+
+        for (const row of data || []) {
+          if (!groupedByCard[row.card_id]) groupedByCard[row.card_id] = [];
+          groupedByCard[row.card_id].push(row);
+
+          const day = String(row.snapshot_at).split('T')[0];
+
+          if (!groupedByDay[day]) {
+            groupedByDay[day] = {
+              tcg: {},
+              ebay: {},
+            };
+          }
+
+          const tcgPrice = getPriceFromSnapshot(row, 'tcg');
+          const ebayPrice = getPriceFromSnapshot(row, 'ebay');
+
+          if (tcgPrice != null) groupedByDay[day].tcg[row.card_id] = tcgPrice;
+          if (ebayPrice != null) groupedByDay[day].ebay[row.card_id] = ebayPrice;
+        }
+
+        let totalLatest = 0;
+        let totalPrevious = 0;
+        let cardsWithPrevious = 0;
+        let unpriced = 0;
+
+        const activeSource: 'tcg' | 'ebay' =
+          chartMode === 'EBAY' ? 'ebay' : 'tcg';
+
+        for (const card of ownedCards) {
+          const snapshots = groupedByCard[card.card_id] || [];
+          const latest = snapshots[snapshots.length - 1];
+          const previous = snapshots[snapshots.length - 2];
+
+          const latestPrice = getPriceFromSnapshot(latest, activeSource);
+          const previousPrice = getPriceFromSnapshot(previous, activeSource);
+
+          if (typeof latestPrice === 'number') {
+            totalLatest += latestPrice;
+          } else {
+            unpriced += 1;
+          }
+
+          if (typeof latestPrice === 'number' && typeof previousPrice === 'number') {
+            totalPrevious += previousPrice;
+            cardsWithPrevious += 1;
+          }
+        }
+
+        if (totalLatest === 0 && activeSource === 'tcg') {
+          const livePriceMap = await fetchLivePricesForCardIds(cardIds);
+
+          let liveTotal = 0;
+          let liveUnpriced = 0;
+
+          for (const card of ownedCards as any[]) {
+            const lookupId = card.api_card_id || card.card_id;
+            const price = livePriceMap[lookupId];
+
+            if (typeof price === 'number') {
+              liveTotal += price;
+            } else {
+              liveUnpriced += 1;
+            }
+          }
+
+          totalLatest = liveTotal;
+          unpriced = liveUnpriced;
+        }
+
+        const change = cardsWithPrevious > 0 ? totalLatest - totalPrevious : 0;
+
+        const percent =
+          cardsWithPrevious > 0 && totalPrevious !== 0
+            ? (change / totalPrevious) * 100
+            : 0;
+
+        const days = Object.keys(groupedByDay).sort();
+
+        const buildValues = (source: 'tcg' | 'ebay') =>
+          days
+            .map((day) => {
+              const pricesForDay = groupedByDay[day][source];
+              let dayTotal = 0;
+
+              for (const cardId of storedCardIds) {
+                const price = pricesForDay[cardId];
+                if (typeof price === 'number') {
+                  dayTotal += price;
+                }
+              }
+
+              return dayTotal;
+            })
+            .filter((value) => Number.isFinite(value) && value > 0);
+
+        const cleanTcgValues = buildValues('tcg');
+        const cleanEbayValues = buildValues('ebay');
+
+        setCollectionTotal(totalLatest);
+        setCollectionChangeAmount(change);
+        setCollectionChangePercent(percent);
+        setUnpricedCardCount(unpriced);
+        setChartData({
+          tcg: cleanTcgValues,
+          ebay: cleanEbayValues,
+        });
+
+        if (chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+
+          if (user) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const { data: existingValuePost, error: existingValuePostError } =
+              await supabase
+                .from('activity_feed')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('type', 'value_change')
+                .gte('created_at', today.toISOString())
+                .limit(1);
+
+            if (existingValuePostError) {
+              console.log('Failed to check existing value post', existingValuePostError);
+            }
+
+            const alreadyPostedToday =
+              Array.isArray(existingValuePost) && existingValuePost.length > 0;
+
+            const postKey = `${user.id}-${today.toISOString()}-${change.toFixed(2)}`;
+
+            if (!alreadyPostedToday && valuePostKeyRef.current !== postKey) {
+              valuePostKeyRef.current = postKey;
+
+              createActivityPost({
+                type: 'value_change',
+                title:
+                  change > 0
+                    ? 'Collection value is up today'
+                    : 'Collection value is down today',
+                subtitle: `${formatSignedMoney(change)} (${formatSignedPercent(
+                  percent
+                )}) · Total ${formatMoney(totalLatest)}`,
+                valueChange: change,
+                isPositive: change > 0,
+              }).catch((activityError) => {
+                console.log('Failed to create value activity post', activityError);
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Failed to calculate collection value', error);
+        setCollectionTotal(0);
+        setCollectionChangeAmount(0);
+        setCollectionChangePercent(0);
+        setUnpricedCardCount(0);
+        setChartData({ tcg: [], ebay: [] });
+      }
+    };
+
+    loadCollectionValue();
+  }, [chartRange, chartMode]);
+
+  const quickStats = useMemo(
+    () => ({
+      ownedCards: String(ownedCardCount),
+      trackedSets: String(trackedSetIds.length),
+      availableSets: loading ? '...' : String(allSets.length),
+      unpriced: String(unpricedCardCount),
+      watchlist: String(watchlistCount),
+      collectionValue,
+    }),
+    [
+      ownedCardCount,
+      trackedSetIds.length,
+      allSets.length,
+      loading,
+      unpricedCardCount,
+      watchlistCount,
+      collectionValue,
+    ]
   );
+
+  const tcgChartValues = normaliseChartValues(chartData.tcg);
+  const ebayChartValues = normaliseChartValues(chartData.ebay);
+
+  const activeChartValues =
+    chartMode === 'EBAY' ? ebayChartValues : tcgChartValues;
+
+  const hasChartData = chartData.tcg.length > 0 || chartData.ebay.length > 0;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -160,51 +529,209 @@ export default function HubScreen() {
             onPress={() => router.push('/profile')}
             style={({ pressed }) => [styles.profileButton, pressed && styles.cardPressed]}
           >
-            <Ionicons name="person-circle-outline" size={28} color="#ffffff" />
+            <Ionicons name="person-circle-outline" size={30} color={theme.colors.text} />
           </Pressable>
         </View>
 
-        <View style={styles.heroCard}>
+        <View style={styles.portfolioCard}>
           <View style={styles.heroGlow} />
-          <Text style={styles.brand}>PocketVault</Text>
-          <Text style={styles.heading}>Your collection, properly organised.</Text>
-          <Text style={styles.subheading}>
-            Track your sets, jump into your binder, scan cards quickly, and keep an eye on value.
-          </Text>
 
-          <View style={styles.statsRow}>
-            <StatPill label="Tracked Sets" value={String(trackedSetIds.length)} />
-            <StatPill label="Available Sets" value={loading ? '...' : String(allSets.length)} />
-            <StatPill label="For Trade" value="29" />
+          <Text style={styles.portfolioLabel}>
+            Collection Value ({chartMode === 'EBAY' ? 'eBay' : 'TCG'})
+          </Text>
+          <Text style={styles.portfolioValue}>{collectionValue}</Text>
+
+          <View style={styles.portfolioChangeRow}>
+            <Ionicons
+              name={collectionUp ? 'arrow-up-circle' : 'arrow-down-circle'}
+              size={18}
+              color={collectionUp ? '#22C55E' : '#EF4444'}
+            />
+            <Text
+              style={[
+                styles.portfolioChange,
+                collectionUp ? styles.positiveText : styles.negativeText,
+              ]}
+            >
+              {formatSignedMoney(collectionChangeAmount)} ({formatSignedPercent(collectionChangePercent)}) today
+            </Text>
           </View>
 
-          <Pressable style={({ pressed }) => [styles.scanButton, pressed && styles.scanButtonPressed]}>
-            <Ionicons name="scan" size={22} color="#0b0f2a" />
-            <Text style={styles.scanButtonText}>Scan Cards</Text>
-          </Pressable>
+          <Text style={styles.updatedText}>
+            Based on owned binder cards with available price snapshots
+          </Text>
+
+          <View style={styles.graphBox}>
+            <View style={styles.graphHeader}>
+              <Text style={styles.graphTitle}>Portfolio trend</Text>
+            </View>
+
+            <View style={styles.graphControls}>
+              <View style={styles.graphTabs}>
+                {(['TCG', 'EBAY', 'BOTH'] as const).map((mode) => (
+                  <Pressable
+                    key={mode}
+                    onPress={() => setChartMode(mode)}
+                    style={[
+                      styles.graphTab,
+                      chartMode === mode && styles.graphTabActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.graphTabText,
+                        chartMode === mode && styles.graphTabTextActive,
+                      ]}
+                    >
+                      {mode}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={styles.graphTabs}>
+                {(['1D', '7D', '30D', 'ALL'] as const).map((range) => (
+                  <Pressable
+                    key={range}
+                    onPress={() => setChartRange(range)}
+                    style={[
+                      styles.graphTab,
+                      chartRange === range && styles.graphTabActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.graphTabText,
+                        chartRange === range && styles.graphTabTextActive,
+                      ]}
+                    >
+                      {range}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <LineChart
+              data={{
+                labels: activeChartValues.map(() => ''),
+                datasets:
+                  chartMode === 'BOTH'
+                    ? [
+                        {
+                          data: tcgChartValues,
+                          color: (opacity = 1) => `rgba(108,75,255,${opacity})`,
+                        },
+                        {
+                          data: ebayChartValues,
+                          color: (opacity = 1) => `rgba(234,179,8,${opacity})`,
+                        },
+                      ]
+                    : [
+                        {
+                          data: activeChartValues,
+                          color: (opacity = 1) =>
+                            chartMode === 'EBAY'
+                              ? `rgba(234,179,8,${opacity})`
+                              : `rgba(108,75,255,${opacity})`,
+                        },
+                      ],
+              }}
+              width={screenWidth - 64}
+              height={145}
+              withDots={false}
+              withInnerLines={true}
+              withOuterLines={false}
+              withVerticalLines={false}
+              withHorizontalLines={true}
+              fromZero={false}
+              bezier
+              chartConfig={{
+                backgroundGradientFrom: theme.colors.card,
+                backgroundGradientTo: theme.colors.card,
+                decimalPlaces: 2,
+                color: (opacity = 1) => `rgba(108,75,255,${opacity})`,
+                labelColor: () => theme.colors.textSoft,
+                propsForBackgroundLines: {
+                  stroke: '#E2E5EB',
+                },
+                propsForLabels: {
+                  fontSize: 9,
+                },
+              }}
+              style={styles.chart}
+            />
+
+            {chartMode === 'BOTH' && (
+              <View style={styles.graphLegend}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, styles.tcgDot]} />
+                  <Text style={styles.legendText}>TCG</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendDot, styles.ebayDot]} />
+                  <Text style={styles.legendText}>eBay</Text>
+                </View>
+              </View>
+            )}
+
+            {!hasChartData && (
+              <Text style={styles.noChartText}>
+                No price history yet. Your graph will build as daily TCG and eBay snapshots are saved.
+              </Text>
+            )}
+          </View>
         </View>
 
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Tracked sets</Text>
-          <Pressable onPress={() => router.push('/collection')}>
-            <Text style={styles.sectionLink}>View all</Text>
-          </Pressable>
+          <Text style={styles.sectionTitle}>Quick stats</Text>
         </View>
 
-        <View style={styles.grid}>
-          {loading ? (
-            <View style={styles.placeholderCard}>
-              <Text style={styles.placeholderText}>Loading sets...</Text>
-            </View>
-          ) : trackedSets.length > 0 ? (
-            trackedSets.slice(0, 4).map((set, index) => (
-              <SetCard key={set.id} set={set} accent={index === 0} />
-            ))
-          ) : (
-            <View style={styles.placeholderCard}>
-              <Text style={styles.placeholderText}>No tracked sets yet. Tap “View all” to choose some.</Text>
-            </View>
-          )}
+        <View style={styles.statsGrid}>
+          <StatCard label="Owned cards" value={quickStats.ownedCards} />
+          <StatCard label="Collection value" value={quickStats.collectionValue} />
+          <StatCard label="Tracked sets" value={quickStats.trackedSets} />
+          <StatCard label="Available sets" value={quickStats.availableSets} />
+          <StatCard label="Unpriced cards" value={quickStats.unpriced} />
+          <StatCard label="Watchlist" value={quickStats.watchlist} />
+        </View>
+
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Recent activity</Text>
+        </View>
+
+        <View style={styles.activityCard}>
+          <ActivityRow
+            icon="wallet-outline"
+            title="Collection value calculated"
+            subtitle={`${ownedCardCount} owned cards checked`}
+            time="Now"
+            positive={null}
+          />
+
+          <ActivityRow
+            icon="storefront-outline"
+            title="Market snapshots checked"
+            subtitle={`${unpricedCardCount} cards have no price yet`}
+            time="Now"
+            positive={unpricedCardCount === 0}
+          />
+
+          <ActivityRow
+            icon="eye-outline"
+            title="Watchlist synced"
+            subtitle={`${watchlistCount} cards being tracked`}
+            time="Now"
+            positive={null}
+          />
+
+          <ActivityRow
+            icon="folder-open-outline"
+            title="Binder synced"
+            subtitle="Owned cards pulled from your binders"
+            time="Today"
+            positive={null}
+          />
         </View>
 
         <View style={styles.sectionRow}>
@@ -212,26 +739,31 @@ export default function HubScreen() {
         </View>
 
         <View style={styles.actionGrid}>
-          <BinderShelfTile onPress={() => router.push('/binder')} />
-
           <ActionTile
-            icon="swap-horizontal"
-            title="Trade Hub"
-            subtitle="Manage trade cards"
-            onPress={() => router.push('/trade')}
+            icon="scan-outline"
+            title="Scan cards"
+            subtitle="Quickly add or identify cards"
+            onPress={() => router.push('/scan')}
           />
 
           <ActionTile
-            icon="stats-chart"
+            icon="folder-open-outline"
+            title="Open binder"
+            subtitle="View your collection folders"
+            onPress={() => router.push('/binder')}
+          />
+
+          <ActionTile
+            icon="storefront-outline"
             title="Market"
-            subtitle="Track prices and sold values"
-            onPress={() => router.push('/market')}
+            subtitle="Trading and price tracking"
+            onPress={() => router.push('/trade')}
           />
 
           <ActionTile
             icon="desktop-outline"
             title="Pokédex"
-            subtitle="Explore entries"
+            subtitle="Explore card and Pokémon entries"
             onPress={() => router.push('/pokedex')}
           />
         </View>
@@ -241,7 +773,7 @@ export default function HubScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#080b1d' },
+  safe: { flex: 1, backgroundColor: theme.colors.bg },
   container: { padding: 18, paddingBottom: 120 },
 
   topBar: {
@@ -251,109 +783,164 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   topBarBrand: {
-    color: '#ffffff',
-    fontSize: 20,
+    color: theme.colors.text,
+    fontSize: 22,
     fontWeight: '900',
   },
   topBarSubtitle: {
-    color: '#94A0C9',
+    color: theme.colors.textSoft,
     fontSize: 13,
     marginTop: 4,
   },
   profileButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: '#121938',
+    width: 50,
+    height: 50,
+    borderRadius: 17,
+    backgroundColor: theme.colors.card,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: theme.colors.border,
+    ...cardShadow,
   },
 
-  heroCard: {
-    backgroundColor: '#111735',
-    borderRadius: 26,
+  portfolioCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 28,
     padding: 20,
     marginBottom: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: theme.colors.border,
     overflow: 'hidden',
+    ...cardShadow,
   },
   heroGlow: {
     position: 'absolute',
-    width: 220,
-    height: 220,
+    width: 240,
+    height: 240,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,209,102,0.08)',
-    top: -70,
-    right: -40,
+    backgroundColor: 'rgba(108,75,255,0.08)',
+    top: -80,
+    right: -60,
   },
-  brand: {
-    color: '#FFD166',
-    fontSize: 17,
-    fontWeight: '800',
+  portfolioLabel: {
+    color: theme.colors.textSoft,
+    fontSize: 13,
+    fontWeight: '700',
     marginBottom: 8,
-    letterSpacing: 0.3,
   },
-  heading: {
-    color: '#ffffff',
-    fontSize: 31,
-    lineHeight: 36,
+  portfolioValue: {
+    color: theme.colors.text,
+    fontSize: 38,
     fontWeight: '900',
-    marginBottom: 10,
+    letterSpacing: -0.5,
   },
-  subheading: {
-    color: '#AAB3D1',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 18,
-    maxWidth: '92%',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 18,
-  },
-  statPill: {
-    flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  statValue: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  statLabel: {
-    color: '#91A0C8',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  scanButton: {
-    backgroundColor: '#FFD166',
-    borderRadius: 18,
-    paddingVertical: 15,
-    paddingHorizontal: 16,
+  portfolioChangeRow: {
+    marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 7,
+  },
+  portfolioChange: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  updatedText: {
+    marginTop: 7,
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  graphBox: {
+    marginTop: 18,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 20,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+  },
+  graphHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  graphTitle: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  graphControls: {
+    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
     gap: 8,
   },
-  scanButtonPressed: {
-    transform: [{ scale: 0.985 }],
-    opacity: 0.95,
+  graphTabs: {
+    flexDirection: 'row',
+    gap: 6,
   },
-  scanButtonText: {
-    color: '#0b0f2a',
-    fontSize: 16,
-    fontWeight: '900',
+  graphTab: {
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
+  graphTabActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  graphTabText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  graphTabTextActive: {
+    color: '#FFFFFF',
+  },
+  graphLegend: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 14,
+    marginTop: 2,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+  },
+  tcgDot: {
+    backgroundColor: '#6C4BFF',
+  },
+  ebayDot: {
+    backgroundColor: '#EAB308',
+  },
+  legendText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  chart: {
+    marginTop: 12,
+    marginLeft: -18,
+    borderRadius: 14,
+  },
+  noChartText: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -362,153 +949,104 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sectionTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '800',
+    color: theme.colors.text,
+    fontSize: 20,
+    fontWeight: '900',
   },
-  sectionLink: {
-    color: '#FFD166',
+
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  statCard: {
+    width: '48.5%',
+    backgroundColor: theme.colors.card,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...cardShadow,
+  },
+  statValue: {
+    color: theme.colors.text,
+    fontSize: 23,
+    fontWeight: '900',
+  },
+  statLabel: {
+    color: theme.colors.textSoft,
     fontSize: 13,
     fontWeight: '700',
+    marginTop: 6,
   },
-  grid: {
-    gap: 14,
-    marginBottom: 24,
-  },
-  setCard: {
-    backgroundColor: '#121938',
-    borderRadius: 20,
-    padding: 18,
+
+  activityCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  setCardAccent: {
-    backgroundColor: '#FFD166',
-    borderColor: '#FFD166',
-  },
-  setCardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  setCardTitleWrap: {
-    flex: 1,
-    marginRight: 10,
-  },
-  setLogo: {
-    width: 150,
-    height: 42,
-    marginBottom: 6,
-  },
-  setCardTitle: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  setCardTitleAccent: {
-    color: '#0b0f2a',
-  },
-  setCardSubtitle: {
-    color: '#AAB3D1',
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  setCardSubtitleAccent: {
-    color: 'rgba(11,15,42,0.72)',
-  },
-  progressTrack: {
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderColor: theme.colors.border,
     overflow: 'hidden',
+    marginBottom: 22,
+    ...cardShadow,
   },
-  progressFill: {
-    width: '48%',
-    height: '100%',
-    backgroundColor: '#FFD166',
-    borderRadius: 999,
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
   },
-  progressFillAccent: {
-    backgroundColor: '#0b0f2a',
-    width: '72%',
+  activityIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 14,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  activityTextWrap: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  activityTitle: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  activitySubtitle: {
+    color: theme.colors.textSoft,
+    fontSize: 13,
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  activityTime: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 2,
   },
 
   actionGrid: {
     gap: 12,
   },
-  binderShelfTile: {
-    flexDirection: 'row',
-    borderRadius: 22,
-    overflow: 'hidden',
-    minHeight: 92,
-    backgroundColor: '#121938',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  binderSpine: {
-    width: 18,
-    backgroundColor: '#2563eb',
-  },
-  binderCover: {
-    flex: 1,
-    padding: 14,
-    justifyContent: 'center',
-  },
-  binderLabelStrip: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    marginBottom: 10,
-  },
-  binderLabelText: {
-    color: '#AAB3D1',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-  binderContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  binderIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,209,102,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  binderTitle: {
-    color: '#ffffff',
-    fontSize: 17,
-    fontWeight: '800',
-    marginBottom: 3,
-  },
-  binderSubtitle: {
-    color: '#94A0C9',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-
   actionTile: {
-    backgroundColor: '#121938',
-    borderRadius: 18,
+    backgroundColor: theme.colors.card,
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: theme.colors.border,
     flexDirection: 'row',
     alignItems: 'center',
+    ...cardShadow,
   },
   actionIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,209,102,0.08)',
+    width: 44,
+    height: 44,
+    borderRadius: 15,
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -517,13 +1055,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionTitle: {
-    color: '#ffffff',
+    color: theme.colors.text,
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     marginBottom: 3,
   },
   actionSubtitle: {
-    color: '#94A0C9',
+    color: theme.colors.textSoft,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -531,16 +1069,11 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.985 }],
     opacity: 0.94,
   },
-  placeholderCard: {
-    backgroundColor: '#121938',
-    borderRadius: 18,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+
+  positiveText: {
+    color: '#22C55E',
   },
-  placeholderText: {
-    color: '#AAB3D1',
-    fontSize: 14,
-    lineHeight: 20,
+  negativeText: {
+    color: '#EF4444',
   },
 });
