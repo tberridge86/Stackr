@@ -1,9 +1,0 @@
-{
-  "$schema": "https://railway.app/railway.schema.json",
-  "crons": [
-    {
-      "schedule": "*/5 * * * *",
-      "command": "npm run daily-market-snapshot"
-    }
-  ]
-}
