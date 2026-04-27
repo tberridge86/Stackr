@@ -48,6 +48,16 @@ function titleLooksBad(title = '') {
     'empty box',
     'display box',
     'choose your card',
+    'heavily played',
+'hp',
+'played',
+'poor condition',
+'damaged',
+'crease',
+'bent',
+'ink',
+'marked',
+'wear',
     'choose your cards',
     'choose card',
     'choose individual card',
@@ -88,35 +98,51 @@ function titleLooksBad(title = '') {
   return blockedTerms.some((term) => t.includes(term));
 }
 
+function extractCardNumber(query = '') {
+  const match = query.match(/\b\d+\/\d+\b/);
+  return match ? match[0].toLowerCase() : null;
+}
+
+function getMainCardName(query = '') {
+  const stopWords = new Set([
+    'pokemon',
+    'pokémon',
+    'card',
+    'base',
+    'set',
+    'perfect',
+    'order',
+    'holo',
+    'foil',
+  ]);
+
+  return query
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word) => word.replace(/[^a-z0-9]/g, ''))
+    .filter((word) => word.length >= 3 && !stopWords.has(word));
+}
+
 function titleLooksGoodForQuery(title = '', query = '') {
   const t = title.toLowerCase();
   const q = query.toLowerCase();
 
-  let score = 0;
+  const cardNumber = extractCardNumber(q);
+  const importantWords = getMainCardName(q);
 
-  const words = q
-    .split(/\s+/)
-    .map((word) => word.trim())
-    .filter(Boolean);
+  if (!t.includes('pokemon') && !t.includes('pokémon')) return false;
+  if (!t.includes('card')) return false;
 
-  for (const word of words) {
-    if (word.length >= 3 && t.includes(word)) {
-      score += 1;
-    }
+  if (importantWords.length > 0) {
+    const hasCardName = importantWords.some((word) => t.includes(word));
+    if (!hasCardName) return false;
   }
 
-  if (t.includes('pokemon') || t.includes('pokémon')) score += 1;
-  if (t.includes('card')) score += 1;
-  if (t.includes('holo')) score += 1;
-  if (t.includes('wotc')) score += 1;
-  if (t.includes('base set')) score += 2;
-
-  const numberMatch = q.match(/\b\d+\/\d+\b/);
-  if (numberMatch && t.includes(numberMatch[0])) {
-    score += 4;
+  if (cardNumber && !t.includes(cardNumber)) {
+    return false;
   }
 
-  return score >= 5;
+  return true;
 }
 
 function numberFromPrice(value) {
@@ -210,14 +236,14 @@ async function fetchEbaySummary(query) {
   const data = await ebayRes.json();
   const items = data.itemSummaries || [];
 
-  const cleaned = items.filter((item) => {
+    const cleaned = items.filter((item) => {
     const title = item.title || '';
     const price = numberFromPrice(item.price?.value);
 
     if (!price) return false;
     if (titleLooksBad(title)) return false;
-    if (!title.toLowerCase().includes(query.split(' ')[0].toLowerCase())) return false;
-    if (price < 5) return false;
+    if (!titleLooksGoodForQuery(title, query)) return false;
+    if (price < 1) return false;
     if (price > 5000) return false;
 
     return true;
@@ -227,7 +253,14 @@ async function fetchEbaySummary(query) {
     .map((item) => numberFromPrice(item.price?.value))
     .filter((price) => price !== null);
 
-  const summary = summarisePrices(prices);
+  const sortedPrices = [...prices].sort((a, b) => a - b);
+
+  const trimmedPrices =
+    sortedPrices.length >= 5
+      ? sortedPrices.slice(1, -1)
+      : sortedPrices;
+
+  const summary = summarisePrices(trimmedPrices);
 
   return {
     marketplace: EBAY_MARKETPLACE_ID,
@@ -320,6 +353,54 @@ app.get('/api/price/ebay', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       error: 'Failed to fetch eBay pricing',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+app.post('/api/scan/tcg', async (req, res) => {
+  try {
+    const { imageUrl } = req.body;
+
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Missing imageUrl' });
+    }
+
+    if (!process.env.XIMILAR_API_TOKEN) {
+      return res.status(500).json({ error: 'Missing XIMILAR_API_TOKEN' });
+    }
+
+    const ximilarRes = await fetch(
+      'https://api.ximilar.com/collectibles/v2/tcg_id',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Token ${process.env.XIMILAR_API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          records: [
+            {
+              _url: imageUrl,
+            },
+          ],
+        }),
+      }
+    );
+
+    const data = await ximilarRes.json();
+
+    if (!ximilarRes.ok) {
+      return res.status(ximilarRes.status).json({
+        error: 'Ximilar request failed',
+        detail: data,
+      });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Failed to scan card',
       detail: getErrorMessage(error),
     });
   }
