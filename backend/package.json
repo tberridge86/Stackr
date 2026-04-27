@@ -6,6 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts"
+  }
+  ,
+    "engines": {
+  "node": "20.x"
   },
   "dependencies": {
     "cors": "^2.8.5",

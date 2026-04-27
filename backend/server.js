@@ -94,7 +94,7 @@ async function getToken() {
     `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
   ).toString('base64');
 
-  const res = await fetch('https://api.ebay.co.uk/identity/v1/oauth2/token', {
+  const res = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
     method: 'POST',
         headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -102,7 +102,7 @@ async function getToken() {
     },
     body: new URLSearchParams({
       grant_type: 'client_credentials',
-      scope: 'https://api.ebay.co.uk/oauth/api_scope',
+      scope: 'https://api.ebay.com/oauth/api_scope',
     }),
   });
 
@@ -123,7 +123,7 @@ async function getToken() {
 async function fetchEbaySummary(query) {
   const token = await getToken();
 
-  const url = `https://api.ebay.co.uk/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
+  const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
     query
   )}&limit=25&sort=price`;
 
@@ -186,7 +186,7 @@ app.get('/debug-env', (req, res) => {
 
 app.get('/debug-dns', async (req, res) => {
   try {
-    const ebayLookup = await dns.promises.resolve4('api.ebay.co.uk');
+    const ebayLookup = await dns.promises.resolve4('api.ebay.com');
     const googleLookup = await dns.promises.resolve4('google.com');
 
     return res.json({
