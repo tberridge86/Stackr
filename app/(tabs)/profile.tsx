@@ -20,7 +20,7 @@ import {
 } from '../../lib/pokemonTcgCache';
   const TYPE_COLOR_MAP: Record<string, string> = {
   water: '#78C8F0',
-  fire: '#F5AC78',
+  fire: '#e9721d',
   grass: '#A7DB8D',
   electric: '#FAE078',
   psychic: '#FA92B2',
@@ -141,12 +141,12 @@ export default function ProfileScreen() {
           Complete your profile setup to continue.
         </Text>
 
-        <TouchableOpacity
-          onPress={() => router.push('/profile/setup')}
-          style={styles.setupButton}
-        >
-          <Text style={styles.setupButtonText}>Set Up Profile</Text>
-        </TouchableOpacity>
+       <TouchableOpacity
+  onPress={() => router.push('/profile/setup')}
+  style={styles.editButton}
+>
+  <Ionicons name="create-outline" size={18} color="#fff" />
+</TouchableOpacity>
       </View>
     );
   }
@@ -179,9 +179,8 @@ export default function ProfileScreen() {
             onPress={() => router.push('/profile/setup')}
             style={styles.editButton}
           >
-            <Ionicons name="create-outline" size={16} color="#fff" />
-            <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
+            <Ionicons name="create-outline" size={26} color="#fff"style={{ marginLeft: 3, marginTop: -4 }} />
+            </TouchableOpacity>
         </View>
 
         <Text style={styles.collectorName}>
@@ -189,10 +188,10 @@ export default function ProfileScreen() {
         </Text>
 
         <Text style={styles.collectorMeta}>
-          {profile.pokemon_type
-            ? `${profile.pokemon_type} Collector`
-            : 'Collector Profile'}
-        </Text>
+  {profile.pokemon_type
+    ? `${profile.pokemon_type.charAt(0).toUpperCase() + profile.pokemon_type.slice(1)} Trainer`
+    : 'Collector Profile'}
+</Text>
       </View>
 
       <View style={styles.section}>
@@ -310,22 +309,25 @@ const styles = StyleSheet.create({
   },
 
   editButton: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    padding: 10,
-    borderRadius: 12,
-  },
-
-  editButtonText: { color: '#fff', marginLeft: 6 },
+  position: 'absolute',
+  top: 12,
+  right: 12,
+  width: 34,
+  height: 34,
+  borderRadius: 8,
+  backgroundColor: 'rgba(0,0,0,0.25)',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
 
   collectorName: {
-    color: '#fff',
+    color: '#0b0f2a',
     fontSize: 26,
     fontWeight: '900',
     marginTop: 16,
   },
 
-  collectorMeta: { color: '#ccc', marginTop: 6 },
+  collectorMeta: { color: '#0b0f2a', marginTop: 6 },
 
   section: { marginBottom: 20 },
 
