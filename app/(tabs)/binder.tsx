@@ -136,14 +136,25 @@ const scanResult = await scanCardWithAI(imageUrl);
 
 console.log('Scan result:', scanResult);
 
+const card = scanResult?.records?.[0]?._objects?.[0];
+
+if (!card) {
+  Alert.alert('Scan failed', 'No card detected');
+  return;
+}
+
 Alert.alert(
   'Card detected',
-  `${scanResult.name} (${scanResult.set_name})`
+  `${card.name} (${card.set})`
 );
-    } catch (error) {
-      console.log('Scan failed', error);
-      Alert.alert('Scan failed', 'Could not scan this card.');
-    } finally {
+    } catch (error: any) {
+  console.log('Scan failed FULL ERROR:', error);
+
+  Alert.alert(
+    'Scan failed',
+    error?.message ?? 'Could not scan this card.'
+  );
+} finally {
       setScanning(false);
     }
   };
