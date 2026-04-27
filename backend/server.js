@@ -167,9 +167,11 @@ async function fetchEbaySummary(query) {
     average: summary.average,
     high: summary.high,
     count: summary.count,
-    rawCount: items.length,
-  };
-}
+    sampleTitles: items.slice(0, 10).map((item) => ({
+    title: item.title,
+    price: item.price?.value,
+  })),
+};
 
 app.get('/', (req, res) => {
   res.send('PocketVault API is running');
