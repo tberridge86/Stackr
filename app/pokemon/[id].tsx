@@ -5,11 +5,12 @@ import {
   Image,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 type PokemonData = {
   id: number;
@@ -59,26 +60,38 @@ export default function PokemonDetailScreen() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color={theme.colors.primary} size="large" />
-        <Text style={styles.loadingText}>Loading Pokémon...</Text>
-      </View>
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <ActivityIndicator color={theme.colors.primary} size="large" />
+          <Text style={styles.loadingText}>Loading Pokémon...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (!data) {
     return (
-      <View style={styles.center}>
-        <Text style={{ color: theme.colors.text }}>
-          Failed to load Pokémon.
-        </Text>
-      </View>
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={styles.backButtonText}>‹</Text>
+          </TouchableOpacity>
+
+          <Text style={{ color: theme.colors.text }}>
+            Failed to load Pokémon.
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={styles.backButtonText}>‹</Text>
+        </TouchableOpacity>
+
         <View style={styles.header}>
           <Image
             source={{
@@ -88,26 +101,20 @@ export default function PokemonDetailScreen() {
           />
 
           <Text style={styles.name}>{formatName(data.name)}</Text>
-          <Text style={styles.number}>
-            #{String(data.id).padStart(4, '0')}
-          </Text>
+          <Text style={styles.number}>#{String(data.id).padStart(4, '0')}</Text>
         </View>
 
-        {/* TYPES */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Type</Text>
           <View style={styles.row}>
             {data.types.map((t) => (
               <View key={t.type.name} style={styles.typeChip}>
-                <Text style={styles.typeText}>
-                  {formatName(t.type.name)}
-                </Text>
+                <Text style={styles.typeText}>{formatName(t.type.name)}</Text>
               </View>
             ))}
           </View>
         </View>
 
-        {/* STATS */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Base Stats</Text>
           {data.stats.map((s) => (
@@ -120,7 +127,6 @@ export default function PokemonDetailScreen() {
           ))}
         </View>
 
-        {/* INFO */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Info</Text>
           <Text style={styles.infoText}>
@@ -131,7 +137,6 @@ export default function PokemonDetailScreen() {
           </Text>
         </View>
 
-        {/* ABILITIES */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Abilities</Text>
           {data.abilities.map((a) => (
@@ -146,18 +151,44 @@ export default function PokemonDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: theme.colors.bg },
-  container: { padding: 18, paddingBottom: 120 },
+  safe: {
+    flex: 1,
+    backgroundColor: theme.colors.bg,
+  },
+  container: {
+    padding: 18,
+    paddingBottom: 120,
+  },
 
   center: {
     flex: 1,
     backgroundColor: theme.colors.bg,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 18,
   },
   loadingText: {
     color: theme.colors.textSoft,
     marginTop: 12,
+  },
+
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: theme.colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 12,
+    ...cardShadow,
+  },
+  backButtonText: {
+    color: theme.colors.text,
+    fontSize: 28,
+    fontWeight: '900',
+    marginTop: -2,
   },
 
   header: {

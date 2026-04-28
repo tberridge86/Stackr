@@ -57,10 +57,12 @@ export default function LoginScreen() {
       setMessage('');
 
       const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-      });
-
+  email: email.trim(),
+  password,
+  options: {
+    emailRedirectTo: 'pocketvaultnative://auth/callback',
+  },
+});
       if (error) {
         setError(error.message);
         return;
