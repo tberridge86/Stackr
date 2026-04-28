@@ -8,6 +8,7 @@ import {
   View,
   Pressable,
   ScrollView,
+  Image,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { LineChart } from 'react-native-chart-kit';
@@ -271,16 +272,36 @@ export default function HubScreen() {
 useEffect(() => {
   const loadRecentListings = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: listings, error } = await supabase
         .from('trade_listings')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .limit(6);
+        .limit(8);
 
       if (error) throw error;
 
-      setRecentListings(data ?? []);
+      const cardIds = [...new Set((listings ?? []).map((item) => item.card_id))];
+
+      const { data: previews, error: previewError } = await supabase
+        .from('card_previews')
+        .select('card_id, name, set_name, image_url')
+        .in('card_id', cardIds);
+
+      if (previewError) throw previewError;
+
+      const previewMap: Record<string, any> = {};
+
+      for (const preview of previews ?? []) {
+        previewMap[preview.card_id] = preview;
+      }
+
+      const enrichedListings = (listings ?? []).map((item) => ({
+        ...item,
+        preview: previewMap[item.card_id] ?? null,
+      }));
+
+      setRecentListings(enrichedListings);
     } catch (err) {
       console.log('Failed to load recent listings', err);
       setRecentListings([]);
@@ -727,26 +748,6 @@ useEffect(() => {
   </Pressable>
 </View>
 
-<View style={styles.recentAdditionsRow}>
-  <Pressable style={styles.recentCard} onPress={() => router.push('/binder')}>
-    <View style={styles.recentImageWrap}>
-      <Ionicons name="sparkles-outline" size={32} color={theme.colors.primary} />
-    </View>
-    <Text style={styles.recentCardName}>Latest cards</Text>
-    <Text style={styles.recentCardSet}>Recently added</Text>
-    <Text style={styles.recentCardValue}>Open binder</Text>
-  </Pressable>
-
-  <Pressable style={styles.recentCard} onPress={() => router.push('/trade')}>
-    <View style={styles.recentImageWrap}>
-      <Ionicons name="storefront-outline" size={32} color={theme.colors.primary} />
-    </View>
-    <Text style={styles.recentCardName}>Trade cards</Text>
-    <Text style={styles.recentCardSet}>Marketplace</Text>
-    <Text style={styles.recentCardValue}>Open market</Text>
-  </Pressable>
-</View>
-
         <View style={styles.sectionRow}>
   <Text style={styles.sectionTitle}>Recent Trade Listings</Text>
 
@@ -758,31 +759,47 @@ useEffect(() => {
 <ScrollView
   horizontal
   showsHorizontalScrollIndicator={false}
-  contentContainerStyle={{ gap: 12, paddingRight: 6, marginBottom: 24 }}
+  contentContainerStyle={styles.recentListingsScroll}
 >
-  {recentListings.map((item) => (
-    <Pressable
-      key={item.id}
-      onPress={() => router.push('/trade')}
-      style={({ pressed }) => [styles.recentCard, pressed && styles.cardPressed]}
-    >
-      <View style={styles.recentImageFallback}>
-        <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
-      </View>
+  {recentListings.map((item) => {
+    const preview = item.preview;
+    const imageUri = preview?.image_url ?? null;
+    const cardName = preview?.name ?? item.card_id ?? 'Unknown card';
+    const setName = preview?.set_name ?? item.set_id ?? 'Unknown set';
 
-      <Text style={styles.recentCardName} numberOfLines={1}>
-        {item.card_id ?? 'Unknown card'}
-      </Text>
+    return (
+      <Pressable
+        key={item.id}
+        onPress={() => router.push('/trade')}
+        style={({ pressed }) => [
+          styles.recentCard,
+          pressed && styles.cardPressed,
+        ]}
+      >
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={styles.recentCardImage}
+            resizeMode="contain"
+          />
+        ) : (
+          <View style={styles.recentImageFallback}>
+            <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
+          </View>
+        )}
 
-      <Text style={styles.recentCardSet} numberOfLines={1}>
-        {item.set_id ?? 'Unknown set'}
-      </Text>
+        <Text style={styles.recentCardName} numberOfLines={1}>
+          {cardName}
+        </Text>
 
-      <Text style={styles.recentCardValue}>
-        Newly listed
-      </Text>
-    </Pressable>
-  ))}
+        <Text style={styles.recentCardSet} numberOfLines={1}>
+          {setName}
+        </Text>
+
+        <Text style={styles.recentCardValue}>Newly listed</Text>
+      </Pressable>
+    );
+  })}
 </ScrollView>
 </ScrollView>
     </SafeAreaView>
@@ -1098,57 +1115,59 @@ const styles = StyleSheet.create({
   fontSize: 13,
   fontWeight: '900',
 },
+viewAllText: {
+  color: theme.colors.primary,
+  fontSize: 13,
+  fontWeight: '900',
+},
 
-recentAdditionsRow: {
-  flexDirection: 'row',
+recentListingsScroll: {
   gap: 12,
+  paddingRight: 10,
   marginBottom: 24,
 },
 
 recentCard: {
-  flex: 1,
+  width: 128,
   backgroundColor: theme.colors.card,
   borderRadius: 20,
-  padding: 12,
+  padding: 10,
   borderWidth: 1,
   borderColor: theme.colors.border,
   ...cardShadow,
 },
 
-recentImageWrap: {
-  height: 118,
+recentCardImage: {
+  width: '100%',
+  height: 130,
+  marginBottom: 8,
+},
+
+recentImageFallback: {
+  height: 130,
   borderRadius: 16,
   backgroundColor: theme.colors.surface,
   alignItems: 'center',
   justifyContent: 'center',
-  marginBottom: 10,
+  marginBottom: 8,
 },
 
 recentCardName: {
   color: theme.colors.text,
-  fontSize: 14,
+  fontSize: 13,
   fontWeight: '900',
 },
 
 recentCardSet: {
   color: theme.colors.textSoft,
-  fontSize: 12,
+  fontSize: 11,
   marginTop: 3,
 },
 
 recentCardValue: {
   color: theme.colors.primary,
-  fontSize: 13,
+  fontSize: 12,
   fontWeight: '900',
   marginTop: 8,
-},
-
-recentImageFallback: {
-  height: 118,
-  borderRadius: 16,
-  backgroundColor: theme.colors.surface,
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: 10,
 },
 });
