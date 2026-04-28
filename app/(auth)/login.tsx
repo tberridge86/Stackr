@@ -56,6 +56,16 @@ export default function LoginScreen() {
       setError('');
       setMessage('');
 
+if (!email.trim() || !password.trim()) {
+  setError('Please enter an email and password.');
+  return;
+}
+
+if (password.length < 6) {
+  setError('Password must be at least 6 characters.');
+  return;
+}
+
       const { data, error } = await supabase.auth.signUp({
   email: email.trim(),
   password,
