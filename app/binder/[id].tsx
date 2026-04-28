@@ -226,22 +226,34 @@ export default function BinderDetailScreen() {
       setBinder(binderData);
 
       const binderCards = await fetchBinderCards(binderId);
-      const withDetails: BinderCardWithDetails[] = [];
 
-      for (const binderCard of binderCards) {
-        let found = getCachedCardSync(binderCard.set_id, binderCard.card_id);
+const setCache: Record<string, any[]> = {};
 
-        if (!found) {
-          const setCards = await getCachedCardsForSet(binderCard.set_id);
-          found =
-            setCards.find((card) => card.id === binderCard.card_id) ?? null;
-        }
+const withDetails: BinderCardWithDetails[] = await Promise.all(
+  binderCards.map(async (binderCard) => {
+    let found = getCachedCardSync(binderCard.set_id, binderCard.card_id);
 
-        withDetails.push({
-          ...binderCard,
-          card: found,
-        });
+    if (!found) {
+      if (!setCache[binderCard.set_id]) {
+        setCache[binderCard.set_id] = await getCachedCardsForSet(
+          binderCard.set_id
+        );
       }
+
+      found =
+        setCache[binderCard.set_id].find(
+          (card) => card.id === binderCard.card_id
+        ) ?? null;
+    }
+
+    return {
+      ...binderCard,
+      card: found,
+    };
+  })
+);
+
+setCards(withDetails);
 
       setCards(withDetails);
 
@@ -1414,9 +1426,8 @@ export default function BinderDetailScreen() {
           </BlurView>
         </View>
       </Modal>
-        </SafeAreaView>
-  </>
-);
+     </SafeAreaView>
+    );
 }
 
 function Row({ label, value }: { label: string; value: string }) {
