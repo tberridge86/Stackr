@@ -18,7 +18,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect, useLocalSearchParams , Stack } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams, Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, {
@@ -235,9 +235,14 @@ const withDetails: BinderCardWithDetails[] = await Promise.all(
 
     if (!found) {
       if (!setCache[binderCard.set_id]) {
-        setCache[binderCard.set_id] = await getCachedCardsForSet(
-          binderCard.set_id
-        );
+        try {
+          setCache[binderCard.set_id] = await getCachedCardsForSet(
+            binderCard.set_id
+          );
+        } catch (error) {
+          console.log(`Skipping failed set ${binderCard.set_id}`, error);
+          setCache[binderCard.set_id] = [];
+        }
       }
 
       found =
@@ -254,9 +259,6 @@ const withDetails: BinderCardWithDetails[] = await Promise.all(
 );
 
 setCards(withDetails);
-
-      setCards(withDetails);
-
       const {
         data: { user },
       } = await supabase.auth.getUser();

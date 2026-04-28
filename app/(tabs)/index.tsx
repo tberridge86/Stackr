@@ -218,6 +218,7 @@ export default function HubScreen() {
   const [ownedCardCount, setOwnedCardCount] = useState(0);
   const [unpricedCardCount, setUnpricedCardCount] = useState(0);
   const [watchlistCount, setWatchlistCount] = useState(0);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   const valuePostKeyRef = useRef<string | null>(null);
 
@@ -270,15 +271,44 @@ export default function HubScreen() {
   }, []);
 
 useEffect(() => {
+  const loadNotifications = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setUnreadNotificationCount(0);
+        return;
+      }
+
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('read', false);
+
+      if (error) throw error;
+
+      setUnreadNotificationCount(count ?? 0);
+    } catch (error) {
+      console.log('Failed to load notifications', error);
+      setUnreadNotificationCount(0);
+    }
+  };
+
+  loadNotifications();
+}, []);
+
+useEffect(() => {
   const loadRecentListings = async () => {
     try {
       const { data: listings, error } = await supabase
-        .from('trade_listings')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(8);
-
+  .from('trade_listings')
+  .select('*')
+  .eq('status', 'live')
+  .order('created_at', { ascending: false })
+  .limit(8);
       if (error) throw error;
 
       const cardIds = [...new Set((listings ?? []).map((item) => item.card_id))];
@@ -569,12 +599,29 @@ useEffect(() => {
             <Text style={styles.topBarSubtitle}>Collector dashboard</Text>
           </View>
 
-          <Pressable
-            onPress={() => router.push('/profile')}
-            style={({ pressed }) => [styles.profileButton, pressed && styles.cardPressed]}
-          >
-            <Ionicons name="person-circle-outline" size={30} color={theme.colors.text} />
-          </Pressable>
+          <View style={styles.topBarActions}>
+  <Pressable
+    onPress={() => router.push('/notifications')}
+    style={({ pressed }) => [styles.profileButton, pressed && styles.cardPressed]}
+  >
+    <Ionicons name="notifications-outline" size={26} color={theme.colors.text} />
+
+    {unreadNotificationCount > 0 && (
+      <View style={styles.notificationBadge}>
+        <Text style={styles.notificationBadgeText}>
+          {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+        </Text>
+      </View>
+    )}
+  </Pressable>
+
+  <Pressable
+    onPress={() => router.push('/profile')}
+    style={({ pressed }) => [styles.profileButton, pressed && styles.cardPressed]}
+  >
+    <Ionicons name="person-circle-outline" size={30} color={theme.colors.text} />
+  </Pressable>
+</View>
         </View>
 
         <View style={styles.portfolioCard}>
@@ -762,10 +809,9 @@ useEffect(() => {
   contentContainerStyle={styles.recentListingsScroll}
 >
   {recentListings.map((item) => {
-    const preview = item.preview;
-    const imageUri = preview?.image_url ?? null;
-    const cardName = preview?.name ?? item.card_id ?? 'Unknown card';
-    const setName = preview?.set_name ?? item.set_id ?? 'Unknown set';
+   const imageUri = item.image_url ?? null;
+const cardName = item.card_name ?? item.card_id ?? 'Unknown card';
+const setName = item.set_name ?? item.set_id ?? 'Unknown set';
 
     return (
       <Pressable
@@ -837,6 +883,30 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     ...cardShadow,
   },
+  
+topBarActions: {
+  flexDirection: 'row',
+  gap: 10,
+},
+
+notificationBadge: {
+  position: 'absolute',
+  top: -4,
+  right: -4,
+  minWidth: 18,
+  height: 18,
+  borderRadius: 9,
+  backgroundColor: '#EF4444',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingHorizontal: 4,
+},
+
+notificationBadgeText: {
+  color: '#FFFFFF',
+  fontSize: 10,
+  fontWeight: '900',
+},
 
   portfolioCard: {
     backgroundColor: theme.colors.card,

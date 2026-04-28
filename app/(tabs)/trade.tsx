@@ -11,12 +11,13 @@ import {
   Image,
   Modal,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Animated,
   PanResponder,
 } from 'react-native';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { useFocusEffect, router } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
@@ -27,7 +28,7 @@ import {
 import { supabase } from '../../lib/supabase';
 
 type MainTab = 'trading' | 'marketplace';
-type SegmentKey = 'marketplaceListings' | 'myListings' | 'myOffers';
+type SegmentKey = 'marketplaceListings' | 'myListings' | 'wanted'| 'myOffers';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -42,6 +43,7 @@ const cardShadow = {
 export default function TradeScreen() {
  const [mainTab, setMainTab] = useState<MainTab>('trading');
 const [segment, setSegment] = useState<SegmentKey>('marketplaceListings');
+const [wantedCards, setWantedCards] = useState<any[]>([]);
 const [cardDetailsMap, setCardDetailsMap] = useState<Record<string, any>>({});
 
 const [myUserId, setMyUserId] = useState<string>('');
@@ -126,17 +128,46 @@ const openTradeCardDetail = (item: any) => {
     loadUser();
   }, []);
 
+   const loadWantedCards = async () => {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setWantedCards([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('user_card_flags')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('flag_type', 'wishlist')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    setWantedCards(data ?? []);
+  } catch (error) {
+    console.log('Failed to load wanted cards', error);
+    setWantedCards([]);
+  }
+};
+
   useFocusEffect(
     useCallback(() => {
       refreshTrade();
+      loadWantedCards();
     }, [refreshTrade])
   );
 
   const currentData = useMemo(() => {
     if (segment === 'marketplaceListings') return marketplaceListings;
     if (segment === 'myListings') return myListings;
+    if (segment === 'wanted') return wantedCards;
     return [];
-  }, [segment, marketplaceListings, myListings]);
+  }, [segment, marketplaceListings, myListings, wantedCards]);
 
   useEffect(() => {
     let mounted = true;
@@ -370,40 +401,54 @@ const openTradeCardDetail = (item: any) => {
               </Text>
             )}
 
-            {item.custom_value != null ? (
-              <Text
-                style={{
-                  color: '#22C55E',
-                  marginBottom: 4,
-                  fontWeight: '800',
-                }}
-              >
-                £{Number(item.custom_value).toFixed(2)}
-              </Text>
-            ) : (
-              <Text
-                style={{
-                  color: theme.colors.primary,
-                  marginBottom: 4,
-                  fontWeight: '800',
-                }}
-              >
-                Open to offers
-              </Text>
-            )}
+            {segment === 'wanted' ? (
+  <Text
+    style={{
+      color: theme.colors.primary,
+      marginBottom: 4,
+      fontWeight: '800',
+    }}
+  >
+    Wanted card
+  </Text>
+) : item.custom_value != null ? (
+  <Text
+    style={{
+      color: '#22C55E',
+      marginBottom: 4,
+      fontWeight: '800',
+    }}
+  >
+    £{Number(item.custom_value).toFixed(2)}
+  </Text>
+) : (
+  <Text
+    style={{
+      color: theme.colors.primary,
+      marginBottom: 4,
+      fontWeight: '800',
+    }}
+  >
+    Open to offers
+  </Text>
+)}
 
-            {segment === 'marketplaceListings' ? (
-              <TouchableOpacity onPress={() => router.push(`/user/${item.user_id}`)}>
-                <Text style={{ color: theme.colors.primary, marginTop: 2 }}>
-                  {sellerName}
-                  {isMyListing ? ' • Your listing' : ''}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <Text style={{ color: theme.colors.textSoft, marginTop: 2 }}>
-                Listed for trade
-              </Text>
-            )}
+           {segment === 'marketplaceListings' ? (
+  <TouchableOpacity onPress={() => router.push(`/user/${item.user_id}`)}>
+    <Text style={{ color: theme.colors.primary, marginTop: 2 }}>
+      {sellerName}
+      {isMyListing ? ' • Your listing' : ''}
+    </Text>
+  </TouchableOpacity>
+) : segment === 'wanted' ? (
+  <Text style={{ color: theme.colors.textSoft, marginTop: 2 }}>
+    Added to wishlist
+  </Text>
+) : (
+  <Text style={{ color: theme.colors.textSoft, marginTop: 2 }}>
+    Listed for trade
+  </Text>
+)}
           </View>
         </TouchableOpacity>
 
@@ -513,6 +558,30 @@ const openTradeCardDetail = (item: any) => {
       Remove from Trade
     </Text>
   </TouchableOpacity>
+) : segment === 'wanted' ? (
+  <TouchableOpacity
+    onPress={() =>
+      toggleWishlistCard(item.card_id, item.set_id)
+    }
+    style={{
+      marginTop: 12,
+      backgroundColor: '#FEE2E2',
+      borderRadius: 12,
+      paddingVertical: 10,
+      borderWidth: 1,
+      borderColor: '#FCA5A5',
+    }}
+  >
+    <Text
+      style={{
+        color: '#991B1B',
+        textAlign: 'center',
+        fontWeight: '900',
+      }}
+    >
+      Remove from wishlist
+    </Text>
+  </TouchableOpacity>
 ) : null}
       </View>
     );
@@ -520,9 +589,11 @@ const openTradeCardDetail = (item: any) => {
 
   const renderEmpty = () => {
     const text =
-      segment === 'marketplaceListings'
-        ? 'No active trade listings yet.'
-        : 'You have no cards marked for trade yet.';
+  segment === 'marketplaceListings'
+    ? 'No active trade listings yet.'
+    : segment === 'wanted'
+    ? 'You have no wanted cards yet.'
+    : 'You have no cards marked for trade yet.';
 
     return (
       <View style={{ paddingVertical: 50 }}>
@@ -562,13 +633,14 @@ const openTradeCardDetail = (item: any) => {
     );
   };
 
-  const renderTrading = () => {
+    const renderTrading = () => {
     return (
       <>
         <View style={{ flexDirection: 'row', marginBottom: 16 }}>
           {renderSegmentButton('marketplaceListings', 'Listings')}
           {renderSegmentButton('myListings', 'Mine')}
           {renderSegmentButton('myOffers', 'Offers')}
+          {renderSegmentButton('wanted', 'Wanted')}
         </View>
 
         {!!tradeError && (
@@ -595,7 +667,9 @@ const openTradeCardDetail = (item: any) => {
         ) : (
           <FlatList
             data={currentData}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item, index) =>
+  item.id ? String(item.id) : `${item.card_id}-${item.set_id}-${index}`
+}
             renderItem={renderListing}
             contentContainerStyle={{
               paddingBottom: 200,

@@ -240,15 +240,61 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
           if (error) throw error;
 
           if (flag === 'trade') {
-            createActivityPost({
-              type: 'trade_listed',
-              title: 'Listed a card for trade',
-              cardId,
-              setId: resolvedSetId,
-            }).catch((activityError) => {
-              console.log('Failed to create trade activity post', activityError);
-            });
-          }
+  createActivityPost({
+    type: 'trade_listed',
+    title: 'Listed a card for trade',
+    cardId,
+    setId: resolvedSetId,
+  }).catch((activityError) => {
+    console.log('Failed to create trade activity post', activityError);
+  });
+
+  let wantedQuery = supabase
+  .from('user_card_flags')
+  .select('user_id')
+  .eq('card_id', cardId)
+  .eq('flag_type', 'wishlist')
+  .neq('user_id', user.id);
+
+if (resolvedSetId) {
+  wantedQuery = wantedQuery.eq('set_id', resolvedSetId);
+}
+
+const { data: wantedMatches, error: wantedError } = await wantedQuery;
+
+  if (wantedError) {
+    console.log('Failed to check wishlist matches', wantedError);
+  }
+
+  if (wantedMatches?.length) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('collector_name')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    const sellerName = profile?.collector_name ?? 'Another collector';
+
+    const notifications = wantedMatches.map((match) => ({
+      user_id: match.user_id,
+      type: 'wishlist_match',
+      title: 'Wishlist match found',
+      message: `${sellerName} just listed a card from your wishlist.`,
+      card_id: cardId,
+      set_id: resolvedSetId,
+      created_at: new Date().toISOString(),
+      read: false,
+    }));
+
+    const { error: notifyError } = await supabase
+      .from('notifications')
+      .insert(notifications);
+
+    if (notifyError) {
+      console.log('Failed to create wishlist notifications', notifyError);
+    }
+  }
+}
         }
 
         await loadFlags();

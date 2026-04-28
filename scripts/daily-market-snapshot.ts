@@ -6,6 +6,7 @@ import { fetchEbayPrice } from '../lib/ebay';
 process.on('SIGTERM', () => {
   console.log('🛑 SIGTERM received, finishing job...');
 });
+
 type EbayResponse = {
   low?: number | string | null;
   average?: number | string | null;
@@ -21,9 +22,7 @@ const supabase = createClient(
 
 function toNumber(value: number | string | null | undefined): number | null {
   if (value == null || value === '') return null;
-
   const parsed = typeof value === 'number' ? value : Number(value);
-
   return Number.isNaN(parsed) ? null : parsed;
 }
 
@@ -43,8 +42,23 @@ function buildEbayQuery(card: any): string {
     .join(' ');
 }
 
+async function logCron(jobName: string, status: 'started' | 'success' | 'failed', details?: string) {
+  const { error } = await supabase.from('cron_logs').insert({
+    job_name: jobName,
+    status,
+    details: details ?? null,
+    ran_at: new Date().toISOString(),
+  });
+
+  if (error) {
+    console.log('⚠️ Failed to write cron log:', error);
+  }
+}
+
 async function runDailyMarketSnapshot() {
   console.log('🚀 Snapshot started');
+
+  await logCron('daily-market-snapshot', 'started');
 
   const { data: cards, error } = await supabase
     .from('binder_cards')
@@ -57,6 +71,13 @@ async function runDailyMarketSnapshot() {
 
   if (!cards || cards.length === 0) {
     console.log('⚠️ No owned cards found');
+
+    await logCron(
+      'daily-market-snapshot',
+      'success',
+      'No owned cards found'
+    );
+
     return;
   }
 
@@ -156,6 +177,12 @@ async function runDailyMarketSnapshot() {
   }
 
   console.log('✅ Binder card prices updated');
+
+  await logCron(
+    'daily-market-snapshot',
+    'success',
+    `Saved ${savedCount}. Missing TCG ${missingTcgCount}. eBay found ${ebayCount}.`
+  );
 }
 
 async function main() {
@@ -163,8 +190,15 @@ async function main() {
     await runDailyMarketSnapshot();
     console.log('🎉 Job complete');
     process.exit(0);
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Daily snapshot job failed:', error);
+
+    await logCron(
+      'daily-market-snapshot',
+      'failed',
+      error?.message ?? 'Unknown error'
+    );
+
     process.exit(1);
   }
 }
