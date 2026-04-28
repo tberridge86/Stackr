@@ -20,7 +20,7 @@ export default function RootLayout() {
 
                 <Stack
                   screenOptions={{
-                    headerShown: true,
+                    headerShown: false,
                     gestureEnabled: true,
                     fullScreenGestureEnabled: true,
                     headerStyle: {

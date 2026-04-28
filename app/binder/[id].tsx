@@ -18,7 +18,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams , Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, {
@@ -145,6 +145,8 @@ export default function BinderDetailScreen() {
     'Coming soon',
     'Card scanning is built into the app architecture, but this feature is coming soon.'
   );
+
+
 
   return;
 
@@ -848,7 +850,9 @@ export default function BinderDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+  <>
+    <Stack.Screen options={{ headerShown: false }} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
@@ -856,7 +860,8 @@ export default function BinderDetailScreen() {
           </Text>
         </View>
       </SafeAreaView>
-    );
+</>
+);
   }
 
   if (!binder) {
@@ -891,23 +896,7 @@ export default function BinderDetailScreen() {
         <View
           style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 14,
-              backgroundColor: theme.colors.card,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 12,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontSize: 24 }}>‹</Text>
-          </TouchableOpacity>
-
+          
           <View style={{ flex: 1 }}>
             <Text
               numberOfLines={1}
@@ -1425,8 +1414,9 @@ export default function BinderDetailScreen() {
           </BlurView>
         </View>
       </Modal>
-    </SafeAreaView>
-  );
+        </SafeAreaView>
+  </>
+);
 }
 
 function Row({ label, value }: { label: string; value: string }) {

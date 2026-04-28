@@ -197,6 +197,7 @@ export default function HubScreen() {
 
   const [allSets, setAllSets] = useState<PokemonSet[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recentListings, setRecentListings] = useState<any[]>([]);
 
   const [chartRange, setChartRange] = useState<ChartRange>('7D');
   const [chartMode, setChartMode] = useState<ChartMode>('TCG');
@@ -266,6 +267,28 @@ export default function HubScreen() {
 
     loadWatchlistCount();
   }, []);
+
+useEffect(() => {
+  const loadRecentListings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('trade_listings')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+
+      setRecentListings(data ?? []);
+    } catch (err) {
+      console.log('Failed to load recent listings', err);
+      setRecentListings([]);
+    }
+  };
+
+  loadRecentListings();
+}, []);
 
   useEffect(() => {
     const loadCollectionValue = async () => {
@@ -697,79 +720,73 @@ export default function HubScreen() {
         </View>
 
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Recent activity</Text>
-        </View>
+  <Text style={styles.sectionTitle}>Recent Additions</Text>
 
-        <View style={styles.activityCard}>
-          <ActivityRow
-            icon="wallet-outline"
-            title="Collection value calculated"
-            subtitle={`${ownedCardCount} owned cards checked`}
-            time="Now"
-            positive={null}
-          />
+  <Pressable onPress={() => router.push('/binder')}>
+    <Text style={styles.viewAllText}>View all</Text>
+  </Pressable>
+</View>
 
-          <ActivityRow
-            icon="storefront-outline"
-            title="Market snapshots checked"
-            subtitle={`${unpricedCardCount} cards have no price yet`}
-            time="Now"
-            positive={unpricedCardCount === 0}
-          />
+<View style={styles.recentAdditionsRow}>
+  <Pressable style={styles.recentCard} onPress={() => router.push('/binder')}>
+    <View style={styles.recentImageWrap}>
+      <Ionicons name="sparkles-outline" size={32} color={theme.colors.primary} />
+    </View>
+    <Text style={styles.recentCardName}>Latest cards</Text>
+    <Text style={styles.recentCardSet}>Recently added</Text>
+    <Text style={styles.recentCardValue}>Open binder</Text>
+  </Pressable>
 
-          <ActivityRow
-            icon="eye-outline"
-            title="Watchlist synced"
-            subtitle={`${watchlistCount} cards being tracked`}
-            time="Now"
-            positive={null}
-          />
-
-          <ActivityRow
-            icon="folder-open-outline"
-            title="Binder synced"
-            subtitle="Owned cards pulled from your binders"
-            time="Today"
-            positive={null}
-          />
-        </View>
+  <Pressable style={styles.recentCard} onPress={() => router.push('/trade')}>
+    <View style={styles.recentImageWrap}>
+      <Ionicons name="storefront-outline" size={32} color={theme.colors.primary} />
+    </View>
+    <Text style={styles.recentCardName}>Trade cards</Text>
+    <Text style={styles.recentCardSet}>Marketplace</Text>
+    <Text style={styles.recentCardValue}>Open market</Text>
+  </Pressable>
+</View>
 
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Quick actions</Text>
-        </View>
+  <Text style={styles.sectionTitle}>Recent Trade Listings</Text>
 
-        <View style={styles.actionGrid}>
-          <ActionTile
-            icon="scan-outline"
-            title="Scan cards"
-            subtitle="Quickly add or identify cards"
-            onPress={() => router.push('/scan')}
-          />
+  <Pressable onPress={() => router.push('/trade')}>
+    <Text style={styles.viewAllText}>View all</Text>
+  </Pressable>
+</View>
 
-          <ActionTile
-            icon="folder-open-outline"
-            title="Open binder"
-            subtitle="View your collection folders"
-            onPress={() => router.push('/binder')}
-          />
+<ScrollView
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={{ gap: 12, paddingRight: 6, marginBottom: 24 }}
+>
+  {recentListings.map((item) => (
+    <Pressable
+      key={item.id}
+      onPress={() => router.push('/trade')}
+      style={({ pressed }) => [styles.recentCard, pressed && styles.cardPressed]}
+    >
+      <View style={styles.recentImageFallback}>
+        <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
+      </View>
 
-          <ActionTile
-            icon="storefront-outline"
-            title="Market"
-            subtitle="Trading and price tracking"
-            onPress={() => router.push('/trade')}
-          />
+      <Text style={styles.recentCardName} numberOfLines={1}>
+        {item.card_id ?? 'Unknown card'}
+      </Text>
 
-          <ActionTile
-            icon="desktop-outline"
-            title="Pokédex"
-            subtitle="Explore card and Pokémon entries"
-            onPress={() => router.push('/pokedex')}
-          />
-        </View>
-      </ScrollView>
+      <Text style={styles.recentCardSet} numberOfLines={1}>
+        {item.set_id ?? 'Unknown set'}
+      </Text>
+
+      <Text style={styles.recentCardValue}>
+        Newly listed
+      </Text>
+    </Pressable>
+  ))}
+</ScrollView>
+</ScrollView>
     </SafeAreaView>
-  );
+    );  
 }
 
 const styles = StyleSheet.create({
@@ -1076,4 +1093,62 @@ const styles = StyleSheet.create({
   negativeText: {
     color: '#EF4444',
   },
+  viewAllText: {
+  color: theme.colors.primary,
+  fontSize: 13,
+  fontWeight: '900',
+},
+
+recentAdditionsRow: {
+  flexDirection: 'row',
+  gap: 12,
+  marginBottom: 24,
+},
+
+recentCard: {
+  flex: 1,
+  backgroundColor: theme.colors.card,
+  borderRadius: 20,
+  padding: 12,
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+  ...cardShadow,
+},
+
+recentImageWrap: {
+  height: 118,
+  borderRadius: 16,
+  backgroundColor: theme.colors.surface,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 10,
+},
+
+recentCardName: {
+  color: theme.colors.text,
+  fontSize: 14,
+  fontWeight: '900',
+},
+
+recentCardSet: {
+  color: theme.colors.textSoft,
+  fontSize: 12,
+  marginTop: 3,
+},
+
+recentCardValue: {
+  color: theme.colors.primary,
+  fontSize: 13,
+  fontWeight: '900',
+  marginTop: 8,
+},
+
+recentImageFallback: {
+  height: 118,
+  borderRadius: 16,
+  backgroundColor: theme.colors.surface,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 10,
+},
 });

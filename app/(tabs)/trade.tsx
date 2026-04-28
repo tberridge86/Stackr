@@ -413,9 +413,6 @@ const openTradeCardDetail = (item: any) => {
           </Text>
         )}
 
-        const trade = activeTrades[item.id];
-        const isSeller = trade?.seller_id === myUserId;
-
 {trade ? (
   <View
     style={{

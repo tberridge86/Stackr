@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 type PokemonListItem = {
@@ -79,6 +79,8 @@ const getRangeMatch = (range: RangeKey, id: number) => {
 };
 
 export default function PokedexScreen() {
+  const insets = useSafeAreaInsets();
+
   const [pokemon, setPokemon] = useState<PokemonEntry[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -219,11 +221,15 @@ export default function PokedexScreen() {
           </View>
         ) : (
           <FlatList
+            style={styles.list}
             data={filteredPokemon}
             keyExtractor={(item) => String(item.id)}
             renderItem={renderPokemon}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 170,
+            }}
+            ListFooterComponent={<View style={{ height: 40 }} />}
             ListEmptyComponent={
               <View style={styles.emptyCard}>
                 <Text style={styles.emptyTitle}>No Pokémon found</Text>
@@ -246,7 +252,12 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 18,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+  },
+  list: {
+    flex: 1,
+    marginBottom: -50,
   },
   headerCard: {
     backgroundColor: theme.colors.card,
@@ -319,9 +330,6 @@ const styles = StyleSheet.create({
     color: theme.colors.textSoft,
     fontSize: 13,
     fontWeight: '700',
-  },
-  listContent: {
-    paddingBottom: 130,
   },
   dexRow: {
     flexDirection: 'row',
