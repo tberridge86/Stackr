@@ -1,4 +1,4 @@
-import { theme } from '../../../../lib/theme';
+import { theme } from '../../../lib/theme';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -8,12 +8,12 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Text } from '../../../../components/Text';
+import { Text } from '../../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { AVATAR_PRESETS } from '../../../../lib/avatars';
-import { supabase } from '../../../../lib/supabase';
+import { AVATAR_PRESETS } from '../../../lib/avatars';
+import { supabase } from '../../../lib/supabase';
 
 type Profile = {
   id: string;

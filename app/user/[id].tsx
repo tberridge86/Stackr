@@ -20,6 +20,7 @@ import {
   getCachedCardsForSet,
 } from '../../lib/pokemonTcgCache';
 import { fetchBinderCards } from '../../lib/binders';
+import { useTrade } from '../../components/trade-context';
 
 type PublicProfile = {
   id: string;
@@ -48,6 +49,22 @@ type PublicBinder = {
   created_at?: string;
 };
 
+type RatingSummary = {
+  user_id: string;
+  average_rating: number | null;
+  review_count: number;
+};
+
+type TradeReview = {
+  id: string;
+  trade_id: string;
+  reviewer_id: string;
+  reviewed_user_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+};
+
 const TYPE_OPTIONS = [
   { key: 'water', label: 'Water', accent: '#4FC3F7', card: '#78C8F0' },
   { key: 'fire', label: 'Fire', accent: '#FF8A65', card: '#F5AC78' },
@@ -64,6 +81,9 @@ const BACKGROUNDS = [
   { key: 'ocean', label: 'Ocean', preview: '#1565C0' },
   { key: 'lava', label: 'Lava', preview: '#BF360C' },
 ];
+
+const asGradientColors = (colors: string[]) =>
+  colors as [string, string, ...string[]];
 
 function getInitials(name: string) {
   return name
@@ -113,19 +133,29 @@ function TopLoaderCard({
 }
 
 export default function PublicProfileScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const userId = Array.isArray(params.id) ? params.id[0] : params.id;
+
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [favoriteCard, setFavoriteCard] = useState<any | null>(null);
   const [chaseCard, setChaseCard] = useState<any | null>(null);
   const [binders, setBinders] = useState<PublicBinder[]>([]);
-  const [binderCounts, setBinderCounts] = useState<Record<string, { owned: number; total: number }>>({});
+  const [binderCounts, setBinderCounts] = useState<
+    Record<string, { owned: number; total: number }>
+  >({});
   const [loading, setLoading] = useState(true);
   const [showcaseLoading, setShowcaseLoading] = useState(false);
   const [bindersLoading, setBindersLoading] = useState(false);
 
+  const { getTraderRating, getTraderReviews } = useTrade();
+
+  const [ratingSummary, setRatingSummary] = useState<RatingSummary | null>(null);
+  const [reviews, setReviews] = useState<TradeReview[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+
   useEffect(() => {
     const loadProfile = async () => {
-      if (!id) {
+      if (!userId) {
         setLoading(false);
         return;
       }
@@ -133,7 +163,7 @@ export default function PublicProfileScreen() {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', id)
+        .eq('id', userId)
         .single();
 
       if (!error && data) {
@@ -146,7 +176,43 @@ export default function PublicProfileScreen() {
     };
 
     loadProfile();
-  }, [id]);
+  }, [userId]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadReviews = async () => {
+      if (!userId) return;
+
+      try {
+        setReviewsLoading(true);
+
+        const [summary, reviewRows] = await Promise.all([
+          getTraderRating(userId),
+          getTraderReviews(userId),
+        ]);
+
+        if (mounted) {
+          setRatingSummary(summary);
+          setReviews(reviewRows ?? []);
+        }
+      } catch (error) {
+        console.log('Failed to load trader reviews', error);
+        if (mounted) {
+          setRatingSummary(null);
+          setReviews([]);
+        }
+      } finally {
+        if (mounted) setReviewsLoading(false);
+      }
+    };
+
+    loadReviews();
+
+    return () => {
+      mounted = false;
+    };
+  }, [userId, getTraderRating, getTraderReviews]);
 
   useEffect(() => {
     let mounted = true;
@@ -191,19 +257,13 @@ export default function PublicProfileScreen() {
     return () => {
       mounted = false;
     };
-  }, [
-    profile?.favorite_card_id,
-    profile?.favorite_set_id,
-    profile?.chase_card_id,
-    profile?.chase_set_id,
-    profile?.id,
-  ]);
+  }, [profile]);
 
   useEffect(() => {
     let mounted = true;
 
     const loadBinders = async () => {
-      if (!id) return;
+      if (!userId) return;
 
       try {
         setBindersLoading(true);
@@ -211,7 +271,7 @@ export default function PublicProfileScreen() {
         const { data, error } = await supabase
           .from('binders')
           .select('*')
-          .eq('user_id', id)
+          .eq('user_id', userId)
           .eq('is_public', true)
           .order('created_at', { ascending: false });
 
@@ -250,7 +310,7 @@ export default function PublicProfileScreen() {
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, [userId]);
 
   const selectedType = useMemo(
     () =>
@@ -280,11 +340,12 @@ export default function PublicProfileScreen() {
     [profile?.avatar_preset]
   );
 
-  const initials = getInitials(profile?.collector_name || 'PC');
-
   if (loading) {
     return (
-      <LinearGradient colors={BACKGROUND_MAP.galaxy.colors} style={styles.gradient}>
+      <LinearGradient
+        colors={asGradientColors(BACKGROUND_MAP.galaxy.colors)}
+        style={styles.gradient}
+      >
         <SafeAreaView style={styles.safeTransparent}>
           <View style={styles.center}>
             <ActivityIndicator color="#FFD166" />
@@ -297,7 +358,10 @@ export default function PublicProfileScreen() {
 
   if (!profile) {
     return (
-      <LinearGradient colors={BACKGROUND_MAP.galaxy.colors} style={styles.gradient}>
+      <LinearGradient
+        colors={asGradientColors(BACKGROUND_MAP.galaxy.colors)}
+        style={styles.gradient}
+      >
         <SafeAreaView style={styles.safeTransparent}>
           <View style={styles.center}>
             <Text style={styles.heading}>Collector not found</Text>
@@ -310,8 +374,13 @@ export default function PublicProfileScreen() {
     );
   }
 
+  const initials = getInitials(profile.collector_name ?? 'PC');
+
   return (
-    <LinearGradient colors={backgroundTheme.colors} style={styles.gradient}>
+    <LinearGradient
+      colors={asGradientColors(backgroundTheme.colors)}
+      style={styles.gradient}
+    >
       <SafeAreaView style={styles.safeTransparent}>
         <ScrollView contentContainerStyle={styles.container}>
           <View style={styles.topBar}>
@@ -358,6 +427,14 @@ export default function PublicProfileScreen() {
               </View>
 
               <Text style={styles.cardTagline}>Collector • Trade Partner</Text>
+
+              <View style={styles.ratingBadge}>
+                <Text style={styles.ratingBadgeText}>
+                  {ratingSummary && ratingSummary.review_count > 0
+                    ? `⭐ ${Number(ratingSummary.average_rating).toFixed(1)} • ${ratingSummary.review_count} review${ratingSummary.review_count === 1 ? '' : 's'}`
+                    : '⭐ No trader reviews yet'}
+                </Text>
+              </View>
 
               <View style={styles.attackRow}>
                 <Text style={styles.attackName}>Collector Type</Text>
@@ -452,11 +529,43 @@ export default function PublicProfileScreen() {
           )}
 
           <View style={styles.infoCard}>
+            <View style={styles.showcaseHeaderRow}>
+              <Text style={styles.infoTitle}>Trader Reviews</Text>
+              {reviewsLoading && <ActivityIndicator color="#FFD166" size="small" />}
+            </View>
+
+            {reviews.length === 0 ? (
+              <Text style={styles.emptyText}>No reviews yet.</Text>
+            ) : (
+              reviews.slice(0, 5).map((review) => (
+                <View key={review.id} style={styles.reviewRow}>
+                  <Text style={styles.reviewStars}>
+                    {'★'.repeat(review.rating)}
+                    {'☆'.repeat(5 - review.rating)}
+                  </Text>
+
+                  {review.comment ? (
+                    <Text style={styles.reviewComment}>“{review.comment}”</Text>
+                  ) : (
+                    <Text style={styles.reviewCommentMuted}>No written comment.</Text>
+                  )}
+
+                  <Text style={styles.reviewDate}>
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+              ))
+            )}
+          </View>
+
+          <View style={styles.infoCard}>
             <Text style={styles.infoTitle}>Collector Info</Text>
 
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Name</Text>
-              <Text style={styles.infoValue}>{profile.collector_name || 'Unknown'}</Text>
+              <Text style={styles.infoValue}>
+                {profile.collector_name || 'Unknown'}
+              </Text>
             </View>
 
             <View style={styles.infoRow}>
@@ -471,17 +580,11 @@ export default function PublicProfileScreen() {
           </View>
 
           <View style={styles.buttonGroup}>
-            <Pressable
-              style={styles.primaryButton}
-              onPress={() => router.push('/offers')}
-            >
+            <Pressable style={styles.primaryButton} onPress={() => router.push('/offers')}>
               <Text style={styles.primaryButtonText}>View Offers</Text>
             </Pressable>
 
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => router.back()}
-            >
+            <Pressable style={styles.secondaryButton} onPress={() => router.back()}>
               <Text style={styles.secondaryButtonText}>Back</Text>
             </Pressable>
           </View>
@@ -548,7 +651,6 @@ const styles = StyleSheet.create({
     color: '#D5DAEC',
     marginTop: 10,
   },
-
   sectionTitle: {
     color: '#fff',
     fontSize: 18,
@@ -561,7 +663,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 14,
   },
-
   previewWrap: {
     alignItems: 'center',
     marginBottom: 22,
@@ -625,6 +726,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 12,
   },
+  ratingBadge: {
+    backgroundColor: 'rgba(255,255,255,0.28)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+    alignSelf: 'flex-start',
+  },
+  ratingBadgeText: {
+    color: '#0b0f2a',
+    fontWeight: '900',
+    fontSize: 13,
+  },
   attackRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -648,7 +762,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontWeight: '700',
   },
-
   showcaseHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -722,7 +835,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     minHeight: 34,
   },
-
   publicBinderCard: {
     flexDirection: 'row',
     borderRadius: 22,
@@ -780,7 +892,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
   },
-
   infoCard: {
     backgroundColor: 'rgba(10,14,31,0.45)',
     borderRadius: 20,
@@ -810,7 +921,32 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
-
+  reviewRow: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  reviewStars: {
+    color: '#FFD166',
+    fontSize: 16,
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  reviewComment: {
+    color: '#fff',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  reviewCommentMuted: {
+    color: '#D5DAEC',
+    fontSize: 14,
+    fontStyle: 'italic',
+  },
+  reviewDate: {
+    color: '#D5DAEC',
+    fontSize: 12,
+    marginTop: 6,
+  },
   buttonGroup: {
     gap: 10,
   },

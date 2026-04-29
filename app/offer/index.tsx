@@ -1,384 +1,303 @@
 import { theme } from '../../lib/theme';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   FlatList,
-  RefreshControl,
+  KeyboardAvoidingView,
+  Platform,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
-import {
-  fetchMyTradeOffers,
-  openPaypalPayment,
-  updateCashPaymentStatus,
-  updateTradeOfferStatus,
-} from '../../lib/tradeOffers';
+import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import {
+  fetchOfferEvents,
+  sendCounterOffer,
+  sendOfferMessage,
+} from '../../lib/tradeOfferEvents';
+import { updateTradeOfferStatus } from '../../lib/tradeOffers';
 
-const cardShadow = {
-  shadowColor: '#000',
-  shadowOpacity: 0.05,
-  shadowRadius: 10,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 3,
-};
+type TradeStatus = 'shipped' | 'received' | 'completed' | 'disputed';
 
-export default function OffersScreen() {
-  const [offers, setOffers] = useState<any[]>([]);
+export default function OfferDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const listRef = useRef<FlatList>(null);
+
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState('');
+  const [message, setMessage] = useState('');
+  const [counterAmount, setCounterAmount] = useState('');
+  const [sending, setSending] = useState(false);
 
-  const loadOffers = async () => {
+  const offerId = String(id);
+
+  const latestStatus =
+    events
+      .filter((event) =>
+        ['accepted', 'shipped', 'received', 'completed', 'disputed'].includes(
+          event.event_type
+        )
+      )
+      .at(-1)?.event_type ?? 'negotiating';
+
+  const isAcceptedOrBeyond = ['accepted', 'shipped', 'received', 'completed'].includes(
+    latestStatus
+  );
+  const isShippedOrBeyond = ['shipped', 'received', 'completed'].includes(latestStatus);
+  const isReceivedOrBeyond = ['received', 'completed'].includes(latestStatus);
+  const isCompleted = latestStatus === 'completed';
+  const isDisputed = latestStatus === 'disputed';
+
+  const load = useCallback(async () => {
     try {
       const {
         data: { user },
-        error: userError,
       } = await supabase.auth.getUser();
 
-      if (userError) throw userError;
+      setCurrentUserId(user?.id ?? '');
 
-      setCurrentUserId(user?.id ?? null);
+      const data = await fetchOfferEvents(offerId);
+      setEvents(data ?? []);
 
-      if (!user) {
-        setOffers([]);
-        return;
-      }
-
-      const data = await fetchMyTradeOffers();
-      setOffers(data ?? []);
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      }, 150);
     } catch (error: any) {
-      console.log('Failed to load offers', error);
+      console.log('Failed to load negotiation', error);
       Alert.alert(
-        'Could not load offers',
+        'Could not load negotiation',
         error?.message ?? 'Something went wrong.'
       );
     } finally {
       setLoading(false);
-      setRefreshing(false);
+    }
+  }, [offerId]);
+
+  useEffect(() => {
+    if (!offerId) return;
+
+    load();
+
+    const channel = supabase
+      .channel(`trade-offer-events-${offerId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'trade_offer_events',
+          filter: `offer_id=eq.${offerId}`,
+        },
+        (payload) => {
+          const newEvent = payload.new;
+
+          setEvents((prev) => {
+            const alreadyExists = prev.some((event) => event.id === newEvent.id);
+            if (alreadyExists) return prev;
+            return [...prev, newEvent];
+          });
+
+          setTimeout(() => {
+            listRef.current?.scrollToEnd({ animated: true });
+          }, 100);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [offerId, load]);
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+
+    try {
+      setSending(true);
+      await sendOfferMessage(offerId, message.trim());
+      setMessage('');
+    } catch (error: any) {
+      Alert.alert('Could not send message', error?.message ?? 'Something went wrong.');
+    } finally {
+      setSending(false);
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      loadOffers();
-    }, [])
-  );
+  const handleCounter = async () => {
+    const amount = counterAmount.trim() ? Number(counterAmount) : undefined;
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadOffers();
+    if (!message.trim() && amount === undefined) {
+      Alert.alert('Counter offer', 'Add a note or cash amount first.');
+      return;
+    }
+
+    if (counterAmount.trim() && Number.isNaN(amount)) {
+      Alert.alert('Invalid amount', 'Enter a valid cash amount.');
+      return;
+    }
+
+    try {
+      setSending(true);
+
+      await sendCounterOffer(
+        offerId,
+        message.trim() || 'Counter offer proposed.',
+        amount
+      );
+
+      setMessage('');
+      setCounterAmount('');
+    } catch (error: any) {
+      Alert.alert('Could not send counter', error?.message ?? 'Something went wrong.');
+    } finally {
+      setSending(false);
+    }
   };
 
-  const doStatusUpdate = async (offerId: string, status: any, note?: string) => {
+  const handleTradeStatus = async (status: TradeStatus, note: string) => {
     try {
+      setSending(true);
       await updateTradeOfferStatus(offerId, status, note);
-      await loadOffers();
+      await sendOfferMessage(offerId, note);
     } catch (error: any) {
-      console.log('Failed to update offer', error);
-      Alert.alert(
-        'Could not update offer',
-        error?.message ?? 'Something went wrong.'
-      );
+      Alert.alert('Could not update trade', error?.message ?? 'Something went wrong.');
+    } finally {
+      setSending(false);
     }
   };
 
-  const doPaymentStatusUpdate = async (
-    offerId: string,
-    paymentStatus: 'required' | 'sent' | 'confirmed' | 'failed'
-  ) => {
+  const handleAcceptCounter = async (event: any) => {
     try {
-      await updateCashPaymentStatus(offerId, paymentStatus);
-      await loadOffers();
+      setSending(true);
+
+      const note = `Counter accepted${
+        event.proposed_cash_amount != null
+          ? ` at £${Number(event.proposed_cash_amount).toFixed(2)}`
+          : ''
+      }.`;
+
+      await updateTradeOfferStatus(offerId, 'accepted', note);
+      await sendOfferMessage(offerId, note);
     } catch (error: any) {
-      console.log('Failed to update payment', error);
-      Alert.alert(
-        'Could not update payment',
-        error?.message ?? 'Something went wrong.'
-      );
+      Alert.alert('Could not accept counter', error?.message ?? 'Something went wrong.');
+    } finally {
+      setSending(false);
     }
   };
 
-  const handlePayPal = async (offer: any) => {
+  const formatTime = (dateString: string) => {
     try {
-      const cash = Array.isArray(offer.trade_cash_terms)
-        ? offer.trade_cash_terms[0]
-        : offer.trade_cash_terms;
-
-      if (!cash) {
-        Alert.alert('No cash payment', 'This offer has no cash payment terms.');
-        return;
-      }
-
-      await openPaypalPayment({
-        paypalMeUsername: cash.paypal_me_username,
-        paypalEmail: cash.paypal_email,
-        amount: Number(cash.amount),
+      return new Date(dateString).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
       });
-    } catch (error: any) {
-      console.log('Failed to open PayPal', error);
-      Alert.alert(
-        'Could not open PayPal',
-        error?.message ?? 'Something went wrong.'
-      );
+    } catch {
+      return '';
     }
   };
 
-  const renderOffer = ({ item }: { item: any }) => {
-    const isSender = currentUserId === item.sender_id;
-    const isReceiver = currentUserId === item.receiver_id;
+  const getEventLabel = (eventType: string) => {
+    switch (eventType) {
+      case 'offer_created':
+        return 'Offer created';
+      case 'counter_offer':
+        return 'Counter offer';
+      case 'accepted':
+        return 'Accepted';
+      case 'shipped':
+        return 'Shipped';
+      case 'received':
+        return 'Received';
+      case 'completed':
+        return 'Completed';
+      case 'declined':
+        return 'Declined';
+      case 'disputed':
+        return 'Disputed';
+      default:
+        return 'Message';
+    }
+  };
 
-    const cards = Array.isArray(item.trade_offer_cards)
-      ? item.trade_offer_cards
-      : [];
+  const renderEvent = ({ item }: { item: any }) => {
+    const mine = item.user_id === currentUserId;
+    const isSystem = item.event_type !== 'message' && item.event_type !== 'counter_offer';
 
-    const cash = Array.isArray(item.trade_cash_terms)
-      ? item.trade_cash_terms[0]
-      : item.trade_cash_terms;
-
-    const offeredCards = cards.filter(
-      (card: any) => card.owner_id === item.sender_id
-    );
-
-    const requestedCards = cards.filter(
-      (card: any) => card.owner_id === item.receiver_id
-    );
+    if (isSystem) {
+      return (
+        <View style={styles.systemWrap}>
+          <Text style={styles.systemText}>{getEventLabel(item.event_type)}</Text>
+          {!!item.note && <Text style={styles.systemNote}>{item.note}</Text>}
+        </View>
+      );
+    }
 
     return (
       <View
-        style={{
-          backgroundColor: theme.colors.card,
-          borderRadius: 18,
-          padding: 14,
-          marginBottom: 14,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          ...cardShadow,
-        }}
+        style={[
+          styles.messageRow,
+          mine ? styles.messageRowMine : styles.messageRowOther,
+        ]}
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            gap: 10,
-            marginBottom: 10,
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                color: theme.colors.text,
-                fontSize: 17,
-                fontWeight: '900',
-              }}
-            >
-              {isSender
-                ? 'Offer Sent'
-                : isReceiver
-                  ? 'Offer Received'
-                  : 'Trade Offer'}
-            </Text>
-
-            <Text
-              style={{
-                color: theme.colors.textSoft,
-                marginTop: 4,
-                fontSize: 12,
-              }}
-            >
-              Status: {item.status}
-            </Text>
-          </View>
-
-          <View
-            style={{
-              backgroundColor: theme.colors.surface,
-              borderRadius: 999,
-              paddingHorizontal: 10,
-              paddingVertical: 5,
-              alignSelf: 'flex-start',
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text
-              style={{
-                color: theme.colors.primary,
-                fontWeight: '900',
-                fontSize: 11,
-              }}
-            >
-              {item.status}
-            </Text>
-          </View>
-        </View>
-
-        <View style={{ marginBottom: 10 }}>
+        <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleOther]}>
           <Text
-            style={{
-              color: theme.colors.secondary,
-              fontWeight: '900',
-              marginBottom: 4,
-            }}
+            style={[
+              styles.bubbleType,
+              mine ? styles.bubbleTypeMine : styles.bubbleTypeOther,
+            ]}
           >
-            Requested
+            {item.event_type === 'counter_offer'
+              ? 'Counter offer'
+              : mine
+                ? 'You'
+                : 'Them'}
           </Text>
 
-          {requestedCards.length ? (
-            requestedCards.map((card: any) => (
-              <Text
-                key={`requested-${card.id}`}
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 13,
-                  marginBottom: 2,
-                }}
-              >
-                {card.card_id}
-              </Text>
-            ))
-          ) : (
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-              No requested cards
+          {!!item.note && (
+            <Text
+              style={[
+                styles.bubbleText,
+                mine ? styles.bubbleTextMine : styles.bubbleTextOther,
+              ]}
+            >
+              {item.note}
             </Text>
           )}
-        </View>
 
-        <View style={{ marginBottom: 10 }}>
-          <Text
-            style={{
-              color: '#16A34A',
-              fontWeight: '900',
-              marginBottom: 4,
-            }}
-          >
-            Offered
-          </Text>
-
-          {offeredCards.length ? (
-            offeredCards.map((card: any) => (
-              <Text
-                key={`offered-${card.id}`}
-                style={{
-                  color: theme.colors.text,
-                  fontSize: 13,
-                  marginBottom: 2,
-                }}
-              >
-                {card.card_id}
+          {item.proposed_cash_amount != null && (
+            <View style={styles.cashPill}>
+              <Text style={styles.cashPillText}>
+                Cash proposed: £{Number(item.proposed_cash_amount).toFixed(2)}
               </Text>
-            ))
-          ) : (
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-              No offered cards
-            </Text>
+            </View>
           )}
-        </View>
 
-        {cash ? (
-          <View
-            style={{
-              backgroundColor: theme.colors.surface,
-              borderRadius: 12,
-              padding: 10,
-              marginBottom: 10,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
+          {item.event_type === 'counter_offer' &&
+            !mine &&
+            !isAcceptedOrBeyond &&
+            !isDisputed && (
+              <TouchableOpacity
+                disabled={sending}
+                onPress={() => handleAcceptCounter(item)}
+                style={[styles.acceptCounterButton, sending && styles.disabled]}
+              >
+                <Text style={styles.acceptCounterText}>Accept Counter</Text>
+              </TouchableOpacity>
+            )}
+
+          <Text
+            style={[
+              styles.timeText,
+              mine ? styles.timeTextMine : styles.timeTextOther,
+            ]}
           >
-            <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-              Cash: £{Number(cash.amount).toFixed(2)}
-            </Text>
-            <Text
-              style={{
-                color: theme.colors.textSoft,
-                fontSize: 12,
-                marginTop: 3,
-              }}
-            >
-              Payment status: {cash.payment_status}
-            </Text>
-          </View>
-        ) : null}
-
-        {item.message ? (
-          <Text style={{ color: theme.colors.textSoft, marginBottom: 10 }}>
-            “{item.message}”
+            {formatTime(item.created_at)}
           </Text>
-        ) : null}
-
-        <View style={{ gap: 8 }}>
-          {isReceiver && item.status === 'sent' ? (
-            <>
-              <ActionButton
-                label="Accept"
-                active
-                onPress={() =>
-                  doStatusUpdate(item.id, 'accepted', 'Offer accepted.')
-                }
-              />
-              <ActionButton
-                label="Decline"
-                onPress={() =>
-                  doStatusUpdate(item.id, 'declined', 'Offer declined.')
-                }
-              />
-            </>
-          ) : null}
-
-          {cash ? (
-            <>
-              <ActionButton
-                label="Pay via PayPal"
-                onPress={() => handlePayPal(item)}
-              />
-
-              <ActionButton
-                label="I sent payment"
-                onPress={() => doPaymentStatusUpdate(item.id, 'sent')}
-              />
-
-              <ActionButton
-                label="Payment received"
-                onPress={() => doPaymentStatusUpdate(item.id, 'confirmed')}
-              />
-            </>
-          ) : null}
-
-          <ActionButton
-            label="Mark shipped"
-            onPress={() =>
-              doStatusUpdate(item.id, 'shipped', 'Trade marked as shipped.')
-            }
-          />
-
-          <ActionButton
-            label="Mark received"
-            onPress={() =>
-              doStatusUpdate(item.id, 'received', 'Trade marked as received.')
-            }
-          />
-
-          <ActionButton
-            label="Complete trade"
-            active
-            onPress={() =>
-              doStatusUpdate(item.id, 'completed', 'Trade completed.')
-            }
-          />
-
-          <ActionButton
-            label="Dispute"
-            danger
-            onPress={() =>
-              doStatusUpdate(item.id, 'disputed', 'Trade disputed.')
-            }
-          />
         </View>
       </View>
     );
@@ -386,135 +305,501 @@ export default function OffersScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-        <View
-          style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
-        >
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
-          <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
-            Loading offers...
-          </Text>
+          <Text style={styles.loadingText}>Loading negotiation...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <View style={{ flex: 1, padding: 16 }}>
-        <Text
-          style={{
-            color: theme.colors.text,
-            fontSize: 28,
-            fontWeight: '900',
-          }}
-        >
-          Trade Offers
-        </Text>
+    <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView
+        style={styles.keyboard}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={styles.backText}>‹</Text>
+          </TouchableOpacity>
 
-        <Text
-          style={{
-            color: theme.colors.textSoft,
-            marginTop: 4,
-            marginBottom: 16,
-          }}
-        >
-          Review, accept and manage your trades.
-        </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Negotiation</Text>
+            <Text style={styles.subtitle}>Private trade discussion</Text>
+          </View>
+        </View>
+
+        <View style={styles.progressCard}>
+          <Text style={styles.progressTitle}>Trade Progress</Text>
+
+          <ProgressItem label="Offer agreed" active={isAcceptedOrBeyond} />
+          <ProgressItem label="Shipped" active={isShippedOrBeyond} />
+          <ProgressItem label="Received" active={isReceivedOrBeyond} />
+          <ProgressItem label="Completed" active={isCompleted} />
+
+          {!isCompleted && !isDisputed && (
+            <View style={styles.progressActions}>
+              {isAcceptedOrBeyond && !isShippedOrBeyond && (
+                <TouchableOpacity
+                  disabled={sending}
+                  onPress={() =>
+                    handleTradeStatus('shipped', 'Trade marked as shipped.')
+                  }
+                  style={[styles.progressActionButton, sending && styles.disabled]}
+                >
+                  <Text style={styles.progressActionText}>Mark Shipped</Text>
+                </TouchableOpacity>
+              )}
+
+              {isShippedOrBeyond && !isReceivedOrBeyond && (
+                <TouchableOpacity
+                  disabled={sending}
+                  onPress={() =>
+                    handleTradeStatus('received', 'Trade marked as received.')
+                  }
+                  style={[styles.progressActionButton, sending && styles.disabled]}
+                >
+                  <Text style={styles.progressActionText}>Mark Received</Text>
+                </TouchableOpacity>
+              )}
+
+              {isReceivedOrBeyond && !isCompleted && (
+                <TouchableOpacity
+                  disabled={sending}
+                  onPress={() =>
+                    handleTradeStatus('completed', 'Trade completed.')
+                  }
+                  style={[styles.progressActionButton, sending && styles.disabled]}
+                >
+                  <Text style={styles.progressActionText}>Complete Trade</Text>
+                </TouchableOpacity>
+              )}
+
+              {isAcceptedOrBeyond && !isCompleted && (
+                <TouchableOpacity
+                  disabled={sending}
+                  onPress={() =>
+                    handleTradeStatus('disputed', 'Trade marked as disputed.')
+                  }
+                  style={[styles.disputeButton, sending && styles.disabled]}
+                >
+                  <Text style={styles.disputeButtonText}>Raise Dispute</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {isDisputed && (
+            <Text style={styles.disputeText}>This trade has been marked as disputed.</Text>
+          )}
+        </View>
+
+        <View style={styles.trustCard}>
+          <Text style={styles.trustTitle}>Trading on PocketVault</Text>
+          <Text style={styles.trustText}>
+            PocketVault connects collectors to arrange trades. Items are exchanged directly between users.
+          </Text>
+          <Text style={styles.trustText}>
+            Please confirm card condition, agree details clearly, and only trade when you’re comfortable.
+          </Text>
+          <Text style={styles.trustText}>
+            Keep all messages inside PocketVault so your trade history is recorded.
+          </Text>
+        </View>
 
         <FlatList
-          data={offers}
+          ref={listRef}
+          data={events}
           keyExtractor={(item) => item.id}
-          renderItem={renderOffer}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={theme.colors.primary}
-            />
-          }
+          renderItem={renderEvent}
+          contentContainerStyle={styles.listContent}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
           ListEmptyComponent={
-            <View
-              style={{
-                backgroundColor: theme.colors.card,
-                borderRadius: 18,
-                padding: 22,
-                alignItems: 'center',
-                marginTop: 20,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                ...cardShadow,
-              }}
-            >
-              <Text
-                style={{
-                  color: theme.colors.text,
-                  fontWeight: '900',
-                  fontSize: 17,
-                }}
-              >
-                No offers yet
-              </Text>
-              <Text
-                style={{
-                  color: theme.colors.textSoft,
-                  textAlign: 'center',
-                  marginTop: 8,
-                  lineHeight: 20,
-                }}
-              >
-                Offers you send and receive will appear here.
+            <View style={styles.emptyWrap}>
+              <Text style={styles.emptyTitle}>No messages yet</Text>
+              <Text style={styles.emptyText}>
+                Start the negotiation with a message or counter offer.
               </Text>
             </View>
           }
-          contentContainerStyle={{ paddingBottom: 120 }}
-          showsVerticalScrollIndicator={false}
         />
-      </View>
+
+        {!isCompleted && !isDisputed ? (
+          <View style={styles.composerWrap}>
+            {!isAcceptedOrBeyond && (
+              <View style={styles.counterRow}>
+                <TextInput
+                  value={counterAmount}
+                  onChangeText={setCounterAmount}
+                  placeholder="Counter cash £"
+                  placeholderTextColor={theme.colors.textSoft}
+                  keyboardType="decimal-pad"
+                  style={styles.counterInput}
+                />
+
+                <TouchableOpacity
+                  onPress={handleCounter}
+                  disabled={sending}
+                  style={[styles.counterButton, sending && styles.disabled]}
+                >
+                  <Text style={styles.counterButtonText}>Counter</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            <View style={styles.messageInputRow}>
+              <TextInput
+                value={message}
+                onChangeText={setMessage}
+                placeholder="Message..."
+                placeholderTextColor={theme.colors.textSoft}
+                multiline
+                style={styles.messageInput}
+              />
+
+              <TouchableOpacity
+                onPress={handleSendMessage}
+                disabled={sending || !message.trim()}
+                style={[
+                  styles.sendButton,
+                  (sending || !message.trim()) && styles.disabled,
+                ]}
+              >
+                <Text style={styles.sendButtonText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.lockedComposer}>
+            <Text style={styles.lockedText}>
+              {isCompleted
+                ? 'This trade is completed.'
+                : 'This trade is disputed. Keep records of all messages.'}
+            </Text>
+          </View>
+        )}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-function ActionButton({
-  label,
-  onPress,
-  active,
-  danger,
-}: {
-  label: string;
-  onPress: () => void | Promise<void>;
-  active?: boolean;
-  danger?: boolean;
-}) {
+function ProgressItem({ label, active }: { label: string; active: boolean }) {
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        backgroundColor: active
-          ? theme.colors.primary
-          : danger
-            ? '#FEE2E2'
-            : theme.colors.surface,
-        borderRadius: 12,
-        paddingVertical: 11,
-        paddingHorizontal: 12,
-        borderWidth: 1,
-        borderColor: active
-          ? theme.colors.primary
-          : danger
-            ? '#FCA5A5'
-            : theme.colors.border,
-      }}
-    >
-      <Text
-        style={{
-          color: active ? '#FFFFFF' : danger ? '#991B1B' : theme.colors.text,
-          fontWeight: '900',
-          textAlign: 'center',
-        }}
-      >
+    <View style={styles.progressItem}>
+      <Text style={styles.progressIcon}>{active ? '✅' : '⬜'}</Text>
+      <Text style={active ? styles.progressTextActive : styles.progressText}>
         {label}
       </Text>
-    </TouchableOpacity>
+    </View>
   );
 }
+
+const styles = {
+  safe: { flex: 1, backgroundColor: theme.colors.bg },
+  keyboard: { flex: 1 },
+  center: {
+    flex: 1,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  loadingText: { color: theme.colors.textSoft, marginTop: 12 },
+
+  header: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+  },
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginRight: 12,
+  },
+  backText: {
+    color: theme.colors.text,
+    fontSize: 30,
+    lineHeight: 30,
+    marginTop: -2,
+  },
+  title: {
+    color: theme.colors.text,
+    fontSize: 20,
+    fontWeight: '900' as const,
+  },
+  subtitle: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    marginTop: 2,
+  },
+
+  progressCard: {
+    marginHorizontal: 12,
+    marginTop: 10,
+    marginBottom: 6,
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  progressTitle: {
+    color: theme.colors.text,
+    fontWeight: '900' as const,
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  progressItem: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginBottom: 6,
+  },
+  progressIcon: { marginRight: 8 },
+  progressText: {
+    color: theme.colors.textSoft,
+    fontSize: 13,
+    fontWeight: '700' as const,
+  },
+  progressTextActive: {
+    color: theme.colors.text,
+    fontSize: 13,
+    fontWeight: '900' as const,
+  },
+  progressActions: {
+    marginTop: 8,
+    gap: 8,
+  },
+  progressActionButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center' as const,
+  },
+  progressActionText: {
+    color: '#FFFFFF',
+    fontWeight: '900' as const,
+    fontSize: 12,
+  },
+  disputeButton: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center' as const,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+  },
+  disputeButtonText: {
+    color: '#991B1B',
+    fontWeight: '900' as const,
+    fontSize: 12,
+  },
+  disputeText: {
+    color: '#EF4444',
+    fontSize: 12,
+    fontWeight: '800' as const,
+    marginTop: 6,
+  },
+
+  trustCard: {
+    marginHorizontal: 12,
+    marginTop: 4,
+    marginBottom: 4,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  trustTitle: {
+    color: theme.colors.text,
+    fontWeight: '900' as const,
+    fontSize: 13,
+    marginBottom: 5,
+  },
+  trustText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 2,
+  },
+
+  listContent: { padding: 16, paddingBottom: 20 },
+  messageRow: { flexDirection: 'row' as const, marginBottom: 10 },
+  messageRowMine: { justifyContent: 'flex-end' as const },
+  messageRowOther: { justifyContent: 'flex-start' as const },
+  bubble: {
+    maxWidth: '82%' as const,
+    borderRadius: 18,
+    padding: 12,
+  },
+  bubbleMine: {
+    backgroundColor: theme.colors.primary,
+    borderBottomRightRadius: 4,
+  },
+  bubbleOther: {
+    backgroundColor: theme.colors.card,
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  bubbleType: {
+    fontSize: 11,
+    fontWeight: '900' as const,
+    marginBottom: 4,
+  },
+  bubbleTypeMine: { color: '#FFFFFF', opacity: 0.85 },
+  bubbleTypeOther: { color: theme.colors.primary },
+  bubbleText: { fontSize: 15, lineHeight: 21 },
+  bubbleTextMine: { color: '#FFFFFF' },
+  bubbleTextOther: { color: theme.colors.text },
+  timeText: {
+    fontSize: 10,
+    alignSelf: 'flex-end' as const,
+    marginTop: 6,
+  },
+  timeTextMine: { color: 'rgba(255,255,255,0.75)' },
+  timeTextOther: { color: theme.colors.textSoft },
+
+  cashPill: {
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 8,
+  },
+  cashPillText: {
+    color: '#FFFFFF',
+    fontWeight: '900' as const,
+    fontSize: 12,
+  },
+
+  acceptCounterButton: {
+    backgroundColor: '#16A34A',
+    borderRadius: 12,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    marginTop: 8,
+    alignItems: 'center' as const,
+  },
+  acceptCounterText: {
+    color: '#FFFFFF',
+    fontWeight: '900' as const,
+    fontSize: 12,
+  },
+
+  systemWrap: {
+    alignSelf: 'center' as const,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  systemText: {
+    color: theme.colors.text,
+    fontWeight: '900' as const,
+    fontSize: 12,
+    textAlign: 'center' as const,
+  },
+  systemNote: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    marginTop: 2,
+    textAlign: 'center' as const,
+  },
+
+  emptyWrap: { alignItems: 'center' as const, paddingTop: 80 },
+  emptyTitle: {
+    color: theme.colors.text,
+    fontWeight: '900' as const,
+    fontSize: 18,
+  },
+  emptyText: {
+    color: theme.colors.textSoft,
+    textAlign: 'center' as const,
+    marginTop: 8,
+    lineHeight: 20,
+  },
+
+  composerWrap: {
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+  },
+  counterRow: {
+    flexDirection: 'row' as const,
+    gap: 8,
+    marginBottom: 8,
+  },
+  counterInput: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    color: theme.colors.text,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  counterButton: {
+    backgroundColor: '#FACC15',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    justifyContent: 'center' as const,
+  },
+  counterButtonText: {
+    color: '#111827',
+    fontWeight: '900' as const,
+  },
+  messageInputRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-end' as const,
+    gap: 8,
+  },
+  messageInput: {
+    flex: 1,
+    maxHeight: 110,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    color: theme.colors.text,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    textAlignVertical: 'top' as const,
+  },
+  sendButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: 18,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '900' as const,
+  },
+  lockedComposer: {
+    padding: 14,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+  },
+  lockedText: {
+    color: theme.colors.textSoft,
+    textAlign: 'center' as const,
+    fontWeight: '800' as const,
+    fontSize: 12,
+  },
+  disabled: { opacity: 0.5 },
+};

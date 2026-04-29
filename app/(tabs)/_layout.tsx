@@ -80,6 +80,7 @@ export default function TabLayout() {
       <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="market" options={{ href: null }} />
       <Tabs.Screen name="explore" options={{ href: null }} />
+      
     </Tabs>
   );
 }

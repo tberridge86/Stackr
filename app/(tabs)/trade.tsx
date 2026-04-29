@@ -15,6 +15,7 @@ import {
   StyleSheet,
   Animated,
   PanResponder,
+TextInput,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -61,6 +62,13 @@ const [cardDetailsMap, setCardDetailsMap] = useState<Record<string, any>>({});
 const [myUserId, setMyUserId] = useState<string>('');
 const [activeTrades, setActiveTrades] = useState<Record<string, any>>({});
 
+const [reviewVisible, setReviewVisible] = useState(false);
+const [reviewTrade, setReviewTrade] = useState<any | null>(null);
+const [reviewedUserId, setReviewedUserId] = useState<string>('');
+const [reviewRating, setReviewRating] = useState(5);
+const [reviewComment, setReviewComment] = useState('');
+const [reviewSaving, setReviewSaving] = useState(false);
+
 // 👇 MODAL STATE
 const [selectedListing, setSelectedListing] = useState<any | null>(null);
 const [selectedCard, setSelectedCard] = useState<any | null>(null);
@@ -77,6 +85,8 @@ const {
   tradeError,
   refreshTrade,
   archiveListing,
+  toggleWishlistCard,
+  createTradeReview,
 } = useTrade();
 
 const closeDetail = useCallback(() => {
@@ -330,6 +340,46 @@ if (data) {
       </TouchableOpacity>
     );
   };
+const openReviewModal = (trade: any) => {
+  const otherUserId =
+    trade.seller_id === myUserId ? trade.buyer_id : trade.seller_id;
+
+  setReviewTrade(trade);
+  setReviewedUserId(otherUserId);
+  setReviewRating(5);
+  setReviewComment('');
+  setReviewVisible(true);
+};
+
+const submitReview = async () => {
+  if (!reviewTrade || !reviewedUserId) return;
+
+  try {
+    setReviewSaving(true);
+
+    await createTradeReview({
+      tradeId: reviewTrade.id,
+      reviewedUserId,
+      rating: reviewRating,
+      comment: reviewComment,
+    });
+
+    setReviewVisible(false);
+    setReviewTrade(null);
+    setReviewedUserId('');
+    setReviewComment('');
+
+    Alert.alert('Review saved', 'Thanks for rating this trader.');
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Could not save review.';
+
+    Alert.alert('Error', message);
+  } finally {
+    setReviewSaving(false);
+  }
+};
+
 
   const renderListing = ({ item }: { item: any }) => {
     const sellerName = item?.profiles?.collector_name || 'Collector';
@@ -522,6 +572,22 @@ if (data) {
         ? '✅ Trade completed'
         : '📦 Trade in progress'}
     </Text>
+
+    {trade.status === 'completed' && (
+  <TouchableOpacity
+    onPress={() => openReviewModal(trade)}
+    style={{
+      backgroundColor: '#FACC15',
+      borderRadius: 10,
+      paddingVertical: 10,
+      marginBottom: 8,
+    }}
+  >
+    <Text style={{ color: '#111827', textAlign: 'center', fontWeight: '900' }}>
+      Leave Trader Review
+    </Text>
+  </TouchableOpacity>
+)}
 
     {/* MARK AS SENT */}
     {((isSeller && !trade.seller_sent) ||
@@ -1014,7 +1080,12 @@ if (data) {
         ? `£${Number(selectedListing.market_estimate).toFixed(2)}`
         : '--'}
     </Text>
-  </View>
+      </View>
+      
+<Text style={styles.marketDisclaimer}>
+  Market values are estimated using recent TCG data and assume the stated card condition. Actual value may vary.
+</Text>
+
 </>
 
                 </View>
@@ -1092,6 +1163,8 @@ if (data) {
                         textAlign: 'center',
                         fontWeight: '900',
                       }}
+
+                      
                     >
                       Your listing
                     </Text>
@@ -1106,6 +1179,131 @@ if (data) {
   </BlurView>
 </Modal>
       
+ <Modal
+  visible={reviewVisible}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setReviewVisible(false)}
+>
+  <View
+    style={{
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      justifyContent: 'center',
+      padding: 20,
+    }}
+  >
+    <View
+      style={{
+        backgroundColor: theme.colors.card,
+        borderRadius: 22,
+        padding: 18,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+      }}
+    >
+      <Text
+        style={{
+          color: theme.colors.text,
+          fontSize: 22,
+          fontWeight: '900',
+          marginBottom: 8,
+        }}
+      >
+        Rate this trader
+      </Text>
+
+      <Text
+        style={{
+          color: theme.colors.textSoft,
+          marginBottom: 14,
+        }}
+      >
+        Leave a star rating and optional comment.
+      </Text>
+
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 16 }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity
+            key={star}
+            onPress={() => setReviewRating(star)}
+            style={{ paddingHorizontal: 5 }}
+          >
+            <Text style={{ fontSize: 34 }}>
+              {star <= reviewRating ? '★' : '☆'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <TextInput
+        value={reviewComment}
+        onChangeText={setReviewComment}
+        placeholder="Optional comment"
+        placeholderTextColor={theme.colors.textSoft}
+        multiline
+        style={{
+          minHeight: 90,
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+          color: theme.colors.text,
+          padding: 12,
+          textAlignVertical: 'top',
+          marginBottom: 14,
+        }}
+      />
+
+      <TouchableOpacity
+        disabled={reviewSaving}
+        onPress={submitReview}
+        style={{
+          backgroundColor: theme.colors.primary,
+          borderRadius: 14,
+          paddingVertical: 13,
+          opacity: reviewSaving ? 0.6 : 1,
+        }}
+      >
+        <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900' }}>
+          {reviewSaving ? 'Saving...' : 'Submit Review'}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => setReviewVisible(false)}
+        style={{
+          marginTop: 10,
+          borderRadius: 14,
+          paddingVertical: 12,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+        }}
+      >
+        <Text
+          style={{
+            color: theme.colors.textSoft,
+            textAlign: 'center',
+            fontWeight: '900',
+          }}
+        >
+          Cancel
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+      
+      
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  marketDisclaimer: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    lineHeight: 16,
+    marginTop: 6,
+  },
+});
