@@ -1,5 +1,5 @@
 import { theme } from '../../lib/theme';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -32,12 +32,42 @@ import {
   fetchBinderCards,
   updateBinderCardOwned,
 } from '../../lib/binders';
-import {
-  getCachedCardSync,
-  getCachedCardsForSet,
-} from '../../lib/pokemonTcgCache';
+
 import { useTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
+
+const CONDITION_OPTIONS = [
+  'Mint',
+  'Near Mint',
+  'Lightly Played',
+  'Moderately Played',
+  'Heavily Played',
+  'Damaged',
+];
+
+const CONDITION_MULTIPLIERS: Record<string, number> = {
+  Mint: 1.05,
+  'Near Mint': 1,
+  'Lightly Played': 0.85,
+  'Moderately Played': 0.65,
+  'Heavily Played': 0.45,
+  Damaged: 0.2,
+};
+
+const getBaseCardValue = (card: any) => {
+  return (
+    card?.ebay_price ??
+    card?.tcg_price ??
+    card?.cardmarket_price ??
+    0
+  );
+};
+
+const getEstimatedValue = (card: any, condition: string) => {
+  const base = getBaseCardValue(card);
+  const multiplier = CONDITION_MULTIPLIERS[condition] ?? 1;
+  return base * multiplier;
+};
 
 type BinderCardWithDetails = BinderCardRecord & {
   card?: any | null;
@@ -104,11 +134,20 @@ export default function BinderDetailScreen() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [addSearch, setAddSearch] = useState('');
+  const [debouncedAddSearch, setDebouncedAddSearch] = useState('');
   const [addSearchResults, setAddSearchResults] = useState<CardPreviewResult[]>(
     []
   );
   const [addSearchLoading, setAddSearchLoading] = useState(false);
   const [addingCardId, setAddingCardId] = useState<string | null>(null);
+
+  const [tradeModalVisible, setTradeModalVisible] = useState(false);
+const [tradeCard, setTradeCard] = useState<BinderCardWithDetails | null>(null);
+
+const [tradeCondition, setTradeCondition] = useState<string>('Near Mint');
+const [tradePrice, setTradePrice] = useState('');
+const [tradeNotes, setTradeNotes] = useState('');
+const [tradeOnly, setTradeOnly] = useState(false);
 
   const modalTranslateY = useRef(new Animated.Value(0)).current;
   const baseScale = useRef(new Animated.Value(1)).current;
@@ -117,8 +156,12 @@ export default function BinderDetailScreen() {
 
   const imageScale = Animated.multiply(baseScale, pinchScale);
 
-  const { toggleTradeCard, toggleWishlistCard, isForTrade, isWanted } =
-    useTrade();
+  const {
+  createTradeListing,
+  toggleWishlistCard,
+  isForTrade,
+  isWanted,
+} = useTrade();
 
   const sortOptions: { label: string; value: SortMode }[] = [
     { label: 'Binder order', value: 'binder' },
@@ -227,38 +270,7 @@ export default function BinderDetailScreen() {
 
       const binderCards = await fetchBinderCards(binderId);
 
-const setCache: Record<string, any[]> = {};
-
-const withDetails: BinderCardWithDetails[] = await Promise.all(
-  binderCards.map(async (binderCard) => {
-    let found = getCachedCardSync(binderCard.set_id, binderCard.card_id);
-
-    if (!found) {
-      if (!setCache[binderCard.set_id]) {
-        try {
-          setCache[binderCard.set_id] = await getCachedCardsForSet(
-            binderCard.set_id
-          );
-        } catch (error) {
-          console.log(`Skipping failed set ${binderCard.set_id}`, error);
-          setCache[binderCard.set_id] = [];
-        }
-      }
-
-      found =
-        setCache[binderCard.set_id].find(
-          (card) => card.id === binderCard.card_id
-        ) ?? null;
-    }
-
-    return {
-      ...binderCard,
-      card: found,
-    };
-  })
-);
-
-setCards(withDetails);
+setCards(binderCards);
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -288,6 +300,22 @@ setCards(withDetails);
       load();
     }, [binderId])
   );
+
+  useEffect(() => {
+  const timer = setTimeout(() => {
+    setDebouncedAddSearch(addSearch);
+  }, 350);
+
+  return () => clearTimeout(timer);
+}, [addSearch]);
+
+useEffect(() => {
+  if (debouncedAddSearch.trim().length >= 2) {
+    searchCardsToAdd(debouncedAddSearch);
+  } else {
+    setAddSearchResults([]);
+  }
+}, [debouncedAddSearch]);
 
   const sortedCards = useMemo(() => {
     const next = [...cards];
@@ -385,9 +413,19 @@ setCards(withDetails);
         return;
       }
 
-      const currentRows = showcaseRows.filter(
-        (row) => row.showcase_type === type
-      );
+     const currentRows = showcaseRows.filter(
+  (row) => row.showcase_type === type
+);
+
+if (currentRows.length >= 3) {
+  Alert.alert(
+    type === 'favorite' ? 'Favourite limit reached' : 'Chase card limit reached',
+    type === 'favorite'
+      ? 'You can only choose 3 favourite cards per set.'
+      : 'You can only choose 3 chase cards per set.'
+  );
+  return;
+}
 
       const { data, error } = await supabase
         .from('binder_card_showcases')
@@ -488,61 +526,42 @@ setCards(withDetails);
     }
   };
 
-  const searchCardsToAdd = async (query: string) => {
-    setAddSearch(query);
+ const searchCardsToAdd = async (query: string) => {
+  const safeQuery = query.trim();
 
-    if (query.trim().length < 2) {
-      setAddSearchResults([]);
-      return;
-    }
+  if (safeQuery.length < 2) {
+    setAddSearchResults([]);
+    return;
+  }
 
-    try {
-      setAddSearchLoading(true);
+  try {
+    setAddSearchLoading(true);
 
-      const safeQuery = query.trim();
+    const { data, error } = await supabase
+      .from('pokemon_cards')
+      .select('id, name, set_id, image_small, image_large, raw_data')
+      .ilike('name', `%${safeQuery}%`)
+      .limit(30);
 
-      const response = await fetch(
-        `https://api.pokemontcg.io/v2/cards?q=name:*${encodeURIComponent(
-          safeQuery
-        )}*&pageSize=30`
-      );
+    if (error) throw error;
 
-      const json = await response.json();
+    const results = (data ?? []).map((card: any) => ({
+      card_id: card.id,
+      name: card.name,
+      set_name: card.raw_data?.set?.name ?? card.set_id,
+      image_url: card.image_small ?? card.image_large ?? null,
+    }));
 
-      const results = (json.data ?? []).map((card: any) => ({
-        card_id: card.id,
-        name: card.name,
-        set_name: card.set?.name ?? null,
-        image_url: card.images?.small ?? card.images?.large ?? null,
-      }));
+    setAddSearchResults(results);
+  } catch (error) {
+    console.log('Supabase search failed', error);
+    setAddSearchResults([]);
+  } finally {
+    setAddSearchLoading(false);
+  }
+};
 
-      setAddSearchResults(results);
-
-      if (results.length > 0) {
-        const rows = results.map((card: CardPreviewResult) => ({
-          card_id: card.card_id,
-          name: card.name,
-          set_name: card.set_name ?? null,
-          image_url: card.image_url ?? null,
-        }));
-
-        const { error: cacheError } = await supabase
-          .from('card_previews')
-          .upsert(rows, { onConflict: 'card_id' });
-
-        if (cacheError) {
-          console.log('Card preview cache failed', cacheError);
-        }
-      }
-    } catch (error) {
-      console.log('Failed to search cards', error);
-      setAddSearchResults([]);
-    } finally {
-      setAddSearchLoading(false);
-    }
-  };
-
-  const handleAddCardToCustomBinder = async (card: CardPreviewResult) => {
+        const handleAddCardToCustomBinder = async (card: CardPreviewResult) => {
     if (!binderId) return;
 
     const derivedSetId = getSetIdFromCardId(card.card_id);
@@ -1087,7 +1106,7 @@ setCards(withDetails);
               placeholder="Search by card name, set or card ID..."
               placeholderTextColor={theme.colors.textSoft}
               value={addSearch}
-              onChangeText={searchCardsToAdd}
+              onChangeText={setAddSearch}
               style={{
                 backgroundColor: theme.colors.card,
                 color: theme.colors.text,
@@ -1393,19 +1412,15 @@ setCards(withDetails);
                       />
 
                       <ActionButton
-                        label={
-                          modalForTrade ? 'Remove from trade' : 'Mark for trade'
-                        }
-                        active={modalForTrade}
-                        onPress={async () => {
-                          await toggleTradeCard(
-                            selectedCard.card_id,
-                            selectedCard.set_id
-                          );
-                          await load();
-                        }}
-                      />
-
+  label={
+    modalForTrade ? 'Edit trade listing' : 'Mark for trade'
+  }
+  active={modalForTrade}
+  onPress={() => {
+    setTradeCard(selectedCard);
+    setTradeModalVisible(true);
+  }}
+/>
                       <ActionButton
                         label={
                           modalWanted
@@ -1428,6 +1443,168 @@ setCards(withDetails);
           </BlurView>
         </View>
       </Modal>
+
+<Modal visible={tradeModalVisible} animationType="slide">
+  <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <View style={{ padding: 16 }}>
+
+      <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>
+        Trade Listing
+      </Text>
+
+      {/* CONDITION */}
+      <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>
+        Condition
+      </Text>
+
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+        {CONDITION_OPTIONS.map((option) => (
+          <TouchableOpacity
+            key={option}
+            onPress={() => setTradeCondition(option)}
+            style={{
+              padding: 8,
+              borderRadius: 10,
+              backgroundColor:
+                tradeCondition === option
+                  ? theme.colors.primary
+                  : theme.colors.card,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
+          >
+            <Text style={{ color: theme.colors.text, fontWeight: '700' }}>
+              {option}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* PRICE */}
+      <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>
+        Your Price (£)
+      </Text>
+
+      <TextInput
+  value={tradePrice}
+  onChangeText={setTradePrice}
+  placeholder="e.g. 5.00"
+  keyboardType="decimal-pad"
+  style={{
+    backgroundColor: theme.colors.card,
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 6,
+    color: theme.colors.text,
+  }}
+/>
+
+{tradeCard && (
+  <Text
+    style={{
+      marginTop: 6,
+      color: theme.colors.textSoft,
+      fontSize: 13,
+    }}
+  >
+    Est. value: £
+    {getEstimatedValue(tradeCard, tradeCondition).toFixed(2)}
+  </Text>
+)}
+
+      {/* NOTES */}
+      <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>
+        Notes (optional)
+      </Text>
+
+      <TextInput
+        value={tradeNotes}
+        onChangeText={setTradeNotes}
+        placeholder="Any details..."
+        multiline
+        style={{
+          backgroundColor: theme.colors.card,
+          borderRadius: 12,
+          padding: 12,
+          marginTop: 6,
+          color: theme.colors.text,
+        }}
+      />
+
+      {/* TRADE ONLY */}
+      <TouchableOpacity
+        onPress={() => setTradeOnly((prev) => !prev)}
+        style={{
+          marginTop: 16,
+          flexDirection: 'row',
+          alignItems: 'center',
+        }}
+      >
+        <Text style={{ color: theme.colors.text }}>
+          {tradeOnly ? '☑ ' : '☐ '}Trade only (no selling)
+        </Text>
+      </TouchableOpacity>
+
+      {/* SUBMIT */}
+      <TouchableOpacity
+        onPress={async () => {
+          if (!tradeCard) return;
+
+          console.log(tradeCard);
+
+         const estimated = getEstimatedValue(tradeCard, tradeCondition);
+
+await createTradeListing({
+  cardId: tradeCard.card_id,
+  setId: tradeCard.set_id,
+
+  condition: tradeCondition,
+  askingPrice: tradePrice ? Number(tradePrice) : null,
+  marketEstimate: estimated,
+  tradeOnly: tradeOnly,
+
+  hasDamage: tradeCondition === 'Damaged',
+damageNotes: tradeCondition === 'Damaged' ? tradeNotes : null,
+damageImageUrl: null,
+listingNotes: tradeNotes,
+});
+
+          setTradeModalVisible(false);
+setTradeCard(null);
+setTradePrice('');
+setTradeNotes('');
+setTradeOnly(false);
+
+await load();
+        }}
+        style={{
+          backgroundColor: theme.colors.primary,
+          borderRadius: 14,
+          padding: 14,
+          alignItems: 'center',
+          marginTop: 20,
+        }}
+      >
+        <Text style={{ color: '#fff', fontWeight: '900' }}>
+          List Card
+        </Text>
+      </TouchableOpacity>
+
+      {/* CANCEL */}
+      <TouchableOpacity
+        onPress={() => setTradeModalVisible(false)}
+        style={{
+          marginTop: 10,
+          alignItems: 'center',
+        }}
+      >
+        <Text style={{ color: theme.colors.textSoft }}>Cancel</Text>
+      </TouchableOpacity>
+
+    </View>
+  </SafeAreaView>
+</Modal>
+
      </SafeAreaView>
     );
 }

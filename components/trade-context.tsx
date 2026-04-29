@@ -19,6 +19,26 @@ type TradeMeta = {
   condition?: string;
   notes?: string;
   value?: string;
+  askingPrice?: number | null;
+  marketEstimate?: number | null;
+  tradeOnly?: boolean;
+  hasDamage?: boolean;
+  damageNotes?: string | null;
+  damageImageUrl?: string | null;
+  listingNotes?: string | null;
+};
+
+type TradeListingInput = {
+  cardId: string;
+  setId?: string | null;
+  condition: string;
+  askingPrice?: number | null;
+  marketEstimate?: number | null;
+  tradeOnly: boolean;
+  hasDamage: boolean;
+  damageNotes?: string | null;
+  damageImageUrl?: string | null;
+  listingNotes?: string | null;
 };
 
 type FlagKey = string;
@@ -45,6 +65,7 @@ type TradeContextType = {
   tradeError: string | null;
 
   toggleTradeCard: (cardId: string, setId?: string | null) => Promise<void>;
+  createTradeListing: (input: TradeListingInput) => Promise<void>;
   toggleWishlistCard: (cardId: string, setId?: string | null) => Promise<void>;
   updateTradeMeta: (
     cardId: string,
@@ -315,6 +336,65 @@ const { data: wantedMatches, error: wantedError } = await wantedQuery;
     [tradeKeys, wishlistKeys, tradeCardIds, wishlistCardIds, loadFlags]
   );
 
+const createTradeListing = useCallback(
+  async (input: TradeListingInput) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) throw new Error('You must be signed in.');
+
+    const resolvedSetId = input.setId ?? getSetIdFromCardId(input.cardId);
+    const key = makeFlagKey(input.cardId, resolvedSetId);
+
+    const { error } = await supabase.from('user_card_flags').upsert(
+      {
+        user_id: user.id,
+        card_id: input.cardId,
+        set_id: resolvedSetId,
+        flag_type: 'trade',
+        condition: input.condition,
+        asking_price: input.askingPrice ?? null,
+        market_estimate: input.marketEstimate ?? null,
+        trade_only: input.tradeOnly,
+        has_damage: input.hasDamage,
+        damage_notes: input.damageNotes ?? null,
+        damage_image_url: input.damageImageUrl ?? null,
+        listing_notes: input.listingNotes ?? null,
+        listing_status: 'active',
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'user_id,card_id,flag_type',
+      }
+    );
+
+    if (error) throw error;
+
+    setTradeKeys((prev) => (prev.includes(key) ? prev : [...prev, key]));
+    setTradeCardIds((prev) =>
+      prev.includes(input.cardId) ? prev : [...prev, input.cardId]
+    );
+
+    setTradeMeta((prev) => ({
+      ...prev,
+      [key]: {
+        condition: input.condition,
+        askingPrice: input.askingPrice ?? null,
+        marketEstimate: input.marketEstimate ?? null,
+        tradeOnly: input.tradeOnly,
+        hasDamage: input.hasDamage,
+        damageNotes: input.damageNotes ?? null,
+        damageImageUrl: input.damageImageUrl ?? null,
+        listingNotes: input.listingNotes ?? null,
+      },
+    }));
+
+    await refreshTrade();
+  },
+  [refreshTrade]
+);
+
   const toggleTradeCard = useCallback(
     async (cardId: string, setId?: string | null) => {
       await toggleFlag(cardId, 'trade', setId);
@@ -357,11 +437,43 @@ const { data: wantedMatches, error: wantedError } = await wantedQuery;
       let query = supabase
         .from('user_card_flags')
         .update({
-          condition: data.condition ?? null,
-          notes: data.notes ?? null,
-          value: data.value ?? null,
-          updated_at: new Date().toISOString(),
-        })
+  condition: data.condition ?? null,
+  notes: data.notes ?? null,
+  value: data.value ?? null,
+
+  asking_price:
+    data.askingPrice !== undefined
+      ? data.askingPrice
+      : data.value
+      ? Number(data.value)
+      : null,
+
+  market_estimate:
+    data.marketEstimate !== undefined
+      ? data.marketEstimate
+      : null,
+
+  trade_only:
+    data.tradeOnly !== undefined
+      ? data.tradeOnly
+      : false,
+
+  has_damage:
+    data.hasDamage !== undefined
+      ? data.hasDamage
+      : false,
+
+  damage_notes:
+    data.damageNotes ?? null,
+
+  damage_image_url:
+    data.damageImageUrl ?? null,
+
+  listing_notes:
+    data.listingNotes ?? data.notes ?? null,
+
+  updated_at: new Date().toISOString(),
+})
         .eq('user_id', user.id)
         .eq('card_id', cardId)
         .eq('flag_type', 'trade');
@@ -394,8 +506,9 @@ const { data: wantedMatches, error: wantedError } = await wantedQuery;
       tradeError,
 
       toggleTradeCard,
-      toggleWishlistCard,
-      updateTradeMeta,
+createTradeListing,
+toggleWishlistCard,
+updateTradeMeta,
 
       isForTrade: (cardId: string, setId?: string | null) => {
         const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
@@ -431,8 +544,9 @@ const { data: wantedMatches, error: wantedError } = await wantedQuery;
       tradeLoading,
       tradeError,
       toggleTradeCard,
-      toggleWishlistCard,
-      updateTradeMeta,
+createTradeListing,
+toggleWishlistCard,
+updateTradeMeta,
       refreshTrade,
       archiveListing,
     ]

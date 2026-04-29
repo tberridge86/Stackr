@@ -7,12 +7,22 @@ export type MarketplaceListing = {
   user_id: string;
   card_id: string;
   set_id: string | null;
+
   custom_value: number | null;
+  asking_price: number | null;
+  market_estimate: number | null;
   condition: string | null;
   notes: string | null;
+  trade_only: boolean;
+  has_damage: boolean;
+  damage_notes: string | null;
+  damage_image_url: string | null;
+  listing_notes: string | null;
+
   status: MarketplaceListingStatus;
   created_at: string;
   updated_at?: string | null;
+
   profiles?: {
     collector_name: string | null;
     avatar_url: string | null;
@@ -28,10 +38,27 @@ function mapFlagToListing(row: any): MarketplaceListing {
     user_id: row.user_id,
     card_id: row.card_id,
     set_id: row.set_id ?? null,
-    custom_value: row.value ? Number(row.value) : null,
+
+    custom_value:
+      row.asking_price != null
+        ? Number(row.asking_price)
+        : row.value
+        ? Number(row.value)
+        : null,
+
+    asking_price: row.asking_price != null ? Number(row.asking_price) : null,
+    market_estimate:
+      row.market_estimate != null ? Number(row.market_estimate) : null,
+
     condition: row.condition ?? null,
-    notes: row.notes ?? null,
-    status: 'active',
+    notes: row.listing_notes ?? row.notes ?? null,
+    trade_only: Boolean(row.trade_only),
+    has_damage: Boolean(row.has_damage),
+    damage_notes: row.damage_notes ?? null,
+    damage_image_url: row.damage_image_url ?? null,
+    listing_notes: row.listing_notes ?? null,
+
+    status: row.listing_status ?? 'active',
     created_at: row.created_at,
     updated_at: row.updated_at ?? null,
   };
@@ -88,16 +115,24 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[]> 
     .from('user_card_flags')
     .select(
       `
-      id,
-      user_id,
-      card_id,
-      set_id,
-      condition,
-      notes,
-      value,
-      created_at,
-      updated_at
-    `
+id,
+user_id,
+card_id,
+set_id,
+condition,
+notes,
+value,
+asking_price,
+market_estimate,
+trade_only,
+has_damage,
+damage_notes,
+damage_image_url,
+listing_notes,
+listing_status,
+created_at,
+updated_at
+`
     )
     .eq('flag_type', 'trade')
     .order('created_at', { ascending: false });
@@ -122,16 +157,24 @@ export async function fetchMyListings(): Promise<MarketplaceListing[]> {
     .from('user_card_flags')
     .select(
       `
-      id,
-      user_id,
-      card_id,
-      set_id,
-      condition,
-      notes,
-      value,
-      created_at,
-      updated_at
-    `
+id,
+user_id,
+card_id,
+set_id,
+condition,
+notes,
+value,
+asking_price,
+market_estimate,
+trade_only,
+has_damage,
+damage_notes,
+damage_image_url,
+listing_notes,
+listing_status,
+created_at,
+updated_at
+`
     )
     .eq('user_id', user.id)
     .eq('flag_type', 'trade')

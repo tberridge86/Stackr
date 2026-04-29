@@ -14,7 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
-import { fetchBinders, fetchBinderCards, BinderRecord } from '../../lib/binders';
+import { fetchBinders, fetchBinderCards, deleteBinder, BinderRecord } from '../../lib/binders';
 
 type BinderCardCountMap = Record<string, { owned: number; total: number }>;
 
@@ -235,6 +235,36 @@ Alert.alert(
     );
   };
 
+const confirmDeleteBinder = (binder: BinderRecord) => {
+  Alert.alert(
+    'Delete binder?',
+    `Are you sure you want to delete "${binder.name}"? This cannot be undone.`,
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteBinder(binder.id);
+
+            setBinders((prev) => prev.filter((item) => item.id !== binder.id));
+
+            setCounts((prev) => {
+              const next = { ...prev };
+              delete next[binder.id];
+              return next;
+            });
+          } catch (error) {
+            console.log('Delete binder failed', error);
+            Alert.alert('Could not delete binder', 'Please try again.');
+          }
+        },
+      },
+    ]
+  );
+};
+
   const renderBinder = ({ item }: { item: BinderRecord }) => {
     const progress = counts[item.id] ?? { owned: 0, total: 0 };
 
@@ -247,12 +277,15 @@ Alert.alert(
 
     return (
       <TouchableOpacity
-        onPress={() =>
-          router.push({
-            pathname: '/binder/[id]',
-            params: { id: item.id },
-          })
-        }
+  onPress={() =>
+    router.push({
+      pathname: '/binder/[id]',
+      params: { id: item.id },
+    })
+  }
+  onLongPress={() => confirmDeleteBinder(item)}
+  delayLongPress={450}
+  
         style={{
           flexDirection: 'row',
           borderRadius: 22,

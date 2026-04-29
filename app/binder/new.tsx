@@ -1,5 +1,5 @@
 import { theme } from '../../lib/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   TextInput,
@@ -28,6 +28,7 @@ export default function NewBinderScreen() {
 
   const [sets, setSets] = useState<PokemonSet[]>([]);
   const [selectedSet, setSelectedSet] = useState<PokemonSet | null>(null);
+  const [setSearch, setSetSearch] = useState('');
 
   const [loadingSets, setLoadingSets] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -46,6 +47,19 @@ export default function NewBinderScreen() {
 
     load();
   }, []);
+
+  const filteredSets = useMemo(() => {
+    const search = setSearch.trim().toLowerCase();
+
+    if (!search) return sets;
+
+    return sets.filter((set) => {
+      const nameMatch = set.name.toLowerCase().includes(search);
+      const idMatch = set.id.toLowerCase().includes(search);
+
+      return nameMatch || idMatch;
+    });
+  }, [sets, setSearch]);
 
   const handleSelectSet = (set: PokemonSet) => {
     setSelectedSet(set);
@@ -188,14 +202,44 @@ export default function NewBinderScreen() {
               Select set
             </Text>
 
+            <TextInput
+              value={setSearch}
+              onChangeText={setSetSearch}
+              placeholder="Search sets, e.g. Base, Jungle, Scarlet..."
+              placeholderTextColor={theme.colors.textSoft}
+              autoCapitalize="none"
+              style={{
+                backgroundColor: theme.colors.card,
+                color: theme.colors.text,
+                padding: 14,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                marginBottom: 12,
+                fontWeight: '700',
+              }}
+            />
+
             {loadingSets ? (
               <ActivityIndicator color={theme.colors.primary} />
             ) : (
               <FlatList
-                data={sets}
+                data={filteredSets}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
                 contentContainerStyle={{ paddingBottom: 14 }}
+                ListEmptyComponent={
+                  <Text
+                    style={{
+                      color: theme.colors.textSoft,
+                      textAlign: 'center',
+                      marginTop: 20,
+                    }}
+                  >
+                    No sets found.
+                  </Text>
+                }
                 renderItem={({ item }) => {
                   const active = selectedSet?.id === item.id;
 

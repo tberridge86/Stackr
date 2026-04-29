@@ -64,15 +64,16 @@ export default function ProfileSetupScreen() {
   const initials = getInitials(collectorName || 'PC');
 
   const handleSave = async () => {
-    if (!collectorName.trim()) {
-      setError('Collector name is required.');
-      return;
-    }
+  if (!collectorName.trim()) {
+    setError('Collector name is required.');
+    return;
+  }
 
+  try {
     setSaving(true);
     setError('');
 
-    const { error } = await updateProfile({
+    const result = await updateProfile({
       collector_name: collectorName.trim(),
       pokemon_type: pokemonType,
       background_key: backgroundKey,
@@ -80,15 +81,22 @@ export default function ProfileSetupScreen() {
       avatar_url: null,
     });
 
-    setSaving(false);
+    console.log('PROFILE SAVE RESULT:', result);
 
-    if (error) {
-      setError(error.message || 'Failed to save profile.');
+    if (result?.error) {
+      console.log('PROFILE SAVE ERROR:', result.error);
+      setError(result.error.message || JSON.stringify(result.error));
       return;
     }
 
     router.replace('/(tabs)');
-  };
+  } catch (err: any) {
+    console.log('PROFILE SAVE CATCH ERROR:', err);
+    setError(err?.message || 'Failed to save profile.');
+  } finally {
+    setSaving(false);
+  }
+};
 
   return (
     <SafeAreaView style={styles.safe}>

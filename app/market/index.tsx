@@ -342,30 +342,50 @@ export default function MarketScreen() {
   };
 
   const searchCards = async () => {
-    try {
-      if (!query.trim()) {
-        setSearchResults([]);
-        return;
-      }
-
-      setSearching(true);
-
-      const cleanQuery = query.trim().replace(/"/g, '');
-      const url = `${POKEMON_TCG_API}?q=name:${encodeURIComponent(
-        cleanQuery
-      )}*&orderBy=set.releaseDate&pageSize=30`;
-
-      const response = await fetch(url);
-      const json = await response.json();
-      const cards = Array.isArray(json?.data) ? json.data : [];
-
-      setSearchResults(cards);
-    } catch (err) {
-      console.error('Error searching cards:', err);
-    } finally {
-      setSearching(false);
+  try {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
     }
-  };
+
+    setSearching(true);
+
+    const cleanQuery = query.trim().replace(/"/g, '');
+
+    const { data, error } = await supabase
+      .from('pokemon_cards')
+      .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+      .ilike('name', `%${cleanQuery}%`)
+      .limit(100);
+
+    if (error) throw error;
+
+    const cards = (data ?? []).map((card: any) => ({
+      id: card.id,
+      name: card.name,
+      number: card.number ?? '',
+      rarity: card.rarity ?? undefined,
+      images: {
+        small: card.image_small ?? undefined,
+        large: card.image_large ?? undefined,
+      },
+      set: {
+        id: card.set_id,
+        name: card.raw_data?.set?.name ?? card.set_id,
+        series: card.raw_data?.set?.series ?? '',
+      },
+      tcgplayer: card.raw_data?.tcgplayer,
+      cardmarket: card.raw_data?.cardmarket,
+    }));
+
+    setSearchResults(cards);
+  } catch (err) {
+    console.error('Error searching cards:', err);
+    setSearchResults([]);
+  } finally {
+    setSearching(false);
+  }
+};
 
   const fetchDetailEbayData = async (card: PokemonCard) => {
     try {

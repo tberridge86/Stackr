@@ -18,13 +18,17 @@ import { supabase } from '../../lib/supabase';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<'login' | 'signup' | null>(
+    null
+  );
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  const loading = loadingAction !== null;
+
   const handleLogin = async () => {
     try {
-      setLoading(true);
+      setLoadingAction('login');
       setError('');
       setMessage('');
 
@@ -46,33 +50,34 @@ export default function LoginScreen() {
     } catch (err: any) {
       setError(err?.message || 'Login failed.');
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
   const handleSignup = async () => {
     try {
-      setLoading(true);
+      setLoadingAction('signup');
       setError('');
       setMessage('');
 
-if (!email.trim() || !password.trim()) {
-  setError('Please enter an email and password.');
-  return;
-}
+      if (!email.trim() || !password.trim()) {
+        setError('To register, enter your email and create a password first.');
+        return;
+      }
 
-if (password.length < 6) {
-  setError('Password must be at least 6 characters.');
-  return;
-}
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters.');
+        return;
+      }
 
       const { data, error } = await supabase.auth.signUp({
-  email: email.trim(),
-  password,
-  options: {
-    emailRedirectTo: 'pocketvaultnative://auth/callback',
-  },
-});
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: 'pocketvaultnative://auth/callback',
+        },
+      });
+
       if (error) {
         setError(error.message);
         return;
@@ -80,15 +85,15 @@ if (password.length < 6) {
 
       if (data.user) {
         setMessage(
-          'Account created. If email confirmation is enabled in Supabase, check your inbox before logging in.'
+          'Account created. Please check your email to verify your account. After verification, you can set your Collector Name on your profile.'
         );
       } else {
-        setMessage('Signup completed.');
+        setMessage('Signup completed. Please check your email.');
       }
     } catch (err: any) {
       setError(err?.message || 'Signup failed.');
     } finally {
-      setLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -103,8 +108,20 @@ if (password.length < 6) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.container}>
-            <Text style={styles.title}>PocketVault</Text>
-            <Text style={styles.subtitle}>Sign in or create an account</Text>
+            <Text style={styles.title}>Stackr</Text>
+            <Text style={styles.subtitle}>
+              Track your cards, value your collection, and trade with other
+              collectors.
+            </Text>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoTitle}>New to Stackr?</Text>
+              <Text style={styles.infoText}>
+                Enter your email and create a password, then tap Create account.
+                You’ll choose your Collector Name next, which will appear on your
+                profile.
+              </Text>
+            </View>
 
             <TextInput
               placeholder="Email"
@@ -133,7 +150,7 @@ if (password.length < 6) {
               onPress={handleLogin}
               disabled={loading}
             >
-              {loading ? (
+              {loadingAction === 'login' ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <Text style={styles.buttonText}>Login</Text>
@@ -145,7 +162,11 @@ if (password.length < 6) {
               onPress={handleSignup}
               disabled={loading}
             >
-              <Text style={styles.secondaryText}>Create account</Text>
+              {loadingAction === 'signup' ? (
+                <ActivityIndicator color={theme.colors.primary} />
+              ) : (
+                <Text style={styles.secondaryText}>Create account</Text>
+              )}
             </Pressable>
           </View>
         </ScrollView>
@@ -171,13 +192,32 @@ const styles = StyleSheet.create({
   },
   title: {
     color: theme.colors.text,
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '900',
     marginBottom: 6,
   },
   subtitle: {
     color: theme.colors.textSoft,
-    marginBottom: 24,
+    marginBottom: 18,
+    lineHeight: 20,
+  },
+  infoBox: {
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 18,
+  },
+  infoTitle: {
+    color: theme.colors.text,
+    fontWeight: '900',
+    marginBottom: 6,
+  },
+  infoText: {
+    color: theme.colors.textSoft,
+    fontSize: 13,
+    lineHeight: 18,
   },
   input: {
     backgroundColor: theme.colors.card,
@@ -205,10 +245,11 @@ const styles = StyleSheet.create({
   secondaryButton: {
     marginTop: 12,
     alignItems: 'center',
+    padding: 10,
   },
   secondaryText: {
     color: theme.colors.primary,
-    fontWeight: '700',
+    fontWeight: '800',
   },
   error: {
     color: '#FF6B6B',
@@ -217,5 +258,6 @@ const styles = StyleSheet.create({
   message: {
     color: '#22C55E',
     marginBottom: 10,
+    lineHeight: 18,
   },
 });

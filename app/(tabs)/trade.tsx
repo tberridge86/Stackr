@@ -40,6 +40,18 @@ const cardShadow = {
   elevation: 3,
 };
 
+const getConditionColor = (condition: string) => {
+  switch (condition) {
+    case 'Mint': return '#22C55E';
+    case 'Near Mint': return '#4ADE80';
+    case 'Lightly Played': return '#FACC15';
+    case 'Moderately Played': return '#FB923C';
+    case 'Heavily Played': return '#f78787';
+    case 'Damaged': return '#EF4444';
+    default: return theme.colors.textSoft;
+  }
+};
+
 export default function TradeScreen() {
  const [mainTab, setMainTab] = useState<MainTab>('trading');
 const [segment, setSegment] = useState<SegmentKey>('marketplaceListings');
@@ -188,31 +200,33 @@ const openTradeCardDetail = (item: any) => {
           found = cards.find((card) => card.id === cardId) ?? null;
         }
 
-        if (found) {
-          nextMap[item.id] = found;
-          continue;
-        }
+       if (found?.set?.name) {
+  nextMap[item.id] = found;
+  continue;
+}
 
-        const { data } = await supabase
-          .from('card_previews')
-          .select('card_id, name, set_name, image_url')
-          .eq('card_id', cardId)
-          .maybeSingle();
+       const { data } = await supabase
+  .from('pokemon_cards')
+  .select('id, name, set_id, image_small, image_large, raw_data')
+  .eq('id', cardId)
+  .maybeSingle();
 
-        if (data) {
-          nextMap[item.id] = {
-            id: data.card_id,
-            name: data.name,
-            set: {
-              id: setId,
-              name: data.set_name ?? setId,
-            },
-            images: {
-              small: data.image_url,
-              large: data.image_url,
-            },
-          };
-        }
+if (data) {
+  nextMap[item.id] = {
+    id: data.id,
+    name: data.name,
+    set: {
+      id: data.set_id,
+      name: data.raw_data?.set?.name ?? data.raw_data?.set?.series ?? data.set_id,
+    },
+    images: {
+      small: data.image_small,
+      large: data.image_large,
+    },
+  };
+
+  continue;
+}
       }
 
       if (mounted) setCardDetailsMap(nextMap);
@@ -322,7 +336,7 @@ const openTradeCardDetail = (item: any) => {
     const cardDetails = cardDetailsMap[item.id];
     const imageUri = cardDetails?.images?.small ?? null;
     const cardName = cardDetails?.name ?? item.card_id ?? 'Unknown card';
-    const setName = cardDetails?.set?.name ?? item.set_id ?? 'Unknown set';
+    const setName = cardDetails?.set?.name ?? 'Unknown set';
     const isMyListing = item.user_id === myUserId;
 
     const trade = activeTrades[item.id];
@@ -388,18 +402,36 @@ const openTradeCardDetail = (item: any) => {
               {cardName}
             </Text>
 
-            <Text
-              style={{ color: theme.colors.textSoft, marginBottom: 4 }}
-              numberOfLines={1}
-            >
-              {setName}
-            </Text>
+           <Text
+  style={{ color: theme.colors.textSoft, marginBottom: 4 }}
+  numberOfLines={1}
+>
+  {setName}
+</Text>
 
-            {!!item.condition && (
-              <Text style={{ color: theme.colors.textSoft, marginBottom: 4 }}>
-                Condition: {item.condition}
-              </Text>
-            )}
+{item.condition && (
+  <Text
+    style={{
+      color: getConditionColor(item.condition),
+      marginBottom: 4,
+      fontWeight: '700',
+      fontSize: 12,
+    }}
+  >
+    Condition: {item.condition}
+  </Text>
+)}
+              {item.has_damage && (
+  <Text style={{ color: '#EF4444', marginBottom: 4, fontWeight: '900' }}>
+    Damage disclosed
+  </Text>
+)}
+
+{item.trade_only && (
+  <Text style={{ color: theme.colors.primary, marginBottom: 4, fontWeight: '900' }}>
+    Trade only
+  </Text>
+)}
 
             {segment === 'wanted' ? (
   <Text
@@ -411,15 +443,25 @@ const openTradeCardDetail = (item: any) => {
   >
     Wanted card
   </Text>
-) : item.custom_value != null ? (
+) : item.asking_price != null || item.custom_value != null ? (
   <Text
     style={{
       color: '#22C55E',
       marginBottom: 4,
-      fontWeight: '800',
+      fontWeight: '900',
     }}
   >
-    £{Number(item.custom_value).toFixed(2)}
+    Asking: £{Number(item.asking_price ?? item.custom_value).toFixed(2)}
+  </Text>
+) : item.trade_only ? (
+  <Text
+    style={{
+      color: theme.colors.primary,
+      marginBottom: 4,
+      fontWeight: '900',
+    }}
+  >
+    Trade only
   </Text>
 ) : (
   <Text
@@ -914,16 +956,18 @@ const openTradeCardDetail = (item: any) => {
                 </Text>
 
                 <Text
-                  style={{
-                    marginTop: 6,
-                    color: theme.colors.textSoft,
-                    fontSize: 15,
-                    marginBottom: 14,
-                  }}
-                >
-                  {selectedCard?.set?.name ?? selectedListing?.set_id ?? 'Unknown set'}
-                  {selectedCard?.number ? ` • #${selectedCard.number}` : ''}
-                </Text>
+  style={{
+    marginTop: 6,
+    color: theme.colors.textSoft,
+    fontSize: 15,
+    marginBottom: 14,
+  }}
+>
+  {selectedCard?.set?.name ??
+  cardDetailsMap[selectedListing?.id]?.set?.name ??
+    'Unknown set'}
+  {selectedCard?.number ? ` • #${selectedCard.number}` : ''}
+</Text>
 
                 <View
                   style={{
@@ -935,49 +979,44 @@ const openTradeCardDetail = (item: any) => {
                     borderColor: theme.colors.border,
                   }}
                 >
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      paddingVertical: 6,
-                    }}
-                  >
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>
-                      Condition
-                    </Text>
-                    <Text
-                      style={{
-                        color: theme.colors.text,
-                        fontSize: 14,
-                        fontWeight: '800',
-                      }}
-                    >
-                      {selectedListing?.condition ?? 'Not specified'}
-                    </Text>
-                  </View>
+                  <>
+  {/* CONDITION */}
+  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+    <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>
+      Condition
+    </Text>
+    <Text style={{ color: getConditionColor(selectedListing?.condition ?? ''), fontSize: 14, fontWeight: '800' }}>
+      {selectedListing?.condition ?? '--'}
+    </Text>
+  </View>
 
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      paddingVertical: 6,
-                    }}
-                  >
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>
-                      Value
-                    </Text>
-                    <Text
-                      style={{
-                        color: theme.colors.text,
-                        fontSize: 14,
-                        fontWeight: '800',
-                      }}
-                    >
-                      {selectedListing?.custom_value != null
-                        ? `£${Number(selectedListing.custom_value).toFixed(2)}`
-                        : 'Open to offers'}
-                    </Text>
-                  </View>
+  {/* PRICE */}
+  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+    <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>
+      Asking Price
+    </Text>
+    <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '800' }}>
+      {selectedListing?.asking_price != null || selectedListing?.custom_value != null
+        ? `£${Number(selectedListing.asking_price ?? selectedListing.custom_value).toFixed(2)}`
+        : selectedListing?.trade_only
+        ? 'Trade only'
+        : 'Open to offers'}
+    </Text>
+  </View>
+
+  {/* MARKET */}
+  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+    <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>
+      Market estimate (based on condition)
+    </Text>
+    <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '800' }}>
+      {selectedListing?.market_estimate != null
+        ? `£${Number(selectedListing.market_estimate).toFixed(2)}`
+        : '--'}
+    </Text>
+  </View>
+</>
+
                 </View>
 
                 {!!selectedListing?.notes && (

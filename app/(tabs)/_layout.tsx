@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../lib/theme';
 
@@ -12,12 +13,12 @@ export default function TabLayout() {
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textSoft,
         tabBarStyle: {
-  backgroundColor: theme.colors.card,
-  borderTopColor: theme.colors.border,
-  borderTopWidth: 1,
-  height: 80,
-  paddingTop: 8,
-  paddingBottom: 8,
+          backgroundColor: theme.colors.card,
+          borderTopColor: theme.colors.border,
+          borderTopWidth: 1,
+          height: Platform.OS === 'android' ? 85: 84,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === 'android' ? 35 : 10,
           shadowColor: '#000',
           shadowOpacity: 0.08,
           shadowRadius: 14,
@@ -27,6 +28,7 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '800',
+          marginBottom: Platform.OS === 'android' ? 4 : 0,
         },
         tabBarIcon: ({ color, size, focused }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'ellipse';
@@ -62,6 +64,7 @@ export default function TabLayout() {
       })}
     >
       <Tabs.Screen name="trade" options={{ title: 'Market' }} />
+
       <Tabs.Screen
         name="community/index"
         options={{
@@ -69,6 +72,7 @@ export default function TabLayout() {
           tabBarLabel: 'Social',
         }}
       />
+
       <Tabs.Screen name="index" options={{ title: 'Hub' }} />
       <Tabs.Screen name="binder" options={{ title: 'Binder' }} />
       <Tabs.Screen name="pokedex" options={{ title: 'Pokédex' }} />

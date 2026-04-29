@@ -7,19 +7,21 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../components/profile-context';
-import { BACKGROUND_MAP } from '../../lib/backgrounds';
 import { AVATAR_PRESETS } from '../../lib/avatars';
 import { theme } from '../../lib/theme';
+import { supabase } from '../../lib/supabase';
 import {
   getCachedCardSync,
   getCachedCardsForSet,
 } from '../../lib/pokemonTcgCache';
-  const TYPE_COLOR_MAP: Record<string, string> = {
+
+const TYPE_COLOR_MAP: Record<string, string> = {
   water: '#78C8F0',
   fire: '#e9721d',
   grass: '#A7DB8D',
@@ -28,7 +30,6 @@ import {
   dark: '#705848',
   dragon: '#7038F8',
 };
-
 
 function TopLoaderCard({ label, card }: { label: string; card: any | null }) {
   return (
@@ -65,20 +66,49 @@ export default function ProfileScreen() {
   const [favoriteCard, setFavoriteCard] = useState<any | null>(null);
   const [chaseCard, setChaseCard] = useState<any | null>(null);
   const [showcaseLoading, setShowcaseLoading] = useState(false);
-
-  const background = useMemo(() => {
-    return (
-      BACKGROUND_MAP[profile?.background_key ?? 'galaxy'] ??
-      BACKGROUND_MAP['galaxy']
-    );
-  }, [profile?.background_key]);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const avatar = useMemo(() => {
-    return (
-      AVATAR_PRESETS.find((a) => a.key === profile?.avatar_preset) ??
-      null
-    );
+    return AVATAR_PRESETS.find((a) => a.key === profile?.avatar_preset) ?? null;
   }, [profile?.avatar_preset]);
+
+  const profileColor =
+    TYPE_COLOR_MAP[profile?.pokemon_type ?? 'water'] ?? theme.colors.primary;
+
+  const handleLogout = async () => {
+    try {
+      setLoggingOut(true);
+
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        Alert.alert('Logout failed', error.message);
+        return;
+      }
+
+      router.replace('/login');
+    } catch (error) {
+      console.log('Logout error:', error);
+      Alert.alert('Logout failed', 'Something went wrong. Please try again.');
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
+  const confirmLogout = () => {
+    Alert.alert(
+      'Log out',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log out',
+          style: 'destructive',
+          onPress: handleLogout,
+        },
+      ]
+    );
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -117,7 +147,7 @@ export default function ProfileScreen() {
         if (mounted) setShowcaseLoading(false);
       }
     };
-  
+
     loadShowcaseCards();
 
     return () => {
@@ -142,129 +172,170 @@ export default function ProfileScreen() {
           Complete your profile setup to continue.
         </Text>
 
-       <TouchableOpacity
-  onPress={() => router.push('/profile/setup')}
-  style={styles.editButton}
->
-  <Ionicons name="create-outline" size={18} color="#fff" />
-</TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push('/profile/setup')}
+          style={styles.setupButton}
+        >
+          <Text style={styles.setupButtonText}>Set up profile</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={confirmLogout}
+          style={[styles.logoutButton, { marginTop: 14 }]}
+          disabled={loggingOut}
+        >
+          {loggingOut ? (
+            <ActivityIndicator color="#D92D20" />
+          ) : (
+            <Text style={styles.logoutText}>Log out</Text>
+          )}
+        </TouchableOpacity>
       </View>
     );
   }
 
-    return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-    <ScrollView contentContainerStyle={styles.content}>
-      <View
-        style={[
-          styles.heroCard,
-          {
-            backgroundColor:
-  TYPE_COLOR_MAP[profile?.pokemon_type ?? 'water'] ?? '#1b1f3a'
-          },
-        ]}
-      >
-        <View style={styles.heroTopRow}>
-          <View style={styles.avatarWrap}>
-            {avatar?.image ? (
-              <Image source={avatar.image} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarFallback}>
-                <Text style={styles.initialsText}>
-                  {profile.collector_name?.[0]?.toUpperCase() ?? '?'}
-                </Text>
-              </View>
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={[styles.heroCard, { backgroundColor: profileColor }]}>
+          <View style={styles.heroTopRow}>
+            <View style={styles.avatarWrap}>
+              {avatar?.image ? (
+                <Image source={avatar.image} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatarFallback}>
+                  <Text style={styles.initialsText}>
+                    {profile.collector_name?.[0]?.toUpperCase() ?? '?'}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <TouchableOpacity
+              onPress={() => router.push('/profile/setup')}
+              style={styles.editButton}
+            >
+              <Ionicons name="create-outline" size={22} color="#fff" />
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.collectorName}>
+            {profile.collector_name ?? 'Collector'}
+          </Text>
+
+          <Text style={styles.collectorMeta}>
+            {profile.pokemon_type
+              ? `${
+                  profile.pokemon_type.charAt(0).toUpperCase() +
+                  profile.pokemon_type.slice(1)
+                } Trainer`
+              : 'Collector Profile'}
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionRow}>
+            <Text style={styles.sectionTitle}>Showcase</Text>
+            {showcaseLoading && (
+              <ActivityIndicator color={theme.colors.primary} size="small" />
             )}
           </View>
 
+          <View style={styles.topLoaderRow}>
+            <TopLoaderCard label="Favourite Card" card={favoriteCard} />
+            <TopLoaderCard label="Chase Card" card={chaseCard} />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Access</Text>
+
           <TouchableOpacity
-            onPress={() => router.push('/profile/setup')}
-            style={styles.editButton}
+            onPress={() => router.push('/binder')}
+            style={styles.quickAction}
           >
-            <Ionicons name="create-outline" size={26} color="#fff"style={{ marginLeft: 3, marginTop: -4 }} />
-            </TouchableOpacity>
+            <Ionicons name="folder-open-outline" size={20} color="#FFD166" />
+            <Text style={styles.quickActionText}>Open Binders</Text>
+            <Ionicons name="chevron-forward" size={18} color="#94A0C9" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push('/trade')}
+            style={styles.quickAction}
+          >
+            <Ionicons name="storefront-outline" size={20} color="#FFD166" />
+            <Text style={styles.quickActionText}>Open Marketplace</Text>
+            <Ionicons name="chevron-forward" size={18} color="#94A0C9" />
+          </TouchableOpacity>
         </View>
 
-        <Text style={styles.collectorName}>
-          {profile.collector_name ?? 'Collector'}
-        </Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
 
-        <Text style={styles.collectorMeta}>
-  {profile.pokemon_type
-    ? `${profile.pokemon_type.charAt(0).toUpperCase() + profile.pokemon_type.slice(1)} Trainer`
-    : 'Collector Profile'}
-</Text>
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Showcase</Text>
-          {showcaseLoading && (
-            <ActivityIndicator color={theme.colors.primary} size="small" />
-          )}
+          <TouchableOpacity
+            onPress={confirmLogout}
+            style={styles.logoutButton}
+            disabled={loggingOut}
+          >
+            {loggingOut ? (
+              <ActivityIndicator color="#D92D20" />
+            ) : (
+              <>
+                <Ionicons name="log-out-outline" size={20} color="#D92D20" />
+                <Text style={styles.logoutText}>Log out</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.topLoaderRow}>
-          <TopLoaderCard label="Favourite Card" card={favoriteCard} />
-          <TopLoaderCard label="Chase Card" card={chaseCard} />
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Access</Text>
-
-        <TouchableOpacity
-          onPress={() => router.push('/binder')}
-          style={styles.quickAction}
-        >
-          <Ionicons name="folder-open-outline" size={20} color="#FFD166" />
-          <Text style={styles.quickActionText}>Open Binders</Text>
-          <Ionicons name="chevron-forward" size={18} color="#94A0C9" />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => router.push('/trade')}
-          style={styles.quickAction}
-        >
-          <Ionicons name="storefront-outline" size={20} color="#FFD166" />
-          <Text style={styles.quickActionText}>Open Marketplace</Text>
-          <Ionicons name="chevron-forward" size={18} color="#94A0C9" />
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
-  </SafeAreaView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.bg },
-  content: { padding: 18, paddingBottom: 120 },
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.bg,
+  },
+
+  content: {
+    padding: 18,
+    paddingBottom: 120,
+  },
 
   centered: {
     flex: 1,
     backgroundColor: theme.colors.bg,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
 
-  loadingText: { color: theme.colors.textSoft, marginTop: 12 },
+  loadingText: {
+    color: theme.colors.textSoft,
+    marginTop: 12,
+  },
 
   errorTitle: {
     color: theme.colors.text,
     fontSize: 18,
     fontWeight: '800',
   },
+
   errorText: {
     color: theme.colors.textSoft,
     marginTop: 6,
+    textAlign: 'center',
   },
 
   setupButton: {
     marginTop: 16,
     backgroundColor: theme.colors.primary,
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
     borderRadius: 12,
   },
+
   setupButtonText: {
     color: '#fff',
     fontWeight: '900',
@@ -312,16 +383,13 @@ const styles = StyleSheet.create({
   },
 
   editButton: {
-  position: 'absolute',
-  top: 12,
-  right: 12,
-  width: 34,
-  height: 34,
-  borderRadius: 8,
-  backgroundColor: 'rgba(0,0,0,0.25)',
-  alignItems: 'center',
-  justifyContent: 'center',
-},
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   collectorName: {
     color: '#0b0f2a',
@@ -330,9 +398,15 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
 
-  collectorMeta: { color: '#0b0f2a', marginTop: 6 },
+  collectorMeta: {
+    color: '#0b0f2a',
+    marginTop: 6,
+    fontWeight: '600',
+  },
 
-  section: { marginBottom: 20 },
+  section: {
+    marginBottom: 20,
+  },
 
   sectionRow: {
     flexDirection: 'row',
@@ -352,7 +426,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 
-  topLoaderWrap: { width: '48%', alignItems: 'center' },
+  topLoaderWrap: {
+    width: '48%',
+    alignItems: 'center',
+  },
 
   topLoaderLabel: {
     color: theme.colors.secondary,
@@ -375,15 +452,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  topLoaderImage: { width: 120, height: 168 },
+  topLoaderImage: {
+    width: 120,
+    height: 168,
+  },
 
-  topLoaderEmpty: { alignItems: 'center' },
+  topLoaderEmpty: {
+    alignItems: 'center',
+  },
 
-  topLoaderEmptyText: { color: '#7c859f' },
+  topLoaderEmptyText: {
+    color: '#7c859f',
+    marginTop: 6,
+  },
 
   topLoaderName: {
     color: theme.colors.text,
     marginTop: 10,
+    textAlign: 'center',
+    fontWeight: '600',
   },
 
   quickAction: {
@@ -399,5 +486,21 @@ const styles = StyleSheet.create({
     flex: 1,
     color: theme.colors.text,
     marginLeft: 12,
+    fontWeight: '700',
+  },
+
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFECEC',
+    padding: 16,
+    borderRadius: 16,
+    gap: 8,
+  },
+
+  logoutText: {
+    color: '#D92D20',
+    fontWeight: '900',
   },
 });

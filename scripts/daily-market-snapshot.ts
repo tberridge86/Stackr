@@ -15,10 +15,17 @@ type EbayResponse = {
   rawCount?: number | string | null;
 };
 
+const JOB_NAME = 'daily-market-snapshot';
+const EBAY_DELAY_MS = 750;
+const EBAY_RETRY_DELAY_MS = 1500;
+const TCG_BATCH_SIZE = 50;
+
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
+
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function toNumber(value: number | string | null | undefined): number | null {
   if (value == null || value === '') return null;
@@ -42,7 +49,11 @@ function buildEbayQuery(card: any): string {
     .join(' ');
 }
 
-async function logCron(jobName: string, status: 'started' | 'success' | 'failed', details?: string) {
+async function logCron(
+  jobName: string,
+  status: 'started' | 'success' | 'failed',
+  details?: string
+) {
   const { error } = await supabase.from('cron_logs').insert({
     job_name: jobName,
     status,
@@ -55,10 +66,59 @@ async function logCron(jobName: string, status: 'started' | 'success' | 'failed'
   }
 }
 
+async function fetchTcgPricesInBatches(cardIds: string[]) {
+  const finalPriceMap: Record<string, number> = {};
+
+  for (let i = 0; i < cardIds.length; i += TCG_BATCH_SIZE) {
+    const batch = cardIds.slice(i, i + TCG_BATCH_SIZE);
+
+    console.log(
+      `🔍 Fetching TCG batch ${Math.floor(i / TCG_BATCH_SIZE) + 1} (${batch.length} cards)`
+    );
+
+    try {
+      const batchMap = await fetchLivePricesForCardIds(batch);
+      Object.assign(finalPriceMap, batchMap);
+    } catch (err) {
+      console.log('⚠️ TCG batch failed, continuing:', err);
+    }
+
+    await delay(500);
+  }
+
+  return finalPriceMap;
+}
+
+async function fetchEbayWithRetry(
+  ebayQuery: string,
+  displayName: string
+): Promise<EbayResponse> {
+  try {
+    console.log(`🟡 eBay query: ${ebayQuery}`);
+    return await fetchEbayPrice(ebayQuery);
+  } catch (firstError) {
+    console.log(`⚠️ eBay fetch failed for ${displayName}. Retrying...`);
+    await delay(EBAY_RETRY_DELAY_MS);
+
+    try {
+      return await fetchEbayPrice(ebayQuery);
+    } catch (secondError) {
+      console.log(`🚫 eBay final fail for ${displayName}:`, secondError);
+
+      return {
+        low: null,
+        average: null,
+        high: null,
+        count: 0,
+      };
+    }
+  }
+}
+
 async function runDailyMarketSnapshot() {
   console.log('🚀 Snapshot started');
 
-  await logCron('daily-market-snapshot', 'started');
+  await logCron(JOB_NAME, 'started');
 
   const { data: cards, error } = await supabase
     .from('binder_cards')
@@ -72,11 +132,7 @@ async function runDailyMarketSnapshot() {
   if (!cards || cards.length === 0) {
     console.log('⚠️ No owned cards found');
 
-    await logCron(
-      'daily-market-snapshot',
-      'success',
-      'No owned cards found'
-    );
+    await logCron(JOB_NAME, 'success', 'No owned cards found');
 
     return;
   }
@@ -87,45 +143,43 @@ async function runDailyMarketSnapshot() {
     new Map(cards.map((card) => [card.api_card_id || card.card_id, card])).values()
   );
 
-  const cardIds = uniqueCards.map((card) => card.api_card_id || card.card_id);
+  const cardIds = uniqueCards
+    .map((card) => card.api_card_id || card.card_id)
+    .filter(Boolean);
 
   console.log(`🔍 Fetching TCG prices for ${cardIds.length} unique cards`);
 
-  const priceMap = await fetchLivePricesForCardIds(cardIds);
+  const priceMap = await fetchTcgPricesInBatches(cardIds);
 
   let savedCount = 0;
   let missingTcgCount = 0;
   let ebayCount = 0;
+  let ebayFailCount = 0;
+  let insertFailCount = 0;
 
-  for (const card of uniqueCards) {
+  for (let index = 0; index < uniqueCards.length; index += 1) {
+    const card = uniqueCards[index];
+
     const lookupId = card.api_card_id || card.card_id;
     const displayName = card.card_name || lookupId;
     const tcgPrice = priceMap[lookupId];
+
+    console.log(
+      `\n📍 Processing ${index + 1}/${uniqueCards.length}: ${displayName}`
+    );
 
     if (typeof tcgPrice !== 'number') {
       missingTcgCount += 1;
       console.log(`⚠️ No TCG price found for ${displayName}`);
     }
 
-    let ebay: EbayResponse = {
-      low: null,
-      average: null,
-      high: null,
-      count: 0,
-    };
-
     const ebayQuery = buildEbayQuery(card);
+    const ebay = await fetchEbayWithRetry(ebayQuery, displayName);
 
-    try {
-      console.log(`🟡 eBay query: ${ebayQuery}`);
-
-      ebay = await fetchEbayPrice(ebayQuery);
-
-      if (toNumber(ebay.average) !== null) {
-        ebayCount += 1;
-      }
-    } catch (err) {
-      console.log(`⚠️ eBay fetch failed for ${displayName}`, err);
+    if (toNumber(ebay.average) !== null) {
+      ebayCount += 1;
+    } else {
+      ebayFailCount += 1;
     }
 
     const snapshot = {
@@ -150,7 +204,9 @@ async function runDailyMarketSnapshot() {
       .insert(snapshot);
 
     if (insertError) {
+      insertFailCount += 1;
       console.error(`❌ Insert failed for ${displayName}:`, insertError);
+      await delay(EBAY_DELAY_MS);
       continue;
     }
 
@@ -161,16 +217,18 @@ async function runDailyMarketSnapshot() {
         snapshot.tcg_mid ?? 'none'
       } | eBay: ${snapshot.ebay_average ?? 'none'}`
     );
+
+    await delay(EBAY_DELAY_MS);
   }
 
-  console.log('✅ Snapshot complete');
+  console.log('\n✅ Snapshot loop complete');
   console.log(`💾 Saved: ${savedCount}`);
   console.log(`⚠️ Missing TCG prices: ${missingTcgCount}`);
   console.log(`🟡 eBay prices found: ${ebayCount}`);
+  console.log(`🚫 eBay missing/failed: ${ebayFailCount}`);
+  console.log(`❌ Insert failures: ${insertFailCount}`);
 
-  const { error: updateError } = await supabase.rpc(
-    'update_binder_card_prices'
-  );
+  const { error: updateError } = await supabase.rpc('update_binder_card_prices');
 
   if (updateError) {
     throw updateError;
@@ -179,9 +237,9 @@ async function runDailyMarketSnapshot() {
   console.log('✅ Binder card prices updated');
 
   await logCron(
-    'daily-market-snapshot',
+    JOB_NAME,
     'success',
-    `Saved ${savedCount}. Missing TCG ${missingTcgCount}. eBay found ${ebayCount}.`
+    `Saved ${savedCount}. Missing TCG ${missingTcgCount}. eBay found ${ebayCount}. eBay failed/missing ${ebayFailCount}. Insert failed ${insertFailCount}.`
   );
 }
 
@@ -194,7 +252,7 @@ async function main() {
     console.error('❌ Daily snapshot job failed:', error);
 
     await logCron(
-      'daily-market-snapshot',
+      JOB_NAME,
       'failed',
       error?.message ?? 'Unknown error'
     );
