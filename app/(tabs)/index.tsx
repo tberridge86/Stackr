@@ -19,6 +19,7 @@ import { fetchBinders, fetchBinderCards } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { createActivityPost } from '../../lib/activity';
 
+
 type ChartRange = '1D' | '7D' | '30D' | 'ALL';
 type ChartMode = 'TCG' | 'EBAY' | 'BOTH';
 
@@ -593,11 +594,19 @@ useEffect(() => {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.topBar}>
-          <View>
-            <Text style={styles.topBarBrand}>PocketVault</Text>
-            <Text style={styles.topBarSubtitle}>Collector dashboard</Text>
+       <View style={styles.topBar}>
+  <View>
+    <View style={styles.brandRow}>
+      <Image
+        source={require('../../assets/images/hub.png')}
+        style={styles.brandIcon}
+        resizeMode="contain"
+      />
+
           </View>
+
+    <Text style={styles.topBarSubtitle}>Collector Dashboard</Text>
+  </View>
 
           <View style={styles.topBarActions}>
   <Pressable
@@ -858,20 +867,34 @@ const styles = StyleSheet.create({
 
   topBar: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: 16,
   },
+
   topBarBrand: {
     color: theme.colors.text,
-    fontSize: 22,
+    fontSize: 38,
     fontWeight: '900',
   },
+
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  brandIcon: {
+    width: 280,
+    height: 100,
+    marginRight: 10,
+  },
+
   topBarSubtitle: {
     color: theme.colors.textSoft,
     fontSize: 13,
     marginTop: 4,
   },
+
   profileButton: {
     width: 50,
     height: 50,
@@ -883,30 +906,30 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     ...cardShadow,
   },
-  
-topBarActions: {
-  flexDirection: 'row',
-  gap: 10,
-},
 
-notificationBadge: {
-  position: 'absolute',
-  top: -4,
-  right: -4,
-  minWidth: 18,
-  height: 18,
-  borderRadius: 9,
-  backgroundColor: '#EF4444',
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingHorizontal: 4,
-},
+  topBarActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
 
-notificationBadgeText: {
-  color: '#FFFFFF',
-  fontSize: 10,
-  fontWeight: '900',
-},
+  notificationBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+
+  notificationBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '900',
+  },
 
   portfolioCard: {
     backgroundColor: theme.colors.card,
@@ -918,6 +941,7 @@ notificationBadgeText: {
     overflow: 'hidden',
     ...cardShadow,
   },
+
   heroGlow: {
     position: 'absolute',
     width: 240,
@@ -927,35 +951,39 @@ notificationBadgeText: {
     top: -80,
     right: -60,
   },
+
   portfolioLabel: {
     color: theme.colors.textSoft,
     fontSize: 13,
     fontWeight: '700',
     marginBottom: 8,
   },
+
   portfolioValue: {
     color: theme.colors.text,
     fontSize: 38,
     fontWeight: '900',
     letterSpacing: -0.5,
   },
+
   portfolioChangeRow: {
     marginTop: 10,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 7,
   },
+
   portfolioChange: {
     fontSize: 15,
     fontWeight: '800',
   },
+
   updatedText: {
     marginTop: 7,
     color: theme.colors.textSoft,
     fontSize: 12,
     fontWeight: '600',
   },
-
   graphBox: {
     marginTop: 18,
     backgroundColor: theme.colors.surface,
@@ -1147,8 +1175,8 @@ notificationBadgeText: {
     ...cardShadow,
   },
   actionIconWrap: {
-    width: 44,
-    height: 44,
+    width: 3072,
+    height: 1024,
     borderRadius: 15,
     backgroundColor: theme.colors.surface,
     alignItems: 'center',
@@ -1185,12 +1213,6 @@ notificationBadgeText: {
   fontSize: 13,
   fontWeight: '900',
 },
-viewAllText: {
-  color: theme.colors.primary,
-  fontSize: 13,
-  fontWeight: '900',
-},
-
 recentListingsScroll: {
   gap: 12,
   paddingRight: 10,

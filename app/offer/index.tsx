@@ -397,15 +397,15 @@ export default function OfferDetailScreen() {
         </View>
 
         <View style={styles.trustCard}>
-          <Text style={styles.trustTitle}>Trading on PocketVault</Text>
+          <Text style={styles.trustTitle}>Trading on Stackr</Text>
           <Text style={styles.trustText}>
-            PocketVault connects collectors to arrange trades. Items are exchanged directly between users.
+            Stackr connects collectors to arrange trades. Items are exchanged directly between users.
           </Text>
           <Text style={styles.trustText}>
             Please confirm card condition, agree details clearly, and only trade when you’re comfortable.
           </Text>
           <Text style={styles.trustText}>
-            Keep all messages inside PocketVault so your trade history is recorded.
+            Keep all messages inside Stackr so your trade history is recorded.
           </Text>
         </View>
 

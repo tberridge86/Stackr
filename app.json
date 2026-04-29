@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "PocketVault",
-    "slug": "pocketvault-native",
+    "name": "Stackr",
+    "slug": "Stackr",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "pocketvaultnative",
+    "scheme": "Stackr",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "plugins": [
@@ -21,7 +21,7 @@
 ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tommo86.pocketvaultnative",
+      "bundleIdentifier": "com.tommo86.Stackr",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -32,7 +32,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.tommo86.pocketvaultnative"
+      "package": "com.tommo86.Stackr"
     },
     "web": {
       "bundler": "metro",

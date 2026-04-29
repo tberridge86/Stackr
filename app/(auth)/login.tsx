@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
   TextInput,
   Pressable,
   ActivityIndicator,
@@ -74,7 +75,7 @@ export default function LoginScreen() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: 'pocketvaultnative://auth/callback',
+          emailRedirectTo: 'stackr://auth/callback',
         },
       });
 
@@ -107,9 +108,15 @@ export default function LoginScreen() {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
+          <View style={styles.logoWrap}>
+  <Image
+    source={require('../../assets/images/hub.png')}
+    style={styles.logo}
+    resizeMode="contain"
+  />
+</View>
           <View style={styles.container}>
-            <Text style={styles.title}>Stackr</Text>
-            <Text style={styles.subtitle}>
+             <Text style={styles.subtitle}>
               Track your cards, value your collection, and trade with other
               collectors.
             </Text>
@@ -260,4 +267,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     lineHeight: 18,
   },
+logoWrap: {
+  alignItems: 'center',
+  marginTop: 60,
+  marginBottom: 40,
+},
+
+logo: {
+  width: 600,
+  height: 210,
+},
+
 });

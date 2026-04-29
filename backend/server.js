@@ -323,7 +323,7 @@ async function scanWithXimilar(imageUrl) {
 }
 
 app.get('/', (req, res) => {
-  res.send('PocketVault API is running');
+  res.send('Stackr API is running');
 });
 
 app.get('/debug-env', (req, res) => {
@@ -541,5 +541,5 @@ app.post('/api/trade/received', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`PocketVault backend listening on port ${PORT}`);
+  console.log(`Stackr backend listening on port ${PORT}`);
 });
