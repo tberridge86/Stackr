@@ -285,6 +285,84 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+const markTradeSent = useCallback(
+  async (tradeId: string, userId: string) => {
+    const { data: trade, error: loadError } = await supabase
+      .from('trade_offers')
+      .select('id, sender_id, receiver_id')
+      .eq('id', tradeId)
+      .single();
+
+    if (loadError) throw loadError;
+
+    const update =
+      trade.sender_id === userId
+        ? { sender_sent: true }
+        : { receiver_sent: true };
+
+    const { error } = await supabase
+      .from('trade_offers')
+      .update(update)
+      .eq('id', tradeId);
+
+    if (error) throw error;
+  },
+  []
+);
+
+const markTradeReceived = useCallback(
+  async (tradeId: string, userId: string) => {
+    const { data: trade, error: loadError } = await supabase
+      .from('trade_offers')
+      .select('id, sender_id, receiver_id')
+      .eq('id', tradeId)
+      .single();
+
+    if (loadError) throw loadError;
+
+    const update =
+      trade.sender_id === userId
+        ? { sender_received: true }
+        : { receiver_received: true };
+
+    const { error } = await supabase
+      .from('trade_offers')
+      .update(update)
+      .eq('id', tradeId);
+
+    if (error) throw error;
+
+    const { data: updatedTrade, error: reloadError } = await supabase
+      .from('trade_offers')
+      .select(
+        'sender_sent, receiver_sent, sender_received, receiver_received'
+      )
+      .eq('id', tradeId)
+      .single();
+
+    if (reloadError) throw reloadError;
+
+    const bothCompleted =
+      updatedTrade.sender_sent &&
+      updatedTrade.receiver_sent &&
+      updatedTrade.sender_received &&
+      updatedTrade.receiver_received;
+
+    if (bothCompleted) {
+      const { error: completeError } = await supabase
+        .from('trade_offers')
+        .update({
+          status: 'completed',
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', tradeId);
+
+      if (completeError) throw completeError;
+    }
+  },
+  []
+);
+
   const toggleFlag = useCallback(
     async (
       cardId: string,
@@ -589,6 +667,8 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       createTradeListing,
       toggleWishlistCard,
       updateTradeMeta,
+      markTradeSent,
+      markTradeReceived,
 
       isForTrade: (cardId: string, setId?: string | null) => {
         const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
@@ -636,6 +716,8 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       createTradeReview,
       getTraderRating,
       getTraderReviews,
+      markTradeSent,
+      markTradeReceived,
     ]
   );
 

@@ -10,6 +10,7 @@ export type BinderRecord = {
   name: string;
   color: string;
   type: BinderType;
+  is_public: boolean | null;
   source_set_id: string | null;
   created_at: string;
 
@@ -69,7 +70,8 @@ export async function fetchBinders(): Promise<BinderRecord[]> {
   const { data, error } = await supabase
     .from('binders')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('sort_order', { ascending: true })
+.order('created_at', { ascending: false });
 
   if (error) throw error;
 

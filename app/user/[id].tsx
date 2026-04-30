@@ -1,3 +1,8 @@
+import {
+  sendFriendRequest,
+  getFriendStatus,
+  removeFriend,
+} from '../../lib/friends';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -152,6 +157,9 @@ export default function PublicProfileScreen() {
   const [ratingSummary, setRatingSummary] = useState<RatingSummary | null>(null);
   const [reviews, setReviews] = useState<TradeReview[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [myUserId, setMyUserId] = useState<string>('');
+  const [friendship, setFriendship] = useState<any | null>(null);
+  const [friendLoading, setFriendLoading] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -176,6 +184,23 @@ export default function PublicProfileScreen() {
     };
 
     loadProfile();
+  }, [userId]);
+
+  useEffect(() => {
+    const loadFriendship = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      setMyUserId(user?.id ?? '');
+
+      if (!user || !userId || user.id === userId) return;
+
+      const status = await getFriendStatus(userId);
+      setFriendship(status);
+    };
+
+    loadFriendship();
   }, [userId]);
 
   useEffect(() => {
@@ -340,6 +365,29 @@ export default function PublicProfileScreen() {
     [profile?.avatar_preset]
   );
 
+  const handleFriendPress = async () => {
+    if (!userId || !myUserId || myUserId === userId) return;
+
+    try {
+      setFriendLoading(true);
+
+      if (!friendship) {
+        const request = await sendFriendRequest(userId);
+        setFriendship(request);
+        return;
+      }
+
+      if (friendship.status === 'accepted') {
+        await removeFriend(friendship.id);
+        setFriendship(null);
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setFriendLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <LinearGradient
@@ -404,9 +452,11 @@ export default function PublicProfileScreen() {
           <View style={styles.previewWrap}>
             <View style={[styles.collectorCard, { backgroundColor: selectedType.card }]}>
               <Text style={styles.collectorSmall}>Collector</Text>
+
               <Text style={styles.collectorName}>
                 {profile.collector_name || 'Unknown Collector'}
               </Text>
+
               <Text style={styles.hp}>HP 120</Text>
 
               <View style={styles.avatarFrame}>
@@ -450,10 +500,40 @@ export default function PublicProfileScreen() {
             </View>
           </View>
 
+          {myUserId !== profile.id && (
+            <Pressable
+              onPress={handleFriendPress}
+              disabled={friendLoading || friendship?.status === 'pending'}
+              style={[
+                styles.primaryButton,
+                {
+                  marginBottom: 22,
+                  opacity:
+                    friendLoading || friendship?.status === 'pending' ? 0.6 : 1,
+                },
+              ]}
+            >
+              <Text style={styles.primaryButtonText}>
+                {friendLoading
+                  ? 'Working...'
+                  : !friendship
+                  ? 'Add Friend'
+                  : friendship.status === 'pending'
+                  ? friendship.requester_id === myUserId
+                    ? 'Request Sent'
+                    : 'Pending Request'
+                  : friendship.status === 'accepted'
+                  ? 'Friends'
+                  : 'Add Friend'}
+              </Text>
+            </Pressable>
+          )}
+
           <View style={styles.showcaseHeaderRow}>
             <Text style={styles.sectionTitle}>Showcase</Text>
             {showcaseLoading && <ActivityIndicator color="#FFD166" size="small" />}
           </View>
+
           <Text style={styles.sectionSubtext}>
             Favourite and chase cards this collector wants to show off.
           </Text>
@@ -467,6 +547,7 @@ export default function PublicProfileScreen() {
             <Text style={styles.sectionTitle}>Public Binders</Text>
             {bindersLoading && <ActivityIndicator color="#FFD166" size="small" />}
           </View>
+
           <Text style={styles.sectionSubtext}>
             Read-only binders this collector has chosen to share.
           </Text>
@@ -580,11 +661,10 @@ export default function PublicProfileScreen() {
           </View>
 
           <View style={styles.buttonGroup}>
-            <Pressable style={styles.primaryButton} onPress={() => router.push('/offers')}>
-              <Text style={styles.primaryButtonText}>View Offers</Text>
-            </Pressable>
-
-            <Pressable style={styles.secondaryButton} onPress={() => router.back()}>
+            <Pressable
+              style={styles.secondaryButton}
+              onPress={() => router.back()}
+            >
               <Text style={styles.secondaryButtonText}>Back</Text>
             </Pressable>
           </View>

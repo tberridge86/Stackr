@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AVATAR_PRESETS } from '../../../lib/avatars';
 import { supabase } from '../../../lib/supabase';
+import { getMyFriends } from '../../../lib/friends';
 
 type FeedMode = 'global' | 'friends';
 
@@ -85,6 +86,10 @@ export default function CommunityScreen() {
 
   const [body, setBody] = useState('');
   const [selectedCard, setSelectedCard] = useState<OwnedCardOption | null>(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [userResults, setUserResults] = useState<ProfilePreview[]>([]);
+  const [userSearchLoading, setUserSearchLoading] = useState(false);
+  const [friends, setFriends] = useState<any[]>([]);
 
   const loadFeed = async () => {
     try {
@@ -94,6 +99,9 @@ export default function CommunityScreen() {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
+
+      const myFriends = await getMyFriends();
+      setFriends(myFriends);
 
       if (userError) throw userError;
       setCurrentUserId(user?.id ?? null);
@@ -215,17 +223,46 @@ export default function CommunityScreen() {
     }
   };
 
+  const searchUsers = async (text: string) => {
+  setUserSearch(text);
+
+  if (text.trim().length < 2) {
+    setUserResults([]);
+    return;
+  }
+
+  try {
+    setUserSearchLoading(true);
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, collector_name, avatar_preset')
+      .ilike('collector_name', `%${text.trim()}%`)
+      .neq('id', currentUserId ?? '')
+      .limit(10);
+
+    if (error) throw error;
+
+    setUserResults((data ?? []) as ProfilePreview[]);
+  } catch (error) {
+    console.log('User search failed', error);
+  } finally {
+    setUserSearchLoading(false);
+  }
+};
+
   useEffect(() => {
     loadFeed();
     loadOwnedCards();
   }, []);
 
-  const visiblePosts = useMemo(() => {
-    if (mode === 'global') return posts;
+ const visiblePosts = useMemo(() => {
+  if (mode === 'global') return posts;
 
-    return posts.filter((post) => post.user_id === currentUserId);
-  }, [posts, mode, currentUserId]);
-
+  return posts.filter((post) =>
+    friends.some((f) => f.friend_id === post.user_id)
+  );
+}, [posts, mode, friends]);
   const handleCreatePost = async () => {
     const trimmedBody = body.trim();
 
@@ -352,6 +389,34 @@ export default function CommunityScreen() {
     );
   };
 
+const renderUserResult = ({ item }: { item: ProfilePreview }) => {
+  const avatar = AVATAR_PRESETS.find((a) => a.key === item.avatar_preset);
+
+  return (
+    <Pressable
+      onPress={() => router.push(`/user/${item.id}`)}
+      style={styles.userResultCard}
+    >
+      <View style={styles.userResultAvatar}>
+        {avatar?.image ? (
+          <Image source={avatar.image} style={styles.userResultAvatarImage} />
+        ) : (
+          <Ionicons name="person" size={18} color="#fff" />
+        )}
+      </View>
+
+      <View style={{ flex: 1 }}>
+        <Text style={styles.userResultName}>
+          {item.collector_name ?? 'Collector'}
+        </Text>
+        <Text style={styles.userResultSubtext}>View profile</Text>
+      </View>
+
+      <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
+    </Pressable>
+  );
+};
+
   const renderOwnedCard = ({ item }: { item: OwnedCardOption }) => {
     const card = item.card;
 
@@ -392,6 +457,30 @@ export default function CommunityScreen() {
       <View style={styles.container}>
         <Text style={styles.heading}>Community</Text>
 
+        <View style={styles.searchCard}>
+  <TextInput
+    value={userSearch}
+    onChangeText={searchUsers}
+    placeholder="Search collectors..."
+    placeholderTextColor={theme.colors.textSoft}
+    style={styles.searchInput}
+  />
+
+  {userSearchLoading && (
+    <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 8 }} />
+  )}
+
+  {userResults.length > 0 && (
+    <FlatList
+      data={userResults}
+      keyExtractor={(item) => item.id}
+      renderItem={renderUserResult}
+      scrollEnabled={false}
+      style={{ marginTop: 10 }}
+    />
+  )}
+</View>
+
         <View style={styles.modeRow}>
           <Pressable onPress={() => setMode('global')}>
             <Text style={mode === 'global' ? styles.activeTab : styles.tab}>
@@ -401,7 +490,7 @@ export default function CommunityScreen() {
 
           <Pressable onPress={() => setMode('friends')}>
             <Text style={mode === 'friends' ? styles.activeTab : styles.tab}>
-              Mine
+              Friends
             </Text>
           </Pressable>
         </View>
@@ -818,4 +907,62 @@ cardRarity: {
     marginTop: 6,
     lineHeight: 20,
   },
+
+  searchCard: {
+  backgroundColor: theme.colors.card,
+  borderRadius: 18,
+  padding: 12,
+  marginTop: 12,
+  marginBottom: 12,
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+},
+
+searchInput: {
+  backgroundColor: theme.colors.bg,
+  borderRadius: 14,
+  padding: 12,
+  color: theme.colors.text,
+  fontWeight: '800',
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+},
+
+userResultCard: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: theme.colors.bg,
+  borderRadius: 14,
+  padding: 10,
+  marginBottom: 8,
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+},
+
+userResultAvatar: {
+  width: 40,
+  height: 40,
+  borderRadius: 12,
+  backgroundColor: theme.colors.primary,
+  marginRight: 10,
+  overflow: 'hidden',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+userResultAvatarImage: {
+  width: 40,
+  height: 40,
+},
+
+userResultName: {
+  color: theme.colors.text,
+  fontWeight: '900',
+},
+
+userResultSubtext: {
+  color: theme.colors.textSoft,
+  fontSize: 12,
+  marginTop: 2,
+},
 });

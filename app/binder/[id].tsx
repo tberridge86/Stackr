@@ -31,6 +31,7 @@ import {
   fetchBinderById,
   fetchBinderCards,
   updateBinderCardOwned,
+  deleteBinder,
 } from '../../lib/binders';
 
 import { useTrade } from '../../components/trade-context';
@@ -259,7 +260,7 @@ const [tradeOnly, setTradeOnly] = useState(false);
     }
   };
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!binderId) return;
 
     try {
@@ -293,13 +294,13 @@ setCards(binderCards);
     } finally {
       setLoading(false);
     }
-  };
+  }, [binderId]);
 
   useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [binderId])
-  );
+  useCallback(() => {
+    load();
+  }, [load])
+);
 
   useEffect(() => {
   const timer = setTimeout(() => {
@@ -1079,14 +1080,61 @@ if (currentRows.length >= 3) {
         </View>
 
         <FlatList
-          data={sortedCards}
-          keyExtractor={(item) => item.id}
-          renderItem={renderCard}
-          numColumns={3}
-          columnWrapperStyle={{ justifyContent: 'space-between' }}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 130 }}
-        />
+  data={sortedCards}
+  keyExtractor={(item) => item.id}
+  renderItem={renderCard}
+  numColumns={3}
+  columnWrapperStyle={{ justifyContent: 'space-between' }}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 130 }}
+  ListFooterComponent={
+    <Pressable
+      onPress={() => {
+        Alert.alert(
+          'Delete binder?',
+          'Are you sure you want to delete this binder? This cannot be undone.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Delete',
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                 if (!binderId) return;
+
+await deleteBinder(binderId);
+router.back();
+                } catch (error) {
+                  console.log('Delete binder failed', error);
+                  Alert.alert('Could not delete binder', 'Please try again.');
+                }
+              },
+            },
+          ]
+        );
+      }}
+      style={{
+        marginTop: 30,
+        marginBottom: 40,
+        paddingVertical: 12,
+        borderRadius: 14,
+        backgroundColor: theme.colors.surface,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        alignItems: 'center',
+      }}
+    >
+      <Text
+        style={{
+          color: theme.colors.textSoft,
+          fontWeight: '900',
+        }}
+      >
+        Delete Binder
+      </Text>
+    </Pressable>
+  }
+/>
       </View>
 
       <Modal visible={showAddModal} animationType="slide">

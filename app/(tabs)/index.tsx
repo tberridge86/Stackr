@@ -9,6 +9,7 @@ import {
   Pressable,
   ScrollView,
   Image,
+  Modal,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { LineChart } from 'react-native-chart-kit';
@@ -194,8 +195,37 @@ const fetchLivePricesForCardIds = async (cardIds: string[]) => {
 const normaliseChartValues = (values: number[]) =>
   values.length >= 2 ? values : values.length === 1 ? [values[0], values[0]] : [0, 0];
 
+const ONBOARDING_STEPS = [
+  {
+    title: 'Welcome to Stackr',
+    body: 'Stackr helps you track your Pokémon card collection, build binders, check values, trade safely, and connect with other collectors.',
+  },
+  {
+    title: 'Hub',
+    body: 'This is your dashboard. You can see your collection value, recent listings, quick stats, notifications, and shortcuts into the app.',
+  },
+  {
+    title: 'Binders',
+    body: 'Create official set binders or custom binders. Track owned and missing cards, favourite cards, chase cards, values, and public binders.',
+  },
+  {
+    title: 'Trade',
+    body: 'The trade area is where you can browse listings, mark cards for trade, make offers, and use the Price Builder to check fair values.',
+  },
+  {
+    title: 'Profile',
+    body: 'Your public profile shows your trader rating, reviews, showcase cards, friends, and any binders you choose to make public.',
+  },
+  {
+    title: 'Safety',
+    body: 'Stackr helps collectors find each other. It does not handle money, hold payments, or guarantee trades. Always trade carefully and use trusted methods.',
+  },
+];
+
 export default function HubScreen() {
   const { trackedSetIds } = useCollection();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
 
   const [allSets, setAllSets] = useState<PokemonSet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -227,6 +257,34 @@ export default function HubScreen() {
   const collectionUp = collectionChangeAmount >= 0;
   const collectionValue = formatMoney(collectionTotal);
 
+ useEffect(() => {
+  const checkOnboarding = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('has_seen_onboarding')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (!data?.has_seen_onboarding) {
+        setShowOnboarding(true);
+      }
+    } catch (error) {
+      console.log('Failed to check onboarding', error);
+    }
+  };
+
+  checkOnboarding();
+}, []);
+ 
   useEffect(() => {
     const loadSets = async () => {
       try {
@@ -857,6 +915,65 @@ const setName = item.set_name ?? item.set_id ?? 'Unknown set';
   })}
 </ScrollView>
 </ScrollView>
+
+<Modal visible={showOnboarding} transparent animationType="fade">
+  <View style={styles.onboardingOverlay}>
+    <View style={styles.onboardingCard}>
+      <Text style={styles.onboardingStep}>
+        {onboardingStep + 1} / {ONBOARDING_STEPS.length}
+      </Text>
+
+      <Text style={styles.onboardingTitle}>
+        {ONBOARDING_STEPS[onboardingStep].title}
+      </Text>
+
+      <Text style={styles.onboardingBody}>
+        {ONBOARDING_STEPS[onboardingStep].body}
+      </Text>
+
+      <View style={styles.onboardingButtons}>
+        {onboardingStep > 0 && (
+          <Pressable
+            onPress={() => setOnboardingStep((prev) => prev - 1)}
+            style={styles.onboardingSecondaryButton}
+          >
+            <Text style={styles.onboardingSecondaryText}>Back</Text>
+          </Pressable>
+        )}
+
+        <Pressable
+          onPress={async () => {
+            if (onboardingStep < ONBOARDING_STEPS.length - 1) {
+              setOnboardingStep((prev) => prev + 1);
+              return;
+            }
+
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
+
+            if (user) {
+              await supabase
+                .from('profiles')
+                .update({ has_seen_onboarding: true })
+                .eq('id', user.id);
+            }
+
+            setShowOnboarding(false);
+          }}
+          style={styles.onboardingPrimaryButton}
+        >
+          <Text style={styles.onboardingPrimaryText}>
+            {onboardingStep === ONBOARDING_STEPS.length - 1
+              ? 'Get started'
+              : 'Next'}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </SafeAreaView>
     );  
 }
@@ -1262,4 +1379,71 @@ recentCardValue: {
   fontWeight: '900',
   marginTop: 8,
 },
+onboardingOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0,0,0,0.35)',
+  justifyContent: 'center',
+  padding: 20,
+},
+
+onboardingCard: {
+  backgroundColor: theme.colors.card,
+  borderRadius: 24,
+  padding: 22,
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+  ...cardShadow,
+},
+
+onboardingStep: {
+  color: theme.colors.textSoft,
+  fontSize: 12,
+  fontWeight: '900',
+  marginBottom: 10,
+},
+
+onboardingTitle: {
+  color: theme.colors.text,
+  fontSize: 24,
+  fontWeight: '900',
+  marginBottom: 10,
+},
+
+onboardingBody: {
+  color: theme.colors.textSoft,
+  fontSize: 15,
+  lineHeight: 22,
+},
+
+onboardingButtons: {
+  flexDirection: 'row',
+  justifyContent: 'flex-end',
+  gap: 10,
+  marginTop: 22,
+},
+
+onboardingSecondaryButton: {
+  paddingVertical: 11,
+  paddingHorizontal: 16,
+  borderRadius: 14,
+  backgroundColor: theme.colors.surface,
+},
+
+onboardingSecondaryText: {
+  color: theme.colors.text,
+  fontWeight: '900',
+},
+
+onboardingPrimaryButton: {
+  paddingVertical: 11,
+  paddingHorizontal: 18,
+  borderRadius: 14,
+  backgroundColor: theme.colors.primary,
+},
+
+onboardingPrimaryText: {
+  color: '#FFFFFF',
+  fontWeight: '900',
+},
+
 });

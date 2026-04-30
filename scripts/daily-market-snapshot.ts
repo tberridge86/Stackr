@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
-import { fetchLivePricesForCardIds } from '../lib/pricing';
 import { fetchEbayPrice } from '../lib/ebay';
 
 process.on('SIGTERM', () => {
@@ -16,9 +15,14 @@ type EbayResponse = {
 };
 
 const JOB_NAME = 'daily-market-snapshot';
+
 const EBAY_DELAY_MS = 750;
 const EBAY_RETRY_DELAY_MS = 1500;
-const TCG_BATCH_SIZE = 50;
+
+const TCG_BATCH_SIZE = 30;
+const TCG_DELAY_MS = 2000;
+const TCG_RETRY_DELAY_MS = 5000;
+const TCG_MAX_RETRIES = 3;
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -49,6 +53,31 @@ function buildEbayQuery(card: any): string {
     .join(' ');
 }
 
+function getPriceFromPokemonCard(card: any): number | null {
+  const prices = card?.tcgplayer?.prices;
+  if (!prices) return null;
+
+  const preferred = [
+    'holofoil',
+    'reverseHolofoil',
+    'normal',
+    '1stEditionHolofoil',
+    '1stEditionNormal',
+  ];
+
+  for (const key of preferred) {
+    const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  for (const entry of Object.values(prices) as any[]) {
+    const value = entry?.market ?? entry?.mid ?? entry?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  return null;
+}
+
 async function logCron(
   jobName: string,
   status: 'started' | 'success' | 'failed',
@@ -66,24 +95,83 @@ async function logCron(
   }
 }
 
+async function fetchTcgBatch(batch: string[], batchNumber: number) {
+  const q = batch.map((id) => `id:${id}`).join(' OR ');
+  const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(
+    q
+  )}&pageSize=${batch.length}`;
+
+  for (let attempt = 1; attempt <= TCG_MAX_RETRIES; attempt += 1) {
+    try {
+      console.log(
+        `🔍 Fetching TCG batch ${batchNumber}, attempt ${attempt} (${batch.length} cards)`
+      );
+
+      const headers: Record<string, string> = {};
+
+      if (process.env.POKEMON_TCG_API_KEY) {
+        headers['X-Api-Key'] = process.env.POKEMON_TCG_API_KEY;
+      } else {
+        console.log('⚠️ No POKEMON_TCG_API_KEY found in env');
+      }
+
+      const response = await fetch(url, { headers });
+      const text = await response.text();
+
+      if (!response.ok) {
+        console.log(`⚠️ TCG HTTP ${response.status}: ${text.slice(0, 120)}`);
+        await delay(TCG_RETRY_DELAY_MS * attempt);
+        continue;
+      }
+
+      if (text.toLowerCase().includes('throttled')) {
+        console.log('⚠️ TCG throttled. Waiting before retry...');
+        await delay(TCG_RETRY_DELAY_MS * attempt);
+        continue;
+      }
+
+      let json: any;
+
+      try {
+        json = JSON.parse(text);
+      } catch {
+        console.log(`⚠️ TCG returned non-JSON: ${text.slice(0, 120)}`);
+        await delay(TCG_RETRY_DELAY_MS * attempt);
+        continue;
+      }
+
+      const priceMap: Record<string, number> = {};
+
+      for (const card of json?.data ?? []) {
+        const price = getPriceFromPokemonCard(card);
+
+        if (typeof price === 'number') {
+          priceMap[card.id] = price;
+        }
+      }
+
+      return priceMap;
+    } catch (error) {
+      console.log(`⚠️ TCG batch ${batchNumber} failed:`, error);
+      await delay(TCG_RETRY_DELAY_MS * attempt);
+    }
+  }
+
+  console.log(`🚫 TCG batch ${batchNumber} failed after all retries`);
+  return {};
+}
+
 async function fetchTcgPricesInBatches(cardIds: string[]) {
   const finalPriceMap: Record<string, number> = {};
 
   for (let i = 0; i < cardIds.length; i += TCG_BATCH_SIZE) {
     const batch = cardIds.slice(i, i + TCG_BATCH_SIZE);
+    const batchNumber = Math.floor(i / TCG_BATCH_SIZE) + 1;
 
-    console.log(
-      `🔍 Fetching TCG batch ${Math.floor(i / TCG_BATCH_SIZE) + 1} (${batch.length} cards)`
-    );
+    const batchMap = await fetchTcgBatch(batch, batchNumber);
+    Object.assign(finalPriceMap, batchMap);
 
-    try {
-      const batchMap = await fetchLivePricesForCardIds(batch);
-      Object.assign(finalPriceMap, batchMap);
-    } catch (err) {
-      console.log('⚠️ TCG batch failed, continuing:', err);
-    }
-
-    await delay(500);
+    await delay(TCG_DELAY_MS);
   }
 
   return finalPriceMap;
@@ -96,7 +184,7 @@ async function fetchEbayWithRetry(
   try {
     console.log(`🟡 eBay query: ${ebayQuery}`);
     return await fetchEbayPrice(ebayQuery);
-  } catch (firstError) {
+  } catch {
     console.log(`⚠️ eBay fetch failed for ${displayName}. Retrying...`);
     await delay(EBAY_RETRY_DELAY_MS);
 
@@ -131,9 +219,7 @@ async function runDailyMarketSnapshot() {
 
   if (!cards || cards.length === 0) {
     console.log('⚠️ No owned cards found');
-
     await logCron(JOB_NAME, 'success', 'No owned cards found');
-
     return;
   }
 
@@ -164,9 +250,7 @@ async function runDailyMarketSnapshot() {
     const displayName = card.card_name || lookupId;
     const tcgPrice = priceMap[lookupId];
 
-    console.log(
-      `\n📍 Processing ${index + 1}/${uniqueCards.length}: ${displayName}`
-    );
+    console.log(`\n📍 Processing ${index + 1}/${uniqueCards.length}: ${displayName}`);
 
     if (typeof tcgPrice !== 'number') {
       missingTcgCount += 1;
@@ -251,11 +335,7 @@ async function main() {
   } catch (error: any) {
     console.error('❌ Daily snapshot job failed:', error);
 
-    await logCron(
-      JOB_NAME,
-      'failed',
-      error?.message ?? 'Unknown error'
-    );
+    await logCron(JOB_NAME, 'failed', error?.message ?? 'Unknown error');
 
     process.exit(1);
   }

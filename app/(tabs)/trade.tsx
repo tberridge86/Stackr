@@ -1,3 +1,4 @@
+import { submitTraderRating } from '../../lib/traderRatings';
 import { BlurView } from 'expo-blur';
 import { theme } from '../../lib/theme';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -27,6 +28,7 @@ import {
   getCachedCardsForSet,
 } from '../../lib/pokemonTcgCache';
 import { supabase } from '../../lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
 
 type MainTab = 'trading' | 'marketplace';
 type SegmentKey = 'marketplaceListings' | 'myListings' | 'wanted'| 'myOffers';
@@ -86,8 +88,7 @@ const {
   refreshTrade,
   archiveListing,
   toggleWishlistCard,
-  createTradeReview,
-} = useTrade();
+  } = useTrade();
 
 const closeDetail = useCallback(() => {
   Animated.timing(translateY, {
@@ -342,7 +343,7 @@ if (data) {
   };
 const openReviewModal = (trade: any) => {
   const otherUserId =
-    trade.seller_id === myUserId ? trade.buyer_id : trade.seller_id;
+    trade.sender_id === myUserId ? trade.receiver_id : trade.sender_id;
 
   setReviewTrade(trade);
   setReviewedUserId(otherUserId);
@@ -352,16 +353,17 @@ const openReviewModal = (trade: any) => {
 };
 
 const submitReview = async () => {
-  if (!reviewTrade || !reviewedUserId) return;
+  if (!reviewTrade || !reviewedUserId || !myUserId) return;
 
   try {
     setReviewSaving(true);
 
-    await createTradeReview({
-      tradeId: reviewTrade.id,
+    await submitTraderRating({
+      tradeOfferId: reviewTrade.id,
+      reviewerId: myUserId,
       reviewedUserId,
       rating: reviewRating,
-      comment: reviewComment,
+      review: reviewComment,
     });
 
     setReviewVisible(false);
@@ -390,7 +392,7 @@ const submitReview = async () => {
     const isMyListing = item.user_id === myUserId;
 
     const trade = activeTrades[item.id];
-        const isSeller = trade?.seller_id === myUserId;
+        const isSender = trade?.sender_id === myUserId;
 
 
     return (
@@ -590,8 +592,8 @@ const submitReview = async () => {
 )}
 
     {/* MARK AS SENT */}
-    {((isSeller && !trade.seller_sent) ||
-      (!isSeller && !trade.buyer_sent)) && (
+   {((isSender && !trade.sender_sent) ||
+  (!isSender && !trade.receiver_sent)) && (
       <TouchableOpacity
         onPress={() => markSent(trade.id)}
         style={{
@@ -608,8 +610,8 @@ const submitReview = async () => {
     )}
 
     {/* MARK AS RECEIVED */}
-    {((isSeller && trade.seller_sent && !trade.seller_received) ||
-      (!isSeller && trade.buyer_sent && !trade.buyer_received)) && (
+{((isSender && trade.sender_sent && !trade.sender_received) ||
+  (!isSender && trade.receiver_sent && !trade.receiver_received)) && (
       <TouchableOpacity
         onPress={() => markReceived(trade.id)}
         style={{
@@ -1293,7 +1295,13 @@ const submitReview = async () => {
     </View>
   </View>
 </Modal>
-      
+
+<Pressable
+  onPress={() => router.push('/price-builder')}
+  style={styles.priceBuilderFab}
+>
+  <Ionicons name="calculator-outline" size={45} color="#fff" />
+</Pressable>
       
     </View>
   );
@@ -1305,5 +1313,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     marginTop: 6,
+  },
+
+  priceBuilderFab: {
+    position: 'absolute',
+    right: 1030,
+    bottom: 30,
+    width: 65,
+    height: 65,
+    borderRadius: 18,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
   },
 });
