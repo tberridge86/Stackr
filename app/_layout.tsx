@@ -5,7 +5,6 @@ import { AuthProvider } from '../components/auth-context';
 import { ProfileProvider } from '../components/profile-context';
 import { TradeProvider } from '../components/trade-context';
 import { CollectionProvider } from '../components/collection-context';
-import { OfferProvider } from '../components/offer-context';
 import { theme } from '../lib/theme';
 
 export default function RootLayout() {
@@ -15,39 +14,37 @@ export default function RootLayout() {
         <ProfileProvider>
           <CollectionProvider>
             <TradeProvider>
-              <OfferProvider>
-                <StatusBar style="dark" />
+              <StatusBar style="dark" />
 
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    gestureEnabled: true,
-                    fullScreenGestureEnabled: true,
-                    headerStyle: {
-                      backgroundColor: theme.colors.card,
-                    },
-                    headerTintColor: theme.colors.text,
-                    headerTitleStyle: {
-                      fontWeight: '900',
-                    },
-                    contentStyle: {
-                      backgroundColor: theme.colors.bg,
-                    },
-                    headerBackButtonDisplayMode: 'minimal',
-                    headerBackTitleVisible: false,
-                  }}
-                >
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                  <Stack.Screen name="card/[id]" options={{ headerShown: false }} />
-                  <Stack.Screen name="set/[id]" options={{ headerShown: false }} />
-                  <Stack.Screen name="offer/new" options={{ headerShown: false }} />
-                  <Stack.Screen name="user/[id]" options={{ headerShown: false }} />
-                  <Stack.Screen name="offers" options={{ headerShown: false }} />
-                  <Stack.Screen name="binder/new" options={{ headerShown: false }} />
-                  <Stack.Screen name="binder/[id]" options={{ headerShown: false }} />
-                  <Stack.Screen name="binder/add-cards" options={{ headerShown: false }} />
-                </Stack>
-              </OfferProvider>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  gestureEnabled: true,
+                  fullScreenGestureEnabled: true,
+                  headerStyle: {
+                    backgroundColor: theme.colors.card,
+                  },
+                  headerTintColor: theme.colors.text,
+                  headerTitleStyle: {
+                    fontWeight: '900',
+                  },
+                  contentStyle: {
+                    backgroundColor: theme.colors.bg,
+                  },
+                  headerBackButtonDisplayMode: 'minimal',
+                  headerBackTitleVisible: false,
+                }}
+              >
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="card/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="set/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="offer/new" options={{ headerShown: false }} />
+                <Stack.Screen name="user/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="offers" options={{ headerShown: false }} />
+                <Stack.Screen name="binder/new" options={{ headerShown: false }} />
+                <Stack.Screen name="binder/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="binder/add-cards" options={{ headerShown: false }} />
+              </Stack>
             </TradeProvider>
           </CollectionProvider>
         </ProfileProvider>

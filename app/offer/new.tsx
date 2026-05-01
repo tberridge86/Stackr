@@ -36,6 +36,9 @@ const cardShadow = {
   elevation: 3,
 };
 
+// Max cards a user can offer in one trade
+const MAX_OFFER_CARDS = 6;
+
 export default function NewOfferScreen() {
   const params = useLocalSearchParams<{
     listingId?: string;
@@ -80,22 +83,20 @@ export default function NewOfferScreen() {
     loadScreen();
   }, []);
 
+  // ===============================
+  // LOAD
+  // ===============================
+
   async function loadScreen() {
     try {
       setLoading(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
 
       if (userError) throw userError;
 
       if (!user) {
-        Alert.alert(
-          'Sign in required',
-          'You need to be signed in to make trade offers.'
-        );
+        Alert.alert('Sign in required', 'You need to be signed in to make trade offers.');
         router.replace('/offer');
         return;
       }
@@ -103,10 +104,7 @@ export default function NewOfferScreen() {
       setCurrentUserId(user.id);
 
       if (!listingId || !targetUserId || !cardId) {
-        Alert.alert(
-          'Missing trade details',
-          'This offer is missing listing information.'
-        );
+        Alert.alert('Missing trade details', 'This offer is missing listing information.');
         router.replace('/offer');
         return;
       }
@@ -118,20 +116,25 @@ export default function NewOfferScreen() {
       setMyTradeCards(ownCards);
     } catch (error: any) {
       console.error('Failed to load offer screen:', error);
-      Alert.alert(
-        'Could not load offer',
-        error?.message ?? 'Something went wrong.'
-      );
+      Alert.alert('Could not load offer', error?.message ?? 'Something went wrong.');
     } finally {
       setLoading(false);
     }
   }
 
+  // ===============================
+  // BUILD TARGET CARD
+  // ===============================
+
   async function buildTargetCard(
     cardIdValue: string,
     setIdValue: string | null
   ): Promise<TradeCardOption> {
-    const cached = getCachedCardSync(cardIdValue) as any;
+
+    // Fixed: pass setId as first arg to getCachedCardSync
+    const cached = setIdValue
+      ? (getCachedCardSync(setIdValue, cardIdValue) as any)
+      : null;
 
     if (cached) {
       return {
@@ -162,6 +165,10 @@ export default function NewOfferScreen() {
     };
   }
 
+  // ===============================
+  // FETCH MY TRADE CARDS
+  // ===============================
+
   async function fetchMyTradeCards(userId: string): Promise<TradeCardOption[]> {
     const { data: flags, error: flagsError } = await supabase
       .from('user_card_flags')
@@ -171,7 +178,6 @@ export default function NewOfferScreen() {
       .order('created_at', { ascending: false });
 
     if (flagsError) throw flagsError;
-
     if (!flags || flags.length === 0) return [];
 
     const cardIds = flags.map((flag: any) => flag.card_id);
@@ -189,7 +195,11 @@ export default function NewOfferScreen() {
 
     return flags.map((flag: any) => {
       const preview = previewMap.get(flag.card_id) as any;
-      const cached = getCachedCardSync(flag.card_id) as any;
+
+      // Fixed: pass set_id as first arg
+      const cached = flag.set_id
+        ? (getCachedCardSync(flag.set_id, flag.card_id) as any)
+        : null;
 
       return {
         id: flag.id,
@@ -207,21 +217,37 @@ export default function NewOfferScreen() {
     });
   }
 
+  // ===============================
+  // TOGGLE CARD SELECTION
+  // ===============================
+
   function toggleCard(cardIdValue: string) {
-    setSelectedCardIds((current) =>
-      current.includes(cardIdValue)
-        ? current.filter((id) => id !== cardIdValue)
-        : [...current, cardIdValue]
-    );
+    setSelectedCardIds((current) => {
+      if (current.includes(cardIdValue)) {
+        return current.filter((id) => id !== cardIdValue);
+      }
+
+      // Enforce max card limit
+      if (current.length >= MAX_OFFER_CARDS) {
+        Alert.alert(
+          'Too many cards',
+          `You can offer up to ${MAX_OFFER_CARDS} cards in a single trade.`
+        );
+        return current;
+      }
+
+      return [...current, cardIdValue];
+    });
   }
+
+  // ===============================
+  // SEND OFFER
+  // ===============================
 
   async function sendOffer() {
     try {
       if (!currentUserId || !targetUserId || !listingId || !cardId) {
-        Alert.alert(
-          'Missing details',
-          'This offer is missing required trade information.'
-        );
+        Alert.alert('Missing details', 'This offer is missing required trade information.');
         return;
       }
 
@@ -276,14 +302,15 @@ export default function NewOfferScreen() {
       router.replace('/offer');
     } catch (error: any) {
       console.error('Failed to send trade offer:', error);
-      Alert.alert(
-        'Could not send offer',
-        error?.message ?? 'Something went wrong.'
-      );
+      Alert.alert('Could not send offer', error?.message ?? 'Something went wrong.');
     } finally {
       setSending(false);
     }
   }
+
+  // ===============================
+  // LOADING STATE
+  // ===============================
 
   if (loading) {
     return (
@@ -294,6 +321,10 @@ export default function NewOfferScreen() {
     );
   }
 
+  // ===============================
+  // RENDER
+  // ===============================
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Make an Offer</Text>
@@ -301,6 +332,7 @@ export default function NewOfferScreen() {
         Choose cards, add cash if needed, and send your offer.
       </Text>
 
+      {/* Card you want */}
       <Section title="Card you want">
         {targetCard ? (
           <View style={styles.cardRow}>
@@ -309,7 +341,6 @@ export default function NewOfferScreen() {
             ) : (
               <View style={styles.cardImagePlaceholder} />
             )}
-
             <View style={{ flex: 1 }}>
               <Text style={styles.cardName}>{targetCard.name}</Text>
               <Text style={styles.cardMeta}>
@@ -323,52 +354,65 @@ export default function NewOfferScreen() {
         )}
       </Section>
 
-      <Section title="Cards you are offering">
+      {/* Cards you are offering */}
+      <Section title={`Cards you are offering (max ${MAX_OFFER_CARDS})`}>
         {myTradeCards.length === 0 ? (
           <Text style={styles.muted}>
             You have no cards currently marked for trade.
           </Text>
         ) : (
-          myTradeCards.map((card) => {
-            const selected = selectedCardIds.includes(card.card_id);
+          <>
+            {selectedCardIds.length > 0 && (
+              <Text style={styles.selectedCount}>
+                {selectedCardIds.length} / {MAX_OFFER_CARDS} selected
+              </Text>
+            )}
 
-            return (
-              <TouchableOpacity
-                key={`${card.id}-${card.card_id}`}
-                onPress={() => toggleCard(card.card_id)}
-                style={[
-                  styles.selectCardRow,
-                  selected && styles.selectCardRowActive,
-                ]}
-              >
-                {card.image_url ? (
-                  <Image source={{ uri: card.image_url }} style={styles.smallCardImage} />
-                ) : (
-                  <View style={styles.smallCardImagePlaceholder} />
-                )}
+            {myTradeCards.map((card) => {
+              const selected = selectedCardIds.includes(card.card_id);
 
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.cardName}>{card.name}</Text>
-                  <Text style={styles.cardMeta}>
-                    {card.set_name ?? card.set_id ?? 'Unknown set'}
-                    {card.number ? ` · ${card.number}` : ''}
+              return (
+                <TouchableOpacity
+                  key={`${card.id}-${card.card_id}`}
+                  onPress={() => toggleCard(card.card_id)}
+                  style={[
+                    styles.selectCardRow,
+                    selected && styles.selectCardRowActive,
+                  ]}
+                >
+                  {card.image_url ? (
+                    <Image
+                      source={{ uri: card.image_url }}
+                      style={styles.smallCardImage}
+                    />
+                  ) : (
+                    <View style={styles.smallCardImagePlaceholder} />
+                  )}
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.cardName}>{card.name}</Text>
+                    <Text style={styles.cardMeta}>
+                      {card.set_name ?? card.set_id ?? 'Unknown set'}
+                      {card.number ? ` · ${card.number}` : ''}
+                    </Text>
+                  </View>
+
+                  <Text style={[styles.selectText, selected && styles.selectTextActive]}>
+                    {selected ? '✓ Selected' : 'Add'}
                   </Text>
-                </View>
-
-                <Text style={[styles.selectText, selected && styles.selectTextActive]}>
-                  {selected ? 'Selected' : 'Add'}
-                </Text>
-              </TouchableOpacity>
-            );
-          })
+                </TouchableOpacity>
+              );
+            })}
+          </>
         )}
       </Section>
 
-      <Section title="Cash offer optional">
+      {/* Cash offer */}
+      <Section title="Cash top-up (optional)">
         <TextInput
           value={cashAmount}
           onChangeText={setCashAmount}
-          placeholder="Amount, for example 15"
+          placeholder="Amount e.g. 15.00"
           placeholderTextColor={theme.colors.textSoft}
           keyboardType="decimal-pad"
           style={styles.input}
@@ -382,12 +426,7 @@ export default function NewOfferScreen() {
               cashPayer === 'sender' && styles.toggleButtonActive,
             ]}
           >
-            <Text
-              style={[
-                styles.toggleText,
-                cashPayer === 'sender' && styles.toggleTextActive,
-              ]}
-            >
+            <Text style={[styles.toggleText, cashPayer === 'sender' && styles.toggleTextActive]}>
               I pay cash
             </Text>
           </TouchableOpacity>
@@ -399,40 +438,73 @@ export default function NewOfferScreen() {
               cashPayer === 'receiver' && styles.toggleButtonActive,
             ]}
           >
-            <Text
-              style={[
-                styles.toggleText,
-                cashPayer === 'receiver' && styles.toggleTextActive,
-              ]}
-            >
+            <Text style={[styles.toggleText, cashPayer === 'receiver' && styles.toggleTextActive]}>
               They pay cash
             </Text>
           </TouchableOpacity>
         </View>
 
-        {cashInvolved ? (
-          <TextInput
-            value={paypalRecipient}
-            onChangeText={setPaypalRecipient}
-            placeholder="PayPal.me username or PayPal email"
-            placeholderTextColor={theme.colors.textSoft}
-            autoCapitalize="none"
-            style={styles.input}
-          />
-        ) : null}
+        {cashInvolved && (
+          <>
+            <Text style={styles.paypalLabel}>
+              PayPal details for{' '}
+              {cashPayer === 'sender' ? 'the receiver' : 'you'}
+            </Text>
+            <TextInput
+              value={paypalRecipient}
+              onChangeText={setPaypalRecipient}
+              placeholder="PayPal.me username or email"
+              placeholderTextColor={theme.colors.textSoft}
+              autoCapitalize="none"
+              style={styles.input}
+            />
+          </>
+        )}
+
+        {/* Cash summary */}
+        {cashInvolved && (
+          <View style={styles.cashSummary}>
+            <Text style={styles.cashSummaryText}>
+              💰 {cashPayer === 'sender' ? 'You' : 'They'} pay{' '}
+              £{cashAmountNumber.toFixed(2)} via PayPal
+            </Text>
+          </View>
+        )}
       </Section>
 
-      <Section title="Message">
+      {/* Message */}
+      <Section title="Message (optional)">
         <TextInput
           value={message}
           onChangeText={setMessage}
-          placeholder="Add a short message..."
+          placeholder="Add a short message to introduce your offer..."
           placeholderTextColor={theme.colors.textSoft}
           multiline
           style={[styles.input, styles.messageInput]}
         />
       </Section>
 
+      {/* Offer summary */}
+      {(selectedCardIds.length > 0 || cashInvolved) && (
+        <View style={styles.summaryBox}>
+          <Text style={styles.summaryTitle}>Offer summary</Text>
+          <Text style={styles.summaryText}>
+            You want: {targetCard?.name ?? 'Unknown card'}
+          </Text>
+          {selectedCardIds.length > 0 && (
+            <Text style={styles.summaryText}>
+              You offer: {selectedCardIds.length} card{selectedCardIds.length !== 1 ? 's' : ''}
+            </Text>
+          )}
+          {cashInvolved && (
+            <Text style={styles.summaryText}>
+              + £{cashAmountNumber.toFixed(2)} cash ({cashPayer === 'sender' ? 'you pay' : 'they pay'})
+            </Text>
+          )}
+        </View>
+      )}
+
+      {/* Send button */}
       <TouchableOpacity
         onPress={sendOffer}
         disabled={sending}
@@ -448,13 +520,7 @@ export default function NewOfferScreen() {
   );
 }
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -504,9 +570,15 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: theme.colors.text,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '900',
     marginBottom: 12,
+  },
+  selectedCount: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 8,
   },
   cardRow: {
     flexDirection: 'row',
@@ -526,7 +598,7 @@ const styles = StyleSheet.create({
   },
   selectCardRowActive: {
     borderColor: theme.colors.primary,
-    backgroundColor: '#F0ECFF',
+    backgroundColor: theme.colors.primary + '12',
   },
   cardImage: {
     width: 76,
@@ -565,6 +637,11 @@ const styles = StyleSheet.create({
   muted: {
     color: theme.colors.textSoft,
     lineHeight: 20,
+  },
+  paypalLabel: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    marginBottom: 6,
   },
   input: {
     backgroundColor: theme.colors.surface,
@@ -608,9 +685,42 @@ const styles = StyleSheet.create({
   selectText: {
     color: theme.colors.textSoft,
     fontWeight: '900',
+    fontSize: 13,
   },
   selectTextActive: {
     color: theme.colors.primary,
+    fontSize: 13,
+  },
+  cashSummary: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  cashSummaryText: {
+    color: theme.colors.text,
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  summaryBox: {
+    backgroundColor: theme.colors.primary + '12',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  summaryTitle: {
+    color: theme.colors.primary,
+    fontWeight: '900',
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  summaryText: {
+    color: theme.colors.text,
+    fontSize: 13,
+    marginBottom: 4,
   },
   sendButton: {
     backgroundColor: theme.colors.primary,

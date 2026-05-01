@@ -13,6 +13,7 @@ const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const PORT = process.env.PORT || 3001;
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -22,127 +23,71 @@ function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
+// ===============================
+// TITLE FILTERING
+// ===============================
+
+// Terms that are always junk — very specific to avoid false positives
+const BLOCKED_TERMS = [
+  'psa', 'bgs', 'cgc', 'sgc', 'ace grading',
+  'graded', 'gem mint', 'slab',
+  'proxy', 'replica', 'reprint',
+  'custom card', 'fan art', 'fanart',
+  'bundle', 'bulk', 'job lot', 'joblot', 'lot of',
+  'booster pack', 'booster box', 'empty box', 'display box',
+  'choose your card', 'choose your cards', 'pick your card',
+  'you choose', 'choose card', 'choose a card', 'choose individual',
+  'singles common', 'common uncommon',
+  'artbox','sticker sheet', 'sticker pack',
+  'black metal card', 'metal card', 'solid metal',
+  'gold foil card', 'gold metal',
+  'oversized', 'digital', 'code card',
+  'keychain', 'fridge magnet', 'magnet',
+  'resin', 'coaster', 'plastic card',
+  'read description',
+  'heavily played', 'poor condition', 'damaged',
+  'creased', 'crease', 'bent', 'inked', 'marked',
+  'written on', 'torn', 'water damaged',
+  'novelty', 'random', 'random card', 'random selection',
+];
+
 function titleLooksBad(title = '') {
   const t = title.toLowerCase();
-
-  const blockedTerms = [
-    'psa',
-    'bgs',
-    'cgc',
-    'sgc',
-    'ace grading',
-    'graded',
-    'grade 9',
-    'grade 10',
-    'gem mint',
-    'slab',
-    'proxy',
-    'replica',
-    'reprint',
-    'custom',
-    'custom card',
-    'fan art',
-    'fanart',
-    'bundle',
-    'bulk',
-    'job lot',
-    'joblot',
-    'lot of',
-    'x cards',
-    'booster pack',
-    'booster box',
-    'empty box',
-    'display box',
-    'choose your card',
-    'choose your cards',
-    'choose card',
-    'choose individual card',
-    'choose a card',
-    'pick your card',
-    'you choose',
-    'choose',
-    'singles common uncommon',
-    'common uncommon',
-    'random',
-    'guaranteed holo',
-    'sticker',
-    'stickers',
-    'artbox',
-    'gold foil',
-    'black metal',
-    'metal card',
-    'oversized',
-    'digital',
-    'code card',
-    'gift',
-    'gold',
-    'foil etched',
-    'novelty',
-    'keychain',
-    'fridge magnet',
-    'magnet',
-    'solid metal',
-    'metal',
-    'resin',
-    'coaster',
-    'plastic card',
-    'read description',
-    'heavily played',
-    'poor condition',
-    'damaged',
-    'creased',
-    'crease',
-    'bent',
-    'inked',
-    'marked',
-    'written on',
-    'torn',
-    'water damaged',
-  ];
-
-  return blockedTerms.some((term) => t.includes(term));
+  return BLOCKED_TERMS.some((term) => t.includes(term));
 }
 
 function extractCardNumber(query = '') {
-  const match = query.match(/\b\d+\/\d+\b/);
-  return match ? match[0].toLowerCase() : null;
+  const match = query.match(/\b(\d+\/\d+)\b/);
+  return match ? match[1].toLowerCase() : null;
 }
 
-function getMainCardName(query = '') {
+// Pull meaningful words from the query for title matching
+function getImportantWords(query = '') {
   const stopWords = new Set([
-    'pokemon',
-    'pokémon',
-    'card',
-    'base',
-    'set',
-    'perfect',
-    'order',
-    'holo',
-    'foil',
+    'pokemon', 'pokémon', 'card', 'cards', 'base', 'set',
+    'holo', 'foil', 'perfect', 'order', 'the', 'and', 'for',
+    'near', 'mint', 'nm', 'lp', 'mp', 'hp', 'ex', 'nm/m',
   ]);
 
   return query
     .toLowerCase()
     .split(/\s+/)
-    .map((word) => word.replace(/[^a-z0-9]/g, ''))
-    .filter((word) => word.length >= 3 && !stopWords.has(word));
+    .map((w) => w.replace(/[^a-z0-9'é]/g, ''))
+    .filter((w) => w.length >= 3 && !stopWords.has(w));
 }
 
 function titleLooksGoodForQuery(title = '', query = '') {
   const t = title.toLowerCase();
-  const q = query.toLowerCase();
+  const cardNumber = extractCardNumber(query);
+  const importantWords = getImportantWords(query);
 
-  const cardNumber = extractCardNumber(q);
-  const importantWords = getMainCardName(q);
-
-  if (!t.includes('pokemon') && !t.includes('pokémon')) return false;
-  if (!t.includes('card')) return false;
-
+  // Must contain at least one important word from the card name
   if (importantWords.length > 0) {
-    const hasCardName = importantWords.some((word) => t.includes(word));
-    if (!hasCardName) return false;
+    const hasRelevantWord = importantWords.some((word) => t.includes(word));
+    if (!hasRelevantWord) return false;
   }
 
+  // If query has a card number (e.g. 4/102), title should contain it
   if (cardNumber && !t.includes(cardNumber)) return false;
 
   return true;
@@ -155,41 +100,59 @@ function numberFromPrice(value) {
 
 function summarisePrices(prices) {
   if (!prices.length) {
-    return {
-      low: null,
-      average: null,
-      high: null,
-      count: 0,
-    };
+    return { low: null, average: null, high: null, count: 0 };
   }
 
   const sorted = [...prices].sort((a, b) => a - b);
 
+  // Trim outliers only if we have enough data
+  const trimmed =
+    sorted.length >= 6
+      ? sorted.slice(1, -1)
+      : sorted;
+
+  const avg = trimmed.reduce((sum, p) => sum + p, 0) / trimmed.length;
+
   return {
-    low: Number(sorted[0].toFixed(2)),
-    average: Number(
-      (sorted.reduce((sum, price) => sum + price, 0) / sorted.length).toFixed(2)
-    ),
-    high: Number(sorted[sorted.length - 1].toFixed(2)),
-    count: sorted.length,
+    low: Number(trimmed[0].toFixed(2)),
+    average: Number(avg.toFixed(2)),
+    high: Number(trimmed[trimmed.length - 1].toFixed(2)),
+    count: trimmed.length,
   };
 }
 
 function buildCardQuery({ name = '', setName = '', number = '' }) {
   return [name, setName, number, 'pokemon card']
-    .map((value) => String(value || '').trim())
+    .map((v) => String(v || '').trim())
     .filter(Boolean)
     .join(' ');
 }
 
+// Fallback: just name + pokemon card (broader search)
+function buildFallbackQuery({ name = '' }) {
+  return `${name.trim()} pokemon card`.trim();
+}
+
+// ===============================
+// TOKEN CACHE
+// ===============================
+
+let cachedToken = null;
+let tokenExpiresAt = 0;
+
 async function getToken() {
+  const now = Date.now();
+
+  // Return cached token if still valid (with 60s buffer)
+  if (cachedToken && now < tokenExpiresAt - 60_000) {
+    return cachedToken;
+  }
+
   if (!EBAY_CLIENT_ID || !EBAY_CLIENT_SECRET) {
     throw new Error('Missing eBay credentials');
   }
 
-  const basic = Buffer.from(
-    `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
-  ).toString('base64');
+  const basic = Buffer.from(`${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`).toString('base64');
 
   const res = await fetch('https://api.ebay.com/identity/v1/oauth2/token', {
     method: 'POST',
@@ -214,64 +177,90 @@ async function getToken() {
     throw new Error('Token response did not include access_token');
   }
 
-  return data.access_token;
+  // Cache it
+  cachedToken = data.access_token;
+  tokenExpiresAt = now + (data.expires_in * 1000);
+
+  return cachedToken;
 }
 
-async function fetchEbaySummary(query) {
-  const token = await getToken();
+// ===============================
+// CORE EBAY SEARCH
+// ===============================
 
+async function searchEbay(query, token) {
   const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
     query
   )}&limit=50&sort=price`;
 
-  const ebayRes = await fetch(url, {
+  const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
       'X-EBAY-C-MARKETPLACE-ID': EBAY_MARKETPLACE_ID,
     },
   });
 
-  if (!ebayRes.ok) {
-    const text = await ebayRes.text();
-    throw new Error(`Browse search failed (${ebayRes.status}): ${text}`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Browse search failed (${res.status}): ${text}`);
   }
 
-  const data = await ebayRes.json();
-  const items = data.itemSummaries || [];
+  const data = await res.json();
+  return data.itemSummaries || [];
+}
 
-  const cleaned = items.filter((item) => {
+function filterItems(items, query) {
+  return items.filter((item) => {
     const title = item.title || '';
     const price = numberFromPrice(item.price?.value);
 
     if (!price) return false;
+    if (price < 0.5) return false;   // lowered from £1 — catches cheap commons
+    if (price > 5000) return false;
     if (titleLooksBad(title)) return false;
     if (!titleLooksGoodForQuery(title, query)) return false;
-    if (price < 1) return false;
-    if (price > 5000) return false;
 
     return true;
   });
+}
+
+async function fetchEbaySummary(query, cardName = '') {
+  const token = await getToken();
+
+  // --- Primary search ---
+  const rawItems = await searchEbay(query, token);
+  let cleaned = filterItems(rawItems, query);
+
+  // --- Fallback: if no results, try broader query ---
+  let usedFallback = false;
+  let fallbackQuery = '';
+
+  if (cleaned.length === 0 && cardName) {
+    fallbackQuery = buildFallbackQuery({ name: cardName });
+    console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
+
+    const fallbackItems = await searchEbay(fallbackQuery, token);
+    cleaned = filterItems(fallbackItems, fallbackQuery);
+    usedFallback = true;
+  }
 
   const prices = cleaned
     .map((item) => numberFromPrice(item.price?.value))
-    .filter((price) => price !== null);
+    .filter((p) => p !== null);
 
-  const sortedPrices = [...prices].sort((a, b) => a - b);
-
-  const trimmedPrices =
-    sortedPrices.length >= 5 ? sortedPrices.slice(1, -1) : sortedPrices;
-
-  const summary = summarisePrices(trimmedPrices);
+  const summary = summarisePrices(prices);
 
   return {
     marketplace: EBAY_MARKETPLACE_ID,
-    query,
+    query: usedFallback ? fallbackQuery : query,
+    originalQuery: query,
+    usedFallback,
     low: summary.low,
     average: summary.average,
     high: summary.high,
     count: summary.count,
-    rawCount: items.length,
-    sampleTitles: items.slice(0, 10).map((item) => ({
+    rawCount: rawItems.length,
+    sampleTitles: rawItems.slice(0, 10).map((item) => ({
       title: item.title,
       price: item.price?.value,
     })),
@@ -282,45 +271,9 @@ async function fetchEbaySummary(query) {
   };
 }
 
-async function scanWithXimilar(imageUrl) {
-  if (!XIMILAR_API_TOKEN) {
-    throw new Error('Missing XIMILAR_API_TOKEN');
-  }
-
-  const ximilarRes = await fetch(
-    'https://api.ximilar.com/collectibles/v2/tcg_id',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Token ${XIMILAR_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        records: [
-          {
-            _url: imageUrl,
-          },
-        ],
-      }),
-    }
-  );
-
-  const data = await ximilarRes.json();
-
-  if (!ximilarRes.ok) {
-    return {
-      ok: false,
-      status: ximilarRes.status,
-      data,
-    };
-  }
-
-  return {
-    ok: true,
-    status: ximilarRes.status,
-    data,
-  };
-}
+// ===============================
+// ROUTES
+// ===============================
 
 app.get('/', (req, res) => {
   res.send('Stackr API is running');
@@ -339,19 +292,13 @@ app.get('/debug-env', (req, res) => {
 app.get('/test-ebay-token', async (req, res) => {
   try {
     const token = await getToken();
-
-    return res.json({
-      ok: true,
-      tokenPreview: `${token.slice(0, 10)}...`,
-    });
+    return res.json({ ok: true, tokenPreview: `${token.slice(0, 10)}...` });
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: getErrorMessage(error),
-    });
+    return res.status(500).json({ ok: false, error: getErrorMessage(error) });
   }
 });
 
+// Simple price endpoint (used by ebay.ts fetchEbayPrice)
 app.get('/price', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
@@ -360,7 +307,9 @@ app.get('/price', async (req, res) => {
       return res.status(400).json({ error: 'Missing query' });
     }
 
-    const summary = await fetchEbaySummary(query);
+const cardName = query.split(' ')[0];
+
+    const summary = await fetchEbaySummary(query, cardName);
     return res.json(summary);
   } catch (error) {
     return res.status(500).json({
@@ -370,6 +319,7 @@ app.get('/price', async (req, res) => {
   }
 });
 
+// Structured price endpoint
 app.get('/api/price/ebay', async (req, res) => {
   try {
     const cardId = String(req.query.cardId || '').trim();
@@ -377,21 +327,14 @@ app.get('/api/price/ebay', async (req, res) => {
     const setName = String(req.query.setName || '').trim();
     const number = String(req.query.number || '').trim();
 
-    const query = buildCardQuery({ name, setName, number });
-
-    if (!query) {
-      return res.status(400).json({ error: 'Missing card search details' });
+    if (!name) {
+      return res.status(400).json({ error: 'Missing card name' });
     }
 
-    const summary = await fetchEbaySummary(query);
+    const query = buildCardQuery({ name, setName, number });
+    const summary = await fetchEbaySummary(query, name);
 
-    return res.json({
-      cardId,
-      name,
-      setName,
-      number,
-      ...summary,
-    });
+    return res.json({ cardId, name, setName, number, ...summary });
   } catch (error) {
     return res.status(500).json({
       error: 'Failed to fetch eBay pricing',
@@ -400,85 +343,83 @@ app.get('/api/price/ebay', async (req, res) => {
   }
 });
 
+// ===============================
+// SCAN (Ximilar)
+// ===============================
+
+async function scanWithXimilar(imageUrl) {
+  if (!XIMILAR_API_TOKEN) throw new Error('Missing XIMILAR_API_TOKEN');
+
+  const ximilarRes = await fetch('https://api.ximilar.com/collectibles/v2/tcg_id', {
+    method: 'POST',
+    headers: {
+      Authorization: `Token ${XIMILAR_API_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ records: [{ _url: imageUrl }] }),
+  });
+
+  const data = await ximilarRes.json();
+
+  return {
+    ok: ximilarRes.ok,
+    status: ximilarRes.status,
+    data,
+  };
+}
+
 app.post('/scan', async (req, res) => {
   try {
     const { imageUrl } = req.body;
-
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'Missing imageUrl' });
-    }
+    if (!imageUrl) return res.status(400).json({ error: 'Missing imageUrl' });
 
     const result = await scanWithXimilar(imageUrl);
-
     if (!result.ok) {
-      return res.status(result.status).json({
-        error: 'Ximilar request failed',
-        detail: result.data,
-      });
+      return res.status(result.status).json({ error: 'Ximilar request failed', detail: result.data });
     }
 
     return res.json(result.data);
   } catch (error) {
-    return res.status(500).json({
-      error: 'Scan failed',
-      detail: getErrorMessage(error),
-    });
+    return res.status(500).json({ error: 'Scan failed', detail: getErrorMessage(error) });
   }
 });
 
 app.post('/api/scan/tcg', async (req, res) => {
   try {
     const { imageUrl } = req.body;
-
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'Missing imageUrl' });
-    }
+    if (!imageUrl) return res.status(400).json({ error: 'Missing imageUrl' });
 
     const result = await scanWithXimilar(imageUrl);
-
     if (!result.ok) {
-      return res.status(result.status).json({
-        error: 'Ximilar request failed',
-        detail: result.data,
-      });
+      return res.status(result.status).json({ error: 'Ximilar request failed', detail: result.data });
     }
 
     return res.json(result.data);
   } catch (error) {
-    return res.status(500).json({
-      error: 'Failed to scan card',
-      detail: getErrorMessage(error),
-    });
+    return res.status(500).json({ error: 'Failed to scan card', detail: getErrorMessage(error) });
   }
 });
 
 app.get('/debug-ximilar', async (req, res) => {
   try {
-    if (!XIMILAR_API_TOKEN) {
-      return res.status(500).json({ ok: false, error: 'Missing token' });
-    }
+    if (!XIMILAR_API_TOKEN) return res.status(500).json({ ok: false, error: 'Missing token' });
 
     const testRes = await fetch('https://api.ximilar.com/account/v2/details/', {
       method: 'GET',
-      headers: {
-        Authorization: `Token ${XIMILAR_API_TOKEN}`,
-      },
+      headers: { Authorization: `Token ${XIMILAR_API_TOKEN}` },
     });
 
     const text = await testRes.text();
-
     return res.status(testRes.status).send(text);
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: getErrorMessage(error),
-    });
+    return res.status(500).json({ ok: false, error: getErrorMessage(error) });
   }
 });
 
 // ===============================
 // TRADE: MARK AS SENT
 // ===============================
+
 app.post('/api/trade/sent', async (req, res) => {
   const { trade_id, user_id } = req.body;
 
@@ -490,8 +431,7 @@ app.post('/api/trade/sent', async (req, res) => {
 
   if (!trade) return res.status(400).json({ error: 'Trade not found' });
 
-  const isSeller = trade.seller_id === user_id;
-  const updateField = isSeller ? 'seller_sent' : 'buyer_sent';
+  const updateField = trade.seller_id === user_id ? 'seller_sent' : 'buyer_sent';
 
   const { error } = await supabase
     .from('trades')
@@ -506,6 +446,7 @@ app.post('/api/trade/sent', async (req, res) => {
 // ===============================
 // TRADE: MARK AS RECEIVED
 // ===============================
+
 app.post('/api/trade/received', async (req, res) => {
   const { trade_id, user_id } = req.body;
 
@@ -517,8 +458,7 @@ app.post('/api/trade/received', async (req, res) => {
 
   if (!trade) return res.status(400).json({ error: 'Trade not found' });
 
-  const isSeller = trade.seller_id === user_id;
-  const updateField = isSeller ? 'seller_received' : 'buyer_received';
+  const updateField = trade.seller_id === user_id ? 'seller_received' : 'buyer_received';
 
   const updated = await supabase
     .from('trades')
@@ -529,8 +469,7 @@ app.post('/api/trade/received', async (req, res) => {
 
   const t = updated.data;
 
-  // AUTO COMPLETE TRADE
-  if (t.buyer_received && t.seller_received) {
+  if (t?.buyer_received && t?.seller_received) {
     await supabase
       .from('trades')
       .update({ status: 'completed' })
@@ -538,6 +477,132 @@ app.post('/api/trade/received', async (req, res) => {
   }
 
   res.json(updated.data);
+});
+
+// ===============================
+// DEBUG: PRICE FILTER INSPECTOR
+// ===============================
+
+app.get('/price/debug', async (req, res) => {
+  try {
+    const name = String(req.query.name || '').trim();
+    const setName = String(req.query.set || '').trim();
+    const number = String(req.query.number || '').trim();
+
+    if (!name) {
+      return res.status(400).json({ error: 'Missing ?name= param' });
+    }
+
+    const token = await getToken();
+
+    const primaryQuery = buildCardQuery({ name, setName, number });
+    const fallbackQuery = buildFallbackQuery({ name });
+
+    // Run both searches in parallel
+    const [primaryRaw, fallbackRaw] = await Promise.all([
+      searchEbay(primaryQuery, token),
+      searchEbay(fallbackQuery, token),
+    ]);
+
+    function analyseItems(items, query) {
+      return items.map((item) => {
+        const title = item.title || '';
+        const price = numberFromPrice(item.price?.value);
+
+        // Work out exactly why each item was rejected
+        const reasons = [];
+
+        if (!price) reasons.push('NO_PRICE');
+        if (price !== null && price < 0.5) reasons.push(`PRICE_TOO_LOW (£${price})`);
+        if (price !== null && price > 5000) reasons.push(`PRICE_TOO_HIGH (£${price})`);
+
+        // Check each blocked term individually
+        const t = title.toLowerCase();
+        const matchedBlockedTerms = BLOCKED_TERMS.filter((term) => t.includes(term));
+        if (matchedBlockedTerms.length > 0) {
+          reasons.push(`BLOCKED_TERMS: [${matchedBlockedTerms.join(', ')}]`);
+        }
+
+        // Check title quality
+        const cardNumber = extractCardNumber(query);
+        const importantWords = getImportantWords(query);
+
+        if (importantWords.length > 0) {
+          const hasRelevantWord = importantWords.some((word) => t.includes(word));
+          if (!hasRelevantWord) {
+            reasons.push(`MISSING_KEYWORDS (looking for any of: [${importantWords.join(', ')}])`);
+          }
+        }
+
+        if (cardNumber && !t.includes(cardNumber)) {
+          reasons.push(`MISSING_CARD_NUMBER (looking for: ${cardNumber})`);
+        }
+
+        const accepted = reasons.length === 0;
+
+        return {
+          title,
+          price: item.price?.value ?? null,
+          accepted,
+          reasons: accepted ? ['✅ ACCEPTED'] : reasons,
+        };
+      });
+    }
+
+    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery);
+    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery);
+
+    const primaryAccepted = primaryAnalysis.filter((i) => i.accepted);
+    const fallbackAccepted = fallbackAnalysis.filter((i) => i.accepted);
+
+    const primaryPrices = primaryAccepted
+      .map((i) => numberFromPrice(i.price))
+      .filter(Boolean);
+
+    const fallbackPrices = fallbackAccepted
+      .map((i) => numberFromPrice(i.price))
+      .filter(Boolean);
+
+    return res.json({
+      // Query info
+      queries: {
+        primary: primaryQuery,
+        fallback: fallbackQuery,
+      },
+
+      // Extracted search terms (useful to verify parsing)
+      parsed: {
+        importantWords: getImportantWords(primaryQuery),
+        cardNumber: extractCardNumber(primaryQuery) ?? 'none found',
+      },
+
+      // Primary search results
+      primary: {
+        totalFromEbay: primaryRaw.length,
+        accepted: primaryAccepted.length,
+        rejected: primaryRaw.length - primaryAccepted.length,
+        priceSummary: summarisePrices(primaryPrices),
+        items: primaryAnalysis,
+      },
+
+      // Fallback search results
+      fallback: {
+        totalFromEbay: fallbackRaw.length,
+        accepted: fallbackAccepted.length,
+        rejected: fallbackRaw.length - fallbackAccepted.length,
+        priceSummary: summarisePrices(fallbackPrices),
+        items: fallbackAnalysis,
+      },
+
+      // Blocked terms reference
+      blockedTermsActive: BLOCKED_TERMS,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Debug failed',
+      detail: getErrorMessage(error),
+    });
+  }
 });
 
 app.listen(PORT, () => {

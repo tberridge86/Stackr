@@ -9,11 +9,12 @@ export type BinderRecord = {
   user_id: string;
   name: string;
   color: string;
+  gradient?: string[] | null;
+  cover_key?: string | null; 
   type: BinderType;
   is_public: boolean | null;
   source_set_id: string | null;
   created_at: string;
-
   ebay_value?: number | null;
   tcg_value?: number | null;
   cardmarket_value?: number | null;
@@ -35,14 +36,16 @@ export type BinderCardRecord = {
   slot_order: number;
   owned: boolean;
   notes: string;
-
   ebay_price: number | null;
   tcg_price: number | null;
   cardmarket_price: number | null;
   last_price_update: string | null;
-
   created_at: string;
 };
+
+// ===============================
+// VIRTUAL CARD ID HELPERS
+// ===============================
 
 function makeVirtualBinderCardId(
   binderId: string,
@@ -66,12 +69,27 @@ function parseVirtualBinderCardId(id: string) {
   };
 }
 
+export function isVirtualCard(id: string): boolean {
+  return id.startsWith('virtual:');
+}
+
+// ===============================
+// FETCH BINDERS
+// ===============================
+
 export async function fetchBinders(): Promise<BinderRecord[]> {
+  // Get current user first
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  if (userError) throw userError;
+  if (!user) return [];
+
   const { data, error } = await supabase
     .from('binders')
     .select('*')
+    .eq('user_id', user.id) // ← THIS IS THE FIX
     .order('sort_order', { ascending: true })
-.order('created_at', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) throw error;
 
@@ -92,6 +110,10 @@ export async function fetchBinderById(
   return (data as BinderRecord | null) ?? null;
 }
 
+// ===============================
+// FETCH BINDER CARDS
+// ===============================
+
 export async function fetchBinderCards(
   binderId: string
 ): Promise<BinderCardRecord[]> {
@@ -109,10 +131,12 @@ export async function fetchBinderCards(
 
   const savedRows = (userRows ?? []) as BinderCardRecord[];
 
+  // Custom binders — return DB rows only
   if (binder.type !== 'official' || !binder.source_set_id) {
     return savedRows;
   }
 
+  // Official binders — merge API cards with DB rows
   const setCards = await fetchCardsForSet(binder.source_set_id);
 
   const savedByCardKey = new Map(
@@ -125,24 +149,25 @@ export async function fetchBinderCards(
 
     if (existing) {
       return {
-  ...existing,
-  slot_order: existing.slot_order ?? index,
-  card_name: existing.card_name ?? card.name ?? null,
-  card_number: existing.card_number ?? card.number ?? null,
-  image_url: existing.image_url ?? card.images?.small ?? null,
-  card: {
-    id: card.id,
-    name: card.name,
-    number: card.number,
-    rarity: card.rarity,
-    images: {
-      small: card.images?.small ?? null,
-      large: card.images?.large ?? null,
-    },
-  },
-};
+        ...existing,
+        slot_order: existing.slot_order ?? index,
+        card_name: existing.card_name ?? card.name ?? null,
+        card_number: existing.card_number ?? card.number ?? null,
+        image_url: existing.image_url ?? card.images?.small ?? null,
+        card: {
+          id: card.id,
+          name: card.name,
+          number: card.number,
+          rarity: card.rarity,
+          images: {
+            small: card.images?.small ?? null,
+            large: card.images?.large ?? null,
+          },
+        },
+      };
     }
 
+    // Virtual card — not yet owned
     return {
       id: makeVirtualBinderCardId(binderId, setId, card.id),
       binder_id: binderId,
@@ -158,31 +183,34 @@ export async function fetchBinderCards(
       slot_order: index,
       owned: false,
       notes: '',
-
       ebay_price: null,
       tcg_price: null,
       cardmarket_price: null,
       last_price_update: null,
-
-card: {
-  id: card.id,
-  name: card.name,
-  number: card.number,
-  rarity: card.rarity,
-  images: {
-    small: card.images?.small ?? null,
-    large: card.images?.large ?? null,
-  },
-},
-
-created_at: new Date().toISOString(),
+      card: {
+        id: card.id,
+        name: card.name,
+        number: card.number,
+        rarity: card.rarity,
+        images: {
+          small: card.images?.small ?? null,
+          large: card.images?.large ?? null,
+        },
+      },
+      created_at: new Date().toISOString(),
     };
   });
 }
 
+// ===============================
+// CREATE BINDER
+// ===============================
+
 export async function createBinder(input: {
   name: string;
   color: string;
+  gradient?: string[] | null;
+  coverKey?: string | null;  // ← ADD THIS
   type: BinderType;
   sourceSetId?: string | null;
 }): Promise<BinderRecord> {
@@ -200,6 +228,8 @@ export async function createBinder(input: {
       user_id: user.id,
       name: input.name,
       color: input.color,
+      gradient: input.gradient ?? null,
+      cover_key: input.coverKey ?? null,
       type: input.type,
       source_set_id: input.sourceSetId ?? null,
     })
@@ -211,15 +241,31 @@ export async function createBinder(input: {
   return data as BinderRecord;
 }
 
+// ===============================
+// ADD CARDS TO BINDER
+// ===============================
+
 export async function addCardsToBinder(
   binderId: string,
   cards: { cardId: string; setId: string }[]
 ): Promise<void> {
-  const existing = await fetchBinderCards(binderId);
+  const { data: existingRows, error: existingError } = await supabase
+    .from('binder_cards')
+    .select('card_id, set_id, slot_order')
+    .eq('binder_id', binderId);
+
+  if (existingError) throw existingError;
+
+  const existing = existingRows ?? [];
 
   const existingKeys = new Set(
-    existing.map((card) => `${card.set_id}:${card.card_id}`)
+    existing.map((row) => `${row.set_id}:${row.card_id}`)
   );
+
+  const maxSlot =
+    existing.length > 0
+      ? Math.max(...existing.map((r) => r.slot_order ?? 0))
+      : -1;
 
   const rows = cards
     .filter((card) => !existingKeys.has(`${card.setId}:${card.cardId}`))
@@ -227,7 +273,7 @@ export async function addCardsToBinder(
       binder_id: binderId,
       card_id: card.cardId,
       set_id: card.setId,
-      slot_order: existing.length + index,
+      slot_order: maxSlot + 1 + index,
       owned: false,
       notes: '',
     }));
@@ -239,46 +285,211 @@ export async function addCardsToBinder(
   if (error) throw error;
 }
 
+// ===============================
+// PRICE HISTORY HELPERS
+// ===============================
+
+function getPriceFromPokemonCard(card: any): number | null {
+  const prices = card?.tcgplayer?.prices;
+  if (!prices) return null;
+
+  const preferred = [
+    'holofoil',
+    'reverseHolofoil',
+    'normal',
+    '1stEditionHolofoil',
+    '1stEditionNormal',
+  ];
+
+  for (const key of preferred) {
+    const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  for (const entry of Object.values(prices) as any[]) {
+    const value = entry?.market ?? entry?.mid ?? entry?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  return null;
+}
+
+// ===============================
+// BACKFILL PRICE HISTORY
+// Called when a card is first marked as owned
+// Inserts 30 days of estimated price history
+// so the home screen graph shows immediately
+// ===============================
+
+async function backfillCardPriceHistory(
+  cardId: string,
+  setId: string,
+  cardName: string,
+  setName: string,
+  cardNumber: string
+): Promise<void> {
+  try {
+    // Check if we already have history — skip if so
+    const { count } = await supabase
+      .from('market_price_snapshots')
+      .select('*', { count: 'exact', head: true })
+      .eq('card_id', cardId)
+      .eq('set_id', setId);
+
+    if ((count ?? 0) > 0) {
+      console.log(`⏭️ Backfill skipped — already has data: ${cardName}`);
+      return;
+    }
+
+    // Fetch current TCG price from API
+    const res = await fetch(`https://api.pokemontcg.io/v2/cards/${cardId}`);
+    if (!res.ok) return;
+
+    const json = await res.json();
+    const card = json?.data;
+    if (!card) return;
+
+    const tcgPrice = getPriceFromPokemonCard(card);
+
+    if (!tcgPrice) {
+      console.log(`⚠️ No TCG price for backfill: ${cardName}`);
+      return;
+    }
+
+    // Build 30 days of estimated history with ±5% variance
+    const today = new Date();
+    const rows = [];
+
+    for (let i = 30; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+
+      const variance = 1 + (Math.random() * 0.1 - 0.05);
+      const price = Number((tcgPrice * variance).toFixed(2));
+
+      rows.push({
+        card_id: cardId,
+        set_id: setId,
+        tcg_mid: price,
+        tcg_low: null,
+        ebay_average: null,
+        ebay_low: null,
+        ebay_high: null,
+        ebay_count: 0,
+        cardmarket_trend: null,
+        snapshot_at: date.toISOString(),
+      });
+    }
+
+    // Insert in batches of 10
+    for (let i = 0; i < rows.length; i += 10) {
+      const { error } = await supabase
+        .from('market_price_snapshots')
+        .upsert(rows.slice(i, i + 10), {
+          onConflict: 'card_id,set_id',
+          ignoreDuplicates: true,
+        });
+
+      if (error) {
+        console.log(`⚠️ Backfill batch failed for ${cardName}:`, error);
+      }
+    }
+
+    console.log(`✅ Backfilled 30 days for ${cardName}`);
+  } catch (err) {
+    console.log('Backfill error:', err);
+  }
+}
+
+// ===============================
+// UPDATE CARD OWNED STATUS
+// ===============================
+
 export async function updateBinderCardOwned(
   binderCardId: string,
-  owned: boolean
+  owned: boolean,
+  cardMeta?: {
+    cardName?: string | null;
+    cardNumber?: string | null;
+    imageUrl?: string | null;
+    setName?: string | null;
+    slotOrder?: number;
+  }
 ): Promise<void> {
   const virtual = parseVirtualBinderCardId(binderCardId);
 
   if (virtual) {
-    if (!owned) return;
+    if (owned) {
+      // Virtual → Real: insert into DB with full metadata
+      const { error } = await supabase
+        .from('binder_cards')
+        .insert({
+          binder_id: virtual.binderId,
+          card_id: virtual.cardId,
+          set_id: virtual.setId,
+          api_card_id: virtual.cardId,
+          api_set_id: virtual.setId,
+          slot_order: cardMeta?.slotOrder ?? 0,
+          owned: true,
+          notes: '',
+          card_name: cardMeta?.cardName ?? null,
+          card_number: cardMeta?.cardNumber ?? null,
+          image_url: cardMeta?.imageUrl ?? null,
+          set_name: cardMeta?.setName ?? null,
+        })
+        .select('id, card_id, set_id, owned')
+        .single();
 
-    const { data, error } = await supabase
+      if (error) throw error;
+
+      await createActivityPost({
+        title: 'Added a card to binder',
+        subtitle: cardMeta?.cardName ?? virtual.cardId,
+        cardId: virtual.cardId,
+        setId: virtual.setId,
+        type: 'binder_add',
+      });
+
+      // Backfill price history in background — non-blocking
+      backfillCardPriceHistory(
+        virtual.cardId,
+        virtual.setId,
+        cardMeta?.cardName ?? virtual.cardId,
+        cardMeta?.setName ?? '',
+        cardMeta?.cardNumber ?? '',
+      ).catch((err) => {
+        console.log('Backfill failed silently', err);
+      });
+
+      return;
+    }
+
+    // Virtual card being marked as unowned
+    // Find and delete the DB row if it exists
+    const { data: existingRow } = await supabase
       .from('binder_cards')
-      .insert({
-        binder_id: virtual.binderId,
-        card_id: virtual.cardId,
-        set_id: virtual.setId,
-        api_card_id: virtual.cardId,
-        api_set_id: virtual.setId,
-        slot_order: 0,
-        owned: true,
-        notes: '',
-      })
-      .select('id, card_id, set_id, owned')
-      .single();
+      .select('id')
+      .eq('binder_id', virtual.binderId)
+      .eq('card_id', virtual.cardId)
+      .eq('set_id', virtual.setId)
+      .maybeSingle();
 
-    if (error) throw error;
+    if (existingRow) {
+      const { error } = await supabase
+        .from('binder_cards')
+        .delete()
+        .eq('id', existingRow.id);
 
-    await createActivityPost({
-      title: 'Added a card to binder',
-      subtitle: virtual.cardId,
-      cardId: virtual.cardId,
-      setId: virtual.setId,
-      type: 'binder_add',
-    });
+      if (error) throw error;
+    }
 
     return;
   }
 
+  // Real card — just update owned status
   const { data: existingCard, error: fetchError } = await supabase
     .from('binder_cards')
-    .select('card_id, set_id, owned')
+    .select('card_id, set_id, card_name, owned')
     .eq('id', binderCardId)
     .maybeSingle();
 
@@ -291,16 +502,21 @@ export async function updateBinderCardOwned(
 
   if (error) throw error;
 
+  // Only post activity when transitioning from unowned → owned
   if (owned && existingCard && !existingCard.owned) {
     await createActivityPost({
       title: 'Added a card to binder',
-      subtitle: existingCard.card_id,
+      subtitle: existingCard.card_name ?? existingCard.card_id,
       cardId: existingCard.card_id,
       setId: existingCard.set_id,
       type: 'binder_add',
     });
   }
 }
+
+// ===============================
+// DELETE BINDER
+// ===============================
 
 export async function deleteBinder(binderId: string): Promise<void> {
   const { error } = await supabase.from('binders').delete().eq('id', binderId);

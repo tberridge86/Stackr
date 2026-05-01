@@ -1,25 +1,29 @@
-import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useEffect, useMemo, useState } from 'react';
+import { theme } from '../../lib/theme';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
-  StyleSheet,
   ScrollView,
   Image,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { Text } from '../../components/Text';
-import { router } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../components/profile-context';
 import { AVATAR_PRESETS } from '../../lib/avatars';
-import { theme } from '../../lib/theme';
 import { supabase } from '../../lib/supabase';
 import {
   getCachedCardSync,
   getCachedCardsForSet,
 } from '../../lib/pokemonTcgCache';
+
+// ===============================
+// CONSTANTS
+// ===============================
 
 const TYPE_COLOR_MAP: Record<string, string> = {
   water: '#78C8F0',
@@ -29,66 +33,344 @@ const TYPE_COLOR_MAP: Record<string, string> = {
   psychic: '#FA92B2',
   dark: '#705848',
   dragon: '#7038F8',
+  normal: '#A8A878',
+  fighting: '#C03028',
+  flying: '#A890F0',
+  poison: '#A040A0',
+  ground: '#E0C068',
+  rock: '#B8A038',
+  bug: '#A8B820',
+  ghost: '#705898',
+  steel: '#B8B8D0',
+  ice: '#98D8D8',
+  fairy: '#EE99AC',
 };
 
-function TopLoaderCard({ label, card }: { label: string; card: any | null }) {
-  return (
-    <View style={styles.topLoaderWrap}>
-      <Text style={styles.topLoaderLabel}>{label}</Text>
+// Determine if text should be dark or light based on bg colour
+function getTextColorForBg(hex: string): string {
+  const clean = hex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 128 ? '#0b0f2a' : '#FFFFFF';
+}
 
-      <View style={styles.topLoaderOuter}>
-        <View style={styles.topLoaderInner}>
+// ===============================
+// SUB COMPONENTS
+// ===============================
+
+function TopLoaderCard({
+  label,
+  card,
+  labelColor,
+}: {
+  label: string;
+  card: any | null;
+  labelColor?: string;
+}) {
+  return (
+    <View style={{ width: '48%', alignItems: 'center' }}>
+      <Text style={{
+        color: labelColor ?? theme.colors.secondary,
+        fontWeight: '800',
+        marginBottom: 10,
+        fontSize: 13,
+      }}>
+        {label}
+      </Text>
+
+      <View style={{
+        backgroundColor: '#d8dde6',
+        borderRadius: 16,
+        padding: 8,
+        width: '100%',
+      }}>
+        <View style={{
+          backgroundColor: '#f4f7fb',
+          borderRadius: 12,
+          minHeight: 190,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
           {card?.images?.small ? (
             <Image
               source={{ uri: card.images.small }}
-              style={styles.topLoaderImage}
+              style={{ width: 120, height: 168 }}
               resizeMode="contain"
             />
           ) : (
-            <View style={styles.topLoaderEmpty}>
+            <View style={{ alignItems: 'center' }}>
               <Ionicons name="image-outline" size={28} color="#7c859f" />
-              <Text style={styles.topLoaderEmptyText}>Not set</Text>
+              <Text style={{ color: '#7c859f', marginTop: 6, fontSize: 12 }}>Not set</Text>
             </View>
           )}
         </View>
       </View>
 
-      <Text style={styles.topLoaderName} numberOfLines={2}>
+      <Text
+        numberOfLines={2}
+        style={{
+          color: theme.colors.text,
+          marginTop: 10,
+          textAlign: 'center',
+          fontWeight: '600',
+          fontSize: 12,
+        }}
+      >
         {card?.name ?? 'No card selected'}
       </Text>
     </View>
   );
 }
 
+function StatBox({ label, value }: { label: string; value: number | string }) {
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.15)',
+      borderRadius: 14,
+      padding: 12,
+      alignItems: 'center',
+    }}>
+      <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 18 }}>
+        {value}
+      </Text>
+      <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 3, fontWeight: '700' }}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function QuickAction({
+  icon,
+  label,
+  onPress,
+  badge,
+}: {
+  icon: any;
+  label: string;
+  onPress: () => void;
+  badge?: number;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.card,
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+      }}
+      activeOpacity={0.8}
+    >
+      <Ionicons name={icon} size={20} color={theme.colors.secondary} />
+      <Text style={{ flex: 1, color: theme.colors.text, marginLeft: 12, fontWeight: '700' }}>
+        {label}
+      </Text>
+      {badge != null && badge > 0 && (
+        <View style={{
+          backgroundColor: theme.colors.primary,
+          borderRadius: 999,
+          minWidth: 22,
+          paddingHorizontal: 6,
+          paddingVertical: 2,
+          marginRight: 8,
+        }}>
+          <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '900', textAlign: 'center' }}>
+            {badge}
+          </Text>
+        </View>
+      )}
+      <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
+    </TouchableOpacity>
+  );
+}
+
+// ===============================
+// MAIN COMPONENT
+// ===============================
+
 export default function ProfileScreen() {
-  const { profile, loading } = useProfile();
+  const { profile, loading, refreshProfile } = useProfile();
 
   const [favoriteCard, setFavoriteCard] = useState<any | null>(null);
   const [chaseCard, setChaseCard] = useState<any | null>(null);
   const [showcaseLoading, setShowcaseLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  // Stats
+  const [ownedCount, setOwnedCount] = useState(0);
+  const [binderCount, setBinderCount] = useState(0);
+  const [tradeCount, setTradeCount] = useState(0);
+  const [traderRating, setTraderRating] = useState<{
+    average_rating: number | null;
+    review_count: number;
+  } | null>(null);
+
+  // Notification badge
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const avatar = useMemo(() => {
     return AVATAR_PRESETS.find((a) => a.key === profile?.avatar_preset) ?? null;
   }, [profile?.avatar_preset]);
 
   const profileColor =
-    TYPE_COLOR_MAP[profile?.pokemon_type ?? 'water'] ?? theme.colors.primary;
+    TYPE_COLOR_MAP[profile?.pokemon_type ?? ''] ?? theme.colors.primary;
+
+  const heroTextColor = getTextColorForBg(profileColor);
+
+  // ===============================
+  // LOAD SHOWCASE CARDS
+  // ===============================
+
+  const loadShowcaseCards = useCallback(async () => {
+    if (!profile) return;
+
+    try {
+      setShowcaseLoading(true);
+
+      const loadCard = async (cardId?: string | null, setId?: string | null) => {
+        if (!cardId || !setId) return null;
+
+        let found = getCachedCardSync(setId, cardId);
+
+        if (!found) {
+          const cards = await getCachedCardsForSet(setId);
+          found = cards.find((c) => c.id === cardId) ?? null;
+        }
+
+        return found ?? null;
+      };
+
+      const [fav, chase] = await Promise.all([
+        loadCard(profile.favorite_card_id, profile.favorite_set_id),
+        loadCard(profile.chase_card_id, profile.chase_set_id),
+      ]);
+
+      setFavoriteCard(fav);
+      setChaseCard(chase);
+    } catch (error) {
+      console.log('Failed to load showcase cards', error);
+    } finally {
+      setShowcaseLoading(false);
+    }
+  }, [profile]);
+
+  // ===============================
+  // LOAD STATS
+  // ===============================
+
+  const loadStats = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const [
+        bindersResult,
+        ratingResult,
+        notificationsResult,
+        tradesResult,
+      ] = await Promise.all([
+        supabase
+          .from('binders')
+          .select('id')
+          .eq('user_id', user.id),
+
+        supabase
+          .from('profile_rating_summary')
+          .select('average_rating, review_count')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+
+        supabase
+          .from('notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('read', false),
+
+        supabase
+          .from('trade_offers')
+          .select('*', { count: 'exact', head: true })
+          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+          .eq('status', 'completed'),
+      ]);
+
+      const binderIds = (bindersResult.data ?? []).map((b) => b.id);
+      setBinderCount(binderIds.length);
+
+      if (binderIds.length > 0) {
+        const { count } = await supabase
+          .from('binder_cards')
+          .select('*', { count: 'exact', head: true })
+          .in('binder_id', binderIds)
+          .eq('owned', true);
+        setOwnedCount(count ?? 0);
+      }
+
+      if (ratingResult.data) {
+        setTraderRating(ratingResult.data as any);
+      }
+
+      setUnreadCount(notificationsResult.count ?? 0);
+      setTradeCount(tradesResult.count ?? 0);
+    } catch (error) {
+      console.log('Failed to load profile stats', error);
+    }
+  }, []);
+
+  // ===============================
+  // FOCUS EFFECT
+  // ===============================
+
+  useFocusEffect(
+    useCallback(() => {
+      loadShowcaseCards();
+      loadStats();
+    }, [loadShowcaseCards, loadStats])
+  );
+
+  useEffect(() => {
+    loadShowcaseCards();
+  }, [loadShowcaseCards]);
+
+  // ===============================
+  // REFRESH
+  // ===============================
+
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await Promise.all([
+        refreshProfile(),
+        loadShowcaseCards(),
+        loadStats(),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // ===============================
+  // LOGOUT
+  // ===============================
 
   const handleLogout = async () => {
     try {
       setLoggingOut(true);
-
       const { error } = await supabase.auth.signOut();
-
       if (error) {
         Alert.alert('Logout failed', error.message);
         return;
       }
-
       router.replace('/login');
     } catch (error) {
-      console.log('Logout error:', error);
       Alert.alert('Logout failed', 'Something went wrong. Please try again.');
     } finally {
       setLoggingOut(false);
@@ -101,188 +383,323 @@ export default function ProfileScreen() {
       'Are you sure you want to log out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Log out',
-          style: 'destructive',
-          onPress: handleLogout,
-        },
+        { text: 'Log out', style: 'destructive', onPress: handleLogout },
       ]
     );
   };
 
-  useEffect(() => {
-    let mounted = true;
-
-    const loadCard = async (cardId?: string | null, setId?: string | null) => {
-      if (!cardId || !setId) return null;
-
-      let found = getCachedCardSync(setId, cardId);
-
-      if (!found) {
-        const cards = await getCachedCardsForSet(setId);
-        found = cards.find((c) => c.id === cardId) ?? null;
-      }
-
-      return found;
-    };
-
-    const loadShowcaseCards = async () => {
-      if (!profile) return;
-
-      try {
-        setShowcaseLoading(true);
-
-        const [fav, chase] = await Promise.all([
-          loadCard(profile.favorite_card_id, profile.favorite_set_id),
-          loadCard(profile.chase_card_id, profile.chase_set_id),
-        ]);
-
-        if (mounted) {
-          setFavoriteCard(fav);
-          setChaseCard(chase);
-        }
-      } catch (error) {
-        console.log('Failed to load showcase cards', error);
-      } finally {
-        if (mounted) setShowcaseLoading(false);
-      }
-    };
-
-    loadShowcaseCards();
-
-    return () => {
-      mounted = false;
-    };
-  }, [profile]);
+  // ===============================
+  // LOADING STATE
+  // ===============================
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator color={theme.colors.primary} size="large" />
-        <Text style={styles.loadingText}>Loading profile...</Text>
+        <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>Loading profile...</Text>
       </View>
     );
   }
 
   if (!profile) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorTitle}>No profile found</Text>
-        <Text style={styles.errorText}>
+      <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800' }}>
+          No profile found
+        </Text>
+        <Text style={{ color: theme.colors.textSoft, marginTop: 6, textAlign: 'center' }}>
           Complete your profile setup to continue.
         </Text>
 
         <TouchableOpacity
           onPress={() => router.push('/profile/setup')}
-          style={styles.setupButton}
+          style={{ marginTop: 16, backgroundColor: theme.colors.primary, paddingVertical: 12, paddingHorizontal: 18, borderRadius: 12 }}
         >
-          <Text style={styles.setupButtonText}>Set up profile</Text>
+          <Text style={{ color: '#fff', fontWeight: '900' }}>Set up profile</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={confirmLogout}
-          style={[styles.logoutButton, { marginTop: 14 }]}
           disabled={loggingOut}
+          style={{
+            marginTop: 14,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#FFECEC',
+            padding: 14,
+            borderRadius: 14,
+            gap: 8,
+            width: '100%',
+          }}
         >
           {loggingOut ? (
             <ActivityIndicator color="#D92D20" />
           ) : (
-            <Text style={styles.logoutText}>Log out</Text>
+            <>
+              <Ionicons name="log-out-outline" size={20} color="#D92D20" />
+              <Text style={{ color: '#D92D20', fontWeight: '900' }}>Log out</Text>
+            </>
           )}
         </TouchableOpacity>
       </View>
     );
   }
 
+  // ===============================
+  // MAIN RENDER
+  // ===============================
+
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.heroCard, { backgroundColor: profileColor }]}>
-          <View style={styles.heroTopRow}>
-            <View style={styles.avatarWrap}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 18, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
+        {/* ===============================
+            HERO CARD
+        =============================== */}
+        <View style={{
+          borderRadius: 26,
+          padding: 18,
+          marginBottom: 20,
+          backgroundColor: profileColor,
+        }}>
+          {/* Top row — avatar + edit button */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <View style={{
+              width: 90,
+              height: 90,
+              borderRadius: 22,
+              backgroundColor: 'rgba(255,255,255,0.15)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              overflow: 'hidden',
+            }}>
               {avatar?.image ? (
-                <Image source={avatar.image} style={styles.avatar} />
+                <Image source={avatar.image} style={{ width: '100%', height: '100%' }} />
               ) : (
-                <View style={styles.avatarFallback}>
-                  <Text style={styles.initialsText}>
+                <View style={{
+                  width: '100%', height: '100%',
+                  backgroundColor: 'rgba(0,0,0,0.3)',
+                  justifyContent: 'center', alignItems: 'center',
+                }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 30, fontWeight: '900' }}>
                     {profile.collector_name?.[0]?.toUpperCase() ?? '?'}
                   </Text>
                 </View>
               )}
             </View>
 
-            <TouchableOpacity
-              onPress={() => router.push('/profile/setup')}
-              style={styles.editButton}
-            >
-              <Ionicons name="create-outline" size={22} color="#fff" />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {/* Notifications button */}
+              <TouchableOpacity
+                onPress={() => router.push('/notifications')}
+                style={{
+                  width: 38, height: 38, borderRadius: 10,
+                  backgroundColor: 'rgba(0,0,0,0.25)',
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="notifications-outline" size={20} color="#fff" />
+                {unreadCount > 0 && (
+                  <View style={{
+                    position: 'absolute',
+                    top: -4, right: -4,
+                    width: 16, height: 16,
+                    borderRadius: 8,
+                    backgroundColor: '#EF4444',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Text style={{ color: '#fff', fontSize: 9, fontWeight: '900' }}>
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Edit button */}
+              <TouchableOpacity
+                onPress={() => router.push('/profile/setup')}
+                style={{
+                  width: 38, height: 38, borderRadius: 10,
+                  backgroundColor: 'rgba(0,0,0,0.25)',
+                  alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="create-outline" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          <Text style={styles.collectorName}>
+          {/* Name + type */}
+          <Text style={{ color: heroTextColor, fontSize: 26, fontWeight: '900', marginTop: 16 }}>
             {profile.collector_name ?? 'Collector'}
           </Text>
 
-          <Text style={styles.collectorMeta}>
+          <Text style={{ color: heroTextColor, marginTop: 4, fontWeight: '600', opacity: 0.85 }}>
             {profile.pokemon_type
-              ? `${
-                  profile.pokemon_type.charAt(0).toUpperCase() +
-                  profile.pokemon_type.slice(1)
-                } Trainer`
+              ? `${profile.pokemon_type.charAt(0).toUpperCase()}${profile.pokemon_type.slice(1)} Trainer`
               : 'Collector Profile'}
           </Text>
+
+          {/* Trader rating */}
+          {traderRating && (
+            <View style={{
+              marginTop: 10,
+              backgroundColor: 'rgba(0,0,0,0.15)',
+              borderRadius: 999,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              alignSelf: 'flex-start',
+            }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>
+                {traderRating.review_count > 0
+                  ? `⭐ ${traderRating.average_rating?.toFixed(1)} · ${traderRating.review_count} review${traderRating.review_count !== 1 ? 's' : ''}`
+                  : '⭐ No reviews yet'}
+              </Text>
+            </View>
+          )}
+
+          {/* Stats row */}
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
+            <StatBox label="Cards" value={ownedCount} />
+            <StatBox label="Binders" value={binderCount} />
+            <StatBox label="Trades" value={tradeCount} />
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>Showcase</Text>
+        {/* ===============================
+            SHOWCASE
+        =============================== */}
+        <View style={{ marginBottom: 20 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800' }}>
+              Showcase
+            </Text>
             {showcaseLoading && (
               <ActivityIndicator color={theme.colors.primary} size="small" />
             )}
           </View>
 
-          <View style={styles.topLoaderRow}>
-            <TopLoaderCard label="Favourite Card" card={favoriteCard} />
-            <TopLoaderCard label="Chase Card" card={chaseCard} />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <TopLoaderCard
+              label="⭐ Favourite Card"
+              card={favoriteCard}
+              labelColor={theme.colors.secondary}
+            />
+            <TopLoaderCard
+              label="🎯 Chase Card"
+              card={chaseCard}
+              labelColor="#FF8FA3"
+            />
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Access</Text>
 
           <TouchableOpacity
             onPress={() => router.push('/binder')}
-            style={styles.quickAction}
+            style={{
+              marginTop: 12,
+              backgroundColor: theme.colors.surface,
+              borderRadius: 14,
+              paddingVertical: 11,
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
           >
-            <Ionicons name="folder-open-outline" size={20} color="#FFD166" />
-            <Text style={styles.quickActionText}>Open Binders</Text>
-            <Ionicons name="chevron-forward" size={18} color="#94A0C9" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => router.push('/trade')}
-            style={styles.quickAction}
-          >
-            <Ionicons name="storefront-outline" size={20} color="#FFD166" />
-            <Text style={styles.quickActionText}>Open Marketplace</Text>
-            <Ionicons name="chevron-forward" size={18} color="#94A0C9" />
+            <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 13 }}>
+              Set showcase cards from your binders →
+            </Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+        {/* ===============================
+            QUICK ACCESS
+        =============================== */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800', marginBottom: 12 }}>
+            Quick Access
+          </Text>
+
+          <QuickAction
+            icon="folder-open-outline"
+            label="My Binders"
+            onPress={() => router.push('/binder')}
+          />
+
+          <QuickAction
+            icon="storefront-outline"
+            label="Trade Marketplace"
+            onPress={() => router.push('/trade')}
+          />
+
+          <QuickAction
+            icon="swap-horizontal-outline"
+            label="My Offers"
+            onPress={() => router.push('/offers')}
+          />
+
+          <QuickAction
+            icon="people-outline"
+            label="Friends"
+            onPress={() => router.push('/friends')}
+          />
+
+          <QuickAction
+            icon="notifications-outline"
+            label="Notifications"
+            onPress={() => router.push('/notifications')}
+            badge={unreadCount}
+          />
+
+          <QuickAction
+            icon="earth-outline"
+            label="Community"
+            onPress={() => router.push('/community')}
+          />
+        </View>
+
+        {/* ===============================
+            ACCOUNT
+        =============================== */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800', marginBottom: 12 }}>
+            Account
+          </Text>
+
+          <QuickAction
+            icon="person-outline"
+            label="Edit Profile"
+            onPress={() => router.push('/profile/setup')}
+          />
 
           <TouchableOpacity
             onPress={confirmLogout}
-            style={styles.logoutButton}
             disabled={loggingOut}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#FFECEC',
+              padding: 16,
+              borderRadius: 16,
+              gap: 8,
+              opacity: loggingOut ? 0.6 : 1,
+            }}
           >
             {loggingOut ? (
               <ActivityIndicator color="#D92D20" />
             ) : (
               <>
                 <Ionicons name="log-out-outline" size={20} color="#D92D20" />
-                <Text style={styles.logoutText}>Log out</Text>
+                <Text style={{ color: '#D92D20', fontWeight: '900' }}>Log out</Text>
               </>
             )}
           </TouchableOpacity>
@@ -291,216 +708,3 @@ export default function ProfileScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-  },
-
-  content: {
-    padding: 18,
-    paddingBottom: 120,
-  },
-
-  centered: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-
-  loadingText: {
-    color: theme.colors.textSoft,
-    marginTop: 12,
-  },
-
-  errorTitle: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-  },
-
-  errorText: {
-    color: theme.colors.textSoft,
-    marginTop: 6,
-    textAlign: 'center',
-  },
-
-  setupButton: {
-    marginTop: 16,
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 12,
-  },
-
-  setupButtonText: {
-    color: '#fff',
-    fontWeight: '900',
-  },
-
-  heroCard: {
-    borderRadius: 26,
-    padding: 18,
-    marginBottom: 20,
-  },
-
-  heroTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  avatarWrap: {
-    width: 90,
-    height: 90,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-
-  avatar: {
-    width: '100%',
-    height: '100%',
-  },
-
-  avatarFallback: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 22,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  initialsText: {
-    color: '#0b0f2a',
-    fontSize: 30,
-    fontWeight: '900',
-  },
-
-  editButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  collectorName: {
-    color: '#0b0f2a',
-    fontSize: 26,
-    fontWeight: '900',
-    marginTop: 16,
-  },
-
-  collectorMeta: {
-    color: '#0b0f2a',
-    marginTop: 6,
-    fontWeight: '600',
-  },
-
-  section: {
-    marginBottom: 20,
-  },
-
-  sectionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-
-  sectionTitle: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 12,
-  },
-
-  topLoaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-
-  topLoaderWrap: {
-    width: '48%',
-    alignItems: 'center',
-  },
-
-  topLoaderLabel: {
-    color: theme.colors.secondary,
-    fontWeight: '800',
-    marginBottom: 10,
-  },
-
-  topLoaderOuter: {
-    backgroundColor: '#d8dde6',
-    borderRadius: 16,
-    padding: 8,
-    width: '100%',
-  },
-
-  topLoaderInner: {
-    backgroundColor: '#f4f7fb',
-    borderRadius: 12,
-    minHeight: 190,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  topLoaderImage: {
-    width: 120,
-    height: 168,
-  },
-
-  topLoaderEmpty: {
-    alignItems: 'center',
-  },
-
-  topLoaderEmptyText: {
-    color: '#7c859f',
-    marginTop: 6,
-  },
-
-  topLoaderName: {
-    color: theme.colors.text,
-    marginTop: 10,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-
-  quickAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.card,
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-  },
-
-  quickActionText: {
-    flex: 1,
-    color: theme.colors.text,
-    marginLeft: 12,
-    fontWeight: '700',
-  },
-
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFECEC',
-    padding: 16,
-    borderRadius: 16,
-    gap: 8,
-  },
-
-  logoutText: {
-    color: '#D92D20',
-    fontWeight: '900',
-  },
-});

@@ -1,5 +1,5 @@
 import { theme } from '../../lib/theme';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -20,6 +20,7 @@ import {
   getCachedCardsForSet,
   getCachedSets,
 } from '../../lib/pokemonTcgCache';
+import { fetchEbayPrice } from '../../lib/ebay';
 
 type PokemonCard = {
   id: string;
@@ -69,6 +70,14 @@ type PokemonCard = {
   };
 };
 
+type EbayPriceResult = {
+  low: number | null;
+  average: number | null;
+  high: number | null;
+  count: number;
+  usedFallback?: boolean;
+};
+
 const CONDITIONS = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Played'];
 
 export default function CardDetailScreen() {
@@ -94,6 +103,15 @@ export default function CardDetailScreen() {
   const [listingBusy, setListingBusy] = useState(false);
   const [favoriteBusy, setFavoriteBusy] = useState(false);
   const [chaseBusy, setChaseBusy] = useState(false);
+
+  // eBay price state
+  const [ebayPrice, setEbayPrice] = useState<EbayPriceResult | null>(null);
+  const [ebayLoading, setEbayLoading] = useState(false);
+  const [ebayError, setEbayError] = useState(false);
+
+  // ===============================
+  // LOAD CARD
+  // ===============================
 
   useEffect(() => {
     let mounted = true;
@@ -153,6 +171,54 @@ export default function CardDetailScreen() {
     };
   }, [cardId, paramSetId]);
 
+  // ===============================
+  // FETCH EBAY PRICE
+  // ===============================
+
+  const fetchEbay = useCallback(async (cardData: PokemonCard) => {
+    try {
+      setEbayLoading(true);
+      setEbayError(false);
+
+      // Build the best possible query
+      const name = cardData.name ?? '';
+      const setName = cardData.set?.name ?? '';
+      const number = cardData.number ?? '';
+
+      const queryParts = [name, setName, number, 'pokemon card']
+        .map((v) => v.trim())
+        .filter(Boolean);
+
+      const query = queryParts.join(' ');
+
+      const result = await fetchEbayPrice(query);
+
+      setEbayPrice({
+        low: result.low ?? null,
+        average: result.average ?? null,
+        high: result.high ?? null,
+        count: result.count ?? 0,
+        usedFallback: result.usedFallback ?? false,
+      });
+    } catch (err) {
+      console.error('eBay price fetch failed:', err);
+      setEbayError(true);
+    } finally {
+      setEbayLoading(false);
+    }
+  }, []);
+
+  // Auto-fetch eBay price once card is loaded
+  useEffect(() => {
+    if (card) {
+      fetchEbay(card);
+    }
+  }, [card, fetchEbay]);
+
+  // ===============================
+  // MEMOS
+  // ===============================
+
   const tradeMeta = useMemo(() => {
     return card ? getMeta(card.id) : {};
   }, [card, getMeta]);
@@ -164,36 +230,41 @@ export default function CardDetailScreen() {
     );
   }, [card, myListings]);
 
-  const marketGuide = useMemo(() => {
+  // TCGPlayer prices (USD reference only)
+  const tcgPrices = useMemo(() => {
     if (!card) return null;
 
-    const tcgplayerPrices = card.tcgplayer?.prices;
-    const cardmarketPrices = card.cardmarket?.prices;
+    const prices = card.tcgplayer?.prices;
+    if (!prices) return null;
 
-    const firstTcgEntry = tcgplayerPrices ? Object.values(tcgplayerPrices)[0] : null;
-    const firstCardmarketEntry = cardmarketPrices ? Object.values(cardmarketPrices)[0] : null;
+    const preferred = [
+      'holofoil',
+      'reverseHolofoil',
+      'normal',
+      '1stEditionHolofoil',
+      '1stEditionNormal',
+    ];
 
-    const low =
-      firstTcgEntry && typeof (firstTcgEntry as any).low === 'number'
-        ? (firstTcgEntry as any).low
-        : null;
+    let entry: any = null;
 
-    const mid =
-      firstTcgEntry && typeof (firstTcgEntry as any).mid === 'number'
-        ? (firstTcgEntry as any).mid
-        : null;
+    for (const key of preferred) {
+      if (prices[key]) {
+        entry = prices[key];
+        break;
+      }
+    }
 
-    const market =
-      firstTcgEntry && typeof (firstTcgEntry as any).market === 'number'
-        ? (firstTcgEntry as any).market
-        : null;
+    if (!entry) {
+      entry = Object.values(prices)[0] ?? null;
+    }
 
-    const trend =
-      firstCardmarketEntry && typeof (firstCardmarketEntry as any).trendPrice === 'number'
-        ? (firstCardmarketEntry as any).trendPrice
-        : null;
+    if (!entry) return null;
 
-    return { low, mid, market, trend };
+    return {
+      low: typeof entry.low === 'number' ? entry.low : null,
+      mid: typeof entry.mid === 'number' ? entry.mid : null,
+      market: typeof entry.market === 'number' ? entry.market : null,
+    };
   }, [card]);
 
   const isFavorite =
@@ -205,6 +276,10 @@ export default function CardDetailScreen() {
     !!card &&
     profile?.chase_card_id === card.id &&
     profile?.chase_set_id === (card.set?.id ?? paramSetId);
+
+  // ===============================
+  // HANDLERS
+  // ===============================
 
   const handleSetCondition = (condition: string) => {
     if (!card) return;
@@ -230,17 +305,14 @@ export default function CardDetailScreen() {
     try {
       if (!card) return;
       const setId = card.set?.id ?? paramSetId;
-
       if (!setId) {
         Alert.alert('Error', 'Set information is missing for this card.');
         return;
       }
-
       setFavoriteBusy(true);
       await setFavoriteCard(card.id, setId);
       Alert.alert('Favourite updated', `${card.name ?? 'Card'} is now your favourite card.`);
     } catch (error) {
-      console.error('Set favourite error:', error);
       Alert.alert('Error', 'Could not update favourite card.');
     } finally {
       setFavoriteBusy(false);
@@ -251,17 +323,14 @@ export default function CardDetailScreen() {
     try {
       if (!card) return;
       const setId = card.set?.id ?? paramSetId;
-
       if (!setId) {
         Alert.alert('Error', 'Set information is missing for this card.');
         return;
       }
-
       setChaseBusy(true);
       await setChaseCard(card.id, setId);
       Alert.alert('Chase updated', `${card.name ?? 'Card'} is now your chase card.`);
     } catch (error) {
-      console.error('Set chase error:', error);
       Alert.alert('Error', 'Could not update chase card.');
     } finally {
       setChaseBusy(false);
@@ -276,10 +345,7 @@ export default function CardDetailScreen() {
       }
 
       if (existingActiveListing) {
-        Alert.alert(
-          'Already Listed',
-          'This card already has an active marketplace listing.'
-        );
+        Alert.alert('Already Listed', 'This card already has an active marketplace listing.');
         return;
       }
 
@@ -297,21 +363,19 @@ export default function CardDetailScreen() {
       });
 
       console.log('Marketplace listing created:', result);
-
       await refreshTrade();
-
       Alert.alert('Listed', `${card.name ?? 'Card'} has been added to the marketplace.`);
     } catch (err) {
-      console.error('Marketplace error:', err);
-
-      const message =
-        err instanceof Error ? err.message : 'Failed to list card on marketplace.';
-
+      const message = err instanceof Error ? err.message : 'Failed to list card on marketplace.';
       Alert.alert('Marketplace Error', message);
     } finally {
       setListingBusy(false);
     }
   };
+
+  // ===============================
+  // LOADING / ERROR STATES
+  // ===============================
 
   if (loading) {
     return (
@@ -334,8 +398,14 @@ export default function CardDetailScreen() {
   const isTradeMarked = isForTrade(card.id);
   const isWishlisted = isWanted(card.id);
 
+  // ===============================
+  // RENDER
+  // ===============================
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+
+      {/* Card Image */}
       <View style={styles.heroCard}>
         {card.images?.large || card.images?.small ? (
           <Image
@@ -350,8 +420,8 @@ export default function CardDetailScreen() {
         )}
       </View>
 
+      {/* Title + Meta */}
       <Text style={styles.title}>{card.name ?? 'Unknown card'}</Text>
-
       <Text style={styles.subtitle}>
         {card.set?.name ?? 'Unknown set'}
         {card.number ? ` • #${card.number}` : ''}
@@ -363,6 +433,134 @@ export default function CardDetailScreen() {
         {!!card.hp && <Text style={styles.metaChip}>HP {card.hp}</Text>}
       </View>
 
+      {/* ===============================
+          MARKET GUIDE (moved up)
+      =============================== */}
+      <View style={styles.section}>
+        <View style={styles.sectionTitleRow}>
+          <Text style={styles.sectionTitle}>Market Guide</Text>
+          <TouchableOpacity
+            onPress={() => fetchEbay(card)}
+            disabled={ebayLoading}
+            style={styles.refreshButton}
+          >
+            <Text style={styles.refreshButtonText}>
+              {ebayLoading ? 'Fetching...' : '↻ Refresh'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.infoCard}>
+
+          {/* eBay Live Prices */}
+          <Text style={styles.priceSourceLabel}>eBay (Live · GBP)</Text>
+
+          {ebayLoading ? (
+            <View style={styles.ebayLoadingRow}>
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+              <Text style={styles.ebayLoadingText}>Fetching live eBay prices...</Text>
+            </View>
+          ) : ebayError ? (
+            <View style={styles.ebayErrorRow}>
+              <Text style={styles.ebayErrorText}>
+                Could not fetch eBay prices.{' '}
+              </Text>
+              <TouchableOpacity onPress={() => fetchEbay(card)}>
+                <Text style={styles.ebayRetryText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <View style={styles.marketButtonsRow}>
+                <TouchableOpacity
+                  onPress={() => handleQuickValue(ebayPrice?.low ?? null)}
+                  style={styles.marketButton}
+                  disabled={ebayPrice?.low == null}
+                >
+                  <Text style={styles.marketButtonLabel}>Low</Text>
+                  <Text style={styles.marketButtonValue}>
+                    {ebayPrice?.low != null ? `£${ebayPrice.low.toFixed(2)}` : 'N/A'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => handleQuickValue(ebayPrice?.average ?? null)}
+                  style={[styles.marketButton, styles.marketButtonHighlight]}
+                  disabled={ebayPrice?.average == null}
+                >
+                  <Text style={styles.marketButtonLabel}>Average</Text>
+                  <Text style={[styles.marketButtonValue, styles.marketButtonValueHighlight]}>
+                    {ebayPrice?.average != null ? `£${ebayPrice.average.toFixed(2)}` : 'N/A'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => handleQuickValue(ebayPrice?.high ?? null)}
+                  style={styles.marketButton}
+                  disabled={ebayPrice?.high == null}
+                >
+                  <Text style={styles.marketButtonLabel}>High</Text>
+                  <Text style={styles.marketButtonValue}>
+                    {ebayPrice?.high != null ? `£${ebayPrice.high.toFixed(2)}` : 'N/A'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Sample count + fallback notice */}
+              <View style={styles.ebayMetaRow}>
+                {ebayPrice?.count != null && ebayPrice.count > 0 && (
+                  <Text style={styles.ebayMetaText}>
+                    Based on {ebayPrice.count} listing{ebayPrice.count !== 1 ? 's' : ''}
+                  </Text>
+                )}
+                {ebayPrice?.usedFallback && (
+                  <Text style={styles.ebayFallbackText}>
+                    ⚠️ Broad search used — results may be less specific
+                  </Text>
+                )}
+                {ebayPrice?.count === 0 && (
+                  <Text style={styles.ebayMetaText}>No listings found on eBay</Text>
+                )}
+              </View>
+            </>
+          )}
+
+          {/* Divider */}
+          <View style={styles.divider} />
+
+          {/* TCGPlayer Reference Prices (USD) */}
+          <Text style={styles.priceSourceLabel}>TCGPlayer (Reference · USD)</Text>
+
+          <View style={styles.marketButtonsRow}>
+            <View style={styles.marketButton}>
+              <Text style={styles.marketButtonLabel}>Low</Text>
+              <Text style={styles.marketButtonValue}>
+                {tcgPrices?.low != null ? `$${tcgPrices.low.toFixed(2)}` : 'N/A'}
+              </Text>
+            </View>
+
+            <View style={styles.marketButton}>
+              <Text style={styles.marketButtonLabel}>Mid</Text>
+              <Text style={styles.marketButtonValue}>
+                {tcgPrices?.mid != null ? `$${tcgPrices.mid.toFixed(2)}` : 'N/A'}
+              </Text>
+            </View>
+
+            <View style={styles.marketButton}>
+              <Text style={styles.marketButtonLabel}>Market</Text>
+              <Text style={styles.marketButtonValue}>
+                {tcgPrices?.market != null ? `$${tcgPrices.market.toFixed(2)}` : 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.marketHint}>
+            Tap an eBay value to auto-fill your asking price.
+          </Text>
+        </View>
+      </View>
+
+      {/* Trade Actions */}
       <View style={styles.actions}>
         <TouchableOpacity
           style={[styles.actionButton, isTradeMarked && styles.actionButtonActive]}
@@ -383,6 +581,7 @@ export default function CardDetailScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Favourite / Chase */}
       <View style={styles.showcaseRow}>
         <TouchableOpacity
           onPress={handleSetFavorite}
@@ -394,11 +593,7 @@ export default function CardDetailScreen() {
           ]}
         >
           <Text style={styles.showcaseButtonText}>
-            {favoriteBusy
-              ? 'Saving...'
-              : isFavorite
-              ? '⭐ Favourite Card'
-              : '⭐ Set as Favourite'}
+            {favoriteBusy ? 'Saving...' : isFavorite ? '⭐ Favourite Card' : '⭐ Set as Favourite'}
           </Text>
         </TouchableOpacity>
 
@@ -412,15 +607,12 @@ export default function CardDetailScreen() {
           ]}
         >
           <Text style={styles.showcaseButtonText}>
-            {chaseBusy
-              ? 'Saving...'
-              : isChase
-              ? '🎯 Chase Card'
-              : '🎯 Set as Chase'}
+            {chaseBusy ? 'Saving...' : isChase ? '🎯 Chase Card' : '🎯 Set as Chase'}
           </Text>
         </TouchableOpacity>
       </View>
 
+      {/* Trade Setup */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Trade Setup</Text>
         <View style={styles.infoCard}>
@@ -462,6 +654,7 @@ export default function CardDetailScreen() {
         </View>
       </View>
 
+      {/* Marketplace Button */}
       <TouchableOpacity
         style={[
           styles.marketplaceButton,
@@ -479,47 +672,7 @@ export default function CardDetailScreen() {
         </Text>
       </TouchableOpacity>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Market Guide</Text>
-        <View style={styles.infoCard}>
-          <View style={styles.marketButtonsRow}>
-            <TouchableOpacity
-              onPress={() => handleQuickValue(marketGuide?.low ?? null)}
-              style={styles.marketButton}
-            >
-              <Text style={styles.marketButtonLabel}>Low</Text>
-              <Text style={styles.marketButtonValue}>
-                {marketGuide?.low != null ? `£${marketGuide.low}` : 'N/A'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleQuickValue(marketGuide?.mid ?? null)}
-              style={styles.marketButton}
-            >
-              <Text style={styles.marketButtonLabel}>Average</Text>
-              <Text style={styles.marketButtonValue}>
-                {marketGuide?.mid != null ? `£${marketGuide.mid}` : 'N/A'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => handleQuickValue(marketGuide?.market ?? null)}
-              style={styles.marketButton}
-            >
-              <Text style={styles.marketButtonLabel}>High</Text>
-              <Text style={styles.marketButtonValue}>
-                {marketGuide?.market != null ? `£${marketGuide.market}` : 'N/A'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.marketHint}>
-            Tap a market value to auto-fill your asking price.
-          </Text>
-        </View>
-      </View>
-
+      {/* Card Details */}
       {!!card.types?.length && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Types</Text>
@@ -553,7 +706,7 @@ export default function CardDetailScreen() {
           <View style={styles.infoCard}>
             {card.rules.map((rule, index) => (
               <Text key={`${rule}-${index}`} style={styles.infoLine}>
-                • {rule}
+                - {rule}
               </Text>
             ))}
           </View>
@@ -721,6 +874,91 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  section: {
+    marginBottom: 16,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    color: theme.colors.text,
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 10,
+  },
+  refreshButton: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  refreshButtonText: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  infoCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  priceSourceLabel: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 10,
+  },
+  ebayLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    gap: 10,
+  },
+  ebayLoadingText: {
+    color: theme.colors.textSoft,
+    fontSize: 13,
+  },
+  ebayErrorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  ebayErrorText: {
+    color: theme.colors.textSoft,
+    fontSize: 13,
+  },
+  ebayRetryText: {
+    color: theme.colors.primary,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  ebayMetaRow: {
+    marginTop: 4,
+    marginBottom: 4,
+    gap: 4,
+  },
+  ebayMetaText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+  },
+  ebayFallbackText: {
+    color: '#F59E0B',
+    fontSize: 11,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.border,
+    marginVertical: 14,
+  },
   actions: {
     flexDirection: 'row',
     marginBottom: 12,
@@ -778,22 +1016,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '800',
     fontSize: 13,
-  },
-  section: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    color: theme.colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 10,
-  },
-  infoCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   label: {
     color: theme.colors.text,
@@ -869,6 +1091,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 8,
   },
+  marketButtonHighlight: {
+    backgroundColor: theme.colors.primary + '18',
+    borderColor: theme.colors.primary,
+  },
   marketButtonLabel: {
     color: theme.colors.textSoft,
     textAlign: 'center',
@@ -880,9 +1106,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '700',
   },
+  marketButtonValueHighlight: {
+    color: theme.colors.primary,
+    fontSize: 15,
+  },
   marketHint: {
     color: theme.colors.textSoft,
     fontSize: 12,
+    marginTop: 4,
   },
   infoLine: {
     color: theme.colors.textSoft,

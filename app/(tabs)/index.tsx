@@ -1,28 +1,43 @@
 import { theme } from '../../lib/theme';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { router } from 'expo-router';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { router , useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Dimensions,
-  StyleSheet,
-  View,
-  Pressable,
-  ScrollView,
   Image,
   Modal,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import { useCollection } from '../../components/collection-context';
-import { fetchAllSets, PokemonSet } from '../../lib/pokemonTcg';
 import { fetchBinders, fetchBinderCards } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { createActivityPost } from '../../lib/activity';
 
+// ===============================
+// TYPES
+// ===============================
 
 type ChartRange = '1D' | '7D' | '30D' | 'ALL';
 type ChartMode = 'TCG' | 'EBAY' | 'BOTH';
+
+// ===============================
+// CONSTANTS
+// ===============================
+
+const screenWidth = Dimensions.get('window').width;
 
 const cardShadow = {
   shadowColor: '#000',
@@ -31,169 +46,6 @@ const cardShadow = {
   shadowOffset: { width: 0, height: 4 },
   elevation: 3,
 };
-
-function StatCard({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statCard}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-function ActivityRow({
-  icon,
-  title,
-  subtitle,
-  time,
-  positive,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  subtitle: string;
-  time: string;
-  positive?: boolean | null;
-}) {
-  return (
-    <View style={styles.activityRow}>
-      <View style={styles.activityIconWrap}>
-        <Ionicons name={icon} size={18} color={theme.colors.primary} />
-      </View>
-
-      <View style={styles.activityTextWrap}>
-        <Text style={styles.activityTitle}>{title}</Text>
-        <Text
-          style={[
-            styles.activitySubtitle,
-            positive === true && styles.positiveText,
-            positive === false && styles.negativeText,
-          ]}
-        >
-          {subtitle}
-        </Text>
-      </View>
-
-      <Text style={styles.activityTime}>{time}</Text>
-    </View>
-  );
-}
-
-function ActionTile({
-  icon,
-  title,
-  subtitle,
-  onPress,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  title: string;
-  subtitle: string;
-  onPress?: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.actionTile, pressed && styles.cardPressed]}
-    >
-      <View style={styles.actionIconWrap}>
-        <Ionicons name={icon} size={20} color={theme.colors.primary} />
-      </View>
-
-      <View style={styles.actionTextWrap}>
-        <Text style={styles.actionTitle}>{title}</Text>
-        <Text style={styles.actionSubtitle}>{subtitle}</Text>
-      </View>
-
-      <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
-    </Pressable>
-  );
-}
-
-const formatMoney = (value: number) => `£${value.toFixed(2)}`;
-
-const formatSignedMoney = (value: number) => {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}£${value.toFixed(2)}`;
-};
-
-const formatSignedPercent = (value: number) => {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(1)}%`;
-};
-
-const getRangeStartDate = (range: ChartRange) => {
-  if (range === 'ALL') return null;
-
-  const date = new Date();
-
-  if (range === '1D') date.setDate(date.getDate() - 1);
-  if (range === '7D') date.setDate(date.getDate() - 7);
-  if (range === '30D') date.setDate(date.getDate() - 30);
-
-  return date.toISOString();
-};
-
-const getPriceFromSnapshot = (
-  row: any,
-  source: 'tcg' | 'ebay'
-): number | null => {
-  const price = source === 'tcg' ? row?.tcg_mid : row?.ebay_average;
-  return typeof price === 'number' ? price : null;
-};
-
-const getPriceFromPokemonCard = (card: any): number | null => {
-  const prices = card?.tcgplayer?.prices;
-  if (!prices) return null;
-
-  const preferred = [
-    'holofoil',
-    'reverseHolofoil',
-    'normal',
-    '1stEditionHolofoil',
-    '1stEditionNormal',
-  ];
-
-  for (const key of preferred) {
-    const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
-    if (typeof value === 'number') return value;
-  }
-
-  for (const entry of Object.values(prices) as any[]) {
-    const value = entry?.market ?? entry?.mid ?? entry?.low;
-    if (typeof value === 'number') return value;
-  }
-
-  return null;
-};
-
-const fetchLivePricesForCardIds = async (cardIds: string[]) => {
-  const chunks: string[][] = [];
-
-  for (let i = 0; i < cardIds.length; i += 20) {
-    chunks.push(cardIds.slice(i, i + 20));
-  }
-
-  const priceMap: Record<string, number> = {};
-
-  for (const chunk of chunks) {
-    const q = chunk.map((id) => `id:${id}`).join(' OR ');
-    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20`;
-
-    const response = await fetch(url);
-    const json = await response.json();
-
-    for (const card of json?.data ?? []) {
-      const price = getPriceFromPokemonCard(card);
-      if (typeof price === 'number') {
-        priceMap[card.id] = price;
-      }
-    }
-  }
-
-  return priceMap;
-};
-
-const normaliseChartValues = (values: number[]) =>
-  values.length >= 2 ? values : values.length === 1 ? [values[0], values[0]] : [0, 0];
 
 const ONBOARDING_STEPS = [
   {
@@ -222,550 +74,724 @@ const ONBOARDING_STEPS = [
   },
 ];
 
+// ===============================
+// HELPERS
+// ===============================
+
+const formatMoney = (value: number) => `£${value.toFixed(2)}`;
+
+const formatSignedMoney = (value: number) => {
+  const sign = value > 0 ? '+' : '';
+  return `${sign}£${value.toFixed(2)}`;
+};
+
+const formatSignedPercent = (value: number) => {
+  const sign = value > 0 ? '+' : '';
+  return `${sign}${value.toFixed(1)}%`;
+};
+
+const getRangeStartDate = (range: ChartRange): string | null => {
+  if (range === 'ALL') return null;
+  const date = new Date();
+  if (range === '1D') date.setDate(date.getDate() - 1);
+  if (range === '7D') date.setDate(date.getDate() - 7);
+  if (range === '30D') date.setDate(date.getDate() - 30);
+  return date.toISOString();
+};
+
+const getPriceFromSnapshot = (row: any, source: 'tcg' | 'ebay'): number | null => {
+  const price = source === 'tcg' ? row?.tcg_mid : row?.ebay_average;
+  return typeof price === 'number' ? price : null;
+};
+
+const getPriceFromPokemonCard = (card: any): number | null => {
+  const prices = card?.tcgplayer?.prices;
+  if (!prices) return null;
+
+  const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
+
+  for (const key of preferred) {
+    const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  for (const entry of Object.values(prices) as any[]) {
+    const value = entry?.market ?? entry?.mid ?? entry?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  return null;
+};
+
+const fetchLivePricesForCardIds = async (cardIds: string[]): Promise<Record<string, number>> => {
+  const priceMap: Record<string, number> = {};
+
+  for (let i = 0; i < cardIds.length; i += 20) {
+    const chunk = cardIds.slice(i, i + 20);
+    const q = chunk.map((id) => `id:${id}`).join(' OR ');
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20`;
+
+    try {
+      const response = await fetch(url);
+      const json = await response.json();
+
+      for (const card of json?.data ?? []) {
+        const price = getPriceFromPokemonCard(card);
+        if (typeof price === 'number') {
+          priceMap[card.id] = price;
+        }
+      }
+    } catch (err) {
+      console.log('TCG live price fetch failed for chunk', err);
+    }
+  }
+
+  return priceMap;
+};
+
+// Fixed: pad shorter array so both datasets have equal length
+const equaliseArrays = (a: number[], b: number[]): [number[], number[]] => {
+  const maxLen = Math.max(a.length, b.length);
+  if (maxLen === 0) return [[0, 0], [0, 0]];
+  const pad = (arr: number[]) =>
+    arr.length < maxLen
+      ? [...Array(maxLen - arr.length).fill(arr[0] ?? 0), ...arr]
+      : arr;
+  return [pad(a), pad(b)];
+};
+
+const normaliseChartValues = (values: number[]): number[] =>
+  values.length >= 2 ? values : values.length === 1 ? [values[0], values[0]] : [0, 0];
+
+// ===============================
+// SUB COMPONENTS
+// ===============================
+
+function StatCard({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={{
+      width: '48.5%',
+      backgroundColor: theme.colors.card,
+      borderRadius: 20,
+      padding: 16,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      ...cardShadow,
+    }}>
+      <Text style={{ color: theme.colors.text, fontSize: 23, fontWeight: '900' }}>
+        {value}
+      </Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', marginTop: 6 }}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function QuickLink({
+  icon,
+  label,
+  onPress,
+  badge,
+}: {
+  icon: any;
+  label: string;
+  onPress: () => void;
+  badge?: number;
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        backgroundColor: theme.colors.card,
+        borderRadius: 16,
+        padding: 14,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        flexDirection: 'row',
+        alignItems: 'center',
+        ...cardShadow,
+      }}
+      activeOpacity={0.8}
+    >
+      <View style={{
+        width: 40, height: 40,
+        borderRadius: 12,
+        backgroundColor: theme.colors.surface,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+      }}>
+        <Ionicons name={icon} size={20} color={theme.colors.primary} />
+      </View>
+
+      <Text style={{ flex: 1, color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>
+        {label}
+      </Text>
+
+      {badge != null && badge > 0 && (
+        <View style={{
+          backgroundColor: theme.colors.primary,
+          borderRadius: 999,
+          minWidth: 22,
+          paddingHorizontal: 6,
+          paddingVertical: 2,
+          marginRight: 8,
+        }}>
+          <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '900', textAlign: 'center' }}>
+            {badge > 9 ? '9+' : badge}
+          </Text>
+        </View>
+      )}
+
+      <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
+    </TouchableOpacity>
+  );
+}
+
+// ===============================
+// MAIN COMPONENT
+// ===============================
+
 export default function HubScreen() {
   const { trackedSetIds } = useCollection();
+
+  // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
 
-  const [allSets, setAllSets] = useState<PokemonSet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [recentListings, setRecentListings] = useState<any[]>([]);
-
+  // Chart
   const [chartRange, setChartRange] = useState<ChartRange>('7D');
   const [chartMode, setChartMode] = useState<ChartMode>('TCG');
+  const [chartData, setChartData] = useState<{ tcg: number[]; ebay: number[] }>({ tcg: [], ebay: [] });
 
-  const [chartData, setChartData] = useState<{
-    tcg: number[];
-    ebay: number[];
-  }>({
-    tcg: [],
-    ebay: [],
-  });
-
+  // Collection value
   const [collectionTotal, setCollectionTotal] = useState(0);
   const [collectionChangeAmount, setCollectionChangeAmount] = useState(0);
   const [collectionChangePercent, setCollectionChangePercent] = useState(0);
 
+  // Stats
   const [ownedCardCount, setOwnedCardCount] = useState(0);
   const [unpricedCardCount, setUnpricedCardCount] = useState(0);
   const [watchlistCount, setWatchlistCount] = useState(0);
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [totalSets, setTotalSets] = useState(0);
+
+  // Recent trade listings
+  const [recentListings, setRecentListings] = useState<any[]>([]);
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const valuePostKeyRef = useRef<string | null>(null);
 
-  const screenWidth = Dimensions.get('window').width;
   const collectionUp = collectionChangeAmount >= 0;
-  const collectionValue = formatMoney(collectionTotal);
 
- useEffect(() => {
-  const checkOnboarding = async () => {
+  // ===============================
+  // LOAD ALL DATA
+  // ===============================
+
+  const loadAll = useCallback(async (isRefresh = false) => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      if (isRefresh) setRefreshing(true);
+      else setLoading(true);
 
-      if (!user) return;
+      const { data: { user } } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('has_seen_onboarding')
-        .eq('id', user.id)
-        .single();
+      // Load counts in parallel
+      const [
+        notificationsResult,
+        watchlistResult,
+        setsResult,
+      ] = await Promise.all([
+        user
+          ? supabase
+              .from('notifications')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .eq('read', false)
+          : Promise.resolve({ count: 0 }),
 
-      if (error) throw error;
+        user
+          ? supabase
+              .from('market_watchlist')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+          : Promise.resolve({ count: 0 }),
 
-      if (!data?.has_seen_onboarding) {
-        setShowOnboarding(true);
+        fetch('https://api.pokemontcg.io/v2/sets?pageSize=1')
+          .then((r) => r.json())
+          .then((j) => ({ count: j?.totalCount ?? 0 }))
+          .catch(() => ({ count: 0 })),
+      ]);
+
+      setUnreadCount((notificationsResult as any).count ?? 0);
+      setWatchlistCount((watchlistResult as any).count ?? 0);
+      setTotalSets((setsResult as any).count ?? 0);
+
+      // Load recent trade listings
+      // Uses user_card_flags (trade) joined with card_previews
+      if (user) {
+        const { data: flagData } = await supabase
+          .from('user_card_flags')
+          .select('card_id, set_id, condition, asking_price, listing_status')
+          .eq('flag_type', 'trade')
+          .eq('listing_status', 'active')
+          .neq('user_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(8);
+
+        if (flagData?.length) {
+          const cardIds = [...new Set(flagData.map((f) => f.card_id))];
+
+          const { data: previews } = await supabase
+            .from('card_previews')
+            .select('card_id, name, image_url, set_name')
+            .in('card_id', cardIds);
+
+          const previewMap: Record<string, any> = {};
+          (previews ?? []).forEach((p: any) => { previewMap[p.card_id] = p; });
+
+          setRecentListings(
+            flagData.map((flag) => ({
+              ...flag,
+              preview: previewMap[flag.card_id] ?? null,
+            }))
+          );
+        }
       }
     } catch (error) {
-      console.log('Failed to check onboarding', error);
+      console.log('Hub load failed', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  };
-
-  checkOnboarding();
-}, []);
- 
-  useEffect(() => {
-    const loadSets = async () => {
-      try {
-        const sets = await fetchAllSets();
-        setAllSets(sets);
-      } catch (error) {
-        console.log('Failed to fetch sets', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSets();
   }, []);
 
-  useEffect(() => {
-    const loadWatchlistCount = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+  // ===============================
+  // LOAD COLLECTION VALUE
+  // ===============================
 
-        if (!user) {
-          setWatchlistCount(0);
-          return;
-        }
-
-        const { count, error } = await supabase
-          .from('market_watchlist')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        setWatchlistCount(count ?? 0);
-      } catch (error) {
-        console.log('Failed to load watchlist count', error);
-        setWatchlistCount(0);
-      }
-    };
-
-    loadWatchlistCount();
-  }, []);
-
-useEffect(() => {
-  const loadNotifications = async () => {
+  const loadCollectionValue = useCallback(async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const binders = await fetchBinders();
 
-      if (!user) {
-        setUnreadNotificationCount(0);
-        return;
-      }
+      const allCards = (
+        await Promise.all(binders.map((b) => fetchBinderCards(b.id)))
+      ).flat();
 
-      const { count, error } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('read', false);
+      const ownedCards = allCards.filter((c) => c.owned);
+      setOwnedCardCount(ownedCards.length);
 
-      if (error) throw error;
+      const storedCardIds = [...new Set(ownedCards.map((c) => c.card_id))];
+      const apiCardIds = [...new Set(ownedCards.map((c: any) => c.api_card_id || c.card_id))];
 
-      setUnreadNotificationCount(count ?? 0);
-    } catch (error) {
-      console.log('Failed to load notifications', error);
-      setUnreadNotificationCount(0);
-    }
-  };
-
-  loadNotifications();
-}, []);
-
-useEffect(() => {
-  const loadRecentListings = async () => {
-    try {
-      const { data: listings, error } = await supabase
-  .from('trade_listings')
-  .select('*')
-  .eq('status', 'live')
-  .order('created_at', { ascending: false })
-  .limit(8);
-      if (error) throw error;
-
-      const cardIds = [...new Set((listings ?? []).map((item) => item.card_id))];
-
-      const { data: previews, error: previewError } = await supabase
-        .from('card_previews')
-        .select('card_id, name, set_name, image_url')
-        .in('card_id', cardIds);
-
-      if (previewError) throw previewError;
-
-      const previewMap: Record<string, any> = {};
-
-      for (const preview of previews ?? []) {
-        previewMap[preview.card_id] = preview;
-      }
-
-      const enrichedListings = (listings ?? []).map((item) => ({
-        ...item,
-        preview: previewMap[item.card_id] ?? null,
-      }));
-
-      setRecentListings(enrichedListings);
-    } catch (err) {
-      console.log('Failed to load recent listings', err);
-      setRecentListings([]);
-    }
-  };
-
-  loadRecentListings();
-}, []);
-
-  useEffect(() => {
-    const loadCollectionValue = async () => {
-      try {
-        const binders = await fetchBinders();
-
-        const allCards = (
-          await Promise.all(binders.map((binder) => fetchBinderCards(binder.id)))
-        ).flat();
-
-        const ownedCards = allCards.filter((card) => card.owned);
-        setOwnedCardCount(ownedCards.length);
-
-        const cardIds = [
-          ...new Set(
-            ownedCards.map((card: any) => card.api_card_id || card.card_id)
-          ),
-        ];
-
-        const storedCardIds = [...new Set(ownedCards.map((card) => card.card_id))];
-
-        if (!storedCardIds.length) {
-          setCollectionTotal(0);
-          setCollectionChangeAmount(0);
-          setCollectionChangePercent(0);
-          setUnpricedCardCount(0);
-          setChartData({ tcg: [], ebay: [] });
-          return;
-        }
-
-        let snapshotQuery = supabase
-          .from('market_price_snapshots')
-          .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
-          .in('card_id', storedCardIds)
-          .order('snapshot_at', { ascending: true });
-
-        const rangeStart = getRangeStartDate(chartRange);
-
-        if (rangeStart) {
-          snapshotQuery = snapshotQuery.gte('snapshot_at', rangeStart);
-        }
-
-        const { data, error } = await snapshotQuery;
-
-        if (error) throw error;
-
-        const groupedByCard: Record<string, any[]> = {};
-        const groupedByDay: Record<
-          string,
-          {
-            tcg: Record<string, number>;
-            ebay: Record<string, number>;
-          }
-        > = {};
-
-        for (const row of data || []) {
-          if (!groupedByCard[row.card_id]) groupedByCard[row.card_id] = [];
-          groupedByCard[row.card_id].push(row);
-
-          const day = String(row.snapshot_at).split('T')[0];
-
-          if (!groupedByDay[day]) {
-            groupedByDay[day] = {
-              tcg: {},
-              ebay: {},
-            };
-          }
-
-          const tcgPrice = getPriceFromSnapshot(row, 'tcg');
-          const ebayPrice = getPriceFromSnapshot(row, 'ebay');
-
-          if (tcgPrice != null) groupedByDay[day].tcg[row.card_id] = tcgPrice;
-          if (ebayPrice != null) groupedByDay[day].ebay[row.card_id] = ebayPrice;
-        }
-
-        let totalLatest = 0;
-        let totalPrevious = 0;
-        let cardsWithPrevious = 0;
-        let unpriced = 0;
-
-        const activeSource: 'tcg' | 'ebay' =
-          chartMode === 'EBAY' ? 'ebay' : 'tcg';
-
-        for (const card of ownedCards) {
-          const snapshots = groupedByCard[card.card_id] || [];
-          const latest = snapshots[snapshots.length - 1];
-          const previous = snapshots[snapshots.length - 2];
-
-          const latestPrice = getPriceFromSnapshot(latest, activeSource);
-          const previousPrice = getPriceFromSnapshot(previous, activeSource);
-
-          if (typeof latestPrice === 'number') {
-            totalLatest += latestPrice;
-          } else {
-            unpriced += 1;
-          }
-
-          if (typeof latestPrice === 'number' && typeof previousPrice === 'number') {
-            totalPrevious += previousPrice;
-            cardsWithPrevious += 1;
-          }
-        }
-
-        if (totalLatest === 0 && activeSource === 'tcg') {
-          const livePriceMap = await fetchLivePricesForCardIds(cardIds);
-
-          let liveTotal = 0;
-          let liveUnpriced = 0;
-
-          for (const card of ownedCards as any[]) {
-            const lookupId = card.api_card_id || card.card_id;
-            const price = livePriceMap[lookupId];
-
-            if (typeof price === 'number') {
-              liveTotal += price;
-            } else {
-              liveUnpriced += 1;
-            }
-          }
-
-          totalLatest = liveTotal;
-          unpriced = liveUnpriced;
-        }
-
-        const change = cardsWithPrevious > 0 ? totalLatest - totalPrevious : 0;
-
-        const percent =
-          cardsWithPrevious > 0 && totalPrevious !== 0
-            ? (change / totalPrevious) * 100
-            : 0;
-
-        const days = Object.keys(groupedByDay).sort();
-
-        const buildValues = (source: 'tcg' | 'ebay') =>
-          days
-            .map((day) => {
-              const pricesForDay = groupedByDay[day][source];
-              let dayTotal = 0;
-
-              for (const cardId of storedCardIds) {
-                const price = pricesForDay[cardId];
-                if (typeof price === 'number') {
-                  dayTotal += price;
-                }
-              }
-
-              return dayTotal;
-            })
-            .filter((value) => Number.isFinite(value) && value > 0);
-
-        const cleanTcgValues = buildValues('tcg');
-        const cleanEbayValues = buildValues('ebay');
-
-        setCollectionTotal(totalLatest);
-        setCollectionChangeAmount(change);
-        setCollectionChangePercent(percent);
-        setUnpricedCardCount(unpriced);
-        setChartData({
-          tcg: cleanTcgValues,
-          ebay: cleanEbayValues,
-        });
-
-        if (chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-
-          if (user) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const { data: existingValuePost, error: existingValuePostError } =
-              await supabase
-                .from('activity_feed')
-                .select('id')
-                .eq('user_id', user.id)
-                .eq('type', 'value_change')
-                .gte('created_at', today.toISOString())
-                .limit(1);
-
-            if (existingValuePostError) {
-              console.log('Failed to check existing value post', existingValuePostError);
-            }
-
-            const alreadyPostedToday =
-              Array.isArray(existingValuePost) && existingValuePost.length > 0;
-
-            const postKey = `${user.id}-${today.toISOString()}-${change.toFixed(2)}`;
-
-            if (!alreadyPostedToday && valuePostKeyRef.current !== postKey) {
-              valuePostKeyRef.current = postKey;
-
-              createActivityPost({
-                type: 'value_change',
-                title:
-                  change > 0
-                    ? 'Collection value is up today'
-                    : 'Collection value is down today',
-                subtitle: `${formatSignedMoney(change)} (${formatSignedPercent(
-                  percent
-                )}) · Total ${formatMoney(totalLatest)}`,
-                valueChange: change,
-                isPositive: change > 0,
-              }).catch((activityError) => {
-                console.log('Failed to create value activity post', activityError);
-              });
-            }
-          }
-        }
-      } catch (error) {
-        console.log('Failed to calculate collection value', error);
+      if (!storedCardIds.length) {
         setCollectionTotal(0);
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setUnpricedCardCount(0);
         setChartData({ tcg: [], ebay: [] });
+        return;
       }
-    };
 
-    loadCollectionValue();
+      let snapshotQuery = supabase
+        .from('market_price_snapshots')
+        .select('card_id, ebay_average, tcg_mid, snapshot_at')
+        .in('card_id', storedCardIds)
+        .order('snapshot_at', { ascending: true });
+
+      const rangeStart = getRangeStartDate(chartRange);
+      if (rangeStart) {
+        snapshotQuery = snapshotQuery.gte('snapshot_at', rangeStart);
+      }
+
+      const { data, error } = await snapshotQuery;
+      if (error) throw error;
+
+      const groupedByCard: Record<string, any[]> = {};
+      const groupedByDay: Record<string, { tcg: Record<string, number>; ebay: Record<string, number> }> = {};
+
+      for (const row of data ?? []) {
+        if (!groupedByCard[row.card_id]) groupedByCard[row.card_id] = [];
+        groupedByCard[row.card_id].push(row);
+
+        const day = String(row.snapshot_at).split('T')[0];
+        if (!groupedByDay[day]) groupedByDay[day] = { tcg: {}, ebay: {} };
+
+        const tcgPrice = getPriceFromSnapshot(row, 'tcg');
+        const ebayPrice = getPriceFromSnapshot(row, 'ebay');
+
+        if (tcgPrice != null) groupedByDay[day].tcg[row.card_id] = tcgPrice;
+        if (ebayPrice != null) groupedByDay[day].ebay[row.card_id] = ebayPrice;
+      }
+
+      const activeSource: 'tcg' | 'ebay' = chartMode === 'EBAY' ? 'ebay' : 'tcg';
+
+      let totalLatest = 0;
+      let totalPrevious = 0;
+      let cardsWithPrevious = 0;
+      let unpriced = 0;
+
+      for (const card of ownedCards) {
+        const snapshots = groupedByCard[card.card_id] ?? [];
+        const latest = snapshots[snapshots.length - 1];
+        const previous = snapshots[snapshots.length - 2];
+
+        const latestPrice = getPriceFromSnapshot(latest, activeSource);
+        const previousPrice = getPriceFromSnapshot(previous, activeSource);
+
+        if (typeof latestPrice === 'number') {
+          totalLatest += latestPrice;
+        } else {
+          unpriced += 1;
+        }
+
+        if (typeof latestPrice === 'number' && typeof previousPrice === 'number') {
+          totalPrevious += previousPrice;
+          cardsWithPrevious += 1;
+        }
+      }
+
+      // Fallback to live TCG prices if no snapshots
+      if (totalLatest === 0 && activeSource === 'tcg') {
+        const livePriceMap = await fetchLivePricesForCardIds(apiCardIds);
+        let liveTotal = 0;
+        let liveUnpriced = 0;
+
+        for (const card of ownedCards as any[]) {
+          const lookupId = card.api_card_id || card.card_id;
+          const price = livePriceMap[lookupId];
+          if (typeof price === 'number') {
+            liveTotal += price;
+          } else {
+            liveUnpriced += 1;
+          }
+        }
+
+        totalLatest = liveTotal;
+        unpriced = liveUnpriced;
+      }
+
+      const change = cardsWithPrevious > 0 ? totalLatest - totalPrevious : 0;
+      const percent =
+        cardsWithPrevious > 0 && totalPrevious !== 0
+          ? (change / totalPrevious) * 100
+          : 0;
+
+      const days = Object.keys(groupedByDay).sort();
+
+      const buildValues = (source: 'tcg' | 'ebay') =>
+        days
+          .map((day) => {
+            const pricesForDay = groupedByDay[day][source];
+            let dayTotal = 0;
+            for (const cardId of storedCardIds) {
+              const price = pricesForDay[cardId];
+              if (typeof price === 'number') dayTotal += price;
+            }
+            return dayTotal;
+          })
+          .filter((v) => Number.isFinite(v) && v > 0);
+
+      setCollectionTotal(totalLatest);
+      setCollectionChangeAmount(change);
+      setCollectionChangePercent(percent);
+      setUnpricedCardCount(unpriced);
+      setChartData({ tcg: buildValues('tcg'), ebay: buildValues('ebay') });
+
+      // Auto-post value change to activity feed
+      if (chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const { data: existingPost } = await supabase
+            .from('activity_feed')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('type', 'value_change')
+            .gte('created_at', today.toISOString())
+            .limit(1);
+
+          const alreadyPosted = Array.isArray(existingPost) && existingPost.length > 0;
+          const postKey = `${user.id}-${today.toISOString()}-${change.toFixed(2)}`;
+
+          if (!alreadyPosted && valuePostKeyRef.current !== postKey) {
+            valuePostKeyRef.current = postKey;
+
+            createActivityPost({
+              type: 'value_change',
+              title: change > 0 ? 'Collection value is up today' : 'Collection value is down today',
+              subtitle: `${formatSignedMoney(change)} (${formatSignedPercent(percent)}) · Total ${formatMoney(totalLatest)}`,
+              valueChange: change,
+              isPositive: change > 0,
+            }).catch((err) => {
+              console.log('Failed to create value activity post', err);
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Failed to calculate collection value', error);
+      setCollectionTotal(0);
+      setCollectionChangeAmount(0);
+      setCollectionChangePercent(0);
+      setUnpricedCardCount(0);
+      setChartData({ tcg: [], ebay: [] });
+    }
   }, [chartRange, chartMode]);
 
-  const quickStats = useMemo(
-    () => ({
-      ownedCards: String(ownedCardCount),
-      trackedSets: String(trackedSetIds.length),
-      availableSets: loading ? '...' : String(allSets.length),
-      unpriced: String(unpricedCardCount),
-      watchlist: String(watchlistCount),
-      collectionValue,
-    }),
-    [
-      ownedCardCount,
-      trackedSetIds.length,
-      allSets.length,
-      loading,
-      unpricedCardCount,
-      watchlistCount,
-      collectionValue,
-    ]
+  // ===============================
+  // ONBOARDING CHECK
+  // ===============================
+
+  const checkOnboarding = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('has_seen_onboarding')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (data && !data.has_seen_onboarding) {
+        setShowOnboarding(true);
+      }
+    } catch (error) {
+      console.log('Onboarding check failed (column may not exist yet)', error);
+    }
+  }, []);
+
+  // ===============================
+  // EFFECTS
+  // ===============================
+
+  useFocusEffect(
+    useCallback(() => {
+      loadAll();
+      loadCollectionValue();
+    }, [loadAll, loadCollectionValue])
   );
+
+  useEffect(() => {
+    checkOnboarding();
+  }, [checkOnboarding]);
+
+  // Reload chart when range/mode changes
+  useEffect(() => {
+    loadCollectionValue();
+  }, [chartRange, chartMode, loadCollectionValue]);
+
+  // ===============================
+  // CHART DATA
+  // ===============================
 
   const tcgChartValues = normaliseChartValues(chartData.tcg);
   const ebayChartValues = normaliseChartValues(chartData.ebay);
 
-  const activeChartValues =
-    chartMode === 'EBAY' ? ebayChartValues : tcgChartValues;
+  // Fixed: equalise array lengths for BOTH mode
+  const [equalTcg, equalEbay] = equaliseArrays(tcgChartValues, ebayChartValues);
 
+  const activeChartValues = chartMode === 'EBAY' ? ebayChartValues : tcgChartValues;
   const hasChartData = chartData.tcg.length > 0 || chartData.ebay.length > 0;
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-       <View style={styles.topBar}>
-  <View>
-    <View style={styles.brandRow}>
-      <Image
-        source={require('../../assets/images/hub.png')}
-        style={styles.brandIcon}
-        resizeMode="contain"
-      />
+  // ===============================
+  // MAIN RENDER
+  // ===============================
 
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 18, paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              loadAll(true);
+              loadCollectionValue();
+            }}
+            tintColor={theme.colors.primary}
+          />
+        }
+      >
+        {/* ===============================
+            TOP BAR
+        =============================== */}
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+          <View>
+            <Image
+              source={require('../../assets/images/hub.png')}
+              style={{ width: 200, height: 60 }}
+              resizeMode="contain"
+            />
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 4 }}>
+              Collector Dashboard
+            </Text>
           </View>
 
-    <Text style={styles.topBarSubtitle}>Collector Dashboard</Text>
-  </View>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              style={{
+                width: 46, height: 46,
+                borderRadius: 14,
+                backgroundColor: theme.colors.card,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                ...cardShadow,
+              }}
+            >
+              <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
+              {unreadCount > 0 && (
+                <View style={{
+                  position: 'absolute', top: -4, right: -4,
+                  minWidth: 18, height: 18, borderRadius: 9,
+                  backgroundColor: '#EF4444',
+                  alignItems: 'center', justifyContent: 'center',
+                  paddingHorizontal: 4,
+                }}>
+                  <Text style={{ color: '#fff', fontSize: 10, fontWeight: '900' }}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
 
-          <View style={styles.topBarActions}>
-  <Pressable
-    onPress={() => router.push('/notifications')}
-    style={({ pressed }) => [styles.profileButton, pressed && styles.cardPressed]}
-  >
-    <Ionicons name="notifications-outline" size={26} color={theme.colors.text} />
-
-    {unreadNotificationCount > 0 && (
-      <View style={styles.notificationBadge}>
-        <Text style={styles.notificationBadgeText}>
-          {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
-        </Text>
-      </View>
-    )}
-  </Pressable>
-
-  <Pressable
-    onPress={() => router.push('/profile')}
-    style={({ pressed }) => [styles.profileButton, pressed && styles.cardPressed]}
-  >
-    <Ionicons name="person-circle-outline" size={30} color={theme.colors.text} />
-  </Pressable>
-</View>
+            <TouchableOpacity
+              onPress={() => router.push('/profile')}
+              style={{
+                width: 46, height: 46,
+                borderRadius: 14,
+                backgroundColor: theme.colors.card,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                ...cardShadow,
+              }}
+            >
+              <Ionicons name="person-circle-outline" size={26} color={theme.colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View style={styles.portfolioCard}>
-          <View style={styles.heroGlow} />
+        {/* ===============================
+            PORTFOLIO CARD
+        =============================== */}
+        <View style={{
+          backgroundColor: theme.colors.card,
+          borderRadius: 28,
+          padding: 20,
+          marginBottom: 22,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          overflow: 'hidden',
+          ...cardShadow,
+        }}>
+          {/* Glow */}
+          <View style={{
+            position: 'absolute',
+            width: 240, height: 240,
+            borderRadius: 999,
+            backgroundColor: 'rgba(108,75,255,0.08)',
+            top: -80, right: -60,
+          }} />
 
-          <Text style={styles.portfolioLabel}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', marginBottom: 8 }}>
             Collection Value ({chartMode === 'EBAY' ? 'eBay' : 'TCG'})
           </Text>
-          <Text style={styles.portfolioValue}>{collectionValue}</Text>
 
-          <View style={styles.portfolioChangeRow}>
+          <Text style={{ color: theme.colors.text, fontSize: 38, fontWeight: '900', letterSpacing: -0.5 }}>
+            {formatMoney(collectionTotal)}
+          </Text>
+
+          <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 7 }}>
             <Ionicons
               name={collectionUp ? 'arrow-up-circle' : 'arrow-down-circle'}
               size={18}
               color={collectionUp ? '#22C55E' : '#EF4444'}
             />
-            <Text
-              style={[
-                styles.portfolioChange,
-                collectionUp ? styles.positiveText : styles.negativeText,
-              ]}
-            >
+            <Text style={{ fontSize: 15, fontWeight: '800', color: collectionUp ? '#22C55E' : '#EF4444' }}>
               {formatSignedMoney(collectionChangeAmount)} ({formatSignedPercent(collectionChangePercent)}) today
             </Text>
           </View>
 
-          <Text style={styles.updatedText}>
+          <Text style={{ marginTop: 7, color: theme.colors.textSoft, fontSize: 12, fontWeight: '600' }}>
             Based on owned binder cards with available price snapshots
           </Text>
 
-          <View style={styles.graphBox}>
-            <View style={styles.graphHeader}>
-              <Text style={styles.graphTitle}>Portfolio trend</Text>
+          {/* Chart */}
+          <View style={{
+            marginTop: 18,
+            backgroundColor: theme.colors.surface,
+            borderRadius: 20,
+            padding: 14,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            overflow: 'hidden',
+          }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '800' }}>
+                Portfolio trend
+              </Text>
             </View>
 
-            <View style={styles.graphControls}>
-              <View style={styles.graphTabs}>
+            <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+              {/* Chart mode tabs */}
+              <View style={{ flexDirection: 'row', gap: 6 }}>
                 {(['TCG', 'EBAY', 'BOTH'] as const).map((mode) => (
-                  <Pressable
+                  <TouchableOpacity
                     key={mode}
                     onPress={() => setChartMode(mode)}
-                    style={[
-                      styles.graphTab,
-                      chartMode === mode && styles.graphTabActive,
-                    ]}
+                    style={{
+                      paddingHorizontal: 9, paddingVertical: 6,
+                      borderRadius: 10,
+                      backgroundColor: chartMode === mode ? theme.colors.primary : theme.colors.card,
+                      borderWidth: 1,
+                      borderColor: chartMode === mode ? theme.colors.primary : theme.colors.border,
+                    }}
                   >
-                    <Text
-                      style={[
-                        styles.graphTabText,
-                        chartMode === mode && styles.graphTabTextActive,
-                      ]}
-                    >
+                    <Text style={{
+                      color: chartMode === mode ? '#FFFFFF' : theme.colors.textSoft,
+                      fontSize: 11, fontWeight: '800',
+                    }}>
                       {mode}
                     </Text>
-                  </Pressable>
+                  </TouchableOpacity>
                 ))}
               </View>
 
-              <View style={styles.graphTabs}>
+              {/* Chart range tabs */}
+              <View style={{ flexDirection: 'row', gap: 6 }}>
                 {(['1D', '7D', '30D', 'ALL'] as const).map((range) => (
-                  <Pressable
+                  <TouchableOpacity
                     key={range}
                     onPress={() => setChartRange(range)}
-                    style={[
-                      styles.graphTab,
-                      chartRange === range && styles.graphTabActive,
-                    ]}
+                    style={{
+                      paddingHorizontal: 9, paddingVertical: 6,
+                      borderRadius: 10,
+                      backgroundColor: chartRange === range ? theme.colors.primary : theme.colors.card,
+                      borderWidth: 1,
+                      borderColor: chartRange === range ? theme.colors.primary : theme.colors.border,
+                    }}
                   >
-                    <Text
-                      style={[
-                        styles.graphTabText,
-                        chartRange === range && styles.graphTabTextActive,
-                      ]}
-                    >
+                    <Text style={{
+                      color: chartRange === range ? '#FFFFFF' : theme.colors.textSoft,
+                      fontSize: 11, fontWeight: '800',
+                    }}>
                       {range}
                     </Text>
-                  </Pressable>
+                  </TouchableOpacity>
                 ))}
               </View>
             </View>
@@ -777,11 +803,11 @@ useEffect(() => {
                   chartMode === 'BOTH'
                     ? [
                         {
-                          data: tcgChartValues,
+                          data: equalTcg,
                           color: (opacity = 1) => `rgba(108,75,255,${opacity})`,
                         },
                         {
-                          data: ebayChartValues,
+                          data: equalEbay,
                           color: (opacity = 1) => `rgba(234,179,8,${opacity})`,
                         },
                       ]
@@ -810,640 +836,240 @@ useEffect(() => {
                 decimalPlaces: 2,
                 color: (opacity = 1) => `rgba(108,75,255,${opacity})`,
                 labelColor: () => theme.colors.textSoft,
-                propsForBackgroundLines: {
-                  stroke: '#E2E5EB',
-                },
-                propsForLabels: {
-                  fontSize: 9,
-                },
+                propsForBackgroundLines: { stroke: '#E2E5EB' },
+                propsForLabels: { fontSize: 9 },
               }}
-              style={styles.chart}
+              style={{ marginTop: 12, marginLeft: -18, borderRadius: 14 }}
             />
 
             {chartMode === 'BOTH' && (
-              <View style={styles.graphLegend}>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, styles.tcgDot]} />
-                  <Text style={styles.legendText}>TCG</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 14, marginTop: 2 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 999, backgroundColor: '#6C4BFF' }} />
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>TCG</Text>
                 </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, styles.ebayDot]} />
-                  <Text style={styles.legendText}>eBay</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 999, backgroundColor: '#EAB308' }} />
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>eBay</Text>
                 </View>
               </View>
             )}
 
             {!hasChartData && (
-              <Text style={styles.noChartText}>
-                No price history yet. Your graph will build as daily TCG and eBay snapshots are saved.
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, textAlign: 'center', marginTop: 8 }}>
+                No price history yet. Your graph will build as daily snapshots are saved.
               </Text>
             )}
           </View>
         </View>
 
-        <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>Quick stats</Text>
+        {/* ===============================
+            QUICK STATS
+        =============================== */}
+        <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12 }}>
+          Quick Stats
+        </Text>
+
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 20 }}>
+          <StatCard label="Owned cards" value={String(ownedCardCount)} />
+          <StatCard label="Collection value" value={formatMoney(collectionTotal)} />
+          <StatCard label="Tracked sets" value={String(trackedSetIds.length)} />
+          <StatCard label="Available sets" value={totalSets > 0 ? String(totalSets) : '...'} />
+          <StatCard label="Unpriced cards" value={String(unpricedCardCount)} />
+          <StatCard label="Watchlist" value={String(watchlistCount)} />
         </View>
 
-        <View style={styles.statsGrid}>
-          <StatCard label="Owned cards" value={quickStats.ownedCards} />
-          <StatCard label="Collection value" value={quickStats.collectionValue} />
-          <StatCard label="Tracked sets" value={quickStats.trackedSets} />
-          <StatCard label="Available sets" value={quickStats.availableSets} />
-          <StatCard label="Unpriced cards" value={quickStats.unpriced} />
-          <StatCard label="Watchlist" value={quickStats.watchlist} />
+        {/* ===============================
+            RECENT TRADE LISTINGS
+        =============================== */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>
+            Recent Trade Listings
+          </Text>
+          <TouchableOpacity onPress={() => router.push('/trade')}>
+            <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>
+              View all
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.sectionRow}>
-  <Text style={styles.sectionTitle}>Recent Additions</Text>
+        {recentListings.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 12, paddingRight: 10, marginBottom: 24 }}
+          >
+            {recentListings.map((item, index) => {
+              const preview = item.preview;
+              const imageUri = preview?.image_url ?? null;
+              const cardName = preview?.name ?? item.card_id ?? 'Unknown card';
+              const setName = preview?.set_name ?? item.set_id ?? 'Unknown set';
 
-  <Pressable onPress={() => router.push('/binder')}>
-    <Text style={styles.viewAllText}>View all</Text>
-  </Pressable>
-</View>
+              return (
+                <TouchableOpacity
+                  key={`${item.card_id}-${index}`}
+                  onPress={() => router.push('/trade')}
+                  style={{
+                    width: 128,
+                    backgroundColor: theme.colors.card,
+                    borderRadius: 20,
+                    padding: 10,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                    ...cardShadow,
+                  }}
+                  activeOpacity={0.8}
+                >
+                  {imageUri ? (
+                    <Image
+                      source={{ uri: imageUri }}
+                      style={{ width: '100%', height: 130, marginBottom: 8 }}
+                      resizeMode="contain"
+                    />
+                  ) : (
+                    <View style={{
+                      height: 130,
+                      borderRadius: 16,
+                      backgroundColor: theme.colors.surface,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 8,
+                    }}>
+                      <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
+                    </View>
+                  )}
 
-        <View style={styles.sectionRow}>
-  <Text style={styles.sectionTitle}>Recent Trade Listings</Text>
-
-  <Pressable onPress={() => router.push('/trade')}>
-    <Text style={styles.viewAllText}>View all</Text>
-  </Pressable>
-</View>
-
-<ScrollView
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  contentContainerStyle={styles.recentListingsScroll}
->
-  {recentListings.map((item) => {
-   const imageUri = item.image_url ?? null;
-const cardName = item.card_name ?? item.card_id ?? 'Unknown card';
-const setName = item.set_name ?? item.set_id ?? 'Unknown set';
-
-    return (
-      <Pressable
-        key={item.id}
-        onPress={() => router.push('/trade')}
-        style={({ pressed }) => [
-          styles.recentCard,
-          pressed && styles.cardPressed,
-        ]}
-      >
-        {imageUri ? (
-          <Image
-            source={{ uri: imageUri }}
-            style={styles.recentCardImage}
-            resizeMode="contain"
-          />
+                  <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>
+                    {cardName}
+                  </Text>
+                  <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3 }}>
+                    {setName}
+                  </Text>
+                  {item.asking_price != null ? (
+                    <Text style={{ color: '#22C55E', fontSize: 12, fontWeight: '900', marginTop: 8 }}>
+                      £{Number(item.asking_price).toFixed(2)}
+                    </Text>
+                  ) : (
+                    <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900', marginTop: 8 }}>
+                      {item.condition ?? 'Listed'}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         ) : (
-          <View style={styles.recentImageFallback}>
-            <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
+          <View style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 16,
+            padding: 16,
+            marginBottom: 24,
+            alignItems: 'center',
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+          }}>
+            <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
+              No active trade listings yet. Mark cards for trade in your binders.
+            </Text>
           </View>
         )}
 
-        <Text style={styles.recentCardName} numberOfLines={1}>
-          {cardName}
+        {/* ===============================
+            QUICK LINKS
+        =============================== */}
+        <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12 }}>
+          Quick Access
         </Text>
 
-        <Text style={styles.recentCardSet} numberOfLines={1}>
-          {setName}
-        </Text>
+        <QuickLink icon="folder-open-outline" label="My Binders" onPress={() => router.push('/binder')} />
+        <QuickLink icon="storefront-outline" label="Trade Marketplace" onPress={() => router.push('/trade')} />
+        <QuickLink icon="swap-horizontal-outline" label="My Offers" onPress={() => router.push('/offers')} />
+        <QuickLink icon="people-outline" label="Community" onPress={() => router.push('/community')} />
+        <QuickLink
+          icon="notifications-outline"
+          label="Notifications"
+          onPress={() => router.push('/notifications')}
+          badge={unreadCount}
+        />
+      </ScrollView>
 
-        <Text style={styles.recentCardValue}>Newly listed</Text>
-      </Pressable>
-    );
-  })}
-</ScrollView>
-</ScrollView>
+      {/* ===============================
+          ONBOARDING MODAL
+      =============================== */}
+      <Modal visible={showOnboarding} transparent animationType="fade">
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.35)',
+          justifyContent: 'center',
+          padding: 20,
+        }}>
+          <View style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 24,
+            padding: 22,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            ...cardShadow,
+          }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900', marginBottom: 10 }}>
+              {onboardingStep + 1} / {ONBOARDING_STEPS.length}
+            </Text>
 
-<Modal visible={showOnboarding} transparent animationType="fade">
-  <View style={styles.onboardingOverlay}>
-    <View style={styles.onboardingCard}>
-      <Text style={styles.onboardingStep}>
-        {onboardingStep + 1} / {ONBOARDING_STEPS.length}
-      </Text>
+            <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', marginBottom: 10 }}>
+              {ONBOARDING_STEPS[onboardingStep].title}
+            </Text>
 
-      <Text style={styles.onboardingTitle}>
-        {ONBOARDING_STEPS[onboardingStep].title}
-      </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 15, lineHeight: 22 }}>
+              {ONBOARDING_STEPS[onboardingStep].body}
+            </Text>
 
-      <Text style={styles.onboardingBody}>
-        {ONBOARDING_STEPS[onboardingStep].body}
-      </Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 22 }}>
+              {onboardingStep > 0 && (
+                <TouchableOpacity
+                  onPress={() => setOnboardingStep((prev) => prev - 1)}
+                  style={{
+                    paddingVertical: 11, paddingHorizontal: 16,
+                    borderRadius: 14,
+                    backgroundColor: theme.colors.surface,
+                  }}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Back</Text>
+                </TouchableOpacity>
+              )}
 
-      <View style={styles.onboardingButtons}>
-        {onboardingStep > 0 && (
-          <Pressable
-            onPress={() => setOnboardingStep((prev) => prev - 1)}
-            style={styles.onboardingSecondaryButton}
-          >
-            <Text style={styles.onboardingSecondaryText}>Back</Text>
-          </Pressable>
-        )}
+              <TouchableOpacity
+                onPress={async () => {
+                  if (onboardingStep < ONBOARDING_STEPS.length - 1) {
+                    setOnboardingStep((prev) => prev + 1);
+                    return;
+                  }
 
-        <Pressable
-          onPress={async () => {
-            if (onboardingStep < ONBOARDING_STEPS.length - 1) {
-              setOnboardingStep((prev) => prev + 1);
-              return;
-            }
+                  const { data: { user } } = await supabase.auth.getUser();
 
-            const {
-              data: { user },
-            } = await supabase.auth.getUser();
+                  if (user) {
+                    await supabase
+                      .from('profiles')
+                      .update({ has_seen_onboarding: true })
+                      .eq('id', user.id)
+                      .catch(() => {}); // non-fatal if column doesn't exist
+                  }
 
-            if (user) {
-              await supabase
-                .from('profiles')
-                .update({ has_seen_onboarding: true })
-                .eq('id', user.id);
-            }
-
-            setShowOnboarding(false);
-          }}
-          style={styles.onboardingPrimaryButton}
-        >
-          <Text style={styles.onboardingPrimaryText}>
-            {onboardingStep === ONBOARDING_STEPS.length - 1
-              ? 'Get started'
-              : 'Next'}
-          </Text>
-        </Pressable>
-      </View>
-    </View>
-  </View>
-</Modal>
-
+                  setShowOnboarding(false);
+                }}
+                style={{
+                  paddingVertical: 11, paddingHorizontal: 18,
+                  borderRadius: 14,
+                  backgroundColor: theme.colors.primary,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>
+                  {onboardingStep === ONBOARDING_STEPS.length - 1 ? 'Get started' : 'Next'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
-    );  
+  );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: theme.colors.bg },
-  container: { padding: 18, paddingBottom: 120 },
-
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-
-  topBarBrand: {
-    color: theme.colors.text,
-    fontSize: 38,
-    fontWeight: '900',
-  },
-
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  brandIcon: {
-    width: 280,
-    height: 100,
-    marginRight: 10,
-  },
-
-  topBarSubtitle: {
-    color: theme.colors.textSoft,
-    fontSize: 13,
-    marginTop: 4,
-  },
-
-  profileButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 17,
-    backgroundColor: theme.colors.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...cardShadow,
-  },
-
-  topBarActions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-
-  notificationBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: '#EF4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-  },
-
-  notificationBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '900',
-  },
-
-  portfolioCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 28,
-    padding: 20,
-    marginBottom: 22,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    overflow: 'hidden',
-    ...cardShadow,
-  },
-
-  heroGlow: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 999,
-    backgroundColor: 'rgba(108,75,255,0.08)',
-    top: -80,
-    right: -60,
-  },
-
-  portfolioLabel: {
-    color: theme.colors.textSoft,
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-
-  portfolioValue: {
-    color: theme.colors.text,
-    fontSize: 38,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-  },
-
-  portfolioChangeRow: {
-    marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-
-  portfolioChange: {
-    fontSize: 15,
-    fontWeight: '800',
-  },
-
-  updatedText: {
-    marginTop: 7,
-    color: theme.colors.textSoft,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  graphBox: {
-    marginTop: 18,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 20,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    overflow: 'hidden',
-  },
-  graphHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  graphTitle: {
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  graphControls: {
-    marginTop: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  graphTabs: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  graphTab: {
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-    borderRadius: 10,
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  graphTabActive: {
-    backgroundColor: theme.colors.primary,
-    borderColor: theme.colors.primary,
-  },
-  graphTabText: {
-    color: theme.colors.textSoft,
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  graphTabTextActive: {
-    color: '#FFFFFF',
-  },
-  graphLegend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 14,
-    marginTop: 2,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-  },
-  tcgDot: {
-    backgroundColor: '#6C4BFF',
-  },
-  ebayDot: {
-    backgroundColor: '#EAB308',
-  },
-  legendText: {
-    color: theme.colors.textSoft,
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  chart: {
-    marginTop: 12,
-    marginLeft: -18,
-    borderRadius: 14,
-  },
-  noChartText: {
-    color: theme.colors.textSoft,
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-
-  sectionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    marginTop: 4,
-  },
-  sectionTitle: {
-    color: theme.colors.text,
-    fontSize: 20,
-    fontWeight: '900',
-  },
-
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  statCard: {
-    width: '48.5%',
-    backgroundColor: theme.colors.card,
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...cardShadow,
-  },
-  statValue: {
-    color: theme.colors.text,
-    fontSize: 23,
-    fontWeight: '900',
-  },
-  statLabel: {
-    color: theme.colors.textSoft,
-    fontSize: 13,
-    fontWeight: '700',
-    marginTop: 6,
-  },
-
-  activityCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    overflow: 'hidden',
-    marginBottom: 22,
-    ...cardShadow,
-  },
-  activityRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  activityIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 14,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  activityTextWrap: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  activityTitle: {
-    color: theme.colors.text,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  activitySubtitle: {
-    color: theme.colors.textSoft,
-    fontSize: 13,
-    marginTop: 4,
-    lineHeight: 18,
-  },
-  activityTime: {
-    color: theme.colors.textSoft,
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: 2,
-  },
-
-  actionGrid: {
-    gap: 12,
-  },
-  actionTile: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    ...cardShadow,
-  },
-  actionIconWrap: {
-    width: 3072,
-    height: 1024,
-    borderRadius: 15,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  actionTextWrap: {
-    flex: 1,
-  },
-  actionTitle: {
-    color: theme.colors.text,
-    fontSize: 16,
-    fontWeight: '900',
-    marginBottom: 3,
-  },
-  actionSubtitle: {
-    color: theme.colors.textSoft,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  cardPressed: {
-    transform: [{ scale: 0.985 }],
-    opacity: 0.94,
-  },
-
-  positiveText: {
-    color: '#22C55E',
-  },
-  negativeText: {
-    color: '#EF4444',
-  },
-  viewAllText: {
-  color: theme.colors.primary,
-  fontSize: 13,
-  fontWeight: '900',
-},
-recentListingsScroll: {
-  gap: 12,
-  paddingRight: 10,
-  marginBottom: 24,
-},
-
-recentCard: {
-  width: 128,
-  backgroundColor: theme.colors.card,
-  borderRadius: 20,
-  padding: 10,
-  borderWidth: 1,
-  borderColor: theme.colors.border,
-  ...cardShadow,
-},
-
-recentCardImage: {
-  width: '100%',
-  height: 130,
-  marginBottom: 8,
-},
-
-recentImageFallback: {
-  height: 130,
-  borderRadius: 16,
-  backgroundColor: theme.colors.surface,
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: 8,
-},
-
-recentCardName: {
-  color: theme.colors.text,
-  fontSize: 13,
-  fontWeight: '900',
-},
-
-recentCardSet: {
-  color: theme.colors.textSoft,
-  fontSize: 11,
-  marginTop: 3,
-},
-
-recentCardValue: {
-  color: theme.colors.primary,
-  fontSize: 12,
-  fontWeight: '900',
-  marginTop: 8,
-},
-onboardingOverlay: {
-  flex: 1,
-  backgroundColor: 'rgba(0,0,0,0.35)',
-  justifyContent: 'center',
-  padding: 20,
-},
-
-onboardingCard: {
-  backgroundColor: theme.colors.card,
-  borderRadius: 24,
-  padding: 22,
-  borderWidth: 1,
-  borderColor: theme.colors.border,
-  ...cardShadow,
-},
-
-onboardingStep: {
-  color: theme.colors.textSoft,
-  fontSize: 12,
-  fontWeight: '900',
-  marginBottom: 10,
-},
-
-onboardingTitle: {
-  color: theme.colors.text,
-  fontSize: 24,
-  fontWeight: '900',
-  marginBottom: 10,
-},
-
-onboardingBody: {
-  color: theme.colors.textSoft,
-  fontSize: 15,
-  lineHeight: 22,
-},
-
-onboardingButtons: {
-  flexDirection: 'row',
-  justifyContent: 'flex-end',
-  gap: 10,
-  marginTop: 22,
-},
-
-onboardingSecondaryButton: {
-  paddingVertical: 11,
-  paddingHorizontal: 16,
-  borderRadius: 14,
-  backgroundColor: theme.colors.surface,
-},
-
-onboardingSecondaryText: {
-  color: theme.colors.text,
-  fontWeight: '900',
-},
-
-onboardingPrimaryButton: {
-  paddingVertical: 11,
-  paddingHorizontal: 18,
-  borderRadius: 14,
-  backgroundColor: theme.colors.primary,
-},
-
-onboardingPrimaryText: {
-  color: '#FFFFFF',
-  fontWeight: '900',
-},
-
-});

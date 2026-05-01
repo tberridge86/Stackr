@@ -1,622 +1,647 @@
 import { theme } from '../lib/theme';
-import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-  ScrollView,
+  ActivityIndicator,
+  Alert,
+  FlatList,
   Image,
+  Pressable,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { Text } from '../components/Text';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { fetchAllSets, fetchCardsForSet, PokemonCard, PokemonSet } from '../lib/pokemonTcg';
-import { useOffers } from '../components/offer-context';
 import { supabase } from '../lib/supabase';
+import {
+  fetchMyTradeOffers,
+  updateTradeOfferStatus,
+  TradeOffer,
+} from '../lib/tradeOffers';
 
-type LookupMap = Record<string, { card: PokemonCard; set: PokemonSet }>;
 type SegmentKey = 'received' | 'sent' | 'history';
-type ProfileMap = Record<string, { collector_name: string | null }>;
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'Pending',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  cancelled: 'Cancelled',
+  payment_required: 'Payment Required',
+  payment_sent: 'Payment Sent',
+  payment_confirmed: 'Payment Confirmed',
+  sent: 'Cards Sent',
+  received: 'Cards Received',
+  completed: 'Completed',
+  disputed: 'Disputed',
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  pending: '#F59E0B',
+  accepted: '#10B981',
+  declined: '#EF4444',
+  cancelled: '#6B7280',
+  payment_required: '#F59E0B',
+  payment_sent: '#3B82F6',
+  payment_confirmed: '#10B981',
+  sent: '#3B82F6',
+  received: '#8B5CF6',
+  completed: '#10B981',
+  disputed: '#EF4444',
+};
+
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+};
 
 export default function OffersScreen() {
-  const { offers, offersLoading, updateOfferStatus, removeOffer } = useOffers();
-  const [lookup, setLookup] = useState<LookupMap>({});
-  const [profileMap, setProfileMap] = useState<ProfileMap>({});
+  const [offers, setOffers] = useState<TradeOffer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [me, setMe] = useState<string>('');
+  const [currentUserId, setCurrentUserId] = useState('');
   const [segment, setSegment] = useState<SegmentKey>('received');
+  const [cardPreviews, setCardPreviews] = useState<Record<string, any>>({});
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  // ===============================
+  // LOAD
+  // ===============================
 
-      setMe(user?.id ?? '');
-    };
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
 
-    loadUser();
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id ?? '');
+
+      const data = await fetchMyTradeOffers();
+      setOffers(data);
+
+      // Load card previews for all cards in all offers
+      const allCardIds = Array.from(new Set(
+        data.flatMap((offer) =>
+          (offer.trade_offer_cards ?? []).map((c) => c.card_id)
+        )
+      ));
+
+      if (allCardIds.length > 0) {
+        const { data: previews } = await supabase
+          .from('card_previews')
+          .select('card_id, name, image_url, set_name')
+          .in('card_id', allCardIds);
+
+        const map: Record<string, any> = {};
+        (previews ?? []).forEach((p: any) => {
+          map[p.card_id] = p;
+        });
+
+        setCardPreviews(map);
+      }
+    } catch (error) {
+      console.log('Failed to load offers', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const allSets = await fetchAllSets();
-
-        const uniqueSetIds = Array.from(
-          new Set(
-            offers.flatMap((offer) => [
-              offer.targetSetId,
-              ...offer.offeredCards.map((c) => c.setId),
-            ])
-          )
-        );
-
-        const uniqueUserIds = Array.from(
-          new Set(
-            offers.flatMap((offer) => [offer.fromUserId, offer.toUserId]).filter(Boolean)
-          )
-        );
-
-        const [setCardsResults, profilesResult] = await Promise.all([
-          Promise.all(
-            uniqueSetIds.map(async (setId) => {
-              const set = allSets.find((s) => s.id === setId);
-              if (!set) return null;
-
-              const cards = await fetchCardsForSet(setId);
-              return { set, cards };
-            })
-          ),
-          uniqueUserIds.length
-            ? supabase
-                .from('profiles')
-                .select('id, collector_name')
-                .in('id', uniqueUserIds)
-            : Promise.resolve({ data: [], error: null }),
-        ]);
-
-        const nextLookup: LookupMap = {};
-
-        setCardsResults.forEach((result) => {
-          if (!result) return;
-
-          result.cards.forEach((card) => {
-            nextLookup[card.id] = { card, set: result.set };
-          });
-        });
-
-        const nextProfiles: ProfileMap = {};
-        (profilesResult.data ?? []).forEach((profile: any) => {
-          nextProfiles[profile.id] = {
-            collector_name: profile.collector_name ?? null,
-          };
-        });
-
-        setLookup(nextLookup);
-        setProfileMap(nextProfiles);
-      } catch (error) {
-        console.log('Failed to load offers', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     load();
-  }, [offers]);
+  }, [load]);
 
-  const receivedOffers = useMemo(
-    () => offers.filter((offer) => offer.toUserId === me && offer.status === 'pending'),
-    [offers, me]
+  // ===============================
+  // SEGMENTS
+  // ===============================
+
+  const receivedOffers = offers.filter(
+    (o) => o.receiver_id === currentUserId && o.status === 'pending'
   );
 
-  const sentOffers = useMemo(
-    () => offers.filter((offer) => offer.fromUserId === me && offer.status === 'pending'),
-    [offers, me]
+  const sentOffers = offers.filter(
+    (o) => o.sender_id === currentUserId && o.status === 'pending'
   );
 
-  const historyOffers = useMemo(
-    () => offers.filter((offer) => offer.status !== 'pending'),
-    [offers]
+  const historyOffers = offers.filter(
+    (o) => o.status !== 'pending'
   );
 
-  const currentOffers = useMemo(() => {
-    if (segment === 'received') return receivedOffers;
-    if (segment === 'sent') return sentOffers;
-    return historyOffers;
-  }, [segment, receivedOffers, sentOffers, historyOffers]);
+  const currentOffers =
+    segment === 'received'
+      ? receivedOffers
+      : segment === 'sent'
+      ? sentOffers
+      : historyOffers;
 
-  const renderSegmentButton = (key: SegmentKey, label: string, count: number) => {
-    const active = segment === key;
+  // ===============================
+  // ACTIONS
+  // ===============================
 
-    return (
-      <Pressable
-        onPress={() => setSegment(key)}
-        style={[styles.segmentButton, active && styles.segmentButtonActive]}
-      >
-        <Text
-          style={[
-            styles.segmentButtonText,
-            active && styles.segmentButtonTextActive,
-          ]}
-        >
-          {label}
-        </Text>
-        <View
-          style={[
-            styles.segmentCount,
-            active && styles.segmentCountActive,
-          ]}
-        >
-          <Text
-            style={[
-              styles.segmentCountText,
-              active && styles.segmentCountTextActive,
-            ]}
-          >
-            {count}
-          </Text>
-        </View>
-      </Pressable>
+  const handleAccept = async (offerId: string) => {
+    try {
+      await updateTradeOfferStatus(offerId, 'accepted', 'Offer accepted.');
+      await load();
+    } catch (error: any) {
+      Alert.alert('Error', error?.message ?? 'Could not accept offer.');
+    }
+  };
+
+  const handleDecline = async (offerId: string) => {
+    Alert.alert(
+      'Decline offer',
+      'Are you sure you want to decline this offer?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Decline',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await updateTradeOfferStatus(offerId, 'declined', 'Offer declined.');
+              await load();
+            } catch (error: any) {
+              Alert.alert('Error', error?.message ?? 'Could not decline offer.');
+            }
+          },
+        },
+      ]
     );
   };
 
-  const renderOffer = (offerId: string) => {
-    const offer = offers.find((o) => o.id === offerId);
-    if (!offer) return null;
+  const handleWithdraw = async (offerId: string) => {
+    Alert.alert(
+      'Withdraw offer',
+      'Are you sure you want to withdraw this offer?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Withdraw',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await updateTradeOfferStatus(offerId, 'cancelled', 'Offer withdrawn.');
+              await load();
+            } catch (error: any) {
+              Alert.alert('Error', error?.message ?? 'Could not withdraw offer.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
-    const target = lookup[offer.targetCardId];
-    const offeredCards = offer.offeredCards
-      .map((ref) => lookup[ref.cardId])
-      .filter(Boolean);
+  // ===============================
+  // RENDER OFFER CARD
+  // ===============================
 
-    if (!target || offeredCards.length === 0) return null;
-
-    const isReceived = offer.toUserId === me;
+  const renderOffer = ({ item: offer }: { item: TradeOffer }) => {
+    const isReceiver = offer.receiver_id === currentUserId;
     const isPending = offer.status === 'pending';
+    const isCompleted = offer.status === 'completed';
+    const statusLabel = STATUS_LABEL[offer.status] ?? offer.status;
+    const statusColor = STATUS_COLOR[offer.status] ?? theme.colors.textSoft;
 
-    const fromName =
-      profileMap[offer.fromUserId]?.collector_name || 'Unknown collector';
-    const toName =
-      profileMap[offer.toUserId]?.collector_name || 'Unknown collector';
+    const offerCards = (offer.trade_offer_cards ?? []).filter(
+      (c) => c.owner_id === offer.sender_id
+    );
+
+    const requestedCards = (offer.trade_offer_cards ?? []).filter(
+      (c) => c.owner_id === offer.receiver_id
+    );
+
+    const cashTerms = offer.trade_cash_terms?.[0] ?? null;
 
     return (
-      <View key={offer.id} style={styles.offerCard}>
-        <View style={styles.offerTopRow}>
-          <Text style={styles.offerTitle}>
-            {isReceived ? 'Offer received' : 'Offer sent'}
+      <TouchableOpacity
+        onPress={() => router.push(`/offer?id=${offer.id}`)}
+        style={{
+          backgroundColor: theme.colors.card,
+          borderRadius: 18,
+          padding: 14,
+          marginBottom: 14,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          ...cardShadow,
+        }}
+        activeOpacity={0.85}
+      >
+        {/* Header */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>
+            {isReceiver ? '📬 Offer received' : '📤 Offer sent'}
           </Text>
-          <View
-            style={[
-              styles.statusBadge,
-              offer.status === 'pending'
-                ? styles.pendingBadge
-                : offer.status === 'accepted'
-                ? styles.acceptedBadge
-                : styles.declinedBadge,
-            ]}
-          >
-            <Text style={styles.statusText}>
-              {offer.status.charAt(0).toUpperCase() + offer.status.slice(1)}
+          <View style={{
+            backgroundColor: statusColor + '20',
+            borderRadius: 999,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderWidth: 1,
+            borderColor: statusColor + '40',
+          }}>
+            <Text style={{ color: statusColor, fontSize: 11, fontWeight: '800' }}>
+              {statusLabel}
             </Text>
           </View>
         </View>
 
-        <View style={styles.partiesBox}>
-          <Text style={styles.partyText}>From: {fromName}</Text>
-          <Text style={styles.partyText}>To: {toName}</Text>
-        </View>
+        {/* Cards being traded */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
 
-        <View style={styles.offerRow}>
-          <View style={styles.targetSide}>
-            {target.card.images?.small ? (
-              <Image
-                source={{ uri: target.card.images.small }}
-                style={styles.targetCardImage}
-                resizeMode="contain"
-              />
-            ) : null}
-            <Text style={styles.sideLabel}>Target card</Text>
-            <Text style={styles.cardName} numberOfLines={2}>
-              {target.card.name}
+          {/* Sender's cards */}
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginBottom: 6 }}>
+              {isReceiver ? 'They offer:' : 'You offer:'}
             </Text>
-            <Text style={styles.cardMeta} numberOfLines={2}>
-              {target.set.name}
-            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+              {offerCards.slice(0, 3).map((card) => {
+                const preview = cardPreviews[card.card_id];
+                return (
+                  <View key={card.id} style={{ alignItems: 'center' }}>
+                    {preview?.image_url ? (
+                      <Image
+                        source={{ uri: preview.image_url }}
+                        style={{ width: 44, height: 62, borderRadius: 4 }}
+                      />
+                    ) : (
+                      <View style={{
+                        width: 44,
+                        height: 62,
+                        borderRadius: 4,
+                        backgroundColor: theme.colors.surface,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Text style={{ color: theme.colors.textSoft, fontSize: 8 }}>?</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+              {offerCards.length > 3 && (
+                <View style={{
+                  width: 44,
+                  height: 62,
+                  borderRadius: 4,
+                  backgroundColor: theme.colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                }}>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+                    +{offerCards.length - 3}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
 
-          <View style={styles.middle}>
-            <Text style={styles.swapText}>⇄</Text>
-            {offer.cashTopUp ? (
-              <Text style={styles.cashText}>+ £{offer.cashTopUp}</Text>
-            ) : (
-              <Text style={styles.cashText}>No cash</Text>
+          {/* Swap arrow */}
+          <View style={{ alignItems: 'center', paddingHorizontal: 4 }}>
+            <Text style={{ fontSize: 22, color: theme.colors.textSoft }}>⇄</Text>
+            {cashTerms && (
+              <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: '800', marginTop: 4 }}>
+                £{Number(cashTerms.amount).toFixed(2)}
+              </Text>
             )}
           </View>
 
-          <View style={styles.offerSide}>
-            <Text style={styles.sideLabel}>Offered cards</Text>
-
-            {offeredCards.map((entry, index) => (
-              <View key={`${offer.id}-${entry.card.id}-${index}`} style={styles.offerItemRow}>
-                {entry.card.images?.small ? (
-                  <Image
-                    source={{ uri: entry.card.images.small }}
-                    style={styles.offerCardImage}
-                    resizeMode="contain"
-                  />
-                ) : null}
-
-                <View style={styles.offerItemText}>
-                  <Text style={styles.offerItemName} numberOfLines={1}>
-                    {entry.card.name}
-                  </Text>
-                  <Text style={styles.offerItemMeta} numberOfLines={1}>
-                    {entry.set.name}
+          {/* Requested cards */}
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginBottom: 6 }}>
+              {isReceiver ? 'You give:' : 'They give:'}
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+              {requestedCards.slice(0, 3).map((card) => {
+                const preview = cardPreviews[card.card_id];
+                return (
+                  <View key={card.id} style={{ alignItems: 'center' }}>
+                    {preview?.image_url ? (
+                      <Image
+                        source={{ uri: preview.image_url }}
+                        style={{ width: 44, height: 62, borderRadius: 4 }}
+                      />
+                    ) : (
+                      <View style={{
+                        width: 44,
+                        height: 62,
+                        borderRadius: 4,
+                        backgroundColor: theme.colors.surface,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <Text style={{ color: theme.colors.textSoft, fontSize: 8 }}>?</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+              {requestedCards.length > 3 && (
+                <View style={{
+                  width: 44,
+                  height: 62,
+                  borderRadius: 4,
+                  backgroundColor: theme.colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                }}>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+                    +{requestedCards.length - 3}
                   </Text>
                 </View>
-              </View>
-            ))}
+              )}
+            </View>
           </View>
         </View>
 
-        {offer.note ? (
-          <View style={styles.noteBox}>
-            <Text style={styles.noteTitle}>Note</Text>
-            <Text style={styles.noteText}>{offer.note}</Text>
+        {/* Message */}
+        {offer.message && (
+          <View style={{
+            backgroundColor: theme.colors.surface,
+            borderRadius: 10,
+            padding: 10,
+            marginBottom: 10,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+          }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontStyle: 'italic' }}>
+              "{offer.message}"
+            </Text>
           </View>
-        ) : null}
-
-        {isPending && isReceived ? (
-          <View style={styles.actionRow}>
-            <Pressable
-              style={[styles.actionButton, styles.acceptButton]}
-              onPress={() => updateOfferStatus(offer.id, 'accepted')}
-            >
-              <Text style={styles.acceptButtonText}>Accept</Text>
-            </Pressable>
-
-            <Pressable
-              style={[styles.actionButton, styles.declineButton]}
-              onPress={() => updateOfferStatus(offer.id, 'declined')}
-            >
-              <Text style={styles.declineButtonText}>Decline</Text>
-            </Pressable>
-          </View>
-        ) : isPending && !isReceived ? (
-          <Pressable
-            style={styles.removeButton}
-            onPress={() => removeOffer(offer.id)}
-          >
-            <Text style={styles.removeButtonText}>Withdraw Offer</Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            style={styles.removeButton}
-            onPress={() => removeOffer(offer.id)}
-          >
-            <Text style={styles.removeButtonText}>Remove Offer</Text>
-          </Pressable>
         )}
-      </View>
+
+        {/* Progress for active trades */}
+        {['accepted', 'payment_required', 'payment_sent', 'payment_confirmed', 'sent', 'received'].includes(offer.status) && (
+          <View style={{
+            flexDirection: 'row',
+            gap: 6,
+            marginBottom: 10,
+            flexWrap: 'wrap',
+          }}>
+            <ProgressPill label="Agreed" done={true} />
+            <ProgressPill
+              label="Sent"
+              done={offer.sender_sent && offer.receiver_sent}
+              partial={offer.sender_sent || offer.receiver_sent}
+            />
+            <ProgressPill
+              label="Received"
+              done={offer.sender_received && offer.receiver_received}
+              partial={offer.sender_received || offer.receiver_received}
+            />
+            <ProgressPill label="Complete" done={offer.status === 'completed'} />
+          </View>
+        )}
+
+        {/* Actions */}
+        {isPending && isReceiver && (
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+            <TouchableOpacity
+              onPress={() => handleAccept(offer.id)}
+              style={{
+                flex: 1,
+                backgroundColor: '#10B981',
+                borderRadius: 12,
+                paddingVertical: 11,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13 }}>
+                Accept
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => handleDecline(offer.id)}
+              style={{
+                flex: 1,
+                backgroundColor: '#FEE2E2',
+                borderRadius: 12,
+                paddingVertical: 11,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: '#FCA5A5',
+              }}
+            >
+              <Text style={{ color: '#991B1B', fontWeight: '900', fontSize: 13 }}>
+                Decline
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {isPending && !isReceiver && (
+          <TouchableOpacity
+            onPress={() => handleWithdraw(offer.id)}
+            style={{
+              backgroundColor: theme.colors.surface,
+              borderRadius: 12,
+              paddingVertical: 11,
+              alignItems: 'center',
+              marginTop: 4,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
+          >
+            <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 13 }}>
+              Withdraw Offer
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Tap to negotiate hint for active offers */}
+        {!isPending && !isCompleted && (
+          <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700', marginTop: 8, textAlign: 'center' }}>
+            Tap to negotiate →
+          </Text>
+        )}
+
+        {/* Leave review prompt */}
+        {isCompleted && (
+          <TouchableOpacity
+            onPress={() => router.push(`/offer/review?offerId=${offer.id}&reviewUserId=${isReceiver ? offer.sender_id : offer.receiver_id}`)}
+            style={{
+              backgroundColor: theme.colors.primary + '18',
+              borderRadius: 12,
+              paddingVertical: 10,
+              alignItems: 'center',
+              marginTop: 8,
+              borderWidth: 1,
+              borderColor: theme.colors.primary,
+            }}
+          >
+            <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 13 }}>
+              ⭐ Leave a Review
+            </Text>
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
     );
   };
 
-  const emptyText =
-    segment === 'received'
-      ? 'No received offers yet.'
-      : segment === 'sent'
-      ? 'No sent offers yet.'
-      : 'No accepted or declined offers yet.';
+  // ===============================
+  // RENDER
+  // ===============================
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.headerRow}>
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>‹</Text>
-          </Pressable>
-          <View style={styles.headerTextWrap}>
-            <Text style={styles.heading}>Offers</Text>
-            <Text style={styles.subheading}>
-              Review received, sent, and completed offers
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}>
+
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              backgroundColor: theme.colors.card,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
+          >
+            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
+          </TouchableOpacity>
+
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
+              Trade Offers
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+              Manage your incoming and outgoing offers
             </Text>
           </View>
         </View>
 
-        <View style={styles.segmentRow}>
-          {renderSegmentButton('received', 'Received', receivedOffers.length)}
-          {renderSegmentButton('sent', 'Sent', sentOffers.length)}
-          {renderSegmentButton('history', 'History', historyOffers.length)}
+        {/* Segments */}
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+          {(
+            [
+              { key: 'received', label: 'Received', count: receivedOffers.length },
+              { key: 'sent', label: 'Sent', count: sentOffers.length },
+              { key: 'history', label: 'History', count: historyOffers.length },
+            ] as { key: SegmentKey; label: string; count: number }[]
+          ).map(({ key, label, count }) => {
+            const active = segment === key;
+            return (
+              <Pressable
+                key={key}
+                onPress={() => setSegment(key)}
+                style={{
+                  flex: 1,
+                  backgroundColor: active ? theme.colors.primary : theme.colors.card,
+                  borderRadius: 12,
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: active ? theme.colors.primary : theme.colors.border,
+                }}
+              >
+                <Text style={{
+                  color: active ? '#FFFFFF' : theme.colors.textSoft,
+                  fontWeight: '800',
+                  fontSize: 13,
+                }}>
+                  {label}
+                </Text>
+                <View style={{
+                  marginTop: 4,
+                  minWidth: 22,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 999,
+                  backgroundColor: active ? 'rgba(255,255,255,0.2)' : theme.colors.surface,
+                }}>
+                  <Text style={{
+                    color: active ? '#FFFFFF' : theme.colors.textSoft,
+                    fontWeight: '900',
+                    fontSize: 11,
+                    textAlign: 'center',
+                  }}>
+                    {count}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
 
-       {loading || offersLoading ? (
-  <Text style={styles.loadingText}>Loading offers...</Text>
-) : currentOffers.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>{emptyText}</Text>
+        {/* List */}
+        {loading ? (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator color={theme.colors.primary} />
+            <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
+              Loading offers...
+            </Text>
           </View>
         ) : (
-          currentOffers.map((offer) => renderOffer(offer.id))
+          <FlatList
+            data={currentOffers}
+            keyExtractor={(item) => item.id}
+            renderItem={renderOffer}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            ListEmptyComponent={
+              <View style={{
+                backgroundColor: theme.colors.card,
+                borderRadius: 16,
+                padding: 24,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+              }}>
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginBottom: 6 }}>
+                  {segment === 'received' ? 'No offers received' : segment === 'sent' ? 'No offers sent' : 'No trade history'}
+                </Text>
+                <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontSize: 13 }}>
+                  {segment === 'received'
+                    ? 'When someone sends you a trade offer it will appear here.'
+                    : segment === 'sent'
+                    ? 'Offers you send to other collectors will appear here.'
+                    : 'Completed and declined offers will appear here.'}
+                </Text>
+              </View>
+            }
+          />
         )}
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: theme.colors.bg },
-  container: { padding: 18, paddingBottom: 120 },
+function ProgressPill({
+  label,
+  done,
+  partial,
+}: {
+  label: string;
+  done: boolean;
+  partial?: boolean;
+}) {
+  const bg = done
+    ? '#10B981'
+    : partial
+    ? '#F59E0B'
+    : theme.colors.surface;
 
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: theme.colors.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 26,
-    lineHeight: 26,
-    marginTop: -2,
-  },
-  headerTextWrap: { flex: 1 },
-  heading: { color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 4 },
-  subheading: { color: '#AAB3D1', fontSize: 14 },
+  const textColor = done || partial ? '#FFFFFF' : theme.colors.textSoft;
 
-  segmentRow: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    gap: 8,
-  },
-  segmentButton: {
-    flex: 1,
-    backgroundColor: theme.colors.card,
-    borderRadius: 12,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  segmentButtonActive: {
-    backgroundColor: '#2563eb',
-  },
-  segmentButtonText: {
-    color: '#AAB3D1',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  segmentButtonTextActive: {
-    color: '#fff',
-  },
-  segmentCount: {
-    marginTop: 6,
-    minWidth: 24,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: '#1f274d',
-  },
-  segmentCountActive: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-  },
-  segmentCountText: {
-    color: '#AAB3D1',
-    fontWeight: '800',
-    textAlign: 'center',
-    fontSize: 11,
-  },
-  segmentCountTextActive: {
-    color: '#fff',
-  },
-
-  loadingText: {
-    color: '#AAB3D1',
-  },
-  emptyCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 14,
-  },
-  emptyText: {
-    color: '#AAB3D1',
-  },
-
-  offerCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  offerTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  offerTitle: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '800',
-    marginBottom: 12,
-  },
-
-  partiesBox: {
-    backgroundColor: '#111735',
-    borderRadius: 12,
-    padding: 10,
-    marginBottom: 12,
-  },
-  partyText: {
-    color: '#AAB3D1',
-    fontSize: 12,
-    marginBottom: 2,
-  },
-
-  offerRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-
-  targetSide: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  offerSide: {
-    flex: 1.2,
-  },
-  middle: {
-    width: 72,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 30,
-  },
-  swapText: {
-    color: '#FFD166',
-    fontSize: 24,
-    fontWeight: '900',
-    marginBottom: 6,
-  },
-  cashText: {
-    color: '#AAB3D1',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-
-  targetCardImage: {
-    width: 74,
-    height: 102,
-    marginBottom: 8,
-  },
-  offerCardImage: {
-    width: 42,
-    height: 58,
-    marginRight: 10,
-  },
-
-  sideLabel: {
-    color: '#8f9bc2',
-    fontSize: 11,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  cardName: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '800',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  cardMeta: {
-    color: '#AAB3D1',
-    fontSize: 11,
-    textAlign: 'center',
-  },
-
-  offerItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#111735',
-    borderRadius: 12,
-    padding: 8,
-    marginBottom: 8,
-  },
-  offerItemText: {
-    flex: 1,
-  },
-  offerItemName: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  offerItemMeta: {
-    color: '#AAB3D1',
-    fontSize: 11,
-    marginTop: 2,
-  },
-
-  noteBox: {
-    backgroundColor: '#111735',
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 12,
-  },
-  noteTitle: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  noteText: {
-    color: '#AAB3D1',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-
-  statusBadge: {
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  pendingBadge: {
-    backgroundColor: 'rgba(255,209,102,0.14)',
-  },
-  acceptedBadge: {
-    backgroundColor: 'rgba(94,211,161,0.14)',
-  },
-  declinedBadge: {
-    backgroundColor: 'rgba(255,107,107,0.14)',
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-
-  actionRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 12,
-  },
-  actionButton: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  acceptButton: {
-    backgroundColor: '#5ED3A1',
-  },
-  declineButton: {
-    backgroundColor: '#FF6B6B',
-  },
-  acceptButtonText: {
-    color: '#0b0f2a',
-    fontWeight: '900',
-  },
-  declineButtonText: {
-    color: '#0b0f2a',
-    fontWeight: '900',
-  },
-
-  removeButton: {
-    backgroundColor: '#1f274d',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontWeight: '800',
-  },
-});
+  return (
+    <View style={{
+      backgroundColor: bg,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderWidth: 1,
+      borderColor: done ? '#10B981' : partial ? '#F59E0B' : theme.colors.border,
+    }}>
+      <Text style={{ color: textColor, fontSize: 11, fontWeight: '800' }}>
+        {done ? '✓ ' : partial ? '◑ ' : ''}{label}
+      </Text>
+    </View>
+  );
+}

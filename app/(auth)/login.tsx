@@ -110,7 +110,7 @@ export default function LoginScreen() {
         >
           <View style={styles.logoWrap}>
   <Image
-    source={require('../../assets/images/hub.png')}
+    source={require('../../assets/images/icon-with-text.png')}
     style={styles.logo}
     resizeMode="contain"
   />
@@ -274,8 +274,8 @@ logoWrap: {
 },
 
 logo: {
-  width: 600,
-  height: 210,
+  width: 350,
+  height: 200,
 },
 
 });

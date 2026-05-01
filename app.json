@@ -9,16 +9,16 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "plugins": [
-  [
-    "expo-splash-screen",
-    {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "cover",
-      "backgroundColor": "#ffffff",
-      "imageWidth": 400
-    }
-  ]
-],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#ffffff",
+          "imageWidth": 400
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.tommo86.Stackr",
@@ -41,7 +41,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "2e729a1c-5747-4209-a7df-0f6fc69410dc"
+        "projectId": "22048198-a309-41d2-a2bf-aa354c76be3a"
       }
     }
   }

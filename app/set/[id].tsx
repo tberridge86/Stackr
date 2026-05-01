@@ -1,103 +1,120 @@
 import { theme } from '../../lib/theme';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  StyleSheet,
-  Text,
   View,
-  Pressable,
-  ScrollView,
+  FlatList,
   TextInput,
   Image,
-  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
 } from 'react-native';
+import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchAllSets, fetchCardsForSet, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
+import { supabase } from '../../lib/supabase';
+
+// ===============================
+// TYPES
+// ===============================
 
 type FilterType = 'all' | 'owned' | 'missing';
 type SortType = 'number' | 'name' | 'rarity';
 
+// ===============================
+// MAIN COMPONENT
+// ===============================
+
 export default function SetDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const setId = Array.isArray(id) ? id[0] : id;
 
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [ownedCards, setOwnedCards] = useState<string[]>([]);
+  // Owned card IDs from Supabase (across all binders)
+  const [ownedCardIds, setOwnedCardIds] = useState<Set<string>>(new Set());
+
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedRarity, setSelectedRarity] = useState<string>('All');
   const [sort, setSort] = useState<SortType>('number');
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  useEffect(() => {
-    if (!id) return;
+  // ===============================
+  // LOAD SET DATA
+  // ===============================
 
-    const loadSetData = async () => {
-      try {
-        const [allSets, fetchedCards] = await Promise.all([
-          fetchAllSets(),
-          fetchCardsForSet(id),
-        ]);
+  const loadSetData = useCallback(async () => {
+    if (!setId) return;
 
-        const currentSet = allSets.find((s) => s.id === id) ?? null;
+    try {
+      setLoading(true);
 
-        setSetInfo(currentSet);
-        setCards(fetchedCards);
-      } catch (error) {
-        console.log('Failed to fetch set data', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const [allSets, fetchedCards] = await Promise.all([
+        fetchAllSets(),
+        fetchCardsForSet(setId),
+      ]);
 
-    loadSetData();
-  }, [id]);
+      const currentSet = allSets.find((s) => s.id === setId) ?? null;
+      setSetInfo(currentSet);
+      setCards(fetchedCards);
 
-  useEffect(() => {
-    if (!id) return;
+      // Load owned cards from Supabase
+      const { data: { user } } = await supabase.auth.getUser();
 
-    const loadOwnedCards = async () => {
-      try {
-        const saved = await AsyncStorage.getItem(`ownedCards:${id}`);
-        if (saved) {
-          setOwnedCards(JSON.parse(saved));
+      if (user) {
+        // Get all binders for this user
+        const { data: binders } = await supabase
+          .from('binders')
+          .select('id')
+          .eq('user_id', user.id);
+
+        const binderIds = (binders ?? []).map((b) => b.id);
+
+        if (binderIds.length > 0) {
+          const { data: ownedRows } = await supabase
+            .from('binder_cards')
+            .select('card_id')
+            .in('binder_id', binderIds)
+            .eq('set_id', setId)
+            .eq('owned', true);
+
+          setOwnedCardIds(
+            new Set((ownedRows ?? []).map((r) => r.card_id))
+          );
         }
-      } catch (error) {
-        console.log('Failed to load owned cards', error);
-      } finally {
-        setIsLoaded(true);
       }
-    };
-
-    loadOwnedCards();
-  }, [id]);
+    } catch (error) {
+      console.log('Failed to load set data', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setId]);
 
   useEffect(() => {
-    if (!id || !isLoaded) return;
+    loadSetData();
+  }, [loadSetData]);
 
-    const saveOwnedCards = async () => {
-      try {
-        await AsyncStorage.setItem(`ownedCards:${id}`, JSON.stringify(ownedCards));
-      } catch (error) {
-        console.log('Failed to save owned cards', error);
-      }
-    };
-
-    saveOwnedCards();
-  }, [ownedCards, id, isLoaded]);
+  // ===============================
+  // FILTER + SORT
+  // ===============================
 
   const rarities = useMemo(
-    () => ['All', ...Array.from(new Set(cards.map((card) => card.rarity).filter(Boolean) as string[]))],
+    () => [
+      'All',
+      ...Array.from(
+        new Set(cards.map((c) => c.rarity).filter(Boolean) as string[])
+      ),
+    ],
     [cards]
   );
 
   const filteredCards = useMemo(() => {
     let result = cards.filter((card) => {
-      const owned = ownedCards.includes(card.id);
+      const owned = ownedCardIds.has(card.id);
 
       const matchesSearch =
         card.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -115,37 +132,131 @@ export default function SetDetailScreen() {
     });
 
     if (sort === 'number') {
-      result.sort((a, b) => {
-        const numA = parseInt(a.number, 10) || 0;
-        const numB = parseInt(b.number, 10) || 0;
-        return numA - numB;
-      });
-    }
-
-    if (sort === 'name') {
+      result.sort((a, b) => (parseInt(a.number, 10) || 0) - (parseInt(b.number, 10) || 0));
+    } else if (sort === 'name') {
       result.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    if (sort === 'rarity') {
+    } else if (sort === 'rarity') {
       result.sort((a, b) => (a.rarity ?? '').localeCompare(b.rarity ?? ''));
     }
 
     return result;
-  }, [cards, ownedCards, search, filter, selectedRarity, sort]);
+  }, [cards, ownedCardIds, search, filter, selectedRarity, sort]);
 
-  const toggleOwned = (cardId: string) => {
-    setOwnedCards((prev) =>
-      prev.includes(cardId)
-        ? prev.filter((existingId) => existingId !== cardId)
-        : [...prev, cardId]
+  const ownedCount = useMemo(
+    () => cards.filter((c) => ownedCardIds.has(c.id)).length,
+    [cards, ownedCardIds]
+  );
+
+  const progressPercent =
+    setInfo?.total && setInfo.total > 0
+      ? (ownedCount / setInfo.total) * 100
+      : 0;
+
+  // ===============================
+  // RENDER CARD
+  // ===============================
+
+  const renderCard = useCallback(({ item: card }: { item: PokemonCard }) => {
+    const owned = ownedCardIds.has(card.id);
+
+    return (
+      <TouchableOpacity
+        onPress={() => router.push(`/card/${card.id}?setId=${setId}`)}
+        activeOpacity={0.85}
+        style={{
+          width: '48%',
+          backgroundColor: owned ? '#FFD166' : theme.colors.card,
+          borderRadius: 18,
+          padding: 12,
+          borderWidth: 1,
+          borderColor: owned ? '#FFD166' : theme.colors.border,
+        }}
+      >
+        {/* Card number badge */}
+        <View style={{
+          alignSelf: 'flex-start',
+          backgroundColor: owned ? 'rgba(0,0,0,0.12)' : theme.colors.surface,
+          paddingVertical: 4,
+          paddingHorizontal: 8,
+          borderRadius: 999,
+          marginBottom: 10,
+        }}>
+          <Text style={{ color: owned ? '#0b0f2a' : theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>
+            #{card.number}
+          </Text>
+        </View>
+
+        {/* Card image */}
+        {card.images?.small ? (
+          <Image
+            source={{ uri: card.images.small }}
+            style={{ width: '100%', height: 150, marginBottom: 10, borderRadius: 12 }}
+            resizeMode="contain"
+          />
+        ) : (
+          <View style={{
+            width: '100%', height: 150,
+            marginBottom: 10, borderRadius: 12,
+            backgroundColor: owned ? 'rgba(0,0,0,0.08)' : theme.colors.surface,
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Ionicons name="image-outline" size={30} color={owned ? '#0b0f2a' : theme.colors.textSoft} />
+            <Text style={{ color: owned ? '#0b0f2a' : theme.colors.textSoft, fontSize: 12, marginTop: 6 }}>
+              No image
+            </Text>
+          </View>
+        )}
+
+        {/* Card name */}
+        <Text
+          numberOfLines={2}
+          style={{ color: owned ? '#0b0f2a' : theme.colors.text, fontSize: 14, fontWeight: '800', marginBottom: 6, minHeight: 36 }}
+        >
+          {card.name}
+        </Text>
+
+        {/* Rarity */}
+        <Text
+          numberOfLines={1}
+          style={{ color: owned ? 'rgba(11,15,42,0.6)' : theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginBottom: 10 }}
+        >
+          {card.rarity ?? 'Unknown'}
+        </Text>
+
+        {/* Owned pill */}
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 5,
+          backgroundColor: owned ? 'rgba(0,0,0,0.12)' : theme.colors.surface,
+          borderRadius: 999,
+          paddingVertical: 6,
+          paddingHorizontal: 10,
+          alignSelf: 'flex-start',
+        }}>
+          <Ionicons
+            name={owned ? 'checkmark-circle' : 'ellipse-outline'}
+            size={14}
+            color={owned ? '#0b0f2a' : theme.colors.textSoft}
+          />
+          <Text style={{ color: owned ? '#0b0f2a' : theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>
+            {owned ? 'Owned' : 'Missing'}
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
-  };
+  }, [ownedCardIds, setId]);
+
+  // ===============================
+  // LOADING
+  // ===============================
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.center}>
-          <Text style={styles.heading}>Loading set...</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator color={theme.colors.primary} size="large" />
+          <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>Loading set...</Text>
         </View>
       </SafeAreaView>
     );
@@ -153,470 +264,243 @@ export default function SetDetailScreen() {
 
   if (!setInfo) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.center}>
-          <Text style={styles.heading}>Set not found</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Set not found</Text>
+          <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
+            <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>Go back</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
   }
 
-  const ownedCount = ownedCards.length;
-  const progressPercent =
-    setInfo.total > 0 ? (ownedCount / setInfo.total) * 100 : 0;
-
-  const renderCard = ({ item: card }: { item: PokemonCard }) => {
-    const owned = ownedCards.includes(card.id);
-
-    return (
-      <Pressable
-        onPress={() => toggleOwned(card.id)}
-        onLongPress={() => router.push(`/card/${card.id}?setId=${setInfo.id}`)}
-        delayLongPress={250}
-        style={({ pressed }) => [
-          styles.cardTile,
-          owned && styles.cardTileOwned,
-          pressed && styles.cardPressed,
-        ]}
-      >
-        <View style={styles.cardNumberBadge}>
-          <Text style={[styles.cardNumberText, owned && styles.cardNumberTextOwned]}>
-            #{card.number}
-          </Text>
-        </View>
-
-        {card.images?.small ? (
-          <Image
-            source={{ uri: card.images.small }}
-            style={styles.cardImage}
-            resizeMode="contain"
-          />
-        ) : (
-          <View style={styles.cardImageFallback}>
-            <Ionicons
-              name="image-outline"
-              size={30}
-              color={owned ? '#0b0f2a' : '#7987b3'}
-            />
-            <Text style={[styles.fallbackText, owned && styles.fallbackTextOwned]}>
-              No image
-            </Text>
-          </View>
-        )}
-
-        <Text style={[styles.cardName, owned && styles.cardNameOwned]} numberOfLines={2}>
-          {card.name}
-        </Text>
-
-        <Text
-          style={[styles.cardRarity, owned && styles.cardRarityOwned]}
-          numberOfLines={1}
-        >
-          {card.rarity ?? 'Unknown'}
-        </Text>
-
-        <View style={[styles.ownedPill, owned && styles.ownedPillActive]}>
-          <Ionicons
-            name={owned ? 'checkmark-circle' : 'ellipse-outline'}
-            size={14}
-            color={owned ? '#0b0f2a' : '#FFD166'}
-          />
-          <Text
-            style={[styles.ownedPillText, owned && styles.ownedPillTextActive]}
-          >
-            {owned ? 'Owned' : 'Missing'}
-          </Text>
-        </View>
-      </Pressable>
-    );
-  };
+  // ===============================
+  // MAIN RENDER
+  // ===============================
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <FlatList
         data={filteredCards}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
+        columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 12 }}
         renderItem={renderCard}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View>
-            <View style={styles.headerRow}>
-              <Pressable onPress={() => router.back()} style={styles.backButton}>
-                <Ionicons name="chevron-back" size={18} color="#fff" />
-              </Pressable>
+            {/* Back button + title */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+              <TouchableOpacity
+                onPress={() => router.back()}
+                style={{
+                  width: 40, height: 40,
+                  borderRadius: 12,
+                  backgroundColor: theme.colors.card,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 12,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                }}
+              >
+                <Ionicons name="chevron-back" size={18} color={theme.colors.text} />
+              </TouchableOpacity>
 
-              <View style={styles.headerTextWrap}>
-                <Text style={styles.heading}>{setInfo.name}</Text>
-                <Text style={styles.subheading}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+                  {setInfo.name}
+                </Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
                   {setInfo.series} · {setInfo.total} cards
                 </Text>
               </View>
             </View>
 
-            <View style={styles.progressCard}>
-              <Text style={styles.progressTitle}>Collection Progress</Text>
-              <Text style={styles.progressNumbers}>
-                {ownedCount} / {setInfo.total}
-              </Text>
-              <View style={styles.progressTrack}>
-                <View
-                  style={[styles.progressFill, { width: `${progressPercent}%` }]}
-                />
+            {/* Progress card */}
+            <View style={{
+              backgroundColor: theme.colors.card,
+              borderRadius: 20,
+              padding: 16,
+              marginBottom: 14,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
+                  Collection Progress
+                </Text>
+                <Text style={{ color: '#FFD166', fontSize: 18, fontWeight: '900' }}>
+                  {ownedCount} / {setInfo.total}
+                </Text>
               </View>
+
+              <View style={{ height: 8, borderRadius: 999, backgroundColor: theme.colors.surface, overflow: 'hidden' }}>
+                <View style={{
+                  width: `${progressPercent}%`,
+                  height: '100%',
+                  backgroundColor: '#FFD166',
+                  borderRadius: 999,
+                }} />
+              </View>
+
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 8 }}>
+                {progressPercent.toFixed(1)}% complete
+              </Text>
             </View>
 
-            <View style={styles.searchWrap}>
-              <Ionicons name="search" size={16} color="#8f9bc2" />
+            {/* Create binder CTA */}
+            <TouchableOpacity
+              onPress={() => router.push({
+                pathname: '/binder/new',
+                params: { sourceSetId: setId, type: 'official' },
+              })}
+              style={{
+                backgroundColor: theme.colors.primary,
+                borderRadius: 14,
+                paddingVertical: 13,
+                alignItems: 'center',
+                marginBottom: 14,
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>
+                + Create Binder for This Set
+              </Text>
+            </TouchableOpacity>
+
+            {/* Search */}
+            <View style={{
+              backgroundColor: theme.colors.card,
+              borderRadius: 14,
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+              marginBottom: 12,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 10,
+            }}>
+              <Ionicons name="search" size={16} color={theme.colors.textSoft} />
               <TextInput
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Search cards..."
-                placeholderTextColor="#8f9bc2"
-                style={styles.searchInput}
+                placeholderTextColor={theme.colors.textSoft}
+                style={{ flex: 1, color: theme.colors.text, fontSize: 15 }}
               />
+              {search.length > 0 && (
+                <TouchableOpacity onPress={() => setSearch('')}>
+                  <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
+                </TouchableOpacity>
+              )}
             </View>
 
-            <View style={styles.filterRow}>
+            {/* Filter chips */}
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
               {(['all', 'owned', 'missing'] as FilterType[]).map((item) => (
-                <Pressable
+                <TouchableOpacity
                   key={item}
                   onPress={() => setFilter(item)}
-                  style={[
-                    styles.filterChip,
-                    filter === item && styles.filterChipActive,
-                  ]}
+                  style={{
+                    backgroundColor: filter === item ? '#FFD166' : theme.colors.card,
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: filter === item ? '#FFD166' : theme.colors.border,
+                  }}
                 >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      filter === item && styles.filterChipTextActive,
-                    ]}
-                  >
+                  <Text style={{
+                    color: filter === item ? '#0b0f2a' : theme.colors.textSoft,
+                    fontWeight: '700',
+                    fontSize: 13,
+                  }}>
                     {item.charAt(0).toUpperCase() + item.slice(1)}
                   </Text>
-                </Pressable>
+                </TouchableOpacity>
               ))}
             </View>
 
-            <View style={styles.filterRow}>
+            {/* Sort chips */}
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
               {(['number', 'name', 'rarity'] as SortType[]).map((item) => (
-                <Pressable
+                <TouchableOpacity
                   key={item}
                   onPress={() => setSort(item)}
-                  style={[
-                    styles.filterChip,
-                    sort === item && styles.filterChipActive,
-                  ]}
+                  style={{
+                    backgroundColor: sort === item ? theme.colors.primary : theme.colors.card,
+                    paddingVertical: 8,
+                    paddingHorizontal: 14,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: sort === item ? theme.colors.primary : theme.colors.border,
+                  }}
                 >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      sort === item && styles.filterChipTextActive,
-                    ]}
-                  >
-                    {item === 'number'
-                      ? 'Number'
-                      : item === 'name'
-                        ? 'A–Z'
-                        : 'Rarity'}
+                  <Text style={{
+                    color: sort === item ? '#FFFFFF' : theme.colors.textSoft,
+                    fontWeight: '700',
+                    fontSize: 13,
+                  }}>
+                    {item === 'number' ? '#' : item === 'name' ? 'A–Z' : 'Rarity'}
                   </Text>
-                </Pressable>
+                </TouchableOpacity>
               ))}
             </View>
 
+            {/* Rarity filter */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.rarityRow}
+              contentContainerStyle={{ gap: 8, paddingBottom: 10, marginBottom: 4 }}
             >
               {rarities.map((rarity) => (
-                <Pressable
+                <TouchableOpacity
                   key={rarity}
                   onPress={() => setSelectedRarity(rarity)}
-                  style={[
-                    styles.rarityChip,
-                    selectedRarity === rarity && styles.rarityChipActive,
-                  ]}
+                  style={{
+                    backgroundColor: selectedRarity === rarity
+                      ? 'rgba(255,209,102,0.14)'
+                      : theme.colors.card,
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: selectedRarity === rarity ? '#FFD166' : theme.colors.border,
+                  }}
                 >
-                  <Text
-                    style={[
-                      styles.rarityChipText,
-                      selectedRarity === rarity && styles.rarityChipTextActive,
-                    ]}
-                  >
+                  <Text style={{
+                    color: selectedRarity === rarity ? '#FFD166' : theme.colors.textSoft,
+                    fontWeight: '700',
+                    fontSize: 12,
+                  }}>
                     {rarity}
                   </Text>
-                </Pressable>
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
-            <View style={styles.resultsRow}>
-              <Text style={styles.sectionTitle}>Cards</Text>
-              <Text style={styles.resultsText}>{filteredCards.length} shown</Text>
+            {/* Results count */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginTop: 4 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>
+                Cards
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
+                {filteredCards.length} shown
+              </Text>
             </View>
+          </View>
+        }
+        ListEmptyComponent={
+          <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+            <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
+              No cards match your filters.
+            </Text>
           </View>
         }
       />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: theme.colors.bg,
-  },
-  listContent: {
-    padding: 18,
-    paddingBottom: 120,
-  },
-  columnWrapper: {
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: theme.colors.card,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  headerTextWrap: {
-    flex: 1,
-  },
-  heading: {
-    color: '#fff',
-    fontSize: 28,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  subheading: {
-    color: '#AAB3D1',
-    fontSize: 14,
-  },
-  progressCard: {
-    backgroundColor: '#111735',
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  progressTitle: {
-    color: '#AAB3D1',
-    fontSize: 13,
-    marginBottom: 6,
-  },
-  progressNumbers: {
-    color: '#FFD166',
-    fontSize: 22,
-    fontWeight: '900',
-    marginBottom: 10,
-  },
-  progressTrack: {
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#FFD166',
-    borderRadius: 999,
-  },
-  searchWrap: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    color: '#fff',
-    fontSize: 15,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-    flexWrap: 'wrap',
-  },
-  filterChip: {
-    backgroundColor: theme.colors.card,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  filterChipActive: {
-    backgroundColor: '#FFD166',
-    borderColor: '#FFD166',
-  },
-  filterChipText: {
-    color: '#AAB3D1',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  filterChipTextActive: {
-    color: '#0b0f2a',
-  },
-  rarityRow: {
-    gap: 8,
-    paddingBottom: 8,
-    marginBottom: 8,
-  },
-  rarityChip: {
-    backgroundColor: theme.colors.card,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  rarityChipActive: {
-    backgroundColor: 'rgba(255,209,102,0.14)',
-    borderColor: '#FFD166',
-  },
-  rarityChipText: {
-    color: '#AAB3D1',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  rarityChipTextActive: {
-    color: '#FFD166',
-  },
-  resultsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    marginTop: 4,
-  },
-  sectionTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  resultsText: {
-    color: '#8f9bc2',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  cardTile: {
-    width: '48%',
-    backgroundColor: theme.colors.card,
-    borderRadius: 18,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-  },
-  cardTileOwned: {
-    backgroundColor: '#FFD166',
-    borderColor: '#FFD166',
-  },
-  cardPressed: {
-    transform: [{ scale: 0.97 }],
-  },
-  cardNumberBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 999,
-    marginBottom: 10,
-  },
-  cardNumberText: {
-    color: '#AAB3D1',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  cardNumberTextOwned: {
-    color: '#0b0f2a',
-  },
-  cardImage: {
-    width: '100%',
-    height: 150,
-    marginBottom: 10,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-  },
-  cardImageFallback: {
-    width: '100%',
-    height: 150,
-    marginBottom: 10,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  fallbackText: {
-    color: '#7987b3',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  fallbackTextOwned: {
-    color: '#0b0f2a',
-  },
-  cardName: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '800',
-    marginBottom: 6,
-    minHeight: 36,
-  },
-  cardNameOwned: {
-    color: '#0b0f2a',
-  },
-  cardRarity: {
-    color: '#94A0C9',
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  cardRarityOwned: {
-    color: 'rgba(11,15,42,0.72)',
-  },
-  ownedPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255,209,102,0.12)',
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    alignSelf: 'flex-start',
-  },
-  ownedPillActive: {
-    backgroundColor: '#0b0f2a',
-  },
-  ownedPillText: {
-    color: '#FFD166',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  ownedPillTextActive: {
-    color: '#FFD166',
-  },
-});

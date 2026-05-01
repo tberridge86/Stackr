@@ -15,6 +15,10 @@ import {
 import { supabase } from '../lib/supabase';
 import { createActivityPost } from '../lib/activity';
 
+// ===============================
+// TYPES
+// ===============================
+
 type TradeMeta = {
   condition?: string;
   notes?: string;
@@ -66,14 +70,9 @@ type CreateTradeReviewInput = {
 
 type FlagKey = string;
 
-const getSetIdFromCardId = (cardId: string) => {
-  const parts = cardId.split('-');
-  return parts.length > 1 ? parts[0] : null;
-};
-
-const makeFlagKey = (cardId: string, setId?: string | null): FlagKey => {
-  return `${setId ?? 'unknown'}:${cardId}`;
-};
+// ===============================
+// CONTEXT TYPE
+// ===============================
 
 type TradeContextType = {
   tradeCardIds: string[];
@@ -96,6 +95,10 @@ type TradeContextType = {
     setId?: string | null
   ) => Promise<void>;
 
+  // Fixed: added missing methods to type
+  markTradeSent: (tradeId: string, userId: string) => Promise<void>;
+  markTradeReceived: (tradeId: string, userId: string) => Promise<void>;
+
   isForTrade: (cardId: string, setId?: string | null) => boolean;
   isWanted: (cardId: string, setId?: string | null) => boolean;
   getMeta: (cardId: string, setId?: string | null) => TradeMeta;
@@ -107,6 +110,23 @@ type TradeContextType = {
   getTraderRating: (userId: string) => Promise<TraderRatingSummary | null>;
   getTraderReviews: (userId: string) => Promise<TradeReview[]>;
 };
+
+// ===============================
+// HELPERS
+// ===============================
+
+const getSetIdFromCardId = (cardId: string): string | null => {
+  const parts = cardId.split('-');
+  return parts.length > 1 ? parts[0] : null;
+};
+
+const makeFlagKey = (cardId: string, setId?: string | null): FlagKey => {
+  return `${setId ?? 'unknown'}:${cardId}`;
+};
+
+// ===============================
+// CONTEXT
+// ===============================
 
 const TradeContext = createContext<TradeContextType | null>(null);
 
@@ -122,10 +142,12 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [tradeLoading, setTradeLoading] = useState(false);
   const [tradeError, setTradeError] = useState<string | null>(null);
 
+  // ===============================
+  // LOAD FLAGS FROM DB
+  // ===============================
+
   const loadFlags = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       setTradeCardIds([]);
@@ -144,7 +166,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
 
     const rows = data ?? [];
-
     const tradeRows = rows.filter((row) => row.flag_type === 'trade');
     const wishlistRows = rows.filter((row) => row.flag_type === 'wishlist');
 
@@ -188,6 +209,10 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     setTradeMeta(nextMeta);
   }, []);
 
+  // ===============================
+  // REFRESH TRADE
+  // ===============================
+
   const refreshTrade = useCallback(async () => {
     try {
       setTradeError(null);
@@ -218,6 +243,10 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     refreshTrade();
   }, [refreshTrade]);
 
+  // ===============================
+  // ARCHIVE LISTING
+  // ===============================
+
   const archiveListing = useCallback(
     async (listingId: string) => {
       await archiveMarketplaceListing(listingId);
@@ -226,21 +255,17 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     [refreshTrade]
   );
 
+  // ===============================
+  // TRADE REVIEWS
+  // ===============================
+
   const createTradeReview = useCallback(
     async (input: CreateTradeReviewInput) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) throw new Error('You must be signed in.');
-
-      if (input.rating < 1 || input.rating > 5) {
-        throw new Error('Rating must be between 1 and 5.');
-      }
-
-      if (user.id === input.reviewedUserId) {
-        throw new Error('You cannot review yourself.');
-      }
+      if (input.rating < 1 || input.rating > 5) throw new Error('Rating must be between 1 and 5.');
+      if (user.id === input.reviewedUserId) throw new Error('You cannot review yourself.');
 
       const { error } = await supabase.from('trade_reviews').insert({
         trade_id: input.tradeId,
@@ -264,7 +289,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (error) throw error;
-
       return data ?? null;
     },
     []
@@ -279,96 +303,98 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-
       return data ?? [];
     },
     []
   );
 
-const markTradeSent = useCallback(
-  async (tradeId: string, userId: string) => {
-    const { data: trade, error: loadError } = await supabase
-      .from('trade_offers')
-      .select('id, sender_id, receiver_id')
-      .eq('id', tradeId)
-      .single();
+  // ===============================
+  // MARK TRADE SENT / RECEIVED
+  // ===============================
 
-    if (loadError) throw loadError;
-
-    const update =
-      trade.sender_id === userId
-        ? { sender_sent: true }
-        : { receiver_sent: true };
-
-    const { error } = await supabase
-      .from('trade_offers')
-      .update(update)
-      .eq('id', tradeId);
-
-    if (error) throw error;
-  },
-  []
-);
-
-const markTradeReceived = useCallback(
-  async (tradeId: string, userId: string) => {
-    const { data: trade, error: loadError } = await supabase
-      .from('trade_offers')
-      .select('id, sender_id, receiver_id')
-      .eq('id', tradeId)
-      .single();
-
-    if (loadError) throw loadError;
-
-    const update =
-      trade.sender_id === userId
-        ? { sender_received: true }
-        : { receiver_received: true };
-
-    const { error } = await supabase
-      .from('trade_offers')
-      .update(update)
-      .eq('id', tradeId);
-
-    if (error) throw error;
-
-    const { data: updatedTrade, error: reloadError } = await supabase
-      .from('trade_offers')
-      .select(
-        'sender_sent, receiver_sent, sender_received, receiver_received'
-      )
-      .eq('id', tradeId)
-      .single();
-
-    if (reloadError) throw reloadError;
-
-    const bothCompleted =
-      updatedTrade.sender_sent &&
-      updatedTrade.receiver_sent &&
-      updatedTrade.sender_received &&
-      updatedTrade.receiver_received;
-
-    if (bothCompleted) {
-      const { error: completeError } = await supabase
+  const markTradeSent = useCallback(
+    async (tradeId: string, userId: string) => {
+      const { data: trade, error: loadError } = await supabase
         .from('trade_offers')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-        })
+        .select('id, sender_id, receiver_id')
+        .eq('id', tradeId)
+        .single();
+
+      if (loadError) throw loadError;
+
+      const update =
+        trade.sender_id === userId
+          ? { sender_sent: true }
+          : { receiver_sent: true };
+
+      const { error } = await supabase
+        .from('trade_offers')
+        .update(update)
         .eq('id', tradeId);
 
-      if (completeError) throw completeError;
-    }
-  },
-  []
-);
+      if (error) throw error;
+    },
+    []
+  );
+
+  const markTradeReceived = useCallback(
+    async (tradeId: string, userId: string) => {
+      const { data: trade, error: loadError } = await supabase
+        .from('trade_offers')
+        .select('id, sender_id, receiver_id')
+        .eq('id', tradeId)
+        .single();
+
+      if (loadError) throw loadError;
+
+      const update =
+        trade.sender_id === userId
+          ? { sender_received: true }
+          : { receiver_received: true };
+
+      const { error } = await supabase
+        .from('trade_offers')
+        .update(update)
+        .eq('id', tradeId);
+
+      if (error) throw error;
+
+      // Check if both sides complete
+      const { data: updatedTrade, error: reloadError } = await supabase
+        .from('trade_offers')
+        .select('sender_sent, receiver_sent, sender_received, receiver_received')
+        .eq('id', tradeId)
+        .single();
+
+      if (reloadError) throw reloadError;
+
+      const bothCompleted =
+        updatedTrade.sender_sent &&
+        updatedTrade.receiver_sent &&
+        updatedTrade.sender_received &&
+        updatedTrade.receiver_received;
+
+      if (bothCompleted) {
+        const { error: completeError } = await supabase
+          .from('trade_offers')
+          .update({
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', tradeId);
+
+        if (completeError) throw completeError;
+      }
+    },
+    []
+  );
+
+  // ===============================
+  // TOGGLE FLAG (trade / wishlist)
+  // ===============================
 
   const toggleFlag = useCallback(
-    async (
-      cardId: string,
-      flag: 'trade' | 'wishlist',
-      setId?: string | null
-    ) => {
+    async (cardId: string, flag: 'trade' | 'wishlist', setId?: string | null) => {
       const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
       const key = makeFlagKey(cardId, resolvedSetId);
       const isTrade = flag === 'trade';
@@ -377,26 +403,16 @@ const markTradeReceived = useCallback(
       const setKeys = isTrade ? setTradeKeys : setWishlistKeys;
       const setIds = isTrade ? setTradeCardIds : setWishlistCardIds;
 
-      const exists =
-        currentKeys.includes(key) ||
-        (isTrade ? tradeCardIds : wishlistCardIds).includes(cardId);
+      // Use key-based check only — avoids false positives across sets
+      const exists = currentKeys.includes(key);
 
-      setKeys((prev) =>
-        exists ? prev.filter((item) => item !== key) : [...prev, key]
-      );
-
-      setIds((prev) =>
-        exists ? prev.filter((id) => id !== cardId) : [...prev, cardId]
-      );
+      // Optimistic update
+      setKeys((prev) => exists ? prev.filter((k) => k !== key) : [...prev, key]);
+      setIds((prev) => exists ? prev.filter((id) => id !== cardId) : [...prev, cardId]);
 
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          throw new Error('You must be signed in.');
-        }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('You must be signed in.');
 
         if (exists) {
           let query = supabase
@@ -411,7 +427,6 @@ const markTradeReceived = useCallback(
           }
 
           const { error } = await query;
-
           if (error) throw error;
         } else {
           const { error } = await supabase.from('user_card_flags').upsert(
@@ -429,14 +444,15 @@ const markTradeReceived = useCallback(
 
           if (error) throw error;
 
+          // Fire activity + wishlist notifications for trade flags
           if (flag === 'trade') {
             createActivityPost({
               type: 'trade_listed',
               title: 'Listed a card for trade',
               cardId,
               setId: resolvedSetId,
-            }).catch((activityError) => {
-              console.log('Failed to create trade activity post', activityError);
+            }).catch((err) => {
+              console.log('Failed to create trade activity post', err);
             });
 
             let wantedQuery = supabase
@@ -487,34 +503,31 @@ const markTradeReceived = useCallback(
           }
         }
 
+        // Reload from DB to ensure state is accurate
         await loadFlags();
       } catch (error) {
         console.log('Rollback triggered', error);
 
-        setKeys((prev) =>
-          exists ? [...prev, key] : prev.filter((item) => item !== key)
-        );
-
-        setIds((prev) =>
-          exists ? [...prev, cardId] : prev.filter((id) => id !== cardId)
-        );
+        // Rollback optimistic update
+        setKeys((prev) => exists ? [...prev, key] : prev.filter((k) => k !== key));
+        setIds((prev) => exists ? [...prev, cardId] : prev.filter((id) => id !== cardId));
 
         throw error;
       }
     },
-    [tradeKeys, wishlistKeys, tradeCardIds, wishlistCardIds, loadFlags]
+    [tradeKeys, wishlistKeys, loadFlags]
   );
+
+  // ===============================
+  // CREATE TRADE LISTING
+  // ===============================
 
   const createTradeListing = useCallback(
     async (input: TradeListingInput) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('You must be signed in.');
 
       const resolvedSetId = input.setId ?? getSetIdFromCardId(input.cardId);
-      const key = makeFlagKey(input.cardId, resolvedSetId);
 
       const { error } = await supabase.from('user_card_flags').upsert(
         {
@@ -540,29 +553,15 @@ const markTradeReceived = useCallback(
 
       if (error) throw error;
 
-      setTradeKeys((prev) => (prev.includes(key) ? prev : [...prev, key]));
-      setTradeCardIds((prev) =>
-        prev.includes(input.cardId) ? prev : [...prev, input.cardId]
-      );
-
-      setTradeMeta((prev) => ({
-        ...prev,
-        [key]: {
-          condition: input.condition,
-          askingPrice: input.askingPrice ?? null,
-          marketEstimate: input.marketEstimate ?? null,
-          tradeOnly: input.tradeOnly,
-          hasDamage: input.hasDamage,
-          damageNotes: input.damageNotes ?? null,
-          damageImageUrl: input.damageImageUrl ?? null,
-          listingNotes: input.listingNotes ?? null,
-        },
-      }));
-
+      // refreshTrade handles all state updates — no need to manually set state
       await refreshTrade();
     },
     [refreshTrade]
   );
+
+  // ===============================
+  // TOGGLE HELPERS
+  // ===============================
 
   const toggleTradeCard = useCallback(
     async (cardId: string, setId?: string | null) => {
@@ -580,21 +579,19 @@ const markTradeReceived = useCallback(
     [toggleFlag, refreshTrade]
   );
 
-  const updateTradeMeta = useCallback(
-    async (
-      cardId: string,
-      data: Partial<TradeMeta>,
-      setId?: string | null
-    ) => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  // ===============================
+  // UPDATE TRADE META
+  // ===============================
 
+  const updateTradeMeta = useCallback(
+    async (cardId: string, data: Partial<TradeMeta>, setId?: string | null) => {
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('You must be signed in.');
 
       const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
       const key = makeFlagKey(cardId, resolvedSetId);
 
+      // Optimistic local update — only merge changed fields
       setTradeMeta((prev) => ({
         ...prev,
         [key]: {
@@ -603,52 +600,54 @@ const markTradeReceived = useCallback(
         },
       }));
 
-      let query = supabase
-        .from('user_card_flags')
-        .update({
-          condition: data.condition ?? null,
-          notes: data.notes ?? null,
-          value: data.value ?? null,
+      // Build update object — only include fields that were actually passed
+      // This prevents overwriting existing DB values with null
+      const updateFields: Record<string, any> = {
+        updated_at: new Date().toISOString(),
+      };
 
-          asking_price:
-            data.askingPrice !== undefined
-              ? data.askingPrice
-              : data.value
-              ? Number(data.value)
-              : null,
-
-          market_estimate:
-            data.marketEstimate !== undefined ? data.marketEstimate : null,
-
-          trade_only: data.tradeOnly !== undefined ? data.tradeOnly : false,
-
-          has_damage: data.hasDamage !== undefined ? data.hasDamage : false,
-
-          damage_notes: data.damageNotes ?? null,
-
-          damage_image_url: data.damageImageUrl ?? null,
-
-          listing_notes: data.listingNotes ?? data.notes ?? null,
-
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id)
-        .eq('card_id', cardId)
-        .eq('flag_type', 'trade');
-
-      if (resolvedSetId) {
-        query = query.eq('set_id', resolvedSetId);
+      if (data.condition !== undefined) updateFields.condition = data.condition;
+      if (data.notes !== undefined) updateFields.notes = data.notes;
+      if (data.value !== undefined) {
+        updateFields.value = data.value;
+        updateFields.asking_price = data.value ? Number(data.value) : null;
       }
+      if (data.askingPrice !== undefined) updateFields.asking_price = data.askingPrice;
+      if (data.marketEstimate !== undefined) updateFields.market_estimate = data.marketEstimate;
+      if (data.tradeOnly !== undefined) updateFields.trade_only = data.tradeOnly;
+      if (data.hasDamage !== undefined) updateFields.has_damage = data.hasDamage;
+      if (data.damageNotes !== undefined) updateFields.damage_notes = data.damageNotes;
+      if (data.damageImageUrl !== undefined) updateFields.damage_image_url = data.damageImageUrl;
+      if (data.listingNotes !== undefined) updateFields.listing_notes = data.listingNotes;
 
-      const { error } = await query;
+      // Upsert so it works even if the flag row doesn't exist yet
+      const { error } = await supabase
+        .from('user_card_flags')
+        .upsert(
+          {
+            user_id: user.id,
+            card_id: cardId,
+            set_id: resolvedSetId,
+            flag_type: 'trade',
+            ...updateFields,
+          },
+          {
+            onConflict: 'user_id,card_id,flag_type',
+          }
+        );
 
       if (error) {
+        // Rollback local state on failure
         await loadFlags();
         throw error;
       }
     },
     [loadFlags]
   );
+
+  // ===============================
+  // CONTEXT VALUE
+  // ===============================
 
   const value = useMemo(
     () => ({
@@ -657,7 +656,6 @@ const markTradeReceived = useCallback(
       tradeKeys,
       wishlistKeys,
       tradeMeta,
-
       marketplaceListings,
       myListings,
       tradeLoading,
@@ -670,21 +668,20 @@ const markTradeReceived = useCallback(
       markTradeSent,
       markTradeReceived,
 
-      isForTrade: (cardId: string, setId?: string | null) => {
+      isForTrade: (cardId: string, setId?: string | null): boolean => {
         const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
         const key = makeFlagKey(cardId, resolvedSetId);
-
-        return tradeKeys.includes(key) || tradeCardIds.includes(cardId);
+        // Key-based check only — avoids false positives across different sets
+        return tradeKeys.includes(key);
       },
 
-      isWanted: (cardId: string, setId?: string | null) => {
+      isWanted: (cardId: string, setId?: string | null): boolean => {
         const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
         const key = makeFlagKey(cardId, resolvedSetId);
-
-        return wishlistKeys.includes(key) || wishlistCardIds.includes(cardId);
+        return wishlistKeys.includes(key);
       },
 
-      getMeta: (cardId: string, setId?: string | null) => {
+      getMeta: (cardId: string, setId?: string | null): TradeMeta => {
         const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
         const key = makeFlagKey(cardId, resolvedSetId);
         return tradeMeta[key] || {};
@@ -692,7 +689,6 @@ const markTradeReceived = useCallback(
 
       refreshTrade,
       archiveListing,
-
       createTradeReview,
       getTraderRating,
       getTraderReviews,
@@ -711,18 +707,26 @@ const markTradeReceived = useCallback(
       createTradeListing,
       toggleWishlistCard,
       updateTradeMeta,
+      markTradeSent,
+      markTradeReceived,
       refreshTrade,
       archiveListing,
       createTradeReview,
       getTraderRating,
       getTraderReviews,
-      markTradeSent,
-      markTradeReceived,
     ]
   );
 
-  return <TradeContext.Provider value={value}>{children}</TradeContext.Provider>;
+  return (
+    <TradeContext.Provider value={value}>
+      {children}
+    </TradeContext.Provider>
+  );
 }
+
+// ===============================
+// HOOK
+// ===============================
 
 export function useTrade() {
   const ctx = useContext(TradeContext);

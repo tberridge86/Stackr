@@ -1,19 +1,16 @@
-import { uploadCardScan } from '../../lib/storage';
 import { theme } from '../../lib/theme';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   TouchableOpacity,
-  FlatList,
   ActivityIndicator,
   RefreshControl,
   Pressable,
   Alert,
   Image,
   Dimensions,
-  Switch,
+  FlatList,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -24,7 +21,17 @@ import {
   BinderRecord,
 } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
-import DraggableFlatList from 'react-native-draggable-flatlist';
+import { LinearGradient } from 'expo-linear-gradient';
+import { getBinderCover } from '../../lib/binderCovers';
+import DraggableFlatList, {
+  ScaleDecorator,
+  ShadowDecorator,
+  OpacityDecorator,
+} from 'react-native-draggable-flatlist';
+
+// ===============================
+// TYPES
+// ===============================
 
 type BinderCardCountMap = Record<string, { owned: number; total: number }>;
 
@@ -36,6 +43,10 @@ type SortKey =
   | 'ownedHigh'
   | 'ownedLow';
 
+// ===============================
+// CONSTANTS
+// ===============================
+
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'recent', label: 'Recent' },
   { key: 'alphabetical', label: 'A-Z' },
@@ -45,290 +56,221 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'ownedLow', label: 'Fewest cards' },
 ];
 
+const screenWidth = Dimensions.get('window').width;
+const COLUMNS = 3;
+const PADDING = 16;
+const GAP = 10;
+const binderCardWidth = (screenWidth - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
+
 const cardShadow = {
   shadowColor: '#000',
-  shadowOpacity: 0.05,
-  shadowRadius: 10,
+  shadowOpacity: 0.25,
+  shadowRadius: 8,
   shadowOffset: { width: 0, height: 4 },
-  elevation: 3,
-};
-const screenWidth = Dimensions.get('window').width;
-const gridGap = 12;
-const binderCardWidth = (screenWidth - 16 * 2 - gridGap * 2) / 3;
-
-const formatCurrency = (value?: number | null) => {
-  if (value === null || value === undefined) return '—';
-  return `£${Number(value).toFixed(2)}`;
+  elevation: 6,
 };
 
 const BINDER_LOGO_OVERRIDES: Record<string, string> = {
   me3: 'https://images.pokemontcg.io/por/logo.png',
-  };
+};
 
-const getBinderLogoUrl = (item: BinderRecord) => {
+// ===============================
+// HELPERS
+// ===============================
+
+const formatCurrency = (value?: number | null): string => {
+  if (value === null || value === undefined) return '—';
+  return `£${Number(value).toFixed(2)}`;
+};
+
+const getBinderLogoUrl = (item: BinderRecord): string | null => {
   if (!item.source_set_id) return null;
-
   if (BINDER_LOGO_OVERRIDES[item.source_set_id]) {
     return BINDER_LOGO_OVERRIDES[item.source_set_id];
   }
-
   return `https://images.pokemontcg.io/${item.source_set_id}/logo.png`;
 };
+
+const isDark = (color?: string): boolean => {
+  if (!color || !color.startsWith('#')) return false;
+  const c = color.replace('#', '');
+  const rgb = parseInt(c, 16);
+  if (isNaN(rgb)) return false;
+  const r = (rgb >> 16) & 0xff;
+  const g = (rgb >> 8) & 0xff;
+  const b = rgb & 0xff;
+  return (r * 299 + g * 587 + b * 114) / 1000 < 140;
+};
+
+// ===============================
+// BINDER CARD COMPONENT
+// ===============================
 
 type BinderCardProps = {
   item: BinderRecord;
   counts: BinderCardCountMap;
   confirmDeleteBinder: (binder: BinderRecord) => void;
-  drag?: () => void;
+  index: number;
 };
 
-function BinderCard({ item, counts, confirmDeleteBinder, drag }: BinderCardProps) {
-  const [isPublic, setIsPublic] = useState(Boolean(item.is_public));
-  const [updating, setUpdating] = useState(false);
+function BinderCard({ item, counts, confirmDeleteBinder, index }: BinderCardProps) {
   const [logoFailed, setLogoFailed] = useState(false);
 
-  const togglePublic = async () => {
-    try {
-      if (updating) return;
-
-      setUpdating(true);
-
-      const newValue = !isPublic;
-      setIsPublic(newValue);
-
-      const { error } = await supabase
-        .from('binders')
-        .update({ is_public: newValue })
-        .eq('id', item.id);
-
-      if (error) throw error;
-    } catch (err) {
-      console.log('Toggle public error:', err);
-      setIsPublic((prev) => !prev);
-      Alert.alert('Could not update binder', 'Please try again.');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
   const progress = counts[item.id] ?? { owned: 0, total: 0 };
-
   const percentage = progress.total
     ? Math.round((progress.owned / progress.total) * 100)
     : 0;
 
-  const mainValue =
-    item.ebay_value ?? item.tcg_value ?? item.cardmarket_value ?? null;
+  const cover = getBinderCover(item.cover_key);
 
-      return (
+  const hasGradient = Array.isArray(item.gradient) && item.gradient.length >= 2;
+  const backgroundColors = hasGradient
+    ? (item.gradient as [string, string])
+    : [item.color || theme.colors.card, item.color || theme.colors.card];
+
+  // Column-based rotation
+  const col = index % COLUMNS;
+  const rotation = col === 0 ? '0deg' : col === 2 ? '0deg' : '0deg';
+
+  const handleOptions = () => {
+    Alert.alert('Binder options', item.name, [
+      {
+        text: 'Edit binder',
+        onPress: () => router.push({ pathname: '/binder/new', params: { id: item.id } }),
+      },
+      {
+        text: 'Delete binder',
+        style: 'destructive',
+        onPress: () => confirmDeleteBinder(item),
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
+  return (
     <TouchableOpacity
-  onPress={() =>
-    router.push({
-      pathname: '/binder/[id]',
-      params: { id: item.id },
-    })
-  }
-  onLongPress={drag}
-  delayLongPress={200}
+      onPress={() => router.push({ pathname: '/binder/[id]', params: { id: item.id } })}
+      onLongPress={handleOptions}
+      delayLongPress={400}
+      activeOpacity={0.85}
       style={{
         width: binderCardWidth,
-        aspectRatio: 1.5,
-        borderRadius: 18,
-        overflow: 'hidden',
-        marginBottom: 14,
-        backgroundColor: theme.colors.card,
-        borderWidth: 2,
-        borderColor: item.color || theme.colors.primary,
-        ...cardShadow,
+        marginBottom: 24,
+        transform: [{ rotate: rotation }],
       }}
     >
-      <View
-        style={{
-          height: 10,
-          backgroundColor: item.color || theme.colors.primary,
-        }}
-      />
+      {/* Binder image */}
+      <View style={{
+        width: binderCardWidth,
+        height: binderCardWidth * 1.4,
+        borderRadius: 6,
+        overflow: 'hidden',
+        ...cardShadow,
+      }}>
+        {cover ? (
+          <Image
+            source={cover.image}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        ) : (
+          <LinearGradient
+            colors={backgroundColors as [string, string]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 8 }}
+          >
+            {item.source_set_id && !logoFailed ? (
+              <Image
+                source={{ uri: getBinderLogoUrl(item) ?? '' }}
+                onError={() => setLogoFailed(true)}
+                style={{ width: '90%', height: 32 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text numberOfLines={3} style={{
+                color: isDark(item.color) ? '#FFFFFF' : theme.colors.text,
+                fontSize: 12,
+                fontWeight: '900',
+                textAlign: 'center',
+              }}>
+                {item.name}
+              </Text>
+            )}
+          </LinearGradient>
+        )}
 
-      <View
-        style={{
-          flex: 1,
-          padding: 8,
-          position: 'relative',
-        }}
-      >
-        <View
+        {/* Options button */}
+        <Pressable
+          onPress={handleOptions}
           style={{
             position: 'absolute',
-            top: 6,
-            right: 6,
-            flexDirection: 'row',
-            alignItems: 'center',
-            zIndex: 10,
+            top: 5, right: 5,
+            width: 22, height: 22,
+            borderRadius: 11,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            alignItems: 'center', justifyContent: 'center',
           }}
         >
-          <Text style={{ fontSize: 12, marginRight: 3, opacity: 0.75 }}>
-            {isPublic ? '🌍' : '🔒'}
-          </Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900', lineHeight: 12 }}>⋯</Text>
+        </Pressable>
 
-          <Switch
-            value={isPublic}
-            onValueChange={togglePublic}
-            disabled={updating}
-            style={{
-              transform: [{ scaleX: 0.62 }, { scaleY: 0.62 }],
-            }}
-          />
+        {/* Progress bar */}
+        <View style={{
+          position: 'absolute',
+          bottom: 0, left: 0, right: 0,
+          height: 3,
+          backgroundColor: 'rgba(0,0,0,0.3)',
+        }}>
+          <View style={{
+            width: progress.total ? `${(progress.owned / progress.total) * 100}%` : '0%',
+            height: '100%',
+            backgroundColor: cover ? cover.accentColor : '#FFFFFF',
+          }} />
         </View>
+      </View>
 
-        <View
-          style={{
-            alignSelf: 'flex-start',
-            backgroundColor: theme.colors.surface,
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderRadius: 999,
-            marginBottom: 10,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.textSoft,
-              fontSize: 9,
-              fontWeight: '900',
-              letterSpacing: 0.5,
-            }}
-          >
-            {item.type === 'official' ? 'OFFICIAL' : 'CUSTOM'}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: 4,
-          }}
-        >
-          
-          {item.source_set_id && !logoFailed ? (
-  <Image
-  source={{
-    uri: getBinderLogoUrl(item) || 'https://via.placeholder.com/80x40',
-  }}
-  onError={() => setLogoFailed(true)}
-  style={{
-    width: '80%',
-    height: 40,
-    resizeMode: 'contain',
-    marginBottom: 6,
-  }}
-/>
-) : (
-  <Text
-    numberOfLines={2}
-    style={{
-      color: theme.colors.text,
-      fontSize: 22,
-      fontWeight: '800',
-      textAlign: 'center',
-    }}
-  >
-    {item.name}
-  </Text>
-)}
-          <Text
-            style={{
-              color: theme.colors.textSoft,
-              marginTop: 8,
-              fontSize: 12,
-              fontWeight: '700',
-            }}
-          >
-            {progress.owned} / {progress.total} owned
-          </Text>
-
-          <Text
-            style={{
-              color: theme.colors.text,
-              marginTop: 4,
-              fontSize: 14,
-              fontWeight: '900',
-            }}
-          >
-            {percentage}%
-          </Text>
-        </View>
-
-        <View
-          style={{
-            backgroundColor: theme.colors.surface,
-            borderRadius: 12,
-            padding: 8,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-          }}
-        >
-          <Text
-            style={{
-              color: theme.colors.textSoft,
-              fontSize: 9,
-              fontWeight: '900',
-              textAlign: 'center',
-              marginBottom: 2,
-            }}
-          >
-            EST. VALUE
-          </Text>
-
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 15,
-              fontWeight: '900',
-              textAlign: 'center',
-            }}
-          >
-            {formatCurrency(mainValue)}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            height: 7,
-            borderRadius: 999,
-            backgroundColor: theme.colors.surface,
-            overflow: 'hidden',
-            marginTop: 10,
-          }}
-        >
-          <View
-            style={{
-              width: progress.total
-                ? `${(progress.owned / progress.total) * 100}%`
-                : '0%',
-              height: '100%',
-              backgroundColor: item.color || theme.colors.primary,
-              borderRadius: 999,
-            }}
-          />
-        </View>
-
-       </View>
+      {/* Name + stats */}
+      <View style={{ marginTop: 6, paddingHorizontal: 2 }}>
+        <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 11, fontWeight: '900' }}>
+          {item.name}
+        </Text>
+        <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }}>
+          {progress.owned}/{progress.total} · {percentage}%
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 }
+
+// ===============================
+// MAIN COMPONENT
+// ===============================
 
 export default function BinderLibraryScreen() {
   const [binders, setBinders] = useState<BinderRecord[]>([]);
   const [counts, setCounts] = useState<BinderCardCountMap>({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>('recent');
-  const [scanning, setScanning] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
+  const [reorderMode, setReorderMode] = useState(false);
 
-  const load = async () => {
+  // ===============================
+  // SCAN (scaffolded — coming soon)
+  // ===============================
+
+  const handleScanCard = async () => {
+    Alert.alert(
+      'Coming soon',
+      'Card scanning is built into the app architecture and will be available soon.'
+    );
+  };
+
+  // ===============================
+  // LOAD
+  // ===============================
+
+  const load = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -338,8 +280,7 @@ export default function BinderLibraryScreen() {
       const entries = await Promise.all(
         data.map(async (binder) => {
           const cards = await fetchBinderCards(binder.id);
-          const owned = cards.filter((card) => card.owned).length;
-
+          const owned = cards.filter((c) => c.owned).length;
           return [binder.id, { owned, total: cards.length }] as const;
         })
       );
@@ -350,157 +291,19 @@ export default function BinderLibraryScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [])
+    }, [load])
   );
 
-  const scanCardWithAI = async (imageUrl: string) => {
-    try {
-      const baseUrl = process.env.EXPO_PUBLIC_PRICE_API_URL;
+  // ===============================
+  // DELETE BINDER
+  // ===============================
 
-      if (!baseUrl) {
-        throw new Error('Missing EXPO_PUBLIC_PRICE_API_URL');
-      }
-
-      const res = await fetch(`${baseUrl.replace(/\/$/, '')}/api/scan/tcg`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ imageUrl }),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text);
-      }
-
-      return await res.json();
-    } catch (error) {
-      console.log('AI scan failed', error);
-      throw error;
-    }
-  };
-
-  const handleScanCard = async () => {
-    Alert.alert(
-      'Coming soon',
-      'Card scanning is built into the app architecture, but this feature is coming soon.'
-    );
-
-    return;
-
-    try {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-
-      if (!permission.granted) {
-        Alert.alert('Camera permission needed', 'Please allow camera access.');
-        return;
-      }
-
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: false,
-        quality: 0.8,
-      });
-
-      if (result.canceled || !result.assets?.[0]?.uri) return;
-
-      setScanning(true);
-
-      const imageUrl = await uploadCardScan(result.assets[0].uri);
-
-      console.log('Uploaded image URL:', imageUrl);
-
-      const scanResult = await scanCardWithAI(imageUrl);
-
-      console.log('Scan result:', scanResult);
-
-      const card = scanResult?.records?.[0]?._objects?.[0];
-
-      if (!card) {
-        Alert.alert('Scan failed', 'No card detected');
-        return;
-      }
-
-      Alert.alert('Card detected', `${card.name} (${card.set})`);
-    } catch (error: any) {
-      console.log('Scan failed FULL ERROR:', error);
-
-      Alert.alert('Scan failed', error?.message ?? 'Could not scan this card.');
-    } finally {
-      setScanning(false);
-    }
-  };
-
-  const sortedBinders = useMemo(() => {
-    const list = [...binders];
-
-    const getProgress = (binderId: string) => {
-      const progress = counts[binderId] ?? { owned: 0, total: 0 };
-      return progress.total ? progress.owned / progress.total : 0;
-    };
-
-    const getOwned = (binderId: string) => counts[binderId]?.owned ?? 0;
-
-    if (sortBy === 'alphabetical') {
-      list.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    if (sortBy === 'completionHigh') {
-      list.sort((a, b) => getProgress(b.id) - getProgress(a.id));
-    }
-
-    if (sortBy === 'completionLow') {
-      list.sort((a, b) => getProgress(a.id) - getProgress(b.id));
-    }
-
-    if (sortBy === 'ownedHigh') {
-      list.sort((a, b) => getOwned(b.id) - getOwned(a.id));
-    }
-
-    if (sortBy === 'ownedLow') {
-      list.sort((a, b) => getOwned(a.id) - getOwned(b.id));
-    }
-
-    return list;
-  }, [binders, counts, sortBy]);
-
-  const renderSortButton = (option: { key: SortKey; label: string }) => {
-    const active = sortBy === option.key;
-
-    return (
-      <Pressable
-        key={option.key}
-        onPress={() => setSortBy(option.key)}
-        style={{
-          backgroundColor: active ? theme.colors.secondary : theme.colors.card,
-          borderRadius: 999,
-          paddingHorizontal: 12,
-          paddingVertical: 8,
-          borderWidth: 1,
-          borderColor: active ? theme.colors.secondary : theme.colors.border,
-          marginRight: 8,
-          marginBottom: 8,
-        }}
-      >
-        <Text
-          style={{
-            color: active ? theme.colors.text : theme.colors.textSoft,
-            fontSize: 12,
-            fontWeight: '900',
-          }}
-        >
-          {option.label}
-        </Text>
-      </Pressable>
-    );
-  };
-
-  const confirmDeleteBinder = (binder: BinderRecord) => {
+  const confirmDeleteBinder = useCallback((binder: BinderRecord) => {
     Alert.alert(
       'Delete binder?',
       `Are you sure you want to delete "${binder.name}"? This cannot be undone.`,
@@ -512,11 +315,7 @@ export default function BinderLibraryScreen() {
           onPress: async () => {
             try {
               await deleteBinder(binder.id);
-
-              setBinders((prev) =>
-                prev.filter((item) => item.id !== binder.id)
-              );
-
+              setBinders((prev) => prev.filter((item) => item.id !== binder.id));
               setCounts((prev) => {
                 const next = { ...prev };
                 delete next[binder.id];
@@ -530,157 +329,324 @@ export default function BinderLibraryScreen() {
         },
       ]
     );
-  };
+  }, []);
 
-  const renderBinder = ({ item, drag }: any) => (
-  <BinderCard
-    item={item}
-    counts={counts}
-    confirmDeleteBinder={confirmDeleteBinder}
-    drag={drag}
-  />
-);
+  // ===============================
+  // SORT
+  // ===============================
+
+  const sortedBinders = useMemo(() => {
+    const list = [...binders];
+
+    const getProgress = (id: string) => {
+      const p = counts[id] ?? { owned: 0, total: 0 };
+      return p.total ? p.owned / p.total : 0;
+    };
+
+    const getOwned = (id: string) => counts[id]?.owned ?? 0;
+
+    switch (sortBy) {
+      case 'alphabetical':
+        list.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'completionHigh':
+        list.sort((a, b) => getProgress(b.id) - getProgress(a.id));
+        break;
+      case 'completionLow':
+        list.sort((a, b) => getProgress(a.id) - getProgress(b.id));
+        break;
+      case 'ownedHigh':
+        list.sort((a, b) => getOwned(b.id) - getOwned(a.id));
+        break;
+      case 'ownedLow':
+        list.sort((a, b) => getOwned(a.id) - getOwned(b.id));
+        break;
+    }
+
+    return list;
+  }, [binders, counts, sortBy]);
+
+  const currentSortLabel = SORT_OPTIONS.find((o) => o.key === sortBy)?.label ?? 'Recent';
+
+  // ===============================
+  // MAIN RENDER
+  // ===============================
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: theme.colors.bg }}
-      edges={['top']}
-    >
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 16,
-          }}
-        >
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top']}>
+      <View style={{ flex: 1, paddingHorizontal: PADDING, paddingTop: 8 }}>
+
+        {/* Header */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text
-              style={{
-                color: theme.colors.text,
-                fontSize: 28,
-                fontWeight: '900',
-              }}
-            >
+            <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '900' }}>
               Binder
             </Text>
-
-            <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
-              Your shelf of official sets and custom collections
+            <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 13 }}>
+              {binders.length} binder{binders.length !== 1 ? 's' : ''} in your collection
             </Text>
           </View>
 
-          <TouchableOpacity
-            onPress={() => router.push('/binder/new')}
-            style={{
-              backgroundColor: theme.colors.primary,
-              paddingHorizontal: 14,
-              paddingVertical: 10,
-              borderRadius: 12,
-            }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>
-              New Binder
-            </Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {/* Reorder toggle */}
+            <TouchableOpacity
+              onPress={() => setReorderMode((prev) => !prev)}
+              style={{
+                backgroundColor: reorderMode ? theme.colors.secondary : theme.colors.card,
+                paddingHorizontal: 12, paddingVertical: 10,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: reorderMode ? theme.colors.secondary : theme.colors.border,
+              }}
+            >
+              <Text style={{
+                color: reorderMode ? theme.colors.text : theme.colors.textSoft,
+                fontWeight: '900',
+                fontSize: 13,
+              }}>
+                {reorderMode ? '✓ Done' : '⇅'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* New binder */}
+            <TouchableOpacity
+              onPress={() => router.push('/binder/new')}
+              style={{
+                backgroundColor: theme.colors.primary,
+                paddingHorizontal: 14, paddingVertical: 10,
+                borderRadius: 12,
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>+ New</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <TouchableOpacity
-          onPress={handleScanCard}
-          disabled={scanning}
-          style={{
-            backgroundColor: theme.colors.secondary,
+        {/* Action row — only show when not in reorder mode */}
+        {!reorderMode && (
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+            <TouchableOpacity
+              onPress={handleScanCard}
+              style={{
+                flex: 1,
+                backgroundColor: theme.colors.secondary,
+                borderRadius: 12,
+                paddingVertical: 11,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+                📷 Scan Card
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setSortOpen((prev) => !prev)}
+              style={{
+                flex: 1,
+                backgroundColor: theme.colors.card,
+                borderRadius: 12,
+                paddingVertical: 11,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                gap: 6,
+              }}
+            >
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+                ↕ {currentSortLabel}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Sort dropdown */}
+        {sortOpen && !reorderMode && (
+          <View style={{
+            backgroundColor: theme.colors.card,
             borderRadius: 14,
-            paddingVertical: 13,
-            alignItems: 'center',
-            marginBottom: 14,
-            opacity: scanning ? 0.6 : 1,
-          }}
-        >
-          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-            {scanning ? 'Scanning...' : 'Scan Card'}
-          </Text>
-        </TouchableOpacity>
-
-        <View style={{ marginBottom: 10 }}>
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 16,
-              fontWeight: '900',
-              marginBottom: 10,
-            }}
-          >
-            Sort binders
-          </Text>
-
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-            {SORT_OPTIONS.map(renderSortButton)}
-          </View>
-        </View>
-
-        {loading ? (
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            <ActivityIndicator color={theme.colors.primary} size="large" />
-          </View>
-        ) : (
-          <DraggableFlatList
-  data={sortedBinders}
-  keyExtractor={(item) => item.id}
-  renderItem={renderBinder}
-  numColumns={3}
-  onDragEnd={async ({ data }) => {
-    setBinders(data);
-
-    await Promise.all(
-      data.map((binder, index) =>
-        supabase
-          .from('binders')
-          .update({ sort_order: index })
-          .eq('id', binder.id)
-      )
-    );
-  }}
-  activationDistance={12}
-  columnWrapperStyle={{
-    justifyContent: 'space-between',
-  }}
-  refreshControl={
-    <RefreshControl
-      refreshing={loading}
-      onRefresh={load}
-      tintColor={theme.colors.primary}
-    />
-  }
-  contentContainerStyle={{
-    paddingBottom: 120,
-    flexGrow: sortedBinders.length === 0 ? 1 : 0,
-  }}
-            ListEmptyComponent={
-              <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
-                <Text
-                  style={{
-                    color: theme.colors.text,
-                    textAlign: 'center',
-                    fontSize: 16,
-                    fontWeight: '900',
-                  }}
-                >
-                  No binders yet.
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            marginBottom: 12,
+            overflow: 'hidden',
+          }}>
+            {SORT_OPTIONS.map((option) => (
+              <TouchableOpacity
+                key={option.key}
+                onPress={() => { setSortBy(option.key); setSortOpen(false); }}
+                style={{
+                  paddingVertical: 12,
+                  paddingHorizontal: 14,
+                  backgroundColor: sortBy === option.key ? theme.colors.secondary : theme.colors.card,
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.colors.border,
+                }}
+              >
+                <Text style={{
+                  color: sortBy === option.key ? theme.colors.text : theme.colors.textSoft,
+                  fontWeight: sortBy === option.key ? '900' : '700',
+                }}>
+                  {option.label}
                 </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
-                <Text
-                  style={{
-                    color: theme.colors.textSoft,
-                    textAlign: 'center',
-                    fontSize: 13,
-                    marginTop: 8,
-                    lineHeight: 20,
-                  }}
-                >
+        {/* Loading */}
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator color={theme.colors.primary} size="large" />
+            <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
+              Loading binders...
+            </Text>
+          </View>
+
+        ) : reorderMode ? (
+          // ===============================
+          // REORDER MODE — single column draggable list
+          // ===============================
+          <>
+            <Text style={{
+              color: theme.colors.textSoft,
+              fontSize: 12,
+              textAlign: 'center',
+              marginBottom: 12,
+            }}>
+              Hold and drag to reorder your binders
+            </Text>
+
+            <DraggableFlatList
+              data={sortedBinders}
+              keyExtractor={(item) => item.id}
+              onDragEnd={async ({ data }) => {
+                setBinders(data);
+                await Promise.all(
+                  data.map((binder, index) =>
+                    supabase
+                      .from('binders')
+                      .update({ sort_order: index })
+                      .eq('id', binder.id)
+                  )
+                );
+              }}
+              activationDistance={10}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              renderItem={({ item, drag, isActive }) => (
+                <ScaleDecorator>
+                  <ShadowDecorator>
+                    <OpacityDecorator activeOpacity={0.75}>
+                      <TouchableOpacity
+                        onLongPress={drag}
+                        delayLongPress={200}
+                        activeOpacity={0.8}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: isActive ? theme.colors.secondary : theme.colors.card,
+                          borderRadius: 14,
+                          padding: 12,
+                          marginBottom: 10,
+                          borderWidth: 1,
+                          borderColor: isActive ? theme.colors.secondary : theme.colors.border,
+                          gap: 12,
+                        }}
+                      >
+                        {/* Cover thumbnail */}
+                        {getBinderCover(item.cover_key) ? (
+                          <Image
+                            source={getBinderCover(item.cover_key)!.image}
+                            style={{ width: 44, height: 60, borderRadius: 6 }}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View style={{
+                            width: 44, height: 60,
+                            borderRadius: 6,
+                            backgroundColor: item.color || theme.colors.primary,
+                            alignItems: 'center', justifyContent: 'center',
+                            overflow: 'hidden',
+                          }}>
+                            <Text style={{
+                              color: '#FFFFFF',
+                              fontSize: 8,
+                              fontWeight: '900',
+                              textAlign: 'center',
+                              padding: 2,
+                            }} numberOfLines={3}>
+                              {item.name}
+                            </Text>
+                          </View>
+                        )}
+
+                        {/* Binder info */}
+                        <View style={{ flex: 1 }}>
+                          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>
+                            {item.name}
+                          </Text>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>
+                            {counts[item.id]?.owned ?? 0} / {counts[item.id]?.total ?? 0} owned
+                          </Text>
+                        </View>
+
+                        {/* Drag handle */}
+                        <Text style={{ color: theme.colors.textSoft, fontSize: 20 }}>☰</Text>
+                      </TouchableOpacity>
+                    </OpacityDecorator>
+                  </ShadowDecorator>
+                </ScaleDecorator>
+              )}
+            />
+          </>
+
+        ) : (
+          // ===============================
+          // NORMAL MODE — 3 column grid
+          // ===============================
+          <FlatList
+            data={sortedBinders}
+            keyExtractor={(item) => item.id}
+            numColumns={COLUMNS}
+            columnWrapperStyle={{ gap: GAP }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120, paddingTop: 8 }}
+            refreshControl={
+              <RefreshControl
+                refreshing={loading}
+                onRefresh={load}
+                tintColor={theme.colors.primary}
+              />
+            }
+            renderItem={({ item, index }) => (
+              <BinderCard
+                item={item}
+                counts={counts}
+                confirmDeleteBinder={confirmDeleteBinder}
+                index={index}
+              />
+            )}
+            ListEmptyComponent={
+              <View style={{ alignItems: 'center', paddingTop: 60, paddingHorizontal: 20 }}>
+                <Text style={{ fontSize: 48, marginBottom: 16 }}>📚</Text>
+                <Text style={{ color: theme.colors.text, textAlign: 'center', fontSize: 18, fontWeight: '900', marginBottom: 8 }}>
+                  No binders yet
+                </Text>
+                <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontSize: 13, lineHeight: 20, marginBottom: 20 }}>
                   Create your first official set binder or a themed custom one.
                 </Text>
+                <TouchableOpacity
+                  onPress={() => router.push('/binder/new')}
+                  style={{
+                    backgroundColor: theme.colors.primary,
+                    borderRadius: 14,
+                    paddingVertical: 12,
+                    paddingHorizontal: 24,
+                  }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Create Binder</Text>
+                </TouchableOpacity>
               </View>
             }
           />

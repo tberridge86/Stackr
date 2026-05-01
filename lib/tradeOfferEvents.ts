@@ -1,6 +1,21 @@
 import { supabase } from './supabase';
 
-export const fetchOfferEvents = async (offerId: string) => {
+// All events read from trade_offer_events
+// Status changes also write there via logTradeEvent in tradeOffers.ts
+
+export type TradeOfferEvent = {
+  id: string;
+  offer_id: string;
+  user_id: string | null;
+  event_type: string;
+  note: string | null;
+  proposed_cash_amount: number | null;
+  created_at: string;
+};
+
+export async function fetchOfferEvents(
+  offerId: string
+): Promise<TradeOfferEvent[]> {
   const { data, error } = await supabase
     .from('trade_offer_events')
     .select('*')
@@ -8,17 +23,14 @@ export const fetchOfferEvents = async (offerId: string) => {
     .order('created_at', { ascending: true });
 
   if (error) throw error;
-  return data;
-};
+  return (data ?? []) as TradeOfferEvent[];
+}
 
-export const sendOfferMessage = async (
+export async function sendOfferMessage(
   offerId: string,
   note: string
-) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
   const { error } = await supabase.from('trade_offer_events').insert({
@@ -29,17 +41,14 @@ export const sendOfferMessage = async (
   });
 
   if (error) throw error;
-};
+}
 
-export const sendCounterOffer = async (
+export async function sendCounterOffer(
   offerId: string,
   note: string,
   cash?: number
-) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
   const { error } = await supabase.from('trade_offer_events').insert({
@@ -51,4 +60,4 @@ export const sendCounterOffer = async (
   });
 
   if (error) throw error;
-};
+}

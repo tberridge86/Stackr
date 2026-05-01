@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import { theme } from '../../lib/theme';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   FlatList,
@@ -10,12 +10,33 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { addCardsToBinder } from '../../lib/binders';
 import { searchPokemonCards, PokemonSearchCard } from '../../lib/pokemonTcgSearch';
 
-const QUICK_SEARCHES = ['Psyduck', 'Pikachu', 'Charizard', 'Eevee', 'Snorlax', 'Mew'];
+// ===============================
+// CONSTANTS
+// ===============================
+
+const QUICK_SEARCHES = [
+  'Pikachu', 'Charizard', 'Mewtwo', 'Eevee',
+  'Snorlax', 'Mew', 'Psyduck', 'Gengar',
+];
+
+const cardShadow = {
+  shadowColor: '#000',
+  shadowOpacity: 0.05,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
+};
+
+// ===============================
+// MAIN COMPONENT
+// ===============================
 
 export default function AddCardsToBinderScreen() {
   const params = useLocalSearchParams<{ binderId?: string }>();
@@ -24,72 +45,107 @@ export default function AddCardsToBinderScreen() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<PokemonSearchCard[]>([]);
   const [searching, setSearching] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const selectedCards = useMemo(
-    () => results.filter((card) => selectedIds.includes(card.id)),
-    [results, selectedIds]
-  );
+  // Persists selections across searches
+  const [selectedCards, setSelectedCards] = useState<
+    Record<string, PokemonSearchCard>
+  >({});
 
-  const runSearch = async (override?: string) => {
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const selectedCount = Object.keys(selectedCards).length;
+  const selectedList = Object.values(selectedCards);
+
+  // ===============================
+  // SEARCH
+  // ===============================
+
+  const runSearch = useCallback(async (override?: string) => {
+    const searchTerm = (override ?? query).trim();
+
+    if (!searchTerm) {
+      setResults([]);
+      return;
+    }
+
+    if (override) setQuery(override);
+
     try {
-      const searchTerm = (override ?? query).trim();
-
-      if (!searchTerm) {
-        setResults([]);
-        setSelectedIds([]);
-        return;
-      }
-
-      if (override) {
-        setQuery(override);
-      }
-
       setSearching(true);
       const data = await searchPokemonCards(searchTerm);
       setResults(data);
-      setSelectedIds([]);
     } catch (error: any) {
       Alert.alert('Search error', error?.message ?? 'Could not search cards.');
     } finally {
       setSearching(false);
     }
-  };
+  }, [query]);
 
-  const toggleCard = (cardId: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(cardId)
-        ? prev.filter((id) => id !== cardId)
-        : [...prev, cardId]
-    );
-  };
+  // Debounced search on type
+  const handleQueryChange = useCallback((text: string) => {
+    setQuery(text);
 
-  const selectAllResults = () => {
-    setSelectedIds(results.map((card) => card.id));
-  };
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
 
-  const clearSelection = () => {
-    setSelectedIds([]);
-  };
+    if (text.trim().length < 2) return;
 
-  const save = async () => {
+    searchTimerRef.current = setTimeout(() => {
+      runSearch(text);
+    }, 400);
+  }, [runSearch]);
+
+  // ===============================
+  // SELECTION
+  // ===============================
+
+  const toggleCard = useCallback((card: PokemonSearchCard) => {
+    setSelectedCards((prev) => {
+      const next = { ...prev };
+      if (next[card.id]) {
+        delete next[card.id];
+      } else {
+        next[card.id] = card;
+      }
+      return next;
+    });
+  }, []);
+
+  const selectAllResults = useCallback(() => {
+    setSelectedCards((prev) => {
+      const next = { ...prev };
+      for (const card of results) {
+        next[card.id] = card;
+      }
+      return next;
+    });
+  }, [results]);
+
+  const clearSelection = useCallback(() => {
+    setSelectedCards({});
+  }, []);
+
+  // ===============================
+  // SAVE
+  // ===============================
+
+  const save = useCallback(async () => {
+    if (!binderId) {
+      Alert.alert('Error', 'Missing binder.');
+      return;
+    }
+
+    if (!selectedList.length) {
+      Alert.alert('Nothing selected', 'Choose at least one card.');
+      return;
+    }
+
     try {
-      if (!binderId) {
-        Alert.alert('Error', 'Missing binder.');
-        return;
-      }
-
-      if (!selectedCards.length) {
-        Alert.alert('Nothing selected', 'Choose at least one card.');
-        return;
-      }
-
       setSaving(true);
 
       await addCardsToBinder(
         binderId,
-        selectedCards.map((card) => ({
+        selectedList.map((card) => ({
           cardId: card.id,
           setId: card.set?.id ?? '',
         }))
@@ -104,237 +160,330 @@ export default function AddCardsToBinderScreen() {
     } finally {
       setSaving(false);
     }
-  };
+  }, [binderId, selectedList]);
 
-  const resultLabel =
-    results.length === 1 ? '1 result' : `${results.length} results`;
+  // ===============================
+  // RENDER CARD
+  // ===============================
+
+  const renderCard = useCallback(({ item }: { item: PokemonSearchCard }) => {
+    const selected = Boolean(selectedCards[item.id]);
+
+    return (
+      <TouchableOpacity
+        onPress={() => toggleCard(item)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: selected
+            ? theme.colors.primary + '18'
+            : theme.colors.card,
+          borderRadius: 14,
+          padding: 12,
+          marginBottom: 10,
+          borderWidth: 1,
+          borderColor: selected ? theme.colors.primary : theme.colors.border,
+          ...cardShadow,
+        }}
+        activeOpacity={0.8}
+      >
+        {/* Card image */}
+        {item.images?.small ? (
+          <Image
+            source={{ uri: item.images.small }}
+            style={{ width: 52, height: 72, borderRadius: 8, marginRight: 12 }}
+            resizeMode="contain"
+          />
+        ) : (
+          <View style={{
+            width: 52, height: 72,
+            borderRadius: 8, marginRight: 12,
+            backgroundColor: theme.colors.surface,
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10 }}>No image</Text>
+          </View>
+        )}
+
+        {/* Card info */}
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>
+            {item.name ?? 'Unknown card'}
+          </Text>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 13 }} numberOfLines={1}>
+            {item.set?.name ?? 'Unknown set'}
+            {item.number ? ` • #${item.number}` : ''}
+          </Text>
+          {!!item.rarity && (
+            <Text style={{ color: '#FFD166', marginTop: 4, fontSize: 12, fontWeight: '700' }}>
+              {item.rarity}
+            </Text>
+          )}
+        </View>
+
+        {/* Checkbox */}
+        <View style={{
+          width: 26, height: 26,
+          borderRadius: 999,
+          backgroundColor: selected ? theme.colors.primary : theme.colors.surface,
+          alignItems: 'center', justifyContent: 'center',
+          borderWidth: 2,
+          borderColor: selected ? theme.colors.primary : theme.colors.border,
+          marginLeft: 8,
+        }}>
+          {selected && (
+            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  }, [selectedCards, toggleCard]);
+
+  // ===============================
+  // MAIN RENDER
+  // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0b0b0b' }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top']}>
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
-        <Text style={{ color: 'white', fontSize: 28, fontWeight: '800', marginBottom: 16 }}>
-          Add Cards
-        </Text>
 
-        <View style={{ flexDirection: 'row', marginBottom: 14 }}>
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search Pokémon, card name, set..."
-            placeholderTextColor="#777"
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
             style={{
-              flex: 1,
-              backgroundColor: '#151515',
-              color: 'white',
-              borderRadius: 14,
-              paddingHorizontal: 14,
-              paddingVertical: 14,
-              marginRight: 10,
+              width: 40, height: 40,
+              borderRadius: 12,
+              backgroundColor: theme.colors.card,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
             }}
-            returnKeyType="search"
-            onSubmitEditing={() => runSearch()}
-          />
+          >
+            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
+          </TouchableOpacity>
+
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
+              Add Cards
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+              Search and select cards to add to your binder
+            </Text>
+          </View>
+        </View>
+
+        {/* Search bar */}
+        <View style={{ flexDirection: 'row', marginBottom: 12, gap: 10 }}>
+          <View style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: theme.colors.card,
+            borderRadius: 14,
+            paddingHorizontal: 14,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            gap: 8,
+          }}>
+            <Ionicons name="search" size={16} color={theme.colors.textSoft} />
+            <TextInput
+              value={query}
+              onChangeText={handleQueryChange}
+              placeholder="Search Pokémon, card name, set..."
+              placeholderTextColor={theme.colors.textSoft}
+              style={{
+                flex: 1,
+                color: theme.colors.text,
+                paddingVertical: 14,
+                fontWeight: '600',
+              }}
+              returnKeyType="search"
+              onSubmitEditing={() => runSearch()}
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => { setQuery(''); setResults([]); }}>
+                <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
+              </TouchableOpacity>
+            )}
+          </View>
 
           <TouchableOpacity
             onPress={() => runSearch()}
             style={{
-              backgroundColor: '#2563eb',
+              backgroundColor: theme.colors.primary,
               borderRadius: 14,
               paddingHorizontal: 16,
               justifyContent: 'center',
             }}
           >
-            <Text style={{ color: 'white', fontWeight: '800' }}>Search</Text>
+            <Text style={{ color: '#FFFFFF', fontWeight: '800' }}>Search</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Quick searches */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 12 }}
-          style={{ marginBottom: 6 }}
+          contentContainerStyle={{ gap: 8, paddingBottom: 12 }}
+          style={{ marginBottom: 4 }}
         >
           {QUICK_SEARCHES.map((term) => (
             <TouchableOpacity
               key={term}
               onPress={() => runSearch(term)}
               style={{
-                backgroundColor: '#151515',
+                backgroundColor: theme.colors.card,
                 borderRadius: 999,
-                paddingHorizontal: 12,
+                paddingHorizontal: 14,
                 paddingVertical: 8,
-                marginRight: 8,
                 borderWidth: 1,
-                borderColor: '#262626',
+                borderColor: theme.colors.border,
               }}
             >
-              <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>{term}</Text>
+              <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 12 }}>
+                {term}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        {!!results.length && !searching && (
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 12,
-            }}
-          >
-            <Text style={{ color: '#AAB3D1', fontSize: 13 }}>
-              {resultLabel} · {selectedIds.length} selected
+        {/* Selection controls */}
+        {results.length > 0 && !searching && (
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 10,
+          }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
+              {results.length} result{results.length !== 1 ? 's' : ''}
+              {selectedCount > 0 ? ` · ${selectedCount} selected` : ''}
             </Text>
 
-            <View style={{ flexDirection: 'row' }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
               <TouchableOpacity
                 onPress={selectAllResults}
                 style={{
-                  backgroundColor: '#1f2940',
+                  backgroundColor: theme.colors.card,
                   borderRadius: 10,
-                  paddingHorizontal: 10,
-                  paddingVertical: 8,
-                  marginRight: 8,
+                  paddingHorizontal: 12, paddingVertical: 7,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
                 }}
               >
-                <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>
-                  Select All
+                <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 12 }}>
+                  All
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={clearSelection}
-                style={{
-                  backgroundColor: '#151515',
-                  borderRadius: 10,
-                  paddingHorizontal: 10,
-                  paddingVertical: 8,
-                }}
-              >
-                <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>
-                  Clear
-                </Text>
-              </TouchableOpacity>
+              {selectedCount > 0 && (
+                <TouchableOpacity
+                  onPress={clearSelection}
+                  style={{
+                    backgroundColor: theme.colors.card,
+                    borderRadius: 10,
+                    paddingHorizontal: 12, paddingVertical: 7,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 12 }}>
+                    Clear
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         )}
 
+        {/* Selected across searches summary */}
+        {selectedCount > 0 && (
+          <View style={{
+            backgroundColor: theme.colors.primary + '12',
+            borderRadius: 12,
+            padding: 10,
+            marginBottom: 10,
+            borderWidth: 1,
+            borderColor: theme.colors.primary + '30',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+          }}>
+            <Ionicons name="checkmark-circle" size={16} color={theme.colors.primary} />
+            <Text style={{ color: theme.colors.primary, fontWeight: '700', fontSize: 13, flex: 1 }}>
+              {selectedCount} card{selectedCount !== 1 ? 's' : ''} selected
+              {results.length > 0 ? ' — search more to add more' : ''}
+            </Text>
+            <TouchableOpacity onPress={clearSelection}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Results list */}
         {searching ? (
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            <ActivityIndicator color="#fff" />
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator color={theme.colors.primary} size="large" />
+            <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
+              Searching...
+            </Text>
           </View>
         ) : (
           <FlatList
             data={results}
             keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            renderItem={renderCard}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 100 }}
             ListEmptyComponent={
-              <View style={{ paddingTop: 40 }}>
-                <Text style={{ color: '#AAB3D1', textAlign: 'center' }}>
-                  Search for cards to add to this binder.
+              <View style={{ paddingTop: 40, alignItems: 'center' }}>
+                <Ionicons name="albums-outline" size={42} color={theme.colors.textSoft} />
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginTop: 14 }}>
+                  Search for cards
                 </Text>
-                <Text
-                  style={{
-                    color: '#7f89b0',
-                    textAlign: 'center',
-                    marginTop: 8,
-                    fontSize: 13,
-                  }}
-                >
-                  Tip: search a Pokémon name like Psyduck, then select all.
+                <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
+                  Search a Pokémon name or card set.{'\n'}
+                  Tip: search "Psyduck" then tap All to grab them all.
                 </Text>
               </View>
             }
-            renderItem={({ item }) => {
-              const selected = selectedIds.includes(item.id);
-
-              return (
-                <TouchableOpacity
-                  onPress={() => toggleCard(item.id)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    backgroundColor: selected ? '#1f2940' : '#151515',
-                    borderRadius: 14,
-                    padding: 12,
-                    marginBottom: 10,
-                    borderWidth: 1,
-                    borderColor: selected ? '#3b82f6' : '#262626',
-                  }}
-                >
-                  {item.images?.small ? (
-                    <Image
-                      source={{ uri: item.images.small }}
-                      style={{ width: 50, height: 70, borderRadius: 8, marginRight: 12 }}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View
-                      style={{
-                        width: 50,
-                        height: 70,
-                        borderRadius: 8,
-                        marginRight: 12,
-                        backgroundColor: '#0f0f0f',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{ color: '#777', fontSize: 10 }}>No image</Text>
-                    </View>
-                  )}
-
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: 'white', fontWeight: '800', fontSize: 15 }}>
-                      {item.name ?? 'Unknown card'}
-                    </Text>
-                    <Text style={{ color: '#AAB3D1', marginTop: 4 }}>
-                      {item.set?.name ?? 'Unknown set'}
-                      {item.number ? ` • #${item.number}` : ''}
-                    </Text>
-                    {!!item.rarity && (
-                      <Text style={{ color: '#7f89b0', marginTop: 4, fontSize: 12 }}>
-                        {item.rarity}
-                      </Text>
-                    )}
-                  </View>
-
-                  <View
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 999,
-                      backgroundColor: selected ? '#3b82f6' : '#222',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{ color: 'white', fontWeight: '800' }}>
-                      {selected ? '✓' : ''}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            }}
           />
         )}
 
+        {/* Add button */}
         <TouchableOpacity
           onPress={save}
-          disabled={saving}
+          disabled={saving || selectedCount === 0}
           style={{
             position: 'absolute',
-            left: 16,
-            right: 16,
-            bottom: 24,
-            backgroundColor: '#2563eb',
+            left: 16, right: 16, bottom: 24,
+            backgroundColor: selectedCount === 0
+              ? theme.colors.textSoft
+              : theme.colors.primary,
             borderRadius: 14,
-            paddingVertical: 14,
+            paddingVertical: 15,
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 8,
           }}
         >
-          <Text style={{ color: 'white', textAlign: 'center', fontWeight: '800' }}>
-            {saving ? 'Adding...' : `Add Selected (${selectedIds.length})`}
-          </Text>
+          {saving ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <>
+              <Ionicons name="add-circle-outline" size={18} color="#FFFFFF" />
+              <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900', fontSize: 15 }}>
+                {selectedCount === 0
+                  ? 'Select cards to add'
+                  : `Add ${selectedCount} card${selectedCount !== 1 ? 's' : ''} to Binder`}
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>

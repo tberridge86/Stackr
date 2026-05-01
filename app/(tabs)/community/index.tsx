@@ -317,15 +317,7 @@ export default function CommunityScreen() {
 
     return (
   <View style={styles.postCard}>
-    <Pressable
-      onPress={() =>
-        router.push({
-          pathname: '/community/profile/[userId]',
-          params: { userId: item.user_id },
-        })
-      }
-      style={styles.postTopRow}
-    >
+    <View style={styles.postTopRow}>
       <View style={styles.avatar}>
         {avatar?.image ? (
           <Image source={avatar.image} style={styles.avatarImage} />
@@ -340,7 +332,7 @@ export default function CommunityScreen() {
         </Text>
         <Text style={styles.time}>{timeAgo(item.created_at)}</Text>
       </View>
-    </Pressable>
+    </View>
  
         {item.post_type === 'card_showcase' && (
   <Text style={styles.body}>
