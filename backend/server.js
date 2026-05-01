@@ -455,7 +455,7 @@ app.get('/api/search/tcg', async (req, res) => {
       ? { 'X-Api-Key': POKEMON_TCG_API_KEY }
       : {};
 
-    // Build primary query — most specific first
+    // Build primary query
     let q = `name:"${name}"`;
     if (number) q += ` number:${number}`;
     if (setId) q += ` set.id:${setId}`;
@@ -463,20 +463,26 @@ app.get('/api/search/tcg', async (req, res) => {
 
     const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20&orderBy=-set.releaseDate`;
 
-    console.log(`🔍 TCG search: ${q}`);
+    console.log(`🔍 Primary query: ${q}`);
+    console.log(`🔍 URL: ${url}`);
 
     const response = await fetch(url, { headers });
-
     let cards = [];
 
     if (response.ok) {
       const data = await response.json();
       cards = data.data ?? [];
+      console.log(`✅ Primary found: ${cards.length} cards`);
+      if (cards.length > 0) {
+        console.log(`✅ First: ${cards[0].name} | ${cards[0].set?.name} | #${cards[0].number}`);
+      }
+    } else {
+      console.log(`❌ Primary failed: ${response.status}`);
     }
 
     // Fallback 1 — drop setId, keep number
     if (cards.length === 0 && (setId || setName) && number) {
-      console.log('⚠️ Fallback 1 — dropping set, keeping number');
+      console.log('⚠️ Fallback 1 — name + number only');
       const q2 = `name:"${name}" number:${number}`;
       const res2 = await fetch(
         `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q2)}&pageSize=20&orderBy=-set.releaseDate`,
@@ -485,10 +491,14 @@ app.get('/api/search/tcg', async (req, res) => {
       if (res2.ok) {
         const data2 = await res2.json();
         cards = data2.data ?? [];
+        console.log(`✅ Fallback 1 found: ${cards.length} cards`);
+        if (cards.length > 0) {
+          console.log(`✅ First: ${cards[0].name} | ${cards[0].set?.name} | #${cards[0].number}`);
+        }
       }
     }
 
-    // Fallback 2 — name only, most recent first
+    // Fallback 2 — name only
     if (cards.length === 0) {
       console.log('⚠️ Fallback 2 — name only');
       const q3 = `name:"${name}"`;
@@ -499,6 +509,10 @@ app.get('/api/search/tcg', async (req, res) => {
       if (res3.ok) {
         const data3 = await res3.json();
         cards = data3.data ?? [];
+        console.log(`✅ Fallback 2 found: ${cards.length} cards`);
+        if (cards.length > 0) {
+          console.log(`✅ First: ${cards[0].name} | ${cards[0].set?.name} | #${cards[0].number}`);
+        }
       }
     }
 
@@ -515,7 +529,7 @@ app.get('/api/search/tcg', async (req, res) => {
       release_date: card.set?.releaseDate,
     }));
 
-    console.log(`✅ TCG search returned ${formatted.length} cards for "${name}"`);
+    console.log(`📦 Returning ${formatted.length} cards`);
 
     return res.json({ cards: formatted, total: formatted.length });
   } catch (error) {
