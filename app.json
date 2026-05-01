@@ -17,6 +17,13 @@
           "backgroundColor": "#ffffff",
           "imageWidth": 400
         }
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Stackr needs camera access to scan your Pokémon cards.",
+          "enableMicrophonePermission": false
+        }
       ]
     ],
     "ios": {
