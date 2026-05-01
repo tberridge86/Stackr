@@ -38,20 +38,31 @@ type ScanMode = 'manual' | 'auto';
 // ===============================
 // TEXT EXTRACTION HELPERS
 // ===============================
-
 function extractCardName(text: string): string | null {
   const lines = text
     .split('\n')
     .map((l) => l.trim())
     .filter((l) => l.length > 1);
 
+  // Normalise a string — strips diacritics and lowercases
+  const normalise = (s: string) =>
+    s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  const stageKeywords = [
+    /^basic\s*(.*)/i,
+    /^stage\s*1\s*(.*)/i,
+    /^stage\s*2\s*(.*)/i,
+    /^vmax\s*(.*)/i,
+    /^vstar\s*(.*)/i,
+    /^vex\s*(.*)/i,
+    /^gx\s*(.*)/i,
+  ];
+
   const skipPatterns = [
     /^hp\s*\d+/i,
     /^\d+\/\d+$/,
     /^©/,
     /^illus/i,
-    /^basic/i,
-    /^stage/i,
     /^evolves/i,
     /^weakness/i,
     /^resistance/i,
@@ -66,15 +77,42 @@ function extractCardName(text: string): string | null {
     /^damage/i,
     /^\d+$/,
     /^[^a-zA-Z]/,
+    /^send/i,
+    /^search/i,
+    /^your/i,
+    /^it can/i,
   ];
 
   for (const line of lines) {
-    const shouldSkip = skipPatterns.some((pattern) => pattern.test(line));
+    const normalisedLine = normalise(line);
+
+    // ✅ Check if line starts with a stage keyword
+    // e.g. "BẠSIG Shaymin" or just "BẠSIG" alone
+    let matchedStage = false;
+    for (const stagePattern of stageKeywords) {
+      const match = normalisedLine.match(stagePattern);
+      if (match) {
+        matchedStage = true;
+        const remainder = match[1]?.replace(/[^a-zA-ZÀ-ÿ\s\-']/g, '').trim();
+        if (remainder && remainder.length >= 3) {
+          // Name was on same line as stage keyword e.g. "Basic Shaymin"
+          console.log(`🎯 Stage+name on same line: "${line}" → "${remainder}"`);
+          return remainder;
+        }
+        // Name is on next line — skip this line and let loop continue
+        console.log(`⏭️ Stage keyword found ("${line}"), checking next line...`);
+        break;
+      }
+    }
+
+    if (matchedStage) continue; // skip "BASIC" line, move to "Shaymin"
+
+    // Original skip logic
+    const shouldSkip = skipPatterns.some((pattern) => pattern.test(normalisedLine));
     if (!shouldSkip && line.length >= 3) {
-      const cleaned = line
-        .replace(/[^a-zA-ZÀ-ÿ\s\-']/g, '')
-        .trim();
+      const cleaned = line.replace(/[^a-zA-ZÀ-ÿ\s\-']/g, '').trim();
       if (cleaned.length >= 3) {
+        console.log(`✅ Card name found: "${cleaned}"`);
         return cleaned;
       }
     }
@@ -259,6 +297,18 @@ export default function ScanScreen() {
 
       const result = await TextRecognition.recognize(`file://${photo.path}`);
       const text = result.text ?? '';
+
+      // 🔍 DEBUG — remove once scanning is fixed
+console.log('=== RAW OCR LINES ===');
+text.split('\n').forEach((line, i) => {
+  if (line.trim()) {
+    console.log(`${i}: "${line.trim()}"`);
+  }
+});
+console.log('=== END OCR ===');
+console.log('📝 Extracted name:', extractCardName(text));
+console.log('🔢 Extracted number:', extractSetNumber(text));
+console.log('🏷️ Extracted setId:', extractSetId(text));
 
       console.log('=== RAW OCR LINES ===');
 text.split('\n').forEach((line, i) => {
