@@ -260,11 +260,8 @@ export default function BinderLibraryScreen() {
   // ===============================
 
   const handleScanCard = async () => {
-    Alert.alert(
-      'Coming soon',
-      'Card scanning is built into the app architecture and will be available soon.'
-    );
-  };
+  router.push('/scan');
+};
 
   // ===============================
   // LOAD

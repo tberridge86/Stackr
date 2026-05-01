@@ -44,6 +44,8 @@ export default function RootLayout() {
                 <Stack.Screen name="binder/new" options={{ headerShown: false }} />
                 <Stack.Screen name="binder/[id]" options={{ headerShown: false }} />
                 <Stack.Screen name="binder/add-cards" options={{ headerShown: false }} />
+                <Stack.Screen name="scan/index" options={{ headerShown: false }} />
+                <Stack.Screen name="scan/result" options={{ headerShown: false }} />
               </Stack>
             </TradeProvider>
           </CollectionProvider>
