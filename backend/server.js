@@ -605,6 +605,63 @@ app.get('/price/debug', async (req, res) => {
   }
 });
 
+// ===============================
+// SEARCH TCG CARDS
+// ===============================
+
+app.get('/api/search/tcg', async (req, res) => {
+  try {
+    const name = String(req.query.name || '').trim();
+    const number = String(req.query.number || '').trim();
+    const setName = String(req.query.setName || '').trim();
+
+    if (!name) {
+      return res.status(400).json({ error: 'Missing name' });
+    }
+
+    const API_KEY = process.env.POKEMON_TCG_API_KEY;
+
+    // Build query
+    let q = `name:"${name}"`;
+    if (number) q += ` number:${number}`;
+    if (setName) q += ` set.name:"${setName}"`;
+
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20&orderBy=set.releaseDate`;
+
+    const response = await fetch(url, {
+      headers: API_KEY ? { 'X-Api-Key': API_KEY } : {},
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      return res.status(response.status).json({ error: text });
+    }
+
+    const data = await response.json();
+
+    // Return simplified card list
+    const cards = (data.data ?? []).map((card) => ({
+      id: card.id,
+      name: card.name,
+      number: card.number,
+      set_id: card.set?.id,
+      set_name: card.set?.name,
+      series: card.set?.series,
+      rarity: card.rarity,
+      image_small: card.images?.small,
+      image_large: card.images?.large,
+      release_date: card.set?.releaseDate,
+    }));
+
+    return res.json({ cards, total: data.totalCount ?? cards.length });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'TCG search failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Stackr backend listening on port ${PORT}`);
 });
