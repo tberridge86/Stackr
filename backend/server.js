@@ -12,7 +12,9 @@ const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
+const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 const PORT = process.env.PORT || 3001;
+
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -27,7 +29,6 @@ function getErrorMessage(error) {
 // TITLE FILTERING
 // ===============================
 
-// Terms that are always junk — very specific to avoid false positives
 const BLOCKED_TERMS = [
   'psa', 'bgs', 'cgc', 'sgc', 'ace grading',
   'graded', 'gem mint', 'slab',
@@ -38,7 +39,7 @@ const BLOCKED_TERMS = [
   'choose your card', 'choose your cards', 'pick your card',
   'you choose', 'choose card', 'choose a card', 'choose individual',
   'singles common', 'common uncommon',
-  'artbox','sticker sheet', 'sticker pack',
+  'sticker sheet', 'sticker pack', 'artbox',
   'black metal card', 'metal card', 'solid metal',
   'gold foil card', 'gold metal',
   'oversized', 'digital', 'code card',
@@ -48,7 +49,7 @@ const BLOCKED_TERMS = [
   'heavily played', 'poor condition', 'damaged',
   'creased', 'crease', 'bent', 'inked', 'marked',
   'written on', 'torn', 'water damaged',
-  'novelty', 'random', 'random card', 'random selection',
+  'novelty', 'random card', 'random selection',
 ];
 
 function titleLooksBad(title = '') {
@@ -61,7 +62,6 @@ function extractCardNumber(query = '') {
   return match ? match[1].toLowerCase() : null;
 }
 
-// Pull meaningful words from the query for title matching
 function getImportantWords(query = '') {
   const stopWords = new Set([
     'pokemon', 'pokémon', 'card', 'cards', 'base', 'set',
@@ -81,13 +81,11 @@ function titleLooksGoodForQuery(title = '', query = '') {
   const cardNumber = extractCardNumber(query);
   const importantWords = getImportantWords(query);
 
-  // Must contain at least one important word from the card name
   if (importantWords.length > 0) {
     const hasRelevantWord = importantWords.some((word) => t.includes(word));
     if (!hasRelevantWord) return false;
   }
 
-  // If query has a card number (e.g. 4/102), title should contain it
   if (cardNumber && !t.includes(cardNumber)) return false;
 
   return true;
@@ -104,13 +102,7 @@ function summarisePrices(prices) {
   }
 
   const sorted = [...prices].sort((a, b) => a - b);
-
-  // Trim outliers only if we have enough data
-  const trimmed =
-    sorted.length >= 6
-      ? sorted.slice(1, -1)
-      : sorted;
-
+  const trimmed = sorted.length >= 6 ? sorted.slice(1, -1) : sorted;
   const avg = trimmed.reduce((sum, p) => sum + p, 0) / trimmed.length;
 
   return {
@@ -128,7 +120,6 @@ function buildCardQuery({ name = '', setName = '', number = '' }) {
     .join(' ');
 }
 
-// Fallback: just name + pokemon card (broader search)
 function buildFallbackQuery({ name = '' }) {
   return `${name.trim()} pokemon card`.trim();
 }
@@ -143,7 +134,6 @@ let tokenExpiresAt = 0;
 async function getToken() {
   const now = Date.now();
 
-  // Return cached token if still valid (with 60s buffer)
   if (cachedToken && now < tokenExpiresAt - 60_000) {
     return cachedToken;
   }
@@ -177,7 +167,6 @@ async function getToken() {
     throw new Error('Token response did not include access_token');
   }
 
-  // Cache it
   cachedToken = data.access_token;
   tokenExpiresAt = now + (data.expires_in * 1000);
 
@@ -215,7 +204,7 @@ function filterItems(items, query) {
     const price = numberFromPrice(item.price?.value);
 
     if (!price) return false;
-    if (price < 0.5) return false;   // lowered from £1 — catches cheap commons
+    if (price < 0.5) return false;
     if (price > 5000) return false;
     if (titleLooksBad(title)) return false;
     if (!titleLooksGoodForQuery(title, query)) return false;
@@ -227,11 +216,9 @@ function filterItems(items, query) {
 async function fetchEbaySummary(query, cardName = '') {
   const token = await getToken();
 
-  // --- Primary search ---
   const rawItems = await searchEbay(query, token);
   let cleaned = filterItems(rawItems, query);
 
-  // --- Fallback: if no results, try broader query ---
   let usedFallback = false;
   let fallbackQuery = '';
 
@@ -285,6 +272,7 @@ app.get('/debug-env', (req, res) => {
     hasEbayClientId: Boolean(EBAY_CLIENT_ID),
     hasEbayClientSecret: Boolean(EBAY_CLIENT_SECRET),
     hasXimilarToken: Boolean(XIMILAR_API_TOKEN),
+    hasTcgApiKey: Boolean(POKEMON_TCG_API_KEY),
     marketplace: EBAY_MARKETPLACE_ID,
   });
 });
@@ -298,7 +286,7 @@ app.get('/test-ebay-token', async (req, res) => {
   }
 });
 
-// Simple price endpoint (used by ebay.ts fetchEbayPrice)
+// Simple price endpoint
 app.get('/price', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
@@ -307,8 +295,7 @@ app.get('/price', async (req, res) => {
       return res.status(400).json({ error: 'Missing query' });
     }
 
-const cardName = query.split(' ')[0];
-
+    const cardName = query.split(' ')[0];
     const summary = await fetchEbaySummary(query, cardName);
     return res.json(summary);
   } catch (error) {
@@ -344,7 +331,203 @@ app.get('/api/price/ebay', async (req, res) => {
 });
 
 // ===============================
-// SCAN (Ximilar)
+// DEBUG: PRICE FILTER INSPECTOR
+// ===============================
+
+app.get('/price/debug', async (req, res) => {
+  try {
+    const name = String(req.query.name || '').trim();
+    const setName = String(req.query.set || '').trim();
+    const number = String(req.query.number || '').trim();
+
+    if (!name) {
+      return res.status(400).json({ error: 'Missing ?name= param' });
+    }
+
+    const token = await getToken();
+
+    const primaryQuery = buildCardQuery({ name, setName, number });
+    const fallbackQuery = buildFallbackQuery({ name });
+
+    const [primaryRaw, fallbackRaw] = await Promise.all([
+      searchEbay(primaryQuery, token),
+      searchEbay(fallbackQuery, token),
+    ]);
+
+    function analyseItems(items, query) {
+      return items.map((item) => {
+        const title = item.title || '';
+        const price = numberFromPrice(item.price?.value);
+
+        const reasons = [];
+
+        if (!price) reasons.push('NO_PRICE');
+        if (price !== null && price < 0.5) reasons.push(`PRICE_TOO_LOW (£${price})`);
+        if (price !== null && price > 5000) reasons.push(`PRICE_TOO_HIGH (£${price})`);
+
+        const t = title.toLowerCase();
+        const matchedBlockedTerms = BLOCKED_TERMS.filter((term) => t.includes(term));
+        if (matchedBlockedTerms.length > 0) {
+          reasons.push(`BLOCKED_TERMS: [${matchedBlockedTerms.join(', ')}]`);
+        }
+
+        const cardNumber = extractCardNumber(query);
+        const importantWords = getImportantWords(query);
+
+        if (importantWords.length > 0) {
+          const hasRelevantWord = importantWords.some((word) => t.includes(word));
+          if (!hasRelevantWord) {
+            reasons.push(`MISSING_KEYWORDS (looking for any of: [${importantWords.join(', ')}])`);
+          }
+        }
+
+        if (cardNumber && !t.includes(cardNumber)) {
+          reasons.push(`MISSING_CARD_NUMBER (looking for: ${cardNumber})`);
+        }
+
+        const accepted = reasons.length === 0;
+
+        return {
+          title,
+          price: item.price?.value ?? null,
+          accepted,
+          reasons: accepted ? ['✅ ACCEPTED'] : reasons,
+        };
+      });
+    }
+
+    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery);
+    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery);
+
+    const primaryAccepted = primaryAnalysis.filter((i) => i.accepted);
+    const fallbackAccepted = fallbackAnalysis.filter((i) => i.accepted);
+
+    const primaryPrices = primaryAccepted.map((i) => numberFromPrice(i.price)).filter(Boolean);
+    const fallbackPrices = fallbackAccepted.map((i) => numberFromPrice(i.price)).filter(Boolean);
+
+    return res.json({
+      queries: { primary: primaryQuery, fallback: fallbackQuery },
+      parsed: {
+        importantWords: getImportantWords(primaryQuery),
+        cardNumber: extractCardNumber(primaryQuery) ?? 'none found',
+      },
+      primary: {
+        totalFromEbay: primaryRaw.length,
+        accepted: primaryAccepted.length,
+        rejected: primaryRaw.length - primaryAccepted.length,
+        priceSummary: summarisePrices(primaryPrices),
+        items: primaryAnalysis,
+      },
+      fallback: {
+        totalFromEbay: fallbackRaw.length,
+        accepted: fallbackAccepted.length,
+        rejected: fallbackRaw.length - fallbackAccepted.length,
+        priceSummary: summarisePrices(fallbackPrices),
+        items: fallbackAnalysis,
+      },
+      blockedTermsActive: BLOCKED_TERMS,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Debug failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+// ===============================
+// TCG CARD SEARCH
+// Used by the scan feature
+// ===============================
+
+app.get('/api/search/tcg', async (req, res) => {
+  try {
+    const name = String(req.query.name || '').trim();
+    const number = String(req.query.number || '').trim();
+    const setName = String(req.query.setName || '').trim();
+    const setId = String(req.query.setId || '').trim();
+
+    if (!name) {
+      return res.status(400).json({ error: 'Missing name' });
+    }
+
+    const headers = POKEMON_TCG_API_KEY
+      ? { 'X-Api-Key': POKEMON_TCG_API_KEY }
+      : {};
+
+    // Build primary query — most specific first
+    let q = `name:"${name}"`;
+    if (number) q += ` number:${number}`;
+    if (setId) q += ` set.id:${setId}`;
+    if (setName) q += ` set.name:"${setName}"`;
+
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20&orderBy=-set.releaseDate`;
+
+    console.log(`🔍 TCG search: ${q}`);
+
+    const response = await fetch(url, { headers });
+
+    let cards = [];
+
+    if (response.ok) {
+      const data = await response.json();
+      cards = data.data ?? [];
+    }
+
+    // Fallback 1 — drop setId, keep number
+    if (cards.length === 0 && (setId || setName) && number) {
+      console.log('⚠️ Fallback 1 — dropping set, keeping number');
+      const q2 = `name:"${name}" number:${number}`;
+      const res2 = await fetch(
+        `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q2)}&pageSize=20&orderBy=-set.releaseDate`,
+        { headers }
+      );
+      if (res2.ok) {
+        const data2 = await res2.json();
+        cards = data2.data ?? [];
+      }
+    }
+
+    // Fallback 2 — name only, most recent first
+    if (cards.length === 0) {
+      console.log('⚠️ Fallback 2 — name only');
+      const q3 = `name:"${name}"`;
+      const res3 = await fetch(
+        `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q3)}&pageSize=20&orderBy=-set.releaseDate`,
+        { headers }
+      );
+      if (res3.ok) {
+        const data3 = await res3.json();
+        cards = data3.data ?? [];
+      }
+    }
+
+    const formatted = cards.map((card) => ({
+      id: card.id,
+      name: card.name,
+      number: card.number,
+      set_id: card.set?.id,
+      set_name: card.set?.name,
+      series: card.set?.series,
+      rarity: card.rarity,
+      image_small: card.images?.small,
+      image_large: card.images?.large,
+      release_date: card.set?.releaseDate,
+    }));
+
+    console.log(`✅ TCG search returned ${formatted.length} cards for "${name}"`);
+
+    return res.json({ cards: formatted, total: formatted.length });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'TCG search failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+// ===============================
+// SCAN (Ximilar — scaffolded)
 // ===============================
 
 async function scanWithXimilar(imageUrl) {
@@ -480,187 +663,8 @@ app.post('/api/trade/received', async (req, res) => {
 });
 
 // ===============================
-// DEBUG: PRICE FILTER INSPECTOR
+// START
 // ===============================
-
-app.get('/price/debug', async (req, res) => {
-  try {
-    const name = String(req.query.name || '').trim();
-    const setName = String(req.query.set || '').trim();
-    const number = String(req.query.number || '').trim();
-
-    if (!name) {
-      return res.status(400).json({ error: 'Missing ?name= param' });
-    }
-
-    const token = await getToken();
-
-    const primaryQuery = buildCardQuery({ name, setName, number });
-    const fallbackQuery = buildFallbackQuery({ name });
-
-    // Run both searches in parallel
-    const [primaryRaw, fallbackRaw] = await Promise.all([
-      searchEbay(primaryQuery, token),
-      searchEbay(fallbackQuery, token),
-    ]);
-
-    function analyseItems(items, query) {
-      return items.map((item) => {
-        const title = item.title || '';
-        const price = numberFromPrice(item.price?.value);
-
-        // Work out exactly why each item was rejected
-        const reasons = [];
-
-        if (!price) reasons.push('NO_PRICE');
-        if (price !== null && price < 0.5) reasons.push(`PRICE_TOO_LOW (£${price})`);
-        if (price !== null && price > 5000) reasons.push(`PRICE_TOO_HIGH (£${price})`);
-
-        // Check each blocked term individually
-        const t = title.toLowerCase();
-        const matchedBlockedTerms = BLOCKED_TERMS.filter((term) => t.includes(term));
-        if (matchedBlockedTerms.length > 0) {
-          reasons.push(`BLOCKED_TERMS: [${matchedBlockedTerms.join(', ')}]`);
-        }
-
-        // Check title quality
-        const cardNumber = extractCardNumber(query);
-        const importantWords = getImportantWords(query);
-
-        if (importantWords.length > 0) {
-          const hasRelevantWord = importantWords.some((word) => t.includes(word));
-          if (!hasRelevantWord) {
-            reasons.push(`MISSING_KEYWORDS (looking for any of: [${importantWords.join(', ')}])`);
-          }
-        }
-
-        if (cardNumber && !t.includes(cardNumber)) {
-          reasons.push(`MISSING_CARD_NUMBER (looking for: ${cardNumber})`);
-        }
-
-        const accepted = reasons.length === 0;
-
-        return {
-          title,
-          price: item.price?.value ?? null,
-          accepted,
-          reasons: accepted ? ['✅ ACCEPTED'] : reasons,
-        };
-      });
-    }
-
-    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery);
-    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery);
-
-    const primaryAccepted = primaryAnalysis.filter((i) => i.accepted);
-    const fallbackAccepted = fallbackAnalysis.filter((i) => i.accepted);
-
-    const primaryPrices = primaryAccepted
-      .map((i) => numberFromPrice(i.price))
-      .filter(Boolean);
-
-    const fallbackPrices = fallbackAccepted
-      .map((i) => numberFromPrice(i.price))
-      .filter(Boolean);
-
-    return res.json({
-      // Query info
-      queries: {
-        primary: primaryQuery,
-        fallback: fallbackQuery,
-      },
-
-      // Extracted search terms (useful to verify parsing)
-      parsed: {
-        importantWords: getImportantWords(primaryQuery),
-        cardNumber: extractCardNumber(primaryQuery) ?? 'none found',
-      },
-
-      // Primary search results
-      primary: {
-        totalFromEbay: primaryRaw.length,
-        accepted: primaryAccepted.length,
-        rejected: primaryRaw.length - primaryAccepted.length,
-        priceSummary: summarisePrices(primaryPrices),
-        items: primaryAnalysis,
-      },
-
-      // Fallback search results
-      fallback: {
-        totalFromEbay: fallbackRaw.length,
-        accepted: fallbackAccepted.length,
-        rejected: fallbackRaw.length - fallbackAccepted.length,
-        priceSummary: summarisePrices(fallbackPrices),
-        items: fallbackAnalysis,
-      },
-
-      // Blocked terms reference
-      blockedTermsActive: BLOCKED_TERMS,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      error: 'Debug failed',
-      detail: getErrorMessage(error),
-    });
-  }
-});
-
-// ===============================
-// SEARCH TCG CARDS
-// ===============================
-
-app.get('/api/search/tcg', async (req, res) => {
-  try {
-    const name = String(req.query.name || '').trim();
-    const number = String(req.query.number || '').trim();
-    const setName = String(req.query.setName || '').trim();
-
-    if (!name) {
-      return res.status(400).json({ error: 'Missing name' });
-    }
-
-    const API_KEY = process.env.POKEMON_TCG_API_KEY;
-
-    // Build query
-    let q = `name:"${name}"`;
-    if (number) q += ` number:${number}`;
-    if (setName) q += ` set.name:"${setName}"`;
-
-    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20&orderBy=set.releaseDate`;
-
-    const response = await fetch(url, {
-      headers: API_KEY ? { 'X-Api-Key': API_KEY } : {},
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      return res.status(response.status).json({ error: text });
-    }
-
-    const data = await response.json();
-
-    // Return simplified card list
-    const cards = (data.data ?? []).map((card) => ({
-      id: card.id,
-      name: card.name,
-      number: card.number,
-      set_id: card.set?.id,
-      set_name: card.set?.name,
-      series: card.set?.series,
-      rarity: card.rarity,
-      image_small: card.images?.small,
-      image_large: card.images?.large,
-      release_date: card.set?.releaseDate,
-    }));
-
-    return res.json({ cards, total: data.totalCount ?? cards.length });
-  } catch (error) {
-    return res.status(500).json({
-      error: 'TCG search failed',
-      detail: getErrorMessage(error),
-    });
-  }
-});
 
 app.listen(PORT, () => {
   console.log(`Stackr backend listening on port ${PORT}`);

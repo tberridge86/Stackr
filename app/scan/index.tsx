@@ -16,7 +16,7 @@ import { Camera, useCameraDevice, useCameraPermission } from 'react-native-visio
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { fetchBinders, BinderRecord } from '../../lib/binders';
 
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+const PRICE_API_URL = (process.env.EXPO_PUBLIC_PRICE_API_URL ?? '').replace(/\/$/, '');
 
 // ===============================
 // TYPES
@@ -84,13 +84,66 @@ function extractCardName(text: string): string | null {
 }
 
 function extractSetNumber(text: string): string | null {
-  // Standard: 002/088 or 4/102 or 045/064
   const standard = text.match(/(\d{1,3})\s*\/\s*(\d{1,3})/);
   if (standard) return `${standard[1]}/${standard[2]}`;
 
-  // Promo: SWSH001, SV001 etc
   const promo = text.match(/\b([A-Z]{2,4}\d{3})\b/);
   if (promo) return promo[1];
+
+  return null;
+}
+
+function extractSetId(text: string): string | null {
+
+  const SET_CODE_MAP: Record<string, string> = {
+    'jpor': 'me3', 'por': 'me3', 'me3': 'me3', 'me03': 'me3',
+    'iobf': 'sv3', 'obf': 'sv3',
+    'imew': 'sv3pt5', 'mew': 'sv3pt5',
+    'ipar': 'sv4', 'par': 'sv4',
+    'ipaf': 'sv4pt5', 'paf': 'sv4pt5',
+    'itef': 'sv5', 'tef': 'sv5',
+    'itwm': 'sv6', 'twm': 'sv6',
+    'isfa': 'sv6pt5', 'sfa': 'sv6pt5',
+    'iscr': 'sv7', 'scr': 'sv7',
+    'issp': 'sv8', 'ssp': 'sv8',
+    'ipre': 'sv8pt5', 'pre': 'sv8pt5',
+    'jtt': 'sv9',
+    'viv': 'swsh4', 'bst': 'swsh5', 'cre': 'swsh6',
+    'evs': 'swsh7', 'fco': 'swsh8', 'brs': 'swsh9',
+    'ast': 'swsh10', 'pgo': 'swsh10pt5', 'loe': 'swsh11',
+    'sil': 'swsh12', 'crz': 'swsh12pt5',
+    'gri': 'sm2', 'bus': 'sm3', 'shf': 'sm3pt5',
+    'cim': 'sm4', 'upr': 'sm5', 'fli': 'sm6',
+    'loc': 'sm8', 'teu': 'sm9', 'unb': 'sm10',
+    'una': 'sm11', 'hif': 'sm11pt5', 'coh': 'sm12',
+    'fla': 'xy2', 'fuf': 'xy3', 'pha': 'xy4',
+    'pri': 'xy5', 'roo': 'xy7', 'aor': 'xy8',
+    'bkp': 'xy9', 'ste': 'xy12',
+    'ecard1': 'ecard1', 'ecard2': 'ecard2', 'ecard3': 'ecard3',
+    'neo1': 'neo1', 'neo2': 'neo2', 'neo3': 'neo3', 'neo4': 'neo4',
+    'base1': 'base1', 'base2': 'base2', 'base3': 'base3',
+    'gym1': 'gym1', 'gym2': 'gym2',
+  };
+
+  const sortedKeys = Object.keys(SET_CODE_MAP)
+    .sort((a, b) => b.length - a.length);
+
+  const lowerText = text.toLowerCase();
+
+  for (const code of sortedKeys) {
+    if (lowerText.includes(code)) {
+      console.log(`✅ Set matched: "${code}" → "${SET_CODE_MAP[code]}"`);
+      return SET_CODE_MAP[code];
+    }
+  }
+
+  const setCode = text.match(
+    /\b(sv\d+[a-z]*|swsh\d+[a-z]*|sm\d+[a-z]*|xy\d+[a-z]*|bw\d+[a-z]*|me\d+[a-z]*)\b/i
+  );
+
+  if (setCode) {
+    return setCode[1].toLowerCase();
+  }
 
   return null;
 }
@@ -103,6 +156,9 @@ export default function ScanScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
   const camera = useRef<Camera>(null);
+
+  // ← torch state is now INSIDE the component ✅
+  const [torch, setTorch] = useState(false);
 
   const [step, setStep] = useState<ScanStep>('select_binder');
   const [scanMode, setScanMode] = useState<ScanMode>('manual');
@@ -190,7 +246,6 @@ export default function ScanScreen() {
 
   // ===============================
   // CORE CAPTURE + OCR
-  // isAuto = true means silent failure (no alerts) for auto mode
   // ===============================
 
   const handleCapture = useCallback(async (isAuto = false) => {
@@ -205,17 +260,19 @@ export default function ScanScreen() {
       const result = await TextRecognition.recognize(`file://${photo.path}`);
       const text = result.text ?? '';
 
-      // TEMPORARY — log full OCR output so we can see what format the number is in
-console.log('=== FULL OCR TEXT ===');
-console.log(text);
-console.log('=== END OCR TEXT ===');
-
-      console.log('OCR text:', text);
+      console.log('=== RAW OCR LINES ===');
+text.split('\n').forEach((line, i) => {
+  if (line.trim()) {
+    console.log(`${i}: "${line.trim()}"`);
+  }
+});
+console.log('=== END ===');
 
       const cardName = extractCardName(text);
       const setNumber = extractSetNumber(text);
+      const setId = extractSetId(text);
 
-      console.log('Name:', cardName, '| Number:', setNumber);
+      console.log('Name:', cardName, '| Number:', setNumber, '| SetId:', setId);
 
       if (!cardName) {
         if (!isAuto) {
@@ -230,14 +287,20 @@ console.log('=== END OCR TEXT ===');
         return;
       }
 
-      // Build search params
       const params = new URLSearchParams({ name: cardName });
       if (setNumber) {
-  const rawNumber = setNumber.split('/')[0];
-  const cleanNumber = String(parseInt(rawNumber, 10)); // "002" → "2"
-  params.append('number', cleanNumber);
-}
-      const res = await fetch(`${PRICE_API_URL}/api/search/tcg?${params.toString()}`);
+        const rawNumber = setNumber.split('/')[0];
+        const cleanNumber = String(parseInt(rawNumber, 10));
+        params.append('number', cleanNumber);
+      }
+      if (setId) {
+        params.append('setId', setId);
+      }
+
+      const searchUrl = `${PRICE_API_URL}/api/search/tcg?${params.toString()}`;
+      console.log('Searching:', searchUrl);
+
+      const res = await fetch(searchUrl);
       if (!res.ok) throw new Error(`Search failed: ${res.status}`);
 
       const data = await res.json();
@@ -258,11 +321,9 @@ console.log('=== END OCR TEXT ===');
 
       const match = cards[0] as ScannedCard;
 
-      // Check not already scanned using ref for auto mode reliability
       if (scannedCardIdsRef.current.has(match.id)) {
         if (isAuto) {
-          // In auto mode — silent, just show subtle feedback
-          setLastScanned(`Already scanned — swipe to next card`);
+          setLastScanned('Already scanned — swipe to next card');
           resetScanState(1500);
         } else {
           setLastScanned(`${match.name} already in list`);
@@ -272,7 +333,6 @@ console.log('=== END OCR TEXT ===');
         return;
       }
 
-      // Add card
       scannedCardIdsRef.current.add(match.id);
       setScannedCards((prev) => [...prev, match]);
       setLastScanned(`✅ ${match.name}${setNumber ? ` #${setNumber}` : ''} added!`);
@@ -291,7 +351,7 @@ console.log('=== END OCR TEXT ===');
   }, [processingOcr, resetScanState]);
 
   // ===============================
-  // START / STOP AUTO SCAN
+  // AUTO SCAN TOGGLE
   // ===============================
 
   const toggleAutoScan = useCallback(() => {
@@ -566,6 +626,7 @@ console.log('=== END OCR TEXT ===');
                     try {
                       setScanning(true);
                       const { supabase } = await import('../../lib/supabase');
+
                       const rows = scannedCards.map((card) => ({
                         binder_id: selectedBinder.id,
                         card_id: card.id,
@@ -578,7 +639,7 @@ console.log('=== END OCR TEXT ===');
                         set_name: card.set_name,
                       }));
 
-                      const { error } = await (await import('../../lib/supabase')).supabase
+                      const { error } = await supabase
                         .from('binder_cards')
                         .upsert(rows, {
                           onConflict: 'binder_id,card_id',
@@ -688,15 +749,17 @@ console.log('=== END OCR TEXT ===');
         device={device}
         isActive={step === 'scanning'}
         photo={true}
+        torch={torch ? 'on' : 'off'}
       />
 
       <SafeAreaView style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
 
-        {/* Header */}
+        {/* Header — fixed closing tags */}
         <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
           <TouchableOpacity
             onPress={() => {
               setAutoScanActive(false);
+              setTorch(false);
               setStep('select_binder');
             }}
             style={{
@@ -718,29 +781,44 @@ console.log('=== END OCR TEXT ===');
             </Text>
           </View>
 
-          {/* Review button */}
-          {scannedCards.length > 0 && (
+          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+            {/* Torch toggle */}
             <TouchableOpacity
-              onPress={() => {
-                setAutoScanActive(false);
-                setStep('review');
-              }}
+              onPress={() => setTorch((prev) => !prev)}
               style={{
-                backgroundColor: theme.colors.primary,
-                borderRadius: 10,
-                paddingHorizontal: 12, paddingVertical: 7,
+                width: 40, height: 40,
+                borderRadius: 20,
+                backgroundColor: torch ? '#F59E0B' : 'rgba(0,0,0,0.5)',
+                alignItems: 'center', justifyContent: 'center',
+                borderWidth: torch ? 2 : 0,
+                borderColor: '#F59E0B',
               }}
             >
-              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>
-                Review ({scannedCards.length})
-              </Text>
+              <Text style={{ fontSize: 18 }}>🔦</Text>
             </TouchableOpacity>
-          )}
+
+            {/* Review button */}
+            {scannedCards.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setAutoScanActive(false);
+                  setStep('review');
+                }}
+                style={{
+                  backgroundColor: theme.colors.primary,
+                  borderRadius: 10,
+                  paddingHorizontal: 12, paddingVertical: 7,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>
+                  Review ({scannedCards.length})
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
-        {/* ===============================
-            MODE TOGGLE — Manual / Auto
-        =============================== */}
+        {/* Mode toggle */}
         <View style={{ alignItems: 'center', marginTop: 8 }}>
           <View style={{
             flexDirection: 'row',
@@ -751,10 +829,7 @@ console.log('=== END OCR TEXT ===');
             borderColor: 'rgba(255,255,255,0.2)',
           }}>
             <TouchableOpacity
-              onPress={() => {
-                setScanMode('manual');
-                setAutoScanActive(false);
-              }}
+              onPress={() => { setScanMode('manual'); setAutoScanActive(false); }}
               style={{
                 paddingHorizontal: 20, paddingVertical: 8,
                 borderRadius: 999,
@@ -763,8 +838,7 @@ console.log('=== END OCR TEXT ===');
             >
               <Text style={{
                 color: scanMode === 'manual' ? '#000000' : 'rgba(255,255,255,0.7)',
-                fontWeight: '900',
-                fontSize: 13,
+                fontWeight: '900', fontSize: 13,
               }}>
                 Manual
               </Text>
@@ -780,21 +854,17 @@ console.log('=== END OCR TEXT ===');
             >
               <Text style={{
                 color: scanMode === 'auto' ? '#FFFFFF' : 'rgba(255,255,255,0.7)',
-                fontWeight: '900',
-                fontSize: 13,
+                fontWeight: '900', fontSize: 13,
               }}>
                 Auto
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Auto mode instructions */}
           {scanMode === 'auto' && (
             <Text style={{
               color: 'rgba(255,255,255,0.8)',
-              fontSize: 11,
-              marginTop: 6,
-              textAlign: 'center',
+              fontSize: 11, marginTop: 6, textAlign: 'center',
               backgroundColor: 'rgba(0,0,0,0.5)',
               paddingHorizontal: 12, paddingVertical: 4,
               borderRadius: 6,
@@ -809,7 +879,7 @@ console.log('=== END OCR TEXT ===');
         {/* Frame guide */}
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{
-            width: 320, height: 448,
+            width: 430, height: 620,
             borderRadius: 16,
             borderWidth: 2,
             borderColor: autoScanActive
@@ -818,13 +888,11 @@ console.log('=== END OCR TEXT ===');
               ? theme.colors.primary
               : 'rgba(255,255,255,0.5)',
           }}>
-            {/* Corner accents */}
             <View style={{ position: 'absolute', top: -2, left: -2, width: 28, height: 28, borderTopWidth: 4, borderLeftWidth: 4, borderColor: autoScanActive ? '#10B981' : theme.colors.primary, borderRadius: 4 }} />
             <View style={{ position: 'absolute', top: -2, right: -2, width: 28, height: 28, borderTopWidth: 4, borderRightWidth: 4, borderColor: autoScanActive ? '#10B981' : theme.colors.primary, borderRadius: 4 }} />
             <View style={{ position: 'absolute', bottom: -2, left: -2, width: 28, height: 28, borderBottomWidth: 4, borderLeftWidth: 4, borderColor: autoScanActive ? '#10B981' : theme.colors.primary, borderRadius: 4 }} />
             <View style={{ position: 'absolute', bottom: -2, right: -2, width: 28, height: 28, borderBottomWidth: 4, borderRightWidth: 4, borderColor: autoScanActive ? '#10B981' : theme.colors.primary, borderRadius: 4 }} />
 
-            {/* Processing indicator */}
             {processingOcr && (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 <ActivityIndicator color={theme.colors.primary} size="large" />
@@ -840,7 +908,6 @@ console.log('=== END OCR TEXT ===');
             )}
           </View>
 
-          {/* Scan result feedback */}
           {lastScanned && (
             <View style={{
               marginTop: 16,
@@ -860,32 +927,22 @@ console.log('=== END OCR TEXT ===');
         {/* Bottom controls */}
         <View style={{ alignItems: 'center', paddingBottom: 48, gap: 14 }}>
 
-          {/* Scanned cards preview strip — tap to review */}
           {scannedCards.length > 0 && (
             <TouchableOpacity
-              onPress={() => {
-                setAutoScanActive(false);
-                setStep('review');
-              }}
+              onPress={() => { setAutoScanActive(false); setStep('review'); }}
               style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 6, alignItems: 'center' }}
             >
               {scannedCards.slice(-5).map((card) => (
                 <Image
                   key={card.id}
                   source={{ uri: card.image_small }}
-                  style={{
-                    width: 36, height: 50,
-                    borderRadius: 4,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255,255,255,0.5)',
-                  }}
+                  style={{ width: 36, height: 50, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' }}
                   resizeMode="cover"
                 />
               ))}
               {scannedCards.length > 5 && (
                 <View style={{
-                  width: 36, height: 50,
-                  borderRadius: 4,
+                  width: 36, height: 50, borderRadius: 4,
                   backgroundColor: 'rgba(0,0,0,0.6)',
                   alignItems: 'center', justifyContent: 'center',
                   borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
@@ -898,7 +955,6 @@ console.log('=== END OCR TEXT ===');
             </TouchableOpacity>
           )}
 
-          {/* Tips */}
           <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 24 }}>
             {['Good lighting', 'Card flat', 'Name + number visible'].map((tip) => (
               <View key={tip} style={{
@@ -915,7 +971,6 @@ console.log('=== END OCR TEXT ===');
             ))}
           </View>
 
-          {/* MANUAL MODE — tap button */}
           {scanMode === 'manual' && (
             <>
               <TouchableOpacity
@@ -926,18 +981,13 @@ console.log('=== END OCR TEXT ===');
                   borderRadius: 40,
                   backgroundColor: processingOcr ? 'rgba(255,255,255,0.4)' : '#FFFFFF',
                   alignItems: 'center', justifyContent: 'center',
-                  borderWidth: 4,
-                  borderColor: 'rgba(255,255,255,0.3)',
+                  borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)',
                 }}
               >
                 {processingOcr ? (
                   <ActivityIndicator color={theme.colors.primary} size="large" />
                 ) : (
-                  <View style={{
-                    width: 60, height: 60,
-                    borderRadius: 30,
-                    backgroundColor: theme.colors.primary,
-                  }} />
+                  <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: theme.colors.primary }} />
                 )}
               </TouchableOpacity>
               <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
@@ -946,7 +996,6 @@ console.log('=== END OCR TEXT ===');
             </>
           )}
 
-          {/* AUTO MODE — start/stop button */}
           {scanMode === 'auto' && (
             <>
               <TouchableOpacity
@@ -956,8 +1005,7 @@ console.log('=== END OCR TEXT ===');
                   borderRadius: 40,
                   backgroundColor: autoScanActive ? '#EF4444' : '#10B981',
                   alignItems: 'center', justifyContent: 'center',
-                  borderWidth: 4,
-                  borderColor: 'rgba(255,255,255,0.3)',
+                  borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)',
                 }}
               >
                 <Text style={{ fontSize: 28 }}>
