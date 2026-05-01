@@ -1,90 +1,203 @@
 import { theme } from '../../lib/theme';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  TextInput,
   Image,
+  FlatList,
+  Vibration,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { uploadCardScan } from '../../lib/storage';
-
-type ScanStep = 'camera' | 'search' | 'searching';
+import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
+import { fetchBinders, BinderRecord } from '../../lib/binders';
 
 const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 
+// ===============================
+// TYPES
+// ===============================
+
+type ScannedCard = {
+  id: string;
+  name: string;
+  number: string;
+  set_id: string;
+  set_name: string;
+  image_small: string;
+  rarity: string;
+};
+
+type ScanStep = 'select_binder' | 'scanning' | 'review';
+
+// ===============================
+// TEXT EXTRACTION HELPERS
+// ===============================
+
+function extractCardName(text: string): string | null {
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 1);
+
+  const skipPatterns = [
+    /^hp\s*\d+/i,
+    /^\d+\/\d+$/,
+    /^©/,
+    /^illus/i,
+    /^basic/i,
+    /^stage/i,
+    /^evolves/i,
+    /^weakness/i,
+    /^resistance/i,
+    /^retreat/i,
+    /^pokemon/i,
+    /^trainer/i,
+    /^energy/i,
+    /^item/i,
+    /^supporter/i,
+    /^stadium/i,
+    /^put/i,
+    /^damage/i,
+    /^\d+$/,
+    /^[^a-zA-Z]/,
+  ];
+
+  for (const line of lines) {
+    const shouldSkip = skipPatterns.some((pattern) => pattern.test(line));
+    if (!shouldSkip && line.length >= 3) {
+      const cleaned = line
+        .replace(/[^a-zA-ZÀ-ÿ\s\-']/g, '')
+        .trim();
+      if (cleaned.length >= 3) {
+        return cleaned;
+      }
+    }
+  }
+
+  return null;
+}
+
+function extractSetNumber(text: string): string | null {
+  // Standard format: 4/102 or 025/078
+  const setNumberMatch = text.match(/\b(\d{1,3}\/\d{1,3})\b/);
+  if (setNumberMatch) return setNumberMatch[1];
+
+  // Promo format: SWSH001, SV001 etc
+  const promoMatch = text.match(/\b([A-Z]{2,4}\d{3})\b/);
+  if (promoMatch) return promoMatch[1];
+
+  return null;
+}
+
+// ===============================
+// MAIN COMPONENT
+// ===============================
+
 export default function ScanScreen() {
-  const [permission, requestPermission] = useCameraPermissions();
-  const [step, setStep] = useState<ScanStep>('camera');
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
-  const [capturing, setCapturing] = useState(false);
-  const cameraRef = useRef<CameraView>(null);
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const device = useCameraDevice('back');
+  const camera = useRef<Camera>(null);
+
+  const [step, setStep] = useState<ScanStep>('select_binder');
+  const [binders, setBinders] = useState<BinderRecord[]>([]);
+  const [selectedBinder, setSelectedBinder] = useState<BinderRecord | null>(null);
+  const [loadingBinders, setLoadingBinders] = useState(true);
+
+  const [scannedCards, setScannedCards] = useState<ScannedCard[]>([]);
+  const [scanning, setScanning] = useState(false);
+  const [lastScanned, setLastScanned] = useState<string | null>(null);
+  const [processingOcr, setProcessingOcr] = useState(false);
+
+  const scanCooldownRef = useRef(false);
 
   // ===============================
-  // CAPTURE PHOTO
+  // LOAD BINDERS
   // ===============================
+
+  useEffect(() => {
+    fetchBinders().then((data) => {
+      setBinders(data);
+      setLoadingBinders(false);
+    });
+  }, []);
+
+  // ===============================
+  // PERMISSION
+  // ===============================
+
+  useEffect(() => {
+    if (!hasPermission) {
+      requestPermission();
+    }
+  }, [hasPermission]);
+
+  // ===============================
+  // CAPTURE + OCR
+  // Fixed: button resets after every outcome
+  // ===============================
+
+  const resetScanState = useCallback((delay = 2000) => {
+    setTimeout(() => {
+      scanCooldownRef.current = false;
+      setLastScanned(null);
+      setProcessingOcr(false);
+    }, delay);
+  }, []);
 
   const handleCapture = useCallback(async () => {
-    if (!cameraRef.current || capturing) return;
+    if (!camera.current || scanCooldownRef.current || processingOcr) return;
+
+    setProcessingOcr(true);
+    scanCooldownRef.current = true;
 
     try {
-      setCapturing(true);
-
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
-        base64: false,
+      // Take photo
+      const photo = await camera.current.takePhoto({
+        flash: 'off',
       });
 
-      if (!photo?.uri) {
-        Alert.alert('Error', 'Could not capture photo.');
+      // Run ML Kit OCR
+      const result = await TextRecognition.recognize(`file://${photo.path}`);
+      const text = result.text ?? '';
+
+      console.log('OCR raw text:', text);
+
+      // Extract name + set number
+      const cardName = extractCardName(text);
+      const setNumber = extractSetNumber(text);
+
+      console.log('Detected name:', cardName);
+      console.log('Detected number:', setNumber);
+
+      if (!cardName) {
+        Alert.alert(
+          'Could not read card name',
+          'Make sure the card name at the top is clearly visible and well lit.',
+          [{ text: 'Try again' }]
+        );
+        // Reset immediately so button works again
+        scanCooldownRef.current = false;
+        setProcessingOcr(false);
         return;
       }
 
-      setPhotoUri(photo.uri);
-      setStep('search');
-    } catch (error: any) {
-      console.log('Capture failed:', error);
-      Alert.alert('Error', 'Could not capture photo.');
-    } finally {
-      setCapturing(false);
-    }
-  }, [capturing]);
-
-  // ===============================
-  // SEARCH
-  // ===============================
-
-  const handleSearch = useCallback(async () => {
-    if (!query.trim()) {
-      Alert.alert('Enter card name', 'Type the name of the card you scanned.');
-      return;
-    }
-
-    try {
-      setStep('searching');
-
-      // Upload photo to get URL (optional — for display)
-      let imageUrl: string | null = null;
-      if (photoUri) {
-        try {
-          imageUrl = await uploadCardScan(photoUri);
-        } catch {
-          // Non-fatal — we can still search without the upload
-        }
+      // Search TCG API with name + number for accuracy
+      const params = new URLSearchParams({ name: cardName });
+      if (setNumber) {
+        // Extract just the card number (before the slash)
+        const cardNum = setNumber.split('/')[0];
+        params.append('number', cardNum);
       }
 
-      // Search TCG API via backend
-      const params = new URLSearchParams({ name: query.trim() });
       const res = await fetch(`${PRICE_API_URL}/api/search/tcg?${params.toString()}`);
 
       if (!res.ok) {
-        throw new Error('Search failed');
+        throw new Error(`Search failed: ${res.status}`);
       }
 
       const data = await res.json();
@@ -92,76 +205,54 @@ export default function ScanScreen() {
 
       if (cards.length === 0) {
         Alert.alert(
-          'No cards found',
-          `Could not find any cards named "${query}". Try a different spelling.`,
-          [{ text: 'Try again', onPress: () => setStep('search') }]
+          `"${cardName}" not found`,
+          setNumber
+            ? `Read "${cardName}" (#${setNumber}) but not found in TCG database. Try again with better lighting.`
+            : `Read "${cardName}" but not found in TCG database. Try again.`,
+          [{ text: 'Try again' }]
         );
+        // Reset immediately so button works again
+        scanCooldownRef.current = false;
+        setProcessingOcr(false);
         return;
       }
 
-      // Navigate to results
-      router.push({
-        pathname: '/scan/result',
-        params: {
-          imageUrl: imageUrl ?? '',
-          cardName: query.trim(),
-          cardsJson: JSON.stringify(cards),
-        },
-      });
+      // Take first/best match
+      const match = cards[0] as ScannedCard;
+
+      // Check not already scanned
+      const alreadyScanned = scannedCards.some((c) => c.id === match.id);
+      if (alreadyScanned) {
+        setLastScanned(`${match.name} already in list`);
+        Vibration.vibrate(100);
+        resetScanState(2000);
+        return;
+      }
+
+      // Add to scanned pile ✅
+      setScannedCards((prev) => [...prev, match]);
+      setLastScanned(`✅ ${match.name}${setNumber ? ` #${setNumber}` : ''} added!`);
+      Vibration.vibrate([0, 100, 50, 100]);
+
+      // Normal cooldown after success
+      resetScanState(2000);
+
     } catch (error: any) {
-      console.log('Search failed:', error);
-      Alert.alert('Search failed', 'Could not search for this card.');
-      setStep('search');
+      console.log('Scan error:', error);
+      Alert.alert('Scan failed', 'Something went wrong. Try again.');
+
+      // Reset immediately on error so button works again
+      scanCooldownRef.current = false;
+      setProcessingOcr(false);
+      setLastScanned(null);
     }
-  }, [query, photoUri]);
+  }, [processingOcr, scannedCards, resetScanState]);
 
   // ===============================
-  // NO PERMISSION
+  // SELECT BINDER STEP
   // ===============================
 
-  if (!permission) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator color="#FFFFFF" />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!permission.granted) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 12 }}>
-            Camera access needed
-          </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginBottom: 24, lineHeight: 20 }}>
-            Stackr needs camera access to scan your Pokémon cards.
-          </Text>
-          <TouchableOpacity
-            onPress={requestPermission}
-            style={{
-              backgroundColor: theme.colors.primary,
-              borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24,
-              marginBottom: 12,
-            }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Allow Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // ===============================
-  // SEARCH STEP — photo taken, enter name
-  // ===============================
-
-  if (step === 'search' || step === 'searching') {
+  if (step === 'select_binder') {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
         <View style={{ flex: 1, padding: 16 }}>
@@ -169,7 +260,7 @@ export default function ScanScreen() {
           {/* Header */}
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
             <TouchableOpacity
-              onPress={() => { setStep('camera'); setPhotoUri(null); setQuery(''); }}
+              onPress={() => router.back()}
               style={{
                 width: 40, height: 40,
                 borderRadius: 12,
@@ -183,101 +274,91 @@ export default function ScanScreen() {
             </TouchableOpacity>
 
             <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>
-                Identify Card
+              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+                Scan Cards
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
-                Type the card name you can see
+                Which binder are you scanning into?
               </Text>
             </View>
           </View>
 
-          {/* Photo preview */}
-          {photoUri && (
-            <View style={{
-              alignItems: 'center',
-              marginBottom: 24,
-            }}>
-              <Image
-                source={{ uri: photoUri }}
-                style={{
-                  width: 180,
-                  height: 252,
-                  borderRadius: 12,
-                  borderWidth: 2,
-                  borderColor: theme.colors.border,
-                }}
-                resizeMode="cover"
-              />
-            </View>
+          {loadingBinders ? (
+            <ActivityIndicator color={theme.colors.primary} />
+          ) : (
+            <FlatList
+              data={binders}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              renderItem={({ item }) => {
+                const selected = selectedBinder?.id === item.id;
+                return (
+                  <TouchableOpacity
+                    onPress={() => setSelectedBinder(item)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: selected ? theme.colors.primary + '18' : theme.colors.card,
+                      borderRadius: 16,
+                      padding: 14,
+                      marginBottom: 10,
+                      borderWidth: 2,
+                      borderColor: selected ? theme.colors.primary : theme.colors.border,
+                      gap: 12,
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <View style={{
+                      width: 44, height: 44,
+                      borderRadius: 10,
+                      backgroundColor: item.color || theme.colors.primary,
+                    }} />
+
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>
+                        {item.name}
+                      </Text>
+                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
+                        {item.type === 'official' ? 'Official set' : 'Custom binder'}
+                      </Text>
+                    </View>
+
+                    {selected && (
+                      <View style={{
+                        width: 26, height: 26,
+                        borderRadius: 13,
+                        backgroundColor: theme.colors.primary,
+                        alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>✓</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
+            />
           )}
 
-          {/* Card name input */}
-          <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
-            Card name
-          </Text>
-
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="e.g. Charizard, Pikachu, Mewtwo..."
-            placeholderTextColor={theme.colors.textSoft}
-            autoFocus
-            returnKeyType="search"
-            onSubmitEditing={handleSearch}
-            style={{
-              backgroundColor: theme.colors.card,
-              color: theme.colors.text,
-              borderRadius: 14,
-              padding: 16,
-              fontSize: 16,
-              fontWeight: '700',
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              marginBottom: 12,
-            }}
-          />
-
-          <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginBottom: 24, lineHeight: 18 }}>
-            Tip: You can see the card name printed at the top of the card. Just type it exactly as shown.
-          </Text>
-
-          {/* Search button */}
+          {/* Start scanning button */}
           <TouchableOpacity
-            onPress={handleSearch}
-            disabled={step === 'searching' || !query.trim()}
+            onPress={() => {
+              if (!selectedBinder) {
+                Alert.alert('Select a binder', 'Please select which binder to scan into.');
+                return;
+              }
+              setStep('scanning');
+            }}
+            disabled={!selectedBinder}
             style={{
-              backgroundColor: query.trim() ? theme.colors.primary : theme.colors.textSoft,
-              borderRadius: 14,
+              backgroundColor: selectedBinder ? theme.colors.primary : theme.colors.textSoft,
+              borderRadius: 16,
               paddingVertical: 16,
               alignItems: 'center',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              gap: 8,
-              opacity: step === 'searching' ? 0.6 : 1,
+              marginTop: 8,
             }}
           >
-            {step === 'searching' ? (
-              <>
-                <ActivityIndicator color="#FFFFFF" size="small" />
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
-                  Searching...
-                </Text>
-              </>
-            ) : (
-              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
-                Find Card
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Skip photo — just search */}
-          <TouchableOpacity
-            onPress={() => setPhotoUri(null)}
-            style={{ marginTop: 12, alignItems: 'center' }}
-          >
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-              Search without photo
+            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
+              {selectedBinder ? `Scan into "${selectedBinder.name}"` : 'Select a binder first'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -286,139 +367,443 @@ export default function ScanScreen() {
   }
 
   // ===============================
-  // CAMERA STEP
+  // REVIEW STEP
+  // ===============================
+
+  if (step === 'review') {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <View style={{ flex: 1, padding: 16 }}>
+
+          {/* Header */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+            <TouchableOpacity
+              onPress={() => setStep('scanning')}
+              style={{
+                width: 40, height: 40,
+                borderRadius: 12,
+                backgroundColor: theme.colors.card,
+                alignItems: 'center', justifyContent: 'center',
+                marginRight: 12,
+                borderWidth: 1, borderColor: theme.colors.border,
+              }}
+            >
+              <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
+            </TouchableOpacity>
+
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+                Review Cards
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+                {scannedCards.length} card{scannedCards.length !== 1 ? 's' : ''} scanned · tap ✕ to remove
+              </Text>
+            </View>
+          </View>
+
+          {scannedCards.length === 0 ? (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', marginBottom: 8 }}>
+                No cards scanned yet
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 20 }}>
+                Go back to the camera and scan some cards first.
+              </Text>
+              <TouchableOpacity
+                onPress={() => setStep('scanning')}
+                style={{
+                  marginTop: 20,
+                  backgroundColor: theme.colors.primary,
+                  borderRadius: 14,
+                  paddingVertical: 12, paddingHorizontal: 24,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Back to Scanner</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <FlatList
+                data={scannedCards}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 150 }}
+                renderItem={({ item }) => (
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: theme.colors.card,
+                    borderRadius: 14,
+                    padding: 10,
+                    marginBottom: 8,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                    gap: 12,
+                  }}>
+                    {item.image_small ? (
+                      <Image
+                        source={{ uri: item.image_small }}
+                        style={{ width: 50, height: 70, borderRadius: 6 }}
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <View style={{
+                        width: 50, height: 70,
+                        borderRadius: 6,
+                        backgroundColor: theme.colors.surface,
+                      }} />
+                    )}
+
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14 }} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
+                        {item.set_name} · #{item.number}
+                      </Text>
+                      {item.rarity && (
+                        <Text style={{ color: '#FFD166', fontSize: 11, marginTop: 2, fontWeight: '700' }}>
+                          {item.rarity}
+                        </Text>
+                      )}
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={() => setScannedCards((prev) => prev.filter((c) => c.id !== item.id))}
+                      style={{
+                        width: 32, height: 32,
+                        borderRadius: 16,
+                        backgroundColor: '#FEE2E2',
+                        alignItems: 'center', justifyContent: 'center',
+                        borderWidth: 1, borderColor: '#FCA5A5',
+                      }}
+                    >
+                      <Text style={{ color: '#991B1B', fontWeight: '900', fontSize: 16 }}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+
+              {/* Action buttons */}
+              <View style={{
+                position: 'absolute',
+                left: 16, right: 16, bottom: 24,
+                gap: 10,
+              }}>
+                <TouchableOpacity
+                  onPress={() => setStep('scanning')}
+                  style={{
+                    backgroundColor: theme.colors.card,
+                    borderRadius: 14, paddingVertical: 13,
+                    alignItems: 'center',
+                    borderWidth: 1, borderColor: theme.colors.border,
+                  }}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
+                    📷 Scan More Cards
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={async () => {
+                    if (!selectedBinder) return;
+
+                    try {
+                      setScanning(true);
+
+                      const { supabase } = await import('../../lib/supabase');
+
+                      const rows = scannedCards.map((card) => ({
+                        binder_id: selectedBinder.id,
+                        card_id: card.id,
+                        set_id: card.set_id,
+                        owned: true,
+                        notes: '',
+                        card_name: card.name,
+                        card_number: card.number,
+                        image_url: card.image_small,
+                        set_name: card.set_name,
+                      }));
+
+                      const { error } = await supabase
+                        .from('binder_cards')
+                        .upsert(rows, {
+                          onConflict: 'binder_id,card_id',
+                          ignoreDuplicates: false,
+                        });
+
+                      if (error) throw error;
+
+                      Alert.alert(
+                        '🎉 All added!',
+                        `${scannedCards.length} card${scannedCards.length !== 1 ? 's' : ''} added to "${selectedBinder.name}".`,
+                        [
+                          {
+                            text: 'Go to binder',
+                            onPress: () => router.replace({
+                              pathname: '/binder/[id]',
+                              params: { id: selectedBinder.id },
+                            }),
+                          },
+                          {
+                            text: 'Scan more',
+                            onPress: () => {
+                              setScannedCards([]);
+                              setStep('scanning');
+                            },
+                          },
+                        ]
+                      );
+                    } catch (error: any) {
+                      Alert.alert('Error', error?.message ?? 'Could not add cards.');
+                    } finally {
+                      setScanning(false);
+                    }
+                  }}
+                  disabled={scanning}
+                  style={{
+                    backgroundColor: theme.colors.primary,
+                    borderRadius: 14, paddingVertical: 16,
+                    alignItems: 'center',
+                    opacity: scanning ? 0.6 : 1,
+                  }}
+                >
+                  {scanning ? (
+                    <ActivityIndicator color="#FFFFFF" />
+                  ) : (
+                    <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
+                      ✅ Add {scannedCards.length} Card{scannedCards.length !== 1 ? 's' : ''} to Binder
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ===============================
+  // PERMISSION / NO DEVICE
+  // ===============================
+
+  if (!hasPermission) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 12 }}>
+            Camera access needed
+          </Text>
+          <Text style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginBottom: 24 }}>
+            Stackr needs camera access to scan your Pokémon cards.
+          </Text>
+          <TouchableOpacity
+            onPress={requestPermission}
+            style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, marginBottom: 12 }}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Allow Camera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!device) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: '#FFFFFF', fontSize: 16 }}>No camera found</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ===============================
+  // SCANNING STEP — live camera
   // ===============================
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
-      <CameraView
-        ref={cameraRef}
+      <Camera
+        ref={camera}
         style={{ flex: 1 }}
-        facing="back"
-      >
-        <SafeAreaView style={{ flex: 1 }}>
+        device={device}
+        isActive={true}
+        photo={true}
+      />
 
-          {/* Header */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{
-                width: 40, height: 40,
-                borderRadius: 20,
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <Text style={{ color: '#FFFFFF', fontSize: 22, lineHeight: 24 }}>✕</Text>
-            </TouchableOpacity>
+      <SafeAreaView style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
 
-            <View style={{ flex: 1, alignItems: 'center' }}>
-              <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900' }}>
-                Scan Card
-              </Text>
-              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>
-                Take a photo of your card
-              </Text>
-            </View>
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+          <TouchableOpacity
+            onPress={() => setStep('select_binder')}
+            style={{
+              width: 40, height: 40,
+              borderRadius: 20,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Text style={{ color: '#FFFFFF', fontSize: 22, lineHeight: 24 }}>✕</Text>
+          </TouchableOpacity>
 
-            <View style={{ width: 40 }} />
-          </View>
-
-          {/* Frame guide */}
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <View style={{
-              width: 240, height: 336,
-              borderRadius: 16,
-              borderWidth: 2,
-              borderColor: 'rgba(255,255,255,0.5)',
-              backgroundColor: 'transparent',
-            }}>
-              {/* Corner accents */}
-              <View style={{ position: 'absolute', top: -2, left: -2, width: 28, height: 28, borderTopWidth: 4, borderLeftWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
-              <View style={{ position: 'absolute', top: -2, right: -2, width: 28, height: 28, borderTopWidth: 4, borderRightWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
-              <View style={{ position: 'absolute', bottom: -2, left: -2, width: 28, height: 28, borderBottomWidth: 4, borderLeftWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
-              <View style={{ position: 'absolute', bottom: -2, right: -2, width: 28, height: 28, borderBottomWidth: 4, borderRightWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
-
-              {/* Instruction inside frame */}
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 16 }}>
-                <View style={{
-                  backgroundColor: 'rgba(0,0,0,0.6)',
-                  borderRadius: 8,
-                  paddingHorizontal: 12, paddingVertical: 6,
-                }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700' }}>
-                    Make sure name is visible
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 16, textAlign: 'center' }}>
-              Centre the card in the frame
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900' }}>
+              Scanning into "{selectedBinder?.name}"
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>
+              {scannedCards.length} card{scannedCards.length !== 1 ? 's' : ''} scanned
             </Text>
           </View>
 
-          {/* Bottom controls */}
-          <View style={{ alignItems: 'center', paddingBottom: 48, gap: 16 }}>
-
-            {/* Tips row */}
-            <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 24 }}>
-              {['Good lighting', 'Card flat', 'Name visible'].map((tip) => (
-                <View key={tip} style={{
-                  flex: 1,
-                  backgroundColor: 'rgba(0,0,0,0.5)',
-                  borderRadius: 8, paddingVertical: 6,
-                  alignItems: 'center',
-                  borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
-                }}>
-                  <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 10, fontWeight: '700' }}>
-                    {tip}
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Capture button */}
+          {/* Review button */}
+          {scannedCards.length > 0 && (
             <TouchableOpacity
-              onPress={handleCapture}
-              disabled={capturing}
+              onPress={() => setStep('review')}
               style={{
-                width: 80, height: 80,
-                borderRadius: 40,
-                backgroundColor: capturing ? 'rgba(255,255,255,0.4)' : '#FFFFFF',
-                alignItems: 'center', justifyContent: 'center',
-                borderWidth: 4,
-                borderColor: 'rgba(255,255,255,0.3)',
-              }}
-            >
-              {capturing ? (
-                <ActivityIndicator color={theme.colors.primary} size="large" />
-              ) : (
-                <View style={{
-                  width: 60, height: 60,
-                  borderRadius: 30,
-                  backgroundColor: theme.colors.primary,
-                }} />
-              )}
-            </TouchableOpacity>
-
-            {/* Skip camera — just search */}
-            <TouchableOpacity
-              onPress={() => setStep('search')}
-              style={{
-                backgroundColor: 'rgba(0,0,0,0.5)',
+                backgroundColor: theme.colors.primary,
                 borderRadius: 10,
-                paddingHorizontal: 16, paddingVertical: 8,
-                borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
+                paddingHorizontal: 12, paddingVertical: 7,
               }}
             >
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontWeight: '700', fontSize: 13 }}>
-                Skip — search manually
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>
+                Review ({scannedCards.length})
               </Text>
             </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Frame guide */}
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{
+            width: 240, height: 336,
+            borderRadius: 16,
+            borderWidth: 2,
+            borderColor: processingOcr ? theme.colors.primary : 'rgba(255,255,255,0.5)',
+          }}>
+            {/* Corner accents */}
+            <View style={{ position: 'absolute', top: -2, left: -2, width: 28, height: 28, borderTopWidth: 4, borderLeftWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
+            <View style={{ position: 'absolute', top: -2, right: -2, width: 28, height: 28, borderTopWidth: 4, borderRightWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
+            <View style={{ position: 'absolute', bottom: -2, left: -2, width: 28, height: 28, borderBottomWidth: 4, borderLeftWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
+            <View style={{ position: 'absolute', bottom: -2, right: -2, width: 28, height: 28, borderBottomWidth: 4, borderRightWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
+
+            {/* Processing indicator */}
+            {processingOcr && (
+              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator color={theme.colors.primary} size="large" />
+                <Text style={{ color: '#FFFFFF', fontWeight: '700', marginTop: 12, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
+                  Reading card...
+                </Text>
+              </View>
+            )}
           </View>
-        </SafeAreaView>
-      </CameraView>
+
+          {/* Scan result feedback */}
+          {lastScanned && (
+            <View style={{
+              marginTop: 16,
+              backgroundColor: lastScanned.startsWith('✅')
+                ? 'rgba(16,185,129,0.9)'
+                : 'rgba(245,158,11,0.9)',
+              borderRadius: 10,
+              paddingHorizontal: 16, paddingVertical: 10,
+            }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 14, textAlign: 'center' }}>
+                {lastScanned}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Bottom controls */}
+        <View style={{ alignItems: 'center', paddingBottom: 48, gap: 14 }}>
+
+          {/* Scanned cards preview strip */}
+          {scannedCards.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setStep('review')}
+              style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 6, alignItems: 'center' }}
+            >
+              {scannedCards.slice(-5).map((card) => (
+                <Image
+                  key={card.id}
+                  source={{ uri: card.image_small }}
+                  style={{
+                    width: 36, height: 50,
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.5)',
+                  }}
+                  resizeMode="cover"
+                />
+              ))}
+              {scannedCards.length > 5 && (
+                <View style={{
+                  width: 36, height: 50,
+                  borderRadius: 4,
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                  alignItems: 'center', justifyContent: 'center',
+                  borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
+                }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>
+                    +{scannedCards.length - 5}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
+
+          {/* Tips */}
+          <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 24 }}>
+            {['Good lighting', 'Card flat', 'Name + number visible'].map((tip) => (
+              <View key={tip} style={{
+                flex: 1,
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                borderRadius: 8, paddingVertical: 6,
+                alignItems: 'center',
+                borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+              }}>
+                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 9, fontWeight: '700', textAlign: 'center' }}>
+                  {tip}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Capture button */}
+          <TouchableOpacity
+            onPress={handleCapture}
+            disabled={processingOcr}
+            style={{
+              width: 80, height: 80,
+              borderRadius: 40,
+              backgroundColor: processingOcr ? 'rgba(255,255,255,0.4)' : '#FFFFFF',
+              alignItems: 'center', justifyContent: 'center',
+              borderWidth: 4,
+              borderColor: 'rgba(255,255,255,0.3)',
+            }}
+          >
+            {processingOcr ? (
+              <ActivityIndicator color={theme.colors.primary} size="large" />
+            ) : (
+              <View style={{
+                width: 60, height: 60,
+                borderRadius: 30,
+                backgroundColor: theme.colors.primary,
+              }} />
+            )}
+          </TouchableOpacity>
+
+          <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
+            Tap to scan · card name + number must be visible
+          </Text>
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
