@@ -1031,21 +1031,22 @@ export default function TradeScreen() {
       <TouchableOpacity
         onPress={() => router.push('/price-builder')}
         style={{
-          position: 'absolute',
-          right: 270,
-          bottom: insets.bottom + 30,
-          width: 60,
-          height: 60,
-          borderRadius: 16,
-          backgroundColor: theme.colors.primary,
-          alignItems: 'center',
-          justifyContent: 'center',
-          shadowColor: '#000',
-          shadowOpacity: 0.18,
-          shadowRadius: 10,
-          shadowOffset: { width: 0, height: 10 },
-          elevation: 5,
-        }}
+  position: 'absolute',
+  left: '50%',
+  transform: [{ translateX: -30 }],
+  bottom: insets.bottom + 20,
+  width: 60,
+  height: 60,
+  borderRadius: 16,
+  backgroundColor: theme.colors.primary,
+  alignItems: 'center',
+  justifyContent: 'center',
+  shadowColor: '#000',
+  shadowOpacity: 0.18,
+  shadowRadius: 10,
+  shadowOffset: { width: 0, height: 10 },
+  elevation: 5,
+}}
       >
         <Ionicons name="calculator-outline" size={38} color="#fff" />
       </TouchableOpacity>
