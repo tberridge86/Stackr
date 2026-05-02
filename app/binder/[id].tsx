@@ -876,8 +876,11 @@ export default function BinderDetailScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
+  <SafeAreaView
+    edges={['bottom']}
+    style={{ flex: 1, backgroundColor: theme.colors.bg }}
+  >
+    <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
@@ -1193,7 +1196,7 @@ export default function BinderDetailScreen() {
                   onPress={closeDetailModal}
                   style={{
                     position: 'absolute',
-                    top: 46, right: 16,
+                    top: 20, right: 16,
                     zIndex: 50,
                     backgroundColor: theme.colors.card,
                     borderRadius: 999,
@@ -1203,12 +1206,12 @@ export default function BinderDetailScreen() {
                     borderColor: theme.colors.border,
                   }}
                 >
-                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Close</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>x</Text>
                 </TouchableOpacity>
 
                 {selectedCard && (
                   <ScrollView
-                    contentContainerStyle={{ padding: 16, paddingTop: 42, paddingBottom: 40 }}
+                    contentContainerStyle={{ padding: 16, paddingTop: 45, paddingBottom: 40 }}
                     showsVerticalScrollIndicator={false}
                   >
                     <PinchGestureHandler

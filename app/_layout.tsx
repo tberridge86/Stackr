@@ -85,7 +85,7 @@ export default function RootLayout() {
                   <Stack.Screen name="binder/add-cards" />
                   <Stack.Screen name="scan/index" />
                   <Stack.Screen name="scan/result" />
-                  <Stack.Screen name="market/index" options={{ title: 'Market', headerBackTitle: '' }} />
+                  <Stack.Screen name="market/index" options={{ title: '' }} />
                   <Stack.Screen name="price-builder/index" options={{ title: '' }} />
                   <Stack.Screen name="user/[id]" options={{ title: '' }} />
                 </Stack>

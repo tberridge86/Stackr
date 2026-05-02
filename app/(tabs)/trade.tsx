@@ -1032,7 +1032,7 @@ export default function TradeScreen() {
         onPress={() => router.push('/price-builder')}
         style={{
           position: 'absolute',
-          right: 300,
+          right: 270,
           bottom: insets.bottom + 30,
           width: 60,
           height: 60,

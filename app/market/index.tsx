@@ -654,7 +654,10 @@ export default function MarketScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+  <SafeAreaView
+    edges={['bottom']}
+    style={{ flex: 1, backgroundColor: theme.colors.bg }}
+  >
       <FlatList
         data={searchResults}
         keyExtractor={(item) => item.id}
