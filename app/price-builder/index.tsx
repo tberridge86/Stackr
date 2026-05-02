@@ -543,36 +543,20 @@ export default function PriceBuilderScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+{/* Header */}
+<View style={{ paddingHorizontal: 16, paddingLeft: 24,padding: 24, paddingTop: 8, paddingBottom: 12 }}>
+  <Text style={{ color: theme.colors.text, fontSize: 36, fontWeight: '900' }}>
+    Price Builder
+  </Text>
+  <Text style={{ color: theme.colors.textSoft, marginTop: 3 }}>
+    Build a bundle and compare totals.
+  </Text>
+</View>
+
       <View style={{ flex: 1 }}>
 
-        {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              width: 42, height: 42,
-              borderRadius: 14,
-              backgroundColor: theme.colors.card,
-              alignItems: 'center', justifyContent: 'center',
-              marginRight: 12,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontSize: 32, lineHeight: 32, marginTop: -3 }}>‹</Text>
-          </TouchableOpacity>
-
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
-              Price Builder
-            </Text>
-            <Text style={{ color: theme.colors.textSoft, marginTop: 3 }}>
-              Build a bundle and compare totals.
-            </Text>
-          </View>
-        </View>
-
+      
         {/* Search card */}
         <View style={{
           backgroundColor: theme.colors.card,
@@ -580,6 +564,7 @@ export default function PriceBuilderScreen() {
           padding: 12,
           marginHorizontal: 16,
           marginBottom: 12,
+          marginTop: 16,
           borderWidth: 1,
           borderColor: theme.colors.border,
         }}>
@@ -745,6 +730,6 @@ export default function PriceBuilderScreen() {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

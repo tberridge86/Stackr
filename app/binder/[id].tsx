@@ -849,8 +849,7 @@ export default function BinderDetailScreen() {
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>Loading binder...</Text>
         </View>
@@ -861,8 +860,7 @@ export default function BinderDetailScreen() {
   if (!binder) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>
             Binder not found
           </Text>
@@ -881,36 +879,64 @@ export default function BinderDetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <Stack.Screen options={{ headerShown: false }} />
-
+      
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
 
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <View style={{ flex: 1 }}>
-            <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
-              {binder.name}
-            </Text>
-            <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
-              {ownedCount} / {totalCount} owned · {progressPercent}%
-            </Text>
+       {/* Header */}
+<View
+  style={{
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  }}
+>
+    <View style={{ flex: 1 }}>
+    <Text
+      numberOfLines={1}
+      style={{
+        color: theme.colors.text,
+        fontSize: 24,
+        fontWeight: '900',
+      }}
+    >
+      {binder.name}
+    </Text>
 
-            {/* Visibility toggle — hidden in read only */}
-            {!isReadOnly && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 10 }}>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900', marginRight: 6 }}>
-                  {isPublic ? '🌍 Public' : '🔒 Private'}
-                </Text>
-                <Switch
-                  value={isPublic}
-                  onValueChange={togglePublic}
-                  disabled={updatingVisibility}
-                  style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
-                />
-              </View>
-            )}
-          </View>
-        </View>
+    <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
+      {ownedCount} / {totalCount} owned · {progressPercent}%
+    </Text>
+
+    {!isReadOnly && (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          marginTop: 10,
+        }}
+      >
+        <Text
+          style={{
+            color: theme.colors.textSoft,
+            fontSize: 12,
+            fontWeight: '900',
+            marginRight: 6,
+          }}
+        >
+          {isPublic ? '🌍 Public' : '🔒 Private'}
+        </Text>
+
+        <Switch
+          value={isPublic}
+          onValueChange={togglePublic}
+          disabled={updatingVisibility}
+          style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
+        />
+      </View>
+    )}
+  </View>
+</View>
 
         {/* Progress bar */}
         <View style={{

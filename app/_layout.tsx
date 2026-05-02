@@ -16,37 +16,50 @@ export default function RootLayout() {
             <TradeProvider>
               <StatusBar style="dark" />
 
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  gestureEnabled: true,
-                  fullScreenGestureEnabled: true,
-                  headerStyle: {
-                    backgroundColor: theme.colors.card,
-                  },
-                  headerTintColor: theme.colors.text,
-                  headerTitleStyle: {
-                    fontWeight: '900',
-                  },
-                  contentStyle: {
-                    backgroundColor: theme.colors.bg,
-                  },
-                  headerBackButtonDisplayMode: 'minimal',
-                  headerBackTitleVisible: false,
-                }}
-              >
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="card/[id]" options={{ headerShown: false }} />
-                <Stack.Screen name="set/[id]" options={{ headerShown: false }} />
-                <Stack.Screen name="offer/new" options={{ headerShown: false }} />
-                <Stack.Screen name="user/[id]" options={{ headerShown: false }} />
-                <Stack.Screen name="offers" options={{ headerShown: false }} />
-                <Stack.Screen name="binder/new" options={{ headerShown: false }} />
-                <Stack.Screen name="binder/[id]" options={{ headerShown: false }} />
-                <Stack.Screen name="binder/add-cards" options={{ headerShown: false }} />
-                <Stack.Screen name="scan/index" options={{ headerShown: false }} />
-                <Stack.Screen name="scan/result" options={{ headerShown: false }} />
-              </Stack>
+             <Stack
+  screenOptions={{
+    headerShown: true,
+    gestureEnabled: true,
+    fullScreenGestureEnabled: true,
+    headerStyle: {
+      backgroundColor: theme.colors.bg,
+    },
+    headerTintColor: theme.colors.primary,
+    headerTitleStyle: {
+      color: theme.colors.text,
+      fontWeight: '900',
+    },
+    headerShadowVisible: false,
+
+    // hides the "(tabs)" back label
+    headerBackButtonDisplayMode: 'minimal',
+    headerBackTitleVisible: false,
+headerBackTitle: '',
+  }}
+>
+  {/* Tabs = NO header */}
+  <Stack.Screen
+  name="(tabs)"
+  options={{
+    headerShown: false,
+    title: '',
+  }}
+/>
+
+  {/* Everything else = automatic back button */}
+  <Stack.Screen name="card/[id]" />
+  <Stack.Screen name="set/[id]" />
+  <Stack.Screen name="offer/new" />
+  <Stack.Screen name="offers" />
+  <Stack.Screen name="binder/new" />
+  <Stack.Screen name="binder/[id]" options={{ title: '' }} />
+  <Stack.Screen name="binder/add-cards" />
+  <Stack.Screen name="scan/index" />
+  <Stack.Screen name="scan/result" />
+  <Stack.Screen name="market/index" options={{ title: 'Market', headerBackTitle: ''}} />
+  <Stack.Screen name="price-builder/index" options={{ title: ''}} />
+  <Stack.Screen name="user/[id]" options={{ title: ''}} />
+</Stack>
             </TradeProvider>
           </CollectionProvider>
         </ProfileProvider>

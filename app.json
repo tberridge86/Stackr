@@ -15,8 +15,7 @@
           "image": "./assets/images/splash.png",
           "resizeMode": "cover",
           "backgroundColor": "#ffffff",
-          "imageWidth": 400
-        }
+         }
       ],
       [
         "react-native-vision-camera",

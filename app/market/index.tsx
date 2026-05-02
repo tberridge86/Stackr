@@ -839,13 +839,29 @@ export default function MarketScreen() {
                 showsVerticalScrollIndicator={false}
               >
                 {/* Drag handle */}
-                <View style={{
-                  alignSelf: 'center',
-                  width: 42, height: 5,
-                  borderRadius: 999,
-                  backgroundColor: 'rgba(255,255,255,0.55)',
-                  marginBottom: 20,
-                }} />
+<View style={{
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 20,
+  position: 'relative',
+}}>
+  <View style={{
+    width: 42, height: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+  }} />
+  <TouchableOpacity
+    onPress={closeDetail}
+    style={{
+      position: 'absolute',
+      right: 0,
+      padding: 8,
+    }}
+  >
+    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20, fontWeight: '700' }}>✕</Text>
+  </TouchableOpacity>
+</View>
 
                 {selectedCard && (
                   <>
