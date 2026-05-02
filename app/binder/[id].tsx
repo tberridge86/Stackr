@@ -148,7 +148,7 @@ export default function BinderDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
 
-  const [sortMode, setSortMode] = useState<SortMode>('binder');
+  const [sortMode, setSortMode] = useState<SortMode>('number');
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState<BinderCardWithDetails | null>(null);
@@ -1135,7 +1135,7 @@ export default function BinderDetailScreen() {
                           borderRadius: 14,
                           padding: 10,
                           marginBottom: 10,
-                          opacity: alreadyInBinder ? 0.55 : 1,
+                          opacity: alreadyInBinder ? 0.35 : 1,
                           borderWidth: 1,
                           borderColor: theme.colors.border,
                         }}

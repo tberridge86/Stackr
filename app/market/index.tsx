@@ -1,5 +1,5 @@
 import { theme } from '../../lib/theme';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -71,6 +71,8 @@ type EbayDetailData = {
 // ===============================
 
 const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+const USD_TO_GBP = 0.79;
+const EUR_TO_GBP = 0.85;
 
 const cardShadow = {
   shadowColor: '#000',
@@ -220,7 +222,6 @@ export default function MarketScreen() {
       return;
     }
 
-    // Keep only latest 2 per card
     const grouped: Record<string, any[]> = {};
     for (const row of data ?? []) {
       if (!grouped[row.card_id]) grouped[row.card_id] = [];
@@ -263,7 +264,6 @@ export default function MarketScreen() {
 
   // ===============================
   // LOAD WATCHLIST
-  // Fixed: load watchlist + cards in one go using Supabase
   // ===============================
 
   const loadWatchlist = useCallback(async () => {
@@ -299,7 +299,6 @@ export default function MarketScreen() {
 
       const cardIds = rows.map((r) => r.card_id);
 
-      // Load card data from Supabase (not external API)
       const { data: cardData } = await supabase
         .from('pokemon_cards')
         .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
@@ -323,13 +322,10 @@ export default function MarketScreen() {
         cardmarket: card.raw_data?.cardmarket,
       }));
 
-      // Preserve watchlist order
       const cardMap = Object.fromEntries(cards.map((c) => [c.id, c]));
       const ordered = cardIds.map((id) => cardMap[id]).filter(Boolean) as PokemonCard[];
 
       setWatchlistCards(ordered);
-
-      // Load price snapshots
       await loadWatchlistPrices(cardIds);
     } catch (err) {
       console.log('Failed to load watchlist:', err);
@@ -350,12 +346,10 @@ export default function MarketScreen() {
 
   // ===============================
   // SEARCH
-  // Fixed: uses Supabase, not external API
   // ===============================
 
   const searchCards = useCallback(async (searchQuery: string) => {
     const trimmed = searchQuery.trim();
-
     if (!trimmed) {
       setSearchResults([]);
       return;
@@ -399,22 +393,14 @@ export default function MarketScreen() {
     }
   }, []);
 
-  // Debounced search on text change
   const handleSearchChange = useCallback((text: string) => {
     setQuery(text);
-
-    if (searchTimerRef.current) {
-      clearTimeout(searchTimerRef.current);
-    }
-
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     if (text.trim().length < 2) {
       setSearchResults([]);
       return;
     }
-
-    searchTimerRef.current = setTimeout(() => {
-      searchCards(text);
-    }, 400);
+    searchTimerRef.current = setTimeout(() => searchCards(text), 400);
   }, [searchCards]);
 
   // ===============================
@@ -505,7 +491,11 @@ export default function MarketScreen() {
     }
 
     const { latestPrice, change, percentChange, hasHistory } = priceData;
-    const changeColor = change == null ? theme.colors.textSoft : change > 0 ? '#22C55E' : change < 0 ? '#EF4444' : theme.colors.textSoft;
+    const changeColor =
+      change == null ? theme.colors.textSoft
+      : change > 0 ? '#22C55E'
+      : change < 0 ? '#EF4444'
+      : theme.colors.textSoft;
 
     return (
       <View style={{ marginTop: 10, marginBottom: 10, gap: 4 }}>
@@ -571,7 +561,7 @@ export default function MarketScreen() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>TCG</Text>
             <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>
-              ${tcgMid != null ? tcgMid.toFixed(2) : '--'}
+              {tcgMid != null ? `£${(tcgMid * USD_TO_GBP).toFixed(2)}` : '--'}
             </Text>
           </View>
 
@@ -684,7 +674,6 @@ export default function MarketScreen() {
         }
         ListHeaderComponent={
           <View style={{ paddingHorizontal: 16, paddingTop: 22, paddingBottom: 10 }}>
-            {/* Header */}
             <Text style={{ fontSize: 30, fontWeight: '900', color: theme.colors.text }}>
               Market
             </Text>
@@ -713,7 +702,6 @@ export default function MarketScreen() {
                 returnKeyType="search"
                 onSubmitEditing={() => searchCards(query)}
               />
-
               <TouchableOpacity
                 onPress={() => searchCards(query)}
                 style={{
@@ -838,41 +826,35 @@ export default function MarketScreen() {
                 contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 44 }}
                 showsVerticalScrollIndicator={false}
               >
-                {/* Drag handle */}
-<View style={{
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: 20,
-  position: 'relative',
-}}>
-  <View style={{
-    width: 42, height: 5,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.55)',
-  }} />
-  <TouchableOpacity
-    onPress={closeDetail}
-    style={{
-      position: 'absolute',
-      right: 0,
-      padding: 8,
-    }}
-  >
-    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20, fontWeight: '700' }}>✕</Text>
-  </TouchableOpacity>
-</View>
+                {/* Drag handle + close */}
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 20,
+                  position: 'relative',
+                }}>
+                  <View style={{
+                    width: 42, height: 5,
+                    borderRadius: 999,
+                    backgroundColor: 'rgba(255,255,255,0.55)',
+                  }} />
+                  <TouchableOpacity
+                    onPress={closeDetail}
+                    style={{ position: 'absolute', right: 0, padding: 8 }}
+                  >
+                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20, fontWeight: '700' }}>✕</Text>
+                  </TouchableOpacity>
+                </View>
 
                 {selectedCard && (
                   <>
-                    {/* Card image */}
                     <Image
                       source={{ uri: selectedCard.images?.large ?? selectedCard.images?.small }}
                       style={{ width: '100%', height: 330, borderRadius: 20, alignSelf: 'center', marginBottom: 18 }}
                       resizeMode="contain"
                     />
 
-                    {/* Card info panel */}
                     <View style={{
                       backgroundColor: theme.colors.card,
                       borderRadius: 22,
@@ -915,7 +897,7 @@ export default function MarketScreen() {
                         </Text>
                       </TouchableOpacity>
 
-                      {/* TCGPlayer prices (USD) */}
+                      {/* TCGPlayer prices (GBP est.) */}
                       <View style={{
                         marginTop: 16,
                         backgroundColor: theme.colors.surface,
@@ -925,15 +907,29 @@ export default function MarketScreen() {
                         borderColor: theme.colors.border,
                       }}>
                         <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>
-                          TCGPlayer (USD)
+                          TCGPlayer (GBP est.)
                         </Text>
-
-                        <PriceRow label="Low" value={`$${getBestTcgPrice(selectedCard, 'low')?.toFixed(2) ?? '--'}`} />
-                        <PriceRow label="Mid" value={`$${getBestTcgPrice(selectedCard, 'mid')?.toFixed(2) ?? '--'}`} />
-                        <PriceRow label="Market" value={`$${getBestTcgPrice(selectedCard, 'market')?.toFixed(2) ?? '--'}`} />
+                        <PriceRow
+                          label="Low"
+                          value={getBestTcgPrice(selectedCard, 'low') != null
+                            ? `£${((getBestTcgPrice(selectedCard, 'low') ?? 0) * USD_TO_GBP).toFixed(2)}`
+                            : '--'}
+                        />
+                        <PriceRow
+                          label="Mid"
+                          value={getBestTcgPrice(selectedCard, 'mid') != null
+                            ? `£${((getBestTcgPrice(selectedCard, 'mid') ?? 0) * USD_TO_GBP).toFixed(2)}`
+                            : '--'}
+                        />
+                        <PriceRow
+                          label="Market"
+                          value={getBestTcgPrice(selectedCard, 'market') != null
+                            ? `£${((getBestTcgPrice(selectedCard, 'market') ?? 0) * USD_TO_GBP).toFixed(2)}`
+                            : '--'}
+                        />
                       </View>
 
-                      {/* Cardmarket prices */}
+                      {/* Cardmarket prices (GBP est.) */}
                       {selectedCard.cardmarket?.prices && (
                         <View style={{
                           marginTop: 12,
@@ -944,18 +940,18 @@ export default function MarketScreen() {
                           borderColor: theme.colors.border,
                         }}>
                           <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>
-                            Cardmarket (EUR)
+                            Cardmarket (GBP est.)
                           </Text>
                           <PriceRow
                             label="Trend"
                             value={selectedCard.cardmarket.prices.trendPrice != null
-                              ? `€${selectedCard.cardmarket.prices.trendPrice.toFixed(2)}`
+                              ? `£${(selectedCard.cardmarket.prices.trendPrice * EUR_TO_GBP).toFixed(2)}`
                               : '--'}
                           />
                           <PriceRow
                             label="30d Avg"
                             value={selectedCard.cardmarket.prices.avg30 != null
-                              ? `€${selectedCard.cardmarket.prices.avg30.toFixed(2)}`
+                              ? `£${(selectedCard.cardmarket.prices.avg30 * EUR_TO_GBP).toFixed(2)}`
                               : '--'}
                           />
                         </View>
