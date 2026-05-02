@@ -37,9 +37,8 @@ export const fetchLivePricesForCardIds = async (cardIds: string[]) => {
     const [setId, number] = id.split('-');
 
     const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(
-      `set.id:${setId} number:${number}`
-    )}`;
-
+  `set.id:${setId} number:${number}`
+)}`;
     const response = await fetch(url);
     const json = await response.json();
 

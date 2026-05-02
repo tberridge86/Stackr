@@ -15,6 +15,7 @@ import { router } from 'expo-router';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { fetchBinders, BinderRecord } from '../../lib/binders';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const PRICE_API_URL = (process.env.EXPO_PUBLIC_PRICE_API_URL ?? '').replace(/\/$/, '');
 
@@ -194,6 +195,7 @@ export default function ScanScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
   const camera = useRef<Camera>(null);
+  const insets = useSafeAreaInsets();
 
   // ← torch state is now INSIDE the component ✅
   const [torch, setTorch] = useState(false);
@@ -975,7 +977,7 @@ console.log('=== END ===');
         </View>
 
         {/* Bottom controls */}
-        <View style={{ alignItems: 'center', paddingBottom: 48, gap: 14 }}>
+        <View style={{ alignItems: 'center', paddingBottom: insets.bottom + 48, gap: 14 }}>
 
           {scannedCards.length > 0 && (
             <TouchableOpacity

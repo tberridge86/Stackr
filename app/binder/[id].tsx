@@ -19,6 +19,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useFocusEffect, useLocalSearchParams, Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
@@ -136,6 +137,7 @@ export default function BinderDetailScreen() {
   const { id, readOnly } = useLocalSearchParams<{ id: string; readOnly?: string }>();
   const binderId = Array.isArray(id) ? id[0] : id;
   const isReadOnly = readOnly === 'true';
+  const insets = useSafeAreaInsets();
 
   // ===============================
   // STATE
@@ -489,7 +491,6 @@ export default function BinderDetailScreen() {
   };
 
   const handleCardPress = async (item: BinderCardWithDetails) => {
-    // Read only — open detail instead of toggling owned
     if (isReadOnly) {
       openCardDetail(item);
       return;
@@ -497,7 +498,6 @@ export default function BinderDetailScreen() {
 
     const newOwned = !item.owned;
 
-    // Optimistic update
     setCards((prev) =>
       prev.map((c) => (c.id === item.id ? { ...c, owned: newOwned } : c))
     );
@@ -762,12 +762,10 @@ export default function BinderDetailScreen() {
           ...cardShadow,
         }}
       >
-        {/* Showcase buttons — hidden in read only */}
         {!isReadOnly && (
           <View style={{
             position: 'absolute',
-            top: 8,
-            left: 8,
+            top: 8, left: 8,
             zIndex: 20,
             flexDirection: 'row',
             gap: 4,
@@ -849,7 +847,7 @@ export default function BinderDetailScreen() {
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>Loading binder...</Text>
         </View>
@@ -860,7 +858,7 @@ export default function BinderDetailScreen() {
   if (!binder) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>
             Binder not found
           </Text>
@@ -879,64 +877,44 @@ export default function BinderDetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
 
         {/* Header */}
-       {/* Header */}
-<View
-  style={{
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  }}
->
-    <View style={{ flex: 1 }}>
-    <Text
-      numberOfLines={1}
-      style={{
-        color: theme.colors.text,
-        fontSize: 24,
-        fontWeight: '900',
-      }}
-    >
-      {binder.name}
-    </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+          <View style={{ flex: 1 }}>
+            <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+              {binder.name}
+            </Text>
 
-    <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
-      {ownedCount} / {totalCount} owned · {progressPercent}%
-    </Text>
+            <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
+              {ownedCount} / {totalCount} owned · {progressPercent}%
+            </Text>
 
-    {!isReadOnly && (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          marginTop: 10,
-        }}
-      >
-        <Text
-          style={{
-            color: theme.colors.textSoft,
-            fontSize: 12,
-            fontWeight: '900',
-            marginRight: 6,
-          }}
-        >
-          {isPublic ? '🌍 Public' : '🔒 Private'}
-        </Text>
-
-        <Switch
-          value={isPublic}
-          onValueChange={togglePublic}
-          disabled={updatingVisibility}
-          style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
-        />
-      </View>
-    )}
-  </View>
-</View>
+            {!isReadOnly && (
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                marginTop: 10,
+              }}>
+                <Text style={{
+                  color: theme.colors.textSoft,
+                  fontSize: 12,
+                  fontWeight: '900',
+                  marginRight: 6,
+                }}>
+                  {isPublic ? '🌍 Public' : '🔒 Private'}
+                </Text>
+                <Switch
+                  value={isPublic}
+                  onValueChange={togglePublic}
+                  disabled={updatingVisibility}
+                  style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
+                />
+              </View>
+            )}
+          </View>
+        </View>
 
         {/* Progress bar */}
         <View style={{
@@ -979,7 +957,7 @@ export default function BinderDetailScreen() {
         {renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
         {renderShowcaseStrip('chase', 'Chase Cards')}
 
-        {/* Scan button — hidden in read only */}
+        {/* Scan button */}
         {!isReadOnly && (
           <TouchableOpacity
             onPress={handleScanCard}
@@ -999,7 +977,7 @@ export default function BinderDetailScreen() {
           </TouchableOpacity>
         )}
 
-        {/* Add card button — hidden in read only */}
+        {/* Add card button */}
         {binder.type === 'custom' && !isReadOnly && (
           <TouchableOpacity
             onPress={() => setShowAddModal(true)}
@@ -1075,13 +1053,11 @@ export default function BinderDetailScreen() {
           numColumns={3}
           columnWrapperStyle={{ justifyContent: 'space-between' }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 130 }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
         />
       </View>
 
-      {/* ===============================
-          ADD CARD MODAL (custom binders only)
-      =============================== */}
+      {/* ADD CARD MODAL */}
       {!isReadOnly && (
         <Modal visible={showAddModal} animationType="slide">
           <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
@@ -1193,9 +1169,7 @@ export default function BinderDetailScreen() {
         </Modal>
       )}
 
-      {/* ===============================
-          CARD DETAIL MODAL
-      =============================== */}
+      {/* CARD DETAIL MODAL */}
       <Modal
         visible={detailVisible}
         transparent
@@ -1219,8 +1193,7 @@ export default function BinderDetailScreen() {
                   onPress={closeDetailModal}
                   style={{
                     position: 'absolute',
-                    top: 46,
-                    right: 16,
+                    top: 46, right: 16,
                     zIndex: 50,
                     backgroundColor: theme.colors.card,
                     borderRadius: 999,
@@ -1238,15 +1211,12 @@ export default function BinderDetailScreen() {
                     contentContainerStyle={{ padding: 16, paddingTop: 42, paddingBottom: 40 }}
                     showsVerticalScrollIndicator={false}
                   >
-                    {/* Card image with pinch zoom */}
                     <PinchGestureHandler
                       onGestureEvent={onPinchGestureEvent}
                       onHandlerStateChange={onPinchHandlerStateChange}
                     >
                       <Animated.Image
-                        source={{
-                          uri: modalCard?.images?.large ?? modalCard?.images?.small ?? undefined,
-                        }}
+                        source={{ uri: modalCard?.images?.large ?? modalCard?.images?.small ?? undefined }}
                         style={{
                           width: '100%',
                           maxHeight: screenHeight * 0.48,
@@ -1259,7 +1229,6 @@ export default function BinderDetailScreen() {
                       />
                     </PinchGestureHandler>
 
-                    {/* Card name + set */}
                     <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900', marginTop: 18 }}>
                       {modalCard?.name ?? selectedCard.card_id}
                     </Text>
@@ -1291,7 +1260,6 @@ export default function BinderDetailScreen() {
                         </TouchableOpacity>
                       </View>
 
-                      {/* eBay live */}
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
                         eBay Live · GBP
                       </Text>
@@ -1317,14 +1285,12 @@ export default function BinderDetailScreen() {
                                 {modalEbayPrice?.low != null ? `£${modalEbayPrice.low.toFixed(2)}` : '--'}
                               </Text>
                             </View>
-
                             <View style={{ flex: 1, backgroundColor: theme.colors.primary + '18', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.primary }}>
                               <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Avg</Text>
                               <Text style={{ color: theme.colors.primary, fontWeight: '900', textAlign: 'center', fontSize: 15 }}>
                                 {modalEbayPrice?.average != null ? `£${modalEbayPrice.average.toFixed(2)}` : '--'}
                               </Text>
                             </View>
-
                             <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
                               <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>High</Text>
                               <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
@@ -1353,7 +1319,6 @@ export default function BinderDetailScreen() {
 
                       <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
 
-                      {/* Stored prices */}
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
                         Stored Prices
                       </Text>
@@ -1367,7 +1332,6 @@ export default function BinderDetailScreen() {
                       </Text>
                     </View>
 
-                    {/* Card actions — hidden in read only */}
                     {!isReadOnly && (
                       <View style={boxStyle}>
                         <Text style={boxTitleStyle}>Card Actions</Text>
@@ -1377,19 +1341,16 @@ export default function BinderDetailScreen() {
                           active={selectedCard.owned}
                           onPress={() => handleCardPress(selectedCard)}
                         />
-
                         <ActionButton
                           label={isShowcased(selectedCard, 'favorite') ? 'Remove favourite top loader' : 'Add to favourite top loaders'}
                           active={isShowcased(selectedCard, 'favorite')}
                           onPress={() => toggleShowcase(selectedCard, 'favorite')}
                         />
-
                         <ActionButton
                           label={isShowcased(selectedCard, 'chase') ? 'Remove chase card' : 'Add to chase cards'}
                           active={isShowcased(selectedCard, 'chase')}
                           onPress={() => toggleShowcase(selectedCard, 'chase')}
                         />
-
                         <ActionButton
                           label={modalForTrade ? 'Edit trade listing' : 'Mark for trade'}
                           active={modalForTrade}
@@ -1398,7 +1359,6 @@ export default function BinderDetailScreen() {
                             setTradeModalVisible(true);
                           }}
                         />
-
                         <ActionButton
                           label={modalWanted ? 'Remove from wishlist' : 'Add to wishlist'}
                           active={modalWanted}
@@ -1414,9 +1374,7 @@ export default function BinderDetailScreen() {
         </View>
       </Modal>
 
-      {/* ===============================
-          TRADE LISTING MODAL — hidden in read only
-      =============================== */}
+      {/* TRADE LISTING MODAL */}
       {!isReadOnly && (
         <Modal visible={tradeModalVisible} animationType="slide">
           <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
@@ -1425,7 +1383,6 @@ export default function BinderDetailScreen() {
                 Trade Listing
               </Text>
 
-              {/* Condition */}
               <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>Condition</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                 {CONDITION_OPTIONS.map((option) => (
@@ -1447,7 +1404,6 @@ export default function BinderDetailScreen() {
                 ))}
               </View>
 
-              {/* Price */}
               <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>Your Price (£)</Text>
               <TextInput
                 value={tradePrice}
@@ -1472,7 +1428,6 @@ export default function BinderDetailScreen() {
                 </Text>
               )}
 
-              {/* Notes */}
               <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>Notes (optional)</Text>
               <TextInput
                 value={tradeNotes}
@@ -1493,7 +1448,6 @@ export default function BinderDetailScreen() {
                 }}
               />
 
-              {/* Trade only toggle */}
               <TouchableOpacity
                 onPress={() => setTradeOnly((prev) => !prev)}
                 style={{ marginTop: 16, flexDirection: 'row', alignItems: 'center' }}
@@ -1503,13 +1457,10 @@ export default function BinderDetailScreen() {
                 </Text>
               </TouchableOpacity>
 
-              {/* Submit */}
               <TouchableOpacity
                 onPress={async () => {
                   if (!tradeCard) return;
-
                   const estimated = getEstimatedValue(tradeCard, tradeCondition);
-
                   await createTradeListing({
                     cardId: tradeCard.card_id,
                     setId: tradeCard.set_id,
@@ -1522,7 +1473,6 @@ export default function BinderDetailScreen() {
                     damageImageUrl: null,
                     listingNotes: tradeNotes,
                   });
-
                   setTradeModalVisible(false);
                   resetTradeModal();
                   await load();
@@ -1538,12 +1488,8 @@ export default function BinderDetailScreen() {
                 <Text style={{ color: '#fff', fontWeight: '900' }}>List Card</Text>
               </TouchableOpacity>
 
-              {/* Cancel */}
               <TouchableOpacity
-                onPress={() => {
-                  setTradeModalVisible(false);
-                  resetTradeModal();
-                }}
+                onPress={() => { setTradeModalVisible(false); resetTradeModal(); }}
                 style={{ marginTop: 10, alignItems: 'center' }}
               >
                 <Text style={{ color: theme.colors.textSoft }}>Cancel</Text>

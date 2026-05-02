@@ -11,10 +11,10 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ===============================
 // TYPES
@@ -92,7 +92,6 @@ const money = (value: number | null | undefined): string => {
 const getTcgPrice = (raw: any): number | null => {
   const prices = raw?.tcgplayer?.prices;
   if (!prices) return null;
-
   const val =
     prices?.holofoil?.market ??
     prices?.reverseHolofoil?.market ??
@@ -100,14 +99,12 @@ const getTcgPrice = (raw: any): number | null => {
     prices?.['1stEditionHolofoil']?.market ??
     prices?.['1stEditionNormal']?.market ??
     null;
-
   return val != null ? Number(val) : null;
 };
 
 const getCardmarketPrice = (raw: any): number | null => {
   const prices = raw?.cardmarket?.prices;
   if (!prices) return null;
-
   const val =
     prices?.averageSellPrice ??
     prices?.trendPrice ??
@@ -115,7 +112,6 @@ const getCardmarketPrice = (raw: any): number | null => {
     prices?.avg7 ??
     prices?.lowPrice ??
     null;
-
   return val != null ? Number(val) : null;
 };
 
@@ -129,7 +125,6 @@ const fetchEbayPrice = async (card: CardRow): Promise<number | null> => {
     .maybeSingle();
 
   if (data?.ebay_average != null) return Number(data.ebay_average);
-
   if (!PRICE_API_URL) return null;
 
   try {
@@ -139,10 +134,8 @@ const fetchEbayPrice = async (card: CardRow): Promise<number | null> => {
       setName: card.raw_data?.set?.name ?? '',
       number: card.raw_data?.number ?? '',
     });
-
     const res = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
     if (!res.ok) return null;
-
     const json = await res.json();
     const avg = json?.average ?? json?.ebay_average ?? json?.avg ?? null;
     return avg != null ? Number(avg) : null;
@@ -156,15 +149,14 @@ const fetchEbayPrice = async (card: CardRow): Promise<number | null> => {
 // ===============================
 
 export default function PriceBuilderScreen() {
+  const insets = useSafeAreaInsets();
+
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<CardRow[]>([]);
   const [items, setItems] = useState<BuilderItem[]>([]);
-
-  // Multi-select pending state
   const [pendingSelection, setPendingSelection] = useState<Record<string, CardRow>>({});
   const pendingCount = Object.keys(pendingSelection).length;
-
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ===============================
@@ -176,16 +168,13 @@ export default function PriceBuilderScreen() {
       setResults([]);
       return;
     }
-
     try {
       setSearching(true);
-
       const { data, error } = await supabase
         .from('pokemon_cards')
         .select('id, name, set_id, image_small, image_large, raw_data')
         .ilike('name', `%${text.trim()}%`)
         .limit(60);
-
       if (error) throw error;
       setResults((data ?? []) as CardRow[]);
     } catch (error) {
@@ -198,17 +187,12 @@ export default function PriceBuilderScreen() {
 
   const handleQueryChange = useCallback((text: string) => {
     setQuery(text);
-
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-
     if (text.trim().length < 2) {
       setResults([]);
       return;
     }
-
-    searchTimerRef.current = setTimeout(() => {
-      runSearch(text);
-    }, 350);
+    searchTimerRef.current = setTimeout(() => runSearch(text), 350);
   }, [runSearch]);
 
   // ===============================
@@ -246,7 +230,6 @@ export default function PriceBuilderScreen() {
     const cards = Object.values(pendingSelection);
     if (!cards.length) return;
 
-    // Build new items immediately
     const newItems: BuilderItem[] = cards.map((card) => ({
       localId: `${card.id}-${Date.now()}-${Math.random()}`,
       card,
@@ -259,13 +242,10 @@ export default function PriceBuilderScreen() {
     }));
 
     setItems((prev) => [...prev, ...newItems]);
-
-    // Clear search and selection
     setPendingSelection({});
     setQuery('');
     setResults([]);
 
-    // Fetch eBay prices in background for each card
     for (const newItem of newItems) {
       fetchEbayPrice(newItem.card).then((ebayPrice) => {
         setItems((prev) =>
@@ -289,9 +269,7 @@ export default function PriceBuilderScreen() {
 
   const updateCondition = useCallback((localId: string, condition: Condition) => {
     setItems((prev) =>
-      prev.map((item) =>
-        item.localId === localId ? { ...item, condition } : item
-      )
+      prev.map((item) => item.localId === localId ? { ...item, condition } : item)
     );
   }, []);
 
@@ -328,7 +306,6 @@ export default function PriceBuilderScreen() {
       totals.ebay > 0 ? totals.ebay : null,
       totals.cardmarket > 0 ? totals.cardmarket : null,
     ].filter((v): v is number => v != null);
-
     if (!available.length) return 0;
     return available.reduce((sum, v) => sum + v, 0) / available.length;
   }, [totals]);
@@ -339,16 +316,13 @@ export default function PriceBuilderScreen() {
 
   const renderResult = useCallback(({ item }: { item: CardRow }) => {
     const isPending = Boolean(pendingSelection[item.id]);
-
     return (
       <TouchableOpacity
         onPress={() => togglePending(item)}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: isPending
-            ? theme.colors.primary + '18'
-            : theme.colors.bg,
+          backgroundColor: isPending ? theme.colors.primary + '18' : theme.colors.bg,
           borderRadius: 14,
           padding: 10,
           marginBottom: 8,
@@ -370,17 +344,12 @@ export default function PriceBuilderScreen() {
             backgroundColor: theme.colors.surface,
           }} />
         )}
-
         <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-            {item.name}
-          </Text>
+          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{item.name}</Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
             {item.raw_data?.set?.name ?? item.set_id ?? 'Unknown set'}
           </Text>
         </View>
-
-        {/* Checkbox */}
         <View style={{
           width: 26, height: 26,
           borderRadius: 999,
@@ -390,9 +359,7 @@ export default function PriceBuilderScreen() {
           borderColor: isPending ? theme.colors.primary : theme.colors.border,
           marginLeft: 8,
         }}>
-          {isPending && (
-            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-          )}
+          {isPending && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
         </View>
       </TouchableOpacity>
     );
@@ -418,7 +385,6 @@ export default function PriceBuilderScreen() {
         borderColor: theme.colors.border,
         ...cardShadow,
       }}>
-        {/* Card image */}
         {item.card.image_small || item.card.image_large ? (
           <Image
             source={{ uri: item.card.image_small ?? item.card.image_large ?? '' }}
@@ -433,7 +399,6 @@ export default function PriceBuilderScreen() {
           }} />
         )}
 
-        {/* Card name + set */}
         <Text numberOfLines={2} style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
           {item.card.name}
         </Text>
@@ -446,22 +411,18 @@ export default function PriceBuilderScreen() {
           <TouchableOpacity
             onPress={() => updateQuantity(item.localId, -1)}
             style={{
-              width: 28, height: 28,
-              borderRadius: 9,
+              width: 28, height: 28, borderRadius: 9,
               backgroundColor: theme.colors.surface,
               alignItems: 'center', justifyContent: 'center',
             }}
           >
             <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>−</Text>
           </TouchableOpacity>
-
           <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{item.quantity}</Text>
-
           <TouchableOpacity
             onPress={() => updateQuantity(item.localId, 1)}
             style={{
-              width: 28, height: 28,
-              borderRadius: 9,
+              width: 28, height: 28, borderRadius: 9,
               backgroundColor: theme.colors.surface,
               alignItems: 'center', justifyContent: 'center',
             }}
@@ -492,8 +453,7 @@ export default function PriceBuilderScreen() {
               >
                 <Text style={{
                   color: active ? '#FFFFFF' : theme.colors.textSoft,
-                  fontWeight: '900',
-                  fontSize: 10,
+                  fontWeight: '900', fontSize: 10,
                 }}>
                   {condition}
                 </Text>
@@ -511,9 +471,7 @@ export default function PriceBuilderScreen() {
             <Text style={{ color: theme.colors.text, fontSize: 11, fontWeight: '800' }}>
               eBay: {item.ebayLoading ? '' : money(ebay)}
             </Text>
-            {item.ebayLoading && (
-              <ActivityIndicator size="small" color={theme.colors.textSoft} />
-            )}
+            {item.ebayLoading && <ActivityIndicator size="small" color={theme.colors.textSoft} />}
           </View>
           <Text style={{ color: theme.colors.text, fontSize: 11, fontWeight: '800' }}>
             CM: {money(cardmarket)}
@@ -544,19 +502,19 @@ export default function PriceBuilderScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-{/* Header */}
-<View style={{ paddingHorizontal: 16, paddingLeft: 24,padding: 24, paddingTop: 8, paddingBottom: 12 }}>
-  <Text style={{ color: theme.colors.text, fontSize: 36, fontWeight: '900' }}>
-    Price Builder
-  </Text>
-  <Text style={{ color: theme.colors.textSoft, marginTop: 3 }}>
-    Build a bundle and compare totals.
-  </Text>
-</View>
+
+      {/* Header */}
+      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
+        <Text style={{ color: theme.colors.text, fontSize: 36, fontWeight: '900' }}>
+          Price Builder
+        </Text>
+        <Text style={{ color: theme.colors.textSoft, marginTop: 3 }}>
+          Build a bundle and compare totals.
+        </Text>
+      </View>
 
       <View style={{ flex: 1 }}>
 
-      
         {/* Search card */}
         <View style={{
           backgroundColor: theme.colors.card,
@@ -564,7 +522,7 @@ export default function PriceBuilderScreen() {
           padding: 12,
           marginHorizontal: 16,
           marginBottom: 12,
-          marginTop: 16,
+          marginTop: 4,
           borderWidth: 1,
           borderColor: theme.colors.border,
         }}>
@@ -590,7 +548,6 @@ export default function PriceBuilderScreen() {
             <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 10 }} />
           )}
 
-          {/* Select all + Add selected bar */}
           {results.length > 0 && !searching && (
             <>
               <View style={{
@@ -685,7 +642,7 @@ export default function PriceBuilderScreen() {
           borderTopWidth: 1,
           borderTopColor: theme.colors.border,
           padding: 16,
-          paddingBottom: 32,
+          paddingBottom: insets.bottom + 16,
         }}>
           {items.length > 0 && (
             <TouchableOpacity
@@ -729,6 +686,7 @@ export default function PriceBuilderScreen() {
             </Text>
           </View>
         </View>
+
       </View>
     </View>
   );

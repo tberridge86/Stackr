@@ -3,8 +3,19 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../lib/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
+  const tabBarHeight = Platform.OS === 'android'
+    ? 64 + insets.bottom
+    : 84;
+
+  const tabBarPaddingBottom = Platform.OS === 'android'
+    ? insets.bottom + 8
+    : 10;
+
   return (
     <Tabs
       initialRouteName="index"
@@ -16,9 +27,9 @@ export default function TabLayout() {
           backgroundColor: theme.colors.card,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
-          height: Platform.OS === 'android' ? 85: 84,
+          height: tabBarHeight,
           paddingTop: 8,
-          paddingBottom: Platform.OS === 'android' ? 35 : 10,
+          paddingBottom: tabBarPaddingBottom,
           shadowColor: '#000',
           shadowOpacity: 0.08,
           shadowRadius: 14,
@@ -36,19 +47,15 @@ export default function TabLayout() {
           if (route.name === 'trade') {
             iconName = focused ? 'storefront' : 'storefront-outline';
           }
-
           if (route.name === 'community/index') {
             iconName = focused ? 'people' : 'people-outline';
           }
-
           if (route.name === 'index') {
             iconName = focused ? 'home' : 'home-outline';
           }
-
           if (route.name === 'binder') {
             iconName = focused ? 'book' : 'book-outline';
           }
-
           if (route.name === 'pokedex') {
             iconName = focused ? 'desktop' : 'desktop-outline';
           }
@@ -64,23 +71,16 @@ export default function TabLayout() {
       })}
     >
       <Tabs.Screen name="trade" options={{ title: 'Market' }} />
-
       <Tabs.Screen
         name="community/index"
-        options={{
-          title: 'Social',
-          tabBarLabel: 'Social',
-        }}
+        options={{ title: 'Social', tabBarLabel: 'Social' }}
       />
-
       <Tabs.Screen name="index" options={{ title: 'Hub' }} />
       <Tabs.Screen name="binder" options={{ title: 'Binder' }} />
       <Tabs.Screen name="pokedex" options={{ title: 'Pokédex' }} />
-
       <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="market" options={{ href: null }} />
       <Tabs.Screen name="explore" options={{ href: null }} />
-      
     </Tabs>
   );
 }

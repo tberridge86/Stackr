@@ -32,6 +32,7 @@ import {
   TradeOffer,
 } from '../../lib/tradeOffers';
 import { supabase } from '../../lib/supabase';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ===============================
 // TYPES
@@ -91,6 +92,7 @@ const STATUS_COLOR: Record<string, string> = {
 // ===============================
 
 export default function TradeScreen() {
+  const insets = useSafeAreaInsets();
   const [mainTab, setMainTab] = useState<MainTab>('trading');
   const [segment, setSegment] = useState<SegmentKey>('marketplaceListings');
   const [wantedCards, setWantedCards] = useState<any[]>([]);
@@ -1031,7 +1033,7 @@ export default function TradeScreen() {
         style={{
           position: 'absolute',
           right: 300,
-          bottom: 30,
+          bottom: insets.bottom + 30,
           width: 60,
           height: 60,
           borderRadius: 16,
