@@ -923,11 +923,3 @@ app.post('/api/sync/set', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Stackr backend listening on port ${PORT}`);
 });
-
-// ===============================
-// START
-// ===============================
-
-app.listen(PORT, () => {
-  console.log(`Stackr backend listening on port ${PORT}`);
-});
