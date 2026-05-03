@@ -15,6 +15,8 @@ import {
 import { supabase } from '../lib/supabase';
 import { createActivityPost } from '../lib/activity';
 
+const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+
 // ===============================
 // TYPES
 // ===============================
@@ -95,7 +97,6 @@ type TradeContextType = {
     setId?: string | null
   ) => Promise<void>;
 
-  // Fixed: added missing methods to type
   markTradeSent: (tradeId: string, userId: string) => Promise<void>;
   markTradeReceived: (tradeId: string, userId: string) => Promise<void>;
 
@@ -123,6 +124,26 @@ const getSetIdFromCardId = (cardId: string): string | null => {
 const makeFlagKey = (cardId: string, setId?: string | null): FlagKey => {
   return `${setId ?? 'unknown'}:${cardId}`;
 };
+
+// ===============================
+// PUSH NOTIFICATION HELPER
+// ===============================
+
+async function sendPushNotification(
+  endpoint: string,
+  payload: Record<string, any>
+): Promise<void> {
+  if (!PRICE_API_URL) return;
+  try {
+    await fetch(`${PRICE_API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.log(`Push notification failed (${endpoint}):`, err);
+  }
+}
 
 // ===============================
 // CONTEXT
@@ -316,7 +337,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     async (tradeId: string, userId: string) => {
       const { data: trade, error: loadError } = await supabase
         .from('trade_offers')
-        .select('id, sender_id, receiver_id')
+        .select('id, sender_id, receiver_id, card_name')
         .eq('id', tradeId)
         .single();
 
@@ -333,6 +354,16 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         .eq('id', tradeId);
 
       if (error) throw error;
+
+      // Notify the other party
+      const recipientUserId =
+        trade.sender_id === userId ? trade.receiver_id : trade.sender_id;
+
+      sendPushNotification('/api/notify/trade-status', {
+        recipientUserId,
+        status: 'sent',
+        cardName: trade.card_name ?? undefined,
+      });
     },
     []
   );
@@ -341,7 +372,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     async (tradeId: string, userId: string) => {
       const { data: trade, error: loadError } = await supabase
         .from('trade_offers')
-        .select('id, sender_id, receiver_id')
+        .select('id, sender_id, receiver_id, card_name')
         .eq('id', tradeId)
         .single();
 
@@ -358,6 +389,16 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         .eq('id', tradeId);
 
       if (error) throw error;
+
+      // Notify the other party
+      const recipientUserId =
+        trade.sender_id === userId ? trade.receiver_id : trade.sender_id;
+
+      sendPushNotification('/api/notify/trade-status', {
+        recipientUserId,
+        status: 'received',
+        cardName: trade.card_name ?? undefined,
+      });
 
       // Check if both sides complete
       const { data: updatedTrade, error: reloadError } = await supabase
@@ -384,6 +425,18 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
           .eq('id', tradeId);
 
         if (completeError) throw completeError;
+
+        // Notify both parties the trade is complete
+        sendPushNotification('/api/notify/trade-status', {
+          recipientUserId: trade.sender_id,
+          status: 'completed',
+          cardName: trade.card_name ?? undefined,
+        });
+        sendPushNotification('/api/notify/trade-status', {
+          recipientUserId: trade.receiver_id,
+          status: 'completed',
+          cardName: trade.card_name ?? undefined,
+        });
       }
     },
     []
@@ -403,7 +456,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       const setKeys = isTrade ? setTradeKeys : setWishlistKeys;
       const setIds = isTrade ? setTradeCardIds : setWishlistCardIds;
 
-      // Use key-based check only — avoids false positives across sets
       const exists = currentKeys.includes(key);
 
       // Optimistic update
@@ -444,7 +496,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
           if (error) throw error;
 
-          // Fire activity + wishlist notifications for trade flags
           if (flag === 'trade') {
             createActivityPost({
               type: 'trade_listed',
@@ -455,6 +506,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
               console.log('Failed to create trade activity post', err);
             });
 
+            // Check for wishlist matches and notify via push
             let wantedQuery = supabase
               .from('user_card_flags')
               .select('user_id')
@@ -481,6 +533,16 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
               const sellerName = profile?.collector_name ?? 'Another collector';
 
+              // Get card name for notification
+              const { data: cardData } = await supabase
+                .from('pokemon_cards')
+                .select('name')
+                .eq('id', cardId)
+                .maybeSingle();
+
+              const cardName = cardData?.name ?? 'a card';
+
+              // Insert in-app notifications
               const notifications = wantedMatches.map((match) => ({
                 user_id: match.user_id,
                 type: 'wishlist_match',
@@ -499,11 +561,19 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
               if (notifyError) {
                 console.log('Failed to create wishlist notifications', notifyError);
               }
+
+              // Send push notifications to each matched user
+              for (const match of wantedMatches) {
+                sendPushNotification('/api/notify/wishlist-match', {
+                  recipientUserId: match.user_id,
+                  listerUsername: sellerName,
+                  cardName,
+                });
+              }
             }
           }
         }
 
-        // Reload from DB to ensure state is accurate
         await loadFlags();
       } catch (error) {
         console.log('Rollback triggered', error);
@@ -553,7 +623,45 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
-      // refreshTrade handles all state updates — no need to manually set state
+      // Check for wishlist matches and send push notifications
+      let wantedQuery = supabase
+        .from('user_card_flags')
+        .select('user_id')
+        .eq('card_id', input.cardId)
+        .eq('flag_type', 'wishlist')
+        .neq('user_id', user.id);
+
+      if (resolvedSetId) {
+        wantedQuery = wantedQuery.eq('set_id', resolvedSetId);
+      }
+
+      const { data: wantedMatches } = await wantedQuery;
+
+      if (wantedMatches?.length) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('collector_name')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        const { data: cardData } = await supabase
+          .from('pokemon_cards')
+          .select('name')
+          .eq('id', input.cardId)
+          .maybeSingle();
+
+        const sellerName = profile?.collector_name ?? 'Another collector';
+        const cardName = cardData?.name ?? 'a card';
+
+        for (const match of wantedMatches) {
+          sendPushNotification('/api/notify/wishlist-match', {
+            recipientUserId: match.user_id,
+            listerUsername: sellerName,
+            cardName,
+          });
+        }
+      }
+
       await refreshTrade();
     },
     [refreshTrade]
@@ -591,7 +699,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
       const key = makeFlagKey(cardId, resolvedSetId);
 
-      // Optimistic local update — only merge changed fields
       setTradeMeta((prev) => ({
         ...prev,
         [key]: {
@@ -600,8 +707,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         },
       }));
 
-      // Build update object — only include fields that were actually passed
-      // This prevents overwriting existing DB values with null
       const updateFields: Record<string, any> = {
         updated_at: new Date().toISOString(),
       };
@@ -620,7 +725,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       if (data.damageImageUrl !== undefined) updateFields.damage_image_url = data.damageImageUrl;
       if (data.listingNotes !== undefined) updateFields.listing_notes = data.listingNotes;
 
-      // Upsert so it works even if the flag row doesn't exist yet
       const { error } = await supabase
         .from('user_card_flags')
         .upsert(
@@ -637,7 +741,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         );
 
       if (error) {
-        // Rollback local state on failure
         await loadFlags();
         throw error;
       }
@@ -671,7 +774,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       isForTrade: (cardId: string, setId?: string | null): boolean => {
         const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
         const key = makeFlagKey(cardId, resolvedSetId);
-        // Key-based check only — avoids false positives across different sets
         return tradeKeys.includes(key);
       },
 

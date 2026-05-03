@@ -42,6 +42,11 @@ const GRADIENT_OPTIONS = [
   { colors: ['#EF4444', '#991B1B'], label: 'Crimson' },
 ];
 
+const BASE_ERA_SET_IDS = [
+  'base1', 'base2', 'base3', 'base4', 'base5',
+  'gym1', 'gym2', 'neo1', 'neo2', 'neo3', 'neo4',
+];
+
 const cardShadow = {
   shadowColor: '#000',
   shadowOpacity: 0.05,
@@ -163,6 +168,7 @@ export default function NewBinderScreen() {
   const [type, setType] = useState<'official' | 'custom'>(
     paramType === 'official' ? 'official' : 'custom'
   );
+  const [edition, setEdition] = useState<'1st_edition' | 'unlimited' | null>(null);
 
   const [sets, setSets] = useState<PokemonSet[]>([]);
   const [selectedSet, setSelectedSet] = useState<PokemonSet | null>(null);
@@ -170,6 +176,8 @@ export default function NewBinderScreen() {
   const [loadingSets, setLoadingSets] = useState(true);
   const [loadingBinder, setLoadingBinder] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
+
+  const isBaseEra = selectedSet ? BASE_ERA_SET_IDS.includes(selectedSet.id) : false;
 
   // ===============================
   // LOAD SETS
@@ -222,6 +230,7 @@ export default function NewBinderScreen() {
       setGradient(binder.gradient ?? null);
       setCoverKey(binder.cover_key ?? null);
       setType(binder.type ?? 'custom');
+      setEdition(binder.edition ?? null);
     } catch (err) {
       console.log('Failed to load binder', err);
       Alert.alert('Error', 'Could not load binder details.');
@@ -256,6 +265,7 @@ export default function NewBinderScreen() {
     if (isEditMode) return;
     setSelectedSet(set);
     setName(set.name);
+    setEdition(null);
   };
 
   const handleSave = async () => {
@@ -282,6 +292,7 @@ export default function NewBinderScreen() {
             color,
             gradient: gradient ?? null,
             cover_key: coverKey ?? null,
+            edition: edition ?? null,
           })
           .eq('id', binderId);
 
@@ -300,6 +311,7 @@ export default function NewBinderScreen() {
         coverKey: coverKey ?? null,
         type,
         sourceSetId: type === 'official' ? selectedSet?.id : null,
+        edition: edition ?? null,
       });
 
       router.replace(`/binder/${binder.id}`);
@@ -516,9 +528,7 @@ export default function NewBinderScreen() {
               </TouchableOpacity>
             )}
 
-            {/* ===============================
-                BINDER COVER PICKER
-            =============================== */}
+            {/* Binder Cover Picker */}
             <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 20, marginBottom: 6 }}>
               Binder Cover (optional)
             </Text>
@@ -527,8 +537,6 @@ export default function NewBinderScreen() {
             </Text>
 
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-
-              {/* No cover */}
               <TouchableOpacity
                 onPress={() => setCoverKey(null)}
                 style={{
@@ -554,7 +562,6 @@ export default function NewBinderScreen() {
                 </Text>
               </TouchableOpacity>
 
-              {/* Cover options */}
               {BINDER_COVERS.map((cover) => {
                 const selected = coverKey === cover.key;
                 return (
@@ -574,8 +581,6 @@ export default function NewBinderScreen() {
                       style={{ width: '100%', height: '100%' }}
                       resizeMode="cover"
                     />
-
-                    {/* Checkmark when selected */}
                     {selected && (
                       <View style={{
                         position: 'absolute', top: 4, right: 4,
@@ -586,8 +591,6 @@ export default function NewBinderScreen() {
                         <Ionicons name="checkmark" size={12} color="#FFFFFF" />
                       </View>
                     )}
-
-                    {/* Name label */}
                     <View style={{
                       position: 'absolute', bottom: 0, left: 0, right: 0,
                       backgroundColor: 'rgba(0,0,0,0.55)',
@@ -617,31 +620,72 @@ export default function NewBinderScreen() {
               </Text>
 
               {selectedSet && (
-                <View style={{
-                  backgroundColor: theme.colors.secondary + '20',
-                  borderRadius: 12, padding: 12, marginBottom: 12,
-                  borderWidth: 1, borderColor: theme.colors.secondary,
-                  flexDirection: 'row', alignItems: 'center', gap: 10,
-                }}>
-                  <Image
-                    source={{ uri: `https://images.pokemontcg.io/${selectedSet.id}/logo.png` }}
-                    style={{ width: 60, height: 28 }}
-                    resizeMode="contain"
-                  />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-                      {selectedSet.name}
-                    </Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
-                      {selectedSet.total} cards
-                    </Text>
+                <>
+                  <View style={{
+                    backgroundColor: theme.colors.secondary + '20',
+                    borderRadius: 12, padding: 12, marginBottom: 12,
+                    borderWidth: 1, borderColor: theme.colors.secondary,
+                    flexDirection: 'row', alignItems: 'center', gap: 10,
+                  }}>
+                    <Image
+                      source={{ uri: `https://images.pokemontcg.io/${selectedSet.id}/logo.png` }}
+                      style={{ width: 60, height: 28 }}
+                      resizeMode="contain"
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
+                        {selectedSet.name}
+                      </Text>
+                      <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+                        {selectedSet.total} cards
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => { setSelectedSet(null); setName(''); setEdition(null); }}>
+                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
+                        Change
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity onPress={() => { setSelectedSet(null); setName(''); }}>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                      Change
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+
+                  {/* Edition picker — only for base era sets */}
+                  {isBaseEra && (
+                    <View style={{ marginBottom: 12 }}>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
+                        Edition
+                      </Text>
+                      <View style={{ flexDirection: 'row', gap: 10 }}>
+                        {([
+                          { value: '1st_edition' as const, label: '1st Edition' },
+                          { value: 'unlimited' as const, label: 'Unlimited' },
+                        ]).map((opt) => {
+                          const active = edition === opt.value;
+                          return (
+                            <TouchableOpacity
+                              key={opt.value}
+                              onPress={() => setEdition(opt.value)}
+                              style={{
+                                flex: 1,
+                                backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                                paddingVertical: 12,
+                                borderRadius: 14,
+                                borderWidth: 1,
+                                borderColor: active ? theme.colors.primary : theme.colors.border,
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Text style={{
+                                color: active ? '#FFFFFF' : theme.colors.textSoft,
+                                fontWeight: '900',
+                              }}>
+                                {opt.label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  )}
+                </>
               )}
 
               <TextInput

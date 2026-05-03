@@ -32,6 +32,12 @@ import {
 } from '../../lib/tradeOffers';
 
 // ===============================
+// CONSTANTS
+// ===============================
+
+const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+
+// ===============================
 // TYPES
 // ===============================
 
@@ -76,6 +82,22 @@ const getEventLabel = (eventType: string): string => {
   return labels[eventType] ?? 'Update';
 };
 
+async function sendPushNotification(
+  endpoint: string,
+  payload: Record<string, any>
+): Promise<void> {
+  if (!PRICE_API_URL) return;
+  try {
+    await fetch(`${PRICE_API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.log(`Push notification failed (${endpoint}):`, err);
+  }
+}
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -113,11 +135,9 @@ export default function OfferDetailScreen() {
   const isDisputed = offerStatus === 'disputed';
   const isDeclinedOrCancelled = ['declined', 'cancelled'].includes(offerStatus);
 
-  // Cards split by owner
   const mySentCards = offerCards.filter((c) => c.owner_id === currentUserId);
   const theirSentCards = offerCards.filter((c) => c.owner_id !== currentUserId);
 
-  // Both-sides sent/received state
   const iHaveSent = isSender ? offer?.sender_sent : offer?.receiver_sent;
   const theyHaveSent = isSender ? offer?.receiver_sent : offer?.sender_sent;
   const iHaveReceived = isSender ? offer?.sender_received : offer?.receiver_received;
@@ -153,7 +173,6 @@ export default function OfferDetailScreen() {
         setOfferCards(offerData.trade_offer_cards ?? []);
         setCashTerms(offerData.trade_cash_terms?.[0] ?? null);
 
-        // Load card previews
         const allCardIds = Array.from(new Set(
           (offerData.trade_offer_cards ?? []).map((c) => c.card_id)
         ));
@@ -232,6 +251,16 @@ export default function OfferDetailScreen() {
   }, [offerId, load]);
 
   // ===============================
+  // HELPERS
+  // ===============================
+
+  const getFirstCardName = (): string | undefined => {
+    const firstCard = offerCards[0];
+    if (!firstCard) return undefined;
+    return cardPreviews[firstCard.card_id]?.name ?? undefined;
+  };
+
+  // ===============================
   // ACTIONS
   // ===============================
 
@@ -281,6 +310,15 @@ export default function OfferDetailScreen() {
     try {
       setSending(true);
       await updateTradeOfferStatus(offerId, 'accepted', 'Offer accepted.');
+
+      if (offer?.sender_id) {
+        sendPushNotification('/api/notify/trade-status', {
+          recipientUserId: offer.sender_id,
+          status: 'accepted',
+          cardName: getFirstCardName(),
+        });
+      }
+
       await load();
     } catch (error: any) {
       Alert.alert('Could not accept', error?.message ?? 'Something went wrong.');
@@ -302,6 +340,15 @@ export default function OfferDetailScreen() {
             try {
               setSending(true);
               await updateTradeOfferStatus(offerId, 'declined', 'Offer declined.');
+
+              if (offer?.sender_id) {
+                sendPushNotification('/api/notify/trade-status', {
+                  recipientUserId: offer.sender_id,
+                  status: 'declined',
+                  cardName: getFirstCardName(),
+                });
+              }
+
               await load();
             } catch (error: any) {
               Alert.alert('Error', error?.message ?? 'Could not decline.');
@@ -323,6 +370,15 @@ export default function OfferDetailScreen() {
           : ''
       }.`;
       await updateTradeOfferStatus(offerId, 'accepted', note);
+
+      if (event.user_id && event.user_id !== currentUserId) {
+        sendPushNotification('/api/notify/trade-status', {
+          recipientUserId: event.user_id,
+          status: 'accepted',
+          cardName: getFirstCardName(),
+        });
+      }
+
       await load();
     } catch (error: any) {
       Alert.alert('Could not accept counter', error?.message ?? 'Something went wrong.');
@@ -335,6 +391,16 @@ export default function OfferDetailScreen() {
     try {
       setSending(true);
       await markTradeSent(offerId);
+
+      const recipientUserId = isSender ? offer?.receiver_id : offer?.sender_id;
+      if (recipientUserId) {
+        sendPushNotification('/api/notify/trade-status', {
+          recipientUserId,
+          status: 'sent',
+          cardName: getFirstCardName(),
+        });
+      }
+
       await load();
     } catch (error: any) {
       Alert.alert('Could not mark as sent', error?.message ?? 'Something went wrong.');
@@ -347,6 +413,16 @@ export default function OfferDetailScreen() {
     try {
       setSending(true);
       await markTradeReceived(offerId);
+
+      const recipientUserId = isSender ? offer?.receiver_id : offer?.sender_id;
+      if (recipientUserId) {
+        sendPushNotification('/api/notify/trade-status', {
+          recipientUserId,
+          status: 'received',
+          cardName: getFirstCardName(),
+        });
+      }
+
       await load();
     } catch (error: any) {
       Alert.alert('Could not mark as received', error?.message ?? 'Something went wrong.');
@@ -524,7 +600,6 @@ export default function OfferDetailScreen() {
             <Text style={styles.subtitle}>Private trade discussion</Text>
           </View>
 
-          {/* Status badge */}
           <View style={{
             backgroundColor: theme.colors.surface,
             borderRadius: 999,
@@ -545,14 +620,11 @@ export default function OfferDetailScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* ===============================
-              TRADE SUMMARY
-          =============================== */}
+          {/* Trade Summary */}
           {offer && (
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Trade Summary</Text>
 
-              {/* My cards */}
               {mySentCards.length > 0 && (
                 <View style={{ marginBottom: 10 }}>
                   <Text style={styles.cardLabel}>You send:</Text>
@@ -562,7 +634,6 @@ export default function OfferDetailScreen() {
                 </View>
               )}
 
-              {/* Their cards */}
               {theirSentCards.length > 0 && (
                 <View style={{ marginBottom: 10 }}>
                   <Text style={styles.cardLabel}>They send:</Text>
@@ -572,7 +643,6 @@ export default function OfferDetailScreen() {
                 </View>
               )}
 
-              {/* Cash terms */}
               {cashTerms && (
                 <View style={{
                   backgroundColor: '#FEF3C7',
@@ -599,7 +669,6 @@ export default function OfferDetailScreen() {
                 </View>
               )}
 
-              {/* Accept / Decline */}
               {isReceiver && isPending && (
                 <View style={{ flexDirection: 'row', gap: 8, marginTop: 14 }}>
                   <TouchableOpacity
@@ -638,7 +707,6 @@ export default function OfferDetailScreen() {
                 </View>
               )}
 
-              {/* Sender can withdraw if still pending */}
               {isSender && isPending && (
                 <TouchableOpacity
                   onPress={() => {
@@ -684,14 +752,11 @@ export default function OfferDetailScreen() {
             </View>
           )}
 
-          {/* ===============================
-              TRADE PROGRESS
-          =============================== */}
+          {/* Trade Progress */}
           {isAcceptedOrBeyond && !isDeclinedOrCancelled && (
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Trade Progress</Text>
 
-              {/* Progress steps */}
               <ProgressStep label="Offer agreed" done={true} />
               <ProgressStep
                 label="Cards sent"
@@ -717,7 +782,6 @@ export default function OfferDetailScreen() {
               />
               <ProgressStep label="Completed" done={isCompleted} />
 
-              {/* Both-sides sent status */}
               {isAccepted && (
                 <View style={{
                   backgroundColor: theme.colors.surface,
@@ -740,7 +804,6 @@ export default function OfferDetailScreen() {
                 </View>
               )}
 
-              {/* Both-sides received status */}
               {isSentOrBeyond && !isCompleted && (
                 <View style={{
                   backgroundColor: theme.colors.surface,
@@ -763,10 +826,8 @@ export default function OfferDetailScreen() {
                 </View>
               )}
 
-              {/* Action buttons */}
               {!isCompleted && !isDisputed && (
                 <View style={{ gap: 8, marginTop: 12 }}>
-                  {/* Mark sent — only show if accepted and I haven't marked sent yet */}
                   {isAccepted && !iHaveSent && (
                     <TouchableOpacity
                       disabled={sending}
@@ -784,7 +845,6 @@ export default function OfferDetailScreen() {
                     </TouchableOpacity>
                   )}
 
-                  {/* Mark received — only show if sent and I haven't marked received yet */}
                   {isSentOrBeyond && !iHaveReceived && (
                     <TouchableOpacity
                       disabled={sending}
@@ -802,7 +862,6 @@ export default function OfferDetailScreen() {
                     </TouchableOpacity>
                   )}
 
-                  {/* Raise dispute */}
                   {isAcceptedOrBeyond && (
                     <TouchableOpacity
                       disabled={sending}
@@ -832,9 +891,7 @@ export default function OfferDetailScreen() {
             </View>
           )}
 
-          {/* ===============================
-              COMPLETED — REVIEW PROMPT
-          =============================== */}
+          {/* Completed */}
           {isCompleted && (
             <View style={[styles.card, {
               borderColor: '#10B981',
@@ -866,9 +923,7 @@ export default function OfferDetailScreen() {
             </View>
           )}
 
-          {/* ===============================
-              TRUST NOTICE
-          =============================== */}
+          {/* Trust Notice */}
           <View style={styles.trustCard}>
             <Text style={styles.trustTitle}>Trading on Stackr</Text>
             <Text style={styles.trustText}>
@@ -878,9 +933,7 @@ export default function OfferDetailScreen() {
             </Text>
           </View>
 
-          {/* ===============================
-              MESSAGES
-          =============================== */}
+          {/* Messages */}
           <FlatList
             ref={listRef}
             data={events}
@@ -902,12 +955,9 @@ export default function OfferDetailScreen() {
           />
         </ScrollView>
 
-        {/* ===============================
-            COMPOSER
-        =============================== */}
+        {/* Composer */}
         {!isCompleted && !isDisputed && !isDeclinedOrCancelled ? (
           <View style={styles.composerWrap}>
-            {/* Counter offer row — only during negotiation */}
             {!isAcceptedOrBeyond && (
               <View style={styles.counterRow}>
                 <TextInput

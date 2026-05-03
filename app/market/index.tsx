@@ -358,15 +358,24 @@ export default function MarketScreen() {
     try {
       setSearching(true);
 
-      const { data, error } = await supabase
+      const words = trimmed.split(' ').filter(Boolean);
+      const cardName = words[0];
+      const setHint = words.slice(1).join(' ');
+
+      let dbQuery = supabase
         .from('pokemon_cards')
         .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .ilike('name', `%${trimmed}%`)
+        .ilike('name', `%${cardName}%`)
         .limit(60);
 
+      if (setHint) {
+        dbQuery = dbQuery.ilike('set_id', `%${setHint}%`);
+      }
+
+      const { data, error } = await dbQuery;
       if (error) throw error;
 
-      const cards: PokemonCard[] = (data ?? []).map((card: any) => ({
+      let cards: PokemonCard[] = (data ?? []).map((card: any) => ({
         id: card.id,
         name: card.name,
         number: card.number ?? '',
@@ -383,6 +392,15 @@ export default function MarketScreen() {
         tcgplayer: card.raw_data?.tcgplayer,
         cardmarket: card.raw_data?.cardmarket,
       }));
+
+      if (setHint) {
+        const hint = setHint.toLowerCase();
+        cards = cards.filter(
+          (c) =>
+            c.set?.name?.toLowerCase().includes(hint) ||
+            c.set?.id?.toLowerCase().includes(hint)
+        );
+      }
 
       setSearchResults(cards);
     } catch (err) {
@@ -654,10 +672,7 @@ export default function MarketScreen() {
   // ===============================
 
   return (
-  <SafeAreaView
-    edges={['bottom']}
-    style={{ flex: 1, backgroundColor: theme.colors.bg }}
-  >
+    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <FlatList
         data={searchResults}
         keyExtractor={(item) => item.id}
@@ -689,7 +704,7 @@ export default function MarketScreen() {
               <TextInput
                 value={query}
                 onChangeText={handleSearchChange}
-                placeholder="Search card name..."
+                placeholder="Search e.g. Charizard base..."
                 placeholderTextColor={theme.colors.textSoft}
                 style={{
                   flex: 1,
@@ -808,9 +823,7 @@ export default function MarketScreen() {
         }
       />
 
-      {/* ===============================
-          CARD DETAIL MODAL
-      =============================== */}
+      {/* CARD DETAIL MODAL */}
       <Modal
         visible={detailVisible}
         transparent

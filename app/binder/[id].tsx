@@ -129,6 +129,32 @@ const getEstimatedValue = (card: any, condition: string): number => {
   return base * multiplier;
 };
 
+const getBinderTcgPrice = (card: any, edition?: string | null): number | null => {
+  const prices = card?.tcgplayer?.prices;
+  if (!prices) return null;
+
+  if (edition === '1st_edition') {
+    const preferred = ['1stEditionHolofoil', '1stEditionNormal', 'holofoil', 'reverseHolofoil', 'normal'];
+    for (const key of preferred) {
+      const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+      if (typeof value === 'number') return value;
+    }
+  }
+
+  const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
+  for (const key of preferred) {
+    const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  for (const entry of Object.values(prices) as any[]) {
+    const value = entry?.market ?? entry?.mid ?? entry?.low;
+    if (typeof value === 'number') return value;
+  }
+
+  return null;
+};
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -230,8 +256,9 @@ export default function BinderDetailScreen() {
       const name = card.card?.name ?? card.card_name ?? '';
       const setName = card.card?.set?.name ?? card.set_name ?? '';
       const number = card.card?.number ?? card.card_number ?? '';
+      const editionTerm = binder?.edition === '1st_edition' ? '1st edition' : '';
 
-      const query = [name, setName, number, 'pokemon card']
+      const query = [name, setName, number, editionTerm, 'pokemon card']
         .map((v) => v.trim())
         .filter(Boolean)
         .join(' ');
@@ -251,7 +278,7 @@ export default function BinderDetailScreen() {
     } finally {
       setModalEbayLoading(false);
     }
-  }, []);
+  }, [binder?.edition]);
 
   // ===============================
   // LOAD
@@ -876,11 +903,8 @@ export default function BinderDetailScreen() {
   // ===============================
 
   return (
-  <SafeAreaView
-    edges={['bottom']}
-    style={{ flex: 1, backgroundColor: theme.colors.bg }}
-  >
-    <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
@@ -888,6 +912,27 @@ export default function BinderDetailScreen() {
             <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
               {binder.name}
             </Text>
+
+            {binder.edition && (
+              <View style={{
+                alignSelf: 'flex-start',
+                marginTop: 4,
+                backgroundColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.surface,
+                borderRadius: 999,
+                paddingHorizontal: 10,
+                paddingVertical: 3,
+                borderWidth: 1,
+                borderColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.border,
+              }}>
+                <Text style={{
+                  color: binder.edition === '1st_edition' ? '#FFFFFF' : theme.colors.textSoft,
+                  fontSize: 11,
+                  fontWeight: '900',
+                }}>
+                  {binder.edition === '1st_edition' ? '1st Edition' : 'Unlimited'}
+                </Text>
+              </View>
+            )}
 
             <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
               {ownedCount} / {totalCount} owned · {progressPercent}%
@@ -1206,12 +1251,12 @@ export default function BinderDetailScreen() {
                     borderColor: theme.colors.border,
                   }}
                 >
-                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>x</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Close</Text>
                 </TouchableOpacity>
 
                 {selectedCard && (
                   <ScrollView
-                    contentContainerStyle={{ padding: 16, paddingTop: 45, paddingBottom: 40 }}
+                    contentContainerStyle={{ padding: 16, paddingTop: 42, paddingBottom: 40 }}
                     showsVerticalScrollIndicator={false}
                   >
                     <PinchGestureHandler
@@ -1241,6 +1286,27 @@ export default function BinderDetailScreen() {
                       {modalCard?.number ? ` · #${modalCard.number}` : ''}
                     </Text>
 
+                    {binder.edition && (
+                      <View style={{
+                        alignSelf: 'flex-start',
+                        marginTop: 6,
+                        backgroundColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.surface,
+                        borderRadius: 999,
+                        paddingHorizontal: 10,
+                        paddingVertical: 3,
+                        borderWidth: 1,
+                        borderColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.border,
+                      }}>
+                        <Text style={{
+                          color: binder.edition === '1st_edition' ? '#FFFFFF' : theme.colors.textSoft,
+                          fontSize: 11,
+                          fontWeight: '900',
+                        }}>
+                          {binder.edition === '1st_edition' ? '1st Edition' : 'Unlimited'}
+                        </Text>
+                      </View>
+                    )}
+
                     {/* Market Value */}
                     <View style={boxStyle}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
@@ -1264,7 +1330,7 @@ export default function BinderDetailScreen() {
                       </View>
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                        eBay Live · GBP
+                        eBay Live · GBP {binder.edition === '1st_edition' ? '· 1st Edition' : ''}
                       </Text>
 
                       {modalEbayLoading ? (
@@ -1327,7 +1393,7 @@ export default function BinderDetailScreen() {
                       </Text>
 
                       <Row label="eBay (cached)" value={formatCurrency(selectedCard?.ebay_price)} />
-                      <Row label="TCGPlayer" value={formatCurrency(selectedCard?.tcg_price)} />
+                      <Row label="TCGPlayer" value={formatCurrency(getBinderTcgPrice(selectedCard?.card, binder?.edition))} />
                       <Row label="CardMarket" value={formatCurrency(selectedCard?.cardmarket_price)} />
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>

@@ -170,13 +170,36 @@ export default function PriceBuilderScreen() {
     }
     try {
       setSearching(true);
-      const { data, error } = await supabase
+
+      const words = text.trim().split(' ').filter(Boolean);
+      const cardName = words[0];
+      const setHint = words.slice(1).join(' ');
+
+      let query = supabase
         .from('pokemon_cards')
         .select('id, name, set_id, image_small, image_large, raw_data')
-        .ilike('name', `%${text.trim()}%`)
+        .ilike('name', `%${cardName}%`)
         .limit(60);
+
+      if (setHint) {
+        query = query.ilike('set_id', `%${setHint}%`);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
-      setResults((data ?? []) as CardRow[]);
+
+      let cards = (data ?? []) as CardRow[];
+
+      if (setHint) {
+        const hint = setHint.toLowerCase();
+        cards = cards.filter(
+          (c) =>
+            (c.raw_data?.set?.name ?? '').toLowerCase().includes(hint) ||
+            (c.set_id ?? '').toLowerCase().includes(hint)
+        );
+      }
+
+      setResults(cards);
     } catch (error) {
       console.log('Search failed', error);
       Alert.alert('Search failed', 'Could not search cards.');
@@ -529,7 +552,7 @@ export default function PriceBuilderScreen() {
           <TextInput
             value={query}
             onChangeText={handleQueryChange}
-            placeholder="Search cards to add..."
+            placeholder="Search e.g. Charizard base..."
             placeholderTextColor={theme.colors.textSoft}
             style={{
               backgroundColor: theme.colors.bg,

@@ -16,6 +16,17 @@ import { supabase } from '../../lib/supabase';
 import { createTradeOffer } from '../../lib/tradeOffers';
 import { getCachedCardSync } from '../../lib/pokemonTcgCache';
 
+// ===============================
+// CONSTANTS
+// ===============================
+
+const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+const MAX_OFFER_CARDS = 6;
+
+// ===============================
+// TYPES
+// ===============================
+
 type CashPayer = 'sender' | 'receiver';
 
 type TradeCardOption = {
@@ -28,6 +39,10 @@ type TradeCardOption = {
   number?: string | null;
 };
 
+// ===============================
+// HELPERS
+// ===============================
+
 const cardShadow = {
   shadowColor: '#000',
   shadowOpacity: 0.05,
@@ -36,8 +51,25 @@ const cardShadow = {
   elevation: 3,
 };
 
-// Max cards a user can offer in one trade
-const MAX_OFFER_CARDS = 6;
+async function sendPushNotification(
+  endpoint: string,
+  payload: Record<string, any>
+): Promise<void> {
+  if (!PRICE_API_URL) return;
+  try {
+    await fetch(`${PRICE_API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.log(`Push notification failed (${endpoint}):`, err);
+  }
+}
+
+// ===============================
+// MAIN COMPONENT
+// ===============================
 
 export default function NewOfferScreen() {
   const params = useLocalSearchParams<{
@@ -47,14 +79,8 @@ export default function NewOfferScreen() {
     setId?: string;
   }>();
 
-  const listingId = Array.isArray(params.listingId)
-    ? params.listingId[0]
-    : params.listingId;
-
-  const targetUserId = Array.isArray(params.targetUserId)
-    ? params.targetUserId[0]
-    : params.targetUserId;
-
+  const listingId = Array.isArray(params.listingId) ? params.listingId[0] : params.listingId;
+  const targetUserId = Array.isArray(params.targetUserId) ? params.targetUserId[0] : params.targetUserId;
   const cardId = Array.isArray(params.cardId) ? params.cardId[0] : params.cardId;
   const setId = Array.isArray(params.setId) ? params.setId[0] : params.setId;
 
@@ -130,8 +156,6 @@ export default function NewOfferScreen() {
     cardIdValue: string,
     setIdValue: string | null
   ): Promise<TradeCardOption> {
-
-    // Fixed: pass setId as first arg to getCachedCardSync
     const cached = setIdValue
       ? (getCachedCardSync(setIdValue, cardIdValue) as any)
       : null;
@@ -195,8 +219,6 @@ export default function NewOfferScreen() {
 
     return flags.map((flag: any) => {
       const preview = previewMap.get(flag.card_id) as any;
-
-      // Fixed: pass set_id as first arg
       const cached = flag.set_id
         ? (getCachedCardSync(flag.set_id, flag.card_id) as any)
         : null;
@@ -226,8 +248,6 @@ export default function NewOfferScreen() {
       if (current.includes(cardIdValue)) {
         return current.filter((id) => id !== cardIdValue);
       }
-
-      // Enforce max card limit
       if (current.length >= MAX_OFFER_CARDS) {
         Alert.alert(
           'Too many cards',
@@ -235,7 +255,6 @@ export default function NewOfferScreen() {
         );
         return current;
       }
-
       return [...current, cardIdValue];
     });
   }
@@ -297,6 +316,19 @@ export default function NewOfferScreen() {
           : null,
         message: message.trim() || null,
       } as any);
+
+      // Notify the receiver they have a new trade offer
+      const { data: senderProfile } = await supabase
+        .from('profiles')
+        .select('collector_name')
+        .eq('id', currentUserId)
+        .maybeSingle();
+
+      sendPushNotification('/api/notify/trade-offer', {
+        recipientUserId: targetUserId,
+        senderUsername: senderProfile?.collector_name ?? 'Someone',
+        cardName: targetCard?.name ?? undefined,
+      });
 
       Alert.alert('Offer sent', 'Your trade offer has been sent.');
       router.replace('/offer');
@@ -370,7 +402,6 @@ export default function NewOfferScreen() {
 
             {myTradeCards.map((card) => {
               const selected = selectedCardIds.includes(card.card_id);
-
               return (
                 <TouchableOpacity
                   key={`${card.id}-${card.card_id}`}
@@ -381,14 +412,10 @@ export default function NewOfferScreen() {
                   ]}
                 >
                   {card.image_url ? (
-                    <Image
-                      source={{ uri: card.image_url }}
-                      style={styles.smallCardImage}
-                    />
+                    <Image source={{ uri: card.image_url }} style={styles.smallCardImage} />
                   ) : (
                     <View style={styles.smallCardImagePlaceholder} />
                   )}
-
                   <View style={{ flex: 1 }}>
                     <Text style={styles.cardName}>{card.name}</Text>
                     <Text style={styles.cardMeta}>
@@ -396,7 +423,6 @@ export default function NewOfferScreen() {
                       {card.number ? ` · ${card.number}` : ''}
                     </Text>
                   </View>
-
                   <Text style={[styles.selectText, selected && styles.selectTextActive]}>
                     {selected ? '✓ Selected' : 'Add'}
                   </Text>
@@ -421,10 +447,7 @@ export default function NewOfferScreen() {
         <View style={styles.toggleRow}>
           <TouchableOpacity
             onPress={() => setCashPayer('sender')}
-            style={[
-              styles.toggleButton,
-              cashPayer === 'sender' && styles.toggleButtonActive,
-            ]}
+            style={[styles.toggleButton, cashPayer === 'sender' && styles.toggleButtonActive]}
           >
             <Text style={[styles.toggleText, cashPayer === 'sender' && styles.toggleTextActive]}>
               I pay cash
@@ -433,10 +456,7 @@ export default function NewOfferScreen() {
 
           <TouchableOpacity
             onPress={() => setCashPayer('receiver')}
-            style={[
-              styles.toggleButton,
-              cashPayer === 'receiver' && styles.toggleButtonActive,
-            ]}
+            style={[styles.toggleButton, cashPayer === 'receiver' && styles.toggleButtonActive]}
           >
             <Text style={[styles.toggleText, cashPayer === 'receiver' && styles.toggleTextActive]}>
               They pay cash
@@ -461,7 +481,6 @@ export default function NewOfferScreen() {
           </>
         )}
 
-        {/* Cash summary */}
         {cashInvolved && (
           <View style={styles.cashSummary}>
             <Text style={styles.cashSummaryText}>
@@ -520,6 +539,10 @@ export default function NewOfferScreen() {
   );
 }
 
+// ===============================
+// SUB COMPONENTS
+// ===============================
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View style={styles.section}>
@@ -528,6 +551,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     </View>
   );
 }
+
+// ===============================
+// STYLES
+// ===============================
 
 const styles = StyleSheet.create({
   loadingScreen: {

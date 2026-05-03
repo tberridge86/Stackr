@@ -10,7 +10,7 @@ export type BinderRecord = {
   name: string;
   color: string;
   gradient?: string[] | null;
-  cover_key?: string | null; 
+  cover_key?: string | null;
   type: BinderType;
   is_public: boolean | null;
   source_set_id: string | null;
@@ -18,6 +18,7 @@ export type BinderRecord = {
   ebay_value?: number | null;
   tcg_value?: number | null;
   cardmarket_value?: number | null;
+  edition?: string | null;
 };
 
 export type BinderCardRecord = {
@@ -78,16 +79,15 @@ export function isVirtualCard(id: string): boolean {
 // ===============================
 
 export async function fetchBinders(): Promise<BinderRecord[]> {
-  // Get current user first
   const { data: { user }, error: userError } = await supabase.auth.getUser();
-  
+
   if (userError) throw userError;
   if (!user) return [];
 
   const { data, error } = await supabase
     .from('binders')
     .select('*')
-    .eq('user_id', user.id) // ← THIS IS THE FIX
+    .eq('user_id', user.id)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: false });
 
@@ -131,12 +131,10 @@ export async function fetchBinderCards(
 
   const savedRows = (userRows ?? []) as BinderCardRecord[];
 
-  // Custom binders — return DB rows only
   if (binder.type !== 'official' || !binder.source_set_id) {
     return savedRows;
   }
 
-  // Official binders — merge API cards with DB rows
   const setCards = await fetchCardsForSet(binder.source_set_id);
 
   const savedByCardKey = new Map(
@@ -167,7 +165,6 @@ export async function fetchBinderCards(
       };
     }
 
-    // Virtual card — not yet owned
     return {
       id: makeVirtualBinderCardId(binderId, setId, card.id),
       binder_id: binderId,
@@ -210,9 +207,10 @@ export async function createBinder(input: {
   name: string;
   color: string;
   gradient?: string[] | null;
-  coverKey?: string | null;  // ← ADD THIS
+  coverKey?: string | null;
   type: BinderType;
   sourceSetId?: string | null;
+  edition?: string | null;
 }): Promise<BinderRecord> {
   const {
     data: { user },
@@ -232,6 +230,7 @@ export async function createBinder(input: {
       cover_key: input.coverKey ?? null,
       type: input.type,
       source_set_id: input.sourceSetId ?? null,
+      edition: input.edition ?? null,
     })
     .select()
     .single();
@@ -289,10 +288,26 @@ export async function addCardsToBinder(
 // PRICE HISTORY HELPERS
 // ===============================
 
-function getPriceFromPokemonCard(card: any): number | null {
+function getPriceFromPokemonCard(card: any, edition?: string | null): number | null {
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;
 
+  // If 1st edition binder, prefer 1st edition prices first
+  if (edition === '1st_edition') {
+    const preferred = [
+      '1stEditionHolofoil',
+      '1stEditionNormal',
+      'holofoil',
+      'reverseHolofoil',
+      'normal',
+    ];
+    for (const key of preferred) {
+      const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+      if (typeof value === 'number') return value;
+    }
+  }
+
+  // Unlimited or no edition — prefer non-1st edition prices
   const preferred = [
     'holofoil',
     'reverseHolofoil',
@@ -316,9 +331,6 @@ function getPriceFromPokemonCard(card: any): number | null {
 
 // ===============================
 // BACKFILL PRICE HISTORY
-// Called when a card is first marked as owned
-// Inserts 30 days of estimated price history
-// so the home screen graph shows immediately
 // ===============================
 
 async function backfillCardPriceHistory(
@@ -329,7 +341,6 @@ async function backfillCardPriceHistory(
   cardNumber: string
 ): Promise<void> {
   try {
-    // Check if we already have history — skip if so
     const { count } = await supabase
       .from('market_price_snapshots')
       .select('*', { count: 'exact', head: true })
@@ -341,7 +352,6 @@ async function backfillCardPriceHistory(
       return;
     }
 
-    // Fetch current TCG price from API
     const res = await fetch(`https://api.pokemontcg.io/v2/cards/${cardId}`);
     if (!res.ok) return;
 
@@ -356,7 +366,6 @@ async function backfillCardPriceHistory(
       return;
     }
 
-    // Build 30 days of estimated history with ±5% variance
     const today = new Date();
     const rows = [];
 
@@ -381,7 +390,6 @@ async function backfillCardPriceHistory(
       });
     }
 
-    // Insert in batches of 10
     for (let i = 0; i < rows.length; i += 10) {
       const { error } = await supabase
         .from('market_price_snapshots')
@@ -420,7 +428,6 @@ export async function updateBinderCardOwned(
 
   if (virtual) {
     if (owned) {
-      // Virtual → Real: insert into DB with full metadata
       const { error } = await supabase
         .from('binder_cards')
         .insert({
@@ -450,7 +457,6 @@ export async function updateBinderCardOwned(
         type: 'binder_add',
       });
 
-      // Backfill price history in background — non-blocking
       backfillCardPriceHistory(
         virtual.cardId,
         virtual.setId,
@@ -464,8 +470,6 @@ export async function updateBinderCardOwned(
       return;
     }
 
-    // Virtual card being marked as unowned
-    // Find and delete the DB row if it exists
     const { data: existingRow } = await supabase
       .from('binder_cards')
       .select('id')
@@ -486,7 +490,6 @@ export async function updateBinderCardOwned(
     return;
   }
 
-  // Real card — just update owned status
   const { data: existingCard, error: fetchError } = await supabase
     .from('binder_cards')
     .select('card_id, set_id, card_name, owned')
@@ -502,7 +505,6 @@ export async function updateBinderCardOwned(
 
   if (error) throw error;
 
-  // Only post activity when transitioning from unowned → owned
   if (owned && existingCard && !existingCard.owned) {
     await createActivityPost({
       title: 'Added a card to binder',
