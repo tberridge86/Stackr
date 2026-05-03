@@ -848,7 +848,7 @@ app.post('/api/notify/price-alert', async (req, res) => {
 // SYNC SET
 // ===============================
 
-app.post('/api/sync/set', async (req, res) => {
+app.get('/api/sync/set', async (req, res) => {
   try {
     const setId = String(req.query.setId || req.body.setId || '').trim();
     if (!setId) return res.status(400).json({ error: 'Missing setId' });
