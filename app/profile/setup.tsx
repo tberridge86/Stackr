@@ -33,6 +33,10 @@ const TYPE_OPTIONS = [
   { key: 'ice', label: '❄️ Ice', accent: '#4DD0E1', card: '#98D8D8' },
   { key: 'fairy', label: '🌸 Fairy', accent: '#F48FB1', card: '#EE99AC' },
   { key: 'normal', label: '⭐ Normal', accent: '#BDBDBD', card: '#A8A878' },
+  { key: 'pink', label: '🌷 Pink', accent: '#F48FB1', card: '#F8BBD0' },
+{ key: 'rose', label: '🌹 Rose', accent: '#E91E63', card: '#F06292' },
+{ key: 'bubblegum', label: '🍬 Bubblegum', accent: '#FF80AB', card: '#FFB3C6' },
+{ key: 'sakura', label: '🌸 Sakura', accent: '#F9A8D4', card: '#FBCFE8' },
 ];
 
 const BACKGROUNDS = [
@@ -40,6 +44,9 @@ const BACKGROUNDS = [
   { key: 'forest', label: 'Forest', preview: '#2E7D32' },
   { key: 'ocean', label: 'Ocean', preview: '#1565C0' },
   { key: 'lava', label: 'Lava', preview: '#BF360C' },
+  { key: 'pink', label: 'Pink', preview: '#E91E63' },
+{ key: 'sakura', label: 'Sakura', preview: '#F472B6' },
+{ key: 'bubblegum', label: 'Bubblegum', preview: '#EC4899' },
 ];
 
 // ===============================

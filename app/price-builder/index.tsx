@@ -633,8 +633,9 @@ export default function PriceBuilderScreen() {
         {items.length === 0 ? (
           <View style={{
             backgroundColor: theme.colors.card,
-            borderRadius: 18, padding: 24,
+            borderRadius: 18, padding: 10,
             marginHorizontal: 16,
+            marginTop: 140,
             borderWidth: 1, borderColor: theme.colors.border,
             alignItems: 'center',
           }}>
@@ -652,7 +653,7 @@ export default function PriceBuilderScreen() {
             renderItem={renderBuilderItem}
             numColumns={2}
             columnWrapperStyle={{ gap: 10, paddingHorizontal: 16 }}
-            contentContainerStyle={{ paddingBottom: 380, gap: 10, paddingTop: 4 }}
+            contentContainerStyle={{ paddingBottom: 460, gap: 10, paddingTop: 4 }}
             showsVerticalScrollIndicator={false}
           />
         )}
@@ -660,7 +661,7 @@ export default function PriceBuilderScreen() {
         {/* Total bar */}
         <View style={{
           position: 'absolute',
-          left: 0, right: 0, bottom: 0,
+          left: 0, right: 0, bottom:60,
           backgroundColor: theme.colors.card,
           borderTopWidth: 1,
           borderTopColor: theme.colors.border,

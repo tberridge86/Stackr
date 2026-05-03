@@ -149,30 +149,27 @@ export default function PokedexScreen() {
   };
 
   const renderPokemon = ({ item }: { item: PokemonEntry }) => {
-    return (
-      <Pressable
-        onPress={() => router.push(`/pokemon/${item.id}`)}
-        style={({ pressed }) => [styles.dexRow, pressed && styles.cardPressed]}
-      >
-        <View style={styles.imageWrap}>
-          <Image
-            source={{ uri: getPokemonImageUrl(item.id) }}
-            style={styles.pokemonImage}
-            resizeMode="contain"
-          />
-        </View>
-
-        <View style={styles.dexInfo}>
-          <Text style={styles.dexName}>{formatPokemonName(item.name)}</Text>
-          <Text style={styles.dexSubtitle}>
-            #{String(item.id).padStart(4, '0')} · Pokédex entry
-          </Text>
-        </View>
-
-        <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
-      </Pressable>
-    );
-  };
+  return (
+    <Pressable
+      onPress={() => router.push(`/pokemon/${item.id}`)}
+      style={({ pressed }) => [styles.gridCard, pressed && styles.cardPressed]}
+    >
+      <View style={styles.gridImageWrap}>
+        <Image
+          source={{ uri: getPokemonImageUrl(item.id) }}
+          style={styles.gridImage}
+          resizeMode="contain"
+        />
+      </View>
+      <Text numberOfLines={1} style={styles.gridName}>
+        {formatPokemonName(item.name)}
+      </Text>
+      <Text style={styles.gridNumber}>
+        #{String(item.id).padStart(4, '0')}
+      </Text>
+    </Pressable>
+  );
+};
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -221,13 +218,15 @@ export default function PokedexScreen() {
           </View>
         ) : (
           <FlatList
-            style={styles.list}
-            data={filteredPokemon}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={renderPokemon}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{
-              paddingBottom: insets.bottom + 170,
+  style={styles.list}
+  data={filteredPokemon}
+  keyExtractor={(item) => String(item.id)}
+  renderItem={renderPokemon}
+  numColumns={3}
+  columnWrapperStyle={{ gap: 10, marginBottom: 10 }}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{
+    paddingBottom: insets.bottom + 170,
             }}
             ListFooterComponent={<View style={{ height: 40 }} />}
             ListEmptyComponent={
@@ -402,4 +401,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  gridCard: {
+  flex: 1,
+  backgroundColor: theme.colors.card,
+  borderRadius: 16,
+  padding: 10,
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: theme.colors.border,
+  ...cardShadow,
+},
+gridImageWrap: {
+  width: '100%',
+  aspectRatio: 1,
+  backgroundColor: theme.colors.surface,
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 6,
+},
+gridImage: {
+  width: '80%',
+  height: '80%',
+},
+gridName: {
+  color: theme.colors.text,
+  fontSize: 11,
+  fontWeight: '900',
+  textAlign: 'center',
+},
+gridNumber: {
+  color: theme.colors.textSoft,
+  fontSize: 10,
+  fontWeight: '700',
+  textAlign: 'center',
+  marginTop: 2,
+},
 });

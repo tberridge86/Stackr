@@ -57,7 +57,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 
 const screenWidth = Dimensions.get('window').width;
-const COLUMNS = 3;
+const COLUMNS = 4;
 const PADDING = 16;
 const GAP = 10;
 const binderCardWidth = (screenWidth - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;

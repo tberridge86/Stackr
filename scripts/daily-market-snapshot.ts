@@ -355,7 +355,7 @@ async function runDailyMarketSnapshot() {
     // UPSERT instead of INSERT — prevents duplicate rows per card
     const { error: upsertError } = await supabase
       .from('market_price_snapshots')
-      .upsert(snapshot, {
+      .insert(snapshot, {
         onConflict: 'card_id,set_id',
         ignoreDuplicates: false,
       });

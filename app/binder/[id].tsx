@@ -194,6 +194,8 @@ export default function BinderDetailScreen() {
   const [addSearchResults, setAddSearchResults] = useState<CardPreviewResult[]>([]);
   const [addSearchLoading, setAddSearchLoading] = useState(false);
   const [addingCardId, setAddingCardId] = useState<string | null>(null);
+const [pendingAddIds, setPendingAddIds] = useState<Record<string, CardPreviewResult>>({});
+const pendingAddCount = Object.keys(pendingAddIds).length;
 
   const [tradeModalVisible, setTradeModalVisible] = useState(false);
   const [tradeCard, setTradeCard] = useState<BinderCardWithDetails | null>(null);
@@ -569,7 +571,7 @@ export default function BinderDetailScreen() {
         .from('pokemon_cards')
         .select('id, name, set_id, image_small, image_large, raw_data')
         .ilike('name', `%${safeQuery}%`)
-        .limit(30);
+        .limit(150);
 
       if (error) throw error;
 
@@ -613,6 +615,35 @@ export default function BinderDetailScreen() {
       setAddingCardId(null);
     }
   };
+
+  const handleAddMultipleToCustomBinder = async () => {
+  if (!binderId || pendingAddCount === 0) return;
+
+  const cardsToAdd = Object.values(pendingAddIds);
+
+  try {
+    setAddingCardId('bulk');
+
+    const validCards = cardsToAdd
+      .map((card) => ({
+        cardId: card.card_id,
+        setId: getSetIdFromCardId(card.card_id),
+      }))
+      .filter((c) => c.setId);
+
+    await addCardsToBinder(binderId, validCards);
+    setPendingAddIds({});
+    setAddSearch('');
+    setAddSearchResults([]);
+    setShowAddModal(false);
+    await load();
+    Alert.alert('Added', `${validCards.length} card${validCards.length !== 1 ? 's' : ''} added to binder.`);
+  } catch (error: any) {
+    Alert.alert('Could not add cards', error?.message ?? 'Something went wrong.');
+  } finally {
+    setAddingCardId(null);
+  }
+};
 
   // ===============================
   // SCAN (scaffolded)
@@ -1107,116 +1138,215 @@ export default function BinderDetailScreen() {
       </View>
 
       {/* ADD CARD MODAL */}
-      {!isReadOnly && (
-        <Modal visible={showAddModal} animationType="slide">
-          <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-            <View style={{ padding: 16, flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>
-                Add Card
+{!isReadOnly && (
+  <Modal visible={showAddModal} animationType="slide">
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <View style={{ padding: 16, flex: 1 }}>
+
+        {/* Header */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>
+            Add Cards
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setShowAddModal(false);
+              setPendingAddIds({});
+              setAddSearch('');
+              setAddSearchResults([]);
+            }}
+            style={{
+              backgroundColor: theme.colors.surface,
+              borderRadius: 999,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
+          >
+            <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Close</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TextInput
+          placeholder="Search by card name..."
+          placeholderTextColor={theme.colors.textSoft}
+          value={addSearch}
+          onChangeText={setAddSearch}
+          style={{
+            backgroundColor: theme.colors.card,
+            color: theme.colors.text,
+            borderRadius: 14,
+            padding: 14,
+            marginBottom: 12,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+          }}
+        />
+
+        {/* Select all / count row */}
+        {addSearchResults.length > 0 && !addSearchLoading && (
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 10,
+          }}>
+            <TouchableOpacity
+              onPress={() => {
+                const allEligible = addSearchResults.filter((r) => {
+                  const setId = getSetIdFromCardId(r.card_id);
+                  return !cards.some((c) => c.card_id === r.card_id && c.set_id === setId);
+                });
+                const allSelected = allEligible.every((r) => pendingAddIds[r.card_id]);
+                if (allSelected) {
+                  setPendingAddIds({});
+                } else {
+                  const next: Record<string, CardPreviewResult> = {};
+                  allEligible.forEach((r) => { next[r.card_id] = r; });
+                  setPendingAddIds(next);
+                }
+              }}
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 10,
+                paddingHorizontal: 12,
+                paddingVertical: 7,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+              }}
+            >
+              <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 12 }}>
+                {addSearchResults
+                  .filter((r) => {
+                    const setId = getSetIdFromCardId(r.card_id);
+                    return !cards.some((c) => c.card_id === r.card_id && c.set_id === setId);
+                  })
+                  .every((r) => pendingAddIds[r.card_id])
+                  ? 'Deselect All'
+                  : 'Select All'}
               </Text>
+            </TouchableOpacity>
 
-              <TextInput
-                placeholder="Search by card name..."
-                placeholderTextColor={theme.colors.textSoft}
-                value={addSearch}
-                onChangeText={setAddSearch}
-                style={{
-                  backgroundColor: theme.colors.card,
-                  color: theme.colors.text,
-                  borderRadius: 14,
-                  padding: 14,
-                  marginVertical: 14,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                }}
-              />
-
-              {addSearchLoading ? (
-                <ActivityIndicator color={theme.colors.primary} />
-              ) : (
-                <FlatList
-                  data={addSearchResults}
-                  keyExtractor={(item) => `${getSetIdFromCardId(item.card_id)}-${item.card_id}`}
-                  keyboardShouldPersistTaps="handled"
-                  renderItem={({ item }) => {
-                    const derivedSetId = getSetIdFromCardId(item.card_id);
-                    const alreadyInBinder = cards.some(
-                      (c) => c.card_id === item.card_id && c.set_id === derivedSetId
-                    );
-
-                    return (
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (alreadyInBinder) {
-                            Alert.alert('Already added', 'This card is already in this binder.');
-                            return;
-                          }
-                          handleAddCardToCustomBinder(item);
-                        }}
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          backgroundColor: theme.colors.card,
-                          borderRadius: 14,
-                          padding: 10,
-                          marginBottom: 10,
-                          opacity: alreadyInBinder ? 0.35 : 1,
-                          borderWidth: 1,
-                          borderColor: theme.colors.border,
-                        }}
-                      >
-                        {item.image_url ? (
-                          <Image
-                            source={{ uri: item.image_url }}
-                            style={{ width: 50, height: 70, borderRadius: 6, backgroundColor: theme.colors.surface }}
-                          />
-                        ) : (
-                          <View style={{ width: 50, height: 70, borderRadius: 6, backgroundColor: theme.colors.surface }} />
-                        )}
-
-                        <View style={{ flex: 1, marginLeft: 12 }}>
-                          <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900' }}>
-                            {item.name}
-                          </Text>
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
-                            {item.set_name ?? derivedSetId}
-                          </Text>
-                        </View>
-
-                        {addingCardId === item.card_id ? (
-                          <ActivityIndicator color={theme.colors.primary} size="small" />
-                        ) : (
-                          <Text style={{
-                            color: alreadyInBinder ? theme.colors.secondary : theme.colors.primary,
-                            fontWeight: '900',
-                          }}>
-                            {alreadyInBinder ? 'Added' : 'Add'}
-                          </Text>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
-              )}
-
+            {pendingAddCount > 0 && (
               <TouchableOpacity
-                onPress={() => setShowAddModal(false)}
+                onPress={handleAddMultipleToCustomBinder}
+                disabled={addingCardId === 'bulk'}
                 style={{
-                  backgroundColor: theme.colors.surface,
-                  borderRadius: 14,
-                  padding: 14,
+                  backgroundColor: theme.colors.primary,
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 7,
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  marginTop: 12,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
+                  gap: 6,
+                  opacity: addingCardId === 'bulk' ? 0.6 : 1,
                 }}
               >
-                <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Close</Text>
+                {addingCardId === 'bulk' ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>
+                    Add {pendingAddCount} to Binder
+                  </Text>
+                )}
               </TouchableOpacity>
-            </View>
-          </SafeAreaView>
-        </Modal>
-      )}
+            )}
+          </View>
+        )}
+
+        {addSearchLoading ? (
+          <ActivityIndicator color={theme.colors.primary} />
+        ) : (
+          <FlatList
+            data={addSearchResults}
+            keyExtractor={(item) => `${getSetIdFromCardId(item.card_id)}-${item.card_id}`}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => {
+              const derivedSetId = getSetIdFromCardId(item.card_id);
+              const alreadyInBinder = cards.some(
+                (c) => c.card_id === item.card_id && c.set_id === derivedSetId
+              );
+              const isPending = Boolean(pendingAddIds[item.card_id]);
+
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    if (alreadyInBinder) {
+                      Alert.alert('Already added', 'This card is already in this binder.');
+                      return;
+                    }
+                    setPendingAddIds((prev) => {
+                      const next = { ...prev };
+                      if (next[item.card_id]) {
+                        delete next[item.card_id];
+                      } else {
+                        next[item.card_id] = item;
+                      }
+                      return next;
+                    });
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: isPending ? theme.colors.primary + '18' : theme.colors.card,
+                    borderRadius: 14,
+                    padding: 10,
+                    marginBottom: 10,
+                    opacity: alreadyInBinder ? 0.35 : 1,
+                    borderWidth: 1,
+                    borderColor: isPending ? theme.colors.primary : theme.colors.border,
+                  }}
+                >
+                  {item.image_url ? (
+                    <Image
+                      source={{ uri: item.image_url }}
+                      style={{ width: 50, height: 70, borderRadius: 6, backgroundColor: theme.colors.surface }}
+                    />
+                  ) : (
+                    <View style={{ width: 50, height: 70, borderRadius: 6, backgroundColor: theme.colors.surface }} />
+                  )}
+
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900' }}>
+                      {item.name}
+                    </Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+                      {item.set_name ?? derivedSetId}
+                    </Text>
+                  </View>
+
+                  <View style={{
+                    width: 26, height: 26,
+                    borderRadius: 999,
+                    backgroundColor: alreadyInBinder
+                      ? theme.colors.secondary
+                      : isPending
+                        ? theme.colors.primary
+                        : theme.colors.surface,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 2,
+                    borderColor: alreadyInBinder
+                      ? theme.colors.secondary
+                      : isPending
+                        ? theme.colors.primary
+                        : theme.colors.border,
+                    marginLeft: 8,
+                  }}>
+                    {(alreadyInBinder || isPending) && (
+                      <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900' }}>✓</Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )}
+      </View>
+    </SafeAreaView>
+  </Modal>
+)}
 
       {/* CARD DETAIL MODAL */}
       <Modal

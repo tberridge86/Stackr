@@ -392,12 +392,8 @@ async function backfillCardPriceHistory(
 
     for (let i = 0; i < rows.length; i += 10) {
       const { error } = await supabase
-        .from('market_price_snapshots')
-        .upsert(rows.slice(i, i + 10), {
-          onConflict: 'card_id,set_id',
-          ignoreDuplicates: true,
-        });
-
+  .from('market_price_snapshots')
+  .insert(rows.slice(i, i + 10));
       if (error) {
         console.log(`⚠️ Backfill batch failed for ${cardName}:`, error);
       }

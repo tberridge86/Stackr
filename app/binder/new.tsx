@@ -356,11 +356,11 @@ export default function NewBinderScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <View style={{ flex: 1, padding: 16 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['bottom', 'left', 'right']}>
+      <View style={{ flex: 1, padding: 16, paddingBottom: 0 }}>
 
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
           <TouchableOpacity
             onPress={() => router.back()}
             style={{
@@ -390,10 +390,10 @@ export default function NewBinderScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingBottom: 85 }}
         >
           {/* Live preview */}
-          <View style={{ marginTop: 16 }}>
+          <View style={{ marginTop: 4 }}>
             <BinderPreview
               name={name}
               color={color}
@@ -633,92 +633,96 @@ export default function NewBinderScreen() {
               </Text>
 
               {selectedSet && (
-                <View style={{
-                  backgroundColor: theme.colors.secondary + '20',
-                  borderRadius: 12, padding: 12, marginBottom: 12,
-                  borderWidth: 1, borderColor: theme.colors.secondary,
-                  flexDirection: 'row', alignItems: 'center', gap: 10,
-                }}>
-                  <Image
-                    source={{ uri: `https://images.pokemontcg.io/${selectedSet.id}/logo.png` }}
-                    style={{ width: 60, height: 28 }}
-                    resizeMode="contain"
-                  />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-                      {selectedSet.name}
-                    </Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
-                      {selectedSet.total} cards
-                    </Text>
-                  </View>
-                  <TouchableOpacity onPress={() => { setSelectedSet(null); setName(''); setEdition(null); }}>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                      Change
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+  <View style={{
+    backgroundColor: theme.colors.secondary + '20',
+    borderRadius: 12, padding: 12, marginBottom: 12,
+    borderWidth: 1, borderColor: theme.colors.secondary,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+  }}>
+    <Image
+      source={{ uri: `https://images.pokemontcg.io/${selectedSet.id}/logo.png` }}
+      style={{ width: 60, height: 28 }}
+      resizeMode="contain"
+    />
+    <View style={{ flex: 1 }}>
+      <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
+        {selectedSet.name}
+      </Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+        {selectedSet.total} cards
+      </Text>
+    </View>
+    <TouchableOpacity onPress={() => { setSelectedSet(null); setName(''); setEdition(null); }}>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
+        Change
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
 
-              <TextInput
-                value={setSearch}
-                onChangeText={setSetSearch}
-                placeholder="Search sets..."
-                placeholderTextColor={theme.colors.textSoft}
-                autoCapitalize="none"
-                style={{
-                  backgroundColor: theme.colors.surface,
-                  color: theme.colors.text,
-                  padding: 14, borderRadius: 14,
-                  borderWidth: 1, borderColor: theme.colors.border,
-                  marginBottom: 12, fontWeight: '700',
-                }}
+{!selectedSet && (
+  <>
+    <TextInput
+      value={setSearch}
+      onChangeText={setSetSearch}
+      placeholder="Search sets..."
+      placeholderTextColor={theme.colors.textSoft}
+      autoCapitalize="none"
+      style={{
+        backgroundColor: theme.colors.surface,
+        color: theme.colors.text,
+        padding: 14, borderRadius: 14,
+        borderWidth: 1, borderColor: theme.colors.border,
+        marginBottom: 12, fontWeight: '700',
+      }}
+    />
+
+    {loadingSets ? (
+      <ActivityIndicator color={theme.colors.primary} />
+    ) : (
+      <FlatList
+        data={filteredSets}
+        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        scrollEnabled={false}
+        contentContainerStyle={{ paddingBottom: 8 }}
+        renderItem={({ item }) => {
+          const active = false;
+          return (
+            <TouchableOpacity
+              onPress={() => handleSelectSet(item)}
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 12,
+                padding: 12, borderRadius: 14, marginBottom: 8,
+                backgroundColor: active ? theme.colors.secondary : theme.colors.surface,
+                borderWidth: 1,
+                borderColor: active ? theme.colors.secondary : theme.colors.border,
+              }}
+            >
+              <Image
+                source={{ uri: `https://images.pokemontcg.io/${item.id}/logo.png` }}
+                style={{ width: 60, height: 26 }}
+                resizeMode="contain"
               />
-
-              {loadingSets ? (
-                <ActivityIndicator color={theme.colors.primary} />
-              ) : (
-                <FlatList
-                  data={filteredSets}
-                  keyExtractor={(item) => item.id}
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                  scrollEnabled={false}
-                  contentContainerStyle={{ paddingBottom: 8 }}
-                  renderItem={({ item }) => {
-                    const active = selectedSet?.id === item.id;
-                    return (
-                      <TouchableOpacity
-                        onPress={() => handleSelectSet(item)}
-                        style={{
-                          flexDirection: 'row', alignItems: 'center', gap: 12,
-                          padding: 12, borderRadius: 14, marginBottom: 8,
-                          backgroundColor: active ? theme.colors.secondary : theme.colors.surface,
-                          borderWidth: 1,
-                          borderColor: active ? theme.colors.secondary : theme.colors.border,
-                        }}
-                      >
-                        <Image
-                          source={{ uri: `https://images.pokemontcg.io/${item.id}/logo.png` }}
-                          style={{ width: 60, height: 26 }}
-                          resizeMode="contain"
-                        />
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-                            {item.name}
-                          </Text>
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
-                            {item.series} · {item.total} cards
-                          </Text>
-                        </View>
-                        {active && (
-                          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>✓</Text>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  }}
-                />
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
+                  {item.name}
+                </Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
+                  {item.series} · {item.total} cards
+                </Text>
+              </View>
+              {active && (
+                <Text style={{ color: theme.colors.text, fontWeight: '900' }}>✓</Text>
               )}
+            </TouchableOpacity>
+          );
+        }}
+      />
+    )}
+  </>
+)}
             </View>
           )}
 

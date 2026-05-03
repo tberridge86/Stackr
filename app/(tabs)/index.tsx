@@ -855,11 +855,15 @@ export default function HubScreen() {
               </View>
             )}
 
-            {!hasChartData && (
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, textAlign: 'center', marginTop: 8 }}>
-                No price history yet. Your graph will build as daily snapshots are saved.
-              </Text>
-            )}
+           {!hasChartData && (
+  <Text style={{ color: theme.colors.textSoft, fontSize: 12, textAlign: 'center', marginTop: 8, lineHeight: 18 }}>
+    No price history yet — check back tomorrow as your graph builds daily.
+  </Text>
+)}
+
+<Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginTop: 6, fontStyle: 'italic' }}>
+  📈 Prices update daily — your chart gets more accurate over time
+</Text>
           </View>
         </View>
 
