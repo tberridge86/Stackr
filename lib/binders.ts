@@ -132,9 +132,19 @@ export async function fetchBinderCards(
   const savedRows = (userRows ?? []) as BinderCardRecord[];
 
   if (binder.type !== 'official' || !binder.source_set_id) {
-    return savedRows;
-  }
-
+  return savedRows.map((row) => ({
+    ...row,
+    card: row.card ?? (row.card_name ? {
+      id: row.card_id,
+      name: row.card_name,
+      number: row.card_number ?? null,
+      images: {
+        small: row.image_url ?? null,
+        large: null,
+      },
+    } : null),
+  }));
+}
   const setCards = await fetchCardsForSet(binder.source_set_id);
 
   const savedByCardKey = new Map(
@@ -246,7 +256,7 @@ export async function createBinder(input: {
 
 export async function addCardsToBinder(
   binderId: string,
-  cards: { cardId: string; setId: string }[]
+  cards: { cardId: string; setId: string; cardName?: string | null; imageUrl?: string | null; setName?: string | null }[]
 ): Promise<void> {
   const { data: existingRows, error: existingError } = await supabase
     .from('binder_cards')
@@ -267,15 +277,18 @@ export async function addCardsToBinder(
       : -1;
 
   const rows = cards
-    .filter((card) => !existingKeys.has(`${card.setId}:${card.cardId}`))
-    .map((card, index) => ({
-      binder_id: binderId,
-      card_id: card.cardId,
-      set_id: card.setId,
-      slot_order: maxSlot + 1 + index,
-      owned: false,
-      notes: '',
-    }));
+  .filter((card) => !existingKeys.has(`${card.setId}:${card.cardId}`))
+  .map((card, index) => ({
+    binder_id: binderId,
+    card_id: card.cardId,
+    set_id: card.setId,
+    card_name: card.cardName ?? null,
+    image_url: card.imageUrl ?? null,
+    set_name: card.setName ?? null,
+    slot_order: maxSlot + 1 + index,
+    owned: false,
+    notes: '',
+  }));
 
   if (!rows.length) return;
 

@@ -543,14 +543,16 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     setName: item.card?.set?.name ?? item.set_name ?? null,
     slotOrder: item.slot_order,
   });
-  await load();
+  setCards((prev) =>
+    prev.map((c) => (c.id === item.id ? { ...c, owned: newOwned } : c))
+  );
 } catch (error) {
-      console.log('Rollback owned toggle', error);
-      setCards((prev) =>
-        prev.map((c) => (c.id === item.id ? { ...c, owned: !newOwned } : c))
-      );
-      Alert.alert('Error', 'Failed to update card.');
-    }
+  console.log('Rollback owned toggle', error);
+  setCards((prev) =>
+    prev.map((c) => (c.id === item.id ? { ...c, owned: !newOwned } : c))
+  );
+  Alert.alert('Error', 'Failed to update card.');
+}
   };
 
   // ===============================
@@ -625,11 +627,14 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     setAddingCardId('bulk');
 
     const validCards = cardsToAdd
-      .map((card) => ({
-        cardId: card.card_id,
-        setId: getSetIdFromCardId(card.card_id),
-      }))
-      .filter((c) => c.setId);
+  .map((card) => ({
+    cardId: card.card_id,
+    setId: getSetIdFromCardId(card.card_id),
+    cardName: card.name ?? null,
+    imageUrl: card.image_url ?? null,
+    setName: card.set_name ?? null,
+  }))
+  .filter((c) => c.setId);
 
     await addCardsToBinder(binderId, validCards);
     setPendingAddIds({});
