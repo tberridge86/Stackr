@@ -62,13 +62,7 @@ const PADDING = 16;
 const GAP = 10;
 const binderCardWidth = (screenWidth - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
 
-const cardShadow = {
-  shadowColor: '#000',
-  shadowOpacity: 0.25,
-  shadowRadius: 8,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 6,
-};
+const cardShadow = {};
 
 const BINDER_LOGO_OVERRIDES: Record<string, string> = {
   me3: 'https://images.pokemontcg.io/por/logo.png',

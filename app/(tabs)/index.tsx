@@ -997,12 +997,15 @@ export default function HubScreen() {
           ONBOARDING MODAL
       =============================== */}
       <Modal visible={showOnboarding} transparent animationType="fade">
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.35)',
-          justifyContent: 'center',
-          padding: 20,
-        }}>
+        <View
+  pointerEvents="box-none"
+  style={{
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    padding: 20,
+  }}
+>
           <View style={{
             backgroundColor: theme.colors.card,
             borderRadius: 24,

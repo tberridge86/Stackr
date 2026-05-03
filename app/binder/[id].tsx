@@ -534,14 +534,15 @@ export default function BinderDetailScreen() {
     }
 
     try {
-      await updateBinderCardOwned(item.id, newOwned, {
-        cardName: item.card?.name ?? item.card_name ?? null,
-        cardNumber: item.card?.number ?? item.card_number ?? null,
-        imageUrl: item.card?.images?.small ?? item.image_url ?? null,
-        setName: item.card?.set?.name ?? item.set_name ?? null,
-        slotOrder: item.slot_order,
-      });
-    } catch (error) {
+  await updateBinderCardOwned(item.id, newOwned, {
+    cardName: item.card?.name ?? item.card_name ?? null,
+    cardNumber: item.card?.number ?? item.card_number ?? null,
+    imageUrl: item.card?.images?.small ?? item.image_url ?? null,
+    setName: item.card?.set?.name ?? item.set_name ?? null,
+    slotOrder: item.slot_order,
+  });
+  await load();
+} catch (error) {
       console.log('Rollback owned toggle', error);
       setCards((prev) =>
         prev.map((c) => (c.id === item.id ? { ...c, owned: !newOwned } : c))

@@ -842,6 +842,88 @@ app.post('/api/notify/price-alert', async (req, res) => {
   }
 });
 
+// ... all the notification endpoints ...
+
+// ===============================
+// SYNC SET
+// ===============================
+
+app.post('/api/sync/set', async (req, res) => {
+  try {
+    const setId = String(req.query.setId || req.body.setId || '').trim();
+    if (!setId) return res.status(400).json({ error: 'Missing setId' });
+
+    const headers = POKEMON_TCG_API_KEY
+      ? { 'X-Api-Key': POKEMON_TCG_API_KEY }
+      : {};
+
+    let page = 1;
+    let totalUpserted = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const url = `https://api.pokemontcg.io/v2/cards?q=set.id:${setId}&pageSize=250&page=${page}`;
+      const response = await fetch(url, { headers });
+
+      if (!response.ok) {
+        return res.status(500).json({ error: `TCG API failed: ${response.status}` });
+      }
+
+      const data = await response.json();
+      const cards = data.data ?? [];
+
+      if (!cards.length) {
+        hasMore = false;
+        break;
+      }
+
+      const rows = cards.map((card) => ({
+        id: card.id,
+        name: card.name,
+        set_id: card.set?.id ?? setId,
+        number: card.number ?? null,
+        rarity: card.rarity ?? null,
+        image_small: card.images?.small ?? null,
+        image_large: card.images?.large ?? null,
+        raw_data: card,
+      }));
+
+      const { error } = await supabase
+        .from('pokemon_cards')
+        .upsert(rows, { onConflict: 'id' });
+
+      if (error) {
+        console.log('Upsert error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      totalUpserted += rows.length;
+      console.log(`✅ Synced page ${page} — ${rows.length} cards`);
+
+      if (cards.length < 250) {
+        hasMore = false;
+      } else {
+        page++;
+      }
+    }
+
+    return res.json({ ok: true, setId, totalUpserted });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Sync failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+// ===============================
+// START
+// ===============================
+
+app.listen(PORT, () => {
+  console.log(`Stackr backend listening on port ${PORT}`);
+});
+
 // ===============================
 // START
 // ===============================

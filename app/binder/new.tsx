@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   ScrollView,
+  Modal,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -169,6 +170,7 @@ export default function NewBinderScreen() {
     paramType === 'official' ? 'official' : 'custom'
   );
   const [edition, setEdition] = useState<'1st_edition' | 'unlimited' | null>(null);
+  const [editionModalVisible, setEditionModalVisible] = useState(false);
 
   const [sets, setSets] = useState<PokemonSet[]>([]);
   const [selectedSet, setSelectedSet] = useState<PokemonSet | null>(null);
@@ -268,19 +270,8 @@ export default function NewBinderScreen() {
     setEdition(null);
   };
 
-  const handleSave = async () => {
-    if (saving) return;
-
-    if (!name.trim()) {
-      Alert.alert('Name required', 'Please enter a binder name.');
-      return;
-    }
-
-    if (!isEditMode && type === 'official' && !selectedSet) {
-      Alert.alert('Set required', 'Please select a set for your official binder.');
-      return;
-    }
-
+  // Core save logic — accepts edition directly to avoid stale state
+  const saveBinder = async (resolvedEdition: '1st_edition' | 'unlimited' | null) => {
     try {
       setSaving(true);
 
@@ -292,7 +283,7 @@ export default function NewBinderScreen() {
             color,
             gradient: gradient ?? null,
             cover_key: coverKey ?? null,
-            edition: edition ?? null,
+            edition: resolvedEdition ?? null,
           })
           .eq('id', binderId);
 
@@ -311,7 +302,7 @@ export default function NewBinderScreen() {
         coverKey: coverKey ?? null,
         type,
         sourceSetId: type === 'official' ? selectedSet?.id : null,
-        edition: edition ?? null,
+        edition: resolvedEdition ?? null,
       });
 
       router.replace(`/binder/${binder.id}`);
@@ -321,6 +312,28 @@ export default function NewBinderScreen() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSave = async () => {
+    if (saving) return;
+
+    if (!name.trim()) {
+      Alert.alert('Name required', 'Please enter a binder name.');
+      return;
+    }
+
+    if (!isEditMode && type === 'official' && !selectedSet) {
+      Alert.alert('Set required', 'Please select a set for your official binder.');
+      return;
+    }
+
+    // If base era set and no edition chosen yet, show the edition picker modal
+    if (!isEditMode && isBaseEra && edition === null) {
+      setEditionModalVisible(true);
+      return;
+    }
+
+    await saveBinder(edition);
   };
 
   // ===============================
@@ -620,72 +633,31 @@ export default function NewBinderScreen() {
               </Text>
 
               {selectedSet && (
-                <>
-                  <View style={{
-                    backgroundColor: theme.colors.secondary + '20',
-                    borderRadius: 12, padding: 12, marginBottom: 12,
-                    borderWidth: 1, borderColor: theme.colors.secondary,
-                    flexDirection: 'row', alignItems: 'center', gap: 10,
-                  }}>
-                    <Image
-                      source={{ uri: `https://images.pokemontcg.io/${selectedSet.id}/logo.png` }}
-                      style={{ width: 60, height: 28 }}
-                      resizeMode="contain"
-                    />
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-                        {selectedSet.name}
-                      </Text>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
-                        {selectedSet.total} cards
-                      </Text>
-                    </View>
-                    <TouchableOpacity onPress={() => { setSelectedSet(null); setName(''); setEdition(null); }}>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                        Change
-                      </Text>
-                    </TouchableOpacity>
+                <View style={{
+                  backgroundColor: theme.colors.secondary + '20',
+                  borderRadius: 12, padding: 12, marginBottom: 12,
+                  borderWidth: 1, borderColor: theme.colors.secondary,
+                  flexDirection: 'row', alignItems: 'center', gap: 10,
+                }}>
+                  <Image
+                    source={{ uri: `https://images.pokemontcg.io/${selectedSet.id}/logo.png` }}
+                    style={{ width: 60, height: 28 }}
+                    resizeMode="contain"
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
+                      {selectedSet.name}
+                    </Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+                      {selectedSet.total} cards
+                    </Text>
                   </View>
-
-                  {/* Edition picker — only for base era sets */}
-                  {isBaseEra && (
-                    <View style={{ marginBottom: 12 }}>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
-                        Edition
-                      </Text>
-                      <View style={{ flexDirection: 'row', gap: 10 }}>
-                        {([
-                          { value: '1st_edition' as const, label: '1st Edition' },
-                          { value: 'unlimited' as const, label: 'Unlimited' },
-                        ]).map((opt) => {
-                          const active = edition === opt.value;
-                          return (
-                            <TouchableOpacity
-                              key={opt.value}
-                              onPress={() => setEdition(opt.value)}
-                              style={{
-                                flex: 1,
-                                backgroundColor: active ? theme.colors.primary : theme.colors.surface,
-                                paddingVertical: 12,
-                                borderRadius: 14,
-                                borderWidth: 1,
-                                borderColor: active ? theme.colors.primary : theme.colors.border,
-                                alignItems: 'center',
-                              }}
-                            >
-                              <Text style={{
-                                color: active ? '#FFFFFF' : theme.colors.textSoft,
-                                fontWeight: '900',
-                              }}>
-                                {opt.label}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-                      </View>
-                    </View>
-                  )}
-                </>
+                  <TouchableOpacity onPress={() => { setSelectedSet(null); setName(''); setEdition(null); }}>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
+                      Change
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               )}
 
               <TextInput
@@ -772,6 +744,86 @@ export default function NewBinderScreen() {
           </TouchableOpacity>
         </ScrollView>
       </View>
+
+      {/* Edition picker modal */}
+      <Modal
+        visible={editionModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setEditionModalVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.55)',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 24,
+        }}>
+          <View style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 24,
+            padding: 24,
+            width: '100%',
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            ...cardShadow,
+          }}>
+            <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>
+              Which edition?
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 24, lineHeight: 18 }}>
+              Base Set cards exist in two editions with very different values. Choose which this binder represents.
+            </Text>
+
+            <TouchableOpacity
+              onPress={async () => {
+                setEditionModalVisible(false);
+                await saveBinder('1st_edition');
+              }}
+              style={{
+                backgroundColor: '#F59E0B',
+                borderRadius: 16,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginBottom: 10,
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>1st Edition</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 3 }}>
+                Stamp on card · higher value
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={async () => {
+                setEditionModalVisible(false);
+                await saveBinder('unlimited');
+              }}
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 16,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginBottom: 16,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+              }}
+            >
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>Unlimited</Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>
+                No stamp · standard print run
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setEditionModalVisible(false)}
+              style={{ alignItems: 'center', paddingVertical: 8 }}
+            >
+              <Text style={{ color: theme.colors.textSoft, fontWeight: '700' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
