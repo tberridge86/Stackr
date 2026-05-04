@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
-import discordRoutes from './routes/discord';
+import discordRoutes from './routes/discord.js';
 
 const app = express();
 
