@@ -446,7 +446,7 @@ export default function PublicProfileScreen() {
         colors={asGradientColors(BACKGROUND_MAP.galaxy.colors)}
         style={{ flex: 1 }}
       >
-        <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }} edges={['bottom', 'left', 'right']}>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
             <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginBottom: 16 }}>
               Collector not found
@@ -476,26 +476,12 @@ export default function PublicProfileScreen() {
     >
       <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
         <ScrollView
-          contentContainerStyle={{ padding: 18, paddingBottom: 120 }}
+          contentContainerStyle={{ padding: 18, paddingBottom: 120, paddingTop: 0 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Top bar */}
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{
-                width: 42, height: 42,
-                borderRadius: 14,
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: 12,
-              }}
-            >
-              <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
-            </TouchableOpacity>
-
-            <View style={{ flex: 1 }}>
+                        <View style={{ flex: 1 }}>
               <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '900' }}>
                 Collector Profile
               </Text>
@@ -632,10 +618,16 @@ export default function PublicProfileScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => router.push({
-                  pathname: '/offer/new',
-                  params: { targetUserId: userId },
-                })}
+                onPress={() => {
+  if (!userId) return;
+  router.push({
+    pathname: '/trade/[userId]',
+    params: {
+      userId,
+      userName: profile?.collector_name ?? '',
+    },
+  });
+}}
                 style={{
                   flex: 1,
                   backgroundColor: 'rgba(255,255,255,0.15)',
@@ -831,21 +823,6 @@ export default function PublicProfileScreen() {
               </View>
             ))}
           </View>
-
-          {/* Back button */}
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              borderRadius: 14,
-              paddingVertical: 14,
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: 'rgba(255,255,255,0.2)',
-            }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 15 }}>Back</Text>
-          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
