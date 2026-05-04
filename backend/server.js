@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
+import discordRoutes from './routes/discord';
 
 const app = express();
 
@@ -908,13 +909,19 @@ app.get('/api/sync/set', async (req, res) => {
     }
 
     return res.json({ ok: true, setId, totalUpserted });
-  } catch (error) {
+   } catch (error) {
     return res.status(500).json({
       error: 'Sync failed',
       detail: getErrorMessage(error),
     });
   }
 });
+
+// ===============================
+// DISCORD ROUTES
+// ===============================
+
+app.use('/api/discord', discordRoutes);
 
 // ===============================
 // START

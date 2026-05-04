@@ -46,7 +46,6 @@ const TYPE_COLOR_MAP: Record<string, string> = {
   fairy: '#EE99AC',
 };
 
-// Determine if text should be dark or light based on bg colour
 function getTextColorForBg(hex: string): string {
   const clean = hex.replace('#', '');
   const r = parseInt(clean.substring(0, 2), 16);
@@ -102,7 +101,9 @@ function TopLoaderCard({
           ) : (
             <View style={{ alignItems: 'center' }}>
               <Ionicons name="image-outline" size={28} color="#7c859f" />
-              <Text style={{ color: '#7c859f', marginTop: 6, fontSize: 12 }}>Not set</Text>
+              <Text style={{ color: '#7c859f', marginTop: 6, fontSize: 12 }}>
+                Not set
+              </Text>
             </View>
           )}
         </View>
@@ -136,7 +137,12 @@ function StatBox({ label, value }: { label: string; value: number | string }) {
       <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 18 }}>
         {value}
       </Text>
-      <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 3, fontWeight: '700' }}>
+      <Text style={{
+        color: 'rgba(255,255,255,0.75)',
+        fontSize: 11,
+        marginTop: 3,
+        fontWeight: '700',
+      }}>
         {label}
       </Text>
     </View>
@@ -170,9 +176,16 @@ function QuickAction({
       activeOpacity={0.8}
     >
       <Ionicons name={icon} size={20} color={theme.colors.secondary} />
-      <Text style={{ flex: 1, color: theme.colors.text, marginLeft: 12, fontWeight: '700' }}>
+
+      <Text style={{
+        flex: 1,
+        color: theme.colors.text,
+        marginLeft: 12,
+        fontWeight: '700',
+      }}>
         {label}
       </Text>
+
       {badge != null && badge > 0 && (
         <View style={{
           backgroundColor: theme.colors.primary,
@@ -182,11 +195,17 @@ function QuickAction({
           paddingVertical: 2,
           marginRight: 8,
         }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '900', textAlign: 'center' }}>
+          <Text style={{
+            color: '#FFFFFF',
+            fontSize: 11,
+            fontWeight: '900',
+            textAlign: 'center',
+          }}>
             {badge}
           </Text>
         </View>
       )}
+
       <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
     </TouchableOpacity>
   );
@@ -205,16 +224,16 @@ export default function ProfileScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  // Stats
   const [ownedCount, setOwnedCount] = useState(0);
   const [binderCount, setBinderCount] = useState(0);
   const [tradeCount, setTradeCount] = useState(0);
+  const [successRate, setSuccessRate] = useState<number | null>(null);
+
   const [traderRating, setTraderRating] = useState<{
     average_rating: number | null;
     review_count: number;
   } | null>(null);
 
-  // Notification badge
   const [unreadCount, setUnreadCount] = useState(0);
 
   const avatar = useMemo(() => {
@@ -297,9 +316,8 @@ export default function ProfileScreen() {
 
         supabase
           .from('trade_offers')
-          .select('*', { count: 'exact', head: true })
-          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-          .eq('status', 'completed'),
+          .select('status')
+          .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`),
       ]);
 
       const binderIds = (bindersResult.data ?? []).map((b) => b.id);
@@ -311,15 +329,42 @@ export default function ProfileScreen() {
           .select('*', { count: 'exact', head: true })
           .in('binder_id', binderIds)
           .eq('owned', true);
+
         setOwnedCount(count ?? 0);
+      } else {
+        setOwnedCount(0);
       }
 
       if (ratingResult.data) {
         setTraderRating(ratingResult.data as any);
+      } else {
+        setTraderRating(null);
       }
 
       setUnreadCount(notificationsResult.count ?? 0);
-      setTradeCount(tradesResult.count ?? 0);
+
+      const tradesData = tradesResult.data ?? [];
+
+      const completed = tradesData.filter(
+        (trade) => trade.status === 'completed'
+      ).length;
+
+      const failed = tradesData.filter(
+        (trade) =>
+          trade.status === 'cancelled' ||
+          trade.status === 'disputed' ||
+          trade.status === 'declined'
+      ).length;
+
+      const totalResolved = completed + failed;
+
+      setTradeCount(completed);
+
+      if (totalResolved > 0) {
+        setSuccessRate(Math.round((completed / totalResolved) * 100));
+      } else {
+        setSuccessRate(null);
+      }
     } catch (error) {
       console.log('Failed to load profile stats', error);
     }
@@ -364,11 +409,14 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     try {
       setLoggingOut(true);
+
       const { error } = await supabase.auth.signOut();
+
       if (error) {
         Alert.alert('Logout failed', error.message);
         return;
       }
+
       router.replace('/login');
     } catch (error) {
       Alert.alert('Logout failed', 'Something went wrong. Please try again.');
@@ -394,28 +442,54 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{
+        flex: 1,
+        backgroundColor: theme.colors.bg,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
         <ActivityIndicator color={theme.colors.primary} size="large" />
-        <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>Loading profile...</Text>
+        <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
+          Loading profile...
+        </Text>
       </View>
     );
   }
 
   if (!profile) {
     return (
-      <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+      <View style={{
+        flex: 1,
+        backgroundColor: theme.colors.bg,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+      }}>
         <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800' }}>
           No profile found
         </Text>
-        <Text style={{ color: theme.colors.textSoft, marginTop: 6, textAlign: 'center' }}>
+
+        <Text style={{
+          color: theme.colors.textSoft,
+          marginTop: 6,
+          textAlign: 'center',
+        }}>
           Complete your profile setup to continue.
         </Text>
 
         <TouchableOpacity
           onPress={() => router.push('/profile/setup')}
-          style={{ marginTop: 16, backgroundColor: theme.colors.primary, paddingVertical: 12, paddingHorizontal: 18, borderRadius: 12 }}
+          style={{
+            marginTop: 16,
+            backgroundColor: theme.colors.primary,
+            paddingVertical: 12,
+            paddingHorizontal: 18,
+            borderRadius: 12,
+          }}
         >
-          <Text style={{ color: '#fff', fontWeight: '900' }}>Set up profile</Text>
+          <Text style={{ color: '#fff', fontWeight: '900' }}>
+            Set up profile
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -438,7 +512,9 @@ export default function ProfileScreen() {
           ) : (
             <>
               <Ionicons name="log-out-outline" size={20} color="#D92D20" />
-              <Text style={{ color: '#D92D20', fontWeight: '900' }}>Log out</Text>
+              <Text style={{ color: '#D92D20', fontWeight: '900' }}>
+                Log out
+              </Text>
             </>
           )}
         </TouchableOpacity>
@@ -463,17 +539,18 @@ export default function ProfileScreen() {
           />
         }
       >
-        {/* ===============================
-            HERO CARD
-        =============================== */}
+        {/* HERO CARD */}
         <View style={{
           borderRadius: 26,
           padding: 18,
           marginBottom: 20,
           backgroundColor: profileColor,
         }}>
-          {/* Top row — avatar + edit button */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+          }}>
             <View style={{
               width: 90,
               height: 90,
@@ -487,9 +564,11 @@ export default function ProfileScreen() {
                 <Image source={avatar.image} style={{ width: '100%', height: '100%' }} />
               ) : (
                 <View style={{
-                  width: '100%', height: '100%',
+                  width: '100%',
+                  height: '100%',
                   backgroundColor: 'rgba(0,0,0,0.3)',
-                  justifyContent: 'center', alignItems: 'center',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}>
                   <Text style={{ color: '#FFFFFF', fontSize: 30, fontWeight: '900' }}>
                     {profile.collector_name?.[0]?.toUpperCase() ?? '?'}
@@ -499,39 +578,51 @@ export default function ProfileScreen() {
             </View>
 
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              {/* Notifications button */}
               <TouchableOpacity
                 onPress={() => router.push('/notifications')}
                 style={{
-                  width: 38, height: 38, borderRadius: 10,
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
                   backgroundColor: 'rgba(0,0,0,0.25)',
-                  alignItems: 'center', justifyContent: 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <Ionicons name="notifications-outline" size={20} color="#fff" />
+
                 {unreadCount > 0 && (
                   <View style={{
                     position: 'absolute',
-                    top: -4, right: -4,
-                    width: 16, height: 16,
+                    top: -4,
+                    right: -4,
+                    width: 16,
+                    height: 16,
                     borderRadius: 8,
                     backgroundColor: '#EF4444',
-                    alignItems: 'center', justifyContent: 'center',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}>
-                    <Text style={{ color: '#fff', fontSize: 9, fontWeight: '900' }}>
+                    <Text style={{
+                      color: '#fff',
+                      fontSize: 9,
+                      fontWeight: '900',
+                    }}>
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </Text>
                   </View>
                 )}
               </TouchableOpacity>
 
-              {/* Edit button */}
               <TouchableOpacity
                 onPress={() => router.push('/profile/setup')}
                 style={{
-                  width: 38, height: 38, borderRadius: 10,
+                  width: 38,
+                  height: 38,
+                  borderRadius: 10,
                   backgroundColor: 'rgba(0,0,0,0.25)',
-                  alignItems: 'center', justifyContent: 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <Ionicons name="create-outline" size={20} color="#fff" />
@@ -539,36 +630,60 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Name + type */}
-          <Text style={{ color: heroTextColor, fontSize: 26, fontWeight: '900', marginTop: 16 }}>
+          <Text style={{
+            color: heroTextColor,
+            fontSize: 26,
+            fontWeight: '900',
+            marginTop: 16,
+          }}>
             {profile.collector_name ?? 'Collector'}
           </Text>
 
-          <Text style={{ color: heroTextColor, marginTop: 4, fontWeight: '600', opacity: 0.85 }}>
+          <Text style={{
+            color: heroTextColor,
+            marginTop: 4,
+            fontWeight: '600',
+            opacity: 0.85,
+          }}>
             {profile.pokemon_type
               ? `${profile.pokemon_type.charAt(0).toUpperCase()}${profile.pokemon_type.slice(1)} Trainer`
               : 'Collector Profile'}
           </Text>
 
-          {/* Trader rating */}
-          {traderRating && (
-            <View style={{
-              marginTop: 10,
-              backgroundColor: 'rgba(0,0,0,0.15)',
-              borderRadius: 999,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              alignSelf: 'flex-start',
-            }}>
-              <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>
-                {traderRating.review_count > 0
-                  ? `⭐ ${traderRating.average_rating?.toFixed(1)} · ${traderRating.review_count} review${traderRating.review_count !== 1 ? 's' : ''}`
-                  : '⭐ No reviews yet'}
+          {/* Trader trust line */}
+          <View style={{
+            marginTop: 10,
+            backgroundColor: 'rgba(0,0,0,0.15)',
+            borderRadius: 999,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            alignSelf: 'flex-start',
+          }}>
+            {(!traderRating || traderRating.review_count === 0) && tradeCount === 0 ? (
+              <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700' }}>
+                ⭐ New Trader
               </Text>
-            </View>
-          )}
+            ) : (
+              <Text style={{ fontSize: 11, fontWeight: '700' }}>
+                <Text style={{ color: '#FFD166' }}>
+                  ⭐ {traderRating?.average_rating?.toFixed(1) ?? '—'}
+                </Text>
 
-          {/* Stats row */}
+                <Text style={{ color: '#FFFFFF' }}>
+                  {' · '}
+                  {traderRating?.review_count ?? 0} review{traderRating?.review_count === 1 ? '' : 's'}
+                  {' · 🤝 '}
+                  {tradeCount} trade{tradeCount === 1 ? '' : 's'}
+                  {' · '}
+                </Text>
+
+                <Text style={{ color: '#22C55E' }}>
+                  {successRate != null ? `✔ ${successRate}% success` : '✔ No history'}
+                </Text>
+              </Text>
+            )}
+          </View>
+
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
             <StatBox label="Cards" value={ownedCount} />
             <StatBox label="Binders" value={binderCount} />
@@ -576,14 +691,18 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* ===============================
-            SHOWCASE
-        =============================== */}
+        {/* SHOWCASE */}
         <View style={{ marginBottom: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 12,
+          }}>
             <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800' }}>
               Showcase
             </Text>
+
             {showcaseLoading && (
               <ActivityIndicator color={theme.colors.primary} size="small" />
             )}
@@ -595,6 +714,7 @@ export default function ProfileScreen() {
               card={favoriteCard}
               labelColor={theme.colors.secondary}
             />
+
             <TopLoaderCard
               label="🎯 Chase Card"
               card={chaseCard}
@@ -614,17 +734,24 @@ export default function ProfileScreen() {
               borderColor: theme.colors.border,
             }}
           >
-            <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 13 }}>
+            <Text style={{
+              color: theme.colors.textSoft,
+              fontWeight: '700',
+              fontSize: 13,
+            }}>
               Set showcase cards from your binders →
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* ===============================
-            QUICK ACCESS
-        =============================== */}
+        {/* QUICK ACCESS */}
         <View style={{ marginBottom: 20 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800', marginBottom: 12 }}>
+          <Text style={{
+            color: theme.colors.text,
+            fontSize: 18,
+            fontWeight: '800',
+            marginBottom: 12,
+          }}>
             Quick Access
           </Text>
 
@@ -666,11 +793,14 @@ export default function ProfileScreen() {
           />
         </View>
 
-        {/* ===============================
-            ACCOUNT
-        =============================== */}
+        {/* ACCOUNT */}
         <View style={{ marginBottom: 20 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800', marginBottom: 12 }}>
+          <Text style={{
+            color: theme.colors.text,
+            fontSize: 18,
+            fontWeight: '800',
+            marginBottom: 12,
+          }}>
             Account
           </Text>
 
@@ -699,7 +829,9 @@ export default function ProfileScreen() {
             ) : (
               <>
                 <Ionicons name="log-out-outline" size={20} color="#D92D20" />
-                <Text style={{ color: '#D92D20', fontWeight: '900' }}>Log out</Text>
+                <Text style={{ color: '#D92D20', fontWeight: '900' }}>
+                  Log out
+                </Text>
               </>
             )}
           </TouchableOpacity>

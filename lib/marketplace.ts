@@ -1,5 +1,7 @@
 import { supabase } from './supabase';
 
+const API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+
 export type MarketplaceListingStatus = 'active' | 'archived' | 'sold';
 
 export type MarketplaceListing = {
@@ -187,6 +189,22 @@ updated_at
   return attachProfiles(listings);
 }
 
+async function notifyDiscordNewTradeListing(listingId: string) {
+  if (!API_URL) return;
+
+  try {
+    await fetch(`${API_URL}/api/discord/new-trade-listing`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ listingId }),
+    });
+  } catch (error) {
+    console.log('Discord listing notification failed:', error);
+  }
+}
+
 export async function createMarketplaceListing(input: {
   card_id: string;
   set_id?: string | null;
@@ -236,9 +254,11 @@ export async function createMarketplaceListing(input: {
     .select()
     .single();
 
-  if (error) throw new Error(error.message);
+ if (error) throw new Error(error.message);
 
-  return mapFlagToListing(data);
+await notifyDiscordNewTradeListing(data.id);
+
+return mapFlagToListing(data);
 }
 
 export async function archiveMarketplaceListing(listingId: string) {

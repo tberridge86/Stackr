@@ -14,6 +14,7 @@ import {
   Modal,
   Pressable,
   RefreshControl,
+  Linking,
   ScrollView,
   TouchableOpacity,
   View,
@@ -638,6 +639,24 @@ export default function HubScreen() {
           </View>
 
           <View style={{ flexDirection: 'row', gap: 10 }}>
+
+ {/* ☕ Ko-fi */}
+  <TouchableOpacity
+    onPress={() => Linking.openURL('https://ko-fi.com/stackr_')}
+    style={{
+      width: 46, height: 46,
+      borderRadius: 14,
+      backgroundColor: '#FF5E5B',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: '#e54e4b',
+      ...cardShadow,
+    }}
+  >
+    <Text style={{ fontSize: 20 }}>☕</Text>
+  </TouchableOpacity>
+            
             <TouchableOpacity
               onPress={() => router.push('/notifications')}
               style={{

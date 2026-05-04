@@ -1,5 +1,5 @@
 import { theme } from '../../lib/theme';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -19,10 +19,6 @@ import { Text } from '../../components/Text';
 import { BlurView } from 'expo-blur';
 import { useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
-
-// ===============================
-// TYPES
-// ===============================
 
 type PokemonCard = {
   id: string;
@@ -66,10 +62,6 @@ type EbayDetailData = {
   count?: number | null;
 } | null;
 
-// ===============================
-// CONSTANTS
-// ===============================
-
 const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 const USD_TO_GBP = 0.79;
 const EUR_TO_GBP = 0.85;
@@ -81,10 +73,6 @@ const cardShadow = {
   shadowOffset: { width: 0, height: 4 },
   elevation: 3,
 };
-
-// ===============================
-// HELPERS
-// ===============================
 
 const formatCurrency = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return '--';
@@ -110,7 +98,13 @@ const getBestTcgPrice = (
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;
 
-  const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
+  const preferred = [
+    'holofoil',
+    'reverseHolofoil',
+    'normal',
+    '1stEditionHolofoil',
+    '1stEditionNormal',
+  ];
 
   for (const key of preferred) {
     const val = prices[key]?.[field];
@@ -125,9 +119,26 @@ const getBestTcgPrice = (
   return null;
 };
 
-// ===============================
-// MAIN COMPONENT
-// ===============================
+const mapCard = (card: any): PokemonCard => ({
+  id: card.id,
+  name: card.name,
+  number: card.number ?? '',
+  rarity: card.rarity ?? undefined,
+  images: {
+    small: card.image_small ?? undefined,
+    large: card.image_large ?? undefined,
+  },
+  set: {
+    id: card.set_id,
+    name: card.raw_data?.set?.name ?? card.set_id,
+    series: card.raw_data?.set?.series ?? '',
+  },
+  tcgplayer: card.raw_data?.tcgplayer,
+  cardmarket: card.raw_data?.cardmarket,
+});
+
+const normalise = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
 export default function MarketScreen() {
   const [query, setQuery] = useState('');
@@ -150,6 +161,14 @@ export default function MarketScreen() {
   const translateY = useRef(new Animated.Value(0)).current;
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, []);
+
   const watchedCardIds = useMemo(
     () => new Set(watchlist.map((item) => item.card_id)),
     [watchlist]
@@ -159,10 +178,6 @@ export default function MarketScreen() {
     (cardId: string) => watchedCardIds.has(cardId),
     [watchedCardIds]
   );
-
-  // ===============================
-  // MODAL
-  // ===============================
 
   const closeDetail = useCallback(() => {
     Animated.timing(translateY, {
@@ -201,10 +216,6 @@ export default function MarketScreen() {
     [closeDetail, translateY]
   );
 
-  // ===============================
-  // LOAD WATCHLIST PRICES
-  // ===============================
-
   const loadWatchlistPrices = useCallback(async (cardIds: string[]) => {
     if (!cardIds.length) {
       setWatchlistPriceMap({});
@@ -223,6 +234,7 @@ export default function MarketScreen() {
     }
 
     const grouped: Record<string, any[]> = {};
+
     for (const row of data ?? []) {
       if (!grouped[row.card_id]) grouped[row.card_id] = [];
       if (grouped[row.card_id].length < 2) {
@@ -262,10 +274,6 @@ export default function MarketScreen() {
     setWatchlistPriceMap(nextMap);
   }, []);
 
-  // ===============================
-  // LOAD WATCHLIST
-  // ===============================
-
   const loadWatchlist = useCallback(async () => {
     try {
       setWatchlistLoading(true);
@@ -304,24 +312,7 @@ export default function MarketScreen() {
         .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
         .in('id', cardIds);
 
-      const cards: PokemonCard[] = (cardData ?? []).map((card: any) => ({
-        id: card.id,
-        name: card.name,
-        number: card.number ?? '',
-        rarity: card.rarity ?? undefined,
-        images: {
-          small: card.image_small ?? undefined,
-          large: card.image_large ?? undefined,
-        },
-        set: {
-          id: card.set_id,
-          name: card.raw_data?.set?.name ?? card.set_id,
-          series: card.raw_data?.set?.series ?? '',
-        },
-        tcgplayer: card.raw_data?.tcgplayer,
-        cardmarket: card.raw_data?.cardmarket,
-      }));
-
+      const cards: PokemonCard[] = (cardData ?? []).map(mapCard);
       const cardMap = Object.fromEntries(cards.map((c) => [c.id, c]));
       const ordered = cardIds.map((id) => cardMap[id]).filter(Boolean) as PokemonCard[];
 
@@ -334,22 +325,15 @@ export default function MarketScreen() {
     }
   }, [loadWatchlistPrices]);
 
-  // ===============================
-  // FOCUS EFFECT
-  // ===============================
-
   useFocusEffect(
     useCallback(() => {
       loadWatchlist();
     }, [loadWatchlist])
   );
 
-  // ===============================
-  // SEARCH
-  // ===============================
-
   const searchCards = useCallback(async (searchQuery: string) => {
     const trimmed = searchQuery.trim();
+
     if (!trimmed) {
       setSearchResults([]);
       return;
@@ -358,51 +342,60 @@ export default function MarketScreen() {
     try {
       setSearching(true);
 
-      const words = trimmed.split(' ').filter(Boolean);
-      const cardName = words[0];
-      const setHint = words.slice(1).join(' ');
+      const words = trimmed.split(/\s+/).filter(Boolean);
+
+      let cardTerm = trimmed;
+      let matchedSetIds: string[] = [];
+
+      for (let i = 0; i < words.length; i++) {
+        const possibleCardTerm = words.slice(0, i).join(' ');
+        const possibleSetTerm = words.slice(i).join(' ');
+
+        if (!possibleSetTerm) continue;
+
+        const { data: matchingSets, error: setError } = await supabase
+          .from('pokemon_sets')
+          .select('id, name')
+          .or(`name.ilike.%${possibleSetTerm}%,id.ilike.%${possibleSetTerm}%`)
+          .limit(20);
+
+        if (setError) {
+          console.log('Set search error:', setError);
+          continue;
+        }
+
+        const filteredSets = (matchingSets ?? []).filter((set: any) => {
+          const setName = normalise(set.name ?? '');
+          const setId = normalise(set.id ?? '');
+          const searchText = normalise(possibleSetTerm);
+
+          return setName.includes(searchText) || setId.includes(searchText);
+        });
+
+        if (filteredSets.length > 0) {
+          cardTerm = possibleCardTerm;
+          matchedSetIds = filteredSets.map((set: any) => set.id);
+          break;
+        }
+      }
 
       let dbQuery = supabase
         .from('pokemon_cards')
         .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .ilike('name', `%${cardName}%`)
-        .limit(60);
+        .limit(cardTerm ? 120 : 300);
 
-      if (setHint) {
-        dbQuery = dbQuery.ilike('set_id', `%${setHint}%`);
+      if (cardTerm) {
+        dbQuery = dbQuery.ilike('name', `%${cardTerm}%`);
+      }
+
+      if (matchedSetIds.length > 0) {
+        dbQuery = dbQuery.in('set_id', matchedSetIds);
       }
 
       const { data, error } = await dbQuery;
       if (error) throw error;
 
-      let cards: PokemonCard[] = (data ?? []).map((card: any) => ({
-        id: card.id,
-        name: card.name,
-        number: card.number ?? '',
-        rarity: card.rarity ?? undefined,
-        images: {
-          small: card.image_small ?? undefined,
-          large: card.image_large ?? undefined,
-        },
-        set: {
-          id: card.set_id,
-          name: card.raw_data?.set?.name ?? card.set_id,
-          series: card.raw_data?.set?.series ?? '',
-        },
-        tcgplayer: card.raw_data?.tcgplayer,
-        cardmarket: card.raw_data?.cardmarket,
-      }));
-
-      if (setHint) {
-        const hint = setHint.toLowerCase();
-        cards = cards.filter(
-          (c) =>
-            c.set?.name?.toLowerCase().includes(hint) ||
-            c.set?.id?.toLowerCase().includes(hint)
-        );
-      }
-
-      setSearchResults(cards);
+      setSearchResults((data ?? []).map(mapCard));
     } catch (err) {
       console.log('Search error:', err);
       setSearchResults([]);
@@ -413,58 +406,52 @@ export default function MarketScreen() {
 
   const handleSearchChange = useCallback((text: string) => {
     setQuery(text);
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    if (text.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    searchTimerRef.current = setTimeout(() => searchCards(text), 400);
-  }, [searchCards]);
 
-  // ===============================
-  // EBAY PRICE FETCH
-  // ===============================
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+
+    searchTimerRef.current = setTimeout(() => {
+      searchCards(text);
+    }, 350);
+  }, [searchCards]);
 
   const fetchDetailEbayData = useCallback(async (card: PokemonCard) => {
     try {
-      if (!PRICE_API_URL) return;
-
       setDetailPriceLoading(true);
-      setDetailEbayData(null);
 
-      const params = new URLSearchParams({
-        cardId: card.id,
-        name: card.name ?? '',
-        setName: card.set?.name ?? '',
-        number: card.number ?? '',
-      });
-
-      const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
-
-      if (!response.ok) {
+      if (!PRICE_API_URL) {
         setDetailEbayData(null);
         return;
       }
 
-      const json = await response.json();
+      const setName = card.set?.name ?? '';
+      const cardNumber = card.number ?? '';
+      const searchTerm = `${card.name} ${setName} ${cardNumber}`.trim();
+
+      const response = await fetch(
+        `${PRICE_API_URL}/api/ebay-price?query=${encodeURIComponent(searchTerm)}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch eBay price');
+      }
+
+      const data = await response.json();
 
       setDetailEbayData({
-        low: json?.low ?? null,
-        average: json?.average ?? null,
-        high: json?.high ?? null,
-        count: json?.count ?? null,
+        low: data.low ?? null,
+        average: data.average ?? null,
+        high: data.high ?? null,
+        count: data.count ?? null,
       });
     } catch (err) {
-      console.log('eBay price fetch error:', err);
+      console.log('eBay detail price error:', err);
       setDetailEbayData(null);
     } finally {
       setDetailPriceLoading(false);
     }
   }, []);
-
-  // ===============================
-  // CARD DETAIL
-  // ===============================
 
   const openCardDetail = useCallback(async (card: PokemonCard) => {
     translateY.setValue(0);
@@ -472,10 +459,6 @@ export default function MarketScreen() {
     setDetailVisible(true);
     await fetchDetailEbayData(card);
   }, [fetchDetailEbayData, translateY]);
-
-  // ===============================
-  // WATCHLIST TOGGLE
-  // ===============================
 
   const toggleWatchlist = useCallback(async (card: PokemonCard) => {
     if (!userId) return;
@@ -497,18 +480,19 @@ export default function MarketScreen() {
     await loadWatchlist();
   }, [userId, isWatching, loadWatchlist]);
 
-  // ===============================
-  // RENDER HELPERS
-  // ===============================
-
   const renderPriceChange = useCallback((cardId: string) => {
     const priceData = watchlistPriceMap[cardId];
 
     if (!priceData) {
-      return <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginTop: 6 }}>--</Text>;
+      return (
+        <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginTop: 6 }}>
+          --
+        </Text>
+      );
     }
 
     const { latestPrice, change, percentChange, hasHistory } = priceData;
+
     const changeColor =
       change == null ? theme.colors.textSoft
       : change > 0 ? '#22C55E'
@@ -520,20 +504,19 @@ export default function MarketScreen() {
         <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.text }}>
           {formatCurrency(latestPrice)}
         </Text>
+
         {hasHistory ? (
           <Text style={{ fontSize: 13, fontWeight: '700', color: changeColor }}>
             {formatDelta(change)} {formatPercent(percentChange)}
           </Text>
         ) : (
-          <Text style={{ fontSize: 13, color: theme.colors.textSoft }}>No history yet</Text>
+          <Text style={{ fontSize: 13, color: theme.colors.textSoft }}>
+            No history yet
+          </Text>
         )}
       </View>
     );
   }, [watchlistPriceMap]);
-
-  // ===============================
-  // RENDER SEARCH RESULT CARD
-  // ===============================
 
   const renderCard = useCallback(({ item }: { item: PokemonCard }) => {
     const watching = isWatching(item.id);
@@ -556,7 +539,12 @@ export default function MarketScreen() {
       >
         <Image
           source={{ uri: item.images?.small ?? item.images?.large }}
-          style={{ width: 86, height: 120, borderRadius: 12, backgroundColor: theme.colors.surface }}
+          style={{
+            width: 86,
+            height: 120,
+            borderRadius: 12,
+            backgroundColor: theme.colors.surface,
+          }}
           resizeMode="contain"
         />
 
@@ -577,7 +565,9 @@ export default function MarketScreen() {
           )}
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>TCG</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>
+              TCG
+            </Text>
             <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>
               {tcgMid != null ? `£${(tcgMid * USD_TO_GBP).toFixed(2)}` : '--'}
             </Text>
@@ -605,10 +595,6 @@ export default function MarketScreen() {
     );
   }, [isWatching, openCardDetail, toggleWatchlist]);
 
-  // ===============================
-  // RENDER WATCHLIST CARD
-  // ===============================
-
   const renderWatchlistCard = useCallback(({ item }: { item: PokemonCard }) => {
     const watching = isWatching(item.id);
 
@@ -630,7 +616,12 @@ export default function MarketScreen() {
       >
         <Image
           source={{ uri: item.images?.small ?? item.images?.large }}
-          style={{ width: 82, height: 114, borderRadius: 10, backgroundColor: theme.colors.surface }}
+          style={{
+            width: 82,
+            height: 114,
+            borderRadius: 10,
+            backgroundColor: theme.colors.surface,
+          }}
           resizeMode="contain"
         />
 
@@ -667,10 +658,6 @@ export default function MarketScreen() {
     );
   }, [isWatching, openCardDetail, renderPriceChange, toggleWatchlist]);
 
-  // ===============================
-  // MAIN RENDER
-  // ===============================
-
   return (
     <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <FlatList
@@ -695,16 +682,16 @@ export default function MarketScreen() {
             <Text style={{ fontSize: 30, fontWeight: '900', color: theme.colors.text }}>
               Market
             </Text>
+
             <Text style={{ marginTop: 6, fontSize: 14, lineHeight: 20, color: theme.colors.textSoft, marginBottom: 16 }}>
               Search cards, watch prices, and track daily movement.
             </Text>
 
-            {/* Search bar */}
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
               <TextInput
                 value={query}
                 onChangeText={handleSearchChange}
-                placeholder="Search e.g. Charizard base..."
+                placeholder="Search e.g. Charizard Destined Rivals..."
                 placeholderTextColor={theme.colors.textSoft}
                 style={{
                   flex: 1,
@@ -720,6 +707,7 @@ export default function MarketScreen() {
                 returnKeyType="search"
                 onSubmitEditing={() => searchCards(query)}
               />
+
               <TouchableOpacity
                 onPress={() => searchCards(query)}
                 style={{
@@ -730,34 +718,21 @@ export default function MarketScreen() {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Search</Text>
+                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>
+                  Search
+                </Text>
               </TouchableOpacity>
             </View>
 
-            {/* Watchlist */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>
                 Watchlist
               </Text>
-              {watchlistLoading && (
-                <ActivityIndicator color={theme.colors.textSoft} size="small" />
-              )}
+              {watchlistLoading && <ActivityIndicator color={theme.colors.textSoft} size="small" />}
             </View>
 
             {!userId ? (
-              <View style={{
-                backgroundColor: theme.colors.card,
-                borderRadius: 16,
-                padding: 18,
-                alignItems: 'center',
-                marginBottom: 16,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-              }}>
-                <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
-                  Sign in to use your market watchlist.
-                </Text>
-              </View>
+              <EmptyBox text="Sign in to use your market watchlist." />
             ) : watchlistLoading ? (
               <View style={{
                 backgroundColor: theme.colors.card,
@@ -771,19 +746,7 @@ export default function MarketScreen() {
                 <ActivityIndicator color={theme.colors.primary} />
               </View>
             ) : watchlistCards.length === 0 ? (
-              <View style={{
-                backgroundColor: theme.colors.card,
-                borderRadius: 16,
-                padding: 18,
-                alignItems: 'center',
-                marginBottom: 16,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-              }}>
-                <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
-                  No watched cards yet. Search for a card and tap Watch.
-                </Text>
-              </View>
+              <EmptyBox text="No watched cards yet. Search for a card and tap Watch." />
             ) : (
               <FlatList
                 data={watchlistCards}
@@ -795,7 +758,6 @@ export default function MarketScreen() {
               />
             )}
 
-            {/* Search results header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>
                 {searchResults.length > 0 ? `Results (${searchResults.length})` : 'Search Results'}
@@ -823,26 +785,16 @@ export default function MarketScreen() {
         }
       />
 
-      {/* CARD DETAIL MODAL */}
-      <Modal
-        visible={detailVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={closeDetail}
-      >
+      <Modal visible={detailVisible} transparent animationType="fade" onRequestClose={closeDetail}>
         <BlurView intensity={95} tint="dark" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.18)' }}>
           <Pressable style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={closeDetail} />
 
           <SafeAreaView style={{ flex: 1 }}>
-            <Animated.View
-              style={{ flex: 1, transform: [{ translateY }] }}
-              {...panResponder.panHandlers}
-            >
+            <Animated.View style={{ flex: 1, transform: [{ translateY }] }} {...panResponder.panHandlers}>
               <ScrollView
                 contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 44 }}
                 showsVerticalScrollIndicator={false}
               >
-                {/* Drag handle + close */}
                 <View style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -851,15 +803,16 @@ export default function MarketScreen() {
                   position: 'relative',
                 }}>
                   <View style={{
-                    width: 42, height: 5,
+                    width: 42,
+                    height: 5,
                     borderRadius: 999,
                     backgroundColor: 'rgba(255,255,255,0.55)',
                   }} />
-                  <TouchableOpacity
-                    onPress={closeDetail}
-                    style={{ position: 'absolute', right: 0, padding: 8 }}
-                  >
-                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20, fontWeight: '700' }}>✕</Text>
+
+                  <TouchableOpacity onPress={closeDetail} style={{ position: 'absolute', right: 0, padding: 8 }}>
+                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20, fontWeight: '700' }}>
+                      ✕
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
@@ -894,7 +847,6 @@ export default function MarketScreen() {
                         </Text>
                       )}
 
-                      {/* Watch button */}
                       <TouchableOpacity
                         onPress={() => toggleWatchlist(selectedCard)}
                         style={{
@@ -913,18 +865,7 @@ export default function MarketScreen() {
                         </Text>
                       </TouchableOpacity>
 
-                      {/* TCGPlayer prices (GBP est.) */}
-                      <View style={{
-                        marginTop: 16,
-                        backgroundColor: theme.colors.surface,
-                        borderRadius: 16,
-                        padding: 14,
-                        borderWidth: 1,
-                        borderColor: theme.colors.border,
-                      }}>
-                        <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>
-                          TCGPlayer (GBP est.)
-                        </Text>
+                      <PriceSection title="TCGPlayer (GBP est.)">
                         <PriceRow
                           label="Low"
                           value={getBestTcgPrice(selectedCard, 'low') != null
@@ -943,21 +884,10 @@ export default function MarketScreen() {
                             ? `£${((getBestTcgPrice(selectedCard, 'market') ?? 0) * USD_TO_GBP).toFixed(2)}`
                             : '--'}
                         />
-                      </View>
+                      </PriceSection>
 
-                      {/* Cardmarket prices (GBP est.) */}
                       {selectedCard.cardmarket?.prices && (
-                        <View style={{
-                          marginTop: 12,
-                          backgroundColor: theme.colors.surface,
-                          borderRadius: 16,
-                          padding: 14,
-                          borderWidth: 1,
-                          borderColor: theme.colors.border,
-                        }}>
-                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>
-                            Cardmarket (GBP est.)
-                          </Text>
+                        <PriceSection title="Cardmarket (GBP est.)">
                           <PriceRow
                             label="Trend"
                             value={selectedCard.cardmarket.prices.trendPrice != null
@@ -970,10 +900,9 @@ export default function MarketScreen() {
                               ? `£${(selectedCard.cardmarket.prices.avg30 * EUR_TO_GBP).toFixed(2)}`
                               : '--'}
                           />
-                        </View>
+                        </PriceSection>
                       )}
 
-                      {/* eBay live prices (GBP) */}
                       <View style={{
                         marginTop: 12,
                         backgroundColor: theme.colors.surface,
@@ -986,9 +915,7 @@ export default function MarketScreen() {
                           <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>
                             eBay Live (GBP)
                           </Text>
-                          {detailPriceLoading && (
-                            <ActivityIndicator size="small" color={theme.colors.primary} />
-                          )}
+                          {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
                         </View>
 
                         {detailPriceLoading ? (
@@ -1020,9 +947,47 @@ export default function MarketScreen() {
   );
 }
 
-// ===============================
-// SUB COMPONENTS
-// ===============================
+function EmptyBox({ text }: { text: string }) {
+  return (
+    <View style={{
+      backgroundColor: theme.colors.card,
+      borderRadius: 16,
+      padding: 18,
+      alignItems: 'center',
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    }}>
+      <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
+        {text}
+      </Text>
+    </View>
+  );
+}
+
+function PriceSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View style={{
+      marginTop: 16,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 16,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    }}>
+      <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>
+        {title}
+      </Text>
+      {children}
+    </View>
+  );
+}
 
 function PriceRow({
   label,
@@ -1035,7 +1000,10 @@ function PriceRow({
 }) {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>{label}</Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>
+        {label}
+      </Text>
+
       <Text style={{
         color: highlight ? theme.colors.primary : theme.colors.text,
         fontSize: highlight ? 15 : 14,

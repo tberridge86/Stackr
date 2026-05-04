@@ -204,6 +204,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [tradeNotes, setTradeNotes] = useState('');
   const [tradeOnly, setTradeOnly] = useState(false);
 
+  const [showcaseCollapsed, setShowcaseCollapsed] = useState<Record<ShowcaseType, boolean>>({
+  favorite: false,
+  chase: false,
+});
+
   const modalTranslateY = useRef(new Animated.Value(0)).current;
   const baseScale = useRef(new Animated.Value(1)).current;
   const pinchScale = useRef(new Animated.Value(1)).current;
@@ -774,20 +779,56 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   };
 
   const renderShowcaseStrip = (type: ShowcaseType, title: string) => {
-    const data = getShowcaseItems(type);
-    if (!data.length) return null;
+  const data = getShowcaseItems(type);
+  if (!data.length) return null;
 
-    return (
-      <View style={{ marginBottom: 24, zIndex: 0 }}>
+  const collapsed = showcaseCollapsed[type];
+
+  return (
+    <View style={{ marginBottom: 24, zIndex: 0 }}>
+      <TouchableOpacity
+        onPress={() =>
+          setShowcaseCollapsed((prev) => ({ ...prev, [type]: !prev[type] }))
+        }
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: collapsed ? 0 : 10,
+        }}
+        activeOpacity={0.7}
+      >
         <Text style={{
           color: type === 'favorite' ? theme.colors.secondary : '#FF8FA3',
           fontSize: 18,
           fontWeight: '900',
-          marginBottom: 10,
         }}>
           {title}
         </Text>
 
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
+        }}>
+          <Text style={{
+            color: type === 'favorite' ? theme.colors.secondary : '#FF8FA3',
+            fontSize: 12,
+            fontWeight: '700',
+          }}>
+            {data.length} card{data.length !== 1 ? 's' : ''}
+          </Text>
+          <Text style={{
+            color: type === 'favorite' ? theme.colors.secondary : '#FF8FA3',
+            fontSize: 14,
+            fontWeight: '900',
+          }}>
+            {collapsed ? '▶' : '▼'}
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      {!collapsed && (
         <DraggableFlatList
           data={data}
           horizontal
@@ -796,9 +837,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           onDragEnd={({ data: newData }) => !isReadOnly && reorderShowcase(type, newData)}
           showsHorizontalScrollIndicator={false}
         />
-      </View>
-    );
-  };
+      )}
+    </View>
+  );
+};
 
   const renderCard = ({ item }: { item: BinderCardWithDetails }) => {
     const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
