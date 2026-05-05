@@ -434,6 +434,7 @@ export default function MarketScreen() {
 
       const base64Image = result.assets[0].base64;
 
+      console.log('📸 Sending scan to:', `${PRICE_API_URL}/api/scan/identify`);
       const claudeResponse = await fetch(`${PRICE_API_URL}/api/scan/identify`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },

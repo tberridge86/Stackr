@@ -918,6 +918,8 @@ app.get('/api/sync/set', async (req, res) => {
 });
 
 app.post('/api/scan/identify', async (req, res) => {
+  console.log('📸 /api/scan/identify hit');
+  console.log('📸 Body keys:', Object.keys(req.body));
   try {
     const { base64Image } = req.body;
     if (!base64Image) return res.status(400).json({ error: 'Missing base64Image' });
