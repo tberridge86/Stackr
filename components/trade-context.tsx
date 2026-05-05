@@ -17,6 +17,8 @@ import { createActivityPost } from '../lib/activity';
 
 const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 
+console.log('🌍 PRICE_API_URL at load time:', PRICE_API_URL); //
+
 // ===============================
 // TYPES
 // ===============================
@@ -297,6 +299,35 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) throw error;
+
+      // ── Notify Discord reviews channel ────────────────────────────
+      if (PRICE_API_URL) {
+        try {
+          const { data: tradeOffer } = await supabase
+            .from('trade_offers')
+            .select('card_name')
+            .eq('id', input.tradeId)
+            .maybeSingle();
+
+          await fetch(
+            `${PRICE_API_URL.replace(/\/$/, '')}/api/discord/new-review`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                reviewedUserId: input.reviewedUserId,
+                reviewerUserId: user.id,
+                rating: input.rating,
+                comment: input.comment ?? null,
+                cardName: tradeOffer?.card_name ?? null,
+              }),
+            }
+          );
+        } catch (discordErr) {
+          console.log('Review Discord notification failed:', discordErr);
+        }
+      }
+      // ── End Discord ───────────────────────────────────────────────
     },
     []
   );
@@ -622,6 +653,41 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (error) throw error;
+
+ // ── Notify Discord ─────────────────────────────────────────────
+      console.log('🔥 createTradeListing — notifying Discord');
+      if (PRICE_API_URL) {
+        try {
+          // Get the listing ID we just upserted
+          const { data: flag } = await supabase
+            .from('user_card_flags')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('card_id', input.cardId)
+            .eq('flag_type', 'trade')
+            .maybeSingle();
+
+          if (flag?.id) {
+            console.log('📡 Posting listing to Discord:', flag.id);
+            const discordRes = await fetch(
+              `${PRICE_API_URL.replace(/\/$/, '')}/api/discord/new-trade-listing`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ listingId: flag.id }),
+              }
+            );
+            console.log('✅ Discord status:', discordRes.status);
+          } else {
+            console.log('⚠️ Could not find listing ID for Discord notification');
+          }
+        } catch (discordErr) {
+          console.log('❌ Discord notification failed:', discordErr);
+        }
+      } else {
+        console.log('❌ PRICE_API_URL missing — Discord notification skipped');
+      }
+      // ── End Discord ────────────────────────────────────────────────
 
       // Check for wishlist matches and send push notifications
       let wantedQuery = supabase

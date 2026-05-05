@@ -2,20 +2,21 @@ import { theme } from '../../lib/theme';
 import React, {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
-import { router , useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
+  Alert,
   Dimensions,
   Image,
+  Linking,
   Modal,
   Pressable,
   RefreshControl,
-  Linking,
   ScrollView,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -26,6 +27,8 @@ import { useCollection } from '../../components/collection-context';
 import { fetchBinders, fetchBinderCards } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { createActivityPost } from '../../lib/activity';
+
+const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 
 // ===============================
 // TYPES
@@ -80,16 +83,8 @@ const ONBOARDING_STEPS = [
 // ===============================
 
 const formatMoney = (value: number) => `£${value.toFixed(2)}`;
-
-const formatSignedMoney = (value: number) => {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}£${value.toFixed(2)}`;
-};
-
-const formatSignedPercent = (value: number) => {
-  const sign = value > 0 ? '+' : '';
-  return `${sign}${value.toFixed(1)}%`;
-};
+const formatSignedMoney = (value: number) => `${value > 0 ? '+' : ''}£${value.toFixed(2)}`;
+const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
 
 const getRangeStartDate = (range: ChartRange): string | null => {
   if (range === 'ALL') return null;
@@ -108,56 +103,43 @@ const getPriceFromSnapshot = (row: any, source: 'tcg' | 'ebay'): number | null =
 const getPriceFromPokemonCard = (card: any): number | null => {
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;
-
   const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
-
   for (const key of preferred) {
     const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
     if (typeof value === 'number') return value;
   }
-
   for (const entry of Object.values(prices) as any[]) {
     const value = entry?.market ?? entry?.mid ?? entry?.low;
     if (typeof value === 'number') return value;
   }
-
   return null;
 };
 
 const fetchLivePricesForCardIds = async (cardIds: string[]): Promise<Record<string, number>> => {
   const priceMap: Record<string, number> = {};
-
   for (let i = 0; i < cardIds.length; i += 20) {
     const chunk = cardIds.slice(i, i + 20);
     const q = chunk.map((id) => `id:${id}`).join(' OR ');
     const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=20`;
-
     try {
       const response = await fetch(url);
       const json = await response.json();
-
       for (const card of json?.data ?? []) {
         const price = getPriceFromPokemonCard(card);
-        if (typeof price === 'number') {
-          priceMap[card.id] = price;
-        }
+        if (typeof price === 'number') priceMap[card.id] = price;
       }
     } catch (err) {
       console.log('TCG live price fetch failed for chunk', err);
     }
   }
-
   return priceMap;
 };
 
-// Fixed: pad shorter array so both datasets have equal length
 const equaliseArrays = (a: number[], b: number[]): [number[], number[]] => {
   const maxLen = Math.max(a.length, b.length);
   if (maxLen === 0) return [[0, 0], [0, 0]];
   const pad = (arr: number[]) =>
-    arr.length < maxLen
-      ? [...Array(maxLen - arr.length).fill(arr[0] ?? 0), ...arr]
-      : arr;
+    arr.length < maxLen ? [...Array(maxLen - arr.length).fill(arr[0] ?? 0), ...arr] : arr;
   return [pad(a), pad(b)];
 };
 
@@ -180,26 +162,14 @@ function StatCard({ label, value }: { label: string; value: string }) {
       borderColor: theme.colors.border,
       ...cardShadow,
     }}>
-      <Text style={{ color: theme.colors.text, fontSize: 23, fontWeight: '900' }}>
-        {value}
-      </Text>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', marginTop: 6 }}>
-        {label}
-      </Text>
+      <Text style={{ color: theme.colors.text, fontSize: 23, fontWeight: '900' }}>{value}</Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', marginTop: 6 }}>{label}</Text>
     </View>
   );
 }
 
-function QuickLink({
-  icon,
-  label,
-  onPress,
-  badge,
-}: {
-  icon: any;
-  label: string;
-  onPress: () => void;
-  badge?: number;
+function QuickLink({ icon, label, onPress, badge }: {
+  icon: any; label: string; onPress: () => void; badge?: number;
 }) {
   return (
     <TouchableOpacity
@@ -227,11 +197,7 @@ function QuickLink({
       }}>
         <Ionicons name={icon} size={20} color={theme.colors.primary} />
       </View>
-
-      <Text style={{ flex: 1, color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>
-        {label}
-      </Text>
-
+      <Text style={{ flex: 1, color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>{label}</Text>
       {badge != null && badge > 0 && (
         <View style={{
           backgroundColor: theme.colors.primary,
@@ -246,7 +212,6 @@ function QuickLink({
           </Text>
         </View>
       )}
-
       <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
     </TouchableOpacity>
   );
@@ -262,6 +227,19 @@ export default function HubScreen() {
   // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
+
+  // Hamburger menu
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Bug report modal
+  const [bugModalOpen, setBugModalOpen] = useState(false);
+  const [bugText, setBugText] = useState('');
+  const [bugSubmitting, setBugSubmitting] = useState(false);
+
+  // Feedback modal
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   // Chart
   const [chartRange, setChartRange] = useState<ChartRange>('7D');
@@ -287,8 +265,69 @@ export default function HubScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const valuePostKeyRef = useRef<string | null>(null);
-
   const collectionUp = collectionChangeAmount >= 0;
+
+  // ===============================
+  // SUBMIT BUG REPORT
+  // ===============================
+
+  const submitBugReport = async () => {
+    if (!bugText.trim()) return;
+    setBugSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profile } = user
+        ? await supabase.from('profiles').select('collector_name').eq('id', user.id).maybeSingle()
+        : { data: null };
+
+      const collectorName = profile?.collector_name ?? user?.email ?? 'Anonymous';
+
+      await fetch(`${PRICE_API_URL}/api/discord/bug-report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report: bugText.trim(), collectorName }),
+      });
+
+      setBugText('');
+      setBugModalOpen(false);
+      Alert.alert('Thanks!', 'Your bug report has been sent to the team.');
+    } catch (err) {
+      Alert.alert('Error', 'Could not send bug report. Please try again.');
+    } finally {
+      setBugSubmitting(false);
+    }
+  };
+
+  // ===============================
+  // SUBMIT FEEDBACK
+  // ===============================
+
+  const submitFeedback = async () => {
+    if (!feedbackText.trim()) return;
+    setFeedbackSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profile } = user
+        ? await supabase.from('profiles').select('collector_name').eq('id', user.id).maybeSingle()
+        : { data: null };
+
+      const collectorName = profile?.collector_name ?? user?.email ?? 'Anonymous';
+
+      await fetch(`${PRICE_API_URL}/api/discord/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback: feedbackText.trim(), collectorName }),
+      });
+
+      setFeedbackText('');
+      setFeedbackModalOpen(false);
+      Alert.alert('Thanks!', 'Your feedback has been sent to the team.');
+    } catch (err) {
+      Alert.alert('Error', 'Could not send feedback. Please try again.');
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  };
 
   // ===============================
   // LOAD ALL DATA
@@ -301,39 +340,20 @@ export default function HubScreen() {
 
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Load counts in parallel
-      const [
-        notificationsResult,
-        watchlistResult,
-        setsResult,
-      ] = await Promise.all([
+      const [notificationsResult, watchlistResult, setsResult] = await Promise.all([
         user
-          ? supabase
-              .from('notifications')
-              .select('*', { count: 'exact', head: true })
-              .eq('user_id', user.id)
-              .eq('read', false)
+          ? supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false)
           : Promise.resolve({ count: 0 }),
-
         user
-          ? supabase
-              .from('market_watchlist')
-              .select('*', { count: 'exact', head: true })
-              .eq('user_id', user.id)
+          ? supabase.from('market_watchlist').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
           : Promise.resolve({ count: 0 }),
-
-        fetch('https://api.pokemontcg.io/v2/sets?pageSize=1')
-          .then((r) => r.json())
-          .then((j) => ({ count: j?.totalCount ?? 0 }))
-          .catch(() => ({ count: 0 })),
+        fetch('https://api.pokemontcg.io/v2/sets?pageSize=1').then((r) => r.json()).then((j) => ({ count: j?.totalCount ?? 0 })).catch(() => ({ count: 0 })),
       ]);
 
       setUnreadCount((notificationsResult as any).count ?? 0);
       setWatchlistCount((watchlistResult as any).count ?? 0);
       setTotalSets((setsResult as any).count ?? 0);
 
-      // Load recent trade listings
-      // Uses user_card_flags (trade) joined with card_previews
       if (user) {
         const { data: flagData } = await supabase
           .from('user_card_flags')
@@ -346,21 +366,10 @@ export default function HubScreen() {
 
         if (flagData?.length) {
           const cardIds = [...new Set(flagData.map((f) => f.card_id))];
-
-          const { data: previews } = await supabase
-            .from('card_previews')
-            .select('card_id, name, image_url, set_name')
-            .in('card_id', cardIds);
-
+          const { data: previews } = await supabase.from('card_previews').select('card_id, name, image_url, set_name').in('card_id', cardIds);
           const previewMap: Record<string, any> = {};
           (previews ?? []).forEach((p: any) => { previewMap[p.card_id] = p; });
-
-          setRecentListings(
-            flagData.map((flag) => ({
-              ...flag,
-              preview: previewMap[flag.card_id] ?? null,
-            }))
-          );
+          setRecentListings(flagData.map((flag) => ({ ...flag, preview: previewMap[flag.card_id] ?? null })));
         }
       }
     } catch (error) {
@@ -378,11 +387,7 @@ export default function HubScreen() {
   const loadCollectionValue = useCallback(async () => {
     try {
       const binders = await fetchBinders();
-
-      const allCards = (
-        await Promise.all(binders.map((b) => fetchBinderCards(b.id)))
-      ).flat();
-
+      const allCards = (await Promise.all(binders.map((b) => fetchBinderCards(b.id)))).flat();
       const ownedCards = allCards.filter((c) => c.owned);
       setOwnedCardCount(ownedCards.length);
 
@@ -390,11 +395,8 @@ export default function HubScreen() {
       const apiCardIds = [...new Set(ownedCards.map((c: any) => c.api_card_id || c.card_id))];
 
       if (!storedCardIds.length) {
-        setCollectionTotal(0);
-        setCollectionChangeAmount(0);
-        setCollectionChangePercent(0);
-        setUnpricedCardCount(0);
-        setChartData({ tcg: [], ebay: [] });
+        setCollectionTotal(0); setCollectionChangeAmount(0); setCollectionChangePercent(0);
+        setUnpricedCardCount(0); setChartData({ tcg: [], ebay: [] });
         return;
       }
 
@@ -405,9 +407,7 @@ export default function HubScreen() {
         .order('snapshot_at', { ascending: true });
 
       const rangeStart = getRangeStartDate(chartRange);
-      if (rangeStart) {
-        snapshotQuery = snapshotQuery.gte('snapshot_at', rangeStart);
-      }
+      if (rangeStart) snapshotQuery = snapshotQuery.gte('snapshot_at', rangeStart);
 
       const { data, error } = await snapshotQuery;
       if (error) throw error;
@@ -418,84 +418,53 @@ export default function HubScreen() {
       for (const row of data ?? []) {
         if (!groupedByCard[row.card_id]) groupedByCard[row.card_id] = [];
         groupedByCard[row.card_id].push(row);
-
         const day = String(row.snapshot_at).split('T')[0];
         if (!groupedByDay[day]) groupedByDay[day] = { tcg: {}, ebay: {} };
-
         const tcgPrice = getPriceFromSnapshot(row, 'tcg');
         const ebayPrice = getPriceFromSnapshot(row, 'ebay');
-
         if (tcgPrice != null) groupedByDay[day].tcg[row.card_id] = tcgPrice;
         if (ebayPrice != null) groupedByDay[day].ebay[row.card_id] = ebayPrice;
       }
 
       const activeSource: 'tcg' | 'ebay' = chartMode === 'EBAY' ? 'ebay' : 'tcg';
-
-      let totalLatest = 0;
-      let totalPrevious = 0;
-      let cardsWithPrevious = 0;
-      let unpriced = 0;
+      let totalLatest = 0, totalPrevious = 0, cardsWithPrevious = 0, unpriced = 0;
 
       for (const card of ownedCards) {
         const snapshots = groupedByCard[card.card_id] ?? [];
         const latest = snapshots[snapshots.length - 1];
         const previous = snapshots[snapshots.length - 2];
-
         const latestPrice = getPriceFromSnapshot(latest, activeSource);
         const previousPrice = getPriceFromSnapshot(previous, activeSource);
-
-        if (typeof latestPrice === 'number') {
-          totalLatest += latestPrice;
-        } else {
-          unpriced += 1;
-        }
-
+        if (typeof latestPrice === 'number') { totalLatest += latestPrice; } else { unpriced += 1; }
         if (typeof latestPrice === 'number' && typeof previousPrice === 'number') {
-          totalPrevious += previousPrice;
-          cardsWithPrevious += 1;
+          totalPrevious += previousPrice; cardsWithPrevious += 1;
         }
       }
 
-      // Fallback to live TCG prices if no snapshots
       if (totalLatest === 0 && activeSource === 'tcg') {
         const livePriceMap = await fetchLivePricesForCardIds(apiCardIds);
-        let liveTotal = 0;
-        let liveUnpriced = 0;
-
+        let liveTotal = 0, liveUnpriced = 0;
         for (const card of ownedCards as any[]) {
-          const lookupId = card.api_card_id || card.card_id;
-          const price = livePriceMap[lookupId];
-          if (typeof price === 'number') {
-            liveTotal += price;
-          } else {
-            liveUnpriced += 1;
-          }
+          const price = livePriceMap[card.api_card_id || card.card_id];
+          if (typeof price === 'number') { liveTotal += price; } else { liveUnpriced += 1; }
         }
-
-        totalLatest = liveTotal;
-        unpriced = liveUnpriced;
+        totalLatest = liveTotal; unpriced = liveUnpriced;
       }
 
       const change = cardsWithPrevious > 0 ? totalLatest - totalPrevious : 0;
-      const percent =
-        cardsWithPrevious > 0 && totalPrevious !== 0
-          ? (change / totalPrevious) * 100
-          : 0;
-
+      const percent = cardsWithPrevious > 0 && totalPrevious !== 0 ? (change / totalPrevious) * 100 : 0;
       const days = Object.keys(groupedByDay).sort();
 
       const buildValues = (source: 'tcg' | 'ebay') =>
-        days
-          .map((day) => {
-            const pricesForDay = groupedByDay[day][source];
-            let dayTotal = 0;
-            for (const cardId of storedCardIds) {
-              const price = pricesForDay[cardId];
-              if (typeof price === 'number') dayTotal += price;
-            }
-            return dayTotal;
-          })
-          .filter((v) => Number.isFinite(v) && v > 0);
+        days.map((day) => {
+          const pricesForDay = groupedByDay[day][source];
+          let dayTotal = 0;
+          for (const cardId of storedCardIds) {
+            const price = pricesForDay[cardId];
+            if (typeof price === 'number') dayTotal += price;
+          }
+          return dayTotal;
+        }).filter((v) => Number.isFinite(v) && v > 0);
 
       setCollectionTotal(totalLatest);
       setCollectionChangeAmount(change);
@@ -503,47 +472,30 @@ export default function HubScreen() {
       setUnpricedCardCount(unpriced);
       setChartData({ tcg: buildValues('tcg'), ebay: buildValues('ebay') });
 
-      // Auto-post value change to activity feed
       if (chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
         const { data: { user } } = await supabase.auth.getUser();
-
         if (user) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-
-          const { data: existingPost } = await supabase
-            .from('activity_feed')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('type', 'value_change')
-            .gte('created_at', today.toISOString())
-            .limit(1);
-
+          const { data: existingPost } = await supabase.from('activity_feed').select('id').eq('user_id', user.id).eq('type', 'value_change').gte('created_at', today.toISOString()).limit(1);
           const alreadyPosted = Array.isArray(existingPost) && existingPost.length > 0;
           const postKey = `${user.id}-${today.toISOString()}-${change.toFixed(2)}`;
-
           if (!alreadyPosted && valuePostKeyRef.current !== postKey) {
             valuePostKeyRef.current = postKey;
-
             createActivityPost({
               type: 'value_change',
               title: change > 0 ? 'Collection value is up today' : 'Collection value is down today',
               subtitle: `${formatSignedMoney(change)} (${formatSignedPercent(percent)}) · Total ${formatMoney(totalLatest)}`,
               valueChange: change,
               isPositive: change > 0,
-            }).catch((err) => {
-              console.log('Failed to create value activity post', err);
-            });
+            }).catch((err) => console.log('Failed to create value activity post', err));
           }
         }
       }
     } catch (error) {
       console.log('Failed to calculate collection value', error);
-      setCollectionTotal(0);
-      setCollectionChangeAmount(0);
-      setCollectionChangePercent(0);
-      setUnpricedCardCount(0);
-      setChartData({ tcg: [], ebay: [] });
+      setCollectionTotal(0); setCollectionChangeAmount(0); setCollectionChangePercent(0);
+      setUnpricedCardCount(0); setChartData({ tcg: [], ebay: [] });
     }
   }, [chartRange, chartMode]);
 
@@ -555,18 +507,10 @@ export default function HubScreen() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      const { data } = await supabase
-        .from('profiles')
-        .select('has_seen_onboarding')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (data && !data.has_seen_onboarding) {
-        setShowOnboarding(true);
-      }
+      const { data } = await supabase.from('profiles').select('has_seen_onboarding').eq('id', user.id).maybeSingle();
+      if (data && !data.has_seen_onboarding) setShowOnboarding(true);
     } catch (error) {
-      console.log('Onboarding check failed (column may not exist yet)', error);
+      console.log('Onboarding check failed', error);
     }
   }, []);
 
@@ -574,21 +518,9 @@ export default function HubScreen() {
   // EFFECTS
   // ===============================
 
-  useFocusEffect(
-    useCallback(() => {
-      loadAll();
-      loadCollectionValue();
-    }, [loadAll, loadCollectionValue])
-  );
-
-  useEffect(() => {
-    checkOnboarding();
-  }, [checkOnboarding]);
-
-  // Reload chart when range/mode changes
-  useEffect(() => {
-    loadCollectionValue();
-  }, [chartRange, chartMode, loadCollectionValue]);
+  useFocusEffect(useCallback(() => { loadAll(); loadCollectionValue(); }, [loadAll, loadCollectionValue]));
+  useEffect(() => { checkOnboarding(); }, [checkOnboarding]);
+  useEffect(() => { loadCollectionValue(); }, [chartRange, chartMode, loadCollectionValue]);
 
   // ===============================
   // CHART DATA
@@ -596,10 +528,7 @@ export default function HubScreen() {
 
   const tcgChartValues = normaliseChartValues(chartData.tcg);
   const ebayChartValues = normaliseChartValues(chartData.ebay);
-
-  // Fixed: equalise array lengths for BOTH mode
   const [equalTcg, equalEbay] = equaliseArrays(tcgChartValues, ebayChartValues);
-
   const activeChartValues = chartMode === 'EBAY' ? ebayChartValues : tcgChartValues;
   const hasChartData = chartData.tcg.length > 0 || chartData.ebay.length > 0;
 
@@ -613,14 +542,7 @@ export default function HubScreen() {
         contentContainerStyle={{ padding: 18, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              loadAll(true);
-              loadCollectionValue();
-            }}
-            tintColor={theme.colors.primary}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={() => { loadAll(true); loadCollectionValue(); }} tintColor={theme.colors.primary} />
         }
       >
         {/* ===============================
@@ -628,118 +550,47 @@ export default function HubScreen() {
         =============================== */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
           <View>
-            <Image
-              source={require('../../assets/images/hub.png')}
-              style={{ width: 200, height: 60 }}
-              resizeMode="contain"
-            />
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 4 }}>
-              Collector Dashboard
-            </Text>
+            <Image source={require('../../assets/images/hub.png')} style={{ width: 200, height: 60 }} resizeMode="contain" />
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 4 }}>Collector Dashboard</Text>
           </View>
 
           <View style={{ flexDirection: 'row', gap: 10 }}>
-
- {/* ☕ Ko-fi */}
-  <TouchableOpacity
-    onPress={() => Linking.openURL('https://ko-fi.com/stackr_')}
-    style={{
-      width: 46, height: 46,
-      borderRadius: 14,
-      backgroundColor: '#FF5E5B',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: '#e54e4b',
-      ...cardShadow,
-    }}
-  >
-    <Text style={{ fontSize: 20 }}>☕</Text>
-  </TouchableOpacity>
-            
+            {/* Notifications */}
             <TouchableOpacity
               onPress={() => router.push('/notifications')}
-              style={{
-                width: 46, height: 46,
-                borderRadius: 14,
-                backgroundColor: theme.colors.card,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                ...cardShadow,
-              }}
+              style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
             >
               <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
               {unreadCount > 0 && (
-                <View style={{
-                  position: 'absolute', top: -4, right: -4,
-                  minWidth: 18, height: 18, borderRadius: 9,
-                  backgroundColor: '#EF4444',
-                  alignItems: 'center', justifyContent: 'center',
-                  paddingHorizontal: 4,
-                }}>
-                  <Text style={{ color: '#fff', fontSize: 10, fontWeight: '900' }}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Text>
+                <View style={{ position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: '#EF4444', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 }}>
+                  <Text style={{ color: '#fff', fontSize: 10, fontWeight: '900' }}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
                 </View>
               )}
             </TouchableOpacity>
 
+            {/* Hamburger */}
             <TouchableOpacity
-              onPress={() => router.push('/profile')}
-              style={{
-                width: 46, height: 46,
-                borderRadius: 14,
-                backgroundColor: theme.colors.card,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                ...cardShadow,
-              }}
+              onPress={() => setMenuOpen(true)}
+              style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
             >
-              <Ionicons name="person-circle-outline" size={26} color={theme.colors.text} />
+              <Ionicons name="menu-outline" size={26} color={theme.colors.text} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* ===============================
-            PORTFOLIO CARD
-        =============================== */}
-        <View style={{
-          backgroundColor: theme.colors.card,
-          borderRadius: 28,
-          padding: 20,
-          marginBottom: 22,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          overflow: 'hidden',
-          ...cardShadow,
-        }}>
-          {/* Glow */}
-          <View style={{
-            position: 'absolute',
-            width: 240, height: 240,
-            borderRadius: 999,
-            backgroundColor: 'rgba(108,75,255,0.08)',
-            top: -80, right: -60,
-          }} />
+        {/* PORTFOLIO CARD */}
+        <View style={{ backgroundColor: theme.colors.card, borderRadius: 28, padding: 20, marginBottom: 22, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden', ...cardShadow }}>
+          <View style={{ position: 'absolute', width: 240, height: 240, borderRadius: 999, backgroundColor: 'rgba(108,75,255,0.08)', top: -80, right: -60 }} />
 
           <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', marginBottom: 8 }}>
             Collection Value ({chartMode === 'EBAY' ? 'eBay' : 'TCG'})
           </Text>
-
           <Text style={{ color: theme.colors.text, fontSize: 38, fontWeight: '900', letterSpacing: -0.5 }}>
             {formatMoney(collectionTotal)}
           </Text>
 
           <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 7 }}>
-            <Ionicons
-              name={collectionUp ? 'arrow-up-circle' : 'arrow-down-circle'}
-              size={18}
-              color={collectionUp ? '#22C55E' : '#EF4444'}
-            />
+            <Ionicons name={collectionUp ? 'arrow-up-circle' : 'arrow-down-circle'} size={18} color={collectionUp ? '#22C55E' : '#EF4444'} />
             <Text style={{ fontSize: 15, fontWeight: '800', color: collectionUp ? '#22C55E' : '#EF4444' }}>
               {formatSignedMoney(collectionChangeAmount)} ({formatSignedPercent(collectionChangePercent)}) today
             </Text>
@@ -749,67 +600,21 @@ export default function HubScreen() {
             Based on owned binder cards with available price snapshots
           </Text>
 
-          {/* Chart */}
-          <View style={{
-            marginTop: 18,
-            backgroundColor: theme.colors.surface,
-            borderRadius: 20,
-            padding: 14,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            overflow: 'hidden',
-          }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '800' }}>
-                Portfolio trend
-              </Text>
-            </View>
+          <View style={{ marginTop: 18, backgroundColor: theme.colors.surface, borderRadius: 20, padding: 14, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
+            <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '800' }}>Portfolio trend</Text>
 
             <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-              {/* Chart mode tabs */}
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 {(['TCG', 'EBAY', 'BOTH'] as const).map((mode) => (
-                  <TouchableOpacity
-                    key={mode}
-                    onPress={() => setChartMode(mode)}
-                    style={{
-                      paddingHorizontal: 9, paddingVertical: 6,
-                      borderRadius: 10,
-                      backgroundColor: chartMode === mode ? theme.colors.primary : theme.colors.card,
-                      borderWidth: 1,
-                      borderColor: chartMode === mode ? theme.colors.primary : theme.colors.border,
-                    }}
-                  >
-                    <Text style={{
-                      color: chartMode === mode ? '#FFFFFF' : theme.colors.textSoft,
-                      fontSize: 11, fontWeight: '800',
-                    }}>
-                      {mode}
-                    </Text>
+                  <TouchableOpacity key={mode} onPress={() => setChartMode(mode)} style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: chartMode === mode ? theme.colors.primary : theme.colors.card, borderWidth: 1, borderColor: chartMode === mode ? theme.colors.primary : theme.colors.border }}>
+                    <Text style={{ color: chartMode === mode ? '#FFFFFF' : theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>{mode}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-
-              {/* Chart range tabs */}
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 {(['1D', '7D', '30D', 'ALL'] as const).map((range) => (
-                  <TouchableOpacity
-                    key={range}
-                    onPress={() => setChartRange(range)}
-                    style={{
-                      paddingHorizontal: 9, paddingVertical: 6,
-                      borderRadius: 10,
-                      backgroundColor: chartRange === range ? theme.colors.primary : theme.colors.card,
-                      borderWidth: 1,
-                      borderColor: chartRange === range ? theme.colors.primary : theme.colors.border,
-                    }}
-                  >
-                    <Text style={{
-                      color: chartRange === range ? '#FFFFFF' : theme.colors.textSoft,
-                      fontSize: 11, fontWeight: '800',
-                    }}>
-                      {range}
-                    </Text>
+                  <TouchableOpacity key={range} onPress={() => setChartRange(range)} style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: chartRange === range ? theme.colors.primary : theme.colors.card, borderWidth: 1, borderColor: chartRange === range ? theme.colors.primary : theme.colors.border }}>
+                    <Text style={{ color: chartRange === range ? '#FFFFFF' : theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>{range}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -818,27 +623,9 @@ export default function HubScreen() {
             <LineChart
               data={{
                 labels: activeChartValues.map(() => ''),
-                datasets:
-                  chartMode === 'BOTH'
-                    ? [
-                        {
-                          data: equalTcg,
-                          color: (opacity = 1) => `rgba(108,75,255,${opacity})`,
-                        },
-                        {
-                          data: equalEbay,
-                          color: (opacity = 1) => `rgba(234,179,8,${opacity})`,
-                        },
-                      ]
-                    : [
-                        {
-                          data: activeChartValues,
-                          color: (opacity = 1) =>
-                            chartMode === 'EBAY'
-                              ? `rgba(234,179,8,${opacity})`
-                              : `rgba(108,75,255,${opacity})`,
-                        },
-                      ],
+                datasets: chartMode === 'BOTH'
+                  ? [{ data: equalTcg, color: (opacity = 1) => `rgba(108,75,255,${opacity})` }, { data: equalEbay, color: (opacity = 1) => `rgba(234,179,8,${opacity})` }]
+                  : [{ data: activeChartValues, color: (opacity = 1) => chartMode === 'EBAY' ? `rgba(234,179,8,${opacity})` : `rgba(108,75,255,${opacity})` }],
               }}
               width={screenWidth - 64}
               height={145}
@@ -874,25 +661,19 @@ export default function HubScreen() {
               </View>
             )}
 
-           {!hasChartData && (
-  <Text style={{ color: theme.colors.textSoft, fontSize: 12, textAlign: 'center', marginTop: 8, lineHeight: 18 }}>
-    No price history yet — check back tomorrow as your graph builds daily.
-  </Text>
-)}
-
-<Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginTop: 6, fontStyle: 'italic' }}>
-  📈 Prices update daily — your chart gets more accurate over time
-</Text>
+            {!hasChartData && (
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, textAlign: 'center', marginTop: 8, lineHeight: 18 }}>
+                No price history yet — check back tomorrow as your graph builds daily.
+              </Text>
+            )}
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginTop: 6, fontStyle: 'italic' }}>
+              📈 Prices update daily — your chart gets more accurate over time
+            </Text>
           </View>
         </View>
 
-        {/* ===============================
-            QUICK STATS
-        =============================== */}
-        <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12 }}>
-          Quick Stats
-        </Text>
-
+        {/* QUICK STATS */}
+        <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12 }}>Quick Stats</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 20 }}>
           <StatCard label="Owned cards" value={String(ownedCardCount)} />
           <StatCard label="Collection value" value={formatMoney(collectionTotal)} />
@@ -902,191 +683,240 @@ export default function HubScreen() {
           <StatCard label="Watchlist" value={String(watchlistCount)} />
         </View>
 
-        {/* ===============================
-            RECENT TRADE LISTINGS
-        =============================== */}
+        {/* RECENT TRADE LISTINGS */}
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>
-            Recent Trade Listings
-          </Text>
+          <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Recent Trade Listings</Text>
           <TouchableOpacity onPress={() => router.push('/trade')}>
-            <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>
-              View all
-            </Text>
+            <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>View all</Text>
           </TouchableOpacity>
         </View>
 
         {recentListings.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 12, paddingRight: 10, marginBottom: 24 }}
-          >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 10, marginBottom: 24 }}>
             {recentListings.map((item, index) => {
               const preview = item.preview;
               const imageUri = preview?.image_url ?? null;
               const cardName = preview?.name ?? item.card_id ?? 'Unknown card';
               const setName = preview?.set_name ?? item.set_id ?? 'Unknown set';
-
               return (
-                <TouchableOpacity
-                  key={`${item.card_id}-${index}`}
-                  onPress={() => router.push('/trade')}
-                  style={{
-                    width: 128,
-                    backgroundColor: theme.colors.card,
-                    borderRadius: 20,
-                    padding: 10,
-                    borderWidth: 1,
-                    borderColor: theme.colors.border,
-                    ...cardShadow,
-                  }}
-                  activeOpacity={0.8}
-                >
+                <TouchableOpacity key={`${item.card_id}-${index}`} onPress={() => router.push('/trade')} style={{ width: 128, backgroundColor: theme.colors.card, borderRadius: 20, padding: 10, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }} activeOpacity={0.8}>
                   {imageUri ? (
-                    <Image
-                      source={{ uri: imageUri }}
-                      style={{ width: '100%', height: 130, marginBottom: 8 }}
-                      resizeMode="contain"
-                    />
+                    <Image source={{ uri: imageUri }} style={{ width: '100%', height: 130, marginBottom: 8 }} resizeMode="contain" />
                   ) : (
-                    <View style={{
-                      height: 130,
-                      borderRadius: 16,
-                      backgroundColor: theme.colors.surface,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: 8,
-                    }}>
+                    <View style={{ height: 130, borderRadius: 16, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
                       <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
                     </View>
                   )}
-
-                  <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>
-                    {cardName}
-                  </Text>
-                  <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3 }}>
-                    {setName}
-                  </Text>
+                  <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{cardName}</Text>
+                  <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3 }}>{setName}</Text>
                   {item.asking_price != null ? (
-                    <Text style={{ color: '#22C55E', fontSize: 12, fontWeight: '900', marginTop: 8 }}>
-                      £{Number(item.asking_price).toFixed(2)}
-                    </Text>
+                    <Text style={{ color: '#22C55E', fontSize: 12, fontWeight: '900', marginTop: 8 }}>£{Number(item.asking_price).toFixed(2)}</Text>
                   ) : (
-                    <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900', marginTop: 8 }}>
-                      {item.condition ?? 'Listed'}
-                    </Text>
+                    <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900', marginTop: 8 }}>{item.condition ?? 'Listed'}</Text>
                   )}
                 </TouchableOpacity>
               );
             })}
           </ScrollView>
         ) : (
-          <View style={{
-            backgroundColor: theme.colors.card,
-            borderRadius: 16,
-            padding: 16,
-            marginBottom: 24,
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-          }}>
-            <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
-              No active trade listings yet. Mark cards for trade in your binders.
-            </Text>
+          <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginBottom: 24, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
+            <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>No active trade listings yet. Mark cards for trade in your binders.</Text>
           </View>
         )}
 
-        {/* ===============================
-            QUICK LINKS
-        =============================== */}
-        <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12 }}>
-          Quick Access
-        </Text>
-
+        {/* QUICK LINKS */}
+        <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12 }}>Quick Access</Text>
         <QuickLink icon="folder-open-outline" label="My Binders" onPress={() => router.push('/binder')} />
         <QuickLink icon="storefront-outline" label="Trade Marketplace" onPress={() => router.push('/trade')} />
         <QuickLink icon="swap-horizontal-outline" label="My Offers" onPress={() => router.push('/offers')} />
         <QuickLink icon="people-outline" label="Community" onPress={() => router.push('/community')} />
-        <QuickLink
-          icon="notifications-outline"
-          label="Notifications"
-          onPress={() => router.push('/notifications')}
-          badge={unreadCount}
-        />
+        <QuickLink icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} badge={unreadCount} />
       </ScrollView>
+
+      {/* ===============================
+          HAMBURGER MENU MODAL
+      =============================== */}
+      <Modal visible={menuOpen} transparent animationType="fade">
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setMenuOpen(false)}>
+          <Pressable
+            style={{
+              position: 'absolute', top: 80, right: 16,
+              backgroundColor: theme.colors.card,
+              borderRadius: 20,
+              padding: 8,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              minWidth: 220,
+              ...cardShadow,
+            }}
+            onPress={() => {}}
+          >
+            {/* Profile */}
+            <TouchableOpacity
+              onPress={() => { setMenuOpen(false); router.push('/profile'); }}
+              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="person-circle-outline" size={22} color={theme.colors.primary} />
+              <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>My Profile</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 1, backgroundColor: theme.colors.border, marginHorizontal: 8 }} />
+
+            {/* Ko-fi */}
+            <TouchableOpacity
+              onPress={() => { setMenuOpen(false); Linking.openURL('https://ko-fi.com/stackr_'); }}
+              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 20, width: 22, textAlign: 'center' }}>☕</Text>
+              <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>Support on Ko-fi</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 1, backgroundColor: theme.colors.border, marginHorizontal: 8 }} />
+
+            {/* Bug report */}
+            <TouchableOpacity
+              onPress={() => { setMenuOpen(false); setBugModalOpen(true); }}
+              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="bug-outline" size={22} color="#EF4444" />
+              <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>Report a Bug</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 1, backgroundColor: theme.colors.border, marginHorizontal: 8 }} />
+
+            {/* Feedback */}
+            <TouchableOpacity
+              onPress={() => { setMenuOpen(false); setFeedbackModalOpen(true); }}
+              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chatbubble-ellipses-outline" size={22} color={theme.colors.primary} />
+              <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>Send Feedback</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* ===============================
+          BUG REPORT MODAL
+      =============================== */}
+      <Modal visible={bugModalOpen} transparent animationType="slide">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.colors.border }}>
+            <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>🐛 Report a Bug</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>
+              Describe what happened and we'll look into it.
+            </Text>
+            <TextInput
+              value={bugText}
+              onChangeText={setBugText}
+              placeholder="e.g. The scan screen crashes when I..."
+              placeholderTextColor={theme.colors.textSoft}
+              multiline
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 14,
+                padding: 14,
+                color: theme.colors.text,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                minHeight: 120,
+                textAlignVertical: 'top',
+                marginBottom: 16,
+              }}
+            />
+            <TouchableOpacity
+              onPress={submitBugReport}
+              disabled={bugSubmitting || !bugText.trim()}
+              style={{ backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: bugSubmitting || !bugText.trim() ? 0.5 : 1 }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>
+                {bugSubmitting ? 'Sending...' : 'Send Bug Report'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => { setBugModalOpen(false); setBugText(''); }} style={{ alignItems: 'center', paddingVertical: 10 }}>
+              <Text style={{ color: theme.colors.textSoft, fontWeight: '700' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ===============================
+          FEEDBACK MODAL
+      =============================== */}
+      <Modal visible={feedbackModalOpen} transparent animationType="slide">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.colors.border }}>
+            <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>💬 Send Feedback</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>
+              Ideas, suggestions, or anything else — we'd love to hear it.
+            </Text>
+            <TextInput
+              value={feedbackText}
+              onChangeText={setFeedbackText}
+              placeholder="e.g. It would be great if I could..."
+              placeholderTextColor={theme.colors.textSoft}
+              multiline
+              style={{
+                backgroundColor: theme.colors.surface,
+                borderRadius: 14,
+                padding: 14,
+                color: theme.colors.text,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                minHeight: 120,
+                textAlignVertical: 'top',
+                marginBottom: 16,
+              }}
+            />
+            <TouchableOpacity
+              onPress={submitFeedback}
+              disabled={feedbackSubmitting || !feedbackText.trim()}
+              style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: feedbackSubmitting || !feedbackText.trim() ? 0.5 : 1 }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>
+                {feedbackSubmitting ? 'Sending...' : 'Send Feedback'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => { setFeedbackModalOpen(false); setFeedbackText(''); }} style={{ alignItems: 'center', paddingVertical: 10 }}>
+              <Text style={{ color: theme.colors.textSoft, fontWeight: '700' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* ===============================
           ONBOARDING MODAL
       =============================== */}
       <Modal visible={showOnboarding} transparent animationType="fade">
-        <View
-  pointerEvents="box-none"
-  style={{
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'center',
-    padding: 20,
-  }}
->
-          <View style={{
-            backgroundColor: theme.colors.card,
-            borderRadius: 24,
-            padding: 22,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            ...cardShadow,
-          }}>
+        <View pointerEvents="box-none" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', padding: 20 }}>
+          <View style={{ backgroundColor: theme.colors.card, borderRadius: 24, padding: 22, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900', marginBottom: 10 }}>
               {onboardingStep + 1} / {ONBOARDING_STEPS.length}
             </Text>
-
             <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', marginBottom: 10 }}>
               {ONBOARDING_STEPS[onboardingStep].title}
             </Text>
-
             <Text style={{ color: theme.colors.textSoft, fontSize: 15, lineHeight: 22 }}>
               {ONBOARDING_STEPS[onboardingStep].body}
             </Text>
-
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 22 }}>
               {onboardingStep > 0 && (
-                <TouchableOpacity
-                  onPress={() => setOnboardingStep((prev) => prev - 1)}
-                  style={{
-                    paddingVertical: 11, paddingHorizontal: 16,
-                    borderRadius: 14,
-                    backgroundColor: theme.colors.surface,
-                  }}
-                >
+                <TouchableOpacity onPress={() => setOnboardingStep((prev) => prev - 1)} style={{ paddingVertical: 11, paddingHorizontal: 16, borderRadius: 14, backgroundColor: theme.colors.surface }}>
                   <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Back</Text>
                 </TouchableOpacity>
               )}
-
               <TouchableOpacity
                 onPress={async () => {
-                  if (onboardingStep < ONBOARDING_STEPS.length - 1) {
-                    setOnboardingStep((prev) => prev + 1);
-                    return;
-                  }
-
+                  if (onboardingStep < ONBOARDING_STEPS.length - 1) { setOnboardingStep((prev) => prev + 1); return; }
                   const { data: { user } } = await supabase.auth.getUser();
-
-                  if (user) {
-                    await supabase
-                      .from('profiles')
-                      .update({ has_seen_onboarding: true })
-                      .eq('id', user.id)
-                      .catch(() => {}); // non-fatal if column doesn't exist
-                  }
-
+                  if (user) await supabase.from('profiles').update({ has_seen_onboarding: true }).eq('id', user.id).catch(() => {});
                   setShowOnboarding(false);
                 }}
-                style={{
-                  paddingVertical: 11, paddingHorizontal: 18,
-                  borderRadius: 14,
-                  backgroundColor: theme.colors.primary,
-                }}
+                style={{ paddingVertical: 11, paddingHorizontal: 18, borderRadius: 14, backgroundColor: theme.colors.primary }}
               >
                 <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>
                   {onboardingStep === ONBOARDING_STEPS.length - 1 ? 'Get started' : 'Next'}

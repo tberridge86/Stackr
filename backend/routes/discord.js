@@ -107,4 +107,63 @@ router.post('/new-trade-listing', async (req, res) => {
   }
 });
 
+// ===============================
+// TRADE REVIEW
+// ===============================
+
+router.post('/new-review', async (req, res) => {
+  try {
+    const { reviewedUserId, reviewerUserId, rating, comment, cardName } = req.body;
+
+    if (!reviewedUserId || !rating) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const webhookUrl = process.env.DISCORD_REVIEWS_WEBHOOK_URL;
+    if (!webhookUrl) return res.status(500).json({ error: 'Reviews webhook missing' });
+
+    const { data: reviewedProfile } = await supabase
+      .from('profiles')
+      .select('collector_name')
+      .eq('id', reviewedUserId)
+      .maybeSingle();
+
+    const { data: reviewerProfile } = await supabase
+      .from('profiles')
+      .select('collector_name')
+      .eq('id', reviewerUserId)
+      .maybeSingle();
+
+    const reviewedName = reviewedProfile?.collector_name ?? 'A collector';
+    const reviewerName = reviewerProfile?.collector_name ?? 'Someone';
+    const stars = '⭐'.repeat(rating);
+
+    const content = [
+      `${stars} **New Trade Review**`,
+      '',
+      `👤 **${reviewedName}** just received a ${rating}-star review`,
+      `✍️ From: ${reviewerName}`,
+      cardName ? `🎴 Card: ${cardName}` : null,
+      comment?.trim() ? `💬 "${comment.trim()}"` : null,
+    ].filter(Boolean).join('\n');
+
+    const discordResponse = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'Stackr Reviews', content }),
+    });
+
+    if (!discordResponse.ok) {
+      const text = await discordResponse.text();
+      console.log('Review webhook failed:', discordResponse.status, text);
+      return res.status(500).json({ error: 'Discord webhook failed' });
+    }
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.log('Review route error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;
