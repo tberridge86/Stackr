@@ -42,3 +42,8 @@ app-example
 /ios
 /android
 .env 
+
+
+# Backend Android build
+backend/android/
+backend/app.json
