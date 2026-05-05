@@ -404,16 +404,19 @@ export default function HubScreen() {
         return;
       }
 
-      let snapshotQuery = supabase
-        .from('market_price_snapshots')
-        .select('card_id, ebay_average, tcg_mid, snapshot_at')
-        .in('card_id', storedCardIds)
-        .order('snapshot_at', { ascending: true });
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
 
-      const rangeStart = getRangeStartDate(chartRange);
-      if (rangeStart) snapshotQuery = snapshotQuery.gte('snapshot_at', rangeStart);
+let snapshotQuery = supabase
+  .from('market_price_snapshots')
+  .select('card_id, ebay_average, tcg_mid, snapshot_at')
+  .in('card_id', storedCardIds)
+  .eq('user_id', currentUser?.id ?? '')
+  .order('snapshot_at', { ascending: true });
 
-      const { data, error } = await snapshotQuery;
+const rangeStart = getRangeStartDate(chartRange);
+if (rangeStart) snapshotQuery = snapshotQuery.gte('snapshot_at', rangeStart);
+
+const { data, error } = await snapshotQuery;
       if (error) throw error;
 
       // ── Group snapshots by card and by day ─────────────────────────

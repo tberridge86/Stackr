@@ -59,8 +59,6 @@ function toInteger(value: number | string | null | undefined): number {
   return parsed == null ? 0 : Math.round(parsed);
 }
 
-// Truncate to midnight UTC — ensures one row per card per day
-// and makes the unique index on (card_id, set_id, snapshot_at) work correctly
 function todayMidnightUTC(): string {
   return new Date().toISOString().split('T')[0] + 'T00:00:00.000Z';
 }
@@ -71,20 +69,12 @@ function todayMidnightUTC(): string {
 
 function buildEbayQuery(card: any): string {
   let number: string | null = null;
-
   if (card.card_number && card.set_total) {
     number = `${card.card_number}/${card.set_total}`;
   } else if (card.card_number) {
     number = String(card.card_number);
   }
-
-  const parts = [
-    card.card_name,
-    number,
-    card.set_name,
-    'pokemon card',
-  ].filter(Boolean);
-
+  const parts = [card.card_name, number, card.set_name, 'pokemon card'].filter(Boolean);
   return parts.join(' ');
 }
 
@@ -95,25 +85,15 @@ function buildEbayQuery(card: any): string {
 function getPriceFromPokemonCard(card: any): number | null {
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;
-
-  const preferred = [
-    'holofoil',
-    'reverseHolofoil',
-    'normal',
-    '1stEditionHolofoil',
-    '1stEditionNormal',
-  ];
-
+  const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
   for (const key of preferred) {
     const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
     if (typeof value === 'number') return value;
   }
-
   for (const entry of Object.values(prices) as any[]) {
     const value = entry?.market ?? entry?.mid ?? entry?.low;
     if (typeof value === 'number') return value;
   }
-
   return null;
 }
 
@@ -121,61 +101,43 @@ function getPriceFromPokemonCard(card: any): number | null {
 // CRON LOGGING
 // ===============================
 
-async function logCron(
-  jobName: string,
-  status: 'started' | 'success' | 'failed',
-  details?: string
-) {
+async function logCron(jobName: string, status: 'started' | 'success' | 'failed', details?: string) {
   const { error } = await supabase.from('cron_logs').insert({
     job_name: jobName,
     status,
     details: details ?? null,
     ran_at: new Date().toISOString(),
   });
-
-  if (error) {
-    console.log('⚠️ Failed to write cron log:', error);
-  }
+  if (error) console.log('⚠️ Failed to write cron log:', error);
 }
 
 // ===============================
 // TCG FETCHING
 // ===============================
 
-async function fetchTcgBatch(
-  batch: string[],
-  batchNumber: number
-): Promise<Record<string, number>> {
+async function fetchTcgBatch(batch: string[], batchNumber: number): Promise<Record<string, number>> {
   const q = batch.map((id) => `id:${id}`).join(' OR ');
   const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q)}&pageSize=${batch.length}`;
 
   for (let attempt = 1; attempt <= TCG_MAX_RETRIES; attempt += 1) {
     try {
       console.log(`🔍 TCG batch ${batchNumber}, attempt ${attempt} (${batch.length} cards)`);
-
       const headers: Record<string, string> = {};
-
       if (process.env.POKEMON_TCG_API_KEY) {
         headers['X-Api-Key'] = process.env.POKEMON_TCG_API_KEY;
-      } else {
-        console.log('⚠️ No POKEMON_TCG_API_KEY found in env');
       }
-
       const response = await fetch(url, { headers });
       const text = await response.text();
-
       if (!response.ok) {
         console.log(`⚠️ TCG HTTP ${response.status}: ${text.slice(0, 120)}`);
         await delay(TCG_RETRY_DELAY_MS * attempt);
         continue;
       }
-
       if (text.toLowerCase().includes('throttled')) {
         console.log('⚠️ TCG throttled — waiting before retry...');
         await delay(TCG_RETRY_DELAY_MS * attempt);
         continue;
       }
-
       let json: any;
       try {
         json = JSON.parse(text);
@@ -184,43 +146,30 @@ async function fetchTcgBatch(
         await delay(TCG_RETRY_DELAY_MS * attempt);
         continue;
       }
-
       const priceMap: Record<string, number> = {};
       for (const card of json?.data ?? []) {
         const price = getPriceFromPokemonCard(card);
-        if (typeof price === 'number') {
-          priceMap[card.id] = price;
-        }
+        if (typeof price === 'number') priceMap[card.id] = price;
       }
-
       return priceMap;
     } catch (error) {
       console.log(`⚠️ TCG batch ${batchNumber} error:`, error);
       await delay(TCG_RETRY_DELAY_MS * attempt);
     }
   }
-
   console.log(`🚫 TCG batch ${batchNumber} failed after all retries`);
   return {};
 }
 
-async function fetchTcgPricesInBatches(
-  cardIds: string[]
-): Promise<Record<string, number>> {
+async function fetchTcgPricesInBatches(cardIds: string[]): Promise<Record<string, number>> {
   const finalPriceMap: Record<string, number> = {};
-
   for (let i = 0; i < cardIds.length; i += TCG_BATCH_SIZE) {
     const batch = cardIds.slice(i, i + TCG_BATCH_SIZE);
     const batchNumber = Math.floor(i / TCG_BATCH_SIZE) + 1;
-
     const batchMap = await fetchTcgBatch(batch, batchNumber);
     Object.assign(finalPriceMap, batchMap);
-
-    if (i + TCG_BATCH_SIZE < cardIds.length) {
-      await delay(TCG_DELAY_MS);
-    }
+    if (i + TCG_BATCH_SIZE < cardIds.length) await delay(TCG_DELAY_MS);
   }
-
   return finalPriceMap;
 }
 
@@ -228,25 +177,19 @@ async function fetchTcgPricesInBatches(
 // EBAY FETCHING
 // ===============================
 
-async function fetchEbayWithRetry(
-  ebayQuery: string,
-  displayName: string
-): Promise<EbayResponse> {
+async function fetchEbayWithRetry(ebayQuery: string, displayName: string): Promise<EbayResponse> {
   try {
     console.log(`🟡 eBay: "${ebayQuery}"`);
     const result = await fetchEbayPrice(ebayQuery);
-
     if ((result as any)?.status === 429) {
       console.log(`⚠️ eBay rate limited — backing off ${EBAY_RATE_LIMIT_DELAY_MS}ms`);
       await delay(EBAY_RATE_LIMIT_DELAY_MS);
       return await fetchEbayPrice(ebayQuery);
     }
-
     return result;
   } catch {
     console.log(`⚠️ eBay fetch failed for "${displayName}" — retrying...`);
     await delay(EBAY_RETRY_DELAY_MS);
-
     try {
       return await fetchEbayPrice(ebayQuery);
     } catch (secondError) {
@@ -257,58 +200,46 @@ async function fetchEbayWithRetry(
 }
 
 // ===============================
-// MAIN JOB
+// PROCESS ONE USER
 // ===============================
 
-async function runDailyMarketSnapshot() {
-  console.log('🚀 Daily market snapshot started');
-  await logCron(JOB_NAME, 'started');
+async function processUser(userId: string, snapshotDate: string) {
+  console.log(`\n👤 Processing user: ${userId}`);
 
-  // ── 1. Fetch all owned binder cards ───────────────────────────────
+  // Get all owned cards for this user
   const { data: cards, error } = await supabase
     .from('binder_cards')
     .select('card_id, set_id, api_card_id, api_set_id, card_name, card_number, set_name, set_total')
-    .eq('owned', true);
+    .eq('owned', true)
+    .in('binder_id',
+      (await supabase.from('binders').select('id').eq('user_id', userId)).data?.map((b: any) => b.id) ?? []
+    );
 
-  if (error) throw error;
-
-  if (!cards || cards.length === 0) {
-    console.log('⚠️ No owned cards found');
-    await logCron(JOB_NAME, 'success', 'No owned cards found');
-    return;
+  if (error) {
+    console.log(`❌ Failed to fetch cards for user ${userId}:`, error);
+    return { saved: 0, missingTcg: 0, ebayFound: 0, ebayFail: 0, upsertFail: 0 };
   }
 
-  console.log(`📦 Found ${cards.length} owned card rows`);
+  if (!cards?.length) {
+    console.log(`⚠️ No owned cards for user ${userId}`);
+    return { saved: 0, missingTcg: 0, ebayFound: 0, ebayFail: 0, upsertFail: 0 };
+  }
 
-  // ── 2. Deduplicate by api_card_id (or card_id as fallback) ────────
+  console.log(`📦 ${cards.length} owned card rows`);
+
+  // Deduplicate by api_card_id
   const uniqueCards = Array.from(
-    new Map(
-      cards.map((card) => [card.api_card_id || card.card_id, card])
-    ).values()
+    new Map(cards.map((card) => [card.api_card_id || card.card_id, card])).values()
   );
 
   console.log(`🔢 ${uniqueCards.length} unique cards after deduplication`);
 
-  // ── 3. Fetch TCG prices in batches ────────────────────────────────
-  const cardIds = uniqueCards
-    .map((card) => card.api_card_id || card.card_id)
-    .filter(Boolean);
-
-  console.log(`🔍 Fetching TCG prices for ${cardIds.length} cards`);
+  // Fetch TCG prices
+  const cardIds = uniqueCards.map((card) => card.api_card_id || card.card_id).filter(Boolean);
   const priceMap = await fetchTcgPricesInBatches(cardIds);
 
-  // ── 4. Snapshot date — midnight UTC, consistent across all cards ──
-  const snapshotDate = todayMidnightUTC();
-  console.log(`📅 Snapshot date: ${snapshotDate}`);
+  let saved = 0, missingTcg = 0, ebayFound = 0, ebayFail = 0, upsertFail = 0;
 
-  // ── 5. Counters ───────────────────────────────────────────────────
-  let savedCount = 0;
-  let missingTcgCount = 0;
-  let ebayFoundCount = 0;
-  let ebayFailCount = 0;
-  let upsertFailCount = 0;
-
-  // ── 6. Process each card ──────────────────────────────────────────
   for (let index = 0; index < uniqueCards.length; index += 1) {
     const card = uniqueCards[index];
     const lookupId = card.api_card_id || card.card_id;
@@ -318,23 +249,18 @@ async function runDailyMarketSnapshot() {
     console.log(`\n📍 [${index + 1}/${uniqueCards.length}] ${displayName}`);
 
     if (typeof tcgPrice !== 'number') {
-      missingTcgCount += 1;
+      missingTcg += 1;
       console.log(`⚠️ No TCG price for ${displayName}`);
     }
 
-    // Fetch eBay price
     const ebayQuery = buildEbayQuery(card);
     const ebay = await fetchEbayWithRetry(ebayQuery, displayName);
     const ebayAverage = toNumber(ebay.average);
 
-    if (ebayAverage !== null) {
-      ebayFoundCount += 1;
-    } else {
-      ebayFailCount += 1;
-    }
+    if (ebayAverage !== null) { ebayFound += 1; } else { ebayFail += 1; }
 
-    // Build snapshot — snapshot_at is always midnight UTC
     const snapshot = {
+      user_id: userId,
       card_id: card.card_id,
       set_id: card.set_id,
       tcg_low: null,
@@ -347,51 +273,77 @@ async function runDailyMarketSnapshot() {
       snapshot_at: snapshotDate,
     };
 
-    // Upsert — inserts on first run of the day, updates on subsequent runs
     const { error: upsertError } = await supabase
       .from('market_price_snapshots')
       .upsert(snapshot, {
-        onConflict: 'card_id,set_id,snapshot_at',
+        onConflict: 'user_id,card_id,set_id,snapshot_at',
         ignoreDuplicates: false,
       });
 
     if (upsertError) {
-      upsertFailCount += 1;
+      upsertFail += 1;
       console.error(`❌ Upsert failed for ${displayName}:`, upsertError);
-      await delay(EBAY_DELAY_MS);
-      continue;
+    } else {
+      saved += 1;
+      console.log(`✅ ${displayName} | TCG: ${snapshot.tcg_mid ?? 'none'} | eBay avg: ${snapshot.ebay_average ?? 'none'}`);
     }
-
-    savedCount += 1;
-    console.log(
-      `✅ ${displayName} | TCG: ${snapshot.tcg_mid ?? 'none'} | eBay avg: ${snapshot.ebay_average ?? 'none'}`
-    );
 
     await delay(EBAY_DELAY_MS);
   }
 
-  // ── 7. Summary ────────────────────────────────────────────────────
+  return { saved, missingTcg, ebayFound, ebayFail, upsertFail };
+}
+
+// ===============================
+// MAIN JOB
+// ===============================
+
+async function runDailyMarketSnapshot() {
+  console.log('🚀 Daily market snapshot started');
+  await logCron(JOB_NAME, 'started');
+
+  const snapshotDate = todayMidnightUTC();
+  console.log(`📅 Snapshot date: ${snapshotDate}`);
+
+  // Get all unique user IDs who have owned cards
+  const { data: binders, error: binderError } = await supabase
+    .from('binders')
+    .select('user_id')
+    .not('user_id', 'is', null);
+
+  if (binderError) throw binderError;
+
+  const userIds = [...new Set((binders ?? []).map((b: any) => b.user_id))];
+  console.log(`👥 Found ${userIds.length} users to process`);
+
+  let totalSaved = 0, totalMissingTcg = 0, totalEbayFound = 0, totalEbayFail = 0, totalUpsertFail = 0;
+
+  for (const userId of userIds) {
+    const result = await processUser(userId, snapshotDate);
+    totalSaved += result.saved;
+    totalMissingTcg += result.missingTcg;
+    totalEbayFound += result.ebayFound;
+    totalEbayFail += result.ebayFail;
+    totalUpsertFail += result.upsertFail;
+  }
+
   console.log('\n📊 Snapshot complete');
-  console.log(`💾 Saved/updated: ${savedCount}`);
-  console.log(`⚠️  Missing TCG:  ${missingTcgCount}`);
-  console.log(`🟡 eBay found:   ${ebayFoundCount}`);
-  console.log(`🚫 eBay failed:  ${ebayFailCount}`);
-  console.log(`❌ Upsert fails: ${upsertFailCount}`);
+  console.log(`👥 Users processed: ${userIds.length}`);
+  console.log(`💾 Saved/updated:   ${totalSaved}`);
+  console.log(`⚠️  Missing TCG:    ${totalMissingTcg}`);
+  console.log(`🟡 eBay found:      ${totalEbayFound}`);
+  console.log(`🚫 eBay failed:     ${totalEbayFail}`);
+  console.log(`❌ Upsert fails:    ${totalUpsertFail}`);
 
-  // ── 8. Update binder card prices via RPC ──────────────────────────
   const { error: updateError } = await supabase.rpc('update_binder_card_prices');
-
   if (updateError) {
     console.error('⚠️ update_binder_card_prices RPC failed:', updateError);
-    console.log('ℹ️ Snapshots saved — prices will update on next successful RPC run');
   } else {
     console.log('✅ Binder card prices updated via RPC');
   }
 
-  await logCron(
-    JOB_NAME,
-    'success',
-    `Saved ${savedCount}. Missing TCG: ${missingTcgCount}. eBay found: ${ebayFoundCount}. eBay failed: ${ebayFailCount}. Upsert failed: ${upsertFailCount}.`
+  await logCron(JOB_NAME, 'success',
+    `Users: ${userIds.length}. Saved: ${totalSaved}. Missing TCG: ${totalMissingTcg}. eBay found: ${totalEbayFound}. eBay failed: ${totalEbayFail}. Upsert failed: ${totalUpsertFail}.`
   );
 }
 
