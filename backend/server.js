@@ -952,6 +952,7 @@ app.post('/api/scan/identify', async (req, res) => {
 
     const data = await response.json();
     const text = data?.content?.[0]?.text ?? '';
+console.log('🔍 Claude raw response:', text);
     
     let parsed;
     try {
