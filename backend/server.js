@@ -944,7 +944,7 @@ app.post('/api/scan/identify', async (req, res) => {
               },
               {
                 type: 'text',
-                text: 'This is a Pokémon TCG card. Please identify it and respond with ONLY a JSON object in this exact format, no other text: {"name": "card name", "set": "set name", "number": "card number e.g. 4/102"}. If you cannot identify the card respond with {"error": "could not identify"}.',
+                text: 'This is a Pokémon TCG card. Identify the following: 1) The Pokémon name printed at the top of the card. 2) The set name printed near the bottom or on the set symbol. 3) The collector card number printed at the bottom in the format XX/XXX (e.g. 4/102 or 25/198). Respond with ONLY raw JSON, no markdown, no code fences, no extra text. Exact format: {"name": "pokemon name", "set": "set name", "number": "XX/XXX"}. If you genuinely cannot read any part of the card respond with {"error": "could not identify"}.',
               },
             ],
           },
