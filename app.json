@@ -24,6 +24,12 @@
           "cameraPermissionText": "Stackr needs camera access to scan your Pokémon cards.",
           "enableMicrophonePermission": false
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Stackr needs camera access to scan Pokémon cards."
+        }
       ]
     ],
     "ios": {
