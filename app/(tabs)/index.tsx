@@ -274,6 +274,8 @@ export default function HubScreen() {
   const submitBugReport = async () => {
     if (!bugText.trim()) return;
     setBugSubmitting(true);
+    console.log('🐛 submitBugReport called');
+    console.log('PRICE_API_URL:', PRICE_API_URL);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const { data: profile } = user
@@ -282,11 +284,13 @@ export default function HubScreen() {
 
       const collectorName = profile?.collector_name ?? user?.email ?? 'Anonymous';
 
-      await fetch(`${PRICE_API_URL}/api/discord/bug-report`, {
+      const bugRes = await fetch(`${PRICE_API_URL}/api/discord/bug-report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ report: bugText.trim(), collectorName }),
       });
+      console.log('📡 Bug report status:', bugRes.status);
+      console.log('📡 Bug report response:', await bugRes.text());
 
       setBugText('');
       setBugModalOpen(false);
