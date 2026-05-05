@@ -138,6 +138,7 @@ export default function RootLayout() {
                 <Stack.Screen name="user/[id]" options={{ title: '' }} />
                 <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
                 <Stack.Screen name="(auth)/login" options={{ title: '' }} />
+                <Stack.Screen name="notifications" options={{ title: '' }} />
               </Stack>
               <PersistentTabBar />
             </TradeProvider>

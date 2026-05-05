@@ -18,8 +18,8 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { router, useFocusEffect, useLocalSearchParams, Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
@@ -982,55 +982,20 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
 
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <View style={{ flex: 1 }}>
-            <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+        <View style={{ marginBottom: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', flex: 1, marginRight: 8 }}>
               {binder.name}
             </Text>
 
-            {binder.edition && (
-              <View style={{
-                alignSelf: 'flex-start',
-                marginTop: 4,
-                backgroundColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.surface,
-                borderRadius: 999,
-                paddingHorizontal: 10,
-                paddingVertical: 3,
-                borderWidth: 1,
-                borderColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.border,
-              }}>
-                <Text style={{
-                  color: binder.edition === '1st_edition' ? '#FFFFFF' : theme.colors.textSoft,
-                  fontSize: 11,
-                  fontWeight: '900',
-                }}>
-                  {binder.edition === '1st_edition' ? '1st Edition' : 'Unlimited'}
-                </Text>
-              </View>
-            )}
-
-            <Text style={{ color: theme.colors.textSoft, marginTop: 4 }}>
-              {ownedCount} / {totalCount} owned · {progressPercent}%
-            </Text>
-
             {!isReadOnly && (
-              <View style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                marginTop: 10,
-              }}>
-                <Text style={{
-                  color: theme.colors.textSoft,
-                  fontSize: 12,
-                  fontWeight: '900',
-                  marginRight: 6,
-                }}>
-                  {isPublic ? '🌍 Public' : '🔒 Private'}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
+                  {isPublic ? '🌍' : '🔒'}
                 </Text>
                 <Switch
                   value={isPublic}
@@ -1041,15 +1006,40 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
               </View>
             )}
           </View>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
+              {ownedCount} / {totalCount} owned · {progressPercent}%
+            </Text>
+
+            {binder.edition && (
+              <View style={{
+                backgroundColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.surface,
+                borderRadius: 999,
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+                borderWidth: 1,
+                borderColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.border,
+              }}>
+                <Text style={{
+                  color: binder.edition === '1st_edition' ? '#FFFFFF' : theme.colors.textSoft,
+                  fontSize: 10,
+                  fontWeight: '900',
+                }}>
+                  {binder.edition === '1st_edition' ? '1st Edition' : 'Unlimited'}
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
 
         {/* Progress bar */}
         <View style={{
-          height: 9,
+          height: 6,
           borderRadius: 999,
           backgroundColor: theme.colors.surface,
           overflow: 'hidden',
-          marginBottom: 16,
+          marginBottom: 10,
         }}>
           <View style={{
             width: totalCount ? `${(ownedCount / totalCount) * 100}%` : '0%',
@@ -1083,26 +1073,6 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         {/* Showcase strips */}
         {renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
         {renderShowcaseStrip('chase', 'Chase Cards')}
-
-        {/* Scan button */}
-        {!isReadOnly && (
-          <TouchableOpacity
-            onPress={handleScanCard}
-            disabled={scanning}
-            style={{
-              backgroundColor: theme.colors.secondary,
-              borderRadius: 14,
-              paddingVertical: 13,
-              alignItems: 'center',
-              marginBottom: 12,
-              opacity: scanning ? 0.6 : 1,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-              {scanning ? 'Scanning...' : 'Scan Card'}
-            </Text>
-          </TouchableOpacity>
-        )}
 
         {/* Add card button */}
         {binder.type === 'custom' && !isReadOnly && (

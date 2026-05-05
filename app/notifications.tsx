@@ -318,28 +318,12 @@ export default function NotificationsScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}>
+    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              width: 40, height: 40,
-              borderRadius: 12,
-              backgroundColor: theme.colors.card,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 12,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-          </TouchableOpacity>
-
-          <View style={{ flex: 1 }}>
+           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
               Notifications
             </Text>
