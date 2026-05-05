@@ -952,9 +952,11 @@ app.post('/api/scan/identify', async (req, res) => {
       }),
     });
 
+    console.log('📡 Anthropic status:', response.status);
     const data = await response.json();
+    console.log('📡 Anthropic full response:', JSON.stringify(data));
     const text = data?.content?.[0]?.text ?? '';
-console.log('🔍 Claude raw response:', text);
+    console.log('🔍 Claude raw response:', text);
     
     let parsed;
     try {
