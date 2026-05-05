@@ -423,7 +423,7 @@ export default function MarketScreen() {
       }
 
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         quality: 0.8,
         base64: true,
       });
@@ -434,40 +434,19 @@ export default function MarketScreen() {
 
       const base64Image = result.assets[0].base64;
 
-      const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'image',
-                  source: { type: 'base64', media_type: 'image/jpeg', data: base64Image },
-                },
-                {
-                  type: 'text',
-                  text: 'This is a Pokémon TCG card. Please identify it and respond with ONLY a JSON object in this exact format, no other text: {"name": "card name", "set": "set name", "number": "card number e.g. 4/102"}. If you cannot identify the card respond with {"error": "could not identify"}.',
-                },
-              ],
-            },
-          ],
-        }),
-      });
+      const claudeResponse = await fetch(`${PRICE_API_URL}/api/scan/identify`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ base64Image }),
+});
 
-      const claudeData = await claudeResponse.json();
-      const responseText = claudeData?.content?.[0]?.text ?? '';
-
-      let parsed: any = null;
-      try {
-        parsed = JSON.parse(responseText.replace(/```json|```/g, '').trim());
-      } catch {
-        Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
-        return;
-      }
+let parsed: any = null;
+try {
+  parsed = await claudeResponse.json();
+} catch {
+  Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
+  return;
+}
 
       if (parsed?.error || !parsed?.name) {
         Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');

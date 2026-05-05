@@ -917,6 +917,55 @@ app.get('/api/sync/set', async (req, res) => {
   }
 });
 
+app.post('/api/scan/identify', async (req, res) => {
+  try {
+    const { base64Image } = req.body;
+    if (!base64Image) return res.status(400).json({ error: 'Missing base64Image' });
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: { type: 'base64', media_type: 'image/jpeg', data: base64Image },
+              },
+              {
+                type: 'text',
+                text: 'This is a Pokémon TCG card. Please identify it and respond with ONLY a JSON object in this exact format, no other text: {"name": "card name", "set": "set name", "number": "card number e.g. 4/102"}. If you cannot identify the card respond with {"error": "could not identify"}.',
+              },
+            ],
+          },
+        ],
+      }),
+    });
+
+    const data = await response.json();
+    const text = data?.content?.[0]?.text ?? '';
+    
+    let parsed;
+    try {
+      parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    } catch {
+      return res.status(422).json({ error: 'Could not parse card identity' });
+    }
+
+    return res.json(parsed);
+  } catch (err) {
+    return res.status(500).json({ error: 'Scan identify failed', detail: err.message });
+  }
+});
+
 // ===============================
 // DISCORD ROUTES
 // ===============================
