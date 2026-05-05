@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts"
+    "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "engines": {
     "node": "20.x"
@@ -15,7 +17,10 @@
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.21.2",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "expo": "~54.0.33",
+    "react": "19.1.0",
+    "react-native": "0.81.5"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
