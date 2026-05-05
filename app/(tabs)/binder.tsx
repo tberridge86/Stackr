@@ -57,7 +57,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 
 const screenWidth = Dimensions.get('window').width;
-const COLUMNS = 4;
+const COLUMNS = 2;
 const PADDING = 16;
 const GAP = 10;
 const binderCardWidth = (screenWidth - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
@@ -155,8 +155,8 @@ function BinderCard({ item, counts, confirmDeleteBinder, index }: BinderCardProp
     >
       {/* Binder image */}
       <View style={{
-        width: binderCardWidth,
-        height: binderCardWidth * 1.4,
+        width: binderCardWidth * 1,
+        height: binderCardWidth * 1,
         borderRadius: 6,
         overflow: 'hidden',
         ...cardShadow,

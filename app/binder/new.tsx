@@ -309,21 +309,7 @@ export default function NewBinderScreen() {
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              width: 40, height: 40,
-              borderRadius: 12,
-              backgroundColor: theme.colors.card,
-              alignItems: 'center', justifyContent: 'center',
-              marginRight: 12,
-              borderWidth: 1, borderColor: theme.colors.border,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-          </TouchableOpacity>
-
-          <View style={{ flex: 1 }}>
+           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
               {isEditMode ? 'Edit Binder' : 'New Binder'}
             </Text>
