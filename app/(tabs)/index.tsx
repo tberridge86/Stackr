@@ -42,6 +42,7 @@ type ChartMode = 'TCG' | 'EBAY' | 'BOTH';
 // ===============================
 
 const screenWidth = Dimensions.get('window').width;
+const USD_TO_GBP = 0.79;
 
 const cardShadow = {
   shadowColor: '#000',
@@ -274,24 +275,17 @@ export default function HubScreen() {
   const submitBugReport = async () => {
     if (!bugText.trim()) return;
     setBugSubmitting(true);
-    console.log('🐛 submitBugReport called');
-    console.log('PRICE_API_URL:', PRICE_API_URL);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       const { data: profile } = user
         ? await supabase.from('profiles').select('collector_name').eq('id', user.id).maybeSingle()
         : { data: null };
-
       const collectorName = profile?.collector_name ?? user?.email ?? 'Anonymous';
-
-      const bugRes = await fetch(`${PRICE_API_URL}/api/discord/bug-report`, {
+      await fetch(`${PRICE_API_URL}/api/discord/bug-report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ report: bugText.trim(), collectorName }),
       });
-      console.log('📡 Bug report status:', bugRes.status);
-      console.log('📡 Bug report response:', await bugRes.text());
-
       setBugText('');
       setBugModalOpen(false);
       Alert.alert('Thanks!', 'Your bug report has been sent to the team.');
@@ -314,15 +308,12 @@ export default function HubScreen() {
       const { data: profile } = user
         ? await supabase.from('profiles').select('collector_name').eq('id', user.id).maybeSingle()
         : { data: null };
-
       const collectorName = profile?.collector_name ?? user?.email ?? 'Anonymous';
-
       await fetch(`${PRICE_API_URL}/api/discord/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedback: feedbackText.trim(), collectorName }),
       });
-
       setFeedbackText('');
       setFeedbackModalOpen(false);
       Alert.alert('Thanks!', 'Your feedback has been sent to the team.');
@@ -351,7 +342,10 @@ export default function HubScreen() {
         user
           ? supabase.from('market_watchlist').select('*', { count: 'exact', head: true }).eq('user_id', user.id)
           : Promise.resolve({ count: 0 }),
-        fetch('https://api.pokemontcg.io/v2/sets?pageSize=1').then((r) => r.json()).then((j) => ({ count: j?.totalCount ?? 0 })).catch(() => ({ count: 0 })),
+        fetch('https://api.pokemontcg.io/v2/sets?pageSize=1')
+          .then((r) => r.json())
+          .then((j) => ({ count: j?.totalCount ?? 0 }))
+          .catch(() => ({ count: 0 })),
       ]);
 
       setUnreadCount((notificationsResult as any).count ?? 0);
@@ -370,7 +364,10 @@ export default function HubScreen() {
 
         if (flagData?.length) {
           const cardIds = [...new Set(flagData.map((f) => f.card_id))];
-          const { data: previews } = await supabase.from('card_previews').select('card_id, name, image_url, set_name').in('card_id', cardIds);
+          const { data: previews } = await supabase
+            .from('card_previews')
+            .select('card_id, name, image_url, set_name')
+            .in('card_id', cardIds);
           const previewMap: Record<string, any> = {};
           (previews ?? []).forEach((p: any) => { previewMap[p.card_id] = p; });
           setRecentListings(flagData.map((flag) => ({ ...flag, preview: previewMap[flag.card_id] ?? null })));
@@ -399,8 +396,11 @@ export default function HubScreen() {
       const apiCardIds = [...new Set(ownedCards.map((c: any) => c.api_card_id || c.card_id))];
 
       if (!storedCardIds.length) {
-        setCollectionTotal(0); setCollectionChangeAmount(0); setCollectionChangePercent(0);
-        setUnpricedCardCount(0); setChartData({ tcg: [], ebay: [] });
+        setCollectionTotal(0);
+        setCollectionChangeAmount(0);
+        setCollectionChangePercent(0);
+        setUnpricedCardCount(0);
+        setChartData({ tcg: [], ebay: [] });
         return;
       }
 
@@ -416,49 +416,87 @@ export default function HubScreen() {
       const { data, error } = await snapshotQuery;
       if (error) throw error;
 
+      // ── Group snapshots by card and by day ─────────────────────────
+      // TCG prices from snapshots are in USD — convert to GBP at write time
+      // eBay prices are already in GBP
       const groupedByCard: Record<string, any[]> = {};
       const groupedByDay: Record<string, { tcg: Record<string, number>; ebay: Record<string, number> }> = {};
 
       for (const row of data ?? []) {
         if (!groupedByCard[row.card_id]) groupedByCard[row.card_id] = [];
         groupedByCard[row.card_id].push(row);
+
         const day = String(row.snapshot_at).split('T')[0];
         if (!groupedByDay[day]) groupedByDay[day] = { tcg: {}, ebay: {} };
-        const tcgPrice = getPriceFromSnapshot(row, 'tcg');
+
+        const tcgRaw = getPriceFromSnapshot(row, 'tcg');
         const ebayPrice = getPriceFromSnapshot(row, 'ebay');
-        if (tcgPrice != null) groupedByDay[day].tcg[row.card_id] = tcgPrice;
+
+        // Convert TCG USD → GBP at storage time so chart values are correct
+        if (tcgRaw != null) groupedByDay[day].tcg[row.card_id] = tcgRaw * USD_TO_GBP;
         if (ebayPrice != null) groupedByDay[day].ebay[row.card_id] = ebayPrice;
       }
 
       const activeSource: 'tcg' | 'ebay' = chartMode === 'EBAY' ? 'ebay' : 'tcg';
-      let totalLatest = 0, totalPrevious = 0, cardsWithPrevious = 0, unpriced = 0;
+      let totalLatest = 0;
+      let totalPrevious = 0;
+      let cardsWithPrevious = 0;
+      let unpriced = 0;
 
       for (const card of ownedCards) {
         const snapshots = groupedByCard[card.card_id] ?? [];
         const latest = snapshots[snapshots.length - 1];
         const previous = snapshots[snapshots.length - 2];
-        const latestPrice = getPriceFromSnapshot(latest, activeSource);
-        const previousPrice = getPriceFromSnapshot(previous, activeSource);
-        if (typeof latestPrice === 'number') { totalLatest += latestPrice; } else { unpriced += 1; }
-        if (typeof latestPrice === 'number' && typeof previousPrice === 'number') {
-          totalPrevious += previousPrice; cardsWithPrevious += 1;
+
+        const latestRaw = getPriceFromSnapshot(latest, activeSource);
+        const previousRaw = getPriceFromSnapshot(previous, activeSource);
+
+        // Apply USD→GBP conversion for TCG prices
+        const latestGbp = latestRaw != null
+          ? (activeSource === 'tcg' ? latestRaw * USD_TO_GBP : latestRaw)
+          : null;
+        const previousGbp = previousRaw != null
+          ? (activeSource === 'tcg' ? previousRaw * USD_TO_GBP : previousRaw)
+          : null;
+
+        if (latestGbp != null) {
+          totalLatest += latestGbp;
+        } else {
+          unpriced += 1;
+        }
+
+        if (latestGbp != null && previousGbp != null) {
+          totalPrevious += previousGbp;
+          cardsWithPrevious += 1;
         }
       }
 
+      // Fallback to live TCG prices if no snapshots exist yet
+      // pokemontcg.io prices are in USD — convert to GBP
       if (totalLatest === 0 && activeSource === 'tcg') {
         const livePriceMap = await fetchLivePricesForCardIds(apiCardIds);
-        let liveTotal = 0, liveUnpriced = 0;
+        let liveTotal = 0;
+        let liveUnpriced = 0;
         for (const card of ownedCards as any[]) {
-          const price = livePriceMap[card.api_card_id || card.card_id];
-          if (typeof price === 'number') { liveTotal += price; } else { liveUnpriced += 1; }
+          const priceUsd = livePriceMap[card.api_card_id || card.card_id];
+          if (typeof priceUsd === 'number') {
+            liveTotal += priceUsd * USD_TO_GBP;
+          } else {
+            liveUnpriced += 1;
+          }
         }
-        totalLatest = liveTotal; unpriced = liveUnpriced;
+        totalLatest = liveTotal;
+        unpriced = liveUnpriced;
       }
 
       const change = cardsWithPrevious > 0 ? totalLatest - totalPrevious : 0;
-      const percent = cardsWithPrevious > 0 && totalPrevious !== 0 ? (change / totalPrevious) * 100 : 0;
+      const percent = cardsWithPrevious > 0 && totalPrevious !== 0
+        ? (change / totalPrevious) * 100
+        : 0;
+
       const days = Object.keys(groupedByDay).sort();
 
+      // groupedByDay already has USD→GBP applied for TCG so no further conversion needed
       const buildValues = (source: 'tcg' | 'ebay') =>
         days.map((day) => {
           const pricesForDay = groupedByDay[day][source];
@@ -476,12 +514,19 @@ export default function HubScreen() {
       setUnpricedCardCount(unpriced);
       setChartData({ tcg: buildValues('tcg'), ebay: buildValues('ebay') });
 
+      // Auto-post value change to activity feed
       if (chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          const { data: existingPost } = await supabase.from('activity_feed').select('id').eq('user_id', user.id).eq('type', 'value_change').gte('created_at', today.toISOString()).limit(1);
+          const { data: existingPost } = await supabase
+            .from('activity_feed')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('type', 'value_change')
+            .gte('created_at', today.toISOString())
+            .limit(1);
           const alreadyPosted = Array.isArray(existingPost) && existingPost.length > 0;
           const postKey = `${user.id}-${today.toISOString()}-${change.toFixed(2)}`;
           if (!alreadyPosted && valuePostKeyRef.current !== postKey) {
@@ -498,8 +543,11 @@ export default function HubScreen() {
       }
     } catch (error) {
       console.log('Failed to calculate collection value', error);
-      setCollectionTotal(0); setCollectionChangeAmount(0); setCollectionChangePercent(0);
-      setUnpricedCardCount(0); setChartData({ tcg: [], ebay: [] });
+      setCollectionTotal(0);
+      setCollectionChangeAmount(0);
+      setCollectionChangePercent(0);
+      setUnpricedCardCount(0);
+      setChartData({ tcg: [], ebay: [] });
     }
   }, [chartRange, chartMode]);
 
@@ -511,7 +559,11 @@ export default function HubScreen() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase.from('profiles').select('has_seen_onboarding').eq('id', user.id).maybeSingle();
+      const { data } = await supabase
+        .from('profiles')
+        .select('has_seen_onboarding')
+        .eq('id', user.id)
+        .maybeSingle();
       if (data && !data.has_seen_onboarding) setShowOnboarding(true);
     } catch (error) {
       console.log('Onboarding check failed', error);
@@ -522,7 +574,11 @@ export default function HubScreen() {
   // EFFECTS
   // ===============================
 
-  useFocusEffect(useCallback(() => { loadAll(); loadCollectionValue(); }, [loadAll, loadCollectionValue]));
+  useFocusEffect(useCallback(() => {
+    loadAll();
+    loadCollectionValue();
+  }, [loadAll, loadCollectionValue]));
+
   useEffect(() => { checkOnboarding(); }, [checkOnboarding]);
   useEffect(() => { loadCollectionValue(); }, [chartRange, chartMode, loadCollectionValue]);
 
@@ -546,12 +602,14 @@ export default function HubScreen() {
         contentContainerStyle={{ padding: 18, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { loadAll(true); loadCollectionValue(); }} tintColor={theme.colors.primary} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => { loadAll(true); loadCollectionValue(); }}
+            tintColor={theme.colors.primary}
+          />
         }
       >
-        {/* ===============================
-            TOP BAR
-        =============================== */}
+        {/* TOP BAR */}
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
           <View>
             <Image source={require('../../assets/images/hub.png')} style={{ width: 200, height: 60 }} resizeMode="contain" />
@@ -559,7 +617,6 @@ export default function HubScreen() {
           </View>
 
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            {/* Notifications */}
             <TouchableOpacity
               onPress={() => router.push('/notifications')}
               style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
@@ -572,7 +629,6 @@ export default function HubScreen() {
               )}
             </TouchableOpacity>
 
-            {/* Hamburger */}
             <TouchableOpacity
               onPress={() => setMenuOpen(true)}
               style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
@@ -610,14 +666,22 @@ export default function HubScreen() {
             <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 {(['TCG', 'EBAY', 'BOTH'] as const).map((mode) => (
-                  <TouchableOpacity key={mode} onPress={() => setChartMode(mode)} style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: chartMode === mode ? theme.colors.primary : theme.colors.card, borderWidth: 1, borderColor: chartMode === mode ? theme.colors.primary : theme.colors.border }}>
+                  <TouchableOpacity
+                    key={mode}
+                    onPress={() => setChartMode(mode)}
+                    style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: chartMode === mode ? theme.colors.primary : theme.colors.card, borderWidth: 1, borderColor: chartMode === mode ? theme.colors.primary : theme.colors.border }}
+                  >
                     <Text style={{ color: chartMode === mode ? '#FFFFFF' : theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>{mode}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
               <View style={{ flexDirection: 'row', gap: 6 }}>
                 {(['1D', '7D', '30D', 'ALL'] as const).map((range) => (
-                  <TouchableOpacity key={range} onPress={() => setChartRange(range)} style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: chartRange === range ? theme.colors.primary : theme.colors.card, borderWidth: 1, borderColor: chartRange === range ? theme.colors.primary : theme.colors.border }}>
+                  <TouchableOpacity
+                    key={range}
+                    onPress={() => setChartRange(range)}
+                    style={{ paddingHorizontal: 9, paddingVertical: 6, borderRadius: 10, backgroundColor: chartRange === range ? theme.colors.primary : theme.colors.card, borderWidth: 1, borderColor: chartRange === range ? theme.colors.primary : theme.colors.border }}
+                  >
                     <Text style={{ color: chartRange === range ? '#FFFFFF' : theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>{range}</Text>
                   </TouchableOpacity>
                 ))}
@@ -628,8 +692,13 @@ export default function HubScreen() {
               data={{
                 labels: activeChartValues.map(() => ''),
                 datasets: chartMode === 'BOTH'
-                  ? [{ data: equalTcg, color: (opacity = 1) => `rgba(108,75,255,${opacity})` }, { data: equalEbay, color: (opacity = 1) => `rgba(234,179,8,${opacity})` }]
-                  : [{ data: activeChartValues, color: (opacity = 1) => chartMode === 'EBAY' ? `rgba(234,179,8,${opacity})` : `rgba(108,75,255,${opacity})` }],
+                  ? [
+                      { data: equalTcg, color: (opacity = 1) => `rgba(108,75,255,${opacity})` },
+                      { data: equalEbay, color: (opacity = 1) => `rgba(234,179,8,${opacity})` },
+                    ]
+                  : [
+                      { data: activeChartValues, color: (opacity = 1) => chartMode === 'EBAY' ? `rgba(234,179,8,${opacity})` : `rgba(108,75,255,${opacity})` },
+                    ],
               }}
               width={screenWidth - 64}
               height={145}
@@ -703,7 +772,12 @@ export default function HubScreen() {
               const cardName = preview?.name ?? item.card_id ?? 'Unknown card';
               const setName = preview?.set_name ?? item.set_id ?? 'Unknown set';
               return (
-                <TouchableOpacity key={`${item.card_id}-${index}`} onPress={() => router.push('/trade')} style={{ width: 128, backgroundColor: theme.colors.card, borderRadius: 20, padding: 10, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }} activeOpacity={0.8}>
+                <TouchableOpacity
+                  key={`${item.card_id}-${index}`}
+                  onPress={() => router.push('/trade')}
+                  style={{ width: 128, backgroundColor: theme.colors.card, borderRadius: 20, padding: 10, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
+                  activeOpacity={0.8}
+                >
                   {imageUri ? (
                     <Image source={{ uri: imageUri }} style={{ width: '100%', height: 130, marginBottom: 8 }} resizeMode="contain" />
                   ) : (
@@ -737,66 +811,35 @@ export default function HubScreen() {
         <QuickLink icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} badge={unreadCount} />
       </ScrollView>
 
-      {/* ===============================
-          HAMBURGER MENU MODAL
-      =============================== */}
+      {/* HAMBURGER MENU */}
       <Modal visible={menuOpen} transparent animationType="fade">
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setMenuOpen(false)}>
           <Pressable
-            style={{
-              position: 'absolute', top: 80, right: 16,
-              backgroundColor: theme.colors.card,
-              borderRadius: 20,
-              padding: 8,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              minWidth: 220,
-              ...cardShadow,
-            }}
+            style={{ position: 'absolute', top: 80, right: 16, backgroundColor: theme.colors.card, borderRadius: 20, padding: 8, borderWidth: 1, borderColor: theme.colors.border, minWidth: 220, ...cardShadow }}
             onPress={() => {}}
           >
-            {/* Profile */}
-            <TouchableOpacity
-              onPress={() => { setMenuOpen(false); router.push('/profile'); }}
-              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={() => { setMenuOpen(false); router.push('/profile'); }} style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }} activeOpacity={0.7}>
               <Ionicons name="person-circle-outline" size={22} color={theme.colors.primary} />
               <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>My Profile</Text>
             </TouchableOpacity>
 
             <View style={{ height: 1, backgroundColor: theme.colors.border, marginHorizontal: 8 }} />
 
-            {/* Ko-fi */}
-            <TouchableOpacity
-              onPress={() => { setMenuOpen(false); Linking.openURL('https://ko-fi.com/stackr_'); }}
-              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={() => { setMenuOpen(false); Linking.openURL('https://ko-fi.com/stackr_'); }} style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }} activeOpacity={0.7}>
               <Text style={{ fontSize: 20, width: 22, textAlign: 'center' }}>☕</Text>
               <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>Support on Ko-fi</Text>
             </TouchableOpacity>
 
             <View style={{ height: 1, backgroundColor: theme.colors.border, marginHorizontal: 8 }} />
 
-            {/* Bug report */}
-            <TouchableOpacity
-              onPress={() => { setMenuOpen(false); setBugModalOpen(true); }}
-              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={() => { setMenuOpen(false); setBugModalOpen(true); }} style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }} activeOpacity={0.7}>
               <Ionicons name="bug-outline" size={22} color="#EF4444" />
               <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>Report a Bug</Text>
             </TouchableOpacity>
 
             <View style={{ height: 1, backgroundColor: theme.colors.border, marginHorizontal: 8 }} />
 
-            {/* Feedback */}
-            <TouchableOpacity
-              onPress={() => { setMenuOpen(false); setFeedbackModalOpen(true); }}
-              style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={() => { setMenuOpen(false); setFeedbackModalOpen(true); }} style={{ flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, gap: 12 }} activeOpacity={0.7}>
               <Ionicons name="chatbubble-ellipses-outline" size={22} color={theme.colors.primary} />
               <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 15 }}>Send Feedback</Text>
             </TouchableOpacity>
@@ -804,42 +847,22 @@ export default function HubScreen() {
         </Pressable>
       </Modal>
 
-      {/* ===============================
-          BUG REPORT MODAL
-      =============================== */}
+      {/* BUG REPORT MODAL */}
       <Modal visible={bugModalOpen} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.colors.border }}>
             <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>🐛 Report a Bug</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>
-              Describe what happened and we'll look into it.
-            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>Describe what happened and we'll look into it.</Text>
             <TextInput
               value={bugText}
               onChangeText={setBugText}
               placeholder="e.g. The scan screen crashes when I..."
               placeholderTextColor={theme.colors.textSoft}
               multiline
-              style={{
-                backgroundColor: theme.colors.surface,
-                borderRadius: 14,
-                padding: 14,
-                color: theme.colors.text,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                minHeight: 120,
-                textAlignVertical: 'top',
-                marginBottom: 16,
-              }}
+              style={{ backgroundColor: theme.colors.surface, borderRadius: 14, padding: 14, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border, minHeight: 120, textAlignVertical: 'top', marginBottom: 16 }}
             />
-            <TouchableOpacity
-              onPress={submitBugReport}
-              disabled={bugSubmitting || !bugText.trim()}
-              style={{ backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: bugSubmitting || !bugText.trim() ? 0.5 : 1 }}
-            >
-              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>
-                {bugSubmitting ? 'Sending...' : 'Send Bug Report'}
-              </Text>
+            <TouchableOpacity onPress={submitBugReport} disabled={bugSubmitting || !bugText.trim()} style={{ backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: bugSubmitting || !bugText.trim() ? 0.5 : 1 }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>{bugSubmitting ? 'Sending...' : 'Send Bug Report'}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => { setBugModalOpen(false); setBugText(''); }} style={{ alignItems: 'center', paddingVertical: 10 }}>
               <Text style={{ color: theme.colors.textSoft, fontWeight: '700' }}>Cancel</Text>
@@ -848,42 +871,22 @@ export default function HubScreen() {
         </View>
       </Modal>
 
-      {/* ===============================
-          FEEDBACK MODAL
-      =============================== */}
+      {/* FEEDBACK MODAL */}
       <Modal visible={feedbackModalOpen} transparent animationType="slide">
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.colors.border }}>
             <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>💬 Send Feedback</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>
-              Ideas, suggestions, or anything else — we'd love to hear it.
-            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>Ideas, suggestions, or anything else — we'd love to hear it.</Text>
             <TextInput
               value={feedbackText}
               onChangeText={setFeedbackText}
               placeholder="e.g. It would be great if I could..."
               placeholderTextColor={theme.colors.textSoft}
               multiline
-              style={{
-                backgroundColor: theme.colors.surface,
-                borderRadius: 14,
-                padding: 14,
-                color: theme.colors.text,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                minHeight: 120,
-                textAlignVertical: 'top',
-                marginBottom: 16,
-              }}
+              style={{ backgroundColor: theme.colors.surface, borderRadius: 14, padding: 14, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border, minHeight: 120, textAlignVertical: 'top', marginBottom: 16 }}
             />
-            <TouchableOpacity
-              onPress={submitFeedback}
-              disabled={feedbackSubmitting || !feedbackText.trim()}
-              style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: feedbackSubmitting || !feedbackText.trim() ? 0.5 : 1 }}
-            >
-              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>
-                {feedbackSubmitting ? 'Sending...' : 'Send Feedback'}
-              </Text>
+            <TouchableOpacity onPress={submitFeedback} disabled={feedbackSubmitting || !feedbackText.trim()} style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10, opacity: feedbackSubmitting || !feedbackText.trim() ? 0.5 : 1 }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>{feedbackSubmitting ? 'Sending...' : 'Send Feedback'}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => { setFeedbackModalOpen(false); setFeedbackText(''); }} style={{ alignItems: 'center', paddingVertical: 10 }}>
               <Text style={{ color: theme.colors.textSoft, fontWeight: '700' }}>Cancel</Text>
@@ -892,9 +895,7 @@ export default function HubScreen() {
         </View>
       </Modal>
 
-      {/* ===============================
-          ONBOARDING MODAL
-      =============================== */}
+      {/* ONBOARDING MODAL */}
       <Modal visible={showOnboarding} transparent animationType="fade">
         <View pointerEvents="box-none" style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', padding: 20 }}>
           <View style={{ backgroundColor: theme.colors.card, borderRadius: 24, padding: 22, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
