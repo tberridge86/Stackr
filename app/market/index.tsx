@@ -18,11 +18,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { BlurView } from 'expo-blur';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect , router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import router from '@/backend/routes/discord';
+
 import { scanStore } from '../../lib/scanStore';
 
 // ===============================

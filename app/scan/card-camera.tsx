@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  StatusBar,
   ActivityIndicator,
 } from 'react-native';
 import { Text } from '../../components/Text';
@@ -13,11 +14,14 @@ import { router } from 'expo-router';
 import { theme } from '../../lib/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { scanStore } from '../../lib/scanStore';
-import RNFS from 'react-native-fs';
+import { readAsStringAsync } from 'expo-file-system/legacy';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('screen');
+const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
 const CARD_WIDTH = SCREEN_WIDTH * 0.78;
 const CARD_HEIGHT = CARD_WIDTH / 0.716;
+const VERTICAL_OFFSET = -(STATUS_BAR_HEIGHT + 30);
 
 export default function CardCameraScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -32,7 +36,14 @@ export default function CardCameraScreen() {
       setCapturing(true);
 
       const photo = await camera.current.takePhoto({ flash: 'off' });
-      const base64 = await RNFS.readFile(photo.path, 'base64');
+
+const resized = await manipulateAsync(
+  `file://${photo.path}`,
+  [{ resize: { width: 800 } }],
+  { compress: 0.7, format: SaveFormat.JPEG, base64: true }
+);
+
+const base64 = resized.base64 ?? '';
 
       scanStore.triggerCallback(base64);
       router.back();

@@ -922,7 +922,14 @@ app.post('/api/scan/identify', async (req, res) => {
   console.log('📸 Body keys:', Object.keys(req.body));
   try {
     const { base64Image } = req.body;
-    if (!base64Image) return res.status(400).json({ error: 'Missing base64Image' });
+if (!base64Image) return res.status(400).json({ error: 'Missing base64Image' });
+
+// Check size and reject if too large
+const sizeBytes = Buffer.byteLength(base64Image, 'base64');
+console.log(`📦 Image size: ${(sizeBytes / 1024 / 1024).toFixed(2)}MB`);
+if (sizeBytes > 4 * 1024 * 1024) {
+  return res.status(400).json({ error: 'Image too large. Please try again.' });
+}
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
