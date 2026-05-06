@@ -458,19 +458,23 @@ try {
       setQuery(searchTerm);
       await searchCards(searchTerm);
 
-      if (parsed.number) {
-        const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
-        setTimeout(() => {
-          setSearchResults((prev) => {
-            const match = prev.find((c) => {
-              const cardNum = (c.number ?? '').replace(/^0+/, '');
-              return cardNum === numberClean;
-            });
-            if (match) openCardDetail(match);
-            return prev;
-          });
-        }, 500);
-      }
+     if (parsed.number) {
+  const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
+  console.log('🔢 Looking for card number:', numberClean);
+  setTimeout(() => {
+    setSearchResults((prev) => {
+      console.log('🔍 Search results count:', prev.length);
+      console.log('🔍 First few numbers:', prev.slice(0, 5).map(c => c.number));
+      const match = prev.find((c) => {
+        const cardNum = (c.number ?? '').replace(/^0+/, '');
+        return cardNum === numberClean;
+      });
+      console.log('✅ Match found:', match?.name ?? 'none');
+      if (match) openCardDetail(match);
+      return prev;
+    });
+  }, 500);
+}
     } catch (err) {
       console.log('Scan error:', err);
       Alert.alert('Scan failed', 'Something went wrong. Please try again.');
