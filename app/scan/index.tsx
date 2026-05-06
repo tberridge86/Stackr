@@ -195,7 +195,7 @@ export default function ScanScreen() {
         reader.readAsDataURL(blob);
       });
 
-      const claudeRes = await fetch(`${PRICE_API_URL}/api/scan/identify`, {
+      const claudeRes = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ base64Image: base64 }),

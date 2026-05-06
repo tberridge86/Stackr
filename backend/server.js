@@ -4,11 +4,14 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
+import cardsightRoutes from './routes/cardsight.js';
 
 const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use('/api/cardsight', cardsightRoutes);
+app.use('/api/discord', discordRoutes);
 
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;

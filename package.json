@@ -19,6 +19,7 @@
     "@react-navigation/elements": "^2.6.3",
     "@react-navigation/native": "^7.2.2",
     "@supabase/supabase-js": "^2.105.1",
+    "cardsightai": "^3.5.1",
     "cors": "^2.8.6",
     "expo": "~54.0.33",
     "expo-av": "~16.0.8",
