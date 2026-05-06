@@ -485,13 +485,29 @@ if (parsed.number) {
       (setsData ?? []).map((s: any) => [s.id, s.total])
     );
 
-    match = cards.find((c) => {
-      const cardNum = (c.number ?? '').replace(/^0+/, '');
-      const setTotal = setsWithTotal[c.set?.id ?? ''];
-      return cardNum === numberClean && setTotal === totalInSet;
-    });
-  }
+   if (!match) {
+  // Get all cards matching the number, prefer most recent set
+  const numberMatches = cards.filter((c) => {
+    const cardNum = (c.number ?? '').replace(/^0+/, '');
+    return cardNum === numberClean;
+  });
 
+  if (numberMatches.length === 1) {
+    match = numberMatches[0];
+  } else if (numberMatches.length > 1) {
+    // Try fuzzy match on set name from Claude
+    if (parsed.set) {
+      const setNameLower = parsed.set.toLowerCase();
+      const fuzzyMatch = numberMatches.find(c =>
+        c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
+        setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
+      );
+      match = fuzzyMatch ?? numberMatches[0];
+    } else {
+      match = numberMatches[0];
+    }
+  }
+}
   if (!match) {
     match = cards.find((c) => {
       const cardNum = (c.number ?? '').replace(/^0+/, '');
