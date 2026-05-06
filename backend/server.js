@@ -928,8 +928,8 @@ if (!base64Image) return res.status(400).json({ error: 'Missing base64Image' });
 // Resize to under 1MB before sending to Claude
 const imageBuffer = Buffer.from(base64Image, 'base64');
 const resizedBuffer = await sharp(imageBuffer)
-  .resize({ width: 800, withoutEnlargement: true })
-  .jpeg({ quality: 70 })
+  .resize({ width: 600, withoutEnlargement: true })
+  .jpeg({ quality: 60 })
   .toBuffer();
 const processedBase64 = resizedBuffer.toString('base64');
 

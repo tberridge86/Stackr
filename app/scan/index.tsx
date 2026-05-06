@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { fetchBinders, BinderRecord } from '../../lib/binders';
+
 
 
 const PRICE_API_URL = (process.env.EXPO_PUBLIC_PRICE_API_URL ?? '').replace(/\/$/, '');
@@ -101,10 +102,10 @@ export default function ScanScreen() {
     }
 
     if (step === 'scanning' && scanMode === 'auto' && autoScanActive) {
-      autoScanIntervalRef.current = setInterval(() => {
-        handleCapture(true);
-      }, 2000);
-    }
+  autoScanIntervalRef.current = setInterval(() => {
+    handleCapture(true);
+  }, 2000);
+}
 
     return () => {
       if (autoScanIntervalRef.current) clearInterval(autoScanIntervalRef.current);
@@ -258,72 +259,67 @@ export default function ScanScreen() {
   // SELECT BINDER STEP
   // ===============================
 
-  if (step === 'select_binder') {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-        <View style={{ flex: 1, padding: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', marginRight: 12, borderWidth: 1, borderColor: theme.colors.border }}
-            >
-              <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-            </TouchableOpacity>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>Scan Cards</Text>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>Which binder are you scanning into?</Text>
-            </View>
+ if (step === 'select_binder') {
+  return (
+    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <View style={{ flex: 1, padding: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
+          
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>Scan Cards</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>Which binder are you scanning into?</Text>
           </View>
-
-          {loadingBinders ? (
-            <ActivityIndicator color={theme.colors.primary} />
-          ) : (
-            <FlatList
-              data={binders}
-              keyExtractor={(item) => item.id}
-              contentContainerStyle={{ paddingBottom: 100 }}
-              renderItem={({ item }) => {
-                const selected = selectedBinder?.id === item.id;
-                return (
-                  <TouchableOpacity
-                    onPress={() => setSelectedBinder(item)}
-                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: selected ? theme.colors.primary + '18' : theme.colors.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 2, borderColor: selected ? theme.colors.primary : theme.colors.border, gap: 12 }}
-                    activeOpacity={0.8}
-                  >
-                    <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: item.color || theme.colors.primary }} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>{item.name}</Text>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
-                        {item.type === 'official' ? 'Official set' : 'Custom binder'}
-                      </Text>
-                    </View>
-                    {selected && (
-                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>✓</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          )}
-
-          <TouchableOpacity
-            onPress={() => {
-              if (!selectedBinder) { Alert.alert('Select a binder', 'Please select which binder to scan into.'); return; }
-              setStep('scanning');
-            }}
-            disabled={!selectedBinder}
-            style={{ backgroundColor: selectedBinder ? theme.colors.primary : theme.colors.textSoft, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8 }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
-              {selectedBinder ? `Scan into "${selectedBinder.name}"` : 'Select a binder first'}
-            </Text>
-          </TouchableOpacity>
         </View>
-      </SafeAreaView>
-    );
-  }
+
+        {loadingBinders ? (
+          <ActivityIndicator color={theme.colors.primary} />
+        ) : (
+          <FlatList
+            data={binders}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            renderItem={({ item }) => {
+              const selected = selectedBinder?.id === item.id;
+              return (
+                <TouchableOpacity
+                  onPress={() => setSelectedBinder(item)}
+                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: selected ? theme.colors.primary + '18' : theme.colors.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 2, borderColor: selected ? theme.colors.primary : theme.colors.border, gap: 12 }}
+                  activeOpacity={0.8}
+                >
+                  <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: item.color || theme.colors.primary }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>{item.name}</Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
+                      {item.type === 'official' ? 'Official set' : 'Custom binder'}
+                    </Text>
+                  </View>
+                  {selected && (
+                    <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            }}
+          />
+        )}
+
+        <TouchableOpacity
+          onPress={() => {
+            if (!selectedBinder) { Alert.alert('Select a binder', 'Please select which binder to scan into.'); return; }
+            setStep('scanning');
+          }}
+          disabled={!selectedBinder}
+          style={{ backgroundColor: selectedBinder ? theme.colors.primary : theme.colors.textSoft, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8, marginBottom: insets.bottom + 16 }}
+        >
+          <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
+            {selectedBinder ? `Scan into "${selectedBinder.name}"` : 'Select a binder first'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
 
   // ===============================
   // REVIEW STEP
@@ -334,12 +330,7 @@ export default function ScanScreen() {
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
         <View style={{ flex: 1, padding: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-            <TouchableOpacity
-              onPress={() => setStep('scanning')}
-              style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', marginRight: 12, borderWidth: 1, borderColor: theme.colors.border }}
-            >
-              <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-            </TouchableOpacity>
+            
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>Review Cards</Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
@@ -385,7 +376,7 @@ export default function ScanScreen() {
                 )}
               />
 
-              <View style={{ position: 'absolute', left: 16, right: 16, bottom: 24, gap: 10 }}>
+              <View style={{ position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 50, gap: 10 }}>
                 <TouchableOpacity
                   onPress={() => setStep('scanning')}
                   style={{ backgroundColor: theme.colors.card, borderRadius: 14, paddingVertical: 13, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
@@ -480,6 +471,7 @@ export default function ScanScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
+      <Stack.Screen options={{ headerShown: false }} />
       <Camera
         ref={camera}
         style={{ flex: 1 }}
@@ -553,7 +545,7 @@ export default function ScanScreen() {
         {/* Frame guide */}
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <View style={{
-            width: 280, height: 390,
+            width: 240, height: 335,
             borderRadius: 16,
             borderWidth: 2,
             borderColor: autoScanActive ? '#10B981' : processingOcr ? theme.colors.primary : 'rgba(255,255,255,0.5)',
