@@ -415,118 +415,90 @@ export default function MarketScreen() {
   // ===============================
 
   const handleScanCard = useCallback(async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Camera permission required', 'Please allow camera access to scan cards.');
-        return;
-      }
+  try {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Camera permission required', 'Please allow camera access to scan cards.');
+      return;
+    }
 
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ['images'],
-        quality: 0.8,
-        base64: true,
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (result.canceled || !result.assets?.[0]?.base64) return;
+
+    setScanning(true);
+
+    const base64Image = result.assets[0].base64;
+
+    const claudeResponse = await fetch(`${PRICE_API_URL}/api/scan/identify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64Image }),
+    });
+
+    let parsed: any = null;
+    try {
+      parsed = await claudeResponse.json();
+    } catch {
+      Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
+      return;
+    }
+
+    if (parsed?.error || !parsed?.name) {
+      Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
+      return;
+    }
+
+    setQuery(parsed.name.trim());
+    await searchCards(parsed.name.trim(), true);
+
+    if (parsed.number) {
+      const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
+
+      const { data: cardData } = await supabase
+        .from('pokemon_cards')
+        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+        .ilike('name', `%${parsed.name.trim()}%`)
+        .limit(120);
+
+      const cards = (cardData ?? []).map(mapCard);
+
+      const numberMatches = cards.filter((c) => {
+        const cardNum = (c.number ?? '').replace(/^0+/, '');
+        return cardNum === numberClean;
       });
 
-      if (result.canceled || !result.assets?.[0]?.base64) return;
+      let match: PokemonCard | undefined;
 
-      setScanning(true);
-
-      const base64Image = result.assets[0].base64;
-
-      console.log('📸 Sending scan to:', `${PRICE_API_URL}/api/scan/identify`);
-      const claudeResponse = await fetch(`${PRICE_API_URL}/api/scan/identify`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ base64Image }),
-});
-
-let parsed: any = null;
-try {
-  parsed = await claudeResponse.json();
-} catch {
-  Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
-  return;
-}
-
-      if (parsed?.error || !parsed?.name) {
-        Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
-        return;
+      if (numberMatches.length === 1) {
+        match = numberMatches[0];
+      } else if (numberMatches.length > 1 && parsed.set) {
+        const setNameLower = parsed.set.toLowerCase();
+        const fuzzyMatch = numberMatches.find((c) =>
+          c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
+          setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
+        );
+        match = fuzzyMatch ?? numberMatches[0];
+      } else {
+        match = numberMatches[0];
       }
 
-  // Search using identified card name only, skip set filter
-setQuery(parsed.name.trim());
-await searchCards(parsed.name.trim(), true);
-
-if (parsed.number) {
-  const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
-  const totalInSet = parsed.number?.includes('/')
-    ? parseInt(parsed.number.split('/')[1])
-    : null;
-
-  const { data: cardData } = await supabase
-    .from('pokemon_cards')
-    .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-    .ilike('name', `%${parsed.name.trim()}%`)
-    .limit(120);
-
-  const cards = (cardData ?? []).map(mapCard);
-
-  let match = null;
-
-  if (totalInSet) {
-    const setIds = [...new Set(cards.map(c => c.set?.id).filter(Boolean))];
-    const { data: setsData } = await supabase
-      .from('pokemon_sets')
-      .select('id, total')
-      .in('id', setIds as string[]);
-
-    const setsWithTotal = Object.fromEntries(
-      (setsData ?? []).map((s: any) => [s.id, s.total])
-    );
-
-   if (!match) {
-  // Get all cards matching the number, prefer most recent set
-  const numberMatches = cards.filter((c) => {
-    const cardNum = (c.number ?? '').replace(/^0+/, '');
-    return cardNum === numberClean;
-  });
-
-  if (numberMatches.length === 1) {
-    match = numberMatches[0];
-  } else if (numberMatches.length > 1) {
-    // Try fuzzy match on set name from Claude
-    if (parsed.set) {
-      const setNameLower = parsed.set.toLowerCase();
-      const fuzzyMatch = numberMatches.find(c =>
-        c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
-        setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
-      );
-      match = fuzzyMatch ?? numberMatches[0];
-    } else {
-      match = numberMatches[0];
+      if (match) {
+        setSearchResults(cards);
+        openCardDetail(match);
+      }
     }
+  } catch (err) {
+    console.log('Scan error:', err);
+    Alert.alert('Scan failed', 'Something went wrong. Please try again.');
+  } finally {
+    setScanning(false);
   }
-}
-  if (!match) {
-    match = cards.find((c) => {
-      const cardNum = (c.number ?? '').replace(/^0+/, '');
-      return cardNum === numberClean;
-    });
-  }
-
-  if (match) {
-    setSearchResults(cards);
-    openCardDetail(match);
-  }
-}
-    } catch (err) {
-      console.log('Scan error:', err);
-      Alert.alert('Scan failed', 'Something went wrong. Please try again.');
-    } finally {
-      setScanning(false);
-    }
-  }, [searchCards, openCardDetail]);
+}, [searchCards, openCardDetail]);
 
   // ===============================
   // RENDER HELPERS
