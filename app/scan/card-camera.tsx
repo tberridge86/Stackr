@@ -78,8 +78,8 @@ export default function CardCameraScreen() {
   const overlayTop = (SCREEN_HEIGHT - CARD_HEIGHT) / 2 + VERTICAL_OFFSET;
   const overlayLeft = (SCREEN_WIDTH - CARD_WIDTH) / 2;
 
-  return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
+ return (
+  <View style={{ flex: 1, backgroundColor: '#000', paddingTop: STATUS_BAR_HEIGHT }}>
       <Camera
         ref={camera}
         style={StyleSheet.absoluteFill}
@@ -87,10 +87,18 @@ export default function CardCameraScreen() {
         isActive={true}
         photo={true}
       />
+       {/* Status bar cover */}
+    <View style={{
+      position: 'absolute',
+      top: 0, left: 0, right: 0,
+      height: STATUS_BAR_HEIGHT,
+      backgroundColor: '#000',
+      zIndex: 10,
+    }} />
 
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: overlayTop, backgroundColor: 'rgba(0,0,0,0.65)' }} />
-        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: SCREEN_HEIGHT - overlayTop - CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
+        <View style={{ position: 'absolute', top: overlayTop + CARD_HEIGHT, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.65)' }} />
         <View style={{ position: 'absolute', top: overlayTop, left: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
         <View style={{ position: 'absolute', top: overlayTop, right: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
 
