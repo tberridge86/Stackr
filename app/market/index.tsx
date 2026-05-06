@@ -476,16 +476,32 @@ export default function MarketScreen() {
 
       if (numberMatches.length === 1) {
         match = numberMatches[0];
-      } else if (numberMatches.length > 1 && parsed.set) {
-        const setNameLower = parsed.set.toLowerCase();
-        const fuzzyMatch = numberMatches.find((c) =>
-          c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
-          setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
-        );
-        match = fuzzyMatch ?? numberMatches[0];
-      } else {
-        match = numberMatches[0];
-      }
+     } else if (numberMatches.length > 1) {
+  // Try fuzzy set name match first
+  if (parsed.set) {
+    const setNameLower = parsed.set.toLowerCase();
+    const fuzzyMatch = numberMatches.find((c) =>
+      c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
+      setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
+    );
+    if (fuzzyMatch) { match = fuzzyMatch; }
+  }
+
+  // Fall back to most recent set by querying release dates
+  if (!match) {
+    const setIds = [...new Set(numberMatches.map(c => c.set?.id).filter(Boolean))];
+    const { data: setsData } = await supabase
+      .from('pokemon_sets')
+      .select('id, release_date')
+      .in('id', setIds as string[])
+      .order('release_date', { ascending: false });
+
+    const mostRecentSetId = setsData?.[0]?.id;
+    match = numberMatches.find(c => c.set?.id === mostRecentSetId) ?? numberMatches[0];
+  }
+} else {
+  match = numberMatches[0];
+}
 
       if (match) {
         setSearchResults(cards);
