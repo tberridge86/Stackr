@@ -22,6 +22,8 @@ import { useFocusEffect } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import router from '@/backend/routes/discord';
+import { scanStore } from '../../lib/scanStore';
 
 // ===============================
 // TYPES
@@ -415,105 +417,89 @@ export default function MarketScreen() {
   // ===============================
 
   const handleScanCard = useCallback(async () => {
-  try {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Camera permission required', 'Please allow camera access to scan cards.');
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-      base64: true,
-    });
-
-    if (result.canceled || !result.assets?.[0]?.base64) return;
-
-    setScanning(true);
-
-    const base64Image = result.assets[0].base64;
-
-    const claudeResponse = await fetch(`${PRICE_API_URL}/api/scan/identify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ base64Image }),
-    });
-
-    let parsed: any = null;
+  scanStore.setCallback(async (base64Image: string) => {
     try {
-      parsed = await claudeResponse.json();
-    } catch {
-      Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
-      return;
-    }
+      setScanning(true);
 
-    if (parsed?.error || !parsed?.name) {
-      Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
-      return;
-    }
-
-    setQuery(parsed.name.trim());
-    await searchCards(parsed.name.trim(), true);
-
-    if (parsed.number) {
-      const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
-
-      const { data: cardData } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .ilike('name', `%${parsed.name.trim()}%`)
-        .limit(120);
-
-      const cards = (cardData ?? []).map(mapCard);
-
-      const numberMatches = cards.filter((c) => {
-        const cardNum = (c.number ?? '').replace(/^0+/, '');
-        return cardNum === numberClean;
+      const claudeResponse = await fetch(`${PRICE_API_URL}/api/scan/identify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64Image }),
       });
 
-      let match: PokemonCard | undefined;
-
-      if (numberMatches.length === 1) {
-        match = numberMatches[0];
-     } else if (numberMatches.length > 1) {
-  // Try fuzzy set name match first
-  if (parsed.set) {
-    const setNameLower = parsed.set.toLowerCase();
-    const fuzzyMatch = numberMatches.find((c) =>
-      c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
-      setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
-    );
-    if (fuzzyMatch) { match = fuzzyMatch; }
-  }
-
-  // Fall back to most recent set by querying release dates
-  if (!match) {
-    const setIds = [...new Set(numberMatches.map(c => c.set?.id).filter(Boolean))];
-    const { data: setsData } = await supabase
-      .from('pokemon_sets')
-      .select('id, release_date')
-      .in('id', setIds as string[])
-      .order('release_date', { ascending: false });
-
-    const mostRecentSetId = setsData?.[0]?.id;
-    match = numberMatches.find(c => c.set?.id === mostRecentSetId) ?? numberMatches[0];
-  }
-} else {
-  match = numberMatches[0];
-}
-
-      if (match) {
-        setSearchResults(cards);
-        openCardDetail(match);
+      let parsed: any = null;
+      try {
+        parsed = await claudeResponse.json();
+      } catch {
+        Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
+        return;
       }
+
+      if (parsed?.error || !parsed?.name) {
+        Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
+        return;
+      }
+
+      setQuery(parsed.name.trim());
+      await searchCards(parsed.name.trim(), true);
+
+      if (parsed.number) {
+        const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
+
+        const { data: cardData } = await supabase
+          .from('pokemon_cards')
+          .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+          .ilike('name', `%${parsed.name.trim()}%`)
+          .limit(120);
+
+        const cards = (cardData ?? []).map(mapCard);
+
+        const numberMatches = cards.filter((c) => {
+          const cardNum = (c.number ?? '').replace(/^0+/, '');
+          return cardNum === numberClean;
+        });
+
+        let match: PokemonCard | undefined;
+
+        if (numberMatches.length === 1) {
+          match = numberMatches[0];
+        } else if (numberMatches.length > 1) {
+          if (parsed.set) {
+            const setNameLower = parsed.set.toLowerCase();
+            const fuzzyMatch = numberMatches.find((c) =>
+              c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
+              setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
+            );
+            if (fuzzyMatch) { match = fuzzyMatch; }
+          }
+
+          if (!match) {
+            const setIds = [...new Set(numberMatches.map(c => c.set?.id).filter(Boolean))];
+            const { data: setsData } = await supabase
+              .from('pokemon_sets')
+              .select('id, release_date')
+              .in('id', setIds as string[])
+              .order('release_date', { ascending: false });
+
+            const mostRecentSetId = setsData?.[0]?.id;
+            match = numberMatches.find(c => c.set?.id === mostRecentSetId) ?? numberMatches[0];
+          }
+        }
+
+        if (match) {
+          setSearchResults(cards);
+          openCardDetail(match);
+        }
+      }
+    } catch (err) {
+      console.log('Scan error:', err);
+      Alert.alert('Scan failed', 'Something went wrong. Please try again.');
+    } finally {
+      setScanning(false);
     }
-  } catch (err) {
-    console.log('Scan error:', err);
-    Alert.alert('Scan failed', 'Something went wrong. Please try again.');
-  } finally {
-    setScanning(false);
-  }
+  });
+
+  router.push('/scan/card-camera');
 }, [searchCards, openCardDetail]);
 
   // ===============================

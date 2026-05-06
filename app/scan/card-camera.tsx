@@ -9,18 +9,17 @@ import {
 import { Text } from '../../components/Text';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router } from 'expo-router';
 import { theme } from '../../lib/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { scanStore } from '../../lib/scanStore';
+import RNFS from 'react-native-fs';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-// Card aspect ratio is 63mm x 88mm = 0.716
-const CARD_WIDTH = SCREEN_WIDTH * 0.75;
+const CARD_WIDTH = SCREEN_WIDTH * 0.78;
 const CARD_HEIGHT = CARD_WIDTH / 0.716;
 
 export default function CardCameraScreen() {
-  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
   const camera = useRef<Camera>(null);
@@ -32,31 +31,13 @@ export default function CardCameraScreen() {
     try {
       setCapturing(true);
 
-      const photo = await camera.current.takePhoto({
-        flash: 'off',
-      });
+      const photo = await camera.current.takePhoto({ flash: 'off' });
+      const base64 = await RNFS.readFile(photo.path, 'base64');
 
-      // Convert to base64
-      const response = await fetch(`file://${photo.path}`);
-      const blob = await response.blob();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const result = reader.result as string;
-          resolve(result.split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-
-      // Navigate back with the base64 image
+      scanStore.triggerCallback(base64);
       router.back();
-      // Pass via global or params — use router params
-      router.setParams({ scannedImage: base64 });
-
     } catch (err) {
       console.log('Capture error:', err);
-    } finally {
       setCapturing(false);
     }
   }, [capturing]);
@@ -80,6 +61,9 @@ export default function CardCameraScreen() {
     );
   }
 
+  const overlayTop = (SCREEN_HEIGHT - CARD_HEIGHT) / 2;
+  const overlayLeft = (SCREEN_WIDTH - CARD_WIDTH) / 2;
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <Camera
@@ -90,85 +74,48 @@ export default function CardCameraScreen() {
         photo={true}
       />
 
-      {/* Dark overlay with card cutout */}
+      {/* Darkened overlay around card frame */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        {/* Top overlay */}
-        <View style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0,
-          height: (SCREEN_HEIGHT - CARD_HEIGHT) / 2,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-        }} />
-        {/* Bottom overlay */}
-        <View style={{
-          position: 'absolute',
-          bottom: 0, left: 0, right: 0,
-          height: (SCREEN_HEIGHT - CARD_HEIGHT) / 2,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-        }} />
-        {/* Left overlay */}
-        <View style={{
-          position: 'absolute',
-          top: (SCREEN_HEIGHT - CARD_HEIGHT) / 2,
-          left: 0,
-          width: (SCREEN_WIDTH - CARD_WIDTH) / 2,
-          height: CARD_HEIGHT,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-        }} />
-        {/* Right overlay */}
-        <View style={{
-          position: 'absolute',
-          top: (SCREEN_HEIGHT - CARD_HEIGHT) / 2,
-          right: 0,
-          width: (SCREEN_WIDTH - CARD_WIDTH) / 2,
-          height: CARD_HEIGHT,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-        }} />
+        {/* Top */}
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: overlayTop, backgroundColor: 'rgba(0,0,0,0.65)' }} />
+        {/* Bottom */}
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: overlayTop, backgroundColor: 'rgba(0,0,0,0.65)' }} />
+        {/* Left */}
+        <View style={{ position: 'absolute', top: overlayTop, left: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
+        {/* Right */}
+        <View style={{ position: 'absolute', top: overlayTop, right: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
 
-        {/* Card frame border */}
+        {/* Card frame */}
         <View style={{
           position: 'absolute',
-          top: (SCREEN_HEIGHT - CARD_HEIGHT) / 2,
-          left: (SCREEN_WIDTH - CARD_WIDTH) / 2,
+          top: overlayTop,
+          left: overlayLeft,
           width: CARD_WIDTH,
           height: CARD_HEIGHT,
           borderWidth: 2,
           borderColor: theme.colors.primary,
-          borderRadius: 12,
+          borderRadius: 14,
         }} />
 
-        {/* Corner markers */}
-        {[
-          { top: (SCREEN_HEIGHT - CARD_HEIGHT) / 2 - 2, left: (SCREEN_WIDTH - CARD_WIDTH) / 2 - 2 },
-          { top: (SCREEN_HEIGHT - CARD_HEIGHT) / 2 - 2, right: (SCREEN_WIDTH - CARD_WIDTH) / 2 - 2 },
-          { bottom: (SCREEN_HEIGHT - CARD_HEIGHT) / 2 - 2, left: (SCREEN_WIDTH - CARD_WIDTH) / 2 - 2 },
-          { bottom: (SCREEN_HEIGHT - CARD_HEIGHT) / 2 - 2, right: (SCREEN_WIDTH - CARD_WIDTH) / 2 - 2 },
-        ].map((pos, i) => (
+        {/* Corner brackets */}
+        {([
+          { top: overlayTop - 1, left: overlayLeft - 1, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 6 },
+          { top: overlayTop - 1, left: overlayLeft + CARD_WIDTH - 23, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 6 },
+          { top: overlayTop + CARD_HEIGHT - 23, left: overlayLeft - 1, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 6 },
+          { top: overlayTop + CARD_HEIGHT - 23, left: overlayLeft + CARD_WIDTH - 23, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 6 },
+        ] as any[]).map((style, i) => (
           <View key={i} style={{
             position: 'absolute',
             width: 24, height: 24,
             borderColor: '#FFFFFF',
-            borderTopWidth: i < 2 ? 3 : 0,
-            borderBottomWidth: i >= 2 ? 3 : 0,
-            borderLeftWidth: i % 2 === 0 ? 3 : 0,
-            borderRightWidth: i % 2 === 1 ? 3 : 0,
-            borderTopLeftRadius: i === 0 ? 4 : 0,
-            borderTopRightRadius: i === 1 ? 4 : 0,
-            borderBottomLeftRadius: i === 2 ? 4 : 0,
-            borderBottomRightRadius: i === 3 ? 4 : 0,
-            ...pos,
+            ...style,
           }} />
         ))}
       </View>
 
-      {/* Instructions */}
-      <View style={{
-        position: 'absolute',
-        top: (SCREEN_HEIGHT - CARD_HEIGHT) / 2 - 50,
-        left: 0, right: 0,
-        alignItems: 'center',
-      }}>
-        <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700', textAlign: 'center', opacity: 0.9 }}>
+      {/* Instruction text */}
+      <View style={{ position: 'absolute', top: overlayTop - 48, left: 0, right: 0, alignItems: 'center' }}>
+        <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700', opacity: 0.9 }}>
           Align card within the frame
         </Text>
       </View>
@@ -177,10 +124,8 @@ export default function CardCameraScreen() {
       <TouchableOpacity
         onPress={() => router.back()}
         style={{
-          position: 'absolute',
-          top: 56, left: 16,
-          width: 44, height: 44,
-          borderRadius: 22,
+          position: 'absolute', top: 56, left: 16,
+          width: 44, height: 44, borderRadius: 22,
           backgroundColor: 'rgba(0,0,0,0.5)',
           alignItems: 'center', justifyContent: 'center',
         }}
@@ -189,37 +134,24 @@ export default function CardCameraScreen() {
       </TouchableOpacity>
 
       {/* Capture button */}
-      <View style={{
-        position: 'absolute',
-        bottom: (SCREEN_HEIGHT - CARD_HEIGHT) / 2 - 80,
-        left: 0, right: 0,
-        alignItems: 'center',
-      }}>
+      <View style={{ position: 'absolute', bottom: overlayTop - 90, left: 0, right: 0, alignItems: 'center' }}>
         <TouchableOpacity
           onPress={handleCapture}
           disabled={capturing}
           style={{
-            width: 72, height: 72,
-            borderRadius: 36,
-            backgroundColor: capturing ? 'rgba(255,255,255,0.5)' : '#FFFFFF',
-            borderWidth: 4,
-            borderColor: theme.colors.primary,
+            width: 72, height: 72, borderRadius: 36,
+            backgroundColor: capturing ? 'rgba(255,255,255,0.4)' : '#FFFFFF',
+            borderWidth: 4, borderColor: theme.colors.primary,
             alignItems: 'center', justifyContent: 'center',
           }}
         >
           {capturing ? (
             <ActivityIndicator color={theme.colors.primary} />
           ) : (
-            <View style={{
-              width: 54, height: 54,
-              borderRadius: 27,
-              backgroundColor: theme.colors.primary,
-            }} />
+            <View style={{ width: 54, height: 54, borderRadius: 27, backgroundColor: theme.colors.primary }} />
           )}
         </TouchableOpacity>
-        <Text style={{ color: '#FFFFFF', marginTop: 10, fontSize: 13, opacity: 0.8 }}>
-          Tap to scan
-        </Text>
+        <Text style={{ color: '#FFFFFF', marginTop: 10, fontSize: 13, opacity: 0.8 }}>Tap to scan</Text>
       </View>
     </View>
   );
