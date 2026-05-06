@@ -14,8 +14,6 @@ import { router } from 'expo-router';
 import { theme } from '../../lib/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { scanStore } from '../../lib/scanStore';
-import { readAsStringAsync } from 'expo-file-system/legacy';
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('screen');
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
@@ -37,13 +35,18 @@ export default function CardCameraScreen() {
 
       const photo = await camera.current.takePhoto({ flash: 'off' });
 
-const resized = await manipulateAsync(
-  `file://${photo.path}`,
-  [{ resize: { width: 800 } }],
-  { compress: 0.7, format: SaveFormat.JPEG, base64: true }
-);
-
-const base64 = resized.base64 ?? '';
+      // Read as base64
+      const response = await fetch(`file://${photo.path}`);
+      const blob = await response.blob();
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
 
       scanStore.triggerCallback(base64);
       router.back();
@@ -85,18 +88,12 @@ const base64 = resized.base64 ?? '';
         photo={true}
       />
 
-      {/* Darkened overlay around card frame */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        {/* Top */}
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: overlayTop, backgroundColor: 'rgba(0,0,0,0.65)' }} />
-        {/* Bottom */}
-        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: overlayTop, backgroundColor: 'rgba(0,0,0,0.65)' }} />
-        {/* Left */}
+        <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: SCREEN_HEIGHT - overlayTop - CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
         <View style={{ position: 'absolute', top: overlayTop, left: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
-        {/* Right */}
         <View style={{ position: 'absolute', top: overlayTop, right: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
 
-        {/* Card frame */}
         <View style={{
           position: 'absolute',
           top: overlayTop,
@@ -108,30 +105,22 @@ const base64 = resized.base64 ?? '';
           borderRadius: 14,
         }} />
 
-        {/* Corner brackets */}
         {([
           { top: overlayTop - 1, left: overlayLeft - 1, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 6 },
           { top: overlayTop - 1, left: overlayLeft + CARD_WIDTH - 23, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 6 },
           { top: overlayTop + CARD_HEIGHT - 23, left: overlayLeft - 1, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 6 },
           { top: overlayTop + CARD_HEIGHT - 23, left: overlayLeft + CARD_WIDTH - 23, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 6 },
         ] as any[]).map((style, i) => (
-          <View key={i} style={{
-            position: 'absolute',
-            width: 24, height: 24,
-            borderColor: '#FFFFFF',
-            ...style,
-          }} />
+          <View key={i} style={{ position: 'absolute', width: 24, height: 24, borderColor: '#FFFFFF', ...style }} />
         ))}
       </View>
 
-      {/* Instruction text */}
       <View style={{ position: 'absolute', top: overlayTop - 48, left: 0, right: 0, alignItems: 'center' }}>
         <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700', opacity: 0.9 }}>
           Align card within the frame
         </Text>
       </View>
 
-      {/* Close button */}
       <TouchableOpacity
         onPress={() => router.back()}
         style={{
@@ -144,7 +133,6 @@ const base64 = resized.base64 ?? '';
         <Ionicons name="close" size={24} color="#FFFFFF" />
       </TouchableOpacity>
 
-      {/* Capture button */}
       <View style={{ position: 'absolute', top: overlayTop + CARD_HEIGHT + 20, left: 0, right: 0, alignItems: 'center' }}>
         <TouchableOpacity
           onPress={handleCapture}

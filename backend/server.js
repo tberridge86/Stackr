@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
 import discordRoutes from './routes/discord.js';
+import sharp from 'sharp';
 
 const app = express();
 
@@ -924,12 +925,13 @@ app.post('/api/scan/identify', async (req, res) => {
     const { base64Image } = req.body;
 if (!base64Image) return res.status(400).json({ error: 'Missing base64Image' });
 
-// Check size and reject if too large
-const sizeBytes = Buffer.byteLength(base64Image, 'base64');
-console.log(`📦 Image size: ${(sizeBytes / 1024 / 1024).toFixed(2)}MB`);
-if (sizeBytes > 4 * 1024 * 1024) {
-  return res.status(400).json({ error: 'Image too large. Please try again.' });
-}
+// Resize to under 1MB before sending to Claude
+const imageBuffer = Buffer.from(base64Image, 'base64');
+const resizedBuffer = await sharp(imageBuffer)
+  .resize({ width: 800, withoutEnlargement: true })
+  .jpeg({ quality: 70 })
+  .toBuffer();
+const processedBase64 = resizedBuffer.toString('base64');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -947,7 +949,7 @@ if (sizeBytes > 4 * 1024 * 1024) {
             content: [
               {
                 type: 'image',
-                source: { type: 'base64', media_type: 'image/jpeg', data: base64Image },
+                source: { type: 'base64', media_type: 'image/jpeg', data: processedBase64 },
               },
               {
                 type: 'text',
