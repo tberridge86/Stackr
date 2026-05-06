@@ -29,11 +29,10 @@ router.post('/identify', async (req, res) => {
     const imageBuffer = Buffer.from(base64Image, 'base64');
 
     const form = new FormData();
-form.append('file', imageBuffer, {
+form.append('image_file', imageBuffer, {
   filename: 'card.jpg',
   contentType: 'image/jpeg',
 });
-form.append('game', 'pokemon');
 
     const response = await fetch('https://api.cardsight.ai/v1/identify/card', {
       method: 'POST',
