@@ -194,12 +194,12 @@ export default function ScanScreen() {
   flash: 'off',
 });
 
-      const manipulated = await ImageManipulator.manipulate(
+      const manipulated = await ImageManipulator.manipulateAsync(
   `file://${photo.path}`,
   [{ resize: { width: 900 } }],
   {
     compress: 0.6,
-    format: 'jpeg',
+    format: ImageManipulator.SaveFormat.JPEG,
     base64: true,
   }
 );

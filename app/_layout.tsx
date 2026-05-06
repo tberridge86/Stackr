@@ -131,7 +131,7 @@ export default function RootLayout() {
                 <Stack.Screen name="binder/new" options={{ title: '' }} />
                 <Stack.Screen name="binder/[id]" options={{ title: '' }} />
                 <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
-                <Stack.Screen name="scan/index" options={{ title: '' }} />
+                <Stack.Screen name="scan" options={{ title: '' }} />
                 <Stack.Screen name="scan/result" options={{ title: '' }} />
                 <Stack.Screen name="market/index" options={{ title: '' }} />
                 <Stack.Screen name="price-builder/index" options={{ title: '' }} />
@@ -140,7 +140,6 @@ export default function RootLayout() {
                 <Stack.Screen name="(auth)/login" options={{ title: '' }} />
                 <Stack.Screen name="notifications" options={{ title: '' }} />
                 <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
-                <Stack.Screen name="app/scan" options={{ title: '' }} />
               </Stack>
               <PersistentTabBar />
             </TradeProvider>

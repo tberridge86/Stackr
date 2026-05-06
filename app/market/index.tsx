@@ -503,7 +503,7 @@ try {
     }
   });
 
-  router.push('/scan/card-camera');
+  router.push('/scan');
 }, [searchCards, openCardDetail]);
 
   // ===============================
