@@ -454,26 +454,29 @@ try {
         return;
       }
 
-      const searchTerm = `${parsed.name} ${parsed.set ?? ''}`.trim();
-      setQuery(searchTerm);
-      await searchCards(searchTerm);
+     // Search using the identified card name
+const searchTerm = `${parsed.name} ${parsed.set ?? ''}`.trim();
+setQuery(searchTerm);
+await searchCards(searchTerm);
 
-     if (parsed.number) {
+if (parsed.number) {
   const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
   console.log('🔢 Looking for card number:', numberClean);
-  setTimeout(() => {
-    setSearchResults((prev) => {
-      console.log('🔍 Search results count:', prev.length);
-      console.log('🔍 First few numbers:', prev.slice(0, 5).map(c => c.number));
-      const match = prev.find((c) => {
-        const cardNum = (c.number ?? '').replace(/^0+/, '');
-        return cardNum === numberClean;
-      });
-      console.log('✅ Match found:', match?.name ?? 'none');
-      if (match) openCardDetail(match);
-      return prev;
+  
+  // Wait longer for search results to populate
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  setSearchResults((prev) => {
+    console.log('🔍 Search results count:', prev.length);
+    console.log('🔍 First few numbers:', prev.slice(0, 5).map(c => c.number));
+    const match = prev.find((c) => {
+      const cardNum = (c.number ?? '').replace(/^0+/, '');
+      return cardNum === numberClean;
     });
-  }, 500);
+    console.log('✅ Match found:', match?.name ?? 'none');
+    if (match) openCardDetail(match);
+    return prev;
+  });
 }
     } catch (err) {
       console.log('Scan error:', err);
