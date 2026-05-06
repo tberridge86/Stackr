@@ -16,8 +16,16 @@ import { Camera, useCameraDevice, useCameraPermission } from 'react-native-visio
 import { fetchBinders, BinderRecord } from '../../lib/binders';
 
 
-
 const PRICE_API_URL = (process.env.EXPO_PUBLIC_PRICE_API_URL ?? '').replace(/\/$/, '');
+
+const SCANNING_MESSAGES = [
+  'Reading card...',
+  'Identifying Pokémon...',
+  'Checking set number...',
+  'Looking up in database...',
+  'Almost there...',
+  'Matching card...',
+];
 
 // ===============================
 // TYPES
@@ -57,10 +65,12 @@ export default function ScanScreen() {
   const [lastScanned, setLastScanned] = useState<string | null>(null);
   const [processingOcr, setProcessingOcr] = useState(false);
   const [autoScanActive, setAutoScanActive] = useState(false);
+  const [scanningMessage, setScanningMessage] = useState('Reading card...');
 
   const scanCooldownRef = useRef(false);
   const autoScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scannedCardIdsRef = useRef<Set<string>>(new Set());
+  const scanningMessageRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ===============================
   // LOAD BINDERS
@@ -88,6 +98,7 @@ export default function ScanScreen() {
   useEffect(() => {
     return () => {
       if (autoScanIntervalRef.current) clearInterval(autoScanIntervalRef.current);
+      if (scanningMessageRef.current) clearInterval(scanningMessageRef.current);
     };
   }, []);
 
@@ -102,10 +113,10 @@ export default function ScanScreen() {
     }
 
     if (step === 'scanning' && scanMode === 'auto' && autoScanActive) {
-  autoScanIntervalRef.current = setInterval(() => {
-    handleCapture(true);
-  }, 2000);
-}
+      autoScanIntervalRef.current = setInterval(() => {
+        handleCapture(true);
+      }, 2000);
+    }
 
     return () => {
       if (autoScanIntervalRef.current) clearInterval(autoScanIntervalRef.current);
@@ -113,16 +124,38 @@ export default function ScanScreen() {
   }, [step, scanMode, autoScanActive]);
 
   // ===============================
+  // SCANNING MESSAGES
+  // ===============================
+
+  const startScanningMessages = useCallback(() => {
+    let i = 0;
+    setScanningMessage(SCANNING_MESSAGES[0]);
+    scanningMessageRef.current = setInterval(() => {
+      i = (i + 1) % SCANNING_MESSAGES.length;
+      setScanningMessage(SCANNING_MESSAGES[i]);
+    }, 600);
+  }, []);
+
+  const stopScanningMessages = useCallback(() => {
+    if (scanningMessageRef.current) {
+      clearInterval(scanningMessageRef.current);
+      scanningMessageRef.current = null;
+    }
+    setScanningMessage('Reading card...');
+  }, []);
+
+  // ===============================
   // RESET STATE
   // ===============================
 
   const resetScanState = useCallback((delay = 2000) => {
+    stopScanningMessages();
     setTimeout(() => {
       scanCooldownRef.current = false;
       setLastScanned(null);
       setProcessingOcr(false);
     }, delay);
-  }, []);
+  }, [stopScanningMessages]);
 
   // ===============================
   // TOGGLE AUTO SCAN
@@ -148,6 +181,7 @@ export default function ScanScreen() {
 
     setProcessingOcr(true);
     scanCooldownRef.current = true;
+    startScanningMessages();
 
     try {
       const photo = await camera.current.takePhoto({ flash: 'off' });
@@ -177,6 +211,7 @@ export default function ScanScreen() {
             [{ text: 'Try again' }]
           );
         }
+        stopScanningMessages();
         scanCooldownRef.current = false;
         setProcessingOcr(false);
         return;
@@ -202,6 +237,7 @@ export default function ScanScreen() {
             [{ text: 'OK' }]
           );
         }
+        stopScanningMessages();
         scanCooldownRef.current = false;
         setProcessingOcr(false);
         return;
@@ -244,82 +280,84 @@ export default function ScanScreen() {
       setScannedCards((prev) => [...prev, match]);
       setLastScanned(`✅ ${match.name} #${match.number} added!`);
       Vibration.vibrate([0, 100, 50, 100]);
-      resetScanState(isAuto ? 1500 : 2000);
+      if (isAuto) {
+        setTimeout(() => setLastScanned('👉 Next card!'), 1000);
+      }
+      resetScanState(isAuto ? 2000 : 2000);
 
     } catch (error: any) {
       console.log('Scan error:', error);
       if (!isAuto) Alert.alert('Scan failed', 'Something went wrong. Try again.');
+      stopScanningMessages();
       scanCooldownRef.current = false;
       setProcessingOcr(false);
       setLastScanned(null);
     }
-  }, [processingOcr, resetScanState, selectedBinder]);
+  }, [processingOcr, resetScanState, selectedBinder, startScanningMessages, stopScanningMessages]);
 
   // ===============================
   // SELECT BINDER STEP
   // ===============================
 
- if (step === 'select_binder') {
-  return (
-    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <View style={{ flex: 1, padding: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
-          
-          <View style={{ flex: 1 }}>
+  if (step === 'select_binder') {
+    return (
+      <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <Stack.Screen options={{ title: 'Scan Cards' }} />
+        <View style={{ flex: 1, padding: 16 }}>
+          <View style={{ marginBottom: 24 }}>
             <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>Scan Cards</Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>Which binder are you scanning into?</Text>
           </View>
-        </View>
 
-        {loadingBinders ? (
-          <ActivityIndicator color={theme.colors.primary} />
-        ) : (
-          <FlatList
-            data={binders}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{ paddingBottom: 100 }}
-            renderItem={({ item }) => {
-              const selected = selectedBinder?.id === item.id;
-              return (
-                <TouchableOpacity
-                  onPress={() => setSelectedBinder(item)}
-                  style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: selected ? theme.colors.primary + '18' : theme.colors.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 2, borderColor: selected ? theme.colors.primary : theme.colors.border, gap: 12 }}
-                  activeOpacity={0.8}
-                >
-                  <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: item.color || theme.colors.primary }} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>{item.name}</Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
-                      {item.type === 'official' ? 'Official set' : 'Custom binder'}
-                    </Text>
-                  </View>
-                  {selected && (
-                    <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-                      <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>✓</Text>
+          {loadingBinders ? (
+            <ActivityIndicator color={theme.colors.primary} />
+          ) : (
+            <FlatList
+              data={binders}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              renderItem={({ item }) => {
+                const selected = selectedBinder?.id === item.id;
+                return (
+                  <TouchableOpacity
+                    onPress={() => setSelectedBinder(item)}
+                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: selected ? theme.colors.primary + '18' : theme.colors.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 2, borderColor: selected ? theme.colors.primary : theme.colors.border, gap: 12 }}
+                    activeOpacity={0.8}
+                  >
+                    <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: item.color || theme.colors.primary }} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>{item.name}</Text>
+                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
+                        {item.type === 'official' ? 'Official set' : 'Custom binder'}
+                      </Text>
                     </View>
-                  )}
-                </TouchableOpacity>
-              );
-            }}
-          />
-        )}
+                    {selected && (
+                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>✓</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          )}
 
-        <TouchableOpacity
-          onPress={() => {
-            if (!selectedBinder) { Alert.alert('Select a binder', 'Please select which binder to scan into.'); return; }
-            setStep('scanning');
-          }}
-          disabled={!selectedBinder}
-          style={{ backgroundColor: selectedBinder ? theme.colors.primary : theme.colors.textSoft, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8, marginBottom: insets.bottom + 16 }}
-        >
-          <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
-            {selectedBinder ? `Scan into "${selectedBinder.name}"` : 'Select a binder first'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-}
+          <TouchableOpacity
+            onPress={() => {
+              if (!selectedBinder) { Alert.alert('Select a binder', 'Please select which binder to scan into.'); return; }
+              setStep('scanning');
+            }}
+            disabled={!selectedBinder}
+            style={{ backgroundColor: selectedBinder ? theme.colors.primary : theme.colors.textSoft, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8, marginBottom: insets.bottom + 16 }}
+          >
+            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
+              {selectedBinder ? `Scan into "${selectedBinder.name}"` : 'Select a binder first'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // ===============================
   // REVIEW STEP
@@ -328,15 +366,13 @@ export default function ScanScreen() {
   if (step === 'review') {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <Stack.Screen options={{ title: 'Review Cards' }} />
         <View style={{ flex: 1, padding: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-            
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>Review Cards</Text>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
-                {scannedCards.length} card{scannedCards.length !== 1 ? 's' : ''} scanned · tap ✕ to remove
-              </Text>
-            </View>
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>Review Cards</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+              {scannedCards.length} card{scannedCards.length !== 1 ? 's' : ''} scanned · tap ✕ to remove
+            </Text>
           </View>
 
           {scannedCards.length === 0 ? (
@@ -376,7 +412,7 @@ export default function ScanScreen() {
                 )}
               />
 
-              <View style={{ position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 50, gap: 10 }}>
+              <View style={{ position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 80, gap: 10 }}>
                 <TouchableOpacity
                   onPress={() => setStep('scanning')}
                   style={{ backgroundColor: theme.colors.card, borderRadius: 14, paddingVertical: 13, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
@@ -537,7 +573,7 @@ export default function ScanScreen() {
 
           {scanMode === 'auto' && (
             <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, marginTop: 6, textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 }}>
-              {autoScanActive ? '🔴 Scanning every 5s — hold card in frame' : 'Tap Start to begin auto scanning'}
+              {autoScanActive ? '🔴 Scanning every 2s — hold card in frame' : 'Tap Start to begin auto scanning'}
             </Text>
           )}
         </View>
@@ -559,14 +595,14 @@ export default function ScanScreen() {
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                 <ActivityIndicator color={theme.colors.primary} size="large" />
                 <Text style={{ color: '#FFFFFF', fontWeight: '700', marginTop: 12, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
-                  Reading card...
+                  {scanningMessage}
                 </Text>
               </View>
             )}
           </View>
 
           {lastScanned && (
-            <View style={{ marginTop: 16, backgroundColor: lastScanned.startsWith('✅') ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 }}>
+            <View style={{ marginTop: 16, backgroundColor: lastScanned.startsWith('✅') || lastScanned.startsWith('👉') ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 }}>
               <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 14, textAlign: 'center' }}>{lastScanned}</Text>
             </View>
           )}
