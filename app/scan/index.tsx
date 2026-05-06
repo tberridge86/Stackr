@@ -14,6 +14,7 @@ import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context
 import { router, Stack } from 'expo-router';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { fetchBinders, BinderRecord } from '../../lib/binders';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 
 const PRICE_API_URL = (process.env.EXPO_PUBLIC_PRICE_API_URL ?? '').replace(/\/$/, '');
@@ -88,9 +89,14 @@ export default function ScanScreen() {
   // ===============================
 
   useEffect(() => {
-    if (!hasPermission) requestPermission();
-  }, [hasPermission]);
+  const checkPermission = async () => {
+    if (!hasPermission) {
+      await requestPermission();
+    }
+  };
 
+  checkPermission();
+}, [hasPermission, requestPermission]);
   // ===============================
   // CLEANUP ON UNMOUNT
   // ===============================
@@ -115,7 +121,7 @@ export default function ScanScreen() {
     if (step === 'scanning' && scanMode === 'auto' && autoScanActive) {
       autoScanIntervalRef.current = setInterval(() => {
         handleCapture(true);
-      }, 2000);
+      }, 1200);
     }
 
     return () => {
@@ -184,17 +190,21 @@ export default function ScanScreen() {
     startScanningMessages();
 
     try {
-      const photo = await camera.current.takePhoto({ flash: 'off' });
+      const photo = await camera.current.takePhoto({
+  flash: 'off',
+});
 
-      const response = await fetch(`file://${photo.path}`);
-      const blob = await response.blob();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+      const manipulated = await ImageManipulator.manipulate(
+  `file://${photo.path}`,
+  [{ resize: { width: 900 } }],
+  {
+    compress: 0.6,
+    format: 'jpeg',
+    base64: true,
+  }
+);
 
+const base64 = manipulated.base64;
       const claudeRes = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -309,7 +319,7 @@ export default function ScanScreen() {
         options={{
           headerShown: true,
           title: ' ',
-          headerBackTitleVisible: false,
+          headerBackVisible: false,
         }}
       />
 
