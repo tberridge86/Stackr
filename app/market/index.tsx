@@ -308,17 +308,17 @@ export default function MarketScreen() {
 
   useFocusEffect(useCallback(() => { loadWatchlist(); }, [loadWatchlist]));
 
-  const searchCards = useCallback(async (searchQuery: string) => {
-    const trimmed = searchQuery.trim();
-    if (!trimmed) { setSearchResults([]); return; }
+  const searchCards = useCallback(async (searchQuery: string, skipSetFilter = false) => {
+  const trimmed = searchQuery.trim();
+  if (!trimmed) { setSearchResults([]); return; }
 
-    try {
-      setSearching(true);
-      const words = trimmed.split(/\s+/).filter(Boolean);
-      let cardTerm = trimmed;
-      let matchedSetIds: string[] = [];
+  try {
+    setSearching(true);
+    const words = trimmed.split(/\s+/).filter(Boolean);
+    let cardTerm = trimmed;
+    let matchedSetIds: string[] = [];
 
-      for (let i = 0; i < words.length; i++) {
+    if (!skipSetFilter) for (let i = 0; i < words.length; i++) {
         const possibleCardTerm = words.slice(0, i).join(' ');
         const possibleSetTerm = words.slice(i).join(' ');
         if (!possibleSetTerm) continue;
@@ -351,7 +351,7 @@ export default function MarketScreen() {
         .limit(cardTerm ? 120 : 300);
 
       if (cardTerm) dbQuery = dbQuery.ilike('name', `%${cardTerm}%`);
-      if (matchedSetIds.length > 0) dbQuery = dbQuery.in('set_id', matchedSetIds);
+      if (!skipSetFilter && matchedSetIds.length > 0) dbQuery = dbQuery.in('set_id', matchedSetIds);
 
       const { data, error } = await dbQuery;
       if (error) throw error;
@@ -454,29 +454,35 @@ try {
         return;
       }
 
-     // Search using the identified card name
-const searchTerm = `${parsed.name} ${parsed.set ?? ''}`.trim();
-setQuery(searchTerm);
-await searchCards(searchTerm);
+  // Search using identified card name only, skip set filter
+setQuery(parsed.name.trim());
+await searchCards(parsed.name.trim(), true);
 
 if (parsed.number) {
   const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
   console.log('🔢 Looking for card number:', numberClean);
-  
-  // Wait longer for search results to populate
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  setSearchResults((prev) => {
-    console.log('🔍 Search results count:', prev.length);
-    console.log('🔍 First few numbers:', prev.slice(0, 5).map(c => c.number));
-    const match = prev.find((c) => {
-      const cardNum = (c.number ?? '').replace(/^0+/, '');
-      return cardNum === numberClean;
-    });
-    console.log('✅ Match found:', match?.name ?? 'none');
-    if (match) openCardDetail(match);
-    return prev;
+
+  // searchCards is async and updates state — capture results directly
+  const { data: cardData } = await supabase
+    .from('pokemon_cards')
+    .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+    .ilike('name', `%${parsed.name.trim()}%`)
+    .limit(120);
+
+  const cards = (cardData ?? []).map(mapCard);
+  console.log('🔍 Direct query results count:', cards.length);
+
+  const match = cards.find((c) => {
+    const cardNum = (c.number ?? '').replace(/^0+/, '');
+    return cardNum === numberClean;
   });
+
+  console.log('✅ Match found:', match?.name ?? 'none');
+
+  if (match) {
+    setSearchResults(cards);
+    openCardDetail(match);
+  }
 }
     } catch (err) {
       console.log('Scan error:', err);
