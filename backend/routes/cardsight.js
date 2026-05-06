@@ -1,11 +1,7 @@
 import express from 'express';
-import { CardSightAI } from 'cardsightai';
+import FormData from 'form-data';
 
 const router = express.Router();
-
-const client = new CardSightAI({
-  apiKey: process.env.CARDSIGHTAI_API_KEY,
-});
 
 router.get('/identify', (req, res) => {
   res.json({
@@ -32,28 +28,74 @@ router.post('/identify', async (req, res) => {
 
     const imageBuffer = Buffer.from(base64Image, 'base64');
 
-    const result = await client.identify.cardBySegment(imageBuffer, 'pokemon');
+    const form = new FormData();
+    form.append('image', imageBuffer, {
+      filename: 'card.jpg',
+      contentType: 'image/jpeg',
+    });
+    form.append('game', 'pokemon');
 
-    const detections = result?.data?.detections ?? [];
+    const response = await fetch('https://api.cardsight.ai/v1/identify/card', {
+      method: 'POST',
+      headers: {
+        'x-api-key': process.env.CARDSIGHTAI_API_KEY,
+        ...form.getHeaders(),
+      },
+      body: form,
+    });
 
-    if (!result?.data?.success || detections.length === 0) {
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('CardSight API error:', data);
+      return res.status(response.status).json({
+        error: 'CardSight identification failed',
+        details: data,
+      });
+    }
+
+    console.log('CardSight response:', JSON.stringify(data, null, 2));
+
+    const detections =
+      data?.data?.detections ??
+      data?.detections ??
+      data?.results ??
+      [];
+
+    if (!detections.length) {
       return res.status(404).json({
         error: 'No card detected',
+        raw: data,
       });
     }
 
     const best = detections[0];
-    const card = best.card ?? {};
+    const card = best.card ?? best;
 
     return res.json({
-      name: card.name ?? null,
-      number: card.number ?? null,
-      set: card.setName ?? card.releaseName ?? null,
-      year: card.year ?? null,
-      confidence: best.confidence ?? null,
-      raw: {
-        detections,
-      },
+      name:
+        card.name ??
+        card.cardName ??
+        card.title ??
+        null,
+      number:
+        card.number ??
+        card.cardNumber ??
+        card.collectorNumber ??
+        null,
+      set:
+        card.setName ??
+        card.releaseName ??
+        card.set ??
+        null,
+      year:
+        card.year ??
+        null,
+      confidence:
+        best.confidence ??
+        best.score ??
+        null,
+      raw: data,
     });
   } catch (error) {
     console.error('CardSight identify error:', error);

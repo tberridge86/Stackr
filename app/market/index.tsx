@@ -421,19 +421,23 @@ export default function MarketScreen() {
     try {
       setScanning(true);
 
-      const claudeResponse = await fetch(`${PRICE_API_URL}/api/scan/identify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64Image }),
-      });
+      const cardSightResponse = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ base64Image }),
+});
 
-      let parsed: any = null;
-      try {
-        parsed = await claudeResponse.json();
-      } catch {
-        Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
-        return;
-      }
+let parsed: any = null;
+
+try {
+  parsed = await cardSightResponse.json();
+} catch {
+  Alert.alert(
+    'Could not identify card',
+    'Try taking a clearer photo of the card.'
+  );
+  return;
+}
 
       if (parsed?.error || !parsed?.name) {
         Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
