@@ -133,7 +133,7 @@ export default function ScanScreen() {
     scanningMessageRef.current = setInterval(() => {
       i = (i + 1) % SCANNING_MESSAGES.length;
       setScanningMessage(SCANNING_MESSAGES[i]);
-    }, 600);
+    }, 2000);
   }, []);
 
   const stopScanningMessages = useCallback(() => {
