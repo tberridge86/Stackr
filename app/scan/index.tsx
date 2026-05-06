@@ -299,65 +299,175 @@ export default function ScanScreen() {
   // SELECT BINDER STEP
   // ===============================
 
-  if (step === 'select_binder') {
-    return (
-      <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-        <Stack.Screen options={{ title: 'Scan Cards' }} />
-        <View style={{ flex: 1, padding: 16 }}>
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>Scan Cards</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>Which binder are you scanning into?</Text>
-          </View>
+ if (step === 'select_binder') {
+  return (
+    <SafeAreaView
+      edges={['bottom']}
+      style={{ flex: 1, backgroundColor: theme.colors.bg }}
+    >
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: ' ',
+          headerBackTitleVisible: false,
+        }}
+      />
 
-          {loadingBinders ? (
-            <ActivityIndicator color={theme.colors.primary} />
-          ) : (
-            <FlatList
-              data={binders}
-              keyExtractor={(item) => item.id}
-              contentContainerStyle={{ paddingBottom: 100 }}
-              renderItem={({ item }) => {
-                const selected = selectedBinder?.id === item.id;
-                return (
-                  <TouchableOpacity
-                    onPress={() => setSelectedBinder(item)}
-                    style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: selected ? theme.colors.primary + '18' : theme.colors.card, borderRadius: 16, padding: 14, marginBottom: 10, borderWidth: 2, borderColor: selected ? theme.colors.primary : theme.colors.border, gap: 12 }}
-                    activeOpacity={0.8}
-                  >
-                    <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: item.color || theme.colors.primary }} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>{item.name}</Text>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
-                        {item.type === 'official' ? 'Official set' : 'Custom binder'}
+      <View style={{ flex: 1, padding: 16 }}>
+        <View style={{ marginBottom: 24 }}>
+          <Text
+            style={{
+              color: theme.colors.text,
+              fontSize: 24,
+              fontWeight: '900',
+            }}
+          >
+            Scan Cards
+          </Text>
+
+          <Text
+            style={{
+              color: theme.colors.textSoft,
+              fontSize: 13,
+              marginTop: 20,
+            }}
+          >
+            Which binder are you scanning into?
+          </Text>
+        </View>
+
+        {loadingBinders ? (
+          <ActivityIndicator color={theme.colors.primary} />
+        ) : (
+          <FlatList
+            data={binders}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            renderItem={({ item }) => {
+              const selected = selectedBinder?.id === item.id;
+
+              return (
+                <TouchableOpacity
+                  onPress={() => setSelectedBinder(item)}
+                  activeOpacity={0.8}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: selected
+                      ? theme.colors.primary + '18'
+                      : theme.colors.card,
+                    borderRadius: 16,
+                    padding: 14,
+                    marginBottom: 10,
+                    borderWidth: 2,
+                    borderColor: selected
+                      ? theme.colors.primary
+                      : theme.colors.border,
+                    gap: 12,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 10,
+                      backgroundColor:
+                        item.color || theme.colors.primary,
+                    }}
+                  />
+
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        color: theme.colors.text,
+                        fontWeight: '900',
+                        fontSize: 15,
+                      }}
+                    >
+                      {item.name}
+                    </Text>
+
+                    <Text
+                      style={{
+                        color: theme.colors.textSoft,
+                        fontSize: 12,
+                        marginTop: 2,
+                      }}
+                    >
+                      {item.type === 'official'
+                        ? 'Official set'
+                        : 'Custom binder'}
+                    </Text>
+                  </View>
+
+                  {selected && (
+                    <View
+                      style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: 13,
+                        backgroundColor: theme.colors.primary,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: '#FFFFFF',
+                          fontSize: 14,
+                          fontWeight: '900',
+                        }}
+                      >
+                        ✓
                       </Text>
                     </View>
-                    {selected && (
-                      <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>✓</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              }}
-            />
-          )}
-
-          <TouchableOpacity
-            onPress={() => {
-              if (!selectedBinder) { Alert.alert('Select a binder', 'Please select which binder to scan into.'); return; }
-              setStep('scanning');
+                  )}
+                </TouchableOpacity>
+              );
             }}
-            disabled={!selectedBinder}
-            style={{ backgroundColor: selectedBinder ? theme.colors.primary : theme.colors.textSoft, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8, marginBottom: insets.bottom + 16 }}
+          />
+        )}
+
+        <TouchableOpacity
+          onPress={() => {
+            if (!selectedBinder) {
+              Alert.alert(
+                'Select a binder',
+                'Please select which binder to scan into.'
+              );
+              return;
+            }
+
+            setStep('scanning');
+          }}
+          disabled={!selectedBinder}
+          style={{
+            backgroundColor: selectedBinder
+              ? theme.colors.primary
+              : theme.colors.textSoft,
+            borderRadius: 16,
+            paddingVertical: 16,
+            alignItems: 'center',
+            marginTop: 8,
+            marginBottom: insets.bottom + 16,
+          }}
+        >
+          <Text
+            style={{
+              color: '#FFFFFF',
+              fontWeight: '900',
+              fontSize: 16,
+            }}
           >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
-              {selectedBinder ? `Scan into "${selectedBinder.name}"` : 'Select a binder first'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+            {selectedBinder
+              ? `Scan into "${selectedBinder.name}"`
+              : 'Select a binder first'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
 
   // ===============================
   // REVIEW STEP
