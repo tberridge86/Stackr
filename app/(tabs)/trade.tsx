@@ -790,20 +790,6 @@ export default function TradeScreen() {
   const renderMarketplace = () => (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
-      {/* Price Tracker */}
-      <View style={{ backgroundColor: theme.colors.card, borderRadius: 20, padding: 18, borderWidth: 1, borderColor: theme.colors.border, marginBottom: 14, ...cardShadow }}>
-        <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Price Tracker</Text>
-        <Text style={{ color: theme.colors.textSoft, marginTop: 8, lineHeight: 20 }}>
-          Search cards, watch prices, and track daily movement using eBay and snapshot data.
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push('/market')}
-          style={{ marginTop: 16, backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 13 }}
-        >
-          <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900' }}>Open Marketplace</Text>
-        </TouchableOpacity>
-      </View>
-
       {/* Watchlist Trends */}
       <View style={{ backgroundColor: theme.colors.card, borderRadius: 20, padding: 18, borderWidth: 1, borderColor: theme.colors.border, marginBottom: 14, ...cardShadow }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -921,7 +907,26 @@ export default function TradeScreen() {
 
       <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
         {renderMainTabButton('trading', '🤝 Trading')}
-        {renderMainTabButton('marketplace', '📈 Prices')}
+       <TouchableOpacity
+  onPress={() => router.push('/market')}
+  style={{
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  }}
+>
+  <Text style={{
+    color: theme.colors.textSoft,
+    textAlign: 'center',
+    fontWeight: '900',
+    fontSize: 15,
+  }}>
+    📈 Prices
+  </Text>
+</TouchableOpacity>
       </View>
 
       {mainTab === 'trading' ? renderTrading() : renderMarketplace()}
