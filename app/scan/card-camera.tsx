@@ -21,7 +21,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('screen');
 const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
 const CARD_WIDTH = SCREEN_WIDTH * 0.78;
 const CARD_HEIGHT = CARD_WIDTH / 0.716;
-const VERTICAL_OFFSET = -(STATUS_BAR_HEIGHT + 30);
+const VERTICAL_OFFSET = -(STATUS_BAR_HEIGHT + 80);
 
 export default function CardCameraScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
@@ -72,7 +72,7 @@ const base64 = resized.base64 ?? '';
     );
   }
 
-  const overlayTop = (SCREEN_HEIGHT - CARD_HEIGHT) / 2;
+  const overlayTop = (SCREEN_HEIGHT - CARD_HEIGHT) / 2 + VERTICAL_OFFSET;
   const overlayLeft = (SCREEN_WIDTH - CARD_WIDTH) / 2;
 
   return (
@@ -145,7 +145,7 @@ const base64 = resized.base64 ?? '';
       </TouchableOpacity>
 
       {/* Capture button */}
-      <View style={{ position: 'absolute', bottom: overlayTop - 90, left: 0, right: 0, alignItems: 'center' }}>
+      <View style={{ position: 'absolute', top: overlayTop + CARD_HEIGHT + 20, left: 0, right: 0, alignItems: 'center' }}>
         <TouchableOpacity
           onPress={handleCapture}
           disabled={capturing}
