@@ -460,9 +460,10 @@ await searchCards(parsed.name.trim(), true);
 
 if (parsed.number) {
   const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
-  console.log('🔢 Looking for card number:', numberClean);
+  const totalInSet = parsed.number?.includes('/')
+    ? parseInt(parsed.number.split('/')[1])
+    : null;
 
-  // searchCards is async and updates state — capture results directly
   const { data: cardData } = await supabase
     .from('pokemon_cards')
     .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
@@ -470,14 +471,33 @@ if (parsed.number) {
     .limit(120);
 
   const cards = (cardData ?? []).map(mapCard);
-  console.log('🔍 Direct query results count:', cards.length);
 
-  const match = cards.find((c) => {
-    const cardNum = (c.number ?? '').replace(/^0+/, '');
-    return cardNum === numberClean;
-  });
+  let match = null;
 
-  console.log('✅ Match found:', match?.name ?? 'none');
+  if (totalInSet) {
+    const setIds = [...new Set(cards.map(c => c.set?.id).filter(Boolean))];
+    const { data: setsData } = await supabase
+      .from('pokemon_sets')
+      .select('id, total')
+      .in('id', setIds as string[]);
+
+    const setsWithTotal = Object.fromEntries(
+      (setsData ?? []).map((s: any) => [s.id, s.total])
+    );
+
+    match = cards.find((c) => {
+      const cardNum = (c.number ?? '').replace(/^0+/, '');
+      const setTotal = setsWithTotal[c.set?.id ?? ''];
+      return cardNum === numberClean && setTotal === totalInSet;
+    });
+  }
+
+  if (!match) {
+    match = cards.find((c) => {
+      const cardNum = (c.number ?? '').replace(/^0+/, '');
+      return cardNum === numberClean;
+    });
+  }
 
   if (match) {
     setSearchResults(cards);
