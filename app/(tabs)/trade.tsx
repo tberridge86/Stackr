@@ -31,7 +31,10 @@ import {
   markTradeReceived,
   TradeOffer,
 } from '../../lib/tradeOffers';
+import { fetchEbayPrice } from '../../lib/ebay';
 import { supabase } from '../../lib/supabase';
+
+const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 
 // ===============================
 // TYPES
@@ -111,12 +114,16 @@ export default function TradeScreen() {
   const [wantedCards, setWantedCards] = useState<any[]>([]);
   const [myOffers, setMyOffers] = useState<TradeOffer[]>([]);
   const [cardDetailsMap, setCardDetailsMap] = useState<Record<string, any>>({});
-  const [myUserId, setMyUserId] = useState<string>('');
+const [myUserId, setMyUserId] = useState<string>('');
 
   const [selectedListing, setSelectedListing] = useState<any | null>(null);
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
+
+  // eBay prices for detail modal
+  const [ebayData, setEbayData] = useState<{ low: number | null; average: number | null; high: number | null; count: number } | null>(null);
+  const [ebayLoading, setEbayLoading] = useState(false);
 
   // Top Movers
   const [topMovers, setTopMovers] = useState<TopMover[]>([]);
@@ -180,12 +187,90 @@ export default function TradeScreen() {
     [closeDetail, translateY]
   );
 
-  const openTradeCardDetail = (item: any) => {
-    const cardDetails = cardDetailsMap[item.id];
+const openTradeCardDetail = async (item: any) => {
+    let cardDetails = cardDetailsMap[item.id];
     translateY.setValue(0);
     setSelectedListing(item);
     setSelectedCard(cardDetails ?? null);
     setDetailVisible(true);
+    
+// If cardDetails not loaded yet, fetch it directly
+    if (!cardDetails?.name && item.card_id) {
+      try {
+        const { data } = await supabase
+          .from('pokemon_cards')
+          .select('id, name, number, set_id, image_small, image_large, raw_data')
+          .eq('id', item.card_id)
+          .maybeSingle();
+        
+        if (data) {
+          cardDetails = {
+            id: data.id,
+            name: data.name,
+            number: data.number,
+            set: {
+              id: data.set_id,
+              name: data.raw_data?.set?.name ?? data.set_id,
+            },
+            images: {
+              small: data.image_small,
+              large: data.image_large,
+            },
+          };
+          // Update the map for future reference
+          setCardDetailsMap(prev => ({ ...prev, [item.id]: cardDetails }));
+        }
+      } catch (err) {
+        console.log('Failed to fetch card details:', err);
+      }
+    }
+    
+    // Fetch live eBay price
+    const cardName = cardDetails?.name;
+    if (cardName) {
+      setEbayLoading(true);
+      setEbayData(null);
+      try {
+        // Build search term with set name and card number
+        const setName = cardDetails?.set?.name ?? '';
+        const cardNumber = cardDetails?.number ?? '';
+        const searchTerm = `${cardName} ${setName} ${cardNumber}`.trim();
+        
+        console.log('Fetching eBay price for:', searchTerm);
+        
+        // Check if PRICE_API_URL is configured
+        if (!PRICE_API_URL) {
+          console.log('PRICE_API_URL not configured - skipping eBay fetch');
+          setEbayData(null);
+          setEbayLoading(false);
+          return;
+        }
+        
+        const response = await fetch(`${PRICE_API_URL}/price?q=${encodeURIComponent(searchTerm)}`);
+        if (!response.ok) {
+          console.log('eBay API response not ok:', response.status);
+          setEbayData(null);
+          setEbayLoading(false);
+          return;
+        }
+        
+        const result = await response.json();
+        console.log('eBay result:', result);
+        setEbayData({
+          low: result.low ?? null,
+          average: result.average ?? null,
+          high: result.high ?? null,
+          count: result.count ?? 0,
+        });
+      } catch (err) {
+        console.log('Failed to fetch eBay price:', err);
+        setEbayData(null);
+      } finally {
+        setEbayLoading(false);
+      }
+    } else {
+      console.log('No card name available for eBay fetch, card_id:', item.card_id);
+    }
   };
 
   // ===============================
@@ -454,14 +539,27 @@ export default function TradeScreen() {
   // ACTIONS
   // ===============================
 
-  const handleArchive = async (listingId: string) => {
-    try {
-      await archiveListing(listingId);
-      await refreshTrade();
-      Alert.alert('Removed', 'This card has been removed from trade.');
-    } catch (err) {
-      Alert.alert('Error', err instanceof Error ? err.message : 'Could not remove listing.');
-    }
+const handleArchive = async (listingId: string) => {
+    Alert.alert(
+      'Remove Listing',
+      'Are you sure you want to remove this card from the marketplace?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await archiveListing(listingId);
+              await refreshTrade();
+              Alert.alert('Removed', 'Card has been removed from the marketplace.');
+            } catch (err) {
+              Alert.alert('Error', err instanceof Error ? err.message : 'Could not remove listing.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleMakeOffer = (item: any) => {
@@ -964,18 +1062,64 @@ export default function TradeScreen() {
                         {selectedCard?.number ? ` • #${selectedCard.number}` : ''}
                       </Text>
 
-                      <View style={{ backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
+<View style={{ backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
                         <DetailRow label="Condition" value={selectedListing?.condition ?? '--'} valueColor={getConditionColor(selectedListing?.condition ?? '')} />
                         <DetailRow
                           label="Asking Price"
                           value={selectedListing?.asking_price != null ? `£${Number(selectedListing.asking_price).toFixed(2)}` : selectedListing?.trade_only ? 'Trade only' : 'Open to offers'}
+                          valueColor={theme.colors.primary}
                         />
-                        <DetailRow
-                          label="Market Estimate"
-                          value={selectedListing?.market_estimate != null ? `£${Number(selectedListing.market_estimate).toFixed(2)}` : '--'}
-                        />
+                        
+                        {/* Live eBay Prices */}
+                        <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
+<View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                          <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '800' }}>eBay Live (GBP)</Text>
+                          {ebayLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
+                        </View>
+                        {ebayLoading ? (
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>Fetching live prices...</Text>
+                        ) : ebayData && ebayData.average != null ? (
+                          <>
+                            <DetailRow label="Low" value={ebayData.low != null ? `£${ebayData.low.toFixed(2)}` : '--'} />
+                            <DetailRow label="Average" value={ebayData.average != null ? `£${ebayData.average.toFixed(2)}` : '--'} valueColor={theme.colors.primary} />
+                            <DetailRow label="High" value={ebayData.high != null ? `£${ebayData.high.toFixed(2)}` : '--'} />
+                            {ebayData.count > 0 && (
+                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>Based on {ebayData.count} listing{ebayData.count !== 1 ? 's' : ''}</Text>
+                            )}
+                          </>
+                        ) : (
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>Live prices unavailable</Text>
+                        )}
+                        
+{/* Market Prices (Historical) - only show if prices exist */}
+                        {selectedListing?.prices && (selectedListing.prices.ebay_average != null || selectedListing.prices.tcg_mid != null || selectedListing.prices.cardmarket_trend != null) && (
+                          <>
+                            <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
+                            <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '800', marginBottom: 8 }}>Market Prices</Text>
+                            {selectedListing.prices?.ebay_average != null && (
+                              <DetailRow 
+                                label="eBay Avg" 
+                                value={`£${Number(selectedListing.prices.ebay_average).toFixed(2)}`} 
+                              />
+                            )}
+                            {selectedListing.prices?.tcg_mid != null && (
+                              <DetailRow 
+                                label="TCGPlayer Mid" 
+                                value={`£${Number(selectedListing.prices.tcg_mid).toFixed(2)}`} 
+                              />
+                            )}
+{selectedListing.prices?.cardmarket_trend != null && (
+                              <DetailRow 
+                                label="Cardmarket" 
+                                value={`£${Number(selectedListing.prices.cardmarket_trend).toFixed(2)}`} 
+                              />
+                            )}
+                              />}
+                          </>
+                        )}
+                        
                         <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 16, marginTop: 6 }}>
-                          Market values are estimated using recent TCG data. Actual value may vary.
+                          Live prices fetched directly from eBay. Historical prices from TCG data.
                         </Text>
                       </View>
 
@@ -986,14 +1130,22 @@ export default function TradeScreen() {
                         </View>
                       )}
 
-                      {selectedListing?.user_id !== myUserId ? (
+{selectedListing?.user_id !== myUserId ? (
                         <TouchableOpacity onPress={() => { closeDetail(); handleMakeOffer(selectedListing); }} style={{ marginTop: 16, backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 13 }}>
                           <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900' }}>Make Offer</Text>
                         </TouchableOpacity>
                       ) : (
-                        <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: theme.colors.border }}>
-                          <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontWeight: '900' }}>Your listing</Text>
-                        </View>
+                        <>
+                          <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: theme.colors.border }}>
+                            <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontWeight: '900' }}>Your listing</Text>
+                          </View>
+                          <TouchableOpacity 
+                            onPress={() => handleArchive(selectedListing.id)} 
+                            style={{ marginTop: 10, backgroundColor: '#FEE2E2', borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: '#FCA5A5' }}
+                          >
+                            <Text style={{ color: '#991B1B', textAlign: 'center', fontWeight: '900' }}>Delete Listing</Text>
+                          </TouchableOpacity>
+                        </>
                       )}
                     </View>
                   </>

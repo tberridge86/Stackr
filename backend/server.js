@@ -67,18 +67,63 @@ function extractCardNumber(query = '') {
   return match ? match[1].toLowerCase() : null;
 }
 
+// Common set name mappings to abbreviations/ids
+const SET_NAME_MAPPINGS = {
+  'base set': 'base',
+  'base': 'base',
+  'jungle': 'base2',
+  'fossil': 'base3',
+  'base set 2': 'base2',
+  'legendary collection': 'base5',
+  'neo': 'neo',
+  'gym': 'gym',
+  'e-card': 'ecard',
+  'ex': 'ex',
+  'ruby sapphire': 'rs',
+  'ruby & sapphire': 'rs',
+  'diamond pearl': 'dp',
+  'diamond & pearl': 'dp',
+  'platinum': 'pt',
+  'heartgold soulsilver': 'hgss',
+  'black white': 'bw',
+  'black & white': 'bw',
+  'xy': 'xy',
+  'x y': 'xy',
+  'sun moon': 'sm',
+  'sun & moon': 'sm',
+  'sword shield': 'swsh',
+  'sword & shield': 'swsh',
+  'scarlet violet': 'sv',
+  'scarlet & violet': 'sv',
+};
+
 function getImportantWords(query = '') {
   const stopWords = new Set([
-    'pokemon', 'pokémon', 'card', 'cards', 'base', 'set',
+    'pokemon', 'pokémon', 'card', 'cards', 
     'holo', 'foil', 'perfect', 'order', 'the', 'and', 'for',
     'near', 'mint', 'nm', 'lp', 'mp', 'hp', 'ex', 'nm/m',
+    'holographic', 'reverse', '1st', 'first', 'edition',
+    'pokemon card', 'tcg', 'pokemontcg',
+    'ultra', 'secret', 'rare', 'amazing', 'rare',
+    'vmax', 'vstar', 'vunion', 'ex', 'gx', 'prism',
+    'star', 'Radiant', 'illustrator', 'special',
   ]);
 
-  return query
+  const words = query
     .toLowerCase()
     .split(/\s+/)
     .map((w) => w.replace(/[^a-z0-9'é]/g, ''))
-    .filter((w) => w.length >= 3 && !stopWords.has(w));
+    .filter((w) => w.length >= 2 && !stopWords.has(w));
+
+  // Add mapped set abbreviations
+  const queryLower = query.toLowerCase();
+  for (const [setName, abbrev] of Object.entries(SET_NAME_MAPPINGS)) {
+    if (queryLower.includes(setName) && !words.includes(abbrev)) {
+      words.push(abbrev);
+    }
+  }
+
+  return words;
 }
 
 function titleLooksGoodForQuery(title = '', query = '') {
@@ -118,15 +163,81 @@ function summarisePrices(prices) {
   };
 }
 
-function buildCardQuery({ name = '', setName = '', number = '' }) {
-  return [name, setName, number, 'pokemon card']
+function buildCardQuery({ name = '', setName = '', number = '', rarity = '' }) {
+  const parts = [name];
+
+  // Add set name if available
+  if (setName) {
+    parts.push(setName);
+  }
+
+  // Add card number if available (e.g., "9/102" or "9")
+  if (number) {
+    parts.push(number);
+  }
+
+  // Add rarity hints to help distinguish holo vs non-holo
+  if (rarity) {
+    const rarityLower = rarity.toLowerCase();
+    if (rarityLower.includes('holo') || rarityLower === 'rare' || rarityLower === 'ultra rare' || rarityLower === 'secret rare') {
+      parts.push('holo');
+      parts.push('holographic');
+    }
+    if (rarityLower.includes('reverse')) {
+      parts.push('reverse holo');
+    }
+    if (rarityLower.includes('first edition') || rarityLower.includes('1st')) {
+      parts.push('1st edition');
+    }
+  }
+
+  parts.push('pokemon card');
+
+  return parts
     .map((v) => String(v || '').trim())
     .filter(Boolean)
     .join(' ');
 }
 
-function buildFallbackQuery({ name = '' }) {
-  return `${name.trim()} pokemon card`.trim();
+// Build better fallback query with set hints when primary fails
+function buildFallbackQuery({ name = '', setName = '', number = '', rarity = '' }) {
+  const parts = [name];
+  
+  // Prioritize set name in fallback to maintain specificity
+  if (setName) {
+    parts.push(setName);
+  }
+  
+  // Always add card number if available (critical for uniqueness)
+  if (number) {
+    parts.push(number);
+  }
+  
+  // Add rarity hints for better rare card matching
+  if (rarity) {
+    const rarityLower = rarity.toLowerCase();
+    if (rarityLower.includes('holo') || rarityLower === 'rare' || rarityLower === 'ultra rare' || rarityLower === 'secret rare') {
+      parts.push('holo');
+      parts.push('holographic');
+    }
+    if (rarityLower.includes('reverse')) {
+      parts.push('reverse holo');
+    }
+    if (rarityLower.includes('first edition') || rarityLower.includes('1st')) {
+      parts.push('1st edition');
+    }
+  } else if (!setName && !number) {
+    // Only add holo hints if nothing else to go on
+    parts.push('holo');
+    parts.push('holographic');
+  }
+  
+  parts.push('pokemon card');
+  
+  return parts
+    .map((v) => String(v || '').trim())
+    .filter(Boolean)
+    .join(' ');
 }
 
 // ===============================
@@ -218,7 +329,11 @@ function filterItems(items, query) {
   });
 }
 
-async function fetchEbaySummary(query, cardName = '') {
+// Extended signature to pass all card details to fallback
+async function fetchEbaySummary(query, options = {}) {
+  const { name = '', setName = '', number = '', rarity = '' } = options;
+  const cardName = name || query.split(' ')[0];
+  
   const token = await getToken();
 
   const rawItems = await searchEbay(query, token);
@@ -228,7 +343,8 @@ async function fetchEbaySummary(query, cardName = '') {
   let fallbackQuery = '';
 
   if (cleaned.length === 0 && cardName) {
-    fallbackQuery = buildFallbackQuery({ name: cardName });
+    // Pass all available card details to fallback for better matching
+    fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, rarity });
     console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
 
     const fallbackItems = await searchEbay(fallbackQuery, token);
@@ -300,8 +416,15 @@ app.get('/price', async (req, res) => {
       return res.status(400).json({ error: 'Missing query' });
     }
 
+    // Extract card name from query for fallback
     const cardName = query.split(' ')[0];
-    const summary = await fetchEbaySummary(query, cardName);
+    
+    // Try to parse additional info from query string for better fallback
+    const parts = query.split(' ');
+    const setName = parts.length > 1 ? parts.find(p => /^(base|xy|swsh|sv|sm|bw|dp|hgss)/i.test(p)) || '' : '';
+    const number = parts.length > 1 ? parts.find(p => /^\d+\/\d+$/.test(p)) || '' : '';
+    
+    const summary = await fetchEbaySummary(query, { name: cardName, setName, number });
     return res.json(summary);
   } catch (error) {
     return res.status(500).json({
@@ -318,15 +441,19 @@ app.get('/api/price/ebay', async (req, res) => {
     const name = String(req.query.name || '').trim();
     const setName = String(req.query.setName || '').trim();
     const number = String(req.query.number || '').trim();
+    const rarity = String(req.query.rarity || '').trim();
 
     if (!name) {
       return res.status(400).json({ error: 'Missing card name' });
     }
 
-    const query = buildCardQuery({ name, setName, number });
-    const summary = await fetchEbaySummary(query, name);
+    // Build primary query with rarity hints for better matching
+    const query = buildCardQuery({ name, setName, number, rarity });
+    
+    // Pass full card details for better fallback matching
+    const summary = await fetchEbaySummary(query, { name, setName, number, rarity });
 
-    return res.json({ cardId, name, setName, number, ...summary });
+    return res.json({ cardId, name, setName, number, rarity, ...summary });
   } catch (error) {
     return res.status(500).json({
       error: 'Failed to fetch eBay pricing',

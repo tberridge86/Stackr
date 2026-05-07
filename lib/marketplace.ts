@@ -11,7 +11,6 @@ export type MarketplaceListingStatus = 'active' | 'archived' | 'sold';
 export type MarketplaceListingPrices = {
   tcg_mid: number | null;
   tcg_low: number | null;
-  tcg_market: number | null;
   ebay_average: number | null;
   cardmarket_trend: number | null;
   cardmarket_avg30: number | null;
@@ -119,36 +118,61 @@ async function attachPrices(listings: MarketplaceListing[]): Promise<Marketplace
 
   if (uniqueCardIds.length === 0) return listings;
 
-  // Get latest snapshots for each card
-  const { data: snapData, error } = await supabase
-    .from('market_price_snapshots')
-    .select('card_id, tcg_mid, tcg_low, tcg_market, ebay_average, cardmarket_trend, cardmarket_avg30, snapshot_at')
-    .in('card_id', uniqueCardIds)
-    .order('snapshot_at', { ascending: false });
+  // Fetch card data to get prices from raw_data (TCGPlayer & Cardmarket API data)
+  const { data: cardData, error } = await supabase
+    .from('pokemon_cards')
+    .select('id, raw_data')
+    .in('id', uniqueCardIds);
 
   if (error) {
-    console.log('Price snapshot fetch error:', error);
+    console.log('Card data fetch error:', error);
     return listings;
   }
 
-  // Group by card_id and get latest
-  const latestSnap: Record<string, any> = {};
-  for (const row of snapData ?? []) {
-    if (!latestSnap[row.card_id]) {
-      latestSnap[row.card_id] = row;
+  // Build price map from card raw_data
+  const cardPriceMap: Record<string, any> = {};
+  const USD_TO_GBP = 0.79;
+  const EUR_TO_GBP = 0.85;
+
+  for (const card of cardData ?? []) {
+    const raw = card.raw_data || {};
+    const tcg = raw.tcgplayer?.prices || {};
+    const cm = raw.cardmarket?.prices || {};
+
+    // Get best TCGPlayer price (prefer holofoil, then any)
+    let tcgMid: number | null = null;
+    const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
+    for (const key of preferred) {
+      if (tcg[key]?.mid != null) {
+        tcgMid = (tcg[key].mid * USD_TO_GBP);
+        break;
+      }
     }
+    if (tcgMid === null) {
+      for (const entry of Object.values(tcg)) {
+        if (entry?.mid) {
+          tcgMid = (entry.mid * USD_TO_GBP);
+          break;
+        }
+      }
+    }
+
+    // Get Cardmarket prices (convert EUR to GBP)
+    const cardmarketTrend = cm.trendPrice != null ? (cm.trendPrice * EUR_TO_GBP) : null;
+    const cardmarketAvg30 = cm.avg30 != null ? (cm.avg30 * EUR_TO_GBP) : null;
+
+    cardPriceMap[card.id] = {
+      tcg_mid: tcgMid,
+      tcg_low: null,
+      ebay_average: null, // eBay requires separate API call
+      cardmarket_trend: cardmarketTrend,
+      cardmarket_avg30: cardmarketAvg30,
+    };
   }
 
   return listings.map((listing) => ({
     ...listing,
-    prices: latestSnap[listing.card_id] ? {
-      tcg_mid: latestSnap[listing.card_id].tcg_mid ?? null,
-      tcg_low: latestSnap[listing.card_id].tcg_low ?? null,
-      tcg_market: latestSnap[listing.card_id].tcg_market ?? null,
-      ebay_average: latestSnap[listing.card_id].ebay_average ?? null,
-      cardmarket_trend: latestSnap[listing.card_id].cardmarket_trend ?? null,
-      cardmarket_avg30: latestSnap[listing.card_id].cardmarket_avg30 ?? null,
-    } : null,
+    prices: cardPriceMap[listing.card_id] || null,
   }));
 }
 
