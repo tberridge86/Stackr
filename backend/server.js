@@ -38,8 +38,9 @@ const BLOCKED_TERMS = [
   'psa', 'bgs', 'cgc', 'sgc', 'ace grading',
   'graded', 'gem mint', 'slab',
   'proxy', 'replica', 'reprint',
-  'custom card', 'fan art', 'fanart',
-  'bundle', 'bulk', 'job lot', 'joblot', 'lot of',
+  'custom card', 'custom ', 'fan art', 'fanart', 'fan-made', 'fan made',
+  'bundle', 'bulk', 'job lot', 'joblot', 'lot of', 'trio', 'pair',
+  'acrylic case', 'acrylic stand',
   'booster pack', 'booster box', 'empty box', 'display box',
   'choose your card', 'choose your cards', 'pick your card',
   'you choose', 'choose card', 'choose a card', 'choose individual',
@@ -152,7 +153,18 @@ function summarisePrices(prices) {
   }
 
   const sorted = [...prices].sort((a, b) => a - b);
-  const trimmed = sorted.length >= 6 ? sorted.slice(1, -1) : sorted;
+
+  let trimmed;
+  if (sorted.length >= 10) {
+    // Trim bottom 15% and top 15% for a robust mid-market range
+    const cut = Math.max(1, Math.floor(sorted.length * 0.15));
+    trimmed = sorted.slice(cut, sorted.length - cut);
+  } else if (sorted.length >= 6) {
+    trimmed = sorted.slice(1, -1);
+  } else {
+    trimmed = sorted;
+  }
+
   const avg = trimmed.reduce((sum, p) => sum + p, 0) / trimmed.length;
 
   return {
