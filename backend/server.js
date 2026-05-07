@@ -132,8 +132,8 @@ function titleLooksGoodForQuery(title = '', query = '') {
   const importantWords = getImportantWords(query);
 
   if (importantWords.length > 0) {
-    const hasRelevantWord = importantWords.some((word) => t.includes(word));
-    if (!hasRelevantWord) return false;
+    const allWordsPresent = importantWords.every((word) => t.includes(word));
+    if (!allWordsPresent) return false;
   }
 
   if (cardNumber && !t.includes(cardNumber)) return false;
@@ -296,7 +296,7 @@ async function getToken() {
 async function searchEbay(query, token) {
   const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
     query
-  )}&limit=50&sort=price`;
+  )}&limit=50&sort=bestMatch`;
 
   const res = await fetch(url, {
     headers: {
