@@ -31,7 +31,6 @@ import {
   markTradeReceived,
   TradeOffer,
 } from '../../lib/tradeOffers';
-import { fetchEbayPrice } from '../../lib/ebay';
 import { supabase } from '../../lib/supabase';
 
 const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
@@ -1108,13 +1107,12 @@ const handleArchive = async (listingId: string) => {
                                 value={`£${Number(selectedListing.prices.tcg_mid).toFixed(2)}`} 
                               />
                             )}
-{selectedListing.prices?.cardmarket_trend != null && (
-                              <DetailRow 
-                                label="Cardmarket" 
-                                value={`£${Number(selectedListing.prices.cardmarket_trend).toFixed(2)}`} 
+                            {selectedListing.prices?.cardmarket_trend != null && (
+                              <DetailRow
+                                label="Cardmarket"
+                                value={`£${Number(selectedListing.prices.cardmarket_trend).toFixed(2)}`}
                               />
                             )}
-                              />}
                           </>
                         )}
                         

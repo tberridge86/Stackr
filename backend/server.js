@@ -302,28 +302,44 @@ async function getToken() {
 }
 
 // ===============================
-// CORE EBAY SEARCH
+// CORE EBAY SEARCH (sold prices via Finding API)
 // ===============================
 
-async function searchEbay(query, token) {
-  const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
-    query
-  )}&limit=50&sort=bestMatch`;
+async function searchEbay(query) {
+  // Finding API uses App ID directly — no OAuth token required
+  // EBAY_MARKETPLACE_ID is "EBAY_GB"; Finding API expects "EBAY-GB"
+  const globalId = EBAY_MARKETPLACE_ID.replace('_', '-');
 
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'X-EBAY-C-MARKETPLACE-ID': EBAY_MARKETPLACE_ID,
-    },
+  const params = new URLSearchParams({
+    'OPERATION-NAME': 'findCompletedItems',
+    'SERVICE-VERSION': '1.0.0',
+    'SECURITY-APPNAME': EBAY_CLIENT_ID,
+    'RESPONSE-DATA-FORMAT': 'JSON',
+    'GLOBAL-ID': globalId,
+    'keywords': query,
+    'itemFilter(0).name': 'SoldItemsOnly',
+    'itemFilter(0).value': 'true',
+    'sortOrder': 'EndTimeSoonest',
+    'paginationInput.entriesPerPage': '50',
   });
+
+  const url = `https://svcs.ebay.com/services/search/FindingService/v1?${params}`;
+
+  const res = await fetch(url);
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Browse search failed (${res.status}): ${text}`);
+    throw new Error(`Finding API search failed (${res.status}): ${text}`);
   }
 
   const data = await res.json();
-  return data.itemSummaries || [];
+  const items = data?.findCompletedItemsResponse?.[0]?.searchResult?.[0]?.item ?? [];
+
+  // Normalise to the same shape filterItems expects: { title, price: { value } }
+  return items.map((item) => ({
+    title: item.title?.[0] ?? '',
+    price: { value: item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ ?? null },
+  }));
 }
 
 function filterItems(items, query) {
@@ -346,20 +362,17 @@ async function fetchEbaySummary(query, options = {}) {
   const { name = '', setName = '', number = '', rarity = '' } = options;
   const cardName = name || query.split(' ')[0];
   
-  const token = await getToken();
-
-  const rawItems = await searchEbay(query, token);
+  const rawItems = await searchEbay(query);
   let cleaned = filterItems(rawItems, query);
 
   let usedFallback = false;
   let fallbackQuery = '';
 
   if (cleaned.length === 0 && cardName) {
-    // Pass all available card details to fallback for better matching
     fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, rarity });
     console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
 
-    const fallbackItems = await searchEbay(fallbackQuery, token);
+    const fallbackItems = await searchEbay(fallbackQuery);
     cleaned = filterItems(fallbackItems, fallbackQuery);
     usedFallback = true;
   }
@@ -488,14 +501,12 @@ app.get('/price/debug', async (req, res) => {
       return res.status(400).json({ error: 'Missing ?name= param' });
     }
 
-    const token = await getToken();
-
     const primaryQuery = buildCardQuery({ name, setName, number });
     const fallbackQuery = buildFallbackQuery({ name });
 
     const [primaryRaw, fallbackRaw] = await Promise.all([
-      searchEbay(primaryQuery, token),
-      searchEbay(fallbackQuery, token),
+      searchEbay(primaryQuery),
+      searchEbay(fallbackQuery),
     ]);
 
     function analyseItems(items, query) {
