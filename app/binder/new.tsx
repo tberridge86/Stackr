@@ -182,7 +182,7 @@ export default function NewBinderScreen() {
       setName(binder.name ?? '');
       setCoverKey(binder.cover_key ?? null);
       setType(binder.type ?? 'custom');
-      setEdition(binder.edition ?? null);
+      setEdition((binder.edition as "1st_edition" | "unlimited" | null) ?? null);
     } catch (err) {
       console.log('Failed to load binder', err);
       Alert.alert('Error', 'Could not load binder details.');

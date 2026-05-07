@@ -112,7 +112,6 @@ export default function RootLayout() {
                   },
                   headerShadowVisible: false,
                   headerBackButtonDisplayMode: 'minimal',
-                  headerBackTitleVisible: false,
                   headerBackTitle: '',
                 }}
               >
@@ -127,7 +126,7 @@ export default function RootLayout() {
                 <Stack.Screen name="set/[id]" options={{ title: '' }} />
                 <Stack.Screen name="offer/new" options={{ title: '' }} />
                 <Stack.Screen name="offers" options={{ title: '' }} />
-                <Stack.Screen name="binder" options={{ title: '' }} />
+
                 <Stack.Screen name="binder/new" options={{ title: '' }} />
                 <Stack.Screen name="binder/[id]" options={{ title: '' }} />
                 <Stack.Screen name="binder/add-cards" options={{ title: '' }} />

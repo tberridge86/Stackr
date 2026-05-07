@@ -503,7 +503,7 @@ try {
     }
   });
 
-  router.push('/scan');
+  router.push({ pathname: '/scan', params: { mode: 'market' } });
 }, [searchCards, openCardDetail]);
 
   // ===============================

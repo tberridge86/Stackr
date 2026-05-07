@@ -24,7 +24,7 @@ const CARD_HEIGHT = CARD_WIDTH / 0.716;
 const VERTICAL_OFFSET = -(STATUS_BAR_HEIGHT + 80);
 
 export default function CardCameraScreen() {
-  const { camera, device, torch, toggleTorch, takePhoto, isContinuous } = useScanCamera(true); // Continuous ON by default
+  const { camera, device, torch, toggleTorch, takePhoto, isContinuous, setIsContinuous } = useScanCamera(true); // Continuous ON by default
   const scanStore = useScanStore();
   const [capturing, setCapturing] = useState(false);
 
@@ -138,7 +138,7 @@ export default function CardCameraScreen() {
 
       {/* NEW: Continuous Toggle */}
       <TouchableOpacity
-        onPress={() => useScanCamera.setContinuous?.(!isContinuous)} // Hook toggle
+        onPress={() => setIsContinuous(!isContinuous)}
         style={{
           position: 'absolute', top: 56, right: 70,
           width: 44, height: 44, borderRadius: 22,

@@ -4,19 +4,18 @@ import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { useScanStore } from './scanStore';
 
-export function useScanCamera(isContinuous = false) {
+export function useScanCamera(initialContinuous = false) {
   const camera = useRef<Camera>(null);
   const [torch, setTorch] = useState<'off' | 'on'>('off');
+  const [isContinuous, setIsContinuous] = useState(initialContinuous);
   const devices = useCameraDevices();
-  const device = devices.back;
+  const device = devices.find(d => d.position === 'back');
   const scanStore = useScanStore();
   
 
   const takePhoto = async () => {
-    if (camera.current?.camera) {
-      const photo = await camera.current.camera.takePhoto({ 
-        qualityPrioritization: 'speed' 
-      });
+    if (camera.current) {
+      const photo = await camera.current.takePhoto();
       const manipulated = await ImageManipulator.manipulateAsync(
         `file://${photo.path}`,
         [{ resize: { width: 600 } }], // Speed: Smaller than 900
@@ -44,6 +43,7 @@ export function useScanCamera(isContinuous = false) {
     torch, 
     toggleTorch, 
     takePhoto, 
-    isContinuous 
+    isContinuous,
+    setIsContinuous
   };
 }

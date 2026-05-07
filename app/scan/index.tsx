@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { fetchBinders, BinderRecord } from '../../lib/binders';
 import * as ImageManipulator from 'expo-image-manipulator';
@@ -27,6 +27,10 @@ const SCANNING_MESSAGES = [
   'Almost there...',
   'Matching card...',
 ];
+
+const FAST_SCAN_PROFILE = { width: 720, compress: 0.5 };
+const ACCURACY_SCAN_PROFILE = { width: 960, compress: 0.72 };
+const REQUEST_TIMEOUT_MS = 5000;
 
 // ===============================
 // TYPES
@@ -55,8 +59,11 @@ export default function ScanScreen() {
   const camera = useRef<Camera>(null);
   const insets = useSafeAreaInsets();
 
+  const params = useLocalSearchParams<{ mode?: string }>();
+  const isMarketMode = params.mode === 'market';
+
   const [torch, setTorch] = useState(false);
-  const [step, setStep] = useState<ScanStep>('select_binder');
+  const [step, setStep] = useState<ScanStep>(isMarketMode ? 'scanning' : 'select_binder');
   const [scanMode, setScanMode] = useState<ScanMode>('manual');
   const [binders, setBinders] = useState<BinderRecord[]>([]);
   const [selectedBinder, setSelectedBinder] = useState<BinderRecord | null>(null);
@@ -72,6 +79,8 @@ export default function ScanScreen() {
   const autoScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scannedCardIdsRef = useRef<Set<string>>(new Set());
   const scanningMessageRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastFrameSigRef = useRef<string | null>(null);
+  const lastFrameTsRef = useRef<number>(0);
 
   // ===============================
   // LOAD BINDERS
@@ -120,8 +129,8 @@ export default function ScanScreen() {
 
     if (step === 'scanning' && scanMode === 'auto' && autoScanActive) {
       autoScanIntervalRef.current = setInterval(() => {
-        handleCapture(true);
-      }, 1200);
+        if (!processingOcr) handleCapture(true);
+      }, 950);
     }
 
     return () => {
@@ -185,33 +194,69 @@ export default function ScanScreen() {
   const handleCapture = useCallback(async (isAuto = false) => {
     if (!camera.current || scanCooldownRef.current || processingOcr) return;
 
+    const now = Date.now();
+    if (isAuto && now - lastFrameTsRef.current < 700) return;
+
     setProcessingOcr(true);
     scanCooldownRef.current = true;
     startScanningMessages();
 
-    try {
-      const photo = await camera.current.takePhoto({
-  flash: 'off',
-});
+    const identifyWithTimeout = async (base64Image: string) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      try {
+        const response = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64Image }),
+          signal: controller.signal,
+        });
+        const json = await response.json();
+        return json;
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
 
+    const runPass = async (profile: { width: number; compress: number }) => {
+      const photo = await camera.current!.takePhoto({ flash: 'off' });
       const manipulated = await ImageManipulator.manipulateAsync(
-  `file://${photo.path}`,
-  [{ resize: { width: 900 } }],
-  {
-    compress: 0.6,
-    format: ImageManipulator.SaveFormat.JPEG,
-    base64: true,
-  }
-);
+        `file://${photo.path}`,
+        [{ resize: { width: profile.width } }],
+        {
+          compress: profile.compress,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        }
+      );
 
-const base64 = manipulated.base64;
-      const claudeRes = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64Image: base64 }),
-      });
+      const base64 = manipulated.base64 ?? '';
+      const sig = `${base64.slice(0, 48)}:${base64.length}`;
+      if (isAuto && sig === lastFrameSigRef.current && Date.now() - lastFrameTsRef.current < 2200) {
+        return { duplicateFrame: true as const };
+      }
 
-      const parsed = await claudeRes.json();
+      lastFrameSigRef.current = sig;
+      lastFrameTsRef.current = Date.now();
+
+      const parsed = await identifyWithTimeout(base64);
+      return { duplicateFrame: false as const, parsed };
+    };
+
+    try {
+      let parsedResult = await runPass(FAST_SCAN_PROFILE);
+
+      if (parsedResult.duplicateFrame) {
+        setLastScanned('Hold steady — same frame');
+        resetScanState(500);
+        return;
+      }
+
+      let parsed: any = parsedResult.parsed;
+      if (parsed?.error || !parsed?.name) {
+        const retry = await runPass(ACCURACY_SCAN_PROFILE);
+        if (!retry.duplicateFrame) parsed = retry.parsed;
+      }
 
       if (parsed?.error || !parsed?.name) {
         if (!isAuto) {
@@ -255,6 +300,18 @@ const base64 = manipulated.base64;
 
       let match = cards[0];
 
+      if (isMarketMode) {
+        setAutoScanActive(false);
+        router.replace({
+          pathname: '/scan/result',
+          params: { cardsJson: JSON.stringify([match]) },
+        });
+        stopScanningMessages();
+        scanCooldownRef.current = false;
+        setProcessingOcr(false);
+        return;
+      }
+
       if (numberClean) {
         const numberMatches = cards.filter((c) =>
           String(parseInt(c.number, 10)) === numberClean
@@ -277,11 +334,11 @@ const base64 = manipulated.base64;
       if (scannedCardIdsRef.current.has(match.id)) {
         if (isAuto) {
           setLastScanned('Already scanned — swipe to next card');
-          resetScanState(1500);
+          resetScanState(900);
         } else {
           setLastScanned(`${match.name} already in list`);
           Vibration.vibrate(100);
-          resetScanState(2000);
+          resetScanState(1400);
         }
         return;
       }
@@ -289,27 +346,30 @@ const base64 = manipulated.base64;
       scannedCardIdsRef.current.add(match.id);
       setScannedCards((prev) => [...prev, match]);
       setLastScanned(`✅ ${match.name} #${match.number} added!`);
-      Vibration.vibrate([0, 100, 50, 100]);
-      if (isAuto) {
-        setTimeout(() => setLastScanned('👉 Next card!'), 1000);
-      }
-      resetScanState(isAuto ? 2000 : 2000);
+      Vibration.vibrate([0, 90, 40, 90]);
+      if (isAuto) setTimeout(() => setLastScanned('👉 Next card!'), 500);
+      resetScanState(isAuto ? 900 : 1200);
 
     } catch (error: any) {
       console.log('Scan error:', error);
-      if (!isAuto) Alert.alert('Scan failed', 'Something went wrong. Try again.');
+      if (!isAuto) {
+        const timeoutMsg = error?.name === 'AbortError'
+          ? 'Scan timed out. Try again with better lighting.'
+          : 'Something went wrong. Try again.';
+        Alert.alert('Scan failed', timeoutMsg);
+      }
       stopScanningMessages();
       scanCooldownRef.current = false;
       setProcessingOcr(false);
       setLastScanned(null);
     }
-  }, [processingOcr, resetScanState, selectedBinder, startScanningMessages, stopScanningMessages]);
+  }, [isMarketMode, processingOcr, resetScanState, selectedBinder, startScanningMessages, stopScanningMessages]);
 
   // ===============================
   // SELECT BINDER STEP
   // ===============================
 
- if (step === 'select_binder') {
+ if (step === 'select_binder' && !isMarketMode) {
   return (
     <SafeAreaView
       edges={['bottom']}
@@ -317,13 +377,11 @@ const base64 = manipulated.base64;
     >
       <Stack.Screen
         options={{
-          headerShown: true,
-          title: ' ',
-          headerBackVisible: false,
+          headerShown: false,
         }}
       />
 
-      <View style={{ flex: 1, padding: 16 }}>
+      <View style={{ flex: 1, padding: 16, paddingTop: 43 }}>
         <View style={{ marginBottom: 24 }}>
           <Text
             style={{
@@ -332,7 +390,7 @@ const base64 = manipulated.base64;
               fontWeight: '900',
             }}
           >
-            Scan Cards
+            Select Binder
           </Text>
 
           <Text
@@ -649,9 +707,13 @@ const base64 = manipulated.base64;
           </TouchableOpacity>
 
           <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>{`"${selectedBinder?.name ?? ''}"`}</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>
+              {isMarketMode ? 'Market Scan' : `"${selectedBinder?.name ?? ''}"`}
+            </Text>
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>
-              {scannedCards.length} card{scannedCards.length !== 1 ? 's' : ''} scanned
+              {isMarketMode
+                ? 'Scan card to view market value'
+                : `${scannedCards.length} card${scannedCards.length !== 1 ? 's' : ''} scanned`}
             </Text>
           </View>
 

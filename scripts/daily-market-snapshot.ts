@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
-import { fetchEbayPrice } from '../lib/ebay.ts';
+import { fetchEbayPrice } from '../lib/ebay';
 
 process.on('SIGTERM', () => {
   console.log('🛑 SIGTERM received, finishing job...');

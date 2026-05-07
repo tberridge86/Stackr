@@ -1,5 +1,5 @@
 import { theme } from '../../lib/theme';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Image,
@@ -11,10 +11,11 @@ import {
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { fetchBinders } from '../../lib/binders';
 import { fetchEbayPrice } from '../../lib/ebay';
+import { getPriceFromPokemonCard } from '../../lib/pricing';
 
 type TCGCard = {
   id: string;
@@ -43,9 +44,7 @@ export default function ScanResultScreen() {
     cardsJson?: string;
   }>();
 
-  const cards: TCGCard[] = params.cardsJson
-    ? JSON.parse(params.cardsJson)
-    : [];
+  const cards: TCGCard[] = params.cardsJson ? JSON.parse(params.cardsJson) : [];
 
   const [selectedCard, setSelectedCard] = useState<TCGCard | null>(
     cards.length === 1 ? cards[0] : null
@@ -58,32 +57,28 @@ export default function ScanResultScreen() {
     high: number | null;
   } | null>(null);
   const [ebayLoading, setEbayLoading] = useState(false);
+  const [tcgPrice, setTcgPrice] = useState<number | null>(null);
+  const [tcgLoading, setTcgLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
-  // ===============================
-  // LOAD BINDERS
-  // ===============================
-
   useEffect(() => {
     fetchBinders().then((data) => {
-      setBinders(data.map((b) => ({
-        id: b.id,
-        name: b.name,
-        color: b.color,
-        cover_key: b.cover_key ?? null,
-      })));
+      setBinders(
+        data.map((b) => ({
+          id: b.id,
+          name: b.name,
+          color: b.color,
+          cover_key: b.cover_key ?? null,
+        }))
+      );
     });
   }, []);
-
-  // ===============================
-  // FETCH EBAY WHEN CARD SELECTED
-  // ===============================
 
   useEffect(() => {
     if (!selectedCard) return;
 
-    const fetch = async () => {
+    const run = async () => {
       try {
         setEbayLoading(true);
         setEbayPrice(null);
@@ -101,14 +96,26 @@ export default function ScanResultScreen() {
       } finally {
         setEbayLoading(false);
       }
+
+      try {
+        setTcgLoading(true);
+        setTcgPrice(null);
+
+        const response = await fetch(`https://api.pokemontcg.io/v2/cards/${selectedCard.id}`);
+        const json = await response.json();
+        const card = json?.data?.[0];
+        const price = getPriceFromPokemonCard(card);
+
+        setTcgPrice(price);
+      } catch {
+        setTcgPrice(null);
+      } finally {
+        setTcgLoading(false);
+      }
     };
 
-    fetch();
+    run();
   }, [selectedCard]);
-
-  // ===============================
-  // ADD TO BINDER
-  // ===============================
 
   const handleAddToBinder = async () => {
     if (!selectedBinderId || !selectedCard) return;
@@ -118,29 +125,28 @@ export default function ScanResultScreen() {
 
       const { error } = await supabase
         .from('binder_cards')
-        .upsert({
-          binder_id: selectedBinderId,
-          card_id: selectedCard.id,
-          set_id: selectedCard.set_id,
-          owned: true,
-          notes: '',
-          card_name: selectedCard.name,
-          card_number: selectedCard.number,
-          image_url: selectedCard.image_small,
-          set_name: selectedCard.set_name,
-        }, {
-          onConflict: 'binder_id,card_id',
-          ignoreDuplicates: false,
-        });
+        .upsert(
+          {
+            binder_id: selectedBinderId,
+            card_id: selectedCard.id,
+            set_id: selectedCard.set_id,
+            owned: true,
+            notes: '',
+            card_name: selectedCard.name,
+            card_number: selectedCard.number,
+            image_url: selectedCard.image_small,
+            set_name: selectedCard.set_name,
+          },
+          {
+            onConflict: 'binder_id,card_id',
+            ignoreDuplicates: false,
+          }
+        );
 
       if (error) throw error;
 
       setAdded(true);
-      Alert.alert(
-        '✅ Added!',
-        `${selectedCard.name} has been added to your binder.`,
-        [{ text: 'OK' }]
-      );
+      Alert.alert('✅ Added!', `${selectedCard.name} has been added to your binder.`, [{ text: 'OK' }]);
     } catch (error: any) {
       Alert.alert('Error', error?.message ?? 'Could not add card.');
     } finally {
@@ -221,37 +227,24 @@ export default function ScanResultScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+      />
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 60 }}
-        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 16, paddingTop: 35, paddingBottom: 60 }}
       >
-        {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              width: 40, height: 40,
-              borderRadius: 12,
-              backgroundColor: theme.colors.card,
-              alignItems: 'center', justifyContent: 'center',
-              marginRight: 12,
-              borderWidth: 1, borderColor: theme.colors.border,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-          </TouchableOpacity>
-
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
-              {cards.length === 1 ? 'Card Found!' : `${cards.length} Results`}
-            </Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
-              {cards.length === 1
-                ? 'Confirm and add to your binder'
-                : 'Select the correct version'}
-            </Text>
-          </View>
+        <View style={{ marginBottom: 14 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+            {cards.length === 1 ? 'Card Found!' : `${cards.length} Results`}
+          </Text>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+            {cards.length === 1
+              ? 'Confirm and add to your binder'
+              : 'Select the correct version'}
+          </Text>
         </View>
 
         {/* If multiple results — show list to pick from */}
@@ -370,6 +363,37 @@ export default function ScanResultScreen() {
               ) : (
                 <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
                   No eBay price available
+                </Text>
+              )}
+            </View>
+
+            {/* TCG price */}
+            <View style={{
+              backgroundColor: theme.colors.card,
+              borderRadius: 18, padding: 16,
+              borderWidth: 1, borderColor: theme.colors.border,
+              marginBottom: 14,
+            }}>
+              <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginBottom: 12 }}>
+                TCG Market Price (USD)
+              </Text>
+
+              {tcgLoading ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
+                    Fetching TCG prices...
+                  </Text>
+                </View>
+              ) : tcgPrice ? (
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>
+                    ${tcgPrice.toFixed(2)}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
+                  No TCG price available
                 </Text>
               )}
             </View>

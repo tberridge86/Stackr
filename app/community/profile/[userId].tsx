@@ -125,14 +125,14 @@ const binderId = Array.isArray(id) ? id[0] : id;
     return AVATAR_PRESETS.find((a) => a.key === profile?.avatar_preset) ?? null;
   }, [profile?.avatar_preset]);
 
-  const isOwnProfile = currentUserId === profileUserId;
+  const isOwnProfile = currentUserId === binderId;
 
   // ===============================
   // LOAD
   // ===============================
 
   const loadProfile = useCallback(async () => {
-    if (!profileUserId) return;
+    if (!binderId) return;
 
     try {
       setLoading(true);
@@ -152,35 +152,35 @@ const binderId = Array.isArray(id) ? id[0] : id;
         supabase
           .from('profiles')
           .select('id, collector_name, avatar_preset, pokemon_type, favorite_card_id, favorite_set_id, chase_card_id, chase_set_id')
-          .eq('id', profileUserId)
+          .eq('id', binderId)
           .maybeSingle(),
 
         supabase
           .from('binders')
           .select('id, name, color, gradient, type, source_set_id')
-          .eq('user_id', profileUserId)
+          .eq('user_id', binderId)
           .eq('is_public', true)  // Fixed: only show public binders
           .order('created_at', { ascending: false }),
 
         supabase
           .from('binder_card_showcases')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', profileUserId),
+          .eq('user_id', binderId),
 
         supabase
           .from('social_posts')
           .select('id, body, card_id, set_id, created_at')
-          .eq('user_id', profileUserId)
+          .eq('user_id', binderId)
           .order('created_at', { ascending: false })
           .limit(10),
 
         supabase
           .from('profile_rating_summary')
           .select('average_rating, review_count')
-          .eq('user_id', profileUserId)
+          .eq('user_id', binderId)
           .maybeSingle(),
 
-        user ? getFriendStatus(profileUserId) : Promise.resolve(null),
+        user ? getFriendStatus(binderId) : Promise.resolve(null),
       ]);
 
       // Profile
@@ -263,7 +263,7 @@ const binderId = Array.isArray(id) ? id[0] : id;
     } finally {
       setLoading(false);
     }
-  }, [profileUserId]);
+  }, [binderId]);
 
   useEffect(() => {
     loadProfile();
@@ -274,13 +274,13 @@ const binderId = Array.isArray(id) ? id[0] : id;
   // ===============================
 
   const handleFriendAction = async () => {
-    if (!profileUserId || isOwnProfile) return;
+    if (!binderId || isOwnProfile) return;
 
     try {
       setFriendActionBusy(true);
 
       if (friendStatus === 'none') {
-        const result = await sendFriendRequest(profileUserId);
+        const result = await sendFriendRequest(binderId);
         setFriendshipId(result.id);
         setFriendStatus('pending_sent');
         Alert.alert('Request sent', 'Friend request sent!');
@@ -580,7 +580,7 @@ const binderId = Array.isArray(id) ? id[0] : id;
                   <TouchableOpacity
                     onPress={() => router.push({
                       pathname: '/offer/new',
-                      params: { targetUserId: profileUserId },
+                      params: { targetUserId: binderId },
                     })}
                     style={{
                       flex: 1,

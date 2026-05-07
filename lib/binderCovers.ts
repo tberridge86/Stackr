@@ -25,7 +25,47 @@ export const BINDER_COVERS: BinderCover[] = [
 { key: 'vaporeon', label: 'Vaporeon', image: require('../assets/binders/vaporeon.png'), accentColor: '#0369A1' },
 ];
 
+const BINDER_COVER_KEY_ALIASES: Record<string, string> = {
+  // common legacy / formatting variants
+  'mr-mime': 'mew',
+  'mr mime': 'mew',
+  'charizard-ex': 'charizard',
+  'charizard ex': 'charizard',
+  'mew-two': 'mewtwo',
+  'sylveon-v': 'sylveon',
+  'vaporeon-v': 'vaporeon',
+};
+
+function normalizeCoverKey(key: string): string {
+  const raw = key.trim().toLowerCase();
+  if (!raw) return raw;
+
+  // direct alias first
+  if (BINDER_COVER_KEY_ALIASES[raw]) return BINDER_COVER_KEY_ALIASES[raw];
+
+  // normalize separators and remove non-alphanumeric chars except dash/space
+  const simplified = raw
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (BINDER_COVER_KEY_ALIASES[simplified]) return BINDER_COVER_KEY_ALIASES[simplified];
+
+  // convert spaced form to dash form for key matching
+  const dashed = simplified.replace(/\s+/g, '-');
+  if (BINDER_COVER_KEY_ALIASES[dashed]) return BINDER_COVER_KEY_ALIASES[dashed];
+
+  return dashed;
+}
+
 export function getBinderCover(key: string | null | undefined): BinderCover | null {
   if (!key) return null;
-  return BINDER_COVERS.find((c) => c.key === key) ?? null;
+
+  // exact match first
+  const exact = BINDER_COVERS.find((c) => c.key === key);
+  if (exact) return exact;
+
+  // normalized/alias match fallback for legacy values
+  const normalized = normalizeCoverKey(key);
+  return BINDER_COVERS.find((c) => c.key === normalized) ?? null;
 }

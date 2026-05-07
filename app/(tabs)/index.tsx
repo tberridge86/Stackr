@@ -921,7 +921,11 @@ const { data, error } = await snapshotQuery;
                 onPress={async () => {
                   if (onboardingStep < ONBOARDING_STEPS.length - 1) { setOnboardingStep((prev) => prev + 1); return; }
                   const { data: { user } } = await supabase.auth.getUser();
-                  if (user) await supabase.from('profiles').update({ has_seen_onboarding: true }).eq('id', user.id).catch(() => {});
+                  if (user) {
+                    try {
+                      await supabase.from('profiles').update({ has_seen_onboarding: true }).eq('id', user.id);
+                    } catch {}
+                  }
                   setShowOnboarding(false);
                 }}
                 style={{ paddingVertical: 11, paddingHorizontal: 18, borderRadius: 14, backgroundColor: theme.colors.primary }}
