@@ -10,11 +10,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 // ===============================
 // TYPES
@@ -549,7 +549,7 @@ export default function PriceBuilderScreen() {
           borderWidth: 1,
           borderColor: theme.colors.border,
         }}>
-          <TextInput
+<TextInput
             value={query}
             onChangeText={handleQueryChange}
             placeholder="Search e.g. Charizard base..."
@@ -560,6 +560,7 @@ export default function PriceBuilderScreen() {
               padding: 12,
               color: theme.colors.text,
               fontWeight: '800',
+              fontSize: 14,
               borderWidth: 1,
               borderColor: theme.colors.border,
             }}

@@ -620,7 +620,7 @@ try {
 
             {/* Search + Scan row */}
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
-              <TextInput
+<TextInput
                 value={query}
                 onChangeText={handleSearchChange}
                 placeholder="Search e.g. Charizard Destined Rivals..."
@@ -634,7 +634,7 @@ try {
                   borderRadius: 14,
                   paddingHorizontal: 14,
                   paddingVertical: 12,
-                  fontSize: 16,
+                  fontSize: 14,
                 }}
                 returnKeyType="search"
                 onSubmitEditing={() => searchCards(query)}

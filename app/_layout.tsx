@@ -35,6 +35,12 @@ function PersistentTabBar() {
     return pathname.startsWith(route);
   };
 
+  const hideTabBar = pathname.startsWith('/(auth)') || pathname.startsWith('/login') || pathname.startsWith('/signup');
+
+  if (hideTabBar) {
+    return null;
+  }
+
   return (
     <View style={{
       position: 'absolute',

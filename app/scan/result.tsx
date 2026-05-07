@@ -237,10 +237,15 @@ export default function ScanResultScreen() {
         contentContainerStyle={{ padding: 16, paddingTop: 35, paddingBottom: 60 }}
       >
         <View style={{ marginBottom: 14 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
-            {cards.length === 1 ? 'Card Found!' : `${cards.length} Results`}
-          </Text>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12, paddingTop: 4 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 24 }}>←</Text>
+            </TouchableOpacity>
+            <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+              {cards.length === 1 ? 'Card Found!' : `${cards.length} Results`}
+            </Text>
+          </View>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
             {cards.length === 1
               ? 'Confirm and add to your binder'
               : 'Select the correct version'}

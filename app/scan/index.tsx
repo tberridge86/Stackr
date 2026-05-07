@@ -382,26 +382,30 @@ export default function ScanScreen() {
       />
 
       <View style={{ flex: 1, padding: 16, paddingTop: 43 }}>
-        <View style={{ marginBottom: 24 }}>
-          <Text
-            style={{
-              color: theme.colors.text,
-              fontSize: 24,
-              fontWeight: '900',
-            }}
-          >
-            Select Binder
-          </Text>
-
-          <Text
-            style={{
-              color: theme.colors.textSoft,
-              fontSize: 13,
-              marginTop: 20,
-            }}
-          >
-            Which binder are you scanning into?
-          </Text>
+        <View style={{ marginBottom: 24, flexDirection: 'row', alignItems: 'flex-start' }}>
+          <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12, paddingTop: 4 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 24 }}>←</Text>
+          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                color: theme.colors.text,
+                fontSize: 24,
+                fontWeight: '900',
+              }}
+            >
+              Select Binder
+            </Text>
+            <Text
+              style={{
+                color: theme.colors.textSoft,
+                fontSize: 13,
+                marginTop: 8,
+              }}
+            >
+              Which binder are you scanning into?
+            </Text>
+          </View>
         </View>
 
         {loadingBinders ? (
@@ -544,11 +548,16 @@ export default function ScanScreen() {
   if (step === 'review') {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-        <Stack.Screen options={{ title: 'Review Cards' }} />
+        <Stack.Screen options={{ headerShown: false }} />
         <View style={{ flex: 1, padding: 16 }}>
-          <View style={{ marginBottom: 20 }}>
+<View style={{ marginBottom: 20 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+            <TouchableOpacity onPress={() => setStep('scanning')} style={{ marginRight: 12, paddingTop: 4 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 24 }}>←</Text>
+            </TouchableOpacity>
             <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>Review Cards</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+          </View>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
               {scannedCards.length} card{scannedCards.length !== 1 ? 's' : ''} scanned · tap ✕ to remove
             </Text>
           </View>
