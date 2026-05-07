@@ -247,7 +247,8 @@ const openTradeCardDetail = async (item: any) => {
         
         const response = await fetch(`${PRICE_API_URL}/price?q=${encodeURIComponent(searchTerm)}`);
         if (!response.ok) {
-          console.log('eBay API response not ok:', response.status);
+          const errBody = await response.json().catch(() => ({}));
+          console.log('eBay API error:', response.status, errBody);
           setEbayData(null);
           setEbayLoading(false);
           return;

@@ -310,20 +310,20 @@ async function searchEbay(query) {
   // EBAY_MARKETPLACE_ID is "EBAY_GB"; Finding API expects "EBAY-GB"
   const globalId = EBAY_MARKETPLACE_ID.replace('_', '-');
 
-  const params = new URLSearchParams({
-    'OPERATION-NAME': 'findCompletedItems',
-    'SERVICE-VERSION': '1.0.0',
-    'SECURITY-APPNAME': EBAY_CLIENT_ID,
-    'RESPONSE-DATA-FORMAT': 'JSON',
-    'GLOBAL-ID': globalId,
-    'keywords': query,
-    'itemFilter(0).name': 'SoldItemsOnly',
-    'itemFilter(0).value': 'true',
-    'sortOrder': 'EndTimeSoonest',
-    'paginationInput.entriesPerPage': '50',
-  });
-
-  const url = `https://svcs.ebay.com/services/search/FindingService/v1?${params}`;
+  // Build URL manually — URLSearchParams encodes parentheses in itemFilter keys,
+  // which breaks the Finding API. Only encode values, not param names.
+  const url =
+    'https://svcs.ebay.com/services/search/FindingService/v1' +
+    '?OPERATION-NAME=findCompletedItems' +
+    '&SERVICE-VERSION=1.0.0' +
+    `&SECURITY-APPNAME=${encodeURIComponent(EBAY_CLIENT_ID)}` +
+    '&RESPONSE-DATA-FORMAT=JSON' +
+    `&GLOBAL-ID=${globalId}` +
+    `&keywords=${encodeURIComponent(query)}` +
+    '&itemFilter(0).name=SoldItemsOnly' +
+    '&itemFilter(0).value=true' +
+    '&sortOrder=EndTimeSoonest' +
+    '&paginationInput.entriesPerPage=50';
 
   const res = await fetch(url);
 
