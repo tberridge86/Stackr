@@ -634,7 +634,6 @@ try {
                   borderRadius: 14,
                   paddingHorizontal: 14,
                   paddingVertical: 12,
-                  fontSize: 14,
                 }}
                 returnKeyType="search"
                 onSubmitEditing={() => searchCards(query)}

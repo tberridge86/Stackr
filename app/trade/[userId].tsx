@@ -41,15 +41,56 @@ export default function UserTradeListingsScreen() {
     try {
       setLoading(true);
 
+// Query from user_card_flags table (same as marketplace)
+      // Include both 'active' listings AND ones with null/no status (default case)
       const { data, error } = await supabase
-  .from('trade_listings')
-  .select('id, card_id, set_id, card_name, image_url, set_name, asking_price, condition')
-  .eq('owner_user_id', userId)
-  .eq('status', 'active')
-  .order('created_at', { ascending: false });
+        .from('user_card_flags')
+        .select('id, card_id, set_id, asking_price, condition')
+        .eq('user_id', userId)
+        .eq('flag_type', 'trade')
+        .or('listing_status.eq.active,listing_status.is.null')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setListings((data ?? []) as TradeListing[]);
+
+      // Get unique card IDs to fetch card details
+      const cardIds = (data ?? []).map(d => d.card_id).filter(Boolean);
+      
+      let cardMap: Record<string, { name: string; image_small: string; set_name: string }> = {};
+      
+      if (cardIds.length > 0) {
+        const { data: cardData } = await supabase
+          .from('pokemon_cards')
+          .select('id, name, image_small, raw_data')
+          .in('id', cardIds);
+
+        if (cardData) {
+          cardData.forEach((c: any) => {
+            cardMap[c.id] = {
+              name: c.name,
+              image_small: c.image_small,
+              set_name: c.raw_data?.set?.name ?? c.set_id ?? null
+            };
+          });
+        }
+      }
+
+      // Map the results
+      const mappedListings = (data ?? []).map((item): TradeListing => {
+        const cardInfo = cardMap[item.card_id] ?? {};
+        return {
+          id: item.id,
+          card_id: item.card_id,
+          set_id: item.set_id,
+          card_name: cardInfo.name ?? item.card_id ?? null,
+          image_url: cardInfo.image_small ?? null,
+          set_name: cardInfo.set_name ?? item.set_id ?? null,
+          asking_price: item.asking_price,
+          condition: item.condition,
+        };
+      });
+
+      setListings(mappedListings);
     } catch (err) {
       console.log('Failed to load trade listings', err);
     } finally {

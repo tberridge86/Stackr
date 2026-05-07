@@ -8,6 +8,15 @@ const API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 
 export type MarketplaceListingStatus = 'active' | 'archived' | 'sold';
 
+export type MarketplaceListingPrices = {
+  tcg_mid: number | null;
+  tcg_low: number | null;
+  tcg_market: number | null;
+  ebay_average: number | null;
+  cardmarket_trend: number | null;
+  cardmarket_avg30: number | null;
+};
+
 export type MarketplaceListing = {
   id: string;
   user_id: string;
@@ -26,6 +35,7 @@ export type MarketplaceListing = {
   status: MarketplaceListingStatus;
   created_at: string;
   updated_at?: string | null;
+  prices?: MarketplaceListingPrices | null;
   profiles?: {
     collector_name: string | null;
     avatar_url: string | null;
@@ -102,6 +112,46 @@ async function attachProfiles(
   }));
 }
 
+async function attachPrices(listings: MarketplaceListing[]): Promise<MarketplaceListing[]> {
+  const uniqueCardIds = Array.from(
+    new Set(listings.map((l) => l.card_id).filter(Boolean))
+  );
+
+  if (uniqueCardIds.length === 0) return listings;
+
+  // Get latest snapshots for each card
+  const { data: snapData, error } = await supabase
+    .from('market_price_snapshots')
+    .select('card_id, tcg_mid, tcg_low, tcg_market, ebay_average, cardmarket_trend, cardmarket_avg30, snapshot_at')
+    .in('card_id', uniqueCardIds)
+    .order('snapshot_at', { ascending: false });
+
+  if (error) {
+    console.log('Price snapshot fetch error:', error);
+    return listings;
+  }
+
+  // Group by card_id and get latest
+  const latestSnap: Record<string, any> = {};
+  for (const row of snapData ?? []) {
+    if (!latestSnap[row.card_id]) {
+      latestSnap[row.card_id] = row;
+    }
+  }
+
+  return listings.map((listing) => ({
+    ...listing,
+    prices: latestSnap[listing.card_id] ? {
+      tcg_mid: latestSnap[listing.card_id].tcg_mid ?? null,
+      tcg_low: latestSnap[listing.card_id].tcg_low ?? null,
+      tcg_market: latestSnap[listing.card_id].tcg_market ?? null,
+      ebay_average: latestSnap[listing.card_id].ebay_average ?? null,
+      cardmarket_trend: latestSnap[listing.card_id].cardmarket_trend ?? null,
+      cardmarket_avg30: latestSnap[listing.card_id].cardmarket_avg30 ?? null,
+    } : null,
+  }));
+}
+
 async function notifyDiscordNewTradeListing(listingId: string) {
   console.log('🔥 notifyDiscordNewTradeListing called');
   console.log('API_URL:', API_URL);
@@ -148,12 +198,14 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[]> 
       created_at, updated_at
     `)
     .eq('flag_type', 'trade')
+    .eq('listing_status', 'active')
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
 
   const listings = ((data ?? []) as any[]).map(mapFlagToListing);
-  return attachProfiles(listings);
+  const withProfiles = await attachProfiles(listings);
+  return attachPrices(withProfiles);
 }
 
 export async function fetchMyListings(): Promise<MarketplaceListing[]> {
@@ -176,7 +228,23 @@ export async function fetchMyListings(): Promise<MarketplaceListing[]> {
   if (error) throw new Error(error.message);
 
   const listings = ((data ?? []) as any[]).map(mapFlagToListing);
-  return attachProfiles(listings);
+  const withProfiles = await attachProfiles(listings);
+  return attachPrices(withProfiles);
+}
+
+export async function deleteMarketplaceListing(listingId: string): Promise<void> {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw new Error(userError.message);
+  if (!user) throw new Error('You must be signed in to delete a listing.');
+
+  const { error } = await supabase
+    .from('user_card_flags')
+    .delete()
+    .eq('id', listingId)
+    .eq('user_id', user.id)
+    .eq('flag_type', 'trade');
+
+  if (error) throw new Error(error.message);
 }
 
 export async function createMarketplaceListing(input: {

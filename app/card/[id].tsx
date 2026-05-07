@@ -14,7 +14,7 @@ import { Text } from '../../components/Text';
 import { useLocalSearchParams } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
 import { useProfile } from '../../components/profile-context';
-import { createMarketplaceListing } from '../../lib/marketplace';
+import { createMarketplaceListing, deleteMarketplaceListing } from '../../lib/marketplace';
 import {
   getCachedCardSync,
   getCachedCardsForSet,
@@ -337,7 +337,7 @@ export default function CardDetailScreen() {
     }
   };
 
-  const handleListOnMarketplace = async () => {
+const handleListOnMarketplace = async () => {
     try {
       if (!card) {
         Alert.alert('Error', 'Card data not loaded yet.');
@@ -371,6 +371,35 @@ export default function CardDetailScreen() {
     } finally {
       setListingBusy(false);
     }
+  };
+
+  const handleDeleteListing = async () => {
+    if (!existingActiveListing) return;
+    
+    Alert.alert(
+      'Remove Listing',
+      'Are you sure you want to remove this card from the marketplace?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setListingBusy(true);
+              await deleteMarketplaceListing(existingActiveListing.id);
+              await refreshTrade();
+              Alert.alert('Removed', 'Card has been removed from the marketplace.');
+            } catch (err) {
+              const message = err instanceof Error ? err.message : 'Failed to remove listing.';
+              Alert.alert('Error', message);
+            } finally {
+              setListingBusy(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   // ===============================
@@ -654,23 +683,33 @@ export default function CardDetailScreen() {
         </View>
       </View>
 
-      {/* Marketplace Button */}
-      <TouchableOpacity
-        style={[
-          styles.marketplaceButton,
-          (listingBusy || !!existingActiveListing) && styles.marketplaceButtonDisabled,
-        ]}
-        onPress={handleListOnMarketplace}
-        disabled={listingBusy || !!existingActiveListing}
-      >
-        <Text style={styles.marketplaceButtonText}>
-          {listingBusy
-            ? 'Listing...'
-            : existingActiveListing
-            ? 'Already Listed on Marketplace'
-            : 'List on Marketplace'}
-        </Text>
-      </TouchableOpacity>
+{/* Marketplace Button(s) */}
+      {existingActiveListing ? (
+        <View style={styles.marketplaceButtonsRow}>
+          <TouchableOpacity
+            style={[styles.deleteButton, listingBusy && styles.buttonDisabled]}
+            onPress={handleDeleteListing}
+            disabled={listingBusy}
+          >
+            <Text style={styles.deleteButtonText}>
+              {listingBusy ? 'Removing...' : '🗑️ Remove Listing'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={[
+            styles.marketplaceButton,
+            listingBusy && styles.buttonDisabled,
+          ]}
+          onPress={handleListOnMarketplace}
+          disabled={listingBusy}
+        >
+          <Text style={styles.marketplaceButtonText}>
+            {listingBusy ? 'Listing...' : 'List on Marketplace'}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* Card Details */}
       {!!card.types?.length && (
@@ -1061,7 +1100,7 @@ const styles = StyleSheet.create({
     minHeight: 90,
     textAlignVertical: 'top',
   },
-  marketplaceButton: {
+marketplaceButton: {
     backgroundColor: theme.colors.primary,
     borderRadius: 14,
     paddingVertical: 14,
@@ -1073,6 +1112,24 @@ const styles = StyleSheet.create({
   },
   marketplaceButtonText: {
     color: '#FFFFFF',
+    textAlign: 'center',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+  deleteButton: {
+    backgroundColor: '#FEE2E2',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+  },
+  deleteButtonText: {
+    color: '#DC2626',
     textAlign: 'center',
     fontWeight: '800',
     fontSize: 14,

@@ -560,7 +560,6 @@ export default function PriceBuilderScreen() {
               padding: 12,
               color: theme.colors.text,
               fontWeight: '800',
-              fontSize: 14,
               borderWidth: 1,
               borderColor: theme.colors.border,
             }}
