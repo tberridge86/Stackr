@@ -253,6 +253,24 @@ function buildFallbackQuery({ name = '', setName = '', number = '', rarity = '' 
 }
 
 // ===============================
+// PRICE RESULT CACHE (2-hour TTL)
+// ===============================
+
+const priceCache = new Map();
+const PRICE_CACHE_TTL = 2 * 60 * 60 * 1000;
+
+function getCachedPrice(key) {
+  const entry = priceCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) { priceCache.delete(key); return null; }
+  return entry.data;
+}
+
+function setCachedPrice(key, data) {
+  priceCache.set(key, { data, expiresAt: Date.now() + PRICE_CACHE_TTL });
+}
+
+// ===============================
 // TOKEN CACHE
 // ===============================
 
@@ -361,7 +379,14 @@ function filterItems(items, query) {
 async function fetchEbaySummary(query, options = {}) {
   const { name = '', setName = '', number = '', rarity = '' } = options;
   const cardName = name || query.split(' ')[0];
-  
+
+  const cacheKey = query.toLowerCase().trim();
+  const cached = getCachedPrice(cacheKey);
+  if (cached) {
+    console.log(`✅ Cache hit for "${query}"`);
+    return cached;
+  }
+
   const rawItems = await searchEbay(query);
   let cleaned = filterItems(rawItems, query);
 
@@ -383,7 +408,7 @@ async function fetchEbaySummary(query, options = {}) {
 
   const summary = summarisePrices(prices);
 
-  return {
+  const result = {
     marketplace: EBAY_MARKETPLACE_ID,
     query: usedFallback ? fallbackQuery : query,
     originalQuery: query,
@@ -402,6 +427,9 @@ async function fetchEbaySummary(query, options = {}) {
       price: item.price?.value,
     })),
   };
+
+  setCachedPrice(cacheKey, result);
+  return result;
 }
 
 // ===============================
