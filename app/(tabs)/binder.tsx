@@ -103,11 +103,12 @@ const isDark = (color?: string): boolean => {
 type BinderCardProps = {
   item: BinderRecord;
   counts: BinderCardCountMap;
+  value: number | null;
   confirmDeleteBinder: (binder: BinderRecord) => void;
   index: number;
 };
 
-function BinderCard({ item, counts, confirmDeleteBinder, index }: BinderCardProps) {
+function BinderCard({ item, counts, value, confirmDeleteBinder, index }: BinderCardProps) {
   const [logoFailed, setLogoFailed] = useState(false);
 
   const progress = counts[item.id] ?? { owned: 0, total: 0 };
@@ -232,6 +233,11 @@ function BinderCard({ item, counts, confirmDeleteBinder, index }: BinderCardProp
         <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }}>
           {progress.owned}/{progress.total} · {percentage}%
         </Text>
+        {value !== null && (
+          <Text style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '700', marginTop: 2 }}>
+            £{value.toFixed(2)}
+          </Text>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -241,9 +247,12 @@ function BinderCard({ item, counts, confirmDeleteBinder, index }: BinderCardProp
 // MAIN COMPONENT
 // ===============================
 
+type BinderValueMap = Record<string, number>;
+
 export default function BinderLibraryScreen() {
   const [binders, setBinders] = useState<BinderRecord[]>([]);
   const [counts, setCounts] = useState<BinderCardCountMap>({});
+  const [values, setValues] = useState<BinderValueMap>({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>('recent');
   const [sortOpen, setSortOpen] = useState(false);
@@ -272,11 +281,16 @@ export default function BinderLibraryScreen() {
         data.map(async (binder) => {
           const cards = await fetchBinderCards(binder.id);
           const owned = cards.filter((c) => c.owned).length;
-          return [binder.id, { owned, total: cards.length }] as const;
+          const totalValue = cards.reduce((sum, card) => sum + (card.ebay_price ?? 0), 0);
+          return [binder.id, { owned, total: cards.length, value: totalValue }] as const;
         })
       );
 
-      setCounts(Object.fromEntries(entries));
+      const countEntries = entries.map(([id, { owned, total }]) => [id, { owned, total }]);
+      const valueEntries = entries.map(([id, { value }]) => [id, value]);
+
+      setCounts(Object.fromEntries(countEntries));
+      setValues(Object.fromEntries(valueEntries));
     } catch (error) {
       console.log('Failed to load binders', error);
     } finally {
@@ -614,6 +628,7 @@ export default function BinderLibraryScreen() {
               <BinderCard
                 item={item}
                 counts={counts}
+                value={values[item.id] ?? null}
                 confirmDeleteBinder={confirmDeleteBinder}
                 index={index}
               />
