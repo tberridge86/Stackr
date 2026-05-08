@@ -690,6 +690,7 @@ app.get('/debug-serpapi', async (req, res) => {
     LH_Sold: '1',
     LH_Complete: '1',
     sacat: '0',
+    no_cache: '1',
     api_key: SERPAPI_API_KEY,
     ebay_domain: marketplace === 'ebay_us' ? 'ebay.com' : 'ebay.co.uk',
   });
@@ -697,7 +698,7 @@ app.get('/debug-serpapi', async (req, res) => {
 
   const serpRes = await fetch(serpUrl, { headers: { Accept: 'application/json' } });
   const data = await serpRes.json();
-  return res.json({ topLevelKeys: Object.keys(data), data });
+  return res.json({ topLevelKeys: Object.keys(data), searchParams: data.search_parameters, ebayUrl: data.search_metadata?.ebay_url, sampleTitles: (data.organic_results || []).slice(0, 5).map(r => ({ title: r.title, price: r.price })) });
 });
 
 app.get('/', (req, res) => {
