@@ -230,24 +230,29 @@ function summarisePrices(prices) {
 
   const sorted = [...prices].sort((a, b) => a - b);
 
-  let trimmed;
-  if (sorted.length >= 10) {
-    // Trim bottom 15% and top 15% for a robust mid-market range
-    const cut = Math.max(1, Math.floor(sorted.length * 0.15));
-    trimmed = sorted.slice(cut, sorted.length - cut);
-  } else if (sorted.length >= 6) {
-    trimmed = sorted.slice(1, -1);
-  } else {
-    trimmed = sorted;
+  // IQR-based outlier removal (Tukey fences) for 4+ prices
+  let filtered = sorted;
+  if (sorted.length >= 4) {
+    const q1 = sorted[Math.floor(sorted.length * 0.25)];
+    const q3 = sorted[Math.floor(sorted.length * 0.75)];
+    const iqr = q3 - q1;
+    const lower = q1 - 1.5 * iqr;
+    const upper = q3 + 1.5 * iqr;
+    const fenced = sorted.filter(p => p >= lower && p <= upper);
+    if (fenced.length >= 3) filtered = fenced;
   }
 
-  const avg = trimmed.reduce((sum, p) => sum + p, 0) / trimmed.length;
+  // Median as the central estimate — unaffected by remaining outliers
+  const mid = Math.floor(filtered.length / 2);
+  const median = filtered.length % 2 !== 0
+    ? filtered[mid]
+    : (filtered[mid - 1] + filtered[mid]) / 2;
 
   return {
-    low: Number(trimmed[0].toFixed(2)),
-    average: Number(avg.toFixed(2)),
-    high: Number(trimmed[trimmed.length - 1].toFixed(2)),
-    count: trimmed.length,
+    low: Number(filtered[0].toFixed(2)),
+    average: Number(median.toFixed(2)),
+    high: Number(filtered[filtered.length - 1].toFixed(2)),
+    count: filtered.length,
   };
 }
 
