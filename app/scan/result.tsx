@@ -83,9 +83,13 @@ export default function ScanResultScreen() {
         setEbayLoading(true);
         setEbayPrice(null);
 
-        const query = `${selectedCard.name} ${selectedCard.set_name} ${selectedCard.number} pokemon card`;
-        console.log('Fetching eBay price for:', query);
-        const result = await fetchEbayPrice(query);
+        const result = await fetchEbayPrice({
+          cardId: selectedCard.id,
+          name: selectedCard.name,
+          setName: selectedCard.set_name,
+          number: selectedCard.number,
+          rarity: selectedCard.rarity,
+        });
         console.log('eBay result:', result);
 
         setEbayPrice({

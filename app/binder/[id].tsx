@@ -263,14 +263,19 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       const name = card.card?.name ?? card.card_name ?? '';
       const setName = card.card?.set?.name ?? card.set_name ?? '';
       const number = card.card?.number ?? card.card_number ?? '';
-      const editionTerm = binder?.edition === '1st_edition' ? '1st edition' : '';
+      const cardId = card.card?.id ?? card.card_id ?? '';
+      const baseRarity = card.card?.rarity ?? '';
+      const rarity = binder?.edition === '1st_edition'
+        ? `${baseRarity} 1st edition`.trim()
+        : baseRarity;
 
-      const query = [name, setName, number, editionTerm, 'pokemon card']
-        .map((v) => v.trim())
-        .filter(Boolean)
-        .join(' ');
-
-      const result = await fetchEbayPrice(query);
+      const result = await fetchEbayPrice({
+        cardId,
+        name,
+        setName,
+        number,
+        rarity,
+      });
 
       setModalEbayPrice({
         low: result.low ?? null,

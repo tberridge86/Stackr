@@ -47,7 +47,7 @@ function getErrorMessage(error) {
 
 const BLOCKED_TERMS = [
   // Graded slabs
-  'psa', 'bgs', 'cgc', 'sgc', 'rcg', 'hga', 'csg', 'tag graded', 'ace grading', 'beckett',
+  'psa', 'bgs', 'cgc', 'sgc', 'rcg', 'hga', 'csg', 'ace', 'beckett',
   'graded', 'gem mint', 'slab',
 
   // Fakes / unofficial
