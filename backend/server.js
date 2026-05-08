@@ -324,9 +324,9 @@ async function getToken() {
 // ===============================
 
 async function searchEbay(query, token) {
-  const url = `https://api.ebay.com/buy/marketplace_insights/v1_beta/item_sales/search?q=${encodeURIComponent(
+  const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
     query
-  )}&limit=50&sort=lastSoldDate`;
+  )}&limit=50&sort=bestMatch`;
 
   const res = await fetch(url, {
     headers: {
@@ -337,16 +337,11 @@ async function searchEbay(query, token) {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Marketplace Insights search failed (${res.status}): ${text}`);
+    throw new Error(`Browse search failed (${res.status}): ${text}`);
   }
 
   const data = await res.json();
-
-  // Normalise to the same shape filterItems expects: { title, price: { value } }
-  return (data.itemSales || []).map((item) => ({
-    title: item.title || '',
-    price: { value: item.lastSoldPrice?.value ?? null },
-  }));
+  return data.itemSummaries || [];
 }
 
 function filterItems(items, query) {

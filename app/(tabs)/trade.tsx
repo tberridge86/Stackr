@@ -1073,7 +1073,7 @@ const handleArchive = async (listingId: string) => {
                         {/* Live eBay Prices */}
                         <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                          <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '800' }}>eBay Live (GBP)</Text>
+                          <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '800' }}>eBay Current Listings (GBP)</Text>
                           {ebayLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
                         </View>
                         {ebayLoading ? (
@@ -1118,7 +1118,7 @@ const handleArchive = async (listingId: string) => {
                         )}
                         
                         <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 16, marginTop: 6 }}>
-                          Live prices fetched directly from eBay. Historical prices from TCG data.
+                          Current listing prices from eBay (not sold prices). Historical prices from TCG data.
                         </Text>
                       </View>
 

@@ -482,7 +482,7 @@ const handleListOnMarketplace = async () => {
         <View style={styles.infoCard}>
 
           {/* eBay Live Prices */}
-          <Text style={styles.priceSourceLabel}>eBay (Live · GBP)</Text>
+          <Text style={styles.priceSourceLabel}>eBay Current Listings · GBP</Text>
 
           {ebayLoading ? (
             <View style={styles.ebayLoadingRow}>
