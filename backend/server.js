@@ -7,6 +7,7 @@ import fetch from 'node-fetch';
 import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
 import cardsightRoutes from './routes/cardsight.js';
+import { Buffer } from 'node:buffer';
 
 const app = express();
 
@@ -18,6 +19,8 @@ app.use('/api/discord', discordRoutes);
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
+const SERPAPI_API_KEY = process.env.SERPAPI_API_KEY;
+const SERPAPI_ENGINE = process.env.SERPAPI_ENGINE || 'ebay';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 const PORT = process.env.PORT || 3001;
@@ -267,6 +270,17 @@ function buildFallbackQuery({ name = '', setName = '', number = '', rarity = '' 
 const priceCache = new Map();
 const PRICE_CACHE_TTL = 2 * 60 * 60 * 1000;
 
+// In-flight dedupe so concurrent identical queries share one upstream call
+const inflightPriceRequests = new Map();
+
+// Short failure cache to avoid immediate repeat hits after upstream throttling
+const failureCache = new Map();
+const FAILURE_CACHE_TTL = 60 * 1000;
+
+// Global cooldown after eBay rate limit response
+let ebayRateLimitCooldownUntil = 0;
+const EBAY_RATE_LIMIT_COOLDOWN_MS = 60 * 1000;
+
 function getCachedPrice(key) {
   const entry = priceCache.get(key);
   if (!entry) return null;
@@ -276,6 +290,35 @@ function getCachedPrice(key) {
 
 function setCachedPrice(key, data) {
   priceCache.set(key, { data, expiresAt: Date.now() + PRICE_CACHE_TTL });
+}
+
+function getCachedFailure(key) {
+  const entry = failureCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    failureCache.delete(key);
+    return null;
+  }
+  return entry.error;
+}
+
+function setCachedFailure(key, error) {
+  failureCache.set(key, { error, expiresAt: Date.now() + FAILURE_CACHE_TTL });
+}
+
+function normalizePriceKey({ query = '', name = '', setName = '', number = '', rarity = '' }) {
+  return JSON.stringify({
+    query: String(query || '').trim().toLowerCase(),
+    name: String(name || '').trim().toLowerCase(),
+    setName: String(setName || '').trim().toLowerCase(),
+    number: String(number || '').trim().toLowerCase(),
+    rarity: String(rarity || '').trim().toLowerCase(),
+  });
+}
+
+function isEbayRateLimitErrorMessage(message = '') {
+  const m = String(message || '').toLowerCase();
+  return m.includes('errorid') && m.includes('10001') && m.includes('ratelimiter');
 }
 
 // ===============================
@@ -328,39 +371,129 @@ async function getToken() {
 }
 
 // ===============================
-// CORE EBAY SEARCH (sold prices via Finding API)
+// CORE EBAY SEARCH (Browse API)
+// NOTE: Browse API does not provide exact equivalent of Finding's completed/sold endpoint.
+// We approximate market pricing from current listing summaries (buyingOptions FIXED_PRICE/AUCTION).
 // ===============================
 
-async function searchEbay(query) {
-  const globalId = EBAY_MARKETPLACE_ID.replace('_', '-');
+function getBrowseLimitErrorMessage(status, text) {
+  const raw = String(text || '');
+  if (status === 429) return `Browse API rate limited (429): ${raw}`;
+  if (status === 403) return `Browse API forbidden (403): ${raw}`;
+  return `Browse API search failed (${status}): ${raw}`;
+}
 
-  const url =
-    'https://svcs.ebay.com/services/search/FindingService/v1' +
-    '?OPERATION-NAME=findCompletedItems' +
-    '&SERVICE-VERSION=1.0.0' +
-    `&SECURITY-APPNAME=${encodeURIComponent(EBAY_CLIENT_ID)}` +
-    '&RESPONSE-DATA-FORMAT=JSON' +
-    `&GLOBAL-ID=${globalId}` +
-    `&keywords=${encodeURIComponent(query)}` +
-    '&itemFilter(0).name=SoldItemsOnly' +
-    '&itemFilter(0).value=true' +
-    '&sortOrder=EndTimeSoonest' +
-    '&paginationInput.entriesPerPage=50';
+function parseSoldPriceValue(rawValue) {
+  if (rawValue == null) return null;
+  const cleaned = String(rawValue).replace(/[^0-9.,-]/g, '').replace(/,/g, '');
+  const num = parseFloat(cleaned);
+  return Number.isFinite(num) ? num : null;
+}
 
-  const res = await fetch(url);
+function normalizeSerpApiSoldItems(data) {
+  const candidates = [
+    ...(Array.isArray(data?.organic_results) ? data.organic_results : []),
+    ...(Array.isArray(data?.shopping_results) ? data.shopping_results : []),
+  ];
+
+  return candidates
+    .map((item) => {
+      const title = String(item?.title || item?.name || '').trim();
+      const priceValue =
+        parseSoldPriceValue(item?.price) ??
+        parseSoldPriceValue(item?.extracted_price) ??
+        parseSoldPriceValue(item?.price?.value);
+
+      return {
+        title,
+        price: { value: priceValue },
+      };
+    })
+    .filter((item) => item.title && item.price.value !== null);
+}
+
+async function searchEbaySoldListingsSerpApi(query) {
+  if (!SERPAPI_API_KEY) {
+    throw new Error('Missing SERPAPI_API_KEY');
+  }
+
+  const marketplace = String(EBAY_MARKETPLACE_ID || 'EBAY_GB').toLowerCase();
+  const serpUrl =
+    'https://serpapi.com/search.json' +
+    `?engine=${encodeURIComponent(SERPAPI_ENGINE)}` +
+    `&q=${encodeURIComponent(query)}` +
+    '&_nkw=' + encodeURIComponent(query) +
+    '&LH_Sold=1' +
+    '&LH_Complete=1' +
+    `&sacat=0` +
+    `&api_key=${encodeURIComponent(SERPAPI_API_KEY)}` +
+    `&ebay_domain=${encodeURIComponent(marketplace === 'ebay_us' ? 'ebay.com' : 'ebay.co.uk')}`;
+
+  const res = await fetch(serpUrl, {
+    headers: { Accept: 'application/json' },
+  });
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Finding API search failed (${res.status}): ${text}`);
+    throw new Error(`SerpApi sold search failed (${res.status}): ${text}`);
   }
 
   const data = await res.json();
-  const items = data?.findCompletedItemsResponse?.[0]?.searchResult?.[0]?.item ?? [];
+  const normalized = normalizeSerpApiSoldItems(data);
 
-  return items.map((item) => ({
-    title: item.title?.[0] ?? '',
-    price: { value: item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ ?? null },
-  }));
+  if (!normalized.length) {
+    throw new Error('SerpApi returned no sold listings');
+  }
+
+  return normalized;
+}
+
+async function searchEbayBrowseListings(query) {
+  const now = Date.now();
+  if (now < ebayRateLimitCooldownUntil) {
+    const secs = Math.ceil((ebayRateLimitCooldownUntil - now) / 1000);
+    throw new Error(`eBay rate-limit cooldown active (${secs}s remaining)`);
+  }
+
+  const token = await getToken();
+  const marketplace = EBAY_MARKETPLACE_ID;
+  const limit = 50;
+
+  const url =
+    'https://api.ebay.com/buy/browse/v1/item_summary/search' +
+    `?q=${encodeURIComponent(query)}` +
+    `&limit=${limit}` +
+    '&sort=price';
+
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'X-EBAY-C-MARKETPLACE-ID': marketplace,
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    const message = getBrowseLimitErrorMessage(res.status, text);
+    if (res.status === 429 || message.toLowerCase().includes('ratelimit')) {
+      ebayRateLimitCooldownUntil = Date.now() + EBAY_RATE_LIMIT_COOLDOWN_MS;
+    }
+    throw new Error(message);
+  }
+
+  const data = await res.json();
+  const items = Array.isArray(data?.itemSummaries) ? data.itemSummaries : [];
+
+  return items
+    .filter((item) => {
+      const options = Array.isArray(item?.buyingOptions) ? item.buyingOptions : [];
+      return options.includes('FIXED_PRICE') || options.includes('AUCTION');
+    })
+    .map((item) => ({
+      title: item?.title ?? '',
+      price: { value: item?.price?.value ?? item?.currentBidPrice?.value ?? null },
+    }));
 }
 
 function filterItems(items, query) {
@@ -383,56 +516,98 @@ async function fetchEbaySummary(query, options = {}) {
   const { name = '', setName = '', number = '', rarity = '' } = options;
   const cardName = name || query.split(' ')[0];
 
-  const cacheKey = query.toLowerCase().trim();
+  const cacheKey = normalizePriceKey({ query, name, setName, number, rarity });
+
   const cached = getCachedPrice(cacheKey);
   if (cached) {
     console.log(`✅ Cache hit for "${query}"`);
     return cached;
   }
 
-  const rawItems = await searchEbay(query);
-  let cleaned = filterItems(rawItems, query);
-
-  let usedFallback = false;
-  let fallbackQuery = '';
-
-  if (cleaned.length === 0 && cardName) {
-    fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, rarity });
-    console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
-
-    const fallbackItems = await searchEbay(fallbackQuery);
-    cleaned = filterItems(fallbackItems, fallbackQuery);
-    usedFallback = true;
+  const cachedFailure = getCachedFailure(cacheKey);
+  if (cachedFailure) {
+    throw new Error(cachedFailure);
   }
 
-  const prices = cleaned
-    .map((item) => numberFromPrice(item.price?.value))
-    .filter((p) => p !== null);
+  if (inflightPriceRequests.has(cacheKey)) {
+    return inflightPriceRequests.get(cacheKey);
+  }
 
-  const summary = summarisePrices(prices);
+  const promise = (async () => {
+    try {
+      let rawItems = [];
+      let usedSoldProvider = false;
 
-  const result = {
-    marketplace: EBAY_MARKETPLACE_ID,
-    query: usedFallback ? fallbackQuery : query,
-    originalQuery: query,
-    usedFallback,
-    low: summary.low,
-    average: summary.average,
-    high: summary.high,
-    count: summary.count,
-    rawCount: rawItems.length,
-    sampleTitles: rawItems.slice(0, 10).map((item) => ({
-      title: item.title,
-      price: item.price?.value,
-    })),
-    acceptedTitles: cleaned.slice(0, 10).map((item) => ({
-      title: item.title,
-      price: item.price?.value,
-    })),
-  };
+      try {
+        rawItems = await searchEbaySoldListingsSerpApi(query);
+        usedSoldProvider = true;
+      } catch (soldError) {
+        console.log(`⚠️ Sold-provider failed for "${query}" (${getErrorMessage(soldError)}). Falling back to Browse listings.`);
+        rawItems = await searchEbayBrowseListings(query);
+      }
+      let cleaned = filterItems(rawItems, query);
 
-  setCachedPrice(cacheKey, result);
-  return result;
+      let usedFallback = false;
+      let fallbackQuery = '';
+
+      if (cleaned.length === 0 && cardName) {
+        fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, rarity });
+        console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
+
+        let fallbackItems = [];
+        try {
+          fallbackItems = await searchEbaySoldListingsSerpApi(fallbackQuery);
+          usedSoldProvider = true;
+        } catch (soldFallbackError) {
+          console.log(`⚠️ Sold-provider fallback failed for "${fallbackQuery}" (${getErrorMessage(soldFallbackError)}). Falling back to Browse listings.`);
+          fallbackItems = await searchEbayBrowseListings(fallbackQuery);
+        }
+        cleaned = filterItems(fallbackItems, fallbackQuery);
+        usedFallback = true;
+      }
+
+      const prices = cleaned
+        .map((item) => numberFromPrice(item.price?.value))
+        .filter((p) => p !== null);
+
+      const summary = summarisePrices(prices);
+
+      const result = {
+        marketplace: EBAY_MARKETPLACE_ID,
+        query: usedFallback ? fallbackQuery : query,
+        originalQuery: query,
+        usedFallback,
+        low: summary.low,
+        average: summary.average,
+        high: summary.high,
+        count: summary.count,
+        rawCount: rawItems.length,
+        soldDataSource: usedSoldProvider ? 'serpapi' : 'browse',
+        sampleTitles: rawItems.slice(0, 10).map((item) => ({
+          title: item.title,
+          price: item.price?.value,
+        })),
+        acceptedTitles: cleaned.slice(0, 10).map((item) => ({
+          title: item.title,
+          price: item.price?.value,
+        })),
+      };
+
+      setCachedPrice(cacheKey, result);
+      return result;
+    } catch (error) {
+      const message = getErrorMessage(error);
+      if (isEbayRateLimitErrorMessage(message) || message.includes('cooldown active')) {
+        setCachedFailure(cacheKey, message);
+      }
+      throw error;
+    } finally {
+      inflightPriceRequests.delete(cacheKey);
+    }
+  })();
+
+  inflightPriceRequests.set(cacheKey, promise);
+  return promise;
 }
 
 // ===============================
@@ -565,8 +740,8 @@ app.get('/price/debug', async (req, res) => {
     const fallbackQuery = buildFallbackQuery({ name });
 
     const [primaryRaw, fallbackRaw] = await Promise.all([
-      searchEbay(primaryQuery),
-      searchEbay(fallbackQuery),
+      searchEbayBrowseListings(primaryQuery),
+      searchEbayBrowseListings(fallbackQuery),
     ]);
 
     function analyseItems(items, query) {
