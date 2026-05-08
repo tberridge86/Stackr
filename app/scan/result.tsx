@@ -337,7 +337,7 @@ export default function ScanResultScreen() {
               marginBottom: 14,
             }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginBottom: 12 }}>
-                eBay Current Listings (GBP)
+                eBay Sold Prices (GBP)
               </Text>
 
               {ebayLoading ? (

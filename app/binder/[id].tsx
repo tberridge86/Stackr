@@ -1478,7 +1478,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       </View>
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                        eBay Current Listings · GBP {binder.edition === '1st_edition' ? '· 1st Edition' : ''}
+                        eBay Sold Prices · GBP {binder.edition === '1st_edition' ? '· 1st Edition' : ''}
                       </Text>
 
                       {modalEbayLoading ? (

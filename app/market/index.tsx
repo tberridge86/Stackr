@@ -760,7 +760,7 @@ try {
 
                       <View style={{ marginTop: 12, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>eBay Current Listings (GBP)</Text>
+                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>eBay Sold Prices (GBP)</Text>
                           {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
                         </View>
 
