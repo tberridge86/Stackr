@@ -452,6 +452,9 @@ function normalizeSerpApiSoldItems(data) {
   const candidates = [
     ...(Array.isArray(data?.organic_results) ? data.organic_results : []),
     ...(Array.isArray(data?.shopping_results) ? data.shopping_results : []),
+    ...(Array.isArray(data?.search_results) ? data.search_results : []),
+    ...(Array.isArray(data?.results) ? data.results : []),
+    ...(Array.isArray(data?.items) ? data.items : []),
   ];
 
   return candidates
@@ -497,6 +500,8 @@ async function searchEbaySoldListingsSerpApi(query) {
   }
 
   const data = await res.json();
+  console.log('🔍 SerpApi top-level keys:', Object.keys(data));
+
   const normalized = normalizeSerpApiSoldItems(data);
 
   if (!normalized.length) {
@@ -671,6 +676,24 @@ async function fetchEbaySummary(query, options = {}) {
 // ===============================
 // ROUTES
 // ===============================
+
+app.get('/debug-serpapi', async (req, res) => {
+  const query = String(req.query.q || 'Charizard base set').trim();
+  if (!SERPAPI_API_KEY) return res.status(500).json({ error: 'Missing SERPAPI_API_KEY' });
+
+  const marketplace = String(EBAY_MARKETPLACE_ID || 'EBAY_GB').toLowerCase();
+  const serpUrl =
+    'https://serpapi.com/search.json' +
+    `?engine=${encodeURIComponent(SERPAPI_ENGINE)}` +
+    `&_nkw=${encodeURIComponent(query)}` +
+    '&LH_Sold=1&LH_Complete=1&sacat=0' +
+    `&api_key=${encodeURIComponent(SERPAPI_API_KEY)}` +
+    `&ebay_domain=${encodeURIComponent(marketplace === 'ebay_us' ? 'ebay.com' : 'ebay.co.uk')}`;
+
+  const serpRes = await fetch(serpUrl, { headers: { Accept: 'application/json' } });
+  const data = await serpRes.json();
+  return res.json({ topLevelKeys: Object.keys(data), data });
+});
 
 app.get('/', (req, res) => {
   res.send('Stackr API is running');
