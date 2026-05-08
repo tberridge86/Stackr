@@ -47,16 +47,18 @@ function getErrorMessage(error) {
 
 const BLOCKED_TERMS = [
   // Graded slabs
-  'psa', 'bgs', 'cgc', 'sgc', 'ace grading', 'beckett',
+  'psa', 'bgs', 'cgc', 'sgc', 'rcg', 'hga', 'csg', 'tag graded', 'ace grading', 'beckett',
   'graded', 'gem mint', 'slab',
 
   // Fakes / unofficial
-  'proxy', 'replica', 'reprint',
+  'proxy', 'replica', 'reprint', 'remake', 'reproduction',
+  'bootleg', 'counterfeit', 'fake',
   'custom card', 'custom ', 'fan art', 'fanart', 'fan-made', 'fan made',
 
   // Multi-card lots
   'bundle', 'bulk', 'job lot', 'joblot', 'lot of', 'trio', 'pair',
   'collection lot', 'mixed lot',
+  ' x2', ' x3', ' x4', ' x5',
 
   // Sealed product / booster
   'booster pack', 'booster box', 'booster bundle', 'booster',
@@ -104,6 +106,8 @@ const BLOCKED_TERMS = [
   'bookmark', 'patch',
   'playmat', 'play mat',
   'tin',
+  'tapestry', 'blanket', 'cushion', 'pillow', 'towel',
+  'wallet', 'umbrella', 'lamp',
 
   // Card accessories (not cards)
   'deck box', 'deckbox',
@@ -122,9 +126,10 @@ const BLOCKED_TERMS = [
 
   // Condition red flags
   'read description',
-  'heavily played', 'poor condition', 'damaged',
+  'heavily played', 'heavy play', 'moderate play', 'moderately played', 'poor condition', 'damaged',
   'creased', 'crease', 'bent', 'inked', 'marked',
   'written on', 'torn', 'water damaged',
+  'whitening', 'scratched', 'scuffed', 'faded',
 ];
 
 function titleLooksBad(title = '') {
