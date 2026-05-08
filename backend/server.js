@@ -1,3 +1,5 @@
+/* eslint-env node */
+import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import express from 'express';
 import cors from 'cors';
@@ -19,6 +21,12 @@ const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 const PORT = process.env.PORT || 3001;
+const EBAY_OAUTH_SCOPES = (
+  process.env.EBAY_OAUTH_SCOPES ||
+  'https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/developer.analytics.readonly'
+)
+  .split(/\s+/)
+  .filter(Boolean);
 
 
 const supabase = createClient(
@@ -298,7 +306,7 @@ async function getToken() {
     },
     body: new URLSearchParams({
       grant_type: 'client_credentials',
-      scope: 'https://api.ebay.com/oauth/api_scope',
+      scope: EBAY_OAUTH_SCOPES.join(' '),
     }),
   });
 
@@ -452,7 +460,23 @@ app.get('/ebay-rate-limits', async (_req, res) => {
     const response = await fetch('https://api.ebay.com/developer/analytics/v1_beta/rate_limit/', {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
     });
-    const data = await response.json();
+
+    const raw = await response.text();
+    let data;
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      data = { raw };
+    }
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: 'eBay rate limit request failed',
+        status: response.status,
+        detail: data,
+      });
+    }
+
     return res.json(data);
   } catch (error) {
     return res.status(500).json({ error: getErrorMessage(error) });

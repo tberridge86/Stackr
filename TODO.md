@@ -22,6 +22,12 @@ eBay price search returning wrong prices (£1.44-£2.51) for rare cards that sho
 ### Phase 3: Testing
 - [ ] Test with "Blastoise Base" query to verify correct pricing
 
+## Phase 4: OAuth / Rate Limit Diagnostics
+- [ ] 7. Add eBay OAuth scopes constant with developer analytics readonly scope
+- [ ] 8. Update getToken() to request all required scopes
+- [ ] 9. Improve /ebay-rate-limits error diagnostics (status + body passthrough)
+- [ ] 10. Verify endpoints: /test-ebay-token, /ebay-rate-limits, /api/price/ebay
+
 ## Completion
 Backend fixes complete - should now return more accurate prices for rare Pokemon cards.
 The fallback query now includes setName, number, and rarity hints for better matching.
