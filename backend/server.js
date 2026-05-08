@@ -123,6 +123,8 @@ const BLOCKED_TERMS = [
   'mystery pack', 'mystery box', 'mystery bag', 'mystery bundle',
   'novelty', 'random card', 'random selection',
   'coin', 'token',
+  'complete set', 'complete master', 'master set', 'full set', '100% complete',
+  'shadowless',
 
   // Condition red flags
   'read description',
