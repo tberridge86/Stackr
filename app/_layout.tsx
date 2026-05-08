@@ -6,7 +6,7 @@ import { ProfileProvider } from '../components/profile-context';
 import { TradeProvider } from '../components/trade-context';
 import { CollectionProvider } from '../components/collection-context';
 import { theme } from '../lib/theme';
-import { Platform, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -98,6 +98,7 @@ function PersistentTabBar() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
       <AuthProvider>
         <ProfileProvider>
           <CollectionProvider>
@@ -131,8 +132,11 @@ export default function RootLayout() {
                 <Stack.Screen name="card/[id]" options={{ title: '' }} />
                 <Stack.Screen name="set/[id]" options={{ title: '' }} />
                 <Stack.Screen name="offer/new" options={{ title: '' }} />
+                <Stack.Screen name="offer/index" options={{ title: '' }} />
+                <Stack.Screen name="offer/[id]" options={{ title: '' }} />
                 <Stack.Screen name="offers" options={{ title: '' }} />
 
+                <Stack.Screen name="listing/new" options={{ title: '' }} />
                 <Stack.Screen name="binder/new" options={{ title: '' }} />
                 <Stack.Screen name="binder/[id]" options={{ title: '' }} />
                 <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
@@ -151,6 +155,7 @@ export default function RootLayout() {
           </CollectionProvider>
         </ProfileProvider>
       </AuthProvider>
+      </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );
 }

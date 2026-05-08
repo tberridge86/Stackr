@@ -14,6 +14,7 @@ import {
   StyleSheet,
   Animated,
   PanResponder,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
@@ -114,6 +115,19 @@ export default function TradeScreen() {
   const [myOffers, setMyOffers] = useState<TradeOffer[]>([]);
   const [cardDetailsMap, setCardDetailsMap] = useState<Record<string, any>>({});
 const [myUserId, setMyUserId] = useState<string>('');
+
+  // Search & filters
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
+  const [filterConditions, setFilterConditions] = useState<string[]>([]);
+  const [filterMinPrice, setFilterMinPrice] = useState('');
+  const [filterMaxPrice, setFilterMaxPrice] = useState('');
+  const [filterHasPhotos, setFilterHasPhotos] = useState(false);
+
+  const activeFilterCount = filterConditions.length +
+    (filterMinPrice ? 1 : 0) + (filterMaxPrice ? 1 : 0) +
+    (filterHasPhotos ? 1 : 0) + (sortBy !== 'newest' ? 1 : 0);
 
   const [selectedListing, setSelectedListing] = useState<any | null>(null);
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
@@ -473,12 +487,44 @@ const openTradeCardDetail = async (item: any) => {
   // CURRENT DATA
   // ===============================
 
+  // Raw data used for loading card details — no filter dependencies
   const currentData = useMemo(() => {
     if (segment === 'marketplaceListings') return marketplaceListings;
     if (segment === 'myListings') return myListings;
     if (segment === 'wanted') return wantedCards;
     return [];
   }, [segment, marketplaceListings, myListings, wantedCards]);
+
+  // Filtered/sorted data for display — depends on cardDetailsMap but not the other way round
+  const displayData = useMemo(() => {
+    if (segment !== 'marketplaceListings') return currentData;
+
+    let data = [...currentData];
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      data = data.filter((item) => {
+        const details = cardDetailsMap[item.id];
+        const name = (details?.name ?? item.card_id ?? '').toLowerCase();
+        const set = (details?.set?.name ?? '').toLowerCase();
+        return name.includes(q) || set.includes(q);
+      });
+    }
+    if (filterConditions.length > 0) {
+      data = data.filter((item) => filterConditions.includes(item.condition));
+    }
+    const minP = parseFloat(filterMinPrice);
+    const maxP = parseFloat(filterMaxPrice);
+    if (!isNaN(minP)) data = data.filter((item) => (item.asking_price ?? 0) >= minP);
+    if (!isNaN(maxP)) data = data.filter((item) => (item.asking_price ?? 0) <= maxP);
+    if (filterHasPhotos) {
+      data = data.filter((item) => Array.isArray(item.listing_images) && item.listing_images.length > 0);
+    }
+    if (sortBy === 'price_asc') data.sort((a, b) => (a.asking_price ?? 0) - (b.asking_price ?? 0));
+    else if (sortBy === 'price_desc') data.sort((a, b) => (b.asking_price ?? 0) - (a.asking_price ?? 0));
+
+    return data;
+  }, [currentData, segment, searchQuery, filterConditions, filterMinPrice, filterMaxPrice, filterHasPhotos, sortBy, cardDetailsMap]);
 
   // ===============================
   // LOAD CARD DETAILS
@@ -674,7 +720,10 @@ const handleArchive = async (listingId: string) => {
   const renderListing = ({ item }: { item: any }) => {
     const sellerName = item?.profiles?.collector_name ?? 'Collector';
     const cardDetails = cardDetailsMap[item.id];
-    const imageUri = cardDetails?.images?.small ?? null;
+    const listingPhoto = Array.isArray(item.listing_images) && item.listing_images.length > 0
+      ? item.listing_images[0]
+      : null;
+    const imageUri = listingPhoto ?? cardDetails?.images?.small ?? null;
     const cardName = cardDetails?.name ?? item.card_id ?? 'Unknown card';
     const setName = cardDetails?.set?.name ?? 'Unknown set';
     const isMyListing = item.user_id === myUserId;
@@ -833,12 +882,171 @@ const handleArchive = async (listingId: string) => {
 
     return (
       <>
+        <TouchableOpacity
+          onPress={() => router.push('/listing/new' as any)}
+          style={{
+            backgroundColor: theme.colors.primary,
+            borderRadius: 14,
+            paddingVertical: 14,
+            alignItems: 'center',
+            marginBottom: 14,
+          }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>+ Add Listing</Text>
+        </TouchableOpacity>
+
         <View style={{ flexDirection: 'row', marginBottom: 16 }}>
           {renderSegmentButton('marketplaceListings', 'Listings')}
           {renderSegmentButton('myListings', 'Mine')}
           {renderSegmentButton('myOffers', `Offers${pendingOfferCount > 0 ? ` (${pendingOfferCount})` : ''}`)}
           {renderSegmentButton('wanted', 'Wanted')}
         </View>
+
+        {segment === 'marketplaceListings' && (
+          <View style={{ marginBottom: 12 }}>
+            {/* Search + Filter button */}
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Search cards or sets..."
+                placeholderTextColor={theme.colors.textSoft}
+                style={{
+                  flex: 1, backgroundColor: theme.colors.card, color: theme.colors.text,
+                  borderWidth: 1, borderColor: theme.colors.border, borderRadius: 12,
+                  paddingHorizontal: 12, paddingVertical: 9, fontSize: 13,
+                }}
+              />
+              <TouchableOpacity
+                onPress={() => setFiltersOpen(o => !o)}
+                style={{
+                  backgroundColor: activeFilterCount > 0 ? theme.colors.primary : theme.colors.card,
+                  borderRadius: 12, paddingHorizontal: 14, justifyContent: 'center',
+                  borderWidth: 1, borderColor: activeFilterCount > 0 ? theme.colors.primary : theme.colors.border,
+                }}
+              >
+                <Text style={{ color: activeFilterCount > 0 ? '#fff' : theme.colors.text, fontWeight: '800', fontSize: 13 }}>
+                  {activeFilterCount > 0 ? `Filters (${activeFilterCount})` : 'Filters'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Filter panel */}
+            {filtersOpen && (
+              <View style={{
+                backgroundColor: theme.colors.card, borderRadius: 14,
+                padding: 14, borderWidth: 1, borderColor: theme.colors.border,
+              }}>
+                {/* Sort */}
+                <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 13, marginBottom: 8 }}>Sort by</Text>
+                <View style={{ flexDirection: 'row', gap: 6, marginBottom: 14 }}>
+                  {(['newest', 'price_asc', 'price_desc'] as const).map((s) => (
+                    <TouchableOpacity
+                      key={s}
+                      onPress={() => setSortBy(s)}
+                      style={{
+                        flex: 1, paddingVertical: 7, borderRadius: 10, alignItems: 'center',
+                        backgroundColor: sortBy === s ? theme.colors.primary : theme.colors.surface,
+                        borderWidth: 1, borderColor: sortBy === s ? theme.colors.primary : theme.colors.border,
+                      }}
+                    >
+                      <Text style={{ color: sortBy === s ? '#fff' : theme.colors.text, fontSize: 11, fontWeight: '700' }}>
+                        {s === 'newest' ? 'Newest' : s === 'price_asc' ? 'Price ↑' : 'Price ↓'}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {/* Condition */}
+                <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 13, marginBottom: 8 }}>Condition</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14 }}>
+                  {['Near Mint', 'Lightly Played', 'Moderately Played', 'Heavily Played', 'Damaged'].map((c) => {
+                    const active = filterConditions.includes(c);
+                    return (
+                      <TouchableOpacity
+                        key={c}
+                        onPress={() => setFilterConditions(prev =>
+                          active ? prev.filter(x => x !== c) : [...prev, c]
+                        )}
+                        style={{
+                          paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,
+                          backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                          borderWidth: 1, borderColor: active ? theme.colors.primary : theme.colors.border,
+                        }}
+                      >
+                        <Text style={{ color: active ? '#fff' : theme.colors.text, fontSize: 12, fontWeight: '700' }}>
+                          {c === 'Near Mint' ? 'NM' : c === 'Lightly Played' ? 'LP' : c === 'Moderately Played' ? 'MP' : c === 'Heavily Played' ? 'HP' : 'DM'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {/* Price range */}
+                <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 13, marginBottom: 8 }}>Price Range (£)</Text>
+                <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
+                  <TextInput
+                    value={filterMinPrice}
+                    onChangeText={setFilterMinPrice}
+                    placeholder="Min"
+                    placeholderTextColor={theme.colors.textSoft}
+                    keyboardType="decimal-pad"
+                    style={{
+                      flex: 1, backgroundColor: theme.colors.surface, color: theme.colors.text,
+                      borderWidth: 1, borderColor: theme.colors.border, borderRadius: 10,
+                      paddingHorizontal: 10, paddingVertical: 8, fontSize: 13,
+                    }}
+                  />
+                  <TextInput
+                    value={filterMaxPrice}
+                    onChangeText={setFilterMaxPrice}
+                    placeholder="Max"
+                    placeholderTextColor={theme.colors.textSoft}
+                    keyboardType="decimal-pad"
+                    style={{
+                      flex: 1, backgroundColor: theme.colors.surface, color: theme.colors.text,
+                      borderWidth: 1, borderColor: theme.colors.border, borderRadius: 10,
+                      paddingHorizontal: 10, paddingVertical: 8, fontSize: 13,
+                    }}
+                  />
+                </View>
+
+                {/* Has photos */}
+                <TouchableOpacity
+                  onPress={() => setFilterHasPhotos(p => !p)}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 }}
+                >
+                  <View style={{
+                    width: 22, height: 22, borderRadius: 6, borderWidth: 2,
+                    borderColor: filterHasPhotos ? theme.colors.primary : theme.colors.border,
+                    backgroundColor: filterHasPhotos ? theme.colors.primary : 'transparent',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {filterHasPhotos && <Text style={{ color: '#fff', fontSize: 12, fontWeight: '900' }}>✓</Text>}
+                  </View>
+                  <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 13 }}>Photos only</Text>
+                </TouchableOpacity>
+
+                {/* Clear */}
+                <TouchableOpacity
+                  onPress={() => {
+                    setSortBy('newest');
+                    setFilterConditions([]);
+                    setFilterMinPrice('');
+                    setFilterMaxPrice('');
+                    setFilterHasPhotos(false);
+                  }}
+                  style={{
+                    borderWidth: 1, borderColor: theme.colors.border, borderRadius: 10,
+                    paddingVertical: 8, alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 13 }}>Clear all filters</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
 
         {!!tradeError && (
           <View style={{ backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 12 }}>
@@ -862,17 +1070,17 @@ const handleArchive = async (listingId: string) => {
               refreshControl={<RefreshControl refreshing={false} onRefresh={loadMyOffers} tintColor={theme.colors.primary} />}
             />
           )
-        ) : tradeLoading && currentData.length === 0 ? (
+        ) : tradeLoading && displayData.length === 0 ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         ) : (
           <FlatList
-            data={currentData}
+            data={displayData}
             keyExtractor={(item, index) => item.id ? String(item.id) : `${item.card_id}-${item.set_id}-${index}`}
             renderItem={renderListing}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 200, flexGrow: currentData.length === 0 ? 1 : 0 }}
+            contentContainerStyle={{ paddingBottom: 200, flexGrow: displayData.length === 0 ? 1 : 0 }}
             refreshControl={<RefreshControl refreshing={tradeLoading} onRefresh={refreshTrade} tintColor={theme.colors.primary} />}
             ListEmptyComponent={
               <View style={{ paddingVertical: 50 }}>

@@ -117,6 +117,15 @@ export default function OfferDetailScreen() {
   const [message, setMessage] = useState('');
   const [counterAmount, setCounterAmount] = useState('');
   const [sending, setSending] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { new: isNew } = useLocalSearchParams<{ new?: string }>();
+
+  const showToast = (msg: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(msg);
+    toastTimer.current = setTimeout(() => setToast(null), 3000);
+  };
 
   // ===============================
   // DERIVED STATE
@@ -173,6 +182,16 @@ export default function OfferDetailScreen() {
         setOfferCards(offerData.trade_offer_cards ?? []);
         setCashTerms(offerData.trade_cash_terms?.[0] ?? null);
 
+        if (isNew === '1' && offerData.receiver_id) {
+          const { data: receiverProfile } = await supabase
+            .from('profiles')
+            .select('collector_name')
+            .eq('id', offerData.receiver_id)
+            .maybeSingle();
+          const name = receiverProfile?.collector_name ?? 'them';
+          showToast(`Offer sent to ${name} ✓`);
+        }
+
         const allCardIds = Array.from(new Set(
           (offerData.trade_offer_cards ?? []).map((c) => c.card_id)
         ));
@@ -187,6 +206,25 @@ export default function OfferDetailScreen() {
           (previews ?? []).forEach((p: any) => {
             previewMap[p.card_id] = p;
           });
+
+          // Fall back to pokemon_cards for any not in card_previews
+          const missingIds = allCardIds.filter((id) => !previewMap[id]);
+          if (missingIds.length > 0) {
+            const { data: pokemonCards } = await supabase
+              .from('pokemon_cards')
+              .select('id, name, image_small, raw_data')
+              .in('id', missingIds);
+
+            (pokemonCards ?? []).forEach((pc: any) => {
+              previewMap[pc.id] = {
+                card_id: pc.id,
+                name: pc.name ?? null,
+                image_url: pc.image_small ?? null,
+                set_name: pc.raw_data?.set?.name ?? null,
+              };
+            });
+          }
+
           setCardPreviews(previewMap);
         }
       }
@@ -469,35 +507,36 @@ export default function OfferDetailScreen() {
           flexDirection: 'row',
           alignItems: 'center',
           backgroundColor: theme.colors.surface,
-          borderRadius: 8,
-          paddingHorizontal: 8,
-          paddingVertical: 5,
+          borderRadius: 10,
+          paddingHorizontal: 10,
+          paddingVertical: 8,
           borderWidth: 1,
           borderColor: theme.colors.border,
-          gap: 6,
-          marginBottom: 4,
-          marginRight: 4,
+          gap: 10,
+          marginBottom: 6,
+          marginRight: 6,
         }}
       >
         {preview?.image_url ? (
           <Image
             source={{ uri: preview.image_url }}
-            style={{ width: 24, height: 34, borderRadius: 3 }}
+            style={{ width: 54, height: 75, borderRadius: 5 }}
+            resizeMode="contain"
           />
         ) : (
           <View style={{
-            width: 24,
-            height: 34,
-            borderRadius: 3,
+            width: 54,
+            height: 75,
+            borderRadius: 5,
             backgroundColor: theme.colors.border,
           }} />
         )}
         <View>
-          <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '700', maxWidth: 120 }} numberOfLines={1}>
+          <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '700', maxWidth: 140 }} numberOfLines={2}>
             {preview?.name ?? card.card_id}
           </Text>
           {preview?.set_name && (
-            <Text style={{ color: theme.colors.textSoft, fontSize: 10 }} numberOfLines={1}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11 }} numberOfLines={1}>
               {preview.set_name}
             </Text>
           )}
@@ -592,9 +631,6 @@ export default function OfferDetailScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backText}>‹</Text>
-          </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Negotiation</Text>
             <Text style={styles.subtitle}>Private trade discussion</Text>
@@ -1008,6 +1044,26 @@ export default function OfferDetailScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      {toast && (
+        <View style={{
+          position: 'absolute',
+          bottom: 80,
+          left: 20,
+          right: 20,
+          backgroundColor: theme.colors.primary,
+          borderRadius: 14,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          alignItems: 'center',
+          elevation: 6,
+          shadowColor: '#000',
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+        }}>
+          <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>{toast}</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -1064,7 +1120,9 @@ const styles = {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 0,
+    paddingBottom: 4,
+    marginTop: -24,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     backgroundColor: theme.colors.card,
@@ -1182,12 +1240,14 @@ const styles = {
   },
 
   composerWrap: {
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     backgroundColor: theme.colors.card,
   },
-  counterRow: { flexDirection: 'row' as const, gap: 8, marginBottom: 8 },
+  counterRow: { flexDirection: 'row' as const, gap: 8, marginBottom: 6 },
   counterInput: {
     flex: 1,
     backgroundColor: theme.colors.surface,

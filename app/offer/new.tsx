@@ -88,6 +88,7 @@ export default function NewOfferScreen() {
   const [sending, setSending] = useState(false);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [targetUserName, setTargetUserName] = useState<string | null>(null);
   const [targetCard, setTargetCard] = useState<TradeCardOption | null>(null);
   const [myTradeCards, setMyTradeCards] = useState<TradeCardOption[]>([]);
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
@@ -135,10 +136,14 @@ export default function NewOfferScreen() {
         return;
       }
 
-      const target = await buildTargetCard(cardId, setId ?? null);
-      setTargetCard(target);
+      const [target, receiverProfile, ownCards] = await Promise.all([
+        buildTargetCard(cardId, setId ?? null),
+        supabase.from('profiles').select('collector_name').eq('id', targetUserId).maybeSingle(),
+        fetchMyTradeCards(user.id),
+      ]);
 
-      const ownCards = await fetchMyTradeCards(user.id);
+      setTargetCard(target);
+      setTargetUserName(receiverProfile.data?.collector_name ?? null);
       setMyTradeCards(ownCards);
     } catch (error: any) {
       console.error('Failed to load offer screen:', error);
@@ -174,18 +179,18 @@ export default function NewOfferScreen() {
 
     const { data } = await supabase
       .from('card_previews')
-      .select('card_id, name, image_url, set_id, set_name, number')
+      .select('card_id, name, image_url')
       .eq('card_id', cardIdValue)
       .maybeSingle();
 
     return {
       id: cardIdValue,
       card_id: cardIdValue,
-      set_id: setIdValue ?? data?.set_id ?? null,
+      set_id: setIdValue ?? null,
       name: data?.name ?? cardIdValue,
       image_url: data?.image_url ?? null,
-      set_name: data?.set_name ?? null,
-      number: data?.number ?? null,
+      set_name: null,
+      number: null,
     };
   }
 
@@ -208,7 +213,7 @@ export default function NewOfferScreen() {
 
     const { data: previews, error: previewsError } = await supabase
       .from('card_previews')
-      .select('card_id, name, image_url, set_id, set_name, number')
+      .select('card_id, name, image_url')
       .in('card_id', cardIds);
 
     if (previewsError) throw previewsError;
@@ -289,7 +294,7 @@ export default function NewOfferScreen() {
         selectedCardIds.includes(card.card_id)
       );
 
-      await createTradeOffer({
+      const newOffer = await createTradeOffer({
         listingId,
         senderUserId: currentUserId,
         receiverUserId: targetUserId,
@@ -330,8 +335,8 @@ export default function NewOfferScreen() {
         cardName: targetCard?.name ?? undefined,
       });
 
-      Alert.alert('Offer sent', 'Your trade offer has been sent.');
-      router.replace('/offer');
+      const destination = newOffer?.id ? `/offer/${newOffer.id}?new=1` : '/offers';
+      router.push(destination as any);
     } catch (error: any) {
       console.error('Failed to send trade offer:', error);
       Alert.alert('Could not send offer', error?.message ?? 'Something went wrong.');
@@ -573,7 +578,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 16,
   },
   title: {
     color: theme.colors.text,
@@ -754,7 +759,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 16,
     alignItems: 'center',
-    marginBottom: 30,
+    marginTop: 8,
+    marginBottom: 8,
   },
   sendButtonText: {
     color: '#FFFFFF',

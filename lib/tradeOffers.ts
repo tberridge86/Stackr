@@ -128,18 +128,12 @@ export async function createTradeOffer(input: {
       owner_id: senderId,
       card_id: card.cardId,
       set_id: card.setId ?? null,
-      quantity: card.quantity ?? 1,
-      condition: card.condition ?? null,
-      notes: card.notes ?? null,
     })),
     ...input.requestedCards.map((card) => ({
       offer_id: offer.id,
       owner_id: receiverId,
       card_id: card.cardId,
       set_id: card.setId ?? null,
-      quantity: card.quantity ?? 1,
-      condition: card.condition ?? null,
-      notes: card.notes ?? null,
     })),
   ];
 

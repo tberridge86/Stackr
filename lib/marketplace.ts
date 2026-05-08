@@ -31,6 +31,7 @@ export type MarketplaceListing = {
   damage_notes: string | null;
   damage_image_url: string | null;
   listing_notes: string | null;
+  listing_images: string[] | null;
   status: MarketplaceListingStatus;
   created_at: string;
   updated_at?: string | null;
@@ -70,6 +71,7 @@ function mapFlagToListing(row: any): MarketplaceListing {
     damage_notes: row.damage_notes ?? null,
     damage_image_url: row.damage_image_url ?? null,
     listing_notes: row.listing_notes ?? null,
+    listing_images: Array.isArray(row.listing_images) ? row.listing_images : null,
     status: row.listing_status ?? 'active',
     created_at: row.created_at,
     updated_at: row.updated_at ?? null,
@@ -218,7 +220,7 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[]> 
     .select(`
       id, user_id, card_id, set_id, condition, notes, value,
       asking_price, market_estimate, trade_only, has_damage,
-      damage_notes, damage_image_url, listing_notes, listing_status,
+      damage_notes, damage_image_url, listing_notes, listing_images, listing_status,
       created_at, updated_at
     `)
     .eq('flag_type', 'trade')
@@ -242,7 +244,7 @@ export async function fetchMyListings(): Promise<MarketplaceListing[]> {
     .select(`
       id, user_id, card_id, set_id, condition, notes, value,
       asking_price, market_estimate, trade_only, has_damage,
-      damage_notes, damage_image_url, listing_notes, listing_status,
+      damage_notes, damage_image_url, listing_notes, listing_images, listing_status,
       created_at, updated_at
     `)
     .eq('user_id', user.id)

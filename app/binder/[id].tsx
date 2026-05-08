@@ -203,6 +203,14 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [tradePrice, setTradePrice] = useState('');
   const [tradeNotes, setTradeNotes] = useState('');
   const [tradeOnly, setTradeOnly] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = (msg: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToastMessage(msg);
+    toastTimer.current = setTimeout(() => setToastMessage(null), 2500);
+  };
 
   const [showcaseCollapsed, setShowcaseCollapsed] = useState<Record<ShowcaseType, boolean>>({
   favorite: false,
@@ -652,7 +660,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     setAddSearchResults([]);
     setShowAddModal(false);
     await load();
-    Alert.alert('Added', `${validCards.length} card${validCards.length !== 1 ? 's' : ''} added to binder.`);
+    showToast(`${validCards.length} card${validCards.length !== 1 ? 's' : ''} added to binder.`);
   } catch (error: any) {
     Alert.alert('Could not add cards', error?.message ?? 'Something went wrong.');
   } finally {
@@ -1574,14 +1582,6 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                           onPress={() => toggleShowcase(selectedCard, 'chase')}
                         />
                         <ActionButton
-                          label={modalForTrade ? 'Edit trade listing' : 'Mark for trade'}
-                          active={modalForTrade}
-                          onPress={() => {
-                            setTradeCard(selectedCard);
-                            setTradeModalVisible(true);
-                          }}
-                        />
-                        <ActionButton
                           label={modalWanted ? 'Remove from wishlist' : 'Add to wishlist'}
                           active={modalWanted}
                           onPress={() => toggleWishlistCard(selectedCard.card_id, selectedCard.set_id)}
@@ -1596,129 +1596,26 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         </View>
       </Modal>
 
-      {/* TRADE LISTING MODAL */}
-      {!isReadOnly && (
-        <Modal visible={tradeModalVisible} animationType="slide">
-          <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-            <View style={{ padding: 16 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>
-                Trade Listing
-              </Text>
 
-              <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>Condition</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-                {CONDITION_OPTIONS.map((option) => (
-                  <TouchableOpacity
-                    key={option}
-                    onPress={() => setTradeCondition(option)}
-                    style={{
-                      padding: 8,
-                      borderRadius: 10,
-                      backgroundColor: tradeCondition === option ? theme.colors.primary : theme.colors.card,
-                      borderWidth: 1,
-                      borderColor: theme.colors.border,
-                    }}
-                  >
-                    <Text style={{ color: tradeCondition === option ? '#fff' : theme.colors.text, fontWeight: '700' }}>
-                      {option}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>Your Price (£)</Text>
-              <TextInput
-                value={tradePrice}
-                onChangeText={setTradePrice}
-                placeholder="e.g. 5.00"
-                keyboardType="decimal-pad"
-                placeholderTextColor={theme.colors.textSoft}
-                style={{
-                  backgroundColor: theme.colors.card,
-                  borderRadius: 12,
-                  padding: 12,
-                  marginTop: 6,
-                  color: theme.colors.text,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                }}
-              />
-
-              {tradeCard && (
-                <Text style={{ marginTop: 6, color: theme.colors.textSoft, fontSize: 13 }}>
-                  Est. value: £{getEstimatedValue(tradeCard, tradeCondition).toFixed(2)}
-                </Text>
-              )}
-
-              <Text style={{ marginTop: 16, color: theme.colors.textSoft }}>Notes (optional)</Text>
-              <TextInput
-                value={tradeNotes}
-                onChangeText={setTradeNotes}
-                placeholder="Any details..."
-                placeholderTextColor={theme.colors.textSoft}
-                multiline
-                style={{
-                  backgroundColor: theme.colors.card,
-                  borderRadius: 12,
-                  padding: 12,
-                  marginTop: 6,
-                  color: theme.colors.text,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                  minHeight: 80,
-                  textAlignVertical: 'top',
-                }}
-              />
-
-              <TouchableOpacity
-                onPress={() => setTradeOnly((prev) => !prev)}
-                style={{ marginTop: 16, flexDirection: 'row', alignItems: 'center' }}
-              >
-                <Text style={{ color: theme.colors.text }}>
-                  {tradeOnly ? '☑ ' : '☐ '}Trade only (no selling)
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={async () => {
-                  if (!tradeCard) return;
-                  const estimated = getEstimatedValue(tradeCard, tradeCondition);
-                  await createTradeListing({
-                    cardId: tradeCard.card_id,
-                    setId: tradeCard.set_id,
-                    condition: tradeCondition,
-                    askingPrice: tradePrice ? Number(tradePrice) : null,
-                    marketEstimate: estimated,
-                    tradeOnly,
-                    hasDamage: tradeCondition === 'Damaged',
-                    damageNotes: tradeCondition === 'Damaged' ? tradeNotes : null,
-                    damageImageUrl: null,
-                    listingNotes: tradeNotes,
-                  });
-                  setTradeModalVisible(false);
-                  resetTradeModal();
-                  await load();
-                }}
-                style={{
-                  backgroundColor: theme.colors.primary,
-                  borderRadius: 14,
-                  padding: 14,
-                  alignItems: 'center',
-                  marginTop: 20,
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: '900' }}>List Card</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => { setTradeModalVisible(false); resetTradeModal(); }}
-                style={{ marginTop: 10, alignItems: 'center' }}
-              >
-                <Text style={{ color: theme.colors.textSoft }}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </SafeAreaView>
-        </Modal>
+      {/* In-app toast */}
+      {toastMessage && (
+        <View style={{
+          position: 'absolute',
+          bottom: 40,
+          left: 24,
+          right: 24,
+          backgroundColor: theme.colors.primary,
+          borderRadius: 14,
+          paddingVertical: 14,
+          paddingHorizontal: 18,
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 6,
+        }}>
+          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>{toastMessage}</Text>
+        </View>
       )}
     </SafeAreaView>
   );
