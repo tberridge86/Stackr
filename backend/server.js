@@ -26,7 +26,7 @@ const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 const PORT = process.env.PORT || 3001;
 const EBAY_OAUTH_SCOPES = (
   process.env.EBAY_OAUTH_SCOPES ||
-  'https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/developer.analytics.readonly'
+  'https://api.ebay.com/oauth/api_scope'
 )
   .split(/\s+/)
   .filter(Boolean);
