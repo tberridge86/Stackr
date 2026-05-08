@@ -125,7 +125,7 @@ function getImportantWords(query = '') {
     .toLowerCase()
     .split(/\s+/)
     .map((w) => w.replace(/[^a-z0-9'é]/g, ''))
-    .filter((w) => w.length >= 2 && !stopWords.has(w));
+    .filter((w) => w.length >= 2 && !stopWords.has(w) && !/^\d+$/.test(w));
 
   // Add mapped set abbreviations
   const queryLower = query.toLowerCase();
