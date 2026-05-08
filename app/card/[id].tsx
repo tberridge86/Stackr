@@ -180,18 +180,13 @@ export default function CardDetailScreen() {
       setEbayLoading(true);
       setEbayError(false);
 
-      // Build the best possible query
-      const name = cardData.name ?? '';
-      const setName = cardData.set?.name ?? '';
-      const number = cardData.number ?? '';
-
-      const queryParts = [name, setName, number, 'pokemon card']
-        .map((v) => v.trim())
-        .filter(Boolean);
-
-      const query = queryParts.join(' ');
-
-      const result = await fetchEbayPrice(query);
+      const result = await fetchEbayPrice({
+        cardId: cardData.id,
+        name: cardData.name ?? '',
+        setName: cardData.set?.name ?? '',
+        number: cardData.number ?? '',
+        rarity: cardData.rarity ?? '',
+      });
 
       setEbayPrice({
         low: result.low ?? null,
@@ -1118,6 +1113,9 @@ marketplaceButton: {
   },
   buttonDisabled: {
     opacity: 0.6,
+  },
+  marketplaceButtonsRow: {
+    marginBottom: 18,
   },
   deleteButton: {
     backgroundColor: '#FEE2E2',

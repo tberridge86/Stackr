@@ -230,14 +230,12 @@ const openTradeCardDetail = async (item: any) => {
       setEbayLoading(true);
       setEbayData(null);
       try {
-        // Build search term with set name and card number
         const setName = cardDetails?.set?.name ?? '';
         const cardNumber = cardDetails?.number ?? '';
-        const searchTerm = `${cardName} ${setName} ${cardNumber}`.trim();
+        const rarity = cardDetails?.rarity ?? '';
         
-        console.log('Fetching eBay price for:', searchTerm);
+        console.log('Fetching eBay sold price for:', { cardName, setName, cardNumber, rarity });
         
-        // Check if PRICE_API_URL is configured
         if (!PRICE_API_URL) {
           console.log('PRICE_API_URL not configured - skipping eBay fetch');
           setEbayData(null);
@@ -245,7 +243,15 @@ const openTradeCardDetail = async (item: any) => {
           return;
         }
         
-        const response = await fetch(`${PRICE_API_URL}/price?q=${encodeURIComponent(searchTerm)}`);
+        const params = new URLSearchParams({
+          name: cardName,
+          setName,
+          number: cardNumber,
+          rarity,
+          cardId: cardDetails?.id ?? item.card_id ?? '',
+        });
+
+        const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
         if (!response.ok) {
           const errBody = await response.json().catch(() => ({}));
           console.log('eBay API error:', response.status, errBody);

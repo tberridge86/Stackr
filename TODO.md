@@ -14,10 +14,10 @@ eBay price search returning wrong prices (£1.44-£2.51) for rare cards that sho
 - [x] 2. Fix fetchEbaySummary to pass full card info to fallback (setName, number)
 - [x] 3. Update getImportantWords stoplist with additional Pokemon TCG terms
 
-### Phase 2: Frontend Fixes (NOT COMPLETED - requires separate work)
-- [ ] 4. Update app/card/[id].tsx to use /api/price/ebay with rarity
-- [ ] 5. Update app/binder/[id].tsx to use /api/price/ebay with rarity
-- [ ] 6. Update app/scan/result.tsx to use /api/price/ebay with rarity
+### Phase 2: Frontend Fixes (IN PROGRESS)
+- [x] 4. Update app/card/[id].tsx to use /api/price/ebay with rarity
+- [x] 5. Update app/(tabs)/trade.tsx to use /api/price/ebay with structured params
+- [x] 6. Update app/market/index.tsx to use /api/price/ebay with structured params
 
 ### Phase 3: Testing
 - [ ] Test with "Blastoise Base" query to verify correct pricing

@@ -378,11 +378,15 @@ export default function MarketScreen() {
       setDetailPriceLoading(true);
       if (!PRICE_API_URL) { setDetailEbayData(null); return; }
 
-      const setName = card.set?.name ?? '';
-      const cardNumber = card.number ?? '';
-      const searchTerm = `${card.name} ${setName} ${cardNumber}`.trim();
+      const params = new URLSearchParams({
+        name: card.name ?? '',
+        setName: card.set?.name ?? '',
+        number: card.number ?? '',
+        rarity: card.rarity ?? '',
+        cardId: card.id ?? '',
+      });
 
-      const response = await fetch(`${PRICE_API_URL}/price?q=${encodeURIComponent(searchTerm)}`);
+      const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch eBay price');
 
       const data = await response.json();
