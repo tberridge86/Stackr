@@ -323,41 +323,25 @@ async function getToken() {
 // CORE EBAY SEARCH (sold prices via Finding API)
 // ===============================
 
-async function searchEbay(query) {
-  // Finding API uses App ID directly — no OAuth token required
-  // EBAY_MARKETPLACE_ID is "EBAY_GB"; Finding API expects "EBAY-GB"
-  const globalId = EBAY_MARKETPLACE_ID.replace('_', '-');
+async function searchEbay(query, token) {
+  const url = `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(
+    query
+  )}&limit=50&sort=bestMatch`;
 
-  // Build URL manually — URLSearchParams encodes parentheses in itemFilter keys,
-  // which breaks the Finding API. Only encode values, not param names.
-  const url =
-    'https://svcs.ebay.com/services/search/FindingService/v1' +
-    '?OPERATION-NAME=findCompletedItems' +
-    '&SERVICE-VERSION=1.0.0' +
-    `&SECURITY-APPNAME=${encodeURIComponent(EBAY_CLIENT_ID)}` +
-    '&RESPONSE-DATA-FORMAT=JSON' +
-    `&GLOBAL-ID=${globalId}` +
-    `&keywords=${encodeURIComponent(query)}` +
-    '&itemFilter(0).name=SoldItemsOnly' +
-    '&itemFilter(0).value=true' +
-    '&sortOrder=EndTimeSoonest' +
-    '&paginationInput.entriesPerPage=50';
-
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'X-EBAY-C-MARKETPLACE-ID': EBAY_MARKETPLACE_ID,
+    },
+  });
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Finding API search failed (${res.status}): ${text}`);
+    throw new Error(`Browse search failed (${res.status}): ${text}`);
   }
 
   const data = await res.json();
-  const items = data?.findCompletedItemsResponse?.[0]?.searchResult?.[0]?.item ?? [];
-
-  // Normalise to the same shape filterItems expects: { title, price: { value } }
-  return items.map((item) => ({
-    title: item.title?.[0] ?? '',
-    price: { value: item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ ?? null },
-  }));
+  return data.itemSummaries || [];
 }
 
 function filterItems(items, query) {
@@ -387,7 +371,9 @@ async function fetchEbaySummary(query, options = {}) {
     return cached;
   }
 
-  const rawItems = await searchEbay(query);
+  const token = await getToken();
+
+  const rawItems = await searchEbay(query, token);
   let cleaned = filterItems(rawItems, query);
 
   let usedFallback = false;
@@ -397,7 +383,7 @@ async function fetchEbaySummary(query, options = {}) {
     fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, rarity });
     console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
 
-    const fallbackItems = await searchEbay(fallbackQuery);
+    const fallbackItems = await searchEbay(fallbackQuery, token);
     cleaned = filterItems(fallbackItems, fallbackQuery);
     usedFallback = true;
   }
@@ -449,6 +435,19 @@ app.get('/debug-env', (req, res) => {
     hasTcgApiKey: Boolean(POKEMON_TCG_API_KEY),
     marketplace: EBAY_MARKETPLACE_ID,
   });
+});
+
+app.get('/ebay-rate-limits', async (_req, res) => {
+  try {
+    const token = await getToken();
+    const response = await fetch('https://api.ebay.com/developer/analytics/v1_beta/rate_limit/', {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    });
+    const data = await response.json();
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: getErrorMessage(error) });
+  }
 });
 
 app.get('/test-ebay-token', async (req, res) => {
@@ -529,12 +528,14 @@ app.get('/price/debug', async (req, res) => {
       return res.status(400).json({ error: 'Missing ?name= param' });
     }
 
+    const token = await getToken();
+
     const primaryQuery = buildCardQuery({ name, setName, number });
     const fallbackQuery = buildFallbackQuery({ name });
 
     const [primaryRaw, fallbackRaw] = await Promise.all([
-      searchEbay(primaryQuery),
-      searchEbay(fallbackQuery),
+      searchEbay(primaryQuery, token),
+      searchEbay(fallbackQuery, token),
     ]);
 
     function analyseItems(items, query) {
