@@ -352,7 +352,19 @@ export default function MarketScreen() {
         .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
         .limit(cardTerm ? 120 : 300);
 
-      if (cardTerm) dbQuery = dbQuery.ilike('name', `%${cardTerm}%`);
+      if (cardTerm) {
+        const normalised = cardTerm.replace(/[''ʼ]/g, "'");
+        const searchWords = normalised.split(/\s+/).filter(Boolean);
+        for (const word of searchWords) {
+          // "Mistys" → also try "Misty_s" so the _ wildcard matches the apostrophe
+          if (!word.includes("'") && /[a-z]s$/i.test(word)) {
+            const wildcardForm = `${word.slice(0, -1)}_s`;
+            dbQuery = dbQuery.or(`name.ilike.%${word}%,name.ilike.%${wildcardForm}%`);
+          } else {
+            dbQuery = dbQuery.ilike('name', `%${word}%`);
+          }
+        }
+      }
       if (!skipSetFilter && matchedSetIds.length > 0) dbQuery = dbQuery.in('set_id', matchedSetIds);
 
       const { data, error } = await dbQuery;
@@ -378,9 +390,14 @@ export default function MarketScreen() {
       setDetailPriceLoading(true);
       if (!PRICE_API_URL) { setDetailEbayData(null); return; }
 
+      // set.name falls back to set_id (e.g. "base1") when raw_data is absent —
+      // set IDs never appear in eBay titles so skip them to avoid killing results
+      const rawSetName = card.set?.name ?? '';
+      const setName = (rawSetName && rawSetName !== card.set?.id) ? rawSetName : '';
+
       const params = new URLSearchParams({
         name: card.name ?? '',
-        setName: card.set?.name ?? '',
+        setName,
         number: card.number ?? '',
         rarity: card.rarity ?? '',
         cardId: card.id ?? '',
@@ -627,7 +644,7 @@ try {
 <TextInput
                 value={query}
                 onChangeText={handleSearchChange}
-                placeholder="Search e.g. Charizard Destined Rivals..."
+                placeholder="Search cards or sets..."
                 placeholderTextColor={theme.colors.textSoft}
                 style={{
                   flex: 1,
@@ -638,6 +655,7 @@ try {
                   borderRadius: 14,
                   paddingHorizontal: 14,
                   paddingVertical: 12,
+                  fontSize: 13,
                 }}
                 returnKeyType="search"
                 onSubmitEditing={() => searchCards(query)}
