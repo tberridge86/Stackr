@@ -461,7 +461,9 @@ function normalizeSerpApiSoldItems(data) {
     .map((item) => {
       const title = String(item?.title || item?.name || '').trim();
       const priceValue =
-        parseSoldPriceValue(item?.price) ??
+        parseSoldPriceValue(item?.price?.extracted) ??
+        parseSoldPriceValue(item?.price?.from?.extracted) ??
+        parseSoldPriceValue(item?.price?.raw) ??
         parseSoldPriceValue(item?.extracted_price) ??
         parseSoldPriceValue(item?.price?.value);
 
@@ -479,16 +481,16 @@ async function searchEbaySoldListingsSerpApi(query) {
   }
 
   const marketplace = String(EBAY_MARKETPLACE_ID || 'EBAY_GB').toLowerCase();
-  const serpUrl =
-    'https://serpapi.com/search.json' +
-    `?engine=${encodeURIComponent(SERPAPI_ENGINE)}` +
-    `&q=${encodeURIComponent(query)}` +
-    '&_nkw=' + encodeURIComponent(query) +
-    '&LH_Sold=1' +
-    '&LH_Complete=1' +
-    `&sacat=0` +
-    `&api_key=${encodeURIComponent(SERPAPI_API_KEY)}` +
-    `&ebay_domain=${encodeURIComponent(marketplace === 'ebay_us' ? 'ebay.com' : 'ebay.co.uk')}`;
+  const params = new URLSearchParams({
+    engine: SERPAPI_ENGINE,
+    _nkw: query,
+    LH_Sold: '1',
+    LH_Complete: '1',
+    sacat: '0',
+    api_key: SERPAPI_API_KEY,
+    ebay_domain: marketplace === 'ebay_us' ? 'ebay.com' : 'ebay.co.uk',
+  });
+  const serpUrl = `https://serpapi.com/search.json?${params.toString()}`;
 
   const res = await fetch(serpUrl, {
     headers: { Accept: 'application/json' },
@@ -682,13 +684,16 @@ app.get('/debug-serpapi', async (req, res) => {
   if (!SERPAPI_API_KEY) return res.status(500).json({ error: 'Missing SERPAPI_API_KEY' });
 
   const marketplace = String(EBAY_MARKETPLACE_ID || 'EBAY_GB').toLowerCase();
-  const serpUrl =
-    'https://serpapi.com/search.json' +
-    `?engine=${encodeURIComponent(SERPAPI_ENGINE)}` +
-    `&_nkw=${encodeURIComponent(query)}` +
-    '&LH_Sold=1&LH_Complete=1&sacat=0' +
-    `&api_key=${encodeURIComponent(SERPAPI_API_KEY)}` +
-    `&ebay_domain=${encodeURIComponent(marketplace === 'ebay_us' ? 'ebay.com' : 'ebay.co.uk')}`;
+  const params = new URLSearchParams({
+    engine: SERPAPI_ENGINE,
+    _nkw: query,
+    LH_Sold: '1',
+    LH_Complete: '1',
+    sacat: '0',
+    api_key: SERPAPI_API_KEY,
+    ebay_domain: marketplace === 'ebay_us' ? 'ebay.com' : 'ebay.co.uk',
+  });
+  const serpUrl = `https://serpapi.com/search.json?${params.toString()}`;
 
   const serpRes = await fetch(serpUrl, { headers: { Accept: 'application/json' } });
   const data = await serpRes.json();
