@@ -484,8 +484,7 @@ async function searchEbaySoldListingsSerpApi(query) {
   const params = new URLSearchParams({
     engine: SERPAPI_ENGINE,
     _nkw: query,
-    LH_Sold: '1',
-    LH_Complete: '1',
+    show_only: 'Sold',
     sacat: '0',
     api_key: SERPAPI_API_KEY,
     ebay_domain: marketplace === 'ebay_us' ? 'ebay.com' : 'ebay.co.uk',
@@ -687,8 +686,7 @@ app.get('/debug-serpapi', async (req, res) => {
   const params = new URLSearchParams({
     engine: SERPAPI_ENGINE,
     _nkw: query,
-    LH_Sold: '1',
-    LH_Complete: '1',
+    show_only: 'Sold',
     sacat: '0',
     no_cache: '1',
     api_key: SERPAPI_API_KEY,
