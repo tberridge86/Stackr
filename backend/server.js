@@ -46,27 +46,85 @@ function getErrorMessage(error) {
 // ===============================
 
 const BLOCKED_TERMS = [
-  'psa', 'bgs', 'cgc', 'sgc', 'ace grading',
+  // Graded slabs
+  'psa', 'bgs', 'cgc', 'sgc', 'ace grading', 'beckett',
   'graded', 'gem mint', 'slab',
+
+  // Fakes / unofficial
   'proxy', 'replica', 'reprint',
   'custom card', 'custom ', 'fan art', 'fanart', 'fan-made', 'fan made',
+
+  // Multi-card lots
   'bundle', 'bulk', 'job lot', 'joblot', 'lot of', 'trio', 'pair',
-  'acrylic case', 'acrylic stand',
-  'booster pack', 'booster box', 'empty box', 'display box',
+  'collection lot', 'mixed lot',
+
+  // Sealed product / booster
+  'booster pack', 'booster box', 'booster bundle', 'booster',
+  'blister pack', 'blister',
+  'sealed pack', 'elite trainer', 'etb',
+  'empty box', 'display box', 'empty tin',
+  'advent calendar',
+
+  // Multi-listing choose-your-own
   'choose your card', 'choose your cards', 'pick your card',
   'you choose', 'choose card', 'choose a card', 'choose individual',
   'singles common', 'common uncommon',
-  'sticker sheet', 'sticker pack', 'artbox',
+  'select your', 'pick from',
+
+  // Stickers / art products
+  'sticker sheet', 'sticker pack', 'sticker set', 'sticker',
+  'artbox',
+
+  // Metal / novelty fake cards
   'black metal card', 'metal card', 'solid metal',
-  'gold foil card', 'gold metal',
+  'gold foil card', 'gold metal', 'metal gold',
+  '24k gold', '24ct gold', 'gold plated',
+
+  // Other non-card formats
   'oversized', 'digital', 'code card',
-  'keychain', 'fridge magnet', 'magnet',
-  'resin', 'coaster', 'plastic card',
+  'mini card', 'mini print',
+
+  // Keychains / wearables / accessories
+  'keychain', 'keyring', 'lanyard', 'wristband',
+  'fridge magnet', 'magnet',
+  'pendant', 'necklace', 'jewellery', 'jewelry', 'bracelet', 'earring',
+  'pin badge', 'button badge', 'enamel pin',
+  'badge',
+
+  // Toys / figures / plush
+  'plush', 'soft toy', 'stuffed',
+  'figure', 'figurine', 'statue', 'mini figure',
+
+  // Homeware / clothing
+  'mug', 'cup', 'coaster',
+  't-shirt', 'hoodie', 'clothing',
+  'phone case', 'phone cover',
+  'notebook', 'journal',
+  'poster', 'art print', 'canvas print', 'canvas',
+  'bookmark', 'patch',
+  'playmat', 'play mat',
+  'tin',
+
+  // Card accessories (not cards)
+  'deck box', 'deckbox',
+  'sleeve', 'card sleeve',
+  'binder', 'portfolio', 'card folder', 'album',
+  'acrylic case', 'acrylic stand',
+
+  // Plastic / resin novelties
+  'resin', 'plastic card',
+
+  // Display / novelty items
+  'for display', 'display only', 'display piece',
+  'mystery pack', 'mystery box', 'mystery bag', 'mystery bundle',
+  'novelty', 'random card', 'random selection',
+  'coin', 'token',
+
+  // Condition red flags
   'read description',
   'heavily played', 'poor condition', 'damaged',
   'creased', 'crease', 'bent', 'inked', 'marked',
   'written on', 'torn', 'water damaged',
-  'novelty', 'random card', 'random selection',
 ];
 
 function titleLooksBad(title = '') {
