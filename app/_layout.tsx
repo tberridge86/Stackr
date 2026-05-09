@@ -97,10 +97,6 @@ function PersistentTabBar() {
 }
 
 // ===============================
-// ROOT LAYOUT
-// ===============================
-
-// ===============================
 // ROOT CONTENT (Handles Splash Hiding)
 // ===============================
 
@@ -111,7 +107,6 @@ function RootLayoutContent() {
 
   useEffect(() => {
     if (!authLoading && !profileLoading) {
-      // Small delay to ensure everything is painted
       setTimeout(async () => {
         setAppIsReady(true);
         await SplashScreen.hideAsync();
@@ -120,8 +115,6 @@ function RootLayoutContent() {
   }, [authLoading, profileLoading]);
 
   if (!appIsReady) {
-    // 1242 x 2688 is the design resolution (@3x).
-    // We scale it down to logical points (divide by 3).
     const designWidth = 1242 / 3;
     const designHeight = 2688 / 3;
 
@@ -137,7 +130,7 @@ function RootLayoutContent() {
           source={require('../assets/images/splash.png')}
           style={{
             width: designWidth,
-            height: designHeight
+            height: designHeight,
           }}
           resizeMode="contain"
         />
