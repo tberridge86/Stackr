@@ -130,6 +130,17 @@ const getEstimatedValue = (card: any, condition: string): number => {
   return base * multiplier;
 };
 
+const USD_TO_GBP = 0.79;
+const EUR_TO_GBP = 0.85;
+
+const getCardmarketPrice = (binderCard: any): number | null => {
+  if (typeof binderCard?.cardmarket_price === 'number') return binderCard.cardmarket_price;
+  const prices = binderCard?.card?.cardmarket?.prices;
+  if (!prices) return null;
+  const eur = prices.trendPrice ?? prices.averageSellPrice ?? prices.avg30;
+  return typeof eur === 'number' ? Math.round(eur * EUR_TO_GBP * 100) / 100 : null;
+};
+
 const getBinderTcgPrice = (card: any, edition?: string | null): number | null => {
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;
@@ -138,19 +149,19 @@ const getBinderTcgPrice = (card: any, edition?: string | null): number | null =>
     const preferred = ['1stEditionHolofoil', '1stEditionNormal', 'holofoil', 'reverseHolofoil', 'normal'];
     for (const key of preferred) {
       const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
-      if (typeof value === 'number') return value;
+      if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;
     }
   }
 
   const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
   for (const key of preferred) {
     const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;
   }
 
   for (const entry of Object.values(prices) as any[]) {
     const value = entry?.market ?? entry?.mid ?? entry?.low;
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;
   }
 
   return null;
@@ -1560,7 +1571,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
                       <Row label="eBay (cached)" value={formatCurrency(selectedCard?.ebay_price)} />
                       <Row label="TCGPlayer" value={formatCurrency(getBinderTcgPrice(selectedCard?.card, binder?.edition))} />
-                      <Row label="CardMarket" value={formatCurrency(selectedCard?.cardmarket_price)} />
+                      <Row label="CardMarket" value={formatCurrency(getCardmarketPrice(selectedCard))} />
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
                         Updated daily
