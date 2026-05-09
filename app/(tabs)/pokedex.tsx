@@ -7,6 +7,7 @@ import {
   Pressable,
   StyleSheet,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { Text } from '../../components/Text';
@@ -80,6 +81,9 @@ const getRangeMatch = (range: RangeKey, id: number) => {
 
 export default function PokedexScreen() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const numColumns = width >= 900 ? 8 : width >= 600 ? 5 : 3;
+  const itemWidth = (width - 36 - (numColumns + 1) * 6) / numColumns;
 
   const [pokemon, setPokemon] = useState<PokemonEntry[]>([]);
   const [query, setQuery] = useState('');
@@ -152,7 +156,7 @@ export default function PokedexScreen() {
   return (
     <Pressable
       onPress={() => router.push(`/pokemon/${item.id}`)}
-      style={({ pressed }) => [styles.gridCard, pressed && styles.cardPressed]}
+      style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
     >
       <View style={styles.gridImageWrap}>
         <Image
@@ -222,8 +226,9 @@ export default function PokedexScreen() {
   data={filteredPokemon}
   keyExtractor={(item) => String(item.id)}
   renderItem={renderPokemon}
-  numColumns={3}
-  columnWrapperStyle={{ gap: 10, marginBottom: 10 }}
+  key={numColumns}
+  numColumns={numColumns}
+  columnWrapperStyle={{ gap: 6, marginBottom: 6, paddingHorizontal: 6 }}
   showsVerticalScrollIndicator={false}
   contentContainerStyle={{
     paddingBottom: insets.bottom + 170,
@@ -402,7 +407,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   gridCard: {
-  flex: 1,
   backgroundColor: theme.colors.card,
   borderRadius: 16,
   padding: 10,

@@ -363,7 +363,8 @@ export default function NewOfferScreen() {
   // ===============================
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
+    <ScrollView contentContainerStyle={styles.content}>
       <Text style={styles.title}>Make an Offer</Text>
       <Text style={styles.subtitle}>
         Choose cards, add cash if needed, and send your offer.
@@ -528,7 +529,8 @@ export default function NewOfferScreen() {
         </View>
       )}
 
-      {/* Send button */}
+    </ScrollView>
+    <View style={{ paddingHorizontal: 16, paddingBottom: 110, paddingTop: 8 }}>
       <TouchableOpacity
         onPress={sendOffer}
         disabled={sending}
@@ -540,7 +542,8 @@ export default function NewOfferScreen() {
           <Text style={styles.sendButtonText}>Send Offer</Text>
         )}
       </TouchableOpacity>
-    </ScrollView>
+    </View>
+    </View>
   );
 }
 

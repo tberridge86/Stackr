@@ -210,6 +210,24 @@ export default function CardDetailScreen() {
     }
   }, [card, fetchEbay]);
 
+  // Fetch TCG/Cardmarket prices directly if missing from cache
+  useEffect(() => {
+    if (!card || card.tcgplayer || card.cardmarket) return;
+    fetch(`https://api.pokemontcg.io/v2/cards/${card.id}`)
+      .then(r => r.json())
+      .then(json => {
+        const d = json?.data;
+        if (d) {
+          setCard(prev => prev ? {
+            ...prev,
+            tcgplayer: d.tcgplayer ?? prev.tcgplayer,
+            cardmarket: d.cardmarket ?? prev.cardmarket,
+          } : prev);
+        }
+      })
+      .catch(() => {});
+  }, [card?.id]);
+
   // ===============================
   // MEMOS
   // ===============================
@@ -228,7 +246,6 @@ export default function CardDetailScreen() {
   // TCGPlayer prices (USD reference only)
   const tcgPrices = useMemo(() => {
     if (!card) return null;
-
     const prices = card.tcgplayer?.prices;
     if (!prices) return null;
 

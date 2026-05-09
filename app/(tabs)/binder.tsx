@@ -10,6 +10,7 @@ import {
   Image,
   Dimensions,
   FlatList,
+  useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -56,11 +57,8 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'ownedLow', label: 'Fewest cards' },
 ];
 
-const screenWidth = Dimensions.get('window').width;
-const COLUMNS = 2;
 const PADDING = 16;
 const GAP = 10;
-const binderCardWidth = (screenWidth - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
 
 const cardShadow = {};
 
@@ -106,9 +104,11 @@ type BinderCardProps = {
   value: number | null;
   confirmDeleteBinder: (binder: BinderRecord) => void;
   index: number;
+  cardWidth: number;
+  columns: number;
 };
 
-function BinderCard({ item, counts, value, confirmDeleteBinder, index }: BinderCardProps) {
+function BinderCard({ item, counts, value, confirmDeleteBinder, index, cardWidth, columns }: BinderCardProps) {
   const [logoFailed, setLogoFailed] = useState(false);
 
   const progress = counts[item.id] ?? { owned: 0, total: 0 };
@@ -124,7 +124,7 @@ function BinderCard({ item, counts, value, confirmDeleteBinder, index }: BinderC
     : [item.color || theme.colors.card, item.color || theme.colors.card];
 
   // Column-based rotation
-  const col = index % COLUMNS;
+  const col = index % columns;
   const rotation = col === 0 ? '0deg' : col === 2 ? '0deg' : '0deg';
 
   const handleOptions = () => {
@@ -149,15 +149,15 @@ function BinderCard({ item, counts, value, confirmDeleteBinder, index }: BinderC
       delayLongPress={400}
       activeOpacity={0.85}
       style={{
-        width: binderCardWidth,
+        width: cardWidth,
         marginBottom: 24,
         transform: [{ rotate: rotation }],
       }}
     >
       {/* Binder image */}
       <View style={{
-        width: binderCardWidth * 1,
-        height: binderCardWidth * 1,
+        width: cardWidth,
+        height: cardWidth,
         borderRadius: 6,
         overflow: 'hidden',
         ...cardShadow,
@@ -250,6 +250,10 @@ function BinderCard({ item, counts, value, confirmDeleteBinder, index }: BinderC
 type BinderValueMap = Record<string, number>;
 
 export default function BinderLibraryScreen() {
+  const { width } = useWindowDimensions();
+  const COLUMNS = width >= 900 ? 5 : width >= 600 ? 3 : 2;
+  const binderCardWidth = (width - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
+
   const [binders, setBinders] = useState<BinderRecord[]>([]);
   const [counts, setCounts] = useState<BinderCardCountMap>({});
   const [values, setValues] = useState<BinderValueMap>({});
@@ -613,6 +617,7 @@ export default function BinderLibraryScreen() {
           <FlatList
             data={sortedBinders}
             keyExtractor={(item) => item.id}
+            key={COLUMNS}
             numColumns={COLUMNS}
             columnWrapperStyle={{ gap: GAP }}
             showsVerticalScrollIndicator={false}
@@ -631,6 +636,8 @@ export default function BinderLibraryScreen() {
                 value={values[item.id] ?? null}
                 confirmDeleteBinder={confirmDeleteBinder}
                 index={index}
+                cardWidth={binderCardWidth}
+                columns={COLUMNS}
               />
             )}
             ListEmptyComponent={

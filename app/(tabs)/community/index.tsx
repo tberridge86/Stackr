@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { theme } from '../../../lib/theme';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   FlatList,
   ActivityIndicator,
+  Animated,
   StyleSheet,
   Image,
   Pressable,
@@ -19,6 +20,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AVATAR_PRESETS } from '../../../lib/avatars';
 import { supabase } from '../../../lib/supabase';
 import { getMyFriends } from '../../../lib/friends';
+import { useProfile } from '../../../components/profile-context';
 
 type FeedMode = 'global' | 'friends';
 
@@ -72,6 +74,9 @@ function timeAgo(dateString: string) {
 }
 
 export default function CommunityScreen() {
+  const { profile: myProfile } = useProfile();
+  const isAdmin = myProfile?.role === 'admin';
+
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfilePreview>>({});
   const [cards, setCards] = useState<Record<string, CardPreview>>({});
@@ -83,6 +88,24 @@ export default function CommunityScreen() {
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [cardModalOpen, setCardModalOpen] = useState(false);
+
+  const postBoxAnim = useRef(new Animated.Value(1)).current;
+  const postBoxVisible = useRef(true);
+  const feedLastScrollY = useRef(0);
+
+  const handleFeedScroll = useCallback((event: any) => {
+    const y = event.nativeEvent.contentOffset.y;
+    const diff = y - feedLastScrollY.current;
+    feedLastScrollY.current = y;
+
+    if (diff > 6 && y > 10 && postBoxVisible.current) {
+      postBoxVisible.current = false;
+      Animated.timing(postBoxAnim, { toValue: 0, duration: 220, useNativeDriver: false }).start();
+    } else if (diff < -6 && !postBoxVisible.current) {
+      postBoxVisible.current = true;
+      Animated.timing(postBoxAnim, { toValue: 1, duration: 200, useNativeDriver: false }).start();
+    }
+  }, [postBoxAnim]);
 
   const [body, setBody] = useState('');
   const [selectedCard, setSelectedCard] = useState<OwnedCardOption | null>(null);
@@ -263,6 +286,20 @@ export default function CommunityScreen() {
     friends.some((f) => f.friend_id === post.user_id)
   );
 }, [posts, mode, friends]);
+  const handleAdminDeletePost = async (postId: string) => {
+    Alert.alert('Delete post', 'Remove this post permanently?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete', style: 'destructive',
+        onPress: async () => {
+          const { error } = await supabase.from('social_posts').delete().eq('id', postId);
+          if (!error) setPosts(prev => prev.filter(p => p.id !== postId));
+          else Alert.alert('Error', error.message);
+        },
+      },
+    ]);
+  };
+
   const handleCreatePost = async () => {
     const trimmedBody = body.trim();
 
@@ -332,6 +369,15 @@ export default function CommunityScreen() {
         </Text>
         <Text style={styles.time}>{timeAgo(item.created_at)}</Text>
       </View>
+
+      {isAdmin && (
+        <Pressable
+          onPress={() => handleAdminDeletePost(item.id)}
+          style={{ padding: 6 }}
+        >
+          <Ionicons name="trash-outline" size={16} color="#EF4444" />
+        </Pressable>
+      )}
     </View>
  
         {item.post_type === 'card_showcase' && (
@@ -487,6 +533,11 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
           </Pressable>
         </View>
 
+        <Animated.View style={{
+          opacity: postBoxAnim,
+          maxHeight: postBoxAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 400] }),
+          overflow: 'hidden',
+        }}>
         <View style={styles.createCard}>
           <TextInput
             value={body}
@@ -536,6 +587,7 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
             </Pressable>
           </View>
         </View>
+        </Animated.View>
 
         {loading ? (
           <ActivityIndicator color={theme.colors.primary} />
@@ -544,6 +596,8 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
             data={visiblePosts}
             keyExtractor={(item) => item.id}
             renderItem={renderPost}
+            onScroll={handleFeedScroll}
+            scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 120 }}
             ListEmptyComponent={

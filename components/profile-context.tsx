@@ -17,6 +17,7 @@ export type Profile = {
   chase_card_id: string | null;
   chase_set_id: string | null;
 
+  role?: string | null;
   created_at?: string;
 };
 

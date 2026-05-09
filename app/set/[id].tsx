@@ -281,6 +281,35 @@ export default function SetDetailScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      {/* Progress bar — always visible */}
+      <View style={{
+        backgroundColor: theme.colors.card,
+        marginHorizontal: 16,
+        marginBottom: 6,
+        borderRadius: 16,
+        padding: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+      }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>Collection Progress</Text>
+          <Text style={{ color: '#FFD166', fontSize: 15, fontWeight: '900' }}>
+            {ownedCount} / {setInfo.total}
+          </Text>
+        </View>
+        <View style={{ height: 6, borderRadius: 999, backgroundColor: theme.colors.surface, overflow: 'hidden' }}>
+          <View style={{
+            width: `${progressPercent}%`,
+            height: '100%',
+            backgroundColor: '#FFD166',
+            borderRadius: 999,
+          }} />
+        </View>
+        <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 5 }}>
+          {progressPercent.toFixed(1)}% complete
+        </Text>
+      </View>
+
       <FlatList
         data={filteredCards}
         keyExtractor={(item) => item.id}
@@ -292,7 +321,7 @@ export default function SetDetailScreen() {
         ListHeaderComponent={
           <View>
             {/* Back button + title */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <TouchableOpacity
                 onPress={() => router.back()}
                 style={{
@@ -310,45 +339,13 @@ export default function SetDetailScreen() {
               </TouchableOpacity>
 
               <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+                <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>
                   {setInfo.name}
                 </Text>
                 <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
                   {setInfo.series} · {setInfo.total} cards
                 </Text>
               </View>
-            </View>
-
-            {/* Progress card */}
-            <View style={{
-              backgroundColor: theme.colors.card,
-              borderRadius: 20,
-              padding: 16,
-              marginBottom: 14,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-                  Collection Progress
-                </Text>
-                <Text style={{ color: '#FFD166', fontSize: 18, fontWeight: '900' }}>
-                  {ownedCount} / {setInfo.total}
-                </Text>
-              </View>
-
-              <View style={{ height: 8, borderRadius: 999, backgroundColor: theme.colors.surface, overflow: 'hidden' }}>
-                <View style={{
-                  width: `${progressPercent}%`,
-                  height: '100%',
-                  backgroundColor: '#FFD166',
-                  borderRadius: 999,
-                }} />
-              </View>
-
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 8 }}>
-                {progressPercent.toFixed(1)}% complete
-              </Text>
             </View>
 
             {/* Create binder CTA */}

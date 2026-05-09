@@ -1,5 +1,6 @@
 import { theme } from '../../lib/theme';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useWindowDimensions } from 'react-native';
 import {
   View,
   TouchableOpacity,
@@ -22,6 +23,7 @@ import { useFocusEffect, router } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useTrade } from '../../components/trade-context';
+import { useProfile } from '../../components/profile-context';
 import {
   getCachedCardSync,
   getCachedCardsForSet,
@@ -109,6 +111,11 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default function TradeScreen() {
   const insets = useSafeAreaInsets();
+  const { profile: myProfile } = useProfile();
+  const isAdmin = myProfile?.role === 'admin';
+  const { width } = useWindowDimensions();
+  const numGridColumns = width >= 900 ? 4 : width >= 600 ? 3 : 2;
+  const gridItemWidth = (width - (numGridColumns + 1) * 10) / numGridColumns;
   const [mainTab, setMainTab] = useState<MainTab>('trading');
   const [segment, setSegment] = useState<SegmentKey>('marketplaceListings');
   const [wantedCards, setWantedCards] = useState<any[]>([]);
@@ -148,6 +155,35 @@ const [myUserId, setMyUserId] = useState<string>('');
   const [watchlistLoading, setWatchlistLoading] = useState(true);
 
   const translateY = useRef(new Animated.Value(0)).current;
+
+  // Scroll-aware header for trading tab
+  const tradingHeaderAnim = useRef(new Animated.Value(0)).current;
+  const tradingLastScrollY = useRef(0);
+  const tradingHeaderVisible = useRef(true);
+  const tradingHeaderHeightRef = useRef(0);
+  const [tradingHeaderHeight, setTradingHeaderHeight] = useState(0);
+
+  const handleTradingScroll = useCallback((event: any) => {
+    const y = event.nativeEvent.contentOffset.y;
+    const diff = y - tradingLastScrollY.current;
+    tradingLastScrollY.current = y;
+
+    if (diff > 6 && y > 10 && tradingHeaderVisible.current) {
+      tradingHeaderVisible.current = false;
+      Animated.timing(tradingHeaderAnim, {
+        toValue: -tradingHeaderHeightRef.current,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+    } else if (diff < -6 && !tradingHeaderVisible.current) {
+      tradingHeaderVisible.current = true;
+      Animated.timing(tradingHeaderAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [tradingHeaderAnim]);
 
   const {
     marketplaceListings,
@@ -735,7 +771,7 @@ const handleArchive = async (listingId: string) => {
           onPress={() => openTradeCardDetail(item)}
           activeOpacity={0.85}
           style={{
-            flex: 1, margin: 5,
+            width: gridItemWidth, margin: 5,
             backgroundColor: theme.colors.card,
             borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border,
             overflow: 'hidden', ...cardShadow,
@@ -769,6 +805,17 @@ const handleArchive = async (listingId: string) => {
                 style={{ backgroundColor: theme.colors.primary, borderRadius: 8, paddingVertical: 6, alignItems: 'center', marginTop: 6 }}
               >
                 <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>Make Offer</Text>
+              </TouchableOpacity>
+            )}
+            {isAdmin && !isMyListing && (
+              <TouchableOpacity
+                onPress={() => Alert.alert('Delete listing', 'Remove this listing?', [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Delete', style: 'destructive', onPress: () => handleArchive(item.id) },
+                ])}
+                style={{ borderRadius: 8, paddingVertical: 5, alignItems: 'center', marginTop: 4, borderWidth: 1, borderColor: '#EF4444' }}
+              >
+                <Text style={{ color: '#EF4444', fontSize: 10, fontWeight: '900' }}>🗑 Remove</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -895,17 +942,27 @@ const handleArchive = async (listingId: string) => {
 
   const renderTrading = () => {
     const pendingOfferCount = myOffers.filter((o) => o.status === 'pending' && o.receiver_id === myUserId).length;
+    const listPaddingTop = tradingHeaderHeight + 4;
 
-    return (
-      <>
+    const header = (
+      <Animated.View
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
+          backgroundColor: theme.colors.bg,
+          transform: [{ translateY: tradingHeaderAnim }],
+        }}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          tradingHeaderHeightRef.current = h;
+          setTradingHeaderHeight(h);
+        }}
+      >
         <TouchableOpacity
           onPress={() => router.push('/listing/new' as any)}
           style={{
             backgroundColor: theme.colors.primary,
-            borderRadius: 14,
-            paddingVertical: 14,
-            alignItems: 'center',
-            marginBottom: 14,
+            borderRadius: 14, paddingVertical: 14,
+            alignItems: 'center', marginBottom: 14,
           }}
         >
           <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>+ Add Listing</Text>
@@ -1064,15 +1121,22 @@ const handleArchive = async (listingId: string) => {
           </View>
         )}
 
+      </Animated.View>
+    );
+
+    return (
+      <View style={{ flex: 1, overflow: 'hidden' }}>
+        {header}
+
         {!!tradeError && (
-          <View style={{ backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 12 }}>
+          <View style={{ marginTop: listPaddingTop, backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 12 }}>
             <Text style={{ color: '#991B1B' }}>{tradeError}</Text>
           </View>
         )}
 
         {segment === 'myOffers' ? (
           myOffers.length === 0 ? (
-            <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+            <View style={{ alignItems: 'center', paddingTop: listPaddingTop + 40, paddingBottom: 40 }}>
               <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>No trade offers yet</Text>
               <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 8 }}>Browse listings and make an offer to get started.</Text>
             </View>
@@ -1081,24 +1145,28 @@ const handleArchive = async (listingId: string) => {
               data={myOffers}
               keyExtractor={(item) => item.id}
               renderItem={renderOffer}
+              onScroll={handleTradingScroll}
+              scrollEventThrottle={16}
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 200 }}
+              contentContainerStyle={{ paddingTop: listPaddingTop, paddingBottom: 200 }}
               refreshControl={<RefreshControl refreshing={false} onRefresh={loadMyOffers} tintColor={theme.colors.primary} />}
             />
           )
         ) : tradeLoading && displayData.length === 0 ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: listPaddingTop }}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         ) : (
           <FlatList
-            key={segment === 'marketplaceListings' ? 'grid' : 'list'}
+            key={segment === 'marketplaceListings' ? `grid-${numGridColumns}` : 'list'}
             data={displayData}
             keyExtractor={(item, index) => item.id ? String(item.id) : `${item.card_id}-${item.set_id}-${index}`}
             renderItem={renderListing}
-            numColumns={segment === 'marketplaceListings' ? 2 : 1}
+            numColumns={segment === 'marketplaceListings' ? numGridColumns : 1}
+            onScroll={handleTradingScroll}
+            scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 200, flexGrow: displayData.length === 0 ? 1 : 0, paddingHorizontal: segment === 'marketplaceListings' ? 5 : 0 }}
+            contentContainerStyle={{ paddingTop: listPaddingTop, paddingBottom: 200, flexGrow: displayData.length === 0 ? 1 : 0, paddingHorizontal: segment === 'marketplaceListings' ? 5 : 0 }}
             refreshControl={<RefreshControl refreshing={tradeLoading} onRefresh={refreshTrade} tintColor={theme.colors.primary} />}
             ListEmptyComponent={
               <View style={{ paddingVertical: 50 }}>
@@ -1109,7 +1177,7 @@ const handleArchive = async (listingId: string) => {
             }
           />
         )}
-      </>
+      </View>
     );
   };
 
@@ -1231,7 +1299,7 @@ const handleArchive = async (listingId: string) => {
   // ===============================
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.bg, paddingHorizontal: 16, paddingTop: 42 }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.bg, paddingHorizontal: 16, paddingTop: 42, zIndex: 0 }}>
       <Text style={{ color: theme.colors.text, fontSize: 30, fontWeight: '900', marginBottom: 6 }}>Market</Text>
       <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 16 }}>Trading, offers, prices, and card movement.</Text>
 
@@ -1267,7 +1335,7 @@ const handleArchive = async (listingId: string) => {
           <Pressable style={StyleSheet.absoluteFillObject} onPress={closeDetail} />
           <SafeAreaView style={{ flex: 1 }}>
             <Animated.View {...panResponder.panHandlers} style={{ flex: 1, transform: [{ translateY }] }}>
-              <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 75, paddingBottom: 44 }} showsVerticalScrollIndicator={false}>
+              <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 75, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20, position: 'relative' }}>
                   <View style={{ width: 42, height: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.55)' }} />
                   <TouchableOpacity onPress={closeDetail} style={{ position: 'absolute', right: 0, padding: 8 }}>
@@ -1362,9 +1430,22 @@ const handleArchive = async (listingId: string) => {
                       )}
 
 {selectedListing?.user_id !== myUserId ? (
-                        <TouchableOpacity onPress={() => { closeDetail(); handleMakeOffer(selectedListing); }} style={{ marginTop: 16, backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 13 }}>
-                          <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900' }}>Make Offer</Text>
-                        </TouchableOpacity>
+                        <>
+                          <TouchableOpacity onPress={() => { closeDetail(); handleMakeOffer(selectedListing); }} style={{ marginTop: 16, backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 13 }}>
+                            <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900' }}>Make Offer</Text>
+                          </TouchableOpacity>
+                          {isAdmin && (
+                            <TouchableOpacity
+                              onPress={() => Alert.alert('Delete listing', 'Remove this listing as admin?', [
+                                { text: 'Cancel', style: 'cancel' },
+                                { text: 'Delete', style: 'destructive', onPress: () => { closeDetail(); handleArchive(selectedListing.id); } },
+                              ])}
+                              style={{ marginTop: 8, backgroundColor: '#FEE2E2', borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: '#FCA5A5' }}
+                            >
+                              <Text style={{ color: '#991B1B', textAlign: 'center', fontWeight: '900' }}>🗑 Admin: Remove Listing</Text>
+                            </TouchableOpacity>
+                          )}
+                        </>
                       ) : (
                         <>
                           <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: theme.colors.border }}>

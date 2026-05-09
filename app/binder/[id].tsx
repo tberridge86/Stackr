@@ -13,6 +13,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
   Switch,
 } from 'react-native';
@@ -164,6 +165,9 @@ export default function BinderDetailScreen() {
   const binderId = Array.isArray(id) ? id[0] : id;
   const isReadOnly = readOnly === 'true';
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const numColumns = width >= 900 ? 6 : width >= 600 ? 4 : 3;
+  const cardWidth = (width - 32 - (numColumns - 1) * 8) / numColumns;
 
   // ===============================
   // STATE
@@ -870,8 +874,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         delayLongPress={300}
         activeOpacity={0.85}
         style={{
-          width: '31.5%',
-          marginBottom: 14,
+          width: cardWidth,
+          marginBottom: 8,
           backgroundColor: theme.colors.card,
           borderRadius: 14,
           padding: 6,
@@ -1160,8 +1164,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           data={sortedCards}
           keyExtractor={(item) => item.id}
           renderItem={renderCard}
-          numColumns={3}
-          columnWrapperStyle={{ justifyContent: 'space-between' }}
+          key={numColumns}
+          numColumns={numColumns}
+          columnWrapperStyle={{ gap: 8, marginBottom: 8 }}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
         />
