@@ -728,15 +728,60 @@ const handleArchive = async (listingId: string) => {
     const setName = cardDetails?.set?.name ?? 'Unknown set';
     const isMyListing = item.user_id === myUserId;
 
+    // Grid card for marketplace listings
+    if (segment === 'marketplaceListings') {
+      return (
+        <TouchableOpacity
+          onPress={() => openTradeCardDetail(item)}
+          activeOpacity={0.85}
+          style={{
+            flex: 1, margin: 5,
+            backgroundColor: theme.colors.card,
+            borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border,
+            overflow: 'hidden', ...cardShadow,
+          }}
+        >
+          {/* Image */}
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={{ width: '100%', aspectRatio: 3 / 4 }} resizeMode="cover" />
+          ) : (
+            <View style={{ width: '100%', aspectRatio: 3 / 4, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11 }}>No photo</Text>
+            </View>
+          )}
+
+
+          {/* Info */}
+          <View style={{ padding: 8 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900' }} numberOfLines={1}>{cardName}</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }} numberOfLines={1}>{setName}</Text>
+            {item.condition && (
+              <Text style={{ color: getConditionColor(item.condition), fontSize: 10, fontWeight: '700', marginTop: 2 }}>
+                {item.condition}
+              </Text>
+            )}
+            <Text style={{ color: '#22C55E', fontWeight: '900', fontSize: 13, marginTop: 4 }}>
+              {item.asking_price != null ? `£${Number(item.asking_price).toFixed(2)}` : '--'}
+            </Text>
+            {!isMyListing && (
+              <TouchableOpacity
+                onPress={() => handleMakeOffer(item)}
+                style={{ backgroundColor: theme.colors.primary, borderRadius: 8, paddingVertical: 6, alignItems: 'center', marginTop: 6 }}
+              >
+                <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>Make Offer</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </TouchableOpacity>
+      );
+    }
+
+    // Row layout for Mine / Wanted
     return (
       <View style={{
         backgroundColor: theme.colors.card,
-        borderRadius: 18,
-        padding: 14,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        ...cardShadow,
+        borderRadius: 18, padding: 14, marginBottom: 12,
+        borderWidth: 1, borderColor: theme.colors.border, ...cardShadow,
       }}>
         <TouchableOpacity onPress={() => openTradeCardDetail(item)} style={{ flexDirection: 'row' }} activeOpacity={0.8}>
           {imageUri ? (
@@ -746,34 +791,14 @@ const handleArchive = async (listingId: string) => {
               <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>No image</Text>
             </View>
           )}
-
           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginBottom: 4 }} numberOfLines={2}>{cardName}</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900', marginBottom: 4 }} numberOfLines={2}>{cardName}</Text>
             <Text style={{ color: theme.colors.textSoft, marginBottom: 4 }} numberOfLines={1}>{setName}</Text>
-
             {item.condition && (
               <Text style={{ color: getConditionColor(item.condition), marginBottom: 4, fontWeight: '700', fontSize: 12 }}>{item.condition}</Text>
             )}
-            {item.has_damage && (
-              <Text style={{ color: '#EF4444', marginBottom: 4, fontWeight: '900', fontSize: 12 }}>⚠️ Damage disclosed</Text>
-            )}
-
-            {segment !== 'wanted' && (
-              item.asking_price != null || item.custom_value != null ? (
-                <Text style={{ color: '#22C55E', marginBottom: 4, fontWeight: '900' }}>£{Number(item.asking_price ?? item.custom_value).toFixed(2)}</Text>
-              ) : item.trade_only ? (
-                <Text style={{ color: theme.colors.primary, marginBottom: 4, fontWeight: '900' }}>Trade only</Text>
-              ) : (
-                <Text style={{ color: theme.colors.primary, marginBottom: 4, fontWeight: '800' }}>Open to offers</Text>
-              )
-            )}
-
-            {segment === 'marketplaceListings' && (
-              <TouchableOpacity onPress={() => router.push(`/user/${item.user_id}`)}>
-                <Text style={{ color: theme.colors.primary, marginTop: 2, fontSize: 12 }}>
-                  {sellerName}{isMyListing ? ' • Your listing' : ''}
-                </Text>
-              </TouchableOpacity>
+            {item.asking_price != null && (
+              <Text style={{ color: '#22C55E', fontWeight: '900' }}>£{Number(item.asking_price).toFixed(2)}</Text>
             )}
             {segment === 'wanted' && (
               <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>On your wishlist</Text>
@@ -781,18 +806,9 @@ const handleArchive = async (listingId: string) => {
           </View>
         </TouchableOpacity>
 
-        {!!item.listing_notes && (
-          <Text style={{ color: theme.colors.textSoft, marginTop: 10, fontSize: 13 }}>{item.listing_notes}</Text>
-        )}
-
-        <View style={{ marginTop: 12, gap: 8 }}>
-          {segment === 'marketplaceListings' && !isMyListing && (
-            <TouchableOpacity onPress={() => handleMakeOffer(item)} style={{ backgroundColor: theme.colors.primary, borderRadius: 12, paddingVertical: 12 }}>
-              <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900' }}>Make Offer</Text>
-            </TouchableOpacity>
-          )}
+        <View style={{ marginTop: 10, gap: 8 }}>
           {segment === 'myListings' && (
-            <TouchableOpacity onPress={() => handleArchive(item.id)} style={{ backgroundColor: '#FEE2E2', borderRadius: 12, paddingVertical: 12, borderWidth: 1, borderColor: '#FCA5A5' }}>
+            <TouchableOpacity onPress={() => handleArchive(item.id)} style={{ backgroundColor: '#FEE2E2', borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: '#FCA5A5' }}>
               <Text style={{ color: '#991B1B', textAlign: 'center', fontWeight: '900' }}>Remove from Trade</Text>
             </TouchableOpacity>
           )}
@@ -1076,11 +1092,13 @@ const handleArchive = async (listingId: string) => {
           </View>
         ) : (
           <FlatList
+            key={segment === 'marketplaceListings' ? 'grid' : 'list'}
             data={displayData}
             keyExtractor={(item, index) => item.id ? String(item.id) : `${item.card_id}-${item.set_id}-${index}`}
             renderItem={renderListing}
+            numColumns={segment === 'marketplaceListings' ? 2 : 1}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 200, flexGrow: displayData.length === 0 ? 1 : 0 }}
+            contentContainerStyle={{ paddingBottom: 200, flexGrow: displayData.length === 0 ? 1 : 0, paddingHorizontal: segment === 'marketplaceListings' ? 5 : 0 }}
             refreshControl={<RefreshControl refreshing={tradeLoading} onRefresh={refreshTrade} tintColor={theme.colors.primary} />}
             ListEmptyComponent={
               <View style={{ paddingVertical: 50 }}>
