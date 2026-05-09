@@ -171,6 +171,8 @@ export async function fetchBinderCards(
             small: card.images?.small ?? null,
             large: card.images?.large ?? null,
           },
+          tcgplayer: card.tcgplayer,
+          cardmarket: card.cardmarket,
         },
       };
     }
@@ -203,6 +205,8 @@ export async function fetchBinderCards(
           small: card.images?.small ?? null,
           large: card.images?.large ?? null,
         },
+        tcgplayer: card.tcgplayer,
+        cardmarket: card.cardmarket,
       },
       created_at: new Date().toISOString(),
     };
