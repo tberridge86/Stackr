@@ -1058,18 +1058,68 @@ async function getFingerprints() {
 }
 
 // Must match the algorithm in scripts/card-fingerprinter/fingerprint.js exactly
-// (Jimp v0.22 bilinear resize + BT.601 greyscale)
+function dct1D(signal) {
+  const N = signal.length;
+  const out = new Array(N);
+  for (let k = 0; k < N; k++) {
+    let sum = 0;
+    for (let n = 0; n < N; n++) {
+      sum += signal[n] * Math.cos((Math.PI * (2 * n + 1) * k) / (2 * N));
+    }
+    out[k] = sum;
+  }
+  return out;
+}
+
+function dct2D(pixels, N) {
+  const temp = new Array(N * N);
+  for (let row = 0; row < N; row++) {
+    const r = dct1D(pixels.slice(row * N, (row + 1) * N));
+    for (let col = 0; col < N; col++) temp[row * N + col] = r[col];
+  }
+  const result = new Array(N * N);
+  for (let col = 0; col < N; col++) {
+    const c = [];
+    for (let row = 0; row < N; row++) c.push(temp[row * N + col]);
+    const dc = dct1D(c);
+    for (let row = 0; row < N; row++) result[row * N + col] = dc[row];
+  }
+  return result;
+}
+
 async function generatePHash(imageBuffer) {
   const image = await Jimp.read(imageBuffer);
+
+  const { width, height } = image.bitmap;
+  const cropTop = Math.floor(height * 0.12);
+  const cropHeight = Math.floor(height * 0.46);
+  image.crop(0, cropTop, width, cropHeight);
+
   image.resize(32, 32).greyscale();
 
   const pixels = [];
   image.scan(0, 0, 32, 32, (_x, _y, idx) => {
-    pixels.push(image.bitmap.data[idx]); // R channel — greyscale so R=G=B
+    pixels.push(image.bitmap.data[idx]);
   });
 
-  const mean = pixels.reduce((a, b) => a + b, 0) / pixels.length;
-  return pixels.map((p) => (p >= mean ? '1' : '0')).join('');
+  const min = Math.min(...pixels);
+  const max = Math.max(...pixels);
+  const range = max - min || 1;
+  const normalized = pixels.map(p => (p - min) / range);
+
+  const dct = dct2D(normalized, 32);
+
+  const coeffs = [];
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      if (row === 0 && col === 0) continue;
+      coeffs.push(dct[row * 32 + col]);
+    }
+  }
+
+  const sorted = [...coeffs].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  return coeffs.map(c => (c > median ? '1' : '0')).join('');
 }
 
 function hammingDistance(a, b) {
@@ -1079,6 +1129,13 @@ function hammingDistance(a, b) {
   }
   return dist;
 }
+
+app.post('/api/fingerprints/reload', (_req, res) => {
+  _fpCache = null;
+  _fpCacheAt = 0;
+  _fpCacheLoading = null;
+  res.json({ ok: true, message: 'Fingerprint cache cleared — will reload on next scan' });
+});
 
 app.post('/api/scan/fingerprint', async (req, res) => {
   try {

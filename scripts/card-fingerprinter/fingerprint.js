@@ -6,38 +6,93 @@ import Jimp from 'jimp';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-// Generate a simple pHash from image buffer
+// ===============================
+// DCT PHASH — must match server.js exactly
+// ===============================
+
+function dct1D(signal) {
+  const N = signal.length;
+  const out = new Array(N);
+  for (let k = 0; k < N; k++) {
+    let sum = 0;
+    for (let n = 0; n < N; n++) {
+      sum += signal[n] * Math.cos((Math.PI * (2 * n + 1) * k) / (2 * N));
+    }
+    out[k] = sum;
+  }
+  return out;
+}
+
+function dct2D(pixels, N) {
+  // Row-wise DCT
+  const temp = new Array(N * N);
+  for (let row = 0; row < N; row++) {
+    const r = dct1D(pixels.slice(row * N, (row + 1) * N));
+    for (let col = 0; col < N; col++) temp[row * N + col] = r[col];
+  }
+  // Column-wise DCT
+  const result = new Array(N * N);
+  for (let col = 0; col < N; col++) {
+    const c = [];
+    for (let row = 0; row < N; row++) c.push(temp[row * N + col]);
+    const dc = dct1D(c);
+    for (let row = 0; row < N; row++) result[row * N + col] = dc[row];
+  }
+  return result;
+}
+
 async function generatePHash(imageUrl) {
   try {
     const res = await fetch(imageUrl);
     const buffer = Buffer.from(await res.arrayBuffer());
-    
     const image = await Jimp.read(buffer);
-    
-    // Resize to 32x32 greyscale — standard pHash prep
+
+    const { width, height } = image.bitmap;
+
+    // Crop to art region — skip name/HP bar at top, stop before attacks/text.
+    // For standard cards this is roughly 12%–58% of card height.
+    // Full-art cards benefit even more since the entire crop is unique art.
+    const cropTop = Math.floor(height * 0.12);
+    const cropHeight = Math.floor(height * 0.46);
+    image.crop(0, cropTop, width, cropHeight);
+
     image.resize(32, 32).greyscale();
-    
-    // Get pixel data and compute mean
+
     const pixels = [];
-    image.scan(0, 0, 32, 32, (x, y, idx) => {
-      pixels.push(image.bitmap.data[idx]); // R channel (greyscale so R=G=B)
+    image.scan(0, 0, 32, 32, (_x, _y, idx) => {
+      pixels.push(image.bitmap.data[idx]);
     });
-    
-    const mean = pixels.reduce((a, b) => a + b, 0) / pixels.length;
-    
-    // Build hash: 1 if pixel > mean, 0 if not
-    const hash = pixels.map(p => (p >= mean ? '1' : '0')).join('');
-    return hash;
+
+    // Contrast normalise — removes lighting variation
+    const min = Math.min(...pixels);
+    const max = Math.max(...pixels);
+    const range = max - min || 1;
+    const normalized = pixels.map(p => (p - min) / range);
+
+    // 2D DCT
+    const dct = dct2D(normalized, 32);
+
+    // Extract top-left 8×8 frequency coefficients, skip DC at [0,0]
+    const coeffs = [];
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        if (row === 0 && col === 0) continue;
+        coeffs.push(dct[row * 32 + col]);
+      }
+    }
+
+    // Threshold at median → 63-bit hash
+    const sorted = [...coeffs].sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
+    return coeffs.map(c => (c > median ? '1' : '0')).join('');
   } catch (err) {
     console.error(`Failed to hash ${imageUrl}:`, err.message);
     return null;
   }
 }
 
-// Fetch all cards from your own Supabase table
 async function fetchAllCards() {
   const allCards = [];
   let from = 0;
@@ -63,7 +118,6 @@ async function fetchAllCards() {
   return allCards;
 }
 
-// Main run
 async function run() {
   console.log('Fetching cards from Supabase...');
   const cards = await fetchAllCards();
@@ -87,7 +141,7 @@ async function run() {
         card_name: card.name,
         set_id: card.set_id,
         image_url: imageUrl,
-        phash
+        phash,
       }, { onConflict: 'card_id' });
 
     if (error) {

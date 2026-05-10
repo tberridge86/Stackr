@@ -834,21 +834,24 @@ export default function ScanScreen() {
 
         {/* Debug overlay */}
         {debugInfo && (
-          <View style={{ position: 'absolute', top: 80, right: 12, backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, padding: 8, minWidth: 160 }}>
-            <Text style={{ color: '#FFD166', fontSize: 10, fontWeight: '900', marginBottom: 2 }}>
+          <View style={{ position: 'absolute', bottom: 180, left: 12, right: 12, backgroundColor: 'rgba(0,0,0,0.92)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#FFD166' }}>
+            <Text style={{ color: '#FFD166', fontSize: 13, fontWeight: '900', marginBottom: 6 }}>
               DEBUG — {debugInfo.method.toUpperCase()}
             </Text>
             {debugInfo.cardName ? (
-              <Text style={{ color: '#FFFFFF', fontSize: 10 }} numberOfLines={2}>{debugInfo.cardName}</Text>
+              <Text style={{ color: '#FFFFFF', fontSize: 13, marginBottom: 4 }} numberOfLines={2}>{debugInfo.cardName}</Text>
             ) : null}
             {debugInfo.confidence !== undefined ? (
-              <Text style={{ color: debugInfo.confidence >= FINGERPRINT_CONFIDENCE_THRESHOLD ? '#10B981' : '#EF4444', fontSize: 10, fontWeight: '700' }}>
-                Confidence: {debugInfo.confidence}%
+              <Text style={{ color: debugInfo.confidence >= FINGERPRINT_CONFIDENCE_THRESHOLD ? '#10B981' : '#EF4444', fontSize: 16, fontWeight: '900', marginBottom: 2 }}>
+                Confidence: {debugInfo.confidence}%  {debugInfo.confidence >= FINGERPRINT_CONFIDENCE_THRESHOLD ? '✅' : '❌'}
               </Text>
             ) : null}
             {debugInfo.distance !== undefined ? (
-              <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10 }}>Distance: {debugInfo.distance}/1024</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Distance: {debugInfo.distance} / 1024 bits</Text>
             ) : null}
+            <TouchableOpacity onPress={() => setDebugInfo(null)} style={{ position: 'absolute', top: 10, right: 10 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16 }}>✕</Text>
+            </TouchableOpacity>
           </View>
         )}
 
