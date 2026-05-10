@@ -1483,71 +1483,7 @@ const handleArchive = async (listingId: string) => {
         </View>
       )}
 
-      {/* Watchlist Trends */}
-          onPress={() => searchMarketCards(marketQuery)}
-          style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingHorizontal: 16, justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Search</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleMarketScanCard}
-          disabled={marketScanning}
-          style={{ backgroundColor: theme.colors.card, borderRadius: 14, width: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border, opacity: marketScanning ? 0.6 : 1 }}
-        >
-          {marketScanning ? (
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          ) : (
-            <Ionicons name="camera-outline" size={22} color={theme.colors.text} />
-          )}
-        </TouchableOpacity>
-      </View>
 
-      {/* Search Results */}
-      {marketSearchResults.length > 0 && (
-        <View style={{ marginBottom: 20 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>Results</Text>
-            <TouchableOpacity onPress={() => setMarketSearchResults([])}>
-              <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Clear</Text>
-            </TouchableOpacity>
-          </View>
-          {marketSearchResults.map((card) => {
-            const watching = watchlistCards.some(c => c.id === card.id);
-            const tcgPrices = card.tcgplayer?.prices;
-            let tcgPrice = null;
-            if (tcgPrices) {
-              const pref = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
-              for (const k of pref) {
-                if (tcgPrices[k]?.mid) { tcgPrice = tcgPrices[k].mid; break; }
-              }
-            }
-
-            return (
-              <TouchableOpacity
-                key={card.id}
-                onPress={() => openCardDetailSimple(card)}
-                style={{ flexDirection: 'row', backgroundColor: theme.colors.card, borderRadius: 18, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
-              >
-                <Image source={{ uri: card.images?.small }} style={{ width: 60, height: 84, borderRadius: 8, backgroundColor: theme.colors.surface }} resizeMode="contain" />
-                <View style={{ flex: 1, marginLeft: 12, justifyContent: 'center' }}>
-                  <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }} numberOfLines={1}>{card.name}</Text>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }} numberOfLines={1}>{card.set?.name}</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>TCG</Text>
-                    <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '700' }}>{tcgPrice ? `£${(tcgPrice * USD_TO_GBP).toFixed(2)}` : '--'}</Text>
-                  </View>
-                </View>
-                <TouchableOpacity
-                  onPress={() => toggleMarketWatchlist(card)}
-                  style={{ alignSelf: 'center', backgroundColor: watching ? theme.colors.secondary : theme.colors.surface, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, borderWidth: 1, borderColor: watching ? theme.colors.secondary : theme.colors.border }}
-                >
-                  <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 11 }}>{watching ? '✓' : '+ Watch'}</Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
 
       {/* Watchlist Trends */}
       <View style={{ backgroundColor: theme.colors.card, borderRadius: 20, padding: 18, borderWidth: 1, borderColor: theme.colors.border, marginBottom: 14, ...cardShadow }}>
