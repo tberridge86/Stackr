@@ -31,6 +31,7 @@ const SCANNING_MESSAGES = [
 const FAST_SCAN_PROFILE = { width: 720, compress: 0.5 };
 const ACCURACY_SCAN_PROFILE = { width: 960, compress: 0.72 };
 const REQUEST_TIMEOUT_MS = 5000;
+const FINGERPRINT_CONFIDENCE_THRESHOLD = 75;
 
 // ===============================
 // TYPES
@@ -188,7 +189,45 @@ export default function ScanScreen() {
   }, []);
 
   // ===============================
-  // CORE CAPTURE — Claude Vision
+  // FINGERPRINT SCAN
+  // ===============================
+
+  const fingerprintScan = useCallback(async (base64Image: string): Promise<ScannedCard | null> => {
+    try {
+      const response = await fetch(`${PRICE_API_URL}/api/scan/fingerprint`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64Image }),
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const match = data.match;
+      if (!match || match.confidence < FINGERPRINT_CONFIDENCE_THRESHOLD) return null;
+
+      const { supabase } = await import('../../lib/supabase');
+      const { data: card } = await supabase
+        .from('pokemon_cards')
+        .select('id, name, number, rarity, image_small, set_id, raw_data')
+        .eq('id', match.card_id)
+        .single();
+      if (!card) return null;
+
+      return {
+        id: card.id,
+        name: card.name,
+        number: card.number ?? '',
+        set_id: card.set_id,
+        set_name: card.raw_data?.set?.name ?? card.set_id,
+        image_small: card.image_small ?? '',
+        rarity: card.rarity ?? '',
+      };
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // ===============================
+  // CORE CAPTURE — fingerprint-first, CardSight fallback
   // ===============================
 
   const handleCapture = useCallback(async (isAuto = false) => {
@@ -201,7 +240,17 @@ export default function ScanScreen() {
     scanCooldownRef.current = true;
     startScanningMessages();
 
-    const identifyWithTimeout = async (base64Image: string) => {
+    const captureBase64 = async (profile: { width: number; compress: number }) => {
+      const photo = await camera.current!.takePhoto({ flash: 'off' });
+      const manipulated = await ImageManipulator.manipulateAsync(
+        `file://${photo.path}`,
+        [{ resize: { width: profile.width } }],
+        { compress: profile.compress, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+      );
+      return manipulated.base64 ?? '';
+    };
+
+    const identifyWithCardSight = async (base64Image: string) => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
       try {
@@ -211,54 +260,77 @@ export default function ScanScreen() {
           body: JSON.stringify({ base64Image }),
           signal: controller.signal,
         });
-        const json = await response.json();
-        return json;
+        return await response.json();
       } finally {
         clearTimeout(timeout);
       }
     };
 
-    const runPass = async (profile: { width: number; compress: number }) => {
-      const photo = await camera.current!.takePhoto({ flash: 'off' });
-      const manipulated = await ImageManipulator.manipulateAsync(
-        `file://${photo.path}`,
-        [{ resize: { width: profile.width } }],
-        {
-          compress: profile.compress,
-          format: ImageManipulator.SaveFormat.JPEG,
-          base64: true,
-        }
-      );
-
-      const base64 = manipulated.base64 ?? '';
-      const sig = `${base64.slice(0, 48)}:${base64.length}`;
-      if (isAuto && sig === lastFrameSigRef.current && Date.now() - lastFrameTsRef.current < 2200) {
-        return { duplicateFrame: true as const };
-      }
-
-      lastFrameSigRef.current = sig;
-      lastFrameTsRef.current = Date.now();
-
-      const parsed = await identifyWithTimeout(base64);
-      return { duplicateFrame: false as const, parsed };
-    };
-
     try {
-      let parsedResult = await runPass(FAST_SCAN_PROFILE);
+      // Step 1: capture at fast profile
+      const base64 = await captureBase64(FAST_SCAN_PROFILE);
 
-      if (parsedResult.duplicateFrame) {
+      // Duplicate frame check
+      const sig = `${base64.slice(0, 48)}:${base64.length}`;
+      if (isAuto && sig === lastFrameSigRef.current && now - lastFrameTsRef.current < 2200) {
         setLastScanned('Hold steady — same frame');
         resetScanState(500);
         return;
       }
+      lastFrameSigRef.current = sig;
+      lastFrameTsRef.current = now;
 
-      let parsed: any = parsedResult.parsed;
-      if (parsed?.error || !parsed?.name) {
-        const retry = await runPass(ACCURACY_SCAN_PROFILE);
-        if (!retry.duplicateFrame) parsed = retry.parsed;
+      // Step 2: try fingerprint match (fast, no AI cost)
+      let match: ScannedCard | null = await fingerprintScan(base64);
+
+      // Step 3: fall back to CardSight if fingerprint didn't reach threshold
+      if (!match) {
+        let parsed: any = await identifyWithCardSight(base64);
+
+        // If fast profile failed, retry with accuracy profile
+        if (parsed?.error || !parsed?.name) {
+          const base64Hq = await captureBase64(ACCURACY_SCAN_PROFILE);
+          // Try fingerprint again at higher quality before spending another CardSight call
+          match = await fingerprintScan(base64Hq);
+          if (!match) {
+            parsed = await identifyWithCardSight(base64Hq);
+          }
+        }
+
+        // If CardSight identified a name, look it up in the TCG database
+        if (!match && parsed && !parsed.error && parsed.name) {
+          const numberClean = parsed.number
+            ? parsed.number.split('/')[0].trim().replace(/^0+/, '')
+            : null;
+
+          const searchParams = new URLSearchParams({ name: parsed.name });
+          if (numberClean) searchParams.append('number', numberClean);
+
+          const searchRes = await fetch(`${PRICE_API_URL}/api/search/tcg?${searchParams.toString()}`);
+          const searchData = await searchRes.json();
+          const cards = (searchData.cards ?? []) as ScannedCard[];
+
+          if (cards.length > 0) {
+            let card = cards[0];
+            if (numberClean) {
+              const numberMatches = cards.filter((c) => String(parseInt(c.number, 10)) === numberClean);
+              if (numberMatches.length === 1) {
+                card = numberMatches[0];
+              } else if (numberMatches.length > 1) {
+                if (selectedBinder?.source_set_id) {
+                  card = numberMatches.find((c) => c.set_id === selectedBinder.source_set_id) ?? numberMatches[0];
+                } else {
+                  card = numberMatches[0];
+                }
+              }
+            }
+            match = card;
+          }
+        }
       }
 
-      if (parsed?.error || !parsed?.name) {
+      // Step 4: handle result
+      if (!match) {
         if (!isAuto) {
           Alert.alert(
             'Could not read card',
@@ -272,63 +344,13 @@ export default function ScanScreen() {
         return;
       }
 
-      const numberClean = parsed.number
-        ? parsed.number.split('/')[0].trim().replace(/^0+/, '')
-        : null;
-
-      const params = new URLSearchParams({ name: parsed.name });
-      if (numberClean) params.append('number', numberClean);
-
-      const searchUrl = `${PRICE_API_URL}/api/search/tcg?${params.toString()}`;
-      const searchRes = await fetch(searchUrl);
-      const searchData = await searchRes.json();
-      const cards = (searchData.cards ?? []) as ScannedCard[];
-
-      if (cards.length === 0) {
-        if (!isAuto) {
-          Alert.alert(
-            `"${parsed.name}" not found`,
-            'Card identified but not found in database.',
-            [{ text: 'OK' }]
-          );
-        }
-        stopScanningMessages();
-        scanCooldownRef.current = false;
-        setProcessingOcr(false);
-        return;
-      }
-
-      let match = cards[0];
-
       if (isMarketMode) {
         setAutoScanActive(false);
-        router.replace({
-          pathname: '/scan/result',
-          params: { cardsJson: JSON.stringify([match]) },
-        });
+        router.replace({ pathname: '/scan/result', params: { cardsJson: JSON.stringify([match]) } });
         stopScanningMessages();
         scanCooldownRef.current = false;
         setProcessingOcr(false);
         return;
-      }
-
-      if (numberClean) {
-        const numberMatches = cards.filter((c) =>
-          String(parseInt(c.number, 10)) === numberClean
-        );
-
-        if (numberMatches.length === 1) {
-          match = numberMatches[0];
-        } else if (numberMatches.length > 1) {
-          if (selectedBinder?.source_set_id) {
-            const setMatch = numberMatches.find(
-              (c) => c.set_id === selectedBinder.source_set_id
-            );
-            match = setMatch ?? numberMatches[0];
-          } else {
-            match = numberMatches[0];
-          }
-        }
       }
 
       if (scannedCardIdsRef.current.has(match.id)) {
@@ -344,7 +366,7 @@ export default function ScanScreen() {
       }
 
       scannedCardIdsRef.current.add(match.id);
-      setScannedCards((prev) => [...prev, match]);
+      setScannedCards((prev) => [...prev, match!]);
       setLastScanned(`✅ ${match.name} #${match.number} added!`);
       Vibration.vibrate([0, 90, 40, 90]);
       if (isAuto) setTimeout(() => setLastScanned('👉 Next card!'), 500);
@@ -363,7 +385,7 @@ export default function ScanScreen() {
       setProcessingOcr(false);
       setLastScanned(null);
     }
-  }, [isMarketMode, processingOcr, resetScanState, selectedBinder, startScanningMessages, stopScanningMessages]);
+  }, [fingerprintScan, isMarketMode, processingOcr, resetScanState, selectedBinder, startScanningMessages, stopScanningMessages]);
 
   // ===============================
   // SELECT BINDER STEP
