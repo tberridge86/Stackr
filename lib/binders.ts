@@ -36,6 +36,7 @@ export type BinderCardRecord = {
   set_total: number | null;
   slot_order: number;
   owned: boolean;
+  condition: string;
   notes: string;
   ebay_price: number | null;
   tcg_price: number | null;
@@ -77,6 +78,20 @@ export function isVirtualCard(id: string): boolean {
 // ===============================
 // FETCH BINDERS
 // ===============================
+
+export const CONDITION_MULTIPLIERS: Record<string, number> = {
+  Mint: 1.05,
+  'Near Mint': 1,
+  'Lightly Played': 0.85,
+  'Moderately Played': 0.65,
+  'Heavily Played': 0.45,
+  Damaged: 0.2,
+};
+
+export const getEstimatedValue = (baseValue: number, condition: string): number => {
+  const multiplier = CONDITION_MULTIPLIERS[condition] ?? 1;
+  return baseValue * multiplier;
+};
 
 export async function fetchBinders(): Promise<BinderRecord[]> {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -134,6 +149,7 @@ export async function fetchBinderCards(
   if (binder.type !== 'official' || !binder.source_set_id) {
   return savedRows.map((row) => ({
     ...row,
+    condition: row.condition || 'Near Mint',
     card: row.card ?? (row.card_name ? {
       id: row.card_id,
       name: row.card_name,
@@ -189,6 +205,7 @@ export async function fetchBinderCards(
       set_total: setCards.length,
       slot_order: index,
       owned: false,
+      condition: 'Near Mint',
       notes: '',
       ebay_price: null,
       tcg_price: null,
@@ -431,6 +448,7 @@ export async function updateBinderCardOwned(
     imageUrl?: string | null;
     setName?: string | null;
     slotOrder?: number;
+    condition?: string;
   }
 ): Promise<void> {
   const virtual = parseVirtualBinderCardId(binderCardId);
@@ -447,6 +465,7 @@ export async function updateBinderCardOwned(
           api_set_id: virtual.setId,
           slot_order: cardMeta?.slotOrder ?? 0,
           owned: true,
+          condition: cardMeta?.condition ?? 'Near Mint',
           notes: '',
           card_name: cardMeta?.cardName ?? null,
           card_number: cardMeta?.cardNumber ?? null,
@@ -509,7 +528,7 @@ export async function updateBinderCardOwned(
 
   const { error } = await supabase
     .from('binder_cards')
-    .update({ owned })
+    .update({ owned, condition: cardMeta?.condition })
     .eq('id', binderCardId);
 
   if (error) throw error;
@@ -523,6 +542,18 @@ export async function updateBinderCardOwned(
       type: 'binder_add',
     });
   }
+}
+
+export async function updateBinderCardCondition(
+  binderCardId: string,
+  condition: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('binder_cards')
+    .update({ condition })
+    .eq('id', binderCardId);
+
+  if (error) throw error;
 }
 
 // ===============================

@@ -26,12 +26,14 @@ import { BlurView } from 'expo-blur';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import {
-  BinderCardRecord,
   BinderRecord,
   addCardsToBinder,
   fetchBinderById,
   fetchBinderCards,
   updateBinderCardOwned,
+  updateBinderCardCondition,
+  CONDITION_MULTIPLIERS,
+  getEstimatedValue,
 } from '../../lib/binders';
 import { useTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
@@ -49,15 +51,6 @@ const CONDITION_OPTIONS = [
   'Heavily Played',
   'Damaged',
 ];
-
-const CONDITION_MULTIPLIERS: Record<string, number> = {
-  Mint: 1.05,
-  'Near Mint': 1,
-  'Lightly Played': 0.85,
-  'Moderately Played': 0.65,
-  'Heavily Played': 0.45,
-  Damaged: 0.2,
-};
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -122,12 +115,6 @@ const formatCurrency = (value: number | null | undefined): string => {
 
 const getBaseCardValue = (card: any): number => {
   return card?.ebay_price ?? card?.tcg_price ?? card?.cardmarket_price ?? 0;
-};
-
-const getEstimatedValue = (card: any, condition: string): number => {
-  const base = getBaseCardValue(card);
-  const multiplier = CONDITION_MULTIPLIERS[condition] ?? 1;
-  return base * multiplier;
 };
 
 const USD_TO_GBP = 0.79;
@@ -575,6 +562,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     imageUrl: item.card?.images?.small ?? item.image_url ?? null,
     setName: item.card?.set?.name ?? item.set_name ?? null,
     slotOrder: item.slot_order,
+    condition: item.condition,
   });
   setCards((prev) =>
     prev.map((c) => (c.id === item.id ? { ...c, owned: newOwned } : c))
@@ -586,6 +574,25 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   );
   Alert.alert('Error', 'Failed to update card.');
 }
+  };
+
+  const handleSetCondition = async (item: BinderCardWithDetails, condition: string) => {
+    if (isReadOnly) return;
+
+    setCards((prev) =>
+      prev.map((c) => (c.id === item.id ? { ...c, condition } : c))
+    );
+    if (selectedCard?.id === item.id) {
+      setSelectedCard({ ...item, condition });
+    }
+
+    try {
+      await updateBinderCardCondition(item.id, condition);
+    } catch (error) {
+      console.log('Failed to update condition', error);
+      Alert.alert('Error', 'Failed to update condition.');
+      load();
+    }
   };
 
   // ===============================
@@ -959,6 +966,17 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         }}>
           {cardName}
         </Text>
+
+        {item.owned && item.condition && item.condition !== 'Near Mint' && (
+          <Text style={{
+            color: theme.colors.textSoft,
+            fontSize: 9,
+            fontWeight: '700',
+            marginTop: 2,
+          }}>
+            {item.condition}
+          </Text>
+        )}
 
         {!isReadOnly && (forTrade || wanted) && (
           <View style={{ flexDirection: 'row', gap: 4, marginTop: 5 }}>
@@ -1486,7 +1504,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
                     {/* Market Value */}
                     <View style={boxStyle}>
-                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                         <Text style={boxTitleStyle}>Market Value</Text>
                         <TouchableOpacity
                           onPress={() => selectedCard && fetchModalEbayPrice(selectedCard)}
@@ -1506,8 +1524,45 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         </TouchableOpacity>
                       </View>
 
+                      {/* Condition Selection */}
+                      <View style={{ marginBottom: 16 }}>
+                        <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+                          Card Condition
+                        </Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                          {CONDITION_OPTIONS.map((c) => {
+                            const active = (selectedCard.condition || 'Near Mint') === c;
+                            return (
+                              <TouchableOpacity
+                                key={c}
+                                onPress={() => handleSetCondition(selectedCard, c)}
+                                disabled={isReadOnly}
+                                style={{
+                                  paddingHorizontal: 10,
+                                  paddingVertical: 6,
+                                  borderRadius: 10,
+                                  backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                                  borderWidth: 1,
+                                  borderColor: active ? theme.colors.primary : theme.colors.border,
+                                }}
+                              >
+                                <Text style={{
+                                  color: active ? '#FFFFFF' : theme.colors.text,
+                                  fontSize: 11,
+                                  fontWeight: '900',
+                                }}>
+                                  {c}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      </View>
+
+                      <View style={{ height: 1, backgroundColor: theme.colors.border, marginBottom: 16 }} />
+
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                        eBay Sold Prices · GBP {binder.edition === '1st_edition' ? '· 1st Edition' : ''}
+                        eBay Sold Prices · Adjusted for {selectedCard.condition || 'Near Mint'}
                       </Text>
 
                       {modalEbayLoading ? (
@@ -1528,19 +1583,19 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                             <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
                               <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Low</Text>
                               <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
-                                {modalEbayPrice?.low != null ? `£${modalEbayPrice.low.toFixed(2)}` : '--'}
+                                {modalEbayPrice?.low != null ? formatCurrency(getEstimatedValue(modalEbayPrice.low, selectedCard.condition || 'Near Mint')) : '--'}
                               </Text>
                             </View>
                             <View style={{ flex: 1, backgroundColor: theme.colors.primary + '18', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.primary }}>
                               <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Avg</Text>
                               <Text style={{ color: theme.colors.primary, fontWeight: '900', textAlign: 'center', fontSize: 15 }}>
-                                {modalEbayPrice?.average != null ? `£${modalEbayPrice.average.toFixed(2)}` : '--'}
+                                {modalEbayPrice?.average != null ? formatCurrency(getEstimatedValue(modalEbayPrice.average, selectedCard.condition || 'Near Mint')) : '--'}
                               </Text>
                             </View>
                             <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
                               <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>High</Text>
                               <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
-                                {modalEbayPrice?.high != null ? `£${modalEbayPrice.high.toFixed(2)}` : '--'}
+                                {modalEbayPrice?.high != null ? formatCurrency(getEstimatedValue(modalEbayPrice.high, selectedCard.condition || 'Near Mint')) : '--'}
                               </Text>
                             </View>
                           </View>
@@ -1566,12 +1621,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                        Stored Prices
+                        Stored Prices (Adjusted)
                       </Text>
 
-                      <Row label="eBay (cached)" value={formatCurrency(selectedCard?.ebay_price)} />
-                      <Row label="TCGPlayer" value={formatCurrency(getBinderTcgPrice(selectedCard?.card, binder?.edition))} />
-                      <Row label="CardMarket" value={formatCurrency(getCardmarketPrice(selectedCard))} />
+                      <Row label="eBay (cached)" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
+                      <Row label="TCGPlayer" value={formatCurrency(getEstimatedValue(getBinderTcgPrice(selectedCard?.card, binder?.edition) ?? 0, selectedCard.condition || 'Near Mint'))} />
+                      <Row label="CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
                         Updated daily

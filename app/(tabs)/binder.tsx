@@ -20,6 +20,7 @@ import {
   fetchBinderCards,
   deleteBinder,
   BinderRecord,
+  getEstimatedValue,
 } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -285,7 +286,11 @@ export default function BinderLibraryScreen() {
         data.map(async (binder) => {
           const cards = await fetchBinderCards(binder.id);
           const owned = cards.filter((c) => c.owned).length;
-          const totalValue = cards.reduce((sum, card) => sum + (card.ebay_price ?? 0), 0);
+          const totalValue = cards.reduce((sum, card) => {
+            if (!card.owned) return sum;
+            const base = card.ebay_price ?? 0;
+            return sum + getEstimatedValue(base, card.condition ?? 'Near Mint');
+          }, 0);
           return [binder.id, { owned, total: cards.length, value: totalValue }] as const;
         })
       );
