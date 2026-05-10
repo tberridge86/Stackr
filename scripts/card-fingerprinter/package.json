@@ -1,0 +1,14 @@
+{
+  "name": "card-fingerprinter",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node fingerprint.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "dotenv": "^16.6.1",
+    "jimp": "^0.22.12",
+    "node-fetch": "^3.3.2"
+  }
+}
