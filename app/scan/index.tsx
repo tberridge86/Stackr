@@ -75,6 +75,7 @@ export default function ScanScreen() {
   const [processingOcr, setProcessingOcr] = useState(false);
   const [autoScanActive, setAutoScanActive] = useState(false);
   const [scanningMessage, setScanningMessage] = useState('Reading card...');
+  const [debugInfo, setDebugInfo] = useState<{ method: string; confidence?: number; distance?: number; cardName?: string } | null>(null);
 
   const scanCooldownRef = useRef(false);
   const autoScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -202,6 +203,15 @@ export default function ScanScreen() {
       if (!response.ok) return null;
       const data = await response.json();
       const match = data.match;
+
+      // Always surface debug info regardless of whether threshold is met
+      setDebugInfo({
+        method: 'fingerprint',
+        confidence: match?.confidence,
+        distance: match?.distance,
+        cardName: match?.card_name,
+      });
+
       if (!match || match.confidence < FINGERPRINT_CONFIDENCE_THRESHOLD) return null;
 
       const { supabase } = await import('../../lib/supabase');
@@ -299,6 +309,7 @@ export default function ScanScreen() {
 
         // If CardSight identified a name, look it up in the TCG database
         if (!match && parsed && !parsed.error && parsed.name) {
+          setDebugInfo({ method: 'cardsight', cardName: parsed.name });
           const numberClean = parsed.number
             ? parsed.number.split('/')[0].trim().replace(/^0+/, '')
             : null;
@@ -820,6 +831,26 @@ export default function ScanScreen() {
             </View>
           )}
         </View>
+
+        {/* Debug overlay */}
+        {debugInfo && (
+          <View style={{ position: 'absolute', top: 80, right: 12, backgroundColor: 'rgba(0,0,0,0.75)', borderRadius: 8, padding: 8, minWidth: 160 }}>
+            <Text style={{ color: '#FFD166', fontSize: 10, fontWeight: '900', marginBottom: 2 }}>
+              DEBUG — {debugInfo.method.toUpperCase()}
+            </Text>
+            {debugInfo.cardName ? (
+              <Text style={{ color: '#FFFFFF', fontSize: 10 }} numberOfLines={2}>{debugInfo.cardName}</Text>
+            ) : null}
+            {debugInfo.confidence !== undefined ? (
+              <Text style={{ color: debugInfo.confidence >= FINGERPRINT_CONFIDENCE_THRESHOLD ? '#10B981' : '#EF4444', fontSize: 10, fontWeight: '700' }}>
+                Confidence: {debugInfo.confidence}%
+              </Text>
+            ) : null}
+            {debugInfo.distance !== undefined ? (
+              <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10 }}>Distance: {debugInfo.distance}/1024</Text>
+            ) : null}
+          </View>
+        )}
 
         {/* Bottom controls */}
         <View style={{ alignItems: 'center', paddingBottom: insets.bottom + 48, gap: 14 }}>
