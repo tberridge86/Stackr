@@ -320,7 +320,11 @@ export default function MarketScreen() {
     let cardTerm = trimmed;
     let matchedSetIds: string[] = [];
 
-    if (!skipSetFilter) for (let i = 0; i < words.length; i++) {
+    // Start at i=1 so at least one word is always kept as the card term.
+    // Starting at i=0 would let a single word like "pikachu" be consumed
+    // entirely by set detection (matching "Detective Pikachu" set) with no
+    // name filter left to apply.
+    if (!skipSetFilter) for (let i = 1; i < words.length; i++) {
         const possibleCardTerm = words.slice(0, i).join(' ');
         const possibleSetTerm = words.slice(i).join(' ');
         if (!possibleSetTerm) continue;
@@ -350,10 +354,14 @@ export default function MarketScreen() {
       let dbQuery = supabase
         .from('pokemon_cards')
         .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .limit(cardTerm ? 120 : 300);
+        .limit(500);
 
       if (cardTerm) {
-        const normalised = cardTerm.replace(/[''ʼ]/g, "'");
+        // Normalise apostrophes and map plain-ascii "pokemon" to the accented
+        // form stored in the DB ("Pokémon") so ilike matches correctly.
+        const normalised = cardTerm
+          .replace(/[''ʼ]/g, "'")
+          .replace(/\bpokemon\b/gi, 'Pokémon');
         const searchWords = normalised.split(/\s+/).filter(Boolean);
         for (const word of searchWords) {
           // "Mistys" → also try "Misty_s" so the _ wildcard matches the apostrophe

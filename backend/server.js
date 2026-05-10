@@ -6,6 +6,7 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
+import Jimp from 'jimp';
 import cardsightRoutes from './routes/cardsight.js';
 import { Buffer } from 'node:buffer';
 
@@ -1022,6 +1023,103 @@ app.get('/api/search/tcg', async (req, res) => {
       error: 'TCG search failed',
       detail: getErrorMessage(error),
     });
+  }
+});
+
+// ===============================
+// FINGERPRINT CACHE + PHASH SCAN
+// ===============================
+
+let _fpCache = null;
+let _fpCacheAt = 0;
+let _fpCacheLoading = null;
+const FP_CACHE_TTL = 60 * 60 * 1000;
+
+async function getFingerprints() {
+  if (_fpCache && Date.now() - _fpCacheAt < FP_CACHE_TTL) return _fpCache;
+  if (_fpCacheLoading) return _fpCacheLoading;
+
+  _fpCacheLoading = (async () => {
+    try {
+      const { data, error } = await supabase
+        .from('card_fingerprints')
+        .select('card_id, card_name, set_id, phash');
+      if (error) throw new Error(`Failed to load fingerprints: ${error.message}`);
+      _fpCache = data;
+      _fpCacheAt = Date.now();
+      console.log(`Fingerprint cache loaded: ${data.length} records`);
+      return _fpCache;
+    } finally {
+      _fpCacheLoading = null;
+    }
+  })();
+
+  return _fpCacheLoading;
+}
+
+// Must match the algorithm in scripts/card-fingerprinter/fingerprint.js exactly
+// (Jimp v0.22 bilinear resize + BT.601 greyscale)
+async function generatePHash(imageBuffer) {
+  const image = await Jimp.read(imageBuffer);
+  image.resize(32, 32).greyscale();
+
+  const pixels = [];
+  image.scan(0, 0, 32, 32, (_x, _y, idx) => {
+    pixels.push(image.bitmap.data[idx]); // R channel — greyscale so R=G=B
+  });
+
+  const mean = pixels.reduce((a, b) => a + b, 0) / pixels.length;
+  return pixels.map((p) => (p >= mean ? '1' : '0')).join('');
+}
+
+function hammingDistance(a, b) {
+  let dist = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) dist++;
+  }
+  return dist;
+}
+
+app.post('/api/scan/fingerprint', async (req, res) => {
+  try {
+    const { base64Image } = req.body;
+    if (!base64Image) return res.status(400).json({ error: 'Missing base64Image' });
+
+    const imageBuffer = Buffer.from(base64Image, 'base64');
+    const queryHash = await generatePHash(imageBuffer);
+
+    const fingerprints = await getFingerprints();
+    if (!fingerprints?.length) return res.status(503).json({ error: 'Fingerprint database not available' });
+
+    const TOP_N = 5;
+    const best = [];
+
+    for (const fp of fingerprints) {
+      if (!fp.phash || fp.phash.length !== queryHash.length) continue;
+      const dist = hammingDistance(queryHash, fp.phash);
+      if (best.length < TOP_N || dist < best[best.length - 1].distance) {
+        best.push({ card_id: fp.card_id, card_name: fp.card_name, set_id: fp.set_id, distance: dist });
+        best.sort((a, b) => a.distance - b.distance);
+        if (best.length > TOP_N) best.pop();
+      }
+    }
+
+    if (!best.length) return res.status(404).json({ error: 'No matches found' });
+
+    const toCandidate = (fp) => ({
+      card_id: fp.card_id,
+      card_name: fp.card_name,
+      set_id: fp.set_id,
+      distance: fp.distance,
+      confidence: Math.round((1 - fp.distance / queryHash.length) * 100),
+    });
+
+    return res.json({
+      match: toCandidate(best[0]),
+      candidates: best.map(toCandidate),
+    });
+  } catch (err) {
+    return res.status(500).json({ error: 'Fingerprint scan failed', detail: getErrorMessage(err) });
   }
 });
 
