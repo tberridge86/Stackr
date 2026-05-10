@@ -115,7 +115,8 @@ export default function TradeScreen() {
   const isAdmin = myProfile?.role === 'admin';
   const { width } = useWindowDimensions();
   const numGridColumns = width >= 900 ? 4 : width >= 600 ? 3 : 2;
-  const gridItemWidth = (width - (numGridColumns + 1) * 10) / numGridColumns;
+  // 32 = paddingHorizontal: 16 on each side of the root view
+  const gridItemWidth = (width - 32 - (numGridColumns + 1) * 10) / numGridColumns;
   const [mainTab, setMainTab] = useState<MainTab>('trading');
   const [segment, setSegment] = useState<SegmentKey>('marketplaceListings');
   const [wantedCards, setWantedCards] = useState<any[]>([]);
@@ -1304,27 +1305,22 @@ const handleArchive = async (listingId: string) => {
       <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 16 }}>Trading, offers, prices, and card movement.</Text>
 
       <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+        <TouchableOpacity
+          onPress={() => router.push('/market')}
+          style={{
+            flex: 1,
+            paddingVertical: 12,
+            borderRadius: 16,
+            backgroundColor: theme.colors.card,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+          }}
+        >
+          <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontWeight: '900', fontSize: 15 }}>
+            📈 Prices
+          </Text>
+        </TouchableOpacity>
         {renderMainTabButton('trading', '🤝 Trading')}
-       <TouchableOpacity
-  onPress={() => router.push('/market')}
-  style={{
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  }}
->
-  <Text style={{
-    color: theme.colors.textSoft,
-    textAlign: 'center',
-    fontWeight: '900',
-    fontSize: 15,
-  }}>
-    📈 Prices
-  </Text>
-</TouchableOpacity>
       </View>
 
       {mainTab === 'trading' ? renderTrading() : renderMarketplace()}

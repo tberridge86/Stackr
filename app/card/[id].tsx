@@ -243,7 +243,10 @@ export default function CardDetailScreen() {
     );
   }, [card, myListings]);
 
-  // TCGPlayer prices (USD reference only)
+  const USD_TO_GBP = 0.79;
+  const EUR_TO_GBP = 0.85;
+
+  // TCGPlayer prices — converted from USD to GBP
   const tcgPrices = useMemo(() => {
     if (!card) return null;
     const prices = card.tcgplayer?.prices;
@@ -272,11 +275,22 @@ export default function CardDetailScreen() {
 
     if (!entry) return null;
 
+    const toGBP = (v: any) => typeof v === 'number' ? Math.round(v * USD_TO_GBP * 100) / 100 : null;
+
     return {
-      low: typeof entry.low === 'number' ? entry.low : null,
-      mid: typeof entry.mid === 'number' ? entry.mid : null,
-      market: typeof entry.market === 'number' ? entry.market : null,
+      low: toGBP(entry.low),
+      mid: toGBP(entry.mid),
+      market: toGBP(entry.market),
     };
+  }, [card]);
+
+  // CardMarket prices — converted from EUR to GBP
+  const cardmarketPrice = useMemo(() => {
+    if (!card) return null;
+    const prices = card.cardmarket?.prices;
+    if (!prices) return null;
+    const eur = prices.trendPrice ?? prices.averageSellPrice ?? prices.avg30;
+    return typeof eur === 'number' ? Math.round(eur * EUR_TO_GBP * 100) / 100 : null;
   }, [card]);
 
   const isFavorite =
@@ -569,28 +583,43 @@ const handleListOnMarketplace = async () => {
           {/* Divider */}
           <View style={styles.divider} />
 
-          {/* TCGPlayer Reference Prices (USD) */}
-          <Text style={styles.priceSourceLabel}>TCGPlayer (Reference · USD)</Text>
+          {/* TCGPlayer — GBP */}
+          <Text style={styles.priceSourceLabel}>TCGPlayer · GBP</Text>
 
           <View style={styles.marketButtonsRow}>
             <View style={styles.marketButton}>
               <Text style={styles.marketButtonLabel}>Low</Text>
               <Text style={styles.marketButtonValue}>
-                {tcgPrices?.low != null ? `$${tcgPrices.low.toFixed(2)}` : 'N/A'}
+                {tcgPrices?.low != null ? `£${tcgPrices.low.toFixed(2)}` : 'N/A'}
               </Text>
             </View>
 
             <View style={styles.marketButton}>
               <Text style={styles.marketButtonLabel}>Mid</Text>
               <Text style={styles.marketButtonValue}>
-                {tcgPrices?.mid != null ? `$${tcgPrices.mid.toFixed(2)}` : 'N/A'}
+                {tcgPrices?.mid != null ? `£${tcgPrices.mid.toFixed(2)}` : 'N/A'}
               </Text>
             </View>
 
             <View style={styles.marketButton}>
               <Text style={styles.marketButtonLabel}>Market</Text>
               <Text style={styles.marketButtonValue}>
-                {tcgPrices?.market != null ? `$${tcgPrices.market.toFixed(2)}` : 'N/A'}
+                {tcgPrices?.market != null ? `£${tcgPrices.market.toFixed(2)}` : 'N/A'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Divider */}
+          <View style={styles.divider} />
+
+          {/* CardMarket — GBP */}
+          <Text style={styles.priceSourceLabel}>CardMarket · GBP</Text>
+
+          <View style={styles.marketButtonsRow}>
+            <View style={[styles.marketButton, { flex: 0, paddingHorizontal: 20 }]}>
+              <Text style={styles.marketButtonLabel}>Trend</Text>
+              <Text style={styles.marketButtonValue}>
+                {cardmarketPrice != null ? `£${cardmarketPrice.toFixed(2)}` : 'N/A'}
               </Text>
             </View>
           </View>

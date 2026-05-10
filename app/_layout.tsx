@@ -37,6 +37,7 @@ function PersistentTabBar() {
 
   const isActive = (route: string) => {
     if (route === '/') return pathname === '/' || pathname === '/index';
+    if (route === '/trade') return pathname.startsWith('/trade') || pathname.startsWith('/market');
     return pathname.startsWith(route);
   };
 
