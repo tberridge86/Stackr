@@ -27,6 +27,8 @@ export default function Index() {
   }, [user, authLoading, profile, profileLoading]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0b0b0b' }} />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.bg }}>
+      <ActivityIndicator />
+    </View>
   );
 }

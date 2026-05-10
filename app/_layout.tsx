@@ -1,20 +1,15 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import * as SplashScreen from 'expo-splash-screen';
-import { AuthProvider, useAuth } from '../components/auth-context';
-import { ProfileProvider, useProfile } from '../components/profile-context';
+import { AuthProvider } from '../components/auth-context';
+import { ProfileProvider } from '../components/profile-context';
 import { TradeProvider } from '../components/trade-context';
 import { CollectionProvider } from '../components/collection-context';
 import { theme } from '../lib/theme';
-import { Image, KeyboardAvoidingView, Platform, TouchableOpacity, View, Dimensions } from 'react-native';
+import { KeyboardAvoidingView, Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useEffect, useState } from 'react';
-
-// Keep the splash screen visible while we fetch resources
-SplashScreen.preventAutoHideAsync();
 
 // ===============================
 // PERSISTENT TAB BAR
@@ -37,7 +32,6 @@ function PersistentTabBar() {
 
   const isActive = (route: string) => {
     if (route === '/') return pathname === '/' || pathname === '/index';
-    if (route === '/trade') return pathname.startsWith('/trade') || pathname.startsWith('/market');
     return pathname.startsWith(route);
   };
 
@@ -98,117 +92,70 @@ function PersistentTabBar() {
 }
 
 // ===============================
-// ROOT CONTENT (Handles Splash Hiding)
+// ROOT LAYOUT
 // ===============================
-
-function RootLayoutContent() {
-  const { loading: authLoading } = useAuth();
-  const { loading: profileLoading } = useProfile();
-  const [appIsReady, setAppIsReady] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && !profileLoading) {
-      setTimeout(async () => {
-        setAppIsReady(true);
-        await SplashScreen.hideAsync();
-      }, 500);
-    }
-  }, [authLoading, profileLoading]);
-
-  if (!appIsReady) {
-    const designWidth = 1242 / 3;
-    const designHeight = 2688 / 3;
-
-    return (
-      <View style={{
-        flex: 1,
-        backgroundColor: '#0b0b0b',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-        <StatusBar style="light" />
-        <Image
-          source={require('../assets/images/splash.png')}
-          style={{
-            width: designWidth,
-            height: designHeight,
-          }}
-          resizeMode="contain"
-        />
-      </View>
-    );
-  }
-
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
-    >
-      <StatusBar style="dark" />
-      <Stack
-        screenOptions={{
-          headerShown: true,
-          gestureEnabled: true,
-          fullScreenGestureEnabled: true,
-          headerStyle: {
-            backgroundColor: theme.colors.bg,
-          },
-          headerTintColor: theme.colors.primary,
-          headerTitleStyle: {
-            color: theme.colors.text,
-            fontWeight: '900',
-          },
-          headerShadowVisible: false,
-          headerBackButtonDisplayMode: 'minimal',
-          headerBackTitle: '',
-        }}
-      >
-        <Stack.Screen
-          name="(tabs)"
-          options={{
-            headerShown: false,
-            title: '',
-          }}
-        />
-        <Stack.Screen name="card/[id]" options={{ title: '' }} />
-        <Stack.Screen name="set/[id]" options={{ title: '' }} />
-        <Stack.Screen name="offer/new" options={{ title: '' }} />
-        <Stack.Screen name="offer/index" options={{ title: '' }} />
-        <Stack.Screen name="offer/[id]" options={{ title: '' }} />
-        <Stack.Screen name="offers" options={{ title: '' }} />
-
-        <Stack.Screen name="listing/new" options={{ title: '' }} />
-        <Stack.Screen name="binder/new" options={{ title: '' }} />
-        <Stack.Screen name="binder/[id]" options={{ title: '' }} />
-        <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
-        <Stack.Screen name="scan" options={{ title: '' }} />
-        <Stack.Screen name="scan/result" options={{ title: '' }} />
-        <Stack.Screen name="market/index" options={{ title: '' }} />
-        <Stack.Screen name="price-builder/index" options={{ title: '' }} />
-        <Stack.Screen name="user/[id]" options={{ title: '' }} />
-        <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
-        <Stack.Screen name="(auth)/login" options={{ title: '' }} />
-        <Stack.Screen name="notifications" options={{ title: '' }} />
-        <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
-      </Stack>
-      <PersistentTabBar />
-    </KeyboardAvoidingView>
-  );
-}
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
       <AuthProvider>
         <ProfileProvider>
           <CollectionProvider>
             <TradeProvider>
-              <RootLayoutContent />
+              <StatusBar style="dark" />
+              <Stack
+                screenOptions={{
+                  headerShown: true,
+                  gestureEnabled: true,
+                  fullScreenGestureEnabled: true,
+                  headerStyle: {
+                    backgroundColor: theme.colors.bg,
+                  },
+                  headerTintColor: theme.colors.primary,
+                  headerTitleStyle: {
+                    color: theme.colors.text,
+                    fontWeight: '900',
+                  },
+                  headerShadowVisible: false,
+                  headerBackButtonDisplayMode: 'minimal',
+                  headerBackTitle: '',
+                }}
+              >
+                <Stack.Screen
+                  name="(tabs)"
+                  options={{
+                    headerShown: false,
+                    title: '',
+                  }}
+                />
+                <Stack.Screen name="card/[id]" options={{ title: '' }} />
+                <Stack.Screen name="set/[id]" options={{ title: '' }} />
+                <Stack.Screen name="offer/new" options={{ title: '' }} />
+                <Stack.Screen name="offer/index" options={{ title: '' }} />
+                <Stack.Screen name="offer/[id]" options={{ title: '' }} />
+                <Stack.Screen name="offers" options={{ title: '' }} />
+
+                <Stack.Screen name="listing/new" options={{ title: '' }} />
+                <Stack.Screen name="binder/new" options={{ title: '' }} />
+                <Stack.Screen name="binder/[id]" options={{ title: '' }} />
+                <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
+                <Stack.Screen name="scan" options={{ title: '' }} />
+                <Stack.Screen name="scan/result" options={{ title: '' }} />
+                <Stack.Screen name="market/index" options={{ title: '' }} />
+                <Stack.Screen name="price-builder/index" options={{ title: '' }} />
+                <Stack.Screen name="user/[id]" options={{ title: '' }} />
+                <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
+                <Stack.Screen name="(auth)/login" options={{ title: '' }} />
+                <Stack.Screen name="notifications" options={{ title: '' }} />
+                <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
+              </Stack>
+              <PersistentTabBar />
             </TradeProvider>
           </CollectionProvider>
         </ProfileProvider>
       </AuthProvider>
+      </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );
 }

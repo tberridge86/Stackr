@@ -1569,14 +1569,6 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         Stored Prices
                       </Text>
 
-                      {selectedCard?.set_id === 'me3' && (
-                        <View style={{ backgroundColor: '#FFFBEB', borderRadius: 8, padding: 8, marginBottom: 12, borderWidth: 1, borderColor: '#FEF3C7' }}>
-                          <Text style={{ color: '#92400E', fontSize: 11, fontWeight: '700', textAlign: 'center' }}>
-                            ⚠️ TCG market data for this set is still being indexed. Use live eBay prices for now.
-                          </Text>
-                        </View>
-                      )}
-
                       <Row label="eBay (cached)" value={formatCurrency(selectedCard?.ebay_price)} />
                       <Row label="TCGPlayer" value={formatCurrency(getBinderTcgPrice(selectedCard?.card, binder?.edition))} />
                       <Row label="CardMarket" value={formatCurrency(getCardmarketPrice(selectedCard))} />

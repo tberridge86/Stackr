@@ -35,8 +35,10 @@ import {
   TradeOffer,
 } from '../../lib/tradeOffers';
 import { supabase } from '../../lib/supabase';
+import { scanStore } from '../../lib/scanStore';
 
 const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+const USD_TO_GBP = 0.79;
 
 // ===============================
 // TYPES
@@ -105,6 +107,27 @@ const STATUS_COLOR: Record<string, string> = {
   disputed: '#EF4444',
 };
 
+const normalise = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+const mapCard = (card: any) => ({
+  id: card.id,
+  name: card.name,
+  number: card.number ?? '',
+  rarity: card.rarity ?? undefined,
+  images: {
+    small: card.image_small ?? undefined,
+    large: card.image_large ?? undefined,
+  },
+  set: {
+    id: card.set_id,
+    name: card.raw_data?.set?.name ?? card.set_id,
+    series: card.raw_data?.set?.series ?? '',
+  },
+  tcgplayer: card.raw_data?.tcgplayer,
+  cardmarket: card.raw_data?.cardmarket,
+});
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -117,7 +140,7 @@ export default function TradeScreen() {
   const numGridColumns = width >= 900 ? 4 : width >= 600 ? 3 : 2;
   // 32 = paddingHorizontal: 16 on each side of the root view
   const gridItemWidth = (width - 32 - (numGridColumns + 1) * 10) / numGridColumns;
-  const [mainTab, setMainTab] = useState<MainTab>('trading');
+  const [mainTab, setMainTab] = useState<MainTab>('marketplace');
   const [segment, setSegment] = useState<SegmentKey>('marketplaceListings');
   const [wantedCards, setWantedCards] = useState<any[]>([]);
   const [myOffers, setMyOffers] = useState<TradeOffer[]>([]);
@@ -149,6 +172,13 @@ const [myUserId, setMyUserId] = useState<string>('');
   // Top Movers
   const [topMovers, setTopMovers] = useState<TopMover[]>([]);
   const [topMoversLoading, setTopMoversLoading] = useState(true);
+
+  // Market Search
+  const [marketQuery, setMarketQuery] = useState('');
+  const [marketSearching, setMarketSearching] = useState(false);
+  const [marketSearchResults, setMarketSearchResults] = useState<any[]>([]);
+  const [marketScanning, setMarketScanning] = useState(false);
+  const marketSearchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Watchlist Trends
   const [watchlistCards, setWatchlistCards] = useState<any[]>([]);
@@ -509,6 +539,189 @@ const openTradeCardDetail = async (item: any) => {
       setWatchlistLoading(false);
     }
   }, []);
+
+  const searchMarketCards = useCallback(async (searchQuery: string, skipSetFilter = false) => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) { setMarketSearchResults([]); return; }
+
+    try {
+      setMarketSearching(true);
+      const words = trimmed.split(/\s+/).filter(Boolean);
+      let cardTerm = trimmed;
+      let matchedSetIds: string[] = [];
+
+      if (!skipSetFilter) {
+        for (let i = 0; i < words.length; i++) {
+          const possibleCardTerm = words.slice(0, i).join(' ');
+          const possibleSetTerm = words.slice(i).join(' ');
+          if (!possibleSetTerm) continue;
+
+          const { data: matchingSets } = await supabase
+            .from('pokemon_sets')
+            .select('id, name')
+            .or(`name.ilike.%${possibleSetTerm}%,id.ilike.%${possibleSetTerm}%`)
+            .limit(20);
+
+          const filteredSets = (matchingSets ?? []).filter((set: any) => {
+            const setName = normalise(set.name ?? '');
+            const setId = normalise(set.id ?? '');
+            const searchText = normalise(possibleSetTerm);
+            return setName.includes(searchText) || setId.includes(searchText);
+          });
+
+          if (filteredSets.length > 0) {
+            cardTerm = possibleCardTerm;
+            matchedSetIds = filteredSets.map((set: any) => set.id);
+            break;
+          }
+        }
+      }
+
+      let dbQuery = supabase
+        .from('pokemon_cards')
+        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+        .limit(cardTerm ? 120 : 300);
+
+      if (cardTerm) {
+        const normals = cardTerm.replace(/[''ʼ]/g, "'");
+        const searchWords = normals.split(/\s+/).filter(Boolean);
+        for (const word of searchWords) {
+          if (!word.includes("'") && /[a-z]s$/i.test(word)) {
+            const wildcardForm = `${word.slice(0, -1)}_s`;
+            dbQuery = dbQuery.or(`name.ilike.%${word}%,name.ilike.%${wildcardForm}%`);
+          } else {
+            dbQuery = dbQuery.ilike('name', `%${word}%`);
+          }
+        }
+      }
+      if (!skipSetFilter && matchedSetIds.length > 0) dbQuery = dbQuery.in('set_id', matchedSetIds);
+
+      const { data, error } = await dbQuery;
+      if (error) throw error;
+      setMarketSearchResults((data ?? []).map(mapCard));
+    } catch (err) {
+      console.log('Search error:', err);
+      setMarketSearchResults([]);
+    } finally {
+      setMarketSearching(false);
+    }
+  }, []);
+
+  const handleMarketSearchChange = useCallback((text: string) => {
+    setMarketQuery(text);
+    if (marketSearchTimerRef.current) clearTimeout(marketSearchTimerRef.current);
+    marketSearchTimerRef.current = setTimeout(() => { searchMarketCards(text); }, 350);
+  }, [searchMarketCards]);
+
+  const openCardDetailSimple = useCallback(async (card: any) => {
+    translateY.setValue(0);
+    setSelectedCard(card);
+    setSelectedListing(null);
+    setDetailVisible(true);
+
+    // Fetch live eBay price
+    if (card?.name) {
+      setEbayLoading(true);
+      setEbayData(null);
+      try {
+        const params = new URLSearchParams({
+          name: card.name,
+          setName: card.set?.name ?? '',
+          number: card.number ?? '',
+          cardId: card.id,
+        });
+        const res = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
+        if (res.ok) {
+          const result = await res.json();
+          setEbayData({
+            low: result.low ?? null,
+            average: result.average ?? null,
+            high: result.high ?? null,
+            count: result.count ?? 0,
+          });
+        }
+      } catch (err) { console.log('eBay fetch error', err); }
+      finally { setEbayLoading(false); }
+    }
+  }, [translateY]);
+
+  const handleMarketScanCard = useCallback(async () => {
+    scanStore.setCallback(async (base64Image: string) => {
+      try {
+        setMarketScanning(true);
+        const cardSightResponse = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64Image }),
+        });
+        let parsed: any = await cardSightResponse.json().catch(() => null);
+        if (parsed?.error || !parsed?.name) {
+          Alert.alert('Could not identify card', 'Try taking a clearer photo.');
+          return;
+        }
+
+        setMarketQuery(parsed.name.trim());
+        await searchMarketCards(parsed.name.trim(), true);
+
+        if (parsed.number) {
+          const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
+          const { data: cardData } = await supabase
+            .from('pokemon_cards')
+            .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+            .ilike('name', `%${parsed.name.trim()}%`)
+            .limit(120);
+
+          const cards = (cardData ?? []).map(mapCard);
+          const numberMatches = cards.filter((c) => (c.number ?? '').replace(/^0+/, '') === numberClean);
+
+          let match: any;
+          if (numberMatches.length === 1) match = numberMatches[0];
+          else if (numberMatches.length > 1) {
+            if (parsed.set) {
+              const setNameLower = parsed.set.toLowerCase();
+              match = numberMatches.find((c) =>
+                c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
+                setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
+              );
+            }
+            if (!match) {
+              const setIds = [...new Set(numberMatches.map(c => c.set?.id).filter(Boolean))];
+              const { data: setsData } = await supabase
+                .from('pokemon_sets')
+                .select('id, release_date')
+                .in('id', setIds as string[])
+                .order('release_date', { ascending: false });
+              const mostRecentSetId = setsData?.[0]?.id;
+              match = numberMatches.find(c => c.set?.id === mostRecentSetId) ?? numberMatches[0];
+            }
+          }
+
+          if (match) {
+            setMarketSearchResults(cards);
+            openCardDetailSimple(match);
+          }
+        }
+      } catch (err) {
+        console.log('Scan error:', err);
+        Alert.alert('Scan failed', 'Something went wrong.');
+      } finally {
+        setMarketScanning(false);
+      }
+    });
+    router.push({ pathname: '/scan', params: { mode: 'market' } });
+  }, [searchMarketCards, openCardDetailSimple]);
+
+  const toggleMarketWatchlist = useCallback(async (card: any) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const watching = watchlistCards.some(c => c.id === card.id);
+    if (watching) {
+      await supabase.from('market_watchlist').delete().eq('user_id', user.id).eq('card_id', card.id);
+    } else {
+      await supabase.from('market_watchlist').insert({ user_id: user.id, card_id: card.id, set_id: card.set?.id ?? null });
+    }
+    loadMarketWatchlist();
+  }, [watchlistCards, loadMarketWatchlist]);
 
   useFocusEffect(
     useCallback(() => {
@@ -1189,6 +1402,153 @@ const handleArchive = async (listingId: string) => {
   const renderMarketplace = () => (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
+      {/* Search + Scan row */}
+      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+        <TextInput
+          value={marketQuery}
+          onChangeText={handleMarketSearchChange}
+          placeholder="Search cards or sets..."
+          placeholderTextColor={theme.colors.textSoft}
+          style={{
+            flex: 1, backgroundColor: theme.colors.card, color: theme.colors.text,
+            borderWidth: 1, borderColor: theme.colors.border, borderRadius: 14,
+            paddingHorizontal: 14, paddingVertical: 12, fontSize: 13,
+          }}
+          returnKeyType="search"
+          onSubmitEditing={() => searchMarketCards(marketQuery)}
+        />
+        <TouchableOpacity
+          onPress={() => searchMarketCards(marketQuery)}
+          style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingHorizontal: 16, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Search</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleMarketScanCard}
+          disabled={marketScanning}
+          style={{ backgroundColor: theme.colors.card, borderRadius: 14, width: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border, opacity: marketScanning ? 0.6 : 1 }}
+        >
+          {marketScanning ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : (
+            <Ionicons name="camera-outline" size={22} color={theme.colors.text} />
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {/* Search Results */}
+      {marketSearchResults.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>Results</Text>
+            <TouchableOpacity onPress={() => setMarketSearchResults([])}>
+              <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+          {marketSearchResults.map((card) => {
+            const watching = watchlistCards.some(c => c.id === card.id);
+            const tcgPrices = card.tcgplayer?.prices;
+            let tcgPrice = null;
+            if (tcgPrices) {
+              const pref = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
+              for (const k of pref) {
+                if (tcgPrices[k]?.mid) { tcgPrice = tcgPrices[k].mid; break; }
+              }
+            }
+
+            return (
+              <TouchableOpacity
+                key={card.id}
+                onPress={() => openCardDetailSimple(card)}
+                style={{ flexDirection: 'row', backgroundColor: theme.colors.card, borderRadius: 18, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
+              >
+                <Image source={{ uri: card.images?.small }} style={{ width: 60, height: 84, borderRadius: 8, backgroundColor: theme.colors.surface }} resizeMode="contain" />
+                <View style={{ flex: 1, marginLeft: 12, justifyContent: 'center' }}>
+                  <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }} numberOfLines={1}>{card.name}</Text>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }} numberOfLines={1}>{card.set?.name}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>TCG</Text>
+                    <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '700' }}>{tcgPrice ? `£${(tcgPrice * USD_TO_GBP).toFixed(2)}` : '--'}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => toggleMarketWatchlist(card)}
+                  style={{ alignSelf: 'center', backgroundColor: watching ? theme.colors.secondary : theme.colors.surface, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, borderWidth: 1, borderColor: watching ? theme.colors.secondary : theme.colors.border }}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 11 }}>{watching ? '✓' : '+ Watch'}</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+
+      {/* Watchlist Trends */}
+          onPress={() => searchMarketCards(marketQuery)}
+          style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingHorizontal: 16, justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Search</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleMarketScanCard}
+          disabled={marketScanning}
+          style={{ backgroundColor: theme.colors.card, borderRadius: 14, width: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border, opacity: marketScanning ? 0.6 : 1 }}
+        >
+          {marketScanning ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : (
+            <Ionicons name="camera-outline" size={22} color={theme.colors.text} />
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {/* Search Results */}
+      {marketSearchResults.length > 0 && (
+        <View style={{ marginBottom: 20 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>Results</Text>
+            <TouchableOpacity onPress={() => setMarketSearchResults([])}>
+              <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Clear</Text>
+            </TouchableOpacity>
+          </View>
+          {marketSearchResults.map((card) => {
+            const watching = watchlistCards.some(c => c.id === card.id);
+            const tcgPrices = card.tcgplayer?.prices;
+            let tcgPrice = null;
+            if (tcgPrices) {
+              const pref = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
+              for (const k of pref) {
+                if (tcgPrices[k]?.mid) { tcgPrice = tcgPrices[k].mid; break; }
+              }
+            }
+
+            return (
+              <TouchableOpacity
+                key={card.id}
+                onPress={() => openCardDetailSimple(card)}
+                style={{ flexDirection: 'row', backgroundColor: theme.colors.card, borderRadius: 18, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
+              >
+                <Image source={{ uri: card.images?.small }} style={{ width: 60, height: 84, borderRadius: 8, backgroundColor: theme.colors.surface }} resizeMode="contain" />
+                <View style={{ flex: 1, marginLeft: 12, justifyContent: 'center' }}>
+                  <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }} numberOfLines={1}>{card.name}</Text>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }} numberOfLines={1}>{card.set?.name}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>TCG</Text>
+                    <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '700' }}>{tcgPrice ? `£${(tcgPrice * USD_TO_GBP).toFixed(2)}` : '--'}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  onPress={() => toggleMarketWatchlist(card)}
+                  style={{ alignSelf: 'center', backgroundColor: watching ? theme.colors.secondary : theme.colors.surface, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, borderWidth: 1, borderColor: watching ? theme.colors.secondary : theme.colors.border }}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 11 }}>{watching ? '✓' : '+ Watch'}</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
+
       {/* Watchlist Trends */}
       <View style={{ backgroundColor: theme.colors.card, borderRadius: 20, padding: 18, borderWidth: 1, borderColor: theme.colors.border, marginBottom: 14, ...cardShadow }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -1305,21 +1665,7 @@ const handleArchive = async (listingId: string) => {
       <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 16 }}>Trading, offers, prices, and card movement.</Text>
 
       <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
-        <TouchableOpacity
-          onPress={() => router.push('/market')}
-          style={{
-            flex: 1,
-            paddingVertical: 12,
-            borderRadius: 16,
-            backgroundColor: theme.colors.card,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-          }}
-        >
-          <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontWeight: '900', fontSize: 15 }}>
-            📈 Prices
-          </Text>
-        </TouchableOpacity>
+        {renderMainTabButton('marketplace', '📈 Prices')}
         {renderMainTabButton('trading', '🤝 Trading')}
       </View>
 
@@ -1359,12 +1705,50 @@ const handleArchive = async (listingId: string) => {
                       </Text>
 
 <View style={{ backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
-                        <DetailRow label="Condition" value={selectedListing?.condition ?? '--'} valueColor={getConditionColor(selectedListing?.condition ?? '')} />
-                        <DetailRow
-                          label="Asking Price"
-                          value={selectedListing?.asking_price != null ? `£${Number(selectedListing.asking_price).toFixed(2)}` : selectedListing?.trade_only ? 'Trade only' : 'Open to offers'}
-                          valueColor={theme.colors.primary}
-                        />
+                        {selectedListing ? (
+                          <>
+                            <DetailRow label="Condition" value={selectedListing.condition ?? '--'} valueColor={getConditionColor(selectedListing.condition ?? '')} />
+                            <DetailRow
+                              label="Asking Price"
+                              value={selectedListing.asking_price != null ? `£${Number(selectedListing.asking_price).toFixed(2)}` : selectedListing.trade_only ? 'Trade only' : 'Open to offers'}
+                              valueColor={theme.colors.primary}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <TouchableOpacity
+                              onPress={() => toggleMarketWatchlist(selectedCard)}
+                              style={{ alignSelf: 'flex-start', backgroundColor: watchlistCards.some(c => c.id === selectedCard.id) ? theme.colors.secondary : theme.colors.surface, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, borderWidth: 1, borderColor: watchlistCards.some(c => c.id === selectedCard.id) ? theme.colors.secondary : theme.colors.border, marginBottom: 12 }}
+                            >
+                              <Text style={{ color: theme.colors.text, fontWeight: '700', fontSize: 14 }}>
+                                {watchlistCards.some(c => c.id === selectedCard.id) ? '✓ Watching' : '+ Watch'}
+                              </Text>
+                            </TouchableOpacity>
+
+                            {/* TCG Prices for standalone card */}
+                            {selectedCard?.tcgplayer?.prices && (
+                              <View style={{ marginBottom: 12 }}>
+                                <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '800', marginBottom: 6 }}>TCGPlayer (GBP est.)</Text>
+                                {(() => {
+                                  const getPrice = (f: 'mid' | 'low' | 'market') => {
+                                    const prices = selectedCard.tcgplayer.prices;
+                                    const pref = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
+                                    for (const k of pref) if (prices[k]?.[f]) return prices[k][f];
+                                    for (const e of Object.values(prices) as any[]) if (e[f]) return e[f];
+                                    return null;
+                                  };
+                                  return (
+                                    <>
+                                      <DetailRow label="Low" value={getPrice('low') ? `£${(getPrice('low') * USD_TO_GBP).toFixed(2)}` : '--'} />
+                                      <DetailRow label="Mid" value={getPrice('mid') ? `£${(getPrice('mid') * USD_TO_GBP).toFixed(2)}` : '--'} />
+                                      <DetailRow label="Market" value={getPrice('market') ? `£${(getPrice('market') * USD_TO_GBP).toFixed(2)}` : '--'} />
+                                    </>
+                                  );
+                                })()}
+                              </View>
+                            )}
+                          </>
+                        )}
                         
                         {/* Live eBay Prices */}
                         <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
@@ -1500,6 +1884,26 @@ function DetailRow({ label, value, valueColor }: { label: string; value: string;
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
       <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>{label}</Text>
       <Text style={{ color: valueColor ?? theme.colors.text, fontSize: 14, fontWeight: '800' }}>{value}</Text>
+    </View>
+  );
+}
+
+function PriceSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
+      <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>{title}</Text>
+      {children}
+    </View>
+  );
+}
+
+function PriceRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>{label}</Text>
+      <Text style={{ color: highlight ? theme.colors.primary : theme.colors.text, fontSize: highlight ? 15 : 14, fontWeight: highlight ? '900' : '700' }}>
+        {value}
+      </Text>
     </View>
   );
 }
