@@ -48,6 +48,7 @@ function BinderPreview({
   name: string;
   coverKey: string | null;
 }) {
+  const { theme } = useTheme();
   const cover = BINDER_COVERS.find((c) => c.key === coverKey) ?? null;
 
   if (cover) {

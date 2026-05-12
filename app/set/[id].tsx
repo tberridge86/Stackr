@@ -33,23 +33,44 @@ const VARIANT_LABELS: Record<string, string> = {
   reverseHoloPokeball: 'Ball',
 };
 
-// Per-set variant overrides for sets without TCGPlayer price data
+// Per-set variant overrides (e.g. for sets with multiple reverse holo patterns)
 const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> = {
-  me2pt5: {
+  asc: {
     Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
     Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
   },
+  ASC: {
+    Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+    Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+  },
+  me2pt5: {
+    Common: ['normal', 'reverseHolofoil'],
+    Uncommon: ['normal', 'reverseHolofoil'],
+  },
 };
 
-function getVariants(card: PokemonCard): string[] {
-  // Set-specific override takes priority
-  const override = SET_VARIANT_OVERRIDES[card.set?.id ?? ''];
-  if (override && card.rarity && override[card.rarity]) {
-    return override[card.rarity]!;
+function getVariants(card: PokemonCard, explicitSetId?: string): string[] {
+  const setId = (explicitSetId ?? card.set?.id ?? '').toLowerCase();
+
+  // 1. Check for hardcoded set overrides (e.g. Ascended Heroes 3-variant logic)
+  const override = SET_VARIANT_OVERRIDES[setId] || SET_VARIANT_OVERRIDES[setId.toUpperCase()];
+  if (override && card.rarity) {
+    const r = card.rarity;
+    const variants = override[r] ||
+                     override[r.charAt(0).toUpperCase() + r.slice(1).toLowerCase()] ||
+                     override[r.toLowerCase()];
+    if (variants) return variants;
   }
-  // Fall back to tcgplayer price keys, then single normal
-  const keys = Object.keys(card.tcgplayer?.prices ?? {});
-  return keys.length > 0 ? keys : ['normal'];
+
+  // 2. Try to get variants from TCGPlayer price keys
+  const prices = card.tcgplayer?.prices;
+  const keys = Object.keys(prices ?? {}).filter(k => k !== 'unlimited');
+
+  // Return multiple variants ONLY if they exist in the database data
+  if (keys.length > 1) return keys;
+
+  // 3. Default to single variant
+  return keys.length > 0 ? [keys[0]] : ['normal'];
 }
 
 function shortVariant(key: string): string {
@@ -69,7 +90,7 @@ type CardItemProps = {
 
 const CardItem = React.memo(({ card, ownedVariants, setId, onToggleVariant }: CardItemProps) => {
   const { theme } = useTheme();
-  const variants = useMemo(() => getVariants(card), [card]);
+  const variants = useMemo(() => getVariants(card, setId), [card, setId]);
   const anyOwned = variants.some((v) => ownedVariants.has(`${card.id}:${v}`));
   const allOwned = variants.every((v) => ownedVariants.has(`${card.id}:${v}`));
   const slicePct = 100 / variants.length;
@@ -146,18 +167,24 @@ const CardItem = React.memo(({ card, ownedVariants, setId, onToggleVariant }: Ca
               {owned && (
                 <Ionicons name="checkmark-circle" size={22} color="#7A5200" />
               )}
-              <Text style={{
-                position: 'absolute',
-                bottom: 3,
-                fontSize: 9,
-                fontWeight: '900',
-                color: owned ? '#7A5200' : 'rgba(255,255,255,0.9)',
-                textShadowColor: 'rgba(0,0,0,0.5)',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 2,
-              }}>
-                {shortVariant(variant)}
-              </Text>
+              <View style={{ position: 'absolute', bottom: 3, alignItems: 'center' }}>
+                {variant === 'reverseHoloEnergy' ? (
+                  <Ionicons name="flash" size={11} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
+                ) : variant === 'reverseHoloPokeball' ? (
+                  <Ionicons name="aperture" size={11} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
+                ) : (
+                  <Text style={{
+                    fontSize: 9,
+                    fontWeight: '900',
+                    color: owned ? '#7A5200' : 'rgba(255,255,255,0.9)',
+                    textShadowColor: 'rgba(0,0,0,0.5)',
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
+                  }}>
+                    {shortVariant(variant)}
+                  </Text>
+                )}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -288,7 +315,7 @@ export default function SetDetailScreen() {
 
   const filteredCards = useMemo(() => {
     let result = cards.filter((card) => {
-      const variants = getVariants(card);
+      const variants = getVariants(card, setId);
       const anyOwned = variants.some((v) => ownedVariants.has(`${card.id}:${v}`));
       const matchesSearch =
         card.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -309,8 +336,8 @@ export default function SetDetailScreen() {
   }, [cards, ownedVariants, search, filter, selectedRarity, sort]);
 
   const ownedCardCount = useMemo(() =>
-    cards.filter((c) => getVariants(c).some((v) => ownedVariants.has(`${c.id}:${v}`))).length,
-    [cards, ownedVariants]
+    cards.filter((c) => getVariants(c, setId).some((v) => ownedVariants.has(`${c.id}:${v}`))).length,
+    [cards, ownedVariants, setId]
   );
 
   const progressPercent = setInfo?.total && setInfo.total > 0

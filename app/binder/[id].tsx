@@ -15,11 +15,12 @@ import {
   useWindowDimensions,
   View,
   Switch,
+  StyleSheet,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Text } from '../../components/Text';
 import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
-
+import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams, Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
@@ -167,22 +168,45 @@ const VARIANT_LABELS: Record<string, string> = {
   reverseHoloPokeball: 'Ball',
 };
 
+// Per-set variant overrides (e.g. for sets with multiple reverse holo patterns like Poké Ball)
 const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> = {
-  me2pt5: {
+  asc: {
     Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
     Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
   },
+  ASC: {
+    Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+    Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+  },
+  // English 151: Only force 2 slices if your DB doesn't have the price keys yet
+  me2pt5: {
+    Common: ['normal', 'reverseHolofoil'],
+    Uncommon: ['normal', 'reverseHolofoil'],
+  },
 };
 
-function getVariants(card: any): string[] {
-  const setId = card?.set?.id ?? card?.set_id ?? '';
-  const override = SET_VARIANT_OVERRIDES[setId];
-  if (override && card?.rarity && override[card.rarity]) {
-    return override[card.rarity]!;
+function getVariants(card: any, explicitSetId?: string): string[] {
+  const setId = (explicitSetId ?? card?.set?.id ?? card?.set_id ?? '').toLowerCase();
+
+  // 1. Check for hardcoded set overrides (e.g. Ascended Heroes 3-variant logic)
+  const override = SET_VARIANT_OVERRIDES[setId] || SET_VARIANT_OVERRIDES[setId.toUpperCase()];
+  if (override && card?.rarity) {
+    const r = card.rarity;
+    const variants = override[r] ||
+                     override[r.charAt(0).toUpperCase() + r.slice(1).toLowerCase()] ||
+                     override[r.toLowerCase()];
+    if (variants) return variants;
   }
+
+  // 2. Try to get variants from TCGPlayer price keys (Most cards fall here)
   const prices = card?.tcgplayer?.prices ?? card?.raw_data?.tcgplayer?.prices;
-  const keys = Object.keys(prices ?? {});
-  return keys.length > 0 ? keys : ['normal'];
+  const keys = Object.keys(prices ?? {}).filter(k => k !== 'unlimited');
+
+  // Return multiple variants ONLY if they exist in the database data
+  if (keys.length > 1) return keys;
+
+  // 3. Fallback: Default to a single variant if no multi-variant data is found
+  return keys.length > 0 ? [keys[0]] : ['normal'];
 }
 
 function shortVariant(key: string): string {
@@ -439,7 +463,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   let ownedCount = 0;
   let totalCount = 0;
   for (const c of cards) {
-    const variants = getVariants(c.card);
+    const variants = getVariants(c.card, c.set_id);
     if (variants.length > 1) {
       totalCount += variants.length;
       ownedCount += variants.filter((v) => ownedVariants.has(`${c.card_id}:${v}`)).length;
@@ -973,18 +997,21 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     const favorite = isShowcased(item, 'favorite');
     const chase = isShowcased(item, 'chase');
 
-    const variants = getVariants(item.card);
+    const variants = getVariants(item.card, item.set_id);
     const multiVariant = variants.length > 1;
     const anyVariantOwned = variants.some((v) => ownedVariants.has(`${item.card_id}:${v}`));
     const isOwned = multiVariant ? anyVariantOwned : item.owned;
     const slicePct = 100 / variants.length;
 
+    // We use a View if multiVariant to allow internal slices to handle touches
+    const Container = multiVariant ? View : TouchableOpacity;
+
     return (
-      <TouchableOpacity
+      <Container
         onPress={multiVariant ? undefined : () => handleCardPress(item)}
         onLongPress={() => openCardDetail(item)}
         delayLongPress={300}
-        activeOpacity={multiVariant ? 1 : 0.85}
+        activeOpacity={0.85}
         style={{
           width: cardWidth,
           marginBottom: 8,
@@ -993,44 +1020,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           padding: 6,
           borderWidth: 1,
           borderColor: isOwned ? theme.colors.secondary : theme.colors.border,
-          opacity: isOwned ? 1 : 0.55,
+          opacity: isOwned ? 1 : 0.6,
           ...cardShadow,
         }}
       >
-        {!isReadOnly && (
-          <View style={{
-            position: 'absolute',
-            top: 8, left: 8,
-            zIndex: 20,
-            flexDirection: 'row',
-            gap: 4,
-          }}>
-            <TouchableOpacity
-              onPress={(e) => { e.stopPropagation(); toggleShowcase(item, 'favorite'); }}
-              style={{
-                width: 24, height: 24, borderRadius: 12,
-                backgroundColor: favorite ? theme.colors.secondary : '#FFFFFF',
-                borderWidth: 1, borderColor: theme.colors.border,
-                alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <Text style={{ color: favorite ? theme.colors.text : theme.colors.secondary, fontWeight: '900' }}>★</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={(e) => { e.stopPropagation(); toggleShowcase(item, 'chase'); }}
-              style={{
-                width: 24, height: 24, borderRadius: 12,
-                backgroundColor: chase ? '#FF8FA3' : '#FFFFFF',
-                borderWidth: 1, borderColor: theme.colors.border,
-                alignItems: 'center', justifyContent: 'center',
-              }}
-            >
-              <Text style={{ color: chase ? theme.colors.text : '#FF8FA3', fontWeight: '900' }}>♦</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
         <View style={{
           width: '100%',
           aspectRatio: 0.72,
@@ -1050,48 +1043,58 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             <Text style={{ color: theme.colors.textSoft, fontSize: 10 }}>No image</Text>
           )}
 
-          {/* Variant slices — only shown when card has multiple variants */}
-          {multiVariant && !isReadOnly && variants.map((variant, i) => {
-            const owned = ownedVariants.has(`${item.card_id}:${variant}`);
-            return (
-              <Pressable
-                key={variant}
-                onPress={() => handleToggleVariant(item.card_id, item.set_id, variant)}
-                style={({ pressed }) => ({
-                  position: 'absolute',
-                  left: `${slicePct * i}%` as any,
-                  width: `${slicePct}%` as any,
-                  top: 0,
-                  bottom: 0,
-                  backgroundColor: pressed
-                    ? 'rgba(108,75,255,0.35)'
-                    : owned
-                      ? 'rgba(255,209,102,0.55)'
-                      : 'rgba(0,0,0,0.08)',
-                  borderLeftWidth: i > 0 ? 1 : 0,
-                  borderColor: 'rgba(255,255,255,0.4)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                })}
-              >
-                {owned && (
-                  <Text style={{ fontSize: 16, color: '#7A5200' }}>✓</Text>
-                )}
-                <Text style={{
-                  position: 'absolute',
-                  bottom: 3,
-                  fontSize: 8,
-                  fontWeight: '900',
-                  color: owned ? '#7A5200' : 'rgba(255,255,255,0.9)',
-                  textShadowColor: 'rgba(0,0,0,0.5)',
-                  textShadowOffset: { width: 0, height: 1 },
-                  textShadowRadius: 2,
-                }}>
-                  {shortVariant(variant)}
-                </Text>
-              </Pressable>
-            );
-          })}
+          {/* Variant slices */}
+          {multiVariant && !isReadOnly && (
+            <View style={[StyleSheet.absoluteFill, { flexDirection: 'row' }]}>
+              {variants.map((variant, i) => {
+                const owned = ownedVariants.has(`${item.card_id}:${variant}`);
+                return (
+                  <Pressable
+                    key={variant}
+                    onPress={() => handleToggleVariant(item.card_id, item.set_id, variant)}
+                    onLongPress={() => openCardDetail(item)}
+                    delayLongPress={400}
+                    style={({ pressed }) => ({
+                      flex: 1,
+                      backgroundColor: pressed
+                        ? 'rgba(108,75,255,0.25)'
+                        : owned
+                          ? 'rgba(255,209,102,0.45)'
+                          : 'rgba(0,0,0,0.04)',
+                      borderLeftWidth: i > 0 ? 1 : 0,
+                      borderColor: 'rgba(255,255,255,0.3)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    })}
+                  >
+                    {owned && (
+                      <View style={{ backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 10, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+                        <Text style={{ fontSize: 13, color: '#7A5200', fontWeight: '900' }}>✓</Text>
+                      </View>
+                    )}
+                    <View style={{ position: 'absolute', bottom: 3, alignItems: 'center' }}>
+                      {variant === 'reverseHoloEnergy' ? (
+                        <Ionicons name="flash" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
+                      ) : variant === 'reverseHoloPokeball' ? (
+                        <Ionicons name="aperture" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
+                      ) : (
+                        <Text style={{
+                          fontSize: 8,
+                          fontWeight: '900',
+                          color: owned ? '#7A5200' : 'rgba(255,255,255,0.9)',
+                          textShadowColor: 'rgba(0,0,0,0.5)',
+                          textShadowOffset: { width: 0, height: 1 },
+                          textShadowRadius: 2,
+                        }}>
+                          {shortVariant(variant)}
+                        </Text>
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
         </View>
 
         <Text numberOfLines={2} style={{
@@ -1125,7 +1128,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             )}
           </View>
         )}
-      </TouchableOpacity>
+      </Container>
     );
   };
 
@@ -1608,23 +1611,82 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                     contentContainerStyle={{ padding: 16, paddingTop: 42, paddingBottom: 40 }}
                     showsVerticalScrollIndicator={false}
                   >
-                    <PinchGestureHandler
-                      onGestureEvent={onPinchGestureEvent}
-                      onHandlerStateChange={onPinchHandlerStateChange}
-                    >
-                      <Animated.Image
-                        source={{ uri: modalCard?.images?.large ?? modalCard?.images?.small ?? undefined }}
-                        style={{
-                          width: '100%',
-                          maxHeight: screenHeight * 0.48,
-                          aspectRatio: 0.72,
-                          borderRadius: 20,
-                          alignSelf: 'center',
-                          transform: [{ scale: imageScale }],
-                        }}
-                        resizeMode="contain"
-                      />
-                    </PinchGestureHandler>
+                    <View style={{ width: '100%', aspectRatio: 0.72, maxHeight: screenHeight * 0.48, alignSelf: 'center', borderRadius: 20, overflow: 'hidden' }}>
+                      <PinchGestureHandler
+                        onGestureEvent={onPinchGestureEvent}
+                        onHandlerStateChange={onPinchHandlerStateChange}
+                      >
+                        <Animated.View style={{ flex: 1, transform: [{ scale: imageScale }] }}>
+                          <Image
+                            source={{ uri: modalCard?.images?.large ?? modalCard?.images?.small ?? undefined }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode="contain"
+                          />
+
+                          {/* Variant slices in Modal */}
+                          {!isReadOnly && (() => {
+                            const modalVariants = getVariants(selectedCard.card, selectedCard.set_id);
+                            if (modalVariants.length <= 1) return null;
+                            const mSlicePct = 100 / modalVariants.length;
+                            return (
+                              <View style={[StyleSheet.absoluteFill, { flexDirection: 'row' }]} pointerEvents="box-none">
+                                {modalVariants.map((variant, i) => {
+                                  const owned = ownedVariants.has(`${selectedCard.card_id}:${variant}`);
+                                  return (
+                                    <Pressable
+                                      key={variant}
+                                      onPress={() => handleToggleVariant(selectedCard.card_id, selectedCard.set_id, variant)}
+                                      style={({ pressed }) => ({
+                                        flex: 1,
+                                        backgroundColor: pressed
+                                          ? 'rgba(108,75,255,0.25)'
+                                          : owned
+                                            ? 'rgba(255,209,102,0.3)'
+                                            : 'transparent',
+                                        borderLeftWidth: i > 0 ? 1 : 0,
+                                        borderColor: 'rgba(255,255,255,0.2)',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                      })}
+                                    >
+                                      {owned && (
+                                        <View style={{ backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 14, width: 28, height: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 }}>
+                                          <Text style={{ fontSize: 18, color: '#7A5200', fontWeight: '900' }}>✓</Text>
+                                        </View>
+                                      )}
+                                      <View style={{
+                                        position: 'absolute',
+                                        bottom: 12,
+                                        backgroundColor: 'rgba(0,0,0,0.6)',
+                                        paddingHorizontal: 8,
+                                        paddingVertical: 4,
+                                        borderRadius: 6,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                      }}>
+                                        {variant === 'reverseHoloEnergy' ? (
+                                          <Ionicons name="flash" size={12} color="#FFFFFF" />
+                                        ) : variant === 'reverseHoloPokeball' ? (
+                                          <Ionicons name="aperture" size={12} color="#FFFFFF" />
+                                        ) : (
+                                          <Text style={{
+                                            fontSize: 10,
+                                            fontWeight: '900',
+                                            color: '#FFFFFF',
+                                          }}>
+                                            {shortVariant(variant)}
+                                          </Text>
+                                        )}
+                                      </View>
+                                    </Pressable>
+                                  );
+                                })}
+                              </View>
+                            );
+                          })()}
+                        </Animated.View>
+                      </PinchGestureHandler>
+                    </View>
 
                     <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900', marginTop: 18 }}>
                       {modalCard?.name ?? selectedCard.card_id}
@@ -1805,7 +1867,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                     </View>
 
                     {!isReadOnly && (() => {
-                      const modalVariants = getVariants(selectedCard.card);
+                      const modalVariants = getVariants(selectedCard.card, selectedCard.set_id);
                       const isMultiVariant = modalVariants.length > 1;
                       return isMultiVariant ? (
                         <View style={boxStyle}>

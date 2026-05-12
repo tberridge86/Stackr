@@ -471,7 +471,6 @@ export async function updateBinderCardOwned(
           api_set_id: virtual.setId,
           slot_order: cardMeta?.slotOrder ?? 0,
           owned: true,
-          condition: cardMeta?.condition ?? 'Near Mint',
           notes: '',
           card_name: cardMeta?.cardName ?? null,
           card_number: cardMeta?.cardNumber ?? null,
@@ -534,7 +533,7 @@ export async function updateBinderCardOwned(
 
   const { error } = await supabase
     .from('binder_cards')
-    .update({ owned, condition: cardMeta?.condition })
+    .update({ owned })
     .eq('id', binderCardId);
 
   if (error) throw error;
