@@ -40,6 +40,7 @@ import { useTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
+import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 
 // ===============================
 // CONSTANTS
@@ -98,6 +99,12 @@ type EbayModalPrice = {
   high: number | null;
   count: number;
   usedFallback?: boolean;
+};
+
+type TcgFallbackPrice = {
+  low: number | null;
+  mid: number | null;
+  market: number | null;
 };
 
 // ===============================
@@ -180,6 +187,10 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
   },
   // English 151: Only force 2 slices if your DB doesn't have the price keys yet
   me2pt5: {
+    Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+    Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+  },
+  me3: {
     Common: ['normal', 'reverseHolofoil'],
     Uncommon: ['normal', 'reverseHolofoil'],
   },
@@ -187,9 +198,19 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
 
 function getVariants(card: any, explicitSetId?: string): string[] {
   const setId = (explicitSetId ?? card?.set?.id ?? card?.set_id ?? '').toLowerCase();
+  const setName = (card?.set?.name ?? card?.raw_data?.set?.name ?? '').toLowerCase();
 
-  // 1. Check for hardcoded set overrides (e.g. Ascended Heroes 3-variant logic)
-  const override = SET_VARIANT_OVERRIDES[setId] || SET_VARIANT_OVERRIDES[setId.toUpperCase()];
+  // 1. Check for hardcoded set overrides by set ID
+  let override = SET_VARIANT_OVERRIDES[setId] || SET_VARIANT_OVERRIDES[setId.toUpperCase()];
+
+  // Fallback by set name in case naming differs
+  if (!override && setName.includes('ascended')) {
+    override = {
+      Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+      Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+    };
+  }
+
   if (override && card?.rarity) {
     const r = card.rarity;
     const variants = override[r] ||
@@ -224,7 +245,7 @@ export default function BinderDetailScreen() {
   const isReadOnly = readOnly === 'true';
   const insets = useSafeAreaInsets();
   const { width, height: screenHeight } = useWindowDimensions();
-  const numColumns = width >= 900 ? 6 : width >= 600 ? 4 : 3;
+  const numColumns = width >= 900 ? 6 : width >= 600 ? 4 : 2;
   const cardWidth = (width - 32 - (numColumns - 1) * 8) / numColumns;
 
   // ===============================
@@ -247,6 +268,7 @@ export default function BinderDetailScreen() {
   const [modalEbayPrice, setModalEbayPrice] = useState<EbayModalPrice | null>(null);
   const [modalEbayLoading, setModalEbayLoading] = useState(false);
   const [modalEbayError, setModalEbayError] = useState(false);
+  const [modalTcgFallbackPrice, setModalTcgFallbackPrice] = useState<TcgFallbackPrice | null>(null);
 
   const [showcaseRows, setShowcaseRows] = useState<ShowcaseRow[]>([]);
 
@@ -308,6 +330,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     setDetailVisible(false);
     setModalEbayPrice(null);
     setModalEbayError(false);
+    setModalTcgFallbackPrice(null);
     modalTranslateY.setValue(0);
     baseScale.setValue(1);
     pinchScale.setValue(1);
@@ -994,16 +1017,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     const cardName = item.card?.name ?? item.card_id;
     const forTrade = isForTrade(item.card_id, item.set_id);
     const wanted = isWanted(item.card_id, item.set_id);
-    const favorite = isShowcased(item, 'favorite');
-    const chase = isShowcased(item, 'chase');
 
     const variants = getVariants(item.card, item.set_id);
     const multiVariant = variants.length > 1;
     const anyVariantOwned = variants.some((v) => ownedVariants.has(`${item.card_id}:${v}`));
     const isOwned = multiVariant ? anyVariantOwned : item.owned;
-    const slicePct = 100 / variants.length;
 
-    // We use a View if multiVariant to allow internal slices to handle touches
     const Container = multiVariant ? View : TouchableOpacity;
 
     return (
@@ -1043,15 +1062,18 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             <Text style={{ color: theme.colors.textSoft, fontSize: 10 }}>No image</Text>
           )}
 
-          {/* Variant slices */}
-          {multiVariant && !isReadOnly && (
+          {multiVariant && (
             <View style={[StyleSheet.absoluteFill, { flexDirection: 'row' }]}>
               {variants.map((variant, i) => {
                 const owned = ownedVariants.has(`${item.card_id}:${variant}`);
                 return (
                   <Pressable
                     key={variant}
-                    onPress={() => handleToggleVariant(item.card_id, item.set_id, variant)}
+                    onPress={() =>
+                      isReadOnly
+                        ? openCardDetail(item)
+                        : handleToggleVariant(item.card_id, item.set_id, variant)
+                    }
                     onLongPress={() => openCardDetail(item)}
                     delayLongPress={400}
                     style={({ pressed }) => ({
@@ -1068,7 +1090,14 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                     })}
                   >
                     {owned && (
-                      <View style={{ backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 10, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+                      <View style={{
+                        backgroundColor: 'rgba(255,255,255,0.7)',
+                        borderRadius: 10,
+                        width: 20,
+                        height: 20,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
                         <Text style={{ fontSize: 13, color: '#7A5200', fontWeight: '900' }}>✓</Text>
                       </View>
                     )}
@@ -1077,6 +1106,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         <Ionicons name="flash" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
                       ) : variant === 'reverseHoloPokeball' ? (
                         <Ionicons name="aperture" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
+                      ) : variant === 'holofoil' || variant === '1stEditionHolofoil' || variant === 'unlimitedHolofoil' ? (
+                        <Ionicons name="star" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
+                      ) : variant === 'reverseHolofoil' ? (
+                        <Ionicons name="sync" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
                       ) : (
                         <Text style={{
                           fontSize: 8,
@@ -1135,6 +1168,101 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   // ===============================
   // LOADING / NOT FOUND
   // ===============================
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadModalTcgFallback = async () => {
+      if (!selectedCard) {
+        setModalTcgFallbackPrice(null);
+        return;
+      }
+
+      const prices = selectedCard.card?.tcgplayer?.prices;
+      if (prices && Object.keys(prices).length > 0) {
+        setModalTcgFallbackPrice(null);
+        return;
+      }
+
+      const setName = (selectedCard.card?.set?.name ?? selectedCard.set_name ?? '').trim();
+      const cardName = (selectedCard.card?.name ?? selectedCard.card_name ?? '').trim();
+      const cardNumberRaw = (selectedCard.card?.number ?? selectedCard.card_number ?? '').trim();
+
+      if (!setName || !cardName) {
+        setModalTcgFallbackPrice(null);
+        return;
+      }
+
+      try {
+        const rows = await fetchTcgcsvUiCardPricesForSet(setName);
+        if (!mounted) return;
+
+        const normalizeNumber = (value: string) =>
+          value.trim().replace(/^#/, '').replace(/\s+/g, '').toLowerCase();
+
+        const normalizeName = (value: string) =>
+          value
+            .toLowerCase()
+            .replace(/\bex\b/g, ' ex ')
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim();
+
+        const parseCollectorNumber = (value: string): string => {
+          const normalized = normalizeNumber(value);
+          if (!normalized) return '';
+          const left = normalized.split('/')[0] ?? normalized;
+          return left.replace(/^0+/, '') || '0';
+        };
+
+        const cardNumberNormalized = normalizeNumber(cardNumberRaw);
+        const cardCollector = parseCollectorNumber(cardNumberRaw);
+        const cardNameNormalized = normalizeName(cardName);
+
+        const matched =
+          rows.find((row) => normalizeNumber(row.number ?? '') === cardNumberNormalized) ??
+          rows.find((row) => parseCollectorNumber(row.number ?? '') === cardCollector && cardCollector !== '') ??
+          rows.find((row) => normalizeName(row.name).includes(cardNameNormalized) && cardNameNormalized.length > 2) ??
+          rows.find((row) => row.name.trim().toLowerCase() === cardName.toLowerCase()) ??
+          null;
+
+        if (!matched) {
+          setModalTcgFallbackPrice(null);
+          return;
+        }
+
+        const values = matched.variants
+          .flatMap((v) => [v.lowPrice, v.midPrice, v.marketPrice])
+          .filter((v): v is number => typeof v === 'number');
+
+        const lowUsd = values.length ? Math.min(...values) : null;
+        const midValues = matched.variants
+          .map((v) => v.midPrice)
+          .filter((v): v is number => typeof v === 'number');
+        const marketValues = matched.variants
+          .map((v) => v.marketPrice)
+          .filter((v): v is number => typeof v === 'number');
+
+        const avg = (arr: number[]) =>
+          arr.length ? arr.reduce((sum, n) => sum + n, 0) / arr.length : null;
+        const toGbp = (v: number | null) =>
+          typeof v === 'number' ? Math.round(v * USD_TO_GBP * 100) / 100 : null;
+
+        setModalTcgFallbackPrice({
+          low: toGbp(lowUsd),
+          mid: toGbp(avg(midValues)),
+          market: toGbp(avg(marketValues)),
+        });
+      } catch {
+        if (mounted) setModalTcgFallbackPrice(null);
+      }
+    };
+
+    loadModalTcgFallback();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selectedCard]);
 
   if (loading) {
     return (
@@ -1268,7 +1396,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           }}>
             <Text style={{ fontSize: 16 }}>👁️</Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>
-              Viewing another collector's binder — read only
+              Viewing another collector&apos;s binder — read only
             </Text>
           </View>
         )}
@@ -1841,25 +1969,20 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       </Text>
 
                       <Row label="eBay (cached)" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
-                      {(selectedCard?.card?.set?.name ?? selectedCard?.card?.raw_data?.set?.name ?? '').toLowerCase().includes('perfect order') ? (
-                        <View style={{
-                          backgroundColor: '#FEF9C3',
-                          borderRadius: 10,
-                          padding: 10,
-                          marginVertical: 6,
-                          borderWidth: 1,
-                          borderColor: '#FDE047',
-                        }}>
-                          <Text style={{ color: '#854D0E', fontSize: 12, fontWeight: '600' }}>
-                            ⚠️ Perfect Order cards aren't yet on TCGPlayer — no pricing data available.
-                          </Text>
-                        </View>
-                      ) : (
-                        <>
-                          <Row label="TCGPlayer" value={formatCurrency(getEstimatedValue(getBinderTcgPrice(selectedCard?.card, binder?.edition) ?? 0, selectedCard.condition || 'Near Mint'))} />
-                          <Row label="CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
-                        </>
-                      )}
+                      <Row
+                        label="TCGPlayer"
+                        value={formatCurrency(
+                          getEstimatedValue(
+                            getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
+                              modalTcgFallbackPrice?.market ??
+                              modalTcgFallbackPrice?.mid ??
+                              modalTcgFallbackPrice?.low ??
+                              0,
+                            selectedCard.condition || 'Near Mint'
+                          )
+                        )}
+                      />
+                      <Row label="CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
                         Updated daily

@@ -22,6 +22,7 @@ import {
 } from '../../lib/pokemonTcgCache';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
+import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 
 type PokemonCard = {
   id: string;
@@ -71,6 +72,12 @@ type PokemonCard = {
   };
 };
 
+type TcgFallbackPrice = {
+  low: number | null;
+  mid: number | null;
+  market: number | null;
+};
+
 type EbayPriceResult = {
   low: number | null;
   average: number | null;
@@ -111,6 +118,9 @@ export default function CardDetailScreen() {
   const [ebayPrice, setEbayPrice] = useState<EbayPriceResult | null>(null);
   const [ebayLoading, setEbayLoading] = useState(false);
   const [ebayError, setEbayError] = useState(false);
+
+  // TCGCSV fallback state (used when pokemontcg tcgplayer block is missing)
+  const [tcgFallbackPrice, setTcgFallbackPrice] = useState<TcgFallbackPrice | null>(null);
 
   // ===============================
   // LOAD CARD
@@ -231,6 +241,107 @@ export default function CardDetailScreen() {
       .catch(() => {});
   }, [card?.id]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    const hasPokemonTcgPrices = (() => {
+      const prices = card?.tcgplayer?.prices;
+      return prices && Object.keys(prices).length > 0;
+    })();
+
+    const loadTcgFallback = async () => {
+      const setName = card?.set?.name?.trim();
+      if (!setName || !card?.name) {
+        setTcgFallbackPrice(null);
+        return;
+      }
+
+      if (hasPokemonTcgPrices) {
+        setTcgFallbackPrice(null);
+        return;
+      }
+
+      try {
+        const rows = await fetchTcgcsvUiCardPricesForSet(setName);
+        if (!mounted) return;
+
+        const normalizeNumber = (value: string) =>
+          value
+            .trim()
+            .replace(/^#/, '')
+            .replace(/\s+/g, '')
+            .toLowerCase();
+
+        const cardNumberRaw = (card.number ?? '').trim();
+        const cardNumberNormalized = normalizeNumber(cardNumberRaw);
+        const cardName = (card.name ?? '').trim().toLowerCase();
+
+        const normalizeName = (value: string) =>
+          value
+            .toLowerCase()
+            .replace(/\bex\b/g, ' ex ')
+            .replace(/[^a-z0-9]+/g, ' ')
+            .trim();
+
+        const cardNameNormalized = normalizeName(cardName);
+
+        const parseCollectorNumber = (value: string): string => {
+          const normalized = normalizeNumber(value);
+          if (!normalized) return '';
+          const left = normalized.split('/')[0] ?? normalized;
+          return left.replace(/^0+/, '') || '0';
+        };
+
+        const cardCollector = parseCollectorNumber(cardNumberRaw);
+
+        let matched =
+          rows.find((row) => normalizeNumber(row.number ?? '') === cardNumberNormalized) ??
+          rows.find((row) => parseCollectorNumber(row.number ?? '') === cardCollector && cardCollector !== '') ??
+          rows.find((row) => normalizeName(row.name).includes(cardNameNormalized) && cardNameNormalized.length > 2) ??
+          rows.find((row) => row.name.trim().toLowerCase() === cardName) ??
+          null;
+
+        if (!matched) {
+          setTcgFallbackPrice(null);
+          return;
+        }
+
+        const values = matched.variants.flatMap((v) => [
+          v.lowPrice,
+          v.midPrice,
+          v.marketPrice,
+        ]).filter((v): v is number => typeof v === 'number');
+
+        const lowUsd = values.length ? Math.min(...values) : null;
+        const midValues = matched.variants
+          .map((v) => v.midPrice)
+          .filter((v): v is number => typeof v === 'number');
+        const marketValues = matched.variants
+          .map((v) => v.marketPrice)
+          .filter((v): v is number => typeof v === 'number');
+
+        const avg = (arr: number[]) =>
+          arr.length ? arr.reduce((sum, n) => sum + n, 0) / arr.length : null;
+        const toGbp = (v: number | null) =>
+          typeof v === 'number' ? Math.round(v * USD_TO_GBP * 100) / 100 : null;
+
+        setTcgFallbackPrice({
+          low: toGbp(lowUsd),
+          mid: toGbp(avg(midValues)),
+          market: toGbp(avg(marketValues)),
+        });
+      } catch (err) {
+        if (mounted) setTcgFallbackPrice(null);
+      }
+    };
+
+    loadTcgFallback();
+
+    return () => {
+      mounted = false;
+    };
+  }, [card?.id, card?.name, card?.number, card?.set?.name, card?.tcgplayer?.prices]);
+
   // ===============================
   // MEMOS
   // ===============================
@@ -284,6 +395,8 @@ export default function CardDetailScreen() {
       market: toGBP(entry.market),
     };
   }, [card]);
+
+  const resolvedTcgPrices = tcgPrices ?? tcgFallbackPrice;
 
   // CardMarket prices — converted from EUR to GBP
   const cardmarketPrice = useMemo(() => {
@@ -587,43 +700,25 @@ const handleListOnMarketplace = async () => {
           {/* TCGPlayer — GBP */}
           <Text style={styles.priceSourceLabel}>TCGPlayer · GBP</Text>
 
-          {(card.set?.name ?? '').toLowerCase().includes('perfect order') && (
-            <View style={{
-              backgroundColor: '#FEF9C3',
-              borderRadius: 10,
-              padding: 10,
-              marginBottom: 10,
-              borderWidth: 1,
-              borderColor: '#FDE047',
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-            }}>
-              <Text style={{ color: '#854D0E', fontSize: 12, flex: 1, fontWeight: '600' }}>
-                ⚠️ Perfect Order cards aren't yet available on TCGPlayer — pricing data unavailable.
-              </Text>
-            </View>
-          )}
-
           <View style={styles.marketButtonsRow}>
             <View style={styles.marketButton}>
               <Text style={styles.marketButtonLabel}>Low</Text>
               <Text style={styles.marketButtonValue}>
-                {tcgPrices?.low != null ? `£${tcgPrices.low.toFixed(2)}` : 'N/A'}
+                {resolvedTcgPrices?.low != null ? `£${resolvedTcgPrices.low.toFixed(2)}` : 'N/A'}
               </Text>
             </View>
 
             <View style={styles.marketButton}>
               <Text style={styles.marketButtonLabel}>Mid</Text>
               <Text style={styles.marketButtonValue}>
-                {tcgPrices?.mid != null ? `£${tcgPrices.mid.toFixed(2)}` : 'N/A'}
+                {resolvedTcgPrices?.mid != null ? `£${resolvedTcgPrices.mid.toFixed(2)}` : 'N/A'}
               </Text>
             </View>
 
             <View style={styles.marketButton}>
               <Text style={styles.marketButtonLabel}>Market</Text>
               <Text style={styles.marketButtonValue}>
-                {tcgPrices?.market != null ? `£${tcgPrices.market.toFixed(2)}` : 'N/A'}
+                {resolvedTcgPrices?.market != null ? `£${resolvedTcgPrices.market.toFixed(2)}` : 'N/A'}
               </Text>
             </View>
           </View>

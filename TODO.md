@@ -1,9 +1,6 @@
-- [x] Add SerpApi config/env support in backend
-- [x] Implement sold-listings fetch via SerpApi eBay engine
-- [x] Normalize SerpApi sold results into existing internal item shape
-- [x] Route `fetchEbaySummary` to sold-listings source first, Browse fallback second
-- [x] Keep `/price` and `/api/price/ebay` response contract unchanged
-- [ ] Tighten SerpApi sold-only query params and expose debug metadata in response
-- [ ] Ensure frontend `lib/ebay.ts` supports new optional response metadata fields
-- [ ] Document new env vars in README
-- [ ] Run backend sanity check
+- [x] Confirm root cause for missing prices in UI (`app/card/[id].tsx` still using PokemonTCG-only `tcgplayer.prices`)
+- [ ] Add TCGCSV fallback integration in `app/card/[id].tsx`
+- [ ] Match fallback rows by card number/name and compute GBP low/mid/market
+- [ ] Replace outdated Perfect Order warning text behavior
+- [ ] Run critical-path verification for Perfect Order + Ascended Heroes samples
+- [ ] Summarize tested coverage vs remaining thorough coverage
