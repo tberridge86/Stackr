@@ -41,8 +41,8 @@ app-example
 # generated native folders
 /ios
 /android
-.env 
-
+.env
+backend/.env
 
 # Backend Android build
 backend/android/
