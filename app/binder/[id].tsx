@@ -1,10 +1,9 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Animated,
-  Dimensions,
   FlatList,
   Image,
   Modal,
@@ -38,6 +37,7 @@ import {
 import { useTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
 import { fetchEbayPrice } from '../../lib/ebay';
+import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 
 // ===============================
 // CONSTANTS
@@ -52,7 +52,6 @@ const CONDITION_OPTIONS = [
   'Damaged',
 ];
 
-const screenHeight = Dimensions.get('window').height;
 
 const cardShadow = {
   shadowColor: '#000',
@@ -117,9 +116,6 @@ const getBaseCardValue = (card: any): number => {
   return card?.ebay_price ?? card?.tcg_price ?? card?.cardmarket_price ?? 0;
 };
 
-const USD_TO_GBP = 0.79;
-const EUR_TO_GBP = 0.85;
-
 const getCardmarketPrice = (binderCard: any): number | null => {
   if (typeof binderCard?.cardmarket_price === 'number') return binderCard.cardmarket_price;
   const prices = binderCard?.card?.cardmarket?.prices;
@@ -159,11 +155,12 @@ const getBinderTcgPrice = (card: any, edition?: string | null): number | null =>
 // ===============================
 
 export default function BinderDetailScreen() {
+  const { theme } = useTheme();
   const { id, readOnly } = useLocalSearchParams<{ id: string; readOnly?: string }>();
   const binderId = Array.isArray(id) ? id[0] : id;
   const isReadOnly = readOnly === 'true';
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height: screenHeight } = useWindowDimensions();
   const numColumns = width >= 900 ? 6 : width >= 600 ? 4 : 3;
   const cardWidth = (width - 32 - (numColumns - 1) * 8) / numColumns;
 
@@ -1023,6 +1020,23 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const modalForTrade = selectedCard ? isForTrade(selectedCard.card_id, selectedCard.set_id) : false;
   const modalWanted = selectedCard ? isWanted(selectedCard.card_id, selectedCard.set_id) : false;
 
+  const boxStyle = {
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    padding: 14,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...cardShadow,
+  };
+
+  const boxTitleStyle = {
+    color: theme.colors.text,
+    fontSize: 17,
+    fontWeight: '900' as const,
+    marginBottom: 10,
+  };
+
   // ===============================
   // MAIN RENDER
   // ===============================
@@ -1625,8 +1639,25 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       </Text>
 
                       <Row label="eBay (cached)" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
-                      <Row label="TCGPlayer" value={formatCurrency(getEstimatedValue(getBinderTcgPrice(selectedCard?.card, binder?.edition) ?? 0, selectedCard.condition || 'Near Mint'))} />
-                      <Row label="CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
+                      {(selectedCard?.card?.set?.name ?? selectedCard?.card?.raw_data?.set?.name ?? '').toLowerCase().includes('perfect order') ? (
+                        <View style={{
+                          backgroundColor: '#FEF9C3',
+                          borderRadius: 10,
+                          padding: 10,
+                          marginVertical: 6,
+                          borderWidth: 1,
+                          borderColor: '#FDE047',
+                        }}>
+                          <Text style={{ color: '#854D0E', fontSize: 12, fontWeight: '600' }}>
+                            ⚠️ Perfect Order cards aren't yet on TCGPlayer — no pricing data available.
+                          </Text>
+                        </View>
+                      ) : (
+                        <>
+                          <Row label="TCGPlayer" value={formatCurrency(getEstimatedValue(getBinderTcgPrice(selectedCard?.card, binder?.edition) ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row label="CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
+                        </>
+                      )}
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
                         Updated daily
@@ -1697,6 +1728,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 // ===============================
 
 function Row({ label, value }: { label: string; value: string }) {
+  const { theme } = useTheme();
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
       <Text style={{ color: theme.colors.textSoft }}>{label}</Text>
@@ -1714,6 +1746,7 @@ function ActionButton({
   onPress: () => void | Promise<void>;
   active?: boolean;
 }) {
+  const { theme } = useTheme();
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -1738,19 +1771,3 @@ function ActionButton({
   );
 }
 
-const boxStyle = {
-  backgroundColor: theme.colors.card,
-  borderRadius: 18,
-  padding: 14,
-  marginTop: 16,
-  borderWidth: 1,
-  borderColor: theme.colors.border,
-  ...cardShadow,
-};
-
-const boxTitleStyle = {
-  color: theme.colors.text,
-  fontSize: 17,
-  fontWeight: '900' as const,
-  marginBottom: 10,
-};

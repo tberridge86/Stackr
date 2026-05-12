@@ -1,4 +1,4 @@
-import { theme } from '../lib/theme';
+import { useTheme } from '../components/theme-context';
 import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -48,11 +48,7 @@ function timeAgo(dateString: string): string {
   return `${days}d ago`;
 }
 
-function getNotificationIcon(type: string): {
-  name: any;
-  color: string;
-  bg: string;
-} {
+function getNotificationIcon(type: string, theme: any): { name: any; color: string; bg: string } {
   switch (type) {
     case 'wishlist_match':
       return { name: 'heart', color: '#EC4899', bg: '#FCE7F3' };
@@ -98,6 +94,7 @@ function getNotificationRoute(item: Notification): string {
 // ===============================
 
 export default function NotificationsScreen() {
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -227,7 +224,7 @@ export default function NotificationsScreen() {
   // ===============================
 
   const renderNotification = ({ item }: { item: Notification }) => {
-    const { name, color, bg } = getNotificationIcon(item.type);
+    const { name, color, bg } = getNotificationIcon(item.type, theme);
 
     return (
       <TouchableOpacity

@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
@@ -8,7 +8,6 @@ import {
   Pressable,
   Alert,
   Image,
-  Dimensions,
   FlatList,
   useWindowDimensions,
 } from 'react-native';
@@ -61,8 +60,6 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 const PADDING = 16;
 const GAP = 10;
 
-const cardShadow = {};
-
 const BINDER_LOGO_OVERRIDES: Record<string, string> = {
   me3: 'https://images.pokemontcg.io/por/logo.png',
 };
@@ -110,6 +107,7 @@ type BinderCardProps = {
 };
 
 function BinderCard({ item, counts, value, confirmDeleteBinder, index, cardWidth, columns }: BinderCardProps) {
+  const { theme } = useTheme();
   const [logoFailed, setLogoFailed] = useState(false);
 
   const progress = counts[item.id] ?? { owned: 0, total: 0 };
@@ -251,6 +249,7 @@ function BinderCard({ item, counts, value, confirmDeleteBinder, index, cardWidth
 type BinderValueMap = Record<string, number>;
 
 export default function BinderLibraryScreen() {
+  const { theme } = useTheme();
   const { width } = useWindowDimensions();
   const COLUMNS = width >= 900 ? 5 : width >= 600 ? 3 : 2;
   const binderCardWidth = (width - PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;

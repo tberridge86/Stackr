@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useState } from 'react';
 import {
   View,
@@ -14,6 +14,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { createTradeReview } from '../../lib/tradeOffers';
 
 export default function LeaveReviewScreen() {
+  const { theme } = useTheme();
   const params = useLocalSearchParams<{
     offerId?: string;
     reviewUserId?: string;

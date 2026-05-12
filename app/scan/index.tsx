@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -15,9 +15,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { fetchBinders, BinderRecord } from '../../lib/binders';
 import * as ImageManipulator from 'expo-image-manipulator';
-
-
-const PRICE_API_URL = (process.env.EXPO_PUBLIC_PRICE_API_URL ?? '').replace(/\/$/, '');
+import { PRICE_API_URL } from '../../lib/config';
 
 const SCANNING_MESSAGES = [
   'Reading card...',
@@ -50,11 +48,18 @@ type ScannedCard = {
 type ScanStep = 'select_binder' | 'scanning' | 'review';
 type ScanMode = 'manual' | 'auto';
 
+type PendingConfirmation = {
+  card: ScannedCard;
+  base64: string;
+  isMarket: boolean;
+};
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
 
 export default function ScanScreen() {
+  const { theme } = useTheme();
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
   const camera = useRef<Camera>(null);
@@ -75,7 +80,7 @@ export default function ScanScreen() {
   const [processingOcr, setProcessingOcr] = useState(false);
   const [autoScanActive, setAutoScanActive] = useState(false);
   const [scanningMessage, setScanningMessage] = useState('Reading card...');
-  const [debugInfo, setDebugInfo] = useState<{ method: string; confidence?: number; distance?: number; cardName?: string } | null>(null);
+  const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
 
   const scanCooldownRef = useRef(false);
   const autoScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -204,14 +209,6 @@ export default function ScanScreen() {
       const data = await response.json();
       const match = data.match;
 
-      // Always surface debug info regardless of whether threshold is met
-      setDebugInfo({
-        method: 'fingerprint',
-        confidence: match?.confidence,
-        distance: match?.distance,
-        cardName: match?.card_name,
-      });
-
       if (!match || match.confidence < FINGERPRINT_CONFIDENCE_THRESHOLD) return null;
 
       const { supabase } = await import('../../lib/supabase');
@@ -279,6 +276,7 @@ export default function ScanScreen() {
     try {
       // Step 1: capture at fast profile
       const base64 = await captureBase64(FAST_SCAN_PROFILE);
+      let bestBase64 = base64;
 
       // Duplicate frame check
       const sig = `${base64.slice(0, 48)}:${base64.length}`;
@@ -300,6 +298,7 @@ export default function ScanScreen() {
         // If fast profile failed, retry with accuracy profile
         if (parsed?.error || !parsed?.name) {
           const base64Hq = await captureBase64(ACCURACY_SCAN_PROFILE);
+          bestBase64 = base64Hq;
           // Try fingerprint again at higher quality before spending another CardSight call
           match = await fingerprintScan(base64Hq);
           if (!match) {
@@ -309,7 +308,6 @@ export default function ScanScreen() {
 
         // If CardSight identified a name, look it up in the TCG database
         if (!match && parsed && !parsed.error && parsed.name) {
-          setDebugInfo({ method: 'cardsight', cardName: parsed.name });
           const numberClean = parsed.number
             ? parsed.number.split('/')[0].trim().replace(/^0+/, '')
             : null;
@@ -355,15 +353,6 @@ export default function ScanScreen() {
         return;
       }
 
-      if (isMarketMode) {
-        setAutoScanActive(false);
-        router.replace({ pathname: '/scan/result', params: { cardsJson: JSON.stringify([match]) } });
-        stopScanningMessages();
-        scanCooldownRef.current = false;
-        setProcessingOcr(false);
-        return;
-      }
-
       if (scannedCardIdsRef.current.has(match.id)) {
         if (isAuto) {
           setLastScanned('Already scanned — swipe to next card');
@@ -376,12 +365,21 @@ export default function ScanScreen() {
         return;
       }
 
-      scannedCardIdsRef.current.add(match.id);
-      setScannedCards((prev) => [...prev, match!]);
-      setLastScanned(`✅ ${match.name} #${match.number} added!`);
-      Vibration.vibrate([0, 90, 40, 90]);
-      if (isAuto) setTimeout(() => setLastScanned('👉 Next card!'), 500);
-      resetScanState(isAuto ? 900 : 1200);
+      // Auto mode: add directly without confirmation
+      if (isAuto) {
+        scannedCardIdsRef.current.add(match.id);
+        setScannedCards((prev) => [...prev, match!]);
+        setLastScanned(`✅ ${match.name} #${match.number} added!`);
+        Vibration.vibrate([0, 90, 40, 90]);
+        setTimeout(() => setLastScanned('👉 Next card!'), 500);
+        resetScanState(900);
+        return;
+      }
+
+      // Manual + market: show confirmation overlay
+      stopScanningMessages();
+      setProcessingOcr(false);
+      setPendingConfirmation({ card: match, base64: bestBase64, isMarket: isMarketMode });
 
     } catch (error: any) {
       console.log('Scan error:', error);
@@ -397,6 +395,44 @@ export default function ScanScreen() {
       setLastScanned(null);
     }
   }, [fingerprintScan, isMarketMode, processingOcr, resetScanState, selectedBinder, startScanningMessages, stopScanningMessages]);
+
+  // ===============================
+  // TRAINING DATA + CONFIRMATION
+  // ===============================
+
+  const saveTrainingData = useCallback(async (cardId: string, base64: string) => {
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      await supabase.from('scan_training_data').insert({ card_id: cardId, image_base64: base64 });
+    } catch (err) {
+      console.log('Training data save failed:', err);
+    }
+  }, []);
+
+  const handleConfirm = useCallback(async () => {
+    if (!pendingConfirmation) return;
+    const { card, base64, isMarket } = pendingConfirmation;
+    setPendingConfirmation(null);
+    scanCooldownRef.current = false;
+    saveTrainingData(card.id, base64);
+
+    if (isMarket) {
+      setAutoScanActive(false);
+      router.replace({ pathname: '/scan/result', params: { cardsJson: JSON.stringify([card]) } });
+      return;
+    }
+
+    scannedCardIdsRef.current.add(card.id);
+    setScannedCards((prev) => [...prev, card]);
+    setLastScanned(`✅ ${card.name} #${card.number} added!`);
+    Vibration.vibrate([0, 90, 40, 90]);
+  }, [pendingConfirmation, saveTrainingData]);
+
+  const handleReject = useCallback(() => {
+    setPendingConfirmation(null);
+    scanCooldownRef.current = false;
+    setLastScanned(null);
+  }, []);
 
   // ===============================
   // SELECT BINDER STEP
@@ -778,29 +814,31 @@ export default function ScanScreen() {
           </View>
         </View>
 
-        {/* Mode toggle */}
-        <View style={{ alignItems: 'center', marginTop: 8 }}>
-          <View style={{ flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 999, padding: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
-            <TouchableOpacity
-              onPress={() => { setScanMode('manual'); setAutoScanActive(false); }}
-              style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999, backgroundColor: scanMode === 'manual' ? '#FFFFFF' : 'transparent' }}
-            >
-              <Text style={{ color: scanMode === 'manual' ? '#000000' : 'rgba(255,255,255,0.7)', fontWeight: '900', fontSize: 13 }}>Manual</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setScanMode('auto')}
-              style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999, backgroundColor: scanMode === 'auto' ? theme.colors.primary : 'transparent' }}
-            >
-              <Text style={{ color: scanMode === 'auto' ? '#FFFFFF' : 'rgba(255,255,255,0.7)', fontWeight: '900', fontSize: 13 }}>Auto</Text>
-            </TouchableOpacity>
-          </View>
+        {/* Mode toggle — binder only */}
+        {!isMarketMode && (
+          <View style={{ alignItems: 'center', marginTop: 8 }}>
+            <View style={{ flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 999, padding: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
+              <TouchableOpacity
+                onPress={() => { setScanMode('manual'); setAutoScanActive(false); }}
+                style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999, backgroundColor: scanMode === 'manual' ? '#FFFFFF' : 'transparent' }}
+              >
+                <Text style={{ color: scanMode === 'manual' ? '#000000' : 'rgba(255,255,255,0.7)', fontWeight: '900', fontSize: 13 }}>Manual</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setScanMode('auto')}
+                style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999, backgroundColor: scanMode === 'auto' ? theme.colors.primary : 'transparent' }}
+              >
+                <Text style={{ color: scanMode === 'auto' ? '#FFFFFF' : 'rgba(255,255,255,0.7)', fontWeight: '900', fontSize: 13 }}>Auto</Text>
+              </TouchableOpacity>
+            </View>
 
-          {scanMode === 'auto' && (
-            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, marginTop: 6, textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 }}>
-              {autoScanActive ? '🔴 Scanning every 2s — hold card in frame' : 'Tap Start to begin auto scanning'}
-            </Text>
-          )}
-        </View>
+            {scanMode === 'auto' && (
+              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, marginTop: 6, textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 }}>
+                {autoScanActive ? '🔴 Scanning every 2s — hold card in frame' : 'Tap Start to begin auto scanning'}
+              </Text>
+            )}
+          </View>
+        )}
 
         {/* Frame guide */}
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -832,26 +870,23 @@ export default function ScanScreen() {
           )}
         </View>
 
-        {/* Debug overlay */}
-        {debugInfo && (
-          <View style={{ position: 'absolute', bottom: 180, left: 12, right: 12, backgroundColor: 'rgba(0,0,0,0.92)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#FFD166' }}>
-            <Text style={{ color: '#FFD166', fontSize: 13, fontWeight: '900', marginBottom: 6 }}>
-              DEBUG — {debugInfo.method.toUpperCase()}
-            </Text>
-            {debugInfo.cardName ? (
-              <Text style={{ color: '#FFFFFF', fontSize: 13, marginBottom: 4 }} numberOfLines={2}>{debugInfo.cardName}</Text>
+        {/* Confirmation overlay */}
+        {pendingConfirmation && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>Is this the right card?</Text>
+            {pendingConfirmation.card.image_small ? (
+              <Image source={{ uri: pendingConfirmation.card.image_small }} style={{ width: 160, height: 224, borderRadius: 10, marginBottom: 16 }} resizeMode="contain" />
             ) : null}
-            {debugInfo.confidence !== undefined ? (
-              <Text style={{ color: debugInfo.confidence >= FINGERPRINT_CONFIDENCE_THRESHOLD ? '#10B981' : '#EF4444', fontSize: 16, fontWeight: '900', marginBottom: 2 }}>
-                Confidence: {debugInfo.confidence}%  {debugInfo.confidence >= FINGERPRINT_CONFIDENCE_THRESHOLD ? '✅' : '❌'}
-              </Text>
-            ) : null}
-            {debugInfo.distance !== undefined ? (
-              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Distance: {debugInfo.distance} / 1024 bits</Text>
-            ) : null}
-            <TouchableOpacity onPress={() => setDebugInfo(null)} style={{ position: 'absolute', top: 10, right: 10 }}>
-              <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16 }}>✕</Text>
-            </TouchableOpacity>
+            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>{pendingConfirmation.card.name}</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 32 }}>{pendingConfirmation.card.set_name} · #{pendingConfirmation.card.number}</Text>
+            <View style={{ flexDirection: 'row', gap: 16 }}>
+              <TouchableOpacity onPress={handleReject} style={{ flex: 1, backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
+                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>✕ Wrong</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleConfirm} style={{ flex: 1, backgroundColor: '#10B981', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
+                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>✓ Correct</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 

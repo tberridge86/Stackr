@@ -1,8 +1,9 @@
 import React from 'react';
 import { Text as RNText, TextProps } from 'react-native';
-import { theme } from '../lib/theme';
+import { useTheme } from './theme-context';
 
 export function Text(props: TextProps) {
+  const { theme } = useTheme();
   return (
     <RNText
       {...props}

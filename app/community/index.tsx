@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, {
   useCallback,
   useEffect,
@@ -97,6 +97,7 @@ function getRarityTag(rarity: string | null | undefined): string | null {
 // ===============================
 
 export default function CommunityScreen() {
+  const { theme } = useTheme();
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfilePreview>>({});
   const [cards, setCards] = useState<Record<string, CardPreview>>({});

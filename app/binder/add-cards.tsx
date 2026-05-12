@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -39,6 +39,7 @@ const cardShadow = {
 // ===============================
 
 export default function AddCardsToBinderScreen() {
+  const { theme } = useTheme();
   const params = useLocalSearchParams<{ binderId?: string }>();
   const binderId = typeof params.binderId === 'string' ? params.binderId : '';
 

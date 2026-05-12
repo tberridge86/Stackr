@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { USD_TO_GBP, EUR_TO_GBP } from './config';
 
 const API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 
@@ -133,8 +134,6 @@ async function attachPrices(listings: MarketplaceListing[]): Promise<Marketplace
 
   // Build price map from card raw_data
   const cardPriceMap: Record<string, any> = {};
-  const USD_TO_GBP = 0.79;
-  const EUR_TO_GBP = 0.85;
 
   for (const card of cardData ?? []) {
     const raw = card.raw_data || {};

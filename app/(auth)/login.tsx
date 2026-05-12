@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -17,6 +17,8 @@ import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
 export default function LoginScreen() {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loadingAction, setLoadingAction] = useState<'login' | 'signup' | null>(
@@ -184,7 +186,8 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: any) {
+  return StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: theme.colors.bg,
@@ -282,3 +285,4 @@ logo: {
 },
 
 });
+}

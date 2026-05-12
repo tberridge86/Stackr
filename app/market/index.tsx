@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -75,9 +75,7 @@ type EbayDetailData = {
 // CONSTANTS
 // ===============================
 
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
-const USD_TO_GBP = 0.79;
-const EUR_TO_GBP = 0.85;
+import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -162,6 +160,7 @@ const normalise = (value: string) =>
 // ===============================
 
 export default function MarketScreen() {
+  const { theme } = useTheme();
   const [query, setQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
@@ -826,6 +825,7 @@ try {
 // ===============================
 
 function EmptyBox({ text }: { text: string }) {
+  const { theme } = useTheme();
   return (
     <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 18, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
       <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>{text}</Text>
@@ -834,6 +834,7 @@ function EmptyBox({ text }: { text: string }) {
 }
 
 function PriceSection({ title, children }: { title: string; children: React.ReactNode }) {
+  const { theme } = useTheme();
   return (
     <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
       <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>{title}</Text>
@@ -843,6 +844,7 @@ function PriceSection({ title, children }: { title: string; children: React.Reac
 }
 
 function PriceRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  const { theme } = useTheme();
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
       <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>{label}</Text>

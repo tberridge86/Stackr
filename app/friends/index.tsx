@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useState } from 'react';
 import {
   View,
@@ -58,6 +58,7 @@ function AvatarView({
   avatarPreset: string | null | undefined;
   size?: number;
 }) {
+  const { theme } = useTheme();
   const avatar = AVATAR_PRESETS.find((a) => a.key === avatarPreset);
 
   return (
@@ -84,6 +85,7 @@ function AvatarView({
 // ===============================
 
 export default function FriendsScreen() {
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [requests, setRequests] = useState<FriendRequest[]>([]);

@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -20,7 +20,7 @@ import { supabase } from '../../lib/supabase';
 // TYPES
 // ===============================
 
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+import { PRICE_API_URL } from '../../lib/config';
 
 type Condition =
   | 'Mint'
@@ -149,6 +149,7 @@ const fetchEbayPrice = async (card: CardRow): Promise<number | null> => {
 // ===============================
 
 export default function PriceBuilderScreen() {
+  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
 
   const [query, setQuery] = useState('');

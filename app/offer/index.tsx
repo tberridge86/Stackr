@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -35,7 +35,7 @@ import {
 // CONSTANTS
 // ===============================
 
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+import { PRICE_API_URL } from '../../lib/config';
 
 // ===============================
 // TYPES
@@ -103,6 +103,8 @@ async function sendPushNotification(
 // ===============================
 
 export default function OfferDetailScreen() {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const { id } = useLocalSearchParams<{ id: string }>();
   const listRef = useRef<FlatList>(null);
   const offerId = String(id);
@@ -1083,6 +1085,7 @@ function ProgressStep({
   partial?: boolean;
   partialLabel?: string;
 }) {
+  const { theme } = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
       <Text style={{ marginRight: 8, fontSize: 16 }}>
@@ -1110,7 +1113,8 @@ function ProgressStep({
 // STYLES
 // ===============================
 
-const styles = {
+function makeStyles(theme: any) {
+  return {
   safe: { flex: 1, backgroundColor: theme.colors.bg },
   keyboard: { flex: 1 },
   center: { flex: 1, alignItems: 'center' as const, justifyContent: 'center' as const },
@@ -1302,4 +1306,5 @@ const styles = {
     fontSize: 12,
   },
   disabled: { opacity: 0.5 },
-};
+  }; // end of return
+} // end of makeStyles

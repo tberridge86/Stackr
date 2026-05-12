@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -34,6 +34,8 @@ const cardShadow = {
 };
 
 export default function PokemonDetailScreen() {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [data, setData] = useState<PokemonData | null>(null);
@@ -150,7 +152,8 @@ export default function PokemonDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: any) {
+  return StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: theme.colors.bg,
@@ -260,3 +263,4 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
+}

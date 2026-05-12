@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -102,6 +102,7 @@ function BinderPreview({
 // ===============================
 
 export default function NewBinderScreen() {
+  const { theme } = useTheme();
   const params = useLocalSearchParams<{
     id?: string;
     sourceSetId?: string;

@@ -15,9 +15,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { createActivityPost } from '../lib/activity';
 
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
-
-console.log('🌍 PRICE_API_URL at load time:', PRICE_API_URL); //
+import { PRICE_API_URL } from '../lib/config';
 
 // ===============================
 // TYPES

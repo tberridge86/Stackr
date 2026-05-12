@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import {
@@ -36,9 +36,14 @@ import {
 } from '../../lib/tradeOffers';
 import { supabase } from '../../lib/supabase';
 import { scanStore } from '../../lib/scanStore';
+import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { useStripe } from '@stripe/stripe-react-native';
 
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
-const USD_TO_GBP = 0.79;
+// ===============================
+// CONSTANTS
+// ===============================
+
+const PHOTO_SLOT_LABELS = ['Card Front', 'Card Back', 'Top-Left', 'Top-Right', 'Bottom-Left', 'Bottom-Right'];
 
 // ===============================
 // TYPES
@@ -133,6 +138,7 @@ const mapCard = (card: any) => ({
 // ===============================
 
 export default function TradeScreen() {
+  const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { profile: myProfile } = useProfile();
   const isAdmin = myProfile?.role === 'admin';
@@ -161,6 +167,7 @@ const [myUserId, setMyUserId] = useState<string>('');
     (filterHasPhotos ? 1 : 0) + (sortBy !== 'newest' ? 1 : 0);
 
   const [selectedListing, setSelectedListing] = useState<any | null>(null);
+  const [modalPhotoIndex, setModalPhotoIndex] = useState(0);
   const [selectedCard, setSelectedCard] = useState<any | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const [actionBusy, setActionBusy] = useState<string | null>(null);
@@ -168,6 +175,10 @@ const [myUserId, setMyUserId] = useState<string>('');
   // eBay prices for detail modal
   const [ebayData, setEbayData] = useState<{ low: number | null; average: number | null; high: number | null; count: number } | null>(null);
   const [ebayLoading, setEbayLoading] = useState(false);
+
+  // Buy Now
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [buying, setBuying] = useState(false);
 
   // Top Movers
   const [topMovers, setTopMovers] = useState<TopMover[]>([]);
@@ -272,6 +283,7 @@ const openTradeCardDetail = async (item: any) => {
     translateY.setValue(0);
     setSelectedListing(item);
     setSelectedCard(cardDetails ?? null);
+    setModalPhotoIndex(0);
     setDetailVisible(true);
     
 // If cardDetails not loaded yet, fetch it directly
@@ -880,6 +892,56 @@ const handleArchive = async (listingId: string) => {
     });
   };
 
+  const handleBuyNow = async (listing: any) => {
+    if (!myUserId) {
+      Alert.alert('Sign in required', 'You need to be signed in to buy.');
+      return;
+    }
+    if (listing.user_id === myUserId) {
+      Alert.alert('Not allowed', "You can't buy your own listing.");
+      return;
+    }
+    if (!listing.asking_price) {
+      Alert.alert('No price set', 'This listing has no fixed price.');
+      return;
+    }
+    setBuying(true);
+    try {
+      const res = await fetch(`${PRICE_API_URL}/api/stripe/create-payment-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listingId: listing.id, buyerId: myUserId }),
+      });
+      const data = await res.json();
+      if (!data.clientSecret) {
+        Alert.alert('Error', data.error ?? 'Could not start payment. Try again.');
+        return;
+      }
+      const { error: initError } = await initPaymentSheet({
+        paymentIntentClientSecret: data.clientSecret,
+        merchantDisplayName: 'Stackr',
+        allowsDelayedPaymentMethods: false,
+      });
+      if (initError) {
+        Alert.alert('Error', initError.message);
+        return;
+      }
+      const { error: presentError } = await presentPaymentSheet();
+      if (presentError) {
+        if (presentError.code !== 'Canceled') {
+          Alert.alert('Payment failed', presentError.message);
+        }
+        return;
+      }
+      closeDetail();
+      Alert.alert('Payment successful', 'Your order is confirmed. The seller will be in touch about shipping.');
+    } catch (err: any) {
+      Alert.alert('Error', err?.message ?? 'Something went wrong.');
+    } finally {
+      setBuying(false);
+    }
+  };
+
   const handleMarkSent = async (offerId: string) => {
     try {
       setActionBusy(offerId);
@@ -1188,6 +1250,24 @@ const handleArchive = async (listingId: string) => {
           {renderSegmentButton('myOffers', `Offers${pendingOfferCount > 0 ? ` (${pendingOfferCount})` : ''}`)}
           {renderSegmentButton('wanted', 'Wanted')}
         </View>
+
+        {segment === 'myListings' && (
+          <TouchableOpacity
+            onPress={() => router.push('/seller/onboarding' as any)}
+            style={{
+              flexDirection: 'row', alignItems: 'center', gap: 10,
+              backgroundColor: theme.colors.card, borderRadius: 14, padding: 14,
+              borderWidth: 1.5, borderColor: theme.colors.border, marginBottom: 14,
+            }}
+          >
+            <Ionicons name="storefront-outline" size={20} color={theme.colors.primary} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>Seller Account & Payouts</Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 1 }}>Set up or manage your payout account</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={theme.colors.textSoft} />
+          </TouchableOpacity>
+        )}
 
         {segment === 'marketplaceListings' && (
           <View style={{ marginBottom: 12 }}>
@@ -1623,13 +1703,52 @@ const handleArchive = async (listingId: string) => {
 
                 {(selectedCard || selectedListing) && (
                   <>
-                    {selectedCard?.images?.large || selectedCard?.images?.small ? (
-                      <Image source={{ uri: selectedCard.images?.large ?? selectedCard.images?.small }} style={{ width: '100%', height: 330, borderRadius: 20, alignSelf: 'center', marginBottom: 18 }} resizeMode="contain" />
-                    ) : (
-                      <View style={{ width: '100%', height: 330, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.card, marginBottom: 18 }}>
-                        <Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>No image</Text>
-                      </View>
-                    )}
+                    {(() => {
+                      const listingPhotos = Array.isArray(selectedListing?.listing_images) && selectedListing.listing_images.length > 0
+                        ? selectedListing.listing_images as string[]
+                        : null;
+                      if (listingPhotos) {
+                        return (
+                          <View style={{ marginBottom: 18 }}>
+                            <ScrollView
+                              horizontal
+                              pagingEnabled
+                              showsHorizontalScrollIndicator={false}
+                              onMomentumScrollEnd={(e) =>
+                                setModalPhotoIndex(Math.round(e.nativeEvent.contentOffset.x / (width - 32)))
+                              }
+                              style={{ borderRadius: 16, overflow: 'hidden' }}
+                            >
+                              {listingPhotos.map((uri, i) => (
+                                <Image
+                                  key={i}
+                                  source={{ uri }}
+                                  style={{ width: width - 32, height: 300 }}
+                                  resizeMode="cover"
+                                />
+                              ))}
+                            </ScrollView>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>
+                                {PHOTO_SLOT_LABELS[modalPhotoIndex] ?? `Photo ${modalPhotoIndex + 1}`}
+                              </Text>
+                              <View style={{ flexDirection: 'row', gap: 5 }}>
+                                {listingPhotos.map((_, i) => (
+                                  <View key={i} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: i === modalPhotoIndex ? theme.colors.primary : theme.colors.border }} />
+                                ))}
+                              </View>
+                            </View>
+                          </View>
+                        );
+                      }
+                      return selectedCard?.images?.large || selectedCard?.images?.small ? (
+                        <Image source={{ uri: selectedCard.images?.large ?? selectedCard.images?.small }} style={{ width: '100%', height: 330, borderRadius: 20, alignSelf: 'center', marginBottom: 18 }} resizeMode="contain" />
+                      ) : (
+                        <View style={{ width: '100%', height: 330, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.card, marginBottom: 18 }}>
+                          <Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>No image</Text>
+                        </View>
+                      );
+                    })()}
 
                     <View style={{ backgroundColor: theme.colors.card, borderRadius: 22, padding: 16, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
                       <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
@@ -1639,6 +1758,22 @@ const handleArchive = async (listingId: string) => {
                         {selectedCard?.set?.name ?? 'Unknown set'}
                         {selectedCard?.number ? ` • #${selectedCard.number}` : ''}
                       </Text>
+
+                      {selectedListing?.profiles?.collector_name && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: theme.colors.border }}>
+                          {selectedListing.profiles.avatar_url ? (
+                            <Image source={{ uri: selectedListing.profiles.avatar_url }} style={{ width: 34, height: 34, borderRadius: 17 }} />
+                          ) : (
+                            <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                              <Ionicons name="person" size={17} color={theme.colors.textSoft} />
+                            </View>
+                          )}
+                          <View>
+                            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700' }}>Seller</Text>
+                            <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '800' }}>{selectedListing.profiles.collector_name}</Text>
+                          </View>
+                        </View>
+                      )}
 
 <View style={{ backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
                         {selectedListing ? (
@@ -1745,9 +1880,33 @@ const handleArchive = async (listingId: string) => {
                         </View>
                       )}
 
+                      {selectedListing && (
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: theme.colors.primary + '10', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: theme.colors.primary + '28', marginTop: 12 }}>
+                          <Ionicons name="shield-checkmark" size={16} color={theme.colors.primary} style={{ marginTop: 1 }} />
+                          <Text style={{ flex: 1, color: theme.colors.primary, fontSize: 12, lineHeight: 18, fontWeight: '700' }}>
+                            Photos verified at listing time. Contact seller if item doesn't match description.
+                          </Text>
+                        </View>
+                      )}
+
 {selectedListing?.user_id !== myUserId ? (
                         <>
-                          <TouchableOpacity onPress={() => { closeDetail(); handleMakeOffer(selectedListing); }} style={{ marginTop: 16, backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 13 }}>
+                          {selectedListing?.asking_price != null && (
+                            <TouchableOpacity
+                              onPress={() => handleBuyNow(selectedListing)}
+                              disabled={buying}
+                              style={{ marginTop: 16, backgroundColor: '#22C55E', borderRadius: 14, paddingVertical: 13, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 }}
+                            >
+                              {buying
+                                ? <ActivityIndicator color="#fff" size="small" />
+                                : <Ionicons name="card-outline" size={17} color="#fff" />
+                              }
+                              <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '900', fontSize: 15 }}>
+                                {buying ? 'Processing...' : `Buy Now • £${Number(selectedListing.asking_price).toFixed(2)}`}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                          <TouchableOpacity onPress={() => { closeDetail(); handleMakeOffer(selectedListing); }} style={{ marginTop: 10, backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 13 }}>
                             <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900' }}>Make Offer</Text>
                           </TouchableOpacity>
                           {isAdmin && (
@@ -1816,6 +1975,7 @@ const handleArchive = async (listingId: string) => {
 // ===============================
 
 function DetailRow({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) {
+  const { theme } = useTheme();
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
       <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>{label}</Text>
@@ -1825,6 +1985,7 @@ function DetailRow({ label, value, valueColor }: { label: string; value: string;
 }
 
 function PriceSection({ title, children }: { title: string; children: React.ReactNode }) {
+  const { theme } = useTheme();
   return (
     <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
       <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>{title}</Text>
@@ -1834,6 +1995,7 @@ function PriceSection({ title, children }: { title: string; children: React.Reac
 }
 
 function PriceRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  const { theme } = useTheme();
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
       <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>{label}</Text>
@@ -1845,6 +2007,7 @@ function PriceRow({ label, value, highlight }: { label: string; value: string; h
 }
 
 function ProgressPill({ label, done, partial }: { label: string; done: boolean; partial?: boolean }) {
+  const { theme } = useTheme();
   const bg = done ? '#10B981' : partial ? '#F59E0B' : theme.colors.surface;
   const textColor = done || partial ? '#FFFFFF' : theme.colors.textSoft;
   return (

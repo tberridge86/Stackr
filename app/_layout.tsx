@@ -1,15 +1,16 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Stack, router, usePathname } from 'expo-router';
+import { Stack, router, usePathname, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from '../components/auth-context';
 import { ProfileProvider } from '../components/profile-context';
 import { TradeProvider } from '../components/trade-context';
 import { CollectionProvider } from '../components/collection-context';
-import { theme } from '../lib/theme';
+import { ThemeProvider, useTheme } from '../components/theme-context';
 import { KeyboardAvoidingView, Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StripeProvider } from '@stripe/stripe-react-native';
 
 // ===============================
 // PERSISTENT TAB BAR
@@ -24,22 +25,23 @@ const TABS = [
 ];
 
 function PersistentTabBar() {
+  const { theme } = useTheme();
   const pathname = usePathname();
+  const segments = useSegments();
   const insets = useSafeAreaInsets();
 
   const tabBarHeight = Platform.OS === 'android' ? 64 + insets.bottom : 84;
   const tabBarPaddingBottom = Platform.OS === 'android' ? insets.bottom + 8 : 10;
 
   const isActive = (route: string) => {
-    if (route === '/') return pathname === '/' || pathname === '/index';
+    if (route === '/') return pathname === '/';
     return pathname.startsWith(route);
   };
 
-  const hideTabBar = pathname === '/' || pathname.startsWith('/(auth)') || pathname.startsWith('/login') || pathname.startsWith('/signup');
+  // Hide on splash screen (segments empty = root index), auth routes
+  const hideTabBar = segments.length === 0 || pathname.startsWith('/(auth)') || pathname.startsWith('/login') || pathname.startsWith('/signup');
 
-  if (hideTabBar) {
-    return null;
-  }
+  if (hideTabBar) return null;
 
   return (
     <View style={{
@@ -53,7 +55,7 @@ function PersistentTabBar() {
       paddingTop: 8,
       paddingBottom: tabBarPaddingBottom,
       shadowColor: '#000',
-      shadowOpacity: 0.08,
+      shadowOpacity: theme.dark ? 0.4 : 0.08,
       shadowRadius: 14,
       shadowOffset: { width: 0, height: -5 },
       elevation: 6,
@@ -64,12 +66,7 @@ function PersistentTabBar() {
           <TouchableOpacity
             key={tab.route}
             onPress={() => router.push(tab.route as any)}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: 2,
-            }}
+            style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 2 }}
           >
             <Ionicons
               name={active ? tab.icon as any : tab.iconOutline as any}
@@ -92,70 +89,77 @@ function PersistentTabBar() {
 }
 
 // ===============================
+// APP SHELL (theme-aware)
+// ===============================
+
+function AppShell() {
+  const { theme, isDark } = useTheme();
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
+        <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''}>
+        <AuthProvider>
+          <ProfileProvider>
+            <CollectionProvider>
+              <TradeProvider>
+                <StatusBar style={isDark ? 'light' : 'dark'} />
+                <Stack
+                  screenOptions={{
+                    headerShown: true,
+                    gestureEnabled: true,
+                    fullScreenGestureEnabled: true,
+                    headerStyle: { backgroundColor: theme.colors.bg },
+                    headerTintColor: theme.colors.primary,
+                    headerTitleStyle: { color: theme.colors.text, fontWeight: '900' },
+                    headerShadowVisible: false,
+                    headerBackButtonDisplayMode: 'minimal',
+                    headerBackTitle: '',
+                    contentStyle: { backgroundColor: theme.colors.bg },
+                  }}
+                >
+                  <Stack.Screen name="index" options={{ headerShown: false }} />
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="card/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="set/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="offer/new" options={{ title: '' }} />
+                  <Stack.Screen name="offer/index" options={{ title: '' }} />
+                  <Stack.Screen name="offer/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="offers" options={{ title: '' }} />
+                  <Stack.Screen name="listing/new" options={{ title: '' }} />
+                  <Stack.Screen name="seller/onboarding" options={{ title: '' }} />
+                  <Stack.Screen name="binder/new" options={{ title: '' }} />
+                  <Stack.Screen name="binder/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
+                  <Stack.Screen name="scan" options={{ title: '' }} />
+                  <Stack.Screen name="scan/result" options={{ title: '' }} />
+                  <Stack.Screen name="market/index" options={{ title: '' }} />
+                  <Stack.Screen name="price-builder/index" options={{ title: '' }} />
+                  <Stack.Screen name="user/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
+                  <Stack.Screen name="(auth)/login" options={{ title: '' }} />
+                  <Stack.Screen name="notifications" options={{ title: '' }} />
+                  <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
+                </Stack>
+                <PersistentTabBar />
+              </TradeProvider>
+            </CollectionProvider>
+          </ProfileProvider>
+        </AuthProvider>
+        </StripeProvider>
+      </KeyboardAvoidingView>
+    </GestureHandlerRootView>
+  );
+}
+
+// ===============================
 // ROOT LAYOUT
 // ===============================
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
-      <AuthProvider>
-        <ProfileProvider>
-          <CollectionProvider>
-            <TradeProvider>
-              <StatusBar style="dark" />
-              <Stack
-                screenOptions={{
-                  headerShown: true,
-                  gestureEnabled: true,
-                  fullScreenGestureEnabled: true,
-                  headerStyle: {
-                    backgroundColor: theme.colors.bg,
-                  },
-                  headerTintColor: theme.colors.primary,
-                  headerTitleStyle: {
-                    color: theme.colors.text,
-                    fontWeight: '900',
-                  },
-                  headerShadowVisible: false,
-                  headerBackButtonDisplayMode: 'minimal',
-                  headerBackTitle: '',
-                }}
-              >
-                <Stack.Screen
-                  name="(tabs)"
-                  options={{
-                    headerShown: false,
-                    title: '',
-                  }}
-                />
-                <Stack.Screen name="card/[id]" options={{ title: '' }} />
-                <Stack.Screen name="set/[id]" options={{ title: '' }} />
-                <Stack.Screen name="offer/new" options={{ title: '' }} />
-                <Stack.Screen name="offer/index" options={{ title: '' }} />
-                <Stack.Screen name="offer/[id]" options={{ title: '' }} />
-                <Stack.Screen name="offers" options={{ title: '' }} />
-
-                <Stack.Screen name="listing/new" options={{ title: '' }} />
-                <Stack.Screen name="binder/new" options={{ title: '' }} />
-                <Stack.Screen name="binder/[id]" options={{ title: '' }} />
-                <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
-                <Stack.Screen name="scan" options={{ title: '' }} />
-                <Stack.Screen name="scan/result" options={{ title: '' }} />
-                <Stack.Screen name="market/index" options={{ title: '' }} />
-                <Stack.Screen name="price-builder/index" options={{ title: '' }} />
-                <Stack.Screen name="user/[id]" options={{ title: '' }} />
-                <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
-                <Stack.Screen name="(auth)/login" options={{ title: '' }} />
-                <Stack.Screen name="notifications" options={{ title: '' }} />
-                <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
-              </Stack>
-              <PersistentTabBar />
-            </TradeProvider>
-          </CollectionProvider>
-        </ProfileProvider>
-      </AuthProvider>
-      </KeyboardAvoidingView>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <AppShell />
+    </ThemeProvider>
   );
 }

@@ -8,6 +8,7 @@ import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
 import Jimp from 'jimp';
 import cardsightRoutes from './routes/cardsight.js';
+import stripeRoutes from './routes/stripe.js';
 import { Buffer } from 'node:buffer';
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use('/api/cardsight', cardsightRoutes);
 app.use('/api/discord', discordRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;

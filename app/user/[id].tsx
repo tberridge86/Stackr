@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -174,6 +174,7 @@ function TopLoaderCard({ label, card }: { label: string; card: any | null }) {
 // ===============================
 
 export default function PublicProfileScreen() {
+  const { theme } = useTheme();
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const userId = Array.isArray(params.id) ? params.id[0] : params.id;
 

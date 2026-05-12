@@ -12,7 +12,7 @@ import { Text } from '../../components/Text';
 import { Camera } from 'react-native-vision-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useScanCamera } from '../../lib/useScanCamera'; // NEW HOOK
 import { useScanStore } from '../../lib/scanStore'; // ENHANCED STORE
@@ -24,6 +24,7 @@ const CARD_HEIGHT = CARD_WIDTH / 0.716;
 const VERTICAL_OFFSET = -(STATUS_BAR_HEIGHT + 80);
 
 export default function CardCameraScreen() {
+  const { theme } = useTheme();
   const { camera, device, torch, toggleTorch, takePhoto, isContinuous, setIsContinuous } = useScanCamera(true); // Continuous ON by default
   const scanStore = useScanStore();
   const [capturing, setCapturing] = useState(false);

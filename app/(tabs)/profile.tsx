@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -68,6 +68,7 @@ function TopLoaderCard({
   card: any | null;
   labelColor?: string;
 }) {
+  const { theme } = useTheme();
   return (
     <View style={{ width: '48%', alignItems: 'center' }}>
       <Text style={{
@@ -160,6 +161,7 @@ function QuickAction({
   onPress: () => void;
   badge?: number;
 }) {
+  const { theme } = useTheme();
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -216,6 +218,7 @@ function QuickAction({
 // ===============================
 
 export default function ProfileScreen() {
+  const { theme, isDark, toggleTheme } = useTheme();
   const { profile, loading, refreshProfile } = useProfile();
 
   const [favoriteCard, setFavoriteCard] = useState<any | null>(null);
@@ -809,6 +812,45 @@ export default function ProfileScreen() {
             label="Edit Profile"
             onPress={() => router.push('/profile/setup')}
           />
+
+          <QuickAction
+            icon="card-outline"
+            label="Seller Account & Payouts"
+            onPress={() => router.push('/seller/onboarding' as any)}
+          />
+
+          {/* Dark mode toggle */}
+          <TouchableOpacity
+            onPress={toggleTheme}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: theme.colors.card,
+              padding: 16,
+              borderRadius: 16,
+              marginBottom: 10,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons name={isDark ? 'moon' : 'sunny-outline'} size={20} color={theme.colors.secondary} />
+            <Text style={{ flex: 1, color: theme.colors.text, marginLeft: 12, fontWeight: '700' }}>
+              {isDark ? 'Dark Mode' : 'Light Mode'}
+            </Text>
+            <View style={{
+              width: 44, height: 26, borderRadius: 13,
+              backgroundColor: isDark ? theme.colors.primary : theme.colors.border,
+              justifyContent: 'center',
+              paddingHorizontal: 3,
+            }}>
+              <View style={{
+                width: 20, height: 20, borderRadius: 10,
+                backgroundColor: '#FFFFFF',
+                alignSelf: isDark ? 'flex-end' : 'flex-start',
+              }} />
+            </View>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={confirmLogout}

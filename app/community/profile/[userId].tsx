@@ -1,4 +1,4 @@
-import { theme } from '../../../lib/theme';
+import { useTheme } from '../../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -103,6 +103,7 @@ function renderStars(rating: number | null): string {
 // ===============================
 
 export default function PublicCollectorProfileScreen() {
+  const { theme } = useTheme();
 const { id, readOnly } = useLocalSearchParams<{ id: string; readOnly?: string }>();
 const binderId = Array.isArray(id) ? id[0] : id;
 

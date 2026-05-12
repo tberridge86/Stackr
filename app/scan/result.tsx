@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -38,6 +38,7 @@ type BinderOption = {
 };
 
 export default function ScanResultScreen() {
+  const { theme } = useTheme();
   const params = useLocalSearchParams<{
     imageUrl?: string;
     cardName?: string;
@@ -387,7 +388,7 @@ export default function ScanResultScreen() {
               marginBottom: 14,
             }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginBottom: 12 }}>
-                TCG Market Price (USD)
+                TCG Market Price (GBP)
               </Text>
 
               {tcgLoading ? (

@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   View,
@@ -21,6 +21,7 @@ import {
   getCachedSets,
 } from '../../lib/pokemonTcgCache';
 import { fetchEbayPrice } from '../../lib/ebay';
+import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 
 type PokemonCard = {
   id: string;
@@ -81,6 +82,8 @@ type EbayPriceResult = {
 const CONDITIONS = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Played'];
 
 export default function CardDetailScreen() {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const params = useLocalSearchParams<{ id?: string; setId?: string }>();
   const cardId = typeof params.id === 'string' ? params.id : '';
   const paramSetId = typeof params.setId === 'string' ? params.setId : '';
@@ -243,8 +246,6 @@ export default function CardDetailScreen() {
     );
   }, [card, myListings]);
 
-  const USD_TO_GBP = 0.79;
-  const EUR_TO_GBP = 0.85;
 
   // TCGPlayer prices — converted from USD to GBP
   const tcgPrices = useMemo(() => {
@@ -586,6 +587,24 @@ const handleListOnMarketplace = async () => {
           {/* TCGPlayer — GBP */}
           <Text style={styles.priceSourceLabel}>TCGPlayer · GBP</Text>
 
+          {(card.set?.name ?? '').toLowerCase().includes('perfect order') && (
+            <View style={{
+              backgroundColor: '#FEF9C3',
+              borderRadius: 10,
+              padding: 10,
+              marginBottom: 10,
+              borderWidth: 1,
+              borderColor: '#FDE047',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <Text style={{ color: '#854D0E', fontSize: 12, flex: 1, fontWeight: '600' }}>
+                ⚠️ Perfect Order cards aren't yet available on TCGPlayer — pricing data unavailable.
+              </Text>
+            </View>
+          )}
+
           <View style={styles.marketButtonsRow}>
             <View style={styles.marketButton}>
               <Text style={styles.marketButtonLabel}>Low</Text>
@@ -869,7 +888,8 @@ const handleListOnMarketplace = async () => {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: any) {
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.bg,
@@ -1232,3 +1252,4 @@ marketplaceButton: {
     marginBottom: 6,
   },
 });
+}

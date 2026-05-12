@@ -1,4 +1,4 @@
-const PRICE_API_URL = (process.env.EXPO_PUBLIC_PRICE_API_URL ?? '').replace(/\/$/, '');
+import { PRICE_API_URL } from './config';
 
 export type IdentifiedCard = {
   id?: string;

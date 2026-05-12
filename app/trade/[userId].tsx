@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -25,6 +25,7 @@ type TradeListing = {
 };
 
 export default function UserTradeListingsScreen() {
+  const { theme } = useTheme();
   const params = useLocalSearchParams<{ userId?: string; userName?: string }>();
   const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
   const userName = Array.isArray(params.userName) ? params.userName[0] : params.userName;

@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { theme } from '../../../lib/theme';
+import { useTheme } from '../../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -74,6 +74,8 @@ function timeAgo(dateString: string) {
 }
 
 export default function CommunityScreen() {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const { profile: myProfile } = useProfile();
   const isAdmin = myProfile?.role === 'admin';
 
@@ -651,7 +653,8 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: any) {
+  return StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.bg },
   container: { flex: 1, padding: 16 },
 
@@ -1012,3 +1015,4 @@ userResultSubtext: {
   marginTop: 2,
 },
 });
+}

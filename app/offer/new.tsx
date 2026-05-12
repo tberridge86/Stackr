@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
@@ -20,7 +20,7 @@ import { getCachedCardSync } from '../../lib/pokemonTcgCache';
 // CONSTANTS
 // ===============================
 
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+import { PRICE_API_URL } from '../../lib/config';
 const MAX_OFFER_CARDS = 6;
 
 // ===============================
@@ -72,6 +72,8 @@ async function sendPushNotification(
 // ===============================
 
 export default function NewOfferScreen() {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const params = useLocalSearchParams<{
     listingId?: string;
     targetUserId?: string;
@@ -552,6 +554,7 @@ export default function NewOfferScreen() {
 // ===============================
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  const { theme } = useTheme();
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -564,7 +567,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 // STYLES
 // ===============================
 
-const styles = StyleSheet.create({
+function makeStyles(theme: any) {
+  return StyleSheet.create({
   loadingScreen: {
     flex: 1,
     alignItems: 'center',
@@ -774,3 +778,4 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
 });
+}

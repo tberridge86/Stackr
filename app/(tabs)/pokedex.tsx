@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -80,6 +80,8 @@ const getRangeMatch = (range: RangeKey, id: number) => {
 };
 
 export default function PokedexScreen() {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const numColumns = width >= 900 ? 8 : width >= 600 ? 5 : 3;
@@ -249,7 +251,8 @@ export default function PokedexScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: any) {
+  return StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: theme.colors.bg,
@@ -442,3 +445,4 @@ gridNumber: {
   marginTop: 2,
 },
 });
+}

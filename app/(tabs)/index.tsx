@@ -1,4 +1,4 @@
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import React, {
   useCallback,
   useEffect,
@@ -9,7 +9,6 @@ import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Alert,
-  Dimensions,
   Image,
   Linking,
   Modal,
@@ -19,6 +18,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { LineChart } from 'react-native-chart-kit';
@@ -27,8 +27,7 @@ import { useCollection } from '../../components/collection-context';
 import { fetchBinders, fetchBinderCards } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { createActivityPost } from '../../lib/activity';
-
-const PRICE_API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
 
 // ===============================
 // TYPES
@@ -41,8 +40,6 @@ type ChartMode = 'TCG' | 'EBAY' | 'BOTH';
 // CONSTANTS
 // ===============================
 
-const screenWidth = Dimensions.get('window').width;
-const USD_TO_GBP = 0.79;
 
 const cardShadow = {
   shadowColor: '#000',
@@ -152,6 +149,7 @@ const normaliseChartValues = (values: number[]): number[] =>
 // ===============================
 
 function StatCard({ label, value }: { label: string; value: string }) {
+  const { theme } = useTheme();
   return (
     <View style={{
       width: '48.5%',
@@ -172,6 +170,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
 function QuickLink({ icon, label, onPress, badge }: {
   icon: any; label: string; onPress: () => void; badge?: number;
 }) {
+  const { theme } = useTheme();
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -223,7 +222,9 @@ function QuickLink({ icon, label, onPress, badge }: {
 // ===============================
 
 export default function HubScreen() {
+  const { theme, isDark } = useTheme();
   const { trackedSetIds } = useCollection();
+  const { width: screenWidth } = useWindowDimensions();
 
   // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -600,7 +601,15 @@ const { data, error } = await snapshotQuery;
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+      {/* BACKGROUND BLOBS — light mode only */}
+      {!isDark && (
+        <>
+          <View pointerEvents="none" style={{ position: 'absolute', width: 320, height: 320, borderRadius: 999, backgroundColor: 'rgba(108,75,255,0.09)', top: -100, right: -100 }} />
+          <View pointerEvents="none" style={{ position: 'absolute', width: 240, height: 240, borderRadius: 999, backgroundColor: 'rgba(255,200,77,0.20)', top: 260, left: -90 }} />
+          <View pointerEvents="none" style={{ position: 'absolute', width: 200, height: 200, borderRadius: 999, backgroundColor: 'rgba(108,75,255,0.06)', bottom: 120, right: -70 }} />
+        </>
+      )}
       <ScrollView
         contentContainerStyle={{ padding: 18, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
@@ -643,7 +652,8 @@ const { data, error } = await snapshotQuery;
 
         {/* PORTFOLIO CARD */}
         <View style={{ backgroundColor: theme.colors.card, borderRadius: 28, padding: 20, marginBottom: 22, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden', ...cardShadow }}>
-          <View style={{ position: 'absolute', width: 240, height: 240, borderRadius: 999, backgroundColor: 'rgba(108,75,255,0.08)', top: -80, right: -60 }} />
+          <View style={{ position: 'absolute', width: 260, height: 260, borderRadius: 999, backgroundColor: 'rgba(108,75,255,0.12)', top: -90, right: -70 }} />
+          <View style={{ position: 'absolute', width: 160, height: 160, borderRadius: 999, backgroundColor: 'rgba(255,200,77,0.15)', bottom: -60, left: -40 }} />
 
           <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', marginBottom: 8 }}>
             Collection Value ({chartMode === 'EBAY' ? 'eBay' : 'TCG'})

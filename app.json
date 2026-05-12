@@ -29,7 +29,8 @@
         {
           "cameraPermission": "Stackr needs camera access to scan Pokémon cards."
         }
-      ]
+      ],
+      "@stripe/stripe-react-native"
     ],
     "ios": {
       "supportsTablet": true,

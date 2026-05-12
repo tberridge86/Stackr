@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Text } from '../../components/Text';
-import { theme } from '../../lib/theme';
+import { useTheme } from '../../components/theme-context';
 import { supabase } from '../../lib/supabase';
 
 export default function AuthCallbackScreen() {
+  const { theme } = useTheme();
   useEffect(() => {
     const checkSession = async () => {
       await supabase.auth.getSession();
