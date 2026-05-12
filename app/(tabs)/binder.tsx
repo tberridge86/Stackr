@@ -159,7 +159,6 @@ function BinderCard({ item, counts, value, confirmDeleteBinder, index, cardWidth
         height: cardWidth,
         borderRadius: 6,
         overflow: 'hidden',
-        ...cardShadow,
       }}>
         {cover ? (
           <Image

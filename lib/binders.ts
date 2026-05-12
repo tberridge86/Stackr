@@ -183,6 +183,9 @@ export async function fetchBinderCards(
           name: card.name,
           number: card.number,
           rarity: card.rarity,
+          set: card.set ?? null,
+          tcgplayer: card.tcgplayer ?? null,
+          raw_data: card.raw_data ?? null,
           images: {
             small: card.images?.small ?? null,
             large: card.images?.large ?? null,
@@ -216,6 +219,9 @@ export async function fetchBinderCards(
         name: card.name,
         number: card.number,
         rarity: card.rarity,
+        set: card.set ?? null,
+        tcgplayer: card.tcgplayer ?? null,
+        raw_data: card.raw_data ?? null,
         images: {
           small: card.images?.small ?? null,
           large: card.images?.large ?? null,

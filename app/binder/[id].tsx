@@ -26,6 +26,7 @@ import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import {
   BinderRecord,
+  BinderCardRecord,
   addCardsToBinder,
   fetchBinderById,
   fetchBinderCards,
@@ -151,6 +152,44 @@ const getBinderTcgPrice = (card: any, edition?: string | null): number | null =>
 };
 
 // ===============================
+// VARIANT HELPERS
+// ===============================
+
+const VARIANT_LABELS: Record<string, string> = {
+  normal: 'Nrm',
+  holofoil: 'Holo',
+  reverseHolofoil: 'Rev',
+  '1stEditionNormal': '1st',
+  '1stEditionHolofoil': '1stH',
+  unlimitedHolofoil: '∞H',
+  unlimited: '∞',
+  reverseHoloEnergy: 'Nrg',
+  reverseHoloPokeball: 'Ball',
+};
+
+const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> = {
+  me2pt5: {
+    Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+    Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+  },
+};
+
+function getVariants(card: any): string[] {
+  const setId = card?.set?.id ?? card?.set_id ?? '';
+  const override = SET_VARIANT_OVERRIDES[setId];
+  if (override && card?.rarity && override[card.rarity]) {
+    return override[card.rarity]!;
+  }
+  const prices = card?.tcgplayer?.prices ?? card?.raw_data?.tcgplayer?.prices;
+  const keys = Object.keys(prices ?? {});
+  return keys.length > 0 ? keys : ['normal'];
+}
+
+function shortVariant(key: string): string {
+  return VARIANT_LABELS[key] ?? key.slice(0, 4);
+}
+
+// ===============================
 // MAIN COMPONENT
 // ===============================
 
@@ -204,6 +243,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [tradeOnly, setTradeOnly] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [ownedVariants, setOwnedVariants] = useState<Set<string>>(new Set());
+  const [userId, setUserId] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -319,6 +360,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
+        setUserId(user.id);
+
         const { data, error } = await supabase
           .from('binder_card_showcases')
           .select('*')
@@ -328,6 +371,17 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
         if (error) throw error;
         setShowcaseRows((data ?? []) as ShowcaseRow[]);
+
+        // Load variant ownership for all cards in this binder
+        const cardIds = binderCards.map((c) => c.card_id);
+        if (cardIds.length > 0) {
+          const { data: variantRows } = await supabase
+            .from('user_card_variants')
+            .select('card_id, variant')
+            .eq('user_id', user.id)
+            .in('card_id', cardIds);
+          setOwnedVariants(new Set((variantRows ?? []).map((r) => `${r.card_id}:${r.variant}`)));
+        }
       }
     } catch (error) {
       console.log('Failed to load binder', error);
@@ -382,8 +436,18 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     return next;
   }, [cards, sortMode]);
 
-  const ownedCount = cards.filter((c) => c.owned).length;
-  const totalCount = cards.length;
+  let ownedCount = 0;
+  let totalCount = 0;
+  for (const c of cards) {
+    const variants = getVariants(c.card);
+    if (variants.length > 1) {
+      totalCount += variants.length;
+      ownedCount += variants.filter((v) => ownedVariants.has(`${c.card_id}:${v}`)).length;
+    } else {
+      totalCount += 1;
+      if (c.owned) ownedCount += 1;
+    }
+  }
   const progressPercent = totalCount ? Math.round((ownedCount / totalCount) * 100) : 0;
 
   // ===============================
@@ -572,6 +636,33 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   Alert.alert('Error', 'Failed to update card.');
 }
   };
+
+  const handleToggleVariant = useCallback(async (cardId: string, setId: string, variant: string) => {
+    if (!userId || isReadOnly) return;
+    const key = `${cardId}:${variant}`;
+    let removing = false;
+
+    setOwnedVariants((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) { next.delete(key); removing = true; }
+      else { next.add(key); removing = false; }
+      return next;
+    });
+
+    if (removing) {
+      await supabase
+        .from('user_card_variants')
+        .delete()
+        .eq('user_id', userId)
+        .eq('card_id', cardId)
+        .eq('set_id', setId)
+        .eq('variant', variant);
+    } else {
+      await supabase
+        .from('user_card_variants')
+        .insert({ user_id: userId, card_id: cardId, set_id: setId, variant });
+    }
+  }, [userId, isReadOnly]);
 
   const handleSetCondition = async (item: BinderCardWithDetails, condition: string) => {
     if (isReadOnly) return;
@@ -882,12 +973,18 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     const favorite = isShowcased(item, 'favorite');
     const chase = isShowcased(item, 'chase');
 
+    const variants = getVariants(item.card);
+    const multiVariant = variants.length > 1;
+    const anyVariantOwned = variants.some((v) => ownedVariants.has(`${item.card_id}:${v}`));
+    const isOwned = multiVariant ? anyVariantOwned : item.owned;
+    const slicePct = 100 / variants.length;
+
     return (
       <TouchableOpacity
-        onPress={() => handleCardPress(item)}
+        onPress={multiVariant ? undefined : () => handleCardPress(item)}
         onLongPress={() => openCardDetail(item)}
         delayLongPress={300}
-        activeOpacity={0.85}
+        activeOpacity={multiVariant ? 1 : 0.85}
         style={{
           width: cardWidth,
           marginBottom: 8,
@@ -895,8 +992,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           borderRadius: 14,
           padding: 6,
           borderWidth: 1,
-          borderColor: item.owned ? theme.colors.secondary : theme.colors.border,
-          opacity: item.owned ? 1 : 0.55,
+          borderColor: isOwned ? theme.colors.secondary : theme.colors.border,
+          opacity: isOwned ? 1 : 0.55,
           ...cardShadow,
         }}
       >
@@ -952,6 +1049,49 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           ) : (
             <Text style={{ color: theme.colors.textSoft, fontSize: 10 }}>No image</Text>
           )}
+
+          {/* Variant slices — only shown when card has multiple variants */}
+          {multiVariant && !isReadOnly && variants.map((variant, i) => {
+            const owned = ownedVariants.has(`${item.card_id}:${variant}`);
+            return (
+              <Pressable
+                key={variant}
+                onPress={() => handleToggleVariant(item.card_id, item.set_id, variant)}
+                style={({ pressed }) => ({
+                  position: 'absolute',
+                  left: `${slicePct * i}%` as any,
+                  width: `${slicePct}%` as any,
+                  top: 0,
+                  bottom: 0,
+                  backgroundColor: pressed
+                    ? 'rgba(108,75,255,0.35)'
+                    : owned
+                      ? 'rgba(255,209,102,0.55)'
+                      : 'rgba(0,0,0,0.08)',
+                  borderLeftWidth: i > 0 ? 1 : 0,
+                  borderColor: 'rgba(255,255,255,0.4)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                })}
+              >
+                {owned && (
+                  <Text style={{ fontSize: 16, color: '#7A5200' }}>✓</Text>
+                )}
+                <Text style={{
+                  position: 'absolute',
+                  bottom: 3,
+                  fontSize: 8,
+                  fontWeight: '900',
+                  color: owned ? '#7A5200' : 'rgba(255,255,255,0.9)',
+                  textShadowColor: 'rgba(0,0,0,0.5)',
+                  textShadowOffset: { width: 0, height: 1 },
+                  textShadowRadius: 2,
+                }}>
+                  {shortVariant(variant)}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <Text numberOfLines={2} style={{
@@ -1664,15 +1804,38 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       </Text>
                     </View>
 
+                    {!isReadOnly && (() => {
+                      const modalVariants = getVariants(selectedCard.card);
+                      const isMultiVariant = modalVariants.length > 1;
+                      return isMultiVariant ? (
+                        <View style={boxStyle}>
+                          <Text style={boxTitleStyle}>Variants Owned</Text>
+                          {modalVariants.map((variant) => {
+                            const variantOwned = ownedVariants.has(`${selectedCard.card_id}:${variant}`);
+                            return (
+                              <ActionButton
+                                key={variant}
+                                label={`${VARIANT_LABELS[variant] ?? variant}${variantOwned ? ' · Owned ✓' : ' · Not owned'}`}
+                                active={variantOwned}
+                                onPress={() => handleToggleVariant(selectedCard.card_id, selectedCard.set_id, variant)}
+                              />
+                            );
+                          })}
+                        </View>
+                      ) : null;
+                    })()}
+
                     {!isReadOnly && (
                       <View style={boxStyle}>
                         <Text style={boxTitleStyle}>Card Actions</Text>
 
-                        <ActionButton
-                          label={selectedCard.owned ? 'Mark as missing' : 'Mark as owned'}
-                          active={selectedCard.owned}
-                          onPress={() => handleCardPress(selectedCard)}
-                        />
+                        {getVariants(selectedCard.card).length <= 1 && (
+                          <ActionButton
+                            label={selectedCard.owned ? 'Mark as missing' : 'Mark as owned'}
+                            active={selectedCard.owned}
+                            onPress={() => handleCardPress(selectedCard)}
+                          />
+                        )}
                         <ActionButton
                           label={isShowcased(selectedCard, 'favorite') ? 'Remove favourite top loader' : 'Add to favourite top loaders'}
                           active={isShowcased(selectedCard, 'favorite')}
