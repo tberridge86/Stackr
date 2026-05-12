@@ -7,7 +7,10 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\thoma\\\\Desktop\\\\pocketvault-native\\\\android\\\\app\\\\src\\\\main\\\\res\" -Directory -Filter \"drawable*\")",
       "Bash(node -e \"require\\('@react-native-async-storage/async-storage'\\)\")",
       "Bash(node -e ' *)",
-      "Bash(npm install stripe --save)"
+      "Bash(npm install stripe --save)",
+      "Bash(git push origin main)",
+      "Bash(git add .gitignore)",
+      "Bash(git commit:*)"
     ]
   }
 }
