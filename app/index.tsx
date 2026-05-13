@@ -1,24 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { Image, StyleSheet, View } from 'react-native';
 import { useAuth } from '../components/auth-context';
 import { useProfile } from '../components/profile-context';
 
-const VIDEO_TIMEOUT_MS = 6000;
+const MIN_SPLASH_MS = 900;
 
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading } = useProfile();
   const router = useRouter();
 
-  const [videoFinished, setVideoFinished] = useState(false);
   const navigatedRef = useRef(false);
-
+  const [splashReady, setSplashReady] = useState(false);
   const authReady = !authLoading && !profileLoading;
 
-  const navigate = () => {
-    if (navigatedRef.current) return;
+  useEffect(() => {
+    const timeout = setTimeout(() => setSplashReady(true), MIN_SPLASH_MS);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (!authReady || !splashReady || navigatedRef.current) return;
     navigatedRef.current = true;
 
     if (!user) {
@@ -28,33 +31,14 @@ export default function Index() {
     } else {
       router.replace('/(tabs)');
     }
-  };
-
-  // Navigate once both the video and auth are ready
-  useEffect(() => {
-    if (videoFinished && authReady) navigate();
-  }, [videoFinished, authReady]);
-
-  // Safety — navigate after timeout even if video playback fails
-  useEffect(() => {
-    const t = setTimeout(() => setVideoFinished(true), VIDEO_TIMEOUT_MS);
-    return () => clearTimeout(t);
-  }, []);
+  }, [authReady, profile?.collector_name, router, splashReady, user]);
 
   return (
     <View style={styles.container}>
-      <Video
-        source={require('../assets/images/splash-video.mp4')}
+      <Image
+        source={require('../assets/images/splash.png')}
         style={StyleSheet.absoluteFill}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay
-        isLooping={false}
-        isMuted
-        onPlaybackStatusUpdate={(status) => {
-          if (status.isLoaded && status.didJustFinish) {
-            setVideoFinished(true);
-          }
-        }}
+        resizeMode="cover"
       />
     </View>
   );

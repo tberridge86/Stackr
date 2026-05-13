@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts",
-    "daily-tcgcsv-sync": "tsx scripts/daily-tcgcsv-sync.ts"
+    "daily-tcgcsv-sync": "tsx scripts/daily-tcgcsv-sync.ts",
+    "fingerprint-cards": "npm --prefix scripts/card-fingerprinter start"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -24,7 +25,6 @@
     "cardsightai": "^3.5.1",
     "cors": "^2.8.6",
     "expo": "~54.0.33",
-    "expo-av": "~16.0.8",
     "expo-blur": "~15.0.8",
     "expo-camera": "~17.0.10",
     "expo-constants": "~18.0.13",

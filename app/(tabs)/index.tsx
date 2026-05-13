@@ -820,7 +820,7 @@ const { data, error } = await snapshotQuery;
         <QuickLink icon="folder-open-outline" label="My Binders" onPress={() => router.push('/binder')} />
         <QuickLink icon="storefront-outline" label="Trade Marketplace" onPress={() => router.push('/trade')} />
         <QuickLink icon="swap-horizontal-outline" label="My Offers" onPress={() => router.push('/offers')} />
-        <QuickLink icon="people-outline" label="Community" onPress={() => router.push('/community')} />
+        <QuickLink icon="people-outline" label="Community" onPress={() => router.push('/(tabs)/community' as any)} />
         <QuickLink icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} badge={unreadCount} />
       </ScrollView>
 

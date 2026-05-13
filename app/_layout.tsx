@@ -1,5 +1,5 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Stack, router, usePathname, useSegments } from 'expo-router';
+import { Stack, router, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider } from '../components/auth-context';
 import { ProfileProvider } from '../components/profile-context';
@@ -18,7 +18,7 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 
 const TABS = [
   { name: 'Market', route: '/(tabs)/trade', icon: 'storefront', iconOutline: 'storefront-outline' },
-  { name: 'Social', route: '/(tabs)/community/index', icon: 'people', iconOutline: 'people-outline' },
+  { name: 'Social', route: '/(tabs)/community', icon: 'people', iconOutline: 'people-outline' },
   { name: 'Hub', route: '/(tabs)', icon: 'home', iconOutline: 'home-outline' },
   { name: 'Binder', route: '/(tabs)/binder', icon: 'book', iconOutline: 'book-outline' },
   { name: 'Pokédex', route: '/(tabs)/pokedex', icon: 'desktop', iconOutline: 'desktop-outline' },
@@ -27,7 +27,6 @@ const TABS = [
 function PersistentTabBar() {
   const { theme } = useTheme();
   const pathname = usePathname();
-  const segments = useSegments();
   const insets = useSafeAreaInsets();
 
   const tabBarHeight = Platform.OS === 'android' ? 64 + insets.bottom : 84;
@@ -35,9 +34,13 @@ function PersistentTabBar() {
 
   const isActive = (route: string) => {
     if (route === '/(tabs)') {
-      return pathname === '/(tabs)' || pathname === '/(tabs)/index';
+      return pathname === '/' || pathname === '/(tabs)' || pathname === '/(tabs)/index';
     }
-    return pathname === route || pathname.startsWith(`${route}/`);
+    const publicRoute = route.replace('/(tabs)', '') || '/';
+    return pathname === route
+      || pathname.startsWith(`${route}/`)
+      || pathname === publicRoute
+      || pathname.startsWith(`${publicRoute}/`);
   };
 
   // Hide on splash screen route and auth routes

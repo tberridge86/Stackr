@@ -8,8 +8,20 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
+const HASH_SIZE = 32;
+const DCT_SIZE = 8;
+const ALGORITHM_VERSION = 2;
+
+const FINGERPRINT_REGIONS = [
+  { key: 'full', x: 0, y: 0, width: 1, height: 1 },
+  { key: 'art', x: 0, y: 0.12, width: 1, height: 0.46 },
+  { key: 'name', x: 0, y: 0.02, width: 1, height: 0.16 },
+  { key: 'lower', x: 0, y: 0.56, width: 1, height: 0.34 },
+  { key: 'center', x: 0, y: 0.22, width: 1, height: 0.58 },
+];
+
 // ===============================
-// DCT PHASH — must match server.js exactly
+// DCT PHASH - must match backend/server.js
 // ===============================
 
 function dct1D(signal) {
@@ -26,13 +38,12 @@ function dct1D(signal) {
 }
 
 function dct2D(pixels, N) {
-  // Row-wise DCT
   const temp = new Array(N * N);
   for (let row = 0; row < N; row++) {
     const r = dct1D(pixels.slice(row * N, (row + 1) * N));
     for (let col = 0; col < N; col++) temp[row * N + col] = r[col];
   }
-  // Column-wise DCT
+
   const result = new Array(N * N);
   for (let col = 0; col < N; col++) {
     const c = [];
@@ -43,50 +54,55 @@ function dct2D(pixels, N) {
   return result;
 }
 
-async function generatePHash(imageUrl) {
+function cropRegion(image, region) {
+  const { width, height } = image.bitmap;
+  const x = Math.max(0, Math.floor(width * region.x));
+  const y = Math.max(0, Math.floor(height * region.y));
+  const cropWidth = Math.max(1, Math.min(width - x, Math.floor(width * region.width)));
+  const cropHeight = Math.max(1, Math.min(height - y, Math.floor(height * region.height)));
+  return image.clone().crop(x, y, cropWidth, cropHeight);
+}
+
+function hashPreparedImage(image) {
+  image.resize(HASH_SIZE, HASH_SIZE).greyscale();
+
+  const pixels = [];
+  image.scan(0, 0, HASH_SIZE, HASH_SIZE, (_x, _y, idx) => {
+    pixels.push(image.bitmap.data[idx]);
+  });
+
+  const min = Math.min(...pixels);
+  const max = Math.max(...pixels);
+  const range = max - min || 1;
+  const normalized = pixels.map((p) => (p - min) / range);
+
+  const dct = dct2D(normalized, HASH_SIZE);
+  const coeffs = [];
+  for (let row = 0; row < DCT_SIZE; row++) {
+    for (let col = 0; col < DCT_SIZE; col++) {
+      if (row === 0 && col === 0) continue;
+      coeffs.push(dct[row * HASH_SIZE + col]);
+    }
+  }
+
+  const sorted = [...coeffs].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  return coeffs.map((c) => (c > median ? '1' : '0')).join('');
+}
+
+async function generateFingerprints(imageUrl) {
   try {
     const res = await fetch(imageUrl);
+    if (!res.ok) throw new Error(`Image fetch failed (${res.status})`);
     const buffer = Buffer.from(await res.arrayBuffer());
     const image = await Jimp.read(buffer);
 
-    const { width, height } = image.bitmap;
-
-    // Crop to art region — skip name/HP bar at top, stop before attacks/text.
-    // For standard cards this is roughly 12%–58% of card height.
-    // Full-art cards benefit even more since the entire crop is unique art.
-    const cropTop = Math.floor(height * 0.12);
-    const cropHeight = Math.floor(height * 0.46);
-    image.crop(0, cropTop, width, cropHeight);
-
-    image.resize(32, 32).greyscale();
-
-    const pixels = [];
-    image.scan(0, 0, 32, 32, (_x, _y, idx) => {
-      pixels.push(image.bitmap.data[idx]);
-    });
-
-    // Contrast normalise — removes lighting variation
-    const min = Math.min(...pixels);
-    const max = Math.max(...pixels);
-    const range = max - min || 1;
-    const normalized = pixels.map(p => (p - min) / range);
-
-    // 2D DCT
-    const dct = dct2D(normalized, 32);
-
-    // Extract top-left 8×8 frequency coefficients, skip DC at [0,0]
-    const coeffs = [];
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
-        if (row === 0 && col === 0) continue;
-        coeffs.push(dct[row * 32 + col]);
-      }
+    const fingerprints = {};
+    for (const region of FINGERPRINT_REGIONS) {
+      fingerprints[region.key] = hashPreparedImage(cropRegion(image, region));
     }
 
-    // Threshold at median → 63-bit hash
-    const sorted = [...coeffs].sort((a, b) => a - b);
-    const median = sorted[Math.floor(sorted.length / 2)];
-    return coeffs.map(c => (c > median ? '1' : '0')).join('');
+    return fingerprints;
   } catch (err) {
     console.error(`Failed to hash ${imageUrl}:`, err.message);
     return null;
@@ -102,10 +118,13 @@ async function fetchAllCards() {
     console.log(`Fetching rows ${from} to ${from + batchSize}...`);
     const { data, error } = await supabase
       .from('pokemon_cards')
-      .select('id, name, set_id, image_small')
+      .select('id, name, set_id, image_small, image_large')
       .range(from, from + batchSize - 1);
 
-    if (error) { console.error('Fetch error:', error.message); break; }
+    if (error) {
+      console.error('Fetch error:', error.message);
+      break;
+    }
     if (!data || data.length === 0) break;
 
     allCards.push(...data);
@@ -128,11 +147,17 @@ async function run() {
   let failed = 0;
 
   for (const card of cards) {
-    const imageUrl = card.image_small;
-    if (!imageUrl) { skipped++; continue; }
+    const imageUrl = card.image_large || card.image_small;
+    if (!imageUrl) {
+      skipped++;
+      continue;
+    }
 
-    const phash = await generatePHash(imageUrl);
-    if (!phash) { failed++; continue; }
+    const fingerprints = await generateFingerprints(imageUrl);
+    if (!fingerprints) {
+      failed++;
+      continue;
+    }
 
     const { error } = await supabase
       .from('card_fingerprints')
@@ -141,7 +166,9 @@ async function run() {
         card_name: card.name,
         set_id: card.set_id,
         image_url: imageUrl,
-        phash,
+        phash: fingerprints.art,
+        fingerprints,
+        algorithm_version: ALGORITHM_VERSION,
       }, { onConflict: 'card_id' });
 
     if (error) {

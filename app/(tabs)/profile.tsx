@@ -792,7 +792,7 @@ export default function ProfileScreen() {
           <QuickAction
             icon="earth-outline"
             label="Community"
-            onPress={() => router.push('/community')}
+            onPress={() => router.push('/(tabs)/community' as any)}
           />
         </View>
 

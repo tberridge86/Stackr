@@ -8,6 +8,7 @@ import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
 import Jimp from 'jimp';
 import cardsightRoutes from './routes/cardsight.js';
+import giblRoutes from './routes/gibl.js';
 import stripeRoutes from './routes/stripe.js';
 import { Buffer } from 'node:buffer';
 
@@ -16,6 +17,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use('/api/cardsight', cardsightRoutes);
+app.use('/api/gibl', giblRoutes);
 app.use('/api/discord', discordRoutes);
 app.use('/api/stripe', stripeRoutes);
 
@@ -153,7 +155,7 @@ const SET_NAME_MAPPINGS = {
   'base': 'base',
   'jungle': 'base2',
   'fossil': 'base3',
-  'base set 2': 'base2',
+  'base set 2': 'base4',
   'legendary collection': 'base5',
   'neo': 'neo',
   'gym': 'gym',
@@ -723,6 +725,7 @@ app.get('/debug-env', (req, res) => {
     hasEbayClientSecret: Boolean(EBAY_CLIENT_SECRET),
     hasXimilarToken: Boolean(XIMILAR_API_TOKEN),
     hasTcgApiKey: Boolean(POKEMON_TCG_API_KEY),
+    hasGiblKey: Boolean(process.env.GIBLTCG_API_KEY || process.env.GIBL_API_KEY),
     marketplace: EBAY_MARKETPLACE_ID,
   });
 });
@@ -932,6 +935,7 @@ app.get('/api/search/tcg', async (req, res) => {
   try {
     const name = String(req.query.name || '').trim();
     const number = String(req.query.number || '').trim();
+    const setTotal = String(req.query.setTotal || '').trim();
     const setName = String(req.query.setName || '').trim();
     const setId = String(req.query.setId || '').trim();
 
@@ -1004,18 +1008,27 @@ app.get('/api/search/tcg', async (req, res) => {
       }
     }
 
-    const formatted = cards.map((card) => ({
+    let formatted = cards.map((card) => ({
       id: card.id,
       name: card.name,
       number: card.number,
       set_id: card.set?.id,
       set_name: card.set?.name,
+      set_printed_total: card.set?.printedTotal ?? card.set?.total ?? null,
       series: card.set?.series,
       rarity: card.rarity,
       image_small: card.images?.small,
       image_large: card.images?.large,
       release_date: card.set?.releaseDate,
     }));
+
+    if (setTotal) {
+      const totalNumber = Number(setTotal);
+      if (Number.isFinite(totalNumber)) {
+        const totalMatches = formatted.filter((card) => Number(card.set_printed_total) === totalNumber);
+        if (totalMatches.length > 0) formatted = totalMatches;
+      }
+    }
 
     console.log(`📦 Returning ${formatted.length} cards`);
 
@@ -1035,7 +1048,18 @@ app.get('/api/search/tcg', async (req, res) => {
 let _fpCache = null;
 let _fpCacheAt = 0;
 let _fpCacheLoading = null;
+const _fpSetCache = new Map();
+const _fpSetCacheLoading = new Map();
 const FP_CACHE_TTL = 60 * 60 * 1000;
+const HASH_SIZE = 32;
+const DCT_SIZE = 8;
+const FINGERPRINT_REGIONS = [
+  { key: 'full', x: 0, y: 0, width: 1, height: 1, weight: 0.85 },
+  { key: 'art', x: 0, y: 0.12, width: 1, height: 0.46, weight: 1.35 },
+  { key: 'name', x: 0, y: 0.02, width: 1, height: 0.16, weight: 0.8 },
+  { key: 'lower', x: 0, y: 0.56, width: 1, height: 0.34, weight: 1 },
+  { key: 'center', x: 0, y: 0.22, width: 1, height: 0.58, weight: 1.05 },
+];
 
 async function getFingerprints() {
   if (_fpCache && Date.now() - _fpCacheAt < FP_CACHE_TTL) return _fpCache;
@@ -1045,7 +1069,7 @@ async function getFingerprints() {
     try {
       const { data, error } = await supabase
         .from('card_fingerprints')
-        .select('card_id, card_name, set_id, phash');
+        .select('*');
       if (error) throw new Error(`Failed to load fingerprints: ${error.message}`);
       _fpCache = data;
       _fpCacheAt = Date.now();
@@ -1057,6 +1081,34 @@ async function getFingerprints() {
   })();
 
   return _fpCacheLoading;
+}
+
+async function getFingerprintsForSet(setId) {
+  if (!setId) return getFingerprints();
+
+  const cached = _fpSetCache.get(setId);
+  if (cached && Date.now() - cached.loadedAt < FP_CACHE_TTL) return cached.data;
+
+  const existingLoad = _fpSetCacheLoading.get(setId);
+  if (existingLoad) return existingLoad;
+
+  const load = (async () => {
+    try {
+      const { data, error } = await supabase
+        .from('card_fingerprints')
+        .select('*')
+        .eq('set_id', setId);
+      if (error) throw new Error(`Failed to load fingerprints for ${setId}: ${error.message}`);
+      _fpSetCache.set(setId, { data, loadedAt: Date.now() });
+      console.log(`Fingerprint set cache loaded: ${setId} (${data.length} records)`);
+      return data;
+    } finally {
+      _fpSetCacheLoading.delete(setId);
+    }
+  })();
+
+  _fpSetCacheLoading.set(setId, load);
+  return load;
 }
 
 // Must match the algorithm in scripts/card-fingerprinter/fingerprint.js exactly
@@ -1089,18 +1141,20 @@ function dct2D(pixels, N) {
   return result;
 }
 
-async function generatePHash(imageBuffer) {
-  const image = await Jimp.read(imageBuffer);
-
+function cropRegion(image, region) {
   const { width, height } = image.bitmap;
-  const cropTop = Math.floor(height * 0.12);
-  const cropHeight = Math.floor(height * 0.46);
-  image.crop(0, cropTop, width, cropHeight);
+  const x = Math.max(0, Math.floor(width * region.x));
+  const y = Math.max(0, Math.floor(height * region.y));
+  const cropWidth = Math.max(1, Math.min(width - x, Math.floor(width * region.width)));
+  const cropHeight = Math.max(1, Math.min(height - y, Math.floor(height * region.height)));
+  return image.clone().crop(x, y, cropWidth, cropHeight);
+}
 
-  image.resize(32, 32).greyscale();
+function hashPreparedImage(image) {
+  image.resize(HASH_SIZE, HASH_SIZE).greyscale();
 
   const pixels = [];
-  image.scan(0, 0, 32, 32, (_x, _y, idx) => {
+  image.scan(0, 0, HASH_SIZE, HASH_SIZE, (_x, _y, idx) => {
     pixels.push(image.bitmap.data[idx]);
   });
 
@@ -1109,19 +1163,28 @@ async function generatePHash(imageBuffer) {
   const range = max - min || 1;
   const normalized = pixels.map(p => (p - min) / range);
 
-  const dct = dct2D(normalized, 32);
+  const dct = dct2D(normalized, HASH_SIZE);
 
   const coeffs = [];
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
+  for (let row = 0; row < DCT_SIZE; row++) {
+    for (let col = 0; col < DCT_SIZE; col++) {
       if (row === 0 && col === 0) continue;
-      coeffs.push(dct[row * 32 + col]);
+      coeffs.push(dct[row * HASH_SIZE + col]);
     }
   }
 
   const sorted = [...coeffs].sort((a, b) => a - b);
   const median = sorted[Math.floor(sorted.length / 2)];
   return coeffs.map(c => (c > median ? '1' : '0')).join('');
+}
+
+async function generateFingerprints(imageBuffer) {
+  const image = await Jimp.read(imageBuffer);
+  const fingerprints = {};
+  for (const region of FINGERPRINT_REGIONS) {
+    fingerprints[region.key] = hashPreparedImage(cropRegion(image, region));
+  }
+  return fingerprints;
 }
 
 function hammingDistance(a, b) {
@@ -1132,33 +1195,95 @@ function hammingDistance(a, b) {
   return dist;
 }
 
+function normalizeFingerprintMap(fp) {
+  const map = fp?.fingerprints && typeof fp.fingerprints === 'object'
+    ? fp.fingerprints
+    : { art: fp?.phash };
+
+  return Object.fromEntries(
+    Object.entries(map).filter(([, hash]) => typeof hash === 'string' && hash.length > 0)
+  );
+}
+
+function scoreFingerprintCandidate(reference, queryHashes) {
+  const referenceHashes = normalizeFingerprintMap(reference);
+  const regionScores = [];
+  let weightedConfidence = 0;
+  let totalWeight = 0;
+
+  for (const region of FINGERPRINT_REGIONS) {
+    const queryHash = queryHashes[region.key];
+    const referenceHash = referenceHashes[region.key];
+    if (!queryHash || !referenceHash || queryHash.length !== referenceHash.length) continue;
+
+    const distance = hammingDistance(queryHash, referenceHash);
+    const confidence = Math.round((1 - distance / queryHash.length) * 100);
+    weightedConfidence += confidence * region.weight;
+    totalWeight += region.weight;
+    regionScores.push({
+      region: region.key,
+      distance,
+      confidence,
+    });
+  }
+
+  if (!regionScores.length || totalWeight === 0) return null;
+
+  const coverageBonus = Math.min(regionScores.length - 1, 4) * 1.25;
+  const score = Math.min(100, Math.round((weightedConfidence / totalWeight) + coverageBonus));
+  const bestRegion = [...regionScores].sort((a, b) => b.confidence - a.confidence)[0];
+
+  return {
+    card_id: reference.card_id,
+    card_name: reference.card_name,
+    set_id: reference.set_id,
+    distance: bestRegion.distance,
+    confidence: score,
+    regions_matched: regionScores.length,
+    region_scores: regionScores,
+  };
+}
+
 app.post('/api/fingerprints/reload', (_req, res) => {
   _fpCache = null;
   _fpCacheAt = 0;
   _fpCacheLoading = null;
+  _fpSetCache.clear();
+  _fpSetCacheLoading.clear();
   res.json({ ok: true, message: 'Fingerprint cache cleared — will reload on next scan' });
 });
 
 app.post('/api/scan/fingerprint', async (req, res) => {
   try {
-    const { base64Image } = req.body;
+    const { base64Image, setId } = req.body;
+    const expectedSetId = typeof setId === 'string' && setId.trim() ? setId.trim() : null;
     if (!base64Image) return res.status(400).json({ error: 'Missing base64Image' });
 
     const imageBuffer = Buffer.from(base64Image, 'base64');
-    const queryHash = await generatePHash(imageBuffer);
+    const queryHashes = await generateFingerprints(imageBuffer);
 
-    const fingerprints = await getFingerprints();
+    const fingerprints = await getFingerprintsForSet(expectedSetId);
     if (!fingerprints?.length) return res.status(503).json({ error: 'Fingerprint database not available' });
 
     const TOP_N = 5;
-    const best = [];
+    const scoredCandidates = [];
 
     for (const fp of fingerprints) {
-      if (!fp.phash || fp.phash.length !== queryHash.length) continue;
-      const dist = hammingDistance(queryHash, fp.phash);
-      if (best.length < TOP_N || dist < best[best.length - 1].distance) {
-        best.push({ card_id: fp.card_id, card_name: fp.card_name, set_id: fp.set_id, distance: dist });
-        best.sort((a, b) => a.distance - b.distance);
+      const scored = scoreFingerprintCandidate(fp, queryHashes);
+      if (!scored) continue;
+      if (expectedSetId) {
+        scored.set_bonus = true;
+      }
+      scoredCandidates.push(scored);
+    }
+
+    const candidatesToRank = scoredCandidates.filter((candidate) => !expectedSetId || candidate.confidence >= 55);
+
+    const best = [];
+    for (const scored of candidatesToRank) {
+      if (best.length < TOP_N || scored.confidence > best[best.length - 1].confidence) {
+        best.push(scored);
+        best.sort((a, b) => b.confidence - a.confidence);
         if (best.length > TOP_N) best.pop();
       }
     }
@@ -1170,7 +1295,10 @@ app.post('/api/scan/fingerprint', async (req, res) => {
       card_name: fp.card_name,
       set_id: fp.set_id,
       distance: fp.distance,
-      confidence: Math.round((1 - fp.distance / queryHash.length) * 100),
+      confidence: fp.confidence,
+      regions_matched: fp.regions_matched,
+      region_scores: fp.region_scores,
+      set_bonus: Boolean(fp.set_bonus),
     });
 
     return res.json({
