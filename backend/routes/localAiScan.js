@@ -99,7 +99,8 @@ router.post('/identify', async (req, res) => {
 
     const formatted = candidates.map(formatCard);
     const uniqueSets = [...new Set(formatted.map((card) => card.set_id))];
-    const confidence = formatted.length === 1 ? 99 : formatted.length > 1 ? 72 : 0;
+    const isExact = formatted.length === 1;
+    const confidence = isExact ? 99 : formatted.length > 1 ? 72 : 0;
 
     console.log(
       `[local-ai] ocr number=${printedNumber.number}/${printedNumber.total} set=${setId || 'any'} candidates=${formatted.length} total=${Date.now() - startedAt}ms`
@@ -116,16 +117,16 @@ router.post('/identify', async (req, res) => {
 
     return res.json({
       provider: 'local-ai',
-      match: formatted[0],
+      match: isExact ? formatted[0] : null,
       candidates: formatted.slice(0, 10),
       confidence,
       printedNumber,
-      needsVisualRerank: formatted.length > 1,
+      needsVisualRerank: !isExact,
       uniqueSets,
       stages: {
         yolo: 'pending-model',
-        clip: formatted.length > 1 ? 'needed' : 'not-needed',
-        ocrResolver: formatted.length === 1 ? 'exact' : 'ambiguous',
+        clip: isExact ? 'not-needed' : 'needed',
+        ocrResolver: isExact ? 'exact' : 'ambiguous',
       },
     });
   } catch (error) {

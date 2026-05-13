@@ -572,9 +572,10 @@ export default function ScanScreen() {
         confidence: data?.confidence,
         stages: data?.stages,
         candidates: data?.candidates?.length,
+        needsVisualRerank: data?.needsVisualRerank,
       });
 
-      return (data.match ?? null) as ScannedCard | null;
+      return data;
     };
 
     const lookupParsedCard = async (
@@ -664,7 +665,22 @@ export default function ScanScreen() {
 
       // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
       if (!match && useLocalAi) {
-        match = await identifyWithLocalAi(printedNumber, expectedSetId);
+        const localResult = await identifyWithLocalAi(printedNumber, expectedSetId);
+        match = localResult?.match ?? null;
+
+        if (!match && localResult?.needsVisualRerank) {
+          const parsed = await identifyWithGibl(bestBase64);
+          console.log('Gibl visual hint result:', {
+            name: parsed?.name,
+            number: parsed?.number,
+            printedTotal: parsed?.printedTotal,
+            confidence: parsed?.confidence,
+            error: parsed?.error,
+            status: parsed?.status,
+          });
+          const hintedResult = await identifyWithLocalAi(printedNumber, expectedSetId, parsed?.name);
+          match = hintedResult?.match ?? null;
+        }
       }
 
       if (!match && useLocalAi && !printedNumber) {
@@ -672,7 +688,22 @@ export default function ScanScreen() {
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
         printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
-        match = await identifyWithLocalAi(printedNumber, expectedSetId);
+        const localResult = await identifyWithLocalAi(printedNumber, expectedSetId);
+        match = localResult?.match ?? null;
+
+        if (!match && localResult?.needsVisualRerank) {
+          const parsed = await identifyWithGibl(bestBase64);
+          console.log('Gibl visual hint result:', {
+            name: parsed?.name,
+            number: parsed?.number,
+            printedTotal: parsed?.printedTotal,
+            confidence: parsed?.confidence,
+            error: parsed?.error,
+            status: parsed?.status,
+          });
+          const hintedResult = await identifyWithLocalAi(printedNumber, expectedSetId, parsed?.name);
+          match = hintedResult?.match ?? null;
+        }
       }
 
       // Step 4: test GiblTCG as an external image-recognition provider.
