@@ -533,6 +533,7 @@ export default function ScanScreen() {
     const identifyWithLocalAi = async (
       printedNumber?: { number: number; total: number } | null,
       setId?: string | null,
+      base64Image?: string | null,
       nameHint?: string | null
     ) => {
       if (!printedNumber) return null;
@@ -540,7 +541,7 @@ export default function ScanScreen() {
       const response = await fetch(`${PRICE_API_URL}/api/local-ai/identify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ printedNumber, setId, nameHint }),
+        body: JSON.stringify({ printedNumber, setId, base64Image, nameHint }),
       });
 
       const raw = await response.text();
@@ -573,6 +574,7 @@ export default function ScanScreen() {
         stages: data?.stages,
         candidates: data?.candidates?.length,
         needsVisualRerank: data?.needsVisualRerank,
+        clipSimilarity: data?.clipSimilarity,
       });
 
       return data;
@@ -665,22 +667,8 @@ export default function ScanScreen() {
 
       // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
       if (!match && useLocalAi) {
-        const localResult = await identifyWithLocalAi(printedNumber, expectedSetId);
+        const localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
         match = localResult?.match ?? null;
-
-        if (!match && localResult?.needsVisualRerank) {
-          const parsed = await identifyWithGibl(bestBase64);
-          console.log('Gibl visual hint result:', {
-            name: parsed?.name,
-            number: parsed?.number,
-            printedTotal: parsed?.printedTotal,
-            confidence: parsed?.confidence,
-            error: parsed?.error,
-            status: parsed?.status,
-          });
-          const hintedResult = await identifyWithLocalAi(printedNumber, expectedSetId, parsed?.name);
-          match = hintedResult?.match ?? null;
-        }
       }
 
       if (!match && useLocalAi && !printedNumber) {
@@ -688,22 +676,8 @@ export default function ScanScreen() {
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
         printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
-        const localResult = await identifyWithLocalAi(printedNumber, expectedSetId);
+        const localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
         match = localResult?.match ?? null;
-
-        if (!match && localResult?.needsVisualRerank) {
-          const parsed = await identifyWithGibl(bestBase64);
-          console.log('Gibl visual hint result:', {
-            name: parsed?.name,
-            number: parsed?.number,
-            printedTotal: parsed?.printedTotal,
-            confidence: parsed?.confidence,
-            error: parsed?.error,
-            status: parsed?.status,
-          });
-          const hintedResult = await identifyWithLocalAi(printedNumber, expectedSetId, parsed?.name);
-          match = hintedResult?.match ?? null;
-        }
       }
 
       // Step 4: test GiblTCG as an external image-recognition provider.
@@ -770,7 +744,9 @@ export default function ScanScreen() {
           if (!isAuto) {
             Alert.alert(
               'Could not read card',
-              'Could not read the printed card number confidently. Try again with the bottom number clearly visible.'
+              printedNumber
+                ? 'The card number was read, but there are multiple matching cards and the visual reranker is unavailable right now.'
+                : 'Could not read the printed card number confidently. Try again with the bottom number clearly visible.'
             );
           }
           stopScanningMessages();
