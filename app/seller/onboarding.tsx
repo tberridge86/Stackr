@@ -46,7 +46,22 @@ export default function SellerOnboardingScreen() {
   }, [user?.id]);
 
   // Reload status every time the screen is focused (e.g. after returning from Stripe)
-  useFocusEffect(loadStatus);
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+
+      const run = async () => {
+        if (!mounted) return;
+        await loadStatus();
+      };
+
+      run();
+
+      return () => {
+        mounted = false;
+      };
+    }, [loadStatus])
+  );
 
   const handleSetupOrResume = async () => {
     if (!user?.id || !user?.email) return;
@@ -66,7 +81,33 @@ export default function SellerOnboardingScreen() {
       if (data.url) {
         await Linking.openURL(data.url);
       } else {
-        Alert.alert('Error', data.error ?? 'Could not start setup. Try again.');
+        const backendError = String(data.error ?? '').toLowerCase();
+
+        if (
+          backendError.includes('complete your platform profile') ||
+          backendError.includes('connect/accounts/overview') ||
+          backendError.includes('connect and create live connected accounts')
+        ) {
+          Alert.alert(
+            'Stripe setup required',
+            'Your Stripe platform profile is incomplete. Open Stripe Connect setup now?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Open Stripe',
+                onPress: async () => {
+                  try {
+                    await Linking.openURL('https://dashboard.stripe.com/connect/accounts/overview');
+                  } catch {
+                    Alert.alert('Error', 'Could not open Stripe dashboard.');
+                  }
+                },
+              },
+            ]
+          );
+        } else {
+          Alert.alert('Error', data.error ?? 'Could not start setup. Try again.');
+        }
       }
     } catch (err: any) {
       Alert.alert('Error', err?.message ?? 'Something went wrong.');

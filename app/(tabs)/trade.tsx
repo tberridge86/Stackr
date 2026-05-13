@@ -1,7 +1,6 @@
 import { useTheme } from '../../components/theme-context';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
-import {
+import { useWindowDimensions ,
   View,
   TouchableOpacity,
   FlatList,
@@ -737,11 +736,24 @@ const openTradeCardDetail = async (item: any) => {
 
   useFocusEffect(
     useCallback(() => {
-      refreshTrade();
-      loadWantedCards();
-      loadMyOffers();
-      loadTopMovers();
-      loadMarketWatchlist();
+      let isActive = true;
+
+      const run = async () => {
+        if (!isActive) return;
+        await Promise.all([
+          Promise.resolve(refreshTrade()),
+          loadWantedCards(),
+          loadMyOffers(),
+          loadTopMovers(),
+          loadMarketWatchlist(),
+        ]);
+      };
+
+      run();
+
+      return () => {
+        isActive = false;
+      };
     }, [refreshTrade, loadWantedCards, loadMyOffers, loadTopMovers, loadMarketWatchlist])
   );
 
@@ -1884,7 +1896,7 @@ const handleArchive = async (listingId: string) => {
                         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: theme.colors.primary + '10', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: theme.colors.primary + '28', marginTop: 12 }}>
                           <Ionicons name="shield-checkmark" size={16} color={theme.colors.primary} style={{ marginTop: 1 }} />
                           <Text style={{ flex: 1, color: theme.colors.primary, fontSize: 12, lineHeight: 18, fontWeight: '700' }}>
-                            Photos verified at listing time. Contact seller if item doesn't match description.
+                            Photos verified at listing time. Contact seller if item doesn&apos;t match description.
                           </Text>
                         </View>
                       )}

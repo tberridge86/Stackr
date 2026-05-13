@@ -202,6 +202,84 @@ router.post('/create-payment-intent', async (req, res) => {
 });
 
 // ===============================
+// CREATE TRADE CASH PAYMENT INTENT
+// ===============================
+// Creates a Stripe PaymentIntent for a trade offer cash term.
+// The payer/recipient are determined from trade_cash_terms.
+// Recipient must have Stripe Connect set up.
+
+router.post('/create-trade-cash-payment-intent', async (req, res) => {
+  const { offerId, payerId } = req.body;
+  if (!offerId || !payerId) {
+    return res.status(400).json({ error: 'offerId and payerId are required' });
+  }
+
+  try {
+    const { data: cashTerm, error: cashTermError } = await supabase
+      .from('trade_cash_terms')
+      .select('*')
+      .eq('offer_id', offerId)
+      .maybeSingle();
+
+    if (cashTermError) return res.status(500).json({ error: cashTermError.message });
+    if (!cashTerm) return res.status(404).json({ error: 'Trade cash terms not found' });
+
+    if (cashTerm.payer_id !== payerId) {
+      return res.status(403).json({ error: 'Only the designated payer can initiate this payment' });
+    }
+
+    if (!cashTerm.amount || Number(cashTerm.amount) <= 0) {
+      return res.status(400).json({ error: 'Invalid cash amount' });
+    }
+
+    const { data: recipientProfile, error: recipientError } = await supabase
+      .from('profiles')
+      .select('stripe_account_id')
+      .eq('id', cashTerm.recipient_id)
+      .maybeSingle();
+
+    if (recipientError) return res.status(500).json({ error: recipientError.message });
+
+    const recipientStripeAccountId = recipientProfile?.stripe_account_id;
+    if (!recipientStripeAccountId) {
+      return res.status(400).json({ error: 'Recipient has not set up Stripe payouts yet' });
+    }
+
+    const amountPence = Math.round(Number(cashTerm.amount) * 100);
+    const platformFeePence = Math.round(amountPence * PLATFORM_FEE_PERCENT);
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountPence,
+      currency: (cashTerm.currency ?? 'GBP').toLowerCase(),
+      application_fee_amount: platformFeePence,
+      transfer_data: { destination: recipientStripeAccountId },
+      metadata: {
+        offerId: String(offerId),
+        payerId: String(cashTerm.payer_id),
+        recipientId: String(cashTerm.recipient_id),
+        type: 'trade_cash',
+      },
+    });
+
+    const { error: updateError } = await supabase
+      .from('trade_cash_terms')
+      .update({
+        payment_intent_id: paymentIntent.id,
+        payment_status: 'required',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('offer_id', offerId);
+
+    if (updateError) return res.status(500).json({ error: updateError.message });
+
+    return res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (err) {
+    console.error('Trade cash PaymentIntent error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ===============================
 // ONBOARDING REDIRECT PAGES
 // ===============================
 

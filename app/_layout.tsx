@@ -17,11 +17,11 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 // ===============================
 
 const TABS = [
-  { name: 'Market', route: '/trade', icon: 'storefront', iconOutline: 'storefront-outline' },
-  { name: 'Social', route: '/community', icon: 'people', iconOutline: 'people-outline' },
-  { name: 'Hub', route: '/', icon: 'home', iconOutline: 'home-outline' },
-  { name: 'Binder', route: '/binder', icon: 'book', iconOutline: 'book-outline' },
-  { name: 'Pokédex', route: '/pokedex', icon: 'desktop', iconOutline: 'desktop-outline' },
+  { name: 'Market', route: '/(tabs)/trade', icon: 'storefront', iconOutline: 'storefront-outline' },
+  { name: 'Social', route: '/(tabs)/community/index', icon: 'people', iconOutline: 'people-outline' },
+  { name: 'Hub', route: '/(tabs)', icon: 'home', iconOutline: 'home-outline' },
+  { name: 'Binder', route: '/(tabs)/binder', icon: 'book', iconOutline: 'book-outline' },
+  { name: 'Pokédex', route: '/(tabs)/pokedex', icon: 'desktop', iconOutline: 'desktop-outline' },
 ];
 
 function PersistentTabBar() {
@@ -34,12 +34,14 @@ function PersistentTabBar() {
   const tabBarPaddingBottom = Platform.OS === 'android' ? insets.bottom + 8 : 10;
 
   const isActive = (route: string) => {
-    if (route === '/') return pathname === '/';
-    return pathname.startsWith(route);
+    if (route === '/(tabs)') {
+      return pathname === '/(tabs)' || pathname === '/(tabs)/index';
+    }
+    return pathname === route || pathname.startsWith(`${route}/`);
   };
 
-  // Hide on splash screen (segments empty = root index), auth routes
-  const hideTabBar = segments.length === 0 || pathname.startsWith('/(auth)') || pathname.startsWith('/login') || pathname.startsWith('/signup');
+  // Hide on splash screen route and auth routes
+  const hideTabBar = pathname.startsWith('/(auth)') || pathname.startsWith('/login') || pathname.startsWith('/signup');
 
   if (hideTabBar) return null;
 

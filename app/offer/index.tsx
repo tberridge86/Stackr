@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { Text } from '../../components/Text';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import {
@@ -108,6 +108,7 @@ export default function OfferDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const listRef = useRef<FlatList>(null);
   const offerId = String(id);
+  const insets = useSafeAreaInsets();
 
   const [offer, setOffer] = useState<TradeOffer | null>(null);
   const [offerCards, setOfferCards] = useState<TradeOfferCard[]>([]);
@@ -654,7 +655,7 @@ export default function OfferDetailScreen() {
 
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 220 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -694,14 +695,12 @@ export default function OfferDetailScreen() {
                     💰 £{Number(cashTerms.amount).toFixed(2)} cash —{' '}
                     {cashTerms.payer_id === currentUserId ? 'you pay' : 'they pay'}
                   </Text>
-                  {cashTerms.paypal_me_username && (
+                  <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
+                    Payment method: Stripe
+                  </Text>
+                  {cashTerms.payment_status && (
                     <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
-                      PayPal: paypal.me/{cashTerms.paypal_me_username}
-                    </Text>
-                  )}
-                  {cashTerms.paypal_email && (
-                    <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
-                      PayPal email: {cashTerms.paypal_email}
+                      Status: {cashTerms.payment_status.replace('_', ' ')}
                     </Text>
                   )}
                 </View>
@@ -966,8 +965,8 @@ export default function OfferDetailScreen() {
             <Text style={styles.trustTitle}>Trading on Stackr</Text>
             <Text style={styles.trustText}>
               Stackr connects collectors to arrange trades directly. Keep all communication
-              here so your trade history is recorded. Never share personal payment details
-              outside of the agreed PayPal terms.
+              here so your trade history is recorded. For cash top-ups, use Stripe inside
+              the app and avoid sharing payment details in chat.
             </Text>
           </View>
 
@@ -995,7 +994,7 @@ export default function OfferDetailScreen() {
 
         {/* Composer */}
         {!isCompleted && !isDisputed && !isDeclinedOrCancelled ? (
-          <View style={styles.composerWrap}>
+          <View style={[styles.composerWrap, { bottom: Math.max(insets.bottom + 25, 32) }]}>
             {!isAcceptedOrBeyond && (
               <View style={styles.counterRow}>
                 <TextInput
@@ -1244,12 +1243,17 @@ function makeStyles(theme: any) {
   },
 
   composerWrap: {
+    position: 'absolute' as const,
+    left: 0,
+    right: 0,
     paddingHorizontal: 12,
     paddingTop: 8,
-    paddingBottom: 8,
+    paddingBottom: 10,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     backgroundColor: theme.colors.card,
+    zIndex: 20,
+    elevation: 20,
   },
   counterRow: { flexDirection: 'row' as const, gap: 8, marginBottom: 6 },
   counterInput: {
@@ -1259,16 +1263,21 @@ function makeStyles(theme: any) {
     borderWidth: 1,
     borderColor: theme.colors.border,
     color: theme.colors.text,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 46,
+    fontSize: 15,
+    fontWeight: '700' as const,
   },
   counterButton: {
     backgroundColor: '#FACC15',
     borderRadius: 14,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
+    minHeight: 46,
     justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
-  counterButtonText: { color: '#111827', fontWeight: '900' as const },
+  counterButtonText: { color: '#111827', fontWeight: '900' as const, fontSize: 14 },
   messageInputRow: {
     flexDirection: 'row' as const,
     alignItems: 'flex-end' as const,
@@ -1276,23 +1285,28 @@ function makeStyles(theme: any) {
   },
   messageInput: {
     flex: 1,
-    maxHeight: 110,
+    maxHeight: 120,
+    minHeight: 48,
     backgroundColor: theme.colors.surface,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: theme.colors.border,
     color: theme.colors.text,
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingVertical: 12,
+    fontSize: 15,
     textAlignVertical: 'top' as const,
   },
   sendButton: {
     backgroundColor: theme.colors.primary,
     borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 13,
+    minHeight: 48,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
-  sendButtonText: { color: '#FFFFFF', fontWeight: '900' as const },
+  sendButtonText: { color: '#FFFFFF', fontWeight: '900' as const, fontSize: 14 },
   lockedComposer: {
     padding: 14,
     borderTopWidth: 1,

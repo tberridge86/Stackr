@@ -1,5 +1,5 @@
-import { Linking } from 'react-native';
 import { supabase } from './supabase';
+import { PRICE_API_URL } from './config';
 
 // ===============================
 // TYPES
@@ -32,9 +32,6 @@ export type TradeCashInput = {
   payer?: 'sender' | 'receiver' | string | null;
   payerId?: string | null;
   recipientId?: string | null;
-  recipientPaypal?: string | null;
-  paypalMeUsername?: string | null;
-  paypalEmail?: string | null;
   paymentStatus?: string | null;
 };
 
@@ -78,6 +75,7 @@ export type TradeCashTerms = {
   currency: string;
   paypal_me_username: string | null;
   paypal_email: string | null;
+  payment_intent_id?: string | null;
   payment_status: string;
 };
 
@@ -154,9 +152,6 @@ export async function createTradeOffer(input: {
       input.cash.recipientId ??
       (input.cash.payer === 'receiver' ? senderId : receiverId);
 
-    const paypalValue = input.cash.recipientPaypal?.trim() ?? '';
-    const looksLikeEmail = paypalValue.includes('@');
-
     const { error: cashError } = await supabase
       .from('trade_cash_terms')
       .insert({
@@ -165,12 +160,6 @@ export async function createTradeOffer(input: {
         recipient_id: recipientId,
         amount: input.cash.amount,
         currency: input.cash.currency ?? 'GBP',
-        paypal_me_username: looksLikeEmail
-          ? null
-          : (input.cash.paypalMeUsername ?? paypalValue) || null,
-        paypal_email: looksLikeEmail
-          ? (input.cash.paypalEmail ?? paypalValue)
-          : (input.cash.paypalEmail ?? null),
         payment_status: 'required',
       });
 
@@ -447,46 +436,35 @@ export async function logTradeEvent(input: {
 }
 
 // ===============================
-// PAYPAL HELPERS
+// STRIPE TRADE CASH HELPERS
 // ===============================
 
-export function buildPaypalMeUrl(username: string, amount: number): string {
-  const clean = username
-    .replace('https://paypal.me/', '')
-    .replace('https://www.paypal.me/', '')
-    .replace('paypal.me/', '')
-    .replace('@', '')
-    .trim();
+export async function createTradeCashPaymentIntent(input: {
+  offerId: string;
+  payerId: string;
+}): Promise<{ clientSecret: string }> {
+  if (!PRICE_API_URL) {
+    throw new Error('Missing PRICE_API_URL configuration.');
+  }
 
-  return `https://www.paypal.me/${encodeURIComponent(clean)}/${amount.toFixed(2)}`;
-}
-
-export function buildPaypalEmailPaymentUrl(email: string, amount: number): string {
-  const params = new URLSearchParams({
-    cmd: '_xclick',
-    business: email,
-    amount: amount.toFixed(2),
-    currency_code: 'GBP',
+  const response = await fetch(`${PRICE_API_URL}/api/stripe/create-trade-cash-payment-intent`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      offerId: input.offerId,
+      payerId: input.payerId,
+    }),
   });
 
-  return `https://www.paypal.com/cgi-bin/webscr?${params.toString()}`;
-}
+  const data = await response.json().catch(() => ({} as any));
 
-export async function openPaypalPayment(input: {
-  paypalMeUsername?: string | null;
-  paypalEmail?: string | null;
-  amount: number;
-}): Promise<void> {
-  const url = input.paypalMeUsername
-    ? buildPaypalMeUrl(input.paypalMeUsername, input.amount)
-    : input.paypalEmail
-    ? buildPaypalEmailPaymentUrl(input.paypalEmail, input.amount)
-    : null;
+  if (!response.ok) {
+    throw new Error(data?.error ?? 'Could not create Stripe payment intent.');
+  }
 
-  if (!url) throw new Error('No PayPal details available.');
+  if (!data?.clientSecret) {
+    throw new Error('Missing Stripe client secret.');
+  }
 
-  const canOpen = await Linking.canOpenURL(url);
-  if (!canOpen) throw new Error('Could not open PayPal.');
-
-  await Linking.openURL(url);
+  return { clientSecret: data.clientSecret as string };
 }

@@ -1,6 +1,5 @@
-- [x] Confirm root cause for missing prices in UI (`app/card/[id].tsx` still using PokemonTCG-only `tcgplayer.prices`)
-- [ ] Add TCGCSV fallback integration in `app/card/[id].tsx`
-- [ ] Match fallback rows by card number/name and compute GBP low/mid/market
-- [ ] Replace outdated Perfect Order warning text behavior
-- [ ] Run critical-path verification for Perfect Order + Ascended Heroes samples
-- [ ] Summarize tested coverage vs remaining thorough coverage
+- [x] Add Stripe trade-cash PaymentIntent endpoint in `backend/routes/stripe.js`
+- [x] Update `lib/tradeOffers.ts` to remove active PayPal flow and add Stripe trade-cash helpers
+- [x] Update `app/offer/new.tsx` to remove PayPal input/copy and use Stripe cash wording
+- [x] Update `app/offer/index.tsx` to remove PayPal display/copy and show Stripe-oriented payment info
+- [ ] Run targeted validation checks on changed files and summarize testing status

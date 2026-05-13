@@ -97,7 +97,6 @@ export default function NewOfferScreen() {
 
   const [cashAmount, setCashAmount] = useState('');
   const [cashPayer, setCashPayer] = useState<CashPayer>('sender');
-  const [paypalRecipient, setPaypalRecipient] = useState('');
   const [message, setMessage] = useState('');
 
   const cashAmountNumber = useMemo(() => {
@@ -282,14 +281,6 @@ export default function NewOfferScreen() {
         return;
       }
 
-      if (cashInvolved && !paypalRecipient.trim()) {
-        Alert.alert(
-          'PayPal details needed',
-          'Add the PayPal.me username or PayPal email for the person receiving cash.'
-        );
-        return;
-      }
-
       setSending(true);
 
       const selectedCards = myTradeCards.filter((card) =>
@@ -317,8 +308,7 @@ export default function NewOfferScreen() {
               amount: cashAmountNumber,
               currency: 'GBP',
               payer: cashPayer,
-              recipientPaypal: paypalRecipient.trim(),
-              paymentStatus: 'not_sent',
+              paymentStatus: 'required',
             }
           : null,
         message: message.trim() || null,
@@ -473,27 +463,10 @@ export default function NewOfferScreen() {
         </View>
 
         {cashInvolved && (
-          <>
-            <Text style={styles.paypalLabel}>
-              PayPal details for{' '}
-              {cashPayer === 'sender' ? 'the receiver' : 'you'}
-            </Text>
-            <TextInput
-              value={paypalRecipient}
-              onChangeText={setPaypalRecipient}
-              placeholder="PayPal.me username or email"
-              placeholderTextColor={theme.colors.textSoft}
-              autoCapitalize="none"
-              style={styles.input}
-            />
-          </>
-        )}
-
-        {cashInvolved && (
           <View style={styles.cashSummary}>
             <Text style={styles.cashSummaryText}>
-              💰 {cashPayer === 'sender' ? 'You' : 'They'} pay{' '}
-              £{cashAmountNumber.toFixed(2)} via PayPal
+              💳 {cashPayer === 'sender' ? 'You' : 'They'} pay{' '}
+              £{cashAmountNumber.toFixed(2)} via Stripe
             </Text>
           </View>
         )}
@@ -555,6 +528,8 @@ export default function NewOfferScreen() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -676,11 +651,6 @@ function makeStyles(theme: any) {
   muted: {
     color: theme.colors.textSoft,
     lineHeight: 20,
-  },
-  paypalLabel: {
-    color: theme.colors.textSoft,
-    fontSize: 12,
-    marginBottom: 6,
   },
   input: {
     backgroundColor: theme.colors.surface,
