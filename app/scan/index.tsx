@@ -32,10 +32,16 @@ const ACCURACY_SCAN_PROFILE = { width: 960, compress: 0.72 };
 const REQUEST_TIMEOUT_MS = 5000;
 const GENERAL_FINGERPRINT_CONFIDENCE_THRESHOLD = 78;
 const SET_FINGERPRINT_CONFIDENCE_THRESHOLD = 60;
-const SCAN_PROVIDER = process.env.EXPO_PUBLIC_SCAN_PROVIDER ?? 'gibl-only';
+const SCAN_PROVIDER = process.env.EXPO_PUBLIC_SCAN_PROVIDER ?? 'local-ai';
 const CARD_ASPECT_RATIO = 0.716;
 const CARD_CROP_WIDTH_RATIO = 0.78;
 const CARD_CROP_HEIGHT_RATIO = 0.86;
+const NUMBER_OCR_WIDTH = 1200;
+const NUMBER_OCR_REGIONS = [
+  { name: 'bottom-right', x: 0.42, y: 0.64, width: 0.56, height: 0.32 },
+  { name: 'bottom-band', x: 0, y: 0.64, width: 1, height: 0.32 },
+  { name: 'lower-half', x: 0, y: 0.52, width: 1, height: 0.44 },
+];
 
 // ===============================
 // TYPES
@@ -55,6 +61,8 @@ type ScannedCard = {
 type CaptureResult = {
   base64: string;
   uri: string;
+  width: number;
+  height: number;
 };
 
 type ScanStep = 'select_binder' | 'scanning' | 'review';
@@ -105,10 +113,61 @@ function normalizeCardName(value?: string | null) {
   return String(value ?? '').trim().toLowerCase();
 }
 
-async function readPrintedNumberFromCardImage(uri: string) {
+function parsePrintedNumberFromOcr(text?: string | null) {
+  if (!text) return null;
+  const normalised = text
+    .replace(/[Oo]/g, '0')
+    .replace(/[Il|]/g, '1')
+    .replace(/[Ss]/g, '5');
+  const match = normalised.match(/\b(\d{1,3})\s*(?:\/|\uFF0F|\u2044|\u2215)\s*(\d{2,3})\b/);
+  if (!match) return null;
+
+  const number = Number(match[1]);
+  const total = Number(match[2]);
+  if (!Number.isFinite(number) || !Number.isFinite(total)) return null;
+  return { number, total };
+}
+
+function getOcrRegionCrop(width: number, height: number, region: typeof NUMBER_OCR_REGIONS[number]) {
+  return {
+    originX: Math.max(0, Math.round(width * region.x)),
+    originY: Math.max(0, Math.round(height * region.y)),
+    width: Math.max(1, Math.min(width, Math.round(width * region.width))),
+    height: Math.max(1, Math.min(height, Math.round(height * region.height))),
+  };
+}
+
+async function readPrintedNumberFromCardImage(uri: string, width?: number, height?: number) {
   try {
+    if (width && height) {
+      for (const region of NUMBER_OCR_REGIONS) {
+        const crop = getOcrRegionCrop(width, height, region);
+        const manipulated = await ImageManipulator.manipulateAsync(
+          uri,
+          [{ crop }, { resize: { width: NUMBER_OCR_WIDTH } }],
+          { compress: 0.92, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        const result = await TextRecognition.recognize(manipulated.uri);
+        const printedNumber = parsePrintedNumberFromOcr(result?.text);
+        if (printedNumber) {
+          console.log('Printed number OCR matched:', {
+            region: region.name,
+            number: `${printedNumber.number}/${printedNumber.total}`,
+          });
+          return printedNumber;
+        }
+      }
+    }
+
     const result = await TextRecognition.recognize(uri);
-    return parsePrintedNumber(result?.text);
+    const printedNumber = parsePrintedNumberFromOcr(result?.text) ?? parsePrintedNumber(result?.text);
+    if (printedNumber) {
+      console.log('Printed number OCR matched:', {
+        region: 'full-card',
+        number: `${printedNumber.number}/${printedNumber.total}`,
+      });
+    }
+    return printedNumber;
   } catch (error) {
     console.log('Card number OCR failed:', error);
     return null;
@@ -431,7 +490,12 @@ export default function ScanScreen() {
         actions,
         { compress: profile.compress, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
-      return { base64: manipulated.base64 ?? '', uri: manipulated.uri };
+      return {
+        base64: manipulated.base64 ?? '',
+        uri: manipulated.uri,
+        width: manipulated.width,
+        height: manipulated.height,
+      };
     };
 
     const identifyWithCardSight = async (base64Image: string) => {
@@ -466,6 +530,53 @@ export default function ScanScreen() {
       }
     };
 
+    const identifyWithLocalAi = async (
+      printedNumber?: { number: number; total: number } | null,
+      setId?: string | null,
+      nameHint?: string | null
+    ) => {
+      if (!printedNumber) return null;
+
+      const response = await fetch(`${PRICE_API_URL}/api/local-ai/identify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ printedNumber, setId, nameHint }),
+      });
+
+      const raw = await response.text();
+      let data: any = null;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch {
+        console.log('Local AI returned non-JSON response:', {
+          status: response.status,
+          preview: raw.slice(0, 180),
+        });
+        return null;
+      }
+
+      if (!response.ok) {
+        console.log('Local AI scan result:', {
+          error: data?.error,
+          status: response.status,
+          printedNumber,
+          stages: data?.stages,
+        });
+        return null;
+      }
+
+      console.log('Local AI scan result:', {
+        card: data?.match?.name,
+        number: data?.match?.number,
+        set: data?.match?.set_name,
+        confidence: data?.confidence,
+        stages: data?.stages,
+        candidates: data?.candidates?.length,
+      });
+
+      return (data.match ?? null) as ScannedCard | null;
+    };
+
     const lookupParsedCard = async (
       parsed: any,
       fallbackPrintedNumber?: { number: number; total: number } | null,
@@ -473,21 +584,28 @@ export default function ScanScreen() {
     ): Promise<ScannedCard | null> => {
       if (!parsed || parsed.error || !parsed.name) return null;
 
-      const numberClean = parsed.number
-        ? String(parsed.number).split('/')[0].trim().replace(/^0+/, '')
-        : fallbackPrintedNumber?.number != null
-          ? String(fallbackPrintedNumber.number)
-          : null;
-      const setTotalClean = parsed.printedTotal
-        ? String(parsed.printedTotal)
-        : fallbackPrintedNumber?.total != null
-          ? String(fallbackPrintedNumber.total)
-          : null;
+      const numberClean = fallbackPrintedNumber?.number != null
+        ? String(fallbackPrintedNumber.number)
+        : setId
+          ? null
+          : parsed.number
+            ? String(parsed.number).split('/')[0].trim().replace(/^0+/, '')
+            : null;
+      const setTotalClean = fallbackPrintedNumber?.total != null
+        ? String(fallbackPrintedNumber.total)
+        : setId
+          ? null
+          : parsed.printedTotal
+            ? String(parsed.printedTotal)
+            : null;
 
       const searchParams = new URLSearchParams({ name: parsed.name });
       if (numberClean) searchParams.append('number', numberClean);
       if (setTotalClean) searchParams.append('setTotal', setTotalClean);
-      if (setId) searchParams.append('setId', setId);
+      if (setId) {
+        searchParams.append('setId', setId);
+        searchParams.append('strictSet', '1');
+      }
 
       const searchRes = await fetch(`${PRICE_API_URL}/api/search/tcg?${searchParams.toString()}`);
       const searchData = await searchRes.json();
@@ -524,7 +642,7 @@ export default function ScanScreen() {
       const base64 = capture.base64;
       let bestBase64 = base64;
       let bestUri = capture.uri;
-      const printedNumber = await readPrintedNumberFromCardImage(bestUri);
+      let printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height);
 
       // Duplicate frame check
       const sig = `${base64.slice(0, 48)}:${base64.length}`;
@@ -537,13 +655,27 @@ export default function ScanScreen() {
       lastFrameTsRef.current = now;
 
       const expectedSetId = selectedBinder?.source_set_id ?? null;
+      const useLocalAi = SCAN_PROVIDER === 'local-ai' || SCAN_PROVIDER === 'hybrid';
       const useGibl = SCAN_PROVIDER === 'gibl-only' || SCAN_PROVIDER === 'hybrid';
       const useLegacy = SCAN_PROVIDER === 'legacy' || SCAN_PROVIDER === 'hybrid';
 
       // Step 2: official binders can resolve instantly from the printed card number.
       let match: ScannedCard | null = await lookupCardBySetNumber(expectedSetId, printedNumber);
 
-      // Step 3: test GiblTCG as the first image-recognition provider.
+      // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
+      if (!match && useLocalAi) {
+        match = await identifyWithLocalAi(printedNumber, expectedSetId);
+      }
+
+      if (!match && useLocalAi && !printedNumber) {
+        const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
+        bestBase64 = hqCapture.base64;
+        bestUri = hqCapture.uri;
+        printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
+        match = await identifyWithLocalAi(printedNumber, expectedSetId);
+      }
+
+      // Step 4: test GiblTCG as an external image-recognition provider.
       if (!match && useGibl) {
         const parsed = await identifyWithGibl(bestBase64);
         console.log('Gibl scan result:', {
@@ -552,11 +684,15 @@ export default function ScanScreen() {
           printedTotal: parsed?.printedTotal,
           confidence: parsed?.confidence,
           error: parsed?.error,
+          status: parsed?.status,
+          attempt: parsed?.attempt,
+          details: parsed?.details,
+          raw: parsed?.raw,
         });
         match = await lookupParsedCard(parsed, printedNumber, expectedSetId);
       }
 
-      // Step 4: try fingerprint match (fast, no AI cost). In official binders the set is already locked,
+      // Step 5: try fingerprint match (fast, no AI cost). In official binders the set is already locked,
       // so OCR should not be allowed to hard-reject the fingerprint result.
       if (!match && useLegacy) {
         match = await fingerprintScan(
@@ -567,12 +703,12 @@ export default function ScanScreen() {
         );
       }
 
-      // Step 5: official binders get one sharper set-locked retry before any broader matching.
+      // Step 6: official binders get one sharper set-locked retry before any broader matching.
       if (!match && expectedSetId && useLegacy) {
         const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
-        const hqPrintedNumber = printedNumber ?? await readPrintedNumberFromCardImage(bestUri);
+        const hqPrintedNumber = printedNumber ?? await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
         match = await lookupCardBySetNumber(expectedSetId, hqPrintedNumber);
         if (!match) {
           match = await fingerprintScan(
@@ -584,7 +720,7 @@ export default function ScanScreen() {
         }
       }
 
-      // Step 6: fall back to CardSight if fingerprint didn't reach threshold
+      // Step 7: fall back to CardSight if fingerprint didn't reach threshold
       if (!match) {
         if (expectedSetId) {
           if (!isAuto) {
@@ -603,7 +739,7 @@ export default function ScanScreen() {
           if (!isAuto) {
             Alert.alert(
               'Could not read card',
-              'GiblTCG did not return a confident match. Try again with the card flat and well lit.'
+              'Could not read the printed card number confidently. Try again with the bottom number clearly visible.'
             );
           }
           stopScanningMessages();
@@ -622,7 +758,7 @@ export default function ScanScreen() {
           const base64Hq = hqCapture.base64;
           bestBase64 = base64Hq;
           bestUri = hqCapture.uri;
-          const hqPrintedNumber = printedNumber ?? await readPrintedNumberFromCardImage(bestUri);
+          const hqPrintedNumber = printedNumber ?? await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
           match = await fingerprintScan(base64Hq, expectedSetId, hqPrintedNumber?.total);
           if (!match) parsed = await identifyWithCardSight(base64Hq);
         }

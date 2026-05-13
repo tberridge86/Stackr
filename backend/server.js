@@ -9,6 +9,7 @@ import sharp from 'sharp';
 import Jimp from 'jimp';
 import cardsightRoutes from './routes/cardsight.js';
 import giblRoutes from './routes/gibl.js';
+import localAiScanRoutes from './routes/localAiScan.js';
 import stripeRoutes from './routes/stripe.js';
 import { Buffer } from 'node:buffer';
 
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use('/api/cardsight', cardsightRoutes);
 app.use('/api/gibl', giblRoutes);
+app.use('/api/local-ai', localAiScanRoutes);
 app.use('/api/discord', discordRoutes);
 app.use('/api/stripe', stripeRoutes);
 
@@ -938,6 +940,7 @@ app.get('/api/search/tcg', async (req, res) => {
     const setTotal = String(req.query.setTotal || '').trim();
     const setName = String(req.query.setName || '').trim();
     const setId = String(req.query.setId || '').trim();
+    const strictSet = String(req.query.strictSet || '').trim() === '1';
 
     if (!name) {
       return res.status(400).json({ error: 'Missing name' });
@@ -972,8 +975,8 @@ app.get('/api/search/tcg', async (req, res) => {
       console.log(`❌ Primary failed: ${response.status}`);
     }
 
-    // Fallback 1 — drop setId, keep number
-    if (cards.length === 0 && (setId || setName) && number) {
+    // Fallback 1 — drop setId, keep number. Disabled for official binder scans.
+    if (cards.length === 0 && !strictSet && (setId || setName) && number) {
       console.log('⚠️ Fallback 1 — name + number only');
       const q2 = `name:"${name}" number:${number}`;
       const res2 = await fetch(
@@ -990,10 +993,12 @@ app.get('/api/search/tcg', async (req, res) => {
       }
     }
 
-    // Fallback 2 — name only
+    // Fallback 2 — name only, but keep the selected set locked when requested.
     if (cards.length === 0) {
       console.log('⚠️ Fallback 2 — name only');
-      const q3 = `name:"${name}"`;
+      let q3 = `name:"${name}"`;
+      if (strictSet && setId) q3 += ` set.id:${setId}`;
+      if (strictSet && setName) q3 += ` set.name:"${setName}"`;
       const res3 = await fetch(
         `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q3)}&pageSize=20&orderBy=-set.releaseDate`,
         { headers }
@@ -1021,6 +1026,10 @@ app.get('/api/search/tcg', async (req, res) => {
       image_large: card.images?.large,
       release_date: card.set?.releaseDate,
     }));
+
+    if (strictSet && setId) {
+      formatted = formatted.filter((card) => card.set_id === setId);
+    }
 
     if (setTotal) {
       const totalNumber = Number(setTotal);

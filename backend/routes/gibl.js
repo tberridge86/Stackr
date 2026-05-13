@@ -41,6 +41,30 @@ function normaliseIdentity(raw) {
   };
 }
 
+async function postImageToGibl(url, imageBuffer, fieldName) {
+  const form = new FormData();
+  form.append(fieldName, imageBuffer, {
+    filename: 'stackr-scan.jpg',
+    contentType: 'image/jpeg',
+  });
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: form.getHeaders(),
+    body: form,
+  });
+
+  const text = await response.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = { rawText: text };
+  }
+
+  return { response, data };
+}
+
 router.get('/identify', (_req, res) => {
   res.json({
     ok: true,
@@ -71,46 +95,40 @@ router.post('/identify', async (req, res) => {
     }
 
     const url = `${GIBL_ENDPOINT}?key=${encodeURIComponent(key)}`;
-    const form = new FormData();
-    form.append('file', imageBuffer, {
-      filename: 'stackr-scan.jpg',
-      contentType: 'image/jpeg',
-    });
+    let attempt = 'file';
+    let { response, data } = await postImageToGibl(url, imageBuffer, attempt);
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: form.getHeaders(),
-      body: form,
-    });
-
-    const text = await response.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { rawText: text };
+    if (!response.ok && [400, 404, 422].includes(response.status)) {
+      attempt = 'image';
+      const retry = await postImageToGibl(url, imageBuffer, attempt);
+      response = retry.response;
+      data = retry.data;
     }
 
     if (!response.ok) {
-      console.log(`[gibl] failed status=${response.status} total=${Date.now() - startedAt}ms`);
+      console.log(
+        `[gibl] failed status=${response.status} attempt=${attempt} total=${Date.now() - startedAt}ms details=${JSON.stringify(data).slice(0, 500)}`
+      );
       return res.status(response.status).json({
         error: 'GiblTCG identification failed',
         status: response.status,
+        attempt,
         details: data,
       });
     }
 
     const payload = normaliseIdentity(data);
     if (!payload.name && !payload.number && !payload.printedTotal) {
-      console.log(`[gibl] no_match total=${Date.now() - startedAt}ms`);
+      console.log(`[gibl] no_match attempt=${attempt} total=${Date.now() - startedAt}ms raw=${JSON.stringify(data).slice(0, 500)}`);
       return res.status(404).json({
         error: 'No card detected',
+        attempt,
         raw: data,
       });
     }
 
     console.log(
-      `[gibl] ok total=${Date.now() - startedAt}ms conf=${payload.confidence ?? 'n/a'} card=${payload.name ?? 'unknown'} #${payload.number ?? '?'}`
+      `[gibl] ok attempt=${attempt} total=${Date.now() - startedAt}ms conf=${payload.confidence ?? 'n/a'} card=${payload.name ?? 'unknown'} #${payload.number ?? '?'}`
     );
 
     return res.json(payload);
