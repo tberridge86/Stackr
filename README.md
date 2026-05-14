@@ -48,3 +48,18 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## On-Device Visual Scanning
+
+The scanner has an optional ONNX Runtime path for local image reranking. It is disabled by default until a mobile image-embedding model is added and the native dev client is rebuilt.
+
+Required environment values:
+
+```bash
+EXPO_PUBLIC_ON_DEVICE_VISUAL=true
+EXPO_PUBLIC_ON_DEVICE_VISUAL_MODEL_ID=Xenova/clip-vit-base-patch32
+```
+
+The app currently bundles `assets/models/clip-vit-base-patch32-vision-quantized.zip`, which contains the ONNX model bytes with a Metro-friendly asset extension.
+
+The model output must use the same embedding space as rows stored in `card_clip_embeddings` for the selected `EXPO_PUBLIC_ON_DEVICE_VISUAL_MODEL_ID`.

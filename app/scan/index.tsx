@@ -20,10 +20,18 @@ import { PRICE_API_URL } from '../../lib/config';
 import {
   lookupLocalCardByNameAndTotal,
   lookupLocalCardsByPrintedNumber,
+  lookupLocalCardsByPrintedTotal,
   resolveLocalCardsByName,
   warmLocalCardIndex,
   type LocalScanCard,
 } from '../../lib/localCardIndex';
+import {
+  rerankWithOnDeviceVisual,
+  setBundledOnDeviceVisualModel,
+} from '../../lib/onDeviceVisualMatcher';
+import clipVisionModel from '../../assets/models/clip-vit-base-patch32-vision-quantized.zip';
+
+setBundledOnDeviceVisualModel(clipVisionModel);
 
 const SCANNING_MESSAGES = [
   'Reading card...',
@@ -44,11 +52,13 @@ const CARD_ASPECT_RATIO = 0.716;
 const CARD_CROP_WIDTH_RATIO = 0.96;
 const CARD_CROP_HEIGHT_RATIO = 0.98;
 const NUMBER_OCR_WIDTH = 1600;
-const NUMBER_OCR_REGIONS = [
+const FAST_NUMBER_OCR_REGIONS = [
   { name: 'number-micro-left', x: 0, y: 0.79, width: 0.42, height: 0.14 },
   { name: 'number-micro-left-tilt', x: 0, y: 0.79, width: 0.42, height: 0.14, rotate: -2 },
   { name: 'number-strip-left', x: 0.02, y: 0.72, width: 0.5, height: 0.24 },
   { name: 'number-strip', x: 0.46, y: 0.68, width: 0.52, height: 0.24 },
+];
+const FALLBACK_NUMBER_OCR_REGIONS = [
   { name: 'bottom-left', x: 0, y: 0.64, width: 0.58, height: 0.32 },
   { name: 'bottom-right', x: 0.42, y: 0.64, width: 0.56, height: 0.32 },
   { name: 'bottom-band', x: 0, y: 0.64, width: 1, height: 0.32 },
@@ -136,7 +146,7 @@ function getCenteredCardCrop(photoWidth?: number, photoHeight?: number) {
   };
 }
 
-function parsePrintedNumber(text?: string | null) {
+function parsePrintedNumber(text?: string | null): PrintedNumber | null {
   if (!text) return null;
   const normalised = text
     .replace(/[Oo]/g, '0')
@@ -160,6 +170,31 @@ function hasThreeDigitCollectorEvidence(text?: string | null) {
   return /(?:^|[^0-9])\d{3}\s*(?:\/|\uFF0F|\u2044|\u2215)\s*\d{2,3}(?=\D|$)/.test(normalised);
 }
 
+function hasThreeDigitTotalEvidence(text?: string | null) {
+  if (!text) return false;
+  const normalised = text
+    .replace(/[Oo]/g, '0')
+    .replace(/[Il|]/g, '1')
+    .replace(/[Ss]/g, '5');
+  return /(?:\/|\uFF0F|\u2044|\u2215)\s*0\d{2}(?=\D|$)/.test(normalised);
+}
+
+function repairSuspiciousPrintedNumber(printedNumber: PrintedNumber) {
+  if (
+    printedNumber.total < 10
+    && printedNumber.ocrText
+    && hasThreeDigitTotalEvidence(printedNumber.ocrText)
+  ) {
+    return {
+      ...printedNumber,
+      total: Number(`0${printedNumber.total}`),
+      region: printedNumber.region,
+    };
+  }
+
+  return printedNumber;
+}
+
 function isBroadNumberRegion(region?: string) {
   return region === 'bottom-band' || region === 'bottom-left' || region === 'lower-half' || region === 'full-card';
 }
@@ -168,7 +203,7 @@ function normalizeCardName(value?: string | null) {
   return String(value ?? '').trim().toLowerCase();
 }
 
-function parsePrintedNumberFromOcr(text?: string | null) {
+function parsePrintedNumberFromOcr(text?: string | null): PrintedNumber | null {
   if (!text) return null;
   const normalised = text
     .replace(/[Oo]/g, '0')
@@ -203,7 +238,7 @@ function shouldTryNameTotalFallback(
   printedNumber?: PrintedNumber | null,
   localIndexResult?: { candidates?: LocalScanCard[] | null; needsVisualRerank?: boolean } | null,
   localResult?: { needsVisualRerank?: boolean; match?: ScannedCard | null } | null
-) {
+): printedNumber is PrintedNumber {
   if (!printedNumber || localResult?.match) return false;
   return Boolean(
     localResult?.needsVisualRerank
@@ -259,36 +294,76 @@ async function readPrintedNumberFromRegion(uri: string, width: number, height: n
   return printedNumber;
 }
 
-async function readPrintedNumberFromCardImage(uri: string, width?: number, height?: number) {
+async function readPrintedNumberFromRegions(
+  uri: string,
+  width: number,
+  height: number,
+  regions: OcrRegion[]
+) {
+  for (const region of regions) {
+    const rawPrintedNumber = await readPrintedNumberFromRegion(uri, width, height, region);
+    const printedNumber = rawPrintedNumber ? repairSuspiciousPrintedNumber(rawPrintedNumber) : null;
+    if (
+      printedNumber
+      && printedNumber.number < 100
+      && isBroadNumberRegion(region.name)
+      && hasThreeDigitCollectorEvidence(printedNumber.ocrText)
+    ) {
+      console.log('Printed number OCR ignored broad truncated match:', {
+        region: region.name,
+        number: `${printedNumber.number}/${printedNumber.total}`,
+      });
+      continue;
+    }
+
+    if (printedNumber) {
+      if (
+        printedNumber.number < 10
+        && printedNumber.total < 10
+        && isBroadNumberRegion(region.name)
+      ) {
+        console.log('Printed number OCR ignored tiny broad match:', {
+          region: region.name,
+          number: `${printedNumber.number}/${printedNumber.total}`,
+        });
+        continue;
+      }
+
+      console.log('Printed number OCR matched:', {
+        region: region.name,
+        number: `${printedNumber.number}/${printedNumber.total}`,
+      });
+      return printedNumber;
+    }
+  }
+
+  return null;
+}
+
+async function readPrintedNumberFromCardImage(
+  uri: string,
+  width?: number,
+  height?: number,
+  options?: { includeFastRegions?: boolean; includeFallbackRegions?: boolean; includeFullCard?: boolean }
+) {
   try {
     if (width && height) {
-      for (const region of NUMBER_OCR_REGIONS) {
-        const printedNumber = await readPrintedNumberFromRegion(uri, width, height, region);
-        if (
-          printedNumber
-          && printedNumber.number < 100
-          && isBroadNumberRegion(region.name)
-          && hasThreeDigitCollectorEvidence(printedNumber.ocrText)
-        ) {
-          console.log('Printed number OCR ignored broad truncated match:', {
-            region: region.name,
-            number: `${printedNumber.number}/${printedNumber.total}`,
-          });
-          continue;
-        }
+      if (options?.includeFastRegions !== false) {
+        const fastRead = await readPrintedNumberFromRegions(uri, width, height, FAST_NUMBER_OCR_REGIONS);
+        if (fastRead) return fastRead;
+      }
 
-        if (printedNumber) {
-          console.log('Printed number OCR matched:', {
-            region: region.name,
-            number: `${printedNumber.number}/${printedNumber.total}`,
-          });
-          return printedNumber;
-        }
+      if (options?.includeFallbackRegions !== false) {
+        const fallbackRead = await readPrintedNumberFromRegions(uri, width, height, FALLBACK_NUMBER_OCR_REGIONS);
+        if (fallbackRead) return fallbackRead;
       }
     }
 
+    if (options?.includeFullCard === false) return null;
+
     const result = await TextRecognition.recognize(uri);
-    const printedNumber = parsePrintedNumberFromOcr(result?.text) ?? parsePrintedNumber(result?.text);
+    const rawPrintedNumber = parsePrintedNumberFromOcr(result?.text) ?? parsePrintedNumber(result?.text);
+    const printedNumber = rawPrintedNumber ? repairSuspiciousPrintedNumber(rawPrintedNumber) : null;
     if (printedNumber) {
       printedNumber.region = 'full-card';
       console.log('Printed number OCR matched:', {
@@ -762,6 +837,33 @@ export default function ScanScreen() {
       return { match: null, candidates, needsVisualRerank: candidates.length > 1, resolvedBy: null };
     };
 
+    const identifyWithOnDeviceVisual = async (
+      base64Image?: string | null,
+      candidates?: LocalScanCard[] | null
+    ) => {
+      if (!candidates?.length) return null;
+
+      const visualResult = await rerankWithOnDeviceVisual(base64Image, candidates);
+      if (visualResult.status !== 'disabled') {
+        console.log('On-device visual scan result:', {
+          status: visualResult.status,
+          reason: visualResult.reason,
+          card: visualResult.match?.name,
+          set: visualResult.match?.set_name,
+          similarity: visualResult.similarity,
+          candidates: candidates?.length ?? 0,
+        });
+      }
+
+      if (!visualResult.match) return null;
+      return {
+        match: toScannedCard(visualResult.match),
+        candidates,
+        needsVisualRerank: false,
+        resolvedBy: 'on-device-visual',
+      };
+    };
+
     const lookupParsedCard = async (
       parsed: any,
       fallbackPrintedNumber?: PrintedNumber | null,
@@ -837,7 +939,10 @@ export default function ScanScreen() {
       let bestUri = capture.uri;
       const scanStartedAt = Date.now();
       const captureDoneAt = Date.now();
-      let printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height);
+      let printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
+        includeFallbackRegions: false,
+        includeFullCard: false,
+      });
       const numberOcrDoneAt = Date.now();
 
       // Duplicate frame check
@@ -861,7 +966,17 @@ export default function ScanScreen() {
       // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
       if (!match && useLocalAi) {
         let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-        let localResult = localIndexResult?.match ? localIndexResult : await identifyWithLocalAi(printedNumber, expectedSetId);
+        const visualCandidates = localIndexResult?.candidates?.length
+          ? localIndexResult.candidates
+          : await lookupLocalCardsByPrintedTotal(printedNumber?.total, expectedSetId);
+        const onDeviceVisualResult = localIndexResult?.match
+          ? null
+          : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
+        let localResult = localIndexResult?.match
+          ? localIndexResult
+          : onDeviceVisualResult?.match
+            ? onDeviceVisualResult
+            : await identifyWithLocalAi(printedNumber, expectedSetId);
         const firstLocalDoneAt = Date.now();
         if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
           const nameText = await readOcrRegionText(bestUri, capture.width, capture.height, NAME_OCR_REGION);
@@ -889,11 +1004,19 @@ export default function ScanScreen() {
               }
             }
             localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
+            const visualCandidatesAfterName = localIndexResult?.candidates?.length
+              ? localIndexResult.candidates
+              : await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId);
+            const onDeviceVisualResultAfterName = localIndexResult?.match
+              ? null
+              : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
             localResult = localResult?.match
               ? localResult
               : localIndexResult?.match
                 ? localIndexResult
-                : await identifyWithLocalAi(printedNumber, expectedSetId);
+                : onDeviceVisualResultAfterName?.match
+                  ? onDeviceVisualResultAfterName
+                  : await identifyWithLocalAi(printedNumber, expectedSetId);
             if (!localResult?.match && localResult?.needsVisualRerank) {
               localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
             }
@@ -925,13 +1048,92 @@ export default function ScanScreen() {
         match = localResult?.match ?? null;
       }
 
+      if (!match && useLocalAi && printedNumber) {
+        const fallbackPrintedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
+          includeFastRegions: false,
+        });
+        if (
+          fallbackPrintedNumber
+          && (
+            fallbackPrintedNumber.number !== printedNumber.number
+            || fallbackPrintedNumber.total !== printedNumber.total
+            || fallbackPrintedNumber.region !== printedNumber.region
+          )
+        ) {
+          printedNumber = fallbackPrintedNumber;
+          let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
+          const visualCandidates = localIndexResult?.candidates?.length
+            ? localIndexResult.candidates
+            : await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId);
+          const onDeviceVisualResult = localIndexResult?.match
+            ? null
+            : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
+          let localResult = localIndexResult?.match
+            ? localIndexResult
+            : onDeviceVisualResult?.match
+              ? onDeviceVisualResult
+              : await identifyWithLocalAi(printedNumber, expectedSetId);
+          if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
+            const nameText = await readOcrRegionText(bestUri, capture.width, capture.height, NAME_OCR_REGION);
+            if (nameText) {
+              printedNumber = {
+                ...printedNumber,
+                ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
+              };
+              if (
+                printedNumber.number < 100
+                && isBroadNumberRegion(printedNumber.region)
+              ) {
+                const nameTotalMatch = await lookupLocalCardByNameAndTotal(
+                  printedNumber.total,
+                  printedNumber.ocrText,
+                  expectedSetId
+                );
+                if (nameTotalMatch) {
+                  localResult = {
+                    match: toScannedCard(nameTotalMatch),
+                    needsVisualRerank: false,
+                    resolvedBy: 'local-name-total',
+                  };
+                }
+              }
+              localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
+              const visualCandidatesAfterName = localIndexResult?.candidates?.length
+                ? localIndexResult.candidates
+                : await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId);
+              const onDeviceVisualResultAfterName = localIndexResult?.match
+                ? null
+                : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
+              localResult = localResult?.match
+                ? localResult
+                : localIndexResult?.match
+                  ? localIndexResult
+                  : onDeviceVisualResultAfterName?.match
+                    ? onDeviceVisualResultAfterName
+                    : await identifyWithLocalAi(printedNumber, expectedSetId);
+            }
+          }
+          match = localResult?.match ?? null;
+        }
+      }
+
       if (!match && useLocalAi && !printedNumber) {
         const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
         printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
         let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-        let localResult = localIndexResult?.match ? localIndexResult : await identifyWithLocalAi(printedNumber, expectedSetId);
+        const visualCandidates = localIndexResult?.candidates?.length
+          ? localIndexResult.candidates
+          : await lookupLocalCardsByPrintedTotal(printedNumber?.total, expectedSetId);
+        const onDeviceVisualResult = localIndexResult?.match
+          ? null
+          : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
+        let localResult = localIndexResult?.match
+          ? localIndexResult
+          : onDeviceVisualResult?.match
+            ? onDeviceVisualResult
+            : await identifyWithLocalAi(printedNumber, expectedSetId);
         if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
           const nameText = await readOcrRegionText(bestUri, hqCapture.width, hqCapture.height, NAME_OCR_REGION);
           if (nameText) {
@@ -957,11 +1159,19 @@ export default function ScanScreen() {
               }
             }
             localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
+            const visualCandidatesAfterName = localIndexResult?.candidates?.length
+              ? localIndexResult.candidates
+              : await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId);
+            const onDeviceVisualResultAfterName = localIndexResult?.match
+              ? null
+              : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
             localResult = localResult?.match
               ? localResult
               : localIndexResult?.match
                 ? localIndexResult
-                : await identifyWithLocalAi(printedNumber, expectedSetId);
+                : onDeviceVisualResultAfterName?.match
+                  ? onDeviceVisualResultAfterName
+                  : await identifyWithLocalAi(printedNumber, expectedSetId);
             if (!localResult?.match && localResult?.needsVisualRerank) {
               localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
             }

@@ -172,6 +172,24 @@ export async function lookupLocalCardsByPrintedNumber(
   return cards;
 }
 
+export async function lookupLocalCardsByPrintedTotal(
+  total?: number | null,
+  setId?: string | null,
+  options?: { allowBuild?: boolean; limit?: number }
+) {
+  if (!total) return null;
+
+  const index = memoryIndex
+    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+  if (!index) return null;
+  memoryIndex = index;
+
+  const limit = options?.limit ?? 160;
+  return index.cards
+    .filter((card) => card.set_printed_total === total && (!setId || card.set_id === setId))
+    .slice(0, limit);
+}
+
 export function resolveLocalCardsByName(cards: LocalScanCard[], ocrText?: string | null) {
   const text = String(ocrText ?? '')
     .toLowerCase()

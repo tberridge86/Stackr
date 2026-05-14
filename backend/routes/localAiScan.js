@@ -50,6 +50,29 @@ function parsePrintedNumber(input) {
   return { number, total, region: null };
 }
 
+function hasThreeDigitTotalEvidence(value) {
+  const text = String(value ?? '')
+    .replace(/[Oo]/g, '0')
+    .replace(/[Il|]/g, '1')
+    .replace(/[Ss]/g, '5');
+  return /(?:\/|\uFF0F|\u2044|\u2215)\s*0\d{2}(?=\D|$)/.test(text);
+}
+
+function repairSuspiciousPrintedNumber(printedNumber, ocrText) {
+  if (
+    printedNumber
+    && printedNumber.total < 10
+    && hasThreeDigitTotalEvidence(ocrText)
+  ) {
+    return {
+      ...printedNumber,
+      total: Number(`0${printedNumber.total}`),
+    };
+  }
+
+  return printedNumber;
+}
+
 function isBroadNumberRegion(region) {
   return region === 'bottom-band' || region === 'bottom-left' || region === 'lower-half' || region === 'full-card';
 }
@@ -207,10 +230,11 @@ router.post('/identify', async (req, res) => {
   const startedAt = Date.now();
 
   try {
-    const printedNumber = parsePrintedNumber(req.body?.printedNumber);
+    const parsedPrintedNumber = parsePrintedNumber(req.body?.printedNumber);
     const setId = String(req.body?.setId || '').trim();
     const nameHint = String(req.body?.nameHint || '').trim();
     const ocrText = normaliseOcrText(req.body?.ocrText || req.body?.printedNumber?.ocrText || '');
+    const printedNumber = repairSuspiciousPrintedNumber(parsedPrintedNumber, req.body?.ocrText || req.body?.printedNumber?.ocrText || '');
     const base64Image = typeof req.body?.base64Image === 'string' ? req.body.base64Image : '';
 
     if (!printedNumber) {

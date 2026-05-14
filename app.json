@@ -14,7 +14,7 @@
         {
           "image": "./assets/images/icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#0b0b0b"
+          "backgroundColor": "#ffffff"
         }
       ],
       [
@@ -30,6 +30,7 @@
           "cameraPermission": "Stackr needs camera access to scan Pokémon cards."
         }
       ],
+      "onnxruntime-react-native",
       ["@stripe/stripe-react-native", {}]
     ],
     "ios": {
@@ -42,7 +43,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#0b0b0b"
+        "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "resize",
