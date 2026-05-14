@@ -2,6 +2,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { Asset } from 'expo-asset';
 import { Buffer } from 'buffer';
 import { decode as decodeJpeg } from 'jpeg-js';
+import { NativeModules } from 'react-native';
 import { supabase } from './supabase';
 import type { LocalScanCard } from './localCardIndex';
 
@@ -31,6 +32,10 @@ let sessionPromise: Promise<import('onnxruntime-react-native').InferenceSession>
 let bundledModel: number | null = null;
 
 function getOrt() {
+  if (!NativeModules.Onnxruntime?.install) {
+    throw new Error('ONNX Runtime native module is not installed in this build');
+  }
+
   if (!ortPromise) {
     ortPromise = import('onnxruntime-react-native');
   }

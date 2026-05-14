@@ -21,6 +21,8 @@ import {
   lookupLocalCardByNameAndTotal,
   lookupLocalCardsByPrintedNumber,
   lookupLocalCardsByPrintedTotal,
+  lookupLocalCardsByNameText,
+  lookupLocalCardsBySet,
   resolveLocalCardsByName,
   warmLocalCardIndex,
   type LocalScanCard,
@@ -1114,6 +1116,28 @@ export default function ScanScreen() {
             }
           }
           match = localResult?.match ?? null;
+        }
+      }
+
+      if (!match && useLocalAi && !printedNumber) {
+        const nameText = await readOcrRegionText(bestUri, capture.width, capture.height, NAME_OCR_REGION);
+        const nameCandidates = await lookupLocalCardsByNameText(nameText, expectedSetId);
+        const setCandidates = nameCandidates?.length
+          ? nameCandidates
+          : await lookupLocalCardsBySet(expectedSetId);
+
+        if (nameCandidates?.length === 1) {
+          match = toScannedCard(nameCandidates[0]);
+          console.log('Local index scan result:', {
+            card: match.name,
+            number: match.number,
+            set: match.set_name,
+            candidates: 1,
+            resolvedBy: 'local-name-no-number',
+          });
+        } else {
+          const visualResult = await identifyWithOnDeviceVisual(bestBase64, setCandidates);
+          match = visualResult?.match ?? null;
         }
       }
 

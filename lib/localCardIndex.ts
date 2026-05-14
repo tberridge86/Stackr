@@ -190,6 +190,57 @@ export async function lookupLocalCardsByPrintedTotal(
     .slice(0, limit);
 }
 
+export async function lookupLocalCardsBySet(
+  setId?: string | null,
+  options?: { allowBuild?: boolean; limit?: number }
+) {
+  if (!setId) return null;
+
+  const index = memoryIndex
+    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+  if (!index) return null;
+  memoryIndex = index;
+
+  const limit = options?.limit ?? 300;
+  return index.cards
+    .filter((card) => card.set_id === setId)
+    .slice(0, limit);
+}
+
+export async function lookupLocalCardsByNameText(
+  ocrText?: string | null,
+  setId?: string | null,
+  options?: { allowBuild?: boolean; limit?: number }
+) {
+  if (!ocrText) return null;
+
+  const index = memoryIndex
+    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+  if (!index) return null;
+  memoryIndex = index;
+
+  const text = String(ocrText)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!text) return null;
+
+  const limit = options?.limit ?? 80;
+  return index.cards
+    .filter((card) => {
+      if (setId && card.set_id !== setId) return false;
+      const name = card.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return name && text.includes(name);
+    })
+    .slice(0, limit);
+}
+
 export function resolveLocalCardsByName(cards: LocalScanCard[], ocrText?: string | null) {
   const text = String(ocrText ?? '')
     .toLowerCase()
