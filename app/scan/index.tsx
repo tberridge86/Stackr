@@ -172,8 +172,6 @@ async function readPrintedNumberFromCardImage(uri: string, width?: number, heigh
         const result = await TextRecognition.recognize(manipulated.uri);
         const printedNumber = parsePrintedNumberFromOcr(result?.text);
         if (printedNumber) {
-          const nameText = await readOcrRegionText(uri, width, height, NAME_OCR_REGION);
-          printedNumber.ocrText = `${result?.text ?? ''}\n${nameText}`.trim();
           console.log('Printed number OCR matched:', {
             region: region.name,
             number: `${printedNumber.number}/${printedNumber.total}`,
@@ -693,7 +691,17 @@ export default function ScanScreen() {
 
       // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
       if (!match && useLocalAi) {
-        const localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+        let localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+        if (!localResult?.match && localResult?.needsVisualRerank && printedNumber) {
+          const nameText = await readOcrRegionText(bestUri, capture.width, capture.height, NAME_OCR_REGION);
+          if (nameText) {
+            printedNumber = {
+              ...printedNumber,
+              ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
+            };
+            localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+          }
+        }
         match = localResult?.match ?? null;
       }
 
@@ -702,7 +710,17 @@ export default function ScanScreen() {
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
         printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
-        const localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+        let localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+        if (!localResult?.match && localResult?.needsVisualRerank && printedNumber) {
+          const nameText = await readOcrRegionText(bestUri, hqCapture.width, hqCapture.height, NAME_OCR_REGION);
+          if (nameText) {
+            printedNumber = {
+              ...printedNumber,
+              ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
+            };
+            localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+          }
+        }
         match = localResult?.match ?? null;
       }
 
