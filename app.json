@@ -31,7 +31,11 @@
         }
       ],
       "onnxruntime-react-native",
-      ["@stripe/stripe-react-native", {}]
+      [
+        "@stripe/stripe-react-native",
+        {}
+      ],
+      "expo-asset"
     ],
     "ios": {
       "supportsTablet": true,

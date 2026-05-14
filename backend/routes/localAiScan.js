@@ -267,10 +267,18 @@ router.post('/identify', async (req, res) => {
       if (!selectedName || !ocrText.includes(selectedName)) {
         selected = null;
         resolvedBy = null;
+        candidates = catalog.filter((card) => (
+          getSetPrintedTotal(card) === printedNumber.total
+          && (!setId || card.set_id === setId)
+        ));
       }
     } else if (selected && broadLowNumberRead && !setId) {
       selected = null;
       resolvedBy = null;
+      candidates = catalog.filter((card) => (
+        getSetPrintedTotal(card) === printedNumber.total
+        && (!setId || card.set_id === setId)
+      ));
     }
 
     if (!selected && ocrText && (candidates.length === 0 || broadLowNumberRead)) {

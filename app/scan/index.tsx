@@ -251,6 +251,18 @@ function shouldTryNameTotalFallback(
   );
 }
 
+function shouldUsePrintedTotalVisualPool(
+  printedNumber?: PrintedNumber | null,
+  localIndexResult?: { candidates?: LocalScanCard[] | null; needsVisualRerank?: boolean } | null
+) {
+  if (!printedNumber?.total) return false;
+  return Boolean(
+    isBroadNumberRegion(printedNumber.region)
+    || hasLongerNumberHint(printedNumber)
+    || localIndexResult?.candidates?.length === 0
+  );
+}
+
 function getOcrRegionCrop(
   width: number,
   height: number,
@@ -968,9 +980,14 @@ export default function ScanScreen() {
       // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
       if (!match && useLocalAi) {
         let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-        const visualCandidates = localIndexResult?.candidates?.length
+        const totalCandidates = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
+          ? await lookupLocalCardsByPrintedTotal(printedNumber?.total, expectedSetId)
+          : null;
+        const visualCandidates = totalCandidates?.length
+          ? totalCandidates
+          : localIndexResult?.candidates?.length
           ? localIndexResult.candidates
-          : await lookupLocalCardsByPrintedTotal(printedNumber?.total, expectedSetId);
+          : null;
         const onDeviceVisualResult = localIndexResult?.match
           ? null
           : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
@@ -1006,9 +1023,14 @@ export default function ScanScreen() {
               }
             }
             localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-            const visualCandidatesAfterName = localIndexResult?.candidates?.length
+            const totalCandidatesAfterName = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
+              ? await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId)
+              : null;
+            const visualCandidatesAfterName = totalCandidatesAfterName?.length
+              ? totalCandidatesAfterName
+              : localIndexResult?.candidates?.length
               ? localIndexResult.candidates
-              : await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId);
+              : null;
             const onDeviceVisualResultAfterName = localIndexResult?.match
               ? null
               : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
@@ -1064,9 +1086,14 @@ export default function ScanScreen() {
         ) {
           printedNumber = fallbackPrintedNumber;
           let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-          const visualCandidates = localIndexResult?.candidates?.length
+          const totalCandidates = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
+            ? await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId)
+            : null;
+          const visualCandidates = totalCandidates?.length
+            ? totalCandidates
+            : localIndexResult?.candidates?.length
             ? localIndexResult.candidates
-            : await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId);
+            : null;
           const onDeviceVisualResult = localIndexResult?.match
             ? null
             : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
@@ -1100,9 +1127,14 @@ export default function ScanScreen() {
                 }
               }
               localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-              const visualCandidatesAfterName = localIndexResult?.candidates?.length
+              const totalCandidatesAfterName = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
+                ? await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId)
+                : null;
+              const visualCandidatesAfterName = totalCandidatesAfterName?.length
+                ? totalCandidatesAfterName
+                : localIndexResult?.candidates?.length
                 ? localIndexResult.candidates
-                : await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId);
+                : null;
               const onDeviceVisualResultAfterName = localIndexResult?.match
                 ? null
                 : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
@@ -1147,9 +1179,14 @@ export default function ScanScreen() {
         bestUri = hqCapture.uri;
         printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
         let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-        const visualCandidates = localIndexResult?.candidates?.length
+        const totalCandidates = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
+          ? await lookupLocalCardsByPrintedTotal(printedNumber?.total, expectedSetId)
+          : null;
+        const visualCandidates = totalCandidates?.length
+          ? totalCandidates
+          : localIndexResult?.candidates?.length
           ? localIndexResult.candidates
-          : await lookupLocalCardsByPrintedTotal(printedNumber?.total, expectedSetId);
+          : null;
         const onDeviceVisualResult = localIndexResult?.match
           ? null
           : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
@@ -1183,9 +1220,14 @@ export default function ScanScreen() {
               }
             }
             localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-            const visualCandidatesAfterName = localIndexResult?.candidates?.length
+            const totalCandidatesAfterName = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
+              ? await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId)
+              : null;
+            const visualCandidatesAfterName = totalCandidatesAfterName?.length
+              ? totalCandidatesAfterName
+              : localIndexResult?.candidates?.length
               ? localIndexResult.candidates
-              : await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId);
+              : null;
             const onDeviceVisualResultAfterName = localIndexResult?.match
               ? null
               : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
