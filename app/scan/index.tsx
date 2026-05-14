@@ -42,6 +42,7 @@ const NUMBER_OCR_REGIONS = [
   { name: 'bottom-band', x: 0, y: 0.64, width: 1, height: 0.32 },
   { name: 'lower-half', x: 0, y: 0.52, width: 1, height: 0.44 },
 ];
+const NAME_OCR_REGION = { name: 'top-name', x: 0, y: 0, width: 1, height: 0.22 };
 
 // ===============================
 // TYPES
@@ -63,6 +64,12 @@ type CaptureResult = {
   uri: string;
   width: number;
   height: number;
+};
+
+type PrintedNumber = {
+  number: number;
+  total: number;
+  ocrText?: string;
 };
 
 type ScanStep = 'select_binder' | 'scanning' | 'review';
@@ -106,7 +113,7 @@ function parsePrintedNumber(text?: string | null) {
   const number = Number(match[1]);
   const total = Number(match[2]);
   if (!Number.isFinite(number) || !Number.isFinite(total)) return null;
-  return { number, total };
+  return { number, total, ocrText: text ?? undefined };
 }
 
 function normalizeCardName(value?: string | null) {
@@ -125,16 +132,31 @@ function parsePrintedNumberFromOcr(text?: string | null) {
   const number = Number(match[1]);
   const total = Number(match[2]);
   if (!Number.isFinite(number) || !Number.isFinite(total)) return null;
-  return { number, total };
+  return { number, total, ocrText: text ?? undefined };
 }
 
-function getOcrRegionCrop(width: number, height: number, region: typeof NUMBER_OCR_REGIONS[number]) {
+function getOcrRegionCrop(
+  width: number,
+  height: number,
+  region: { x: number; y: number; width: number; height: number }
+) {
   return {
     originX: Math.max(0, Math.round(width * region.x)),
     originY: Math.max(0, Math.round(height * region.y)),
     width: Math.max(1, Math.min(width, Math.round(width * region.width))),
     height: Math.max(1, Math.min(height, Math.round(height * region.height))),
   };
+}
+
+async function readOcrRegionText(uri: string, width: number, height: number, region: typeof NAME_OCR_REGION) {
+  const crop = getOcrRegionCrop(width, height, region);
+  const manipulated = await ImageManipulator.manipulateAsync(
+    uri,
+    [{ crop }, { resize: { width: 1000 } }],
+    { compress: 0.92, format: ImageManipulator.SaveFormat.JPEG }
+  );
+  const result = await TextRecognition.recognize(manipulated.uri);
+  return result?.text ?? '';
 }
 
 async function readPrintedNumberFromCardImage(uri: string, width?: number, height?: number) {
@@ -150,6 +172,8 @@ async function readPrintedNumberFromCardImage(uri: string, width?: number, heigh
         const result = await TextRecognition.recognize(manipulated.uri);
         const printedNumber = parsePrintedNumberFromOcr(result?.text);
         if (printedNumber) {
+          const nameText = await readOcrRegionText(uri, width, height, NAME_OCR_REGION);
+          printedNumber.ocrText = `${result?.text ?? ''}\n${nameText}`.trim();
           console.log('Printed number OCR matched:', {
             region: region.name,
             number: `${printedNumber.number}/${printedNumber.total}`,
@@ -383,7 +407,7 @@ export default function ScanScreen() {
   const resolveCardInExpectedSet = useCallback(async (
     card: ScannedCard,
     setId?: string | null,
-    printedNumber?: { number: number; total: number } | null
+    printedNumber?: PrintedNumber | null
   ): Promise<ScannedCard> => {
     if (!setId || card.set_id === setId) return card;
 
@@ -423,7 +447,7 @@ export default function ScanScreen() {
 
   const lookupCardBySetNumber = useCallback(async (
     setId?: string | null,
-    printedNumber?: { number: number; total: number } | null
+    printedNumber?: PrintedNumber | null
   ): Promise<ScannedCard | null> => {
     if (!setId || !printedNumber?.number) return null;
 
@@ -531,7 +555,7 @@ export default function ScanScreen() {
     };
 
     const identifyWithLocalAi = async (
-      printedNumber?: { number: number; total: number } | null,
+      printedNumber?: PrintedNumber | null,
       setId?: string | null,
       base64Image?: string | null,
       nameHint?: string | null
@@ -573,8 +597,10 @@ export default function ScanScreen() {
         confidence: data?.confidence,
         stages: data?.stages,
         candidates: data?.candidates?.length,
+        candidateNames: data?.candidates?.map((card: ScannedCard) => `${card.name} (${card.set_name})`).slice(0, 5),
         needsVisualRerank: data?.needsVisualRerank,
         clipSimilarity: data?.clipSimilarity,
+        resolvedBy: data?.resolvedBy,
       });
 
       return data;
@@ -582,7 +608,7 @@ export default function ScanScreen() {
 
     const lookupParsedCard = async (
       parsed: any,
-      fallbackPrintedNumber?: { number: number; total: number } | null,
+      fallbackPrintedNumber?: PrintedNumber | null,
       setId?: string | null
     ): Promise<ScannedCard | null> => {
       if (!parsed || parsed.error || !parsed.name) return null;

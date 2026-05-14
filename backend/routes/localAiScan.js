@@ -18,6 +18,14 @@ function normaliseCardName(value) {
   return String(value ?? '').trim().toLowerCase();
 }
 
+function normaliseOcrText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function parsePrintedNumber(input) {
   if (!input) return null;
 
@@ -159,6 +167,7 @@ router.post('/identify', async (req, res) => {
     const printedNumber = parsePrintedNumber(req.body?.printedNumber);
     const setId = String(req.body?.setId || '').trim();
     const nameHint = String(req.body?.nameHint || '').trim();
+    const ocrText = normaliseOcrText(req.body?.ocrText || req.body?.printedNumber?.ocrText || '');
     const base64Image = typeof req.body?.base64Image === 'string' ? req.body.base64Image : '';
 
     if (!printedNumber) {
@@ -188,20 +197,34 @@ router.post('/identify', async (req, res) => {
     }
 
     let selected = candidates.length === 1 ? candidates[0] : null;
+    let resolvedBy = selected ? 'ocr-exact' : null;
     let clipSimilarity = null;
+
+    if (!selected && ocrText) {
+      const nameMatches = candidates.filter((card) => {
+        const name = normaliseOcrText(card.name);
+        return name && ocrText.includes(name);
+      });
+
+      if (nameMatches.length === 1) {
+        selected = nameMatches[0];
+        resolvedBy = 'ocr-name';
+      }
+    }
 
     if (!selected && candidates.length > 1 && base64Image) {
       const clipBest = await rerankCandidatesWithClip(candidates, base64Image);
       if (clipBest?.candidate) {
         selected = clipBest.candidate;
         clipSimilarity = Number(clipBest.similarity.toFixed(4));
+        resolvedBy = 'clip';
       }
     }
 
     const formatted = candidates.map(formatCard);
     const uniqueSets = [...new Set(formatted.map((card) => card.set_id))];
     const isExact = formatted.length === 1;
-    const isClipResolved = Boolean(selected && !isExact);
+    const isClipResolved = resolvedBy === 'clip';
     const confidence = isExact ? 99 : formatted.length > 1 ? 72 : 0;
 
     console.log(
@@ -221,14 +244,15 @@ router.post('/identify', async (req, res) => {
       provider: 'local-ai',
       match: selected ? formatCard(selected) : null,
       candidates: formatted.slice(0, 10),
-      confidence: isExact ? confidence : isClipResolved ? 88 : confidence,
+      confidence: isExact ? confidence : resolvedBy === 'ocr-name' ? 94 : isClipResolved ? 88 : confidence,
       printedNumber,
       needsVisualRerank: !selected,
       clipSimilarity,
+      resolvedBy,
       uniqueSets,
       stages: {
         yolo: 'pending-model',
-        clip: isExact ? 'not-needed' : isClipResolved ? 'resolved' : 'needed',
+        clip: isExact || resolvedBy === 'ocr-name' ? 'not-needed' : isClipResolved ? 'resolved' : 'needed',
         ocrResolver: isExact ? 'exact' : 'ambiguous',
       },
     });
