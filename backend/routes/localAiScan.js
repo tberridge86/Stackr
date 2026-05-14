@@ -12,6 +12,7 @@ const supabase = createClient(
 const CLIP_MODEL = process.env.CLIP_MODEL || 'Xenova/clip-vit-base-patch32';
 let clipExtractorPromise = null;
 const candidateEmbeddingCache = new Map();
+const CLIP_WARMUP_ON_BOOT = process.env.CLIP_WARMUP_ON_BOOT !== 'false';
 
 function normaliseCardName(value) {
   return String(value ?? '').trim().toLowerCase();
@@ -63,6 +64,12 @@ function getClipExtractor() {
   return clipExtractorPromise;
 }
 
+if (CLIP_WARMUP_ON_BOOT) {
+  getClipExtractor()
+    .then(() => console.log(`[local-ai] CLIP warmup ready model=${CLIP_MODEL}`))
+    .catch((error) => console.log(`[local-ai] CLIP warmup failed: ${error?.message ?? String(error)}`));
+}
+
 function cosineSimilarity(a, b) {
   let dot = 0;
   let aNorm = 0;
@@ -88,6 +95,18 @@ async function embedScanImage(base64Image) {
 }
 
 async function embedCandidateImage(card) {
+  const { data: stored, error } = await supabase
+    .from('card_clip_embeddings')
+    .select('embedding, model')
+    .eq('card_id', card.id)
+    .eq('model', CLIP_MODEL)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (Array.isArray(stored?.embedding) && stored.embedding.length > 0) {
+    return Float32Array.from(stored.embedding);
+  }
+
   const url = card.image_large || card.image_small;
   if (!url) return null;
 

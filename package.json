@@ -11,7 +11,8 @@
     "lint": "expo lint",
     "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts",
     "daily-tcgcsv-sync": "tsx scripts/daily-tcgcsv-sync.ts",
-    "fingerprint-cards": "npm --prefix scripts/card-fingerprinter start"
+    "fingerprint-cards": "npm --prefix scripts/card-fingerprinter start",
+    "clip-embed-cards": "npm --prefix scripts/card-clip-embedder start"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
