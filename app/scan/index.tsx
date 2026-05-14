@@ -199,6 +199,21 @@ function hasLongerNumberHint(printedNumber?: PrintedNumber | null) {
   return pattern.test(printedNumber.ocrText);
 }
 
+function shouldTryNameTotalFallback(
+  printedNumber?: PrintedNumber | null,
+  localIndexResult?: { candidates?: LocalScanCard[] | null; needsVisualRerank?: boolean } | null,
+  localResult?: { needsVisualRerank?: boolean; match?: ScannedCard | null } | null
+) {
+  if (!printedNumber || localResult?.match) return false;
+  return Boolean(
+    localResult?.needsVisualRerank
+    || !localIndexResult
+    || localIndexResult?.needsVisualRerank
+    || localIndexResult?.candidates?.length === 0
+    || isBroadNumberRegion(printedNumber.region)
+  );
+}
+
 function getOcrRegionCrop(
   width: number,
   height: number,
@@ -848,7 +863,7 @@ export default function ScanScreen() {
         let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
         let localResult = localIndexResult?.match ? localIndexResult : await identifyWithLocalAi(printedNumber, expectedSetId);
         const firstLocalDoneAt = Date.now();
-        if (!localResult?.match && (localResult?.needsVisualRerank || localIndexResult?.needsVisualRerank) && printedNumber) {
+        if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
           const nameText = await readOcrRegionText(bestUri, capture.width, capture.height, NAME_OCR_REGION);
           const nameOcrDoneAt = Date.now();
           if (nameText) {
@@ -917,7 +932,7 @@ export default function ScanScreen() {
         printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
         let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
         let localResult = localIndexResult?.match ? localIndexResult : await identifyWithLocalAi(printedNumber, expectedSetId);
-        if (!localResult?.match && localResult?.needsVisualRerank && printedNumber) {
+        if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
           const nameText = await readOcrRegionText(bestUri, hqCapture.width, hqCapture.height, NAME_OCR_REGION);
           if (nameText) {
             printedNumber = {

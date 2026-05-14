@@ -35,6 +35,16 @@ import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
 
 type ChartRange = '1D' | '7D' | '30D' | 'ALL';
 type ChartMode = 'TCG' | 'EBAY' | 'BOTH';
+type DailyMover = {
+  cardId: string;
+  name: string;
+  setName: string;
+  imageUrl: string | null;
+  latest: number;
+  previous: number;
+  change: number;
+  percent: number;
+};
 
 // ===============================
 // CONSTANTS
@@ -84,13 +94,26 @@ const formatMoney = (value: number) => `£${value.toFixed(2)}`;
 const formatSignedMoney = (value: number) => `${value > 0 ? '+' : ''}£${value.toFixed(2)}`;
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
 
-const getRangeStartDate = (range: ChartRange): string | null => {
-  if (range === 'ALL') return null;
-  const date = new Date();
-  if (range === '1D') date.setDate(date.getDate() - 1);
-  if (range === '7D') date.setDate(date.getDate() - 7);
-  if (range === '30D') date.setDate(date.getDate() - 30);
-  return date.toISOString();
+const toDayKey = (value: Date | string) => {
+  const date = typeof value === 'string' ? new Date(value) : value;
+  return date.toISOString().split('T')[0];
+};
+
+const buildDayKeys = (range: ChartRange, availableDays: string[]) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (range === 'ALL') {
+    const days = [...new Set([...availableDays, toDayKey(today)])].sort();
+    return days.length >= 2 ? days : days.length === 1 ? [days[0], days[0]] : [];
+  }
+
+  const count = range === '1D' ? 2 : range === '7D' ? 8 : 31;
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (count - 1 - index));
+    return toDayKey(date);
+  });
 };
 
 const getPriceFromSnapshot = (row: any, source: 'tcg' | 'ebay'): number | null => {
@@ -252,6 +275,7 @@ export default function HubScreen() {
   const [collectionTotal, setCollectionTotal] = useState(0);
   const [collectionChangeAmount, setCollectionChangeAmount] = useState(0);
   const [collectionChangePercent, setCollectionChangePercent] = useState(0);
+  const [dailyMovers, setDailyMovers] = useState<DailyMover[]>([]);
 
   // Stats
   const [ownedCardCount, setOwnedCardCount] = useState(0);
@@ -402,6 +426,7 @@ export default function HubScreen() {
         setCollectionChangePercent(0);
         setUnpricedCardCount(0);
         setChartData({ tcg: [], ebay: [] });
+        setDailyMovers([]);
         return;
       }
 
@@ -413,9 +438,6 @@ let snapshotQuery = supabase
   .in('card_id', storedCardIds)
   .eq('user_id', currentUser?.id ?? '')
   .order('snapshot_at', { ascending: true });
-
-const rangeStart = getRangeStartDate(chartRange);
-if (rangeStart) snapshotQuery = snapshotQuery.gte('snapshot_at', rangeStart);
 
 const { data, error } = await snapshotQuery;
       if (error) throw error;
@@ -446,6 +468,7 @@ const { data, error } = await snapshotQuery;
       let totalPrevious = 0;
       let cardsWithPrevious = 0;
       let unpriced = 0;
+      const moverRows: DailyMover[] = [];
 
       for (const card of ownedCards) {
         const snapshots = groupedByCard[card.card_id] ?? [];
@@ -472,6 +495,19 @@ const { data, error } = await snapshotQuery;
         if (latestGbp != null && previousGbp != null) {
           totalPrevious += previousGbp;
           cardsWithPrevious += 1;
+          const cardChange = latestGbp - previousGbp;
+          if (cardChange > 0) {
+            moverRows.push({
+              cardId: card.card_id,
+              name: card.card_name ?? card.card?.name ?? card.card_id,
+              setName: card.set_name ?? card.card?.set?.name ?? card.set_id ?? '',
+              imageUrl: card.image_url ?? card.card?.images?.small ?? null,
+              latest: latestGbp,
+              previous: previousGbp,
+              change: cardChange,
+              percent: previousGbp !== 0 ? (cardChange / previousGbp) * 100 : 0,
+            });
+          }
         }
       }
 
@@ -498,25 +534,31 @@ const { data, error } = await snapshotQuery;
         ? (change / totalPrevious) * 100
         : 0;
 
-      const days = Object.keys(groupedByDay).sort();
+      const days = buildDayKeys(chartRange, Object.keys(groupedByDay).sort());
 
       // groupedByDay already has USD→GBP applied for TCG so no further conversion needed
-      const buildValues = (source: 'tcg' | 'ebay') =>
-        days.map((day) => {
-          const pricesForDay = groupedByDay[day][source];
+      const buildValues = (source: 'tcg' | 'ebay') => {
+        const latestByCard: Record<string, number> = {};
+        return days.map((day) => {
+          const pricesForDay = groupedByDay[day]?.[source] ?? {};
+          Object.entries(pricesForDay).forEach(([cardId, price]) => {
+            if (typeof price === 'number') latestByCard[cardId] = price;
+          });
           let dayTotal = 0;
           for (const cardId of storedCardIds) {
-            const price = pricesForDay[cardId];
+            const price = latestByCard[cardId];
             if (typeof price === 'number') dayTotal += price;
           }
           return dayTotal;
         }).filter((v) => Number.isFinite(v) && v > 0);
+      };
 
       setCollectionTotal(totalLatest);
       setCollectionChangeAmount(change);
       setCollectionChangePercent(percent);
       setUnpricedCardCount(unpriced);
       setChartData({ tcg: buildValues('tcg'), ebay: buildValues('ebay') });
+      setDailyMovers(moverRows.sort((a, b) => b.change - a.change).slice(0, 3));
 
       // Auto-post value change to activity feed
       if (chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
@@ -552,6 +594,7 @@ const { data, error } = await snapshotQuery;
       setCollectionChangePercent(0);
       setUnpricedCardCount(0);
       setChartData({ tcg: [], ebay: [] });
+      setDailyMovers([]);
     }
   }, [chartRange, chartMode]);
 
@@ -758,6 +801,52 @@ const { data, error } = await snapshotQuery;
           </View>
         </View>
 
+        {dailyMovers.length > 0 && (
+          <View style={{ marginBottom: 22 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Top 3 Movers Today</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="trending-up" size={16} color="#22C55E" />
+                <Text style={{ color: '#22C55E', fontSize: 12, fontWeight: '900' }}>Value drivers</Text>
+              </View>
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 10 }}>
+              {dailyMovers.map((mover, index) => (
+                <View
+                  key={`${mover.cardId}-${index}`}
+                  style={{
+                    width: 150,
+                    backgroundColor: theme.colors.card,
+                    borderRadius: 18,
+                    padding: 10,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                    ...cardShadow,
+                  }}
+                >
+                  <View style={{ position: 'absolute', top: 8, left: 8, zIndex: 2, backgroundColor: '#22C55E', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>#{index + 1}</Text>
+                  </View>
+                  {mover.imageUrl ? (
+                    <Image source={{ uri: mover.imageUrl }} style={{ width: '100%', height: 142, marginBottom: 8 }} resizeMode="contain" />
+                  ) : (
+                    <View style={{ height: 142, borderRadius: 12, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                      <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
+                    </View>
+                  )}
+                  <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{mover.name}</Text>
+                  <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3 }}>{mover.setName}</Text>
+                  <Text style={{ color: '#22C55E', fontSize: 15, fontWeight: '900', marginTop: 8 }}>{formatSignedMoney(mover.change)}</Text>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginTop: 2 }}>
+                    {formatSignedPercent(mover.percent)} to {formatMoney(mover.latest)}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
         {/* QUICK STATS */}
         <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 12 }}>Quick Stats</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 20 }}>
@@ -865,7 +954,7 @@ const { data, error } = await snapshotQuery;
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.colors.border }}>
             <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>🐛 Report a Bug</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>Describe what happened and we'll look into it.</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>Describe what happened and we&apos;ll look into it.</Text>
             <TextInput
               value={bugText}
               onChangeText={setBugText}
@@ -889,7 +978,7 @@ const { data, error } = await snapshotQuery;
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, borderWidth: 1, borderColor: theme.colors.border }}>
             <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginBottom: 6 }}>💬 Send Feedback</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>Ideas, suggestions, or anything else — we'd love to hear it.</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>Ideas, suggestions, or anything else — we&apos;d love to hear it.</Text>
             <TextInput
               value={feedbackText}
               onChangeText={setFeedbackText}

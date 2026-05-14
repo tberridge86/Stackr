@@ -1,4 +1,5 @@
 import express from 'express';
+import { Buffer } from 'buffer';
 import { createClient } from '@supabase/supabase-js';
 import { pipeline, RawImage } from '@huggingface/transformers';
 
@@ -246,6 +247,21 @@ router.post('/identify', async (req, res) => {
     } else if (selected && broadLowNumberRead && !setId) {
       selected = null;
       resolvedBy = null;
+    }
+
+    if (!selected && ocrText && (candidates.length === 0 || broadLowNumberRead)) {
+      const nameTotalMatches = catalog.filter((card) => {
+        if (getSetPrintedTotal(card) !== printedNumber.total) return false;
+        if (setId && card.set_id !== setId) return false;
+        const name = normaliseOcrText(card.name);
+        return name && ocrText.includes(name);
+      });
+
+      if (nameTotalMatches.length === 1) {
+        candidates = nameTotalMatches;
+        selected = nameTotalMatches[0];
+        resolvedBy = 'ocr-name-total';
+      }
     }
 
     if (!selected && ocrText) {
