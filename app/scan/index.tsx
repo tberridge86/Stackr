@@ -669,7 +669,10 @@ export default function ScanScreen() {
       const base64 = capture.base64;
       let bestBase64 = base64;
       let bestUri = capture.uri;
+      const scanStartedAt = Date.now();
+      const captureDoneAt = Date.now();
       let printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height);
+      const numberOcrDoneAt = Date.now();
 
       // Duplicate frame check
       const sig = `${base64.slice(0, 48)}:${base64.length}`;
@@ -691,16 +694,44 @@ export default function ScanScreen() {
 
       // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
       if (!match && useLocalAi) {
-        let localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+        let localResult = await identifyWithLocalAi(printedNumber, expectedSetId);
+        const firstLocalDoneAt = Date.now();
         if (!localResult?.match && localResult?.needsVisualRerank && printedNumber) {
           const nameText = await readOcrRegionText(bestUri, capture.width, capture.height, NAME_OCR_REGION);
+          const nameOcrDoneAt = Date.now();
           if (nameText) {
             printedNumber = {
               ...printedNumber,
               ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
             };
-            localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+            localResult = await identifyWithLocalAi(printedNumber, expectedSetId);
+            if (!localResult?.match && localResult?.needsVisualRerank) {
+              localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+            }
+            console.log('Scan timing:', {
+              captureMs: captureDoneAt - scanStartedAt,
+              numberOcrMs: numberOcrDoneAt - captureDoneAt,
+              firstResolveMs: firstLocalDoneAt - numberOcrDoneAt,
+              nameOcrMs: nameOcrDoneAt - firstLocalDoneAt,
+              secondResolveMs: Date.now() - nameOcrDoneAt,
+              totalMs: Date.now() - scanStartedAt,
+            });
+          } else {
+            console.log('Scan timing:', {
+              captureMs: captureDoneAt - scanStartedAt,
+              numberOcrMs: numberOcrDoneAt - captureDoneAt,
+              firstResolveMs: firstLocalDoneAt - numberOcrDoneAt,
+              nameOcrMs: nameOcrDoneAt - firstLocalDoneAt,
+              totalMs: Date.now() - scanStartedAt,
+            });
           }
+        } else {
+          console.log('Scan timing:', {
+            captureMs: captureDoneAt - scanStartedAt,
+            numberOcrMs: numberOcrDoneAt - captureDoneAt,
+            firstResolveMs: firstLocalDoneAt - numberOcrDoneAt,
+            totalMs: Date.now() - scanStartedAt,
+          });
         }
         match = localResult?.match ?? null;
       }
@@ -710,7 +741,7 @@ export default function ScanScreen() {
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
         printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
-        let localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+        let localResult = await identifyWithLocalAi(printedNumber, expectedSetId);
         if (!localResult?.match && localResult?.needsVisualRerank && printedNumber) {
           const nameText = await readOcrRegionText(bestUri, hqCapture.width, hqCapture.height, NAME_OCR_REGION);
           if (nameText) {
@@ -718,7 +749,10 @@ export default function ScanScreen() {
               ...printedNumber,
               ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
             };
-            localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+            localResult = await identifyWithLocalAi(printedNumber, expectedSetId);
+            if (!localResult?.match && localResult?.needsVisualRerank) {
+              localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
+            }
           }
         }
         match = localResult?.match ?? null;

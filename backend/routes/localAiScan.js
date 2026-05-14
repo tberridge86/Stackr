@@ -13,6 +13,9 @@ const CLIP_MODEL = process.env.CLIP_MODEL || 'Xenova/clip-vit-base-patch32';
 let clipExtractorPromise = null;
 const candidateEmbeddingCache = new Map();
 const CLIP_WARMUP_ON_BOOT = process.env.CLIP_WARMUP_ON_BOOT !== 'false';
+let cardCatalogPromise = null;
+let cardCatalogLoadedAt = 0;
+const CARD_CATALOG_TTL_MS = 60 * 60 * 1000;
 
 function normaliseCardName(value) {
   return String(value ?? '').trim().toLowerCase();
@@ -65,6 +68,37 @@ function formatCard(card) {
   };
 }
 
+async function getCardCatalog() {
+  if (cardCatalogPromise && Date.now() - cardCatalogLoadedAt < CARD_CATALOG_TTL_MS) {
+    return cardCatalogPromise;
+  }
+
+  cardCatalogPromise = (async () => {
+    const startedAt = Date.now();
+    const pageSize = 1000;
+    let from = 0;
+    const rows = [];
+
+    while (true) {
+      const { data, error } = await supabase
+        .from('pokemon_cards')
+        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+        .range(from, from + pageSize - 1);
+
+      if (error) throw error;
+      rows.push(...(data ?? []));
+      if (!data || data.length < pageSize) break;
+      from += pageSize;
+    }
+
+    cardCatalogLoadedAt = Date.now();
+    console.log(`[local-ai] card catalog loaded rows=${rows.length} total=${Date.now() - startedAt}ms`);
+    return rows;
+  })();
+
+  return cardCatalogPromise;
+}
+
 function getClipExtractor() {
   if (!clipExtractorPromise) {
     clipExtractorPromise = pipeline('image-feature-extraction', CLIP_MODEL);
@@ -76,6 +110,9 @@ if (CLIP_WARMUP_ON_BOOT) {
   getClipExtractor()
     .then(() => console.log(`[local-ai] CLIP warmup ready model=${CLIP_MODEL}`))
     .catch((error) => console.log(`[local-ai] CLIP warmup failed: ${error?.message ?? String(error)}`));
+  getCardCatalog()
+    .then((rows) => console.log(`[local-ai] card catalog warmup ready rows=${rows.length}`))
+    .catch((error) => console.log(`[local-ai] card catalog warmup failed: ${error?.message ?? String(error)}`));
 }
 
 function cosineSimilarity(a, b) {
@@ -178,18 +215,12 @@ router.post('/identify', async (req, res) => {
       });
     }
 
-    let query = supabase
-      .from('pokemon_cards')
-      .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-      .eq('number', String(printedNumber.number))
-      .limit(250);
-
-    if (setId) query = query.eq('set_id', setId);
-
-    const { data, error } = await query;
-    if (error) throw error;
-
-    let candidates = (data ?? []).filter((card) => getSetPrintedTotal(card) === printedNumber.total);
+    const catalog = await getCardCatalog();
+    let candidates = catalog.filter((card) => (
+      String(parseInt(card.number ?? '', 10)) === String(printedNumber.number)
+      && getSetPrintedTotal(card) === printedNumber.total
+      && (!setId || card.set_id === setId)
+    ));
 
     if (nameHint) {
       const exactName = candidates.filter((card) => normaliseCardName(card.name) === normaliseCardName(nameHint));
