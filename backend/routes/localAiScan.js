@@ -35,7 +35,8 @@ function parsePrintedNumber(input) {
   if (typeof input === 'object') {
     const number = Number(input.number);
     const total = Number(input.total);
-    if (Number.isFinite(number) && Number.isFinite(total)) return { number, total };
+    const region = typeof input.region === 'string' ? input.region : null;
+    if (Number.isFinite(number) && Number.isFinite(total)) return { number, total, region };
     return null;
   }
 
@@ -45,7 +46,11 @@ function parsePrintedNumber(input) {
   const number = Number(match[1]);
   const total = Number(match[2]);
   if (!Number.isFinite(number) || !Number.isFinite(total)) return null;
-  return { number, total };
+  return { number, total, region: null };
+}
+
+function isBroadNumberRegion(region) {
+  return region === 'bottom-band' || region === 'lower-half' || region === 'full-card';
 }
 
 function getSetPrintedTotal(card) {
@@ -230,6 +235,18 @@ router.post('/identify', async (req, res) => {
     let selected = candidates.length === 1 ? candidates[0] : null;
     let resolvedBy = selected ? 'ocr-exact' : null;
     let clipSimilarity = null;
+    const broadLowNumberRead = printedNumber.number < 100 && isBroadNumberRegion(printedNumber.region);
+
+    if (selected && broadLowNumberRead && ocrText) {
+      const selectedName = normaliseOcrText(selected.name);
+      if (!selectedName || !ocrText.includes(selectedName)) {
+        selected = null;
+        resolvedBy = null;
+      }
+    } else if (selected && broadLowNumberRead && !setId) {
+      selected = null;
+      resolvedBy = null;
+    }
 
     if (!selected && ocrText) {
       const nameMatches = candidates.filter((card) => {
