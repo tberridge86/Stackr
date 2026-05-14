@@ -20,6 +20,21 @@ export type LocalScanCard = {
   rarity: string;
 };
 
+export type LocalPrintedNumberSignal = {
+  number: number;
+  total: number;
+  region?: string;
+  ocrText?: string;
+};
+
+export type LocalFusionResolveResult = {
+  match: LocalScanCard | null;
+  candidates: LocalScanCard[];
+  confidence: number;
+  resolvedBy: string | null;
+  reason?: string;
+};
+
 type LocalIndexPayload = {
   cards: LocalScanCard[];
   byNumberTotal: Record<string, number[]>;
@@ -48,6 +63,50 @@ function toScanCard(row: any): LocalScanCard {
 
 function keyFor(number: number | string, total: number | string) {
   return `${Number(number)}/${Number(total)}`;
+}
+
+function normalizeOcrText(value?: string | null) {
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function nameAppearsInText(name: string, text: string) {
+  const normalizedName = normalizeOcrText(name);
+  if (normalizedName.length < 3) return false;
+  return new RegExp(`(?:^| )${normalizedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?: |$)`).test(text);
+}
+
+function inferPrintedTotalsFromText(text?: string | null) {
+  if (!text) return [];
+  const normalised = String(text)
+    .replace(/[Oo]/g, '0')
+    .replace(/[Il|]/g, '1')
+    .replace(/[Ss]/g, '5');
+  const totals = [...normalised.matchAll(/(?:\/|\uFF0F|\u2044|\u2215)\s*0?(\d{2,3})(?=\D|$)/g)]
+    .map((match) => Number(match[1]))
+    .filter((value) => Number.isFinite(value) && value > 0);
+  return [...new Set(totals)];
+}
+
+function isBroadNumberRegion(region?: string | null) {
+  return region === 'bottom-band'
+    || region === 'bottom-left'
+    || region === 'lower-half'
+    || region === 'full-card';
+}
+
+function isSuspiciousPrintedNumber(printedNumber?: LocalPrintedNumberSignal | null) {
+  if (!printedNumber) return false;
+  return printedNumber.number < 100 && isBroadNumberRegion(printedNumber.region);
+}
+
+function addCandidates(target: Map<string, LocalScanCard>, cards?: LocalScanCard[] | null) {
+  for (const card of cards ?? []) {
+    target.set(card.id, card);
+  }
 }
 
 function buildIndex(cards: LocalScanCard[]): LocalIndexPayload {
@@ -219,11 +278,7 @@ export async function lookupLocalCardsByNameText(
   if (!index) return null;
   memoryIndex = index;
 
-  const text = String(ocrText)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const text = normalizeOcrText(ocrText);
 
   if (!text) return null;
 
@@ -231,32 +286,18 @@ export async function lookupLocalCardsByNameText(
   return index.cards
     .filter((card) => {
       if (setId && card.set_id !== setId) return false;
-      const name = card.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      return name && text.includes(name);
+      return nameAppearsInText(card.name, text);
     })
     .slice(0, limit);
 }
 
 export function resolveLocalCardsByName(cards: LocalScanCard[], ocrText?: string | null) {
-  const text = String(ocrText ?? '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const text = normalizeOcrText(ocrText);
 
   if (!text) return null;
 
   const matches = cards.filter((card) => {
-    const name = card.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return name && text.includes(name);
+    return nameAppearsInText(card.name, text);
   });
 
   return matches.length === 1 ? matches[0] : null;
@@ -273,26 +314,186 @@ export async function lookupLocalCardByNameAndTotal(
   if (!index) return null;
   memoryIndex = index;
 
-  const text = String(ocrText)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const text = normalizeOcrText(ocrText);
 
   if (!text) return null;
 
   const matches = index.cards.filter((card) => {
     if (card.set_printed_total !== total) return false;
     if (setId && card.set_id !== setId) return false;
-    const name = card.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    return name && text.includes(name);
+    return nameAppearsInText(card.name, text);
   });
 
   return matches.length === 1 ? matches[0] : null;
+}
+
+export async function lookupLocalCardByNameTotalAndNumberHint(
+  total?: number | null,
+  ocrText?: string | null,
+  printedNumber?: { number: number; total: number } | null,
+  setId?: string | null
+) {
+  if (!total || !ocrText) return null;
+
+  const index = memoryIndex ?? await loadStoredIndex();
+  if (!index) return null;
+  memoryIndex = index;
+
+  const text = normalizeOcrText(ocrText);
+  if (!text) return null;
+
+  const matches = index.cards.filter((card) => {
+    if (card.set_printed_total !== total) return false;
+    if (setId && card.set_id !== setId) return false;
+    return nameAppearsInText(card.name, text);
+  });
+
+  if (matches.length === 1) return matches[0];
+
+  const numberHint = printedNumber?.number;
+  if (!numberHint || matches.length === 0) return null;
+
+  const exactMatches = matches.filter((card) => Number.parseInt(card.number, 10) === numberHint);
+  if (exactMatches.length === 1) return exactMatches[0];
+
+  if (numberHint < 100) {
+    const suffixMatches = matches.filter((card) => String(Number.parseInt(card.number, 10)).endsWith(String(numberHint)));
+    if (suffixMatches.length === 1) return suffixMatches[0];
+  }
+
+  return null;
+}
+
+export async function resolveLocalCardByFusion(
+  signals: {
+    printedNumber?: LocalPrintedNumberSignal | null;
+    nameText?: string | null;
+    totalHintText?: string | null;
+    setId?: string | null;
+  },
+  options?: { allowBuild?: boolean }
+): Promise<LocalFusionResolveResult | null> {
+  const index = memoryIndex
+    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+  if (!index) return null;
+  memoryIndex = index;
+
+  const printedNumber = signals.printedNumber ?? null;
+  const nameText = normalizeOcrText(signals.nameText);
+  const combinedText = normalizeOcrText(`${signals.printedNumber?.ocrText ?? ''}\n${signals.nameText ?? ''}\n${signals.totalHintText ?? ''}`);
+  const inferredTotals = new Set([
+    ...(printedNumber?.total ? [printedNumber.total] : []),
+    ...inferPrintedTotalsFromText(signals.totalHintText),
+    ...inferPrintedTotalsFromText(signals.nameText),
+    ...inferPrintedTotalsFromText(printedNumber?.ocrText),
+  ]);
+  const setId = signals.setId ?? null;
+  const suspiciousNumber = isSuspiciousPrintedNumber(printedNumber);
+  const pool = new Map<string, LocalScanCard>();
+
+  if (printedNumber?.number && printedNumber.total) {
+    const exactIds = index.byNumberTotal[keyFor(printedNumber.number, printedNumber.total)] ?? [];
+    addCandidates(pool, exactIds.map((id) => index.cards[id]));
+  }
+
+  if (inferredTotals.size > 0) {
+    addCandidates(pool, index.cards.filter((card) => (
+      card.set_printed_total != null
+      && inferredTotals.has(card.set_printed_total)
+      && (!setId || card.set_id === setId)
+    )));
+  }
+
+  if (nameText) {
+    addCandidates(pool, index.cards.filter((card) => (
+      (!setId || card.set_id === setId)
+      && nameAppearsInText(card.name, nameText)
+    )));
+  }
+
+  if (setId) {
+    addCandidates(pool, index.cards.filter((card) => card.set_id === setId));
+  }
+
+  const candidates = [...pool.values()].filter((card) => !setId || card.set_id === setId);
+  if (candidates.length === 0) {
+    return { match: null, candidates: [], confidence: 0, resolvedBy: null, reason: 'no-candidates' };
+  }
+
+  const scored = candidates.map((card) => {
+    const cardNumber = Number.parseInt(card.number, 10);
+    const totalMatches = card.set_printed_total != null && inferredTotals.has(card.set_printed_total);
+    const exactNumber = printedNumber?.number != null && cardNumber === printedNumber.number;
+    const suffixNumber = Boolean(
+      suspiciousNumber
+      && printedNumber?.number
+      && String(cardNumber).endsWith(String(printedNumber.number))
+    );
+    const nameMatches = Boolean(nameText && nameAppearsInText(card.name, nameText));
+    const combinedNameMatches = Boolean(combinedText && nameAppearsInText(card.name, combinedText));
+
+    let score = 0;
+    const reasons: string[] = [];
+
+    if (setId && card.set_id === setId) {
+      score += 35;
+      reasons.push('set');
+    }
+
+    if (totalMatches) {
+      score += 35;
+      reasons.push('total');
+    }
+
+    if (exactNumber) {
+      score += suspiciousNumber ? 12 : 60;
+      reasons.push(suspiciousNumber ? 'weak-number' : 'number');
+    }
+
+    if (suffixNumber && !exactNumber) {
+      score += 50;
+      reasons.push('number-suffix');
+    }
+
+    if (nameMatches || combinedNameMatches) {
+      score += 70;
+      reasons.push('name');
+    } else if (nameText) {
+      score -= suspiciousNumber ? 70 : 25;
+      reasons.push('name-missing');
+    }
+
+    if (suspiciousNumber && exactNumber && nameText && !nameMatches && !combinedNameMatches) {
+      score -= 70;
+      reasons.push('suspicious-exact-rejected');
+    }
+
+    return { card, score, reasons };
+  }).sort((a, b) => b.score - a.score);
+
+  const best = scored[0];
+  const second = scored[1];
+  const margin = best.score - (second?.score ?? 0);
+  const confidence = Math.max(0, Math.min(99, best.score));
+  const strongEnough = best.score >= 90 || (best.score >= 75 && margin >= 15);
+
+  console.log('Local fusion resolver:', {
+    best: `${best.card.name} (${best.card.set_name}) #${best.card.number}`,
+    score: best.score,
+    margin,
+    reasons: best.reasons,
+    candidates: candidates.length,
+    runnerUp: second ? `${second.card.name} (${second.card.set_name}) #${second.card.number}` : null,
+    runnerUpScore: second?.score ?? null,
+  });
+
+  return {
+    match: strongEnough ? best.card : null,
+    candidates: scored.slice(0, 25).map((item) => item.card),
+    confidence,
+    resolvedBy: strongEnough ? `local-fusion:${best.reasons.join('+')}` : null,
+    reason: strongEnough ? undefined : 'ambiguous',
+  };
 }
 
 export function warmLocalCardIndex() {

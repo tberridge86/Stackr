@@ -11,6 +11,8 @@ const supabase = createClient(
 );
 
 const CLIP_MODEL = process.env.CLIP_MODEL || 'Xenova/clip-vit-base-patch32';
+const CLIP_ACCEPT_SIMILARITY = Number(process.env.CLIP_ACCEPT_SIMILARITY || 0.68);
+const CLIP_ACCEPT_MARGIN = Number(process.env.CLIP_ACCEPT_MARGIN || 0.025);
 let clipExtractorPromise = null;
 const candidateEmbeddingCache = new Map();
 const CLIP_WARMUP_ON_BOOT = process.env.CLIP_WARMUP_ON_BOOT !== 'false';
@@ -28,6 +30,13 @@ function normaliseOcrText(value) {
     .replace(/[^a-z0-9]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function nameAppearsInText(name, text) {
+  const normalizedName = normaliseOcrText(name);
+  if (normalizedName.length < 3) return false;
+  const escaped = normalizedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?:^| )${escaped}(?: |$)`).test(text);
 }
 
 function parsePrintedNumber(input) {
@@ -211,7 +220,15 @@ async function rerankCandidatesWithClip(candidates, base64Image) {
   }
 
   scored.sort((a, b) => b.similarity - a.similarity);
-  return scored[0] ?? null;
+  const best = scored[0] ?? null;
+  const second = scored[1] ?? null;
+  if (!best) return null;
+
+  return {
+    ...best,
+    secondSimilarity: second?.similarity ?? null,
+    margin: second ? best.similarity - second.similarity : 1,
+  };
 }
 
 router.get('/identify', (_req, res) => {
@@ -285,21 +302,28 @@ router.post('/identify', async (req, res) => {
       const nameTotalMatches = catalog.filter((card) => {
         if (getSetPrintedTotal(card) !== printedNumber.total) return false;
         if (setId && card.set_id !== setId) return false;
-        const name = normaliseOcrText(card.name);
-        return name && ocrText.includes(name);
+        return nameAppearsInText(card.name, ocrText);
       });
 
       if (nameTotalMatches.length === 1) {
         candidates = nameTotalMatches;
         selected = nameTotalMatches[0];
         resolvedBy = 'ocr-name-total';
+      } else if (nameTotalMatches.length > 1 && broadLowNumberRead) {
+        const suffixMatches = nameTotalMatches.filter((card) => (
+          String(parseInt(card.number ?? '', 10)).endsWith(String(printedNumber.number))
+        ));
+        if (suffixMatches.length === 1) {
+          candidates = nameTotalMatches;
+          selected = suffixMatches[0];
+          resolvedBy = 'ocr-name-total-suffix';
+        }
       }
     }
 
     if (!selected && ocrText) {
       const nameMatches = candidates.filter((card) => {
-        const name = normaliseOcrText(card.name);
-        return name && ocrText.includes(name);
+        return nameAppearsInText(card.name, ocrText);
       });
 
       if (nameMatches.length === 1) {
@@ -311,9 +335,21 @@ router.post('/identify', async (req, res) => {
     if (!selected && candidates.length > 1 && base64Image) {
       const clipBest = await rerankCandidatesWithClip(candidates, base64Image);
       if (clipBest?.candidate) {
-        selected = clipBest.candidate;
         clipSimilarity = Number(clipBest.similarity.toFixed(4));
-        resolvedBy = 'clip';
+        const clipMargin = Number((clipBest.margin ?? 0).toFixed(4));
+        if (clipBest.similarity >= CLIP_ACCEPT_SIMILARITY && clipBest.margin >= CLIP_ACCEPT_MARGIN) {
+          selected = clipBest.candidate;
+          resolvedBy = 'clip';
+        } else {
+          console.log('[local-ai] clip rejected low confidence', {
+            best: clipBest.candidate.name,
+            similarity: clipSimilarity,
+            secondSimilarity: clipBest.secondSimilarity == null ? null : Number(clipBest.secondSimilarity.toFixed(4)),
+            margin: clipMargin,
+            requiredSimilarity: CLIP_ACCEPT_SIMILARITY,
+            requiredMargin: CLIP_ACCEPT_MARGIN,
+          });
+        }
       }
     }
 
