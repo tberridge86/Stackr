@@ -50,7 +50,7 @@ function parsePrintedNumber(input) {
 }
 
 function isBroadNumberRegion(region) {
-  return region === 'bottom-band' || region === 'lower-half' || region === 'full-card';
+  return region === 'bottom-band' || region === 'bottom-left' || region === 'lower-half' || region === 'full-card';
 }
 
 function getSetPrintedTotal(card) {

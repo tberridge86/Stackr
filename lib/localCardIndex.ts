@@ -193,6 +193,39 @@ export function resolveLocalCardsByName(cards: LocalScanCard[], ocrText?: string
   return matches.length === 1 ? matches[0] : null;
 }
 
+export async function lookupLocalCardByNameAndTotal(
+  total?: number | null,
+  ocrText?: string | null,
+  setId?: string | null
+) {
+  if (!total || !ocrText) return null;
+
+  const index = memoryIndex ?? await loadStoredIndex();
+  if (!index) return null;
+  memoryIndex = index;
+
+  const text = String(ocrText)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!text) return null;
+
+  const matches = index.cards.filter((card) => {
+    if (card.set_printed_total !== total) return false;
+    if (setId && card.set_id !== setId) return false;
+    const name = card.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return name && text.includes(name);
+  });
+
+  return matches.length === 1 ? matches[0] : null;
+}
+
 export function warmLocalCardIndex() {
   getLocalCardIndex().catch((error) => {
     console.log('Local card index warmup failed:', error);

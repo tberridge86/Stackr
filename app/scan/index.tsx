@@ -18,6 +18,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { PRICE_API_URL } from '../../lib/config';
 import {
+  lookupLocalCardByNameAndTotal,
   lookupLocalCardsByPrintedNumber,
   resolveLocalCardsByName,
   warmLocalCardIndex,
@@ -160,7 +161,7 @@ function hasThreeDigitCollectorEvidence(text?: string | null) {
 }
 
 function isBroadNumberRegion(region?: string) {
-  return region === 'bottom-band' || region === 'lower-half' || region === 'full-card';
+  return region === 'bottom-band' || region === 'bottom-left' || region === 'lower-half' || region === 'full-card';
 }
 
 function normalizeCardName(value?: string | null) {
@@ -855,8 +856,29 @@ export default function ScanScreen() {
               ...printedNumber,
               ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
             };
+            if (
+              printedNumber.number < 100
+              && isBroadNumberRegion(printedNumber.region)
+            ) {
+              const nameTotalMatch = await lookupLocalCardByNameAndTotal(
+                printedNumber.total,
+                printedNumber.ocrText,
+                expectedSetId
+              );
+              if (nameTotalMatch) {
+                localResult = {
+                  match: toScannedCard(nameTotalMatch),
+                  needsVisualRerank: false,
+                  resolvedBy: 'local-name-total',
+                };
+              }
+            }
             localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-            localResult = localIndexResult?.match ? localIndexResult : await identifyWithLocalAi(printedNumber, expectedSetId);
+            localResult = localResult?.match
+              ? localResult
+              : localIndexResult?.match
+                ? localIndexResult
+                : await identifyWithLocalAi(printedNumber, expectedSetId);
             if (!localResult?.match && localResult?.needsVisualRerank) {
               localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
             }
@@ -902,8 +924,29 @@ export default function ScanScreen() {
               ...printedNumber,
               ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
             };
+            if (
+              printedNumber.number < 100
+              && isBroadNumberRegion(printedNumber.region)
+            ) {
+              const nameTotalMatch = await lookupLocalCardByNameAndTotal(
+                printedNumber.total,
+                printedNumber.ocrText,
+                expectedSetId
+              );
+              if (nameTotalMatch) {
+                localResult = {
+                  match: toScannedCard(nameTotalMatch),
+                  needsVisualRerank: false,
+                  resolvedBy: 'local-name-total',
+                };
+              }
+            }
             localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-            localResult = localIndexResult?.match ? localIndexResult : await identifyWithLocalAi(printedNumber, expectedSetId);
+            localResult = localResult?.match
+              ? localResult
+              : localIndexResult?.match
+                ? localIndexResult
+                : await identifyWithLocalAi(printedNumber, expectedSetId);
             if (!localResult?.match && localResult?.needsVisualRerank) {
               localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
             }
