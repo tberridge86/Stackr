@@ -1,9 +1,12 @@
 import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const router = express.Router();
-const PACK_ROOT = process.env.SCANNER_PACK_ROOT || path.resolve('backend/data/scanner-packs');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const BACKEND_ROOT = path.resolve(__dirname, '..');
+const PACK_ROOT = process.env.SCANNER_PACK_ROOT || path.join(BACKEND_ROOT, 'data/scanner-packs');
 const DEFAULT_PACK_ID = process.env.SCANNER_PACK_ID || 'en-clip-base-v1';
 
 function getPackDir(packId = DEFAULT_PACK_ID) {

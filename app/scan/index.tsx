@@ -32,6 +32,7 @@ import {
   rerankWithOnDeviceVisual,
   setBundledOnDeviceVisualModel,
 } from '../../lib/onDeviceVisualMatcher';
+import { syncScannerPack } from '../../lib/scannerPack';
 import clipVisionModel from '../../assets/models/clip-vit-base-patch32-vision-quantized.zip';
 
 setBundledOnDeviceVisualModel(clipVisionModel);
@@ -509,6 +510,18 @@ export default function ScanScreen() {
       setLoadingBinders(false);
     });
     warmLocalCardIndex();
+    syncScannerPack()
+      .then((manifest) => {
+        console.log('Scanner pack ready:', {
+          id: manifest.id,
+          cards: manifest.cardCount,
+          dimensions: manifest.dimensions,
+          generatedAt: manifest.generatedAt,
+        });
+      })
+      .catch((error) => {
+        console.log('Scanner pack sync failed:', error);
+      });
   }, []);
 
   // ===============================
