@@ -109,6 +109,31 @@ function addCandidates(target: Map<string, LocalScanCard>, cards?: LocalScanCard
   }
 }
 
+function isHighRarity(card: LocalScanCard) {
+  return /rare|secret|illustration|special|hyper|ultra/i.test(card.rarity ?? '');
+}
+
+function getDuplicateSecretTieBreak(scored: { card: LocalScanCard; score: number; reasons: string[] }[]) {
+  const topScore = scored[0]?.score;
+  if (topScore == null) return null;
+
+  const tied = scored.filter((item) => item.score === topScore && item.reasons.includes('name'));
+  if (tied.length < 2 || tied.length > 4) return null;
+
+  const names = new Set(tied.map((item) => normalizeOcrText(item.card.name)));
+  const sets = new Set(tied.map((item) => item.card.set_id));
+  const totals = new Set(tied.map((item) => item.card.set_printed_total));
+  if (names.size !== 1 || sets.size !== 1 || totals.size !== 1) return null;
+
+  const secretCandidates = tied.filter((item) => {
+    const number = Number.parseInt(item.card.number, 10);
+    const total = item.card.set_printed_total;
+    return Boolean(total && number > total && isHighRarity(item.card));
+  });
+
+  return secretCandidates.length === 1 ? secretCandidates[0] : null;
+}
+
 function buildIndex(cards: LocalScanCard[]): LocalIndexPayload {
   const byNumberTotal: Record<string, number[]> = {};
 
@@ -473,25 +498,30 @@ export async function resolveLocalCardByFusion(
 
   const best = scored[0];
   const second = scored[1];
-  const margin = best.score - (second?.score ?? 0);
-  const confidence = Math.max(0, Math.min(99, best.score));
-  const strongEnough = best.score >= 90 || (best.score >= 75 && margin >= 15);
+  const duplicateSecretTieBreak = getDuplicateSecretTieBreak(scored);
+  const selected = duplicateSecretTieBreak ?? best;
+  const margin = selected.score - (second?.card.id === selected.card.id ? (scored[2]?.score ?? 0) : (second?.score ?? 0));
+  const selectedScore = duplicateSecretTieBreak ? selected.score + 18 : selected.score;
+  const confidence = Math.max(0, Math.min(99, selectedScore));
+  const strongEnough = Boolean(duplicateSecretTieBreak) || selectedScore >= 90 || (selectedScore >= 75 && margin >= 15);
 
   console.log('Local fusion resolver:', {
-    best: `${best.card.name} (${best.card.set_name}) #${best.card.number}`,
-    score: best.score,
+    best: `${selected.card.name} (${selected.card.set_name}) #${selected.card.number}`,
+    score: selectedScore,
     margin,
-    reasons: best.reasons,
+    reasons: duplicateSecretTieBreak ? [...selected.reasons, 'duplicate-secret'] : selected.reasons,
     candidates: candidates.length,
     runnerUp: second ? `${second.card.name} (${second.card.set_name}) #${second.card.number}` : null,
     runnerUpScore: second?.score ?? null,
   });
 
   return {
-    match: strongEnough ? best.card : null,
+    match: strongEnough ? selected.card : null,
     candidates: scored.slice(0, 25).map((item) => item.card),
     confidence,
-    resolvedBy: strongEnough ? `local-fusion:${best.reasons.join('+')}` : null,
+    resolvedBy: strongEnough
+      ? `local-fusion:${(duplicateSecretTieBreak ? [...selected.reasons, 'duplicate-secret'] : selected.reasons).join('+')}`
+      : null,
     reason: strongEnough ? undefined : 'ambiguous',
   };
 }

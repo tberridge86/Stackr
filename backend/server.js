@@ -10,6 +10,7 @@ import Jimp from 'jimp';
 import cardsightRoutes from './routes/cardsight.js';
 import giblRoutes from './routes/gibl.js';
 import localAiScanRoutes from './routes/localAiScan.js';
+import scannerPackRoutes from './routes/scannerPacks.js';
 import stripeRoutes from './routes/stripe.js';
 import { Buffer } from 'node:buffer';
 
@@ -20,6 +21,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use('/api/cardsight', cardsightRoutes);
 app.use('/api/gibl', giblRoutes);
 app.use('/api/local-ai', localAiScanRoutes);
+app.use('/api/scanner-packs', scannerPackRoutes);
 app.use('/api/discord', discordRoutes);
 app.use('/api/stripe', stripeRoutes);
 

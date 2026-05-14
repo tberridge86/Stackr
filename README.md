@@ -51,7 +51,34 @@ Join our community of developers creating universal apps.
 
 ## On-Device Visual Scanning
 
-The scanner has an optional ONNX Runtime path for local image reranking. It is disabled by default until a mobile image-embedding model is added and the native dev client is rebuilt.
+The scanner direction is compact local scanner packs, not image files on the phone.
+
+Backend pack generation:
+
+```bash
+npm run build-scanner-pack
+```
+
+This creates:
+
+```text
+backend/data/scanner-packs/en-clip-base-v1/manifest.json
+backend/data/scanner-packs/en-clip-base-v1/vectors.i8
+```
+
+The current English pack contains the card metadata plus int8-quantized CLIP vectors. The vector file is around 10MB for roughly 20k cards.
+
+Backend pack endpoints:
+
+```text
+GET /api/scanner-packs/latest
+GET /api/scanner-packs/:packId/manifest
+GET /api/scanner-packs/:packId/vectors
+```
+
+The phone-side cache/search layer lives in `lib/scannerPack.ts`.
+
+The older ONNX Runtime path is optional and disabled by default until the native build and model loading are proven stable.
 
 Required environment values:
 

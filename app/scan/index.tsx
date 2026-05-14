@@ -68,8 +68,12 @@ const FALLBACK_NUMBER_OCR_REGIONS = [
   { name: 'lower-half', x: 0, y: 0.52, width: 1, height: 0.44 },
 ];
 const TOTAL_HINT_OCR_REGIONS = [
-  { name: 'total-hint-left', x: 0, y: 0.76, width: 0.42, height: 0.18 },
-  { name: 'total-hint-bottom', x: 0, y: 0.72, width: 0.62, height: 0.24 },
+  { name: 'total-hint-micro-left', x: 0, y: 0.84, width: 0.34, height: 0.09 },
+  { name: 'total-hint-low-left', x: 0, y: 0.81, width: 0.48, height: 0.14 },
+  { name: 'total-hint-card-number-line', x: 0, y: 0.88, width: 0.46, height: 0.08 },
+  { name: 'total-hint-card-number-tight', x: 0.03, y: 0.895, width: 0.36, height: 0.065 },
+  { name: 'total-hint-bottom-left', x: 0, y: 0.78, width: 0.58, height: 0.18 },
+  { name: 'total-hint-bottom-band', x: 0, y: 0.78, width: 1, height: 0.18 },
 ];
 const NAME_OCR_REGIONS = [
   { name: 'top-name', x: 0, y: 0, width: 1, height: 0.28 },
@@ -219,6 +223,11 @@ function inferPrintedTotalFromText(text?: string | null) {
   return totals[0] ?? null;
 }
 
+function parsePrintedNumberSignalFromText(text?: string | null): PrintedNumber | null {
+  const parsed = parsePrintedNumberFromOcr(text) ?? parsePrintedNumber(text);
+  return parsed ? repairSuspiciousPrintedNumber(parsed) : null;
+}
+
 function isBroadNumberRegion(region?: string) {
   return region === 'bottom-band' || region === 'bottom-left' || region === 'lower-half' || region === 'full-card';
 }
@@ -298,11 +307,17 @@ function getOcrRegionCrop(
   };
 }
 
-async function readOcrRegionText(uri: string, width: number, height: number, region: OcrRegion) {
+async function readOcrRegionText(
+  uri: string,
+  width: number,
+  height: number,
+  region: OcrRegion,
+  options?: { resizeWidth?: number }
+) {
   const crop = getOcrRegionCrop(width, height, region);
   const manipulated = await ImageManipulator.manipulateAsync(
     uri,
-    [{ crop }, { resize: { width: 1000 } }],
+    [{ crop }, { resize: { width: options?.resizeWidth ?? 1000 } }],
     { compress: 0.92, format: ImageManipulator.SaveFormat.JPEG }
   );
   const result = await TextRecognition.recognize(manipulated.uri);
@@ -330,7 +345,7 @@ async function readTotalHintTextFromCardImage(uri: string, width: number, height
   const chunks: string[] = [];
 
   for (const region of TOTAL_HINT_OCR_REGIONS) {
-    const text = await readOcrRegionText(uri, width, height, region);
+    const text = await readOcrRegionText(uri, width, height, region, { resizeWidth: 1800 });
     if (text.trim()) {
       console.log('Total hint OCR text:', {
         region: region.name,
@@ -1269,7 +1284,9 @@ export default function ScanScreen() {
         const nameText = await readNameTextFromCardImage(bestUri, capture.width, capture.height);
         const totalHintText = await readTotalHintTextFromCardImage(bestUri, capture.width, capture.height);
         const combinedNameAndTotalText = `${nameText}\n${totalHintText}`.trim();
-        const fusionResult = await identifyWithLocalFusion(null, expectedSetId, nameText, totalHintText);
+        const totalHintPrintedNumber = parsePrintedNumberSignalFromText(totalHintText);
+        const fusionPrintedNumber = totalHintPrintedNumber ?? null;
+        const fusionResult = await identifyWithLocalFusion(fusionPrintedNumber, expectedSetId, nameText, totalHintText);
         const nameCandidates = await lookupLocalCardsByNameText(nameText, expectedSetId);
         const inferredTotal = inferPrintedTotalFromText(combinedNameAndTotalText);
         const totalNameCandidates = inferredTotal && nameCandidates?.length
@@ -1283,6 +1300,9 @@ export default function ScanScreen() {
 
         console.log('No-number scan fallback:', {
           hasNameText: Boolean(nameText),
+          totalHintNumber: totalHintPrintedNumber
+            ? `${totalHintPrintedNumber.number}/${totalHintPrintedNumber.total}`
+            : null,
           inferredTotal,
           nameCandidates: nameCandidates?.length ?? 0,
           totalNameCandidates: totalNameCandidates?.length ?? 0,
