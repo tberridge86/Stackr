@@ -1052,7 +1052,9 @@ export default function ScanScreen() {
 
     const identifyWithRareCandyStyle = async (
       base64Image?: string | null,
-      setId?: string | null
+      setId?: string | null,
+      nameHint?: string | null,
+      printedNumberHint?: PrintedNumber | null
     ) => {
       if (!USE_RARE_CANDY_STYLE_SCAN || !base64Image) return null;
 
@@ -1064,7 +1066,14 @@ export default function ScanScreen() {
         response = await fetch(`${PRICE_API_URL}/api/rare-candy-scan/identify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base64Image, setId }),
+          body: JSON.stringify({
+            base64Image,
+            setId,
+            nameHint,
+            printedNumber: printedNumberHint
+              ? { number: printedNumberHint.number, total: printedNumberHint.total }
+              : null,
+          }),
           signal: controller.signal,
         });
       } catch (error) {
@@ -1098,6 +1107,7 @@ export default function ScanScreen() {
         margin: data?.margin,
         confidence: data?.confidence,
         accepted: data?.accepted,
+        reasons: data?.candidates?.[0]?.reasons,
         totalMs: data?.totalMs,
       });
 
@@ -1853,7 +1863,12 @@ export default function ScanScreen() {
             resolvedBy: totalNameCandidates?.length === 1 ? 'local-name-total-no-number' : 'local-name-no-number',
           });
         } else {
-          const visualResult = hasHardScanBudget(1600)
+          const rareCandyWithName = hasHardScanBudget(1200)
+            ? await identifyWithRareCandyStyle(bestBase64, expectedSetId, nameText, totalHintPrintedNumber)
+            : null;
+          const visualResult = rareCandyWithName?.match
+            ? rareCandyWithName
+            : hasHardScanBudget(1600)
             ? await identifyWithScannerPackVisual(bestBase64, setCandidates)
             : null;
           match = visualResult?.match ?? null;

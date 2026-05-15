@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -106,7 +105,7 @@ export default function OfferDetailScreen() {
   const { theme } = useTheme();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const { id } = useLocalSearchParams<{ id: string }>();
-  const listRef = useRef<FlatList>(null);
+  const scrollRef = useRef<ScrollView>(null);
   const offerId = String(id);
   const insets = useSafeAreaInsets();
 
@@ -233,7 +232,7 @@ export default function OfferDetailScreen() {
       }
 
       setTimeout(() => {
-        listRef.current?.scrollToEnd({ animated: true });
+        scrollRef.current?.scrollToEnd({ animated: true });
       }, 150);
     } catch (error: any) {
       console.log('Failed to load negotiation', error);
@@ -267,7 +266,7 @@ export default function OfferDetailScreen() {
             if (prev.some((e) => e.id === payload.new.id)) return prev;
             return [...prev, payload.new as TradeOfferEvent];
           });
-          setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
+          setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
         }
       )
       .on(
@@ -654,10 +653,12 @@ export default function OfferDetailScreen() {
         </View>
 
         <ScrollView
+          ref={scrollRef}
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 220 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
           {/* Trade Summary */}
           {offer && (
@@ -971,15 +972,8 @@ export default function OfferDetailScreen() {
           </View>
 
           {/* Messages */}
-          <FlatList
-            ref={listRef}
-            data={events}
-            keyExtractor={(item) => item.id}
-            renderItem={renderEvent}
-            scrollEnabled={false}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
-            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-            ListEmptyComponent={
+          <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+            {events.length === 0 ? (
               <View style={{ alignItems: 'center', paddingTop: 40, paddingBottom: 20 }}>
                 <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
                   No messages yet
@@ -988,8 +982,14 @@ export default function OfferDetailScreen() {
                   Start the negotiation with a message or counter offer.
                 </Text>
               </View>
-            }
-          />
+            ) : (
+              events.map((event) => (
+                <React.Fragment key={event.id}>
+                  {renderEvent({ item: event })}
+                </React.Fragment>
+              ))
+            )}
+          </View>
         </ScrollView>
 
         {/* Composer */}
