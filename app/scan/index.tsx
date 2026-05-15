@@ -252,6 +252,10 @@ function repairSuspiciousPrintedNumber(printedNumber: PrintedNumber) {
 function isSuspiciousPrintedNumber(printedNumber?: PrintedNumber | null) {
   if (!printedNumber) return false;
 
+  if (printedNumber.number < 1 || printedNumber.total < 1) {
+    return true;
+  }
+
   if (printedNumber.number > 300) {
     return true;
   }
@@ -1550,10 +1554,6 @@ export default function ScanScreen() {
         needsVisualRerank?: boolean;
         resolvedBy?: string | null;
       } | null = null;
-
-      if (!printedNumber && useLocalAi && hasHardScanBudget(RARE_CANDY_STYLE_TIMEOUT_MS + 300)) {
-        rareCandyStyleResult = await identifyWithRareCandyStyle(bestBase64, expectedSetId);
-      }
 
       // Step 2: official binders can resolve instantly from the printed card number.
       let match: ScannedCard | null = rareCandyStyleResult?.match ?? await lookupCardBySetNumber(expectedSetId, printedNumber);

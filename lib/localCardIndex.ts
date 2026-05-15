@@ -101,6 +101,7 @@ function isBroadNumberRegion(region?: string | null) {
 
 function isSuspiciousPrintedNumber(printedNumber?: LocalPrintedNumberSignal | null) {
   if (!printedNumber) return false;
+  if (printedNumber.number < 1 || printedNumber.total < 1) return true;
   return printedNumber.number < 100
     && printedNumber.number <= printedNumber.total
     && isBroadNumberRegion(printedNumber.region);

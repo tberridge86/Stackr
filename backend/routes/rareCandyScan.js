@@ -241,7 +241,14 @@ router.post('/identify', async (req, res) => {
         || scoredResult.nameMatchCount === 1
       )
     );
-    const visualAccepted = Boolean(best && best.similarity >= ACCEPT_SIMILARITY && margin >= ACCEPT_MARGIN);
+    const hasEvidenceHint = Boolean(setId || nameHint || printedNumber);
+    const visualAccepted = Boolean(
+      hasEvidenceHint
+      && best
+      && best.reasons.length > 0
+      && best.similarity >= ACCEPT_SIMILARITY
+      && margin >= ACCEPT_MARGIN
+    );
     const nameOnlyAccepted = Boolean(
       best?.evidence?.nameMatch
       && scoredResult.nameMatchCount > 1
