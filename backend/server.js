@@ -33,6 +33,8 @@ const SERPAPI_ENGINE = process.env.SERPAPI_ENGINE || 'ebay';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 const PORT = process.env.PORT || 3001;
+const EBAY_SOLD_SEARCH_TIMEOUT_MS = Number(process.env.EBAY_SOLD_SEARCH_TIMEOUT_MS || 3500);
+const EBAY_BROWSE_SEARCH_TIMEOUT_MS = Number(process.env.EBAY_BROWSE_SEARCH_TIMEOUT_MS || 4500);
 const EBAY_OAUTH_SCOPES = (
   process.env.EBAY_OAUTH_SCOPES ||
   'https://api.ebay.com/oauth/api_scope'
@@ -48,6 +50,25 @@ const supabase = createClient(
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 5000, label = 'request') {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error(`${label} timed out after ${timeoutMs}ms`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ===============================
@@ -92,7 +113,7 @@ const BLOCKED_TERMS = [
   '24k gold', '24ct gold', 'gold plated',
 
   // Other non-card formats
-  'oversized', 'digital', 'code card',
+  'oversized', 'jumbo', 'digital', 'code card',
   'mini card', 'mini print',
 
   // Keychains / wearables / accessories
@@ -141,6 +162,11 @@ const BLOCKED_TERMS = [
   'creased', 'crease', 'bent', 'inked', 'marked',
   'written on', 'torn', 'water damaged',
   'whitening', 'scratched', 'scuffed', 'faded',
+
+  // Language/version mismatches. The current app prices English cards by default.
+  'japanese', 'japan', 'jpn', 'jp ', 'korean', 'chinese', 'thai', 'indonesian',
+  'french', 'german', 'spanish', 'italian', 'portuguese', 'dutch',
+  'foreign', 'non english', 'non-english', 'world championship', 'championship deck',
 ];
 
 function titleLooksBad(title = '') {
@@ -153,40 +179,175 @@ function extractCardNumber(query = '') {
   return match ? match[1].toLowerCase() : null;
 }
 
-// Common set name mappings to abbreviations/ids
-const SET_NAME_MAPPINGS = {
-  'base set': 'base',
-  'base': 'base',
-  'jungle': 'base2',
-  'fossil': 'base3',
-  'base set 2': 'base4',
-  'legendary collection': 'base5',
-  'neo': 'neo',
-  'gym': 'gym',
-  'e-card': 'ecard',
-  'ex': 'ex',
-  'ruby sapphire': 'rs',
-  'ruby & sapphire': 'rs',
-  'diamond pearl': 'dp',
-  'diamond & pearl': 'dp',
-  'platinum': 'pt',
-  'heartgold soulsilver': 'hgss',
-  'black white': 'bw',
-  'black & white': 'bw',
-  'xy': 'xy',
-  'x y': 'xy',
-  'sun moon': 'sm',
-  'sun & moon': 'sm',
-  'sword shield': 'swsh',
-  'sword & shield': 'swsh',
-  'scarlet violet': 'sv',
-  'scarlet & violet': 'sv',
-};
+function escapeRegExp(value = '') {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function normaliseForTitleMatch(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/pok[eÃ©]mon/g, 'pokemon')
+    .replace(/[’`]/g, "'")
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9/'\s-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function titleHasWord(title = '', word = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  const target = normaliseForTitleMatch(word);
+  if (!target) return true;
+  return new RegExp(`(^|[^a-z0-9])${escapeRegExp(target)}([^a-z0-9]|$)`).test(cleaned);
+}
+
+function getCollectorNumberCandidates(number = '') {
+  const raw = String(number || '').trim().toLowerCase();
+  if (!raw) return [];
+
+  const candidates = new Set([raw]);
+  const full = raw.match(/^0*(\d+)\s*\/\s*0*(\d+)$/);
+  if (full) {
+    candidates.add(`${Number(full[1])}/${Number(full[2])}`);
+    candidates.add(`${full[1]}/${full[2]}`);
+    candidates.add(`${full[1].padStart(3, '0')}/${full[2].padStart(3, '0')}`);
+    candidates.add(`${full[1].padStart(2, '0')}/${full[2].padStart(2, '0')}`);
+  } else {
+    const single = raw.match(/^0*(\d+)$/);
+    if (single) {
+      candidates.add(String(Number(single[1])));
+      candidates.add(single[1].padStart(2, '0'));
+      candidates.add(single[1].padStart(3, '0'));
+    }
+  }
+
+  return [...candidates].filter(Boolean);
+}
+
+function titleHasCollectorNumber(title = '', number = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  const candidates = getCollectorNumberCandidates(number);
+  if (!candidates.length) return true;
+
+  return candidates.some((candidate) => {
+    if (candidate.includes('/')) {
+      const [left, right] = candidate.split('/').map((part) => escapeRegExp(part));
+      return new RegExp(`(^|[^0-9])0*${left}\\s*/\\s*0*${right}([^0-9]|$)`).test(cleaned);
+    }
+
+    const token = escapeRegExp(String(Number(candidate)));
+    return new RegExp(`(^|[^0-9])0*${token}([^0-9]|$)`).test(cleaned);
+  });
+}
+
+function titleHasCardName(title = '', name = '') {
+  const nameWords = normaliseForTitleMatch(name)
+    .split(/\s+/)
+    .filter((word) => word.length >= 2 && !['ex', 'gx', 'v', 'hp'].includes(word));
+
+  if (!nameWords.length) return true;
+  const cleaned = normaliseForTitleMatch(title);
+  return nameWords.every((word) => titleHasWord(cleaned, word));
+}
+
+function titleHasSetName(title = '', setName = '') {
+  const set = normaliseForTitleMatch(setName);
+  if (!set) return true;
+
+  const cleaned = normaliseForTitleMatch(title);
+
+  // "Base" is the most dangerous one: Base, Base Set 2, and Legendary Collection
+  // are often mixed together in listing titles.
+  if (set === 'base' || set === 'base set') {
+    if (/\bbase\s*(set\s*)?2\b/.test(cleaned)) return false;
+    if (cleaned.includes('legendary collection')) return false;
+    return /\bbase(\s+set)?\b/.test(cleaned);
+  }
+
+  if (set === 'base set 2') {
+    return /\bbase\s*(set\s*)?2\b/.test(cleaned);
+  }
+
+  const requiredWords = set
+    .split(/\s+/)
+    .filter((word) => word.length >= 2 && !['the', 'and', 'set'].includes(word));
+
+  return requiredWords.every((word) => titleHasWord(cleaned, word));
+}
+
+function getVariantMismatchReasons(title = '', { name = '', rarity = '' } = {}) {
+  const cleaned = normaliseForTitleMatch(title);
+  const cleanedWithoutName = normaliseForTitleMatch(
+    cleaned.replace(new RegExp(escapeRegExp(normaliseForTitleMatch(name)), 'g'), ' ')
+  );
+  const rarityLower = String(rarity || '').toLowerCase();
+  const reasons = [];
+
+  if (!rarityLower.includes('first') && !rarityLower.includes('1st') && /\b(1st|first)\s+edition\b/.test(cleaned)) {
+    reasons.push('UNREQUESTED_FIRST_EDITION');
+  }
+
+  if (!rarityLower.includes('reverse') && /\breverse\s+(holo|foil|holographic)\b/.test(cleaned)) {
+    reasons.push('UNREQUESTED_REVERSE_HOLO');
+  }
+
+  if (!rarityLower.includes('shadowless') && cleaned.includes('shadowless')) {
+    reasons.push('UNREQUESTED_SHADOWLESS');
+  }
+
+  if (!rarityLower.includes('4th') && !rarityLower.includes('1999-2000') && /\b(4th\s+print|fourth\s+print|1999\s*-\s*2000|uk\s+print)\b/.test(cleaned)) {
+    reasons.push('UNREQUESTED_BASE_PRINT_VARIANT');
+  }
+
+  if ((rarityLower === 'common' || rarityLower === 'uncommon') && /\b(secret\s+rare|ultra\s+rare|rare\s+holo|holo\s+rare|holographic|rare)\b/.test(cleanedWithoutName)) {
+    reasons.push('RARITY_MISMATCH');
+  }
+
+  return reasons;
+}
+
+function getLanguageMismatchReasons(title = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  const languagePattern = /\b(japanese|japan|jpn|jp|korean|chinese|thai|indonesian|french|german|spanish|italian|portuguese|dutch|foreign|non\s*-?\s*english)\b/;
+  return languagePattern.test(cleaned) ? ['NON_ENGLISH_LISTING'] : [];
+}
+
+function getStructuredTitleRejectionReasons(title = '', query = '', options = {}) {
+  const reasons = [];
+  const { name = '', setName = '', number = '', rarity = '' } = options;
+
+  if (titleLooksBad(title)) {
+    const cleaned = title.toLowerCase();
+    const matched = BLOCKED_TERMS.filter((term) => cleaned.includes(term));
+    reasons.push(`BLOCKED_TERMS: [${matched.join(', ')}]`);
+  }
+
+  if (!titleLooksGoodForQuery(title, query)) {
+    reasons.push('MISSING_QUERY_KEYWORDS');
+  }
+
+  if (name && !titleHasCardName(title, name)) {
+    reasons.push(`MISSING_CARD_NAME (${name})`);
+  }
+
+  if (setName && !titleHasSetName(title, setName)) {
+    reasons.push(`MISSING_OR_CONFLICTING_SET (${setName})`);
+  }
+
+  if (number && !titleHasCollectorNumber(title, number)) {
+    reasons.push(`MISSING_COLLECTOR_NUMBER (${number})`);
+  }
+
+  reasons.push(...getLanguageMismatchReasons(title));
+  reasons.push(...getVariantMismatchReasons(title, { name, rarity }));
+
+  return reasons;
+}
 
 function getImportantWords(query = '') {
   const stopWords = new Set([
     'pokemon', 'pokémon', 'card', 'cards', 
-    'holo', 'foil', 'perfect', 'order', 'the', 'and', 'for',
+    'holo', 'foil', 'perfect', 'order', 'set', 'the', 'and', 'for',
     'near', 'mint', 'nm', 'lp', 'mp', 'hp', 'ex', 'nm/m',
     'holographic', 'reverse', '1st', 'first', 'edition',
     'pokemon card', 'tcg', 'pokemontcg',
@@ -200,14 +361,6 @@ function getImportantWords(query = '') {
     .split(/\s+/)
     .map((w) => w.replace(/[^a-z0-9'é]/g, ''))
     .filter((w) => w.length >= 2 && !stopWords.has(w) && !/^\d+$/.test(w));
-
-  // Add mapped set abbreviations
-  const queryLower = query.toLowerCase();
-  for (const [setName, abbrev] of Object.entries(SET_NAME_MAPPINGS)) {
-    if (queryLower.includes(setName) && !words.includes(abbrev)) {
-      words.push(abbrev);
-    }
-  }
 
   return words;
 }
@@ -345,6 +498,7 @@ function buildFallbackQuery({ name = '', setName = '', number = '', rarity = '' 
 // ===============================
 
 const priceCache = new Map();
+const PRICE_FILTER_VERSION = 2;
 const PRICE_CACHE_TTL = 2 * 60 * 60 * 1000;
 
 // In-flight dedupe so concurrent identical queries share one upstream call
@@ -385,6 +539,7 @@ function setCachedFailure(key, error) {
 
 function normalizePriceKey({ query = '', name = '', setName = '', number = '', rarity = '' }) {
   return JSON.stringify({
+    filterVersion: PRICE_FILTER_VERSION,
     query: String(query || '').trim().toLowerCase(),
     name: String(name || '').trim().toLowerCase(),
     setName: String(setName || '').trim().toLowerCase(),
@@ -510,9 +665,12 @@ async function searchEbaySoldListingsSerpApi(query) {
   });
   const serpUrl = `https://serpapi.com/search.json?${params.toString()}`;
 
-  const res = await fetch(serpUrl, {
-    headers: { Accept: 'application/json' },
-  });
+  const res = await fetchWithTimeout(
+    serpUrl,
+    { headers: { Accept: 'application/json' } },
+    EBAY_SOLD_SEARCH_TIMEOUT_MS,
+    'SerpApi sold search'
+  );
 
   if (!res.ok) {
     const text = await res.text();
@@ -548,13 +706,18 @@ async function searchEbayBrowseListings(query) {
     `&limit=${limit}` +
     '&sort=price';
 
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-      'X-EBAY-C-MARKETPLACE-ID': marketplace,
+  const res = await fetchWithTimeout(
+    url,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+        'X-EBAY-C-MARKETPLACE-ID': marketplace,
+      },
     },
-  });
+    EBAY_BROWSE_SEARCH_TIMEOUT_MS,
+    'eBay Browse search'
+  );
 
   if (!res.ok) {
     const text = await res.text();
@@ -579,7 +742,7 @@ async function searchEbayBrowseListings(query) {
     }));
 }
 
-function filterItems(items, query) {
+function filterItems(items, query, options = {}) {
   return items.filter((item) => {
     const title = item.title || '';
     const price = numberFromPrice(item.price?.value);
@@ -587,8 +750,7 @@ function filterItems(items, query) {
     if (!price) return false;
     if (price < 0.5) return false;
     if (price > 5000) return false;
-    if (titleLooksBad(title)) return false;
-    if (!titleLooksGoodForQuery(title, query)) return false;
+    if (getStructuredTitleRejectionReasons(title, query, options).length > 0) return false;
 
     return true;
   });
@@ -618,17 +780,20 @@ async function fetchEbaySummary(query, options = {}) {
 
   const promise = (async () => {
     try {
+      const startedAt = Date.now();
       let rawItems = [];
       let usedSoldProvider = false;
+      let soldProviderError = null;
 
       try {
         rawItems = await searchEbaySoldListingsSerpApi(query);
         usedSoldProvider = true;
       } catch (soldError) {
+        soldProviderError = getErrorMessage(soldError);
         console.log(`⚠️ Sold-provider failed for "${query}" (${getErrorMessage(soldError)}). Falling back to Browse listings.`);
         rawItems = await searchEbayBrowseListings(query);
       }
-      let cleaned = filterItems(rawItems, query);
+      let cleaned = filterItems(rawItems, query, options);
 
       let usedFallback = false;
       let fallbackQuery = '';
@@ -642,10 +807,11 @@ async function fetchEbaySummary(query, options = {}) {
           fallbackItems = await searchEbaySoldListingsSerpApi(fallbackQuery);
           usedSoldProvider = true;
         } catch (soldFallbackError) {
+          soldProviderError = getErrorMessage(soldFallbackError);
           console.log(`⚠️ Sold-provider fallback failed for "${fallbackQuery}" (${getErrorMessage(soldFallbackError)}). Falling back to Browse listings.`);
           fallbackItems = await searchEbayBrowseListings(fallbackQuery);
         }
-        cleaned = filterItems(fallbackItems, fallbackQuery);
+        cleaned = filterItems(fallbackItems, fallbackQuery, { name: cardName, setName, number, rarity });
         usedFallback = true;
       }
 
@@ -666,6 +832,8 @@ async function fetchEbaySummary(query, options = {}) {
         count: summary.count,
         rawCount: rawItems.length,
         soldDataSource: usedSoldProvider ? 'serpapi' : 'browse',
+        soldProviderError,
+        elapsedMs: Date.now() - startedAt,
         sampleTitles: rawItems.slice(0, 10).map((item) => ({
           title: item.title,
           price: item.price?.value,
@@ -836,20 +1004,21 @@ app.get('/price/debug', async (req, res) => {
     const name = String(req.query.name || '').trim();
     const setName = String(req.query.set || '').trim();
     const number = String(req.query.number || '').trim();
+    const rarity = String(req.query.rarity || '').trim();
 
     if (!name) {
       return res.status(400).json({ error: 'Missing ?name= param' });
     }
 
-    const primaryQuery = buildCardQuery({ name, setName, number });
-    const fallbackQuery = buildFallbackQuery({ name });
+    const primaryQuery = buildCardQuery({ name, setName, number, rarity });
+    const fallbackQuery = buildFallbackQuery({ name, setName, number, rarity });
 
     const [primaryRaw, fallbackRaw] = await Promise.all([
       searchEbayBrowseListings(primaryQuery),
       searchEbayBrowseListings(fallbackQuery),
     ]);
 
-    function analyseItems(items, query) {
+    function analyseItems(items, query, options = {}) {
       return items.map((item) => {
         const title = item.title || '';
         const price = numberFromPrice(item.price?.value);
@@ -860,25 +1029,7 @@ app.get('/price/debug', async (req, res) => {
         if (price !== null && price < 0.5) reasons.push(`PRICE_TOO_LOW (£${price})`);
         if (price !== null && price > 5000) reasons.push(`PRICE_TOO_HIGH (£${price})`);
 
-        const t = title.toLowerCase();
-        const matchedBlockedTerms = BLOCKED_TERMS.filter((term) => t.includes(term));
-        if (matchedBlockedTerms.length > 0) {
-          reasons.push(`BLOCKED_TERMS: [${matchedBlockedTerms.join(', ')}]`);
-        }
-
-        const cardNumber = extractCardNumber(query);
-        const importantWords = getImportantWords(query);
-
-        if (importantWords.length > 0) {
-          const hasRelevantWord = importantWords.some((word) => t.includes(word));
-          if (!hasRelevantWord) {
-            reasons.push(`MISSING_KEYWORDS (looking for any of: [${importantWords.join(', ')}])`);
-          }
-        }
-
-        if (cardNumber && !t.includes(cardNumber)) {
-          reasons.push(`MISSING_CARD_NUMBER (looking for: ${cardNumber})`);
-        }
+        reasons.push(...getStructuredTitleRejectionReasons(title, query, options));
 
         const accepted = reasons.length === 0;
 
@@ -891,8 +1042,8 @@ app.get('/price/debug', async (req, res) => {
       });
     }
 
-    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery);
-    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery);
+    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery, { name, setName, number, rarity });
+    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery, { name, setName, number, rarity });
 
     const primaryAccepted = primaryAnalysis.filter((i) => i.accepted);
     const fallbackAccepted = fallbackAnalysis.filter((i) => i.accepted);

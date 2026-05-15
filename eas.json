@@ -9,6 +9,7 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
+        "APP_VARIANT": "development",
         "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt",
         "EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY": "REMOVED_BY_INCIDENT_20260729"

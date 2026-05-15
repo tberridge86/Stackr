@@ -29,10 +29,16 @@ import {
   type LocalScanCard,
 } from '../../lib/localCardIndex';
 import {
+  embedImageOnDevice,
+  isOnDeviceVisualAvailable,
   rerankWithOnDeviceVisual,
   setBundledOnDeviceVisualModel,
 } from '../../lib/onDeviceVisualMatcher';
-import { syncScannerPack } from '../../lib/scannerPack';
+import {
+  scannerPackCardToLocalCard,
+  searchScannerPack,
+  syncScannerPack,
+} from '../../lib/scannerPack';
 import clipVisionModel from '../../assets/models/clip-vit-base-patch32-vision-quantized.zip';
 
 setBundledOnDeviceVisualModel(clipVisionModel);
@@ -49,6 +55,10 @@ const SCANNING_MESSAGES = [
 const FAST_SCAN_PROFILE = { width: 720, compress: 0.5 };
 const ACCURACY_SCAN_PROFILE = { width: 960, compress: 0.72 };
 const REQUEST_TIMEOUT_MS = 5000;
+const LOCAL_AI_TIMEOUT_MS = 2500;
+const LOCAL_AI_VISUAL_TIMEOUT_MS = 3500;
+const AUTO_SCAN_SOFT_BUDGET_MS = 4500;
+const AUTO_SCAN_HARD_BUDGET_MS = 6500;
 const GENERAL_FINGERPRINT_CONFIDENCE_THRESHOLD = 78;
 const SET_FINGERPRINT_CONFIDENCE_THRESHOLD = 60;
 const SCAN_PROVIDER = process.env.EXPO_PUBLIC_SCAN_PROVIDER ?? 'local-ai';
@@ -841,11 +851,28 @@ export default function ScanScreen() {
     ) => {
       if (!printedNumber) return null;
 
-      const response = await fetch(`${PRICE_API_URL}/api/local-ai/identify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ printedNumber, setId, base64Image, nameHint }),
-      });
+      const controller = new AbortController();
+      const timeoutMs = base64Image ? LOCAL_AI_VISUAL_TIMEOUT_MS : LOCAL_AI_TIMEOUT_MS;
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      let response: Response;
+
+      try {
+        response = await fetch(`${PRICE_API_URL}/api/local-ai/identify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ printedNumber, setId, base64Image, nameHint }),
+          signal: controller.signal,
+        });
+      } catch (error) {
+        console.log('Local AI request failed or timed out:', {
+          timeoutMs,
+          visual: Boolean(base64Image),
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return null;
+      } finally {
+        clearTimeout(timeout);
+      }
 
       const raw = await response.text();
       let data: any = null;
@@ -940,7 +967,9 @@ export default function ScanScreen() {
       candidates?: LocalScanCard[] | null
     ) => {
       if (!candidates?.length) return null;
+      if (!isOnDeviceVisualAvailable()) return null;
 
+      const startedAt = Date.now();
       const visualResult = await rerankWithOnDeviceVisual(base64Image, candidates);
       if (visualResult.status !== 'disabled') {
         console.log('On-device visual scan result:', {
@@ -950,6 +979,7 @@ export default function ScanScreen() {
           set: visualResult.match?.set_name,
           similarity: visualResult.similarity,
           candidates: candidates?.length ?? 0,
+          totalMs: Date.now() - startedAt,
         });
       }
 
@@ -959,6 +989,61 @@ export default function ScanScreen() {
         candidates,
         needsVisualRerank: false,
         resolvedBy: 'on-device-visual',
+      };
+    };
+
+    const identifyWithScannerPackVisual = async (
+      base64Image?: string | null,
+      candidates?: LocalScanCard[] | null
+    ) => {
+      if (!isOnDeviceVisualAvailable()) return null;
+
+      const startedAt = Date.now();
+      const embedded = await embedImageOnDevice(base64Image);
+      if (embedded.status !== 'ready') {
+        if (embedded.status !== 'disabled') {
+          console.log('Scanner pack visual search unavailable:', {
+            status: embedded.status,
+            reason: embedded.reason,
+          });
+        }
+        return null;
+      }
+
+      const results = await searchScannerPack(embedded.embedding, {
+        limit: 5,
+        candidateIds: candidates?.map((candidate) => candidate.id),
+      });
+      const searchDoneAt = Date.now();
+
+      const best = results[0];
+      const second = results[1];
+      const margin = best && second ? best.similarity - second.similarity : 1;
+
+      console.log('Scanner pack visual search result:', {
+        card: best?.card.name,
+        number: best?.card.number,
+        set: best?.card.setName,
+        similarity: best ? Number(best.similarity.toFixed(4)) : null,
+        margin: Number(margin.toFixed(4)),
+        candidates: candidates?.length ?? 'all',
+        searchMs: searchDoneAt - startedAt,
+        totalMs: Date.now() - startedAt,
+        top: results.slice(0, 3).map((result) => ({
+          card: result.card.name,
+          number: result.card.number,
+          set: result.card.setName,
+          similarity: Number(result.similarity.toFixed(4)),
+        })),
+      });
+
+      if (!best || best.similarity < 0.7 || margin < 0.02) return null;
+
+      return {
+        match: toScannedCard(scannerPackCardToLocalCard(best.card)),
+        candidates: results.map((result) => scannerPackCardToLocalCard(result.card)),
+        needsVisualRerank: false,
+        resolvedBy: 'scanner-pack-visual',
       };
     };
 
@@ -1070,11 +1155,26 @@ export default function ScanScreen() {
       let bestUri = capture.uri;
       const scanStartedAt = Date.now();
       const captureDoneAt = Date.now();
+      const elapsedScanMs = () => Date.now() - scanStartedAt;
+      const hasFastScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_SOFT_BUDGET_MS;
+      const hasHardScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_HARD_BUDGET_MS;
       let printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
         includeFallbackRegions: false,
         includeFullCard: false,
       });
       const numberOcrDoneAt = Date.now();
+      let cachedNameText: string | null = null;
+      let cachedTotalHintText: string | null = null;
+      const getNameText = async (uri: string, width: number, height: number) => {
+        if (cachedNameText !== null) return cachedNameText;
+        cachedNameText = await readNameTextFromCardImage(uri, width, height);
+        return cachedNameText;
+      };
+      const getTotalHintText = async (uri: string, width: number, height: number) => {
+        if (cachedTotalHintText !== null) return cachedTotalHintText;
+        cachedTotalHintText = await readTotalHintTextFromCardImage(uri, width, height);
+        return cachedTotalHintText;
+      };
 
       // Duplicate frame check
       const sig = `${base64.slice(0, 48)}:${base64.length}`;
@@ -1099,6 +1199,7 @@ export default function ScanScreen() {
         let localResult = await identifyWithLocalFusion(printedNumber, expectedSetId);
         if (
           !localResult?.match
+          && hasFastScanBudget(1400)
           && (
             !printedNumber
             || isBroadNumberRegion(printedNumber.region)
@@ -1106,8 +1207,10 @@ export default function ScanScreen() {
             || localResult?.needsVisualRerank
           )
         ) {
-          const nameText = await readNameTextFromCardImage(bestUri, capture.width, capture.height);
-          const totalHintText = await readTotalHintTextFromCardImage(bestUri, capture.width, capture.height);
+          const [nameText, totalHintText] = await Promise.all([
+            getNameText(bestUri, capture.width, capture.height),
+            getTotalHintText(bestUri, capture.width, capture.height),
+          ]);
           localResult = await identifyWithLocalFusion(
             printedNumber,
             expectedSetId,
@@ -1125,7 +1228,7 @@ export default function ScanScreen() {
           : localIndexResult?.candidates?.length
           ? localIndexResult.candidates
           : null;
-        const onDeviceVisualResult = localIndexResult?.match
+        const onDeviceVisualResult = localIndexResult?.match || !hasFastScanBudget(900)
           ? null
           : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
         localResult = localResult?.match
@@ -1134,10 +1237,14 @@ export default function ScanScreen() {
           ? localIndexResult
           : onDeviceVisualResult?.match
             ? onDeviceVisualResult
-            : await identifyWithLocalAi(printedNumber, expectedSetId);
+            : localIndexResult?.needsVisualRerank
+              ? localIndexResult
+              : hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
+                ? await identifyWithLocalAi(printedNumber, expectedSetId)
+                : localResult;
         const firstLocalDoneAt = Date.now();
         if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
-          const nameText = await readNameTextFromCardImage(bestUri, capture.width, capture.height);
+          const nameText = await getNameText(bestUri, capture.width, capture.height);
           const nameOcrDoneAt = Date.now();
           if (nameText) {
             printedNumber = {
@@ -1172,7 +1279,7 @@ export default function ScanScreen() {
               : localIndexResult?.candidates?.length
               ? localIndexResult.candidates
               : null;
-            const onDeviceVisualResultAfterName = localIndexResult?.match
+            const onDeviceVisualResultAfterName = localIndexResult?.match || !hasFastScanBudget(900)
               ? null
               : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
             localResult = localResult?.match
@@ -1181,8 +1288,10 @@ export default function ScanScreen() {
                 ? localIndexResult
                 : onDeviceVisualResultAfterName?.match
                   ? onDeviceVisualResultAfterName
-                  : await identifyWithLocalAi(printedNumber, expectedSetId);
-            if (!localResult?.match && localResult?.needsVisualRerank) {
+                  : hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
+                    ? await identifyWithLocalAi(printedNumber, expectedSetId)
+                    : localResult;
+            if (!localResult?.match && localResult?.needsVisualRerank && hasHardScanBudget(LOCAL_AI_VISUAL_TIMEOUT_MS)) {
               localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
             }
             console.log('Scan timing:', {
@@ -1213,7 +1322,7 @@ export default function ScanScreen() {
         match = localResult?.match ?? null;
       }
 
-      if (!match && useLocalAi && printedNumber) {
+      if (!match && useLocalAi && printedNumber && hasHardScanBudget(1300)) {
         const fallbackPrintedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
           includeFastRegions: false,
         });
@@ -1235,16 +1344,20 @@ export default function ScanScreen() {
             : localIndexResult?.candidates?.length
             ? localIndexResult.candidates
             : null;
-          const onDeviceVisualResult = localIndexResult?.match
+          const onDeviceVisualResult = localIndexResult?.match || !hasFastScanBudget(900)
             ? null
             : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
           let localResult = localIndexResult?.match
             ? localIndexResult
             : onDeviceVisualResult?.match
               ? onDeviceVisualResult
-              : await identifyWithLocalAi(printedNumber, expectedSetId);
-          if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
-            const nameText = await readNameTextFromCardImage(bestUri, capture.width, capture.height);
+              : localIndexResult?.needsVisualRerank
+                ? localIndexResult
+                : hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
+                  ? await identifyWithLocalAi(printedNumber, expectedSetId)
+                  : localIndexResult;
+          if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult) && hasHardScanBudget(1200)) {
+            const nameText = await getNameText(bestUri, capture.width, capture.height);
             if (nameText) {
               printedNumber = {
                 ...printedNumber,
@@ -1263,6 +1376,7 @@ export default function ScanScreen() {
                 if (nameTotalMatch) {
                   localResult = {
                     match: toScannedCard(nameTotalMatch),
+                    candidates: [nameTotalMatch],
                     needsVisualRerank: false,
                     resolvedBy: 'local-name-total',
                   };
@@ -1277,7 +1391,7 @@ export default function ScanScreen() {
                 : localIndexResult?.candidates?.length
                 ? localIndexResult.candidates
                 : null;
-              const onDeviceVisualResultAfterName = localIndexResult?.match
+              const onDeviceVisualResultAfterName = localIndexResult?.match || !hasFastScanBudget(900)
                 ? null
                 : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
               localResult = localResult?.match
@@ -1286,16 +1400,53 @@ export default function ScanScreen() {
                   ? localIndexResult
                   : onDeviceVisualResultAfterName?.match
                     ? onDeviceVisualResultAfterName
-                    : await identifyWithLocalAi(printedNumber, expectedSetId);
+                    : hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
+                      ? await identifyWithLocalAi(printedNumber, expectedSetId)
+                      : localResult;
             }
           }
           match = localResult?.match ?? null;
         }
       }
 
-      if (!match && useLocalAi && !printedNumber) {
-        const nameText = await readNameTextFromCardImage(bestUri, capture.width, capture.height);
-        const totalHintText = await readTotalHintTextFromCardImage(bestUri, capture.width, capture.height);
+      if (!match && useLocalAi && !printedNumber && hasHardScanBudget(1300)) {
+        const fallbackPrintedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
+          includeFastRegions: false,
+          includeFullCard: false,
+        });
+
+        if (fallbackPrintedNumber) {
+          printedNumber = fallbackPrintedNumber;
+          let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
+          let localResult = localIndexResult?.match
+            ? localIndexResult
+            : localIndexResult?.needsVisualRerank
+              ? localIndexResult
+              : await identifyWithLocalFusion(printedNumber, expectedSetId);
+
+          if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult) && hasHardScanBudget(1200)) {
+            const nameText = await getNameText(bestUri, capture.width, capture.height);
+            if (nameText) {
+              printedNumber = {
+                ...printedNumber,
+                ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
+              };
+              localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
+              localResult = localIndexResult?.match
+                ? localIndexResult
+                : await identifyWithLocalFusion(printedNumber, expectedSetId, nameText);
+            }
+          }
+
+          match = localResult?.match ?? null;
+        }
+      }
+
+      if (!match && useLocalAi && !printedNumber && hasHardScanBudget(1600)) {
+        const [nameText, totalHintText] = await Promise.all([
+          getNameText(bestUri, capture.width, capture.height),
+          getTotalHintText(bestUri, capture.width, capture.height),
+        ]);
         const combinedNameAndTotalText = `${nameText}\n${totalHintText}`.trim();
         const totalHintPrintedNumber = parsePrintedNumberSignalFromText(totalHintText);
         const fusionPrintedNumber = totalHintPrintedNumber ?? null;
@@ -1336,12 +1487,14 @@ export default function ScanScreen() {
             resolvedBy: totalNameCandidates?.length === 1 ? 'local-name-total-no-number' : 'local-name-no-number',
           });
         } else {
-          const visualResult = await identifyWithOnDeviceVisual(bestBase64, setCandidates);
+          const visualResult = hasHardScanBudget(1600)
+            ? await identifyWithScannerPackVisual(bestBase64, setCandidates)
+            : null;
           match = visualResult?.match ?? null;
         }
       }
 
-      if (!match && useLocalAi && !printedNumber) {
+      if (!match && useLocalAi && !printedNumber && !isAuto) {
         const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
@@ -1355,15 +1508,19 @@ export default function ScanScreen() {
           : localIndexResult?.candidates?.length
           ? localIndexResult.candidates
           : null;
-        const onDeviceVisualResult = localIndexResult?.match
+        const onDeviceVisualResult = localIndexResult?.match || !hasFastScanBudget(900)
           ? null
           : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
         let localResult = localIndexResult?.match
           ? localIndexResult
           : onDeviceVisualResult?.match
             ? onDeviceVisualResult
-            : await identifyWithLocalAi(printedNumber, expectedSetId);
-        if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
+            : localIndexResult?.needsVisualRerank
+              ? localIndexResult
+              : hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
+                ? await identifyWithLocalAi(printedNumber, expectedSetId)
+                : localIndexResult;
+        if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult) && hasHardScanBudget(1200)) {
           const nameText = await readNameTextFromCardImage(bestUri, hqCapture.width, hqCapture.height);
           if (nameText) {
             printedNumber = {
@@ -1383,6 +1540,7 @@ export default function ScanScreen() {
               if (nameTotalMatch) {
                 localResult = {
                   match: toScannedCard(nameTotalMatch),
+                  candidates: [nameTotalMatch],
                   needsVisualRerank: false,
                   resolvedBy: 'local-name-total',
                 };
@@ -1397,7 +1555,7 @@ export default function ScanScreen() {
               : localIndexResult?.candidates?.length
               ? localIndexResult.candidates
               : null;
-            const onDeviceVisualResultAfterName = localIndexResult?.match
+            const onDeviceVisualResultAfterName = localIndexResult?.match || !hasFastScanBudget(900)
               ? null
               : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
             localResult = localResult?.match
@@ -1406,8 +1564,10 @@ export default function ScanScreen() {
                 ? localIndexResult
                 : onDeviceVisualResultAfterName?.match
                   ? onDeviceVisualResultAfterName
-                  : await identifyWithLocalAi(printedNumber, expectedSetId);
-            if (!localResult?.match && localResult?.needsVisualRerank) {
+                  : hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
+                    ? await identifyWithLocalAi(printedNumber, expectedSetId)
+                    : localResult;
+            if (!localResult?.match && localResult?.needsVisualRerank && hasHardScanBudget(LOCAL_AI_VISUAL_TIMEOUT_MS)) {
               localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
             }
           }
@@ -1416,7 +1576,7 @@ export default function ScanScreen() {
       }
 
       // Step 4: test GiblTCG as an external image-recognition provider.
-      if (!match && useGibl) {
+      if (!match && useGibl && hasHardScanBudget(3500)) {
         const parsed = await identifyWithGibl(bestBase64);
         console.log('Gibl scan result:', {
           name: parsed?.name,
@@ -1444,7 +1604,7 @@ export default function ScanScreen() {
       }
 
       // Step 6: official binders get one sharper set-locked retry before any broader matching.
-      if (!match && expectedSetId && useLegacy) {
+      if (!match && expectedSetId && useLegacy && !isAuto) {
         const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
@@ -1475,7 +1635,7 @@ export default function ScanScreen() {
           return;
         }
 
-        if (!useLegacy) {
+        if (!useLegacy || isAuto) {
           if (!isAuto) {
             Alert.alert(
               'Could not read card',

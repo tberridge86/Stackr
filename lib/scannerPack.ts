@@ -1,10 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system/legacy';
 import { PRICE_API_URL } from './config';
 import type { LocalScanCard } from './localCardIndex';
 
-const MANIFEST_KEY = 'stackr:scanner-pack:manifest:v1';
-const VECTORS_KEY_PREFIX = 'stackr:scanner-pack:vectors:v1:';
-const VECTOR_CHUNK_SIZE = 64 * 1024;
+const MANIFEST_KEY = 'stackr:scanner-pack:manifest:v2';
+const PACK_DIR = `${FileSystem.documentDirectory ?? ''}scanner-packs`;
 
 export type ScannerPackCard = {
   id: string;
@@ -27,7 +27,8 @@ export type ScannerPackManifest = {
   cardCount: number;
   generatedAt: string;
   cards: ScannerPackCard[];
-  vectorChunkCount?: number;
+  localManifestUri?: string;
+  localVectorsUri?: string;
 };
 
 export type ScannerPackSearchResult = {
@@ -63,58 +64,50 @@ function base64ToBytes(value: string) {
   return bytes;
 }
 
-function bytesToBase64(bytes: Uint8Array) {
-  if (typeof Buffer !== 'undefined') {
-    return Buffer.from(bytes).toString('base64');
+async function ensurePackDir() {
+  const info = await FileSystem.getInfoAsync(PACK_DIR);
+  if (!info.exists) {
+    await FileSystem.makeDirectoryAsync(PACK_DIR, { intermediates: true });
   }
-
-  let binary = '';
-  for (let index = 0; index < bytes.length; index += 1) {
-    binary += String.fromCharCode(bytes[index]);
-  }
-  return btoa(binary);
 }
 
-async function storeVectors(packId: string, vectors: Uint8Array) {
-  const entries: [string, string][] = [];
-  let chunkCount = 0;
+function getManifestUri(packId: string) {
+  return `${PACK_DIR}/${packId}.manifest.json`;
+}
 
-  for (let offset = 0; offset < vectors.length; offset += VECTOR_CHUNK_SIZE) {
-    entries.push([
-      `${VECTORS_KEY_PREFIX}${packId}:${chunkCount}`,
-      bytesToBase64(vectors.slice(offset, offset + VECTOR_CHUNK_SIZE)),
-    ]);
-    chunkCount += 1;
-  }
+function getVectorsUri(packId: string) {
+  return `${PACK_DIR}/${packId}.vectors.i8`;
+}
 
-  await AsyncStorage.multiSet(entries);
-  return chunkCount;
+async function readVectorFile(uri: string) {
+  const base64 = await FileSystem.readAsStringAsync(uri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+  const bytes = base64ToBytes(base64);
+  return new Int8Array(bytes.buffer);
 }
 
 async function loadStoredPack() {
   const rawManifest = await AsyncStorage.getItem(MANIFEST_KEY);
   if (!rawManifest) return null;
 
-  const manifest = JSON.parse(rawManifest) as ScannerPackManifest;
-  if (!manifest.vectorChunkCount) return null;
+  const storedManifest = JSON.parse(rawManifest) as ScannerPackManifest;
+  if (!storedManifest.localManifestUri || !storedManifest.localVectorsUri) return null;
 
-  const chunkKeys = Array.from(
-    { length: manifest.vectorChunkCount },
-    (_, index) => `${VECTORS_KEY_PREFIX}${manifest.id}:${index}`
-  );
-  const chunks = await AsyncStorage.multiGet(chunkKeys);
-  const totalBytes = manifest.cardCount * manifest.dimensions;
-  const vectors = new Uint8Array(totalBytes);
-  let offset = 0;
+  const [manifestInfo, vectorsInfo] = await Promise.all([
+    FileSystem.getInfoAsync(storedManifest.localManifestUri),
+    FileSystem.getInfoAsync(storedManifest.localVectorsUri),
+  ]);
+  if (!manifestInfo.exists || !vectorsInfo.exists) return null;
 
-  for (const [, raw] of chunks) {
-    if (!raw) return null;
-    const bytes = base64ToBytes(raw);
-    vectors.set(bytes, offset);
-    offset += bytes.length;
-  }
-
-  return { manifest, vectors: new Int8Array(vectors.buffer) };
+  const manifestRaw = await FileSystem.readAsStringAsync(storedManifest.localManifestUri);
+  const manifest = {
+    ...(JSON.parse(manifestRaw) as ScannerPackManifest),
+    localManifestUri: storedManifest.localManifestUri,
+    localVectorsUri: storedManifest.localVectorsUri,
+  };
+  const vectors = await readVectorFile(storedManifest.localVectorsUri);
+  return { manifest, vectors };
 }
 
 export async function getScannerPack() {
@@ -131,23 +124,40 @@ export async function syncScannerPack() {
   const latest = await latestRes.json();
 
   const current = await getScannerPack();
-  if (current?.manifest?.id === latest.id && current.manifest.generatedAt === latest.generatedAt) {
+  if (current && current.manifest.id === latest.id && current.manifest.generatedAt === latest.generatedAt) {
     return current.manifest;
   }
 
-  const manifestRes = await fetch(`${PRICE_API_URL}${latest.manifestUrl}`);
-  if (!manifestRes.ok) throw new Error(`Scanner pack manifest failed: ${manifestRes.status}`);
-  const manifest = await manifestRes.json() as ScannerPackManifest;
+  await ensurePackDir();
+  const manifestUri = getManifestUri(latest.id);
+  const vectorsUri = getVectorsUri(latest.id);
 
-  const vectorsRes = await fetch(`${PRICE_API_URL}${latest.vectorsUrl}`);
-  if (!vectorsRes.ok) throw new Error(`Scanner pack vectors failed: ${vectorsRes.status}`);
-  const vectorBytes = new Uint8Array(await vectorsRes.arrayBuffer());
-  const vectorChunkCount = await storeVectors(manifest.id, vectorBytes);
+  const manifestDownload = await FileSystem.downloadAsync(`${PRICE_API_URL}${latest.manifestUrl}`, manifestUri);
+  if (manifestDownload.status !== 200) {
+    throw new Error(`Scanner pack manifest failed: ${manifestDownload.status}`);
+  }
 
-  const storedManifest = { ...manifest, vectorChunkCount };
-  await AsyncStorage.setItem(MANIFEST_KEY, JSON.stringify(storedManifest));
-  memoryPack = { manifest: storedManifest, vectors: new Int8Array(vectorBytes.buffer) };
-  return storedManifest;
+  const vectorsDownload = await FileSystem.downloadAsync(`${PRICE_API_URL}${latest.vectorsUrl}`, vectorsUri);
+  if (vectorsDownload.status !== 200) {
+    throw new Error(`Scanner pack vectors failed: ${vectorsDownload.status}`);
+  }
+
+  const manifestRaw = await FileSystem.readAsStringAsync(manifestUri);
+  const manifest = {
+    ...(JSON.parse(manifestRaw) as ScannerPackManifest),
+    localManifestUri: manifestUri,
+    localVectorsUri: vectorsUri,
+  };
+
+  await AsyncStorage.setItem(MANIFEST_KEY, JSON.stringify({
+    id: manifest.id,
+    generatedAt: manifest.generatedAt,
+    localManifestUri: manifest.localManifestUri,
+    localVectorsUri: manifest.localVectorsUri,
+  }));
+
+  memoryPack = { manifest, vectors: await readVectorFile(vectorsUri) };
+  return manifest;
 }
 
 function dotInt8Float(vectors: Int8Array, offset: number, query: Float32Array, dimensions: number) {

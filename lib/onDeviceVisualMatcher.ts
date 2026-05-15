@@ -3,22 +3,19 @@ import { Asset } from 'expo-asset';
 import { Buffer } from 'buffer';
 import { decode as decodeJpeg } from 'jpeg-js';
 import { NativeModules } from 'react-native';
-import { supabase } from './supabase';
 import type { LocalScanCard } from './localCardIndex';
+import {
+  scannerPackCardToLocalCard,
+  searchScannerPack,
+} from './scannerPack';
 
 const ON_DEVICE_VISUAL_ENABLED = process.env.EXPO_PUBLIC_ON_DEVICE_VISUAL === 'true';
 const ON_DEVICE_VISUAL_MODEL_PATH = process.env.EXPO_PUBLIC_ON_DEVICE_VISUAL_MODEL_PATH ?? '';
-const ON_DEVICE_VISUAL_MODEL_ID = process.env.EXPO_PUBLIC_ON_DEVICE_VISUAL_MODEL_ID ?? 'Xenova/clip-vit-base-patch32';
 const INPUT_SIZE = 224;
 const CLIP_MEAN = [0.48145466, 0.4578275, 0.40821073];
 const CLIP_STD = [0.26862954, 0.26130258, 0.27577711];
 
 type OrtModule = typeof import('onnxruntime-react-native');
-
-type CandidateEmbedding = {
-  card_id: string;
-  embedding: number[];
-};
 
 export type OnDeviceVisualResult = {
   match?: LocalScanCard | null;
@@ -30,6 +27,11 @@ export type OnDeviceVisualResult = {
 let ortPromise: Promise<OrtModule> | null = null;
 let sessionPromise: Promise<import('onnxruntime-react-native').InferenceSession> | null = null;
 let bundledModel: number | null = null;
+const embeddingCache = new Map<string, Float32Array>();
+
+function getImageCacheKey(base64Image: string) {
+  return `${base64Image.length}:${base64Image.slice(0, 64)}:${base64Image.slice(-64)}`;
+}
 
 function getOrt() {
   if (!NativeModules.Onnxruntime?.install) {
@@ -59,22 +61,6 @@ async function getSession() {
 
 export function setBundledOnDeviceVisualModel(modelModule: number) {
   bundledModel = modelModule;
-}
-
-function cosineSimilarity(a: ArrayLike<number>, b: ArrayLike<number>) {
-  let dot = 0;
-  let aNorm = 0;
-  let bNorm = 0;
-  const length = Math.min(a.length, b.length);
-
-  for (let i = 0; i < length; i += 1) {
-    dot += a[i] * b[i];
-    aNorm += a[i] * a[i];
-    bNorm += b[i] * b[i];
-  }
-
-  if (!aNorm || !bNorm) return -1;
-  return dot / (Math.sqrt(aNorm) * Math.sqrt(bNorm));
 }
 
 async function imageBase64ToClipTensor(base64Image: string) {
@@ -108,20 +94,6 @@ async function imageBase64ToClipTensor(base64Image: string) {
   return tensor;
 }
 
-async function fetchCandidateEmbeddings(candidates: LocalScanCard[]) {
-  const ids = candidates.map((candidate) => candidate.id);
-  if (ids.length === 0) return [];
-
-  const { data, error } = await supabase
-    .from('card_clip_embeddings')
-    .select('card_id, embedding')
-    .eq('model', ON_DEVICE_VISUAL_MODEL_ID)
-    .in('card_id', ids);
-
-  if (error) throw error;
-  return (data ?? []) as CandidateEmbedding[];
-}
-
 function getFirstTensorOutput(outputs: import('onnxruntime-react-native').InferenceSession.OnnxValueMapType) {
   const first = Object.values(outputs)[0];
   const data = first?.data;
@@ -131,6 +103,75 @@ function getFirstTensorOutput(outputs: import('onnxruntime-react-native').Infere
   }
   {
     throw new Error('ONNX model did not return a numeric tensor output');
+  }
+}
+
+export function isOnDeviceVisualEnabled() {
+  return ON_DEVICE_VISUAL_ENABLED;
+}
+
+export function isOnDeviceVisualAvailable() {
+  return Boolean(ON_DEVICE_VISUAL_ENABLED && NativeModules.Onnxruntime?.install);
+}
+
+export async function embedImageOnDevice(base64Image: string | null | undefined) {
+  if (!ON_DEVICE_VISUAL_ENABLED) {
+    return { status: 'disabled' as const, reason: 'EXPO_PUBLIC_ON_DEVICE_VISUAL is not true' };
+  }
+
+  if (!base64Image) return { status: 'unavailable' as const, reason: 'No image supplied' };
+
+  try {
+    const cacheKey = getImageCacheKey(base64Image);
+    const cached = embeddingCache.get(cacheKey);
+    if (cached) return { status: 'ready' as const, embedding: cached, cached: true };
+
+    const startedAt = Date.now();
+    const session = await getSession();
+    if (!session) {
+      return { status: 'unavailable' as const, reason: 'Missing ONNX model path or bundled model asset' };
+    }
+
+    const sessionReadyAt = Date.now();
+    const { Tensor } = await getOrt();
+    const tensorData = await imageBase64ToClipTensor(base64Image);
+    const preprocessDoneAt = Date.now();
+    const inputName = session.inputNames[0];
+    const output = await session.run({
+      [inputName]: new Tensor('float32', tensorData, [1, 3, INPUT_SIZE, INPUT_SIZE]),
+    });
+    const inferenceDoneAt = Date.now();
+    const rawEmbedding = getFirstTensorOutput(output);
+    const embedding = rawEmbedding instanceof Float32Array
+      ? rawEmbedding
+      : Float32Array.from(rawEmbedding);
+
+    let norm = 0;
+    for (const value of embedding) norm += value * value;
+    norm = Math.sqrt(norm) || 1;
+    for (let index = 0; index < embedding.length; index += 1) {
+      embedding[index] /= norm;
+    }
+
+    embeddingCache.set(cacheKey, embedding);
+    if (embeddingCache.size > 3) {
+      const oldestKey = embeddingCache.keys().next().value;
+      if (oldestKey) embeddingCache.delete(oldestKey);
+    }
+
+    console.log('On-device embedding timing:', {
+      sessionMs: sessionReadyAt - startedAt,
+      preprocessMs: preprocessDoneAt - sessionReadyAt,
+      inferenceMs: inferenceDoneAt - preprocessDoneAt,
+      totalMs: Date.now() - startedAt,
+    });
+
+    return { status: 'ready' as const, embedding, cached: false };
+  } catch (error) {
+    return {
+      status: 'error' as const,
+      reason: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
@@ -146,30 +187,20 @@ export async function rerankWithOnDeviceVisual(
   if (!candidates?.length) return { status: 'no-candidates' };
 
   try {
-    const session = await getSession();
-    if (!session) {
-      return { status: 'unavailable', reason: 'Missing ONNX model path or bundled model asset' };
+    const embedded = await embedImageOnDevice(base64Image);
+    if (embedded.status !== 'ready') {
+      return { status: embedded.status === 'disabled' ? 'disabled' : 'unavailable', reason: embedded.reason };
     }
 
-    const embeddings = await fetchCandidateEmbeddings(candidates);
-    if (embeddings.length === 0) return { status: 'no-embeddings' };
-
-    const { Tensor } = await getOrt();
-    const tensorData = await imageBase64ToClipTensor(base64Image);
-    const inputName = session.inputNames[0];
-    const output = await session.run({
-      [inputName]: new Tensor('float32', tensorData, [1, 3, INPUT_SIZE, INPUT_SIZE]),
-    });
-    const queryEmbedding = getFirstTensorOutput(output);
-
     const byId = new Map(candidates.map((candidate) => [candidate.id, candidate]));
-    const scored = embeddings
-      .map((embedding) => ({
-        candidate: byId.get(embedding.card_id) ?? null,
-        similarity: cosineSimilarity(queryEmbedding, embedding.embedding),
-      }))
-      .filter((item): item is { candidate: LocalScanCard; similarity: number } => Boolean(item.candidate))
-      .sort((a, b) => b.similarity - a.similarity);
+    const scored = (await searchScannerPack(embedded.embedding, {
+      limit: 5,
+      candidateIds: candidates.map((candidate) => candidate.id),
+    }))
+      .map((result) => ({
+        candidate: byId.get(result.card.id) ?? scannerPackCardToLocalCard(result.card),
+        similarity: result.similarity,
+      }));
 
     const best = scored[0];
     const second = scored[1];
