@@ -94,13 +94,16 @@ function inferPrintedTotalsFromText(text?: string | null) {
 function isBroadNumberRegion(region?: string | null) {
   return region === 'bottom-band'
     || region === 'bottom-left'
+    || region === 'number-fast-lower-half'
     || region === 'lower-half'
     || region === 'full-card';
 }
 
 function isSuspiciousPrintedNumber(printedNumber?: LocalPrintedNumberSignal | null) {
   if (!printedNumber) return false;
-  return printedNumber.number < 100 && isBroadNumberRegion(printedNumber.region);
+  return printedNumber.number < 100
+    && printedNumber.number <= printedNumber.total
+    && isBroadNumberRegion(printedNumber.region);
 }
 
 function addCandidates(target: Map<string, LocalScanCard>, cards?: LocalScanCard[] | null) {
@@ -503,7 +506,33 @@ export async function resolveLocalCardByFusion(
   const margin = selected.score - (second?.card.id === selected.card.id ? (scored[2]?.score ?? 0) : (second?.score ?? 0));
   const selectedScore = duplicateSecretTieBreak ? selected.score + 18 : selected.score;
   const confidence = Math.max(0, Math.min(99, selectedScore));
-  const strongEnough = Boolean(duplicateSecretTieBreak) || selectedScore >= 90 || (selectedScore >= 75 && margin >= 15);
+  const exactNumberTotalMatches = printedNumber?.number && printedNumber.total
+    ? candidates.filter((card) => (
+      Number.parseInt(card.number, 10) === printedNumber.number
+      && card.set_printed_total === printedNumber.total
+    ))
+    : [];
+  const selectedIsExactNumberTotal = exactNumberTotalMatches.some((card) => card.id === selected.card.id);
+  const selectedIsSecretSuffix = Boolean(
+    printedNumber?.number
+    && selected.card.set_printed_total
+    && Number.parseInt(selected.card.number, 10) > selected.card.set_printed_total
+    && String(Number.parseInt(selected.card.number, 10)).endsWith(String(printedNumber.number))
+  );
+  const hasSecretSuffixEvidence = selectedIsSecretSuffix
+    && selected.reasons.includes('name')
+    && selected.reasons.includes('total')
+    && selected.reasons.includes('number-suffix');
+  const hasConflictingExactNumberTotal = exactNumberTotalMatches.length === 1
+    && !selectedIsExactNumberTotal
+    && !hasSecretSuffixEvidence;
+  const hasTieBreakerEvidence = selected.reasons.includes('name') || selected.reasons.includes('set');
+  const strongEnough = !hasConflictingExactNumberTotal && (
+    Boolean(duplicateSecretTieBreak)
+    || (hasSecretSuffixEvidence && selectedScore >= 120 && margin >= 35)
+    || (selectedScore >= 90 && (candidates.length === 1 || margin >= 15 || hasTieBreakerEvidence))
+    || (selectedScore >= 75 && margin >= 15)
+  );
 
   console.log('Local fusion resolver:', {
     best: `${selected.card.name} (${selected.card.set_name}) #${selected.card.number}`,
