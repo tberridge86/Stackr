@@ -4,6 +4,7 @@ type FetchEbayPriceInput =
       name: string;
       setName?: string;
       number?: string;
+      setTotal?: string | number | null;
       rarity?: string;
       cardId?: string;
     };
@@ -36,6 +37,7 @@ export async function fetchEbayPrice(input: FetchEbayPriceInput) {
   params.set('name', input.name);
   if (input.setName) params.set('setName', input.setName);
   if (input.number) params.set('number', input.number);
+  if (input.setTotal != null) params.set('setTotal', String(input.setTotal));
   if (input.rarity) params.set('rarity', input.rarity);
   if (input.cardId) params.set('cardId', input.cardId);
 

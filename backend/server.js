@@ -203,6 +203,14 @@ function titleHasWord(title = '', word = '') {
   return new RegExp(`(^|[^a-z0-9])${escapeRegExp(target)}([^a-z0-9]|$)`).test(cleaned);
 }
 
+function getFullCollectorNumber(number = '', setTotal = '') {
+  const rawNumber = String(number || '').trim();
+  const rawTotal = String(setTotal || '').trim();
+  if (!rawNumber || rawNumber.includes('/')) return rawNumber;
+  if (!/^\d+$/.test(rawNumber) || !/^\d+$/.test(rawTotal)) return rawNumber;
+  return `${Number(rawNumber)}/${Number(rawTotal)}`;
+}
+
 function getCollectorNumberCandidates(number = '') {
   const raw = String(number || '').trim().toLowerCase();
   if (!raw) return [];
@@ -220,6 +228,8 @@ function getCollectorNumberCandidates(number = '') {
       candidates.add(String(Number(single[1])));
       candidates.add(single[1].padStart(2, '0'));
       candidates.add(single[1].padStart(3, '0'));
+    } else if (/^[a-z]+\d+$/i.test(raw)) {
+      candidates.add(raw.replace(/\s+/g, ''));
     }
   }
 
@@ -237,7 +247,13 @@ function titleHasCollectorNumber(title = '', number = '') {
       return new RegExp(`(^|[^0-9])0*${left}\\s*/\\s*0*${right}([^0-9]|$)`).test(cleaned);
     }
 
-    const token = escapeRegExp(String(Number(candidate)));
+    if (/^[a-z]+\d+$/i.test(candidate)) {
+      return new RegExp(`(^|[^a-z0-9])${escapeRegExp(candidate)}([^a-z0-9]|$)`).test(cleaned);
+    }
+
+    const numeric = Number(candidate);
+    if (!Number.isFinite(numeric)) return false;
+    const token = escapeRegExp(String(numeric));
     return new RegExp(`(^|[^0-9])0*${token}([^0-9]|$)`).test(cleaned);
   });
 }
@@ -316,7 +332,8 @@ function getLanguageMismatchReasons(title = '') {
 
 function getStructuredTitleRejectionReasons(title = '', query = '', options = {}) {
   const reasons = [];
-  const { name = '', setName = '', number = '', rarity = '' } = options;
+  const { name = '', setName = '', number = '', setTotal = '', rarity = '' } = options;
+  const collectorNumber = getFullCollectorNumber(number, setTotal);
 
   if (titleLooksBad(title)) {
     const cleaned = title.toLowerCase();
@@ -336,8 +353,8 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
     reasons.push(`MISSING_OR_CONFLICTING_SET (${setName})`);
   }
 
-  if (number && !titleHasCollectorNumber(title, number)) {
-    reasons.push(`MISSING_COLLECTOR_NUMBER (${number})`);
+  if (collectorNumber && !titleHasCollectorNumber(title, collectorNumber)) {
+    reasons.push(`MISSING_COLLECTOR_NUMBER (${collectorNumber})`);
   }
 
   reasons.push(...getLanguageMismatchReasons(title));
@@ -418,7 +435,7 @@ function summarisePrices(prices) {
   };
 }
 
-function buildCardQuery({ name = '', setName = '', number = '', rarity = '' }) {
+function buildCardQuery({ name = '', setName = '', number = '', setTotal = '', rarity = '' }) {
   const parts = [name];
 
   // Add set name if available
@@ -426,9 +443,10 @@ function buildCardQuery({ name = '', setName = '', number = '', rarity = '' }) {
     parts.push(setName);
   }
 
-  // Add card number if available (e.g., "9/102" or "9")
-  if (number) {
-    parts.push(number);
+  // Add full collector number when we know the printed set total (e.g. "46/102").
+  const collectorNumber = getFullCollectorNumber(number, setTotal);
+  if (collectorNumber) {
+    parts.push(collectorNumber);
   }
 
   // Add rarity hints to help distinguish holo vs non-holo
@@ -455,7 +473,7 @@ function buildCardQuery({ name = '', setName = '', number = '', rarity = '' }) {
 }
 
 // Build better fallback query with set hints when primary fails
-function buildFallbackQuery({ name = '', setName = '', number = '', rarity = '' }) {
+function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '', rarity = '' }) {
   const parts = [name];
   
   // Prioritize set name in fallback to maintain specificity
@@ -463,9 +481,10 @@ function buildFallbackQuery({ name = '', setName = '', number = '', rarity = '' 
     parts.push(setName);
   }
   
-  // Always add card number if available (critical for uniqueness)
-  if (number) {
-    parts.push(number);
+  // Always add collector number if available (critical for uniqueness)
+  const collectorNumber = getFullCollectorNumber(number, setTotal);
+  if (collectorNumber) {
+    parts.push(collectorNumber);
   }
   
   // Add rarity hints for better rare card matching
@@ -500,7 +519,7 @@ function buildFallbackQuery({ name = '', setName = '', number = '', rarity = '' 
 // ===============================
 
 const priceCache = new Map();
-const PRICE_FILTER_VERSION = 2;
+const PRICE_FILTER_VERSION = 3;
 const PRICE_CACHE_TTL = 2 * 60 * 60 * 1000;
 
 // In-flight dedupe so concurrent identical queries share one upstream call
@@ -539,13 +558,14 @@ function setCachedFailure(key, error) {
   failureCache.set(key, { error, expiresAt: Date.now() + FAILURE_CACHE_TTL });
 }
 
-function normalizePriceKey({ query = '', name = '', setName = '', number = '', rarity = '' }) {
+function normalizePriceKey({ query = '', name = '', setName = '', number = '', setTotal = '', rarity = '' }) {
   return JSON.stringify({
     filterVersion: PRICE_FILTER_VERSION,
     query: String(query || '').trim().toLowerCase(),
     name: String(name || '').trim().toLowerCase(),
     setName: String(setName || '').trim().toLowerCase(),
     number: String(number || '').trim().toLowerCase(),
+    setTotal: String(setTotal || '').trim().toLowerCase(),
     rarity: String(rarity || '').trim().toLowerCase(),
   });
 }
@@ -760,10 +780,10 @@ function filterItems(items, query, options = {}) {
 
 // Extended signature to pass all card details to fallback
 async function fetchEbaySummary(query, options = {}) {
-  const { name = '', setName = '', number = '', rarity = '' } = options;
+  const { name = '', setName = '', number = '', setTotal = '', rarity = '' } = options;
   const cardName = name || query.split(' ')[0];
 
-  const cacheKey = normalizePriceKey({ query, name, setName, number, rarity });
+  const cacheKey = normalizePriceKey({ query, name, setName, number, setTotal, rarity });
 
   const cached = getCachedPrice(cacheKey);
   if (cached) {
@@ -799,9 +819,10 @@ async function fetchEbaySummary(query, options = {}) {
 
       let usedFallback = false;
       let fallbackQuery = '';
+      let acceptedSourceItems = rawItems;
 
       if (cleaned.length === 0 && cardName) {
-        fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, rarity });
+        fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, setTotal, rarity });
         console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
 
         let fallbackItems = [];
@@ -813,7 +834,8 @@ async function fetchEbaySummary(query, options = {}) {
           console.log(`⚠️ Sold-provider fallback failed for "${fallbackQuery}" (${getErrorMessage(soldFallbackError)}). Falling back to Browse listings.`);
           fallbackItems = await searchEbayBrowseListings(fallbackQuery);
         }
-        cleaned = filterItems(fallbackItems, fallbackQuery, { name: cardName, setName, number, rarity });
+        cleaned = filterItems(fallbackItems, fallbackQuery, { name: cardName, setName, number, setTotal, rarity });
+        acceptedSourceItems = fallbackItems;
         usedFallback = true;
       }
 
@@ -844,6 +866,20 @@ async function fetchEbaySummary(query, options = {}) {
           title: item.title,
           price: item.price?.value,
         })),
+        rejectedTitles: acceptedSourceItems
+          .filter((item) => !cleaned.includes(item))
+          .slice(0, 10)
+          .map((item) => ({
+            title: item.title,
+            price: item.price?.value,
+            reasons: getStructuredTitleRejectionReasons(item.title || '', usedFallback ? fallbackQuery : query, {
+              name: cardName,
+              setName,
+              number,
+              setTotal,
+              rarity,
+            }),
+          })),
       };
 
       setCachedPrice(cacheKey, result);
@@ -958,8 +994,9 @@ app.get('/price', async (req, res) => {
     const parts = query.split(' ');
     const setName = parts.length > 1 ? parts.find(p => /^(base|xy|swsh|sv|sm|bw|dp|hgss)/i.test(p)) || '' : '';
     const number = parts.length > 1 ? parts.find(p => /^\d+\/\d+$/.test(p)) || '' : '';
+    const setTotal = number.includes('/') ? number.split('/')[1] : '';
     
-    const summary = await fetchEbaySummary(query, { name: cardName, setName, number });
+    const summary = await fetchEbaySummary(query, { name: cardName, setName, number, setTotal });
     return res.json(summary);
   } catch (error) {
     return res.status(500).json({
@@ -973,22 +1010,52 @@ app.get('/price', async (req, res) => {
 app.get('/api/price/ebay', async (req, res) => {
   try {
     const cardId = String(req.query.cardId || '').trim();
-    const name = String(req.query.name || '').trim();
-    const setName = String(req.query.setName || '').trim();
-    const number = String(req.query.number || '').trim();
-    const rarity = String(req.query.rarity || '').trim();
+    let name = String(req.query.name || '').trim();
+    let setName = String(req.query.setName || '').trim();
+    let number = String(req.query.number || '').trim();
+    let setTotal = String(req.query.setTotal || req.query.printedTotal || '').trim();
+    let rarity = String(req.query.rarity || '').trim();
 
     if (!name) {
       return res.status(400).json({ error: 'Missing card name' });
     }
 
+    if (cardId && (!setTotal || !setName || !number || !rarity)) {
+      const { data: cardRow, error: cardError } = await supabase
+        .from('pokemon_cards')
+        .select('name, number, rarity, raw_data')
+        .eq('id', cardId)
+        .maybeSingle();
+
+      if (cardError) {
+        console.log('Price card lookup failed:', cardError.message);
+      }
+
+      if (cardRow) {
+        name ||= cardRow.name ?? '';
+        number ||= cardRow.number ?? '';
+        rarity ||= cardRow.rarity ?? '';
+        setName ||= cardRow.raw_data?.set?.name ?? '';
+        setTotal ||= String(cardRow.raw_data?.set?.printedTotal ?? cardRow.raw_data?.set?.total ?? '');
+      }
+    }
+
     // Build primary query with rarity hints for better matching
-    const query = buildCardQuery({ name, setName, number, rarity });
+    const query = buildCardQuery({ name, setName, number, setTotal, rarity });
     
     // Pass full card details for better fallback matching
-    const summary = await fetchEbaySummary(query, { name, setName, number, rarity });
+    const summary = await fetchEbaySummary(query, { name, setName, number, setTotal, rarity });
 
-    return res.json({ cardId, name, setName, number, rarity, ...summary });
+    return res.json({
+      cardId,
+      name,
+      setName,
+      number,
+      setTotal,
+      collectorNumber: getFullCollectorNumber(number, setTotal),
+      rarity,
+      ...summary,
+    });
   } catch (error) {
     return res.status(500).json({
       error: 'Failed to fetch eBay pricing',
@@ -1006,14 +1073,15 @@ app.get('/price/debug', async (req, res) => {
     const name = String(req.query.name || '').trim();
     const setName = String(req.query.set || '').trim();
     const number = String(req.query.number || '').trim();
+    const setTotal = String(req.query.setTotal || req.query.printedTotal || '').trim();
     const rarity = String(req.query.rarity || '').trim();
 
     if (!name) {
       return res.status(400).json({ error: 'Missing ?name= param' });
     }
 
-    const primaryQuery = buildCardQuery({ name, setName, number, rarity });
-    const fallbackQuery = buildFallbackQuery({ name, setName, number, rarity });
+    const primaryQuery = buildCardQuery({ name, setName, number, setTotal, rarity });
+    const fallbackQuery = buildFallbackQuery({ name, setName, number, setTotal, rarity });
 
     const [primaryRaw, fallbackRaw] = await Promise.all([
       searchEbayBrowseListings(primaryQuery),
@@ -1044,8 +1112,8 @@ app.get('/price/debug', async (req, res) => {
       });
     }
 
-    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery, { name, setName, number, rarity });
-    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery, { name, setName, number, rarity });
+    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery, { name, setName, number, setTotal, rarity });
+    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery, { name, setName, number, setTotal, rarity });
 
     const primaryAccepted = primaryAnalysis.filter((i) => i.accepted);
     const fallbackAccepted = fallbackAnalysis.filter((i) => i.accepted);
@@ -1200,6 +1268,81 @@ app.get('/api/search/tcg', async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       error: 'TCG search failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+app.get('/api/tcg/verify', async (req, res) => {
+  try {
+    const cardId = String(req.query.cardId || '').trim();
+    const name = String(req.query.name || '').trim();
+    const number = String(req.query.number || '').trim();
+    const setId = String(req.query.setId || '').trim();
+
+    if (!cardId && (!name || !number || !setId)) {
+      return res.status(400).json({ error: 'Pass cardId, or name + number + setId' });
+    }
+
+    const headers = POKEMON_TCG_API_KEY
+      ? { 'X-Api-Key': POKEMON_TCG_API_KEY }
+      : {};
+
+    const dbQuery = cardId
+      ? supabase.from('pokemon_cards').select('id,name,number,set_id,rarity,image_small,raw_data').eq('id', cardId).maybeSingle()
+      : supabase
+        .from('pokemon_cards')
+        .select('id,name,number,set_id,rarity,image_small,raw_data')
+        .eq('set_id', setId)
+        .eq('number', number)
+        .ilike('name', name)
+        .maybeSingle();
+
+    const { data: dbCard, error: dbError } = await dbQuery;
+    if (dbError) throw dbError;
+
+    const tcgQuery = cardId
+      ? `id:${cardId}`
+      : `set.id:${setId} number:${number} name:"${name}"`;
+    const tcgUrl = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(tcgQuery)}&pageSize=5`;
+    const tcgResponse = await fetch(tcgUrl, { headers });
+    const tcgJson = tcgResponse.ok ? await tcgResponse.json() : null;
+    const liveCard = tcgJson?.data?.[0] ?? null;
+
+    const dbRaw = dbCard?.raw_data ?? {};
+    return res.json({
+      ok: true,
+      query: { cardId, name, number, setId },
+      database: {
+        found: Boolean(dbCard),
+        id: dbCard?.id ?? null,
+        name: dbCard?.name ?? null,
+        number: dbCard?.number ?? null,
+        setId: dbCard?.set_id ?? null,
+        setName: dbRaw?.set?.name ?? null,
+        printedTotal: dbRaw?.set?.printedTotal ?? dbRaw?.set?.total ?? null,
+        hasTcgplayer: Boolean(dbRaw?.tcgplayer?.prices && Object.keys(dbRaw.tcgplayer.prices).length),
+        tcgplayerPriceKeys: Object.keys(dbRaw?.tcgplayer?.prices ?? {}),
+        hasCardmarket: Boolean(dbRaw?.cardmarket?.prices),
+      },
+      liveTcgApi: {
+        ok: tcgResponse.ok,
+        status: tcgResponse.status,
+        found: Boolean(liveCard),
+        id: liveCard?.id ?? null,
+        name: liveCard?.name ?? null,
+        number: liveCard?.number ?? null,
+        setId: liveCard?.set?.id ?? null,
+        setName: liveCard?.set?.name ?? null,
+        printedTotal: liveCard?.set?.printedTotal ?? liveCard?.set?.total ?? null,
+        hasTcgplayer: Boolean(liveCard?.tcgplayer?.prices && Object.keys(liveCard.tcgplayer.prices).length),
+        tcgplayerPriceKeys: Object.keys(liveCard?.tcgplayer?.prices ?? {}),
+        hasCardmarket: Boolean(liveCard?.cardmarket?.prices),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'TCG verify failed',
       detail: getErrorMessage(error),
     });
   }

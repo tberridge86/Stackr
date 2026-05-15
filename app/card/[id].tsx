@@ -198,6 +198,7 @@ export default function CardDetailScreen() {
         name: cardData.name ?? '',
         setName: cardData.set?.name ?? '',
         number: cardData.number ?? '',
+        setTotal: (cardData.set as any)?.printedTotal ?? (cardData.set as any)?.total ?? null,
         rarity: cardData.rarity ?? '',
       });
 

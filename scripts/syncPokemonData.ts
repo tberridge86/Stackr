@@ -8,13 +8,16 @@ const supabase = createClient(
 );
 
 const API_BASE = 'https://api.pokemontcg.io/v2';
+const API_HEADERS = process.env.POKEMON_TCG_API_KEY
+  ? { 'X-Api-Key': process.env.POKEMON_TCG_API_KEY }
+  : {};
 
 async function syncSets() {
   let page = 1;
   let allSets: any[] = [];
 
   while (true) {
-    const res = await fetch(`${API_BASE}/sets?page=${page}&pageSize=250`);
+    const res = await fetch(`${API_BASE}/sets?page=${page}&pageSize=250`, { headers: API_HEADERS });
     const json = await res.json();
 
     if (!json.data.length) break;
@@ -45,7 +48,7 @@ async function syncCards() {
   let totalFetched = 0;
 
   while (true) {
-    const res = await fetch(`${API_BASE}/cards?page=${page}&pageSize=250`);
+    const res = await fetch(`${API_BASE}/cards?page=${page}&pageSize=250`, { headers: API_HEADERS });
     const json = await res.json();
 
     if (!json.data.length) break;

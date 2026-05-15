@@ -1548,15 +1548,8 @@ export default function ScanScreen() {
         return;
       }
 
-      let rareCandyStyleResult: {
-        match: ScannedCard | null;
-        candidates?: ScannedCard[];
-        needsVisualRerank?: boolean;
-        resolvedBy?: string | null;
-      } | null = null;
-
       // Step 2: official binders can resolve instantly from the printed card number.
-      let match: ScannedCard | null = rareCandyStyleResult?.match ?? await lookupCardBySetNumber(expectedSetId, printedNumber);
+      let match: ScannedCard | null = await lookupCardBySetNumber(expectedSetId, printedNumber);
 
       // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
       if (!match && useLocalAi && printedNumber) {

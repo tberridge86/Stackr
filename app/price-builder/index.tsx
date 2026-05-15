@@ -134,6 +134,8 @@ const fetchEbayPrice = async (card: CardRow): Promise<number | null> => {
       setName: card.raw_data?.set?.name ?? '',
       number: card.raw_data?.number ?? '',
     });
+    const printedTotal = card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total;
+    if (printedTotal != null) params.set('setTotal', String(printedTotal));
     const res = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
     if (!res.ok) return null;
     const json = await res.json();

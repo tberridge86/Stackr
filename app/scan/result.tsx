@@ -23,6 +23,7 @@ type TCGCard = {
   number: string;
   set_id: string;
   set_name: string;
+  set_printed_total?: number | null;
   series: string;
   rarity: string;
   image_small: string;
@@ -89,6 +90,7 @@ export default function ScanResultScreen() {
           name: selectedCard.name,
           setName: selectedCard.set_name,
           number: selectedCard.number,
+          setTotal: selectedCard.set_printed_total,
           rarity: selectedCard.rarity,
         });
         console.log('eBay result:', result);

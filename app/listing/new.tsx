@@ -177,7 +177,14 @@ export default function NewListingScreen() {
       const rawSetName = card.set_name ?? '';
       const setName = (rawSetName && rawSetName !== card.set_id) ? rawSetName : '';
       const [ebayResult] = await Promise.allSettled([
-        fetchEbayPrice({ cardId: card.id, name: card.name, setName, number: card.number ?? '', rarity: card.rarity ?? '' }),
+        fetchEbayPrice({
+          cardId: card.id,
+          name: card.name,
+          setName,
+          number: card.number ?? '',
+          setTotal: card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? null,
+          rarity: card.rarity ?? '',
+        }),
       ]);
 
       const tcgPrices = card.raw_data?.tcgplayer?.prices;

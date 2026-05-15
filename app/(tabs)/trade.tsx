@@ -342,6 +342,8 @@ const openTradeCardDetail = async (item: any) => {
           rarity,
           cardId: cardDetails?.id ?? item.card_id ?? '',
         });
+        const printedTotal = cardDetails?.set?.printedTotal ?? cardDetails?.set?.total;
+        if (printedTotal != null) params.set('setTotal', String(printedTotal));
 
         const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
         if (!response.ok) {
@@ -641,6 +643,8 @@ const openTradeCardDetail = async (item: any) => {
           number: card.number ?? '',
           cardId: card.id,
         });
+        const printedTotal = card.set?.printedTotal ?? card.set?.total;
+        if (printedTotal != null) params.set('setTotal', String(printedTotal));
         const res = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
         if (res.ok) {
           const result = await res.json();

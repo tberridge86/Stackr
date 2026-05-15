@@ -369,6 +369,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         name,
         setName,
         number,
+        setTotal: card.card?.set?.printedTotal ?? card.card?.set?.total ?? null,
         rarity,
       });
 

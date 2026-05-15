@@ -35,7 +35,7 @@ type PokemonCard = {
   number?: string;
   rarity?: string;
   images?: { small?: string; large?: string };
-  set?: { id?: string; name?: string; series?: string };
+  set?: { id?: string; name?: string; series?: string; printedTotal?: number; total?: number };
   tcgplayer?: {
     prices?: Record<string, { low?: number; mid?: number; high?: number; market?: number }>;
   };
@@ -409,6 +409,8 @@ export default function MarketScreen() {
         rarity: card.rarity ?? '',
         cardId: card.id ?? '',
       });
+      const printedTotal = card.set?.printedTotal ?? card.set?.total;
+      if (printedTotal != null) params.set('setTotal', String(printedTotal));
 
       const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch eBay price');
