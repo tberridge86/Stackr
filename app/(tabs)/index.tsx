@@ -23,7 +23,9 @@ import {
 import { Text } from '../../components/Text';
 import { LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCollection } from '../../components/collection-context';
+import { FeatureTipModal } from '../../components/FeatureTipModal';
 import { fetchBinders, fetchBinderCards } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { createActivityPost } from '../../lib/activity';
@@ -83,6 +85,36 @@ const ONBOARDING_STEPS = [
   {
     title: 'Safety',
     body: 'Stackr helps collectors find each other. It does not handle money, hold payments, or guarantee trades. Always trade carefully and use trusted methods.',
+  },
+];
+
+const HUB_TIP_STORAGE_KEY = 'stackr:feature-tip-dismissed:hub-overview-v1';
+
+const HUB_TIP_ITEMS = [
+  {
+    icon: 'analytics-outline' as const,
+    title: 'Market value',
+    body: 'Track your collection value, daily movement, and the cards driving the biggest changes.',
+  },
+  {
+    icon: 'people-outline' as const,
+    title: 'Social',
+    body: 'Jump into community activity, friends, public binders, and collector updates.',
+  },
+  {
+    icon: 'swap-horizontal-outline' as const,
+    title: 'Trade',
+    body: 'Browse listings, review offers, and move quickly into your trade marketplace.',
+  },
+  {
+    icon: 'search-outline' as const,
+    title: 'Market checker',
+    body: 'Check recent card prices using eBay first, then TCG and Cardmarket where available.',
+  },
+  {
+    icon: 'calculator-outline' as const,
+    title: 'Price Builder',
+    body: 'Build fair values for bundles, trades, and listings from your scanned or saved cards.',
   },
 ];
 
@@ -252,6 +284,8 @@ export default function HubScreen() {
   // Onboarding
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
+  const [hubTipOpen, setHubTipOpen] = useState(false);
 
   // Hamburger menu
   const [menuOpen, setMenuOpen] = useState(false);
@@ -268,7 +302,7 @@ export default function HubScreen() {
 
   // Chart
   const [chartRange, setChartRange] = useState<ChartRange>('7D');
-  const [chartMode, setChartMode] = useState<ChartMode>('TCG');
+  const [chartMode, setChartMode] = useState<ChartMode>('EBAY');
   const [chartData, setChartData] = useState<{ tcg: number[]; ebay: number[] }>({ tcg: [], ebay: [] });
 
   // Collection value
@@ -614,6 +648,27 @@ const { data, error } = await snapshotQuery;
       if (data && !data.has_seen_onboarding) setShowOnboarding(true);
     } catch (error) {
       console.log('Onboarding check failed', error);
+    } finally {
+      setOnboardingChecked(true);
+    }
+  }, []);
+
+  const checkHubTip = useCallback(async () => {
+    try {
+      const dismissed = await AsyncStorage.getItem(HUB_TIP_STORAGE_KEY);
+      if (dismissed !== 'true') setHubTipOpen(true);
+    } catch (error) {
+      console.log('Hub tip check failed', error);
+    }
+  }, []);
+
+  const closeHubTip = useCallback(async (dontShowAgain: boolean) => {
+    setHubTipOpen(false);
+    if (!dontShowAgain) return;
+    try {
+      await AsyncStorage.setItem(HUB_TIP_STORAGE_KEY, 'true');
+    } catch (error) {
+      console.log('Hub tip dismiss failed', error);
     }
   }, []);
 
@@ -627,6 +682,9 @@ const { data, error } = await snapshotQuery;
   }, [loadAll, loadCollectionValue]));
 
   useEffect(() => { checkOnboarding(); }, [checkOnboarding]);
+  useEffect(() => {
+    if (onboardingChecked && !showOnboarding) checkHubTip();
+  }, [checkHubTip, onboardingChecked, showOnboarding]);
   useEffect(() => { loadCollectionValue(); }, [chartRange, chartMode, loadCollectionValue]);
 
   // ===============================
@@ -672,6 +730,13 @@ const { data, error } = await snapshotQuery;
           </View>
 
           <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity
+              onPress={() => setHubTipOpen(true)}
+              style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
+            >
+              <Ionicons name="information-circle-outline" size={22} color={theme.colors.text} />
+            </TouchableOpacity>
+
             <TouchableOpacity
               onPress={() => router.push('/notifications')}
               style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
@@ -912,6 +977,14 @@ const { data, error } = await snapshotQuery;
         <QuickLink icon="people-outline" label="Community" onPress={() => router.push('/(tabs)/community' as any)} />
         <QuickLink icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} badge={unreadCount} />
       </ScrollView>
+
+      <FeatureTipModal
+        visible={hubTipOpen}
+        title="Welcome to the Hub"
+        subtitle="Your home base for value, trading, community, and quick price checks."
+        items={HUB_TIP_ITEMS}
+        onClose={closeHubTip}
+      />
 
       {/* HAMBURGER MENU */}
       <Modal visible={menuOpen} transparent animationType="fade">

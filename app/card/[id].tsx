@@ -23,6 +23,7 @@ import {
 import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
+import { supabase } from '../../lib/supabase';
 
 type PokemonCard = {
   id: string;
@@ -86,6 +87,12 @@ type EbayPriceResult = {
   usedFallback?: boolean;
 };
 
+type LatestSnapshotPrice = {
+  tcg_mid?: number | null;
+  tcg_low?: number | null;
+  cardmarket_trend?: number | null;
+};
+
 const CONDITIONS = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Played'];
 
 export default function CardDetailScreen() {
@@ -121,6 +128,7 @@ export default function CardDetailScreen() {
 
   // TCGCSV fallback state (used when pokemontcg tcgplayer block is missing)
   const [tcgFallbackPrice, setTcgFallbackPrice] = useState<TcgFallbackPrice | null>(null);
+  const [latestSnapshotPrice, setLatestSnapshotPrice] = useState<LatestSnapshotPrice | null>(null);
 
   // ===============================
   // LOAD CARD
@@ -223,6 +231,34 @@ export default function CardDetailScreen() {
       fetchEbay(card);
     }
   }, [card, fetchEbay]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadLatestSnapshot = async () => {
+      if (!card?.id) {
+        setLatestSnapshotPrice(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('market_price_snapshots')
+        .select('tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
+        .eq('card_id', card.id)
+        .order('snapshot_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!mounted) return;
+      setLatestSnapshotPrice(error ? null : data ?? null);
+    };
+
+    loadLatestSnapshot();
+
+    return () => {
+      mounted = false;
+    };
+  }, [card?.id]);
 
   // Fetch TCG/Cardmarket prices directly if missing from cache
   useEffect(() => {
@@ -397,16 +433,26 @@ export default function CardDetailScreen() {
     };
   }, [card]);
 
-  const resolvedTcgPrices = tcgPrices ?? tcgFallbackPrice;
+  const snapshotTcgPrices = latestSnapshotPrice?.tcg_mid != null || latestSnapshotPrice?.tcg_low != null
+    ? {
+        low: latestSnapshotPrice.tcg_low ?? null,
+        mid: latestSnapshotPrice.tcg_mid ?? null,
+        market: latestSnapshotPrice.tcg_mid ?? null,
+      }
+    : null;
+
+  const resolvedTcgPrices = snapshotTcgPrices ?? tcgPrices ?? tcgFallbackPrice;
 
   // CardMarket prices — converted from EUR to GBP
   const cardmarketPrice = useMemo(() => {
     if (!card) return null;
+    if (latestSnapshotPrice?.cardmarket_trend != null) return latestSnapshotPrice.cardmarket_trend;
+
     const prices = card.cardmarket?.prices;
     if (!prices) return null;
     const eur = prices.trendPrice ?? prices.averageSellPrice ?? prices.avg30;
     return typeof eur === 'number' ? Math.round(eur * EUR_TO_GBP * 100) / 100 : null;
-  }, [card]);
+  }, [card, latestSnapshotPrice]);
 
   const isFavorite =
     !!card &&

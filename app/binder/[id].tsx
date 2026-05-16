@@ -25,6 +25,7 @@ import { router, useFocusEffect, useLocalSearchParams, Stack } from 'expo-router
 import { BlurView } from 'expo-blur';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   BinderRecord,
   BinderCardRecord,
@@ -196,6 +197,8 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
   },
 };
 
+const getMasterSetStorageKey = (binderId: string) => `stackr:binder-master-set:${binderId}`;
+
 function getVariants(card: any, explicitSetId?: string): string[] {
   const setId = (explicitSetId ?? card?.set?.id ?? card?.set_id ?? '').toLowerCase();
   const setName = (card?.set?.name ?? card?.raw_data?.set?.name ?? '').toLowerCase();
@@ -290,6 +293,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [ownedVariants, setOwnedVariants] = useState<Set<string>>(new Set());
+  const [masterSetEnabled, setMasterSetEnabled] = useState(false);
+  const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -445,6 +450,26 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     }, [load])
   );
 
+  useEffect(() => {
+    let mounted = true;
+
+    const loadMasterSetMode = async () => {
+      if (!binderId) return;
+      try {
+        const stored = await AsyncStorage.getItem(getMasterSetStorageKey(binderId));
+        if (mounted) setMasterSetEnabled(stored === 'true');
+      } catch (error) {
+        console.log('Failed to load master set setting', error);
+      }
+    };
+
+    loadMasterSetMode();
+
+    return () => {
+      mounted = false;
+    };
+  }, [binderId]);
+
   // ===============================
   // DEBOUNCED SEARCH
   // ===============================
@@ -487,7 +512,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   let ownedCount = 0;
   let totalCount = 0;
   for (const c of cards) {
-    const variants = getVariants(c.card, c.set_id);
+    const variants = masterSetEnabled ? getVariants(c.card, c.set_id) : ['card'];
     if (variants.length > 1) {
       totalCount += variants.length;
       ownedCount += variants.filter((v) => ownedVariants.has(`${c.card_id}:${v}`)).length;
@@ -521,6 +546,21 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       Alert.alert('Could not update binder', 'Please try again.');
     } finally {
       setUpdatingVisibility(false);
+    }
+  };
+
+  const toggleMasterSet = async (value: boolean) => {
+    if (!binderId || updatingMasterSet) return;
+    try {
+      setUpdatingMasterSet(true);
+      setMasterSetEnabled(value);
+      await AsyncStorage.setItem(getMasterSetStorageKey(binderId), value ? 'true' : 'false');
+    } catch (error) {
+      console.log('Toggle master set error:', error);
+      setMasterSetEnabled((prev) => !prev);
+      Alert.alert('Could not update binder', 'Please try again.');
+    } finally {
+      setUpdatingMasterSet(false);
     }
   };
 
@@ -1019,7 +1059,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     const forTrade = isForTrade(item.card_id, item.set_id);
     const wanted = isWanted(item.card_id, item.set_id);
 
-    const variants = getVariants(item.card, item.set_id);
+    const variants = masterSetEnabled ? getVariants(item.card, item.set_id) : ['card'];
     const multiVariant = variants.length > 1;
     const anyVariantOwned = variants.some((v) => ownedVariants.has(`${item.card_id}:${v}`));
     const isOwned = multiVariant ? anyVariantOwned : item.owned;
@@ -1326,6 +1366,15 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
             {!isReadOnly && (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
+                  Master set
+                </Text>
+                <Switch
+                  value={masterSetEnabled}
+                  onValueChange={toggleMasterSet}
+                  disabled={updatingMasterSet}
+                  style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
+                />
                 <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
                   {isPublic ? '🌍' : '🔒'}
                 </Text>
@@ -1753,10 +1802,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                           />
 
                           {/* Variant slices in Modal */}
-                          {!isReadOnly && (() => {
+                          {!isReadOnly && masterSetEnabled && (() => {
                             const modalVariants = getVariants(selectedCard.card, selectedCard.set_id);
                             if (modalVariants.length <= 1) return null;
-                            const mSlicePct = 100 / modalVariants.length;
                             return (
                               <View style={[StyleSheet.absoluteFill, { flexDirection: 'row' }]} pointerEvents="box-none">
                                 {modalVariants.map((variant, i) => {
@@ -1990,7 +2038,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       </Text>
                     </View>
 
-                    {!isReadOnly && (() => {
+                    {!isReadOnly && masterSetEnabled && (() => {
                       const modalVariants = getVariants(selectedCard.card, selectedCard.set_id);
                       const isMultiVariant = modalVariants.length > 1;
                       return isMultiVariant ? (
@@ -2015,7 +2063,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       <View style={boxStyle}>
                         <Text style={boxTitleStyle}>Card Actions</Text>
 
-                        {getVariants(selectedCard.card).length <= 1 && (
+                        {(!masterSetEnabled || getVariants(selectedCard.card).length <= 1) && (
                           <ActionButton
                             label={selectedCard.owned ? 'Mark as missing' : 'Mark as owned'}
                             active={selectedCard.owned}

@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { USD_TO_GBP, EUR_TO_GBP } from './config';
+import { getPreferredMarketPrice } from './pricing';
 
 const API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 
@@ -14,7 +15,8 @@ export type MarketplaceListingPrices = {
   tcg_low: number | null;
   ebay_average: number | null;
   cardmarket_trend: number | null;
-  cardmarket_avg30: number | null;
+  preferred_source?: 'ebay' | 'tcg' | 'cardmarket' | null;
+  preferred_value?: number | null;
 };
 
 export type MarketplaceListing = {
@@ -121,7 +123,22 @@ async function attachPrices(listings: MarketplaceListing[]): Promise<Marketplace
 
   if (uniqueCardIds.length === 0) return listings;
 
-  // Fetch card data to get prices from raw_data (TCGPlayer & Cardmarket API data)
+  const { data: snapshotData, error: snapshotError } = await supabase
+    .from('market_price_snapshots')
+    .select('card_id, ebay_average, ebay_low, ebay_high, tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
+    .in('card_id', uniqueCardIds)
+    .order('snapshot_at', { ascending: false });
+
+  if (snapshotError) {
+    console.log('Latest snapshot fetch error:', snapshotError);
+  }
+
+  const latestSnapshotByCardId = new Map<string, any>();
+  for (const row of snapshotData ?? []) {
+    if (!latestSnapshotByCardId.has(row.card_id)) latestSnapshotByCardId.set(row.card_id, row);
+  }
+
+  // Fetch card data as a fallback when snapshots are missing.
   const { data: cardData, error } = await supabase
     .from('pokemon_cards')
     .select('id, raw_data')
@@ -139,6 +156,7 @@ async function attachPrices(listings: MarketplaceListing[]): Promise<Marketplace
     const raw = card.raw_data || {};
     const tcg = raw.tcgplayer?.prices || {};
     const cm = raw.cardmarket?.prices || {};
+    const snapshot = latestSnapshotByCardId.get(card.id);
 
     // Get best TCGPlayer price (prefer holofoil, then any)
     let tcgMid: number | null = null;
@@ -150,7 +168,7 @@ async function attachPrices(listings: MarketplaceListing[]): Promise<Marketplace
       }
     }
     if (tcgMid === null) {
-      for (const entry of Object.values(tcg)) {
+      for (const entry of Object.values(tcg) as any[]) {
         if (entry?.mid) {
           tcgMid = (entry.mid * USD_TO_GBP);
           break;
@@ -160,14 +178,19 @@ async function attachPrices(listings: MarketplaceListing[]): Promise<Marketplace
 
     // Get Cardmarket prices (convert EUR to GBP)
     const cardmarketTrend = cm.trendPrice != null ? (cm.trendPrice * EUR_TO_GBP) : null;
-    const cardmarketAvg30 = cm.avg30 != null ? (cm.avg30 * EUR_TO_GBP) : null;
+
+    const preferredMarketPrice = getPreferredMarketPrice(snapshot, {
+      tcg: tcgMid,
+      cardmarket: cardmarketTrend,
+    });
 
     cardPriceMap[card.id] = {
-      tcg_mid: tcgMid,
-      tcg_low: null,
-      ebay_average: null, // eBay requires separate API call
-      cardmarket_trend: cardmarketTrend,
-      cardmarket_avg30: cardmarketAvg30,
+      tcg_mid: snapshot?.tcg_mid ?? tcgMid,
+      tcg_low: snapshot?.tcg_low ?? null,
+      ebay_average: snapshot?.ebay_average ?? null,
+      cardmarket_trend: snapshot?.cardmarket_trend ?? cardmarketTrend,
+      preferred_source: preferredMarketPrice.source,
+      preferred_value: preferredMarketPrice.value,
     };
   }
 

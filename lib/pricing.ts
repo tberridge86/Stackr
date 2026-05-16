@@ -56,6 +56,31 @@ export type TcgCardPriceAvailability = {
   variants: TcgVariantPriceSummary[];
 };
 
+export type LatestMarketSnapshot = {
+  ebay_average?: number | null;
+  ebay_low?: number | null;
+  ebay_high?: number | null;
+  tcg_mid?: number | null;
+  tcg_low?: number | null;
+  cardmarket_trend?: number | null;
+};
+
+export const getPreferredMarketPrice = (
+  snapshot?: LatestMarketSnapshot | null,
+  fallback?: { ebay?: number | null; tcg?: number | null; cardmarket?: number | null }
+) => {
+  const ebay = snapshot?.ebay_average ?? fallback?.ebay ?? null;
+  if (typeof ebay === 'number') return { source: 'ebay' as const, value: ebay };
+
+  const tcg = snapshot?.tcg_mid ?? fallback?.tcg ?? null;
+  if (typeof tcg === 'number') return { source: 'tcg' as const, value: tcg };
+
+  const cardmarket = snapshot?.cardmarket_trend ?? fallback?.cardmarket ?? null;
+  if (typeof cardmarket === 'number') return { source: 'cardmarket' as const, value: cardmarket };
+
+  return { source: null, value: null };
+};
+
 export const getPriceFromPokemonCard = (card: any): number | null => {
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;

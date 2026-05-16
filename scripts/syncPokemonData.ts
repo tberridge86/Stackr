@@ -8,7 +8,7 @@ const supabase = createClient(
 );
 
 const API_BASE = 'https://api.pokemontcg.io/v2';
-const API_HEADERS = process.env.POKEMON_TCG_API_KEY
+const API_HEADERS: Record<string, string> = process.env.POKEMON_TCG_API_KEY
   ? { 'X-Api-Key': process.env.POKEMON_TCG_API_KEY }
   : {};
 

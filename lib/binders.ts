@@ -45,6 +45,41 @@ export type BinderCardRecord = {
   created_at: string;
 };
 
+async function attachLatestSnapshotPrices<T extends BinderCardRecord>(
+  rows: T[]
+): Promise<T[]> {
+  const cardIds = [...new Set(rows.map((row) => row.card_id).filter(Boolean))];
+  if (!cardIds.length) return rows;
+
+  const { data, error } = await supabase
+    .from('market_price_snapshots')
+    .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
+    .in('card_id', cardIds)
+    .order('snapshot_at', { ascending: false });
+
+  if (error) {
+    console.log('Latest binder snapshot prices failed:', error.message);
+    return rows;
+  }
+
+  const latestByCardId = new Map<string, any>();
+  for (const row of data ?? []) {
+    if (!latestByCardId.has(row.card_id)) latestByCardId.set(row.card_id, row);
+  }
+
+  return rows.map((row) => {
+    const snapshot = latestByCardId.get(row.card_id);
+    if (!snapshot) return row;
+
+    return {
+      ...row,
+      ebay_price: snapshot.ebay_average ?? row.ebay_price ?? null,
+      tcg_price: snapshot.tcg_mid ?? row.tcg_price ?? null,
+      cardmarket_price: snapshot.cardmarket_trend ?? row.cardmarket_price ?? null,
+    };
+  });
+}
+
 // ===============================
 // VIRTUAL CARD ID HELPERS
 // ===============================
@@ -147,7 +182,7 @@ export async function fetchBinderCards(
   const savedRows = (userRows ?? []) as BinderCardRecord[];
 
   if (binder.type !== 'official' || !binder.source_set_id) {
-  return savedRows.map((row) => ({
+  return attachLatestSnapshotPrices(savedRows.map((row) => ({
     ...row,
     condition: row.condition || 'Near Mint',
     card: row.card ?? (row.card_name ? {
@@ -159,7 +194,7 @@ export async function fetchBinderCards(
         large: null,
       },
     } : null),
-  }));
+  })));
 }
   const setCards = await fetchCardsForSet(binder.source_set_id);
 
@@ -167,7 +202,7 @@ export async function fetchBinderCards(
     savedRows.map((row) => [`${row.set_id}:${row.card_id}`, row])
   );
 
-  return setCards.map((card, index) => {
+  const rows = setCards.map((card, index) => {
     const setId = binder.source_set_id as string;
     const existing = savedByCardKey.get(`${setId}:${card.id}`);
 
@@ -230,6 +265,8 @@ export async function fetchBinderCards(
       created_at: new Date().toISOString(),
     };
   });
+
+  return attachLatestSnapshotPrices(rows);
 }
 
 // ===============================
