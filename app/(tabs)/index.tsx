@@ -94,27 +94,27 @@ const HUB_TIP_ITEMS = [
   {
     icon: 'analytics-outline' as const,
     title: 'Market value',
-    body: 'Track your collection value, daily movement, and the cards driving the biggest changes.',
+    body: 'Track value, movement, and top daily movers.',
   },
   {
     icon: 'people-outline' as const,
     title: 'Social',
-    body: 'Jump into community activity, friends, public binders, and collector updates.',
+    body: 'See community activity, friends, and public binders.',
   },
   {
     icon: 'swap-horizontal-outline' as const,
     title: 'Trade',
-    body: 'Browse listings, review offers, and move quickly into your trade marketplace.',
+    body: 'Browse listings and review offers.',
   },
   {
     icon: 'search-outline' as const,
     title: 'Market checker',
-    body: 'Check recent card prices using eBay first, then TCG and Cardmarket where available.',
+    body: 'Check recent eBay, TCG, and Cardmarket prices.',
   },
   {
     icon: 'calculator-outline' as const,
     title: 'Price Builder',
-    body: 'Build fair values for bundles, trades, and listings from your scanned or saved cards.',
+    body: 'Build fair values for trades and bundles.',
   },
 ];
 

@@ -1,8 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
   Modal,
   Pressable,
+  ScrollView,
   Switch,
   TouchableOpacity,
   View,
@@ -29,6 +32,11 @@ type FeatureTipModalProps = {
   onClose: (dontShowAgain: boolean) => void;
 };
 
+type FeatureTipGateProps = Omit<FeatureTipModalProps, 'visible' | 'onClose'> & {
+  tipKey: string;
+  enabled?: boolean;
+};
+
 export function FeatureTipModal({
   visible,
   title,
@@ -50,15 +58,16 @@ export function FeatureTipModal({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(8,10,20,0.48)', justifyContent: 'center', padding: 20 }}>
+      <View style={{ flex: 1, backgroundColor: 'rgba(8,10,20,0.48)', justifyContent: 'center', padding: 18 }}>
         <Pressable style={{ position: 'absolute', inset: 0 }} onPress={close} />
         <View
           style={{
             backgroundColor: theme.colors.card,
-            borderRadius: 24,
-            padding: 20,
+            borderRadius: 20,
+            padding: 16,
             borderWidth: 1,
             borderColor: theme.colors.border,
+            maxHeight: '82%',
             shadowColor: '#000',
             shadowOpacity: 0.16,
             shadowRadius: 18,
@@ -73,9 +82,9 @@ export function FeatureTipModal({
               position: 'absolute',
               top: 12,
               right: 12,
-              width: 32,
-              height: 32,
-              borderRadius: 16,
+              width: 30,
+              height: 30,
+              borderRadius: 15,
               backgroundColor: theme.colors.surface,
               alignItems: 'center',
               justifyContent: 'center',
@@ -85,39 +94,40 @@ export function FeatureTipModal({
             <Ionicons name="close" size={19} color={theme.colors.textSoft} />
           </TouchableOpacity>
 
-          <View style={{ alignItems: 'center', marginBottom: 16, paddingHorizontal: 24 }}>
+          <View style={{ alignItems: 'center', marginBottom: 12, paddingHorizontal: 24 }}>
             <View
               style={{
-                width: 56,
-                height: 56,
-                borderRadius: 18,
+                width: 44,
+                height: 44,
+                borderRadius: 15,
                 backgroundColor: `${accent}1A`,
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: 12,
+                marginBottom: 9,
               }}
             >
-              <Ionicons name="sparkles-outline" size={28} color={accent} />
+              <Ionicons name="sparkles-outline" size={23} color={accent} />
             </View>
-            <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900', textAlign: 'center' }}>
+            <Text style={{ color: theme.colors.text, fontSize: 19, fontWeight: '900', textAlign: 'center' }}>
               {title}
             </Text>
             {!!subtitle && (
-              <Text style={{ color: theme.colors.textSoft, fontSize: 14, fontWeight: '700', textAlign: 'center', marginTop: 6, lineHeight: 20 }}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', textAlign: 'center', marginTop: 5, lineHeight: 17 }}>
                 {subtitle}
               </Text>
             )}
           </View>
 
-          <View style={{ gap: 10 }}>
+          <ScrollView style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 8 }} showsVerticalScrollIndicator={false}>
             {items.map((item) => (
               <View
                 key={`${item.icon}-${item.title}`}
                 style={{
                   flexDirection: 'row',
-                  gap: 12,
-                  padding: 12,
-                  borderRadius: 16,
+                  gap: 10,
+                  paddingVertical: 9,
+                  paddingHorizontal: 10,
+                  borderRadius: 14,
                   backgroundColor: theme.colors.surface,
                   borderWidth: 1,
                   borderColor: theme.colors.border,
@@ -125,9 +135,9 @@ export function FeatureTipModal({
               >
                 <View
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 12,
+                    width: 31,
+                    height: 31,
+                    borderRadius: 10,
                     backgroundColor: theme.colors.card,
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -135,21 +145,21 @@ export function FeatureTipModal({
                     borderColor: theme.colors.border,
                   }}
                 >
-                  <Ionicons name={item.icon} size={20} color={accent} />
+                  <Ionicons name={item.icon} size={17} color={accent} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>{item.title}</Text>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 3 }}>{item.body}</Text>
+                  <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{item.title}</Text>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: 2 }}>{item.body}</Text>
                 </View>
               </View>
             ))}
-          </View>
+          </ScrollView>
 
           <Pressable
             onPress={() => setDontShowAgain((current) => !current)}
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 16 }}
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 12 }}
           >
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '800' }}>{storageLabel}</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>{storageLabel}</Text>
             <Switch
               value={dontShowAgain}
               onValueChange={setDontShowAgain}
@@ -161,12 +171,46 @@ export function FeatureTipModal({
           <TouchableOpacity
             onPress={close}
             activeOpacity={0.85}
-            style={{ marginTop: 16, backgroundColor: accent, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}
+            style={{ marginTop: 12, backgroundColor: accent, borderRadius: 14, paddingVertical: 12, alignItems: 'center' }}
           >
-            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>{ctaLabel}</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>{ctaLabel}</Text>
           </TouchableOpacity>
         </View>
       </View>
     </Modal>
   );
+}
+
+export function FeatureTipGate({ tipKey, enabled = true, ...modalProps }: FeatureTipGateProps) {
+  const [visible, setVisible] = useState(false);
+  const storageKey = `stackr:feature-tip-dismissed:${tipKey}`;
+
+  useFocusEffect(useCallback(() => {
+    let mounted = true;
+    const checkTip = async () => {
+      if (!enabled) return;
+      try {
+        const dismissed = await AsyncStorage.getItem(storageKey);
+        if (mounted && dismissed !== 'true') setVisible(true);
+      } catch (error) {
+        console.log('Feature tip check failed', error);
+      }
+    };
+    checkTip();
+    return () => {
+      mounted = false;
+    };
+  }, [enabled, storageKey]));
+
+  const close = useCallback(async (dontShowAgain: boolean) => {
+    setVisible(false);
+    if (!dontShowAgain) return;
+    try {
+      await AsyncStorage.setItem(storageKey, 'true');
+    } catch (error) {
+      console.log('Feature tip dismiss failed', error);
+    }
+  }, [storageKey]);
+
+  return <FeatureTipModal visible={visible} onClose={close} {...modalProps} />;
 }
