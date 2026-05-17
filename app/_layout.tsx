@@ -5,6 +5,7 @@ import { AuthProvider } from '../components/auth-context';
 import { ProfileProvider } from '../components/profile-context';
 import { TradeProvider } from '../components/trade-context';
 import { CollectionProvider } from '../components/collection-context';
+import { AppModeProvider, useAppMode } from '../components/app-mode-context';
 import { ThemeProvider, useTheme } from '../components/theme-context';
 import { KeyboardAvoidingView, Platform, TouchableOpacity, View } from 'react-native';
 import { Text } from '../components/Text';
@@ -26,8 +27,15 @@ const TABS = [
 
 function PersistentTabBar() {
   const { theme } = useTheme();
+  const { mode } = useAppMode();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const tabs = [
+    ...TABS.slice(0, 4),
+    mode === 'seller'
+      ? { name: 'Inventory', route: '/(tabs)/inventory', icon: 'file-tray-full', iconOutline: 'file-tray-full-outline' }
+      : TABS[4],
+  ];
 
   const tabBarHeight = Platform.OS === 'android' ? 64 + insets.bottom : 84;
   const tabBarPaddingBottom = Platform.OS === 'android' ? insets.bottom + 8 : 10;
@@ -65,7 +73,7 @@ function PersistentTabBar() {
       shadowOffset: { width: 0, height: -5 },
       elevation: 6,
     }}>
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const active = isActive(tab.route);
         return (
           <TouchableOpacity
@@ -106,8 +114,9 @@ function AppShell() {
         <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''}>
         <AuthProvider>
           <ProfileProvider>
-            <CollectionProvider>
-              <TradeProvider>
+            <AppModeProvider>
+              <CollectionProvider>
+                <TradeProvider>
                 <StatusBar style={isDark ? 'light' : 'dark'} />
                 <Stack
                   screenOptions={{
@@ -147,8 +156,9 @@ function AppShell() {
                   <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
                 </Stack>
                 <PersistentTabBar />
-              </TradeProvider>
-            </CollectionProvider>
+                </TradeProvider>
+              </CollectionProvider>
+            </AppModeProvider>
           </ProfileProvider>
         </AuthProvider>
         </StripeProvider>

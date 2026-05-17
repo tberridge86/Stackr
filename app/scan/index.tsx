@@ -14,6 +14,7 @@ import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { fetchBinders, BinderRecord } from '../../lib/binders';
+import { scanStore } from '../../lib/scanStore';
 import * as ImageManipulator from 'expo-image-manipulator';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { PRICE_API_URL } from '../../lib/config';
@@ -646,7 +647,8 @@ export default function ScanScreen() {
   const insets = useSafeAreaInsets();
 
   const params = useLocalSearchParams<{ mode?: string }>();
-  const isMarketMode = params.mode === 'market';
+  const isInventoryMode = params.mode === 'inventory';
+  const isMarketMode = params.mode === 'market' || isInventoryMode;
 
   const [torch, setTorch] = useState(false);
   const [step, setStep] = useState<ScanStep>(isMarketMode ? 'scanning' : 'select_binder');
@@ -2136,6 +2138,13 @@ export default function ScanScreen() {
     scanCooldownRef.current = false;
     saveTrainingData(card.id, base64);
 
+    if (isInventoryMode) {
+      scanStore.triggerCallback(base64);
+      setAutoScanActive(false);
+      router.back();
+      return;
+    }
+
     if (isMarket) {
       setAutoScanActive(false);
       router.replace({ pathname: '/scan/result', params: { cardsJson: JSON.stringify([card]) } });
@@ -2146,7 +2155,7 @@ export default function ScanScreen() {
     setScannedCards((prev) => [...prev, card]);
     setLastScanned(`✅ ${card.name} #${card.number} added!`);
     Vibration.vibrate([0, 90, 40, 90]);
-  }, [pendingConfirmation, saveTrainingData]);
+  }, [isInventoryMode, pendingConfirmation, saveTrainingData]);
 
   const handleReject = useCallback(() => {
     setPendingConfirmation(null);

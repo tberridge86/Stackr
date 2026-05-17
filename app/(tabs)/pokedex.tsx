@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { router } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -179,6 +180,16 @@ export default function PokedexScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <FeatureTipGate
+        tipKey="pokedex-screen-v1"
+        title="Pokedex"
+        subtitle="Browse Pokemon by name, number, and region."
+        items={[
+          { icon: 'search-outline', title: 'Search', body: 'Find a Pokemon by name or Pokedex number.' },
+          { icon: 'filter-outline', title: 'Regions', body: 'Use the chips to jump between generations.' },
+          { icon: 'albums-outline', title: 'Profiles', body: 'Tap a Pokemon to open its detail page.' },
+        ]}
+      />
       <View style={styles.container}>
         <View style={styles.headerCard}>
           <Text style={styles.heading}>Pokédex</Text>

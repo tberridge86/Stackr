@@ -1,5 +1,5 @@
 import { useTheme } from '../components/theme-context';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
+import { StackrScreenHeader } from '../components/StackrScreenHeader';
 
 // ===============================
 // TYPES
@@ -30,6 +31,16 @@ type Notification = {
   read: boolean;
   created_at: string;
 };
+
+type ActivityTab = 'all' | 'trades' | 'offers' | 'messages' | 'likes';
+
+const ACTIVITY_TABS: { key: ActivityTab; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'trades', label: 'Trades' },
+  { key: 'offers', label: 'Offers' },
+  { key: 'messages', label: 'Messages' },
+  { key: 'likes', label: 'Likes' },
+];
 
 // ===============================
 // HELPERS
@@ -71,6 +82,14 @@ function getNotificationIcon(type: string, theme: any): { name: any; color: stri
   }
 }
 
+function getActivityTab(type: string): ActivityTab {
+  if (type.includes('message') || type.includes('chat')) return 'messages';
+  if (type.includes('like') || type.includes('favourite') || type.includes('favorite') || type === 'wishlist_match') return 'likes';
+  if (type.includes('offer')) return 'offers';
+  if (type.includes('trade') || type.includes('card_received')) return 'trades';
+  return 'all';
+}
+
 // Route to the right screen based on notification type
 function getNotificationRoute(item: Notification): string {
   switch (item.type) {
@@ -99,8 +118,15 @@ export default function NotificationsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [markingAll, setMarkingAll] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActivityTab>('all');
 
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const featuredNotification = notifications.find((n) => !n.read) ?? notifications[0] ?? null;
+
+  const filteredNotifications = useMemo(() => {
+    if (activeTab === 'all') return notifications;
+    return notifications.filter((item) => getActivityTab(item.type) === activeTab);
+  }, [activeTab, notifications]);
 
   // ===============================
   // LOAD
@@ -183,7 +209,7 @@ export default function NotificationsScreen() {
         .eq('read', false);
 
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Could not mark all as read.');
     } finally {
       setMarkingAll(false);
@@ -231,11 +257,16 @@ export default function NotificationsScreen() {
         onPress={() => markAsRead(item)}
         style={{
           backgroundColor: theme.colors.card,
-          borderRadius: 18,
+          borderRadius: 20,
           padding: 14,
-          marginBottom: 10,
+          marginBottom: 12,
           borderWidth: 1,
-          borderColor: item.read ? theme.colors.border : theme.colors.primary,
+          borderColor: item.read ? theme.colors.border : theme.colors.primary + '55',
+          shadowColor: '#111827',
+          shadowOpacity: 0.04,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 5 },
+          elevation: 1,
         }}
         activeOpacity={0.8}
       >
@@ -256,7 +287,7 @@ export default function NotificationsScreen() {
           {/* Content */}
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900', flex: 1, marginRight: 8 }} numberOfLines={1}>
+              <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900', flex: 1, marginRight: 8 }} numberOfLines={1}>
                 {item.title ?? 'Notification'}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 11 }}>
@@ -293,6 +324,202 @@ export default function NotificationsScreen() {
     );
   };
 
+  const renderActivityHeader = () => {
+    const featuredIcon = featuredNotification ? getNotificationIcon(featuredNotification.type, theme) : null;
+
+    return (
+      <View>
+        <StackrScreenHeader
+          title="Activity"
+          subtitle="Stay in the loop with your trades"
+          rightIcon="search-outline"
+          onRightPress={() => router.push('/trade' as any)}
+        />
+
+        <View style={{
+          flexDirection: 'row',
+          backgroundColor: theme.colors.card,
+          borderRadius: 22,
+          padding: 5,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+        }}>
+          {ACTIVITY_TABS.map((tab) => {
+            const active = activeTab === tab.key;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                onPress={() => setActiveTab(tab.key)}
+                activeOpacity={0.85}
+                style={{
+                  flex: 1,
+                  minHeight: 42,
+                  borderRadius: 17,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: active ? theme.colors.primary + '18' : 'transparent',
+                  borderWidth: active ? 1 : 0,
+                  borderColor: active ? theme.colors.primary + '55' : 'transparent',
+                }}
+              >
+                <Text style={{
+                  color: active ? theme.colors.primary : theme.colors.textSoft,
+                  fontSize: 13,
+                  fontWeight: '900',
+                }}>
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {featuredNotification ? (
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => markAsRead(featuredNotification)}
+            style={{
+              backgroundColor: theme.colors.primary + '10',
+              borderRadius: 26,
+              padding: 18,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: theme.colors.primary + '33',
+              overflow: 'hidden',
+            }}
+          >
+            <Ionicons name="sparkles" size={18} color="#F59E0B" style={{ position: 'absolute', right: 38, top: 28 }} />
+            <Ionicons name="sparkles" size={14} color={theme.colors.primary} style={{ position: 'absolute', right: 70, top: 82 }} />
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 18 }}>
+              <View style={{
+                width: 58,
+                height: 58,
+                borderRadius: 18,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: featuredIcon?.bg ?? theme.colors.card,
+                marginRight: 14,
+              }}>
+                <Ionicons name={featuredIcon?.name ?? 'notifications'} size={26} color={featuredIcon?.color ?? theme.colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', flex: 1 }} numberOfLines={1}>
+                    {featuredNotification.title ?? 'Stackr activity'}
+                  </Text>
+                  {!featuredNotification.read && (
+                    <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: theme.colors.primary }} />
+                  )}
+                </View>
+                <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900', marginTop: 2 }}>
+                  {timeAgo(featuredNotification.created_at)}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={{ color: theme.colors.text, fontSize: 25, lineHeight: 31, fontWeight: '900', marginBottom: 10 }}>
+              {featuredNotification.message ?? 'You have a new update waiting.'}
+            </Text>
+
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => markAsRead(featuredNotification)}
+                style={{
+                  flex: 1,
+                  minHeight: 48,
+                  borderRadius: 16,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: theme.colors.primary,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>
+                  View
+                </Text>
+              </TouchableOpacity>
+              {!featuredNotification.read && (
+                <TouchableOpacity
+                  activeOpacity={0.85}
+                  onPress={() => markAsRead(featuredNotification)}
+                  style={{
+                    flex: 1,
+                    minHeight: 48,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: theme.colors.card,
+                    borderWidth: 1,
+                    borderColor: theme.colors.primary + '55',
+                  }}
+                >
+                  <Text style={{ color: theme.colors.primary, fontSize: 15, fontWeight: '900' }}>
+                    Mark read
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </TouchableOpacity>
+        ) : null}
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <View>
+            <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>
+              Latest updates
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+              {unreadCount > 0 ? `${unreadCount} unread` : 'Everything is caught up'}
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {unreadCount > 0 && (
+              <TouchableOpacity
+                onPress={markAllAsRead}
+                disabled={markingAll}
+                style={{
+                  backgroundColor: theme.colors.primary + '12',
+                  borderRadius: 14,
+                  paddingHorizontal: 12,
+                  paddingVertical: 9,
+                  borderWidth: 1,
+                  borderColor: theme.colors.primary + '35',
+                }}
+              >
+                {markingAll ? (
+                  <ActivityIndicator size="small" color={theme.colors.primary} />
+                ) : (
+                  <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>
+                    Mark read
+                  </Text>
+                )}
+              </TouchableOpacity>
+            )}
+
+            {notifications.length > 0 && (
+              <TouchableOpacity
+                onPress={clearAll}
+                style={{
+                  backgroundColor: theme.colors.card,
+                  borderRadius: 14,
+                  paddingHorizontal: 12,
+                  paddingVertical: 9,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                }}
+              >
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
+                  Clear
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   // ===============================
   // LOADING
   // ===============================
@@ -317,78 +544,15 @@ export default function NotificationsScreen() {
   return (
     <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
-
-        {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
-              Notifications
-            </Text>
-            {unreadCount > 0 && (
-              <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
-                {unreadCount} unread
-              </Text>
-            )}
-          </View>
-
-          {/* Actions */}
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {unreadCount > 0 && (
-              <TouchableOpacity
-                onPress={markAllAsRead}
-                disabled={markingAll}
-                style={{
-                  backgroundColor: theme.colors.card,
-                  borderRadius: 10,
-                  paddingHorizontal: 10,
-                  paddingVertical: 7,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                }}
-              >
-                {markingAll ? (
-                  <ActivityIndicator size="small" color={theme.colors.primary} />
-                ) : (
-                  <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700' }}>
-                    Mark all read
-                  </Text>
-                )}
-              </TouchableOpacity>
-            )}
-
-            {notifications.length > 0 && (
-              <TouchableOpacity
-                onPress={clearAll}
-                style={{
-                  backgroundColor: theme.colors.card,
-                  borderRadius: 10,
-                  paddingHorizontal: 10,
-                  paddingVertical: 7,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                }}
-              >
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                  Clear all
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 16 }}>
-          Wishlist matches, trade updates and friend activity.
-        </Text>
-
-        {/* List */}
         <FlatList
-          data={notifications}
+          data={filteredNotifications}
           keyExtractor={(item) => item.id}
           renderItem={renderNotification}
+          ListHeaderComponent={renderActivityHeader}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingBottom: 120,
-            flexGrow: notifications.length === 0 ? 1 : 0,
+            flexGrow: filteredNotifications.length === 0 ? 1 : 0,
           }}
           refreshControl={
             <RefreshControl
@@ -413,10 +577,10 @@ export default function NotificationsScreen() {
               </View>
 
               <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', marginBottom: 8 }}>
-                No notifications yet
+                No activity here yet
               </Text>
               <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 20, maxWidth: 260 }}>
-                When someone lists a card from your wishlist or responds to a trade offer, you'll see it here.
+                Trade updates, offers, messages and wishlist matches will appear here.
               </Text>
             </View>
           }

@@ -15,6 +15,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Text } from '../../../components/Text';
+import { FeatureTipGate } from '../../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AVATAR_PRESETS } from '../../../lib/avatars';
@@ -23,6 +24,7 @@ import { getMyFriends } from '../../../lib/friends';
 import { useProfile } from '../../../components/profile-context';
 
 type FeedMode = 'global' | 'friends';
+type SocialTab = 'Feed' | 'Flex' | 'Local' | 'Price Checks' | 'Discussions';
 
 type SocialPost = {
   id: string;
@@ -86,6 +88,8 @@ export default function CommunityScreen() {
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [mode, setMode] = useState<FeedMode>('global');
+  const [activeSocialTab, setActiveSocialTab] = useState<SocialTab>('Feed');
+  const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
@@ -457,6 +461,62 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
   );
 };
 
+  const socialTabs: SocialTab[] = ['Feed', 'Flex', 'Local', 'Price Checks', 'Discussions'];
+  const socialCategories: Record<SocialTab, { icon: keyof typeof Ionicons.glyphMap; label: string }[]> = {
+    Feed: [
+      { icon: 'albums-outline', label: 'Binder Flex' },
+      { icon: 'sparkles-outline', label: 'Chase Pulls' },
+      { icon: 'swap-horizontal-outline', label: 'Trades' },
+      { icon: 'trophy-outline', label: 'Set Complete' },
+    ],
+    Flex: [
+      { icon: 'albums-outline', label: 'Binders' },
+      { icon: 'sparkles-outline', label: 'Chase Cards' },
+      { icon: 'id-card-outline', label: 'Slabs' },
+      { icon: 'trophy-outline', label: 'Milestones' },
+    ],
+    Local: [
+      { icon: 'location-outline', label: 'Near Me' },
+      { icon: 'calendar-outline', label: 'Events' },
+      { icon: 'people-outline', label: 'Collectors' },
+      { icon: 'swap-horizontal-outline', label: 'Trade Tables' },
+    ],
+    'Price Checks': [
+      { icon: 'trending-up-outline', label: 'Market' },
+      { icon: 'pricetag-outline', label: 'eBay Sold' },
+      { icon: 'analytics-outline', label: 'TCG' },
+      { icon: 'globe-outline', label: 'Cardmarket' },
+    ],
+    Discussions: [
+      { icon: 'trending-up-outline', label: 'Market' },
+      { icon: 'cube-outline', label: 'Sets' },
+      { icon: 'shield-checkmark-outline', label: 'Grading' },
+      { icon: 'file-tray-full-outline', label: 'Sealed' },
+      { icon: 'swap-horizontal-outline', label: 'Trades' },
+      { icon: 'analytics-outline', label: 'Investing' },
+    ],
+  };
+  const activeSocialCategories = socialCategories[activeSocialTab] ?? [];
+  const flexCards = [
+    { icon: 'albums-outline' as const, label: 'Binder Flex' },
+    { icon: 'sparkles-outline' as const, label: 'Chase Card\nPull' },
+    { icon: 'swap-horizontal-outline' as const, label: 'Trade Win' },
+    { icon: 'trophy-outline' as const, label: 'Set Complete' },
+    { icon: 'id-card-outline' as const, label: 'Slab Return' },
+  ];
+  const marketTopics = [
+    { icon: 'analytics-outline' as const, label: 'Are vintage holos moving up again?', replies: 56 },
+    { icon: 'podium-outline' as const, label: 'PSA 10 prices this week', replies: 32 },
+    { icon: 'cube-outline' as const, label: 'Sealed product watch', replies: 28 },
+    { icon: 'pricetag-outline' as const, label: "What's undervalued right now?", replies: 41 },
+  ];
+  const shareActions = [
+    { icon: 'albums-outline' as const, label: 'Flex binder' },
+    { icon: 'sparkles-outline' as const, label: 'Post chase card' },
+    { icon: 'chatbubble-ellipses-outline' as const, label: 'Start discussion' },
+    { icon: 'location-outline' as const, label: 'Organise meetup' },
+  ];
+
   const renderOwnedCard = ({ item }: { item: OwnedCardOption }) => {
     const card = item.card;
 
@@ -494,8 +554,164 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <FeatureTipGate
+        tipKey="social-screen-v1"
+        title="Social"
+        subtitle="Share collection moments and find other collectors."
+        items={[
+          { icon: 'chatbubble-ellipses-outline', title: 'Post updates', body: 'Share a message or attach a card you own.' },
+          { icon: 'people-outline', title: 'Friends feed', body: 'Switch between global posts and your friends.' },
+          { icon: 'search-outline', title: 'Find collectors', body: 'Search names and open public profiles.' },
+        ]}
+      />
       <View style={styles.container}>
-        <Text style={styles.heading}>Community</Text>
+        <View style={styles.hero}>
+          <View style={styles.brandRow}>
+            <Image source={require('../../../assets/images/hub.png')} style={styles.brandLogo} resizeMode="contain" />
+            <View style={styles.heroActions}>
+              <Pressable style={styles.heroIconButton}>
+                <Ionicons name="search-outline" size={22} color={theme.colors.text} />
+              </Pressable>
+              <Pressable style={styles.heroIconButton}>
+                <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
+                <View style={styles.notificationDot} />
+              </Pressable>
+              <Pressable style={styles.heroAddButton}>
+                <Ionicons name="add" size={28} color="#FFFFFF" />
+              </Pressable>
+            </View>
+          </View>
+
+          <Ionicons name="sparkles" size={24} color="#D9CCFF" style={styles.heroSparkleOne} />
+          <Ionicons name="sparkles" size={14} color="#F59E0B" style={styles.heroSparkleTwo} />
+          <View style={styles.heroOrbLarge} />
+          <View style={styles.heroOrbSmall} />
+
+          <Text style={styles.heading}>Social</Text>
+          <Text style={styles.subheading}>Flex, trade, meet and talk cards.</Text>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.socialTabs}>
+            {socialTabs.map((tab) => {
+              const active = activeSocialTab === tab;
+              return (
+                <Pressable
+                  key={tab}
+                  onPress={() => {
+                    setActiveSocialTab(tab);
+                    setActiveCategory('All');
+                  }}
+                  style={styles.socialTab}
+                >
+                  <Text style={[styles.socialTabText, active && styles.socialTabTextActive]}>{tab}</Text>
+                  {active && <View style={styles.socialTabUnderline} />}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryStrip}
+        >
+          {[{ icon: 'apps-outline' as const, label: 'All' }, ...activeSocialCategories].map((item) => {
+            const active = activeCategory === item.label;
+            return (
+              <Pressable
+                key={item.label}
+                onPress={() => setActiveCategory(item.label)}
+                style={[styles.categoryChip, active && styles.categoryChipActive]}
+              >
+                <Ionicons
+                  name={item.icon}
+                  size={16}
+                  color={active ? theme.colors.primary : theme.colors.textSoft}
+                />
+                <Text style={[styles.categoryChipText, active && styles.categoryChipTextActive]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.flexCardRow}>
+          {flexCards.map((item, index) => (
+            <Pressable key={item.label} style={[styles.flexCard, index === 0 && styles.flexCardActive]}>
+              <Ionicons name={item.icon} size={34} color={theme.colors.primary} />
+              <Text style={styles.flexCardText}>{item.label}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <View style={styles.socialGrid}>
+          <View style={[styles.panelCard, styles.panelHalf]}>
+            <View style={styles.panelHeader}>
+              <View style={styles.panelTitleRow}>
+                <Ionicons name="chatbubble-ellipses" size={20} color={theme.colors.primary} />
+                <Text style={styles.panelTitle}>Card Market Talk</Text>
+              </View>
+              <Text style={styles.viewAllText}>View all</Text>
+            </View>
+            {marketTopics.map((topic) => (
+              <View key={topic.label} style={styles.topicRow}>
+                <View style={styles.topicIcon}>
+                  <Ionicons name={topic.icon} size={16} color={theme.colors.primary} />
+                </View>
+                <Text numberOfLines={1} style={styles.topicText}>{topic.label}</Text>
+                <Ionicons name="chatbubble-outline" size={14} color={theme.colors.textSoft} />
+                <Text style={styles.topicCount}>{topic.replies}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={[styles.panelCard, styles.panelHalf]}>
+            <View style={styles.panelHeader}>
+              <View style={styles.panelTitleRow}>
+                <Ionicons name="location" size={20} color={theme.colors.primary} />
+                <View>
+                  <Text style={styles.panelTitle}>Near You</Text>
+                  <Text style={styles.panelSubtitle}>Collectors and games in your area</Text>
+                </View>
+              </View>
+              <Text style={styles.viewAllText}>View all</Text>
+            </View>
+            <View style={styles.localEventCard}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.localEventTitle}>Derby Card Night</Text>
+                <Text style={styles.localEventMeta}>6 collectors interested</Text>
+                <Text style={styles.localEventMeta}>Saturday · 6:30 PM · 2.1 miles away</Text>
+              </View>
+              <View style={styles.mapMock}>
+                <Ionicons name="location" size={32} color={theme.colors.primary} />
+              </View>
+            </View>
+            <View style={styles.localButtons}>
+              <Pressable style={styles.localPrimaryButton}>
+                <Text style={styles.localPrimaryText}>Join</Text>
+              </Pressable>
+              <Pressable style={styles.localSecondaryButton}>
+                <Text style={styles.localSecondaryText}>Create Meetup</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.sharePanel}>
+          <View style={styles.panelTitleRow}>
+            <Ionicons name="sparkles" size={18} color={theme.colors.primary} />
+            <Text style={styles.panelTitle}>Share something</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shareActions}>
+            {shareActions.map((item) => (
+              <Pressable key={item.label} style={styles.shareAction}>
+                <Ionicons name={item.icon} size={18} color={theme.colors.primary} />
+                <Text style={styles.shareActionText}>{item.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
 
         <View style={styles.searchCard}>
   <TextInput
@@ -656,12 +872,393 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
 function makeStyles(theme: any) {
   return StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.bg },
-  container: { flex: 1, padding: 16 },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 10 },
+
+  hero: {
+    position: 'relative',
+    paddingBottom: 8,
+    overflow: 'hidden',
+  },
+
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  brandLogo: {
+    width: 150,
+    height: 54,
+  },
+
+  heroActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  heroIconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  heroAddButton: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+    shadowColor: theme.colors.primary,
+    shadowOpacity: 0.34,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 7,
+  },
+
+  notificationDot: {
+    position: 'absolute',
+    right: 7,
+    top: 7,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.primary,
+  },
+
+  heroSparkleOne: {
+    position: 'absolute',
+    top: 34,
+    left: 154,
+  },
+
+  heroSparkleTwo: {
+    position: 'absolute',
+    top: 72,
+    right: 112,
+  },
+
+  heroOrbLarge: {
+    position: 'absolute',
+    right: -52,
+    top: 44,
+    width: 122,
+    height: 122,
+    borderRadius: 61,
+    backgroundColor: 'rgba(108, 66, 245, 0.14)',
+  },
+
+  heroOrbSmall: {
+    position: 'absolute',
+    right: 54,
+    top: 72,
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: 'rgba(108, 66, 245, 0.10)',
+  },
 
   heading: {
     color: theme.colors.text,
-    fontSize: 26,
+    fontSize: 44,
     fontWeight: '900',
+    letterSpacing: 0,
+  },
+
+  subheading: {
+    color: theme.colors.textSoft,
+    fontSize: 16,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+
+  socialTabs: {
+    gap: 28,
+    paddingTop: 22,
+    paddingRight: 24,
+  },
+
+  socialTab: {
+    paddingBottom: 10,
+    alignItems: 'center',
+  },
+
+  socialTabText: {
+    color: theme.colors.textSoft,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+
+  socialTabTextActive: {
+    color: theme.colors.primary,
+  },
+
+  socialTabUnderline: {
+    position: 'absolute',
+    bottom: 0,
+    width: '120%',
+    height: 3,
+    borderRadius: 999,
+    backgroundColor: theme.colors.primary,
+  },
+
+  flexCardRow: {
+    gap: 10,
+    paddingTop: 4,
+    paddingBottom: 12,
+  },
+
+  categoryStrip: {
+    gap: 8,
+    paddingBottom: 12,
+    paddingRight: 18,
+  },
+
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingHorizontal: 13,
+    paddingVertical: 9,
+    borderRadius: 12,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: '#1E1450',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 1,
+  },
+
+  categoryChipActive: {
+    backgroundColor: '#F6F1FF',
+    borderColor: theme.colors.primary,
+  },
+
+  categoryChipText: {
+    color: theme.colors.textSoft,
+    fontWeight: '900',
+    fontSize: 12,
+  },
+
+  categoryChipTextActive: {
+    color: theme.colors.primary,
+  },
+
+  flexCard: {
+    width: 116,
+    minHeight: 110,
+    borderRadius: 16,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 10,
+    shadowColor: '#1E1450',
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+
+  flexCardActive: {
+    borderColor: theme.colors.primary,
+  },
+
+  flexCardText: {
+    color: theme.colors.text,
+    fontWeight: '900',
+    textAlign: 'center',
+    fontSize: 13,
+    marginTop: 9,
+    lineHeight: 16,
+  },
+
+  socialGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+
+  panelCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: '#1E1450',
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+
+  panelHalf: {
+    flex: 1,
+  },
+
+  panelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  panelTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  panelTitle: {
+    color: theme.colors.text,
+    fontWeight: '900',
+    fontSize: 16,
+  },
+
+  panelSubtitle: {
+    color: theme.colors.textSoft,
+    fontWeight: '700',
+    fontSize: 10,
+    marginTop: 1,
+  },
+
+  viewAllText: {
+    color: theme.colors.primary,
+    fontWeight: '900',
+    fontSize: 11,
+  },
+
+  topicRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    gap: 7,
+  },
+
+  topicIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: `${theme.colors.primary}10`,
+  },
+
+  topicText: {
+    flex: 1,
+    color: theme.colors.text,
+    fontWeight: '800',
+    fontSize: 11,
+  },
+
+  topicCount: {
+    color: theme.colors.textSoft,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+
+  localEventCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 14,
+    padding: 10,
+  },
+
+  localEventTitle: {
+    color: theme.colors.text,
+    fontWeight: '900',
+    fontSize: 14,
+  },
+
+  localEventMeta: {
+    color: theme.colors.textSoft,
+    fontSize: 10,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+
+  mapMock: {
+    width: 62,
+    height: 62,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EFEAFB',
+  },
+
+  localButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+
+  localPrimaryButton: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary,
+  },
+
+  localPrimaryText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 12,
+  },
+
+  localSecondaryButton: {
+    flex: 1,
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+  },
+
+  localSecondaryText: {
+    color: theme.colors.primary,
+    fontWeight: '900',
+    fontSize: 12,
+  },
+
+  sharePanel: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    padding: 12,
+    marginBottom: 12,
+  },
+
+  shareActions: {
+    gap: 8,
+    paddingTop: 10,
+  },
+
+  shareAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    borderRadius: 12,
+    paddingHorizontal: 11,
+    paddingVertical: 10,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+
+  shareActionText: {
+    color: theme.colors.text,
+    fontWeight: '800',
+    fontSize: 12,
   },
 
   modeRow: {

@@ -170,8 +170,8 @@ const VARIANT_LABELS: Record<string, string> = {
   reverseHolofoil: 'Rev',
   '1stEditionNormal': '1st',
   '1stEditionHolofoil': '1stH',
-  unlimitedHolofoil: '∞H',
-  unlimited: '∞',
+  unlimitedHolofoil: 'âˆžH',
+  unlimited: 'âˆž',
   reverseHoloEnergy: 'Nrg',
   reverseHoloPokeball: 'Ball',
 };
@@ -725,6 +725,73 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 }
   };
 
+  const handleRemoveCustomBinderCard = async (item: BinderCardWithDetails) => {
+    if (isReadOnly || binder?.type !== 'custom') return;
+
+    Alert.alert(
+      'Remove from binder?',
+      `Remove ${item.card?.name ?? item.card_name ?? 'this card'} from this custom binder?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            const previousCards = cards;
+            const previousShowcaseRows = showcaseRows;
+
+            try {
+              setCards((prev) => prev.filter((card) => card.id !== item.id));
+              setShowcaseRows((prev) =>
+                prev.filter((row) => !(row.card_id === item.card_id && row.set_id === item.set_id))
+              );
+
+              const { error } = await supabase
+                .from('binder_cards')
+                .delete()
+                .eq('id', item.id)
+                .eq('binder_id', binder.id);
+
+              if (error) throw error;
+
+              await supabase
+                .from('binder_card_showcases')
+                .delete()
+                .eq('binder_id', binder.id)
+                .eq('card_id', item.card_id)
+                .eq('set_id', item.set_id);
+
+              if (selectedCard?.id === item.id) {
+                setDetailVisible(false);
+                setSelectedCard(null);
+              }
+
+              showToast('Card removed from binder');
+            } catch (error) {
+              console.log('Failed to remove custom binder card', error);
+              setCards(previousCards);
+              setShowcaseRows(previousShowcaseRows);
+              Alert.alert('Could not remove card', 'Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleCardLongPress = (item: BinderCardWithDetails) => {
+    if (isReadOnly || binder?.type !== 'custom') {
+      openCardDetail(item);
+      return;
+    }
+
+    Alert.alert(item.card?.name ?? item.card_name ?? 'Card options', 'What would you like to do?', [
+      { text: 'View details', onPress: () => openCardDetail(item) },
+      { text: 'Remove from binder', style: 'destructive', onPress: () => handleRemoveCustomBinderCard(item) },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
   const handleToggleVariant = useCallback(async (cardId: string, setId: string, variant: string) => {
     if (!userId || isReadOnly) return;
     const key = `${cardId}:${variant}`;
@@ -994,9 +1061,32 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   if (!data.length) return null;
 
   const collapsed = showcaseCollapsed[type];
+  const isChase = type === 'chase';
+  const accent = type === 'favorite' ? theme.colors.secondary : '#E85D8A';
+  const panelStyle = isChase
+    ? {
+        backgroundColor: theme.dark ? 'rgba(232,93,138,0.08)' : '#FFF9F1',
+        borderColor: theme.dark ? 'rgba(232,93,138,0.35)' : '#F8DCA6',
+        borderWidth: 1,
+        borderRadius: 22,
+        padding: 14,
+        overflow: 'hidden' as const,
+        ...cardShadow,
+      }
+    : {};
 
   return (
-    <View style={{ marginBottom: 24, zIndex: 0 }}>
+    <View style={{ marginBottom: 24, zIndex: 0, ...panelStyle }}>
+      {isChase && (
+        <>
+          <View pointerEvents="none" style={{ position: 'absolute', right: 18, top: 74, opacity: theme.dark ? 0.1 : 0.35 }}>
+            <Ionicons name="sparkles" size={58} color="#F3C6DC" />
+          </View>
+          <View pointerEvents="none" style={{ position: 'absolute', right: -16, bottom: -14, opacity: theme.dark ? 0.08 : 0.28 }}>
+            <Ionicons name="ellipse" size={92} color="#E9D8FD" />
+          </View>
+        </>
+      )}
       <TouchableOpacity
         onPress={() =>
           setShowcaseCollapsed((prev) => ({ ...prev, [type]: !prev[type] }))
@@ -1009,13 +1099,16 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         }}
         activeOpacity={0.7}
       >
-        <Text style={{
-          color: type === 'favorite' ? theme.colors.secondary : '#FF8FA3',
-          fontSize: 18,
-          fontWeight: '900',
-        }}>
-          {title}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+          {isChase && <Ionicons name="sparkles" size={18} color={accent} />}
+          <Text style={{
+            color: accent,
+            fontSize: isChase ? 20 : 18,
+            fontWeight: '900',
+          }}>
+            {title}
+          </Text>
+        </View>
 
         <View style={{
           flexDirection: 'row',
@@ -1023,18 +1116,18 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           gap: 6,
         }}>
           <Text style={{
-            color: type === 'favorite' ? theme.colors.secondary : '#FF8FA3',
+            color: accent,
             fontSize: 12,
-            fontWeight: '700',
+            fontWeight: '900',
           }}>
             {data.length} card{data.length !== 1 ? 's' : ''}
           </Text>
           <Text style={{
-            color: type === 'favorite' ? theme.colors.secondary : '#FF8FA3',
+            color: accent,
             fontSize: 14,
             fontWeight: '900',
           }}>
-            {collapsed ? '▶' : '▼'}
+            {collapsed ? 'â–¶' : 'â–¼'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -1047,6 +1140,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           renderItem={renderToploaderCard}
           onDragEnd={({ data: newData }) => !isReadOnly && reorderShowcase(type, newData)}
           showsHorizontalScrollIndicator={false}
+          contentContainerStyle={isChase ? { paddingTop: 4, paddingBottom: 2, paddingRight: 10 } : undefined}
         />
       )}
     </View>
@@ -1069,7 +1163,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     return (
       <Container
         onPress={multiVariant ? undefined : () => handleCardPress(item)}
-        onLongPress={() => openCardDetail(item)}
+        onLongPress={() => handleCardLongPress(item)}
         delayLongPress={300}
         activeOpacity={0.85}
         style={{
@@ -1115,7 +1209,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         ? openCardDetail(item)
                         : handleToggleVariant(item.card_id, item.set_id, variant)
                     }
-                    onLongPress={() => openCardDetail(item)}
+                    onLongPress={() => handleCardLongPress(item)}
                     delayLongPress={400}
                     style={({ pressed }) => ({
                       flex: 1,
@@ -1139,7 +1233,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}>
-                        <Text style={{ fontSize: 13, color: '#7A5200', fontWeight: '900' }}>✓</Text>
+                        <Text style={{ fontSize: 13, color: '#7A5200', fontWeight: '900' }}>âœ“</Text>
                       </View>
                     )}
                     <View style={{ position: 'absolute', bottom: 3, alignItems: 'center' }}>
@@ -1359,36 +1453,42 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
         {/* Header */}
         <View style={{ marginBottom: 10 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', flex: 1, marginRight: 8 }}>
+          <View>
+            <Text numberOfLines={2} style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', lineHeight: 29 }}>
               {binder.name}
             </Text>
 
             {!isReadOnly && (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
-                  Master set
-                </Text>
-                <Switch
-                  value={masterSetEnabled}
-                  onValueChange={toggleMasterSet}
-                  disabled={updatingMasterSet}
-                  style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
-                />
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
-                  {isPublic ? '🌍' : '🔒'}
-                </Text>
-                <Switch
-                  value={isPublic}
-                  onValueChange={togglePublic}
-                  disabled={updatingVisibility}
-                  style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
-                />
+              <View style={{ alignItems: 'flex-end', marginTop: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
+                    Master set
+                  </Text>
+                  <Switch
+                    value={masterSetEnabled}
+                    onValueChange={toggleMasterSet}
+                    disabled={updatingMasterSet}
+                    style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
+                  />
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
+                    {isPublic ? 'Public' : 'Private'}
+                  </Text>
+                  <Switch
+                    value={isPublic}
+                    onValueChange={togglePublic}
+                    disabled={updatingVisibility}
+                    style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
+                  />
+                </View>
+              </View>
               </View>
             )}
           </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
               {ownedCount} / {totalCount} owned · {progressPercent}%
             </Text>
@@ -1413,7 +1513,6 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             )}
           </View>
         </View>
-
         {/* Progress bar */}
         <View style={{
           height: 6,
@@ -1444,9 +1543,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             alignItems: 'center',
             gap: 8,
           }}>
-            <Text style={{ fontSize: 16 }}>👁️</Text>
+            <Text style={{ fontSize: 16 }}>ðŸ‘ï¸</Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>
-              Viewing another collector&apos;s binder — read only
+              Viewing another collector&apos;s binder â€” read only
             </Text>
           </View>
         )}
@@ -1493,7 +1592,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           >
             <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{currentSortLabel}</Text>
             <Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>
-              {sortDropdownOpen ? '▲' : '▼'}
+              {sortDropdownOpen ? 'â–²' : 'â–¼'}
             </Text>
           </TouchableOpacity>
 
@@ -1734,7 +1833,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                     marginLeft: 8,
                   }}>
                     {(alreadyInBinder || isPending) && (
-                      <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900' }}>✓</Text>
+                      <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900' }}>âœ“</Text>
                     )}
                   </View>
                 </TouchableOpacity>
@@ -1828,7 +1927,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                                     >
                                       {owned && (
                                         <View style={{ backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 14, width: 28, height: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 }}>
-                                          <Text style={{ fontSize: 18, color: '#7A5200', fontWeight: '900' }}>✓</Text>
+                                          <Text style={{ fontSize: 18, color: '#7A5200', fontWeight: '900' }}>âœ“</Text>
                                         </View>
                                       )}
                                       <View style={{
@@ -1912,7 +2011,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                           }}
                         >
                           <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700' }}>
-                            {modalEbayLoading ? 'Fetching...' : '↻ Refresh'}
+                            {modalEbayLoading ? 'Fetching...' : 'â†» Refresh'}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -2000,7 +2099,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                           )}
                           {modalEbayPrice?.usedFallback && (
                             <Text style={{ color: '#F59E0B', fontSize: 11, marginTop: 2 }}>
-                              ⚠️ Broad search used — results may be less specific
+                              âš ï¸ Broad search used â€” results may be less specific
                             </Text>
                           )}
                           {modalEbayPrice?.count === 0 && (
@@ -2049,7 +2148,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                             return (
                               <ActionButton
                                 key={variant}
-                                label={`${VARIANT_LABELS[variant] ?? variant}${variantOwned ? ' · Owned ✓' : ' · Not owned'}`}
+                                label={`${VARIANT_LABELS[variant] ?? variant}${variantOwned ? ' · Owned âœ“' : ' · Not owned'}`}
                                 active={variantOwned}
                                 onPress={() => handleToggleVariant(selectedCard.card_id, selectedCard.set_id, variant)}
                               />
@@ -2167,4 +2266,6 @@ function ActionButton({
     </TouchableOpacity>
   );
 }
+
+
 
