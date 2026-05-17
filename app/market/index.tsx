@@ -643,9 +643,9 @@ try {
         }
         ListHeaderComponent={
           <View style={{ paddingHorizontal: 16, paddingTop: 22, paddingBottom: 10 }}>
-            <Text style={{ fontSize: 30, fontWeight: '900', color: theme.colors.text }}>Market</Text>
+            <Text style={{ fontSize: 30, fontWeight: '900', color: theme.colors.text }}>Latest Prices</Text>
             <Text style={{ marginTop: 6, fontSize: 14, lineHeight: 20, color: theme.colors.textSoft, marginBottom: 16 }}>
-              Search cards, watch prices, and track daily movement.
+              Search a specific card and track the latest price movement.
             </Text>
 
             {/* Search + Scan row */}
@@ -653,7 +653,7 @@ try {
 <TextInput
                 value={query}
                 onChangeText={handleSearchChange}
-                placeholder="Search cards or sets..."
+                placeholder="Search a specific card..."
                 placeholderTextColor={theme.colors.textSoft}
                 style={{
                   flex: 1,
@@ -718,7 +718,7 @@ try {
             {/* Results header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
               <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>
-                {searchResults.length > 0 ? `Results (${searchResults.length})` : 'Search Results'}
+                {searchResults.length > 0 ? `Latest prices (${searchResults.length})` : 'Latest price results'}
               </Text>
               {searching && <ActivityIndicator color={theme.colors.textSoft} size="small" />}
             </View>
@@ -791,7 +791,7 @@ try {
 
                       <View style={{ marginTop: 12, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>eBay Sold Prices (GBP)</Text>
+                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>eBay Latest Prices (GBP)</Text>
                           {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
                         </View>
 

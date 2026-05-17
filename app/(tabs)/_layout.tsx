@@ -21,6 +21,7 @@ export default function TabLayout() {
           if (route.name === 'index') iconName = focused ? 'home' : 'home-outline';
           if (route.name === 'binder') iconName = focused ? 'book' : 'book-outline';
           if (route.name === 'pokedex') iconName = focused ? 'desktop' : 'desktop-outline';
+          if (route.name === 'inventory') iconName = focused ? 'file-tray-full' : 'file-tray-full-outline';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
       })}
@@ -29,6 +30,7 @@ export default function TabLayout() {
       <Tabs.Screen name="community/index" options={{ title: 'Social', tabBarLabel: 'Social' }} />
       <Tabs.Screen name="index" options={{ title: 'Hub' }} />
       <Tabs.Screen name="binder" options={{ title: 'Binder' }} />
+      <Tabs.Screen name="inventory" options={{ title: 'Inventory' }} />
       <Tabs.Screen name="pokedex" options={{ title: 'Pokédex' }} />
       <Tabs.Screen name="profile" options={{ href: null }} />
       <Tabs.Screen name="market" options={{ href: null }} />

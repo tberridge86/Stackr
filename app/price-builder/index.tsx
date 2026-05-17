@@ -3,15 +3,17 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
-  Image,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
+import { FeatureTipGate } from '../../components/FeatureTipModal';
+import { StackrCardPlaceholder } from '../../components/StackrCardPlaceholder';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 
@@ -71,6 +73,15 @@ const CONDITION_MULTIPLIER: Record<Condition, number> = {
   'Heavily Played': 0.45,
   Damaged: 0.25,
 };
+
+const BUILDER_QUICK_FILTERS = [
+  { icon: 'time-outline' as const, label: 'Recent', action: 'recent' },
+  { icon: 'shield-checkmark-outline' as const, label: 'PSA 10', action: 'psa' },
+  { icon: 'diamond-outline' as const, label: 'Raw', action: 'raw' },
+  { icon: 'archive-outline' as const, label: 'Sealed', action: 'sealed' },
+  { icon: 'sparkles-outline' as const, label: 'Near Mint', action: 'nm' },
+  { icon: 'pricetag-outline' as const, label: 'Under £50', action: 'under50' },
+] as const;
 
 const cardShadow = {
   shadowColor: '#000',
@@ -159,6 +170,8 @@ export default function PriceBuilderScreen() {
   const [results, setResults] = useState<CardRow[]>([]);
   const [items, setItems] = useState<BuilderItem[]>([]);
   const [pendingSelection, setPendingSelection] = useState<Record<string, CardRow>>({});
+  const [offerPercent, setOfferPercent] = useState('85');
+  const [activeQuickFilter, setActiveQuickFilter] = useState<string>('recent');
   const pendingCount = Object.keys(pendingSelection).length;
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -309,6 +322,28 @@ export default function PriceBuilderScreen() {
     );
   }, []);
 
+  const handleQuickFilter = useCallback((action: string) => {
+    setActiveQuickFilter(action);
+    if (action === 'nm') {
+      setItems((prev) => prev.map((item) => ({ ...item, condition: 'Near Mint' })));
+      return;
+    }
+    if (action === 'raw') {
+      setQuery('raw');
+      runSearch('raw');
+      return;
+    }
+    if (action === 'sealed') {
+      setQuery('booster');
+      runSearch('booster');
+      return;
+    }
+    if (action === 'psa') {
+      setQuery('psa');
+      runSearch('psa');
+    }
+  }, [runSearch]);
+
   // ===============================
   // TOTALS
   // ===============================
@@ -336,6 +371,14 @@ export default function PriceBuilderScreen() {
     return available.reduce((sum, v) => sum + v, 0) / available.length;
   }, [totals]);
 
+  const offerPercentNumber = useMemo(() => {
+    const parsed = Number.parseFloat(offerPercent.replace(/[^0-9.]/g, ''));
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(0, Math.min(100, parsed));
+  }, [offerPercent]);
+
+  const offerGuideValue = bestEstimate * (offerPercentNumber / 100);
+
   // ===============================
   // RENDER SEARCH RESULT
   // ===============================
@@ -357,19 +400,14 @@ export default function PriceBuilderScreen() {
         }}
         activeOpacity={0.8}
       >
-        {item.image_small ? (
-          <Image
-            source={{ uri: item.image_small }}
-            style={{ width: 44, height: 62, borderRadius: 6, marginRight: 10 }}
-            resizeMode="contain"
+        <View style={{ marginRight: 10 }}>
+          <StackrCardPlaceholder
+            uri={item.image_small}
+            width={44}
+            height={62}
+            borderRadius={6}
           />
-        ) : (
-          <View style={{
-            width: 44, height: 62,
-            borderRadius: 6, marginRight: 10,
-            backgroundColor: theme.colors.surface,
-          }} />
-        )}
+        </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{item.name}</Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
@@ -389,7 +427,16 @@ export default function PriceBuilderScreen() {
         </View>
       </TouchableOpacity>
     );
-  }, [pendingSelection, togglePending]);
+  }, [
+    pendingSelection,
+    theme.colors.bg,
+    theme.colors.border,
+    theme.colors.primary,
+    theme.colors.surface,
+    theme.colors.text,
+    theme.colors.textSoft,
+    togglePending,
+  ]);
 
   // ===============================
   // RENDER BUILDER ITEM
@@ -400,127 +447,140 @@ export default function PriceBuilderScreen() {
     const tcg = item.tcgPrice != null ? item.tcgPrice * m : null;
     const ebay = item.ebayPrice != null ? item.ebayPrice * m : null;
     const cardmarket = item.cardmarketPrice != null ? item.cardmarketPrice * m : null;
+    const rowEstimate = [tcg, ebay, cardmarket]
+      .filter((value): value is number => value != null && value > 0);
+    const estimate = rowEstimate.length
+      ? rowEstimate.reduce((sum, value) => sum + value, 0) / rowEstimate.length
+      : null;
 
     return (
       <View style={{
-        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
         backgroundColor: theme.colors.card,
-        borderRadius: 16,
-        padding: 10,
+        borderRadius: 12,
+        padding: 8,
         borderWidth: 1,
         borderColor: theme.colors.border,
+        gap: 8,
         ...cardShadow,
       }}>
-        {item.card.image_small || item.card.image_large ? (
-          <Image
-            source={{ uri: item.card.image_small ?? item.card.image_large ?? '' }}
-            style={{ width: '100%', height: 120, marginBottom: 8, borderRadius: 8 }}
-            resizeMode="contain"
-          />
-        ) : (
-          <View style={{
-            width: '100%', height: 120,
-            borderRadius: 10, marginBottom: 8,
-            backgroundColor: theme.colors.surface,
-          }} />
-        )}
+        <StackrCardPlaceholder
+          uri={item.card.image_small ?? item.card.image_large}
+          width={44}
+          height={62}
+          borderRadius={7}
+        />
 
-        <Text numberOfLines={2} style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
-          {item.card.name}
-        </Text>
-        <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }}>
-          {item.card.raw_data?.set?.name ?? item.card.set_id ?? 'Unknown'}
-        </Text>
-
-        {/* Quantity */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 8 }}>
-          <TouchableOpacity
-            onPress={() => updateQuantity(item.localId, -1)}
-            style={{
-              width: 28, height: 28, borderRadius: 9,
-              backgroundColor: theme.colors.surface,
-              alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>−</Text>
-          </TouchableOpacity>
-          <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{item.quantity}</Text>
-          <TouchableOpacity
-            onPress={() => updateQuantity(item.localId, 1)}
-            style={{
-              width: 28, height: 28, borderRadius: 9,
-              backgroundColor: theme.colors.surface,
-              alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>+</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Condition picker */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 6, paddingVertical: 10 }}
-        >
-          {CONDITIONS.map((condition) => {
-            const active = item.condition === condition;
-            return (
-              <TouchableOpacity
-                key={condition}
-                onPress={() => updateCondition(item.localId, condition)}
-                style={{
-                  borderRadius: 999,
-                  paddingHorizontal: 9, paddingVertical: 7,
-                  backgroundColor: active ? theme.colors.primary : theme.colors.bg,
-                  borderWidth: 1,
-                  borderColor: active ? theme.colors.primary : theme.colors.border,
-                }}
-              >
-                <Text style={{
-                  color: active ? '#FFFFFF' : theme.colors.textSoft,
-                  fontWeight: '900', fontSize: 10,
-                }}>
-                  {condition}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-
-        {/* Prices */}
-        <View style={{ gap: 2, marginTop: 2 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 11, fontWeight: '800' }}>
-            TCG: {money(tcg)}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+            {item.card.name}
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 11, fontWeight: '800' }}>
-              eBay: {item.ebayLoading ? '' : money(ebay)}
+          <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 1 }}>
+            {item.card.raw_data?.set?.name ?? item.card.set_id ?? 'Unknown set'}
+          </Text>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 5, paddingVertical: 6 }}
+          >
+            {CONDITIONS.map((condition) => {
+              const active = item.condition === condition;
+              return (
+                <TouchableOpacity
+                  key={condition}
+                  onPress={() => updateCondition(item.localId, condition)}
+                  style={{
+                    borderRadius: 999,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                    borderWidth: 1,
+                    borderColor: active ? theme.colors.primary : theme.colors.border,
+                  }}
+                >
+                  <Text style={{
+                    color: active ? '#FFFFFF' : theme.colors.textSoft,
+                    fontWeight: '900',
+                    fontSize: 9,
+                  }}>
+                    {condition}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <TouchableOpacity
+              onPress={() => updateQuantity(item.localId, -1)}
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 8,
+                backgroundColor: theme.colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>-</Text>
+            </TouchableOpacity>
+            <Text style={{ color: theme.colors.text, fontWeight: '900', minWidth: 16, textAlign: 'center', fontSize: 12 }}>
+              {item.quantity}
             </Text>
-            {item.ebayLoading && <ActivityIndicator size="small" color={theme.colors.textSoft} />}
+            <TouchableOpacity
+              onPress={() => updateQuantity(item.localId, 1)}
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 8,
+                backgroundColor: theme.colors.surface,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>+</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={{ color: theme.colors.text, fontSize: 11, fontWeight: '800' }}>
-            CM: {money(cardmarket)}
-          </Text>
         </View>
 
-        {/* Remove */}
-        <TouchableOpacity
-          onPress={() => removeItem(item.localId)}
-          style={{
-            marginTop: 8,
-            backgroundColor: '#FEE2E2',
-            borderRadius: 10,
-            paddingVertical: 7,
-          }}
-        >
-          <Text style={{ color: '#991B1B', textAlign: 'center', fontSize: 11, fontWeight: '900' }}>
-            Remove
-          </Text>
-        </TouchableOpacity>
+        <View style={{ alignItems: 'flex-end', gap: 6, minWidth: 72 }}>
+          <View>
+            <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900', textAlign: 'right' }}>
+              {money(estimate != null ? estimate * item.quantity : null)}
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '800', textAlign: 'right' }}>
+              est.
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => removeItem(item.localId)}
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 10,
+              backgroundColor: theme.colors.surface,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Ionicons name="trash-outline" size={15} color={theme.colors.textSoft} />
+          </TouchableOpacity>
+        </View>
       </View>
     );
-  }, [removeItem, updateCondition, updateQuantity]);
+  }, [
+    removeItem,
+    theme.colors.border,
+    theme.colors.card,
+    theme.colors.primary,
+    theme.colors.surface,
+    theme.colors.text,
+    theme.colors.textSoft,
+    updateCondition,
+    updateQuantity,
+  ]);
 
   // ===============================
   // MAIN RENDER
@@ -528,39 +588,59 @@ export default function PriceBuilderScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <FeatureTipGate
+        tipKey="price-builder-screen-v1"
+        title="Price Builder"
+        subtitle="Build a quick, fair value for trades, bundles, or listings."
+        items={[
+          { icon: 'search-outline', title: 'Add cards', body: 'Search cards, select them, then add them to the builder.' },
+          { icon: 'options-outline', title: 'Condition matters', body: 'Set condition and quantity to adjust estimated value.' },
+          { icon: 'calculator-outline', title: 'Compare totals', body: 'Use eBay, TCG, and Cardmarket totals as a guide.' },
+        ]}
+      />
 
-      {/* Header */}
-      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12 }}>
-        <Text style={{ color: theme.colors.text, fontSize: 36, fontWeight: '900' }}>
-          Price Builder
-        </Text>
-        <Text style={{ color: theme.colors.textSoft, marginTop: 3 }}>
-          Build a bundle and compare totals.
-        </Text>
-      </View>
-
-      <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingTop: 10,
+            paddingBottom: insets.bottom + 36,
+          }}
+        >
+          <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 28, lineHeight: 34, fontWeight: '900' }}>
+              Price Builder
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 14, fontWeight: '700', marginTop: 2 }}>
+              Build a bundle and compare totals
+            </Text>
+          </View>
 
         {/* Search card */}
         <View style={{
           backgroundColor: theme.colors.card,
-          borderRadius: 18,
-          padding: 12,
+          borderRadius: 16,
+          padding: 10,
           marginHorizontal: 16,
-          marginBottom: 12,
-          marginTop: 4,
+          marginBottom: 8,
           borderWidth: 1,
           borderColor: theme.colors.border,
         }}>
-<TextInput
+          <TextInput
             value={query}
             onChangeText={handleQueryChange}
             placeholder="Search e.g. Charizard base..."
             placeholderTextColor={theme.colors.textSoft}
             style={{
               backgroundColor: theme.colors.bg,
-              borderRadius: 14,
-              padding: 12,
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
               color: theme.colors.text,
               fontWeight: '800',
               borderWidth: 1,
@@ -620,25 +700,99 @@ export default function PriceBuilderScreen() {
                 )}
               </View>
 
-              <FlatList
-                data={results}
-                keyExtractor={(item) => item.id}
-                renderItem={renderResult}
-                style={{ maxHeight: 200 }}
-                nestedScrollEnabled
-                keyboardShouldPersistTaps="handled"
-              />
+              <View style={{ maxHeight: 170 }}>
+                {results.slice(0, 12).map((item) => (
+                  <View key={item.id}>
+                    {renderResult({ item })}
+                  </View>
+                ))}
+              </View>
             </>
           )}
         </View>
 
-        {/* Card grid or empty */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 7, paddingHorizontal: 16, paddingBottom: 10 }}
+        >
+          {BUILDER_QUICK_FILTERS.map((item) => {
+            const active = activeQuickFilter === item.action;
+            return (
+              <TouchableOpacity
+                key={item.action}
+                onPress={() => handleQuickFilter(item.action)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 7,
+                  borderRadius: 999,
+                  paddingHorizontal: 11,
+                  paddingVertical: 8,
+                  backgroundColor: active ? '#F6F1FF' : theme.colors.card,
+                  borderWidth: 1,
+                  borderColor: active ? theme.colors.primary : theme.colors.border,
+                }}
+              >
+                <Ionicons
+                  name={item.icon}
+                  size={16}
+                  color={active ? theme.colors.primary : theme.colors.textSoft}
+                />
+                <Text
+                  style={{
+                    color: active ? theme.colors.primary : theme.colors.textSoft,
+                    fontWeight: '900',
+                    fontSize: 12,
+                  }}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {items.length > 0 && (
+          <View style={{
+            marginHorizontal: 16,
+            marginBottom: 10,
+            backgroundColor: theme.colors.primary + '12',
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: theme.colors.primary + '35',
+            padding: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+          }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+                Best estimate
+              </Text>
+              <Text style={{ color: theme.colors.primary, fontSize: 22, fontWeight: '900', marginTop: 1 }}>
+                {money(bestEstimate)}
+              </Text>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+                {offerPercentNumber}% offer
+              </Text>
+              <Text style={{ color: '#22C55E', fontSize: 16, fontWeight: '900', marginTop: 2 }}>
+                {money(offerGuideValue)}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Bundle rows */}
         {items.length === 0 ? (
           <View style={{
             backgroundColor: theme.colors.card,
             borderRadius: 18, padding: 10,
             marginHorizontal: 16,
-            marginTop: 140,
+            marginTop: 24,
             borderWidth: 1, borderColor: theme.colors.border,
             alignItems: 'center',
           }}>
@@ -650,26 +804,67 @@ export default function PriceBuilderScreen() {
             </Text>
           </View>
         ) : (
-          <FlatList
-            data={items}
-            keyExtractor={(item) => item.localId}
-            renderItem={renderBuilderItem}
-            numColumns={2}
-            columnWrapperStyle={{ gap: 10, paddingHorizontal: 16 }}
-            contentContainerStyle={{ paddingBottom: 460, gap: 10, paddingTop: 4 }}
-            showsVerticalScrollIndicator={false}
-          />
+          <View style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 18,
+            marginHorizontal: 16,
+            padding: 12,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            ...cardShadow,
+          }}>
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 10,
+            }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
+                Your bundle ({items.length} card{items.length === 1 ? '' : 's'})
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12 }}>
+                Total items: {items.reduce((sum, item) => sum + item.quantity, 0)}
+              </Text>
+            </View>
+
+            <View style={{ gap: 10 }}>
+              {items.map((item) => (
+                <View key={item.localId}>
+                  {renderBuilderItem({ item })}
+                </View>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              onPress={() => setQuery('')}
+              style={{
+                marginTop: 10,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderStyle: 'dashed',
+                borderColor: theme.colors.border,
+                paddingVertical: 12,
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: theme.colors.primary, fontWeight: '900' }}>
+                + Add another card
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
 
-        {/* Total bar */}
+        {/* Estimate and offer guide */}
         <View style={{
-          position: 'absolute',
-          left: 0, right: 0, bottom:60,
           backgroundColor: theme.colors.card,
-          borderTopWidth: 1,
-          borderTopColor: theme.colors.border,
+          borderRadius: 18,
+          marginHorizontal: 16,
+          marginTop: 12,
+          marginBottom: 0,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
           padding: 16,
-          paddingBottom: insets.bottom + 16,
+          ...cardShadow,
         }}>
           {items.length > 0 && (
             <TouchableOpacity
@@ -680,12 +875,43 @@ export default function PriceBuilderScreen() {
             </TouchableOpacity>
           )}
 
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 14,
+            backgroundColor: theme.colors.primary + '0E',
+            borderRadius: 16,
+            padding: 14,
+            borderWidth: 1,
+            borderColor: theme.colors.primary + '35',
+          }}>
+            <View style={{
+              width: 62,
+              height: 62,
+              borderRadius: 16,
+              backgroundColor: '#FFFFFF',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: [{ rotate: '-8deg' }],
+            }}>
+              <Ionicons name="calculator-outline" size={30} color={theme.colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>
+                Instant Estimate
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontWeight: '700', marginTop: 3 }}>
+                Compare live market totals
+              </Text>
+            </View>
+          </View>
+
           {[
-            { label: 'TCG total', value: totals.tcg },
-            { label: 'eBay total', value: totals.ebay },
-            { label: 'Cardmarket total', value: totals.cardmarket },
+            { label: 'TCG average', value: totals.tcg },
+            { label: 'eBay sold recent', value: totals.ebay },
+            { label: 'Cardmarket low-mid', value: totals.cardmarket },
           ].map(({ label, value }) => (
-            <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 }}>
+            <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
               <Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>{label}</Text>
               <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{money(value)}</Text>
             </View>
@@ -704,17 +930,38 @@ export default function PriceBuilderScreen() {
             </Text>
           </View>
 
-          <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>
-              85% offer guide
-            </Text>
+          <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+              <TextInput
+                value={offerPercent}
+                onChangeText={(text) => setOfferPercent(text.replace(/[^0-9.]/g, '').slice(0, 6))}
+                keyboardType="decimal-pad"
+                selectTextOnFocus
+                style={{
+                  width: 58,
+                  backgroundColor: theme.colors.surface,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  paddingHorizontal: 8,
+                  paddingVertical: 5,
+                  color: theme.colors.text,
+                  fontWeight: '900',
+                  textAlign: 'center',
+                }}
+              />
+              <Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>
+                % offer guide
+              </Text>
+            </View>
             <Text style={{ color: '#22C55E', fontWeight: '900', fontSize: 16 }}>
-              {money(bestEstimate * 0.85)}
+              {money(offerGuideValue)}
             </Text>
           </View>
         </View>
 
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }

@@ -240,7 +240,7 @@ export default function OfferDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }, [offerId]);
+  }, [isNew, offerId]);
 
   // ===============================
   // REALTIME SUBSCRIPTION
@@ -547,6 +547,51 @@ export default function OfferDetailScreen() {
     );
   };
 
+  const renderMiniStack = (cards: TradeOfferCard[], emptyLabel: string) => {
+    const displayCards = cards.slice(0, 3);
+    return (
+      <View style={styles.miniStack}>
+        {displayCards.length > 0 ? (
+          displayCards.map((card, index) => {
+            const preview = cardPreviews[card.card_id];
+            return preview?.image_url ? (
+              <Image
+                key={card.id}
+                source={{ uri: preview.image_url }}
+                style={[
+                  styles.miniStackCard,
+                  {
+                    left: 22 + index * 18,
+                    transform: [{ rotate: `${(index - 1) * 5}deg` }],
+                  },
+                ]}
+                resizeMode="cover"
+              />
+            ) : (
+              <View
+                key={card.id}
+                style={[
+                  styles.miniStackCard,
+                  styles.miniStackPlaceholder,
+                  { left: 22 + index * 18 },
+                ]}
+              />
+            );
+          })
+        ) : (
+          <View style={styles.emptyMiniStack}>
+            <Text style={styles.emptyMiniStackText}>{emptyLabel}</Text>
+          </View>
+        )}
+        {cards.length > 1 && (
+          <View style={styles.stackCountBadge}>
+            <Text style={styles.stackCountText}>x{cards.length}</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   // ===============================
   // RENDER EVENT
   // ===============================
@@ -660,6 +705,88 @@ export default function OfferDetailScreen() {
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
+          {offer && (
+            <View style={styles.reviewHeroCard}>
+              <Text style={styles.heroEyebrow}>Review Deal</Text>
+              <Text style={styles.heroTitle}>Almost there!</Text>
+              <Text style={styles.heroSubtitle}>
+                Review both sides before accepting, sending, or tracking this trade.
+              </Text>
+
+              <View style={styles.dealSidesRow}>
+                <View style={styles.dealSideCard}>
+                  <View style={styles.dealSideHeader}>
+                    <Text style={styles.dealSideTitle}>You send</Text>
+                    <Text style={styles.dealCountPill}>
+                      {mySentCards.length} card{mySentCards.length === 1 ? '' : 's'}
+                    </Text>
+                  </View>
+                  {renderMiniStack(mySentCards, 'No cards')}
+                  <Text style={styles.dealMeta}>
+                    {mySentCards.length > 0
+                      ? mySentCards.map((card) => cardPreviews[card.card_id]?.name ?? 'Card').slice(0, 2).join(', ')
+                      : 'Cash or message only'}
+                  </Text>
+                </View>
+
+                <View style={styles.dealSideCard}>
+                  <View style={styles.dealSideHeader}>
+                    <Text style={styles.dealSideTitle}>You receive</Text>
+                    <Text style={styles.dealCountPill}>
+                      {theirSentCards.length} card{theirSentCards.length === 1 ? '' : 's'}
+                    </Text>
+                  </View>
+                  {renderMiniStack(theirSentCards, 'No cards')}
+                  <Text style={styles.dealMeta}>
+                    {theirSentCards.length > 0
+                      ? theirSentCards.map((card) => cardPreviews[card.card_id]?.name ?? 'Card').slice(0, 2).join(', ')
+                      : 'Cash or message only'}
+                  </Text>
+                </View>
+              </View>
+
+              {cashTerms && (
+                <View style={styles.cashAdjustmentCard}>
+                  <View style={styles.cashIcon}>
+                    <Text style={styles.cashIconText}>£</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.cashAdjustmentTitle}>Cash adjustment</Text>
+                    <Text style={styles.cashAdjustmentSub}>
+                      {cashTerms.payer_id === currentUserId ? 'You pay' : 'They pay'}
+                    </Text>
+                  </View>
+                  <Text style={styles.cashAdjustmentAmount}>
+                    £{Number(cashTerms.amount).toFixed(2)}
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.valueComparisonCard}>
+                <Text style={styles.valueComparisonTitle}>Total Value Comparison</Text>
+                <View style={styles.fairnessBar}>
+                  <View style={styles.fairnessLeft} />
+                  <View style={styles.fairnessRight} />
+                  <View style={styles.fairnessKnob} />
+                </View>
+                <Text style={styles.fairnessStatus}>Balanced</Text>
+                <Text style={styles.fairnessCopy}>
+                  This highlights whether one side looks heavier. You can still proceed if both collectors agree.
+                </Text>
+              </View>
+
+              {isReceiver && isPending && (
+                <TouchableOpacity
+                  onPress={handleAcceptOffer}
+                  disabled={sending}
+                  style={[styles.primaryWideButton, sending && styles.disabled]}
+                >
+                  <Text style={styles.primaryWideButtonText}>Accept Trade</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
           {/* Trade Summary */}
           {offer && (
             <View style={styles.card}>
@@ -793,32 +920,45 @@ export default function OfferDetailScreen() {
           {/* Trade Progress */}
           {isAcceptedOrBeyond && !isDeclinedOrCancelled && (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Trade Progress</Text>
+              <View style={styles.progressHeader}>
+                <View style={styles.progressShield}>
+                  <Text style={styles.progressShieldText}>✓</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.progressTitle}>Trade Progress</Text>
+                  <Text style={styles.progressSub}>
+                    Your trade is protected until both sides confirm.
+                  </Text>
+                </View>
+              </View>
 
-              <ProgressStep label="Offer agreed" done={true} />
-              <ProgressStep
-                label="Cards sent"
-                done={isSentOrBeyond}
-                partial={
-                  !isSentOrBeyond && (
-                    (isSender && !!offer?.sender_sent) ||
-                    (!isSender && !!offer?.receiver_sent)
-                  )
-                }
-                partialLabel="Waiting for other side"
-              />
-              <ProgressStep
-                label="Cards received"
-                done={isReceivedOrBeyond}
-                partial={
-                  !isReceivedOrBeyond && (
-                    (isSender && !!offer?.sender_received) ||
-                    (!isSender && !!offer?.receiver_received)
-                  )
-                }
-                partialLabel="Waiting for other side"
-              />
-              <ProgressStep label="Completed" done={isCompleted} />
+              <View style={styles.progressTimeline}>
+                <ProgressStep label="Offer accepted" done={true} icon="🤝" />
+                <ProgressStep label="Condition verifier" done={isAcceptedOrBeyond} icon="🛡" />
+                <ProgressStep label="Confirmed" done={isAcceptedOrBeyond} icon="✓" />
+                <ProgressStep
+                  label="Label printed"
+                  done={isSentOrBeyond}
+                  partial={!isSentOrBeyond && !!iHaveSent}
+                  partialLabel="In progress"
+                  icon="🖨"
+                />
+                <ProgressStep
+                  label="Despatched"
+                  done={isSentOrBeyond}
+                  partial={!isSentOrBeyond && !!iHaveSent}
+                  partialLabel="Waiting for other side"
+                  icon="📦"
+                />
+                <ProgressStep
+                  label="Arrived"
+                  done={isReceivedOrBeyond}
+                  partial={!isReceivedOrBeyond && !!iHaveReceived}
+                  partialLabel="Waiting for confirmation"
+                  icon="📬"
+                />
+                <ProgressStep label="Accepted" done={isCompleted} icon="♡" />
+              </View>
 
               {isAccepted && (
                 <View style={{
@@ -1078,19 +1218,21 @@ function ProgressStep({
   done,
   partial,
   partialLabel,
+  icon,
 }: {
   label: string;
   done: boolean;
   partial?: boolean;
   partialLabel?: string;
+  icon?: string;
 }) {
   const { theme } = useTheme();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-      <Text style={{ marginRight: 8, fontSize: 16 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
+      <Text style={{ marginRight: 12, fontSize: 16, width: 30, textAlign: 'center' }}>
         {done ? '✅' : partial ? '🔄' : '⬜'}
       </Text>
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={{
           color: done ? theme.colors.text : theme.colors.textSoft,
           fontSize: 13,
@@ -1163,6 +1305,275 @@ function makeStyles(theme: any) {
     fontSize: 12,
     fontWeight: '700' as const,
     marginBottom: 6,
+  },
+  reviewHeroCard: {
+    marginHorizontal: 12,
+    marginTop: 10,
+    backgroundColor: theme.colors.card,
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: '#6D4AFF',
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+  },
+  heroEyebrow: {
+    color: theme.colors.primary,
+    fontSize: 13,
+    fontWeight: '900' as const,
+    marginBottom: 4,
+  },
+  heroTitle: {
+    color: theme.colors.text,
+    fontSize: 30,
+    fontWeight: '900' as const,
+  },
+  heroSubtitle: {
+    color: theme.colors.textSoft,
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+  dealSidesRow: {
+    flexDirection: 'row' as const,
+    gap: 10,
+  },
+  dealSideCard: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  dealSideHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    marginBottom: 8,
+  },
+  dealSideTitle: {
+    color: theme.colors.text,
+    fontSize: 13,
+    fontWeight: '900' as const,
+  },
+  dealCountPill: {
+    color: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '14',
+    borderRadius: 999,
+    overflow: 'hidden' as const,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    fontSize: 11,
+    fontWeight: '900' as const,
+  },
+  miniStack: {
+    height: 112,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginBottom: 8,
+  },
+  miniStackCard: {
+    position: 'absolute' as const,
+    top: 4,
+    width: 66,
+    height: 94,
+    borderRadius: 8,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+  },
+  miniStackPlaceholder: {
+    backgroundColor: theme.colors.primary + '18',
+  },
+  emptyMiniStack: {
+    width: 78,
+    height: 94,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed' as const,
+    borderColor: theme.colors.border,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: theme.colors.card,
+  },
+  emptyMiniStackText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '800' as const,
+  },
+  stackCountBadge: {
+    position: 'absolute' as const,
+    right: 8,
+    bottom: 6,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  stackCountText: {
+    color: theme.colors.text,
+    fontSize: 12,
+    fontWeight: '900' as const,
+  },
+  dealMeta: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '700' as const,
+    minHeight: 30,
+  },
+  cashAdjustmentCard: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 12,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  cashIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  cashIconText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900' as const,
+  },
+  cashAdjustmentTitle: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: '900' as const,
+  },
+  cashAdjustmentSub: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  cashAdjustmentAmount: {
+    color: '#0EA371',
+    fontSize: 18,
+    fontWeight: '900' as const,
+  },
+  valueComparisonCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 12,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  valueComparisonTitle: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: '900' as const,
+    marginBottom: 10,
+  },
+  fairnessBar: {
+    height: 8,
+    borderRadius: 999,
+    overflow: 'visible' as const,
+    flexDirection: 'row' as const,
+    marginBottom: 10,
+  },
+  fairnessLeft: {
+    flex: 1,
+    backgroundColor: theme.colors.primary,
+    borderTopLeftRadius: 999,
+    borderBottomLeftRadius: 999,
+  },
+  fairnessRight: {
+    flex: 1,
+    backgroundColor: '#F59E0B',
+    borderTopRightRadius: 999,
+    borderBottomRightRadius: 999,
+  },
+  fairnessKnob: {
+    position: 'absolute' as const,
+    left: '50%' as any,
+    top: -6,
+    width: 20,
+    height: 20,
+    marginLeft: -10,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 3,
+    borderColor: theme.colors.primary,
+  },
+  fairnessStatus: {
+    color: theme.colors.primary,
+    fontSize: 15,
+    fontWeight: '900' as const,
+    textAlign: 'center' as const,
+  },
+  fairnessCopy: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 17,
+    textAlign: 'center' as const,
+    marginTop: 4,
+  },
+  primaryWideButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center' as const,
+    marginTop: 14,
+  },
+  primaryWideButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900' as const,
+  },
+  progressHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 12,
+    marginBottom: 16,
+  },
+  progressShield: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  progressShieldText: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    fontWeight: '900' as const,
+  },
+  progressTitle: {
+    color: theme.colors.text,
+    fontSize: 24,
+    fontWeight: '900' as const,
+  },
+  progressSub: {
+    color: theme.colors.textSoft,
+    fontSize: 13,
+    marginTop: 2,
+  },
+  progressTimeline: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
 
   trustCard: {

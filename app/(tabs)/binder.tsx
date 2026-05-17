@@ -12,6 +12,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import {
@@ -386,6 +387,16 @@ export default function BinderLibraryScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top']}>
+      <FeatureTipGate
+        tipKey="binder-library-screen-v1"
+        title="Binders"
+        subtitle="Your collection lives here, organised by set or custom folders."
+        items={[
+          { icon: 'book-outline', title: 'Track ownership', body: 'Open a binder to mark cards owned or missing.' },
+          { icon: 'albums-outline', title: 'Master sets', body: 'Use Master Set mode inside a binder to track variants.' },
+          { icon: 'camera-outline', title: 'Scan cards', body: 'Jump straight into the scanner from this screen.' },
+        ]}
+      />
       <View style={{ flex: 1, paddingHorizontal: PADDING, paddingTop: 8 }}>
 
         {/* Header */}

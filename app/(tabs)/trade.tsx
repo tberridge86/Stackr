@@ -18,6 +18,9 @@ import { useWindowDimensions ,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
+import { FeatureTipGate } from '../../components/FeatureTipModal';
+import { StackrCardPlaceholder } from '../../components/StackrCardPlaceholder';
+import { StackrScreenHeader } from '../../components/StackrScreenHeader';
 import { useFocusEffect, router } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,6 +53,20 @@ const PHOTO_SLOT_LABELS = ['Card Front', 'Card Back', 'Top-Left', 'Top-Right', '
 
 type MainTab = 'trading' | 'marketplace';
 type SegmentKey = 'marketplaceListings' | 'myListings' | 'wanted' | 'myOffers';
+type MarketplaceCardTypeFilter = 'any' | 'raw' | 'graded' | 'sealed';
+
+const MARKETPLACE_QUICK_FILTERS_REMOVED: {
+  key: string;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}[] = [
+  { key: 'all', label: 'All', icon: 'apps-outline' },
+  { key: 'photos', label: 'Photos', icon: 'image-outline' },
+  { key: 'nm', label: 'Near Mint', icon: 'sparkles-outline' },
+  { key: 'raw', label: 'Raw', icon: 'diamond-outline' },
+  { key: 'under50', label: 'Under £50', icon: 'pricetag-outline' },
+  { key: 'highToLow', label: 'High value', icon: 'trending-up-outline' },
+];
 
 type TopMover = {
   card: any;
@@ -85,19 +102,19 @@ const getConditionColor = (condition: string): string => {
     case 'Moderately Played': return '#FB923C';
     case 'Heavily Played': return '#f78787';
     case 'Damaged': return '#EF4444';
-    default: return theme.colors.textSoft;
+    default: return '#7970A9';
   }
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  pending: '⏳ Pending',
-  accepted: '✅ Accepted',
-  declined: '❌ Declined',
-  cancelled: '🚫 Cancelled',
-  sent: '📦 Cards Sent',
-  received: '📬 Cards Received',
-  completed: '🎉 Completed',
-  disputed: '⚠️ Disputed',
+  pending: 'Pending',
+  accepted: 'Accepted',
+  declined: 'Declined',
+  cancelled: 'Cancelled',
+  sent: 'Cards Sent',
+  received: 'Cards Received',
+  completed: 'Completed',
+  disputed: 'Disputed',
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -156,14 +173,19 @@ const [myUserId, setMyUserId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc'>('newest');
+  const [filterCardType, setFilterCardType] = useState<MarketplaceCardTypeFilter>('any');
+  const [filterSetQuery, setFilterSetQuery] = useState('');
   const [filterConditions, setFilterConditions] = useState<string[]>([]);
   const [filterMinPrice, setFilterMinPrice] = useState('');
   const [filterMaxPrice, setFilterMaxPrice] = useState('');
+  const [filterLocation, setFilterLocation] = useState('');
   const [filterHasPhotos, setFilterHasPhotos] = useState(false);
 
   const activeFilterCount = filterConditions.length +
+    (filterCardType !== 'any' ? 1 : 0) + (filterSetQuery.trim() ? 1 : 0) +
     (filterMinPrice ? 1 : 0) + (filterMaxPrice ? 1 : 0) +
-    (filterHasPhotos ? 1 : 0) + (sortBy !== 'newest' ? 1 : 0);
+    (filterLocation.trim() ? 1 : 0) + (filterHasPhotos ? 1 : 0) +
+    (sortBy !== 'newest' ? 1 : 0);
 
   const [selectedListing, setSelectedListing] = useState<any | null>(null);
   const [modalPhotoIndex, setModalPhotoIndex] = useState(0);
@@ -596,7 +618,7 @@ const openTradeCardDetail = async (item: any) => {
         .limit(cardTerm ? 120 : 300);
 
       if (cardTerm) {
-        const normals = cardTerm.replace(/[''ʼ]/g, "'");
+        const normals = cardTerm.replace(/[''Ê¼]/g, "'");
         const searchWords = normals.split(/\s+/).filter(Boolean);
         for (const word of searchWords) {
           if (!word.includes("'") && /[a-z]s$/i.test(word)) {
@@ -765,7 +787,7 @@ const openTradeCardDetail = async (item: any) => {
   // CURRENT DATA
   // ===============================
 
-  // Raw data used for loading card details — no filter dependencies
+  // Raw data used for loading card details - no filter dependencies
   const currentData = useMemo(() => {
     if (segment === 'marketplaceListings') return marketplaceListings;
     if (segment === 'myListings') return myListings;
@@ -773,7 +795,7 @@ const openTradeCardDetail = async (item: any) => {
     return [];
   }, [segment, marketplaceListings, myListings, wantedCards]);
 
-  // Filtered/sorted data for display — depends on cardDetailsMap but not the other way round
+  // Filtered/sorted data for display - depends on cardDetailsMap but not the other way round
   const displayData = useMemo(() => {
     if (segment !== 'marketplaceListings') return currentData;
 
@@ -791,6 +813,24 @@ const openTradeCardDetail = async (item: any) => {
     if (filterConditions.length > 0) {
       data = data.filter((item) => filterConditions.includes(item.condition));
     }
+    if (filterCardType === 'raw') {
+      data = data.filter((item) => !item.grade_company && !item.grade);
+    } else if (filterCardType === 'graded') {
+      data = data.filter((item) => !!item.grade_company || !!item.grade);
+    } else if (filterCardType === 'sealed') {
+      data = data.filter((item) => {
+        const details = cardDetailsMap[item.id];
+        const haystack = `${details?.name ?? ''} ${details?.set?.name ?? ''} ${item.listing_notes ?? ''}`.toLowerCase();
+        return haystack.includes('sealed') || haystack.includes('booster') || haystack.includes('etb') || haystack.includes('box');
+      });
+    }
+    if (filterSetQuery.trim()) {
+      const q = filterSetQuery.trim().toLowerCase();
+      data = data.filter((item) => {
+        const details = cardDetailsMap[item.id];
+        return String(details?.set?.name ?? details?.set_id ?? item.set_id ?? '').toLowerCase().includes(q);
+      });
+    }
     const minP = parseFloat(filterMinPrice);
     const maxP = parseFloat(filterMaxPrice);
     if (!isNaN(minP)) data = data.filter((item) => (item.asking_price ?? 0) >= minP);
@@ -798,11 +838,19 @@ const openTradeCardDetail = async (item: any) => {
     if (filterHasPhotos) {
       data = data.filter((item) => Array.isArray(item.listing_images) && item.listing_images.length > 0);
     }
+    if (filterLocation.trim()) {
+      const q = filterLocation.trim().toLowerCase();
+      data = data.filter((item) => {
+        const profile = (item.profiles ?? item.profile ?? {}) as any;
+        const haystack = `${profile.location ?? ''} ${profile.city ?? ''} ${profile.display_name ?? ''}`.toLowerCase();
+        return haystack.includes(q);
+      });
+    }
     if (sortBy === 'price_asc') data.sort((a, b) => (a.asking_price ?? 0) - (b.asking_price ?? 0));
     else if (sortBy === 'price_desc') data.sort((a, b) => (b.asking_price ?? 0) - (a.asking_price ?? 0));
 
     return data;
-  }, [currentData, segment, searchQuery, filterConditions, filterMinPrice, filterMaxPrice, filterHasPhotos, sortBy, cardDetailsMap]);
+  }, [currentData, segment, searchQuery, filterConditions, filterCardType, filterSetQuery, filterMinPrice, filterMaxPrice, filterLocation, filterHasPhotos, sortBy, cardDetailsMap]);
 
   // ===============================
   // LOAD CARD DETAILS
@@ -1069,14 +1117,12 @@ const handleArchive = async (listingId: string) => {
             overflow: 'hidden', ...cardShadow,
           }}
         >
-          {/* Image */}
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={{ width: '100%', aspectRatio: 3 / 4 }} resizeMode="cover" />
-          ) : (
-            <View style={{ width: '100%', aspectRatio: 3 / 4, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 11 }}>No photo</Text>
-            </View>
-          )}
+          <StackrCardPlaceholder
+            uri={imageUri}
+            width="100%"
+            height={gridItemWidth * 1.33}
+            borderRadius={0}
+          />
 
 
           {/* Info */}
@@ -1107,7 +1153,7 @@ const handleArchive = async (listingId: string) => {
                 ])}
                 style={{ borderRadius: 8, paddingVertical: 5, alignItems: 'center', marginTop: 4, borderWidth: 1, borderColor: '#EF4444' }}
               >
-                <Text style={{ color: '#EF4444', fontSize: 10, fontWeight: '900' }}>🗑 Remove</Text>
+                <Text style={{ color: '#EF4444', fontSize: 10, fontWeight: '900' }}>ðŸ—‘ Remove</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -1123,13 +1169,14 @@ const handleArchive = async (listingId: string) => {
         borderWidth: 1, borderColor: theme.colors.border, ...cardShadow,
       }}>
         <TouchableOpacity onPress={() => openTradeCardDetail(item)} style={{ flexDirection: 'row' }} activeOpacity={0.8}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={{ width: 72, height: 100, borderRadius: 10, marginRight: 12, backgroundColor: theme.colors.surface }} resizeMode="cover" />
-          ) : (
-            <View style={{ width: 72, height: 100, borderRadius: 10, marginRight: 12, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>No image</Text>
-            </View>
-          )}
+          <View style={{ marginRight: 12 }}>
+            <StackrCardPlaceholder
+              uri={imageUri}
+              width={72}
+              height={100}
+              borderRadius={10}
+            />
+          </View>
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900', marginBottom: 4 }} numberOfLines={2}>{cardName}</Text>
             <Text style={{ color: theme.colors.textSoft, marginBottom: 4 }} numberOfLines={1}>{setName}</Text>
@@ -1186,7 +1233,7 @@ const handleArchive = async (listingId: string) => {
       >
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14 }}>
-            {isReceiver ? '📬 Received' : '📤 Sent'}
+            {isReceiver ? 'ðŸ“¬ Received' : 'ðŸ“¤ Sent'}
           </Text>
           <View style={{ backgroundColor: statusColor + '20', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: statusColor + '40' }}>
             <Text style={{ color: statusColor, fontSize: 11, fontWeight: '800' }}>{statusLabel}</Text>
@@ -1204,12 +1251,12 @@ const handleArchive = async (listingId: string) => {
         <View style={{ gap: 8 }}>
           {isAccepted && !iHaveSent && (
             <TouchableOpacity onPress={() => handleMarkSent(offer.id)} disabled={busy} style={[{ backgroundColor: theme.colors.primary, borderRadius: 12, paddingVertical: 10, alignItems: 'center' }, busy && { opacity: 0.6 }]}>
-              {busy ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: '#fff', fontWeight: '900', fontSize: 13 }}>📦 Mark My Cards as Sent</Text>}
+              {busy ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: '#fff', fontWeight: '900', fontSize: 13 }}>ðŸ“¦ Mark My Cards as Sent</Text>}
             </TouchableOpacity>
           )}
           {(isAccepted || isSentStatus) && !iHaveReceived && iHaveSent && (
             <TouchableOpacity onPress={() => handleMarkReceived(offer.id)} disabled={busy} style={[{ backgroundColor: '#8B5CF6', borderRadius: 12, paddingVertical: 10, alignItems: 'center' }, busy && { opacity: 0.6 }]}>
-              {busy ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: '#fff', fontWeight: '900', fontSize: 13 }}>📬 Mark Cards as Received</Text>}
+              {busy ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: '#fff', fontWeight: '900', fontSize: 13 }}>Mark Cards as Received</Text>}
             </TouchableOpacity>
           )}
           {isCompleted && (
@@ -1217,11 +1264,11 @@ const handleArchive = async (listingId: string) => {
               onPress={() => router.push(`/offer/review?offerId=${offer.id}&reviewUserId=${isSender ? offer.receiver_id : offer.sender_id}`)}
               style={{ backgroundColor: theme.colors.primary + '18', borderRadius: 12, paddingVertical: 10, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.primary }}
             >
-              <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 13 }}>⭐ Leave a Review</Text>
+              <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 13 }}>Leave a Review</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity onPress={() => router.push(`/offer?id=${offer.id}`)} style={{ backgroundColor: theme.colors.surface, borderRadius: 12, paddingVertical: 10, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
-            <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 13 }}>Open Negotiation →</Text>
+            <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 13 }}>Open Negotiation</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -1334,7 +1381,7 @@ const handleArchive = async (listingId: string) => {
                       }}
                     >
                       <Text style={{ color: sortBy === s ? '#fff' : theme.colors.text, fontSize: 11, fontWeight: '700' }}>
-                        {s === 'newest' ? 'Newest' : s === 'price_asc' ? 'Price ↑' : 'Price ↓'}
+                        {s === 'newest' ? 'Newest' : s === 'price_asc' ? 'Price up' : 'Price down'}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -1532,6 +1579,48 @@ const handleArchive = async (listingId: string) => {
         </TouchableOpacity>
       </View>
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 8, paddingRight: 18, marginBottom: 16 }}
+      >
+        {MARKETPLACE_QUICK_FILTERS.map((item) => {
+          const active = quickFilter === item.key;
+          return (
+            <TouchableOpacity
+              key={item.key}
+              onPress={() => setQuickFilter(item.key)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 7,
+                borderRadius: 12,
+                paddingHorizontal: 13,
+                paddingVertical: 9,
+                backgroundColor: active ? '#F6F1FF' : theme.colors.card,
+                borderWidth: 1,
+                borderColor: active ? theme.colors.primary : theme.colors.border,
+              }}
+            >
+              <Ionicons
+                name={item.icon}
+                size={16}
+                color={active ? theme.colors.primary : theme.colors.textSoft}
+              />
+              <Text
+                style={{
+                  color: active ? theme.colors.primary : theme.colors.textSoft,
+                  fontWeight: '900',
+                  fontSize: 12,
+                }}
+              >
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
       {/* Search Results */}
       {marketSearchResults.length > 0 && (
         <View style={{ marginBottom: 20 }}>
@@ -1558,7 +1647,13 @@ const handleArchive = async (listingId: string) => {
                 onPress={() => openCardDetailSimple(card)}
                 style={{ flexDirection: 'row', backgroundColor: theme.colors.card, borderRadius: 18, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
               >
-                <Image source={{ uri: card.images?.small }} style={{ width: 60, height: 84, borderRadius: 8, backgroundColor: theme.colors.surface }} resizeMode="contain" />
+                <StackrCardPlaceholder
+                  uri={card.images?.small}
+                  width={60}
+                  height={84}
+                  borderRadius={8}
+                  resizeMode="contain"
+                />
                 <View style={{ flex: 1, marginLeft: 12, justifyContent: 'center' }}>
                   <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }} numberOfLines={1}>{card.name}</Text>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }} numberOfLines={1}>{card.set?.name}</Text>
@@ -1592,7 +1687,7 @@ const handleArchive = async (listingId: string) => {
           <ActivityIndicator color={theme.colors.primary} />
         ) : watchlistCards.length === 0 ? (
           <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-            No watched cards yet — search in the marketplace and tap Watch.
+            No watched cards yet - search in the marketplace and tap Watch.
           </Text>
         ) : (
           watchlistCards.map((card, index) => {
@@ -1612,7 +1707,15 @@ const handleArchive = async (listingId: string) => {
                   borderBottomColor: theme.colors.border,
                 }}
               >
-                <Image source={{ uri: card.images?.small }} style={{ width: 36, height: 50, borderRadius: 5, backgroundColor: theme.colors.surface, marginRight: 10 }} resizeMode="contain" />
+                <View style={{ marginRight: 10 }}>
+                  <StackrCardPlaceholder
+                    uri={card.images?.small}
+                    width={36}
+                    height={50}
+                    borderRadius={5}
+                    resizeMode="contain"
+                  />
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }} numberOfLines={1}>{card.name}</Text>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }} numberOfLines={1}>{card.set?.name ?? ''}</Text>
@@ -1647,7 +1750,7 @@ const handleArchive = async (listingId: string) => {
           <ActivityIndicator color={theme.colors.primary} />
         ) : topMovers.length === 0 ? (
           <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-            Not enough price history yet — check back tomorrow.
+            Not enough price history yet - check back tomorrow.
           </Text>
         ) : (
           topMovers.map((mover, index) => {
@@ -1666,11 +1769,19 @@ const handleArchive = async (listingId: string) => {
                   borderBottomColor: theme.colors.border,
                 }}
               >
-                <Image source={{ uri: mover.card.images?.small }} style={{ width: 36, height: 50, borderRadius: 5, backgroundColor: theme.colors.surface, marginRight: 10 }} resizeMode="contain" />
+                <View style={{ marginRight: 10 }}>
+                  <StackrCardPlaceholder
+                    uri={mover.card.images?.small}
+                    width={36}
+                    height={50}
+                    borderRadius={5}
+                    resizeMode="contain"
+                  />
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }} numberOfLines={1}>{mover.card.name}</Text>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }} numberOfLines={1}>
-                    {mover.card.set?.name ?? ''}{mover.card.number ? ` · #${mover.card.number}` : ''}
+                    {mover.card.set?.name ?? ''}{mover.card.number ? ` - #${mover.card.number}` : ''}
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
@@ -1693,12 +1804,26 @@ const handleArchive = async (listingId: string) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.bg, paddingHorizontal: 16, paddingTop: 42, zIndex: 0 }}>
-      <Text style={{ color: theme.colors.text, fontSize: 30, fontWeight: '900', marginBottom: 6 }}>Market</Text>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 16 }}>Trading, offers, prices, and card movement.</Text>
+      <FeatureTipGate
+        tipKey="trade-screen-v1"
+        title="Market Place"
+        subtitle="Prices, wanted cards, trading tools, and collector listings in one place."
+        items={[
+          { icon: 'trending-up-outline', title: 'Market Prices', body: 'View live prices and recent card movement.' },
+          { icon: 'heart-outline', title: 'Wanted Cards', body: 'Track cards you are looking for.' },
+          { icon: 'calculator-outline', title: 'Price Builder', body: 'Build fair values for trades and bundles.' },
+          { icon: 'swap-horizontal-outline', title: 'Trading', body: 'Trade or buy from other collectors on Stackr.' },
+        ]}
+      />
+
+      <StackrScreenHeader
+        title="Marketplace"
+        subtitle="Trading, offers, prices, and card movement"
+      />
 
       <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
-        {renderMainTabButton('marketplace', '📈 Prices')}
-        {renderMainTabButton('trading', '🤝 Trading')}
+        {renderMainTabButton('marketplace', 'ðŸ“ˆ Prices')}
+        {renderMainTabButton('trading', 'ðŸ¤ Trading')}
       </View>
 
       {mainTab === 'trading' ? renderTrading() : renderMarketplace()}
@@ -1713,7 +1838,7 @@ const handleArchive = async (listingId: string) => {
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 20, position: 'relative' }}>
                   <View style={{ width: 42, height: 5, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.55)' }} />
                   <TouchableOpacity onPress={closeDetail} style={{ position: 'absolute', right: 0, padding: 8 }}>
-                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20, fontWeight: '700' }}>✕</Text>
+                    <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 20, fontWeight: '700' }}>×</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -1772,7 +1897,7 @@ const handleArchive = async (listingId: string) => {
                       </Text>
                       <Text style={{ marginTop: 6, color: theme.colors.textSoft, fontSize: 15, marginBottom: 14 }}>
                         {selectedCard?.set?.name ?? 'Unknown set'}
-                        {selectedCard?.number ? ` • #${selectedCard.number}` : ''}
+                        {selectedCard?.number ? ` - #${selectedCard.number}` : ''}
                       </Text>
 
                       {selectedListing?.profiles?.collector_name && (
@@ -1918,7 +2043,7 @@ const handleArchive = async (listingId: string) => {
                                 : <Ionicons name="card-outline" size={17} color="#fff" />
                               }
                               <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '900', fontSize: 15 }}>
-                                {buying ? 'Processing...' : `Buy Now • £${Number(selectedListing.asking_price).toFixed(2)}`}
+                                {buying ? 'Processing...' : `Buy Now - £${Number(selectedListing.asking_price).toFixed(2)}`}
                               </Text>
                             </TouchableOpacity>
                           )}
@@ -1933,7 +2058,7 @@ const handleArchive = async (listingId: string) => {
                               ])}
                               style={{ marginTop: 8, backgroundColor: '#FEE2E2', borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: '#FCA5A5' }}
                             >
-                              <Text style={{ color: '#991B1B', textAlign: 'center', fontWeight: '900' }}>🗑 Admin: Remove Listing</Text>
+                              <Text style={{ color: '#991B1B', textAlign: 'center', fontWeight: '900' }}>ðŸ—‘ Admin: Remove Listing</Text>
                             </TouchableOpacity>
                           )}
                         </>
@@ -2029,7 +2154,7 @@ function ProgressPill({ label, done, partial }: { label: string; done: boolean; 
   return (
     <View style={{ backgroundColor: bg, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: done ? '#10B981' : partial ? '#F59E0B' : theme.colors.border }}>
       <Text style={{ color: textColor, fontSize: 11, fontWeight: '800' }}>
-        {done ? '✓ ' : partial ? '◑ ' : ''}{label}
+        {done ? 'Done ' : partial ? 'Part ' : ''}{label}
       </Text>
     </View>
   );

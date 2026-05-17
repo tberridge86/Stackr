@@ -1,0 +1,231 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from './supabase';
+
+export type InventoryCondition =
+  | 'Mint'
+  | 'Near Mint'
+  | 'Lightly Played'
+  | 'Moderately Played'
+  | 'Heavily Played'
+  | 'Damaged';
+
+export const INVENTORY_CONDITIONS: InventoryCondition[] = [
+  'Mint',
+  'Near Mint',
+  'Lightly Played',
+  'Moderately Played',
+  'Heavily Played',
+  'Damaged',
+];
+
+export type InventoryCardSnapshot = {
+  id: string;
+  name: string;
+  number: string | null;
+  set_id: string | null;
+  set_name: string | null;
+  rarity: string | null;
+  image_small: string | null;
+  image_large: string | null;
+  tcg_price: number | null;
+  ebay_price: number | null;
+  cardmarket_price: number | null;
+};
+
+export type InventoryItem = {
+  id: string;
+  card_id: string;
+  set_id: string | null;
+  condition: InventoryCondition;
+  quantity: number;
+  asking_price: number | null;
+  buy_price: number | null;
+  notes: string | null;
+  card: InventoryCardSnapshot;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InventorySaleLine = {
+  inventory_item_id: string;
+  card_id: string;
+  card_name: string;
+  set_name: string | null;
+  condition: InventoryCondition;
+  quantity: number;
+  estimated_unit_price: number | null;
+  image_small: string | null;
+};
+
+export type InventorySaleTransaction = {
+  id: string;
+  sold_price: number | null;
+  estimated_value: number;
+  lines: InventorySaleLine[];
+  created_at: string;
+};
+
+const STORAGE_KEY = 'stackr:inventory-items:v1';
+const SALES_STORAGE_KEY = 'stackr:inventory-sales:v1';
+
+export async function loadInventoryItems(): Promise<InventoryItem[]> {
+  const raw = await AsyncStorage.getItem(STORAGE_KEY);
+  const cached = (() => {
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return cached;
+
+    const { data, error } = await supabase
+      .from('seller_inventory_items')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+
+    const remoteItems = (data ?? []).map((row: any): InventoryItem => ({
+      id: row.id,
+      card_id: row.card_id,
+      set_id: row.set_id,
+      condition: row.condition,
+      quantity: row.quantity,
+      asking_price: row.asking_price == null ? null : Number(row.asking_price),
+      buy_price: row.buy_price == null ? null : Number(row.buy_price),
+      notes: row.notes,
+      card: row.card_snapshot,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    }));
+
+    if (!remoteItems.length && cached.length) {
+      await saveInventoryItems(cached);
+      return cached;
+    }
+
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(remoteItems));
+    return remoteItems;
+  } catch (error) {
+    console.log('Seller inventory Supabase load failed', error);
+    return cached;
+  }
+}
+
+export async function saveInventoryItems(items: InventoryItem[]) {
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error: deleteError } = await supabase
+      .from('seller_inventory_items')
+      .delete()
+      .eq('user_id', user.id);
+    if (deleteError) throw deleteError;
+
+    if (!items.length) return;
+
+    const rows = items.map((item) => ({
+      id: item.id,
+      user_id: user.id,
+      card_id: item.card_id,
+      set_id: item.set_id,
+      condition: item.condition,
+      quantity: item.quantity,
+      asking_price: item.asking_price,
+      buy_price: item.buy_price,
+      notes: item.notes,
+      card_snapshot: item.card,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+    }));
+
+    const { error: insertError } = await supabase
+      .from('seller_inventory_items')
+      .insert(rows);
+    if (insertError) throw insertError;
+  } catch (error) {
+    console.log('Seller inventory Supabase save failed', error);
+  }
+}
+
+export async function loadInventorySales(): Promise<InventorySaleTransaction[]> {
+  const raw = await AsyncStorage.getItem(SALES_STORAGE_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveInventorySales(sales: InventorySaleTransaction[]) {
+  await AsyncStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(sales));
+}
+
+export async function addInventorySale(sale: InventorySaleTransaction) {
+  const current = await loadInventorySales();
+  await saveInventorySales([sale, ...current]);
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error: saleError } = await supabase.from('seller_sale_transactions').insert({
+      id: sale.id,
+      user_id: user.id,
+      sold_price: sale.sold_price,
+      estimated_value: sale.estimated_value,
+      created_at: sale.created_at,
+    });
+    if (saleError) throw saleError;
+
+    if (!sale.lines.length) return;
+    const { error: lineError } = await supabase.from('seller_sale_transaction_items').insert(
+      sale.lines.map((line) => ({
+        transaction_id: sale.id,
+        user_id: user.id,
+        inventory_item_id: line.inventory_item_id,
+        card_id: line.card_id,
+        card_name: line.card_name,
+        set_name: line.set_name,
+        condition: line.condition,
+        quantity: line.quantity,
+        estimated_unit_price: line.estimated_unit_price,
+        image_small: line.image_small,
+      }))
+    );
+    if (lineError) throw lineError;
+  } catch (error) {
+    console.log('Seller sale Supabase save failed', error);
+  }
+}
+
+export function createInventoryItem(
+  card: InventoryCardSnapshot,
+  condition: InventoryCondition,
+  quantity = 1
+): InventoryItem {
+  const now = new Date().toISOString();
+  return {
+    id: `${card.id}:${condition}:${Date.now()}`,
+    card_id: card.id,
+    set_id: card.set_id,
+    condition,
+    quantity,
+    asking_price: null,
+    buy_price: null,
+    notes: null,
+    card,
+    created_at: now,
+    updated_at: now,
+  };
+}

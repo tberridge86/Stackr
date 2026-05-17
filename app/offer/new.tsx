@@ -15,12 +15,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { createTradeOffer } from '../../lib/tradeOffers';
 import { getCachedCardSync } from '../../lib/pokemonTcgCache';
+import { getPreferredMarketPrice, getPriceFromPokemonCard } from '../../lib/pricing';
+import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
 
 // ===============================
 // CONSTANTS
 // ===============================
 
-import { PRICE_API_URL } from '../../lib/config';
 const MAX_OFFER_CARDS = 6;
 
 // ===============================
@@ -37,6 +38,8 @@ type TradeCardOption = {
   image_url: string | null;
   set_name?: string | null;
   number?: string | null;
+  estimated_value?: number | null;
+  price_source?: string | null;
 };
 
 // ===============================
@@ -50,6 +53,37 @@ const cardShadow = {
   shadowOffset: { width: 0, height: 4 },
   elevation: 3,
 };
+
+const money = (value: number | null | undefined) =>
+  typeof value === 'number' && Number.isFinite(value)
+    ? `£${value.toFixed(2)}`
+    : 'No price yet';
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+function getRawTcgPriceGbp(rawData: any): number | null {
+  const usdPrice = getPriceFromPokemonCard(rawData);
+  return typeof usdPrice === 'number' ? usdPrice * USD_TO_GBP : null;
+}
+
+async function fetchEstimatedPrice(cardIdValue: string, rawData?: any) {
+  const fallbackTcg = getRawTcgPriceGbp(rawData);
+
+  const { data, error } = await supabase
+    .from('market_price_snapshots')
+    .select('ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
+    .eq('card_id', cardIdValue)
+    .order('snapshot_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.log('Trade price lookup failed:', error.message);
+  }
+
+  return getPreferredMarketPrice(data ?? null, { tcg: fallbackTcg });
+}
 
 async function sendPushNotification(
   endpoint: string,
@@ -106,9 +140,51 @@ export default function NewOfferScreen() {
   }, [cashAmount]);
 
   const cashInvolved = cashAmountNumber > 0;
+  const selectedTradeCards = useMemo(
+    () => myTradeCards.filter((card) => selectedCardIds.includes(card.card_id)),
+    [myTradeCards, selectedCardIds]
+  );
+  const requestedSideValue = targetCard?.estimated_value ?? 0;
+  const offeredCardsValue = selectedTradeCards.reduce(
+    (total, card) => total + (card.estimated_value ?? 0),
+    0
+  );
+  const offeredSideValue =
+    offeredCardsValue + (cashPayer === 'sender' ? cashAmountNumber : 0);
+  const receiverSideValue =
+    requestedSideValue + (cashPayer === 'receiver' ? cashAmountNumber : 0);
+  const valueDifference = offeredSideValue - receiverSideValue;
+  const absoluteDifference = Math.abs(valueDifference);
+  const comparisonBase = Math.max(offeredSideValue, receiverSideValue, 1);
+  const differencePercent = Math.min(100, (absoluteDifference / comparisonBase) * 100);
+  const fairnessState =
+    absoluteDifference < 2 || differencePercent <= 8
+      ? 'balanced'
+      : valueDifference > 0
+        ? 'your-heavy'
+        : 'their-heavy';
+  const fairnessMarkerPercent = clamp(
+    50 - (valueDifference / comparisonBase) * 44,
+    6,
+    94
+  );
+  const fairnessLabel =
+    fairnessState === 'balanced'
+      ? 'Balanced'
+      : fairnessState === 'your-heavy'
+        ? 'Your side is heavier'
+        : 'Their side is heavier';
+  const fairnessHint =
+    fairnessState === 'balanced'
+      ? 'Both sides are close enough to feel fair.'
+      : fairnessState === 'your-heavy'
+        ? `You are offering about ${money(absoluteDifference)} more.`
+        : `They are sending about ${money(absoluteDifference)} more.`;
 
   useEffect(() => {
     loadScreen();
+    // The offer params are fixed for the lifetime of this screen.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ===============================
@@ -166,15 +242,31 @@ export default function NewOfferScreen() {
       ? (getCachedCardSync(setIdValue, cardIdValue) as any)
       : null;
 
-    if (cached) {
+    const { data: cardRow } = await supabase
+      .from('pokemon_cards')
+      .select('id, name, set_id, number, image_small, image_large, raw_data')
+      .eq('id', cardIdValue)
+      .maybeSingle();
+
+    if (cardRow || cached) {
+      const rawData = (cardRow as any)?.raw_data ?? cached;
+      const price = await fetchEstimatedPrice(cardIdValue, rawData);
+
       return {
         id: cardIdValue,
         card_id: cardIdValue,
-        set_id: setIdValue ?? cached?.set?.id ?? null,
-        name: cached?.name ?? cardIdValue,
-        image_url: cached?.images?.small ?? cached?.images?.large ?? null,
-        set_name: cached?.set?.name ?? null,
-        number: cached?.number ?? null,
+        set_id: (cardRow as any)?.set_id ?? setIdValue ?? cached?.set?.id ?? null,
+        name: (cardRow as any)?.name ?? cached?.name ?? cardIdValue,
+        image_url:
+          (cardRow as any)?.image_small ??
+          (cardRow as any)?.image_large ??
+          cached?.images?.small ??
+          cached?.images?.large ??
+          null,
+        set_name: rawData?.set?.name ?? null,
+        number: (cardRow as any)?.number ?? cached?.number ?? null,
+        estimated_value: price.value,
+        price_source: price.source,
       };
     }
 
@@ -192,6 +284,8 @@ export default function NewOfferScreen() {
       image_url: data?.image_url ?? null,
       set_name: null,
       number: null,
+      estimated_value: null,
+      price_source: null,
     };
   }
 
@@ -212,35 +306,68 @@ export default function NewOfferScreen() {
 
     const cardIds = flags.map((flag: any) => flag.card_id);
 
-    const { data: previews, error: previewsError } = await supabase
-      .from('card_previews')
-      .select('card_id, name, image_url')
-      .in('card_id', cardIds);
+    const [cardRowsResult, previewsResult, snapshotsResult] = await Promise.all([
+      supabase
+        .from('pokemon_cards')
+        .select('id, name, set_id, number, image_small, image_large, raw_data')
+        .in('id', cardIds),
+      supabase
+        .from('card_previews')
+        .select('card_id, name, image_url')
+        .in('card_id', cardIds),
+      supabase
+        .from('market_price_snapshots')
+        .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
+        .in('card_id', cardIds)
+        .order('snapshot_at', { ascending: false }),
+    ]);
 
-    if (previewsError) throw previewsError;
+    if (cardRowsResult.error) throw cardRowsResult.error;
+    if (previewsResult.error) throw previewsResult.error;
+    if (snapshotsResult.error) {
+      console.log('Trade snapshot lookup failed:', snapshotsResult.error.message);
+    }
 
     const previewMap = new Map(
-      (previews ?? []).map((preview: any) => [preview.card_id, preview])
+      (previewsResult.data ?? []).map((preview: any) => [preview.card_id, preview])
     );
+    const cardRowMap = new Map(
+      (cardRowsResult.data ?? []).map((card: any) => [card.id, card])
+    );
+    const snapshotMap = new Map<string, any>();
+    for (const snapshot of snapshotsResult.data ?? []) {
+      if (!snapshotMap.has((snapshot as any).card_id)) {
+        snapshotMap.set((snapshot as any).card_id, snapshot);
+      }
+    }
 
     return flags.map((flag: any) => {
       const preview = previewMap.get(flag.card_id) as any;
+      const row = cardRowMap.get(flag.card_id) as any;
       const cached = flag.set_id
         ? (getCachedCardSync(flag.set_id, flag.card_id) as any)
         : null;
+      const rawData = row?.raw_data ?? cached;
+      const price = getPreferredMarketPrice(snapshotMap.get(flag.card_id), {
+        tcg: getRawTcgPriceGbp(rawData),
+      });
 
       return {
         id: flag.id,
         card_id: flag.card_id,
-        set_id: flag.set_id ?? preview?.set_id ?? cached?.set?.id ?? null,
-        name: preview?.name ?? cached?.name ?? flag.card_id,
+        set_id: flag.set_id ?? row?.set_id ?? preview?.set_id ?? cached?.set?.id ?? null,
+        name: row?.name ?? preview?.name ?? cached?.name ?? flag.card_id,
         image_url:
+          row?.image_small ??
+          row?.image_large ??
           preview?.image_url ??
           cached?.images?.small ??
           cached?.images?.large ??
           null,
-        set_name: preview?.set_name ?? cached?.set?.name ?? null,
-        number: preview?.number ?? cached?.number ?? null,
+        set_name: row?.raw_data?.set?.name ?? preview?.set_name ?? cached?.set?.name ?? null,
+        number: row?.number ?? preview?.number ?? cached?.number ?? null,
+        estimated_value: price.value,
+        price_source: price.source,
       };
     });
   }
@@ -283,10 +410,6 @@ export default function NewOfferScreen() {
 
       setSending(true);
 
-      const selectedCards = myTradeCards.filter((card) =>
-        selectedCardIds.includes(card.card_id)
-      );
-
       const newOffer = await createTradeOffer({
         listingId,
         senderUserId: currentUserId,
@@ -298,7 +421,7 @@ export default function NewOfferScreen() {
             quantity: 1,
           },
         ],
-        offeredCards: selectedCards.map((card) => ({
+        offeredCards: selectedTradeCards.map((card) => ({
           cardId: card.card_id,
           setId: card.set_id,
           quantity: 1,
@@ -357,10 +480,170 @@ export default function NewOfferScreen() {
   return (
     <View style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Make an Offer</Text>
+      <Text style={styles.brand}>stackr</Text>
+      <Text style={styles.title}>Build a Trade</Text>
       <Text style={styles.subtitle}>
-        Choose cards, add cash if needed, and send your offer.
+        Add cards, cash or offers
+        {targetUserName ? ` to ${targetUserName}` : ''}.
       </Text>
+
+      <View style={styles.tradeSides}>
+        <View style={styles.tradeSideCard}>
+          <View style={styles.tradeSideHeader}>
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarText}>Y</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tradeSideName}>You</Text>
+              <Text style={styles.trustedText}>Trusted Trader</Text>
+            </View>
+          </View>
+
+          <View style={styles.sideLabelRow}>
+            <Text style={styles.sideLabel}>Cards</Text>
+            <Text style={styles.countBadge}>{selectedTradeCards.length}</Text>
+          </View>
+
+          <View style={styles.stackArea}>
+            {selectedTradeCards.length > 0 ? (
+              selectedTradeCards.slice(0, 3).map((card, index) =>
+                card.image_url ? (
+                  <Image
+                    key={`${card.card_id}-${index}`}
+                    source={{ uri: card.image_url }}
+                    style={[
+                      styles.stackCardImage,
+                      {
+                        left: 16 + index * 18,
+                        transform: [{ rotate: `${(index - 1) * 5}deg` }],
+                      },
+                    ]}
+                  />
+                ) : (
+                  <View
+                    key={`${card.card_id}-${index}`}
+                    style={[
+                      styles.stackCardImage,
+                      styles.stackPlaceholder,
+                      { left: 16 + index * 18 },
+                    ]}
+                  />
+                )
+              )
+            ) : (
+              <View style={styles.emptyStack}>
+                <Text style={styles.emptyStackText}>Add cards</Text>
+              </View>
+            )}
+            {selectedTradeCards.length > 1 && (
+              <View style={styles.stackCountBubble}>
+                <Text style={styles.stackCountText}>x{selectedTradeCards.length}</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.sideValueBox}>
+            <Text style={styles.valueLabel}>Est. Value</Text>
+            <Text style={styles.sideValueAmount}>{money(offeredSideValue)}</Text>
+            {cashPayer === 'sender' && cashInvolved && (
+              <Text style={styles.cashMini}>includes {money(cashAmountNumber)} cash</Text>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.swapBadge}>
+          <Text style={styles.swapBadgeText}>⇄</Text>
+        </View>
+
+        <View style={styles.tradeSideCard}>
+          <View style={styles.tradeSideHeader}>
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarText}>{(targetUserName ?? 'T').charAt(0)}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tradeSideName}>{targetUserName ?? 'Trader'}</Text>
+              <Text style={styles.trustedText}>Trusted Trader</Text>
+            </View>
+          </View>
+
+          <View style={styles.sideLabelRow}>
+            <Text style={styles.sideLabel}>Cards</Text>
+            <Text style={styles.countBadge}>{targetCard ? 1 : 0}</Text>
+          </View>
+
+          <View style={styles.stackArea}>
+            {targetCard?.image_url ? (
+              <Image source={{ uri: targetCard.image_url }} style={styles.targetStackImage} />
+            ) : (
+              <View style={styles.emptyStack}>
+                <Text style={styles.emptyStackText}>Wanted card</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.sideValueBox}>
+            <Text style={styles.valueLabel}>Est. Value</Text>
+            <Text style={styles.sideValueAmount}>{money(receiverSideValue)}</Text>
+            {cashPayer === 'receiver' && cashInvolved && (
+              <Text style={styles.cashMini}>includes {money(cashAmountNumber)} cash</Text>
+            )}
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.fairnessBox}>
+        <View style={styles.fairnessHeader}>
+          <Text style={styles.fairnessTitle}>Trade Fairness</Text>
+          <Text
+            style={[
+              styles.fairnessPill,
+              fairnessState !== 'balanced' && styles.fairnessPillWarn,
+            ]}
+          >
+            {Math.round(differencePercent)}%
+          </Text>
+        </View>
+
+        <View style={styles.fairnessTrack}>
+          <View style={styles.fairnessTrackLeft} />
+          <View style={styles.fairnessTrackRight} />
+          <View
+            style={[
+              styles.fairnessMarker,
+              { left: `${fairnessMarkerPercent}%` },
+            ]}
+          />
+        </View>
+        <View style={styles.fairnessEnds}>
+          <Text style={styles.fairnessEndText}>You</Text>
+          <Text style={styles.fairnessEndText}>Them</Text>
+        </View>
+
+        <Text
+          style={[
+            styles.fairnessLabel,
+            fairnessState !== 'balanced' && styles.fairnessLabelWarn,
+          ]}
+        >
+          {fairnessLabel}
+        </Text>
+        <Text style={styles.fairnessHint}>{fairnessHint}</Text>
+
+        <View style={styles.valueGrid}>
+          <View style={styles.valueCell}>
+            <Text style={styles.valueLabel}>Your side</Text>
+            <Text style={styles.valueAmount}>{money(offeredSideValue)}</Text>
+          </View>
+          <View style={styles.valueCell}>
+            <Text style={styles.valueLabel}>Their side</Text>
+            <Text style={styles.valueAmount}>{money(receiverSideValue)}</Text>
+          </View>
+          <View style={styles.valueCell}>
+            <Text style={styles.valueLabel}>Difference</Text>
+            <Text style={styles.valueAmount}>{money(absoluteDifference)}</Text>
+          </View>
+        </View>
+      </View>
 
       {/* Card you want */}
       <Section title="Card you want">
@@ -376,6 +659,10 @@ export default function NewOfferScreen() {
               <Text style={styles.cardMeta}>
                 {targetCard.set_name ?? targetCard.set_id ?? 'Unknown set'}
                 {targetCard.number ? ` · ${targetCard.number}` : ''}
+              </Text>
+              <Text style={styles.priceMeta}>
+                {money(targetCard.estimated_value)}
+                {targetCard.price_source ? ` ${targetCard.price_source}` : ''}
               </Text>
             </View>
           </View>
@@ -419,6 +706,10 @@ export default function NewOfferScreen() {
                     <Text style={styles.cardMeta}>
                       {card.set_name ?? card.set_id ?? 'Unknown set'}
                       {card.number ? ` · ${card.number}` : ''}
+                    </Text>
+                    <Text style={styles.priceMeta}>
+                      {money(card.estimated_value)}
+                      {card.price_source ? ` ${card.price_source}` : ''}
                     </Text>
                   </View>
                   <Text style={[styles.selectText, selected && styles.selectTextActive]}>
@@ -504,6 +795,62 @@ export default function NewOfferScreen() {
         </View>
       )}
 
+      {false && (targetCard || selectedCardIds.length > 0 || cashInvolved) && (
+        <View style={styles.fairnessBox}>
+          <View style={styles.fairnessHeader}>
+            <Text style={styles.fairnessTitle}>Trade Fairness</Text>
+            <Text
+              style={[
+                styles.fairnessPill,
+                fairnessState !== 'balanced' && styles.fairnessPillWarn,
+              ]}
+            >
+              {Math.round(differencePercent)}%
+            </Text>
+          </View>
+
+          <View style={styles.fairnessTrack}>
+            <View style={styles.fairnessTrackLeft} />
+            <View style={styles.fairnessTrackRight} />
+            <View
+              style={[
+                styles.fairnessMarker,
+                { left: `${fairnessMarkerPercent}%` },
+              ]}
+            />
+          </View>
+          <View style={styles.fairnessEnds}>
+            <Text style={styles.fairnessEndText}>You</Text>
+            <Text style={styles.fairnessEndText}>Them</Text>
+          </View>
+
+          <Text
+            style={[
+              styles.fairnessLabel,
+              fairnessState !== 'balanced' && styles.fairnessLabelWarn,
+            ]}
+          >
+            {fairnessLabel}
+          </Text>
+          <Text style={styles.fairnessHint}>{fairnessHint}</Text>
+
+          <View style={styles.valueGrid}>
+            <View style={styles.valueCell}>
+              <Text style={styles.valueLabel}>Your side</Text>
+              <Text style={styles.valueAmount}>{money(offeredSideValue)}</Text>
+            </View>
+            <View style={styles.valueCell}>
+              <Text style={styles.valueLabel}>Their side</Text>
+              <Text style={styles.valueAmount}>{money(receiverSideValue)}</Text>
+            </View>
+            <View style={styles.valueCell}>
+              <Text style={styles.valueLabel}>Difference</Text>
+              <Text style={styles.valueAmount}>{money(absoluteDifference)}</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
     </ScrollView>
     <View style={{ paddingHorizontal: 16, paddingBottom: 110, paddingTop: 8 }}>
       <TouchableOpacity
@@ -562,6 +909,12 @@ function makeStyles(theme: any) {
     padding: 16,
     paddingBottom: 16,
   },
+  brand: {
+    color: theme.colors.text,
+    fontSize: 26,
+    fontWeight: '900',
+    marginBottom: 8,
+  },
   title: {
     color: theme.colors.text,
     fontSize: 28,
@@ -572,6 +925,171 @@ function makeStyles(theme: any) {
     color: theme.colors.textSoft,
     marginBottom: 20,
     lineHeight: 20,
+  },
+  tradeSides: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  tradeSideCard: {
+    flex: 1,
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...cardShadow,
+  },
+  tradeSideHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  avatarCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary,
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  tradeSideName: {
+    color: theme.colors.text,
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  trustedText: {
+    color: theme.colors.primary,
+    fontSize: 10,
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  sideLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
+  sideLabel: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  countBadge: {
+    color: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '14',
+    borderRadius: 999,
+    overflow: 'hidden',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  stackArea: {
+    height: 108,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stackCardImage: {
+    position: 'absolute',
+    top: 4,
+    width: 66,
+    height: 92,
+    borderRadius: 8,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+  },
+  targetStackImage: {
+    width: 72,
+    height: 100,
+    borderRadius: 8,
+    backgroundColor: theme.colors.surface,
+  },
+  stackPlaceholder: {
+    backgroundColor: theme.colors.primary + '18',
+  },
+  emptyStack: {
+    width: 82,
+    height: 96,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+  },
+  emptyStackText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  stackCountBubble: {
+    position: 'absolute',
+    right: 14,
+    bottom: 6,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  stackCountText: {
+    color: theme.colors.text,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  swapBadge: {
+    position: 'absolute',
+    left: '50%',
+    top: 82,
+    zIndex: 2,
+    width: 34,
+    height: 34,
+    marginLeft: -17,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...cardShadow,
+  },
+  swapBadgeText: {
+    color: theme.colors.primary,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  sideValueBox: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  sideValueAmount: {
+    color: theme.colors.text,
+    fontSize: 18,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+  cashMini: {
+    color: theme.colors.textSoft,
+    fontSize: 10,
+    fontWeight: '700',
+    marginTop: 3,
   },
   section: {
     backgroundColor: theme.colors.card,
@@ -646,6 +1164,12 @@ function makeStyles(theme: any) {
   cardMeta: {
     color: theme.colors.textSoft,
     fontSize: 12,
+    marginTop: 4,
+  },
+  priceMeta: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '800',
     marginTop: 4,
   },
   muted: {
@@ -730,6 +1254,121 @@ function makeStyles(theme: any) {
     color: theme.colors.text,
     fontSize: 13,
     marginBottom: 4,
+  },
+  fairnessBox: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    ...cardShadow,
+  },
+  fairnessHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  fairnessTitle: {
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  fairnessPill: {
+    color: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '14',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    fontSize: 12,
+    fontWeight: '900',
+    overflow: 'hidden',
+  },
+  fairnessPillWarn: {
+    color: '#F59E0B',
+    backgroundColor: '#F59E0B18',
+  },
+  fairnessTrack: {
+    height: 8,
+    borderRadius: 999,
+    overflow: 'visible',
+    flexDirection: 'row',
+    backgroundColor: theme.colors.border,
+    marginTop: 4,
+  },
+  fairnessTrackLeft: {
+    flex: 1,
+    backgroundColor: theme.colors.primary,
+    borderTopLeftRadius: 999,
+    borderBottomLeftRadius: 999,
+  },
+  fairnessTrackRight: {
+    flex: 1,
+    backgroundColor: '#F59E0B',
+    borderTopRightRadius: 999,
+    borderBottomRightRadius: 999,
+  },
+  fairnessMarker: {
+    position: 'absolute',
+    top: -6,
+    width: 20,
+    height: 20,
+    marginLeft: -10,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 3,
+    borderColor: theme.colors.primary,
+  },
+  fairnessEnds: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  fairnessEndText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  fairnessLabel: {
+    color: theme.colors.primary,
+    textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '900',
+    marginTop: 8,
+  },
+  fairnessLabelWarn: {
+    color: '#F59E0B',
+  },
+  fairnessHint: {
+    color: theme.colors.textSoft,
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  valueGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  valueCell: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 10,
+  },
+  valueLabel: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  valueAmount: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: '900',
   },
   sendButton: {
     backgroundColor: theme.colors.primary,

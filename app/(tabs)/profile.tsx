@@ -8,12 +8,14 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Switch,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../components/profile-context';
+import { useAppMode } from '../../components/app-mode-context';
 import { AVATAR_PRESETS } from '../../lib/avatars';
 import { supabase } from '../../lib/supabase';
 import {
@@ -219,6 +221,7 @@ function QuickAction({
 
 export default function ProfileScreen() {
   const { theme, isDark, toggleTheme } = useTheme();
+  const { mode, setMode } = useAppMode();
   const { profile, loading, refreshProfile } = useProfile();
 
   const [favoriteCard, setFavoriteCard] = useState<any | null>(null);
@@ -818,6 +821,54 @@ export default function ProfileScreen() {
             label="Seller Account & Payouts"
             onPress={() => router.push('/seller/onboarding' as any)}
           />
+
+          <TouchableOpacity
+            onPress={() => setMode(mode === 'seller' ? 'collector' : 'seller')}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#FFFFFF',
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              borderRadius: 18,
+              marginBottom: 10,
+              borderWidth: 1,
+              borderColor: '#EEEAFB',
+              shadowColor: '#120F2A',
+              shadowOpacity: 0.08,
+              shadowRadius: 12,
+              shadowOffset: { width: 0, height: 5 },
+              elevation: 3,
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: '#F2EEFF',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 10,
+            }}>
+              <Ionicons name="storefront-outline" size={20} color={theme.colors.primary} />
+            </View>
+            <View style={{ flex: 1, paddingRight: 8 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+                Seller mode
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 10, lineHeight: 13, marginTop: 1, fontWeight: '600' }}>
+                Replaces Pokédex with Inventory. Binders still work.
+              </Text>
+            </View>
+            <Switch
+              value={mode === 'seller'}
+              onValueChange={(value) => setMode(value ? 'seller' : 'collector')}
+              trackColor={{ false: '#E5E2EE', true: `${theme.colors.primary}66` }}
+              thumbColor={mode === 'seller' ? theme.colors.primary : '#FFFFFF'}
+              ios_backgroundColor="#E5E2EE"
+            />
+          </TouchableOpacity>
 
           {/* Dark mode toggle */}
           <TouchableOpacity

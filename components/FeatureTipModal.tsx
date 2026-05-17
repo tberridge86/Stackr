@@ -37,6 +37,8 @@ type FeatureTipGateProps = Omit<FeatureTipModalProps, 'visible' | 'onClose'> & {
   enabled?: boolean;
 };
 
+const featureTipSeenThisSession = new Set<string>();
+
 export function FeatureTipModal({
   visible,
   title,
@@ -189,6 +191,7 @@ export function FeatureTipGate({ tipKey, enabled = true, ...modalProps }: Featur
     let mounted = true;
     const checkTip = async () => {
       if (!enabled) return;
+      if (featureTipSeenThisSession.has(tipKey)) return;
       try {
         const dismissed = await AsyncStorage.getItem(storageKey);
         if (mounted && dismissed !== 'true') setVisible(true);
@@ -200,9 +203,10 @@ export function FeatureTipGate({ tipKey, enabled = true, ...modalProps }: Featur
     return () => {
       mounted = false;
     };
-  }, [enabled, storageKey]));
+  }, [enabled, storageKey, tipKey]));
 
   const close = useCallback(async (dontShowAgain: boolean) => {
+    featureTipSeenThisSession.add(tipKey);
     setVisible(false);
     if (!dontShowAgain) return;
     try {
@@ -210,7 +214,7 @@ export function FeatureTipGate({ tipKey, enabled = true, ...modalProps }: Featur
     } catch (error) {
       console.log('Feature tip dismiss failed', error);
     }
-  }, [storageKey]);
+  }, [storageKey, tipKey]);
 
   return <FeatureTipModal visible={visible} onClose={close} {...modalProps} />;
 }
