@@ -16,6 +16,7 @@ import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { StackrCardPlaceholder } from '../../components/StackrCardPlaceholder';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
+import { searchLocalPokemonCards } from '../../lib/cardSearch';
 
 
 // ===============================
@@ -187,33 +188,10 @@ export default function PriceBuilderScreen() {
     try {
       setSearching(true);
 
-      const words = text.trim().split(' ').filter(Boolean);
-      const cardName = words[0];
-      const setHint = words.slice(1).join(' ');
-
-      let query = supabase
-        .from('pokemon_cards')
-        .select('id, name, set_id, image_small, image_large, raw_data')
-        .ilike('name', `%${cardName}%`)
-        .limit(60);
-
-      if (setHint) {
-        query = query.ilike('set_id', `%${setHint}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      let cards = (data ?? []) as CardRow[];
-
-      if (setHint) {
-        const hint = setHint.toLowerCase();
-        cards = cards.filter(
-          (c) =>
-            (c.raw_data?.set?.name ?? '').toLowerCase().includes(hint) ||
-            (c.set_id ?? '').toLowerCase().includes(hint)
-        );
-      }
+      const cards = await searchLocalPokemonCards<CardRow>(text, {
+        limit: 80,
+        select: 'id, name, set_id, image_small, image_large, raw_data',
+      });
 
       setResults(cards);
     } catch (error) {
@@ -459,16 +437,16 @@ export default function PriceBuilderScreen() {
         alignItems: 'center',
         backgroundColor: theme.colors.card,
         borderRadius: 12,
-        padding: 8,
+        padding: 6,
         borderWidth: 1,
         borderColor: theme.colors.border,
-        gap: 8,
+        gap: 7,
         ...cardShadow,
       }}>
         <StackrCardPlaceholder
           uri={item.card.image_small ?? item.card.image_large}
-          width={44}
-          height={62}
+          width={36}
+          height={50}
           borderRadius={7}
         />
 
@@ -483,7 +461,7 @@ export default function PriceBuilderScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 5, paddingVertical: 6 }}
+            contentContainerStyle={{ gap: 4, paddingVertical: 4 }}
           >
             {CONDITIONS.map((condition) => {
               const active = item.condition === condition;
@@ -493,8 +471,8 @@ export default function PriceBuilderScreen() {
                   onPress={() => updateCondition(item.localId, condition)}
                   style={{
                     borderRadius: 999,
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
+                    paddingHorizontal: 7,
+                    paddingVertical: 3,
                     backgroundColor: active ? theme.colors.primary : theme.colors.surface,
                     borderWidth: 1,
                     borderColor: active ? theme.colors.primary : theme.colors.border,
@@ -512,12 +490,12 @@ export default function PriceBuilderScreen() {
             })}
           </ScrollView>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
             <TouchableOpacity
               onPress={() => updateQuantity(item.localId, -1)}
               style={{
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 borderRadius: 8,
                 backgroundColor: theme.colors.surface,
                 alignItems: 'center',
@@ -532,8 +510,8 @@ export default function PriceBuilderScreen() {
             <TouchableOpacity
               onPress={() => updateQuantity(item.localId, 1)}
               style={{
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 borderRadius: 8,
                 backgroundColor: theme.colors.surface,
                 alignItems: 'center',
@@ -545,9 +523,9 @@ export default function PriceBuilderScreen() {
           </View>
         </View>
 
-        <View style={{ alignItems: 'flex-end', gap: 6, minWidth: 72 }}>
+        <View style={{ alignItems: 'flex-end', gap: 5, minWidth: 82 }}>
           <View>
-            <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900', textAlign: 'right' }}>
+            <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900', textAlign: 'right' }}>
               {money(estimate != null ? estimate * item.quantity : null)}
             </Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '800', textAlign: 'right' }}>
@@ -557,8 +535,8 @@ export default function PriceBuilderScreen() {
           <TouchableOpacity
             onPress={() => removeItem(item.localId)}
             style={{
-              width: 28,
-              height: 28,
+              width: 26,
+              height: 26,
               borderRadius: 10,
               backgroundColor: theme.colors.surface,
               alignItems: 'center',
@@ -608,15 +586,15 @@ export default function PriceBuilderScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingTop: 10,
-            paddingBottom: insets.bottom + 36,
+            paddingTop: 6,
+            paddingBottom: insets.bottom + 180,
           }}
         >
-          <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 28, lineHeight: 34, fontWeight: '900' }}>
+          <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>
               Price Builder
             </Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 14, fontWeight: '700', marginTop: 2 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
               Build a bundle and compare totals
             </Text>
           </View>
@@ -625,9 +603,9 @@ export default function PriceBuilderScreen() {
         <View style={{
           backgroundColor: theme.colors.card,
           borderRadius: 16,
-          padding: 10,
+          padding: 8,
           marginHorizontal: 16,
-          marginBottom: 8,
+          marginBottom: 6,
           borderWidth: 1,
           borderColor: theme.colors.border,
         }}>
@@ -640,7 +618,7 @@ export default function PriceBuilderScreen() {
               backgroundColor: theme.colors.bg,
               borderRadius: 12,
               paddingHorizontal: 12,
-              paddingVertical: 10,
+              paddingVertical: 8,
               color: theme.colors.text,
               fontWeight: '800',
               borderWidth: 1,
@@ -700,7 +678,7 @@ export default function PriceBuilderScreen() {
                 )}
               </View>
 
-              <View style={{ maxHeight: 170 }}>
+              <View style={{ maxHeight: 132 }}>
                 {results.slice(0, 12).map((item) => (
                   <View key={item.id}>
                     {renderResult({ item })}
@@ -714,7 +692,7 @@ export default function PriceBuilderScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 7, paddingHorizontal: 16, paddingBottom: 10 }}
+          contentContainerStyle={{ gap: 7, paddingHorizontal: 16, paddingBottom: 8 }}
         >
           {BUILDER_QUICK_FILTERS.map((item) => {
             const active = activeQuickFilter === item.action;
@@ -727,8 +705,8 @@ export default function PriceBuilderScreen() {
                   alignItems: 'center',
                   gap: 7,
                   borderRadius: 999,
-                  paddingHorizontal: 11,
-                  paddingVertical: 8,
+                  paddingHorizontal: 10,
+                  paddingVertical: 7,
                   backgroundColor: active ? '#F6F1FF' : theme.colors.card,
                   borderWidth: 1,
                   borderColor: active ? theme.colors.primary : theme.colors.border,
@@ -771,7 +749,7 @@ export default function PriceBuilderScreen() {
               <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
                 Best estimate
               </Text>
-              <Text style={{ color: theme.colors.primary, fontSize: 22, fontWeight: '900', marginTop: 1 }}>
+              <Text style={{ color: theme.colors.primary, fontSize: 20, fontWeight: '900', marginTop: 1 }}>
                 {money(bestEstimate)}
               </Text>
             </View>
@@ -792,7 +770,7 @@ export default function PriceBuilderScreen() {
             backgroundColor: theme.colors.card,
             borderRadius: 18, padding: 10,
             marginHorizontal: 16,
-            marginTop: 24,
+            marginTop: 14,
             borderWidth: 1, borderColor: theme.colors.border,
             alignItems: 'center',
           }}>
@@ -808,7 +786,7 @@ export default function PriceBuilderScreen() {
             backgroundColor: theme.colors.card,
             borderRadius: 18,
             marginHorizontal: 16,
-            padding: 12,
+            padding: 10,
             borderWidth: 1,
             borderColor: theme.colors.border,
             ...cardShadow,
@@ -817,9 +795,9 @@ export default function PriceBuilderScreen() {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: 10,
+              marginBottom: 8,
             }}>
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>
                 Your bundle ({items.length} card{items.length === 1 ? '' : 's'})
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12 }}>
@@ -827,7 +805,7 @@ export default function PriceBuilderScreen() {
               </Text>
             </View>
 
-            <View style={{ gap: 10 }}>
+            <View style={{ gap: 8 }}>
               {items.map((item) => (
                 <View key={item.localId}>
                   {renderBuilderItem({ item })}
@@ -843,7 +821,7 @@ export default function PriceBuilderScreen() {
                 borderWidth: 1,
                 borderStyle: 'dashed',
                 borderColor: theme.colors.border,
-                paddingVertical: 12,
+                paddingVertical: 10,
                 alignItems: 'center',
               }}
             >
@@ -863,13 +841,13 @@ export default function PriceBuilderScreen() {
           marginBottom: 0,
           borderWidth: 1,
           borderColor: theme.colors.border,
-          padding: 16,
+          padding: 12,
           ...cardShadow,
         }}>
           {items.length > 0 && (
             <TouchableOpacity
               onPress={() => setItems([])}
-              style={{ alignSelf: 'flex-end', marginBottom: 8 }}
+              style={{ alignSelf: 'flex-end', marginBottom: 6 }}
             >
               <Text style={{ color: '#EF4444', fontWeight: '900' }}>Clear All</Text>
             </TouchableOpacity>
@@ -878,29 +856,29 @@ export default function PriceBuilderScreen() {
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 14,
+            gap: 10,
             backgroundColor: theme.colors.primary + '0E',
             borderRadius: 16,
-            padding: 14,
+            padding: 10,
             borderWidth: 1,
             borderColor: theme.colors.primary + '35',
           }}>
             <View style={{
-              width: 62,
-              height: 62,
+              width: 48,
+              height: 48,
               borderRadius: 16,
               backgroundColor: '#FFFFFF',
               alignItems: 'center',
               justifyContent: 'center',
               transform: [{ rotate: '-8deg' }],
             }}>
-              <Ionicons name="calculator-outline" size={30} color={theme.colors.primary} />
+              <Ionicons name="calculator-outline" size={25} color={theme.colors.primary} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
                 Instant Estimate
               </Text>
-              <Text style={{ color: theme.colors.textSoft, fontWeight: '700', marginTop: 3 }}>
+              <Text style={{ color: theme.colors.textSoft, fontWeight: '700', marginTop: 2, fontSize: 12 }}>
                 Compare live market totals
               </Text>
             </View>

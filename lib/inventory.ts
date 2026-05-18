@@ -7,7 +7,8 @@ export type InventoryCondition =
   | 'Lightly Played'
   | 'Moderately Played'
   | 'Heavily Played'
-  | 'Damaged';
+  | 'Damaged'
+  | 'Sealed';
 
 export const INVENTORY_CONDITIONS: InventoryCondition[] = [
   'Mint',
@@ -17,6 +18,8 @@ export const INVENTORY_CONDITIONS: InventoryCondition[] = [
   'Heavily Played',
   'Damaged',
 ];
+
+export const PRODUCT_INVENTORY_CONDITIONS: InventoryCondition[] = ['Sealed'];
 
 export type InventoryCardSnapshot = {
   id: string;
@@ -30,6 +33,14 @@ export type InventoryCardSnapshot = {
   tcg_price: number | null;
   ebay_price: number | null;
   cardmarket_price: number | null;
+  is_product?: boolean;
+  product_type?: string | null;
+  product_name?: string | null;
+  product_price_low?: number | null;
+  product_price_high?: number | null;
+  product_price_count?: number | null;
+  product_price_query?: string | null;
+  product_price_source?: string | null;
 };
 
 export type InventoryItem = {

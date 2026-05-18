@@ -402,10 +402,10 @@ export default function BinderLibraryScreen() {
         {/* Header */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '900' }}>
+            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>
               Binder
             </Text>
-            <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 13 }}>
+            <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 12, fontWeight: '700' }}>
               {binders.length} binder{binders.length !== 1 ? 's' : ''} in your collection
             </Text>
           </View>

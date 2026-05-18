@@ -24,6 +24,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
 import { scanStore } from '../../lib/scanStore';
+import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
+import { buildProductQuery, getProductPriceWithFallback, searchMarketProducts } from '../../lib/productSearch';
+import type { ProductLookupType, ProductPriceResult } from '../../lib/productSearch';
 
 // ===============================
 // TYPES
@@ -69,13 +73,23 @@ type EbayDetailData = {
   average?: number | null;
   high?: number | null;
   count?: number | null;
+  query?: string;
+  soldDataSource?: string;
 } | null;
+
+type LookupType =
+  | 'raw_card'
+  | 'graded_slab'
+  | 'sealed_product'
+  | 'booster_pack'
+  | 'booster_box'
+  | 'elite_trainer_box'
+  | 'collection_bundle'
+  | 'accessories';
 
 // ===============================
 // CONSTANTS
 // ===============================
-
-import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -83,6 +97,55 @@ const cardShadow = {
   shadowRadius: 10,
   shadowOffset: { width: 0, height: 4 },
   elevation: 3,
+};
+
+const LOOKUP_OPTIONS: { key: LookupType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'raw_card', label: 'Raw Card', icon: 'albums-outline' },
+  { key: 'graded_slab', label: 'Graded Slab', icon: 'id-card-outline' },
+  { key: 'sealed_product', label: 'Sealed Product', icon: 'cube-outline' },
+  { key: 'booster_pack', label: 'Booster Pack', icon: 'file-tray-full-outline' },
+  { key: 'booster_box', label: 'Booster Box', icon: 'archive-outline' },
+  { key: 'elite_trainer_box', label: 'Elite Trainer Box', icon: 'file-tray-stacked-outline' },
+  { key: 'collection_bundle', label: 'Collection Bundle', icon: 'cube-outline' },
+  { key: 'accessories', label: 'Accessories', icon: 'layers-outline' },
+];
+
+const RAW_CONDITIONS = ['Near Mint', 'Lightly Played', 'Moderately Played', 'Heavily Played', 'Damaged'];
+const GRADING_COMPANIES = ['PSA', 'CGC', 'BGS', 'Ace'];
+const GRADES = ['10', '9.5', '9', '8', '7'];
+
+const isCardLookup = (lookupType: LookupType): lookupType is 'raw_card' | 'graded_slab' =>
+  lookupType === 'raw_card' || lookupType === 'graded_slab';
+
+const toEbayDetailData = (price: ProductPriceResult | null): EbayDetailData =>
+  price ? {
+    low: price.low,
+    average: price.average,
+    high: price.high,
+    count: price.count,
+    query: price.query || undefined,
+    soldDataSource: price.soldDataSource || undefined,
+  } : null;
+
+const getLookupSearchHint = (lookupType: LookupType) => {
+  switch (lookupType) {
+    case 'graded_slab':
+      return 'Search a card to price as a slab...';
+    case 'elite_trainer_box':
+      return 'Search an ETB, set, or product...';
+    case 'booster_pack':
+      return 'Search a booster pack...';
+    case 'booster_box':
+      return 'Search a booster box...';
+    case 'collection_bundle':
+      return 'Search a collection box or bundle...';
+    case 'accessories':
+      return 'Search binders, sleeves, cases...';
+    case 'sealed_product':
+      return 'Search any sealed Pokemon product...';
+    default:
+      return 'Search a specific card...';
+  }
 };
 
 // ===============================
@@ -162,14 +225,20 @@ const normalise = (value: string) =>
 export default function MarketScreen() {
   const { theme } = useTheme();
   const [query, setQuery] = useState('');
+  const [lookupType, setLookupType] = useState<LookupType>('raw_card');
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
+  const [productPriceData, setProductPriceData] = useState<EbayDetailData>(null);
+  const [productPriceLoading, setProductPriceLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailEbayData, setDetailEbayData] = useState<EbayDetailData>(null);
   const [detailPriceLoading, setDetailPriceLoading] = useState(false);
+  const [rawCondition, setRawCondition] = useState('Near Mint');
+  const [gradingCompany, setGradingCompany] = useState('PSA');
+  const [grade, setGrade] = useState('10');
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -315,6 +384,13 @@ export default function MarketScreen() {
 
   try {
     setSearching(true);
+    const smartResults = await searchLocalPokemonCards<any>(trimmed, {
+      limit: 120,
+      select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
+      skipSetDetection: skipSetFilter,
+    });
+    setSearchResults(smartResults.map(mapCard));
+    if (smartResults.length < 0) {
     const words = trimmed.split(/\s+/).filter(Boolean);
     let cardTerm = trimmed;
     let matchedSetIds: string[] = [];
@@ -378,6 +454,7 @@ export default function MarketScreen() {
       if (error) throw error;
 
       setSearchResults((data ?? []).map(mapCard));
+    }
     } catch (err) {
       console.log('Search error:', err);
       setSearchResults([]);
@@ -386,11 +463,51 @@ export default function MarketScreen() {
     }
   }, []);
 
+  const searchProductPrice = useCallback(async (searchQuery: string) => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) { setProductPriceData(null); return; }
+
+    try {
+      setProductPriceLoading(true);
+      setSearching(true);
+      setSearchResults([]);
+      const productType = lookupType as ProductLookupType;
+      const catalogResults = await searchMarketProducts(trimmed, productType, 1);
+      const catalogPrice = catalogResults[0]?.latest_price ?? null;
+      if (catalogPrice?.average != null) {
+        setProductPriceData(toEbayDetailData(catalogPrice));
+      }
+
+      const data = await getProductPriceWithFallback(trimmed, productType);
+      if (!data && catalogPrice) return;
+      setProductPriceData(toEbayDetailData(data));
+    } catch (err) {
+      console.log('Product price search error:', err);
+      setProductPriceData(null);
+    } finally {
+      setProductPriceLoading(false);
+      setSearching(false);
+    }
+  }, [lookupType]);
+
+  const runLookupSearch = useCallback(async (searchQuery: string, skipSetFilter = false) => {
+    if (isCardLookup(lookupType)) {
+      setProductPriceData(null);
+      await searchCards(searchQuery, skipSetFilter);
+    } else {
+      await searchProductPrice(searchQuery);
+    }
+  }, [lookupType, searchCards, searchProductPrice]);
+
   const handleSearchChange = useCallback((text: string) => {
     setQuery(text);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    searchTimerRef.current = setTimeout(() => { searchCards(text); }, 350);
-  }, [searchCards]);
+    if (isCardLookup(lookupType)) {
+      searchTimerRef.current = setTimeout(() => { searchCards(text); }, 350);
+    } else {
+      setProductPriceData(null);
+    }
+  }, [lookupType, searchCards]);
 
   const fetchDetailEbayData = useCallback(async (card: PokemonCard) => {
     try {
@@ -408,7 +525,15 @@ export default function MarketScreen() {
         number: card.number ?? '',
         rarity: card.rarity ?? '',
         cardId: card.id ?? '',
+        productType: 'card',
+        pricingMode: lookupType === 'graded_slab' ? 'graded' : 'raw',
       });
+      if (lookupType === 'graded_slab') {
+        params.set('gradingCompany', gradingCompany);
+        params.set('grade', grade);
+      } else {
+        params.set('condition', rawCondition);
+      }
       const printedTotal = card.set?.printedTotal ?? card.set?.total;
       if (printedTotal != null) params.set('setTotal', String(printedTotal));
 
@@ -416,21 +541,32 @@ export default function MarketScreen() {
       if (!response.ok) throw new Error('Failed to fetch eBay price');
 
       const data = await response.json();
-      setDetailEbayData({ low: data.low ?? null, average: data.average ?? null, high: data.high ?? null, count: data.count ?? null });
+      setDetailEbayData({
+        low: data.low ?? null,
+        average: data.average ?? null,
+        high: data.high ?? null,
+        count: data.count ?? null,
+        query: data.query ?? null,
+        soldDataSource: data.soldDataSource ?? null,
+      });
     } catch (err) {
       console.log('eBay detail price error:', err);
       setDetailEbayData(null);
     } finally {
       setDetailPriceLoading(false);
     }
-  }, []);
+  }, [grade, gradingCompany, lookupType, rawCondition]);
 
   const openCardDetail = useCallback(async (card: PokemonCard) => {
     translateY.setValue(0);
     setSelectedCard(card);
     setDetailVisible(true);
-    await fetchDetailEbayData(card);
-  }, [fetchDetailEbayData, translateY]);
+  }, [translateY]);
+
+  useEffect(() => {
+    if (!detailVisible || !selectedCard) return;
+    fetchDetailEbayData(selectedCard);
+  }, [detailVisible, fetchDetailEbayData, selectedCard]);
 
   const toggleWatchlist = useCallback(async (card: PokemonCard) => {
     if (!userId) return;
@@ -622,6 +758,43 @@ try {
     );
   }, [isWatching, openCardDetail, renderPriceChange, toggleWatchlist]);
 
+  const renderLookupOption = useCallback((option: { key: LookupType; label: string; icon: keyof typeof Ionicons.glyphMap }) => {
+    const active = lookupType === option.key;
+    return (
+      <TouchableOpacity
+        key={option.key}
+        onPress={() => {
+          setLookupType(option.key);
+          setSearchResults([]);
+          setProductPriceData(null);
+        }}
+        style={{
+          width: '31%',
+          minHeight: 102,
+          backgroundColor: active ? theme.colors.primary + '10' : theme.colors.card,
+          borderRadius: 14,
+          borderWidth: 1.5,
+          borderColor: active ? theme.colors.primary : theme.colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 10,
+          marginBottom: 10,
+          position: 'relative',
+        }}
+      >
+        {active && (
+          <View style={{ position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+          </View>
+        )}
+        <Ionicons name={option.icon} size={34} color={active ? theme.colors.primary : theme.colors.text} />
+        <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 11, textAlign: 'center', marginTop: 8 }} numberOfLines={2}>
+          {option.label}
+        </Text>
+      </TouchableOpacity>
+    );
+  }, [lookupType, theme.colors.border, theme.colors.card, theme.colors.primary, theme.colors.text]);
+
   // ===============================
   // MAIN RENDER
   // ===============================
@@ -642,18 +815,22 @@ try {
           />
         }
         ListHeaderComponent={
-          <View style={{ paddingHorizontal: 16, paddingTop: 22, paddingBottom: 10 }}>
-            <Text style={{ fontSize: 30, fontWeight: '900', color: theme.colors.text }}>Latest Prices</Text>
-            <Text style={{ marginTop: 6, fontSize: 14, lineHeight: 20, color: theme.colors.textSoft, marginBottom: 16 }}>
-              Search a specific card and track the latest price movement.
+          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10 }}>
+            <Text style={{ fontSize: 24, lineHeight: 29, fontWeight: '900', color: theme.colors.text }}>Latest Prices</Text>
+            <Text style={{ marginTop: 2, fontSize: 12, fontWeight: '700', lineHeight: 18, color: theme.colors.textSoft, marginBottom: 16 }}>
+              Search raw cards, graded slabs, sealed products, and accessories.
             </Text>
+
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 12 }}>
+              {LOOKUP_OPTIONS.map(renderLookupOption)}
+            </View>
 
             {/* Search + Scan row */}
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
 <TextInput
                 value={query}
                 onChangeText={handleSearchChange}
-                placeholder="Search a specific card..."
+                placeholder={getLookupSearchHint(lookupType)}
                 placeholderTextColor={theme.colors.textSoft}
                 style={{
                   flex: 1,
@@ -667,65 +844,79 @@ try {
                   fontSize: 13,
                 }}
                 returnKeyType="search"
-                onSubmitEditing={() => searchCards(query)}
+                onSubmitEditing={() => runLookupSearch(query)}
               />
 
               <TouchableOpacity
-                onPress={() => searchCards(query)}
+                onPress={() => runLookupSearch(query)}
                 style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingHorizontal: 16, justifyContent: 'center', alignItems: 'center' }}
               >
                 <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Search</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={handleScanCard}
-                disabled={scanning}
-                style={{ backgroundColor: theme.colors.card, borderRadius: 14, width: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border, opacity: scanning ? 0.6 : 1 }}
-              >
-                {scanning ? (
-                  <ActivityIndicator size="small" color={theme.colors.primary} />
-                ) : (
-                  <Ionicons name="camera-outline" size={22} color={theme.colors.text} />
-                )}
-              </TouchableOpacity>
+              {isCardLookup(lookupType) && (
+                <TouchableOpacity
+                  onPress={handleScanCard}
+                  disabled={scanning}
+                  style={{ backgroundColor: theme.colors.card, borderRadius: 14, width: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border, opacity: scanning ? 0.6 : 1 }}
+                >
+                  {scanning ? (
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                  ) : (
+                    <Ionicons name="camera-outline" size={22} color={theme.colors.text} />
+                  )}
+                </TouchableOpacity>
+              )}
             </View>
 
-            {/* Watchlist */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>Watchlist</Text>
-              {watchlistLoading && <ActivityIndicator color={theme.colors.textSoft} size="small" />}
-            </View>
-
-            {!userId ? (
-              <EmptyBox text="Sign in to use your market watchlist." />
-            ) : watchlistLoading ? (
-              <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 18, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
-                <ActivityIndicator color={theme.colors.primary} />
-              </View>
-            ) : watchlistCards.length === 0 ? (
-              <EmptyBox text="No watched cards yet. Search for a card and tap Watch." />
-            ) : (
-              <FlatList
-                data={watchlistCards}
-                keyExtractor={(item) => `watch-${item.id}`}
-                renderItem={renderWatchlistCard}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 0, paddingBottom: 4, marginBottom: 16 }}
+            {!isCardLookup(lookupType) && (
+              <ProductPricePanel
+                title={query.trim() ? buildProductQuery(query, lookupType) : LOOKUP_OPTIONS.find((option) => option.key === lookupType)?.label ?? 'Product price'}
+                data={productPriceData}
+                loading={productPriceLoading}
               />
             )}
 
-            {/* Results header */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>
-                {searchResults.length > 0 ? `Latest prices (${searchResults.length})` : 'Latest price results'}
-              </Text>
-              {searching && <ActivityIndicator color={theme.colors.textSoft} size="small" />}
-            </View>
+            {isCardLookup(lookupType) && (
+              <>
+                {/* Watchlist */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>Watchlist</Text>
+                  {watchlistLoading && <ActivityIndicator color={theme.colors.textSoft} size="small" />}
+                </View>
+
+                {!userId ? (
+                  <EmptyBox text="Sign in to use your market watchlist." />
+                ) : watchlistLoading ? (
+                  <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 18, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
+                    <ActivityIndicator color={theme.colors.primary} />
+                  </View>
+                ) : watchlistCards.length === 0 ? (
+                  <EmptyBox text="No watched cards yet. Search for a card and tap Watch." />
+                ) : (
+                  <FlatList
+                    data={watchlistCards}
+                    keyExtractor={(item) => `watch-${item.id}`}
+                    renderItem={renderWatchlistCard}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 0, paddingBottom: 4, marginBottom: 16 }}
+                  />
+                )}
+
+                {/* Results header */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>
+                    {searchResults.length > 0 ? `Latest prices (${searchResults.length})` : 'Latest price results'}
+                  </Text>
+                  {searching && <ActivityIndicator color={theme.colors.textSoft} size="small" />}
+                </View>
+              </>
+            )}
           </View>
         }
         ListEmptyComponent={
-          !searching ? (
+          !searching && isCardLookup(lookupType) ? (
             <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 18, marginHorizontal: 16, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
               <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 20 }}>
                 Search for a Pokémon card to view pricing and add it to your watchlist.
@@ -776,6 +967,67 @@ try {
                         </Text>
                       </TouchableOpacity>
 
+                      <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
+                        {(['raw_card', 'graded_slab'] as LookupType[]).map((mode) => {
+                          const active = lookupType === mode;
+                          return (
+                            <TouchableOpacity
+                              key={mode}
+                              onPress={() => setLookupType(mode)}
+                              style={{ flex: 1, borderRadius: 12, paddingVertical: 10, alignItems: 'center', backgroundColor: active ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: active ? theme.colors.primary : theme.colors.border }}
+                            >
+                              <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+                                {mode === 'raw_card' ? 'Raw' : 'Graded'}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+
+                      {lookupType === 'graded_slab' ? (
+                        <>
+                          <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12, marginTop: 14, marginBottom: 8 }}>Grading company</Text>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                            {GRADING_COMPANIES.map((company) => (
+                              <TouchableOpacity
+                                key={company}
+                                onPress={() => setGradingCompany(company)}
+                                style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: gradingCompany === company ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: gradingCompany === company ? theme.colors.primary : theme.colors.border }}
+                              >
+                                <Text style={{ color: gradingCompany === company ? '#FFFFFF' : theme.colors.text, fontWeight: '800', fontSize: 12 }}>{company}</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                          <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12, marginTop: 14, marginBottom: 8 }}>Grade</Text>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                            {GRADES.map((value) => (
+                              <TouchableOpacity
+                                key={value}
+                                onPress={() => setGrade(value)}
+                                style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: grade === value ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: grade === value ? theme.colors.primary : theme.colors.border }}
+                              >
+                                <Text style={{ color: grade === value ? '#FFFFFF' : theme.colors.text, fontWeight: '800', fontSize: 12 }}>{value}</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        </>
+                      ) : (
+                        <>
+                          <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12, marginTop: 14, marginBottom: 8 }}>Condition</Text>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                            {RAW_CONDITIONS.map((condition) => (
+                              <TouchableOpacity
+                                key={condition}
+                                onPress={() => setRawCondition(condition)}
+                                style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: rawCondition === condition ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: rawCondition === condition ? theme.colors.primary : theme.colors.border }}
+                              >
+                                <Text style={{ color: rawCondition === condition ? '#FFFFFF' : theme.colors.text, fontWeight: '800', fontSize: 12 }}>{condition}</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        </>
+                      )}
+
                       <PriceSection title="TCGPlayer (GBP est.)">
                         <PriceRow label="Low" value={getBestTcgPrice(selectedCard, 'low') != null ? `£${((getBestTcgPrice(selectedCard, 'low') ?? 0) * USD_TO_GBP).toFixed(2)}` : '--'} />
                         <PriceRow label="Mid" value={getBestTcgPrice(selectedCard, 'mid') != null ? `£${((getBestTcgPrice(selectedCard, 'mid') ?? 0) * USD_TO_GBP).toFixed(2)}` : '--'} />
@@ -791,7 +1043,9 @@ try {
 
                       <View style={{ marginTop: 12, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>eBay Latest Prices (GBP)</Text>
+                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>
+                            {lookupType === 'graded_slab' ? `${gradingCompany} ${grade} Slab Prices (GBP)` : `${rawCondition} Raw Prices (GBP)`}
+                          </Text>
                           {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
                         </View>
 
@@ -831,6 +1085,34 @@ function EmptyBox({ text }: { text: string }) {
   return (
     <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 18, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
       <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>{text}</Text>
+    </View>
+  );
+}
+
+function ProductPricePanel({ title, data, loading }: { title: string; data: EbayDetailData; loading: boolean }) {
+  const { theme } = useTheme();
+  return (
+    <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginHorizontal: 16, marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '900', flex: 1 }} numberOfLines={2}>{title}</Text>
+        {loading && <ActivityIndicator color={theme.colors.primary} size="small" />}
+      </View>
+      {loading ? (
+        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching eBay sold prices...</Text>
+      ) : data ? (
+        <>
+          <PriceRow label="Low" value={formatCurrency(data.low)} />
+          <PriceRow label="Average" value={formatCurrency(data.average)} highlight />
+          <PriceRow label="High" value={formatCurrency(data.high)} />
+          {data.count != null && (
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
+              Based on {data.count} listing{data.count !== 1 ? 's' : ''}
+            </Text>
+          )}
+        </>
+      ) : (
+        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Run a search to see recent market prices.</Text>
+      )}
     </View>
   );
 }

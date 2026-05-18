@@ -19,10 +19,14 @@ import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { fetchEbayPrice } from '../../lib/ebay';
+import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import { getProductPriceWithFallback } from '../../lib/productSearch';
+import type { ProductLookupType } from '../../lib/productSearch';
 
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 
 type Step = 'search' | 'condition' | 'photos' | 'review';
+type ListingType = 'raw_card' | 'graded_slab' | ProductLookupType;
 
 type SelectedCard = {
   id: string;
@@ -42,6 +46,28 @@ type Prices = {
   cardmarket: number | null;
   loading: boolean;
 };
+
+const LISTING_TYPES: { key: ListingType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'raw_card', label: 'Raw Card', icon: 'albums-outline' },
+  { key: 'graded_slab', label: 'Graded Slab', icon: 'id-card-outline' },
+  { key: 'sealed_product', label: 'Sealed Product', icon: 'cube-outline' },
+  { key: 'booster_pack', label: 'Booster Pack', icon: 'file-tray-full-outline' },
+  { key: 'booster_box', label: 'Booster Box', icon: 'archive-outline' },
+  { key: 'elite_trainer_box', label: 'Elite Trainer Box', icon: 'file-tray-stacked-outline' },
+  { key: 'collection_bundle', label: 'Collection Bundle', icon: 'cube-outline' },
+  { key: 'accessories', label: 'Accessories', icon: 'layers-outline' },
+];
+
+const GRADING_COMPANIES = ['PSA', 'CGC', 'BGS', 'Ace'];
+const GRADES = ['10', '9.5', '9', '8', '7'];
+
+const isCardListing = (type: ListingType) => type === 'raw_card' || type === 'graded_slab';
+
+const listingTypeLabel = (type: ListingType) =>
+  LISTING_TYPES.find((item) => item.key === type)?.label ?? 'Listing';
+
+const slugify = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 80);
 
 const CONDITIONS = [
   {
@@ -73,7 +99,7 @@ const CONDITIONS = [
 
 type SlotCorner = 'tl' | 'tr' | 'bl' | 'br' | null;
 
-const PHOTO_SLOTS: Array<{ key: string; label: string; desc: string; corner: SlotCorner; required: boolean }> = [
+const PHOTO_SLOTS: { key: string; label: string; desc: string; corner: SlotCorner; required: boolean }[] = [
   { key: 'front', label: 'Card Front', desc: 'Full front face — fill the frame, card flat on surface', corner: null, required: true },
   { key: 'back', label: 'Card Back', desc: 'Full back — same orientation, good lighting', corner: null, required: true },
   { key: 'corner_tl', label: 'Top-Left', desc: 'Close up of the top-left corner (front)', corner: 'tl', required: false },
@@ -81,10 +107,6 @@ const PHOTO_SLOTS: Array<{ key: string; label: string; desc: string; corner: Slo
   { key: 'corner_bl', label: 'Bottom-Left', desc: 'Close up of the bottom-left corner (front)', corner: 'bl', required: false },
   { key: 'corner_br', label: 'Bottom-Right', desc: 'Close up of the bottom-right corner (front)', corner: 'br', required: false },
 ];
-
-function normalise(v: string) {
-  return v.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-}
 
 export default function NewListingScreen() {
   const { theme } = useTheme();
@@ -94,6 +116,10 @@ export default function NewListingScreen() {
   const [searching, setSearching] = useState(false);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [listingType, setListingType] = useState<ListingType>('raw_card');
+  const [productName, setProductName] = useState('');
+  const [gradingCompany, setGradingCompany] = useState('PSA');
+  const [grade, setGrade] = useState('10');
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
   const [condition, setCondition] = useState('');
   const [conditionGuideVisible, setConditionGuideVisible] = useState(false);
@@ -109,6 +135,12 @@ export default function NewListingScreen() {
   const [description, setDescription] = useState('');
   const [posting, setPosting] = useState(false);
 
+  const recommendedValue = prices.ebay ?? prices.tcg ?? prices.cardmarket ?? null;
+  const parsedAskingPrice = parseFloat(askingPrice.replace(/[£,]/g, ''));
+  const isOverMarketWarning = recommendedValue != null
+    && Number.isFinite(parsedAskingPrice)
+    && parsedAskingPrice > recommendedValue * 1.2;
+
   // ===============================
   // SEARCH
   // ===============================
@@ -118,23 +150,11 @@ export default function NewListingScreen() {
     if (!trimmed) { setSearchResults([]); return; }
     setSearching(true);
     try {
-      const words = trimmed.replace(/[''ʼ]/g, "'").split(/\s+/).filter(Boolean);
-      let dbQuery = supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .limit(40);
+      const data = await searchLocalPokemonCards<any>(trimmed, {
+        limit: 60,
+        select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
+      });
 
-      for (const word of words) {
-        if (!word.includes("'") && /[a-z]s$/i.test(word)) {
-          const wildcardForm = `${word.slice(0, -1)}_s`;
-          dbQuery = dbQuery.or(`name.ilike.%${word}%,name.ilike.%${wildcardForm}%`);
-        } else {
-          dbQuery = dbQuery.ilike('name', `%${word}%`);
-        }
-      }
-
-      const { data, error } = await dbQuery;
-      if (error) throw error;
       setSearchResults(
         (data ?? []).map((c: any) => ({
           id: c.id,
@@ -158,13 +178,37 @@ export default function NewListingScreen() {
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => searchCards(text), 350);
+    if (isCardListing(listingType)) {
+      searchTimer.current = setTimeout(() => searchCards(text), 350);
+    }
+  };
+
+  const handleListingTypeChange = (type: ListingType) => {
+    setListingType(type);
+    setSelectedCard(null);
+    setSearchResults([]);
+    setSearchQuery('');
+    setProductName('');
+    setCondition('');
+    setAskingPrice('');
+    setPrices({ ebay: null, tcg: null, cardmarket: null, loading: false });
   };
 
   const selectCard = (card: SelectedCard) => {
     setSelectedCard(card);
     setStep('condition');
     fetchPrices(card);
+  };
+
+  const selectProduct = async () => {
+    const trimmed = productName.trim() || searchQuery.trim();
+    if (!trimmed) {
+      Alert.alert('Product required', 'Enter the sealed product you want to list.');
+      return;
+    }
+    setProductName(trimmed);
+    setStep('condition');
+    await fetchProductPrices(trimmed);
   };
 
   // ===============================
@@ -176,16 +220,38 @@ export default function NewListingScreen() {
     try {
       const rawSetName = card.set_name ?? '';
       const setName = (rawSetName && rawSetName !== card.set_id) ? rawSetName : '';
-      const [ebayResult] = await Promise.allSettled([
-        fetchEbayPrice({
+      const fetchCardEbayPrice = async () => {
+        if (listingType === 'raw_card') {
+          return fetchEbayPrice({
+            cardId: card.id,
+            name: card.name,
+            setName,
+            number: card.number ?? '',
+            setTotal: card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? null,
+            rarity: card.rarity ?? '',
+          });
+        }
+
+        if (!PRICE_API_URL) throw new Error('Missing price API URL');
+        const params = new URLSearchParams({
           cardId: card.id,
           name: card.name,
           setName,
           number: card.number ?? '',
-          setTotal: card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? null,
           rarity: card.rarity ?? '',
-        }),
-      ]);
+          productType: 'card',
+          pricingMode: 'graded',
+          gradingCompany,
+          grade,
+        });
+        const setTotal = card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? null;
+        if (setTotal != null) params.set('setTotal', String(setTotal));
+        const response = await fetch(`${PRICE_API_URL.replace(/\/$/, '')}/api/price/ebay?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch graded price');
+        return response.json();
+      };
+
+      const [ebayResult] = await Promise.allSettled([fetchCardEbayPrice()]);
 
       const tcgPrices = card.raw_data?.tcgplayer?.prices;
       let tcg: number | null = null;
@@ -206,6 +272,28 @@ export default function NewListingScreen() {
       setPrices({ ebay: null, tcg: null, cardmarket: null, loading: false });
     }
   };
+
+  const fetchProductPrices = async (name: string) => {
+    setPrices({ ebay: null, tcg: null, cardmarket: null, loading: true });
+    try {
+      const data = await getProductPriceWithFallback(name, listingType as ProductLookupType);
+      setPrices({
+        ebay: data?.average ?? null,
+        tcg: null,
+        cardmarket: null,
+        loading: false,
+      });
+    } catch {
+      setPrices({ ebay: null, tcg: null, cardmarket: null, loading: false });
+    }
+  };
+
+  useEffect(() => {
+    if (listingType === 'graded_slab' && selectedCard) {
+      fetchPrices(selectedCard);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grade, gradingCompany]);
 
   // ===============================
   // PHOTOS
@@ -262,8 +350,9 @@ export default function NewListingScreen() {
   // ===============================
 
   const postListing = async () => {
-    if (!selectedCard) return;
-    const price = parseFloat(askingPrice.replace(/[£,]/g, ''));
+    if (isCardListing(listingType) && !selectedCard) return;
+    if (!isCardListing(listingType) && !productName.trim()) return;
+    const price = parseFloat(askingPrice.replace(/[^0-9.]/g, ''));
     if (!price || isNaN(price) || price <= 0) {
       Alert.alert('Price required', 'Please enter a valid asking price.');
       return;
@@ -275,6 +364,22 @@ export default function NewListingScreen() {
       return;
     }
 
+    if (isOverMarketWarning) {
+      Alert.alert(
+        'This is >20% market value',
+        'This listing will be flagged for admin review to help keep trades fair.',
+        [
+          { text: 'Edit price', style: 'cancel' },
+          { text: 'Post anyway', onPress: () => postListingConfirmed(price) },
+        ]
+      );
+      return;
+    }
+
+    postListingConfirmed(price);
+  };
+
+  const postListingConfirmed = async (price: number) => {
     setPosting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -284,13 +389,31 @@ export default function NewListingScreen() {
       const photoUrls = Object.keys(photos).length > 0 ? await uploadPhotos(user.id) : [];
       setUploading(false);
 
+      const resolvedName = isCardListing(listingType)
+        ? selectedCard?.name ?? ''
+        : productName.trim();
+      const cardId = isCardListing(listingType)
+        ? selectedCard!.id
+        : `product:${listingType}:${slugify(resolvedName) || Date.now()}`;
+      const setId = isCardListing(listingType) ? selectedCard!.set_id : null;
+      const marketEstimate = recommendedValue ?? null;
+      const reviewRequired = marketEstimate != null && price > marketEstimate * 1.2;
+
       const { error } = await supabase.from('user_card_flags').insert({
         user_id: user.id,
-        card_id: selectedCard.id,
-        set_id: selectedCard.set_id,
+        card_id: cardId,
+        set_id: setId,
         flag_type: 'trade',
-        condition,
+        condition: listingType === 'raw_card' ? condition : listingType === 'graded_slab' ? `${gradingCompany} ${grade}` : 'Sealed',
         asking_price: price,
+        market_estimate: marketEstimate,
+        product_type: listingType,
+        product_name: resolvedName,
+        pricing_mode: listingType === 'graded_slab' ? 'graded' : listingType === 'raw_card' ? 'raw' : 'sealed',
+        grade_company: listingType === 'graded_slab' ? gradingCompany : null,
+        grade: listingType === 'graded_slab' ? grade : null,
+        admin_review_required: reviewRequired,
+        admin_review_reason: reviewRequired ? 'This is >20% market value' : null,
         listing_notes: description.trim() || null,
         listing_images: photoUrls,
         listing_status: 'active',
@@ -298,7 +421,7 @@ export default function NewListingScreen() {
 
       if (error) throw error;
 
-      Alert.alert('Listed!', 'Your card is now on the marketplace.', [
+      Alert.alert('Listed!', reviewRequired ? 'Your listing is live and flagged for admin review.' : 'Your listing is now live in Trades.', [
         { text: 'OK', onPress: () => router.replace('/trade' as any) },
       ]);
     } catch (err: any) {
@@ -313,31 +436,99 @@ export default function NewListingScreen() {
   // RENDER STEPS
   // ===============================
 
+  const renderListingTypeOption = (item: { key: ListingType; label: string; icon: keyof typeof Ionicons.glyphMap }) => {
+    const active = listingType === item.key;
+    return (
+      <TouchableOpacity
+        key={item.key}
+        onPress={() => handleListingTypeChange(item.key)}
+        activeOpacity={0.85}
+        style={{
+          width: '31%',
+          minHeight: 102,
+          backgroundColor: active ? theme.colors.primary + '10' : theme.colors.card,
+          borderRadius: 14,
+          borderWidth: 1.5,
+          borderColor: active ? theme.colors.primary : theme.colors.border,
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 10,
+          marginBottom: 10,
+          position: 'relative',
+        }}
+      >
+        {active && (
+          <View style={{ position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+          </View>
+        )}
+        <Ionicons name={item.icon} size={34} color={active ? theme.colors.primary : theme.colors.text} />
+        <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 11, textAlign: 'center', marginTop: 8 }} numberOfLines={2}>
+          {item.label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
   const renderSearch = () => (
     <View style={{ flex: 1 }}>
-      <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
-        <TextInput
-          value={searchQuery}
-          onChangeText={handleSearchChange}
-          placeholder="Search by name or set..."
-          placeholderTextColor={theme.colors.textSoft}
-          autoFocus
-          style={{
-            backgroundColor: theme.colors.card,
-            color: theme.colors.text,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            borderRadius: 14,
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-            fontSize: 15,
-          }}
-        />
-        {searching && <ActivityIndicator style={{ marginTop: 8 }} color={theme.colors.primary} />}
+      <View style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 10 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+          {LISTING_TYPES.map(renderListingTypeOption)}
+        </View>
+
+        {isCardListing(listingType) ? (
+          <>
+            <TextInput
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              placeholder={listingType === 'graded_slab' ? 'Search the card inside the slab...' : 'Search by name or set...'}
+              placeholderTextColor={theme.colors.textSoft}
+              autoFocus
+              style={{
+                backgroundColor: theme.colors.card,
+                color: theme.colors.text,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: 14,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                fontSize: 15,
+              }}
+            />
+            {searching && <ActivityIndicator style={{ marginTop: 8 }} color={theme.colors.primary} />}
+          </>
+        ) : (
+          <>
+            <TextInput
+              value={productName}
+              onChangeText={setProductName}
+              placeholder={`Enter ${listingTypeLabel(listingType).toLowerCase()} name...`}
+              placeholderTextColor={theme.colors.textSoft}
+              autoFocus
+              style={{
+                backgroundColor: theme.colors.card,
+                color: theme.colors.text,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: 14,
+                paddingHorizontal: 14,
+                paddingVertical: 12,
+                fontSize: 15,
+              }}
+            />
+            <TouchableOpacity
+              onPress={selectProduct}
+              style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 13, alignItems: 'center' }}
+            >
+              <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Continue</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}>
-        {searchResults.map(card => (
+        {isCardListing(listingType) && searchResults.map(card => (
           <TouchableOpacity
             key={card.id}
             onPress={() => selectCard(card)}
@@ -367,7 +558,7 @@ export default function NewListingScreen() {
             </View>
           </TouchableOpacity>
         ))}
-        {!searching && searchQuery.trim().length > 0 && searchResults.length === 0 && (
+        {isCardListing(listingType) && !searching && searchQuery.trim().length > 0 && searchResults.length === 0 && (
           <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 24 }}>No cards found</Text>
         )}
       </ScrollView>
@@ -378,57 +569,88 @@ export default function NewListingScreen() {
     <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 8 }}>
       {/* Card preview */}
-      {selectedCard && (
+      {(selectedCard || productName.trim()) && (
         <View style={{
           flexDirection: 'row', alignItems: 'center', gap: 12,
           backgroundColor: theme.colors.card, borderRadius: 14, padding: 12,
           borderWidth: 1, borderColor: theme.colors.border, marginBottom: 20,
         }}>
-          {selectedCard.image_small && (
+          {selectedCard?.image_small ? (
             <Image source={{ uri: selectedCard.image_small }} style={{ width: 54, height: 75, borderRadius: 8 }} resizeMode="contain" />
+          ) : (
+            <View style={{ width: 54, height: 75, borderRadius: 8, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name={LISTING_TYPES.find((item) => item.key === listingType)?.icon ?? 'cube-outline'} size={24} color={theme.colors.textSoft} />
+            </View>
           )}
           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>{selectedCard.name}</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>{selectedCard.set_name}</Text>
-            {selectedCard.number && <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>#{selectedCard.number}</Text>}
+            <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>{selectedCard?.name ?? productName.trim()}</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+              {selectedCard?.set_name ?? listingTypeLabel(listingType)}
+            </Text>
+            {selectedCard?.number && <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>#{selectedCard.number}</Text>}
           </View>
         </View>
       )}
 
-      {/* Condition */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>Condition <Text style={{ color: '#EF4444', fontSize: 14 }}>*</Text></Text>
-        <TouchableOpacity
-          onPress={() => setConditionGuideVisible(true)}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: theme.colors.surface, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: theme.colors.border }}
-        >
-          <Ionicons name="help-circle-outline" size={15} color={theme.colors.primary} />
-          <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '800' }}>Grading guide</Text>
-        </TouchableOpacity>
-      </View>
-      {condition === '' && (
-        <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginBottom: 8, fontWeight: '700' }}>Select a condition to continue</Text>
+      {listingType === 'raw_card' && (
+        <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>Condition <Text style={{ color: '#EF4444', fontSize: 14 }}>*</Text></Text>
+            <TouchableOpacity
+              onPress={() => setConditionGuideVisible(true)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: theme.colors.surface, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5, borderWidth: 1, borderColor: theme.colors.border }}
+            >
+              <Ionicons name="help-circle-outline" size={15} color={theme.colors.primary} />
+              <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '800' }}>Grading guide</Text>
+            </TouchableOpacity>
+          </View>
+          {condition === '' && (
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginBottom: 8, fontWeight: '700' }}>Select a condition to continue</Text>
+          )}
+          {CONDITIONS.map(c => (
+            <TouchableOpacity
+              key={c.key}
+              onPress={() => setCondition(c.key)}
+              style={{
+                flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+                backgroundColor: condition === c.key ? c.color + '18' : theme.colors.card,
+                borderRadius: 12, padding: 12, marginBottom: 8,
+                borderWidth: 2, borderColor: condition === c.key ? c.color : theme.colors.border,
+              }}
+            >
+              <View style={{ flex: 1, marginRight: 10 }}>
+                <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 14 }}>{c.label}</Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 1 }}>{c.desc}</Text>
+              </View>
+              <View style={{ backgroundColor: condition === c.key ? c.color : theme.colors.surface, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: condition === c.key ? c.color : theme.colors.border }}>
+                <Text style={{ color: condition === c.key ? '#fff' : theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>{c.short}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </>
       )}
-      {CONDITIONS.map(c => (
-        <TouchableOpacity
-          key={c.key}
-          onPress={() => setCondition(c.key)}
-          style={{
-            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-            backgroundColor: condition === c.key ? c.color + '18' : theme.colors.card,
-            borderRadius: 12, padding: 12, marginBottom: 8,
-            borderWidth: 2, borderColor: condition === c.key ? c.color : theme.colors.border,
-          }}
-        >
-          <View style={{ flex: 1, marginRight: 10 }}>
-            <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 14 }}>{c.label}</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 1 }}>{c.desc}</Text>
+
+      {listingType === 'graded_slab' && (
+        <View style={{ backgroundColor: theme.colors.card, borderRadius: 14, padding: 12, borderWidth: 1, borderColor: theme.colors.border, marginBottom: 12 }}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginBottom: 10 }}>Slab details</Text>
+          <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12, marginBottom: 8 }}>Company</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+            {GRADING_COMPANIES.map((company) => (
+              <TouchableOpacity key={company} onPress={() => setGradingCompany(company)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: gradingCompany === company ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: gradingCompany === company ? theme.colors.primary : theme.colors.border }}>
+                <Text style={{ color: gradingCompany === company ? '#fff' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{company}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
-          <View style={{ backgroundColor: condition === c.key ? c.color : theme.colors.surface, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: condition === c.key ? c.color : theme.colors.border }}>
-            <Text style={{ color: condition === c.key ? '#fff' : theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>{c.short}</Text>
+          <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12, marginBottom: 8 }}>Grade</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {GRADES.map((value) => (
+              <TouchableOpacity key={value} onPress={() => setGrade(value)} style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: grade === value ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: grade === value ? theme.colors.primary : theme.colors.border }}>
+                <Text style={{ color: grade === value ? '#fff' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{value}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
-        </TouchableOpacity>
-      ))}
+        </View>
+      )}
 
       {/* Suggested prices */}
       <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginTop: 12, marginBottom: 8 }}>Suggested Prices</Text>
@@ -444,14 +666,22 @@ export default function NewListingScreen() {
         ) : (
           <>
             <PriceRow label="eBay Sold Avg" value={prices.ebay} />
-            <PriceRow label="TCGPlayer Market" value={prices.tcg} />
-            <PriceRow label="Cardmarket Trend" value={prices.cardmarket} />
+            {isCardListing(listingType) && <PriceRow label="TCGPlayer Market" value={prices.tcg} />}
+            {isCardListing(listingType) && <PriceRow label="Cardmarket Trend" value={prices.cardmarket} />}
+            {recommendedValue != null && (
+              <TouchableOpacity
+                onPress={() => setAskingPrice(recommendedValue.toFixed(2))}
+                style={{ marginTop: 8, backgroundColor: theme.colors.surface, borderRadius: 10, paddingVertical: 9, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
+              >
+                <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12 }}>Use recommended £{recommendedValue.toFixed(2)}</Text>
+              </TouchableOpacity>
+            )}
           </>
         )}
       </View>
 
       {/* Asking price */}
-      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginBottom: 6 }}>Your Asking Price</Text>
+      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginBottom: 6 }}>Your Trade Value</Text>
       <View style={{
         flexDirection: 'row', alignItems: 'center',
         backgroundColor: theme.colors.card, borderRadius: 14,
@@ -468,12 +698,18 @@ export default function NewListingScreen() {
           style={{ flex: 1, color: theme.colors.text, fontSize: 18, fontWeight: '700', paddingVertical: 14 }}
         />
       </View>
+      {isOverMarketWarning && (
+        <View style={{ backgroundColor: '#FEF3C7', borderRadius: 12, padding: 10, borderWidth: 1, borderColor: '#F59E0B', marginTop: 8 }}>
+          <Text style={{ color: '#92400E', fontWeight: '900', fontSize: 12 }}>This is &gt;20% market value</Text>
+          <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>Admin can review this listing to keep Trades fair.</Text>
+        </View>
+      )}
 
     </ScrollView>
     <View style={{ padding: 16, paddingTop: 8, paddingBottom: 90 }}>
       <TouchableOpacity
-        onPress={() => { if (!condition) { Alert.alert('Condition required', 'Please select a condition before continuing.'); return; } if (!askingPrice.trim()) { Alert.alert('Price required', 'Enter an asking price to continue.'); return; } setSlotIndex(0); setStep('photos'); }}
-        style={{ backgroundColor: condition ? theme.colors.primary : theme.colors.border, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
+        onPress={() => { if (listingType === 'raw_card' && !condition) { Alert.alert('Condition required', 'Please select a condition before continuing.'); return; } if (!askingPrice.trim()) { Alert.alert('Price required', 'Enter a trade value to continue.'); return; } setSlotIndex(0); setStep('photos'); }}
+        style={{ backgroundColor: listingType !== 'raw_card' || condition ? theme.colors.primary : theme.colors.border, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
       >
         <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Next → Add Photos</Text>
       </TouchableOpacity>
@@ -643,10 +879,13 @@ export default function NewListingScreen() {
           borderWidth: 1, borderColor: theme.colors.border, marginBottom: 16,
         }}>
           <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15, marginBottom: 10 }}>Listing Summary</Text>
-          <Row label="Card" value={selectedCard?.name ?? ''} />
-          <Row label="Set" value={selectedCard?.set_name ?? selectedCard?.set_id ?? ''} />
-          <Row label="Condition" value={condition} />
-          <Row label="Asking Price" value={`£${parseFloat(askingPrice || '0').toFixed(2)}`} highlight />
+          <Row label="Type" value={listingTypeLabel(listingType)} />
+          <Row label={isCardListing(listingType) ? 'Card' : 'Product'} value={selectedCard?.name ?? productName.trim()} />
+          {selectedCard && <Row label="Set" value={selectedCard.set_name ?? selectedCard.set_id ?? ''} />}
+          <Row label={listingType === 'graded_slab' ? 'Slab' : listingType === 'raw_card' ? 'Condition' : 'State'} value={listingType === 'graded_slab' ? `${gradingCompany} ${grade}` : listingType === 'raw_card' ? condition : 'Sealed'} />
+          {recommendedValue != null && <Row label="Recommended" value={`£${recommendedValue.toFixed(2)}`} />}
+          <Row label="Trade Value" value={`£${parseFloat(askingPrice || '0').toFixed(2)}`} highlight />
+          {isOverMarketWarning && <Row label="Admin Review" value="This is >20% market value" />}
           <Row label="Photos" value={`${Object.keys(photos).length} of ${PHOTO_SLOTS.length}`} />
         </View>
 
@@ -706,8 +945,8 @@ export default function NewListingScreen() {
   );
 
   const STEP_LABELS: Record<Step, string> = {
-    search: 'Find Your Card',
-    condition: 'Condition & Price',
+    search: 'Choose Listing',
+    condition: 'Details & Value',
     photos: 'Photos',
     review: 'Review & Post',
   };

@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -29,12 +29,12 @@ import {
   TradeOfferCard,
   TradeCashTerms,
 } from '../../lib/tradeOffers';
+import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { getPriceFromPokemonCard } from '../../lib/pricing';
 
 // ===============================
 // CONSTANTS
 // ===============================
-
-import { PRICE_API_URL } from '../../lib/config';
 
 // ===============================
 // TYPES
@@ -45,7 +45,16 @@ type CardPreview = {
   name: string | null;
   image_url: string | null;
   set_name: string | null;
+  estimated_value?: number | null;
 };
+
+const money = (value: number | null | undefined) =>
+  typeof value === 'number' && Number.isFinite(value)
+    ? `£${value.toFixed(2)}`
+    : '--';
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
 
 // ===============================
 // HELPERS
@@ -66,17 +75,17 @@ const getEventLabel = (eventType: string): string => {
   const labels: Record<string, string> = {
     offer_created: 'Offer created',
     counter_offer: 'Counter offer',
-    pending: '⏳ Offer pending',
-    accepted: '✅ Offer accepted',
-    declined: '❌ Offer declined',
-    cancelled: '🚫 Offer cancelled',
-    sent: '📦 Cards sent',
-    received: '📬 Cards received',
-    completed: '🎉 Trade completed',
-    disputed: '⚠️ Dispute raised',
-    payment_required: '💳 Payment required',
-    payment_sent: '💸 Payment sent',
-    payment_confirmed: '✅ Payment confirmed',
+    pending: 'Offer pending',
+    accepted: 'Offer accepted',
+    declined: 'Offer declined',
+    cancelled: 'Offer cancelled',
+    sent: 'Cards sent',
+    received: 'Cards received',
+    completed: 'Trade completed',
+    disputed: 'Dispute raised',
+    payment_required: 'Payment required',
+    payment_sent: 'Payment sent',
+    payment_confirmed: 'Payment confirmed',
   };
   return labels[eventType] ?? 'Update';
 };
@@ -153,6 +162,47 @@ export default function OfferDetailScreen() {
   const theyHaveSent = isSender ? offer?.receiver_sent : offer?.sender_sent;
   const iHaveReceived = isSender ? offer?.sender_received : offer?.receiver_received;
   const theyHaveReceived = isSender ? offer?.receiver_received : offer?.sender_received;
+  const cashAmount = Number(cashTerms?.amount ?? 0);
+  const myCardsValue = useMemo(
+    () => mySentCards.reduce((total, card) => {
+      const quantity = Number(card.quantity ?? 1) || 1;
+      return total + (cardPreviews[card.card_id]?.estimated_value ?? 0) * quantity;
+    }, 0),
+    [cardPreviews, mySentCards]
+  );
+  const theirCardsValue = useMemo(
+    () => theirSentCards.reduce((total, card) => {
+      const quantity = Number(card.quantity ?? 1) || 1;
+      return total + (cardPreviews[card.card_id]?.estimated_value ?? 0) * quantity;
+    }, 0),
+    [cardPreviews, theirSentCards]
+  );
+  const mySideValue = myCardsValue + (cashTerms?.payer_id === currentUserId ? cashAmount : 0);
+  const theirSideValue = theirCardsValue + (cashTerms && cashTerms.payer_id !== currentUserId ? cashAmount : 0);
+  const tradeValueDifference = mySideValue - theirSideValue;
+  const absoluteTradeDifference = Math.abs(tradeValueDifference);
+  const comparisonBase = Math.max(mySideValue, theirSideValue, 1);
+  const tradeDifferencePercent = Math.min(100, (absoluteTradeDifference / comparisonBase) * 100);
+  const tradeFairnessState =
+    absoluteTradeDifference < 2 || tradeDifferencePercent <= 8
+      ? 'balanced'
+      : tradeValueDifference > 0
+        ? 'your-heavy'
+        : 'their-heavy';
+  const fairnessMarkerPercent = clamp(50 - (tradeValueDifference / comparisonBase) * 44, 6, 94);
+  const fairnessStatus =
+    tradeFairnessState === 'balanced'
+      ? 'Balanced'
+      : tradeFairnessState === 'your-heavy'
+        ? 'Your side is heavier'
+        : 'Their side is heavier';
+  const fairnessCopy =
+    tradeFairnessState === 'balanced'
+      ? 'Both sides are close enough to feel fair.'
+      : tradeFairnessState === 'your-heavy'
+        ? `You are sending about ${money(absoluteTradeDifference)} more.`
+        : `They are sending about ${money(absoluteTradeDifference)} more.`;
+  const fairnessColor = tradeFairnessState === 'balanced' ? theme.colors.primary : '#F59E0B';
 
   // ===============================
   // LOAD
@@ -191,7 +241,7 @@ export default function OfferDetailScreen() {
             .eq('id', offerData.receiver_id)
             .maybeSingle();
           const name = receiverProfile?.collector_name ?? 'them';
-          showToast(`Offer sent to ${name} ✓`);
+          showToast(`Offer sent to ${name}`);
         }
 
         const allCardIds = Array.from(new Set(
@@ -223,9 +273,27 @@ export default function OfferDetailScreen() {
                 name: pc.name ?? null,
                 image_url: pc.image_small ?? null,
                 set_name: pc.raw_data?.set?.name ?? null,
+                estimated_value: getPriceFromPokemonCard(pc.raw_data) != null
+                  ? Number(getPriceFromPokemonCard(pc.raw_data)) * USD_TO_GBP
+                  : null,
               };
             });
           }
+
+          const { data: priceCards } = await supabase
+            .from('pokemon_cards')
+            .select('id, raw_data')
+            .in('id', allCardIds);
+
+          (priceCards ?? []).forEach((pc: any) => {
+            const usdPrice = getPriceFromPokemonCard(pc.raw_data);
+            if (usdPrice != null && previewMap[pc.id]) {
+              previewMap[pc.id] = {
+                ...previewMap[pc.id],
+                estimated_value: Number(usdPrice) * USD_TO_GBP,
+              };
+            }
+          });
 
           setCardPreviews(previewMap);
         }
@@ -392,6 +460,31 @@ export default function OfferDetailScreen() {
               await load();
             } catch (error: any) {
               Alert.alert('Error', error?.message ?? 'Could not decline.');
+            } finally {
+              setSending(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleWithdrawOffer = async () => {
+    Alert.alert(
+      'Withdraw offer',
+      'Are you sure you want to withdraw this offer?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Withdraw',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setSending(true);
+              await updateTradeOfferStatus(offerId, 'cancelled', 'Offer withdrawn.');
+              router.replace('/offers');
+            } catch (error: any) {
+              Alert.alert('Error', error?.message ?? 'Could not withdraw.');
             } finally {
               setSending(false);
             }
@@ -625,7 +718,7 @@ export default function OfferDetailScreen() {
           {item.proposed_cash_amount != null && (
             <View style={[styles.cashPill, !mine && styles.cashPillOther]}>
               <Text style={[styles.cashPillText, !mine && styles.cashPillTextOther]}>
-                💰 Cash: £{Number(item.proposed_cash_amount).toFixed(2)}
+                Cash: £{Number(item.proposed_cash_amount).toFixed(2)}
               </Text>
             </View>
           )}
@@ -679,6 +772,7 @@ export default function OfferDetailScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
+            <Image source={require('../../assets/images/hub.png')} style={styles.headerLogo} resizeMode="contain" />
             <Text style={styles.title}>Negotiation</Text>
             <Text style={styles.subtitle}>Private trade discussion</Text>
           </View>
@@ -764,24 +858,62 @@ export default function OfferDetailScreen() {
 
               <View style={styles.valueComparisonCard}>
                 <Text style={styles.valueComparisonTitle}>Total Value Comparison</Text>
+                <View style={styles.valueComparisonGrid}>
+                  <View style={[styles.valueComparisonCell, tradeFairnessState === 'your-heavy' && styles.valueComparisonCellWarn]}>
+                    <Text style={styles.valueComparisonLabel}>You send</Text>
+                    <Text style={styles.valueComparisonAmount}>{money(mySideValue)}</Text>
+                  </View>
+                  <View style={[styles.valueComparisonCell, tradeFairnessState === 'their-heavy' && styles.valueComparisonCellWarn]}>
+                    <Text style={styles.valueComparisonLabel}>You receive</Text>
+                    <Text style={styles.valueComparisonAmount}>{money(theirSideValue)}</Text>
+                  </View>
+                  <View style={styles.valueComparisonCell}>
+                    <Text style={styles.valueComparisonLabel}>Difference</Text>
+                    <Text style={styles.valueComparisonAmount}>{money(absoluteTradeDifference)}</Text>
+                  </View>
+                </View>
                 <View style={styles.fairnessBar}>
                   <View style={styles.fairnessLeft} />
                   <View style={styles.fairnessRight} />
-                  <View style={styles.fairnessKnob} />
+                  <View
+                    style={[
+                      styles.fairnessKnob,
+                      { left: `${fairnessMarkerPercent}%`, borderColor: fairnessColor },
+                    ]}
+                  />
                 </View>
-                <Text style={styles.fairnessStatus}>Balanced</Text>
-                <Text style={styles.fairnessCopy}>
-                  This highlights whether one side looks heavier. You can still proceed if both collectors agree.
+                <Text style={[styles.fairnessStatus, tradeFairnessState !== 'balanced' && styles.fairnessStatusWarn]}>
+                  {fairnessStatus}
                 </Text>
+                <Text style={styles.fairnessCopy}>{fairnessCopy}</Text>
               </View>
 
               {isReceiver && isPending && (
+                <View style={styles.reviewActionRow}>
+                  <TouchableOpacity
+                    onPress={handleAcceptOffer}
+                    disabled={sending}
+                    style={[styles.primaryWideButton, styles.reviewActionButton, sending && styles.disabled]}
+                  >
+                    <Text style={styles.primaryWideButtonText}>Accept Trade</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleDeclineOffer}
+                    disabled={sending}
+                    style={[styles.secondaryWideButton, styles.reviewActionButton, sending && styles.disabled]}
+                  >
+                    <Text style={styles.secondaryWideButtonText}>Decline</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {isSender && isPending && (
                 <TouchableOpacity
-                  onPress={handleAcceptOffer}
+                  onPress={handleWithdrawOffer}
                   disabled={sending}
-                  style={[styles.primaryWideButton, sending && styles.disabled]}
+                  style={[styles.secondaryWideButton, sending && styles.disabled]}
                 >
-                  <Text style={styles.primaryWideButtonText}>Accept Trade</Text>
+                  <Text style={styles.secondaryWideButtonText}>Withdraw Offer</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -820,7 +952,7 @@ export default function OfferDetailScreen() {
                   borderColor: '#FDE68A',
                 }}>
                   <Text style={{ color: '#92400E', fontWeight: '800', fontSize: 13 }}>
-                    💰 £{Number(cashTerms.amount).toFixed(2)} cash —{' '}
+                    £{Number(cashTerms.amount).toFixed(2)} cash -{' '}
                     {cashTerms.payer_id === currentUserId ? 'you pay' : 'they pay'}
                   </Text>
                   <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
@@ -834,86 +966,6 @@ export default function OfferDetailScreen() {
                 </View>
               )}
 
-              {isReceiver && isPending && (
-                <View style={{ flexDirection: 'row', gap: 8, marginTop: 14 }}>
-                  <TouchableOpacity
-                    onPress={handleAcceptOffer}
-                    disabled={sending}
-                    style={[{
-                      flex: 1,
-                      backgroundColor: '#10B981',
-                      borderRadius: 12,
-                      paddingVertical: 12,
-                      alignItems: 'center',
-                    }, sending && styles.disabled]}
-                  >
-                    <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 14 }}>
-                      ✓ Accept Offer
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    onPress={handleDeclineOffer}
-                    disabled={sending}
-                    style={[{
-                      flex: 1,
-                      backgroundColor: '#FEE2E2',
-                      borderRadius: 12,
-                      paddingVertical: 12,
-                      alignItems: 'center',
-                      borderWidth: 1,
-                      borderColor: '#FCA5A5',
-                    }, sending && styles.disabled]}
-                  >
-                    <Text style={{ color: '#991B1B', fontWeight: '900', fontSize: 14 }}>
-                      ✕ Decline
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-
-              {isSender && isPending && (
-                <TouchableOpacity
-                  onPress={() => {
-                    Alert.alert(
-                      'Withdraw offer',
-                      'Are you sure you want to withdraw this offer?',
-                      [
-                        { text: 'Cancel', style: 'cancel' },
-                        {
-                          text: 'Withdraw',
-                          style: 'destructive',
-                          onPress: async () => {
-                            try {
-                              setSending(true);
-                              await updateTradeOfferStatus(offerId, 'cancelled', 'Offer withdrawn.');
-                              router.replace('/offers');
-                            } catch (e: any) {
-                              Alert.alert('Error', e?.message ?? 'Could not withdraw.');
-                            } finally {
-                              setSending(false);
-                            }
-                          },
-                        },
-                      ]
-                    );
-                  }}
-                  disabled={sending}
-                  style={[{
-                    backgroundColor: theme.colors.surface,
-                    borderRadius: 12,
-                    paddingVertical: 12,
-                    alignItems: 'center',
-                    marginTop: 14,
-                    borderWidth: 1,
-                    borderColor: theme.colors.border,
-                  }, sending && styles.disabled]}
-                >
-                  <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 13 }}>
-                    Withdraw Offer
-                  </Text>
-                </TouchableOpacity>
-              )}
             </View>
           )}
 
@@ -922,7 +974,7 @@ export default function OfferDetailScreen() {
             <View style={styles.card}>
               <View style={styles.progressHeader}>
                 <View style={styles.progressShield}>
-                  <Text style={styles.progressShieldText}>✓</Text>
+                  <Text style={styles.progressShieldText}>OK</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.progressTitle}>Trade Progress</Text>
@@ -933,31 +985,22 @@ export default function OfferDetailScreen() {
               </View>
 
               <View style={styles.progressTimeline}>
-                <ProgressStep label="Offer accepted" done={true} icon="🤝" />
-                <ProgressStep label="Condition verifier" done={isAcceptedOrBeyond} icon="🛡" />
-                <ProgressStep label="Confirmed" done={isAcceptedOrBeyond} icon="✓" />
+                <ProgressStep label="Offer accepted" done={true} />
+                <ProgressStep label="Condition check" done={isAcceptedOrBeyond} />
+                <ProgressStep label="Both sides confirmed" done={isAcceptedOrBeyond} />
                 <ProgressStep
-                  label="Label printed"
-                  done={isSentOrBeyond}
-                  partial={!isSentOrBeyond && !!iHaveSent}
-                  partialLabel="In progress"
-                  icon="🖨"
-                />
-                <ProgressStep
-                  label="Despatched"
+                  label="Cards sent"
                   done={isSentOrBeyond}
                   partial={!isSentOrBeyond && !!iHaveSent}
                   partialLabel="Waiting for other side"
-                  icon="📦"
                 />
                 <ProgressStep
-                  label="Arrived"
+                  label="Cards received"
                   done={isReceivedOrBeyond}
                   partial={!isReceivedOrBeyond && !!iHaveReceived}
                   partialLabel="Waiting for confirmation"
-                  icon="📬"
                 />
-                <ProgressStep label="Accepted" done={isCompleted} icon="♡" />
+                <ProgressStep label="Trade completed" done={isCompleted} />
               </View>
 
               {isAccepted && (
@@ -974,10 +1017,10 @@ export default function OfferDetailScreen() {
                     SENT STATUS
                   </Text>
                   <Text style={{ color: iHaveSent ? '#10B981' : theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                    {iHaveSent ? '✅' : '⬜'} You — {iHaveSent ? 'sent' : 'not sent yet'}
+                    {iHaveSent ? 'OK' : '-'} You - {iHaveSent ? 'sent' : 'not sent yet'}
                   </Text>
                   <Text style={{ color: theyHaveSent ? '#10B981' : theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                    {theyHaveSent ? '✅' : '⬜'} Them — {theyHaveSent ? 'sent' : 'not sent yet'}
+                    {theyHaveSent ? 'OK' : '-'} Them - {theyHaveSent ? 'sent' : 'not sent yet'}
                   </Text>
                 </View>
               )}
@@ -996,10 +1039,10 @@ export default function OfferDetailScreen() {
                     RECEIVED STATUS
                   </Text>
                   <Text style={{ color: iHaveReceived ? '#10B981' : theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                    {iHaveReceived ? '✅' : '⬜'} You — {iHaveReceived ? 'received' : 'not received yet'}
+                    {iHaveReceived ? 'OK' : '-'} You - {iHaveReceived ? 'received' : 'not received yet'}
                   </Text>
                   <Text style={{ color: theyHaveReceived ? '#10B981' : theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                    {theyHaveReceived ? '✅' : '⬜'} Them — {theyHaveReceived ? 'received' : 'not received yet'}
+                    {theyHaveReceived ? 'OK' : '-'} Them - {theyHaveReceived ? 'received' : 'not received yet'}
                   </Text>
                 </View>
               )}
@@ -1018,7 +1061,7 @@ export default function OfferDetailScreen() {
                       }, sending && styles.disabled]}
                     >
                       <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13 }}>
-                        📦 Mark My Cards as Sent
+                        Mark My Cards as Sent
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -1035,7 +1078,7 @@ export default function OfferDetailScreen() {
                       }, sending && styles.disabled]}
                     >
                       <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13 }}>
-                        📬 Mark Cards as Received
+                        Mark Cards as Received
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -1054,7 +1097,7 @@ export default function OfferDetailScreen() {
                       }, sending && styles.disabled]}
                     >
                       <Text style={{ color: '#991B1B', fontWeight: '900', fontSize: 12 }}>
-                        ⚠️ Raise Dispute
+                        Raise Dispute
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -1063,7 +1106,7 @@ export default function OfferDetailScreen() {
 
               {isDisputed && (
                 <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '800', marginTop: 8 }}>
-                  ⚠️ This trade has been marked as disputed.
+                  This trade has been marked as disputed.
                 </Text>
               )}
             </View>
@@ -1076,7 +1119,7 @@ export default function OfferDetailScreen() {
               backgroundColor: '#F0FDF4',
             }]}>
               <Text style={{ color: '#065F46', fontWeight: '900', fontSize: 16, marginBottom: 6 }}>
-                🎉 Trade Complete!
+                Trade Complete!
               </Text>
               <Text style={{ color: '#065F46', fontSize: 13, lineHeight: 18, marginBottom: 14 }}>
                 This trade has been completed successfully. Leave a review to help build trust in the community.
@@ -1095,7 +1138,7 @@ export default function OfferDetailScreen() {
                 }}
               >
                 <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 14 }}>
-                  ⭐ Leave a Review
+                  Leave a Review
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1177,10 +1220,10 @@ export default function OfferDetailScreen() {
           <View style={styles.lockedComposer}>
             <Text style={styles.lockedText}>
               {isCompleted
-                ? '🎉 This trade is completed.'
+                ? 'This trade is completed.'
                 : isDisputed
-                ? '⚠️ This trade is disputed. Keep records of all messages.'
-                : '🚫 This offer has been declined or cancelled.'}
+                ? 'This trade is disputed. Keep records of all messages.'
+                : 'This offer has been declined or cancelled.'}
             </Text>
           </View>
         )}
@@ -1218,19 +1261,17 @@ function ProgressStep({
   done,
   partial,
   partialLabel,
-  icon,
 }: {
   label: string;
   done: boolean;
   partial?: boolean;
   partialLabel?: string;
-  icon?: string;
 }) {
   const { theme } = useTheme();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
       <Text style={{ marginRight: 12, fontSize: 16, width: 30, textAlign: 'center' }}>
-        {done ? '✅' : partial ? '🔄' : '⬜'}
+        {done ? 'OK' : partial ? '...' : '-'}
       </Text>
       <View style={{ flex: 1 }}>
         <Text style={{
@@ -1271,6 +1312,11 @@ function makeStyles(theme: any) {
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     backgroundColor: theme.colors.card,
+  },
+  headerLogo: {
+    width: 128,
+    height: 40,
+    marginBottom: 4,
   },
   backButton: {
     width: 42,
@@ -1483,6 +1529,37 @@ function makeStyles(theme: any) {
     fontWeight: '900' as const,
     marginBottom: 10,
   },
+  valueComparisonGrid: {
+    flexDirection: 'row' as const,
+    gap: 8,
+    marginBottom: 14,
+  },
+  valueComparisonCell: {
+    flex: 1,
+    minHeight: 64,
+    borderRadius: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    justifyContent: 'center' as const,
+  },
+  valueComparisonCellWarn: {
+    borderColor: '#F59E0B',
+    backgroundColor: '#FFF7ED',
+  },
+  valueComparisonLabel: {
+    color: theme.colors.textSoft,
+    fontSize: 10,
+    fontWeight: '800' as const,
+    marginBottom: 5,
+  },
+  valueComparisonAmount: {
+    color: theme.colors.text,
+    fontSize: 15,
+    fontWeight: '900' as const,
+  },
   fairnessBar: {
     height: 8,
     borderRadius: 999,
@@ -1520,12 +1597,24 @@ function makeStyles(theme: any) {
     fontWeight: '900' as const,
     textAlign: 'center' as const,
   },
+  fairnessStatusWarn: {
+    color: '#B45309',
+  },
   fairnessCopy: {
     color: theme.colors.textSoft,
     fontSize: 12,
     lineHeight: 17,
     textAlign: 'center' as const,
     marginTop: 4,
+  },
+  reviewActionRow: {
+    flexDirection: 'row' as const,
+    gap: 10,
+    marginTop: 14,
+  },
+  reviewActionButton: {
+    flex: 1,
+    marginTop: 0,
   },
   primaryWideButton: {
     backgroundColor: theme.colors.primary,
@@ -1536,6 +1625,20 @@ function makeStyles(theme: any) {
   },
   primaryWideButtonText: {
     color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '900' as const,
+  },
+  secondaryWideButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center' as const,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '55',
+  },
+  secondaryWideButtonText: {
+    color: theme.colors.primary,
     fontSize: 16,
     fontWeight: '900' as const,
   },

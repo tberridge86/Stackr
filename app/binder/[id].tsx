@@ -42,6 +42,7 @@ import { supabase } from '../../lib/supabase';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
+import { searchLocalPokemonCards } from '../../lib/cardSearch';
 
 // ===============================
 // CONSTANTS
@@ -852,13 +853,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     try {
       setAddSearchLoading(true);
 
-      const { data, error } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, set_id, image_small, image_large, raw_data')
-        .ilike('name', `%${safeQuery}%`)
-        .limit(150);
-
-      if (error) throw error;
+      const data = await searchLocalPokemonCards<any>(safeQuery, {
+        limit: 150,
+        select: 'id, name, set_id, image_small, image_large, raw_data',
+      });
 
       setAddSearchResults(
         (data ?? []).map((card: any) => ({
