@@ -23,6 +23,7 @@ import {
   InventoryCardSnapshot,
   InventoryCondition,
   InventoryItem,
+  PRODUCT_INVENTORY_CONDITIONS,
   addInventorySale,
   createInventoryItem,
   loadInventoryItems,
@@ -32,6 +33,16 @@ import { getPriceFromPokemonCard } from '../../lib/pricing';
 import { scanStore } from '../../lib/scanStore';
 import { supabase } from '../../lib/supabase';
 import { PRICE_API_URL } from '../../lib/config';
+import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import {
+  PRODUCT_LOOKUP_OPTIONS,
+  fetchProductPrice,
+  productLookupLabel,
+  productToInventorySnapshot,
+  searchMarketProducts,
+  toInventoryProductSnapshot,
+} from '../../lib/productSearch';
+import type { ProductLookupType } from '../../lib/productSearch';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -48,7 +59,23 @@ const conditionShort: Record<InventoryCondition, string> = {
   'Moderately Played': 'MP',
   'Heavily Played': 'HP',
   Damaged: 'DMG',
+  Sealed: 'SEA',
 };
+
+type InventoryLookupType = 'raw_card' | ProductLookupType;
+
+const INVENTORY_LOOKUP_OPTIONS: {
+  key: InventoryLookupType;
+  label: string;
+  icon: keyof typeof Ionicons.glyphMap;
+}[] = [
+  { key: 'raw_card', label: 'Raw Card', icon: 'albums-outline' },
+  ...PRODUCT_LOOKUP_OPTIONS.map((option) => ({
+    key: option.key,
+    label: option.label,
+    icon: option.icon as keyof typeof Ionicons.glyphMap,
+  })),
+];
 
 type InventoryViewFilter = 'all' | 'lowStock' | 'highValue' | 'noPrice' | 'stockOut';
 
@@ -69,6 +96,11 @@ const money = (value: number | null | undefined) =>
 
 const getPreferredPrice = (card: InventoryCardSnapshot) =>
   card.ebay_price ?? card.tcg_price ?? card.cardmarket_price ?? null;
+
+const getDraftConditions = (card: InventoryCardSnapshot) =>
+  card.is_product ? PRODUCT_INVENTORY_CONDITIONS : INVENTORY_CONDITIONS;
+
+const INVENTORY_FILTER_CONDITIONS = [...INVENTORY_CONDITIONS, ...PRODUCT_INVENTORY_CONDITIONS];
 
 type InventoryDraft = {
   card: InventoryCardSnapshot;
@@ -113,6 +145,7 @@ export default function InventoryScreen() {
   const itemWidth = (width - 32 - (columns - 1) * 10) / columns;
 
   const [items, setItems] = useState<InventoryItem[]>([]);
+  const [lookupType, setLookupType] = useState<InventoryLookupType>('raw_card');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<InventoryCardSnapshot[]>([]);
   const [searching, setSearching] = useState(false);
@@ -155,12 +188,10 @@ export default function InventoryScreen() {
 
     try {
       setSearching(true);
-      const { data, error } = await supabase
-        .from('pokemon_cards')
-        .select('id,name,number,rarity,set_id,image_small,image_large,raw_data')
-        .ilike('name', `%${trimmed}%`)
-        .limit(50);
-      if (error) throw error;
+      const data = await searchLocalPokemonCards<any>(trimmed, {
+        limit: 60,
+        select: 'id,name,number,rarity,set_id,image_small,image_large,raw_data',
+      });
 
       const ids = (data ?? []).map((row: any) => row.id);
       const snapshotMap = new Map<string, any>();
@@ -184,18 +215,65 @@ export default function InventoryScreen() {
     }
   }, []);
 
+  const searchProduct = useCallback(async (text: string, type: ProductLookupType) => {
+    const trimmed = text.trim();
+    if (trimmed.length < 2) {
+      setResults([]);
+      return;
+    }
+
+    try {
+      setSearching(true);
+      const catalogResults = await searchMarketProducts(trimmed, type, 12);
+      if (catalogResults.length) {
+        setResults(catalogResults.map(productToInventorySnapshot));
+        return;
+      }
+
+      const price = await fetchProductPrice(trimmed, type);
+      setResults([toInventoryProductSnapshot(trimmed, type, price)]);
+    } catch (error) {
+      console.log('Inventory product search failed', error);
+      setResults([toInventoryProductSnapshot(trimmed, type, null)]);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
   const onSearchChange = useCallback((text: string) => {
     setQuery(text);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    searchTimerRef.current = setTimeout(() => searchCards(text), 300);
-  }, [searchCards]);
+    searchTimerRef.current = setTimeout(() => {
+      if (lookupType === 'raw_card') {
+        searchCards(text);
+      } else {
+        searchProduct(text, lookupType);
+      }
+    }, lookupType === 'raw_card' ? 300 : 450);
+  }, [lookupType, searchCards, searchProduct]);
+
+  const changeLookupType = useCallback((nextType: InventoryLookupType) => {
+    setLookupType(nextType);
+    setResults([]);
+    setDrafts([]);
+    if (query.trim()) {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      searchTimerRef.current = setTimeout(() => {
+        if (nextType === 'raw_card') {
+          searchCards(query);
+        } else {
+          searchProduct(query, nextType);
+        }
+      }, 120);
+    }
+  }, [query, searchCards, searchProduct]);
 
   const toggleDraftCard = useCallback((card: InventoryCardSnapshot) => {
     setDrafts((prev) => {
       if (prev.some((draft) => draft.card.id === card.id)) {
         return prev.filter((draft) => draft.card.id !== card.id);
       }
-      return [...prev, { card, quantities: createQuantities(), expanded: true }];
+      return [...prev, { card, quantities: createQuantities(card.is_product ? 'Sealed' : 'Near Mint'), expanded: true }];
     });
   }, []);
 
@@ -215,7 +293,7 @@ export default function InventoryScreen() {
           ...draft,
           quantities: {
             ...draft.quantities,
-            [condition]: Math.max(0, draft.quantities[condition] + change),
+            [condition]: Math.max(0, (draft.quantities[condition] ?? 0) + change),
           },
         };
       })
@@ -240,7 +318,7 @@ export default function InventoryScreen() {
 
   const addAllDrafts = useCallback(async () => {
     const totalQuantity = drafts.reduce(
-      (sum, draft) => sum + INVENTORY_CONDITIONS.reduce((inner, condition) => inner + draft.quantities[condition], 0),
+      (sum, draft) => sum + getDraftConditions(draft.card).reduce((inner, condition) => inner + (draft.quantities[condition] ?? 0), 0),
       0
     );
     if (totalQuantity <= 0) {
@@ -250,8 +328,8 @@ export default function InventoryScreen() {
 
     let next = items;
     for (const draft of drafts) {
-      for (const condition of INVENTORY_CONDITIONS) {
-        const quantity = draft.quantities[condition];
+      for (const condition of getDraftConditions(draft.card)) {
+        const quantity = draft.quantities[condition] ?? 0;
         if (quantity > 0) next = addStockLine(next, draft.card, condition, quantity);
       }
     }
@@ -345,6 +423,7 @@ export default function InventoryScreen() {
         }
 
         setQuery(String(name));
+        setLookupType('raw_card');
         await searchCards(String(name));
       } catch (error) {
         console.log('Inventory scan failed', error);
@@ -504,10 +583,10 @@ export default function InventoryScreen() {
     return (
       <View style={{ width: itemWidth, backgroundColor: theme.colors.card, borderRadius: 16, padding: 10, borderWidth: 1, borderColor: theme.colors.border, marginBottom: 10, ...cardShadow }}>
         {item.card.image_small ? (
-          <Image source={{ uri: item.card.image_small }} style={{ width: '100%', aspectRatio: 0.72, borderRadius: 10 }} resizeMode="contain" />
+          <Image source={{ uri: item.card.image_small }} style={{ width: '100%', aspectRatio: item.card.is_product ? 1 : 0.72, borderRadius: 10 }} resizeMode="contain" />
         ) : (
-          <View style={{ width: '100%', aspectRatio: 0.72, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="albums-outline" size={28} color={theme.colors.primary} />
+          <View style={{ width: '100%', aspectRatio: item.card.is_product ? 1 : 0.72, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name={item.card.is_product ? 'cube-outline' : 'albums-outline'} size={28} color={theme.colors.primary} />
           </View>
         )}
         <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13, marginTop: 8 }}>{item.card.name}</Text>
@@ -571,8 +650,8 @@ export default function InventoryScreen() {
       <View style={{ paddingHorizontal: 16, paddingTop: 8, flex: 1 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <View>
-            <Text style={{ color: theme.colors.text, fontSize: 30, fontWeight: '900' }}>Inventory</Text>
-            <Text style={{ color: theme.colors.textSoft, marginTop: 2 }}>{totalStock} in stock · {money(inventoryValue)} value</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>Inventory</Text>
+            <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 12, fontWeight: '700' }}>{totalStock} in stock · {money(inventoryValue)} value</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <TouchableOpacity onPress={startSale} style={{ backgroundColor: theme.colors.card, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 11, flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderColor: theme.colors.border }}>
@@ -612,9 +691,45 @@ export default function InventoryScreen() {
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.colors.surface, borderRadius: 14, paddingHorizontal: 12, borderWidth: 1, borderColor: theme.colors.border }}>
             <Ionicons name="search-outline" size={18} color={theme.colors.textSoft} />
-            <TextInput value={query} onChangeText={onSearchChange} placeholder={stockScanMode === 'add' ? 'Search card to add...' : 'Search current stock...'} placeholderTextColor={theme.colors.textSoft} style={{ flex: 1, color: theme.colors.text, paddingVertical: 11, fontWeight: '800' }} />
+            <TextInput
+              value={query}
+              onChangeText={onSearchChange}
+              placeholder={stockScanMode === 'add' ? (lookupType === 'raw_card' ? 'Search card to add...' : `Search ${productLookupLabel(lookupType).toLowerCase()}...`) : 'Search current stock...'}
+              placeholderTextColor={theme.colors.textSoft}
+              style={{ flex: 1, color: theme.colors.text, paddingVertical: 11, fontWeight: '800' }}
+            />
             {searching && <ActivityIndicator color={theme.colors.primary} />}
           </View>
+
+          {stockScanMode === 'add' && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 10 }}>
+              {INVENTORY_LOOKUP_OPTIONS.map((option) => {
+                const active = lookupType === option.key;
+                return (
+                  <TouchableOpacity
+                    key={option.key}
+                    onPress={() => changeLookupType(option.key)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 6,
+                      paddingHorizontal: 11,
+                      paddingVertical: 8,
+                      borderRadius: 12,
+                      backgroundColor: active ? '#F6F1FF' : theme.colors.card,
+                      borderWidth: 1,
+                      borderColor: active ? theme.colors.primary : theme.colors.border,
+                    }}
+                  >
+                    <Ionicons name={option.icon} size={15} color={active ? theme.colors.primary : theme.colors.textSoft} />
+                    <Text style={{ color: active ? theme.colors.primary : theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          )}
 
           {results.length > 0 && (
             <FlatList
@@ -626,10 +741,18 @@ export default function InventoryScreen() {
                 const selected = drafts.some((draft) => draft.card.id === item.id);
                 return (
                   <TouchableOpacity onPress={() => toggleDraftCard(item)} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
-                    {item.image_small ? <Image source={{ uri: item.image_small }} style={{ width: 42, height: 58 }} resizeMode="contain" /> : <View style={{ width: 42, height: 58 }} />}
+                    {item.image_small ? (
+                      <Image source={{ uri: item.image_small }} style={{ width: 42, height: 58 }} resizeMode="contain" />
+                    ) : (
+                      <View style={{ width: 42, height: 58, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name={item.is_product ? 'cube-outline' : 'albums-outline'} size={20} color={theme.colors.primary} />
+                      </View>
+                    )}
                     <View style={{ flex: 1, marginLeft: 10 }}>
                       <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900' }}>{item.name}</Text>
-                      <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12 }}>{item.set_name} · #{item.number ?? '--'} · {money(getPreferredPrice(item))}</Text>
+                      <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+                        {item.is_product ? `${item.set_name} · recommended ${money(getPreferredPrice(item))}` : `${item.set_name} · #${item.number ?? '--'} · ${money(getPreferredPrice(item))}`}
+                      </Text>
                     </View>
                     <View style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: selected ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: selected ? theme.colors.primary : theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
                       <Ionicons name={selected ? 'checkmark' : 'add'} size={18} color={selected ? '#FFFFFF' : theme.colors.textSoft} />
@@ -646,7 +769,7 @@ export default function InventoryScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <View>
                 <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900' }}>Review stock</Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>{drafts.length} card{drafts.length !== 1 ? 's' : ''} selected</Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>{drafts.length} item{drafts.length !== 1 ? 's' : ''} selected</Text>
               </View>
               <TouchableOpacity onPress={addAllDrafts} style={{ backgroundColor: theme.colors.primary, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9 }}>
                 <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>Add all</Text>
@@ -654,11 +777,18 @@ export default function InventoryScreen() {
             </View>
 
             {drafts.map((draft) => {
-              const draftTotal = INVENTORY_CONDITIONS.reduce((sum, condition) => sum + draft.quantities[condition], 0);
+              const draftConditions = getDraftConditions(draft.card);
+              const draftTotal = draftConditions.reduce((sum, condition) => sum + (draft.quantities[condition] ?? 0), 0);
               return (
                 <View key={draft.card.id} style={{ borderTopWidth: 1, borderTopColor: theme.colors.border, paddingTop: 10, marginTop: 8 }}>
                   <TouchableOpacity onPress={() => toggleDraftExpanded(draft.card.id)} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    {draft.card.image_small ? <Image source={{ uri: draft.card.image_small }} style={{ width: 40, height: 56 }} resizeMode="contain" /> : <View style={{ width: 40, height: 56 }} />}
+                    {draft.card.image_small ? (
+                      <Image source={{ uri: draft.card.image_small }} style={{ width: 40, height: draft.card.is_product ? 40 : 56, borderRadius: draft.card.is_product ? 8 : 0 }} resizeMode="contain" />
+                    ) : (
+                      <View style={{ width: 40, height: draft.card.is_product ? 40 : 56, borderRadius: 8, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name={draft.card.is_product ? 'cube-outline' : 'albums-outline'} size={18} color={theme.colors.primary} />
+                      </View>
+                    )}
                     <View style={{ flex: 1, marginLeft: 10 }}>
                       <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900' }}>{draft.card.name}</Text>
                       <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12 }}>{draft.card.set_name} · {draftTotal} total</Text>
@@ -671,14 +801,14 @@ export default function InventoryScreen() {
 
                   {draft.expanded && (
                     <View style={{ marginTop: 10, gap: 7 }}>
-                      {INVENTORY_CONDITIONS.map((condition) => (
+                      {draftConditions.map((condition) => (
                         <View key={condition} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: theme.colors.surface, borderRadius: 12, paddingVertical: 7, paddingHorizontal: 10 }}>
                           <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>{condition}</Text>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                             <TouchableOpacity onPress={() => updateDraftQuantity(draft.card.id, condition, -1)} style={{ width: 28, height: 28, borderRadius: 9, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
                               <Ionicons name="remove" size={16} color={theme.colors.text} />
                             </TouchableOpacity>
-                            <Text style={{ color: theme.colors.text, fontWeight: '900', minWidth: 20, textAlign: 'center' }}>{draft.quantities[condition]}</Text>
+                            <Text style={{ color: theme.colors.text, fontWeight: '900', minWidth: 20, textAlign: 'center' }}>{draft.quantities[condition] ?? 0}</Text>
                             <TouchableOpacity onPress={() => updateDraftQuantity(draft.card.id, condition, 1)} style={{ width: 28, height: 28, borderRadius: 9, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
                               <Ionicons name="add" size={16} color="#FFFFFF" />
                             </TouchableOpacity>
@@ -734,7 +864,7 @@ export default function InventoryScreen() {
             })}
           </ScrollView>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-            {(['All', ...INVENTORY_CONDITIONS] as const).map((condition) => (
+            {(['All', ...INVENTORY_FILTER_CONDITIONS] as const).map((condition) => (
               <TouchableOpacity key={condition} onPress={() => setFilterCondition(condition)} style={{ paddingHorizontal: 11, paddingVertical: 8, borderRadius: 999, backgroundColor: filterCondition === condition ? theme.colors.primary : theme.colors.card, borderWidth: 1, borderColor: filterCondition === condition ? theme.colors.primary : theme.colors.border }}>
                 <Text style={{ color: filterCondition === condition ? '#FFFFFF' : theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>{condition === 'All' ? 'All' : conditionShort[condition]}</Text>
               </TouchableOpacity>

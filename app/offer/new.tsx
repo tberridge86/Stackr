@@ -180,6 +180,7 @@ export default function NewOfferScreen() {
       : fairnessState === 'your-heavy'
         ? `You are offering about ${money(absoluteDifference)} more.`
         : `They are sending about ${money(absoluteDifference)} more.`;
+  const fairnessColor = fairnessState === 'balanced' ? theme.colors.primary : '#F59E0B';
 
   useEffect(() => {
     loadScreen();
@@ -480,7 +481,7 @@ export default function NewOfferScreen() {
   return (
     <View style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
-      <Text style={styles.brand}>stackr</Text>
+      <Image source={require('../../assets/images/hub.png')} style={styles.brandLogo} resizeMode="contain" />
       <Text style={styles.title}>Build a Trade</Text>
       <Text style={styles.subtitle}>
         Add cards, cash or offers
@@ -600,7 +601,7 @@ export default function NewOfferScreen() {
               fairnessState !== 'balanced' && styles.fairnessPillWarn,
             ]}
           >
-            {Math.round(differencePercent)}%
+            {money(absoluteDifference)}
           </Text>
         </View>
 
@@ -611,6 +612,7 @@ export default function NewOfferScreen() {
             style={[
               styles.fairnessMarker,
               { left: `${fairnessMarkerPercent}%` },
+              { borderColor: fairnessColor },
             ]}
           />
         </View>
@@ -629,18 +631,24 @@ export default function NewOfferScreen() {
         </Text>
         <Text style={styles.fairnessHint}>{fairnessHint}</Text>
 
-        <View style={styles.valueGrid}>
-          <View style={styles.valueCell}>
+        <View style={styles.tradeSummaryCard}>
+          <View style={styles.tradeSummaryHeader}>
+            <Text style={styles.tradeSummaryTitle}>Trade Summary</Text>
+            <Text style={styles.tradeSummaryDelta}>{Math.round(differencePercent)}%</Text>
+          </View>
+          <View style={styles.valueGrid}>
+          <View style={[styles.valueCell, fairnessState === 'your-heavy' && styles.valueCellActive]}>
             <Text style={styles.valueLabel}>Your side</Text>
             <Text style={styles.valueAmount}>{money(offeredSideValue)}</Text>
           </View>
-          <View style={styles.valueCell}>
+          <View style={[styles.valueCell, fairnessState === 'their-heavy' && styles.valueCellActive]}>
             <Text style={styles.valueLabel}>Their side</Text>
             <Text style={styles.valueAmount}>{money(receiverSideValue)}</Text>
           </View>
           <View style={styles.valueCell}>
             <Text style={styles.valueLabel}>Difference</Text>
             <Text style={styles.valueAmount}>{money(absoluteDifference)}</Text>
+          </View>
           </View>
         </View>
       </View>
@@ -713,7 +721,7 @@ export default function NewOfferScreen() {
                     </Text>
                   </View>
                   <Text style={[styles.selectText, selected && styles.selectTextActive]}>
-                    {selected ? '✓ Selected' : 'Add'}
+                    {selected ? 'Selected' : 'Add'}
                   </Text>
                 </TouchableOpacity>
               );
@@ -756,7 +764,7 @@ export default function NewOfferScreen() {
         {cashInvolved && (
           <View style={styles.cashSummary}>
             <Text style={styles.cashSummaryText}>
-              💳 {cashPayer === 'sender' ? 'You' : 'They'} pay{' '}
+              {cashPayer === 'sender' ? 'You' : 'They'} pay{' '}
               £{cashAmountNumber.toFixed(2)} via Stripe
             </Text>
           </View>
@@ -795,61 +803,7 @@ export default function NewOfferScreen() {
         </View>
       )}
 
-      {false && (targetCard || selectedCardIds.length > 0 || cashInvolved) && (
-        <View style={styles.fairnessBox}>
-          <View style={styles.fairnessHeader}>
-            <Text style={styles.fairnessTitle}>Trade Fairness</Text>
-            <Text
-              style={[
-                styles.fairnessPill,
-                fairnessState !== 'balanced' && styles.fairnessPillWarn,
-              ]}
-            >
-              {Math.round(differencePercent)}%
-            </Text>
-          </View>
 
-          <View style={styles.fairnessTrack}>
-            <View style={styles.fairnessTrackLeft} />
-            <View style={styles.fairnessTrackRight} />
-            <View
-              style={[
-                styles.fairnessMarker,
-                { left: `${fairnessMarkerPercent}%` },
-              ]}
-            />
-          </View>
-          <View style={styles.fairnessEnds}>
-            <Text style={styles.fairnessEndText}>You</Text>
-            <Text style={styles.fairnessEndText}>Them</Text>
-          </View>
-
-          <Text
-            style={[
-              styles.fairnessLabel,
-              fairnessState !== 'balanced' && styles.fairnessLabelWarn,
-            ]}
-          >
-            {fairnessLabel}
-          </Text>
-          <Text style={styles.fairnessHint}>{fairnessHint}</Text>
-
-          <View style={styles.valueGrid}>
-            <View style={styles.valueCell}>
-              <Text style={styles.valueLabel}>Your side</Text>
-              <Text style={styles.valueAmount}>{money(offeredSideValue)}</Text>
-            </View>
-            <View style={styles.valueCell}>
-              <Text style={styles.valueLabel}>Their side</Text>
-              <Text style={styles.valueAmount}>{money(receiverSideValue)}</Text>
-            </View>
-            <View style={styles.valueCell}>
-              <Text style={styles.valueLabel}>Difference</Text>
-              <Text style={styles.valueAmount}>{money(absoluteDifference)}</Text>
-            </View>
-          </View>
-        </View>
-      )}
 
     </ScrollView>
     <View style={{ paddingHorizontal: 16, paddingBottom: 110, paddingTop: 8 }}>
@@ -909,11 +863,11 @@ function makeStyles(theme: any) {
     padding: 16,
     paddingBottom: 16,
   },
-  brand: {
-    color: theme.colors.text,
-    fontSize: 26,
-    fontWeight: '900',
+  brandLogo: {
+    width: 150,
+    height: 48,
     marginBottom: 8,
+    alignSelf: 'flex-start',
   },
   title: {
     color: theme.colors.text,
@@ -934,7 +888,7 @@ function makeStyles(theme: any) {
   tradeSideCard: {
     flex: 1,
     backgroundColor: theme.colors.card,
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 12,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -992,7 +946,7 @@ function makeStyles(theme: any) {
     fontWeight: '900',
   },
   stackArea: {
-    height: 108,
+    height: 122,
     marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -1000,16 +954,16 @@ function makeStyles(theme: any) {
   stackCardImage: {
     position: 'absolute',
     top: 4,
-    width: 66,
-    height: 92,
+    width: 72,
+    height: 100,
     borderRadius: 8,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: '#FFFFFF',
   },
   targetStackImage: {
-    width: 72,
-    height: 100,
+    width: 78,
+    height: 108,
     borderRadius: 8,
     backgroundColor: theme.colors.surface,
   },
@@ -1078,6 +1032,7 @@ function makeStyles(theme: any) {
     padding: 10,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    minHeight: 70,
   },
   sideValueAmount: {
     color: theme.colors.text,
@@ -1257,8 +1212,8 @@ function makeStyles(theme: any) {
   },
   fairnessBox: {
     backgroundColor: theme.colors.card,
-    borderRadius: 18,
-    padding: 14,
+    borderRadius: 22,
+    padding: 16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -1290,12 +1245,12 @@ function makeStyles(theme: any) {
     backgroundColor: '#F59E0B18',
   },
   fairnessTrack: {
-    height: 8,
+    height: 9,
     borderRadius: 999,
     overflow: 'visible',
     flexDirection: 'row',
     backgroundColor: theme.colors.border,
-    marginTop: 4,
+    marginTop: 2,
   },
   fairnessTrackLeft: {
     flex: 1,
@@ -1311,14 +1266,19 @@ function makeStyles(theme: any) {
   },
   fairnessMarker: {
     position: 'absolute',
-    top: -6,
-    width: 20,
-    height: 20,
-    marginLeft: -10,
-    borderRadius: 10,
+    top: -8,
+    width: 24,
+    height: 24,
+    marginLeft: -12,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 3,
     borderColor: theme.colors.primary,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   fairnessEnds: {
     flexDirection: 'row',
@@ -1347,6 +1307,34 @@ function makeStyles(theme: any) {
     marginTop: 4,
     marginBottom: 12,
   },
+  tradeSummaryCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 10,
+  },
+  tradeSummaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  tradeSummaryTitle: {
+    color: theme.colors.text,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  tradeSummaryDelta: {
+    color: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '14',
+    borderRadius: 999,
+    overflow: 'hidden',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    fontSize: 11,
+    fontWeight: '900',
+  },
   valueGrid: {
     flexDirection: 'row',
     gap: 8,
@@ -1358,6 +1346,10 @@ function makeStyles(theme: any) {
     borderWidth: 1,
     borderColor: theme.colors.border,
     padding: 10,
+  },
+  valueCellActive: {
+    borderColor: '#F59E0B',
+    backgroundColor: '#F59E0B12',
   },
   valueLabel: {
     color: theme.colors.textSoft,

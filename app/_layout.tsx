@@ -18,7 +18,7 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 // ===============================
 
 const TABS = [
-  { name: 'Market', route: '/(tabs)/trade', icon: 'storefront', iconOutline: 'storefront-outline' },
+  { name: 'Trades', route: '/(tabs)/trade', icon: 'swap-horizontal', iconOutline: 'swap-horizontal-outline' },
   { name: 'Social', route: '/(tabs)/community', icon: 'people', iconOutline: 'people-outline' },
   { name: 'Hub', route: '/(tabs)', icon: 'home', iconOutline: 'home-outline' },
   { name: 'Binder', route: '/(tabs)/binder', icon: 'book', iconOutline: 'book-outline' },
@@ -75,22 +75,34 @@ function PersistentTabBar() {
     }}>
       {tabs.map((tab) => {
         const active = isActive(tab.route);
+        const isHub = tab.name === 'Hub';
         return (
           <TouchableOpacity
             key={tab.route}
             onPress={() => router.push(tab.route as any)}
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 2 }}
+            style={{ flex: isHub ? 1.18 : 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 2 }}
           >
-            <Ionicons
-              name={active ? tab.icon as any : tab.iconOutline as any}
-              size={24}
-              color={active ? theme.colors.primary : theme.colors.textSoft}
-            />
+            <View style={{
+              width: isHub ? 46 : 32,
+              height: isHub ? 34 : 28,
+              borderRadius: isHub ? 17 : 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: isHub ? (active ? theme.colors.primary : theme.colors.primary + '18') : 'transparent',
+              borderWidth: isHub ? 1 : 0,
+              borderColor: isHub ? theme.colors.primary + '55' : 'transparent',
+            }}>
+              <Ionicons
+                name={active ? tab.icon as any : tab.iconOutline as any}
+                size={isHub ? 27 : 24}
+                color={isHub ? (active ? '#fff' : theme.colors.primary) : active ? theme.colors.primary : theme.colors.textSoft}
+              />
+            </View>
             <Text style={{
-              fontSize: 11,
-              fontWeight: '800',
+              fontSize: isHub ? 12 : 11,
+              fontWeight: isHub ? '900' : '800',
               color: active ? theme.colors.primary : theme.colors.textSoft,
-              marginTop: 2,
+              marginTop: isHub ? 1 : 2,
             }}>
               {tab.name}
             </Text>

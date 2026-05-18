@@ -9,17 +9,40 @@ type StackrScreenHeaderProps = {
   subtitle?: string;
   rightIcon?: keyof typeof Ionicons.glyphMap;
   onRightPress?: () => void;
+  variant?: 'compact' | 'hero';
+  showLogo?: boolean;
 };
 
-export function StackrScreenHeader({ title, subtitle, rightIcon = 'notifications-outline', onRightPress }: StackrScreenHeaderProps) {
+export function StackrScreenHeader({
+  title,
+  subtitle,
+  rightIcon = 'notifications-outline',
+  onRightPress,
+  variant = 'compact',
+  showLogo = false,
+}: StackrScreenHeaderProps) {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
   const logoWidth = Math.min(182, Math.max(132, width * 0.42));
+  const isHero = variant === 'hero';
 
   return (
-    <View style={{ position: 'relative', paddingTop: 8, paddingBottom: 16, overflow: 'hidden' }}>
+    <View style={{ position: 'relative', paddingTop: 2, paddingBottom: 12, overflow: 'hidden' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Image source={require('../assets/images/hub.png')} style={{ width: logoWidth, height: 58 }} resizeMode="contain" />
+        {showLogo ? (
+          <Image source={require('../assets/images/hub.png')} style={{ width: logoWidth, height: 58 }} resizeMode="contain" />
+        ) : (
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.text, fontSize: isHero ? 36 : 24, lineHeight: isHero ? 42 : 29, fontWeight: '900', letterSpacing: 0 }}>
+              {title}
+            </Text>
+            {subtitle ? (
+              <Text style={{ color: theme.colors.textSoft, fontSize: isHero ? 15 : 12, fontWeight: '700', marginTop: isHero ? 4 : 2 }}>
+                {subtitle}
+              </Text>
+            ) : null}
+          </View>
+        )}
         <Pressable
           onPress={onRightPress}
           style={{ width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' }}
@@ -30,15 +53,19 @@ export function StackrScreenHeader({ title, subtitle, rightIcon = 'notifications
           )}
         </Pressable>
       </View>
-      <Ionicons name="sparkles" size={22} color="#F59E0B" style={{ position: 'absolute', left: 292, top: 86 }} />
-      <Ionicons name="sparkles" size={16} color={theme.colors.primary} style={{ position: 'absolute', left: 324, top: 110 }} />
-      <Text style={{ color: theme.colors.text, fontSize: 44, lineHeight: 50, fontWeight: '900', letterSpacing: 0, marginTop: 8 }}>
-        {title}
-      </Text>
-      {subtitle ? (
-        <Text style={{ color: theme.colors.textSoft, fontSize: 17, fontWeight: '700', marginTop: 5 }}>
-          {subtitle}
-        </Text>
+      {showLogo ? (
+        <>
+          <Ionicons name="sparkles" size={22} color="#F59E0B" style={{ position: 'absolute', left: 292, top: 86 }} />
+          <Ionicons name="sparkles" size={16} color={theme.colors.primary} style={{ position: 'absolute', left: 324, top: 110 }} />
+          <Text style={{ color: theme.colors.text, fontSize: isHero ? 36 : 24, lineHeight: isHero ? 42 : 29, fontWeight: '900', letterSpacing: 0, marginTop: 8 }}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text style={{ color: theme.colors.textSoft, fontSize: isHero ? 15 : 12, fontWeight: '700', marginTop: isHero ? 4 : 2 }}>
+              {subtitle}
+            </Text>
+          ) : null}
+        </>
       ) : null}
     </View>
   );

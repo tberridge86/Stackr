@@ -24,6 +24,13 @@ export type MarketplaceListing = {
   user_id: string;
   card_id: string;
   set_id: string | null;
+  product_type: string | null;
+  product_name: string | null;
+  pricing_mode: string | null;
+  grade_company: string | null;
+  grade: string | null;
+  admin_review_required: boolean;
+  admin_review_reason: string | null;
   custom_value: number | null;
   asking_price: number | null;
   market_estimate: number | null;
@@ -58,6 +65,13 @@ function mapFlagToListing(row: any): MarketplaceListing {
     user_id: row.user_id,
     card_id: row.card_id,
     set_id: row.set_id ?? null,
+    product_type: row.product_type ?? null,
+    product_name: row.product_name ?? null,
+    pricing_mode: row.pricing_mode ?? null,
+    grade_company: row.grade_company ?? null,
+    grade: row.grade ?? null,
+    admin_review_required: Boolean(row.admin_review_required),
+    admin_review_reason: row.admin_review_reason ?? null,
     custom_value:
       row.asking_price != null
         ? Number(row.asking_price)
@@ -241,6 +255,8 @@ export async function fetchMarketplaceListings(): Promise<MarketplaceListing[]> 
     .from('user_card_flags')
     .select(`
       id, user_id, card_id, set_id, condition, notes, value,
+      product_type, product_name, pricing_mode, grade_company, grade,
+      admin_review_required, admin_review_reason,
       asking_price, market_estimate, trade_only, has_damage,
       damage_notes, damage_image_url, listing_notes, listing_images, listing_status,
       created_at, updated_at
@@ -265,6 +281,8 @@ export async function fetchMyListings(): Promise<MarketplaceListing[]> {
     .from('user_card_flags')
     .select(`
       id, user_id, card_id, set_id, condition, notes, value,
+      product_type, product_name, pricing_mode, grade_company, grade,
+      admin_review_required, admin_review_reason,
       asking_price, market_estimate, trade_only, has_damage,
       damage_notes, damage_image_url, listing_notes, listing_images, listing_status,
       created_at, updated_at

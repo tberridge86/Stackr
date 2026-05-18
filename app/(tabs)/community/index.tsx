@@ -1,11 +1,10 @@
 import { router } from 'expo-router';
 import { useTheme } from '../../../components/theme-context';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   FlatList,
   ActivityIndicator,
-  Animated,
   StyleSheet,
   Image,
   Pressable,
@@ -24,7 +23,8 @@ import { getMyFriends } from '../../../lib/friends';
 import { useProfile } from '../../../components/profile-context';
 
 type FeedMode = 'global' | 'friends';
-type SocialTab = 'Feed' | 'Flex' | 'Local' | 'Price Checks' | 'Discussions';
+type SocialTab = 'Home' | 'Flex' | 'Local' | 'News';
+type LocalFilter = 'Stores' | 'Meet ups' | 'Trade nights';
 
 type SocialPost = {
   id: string;
@@ -53,11 +53,148 @@ type CardPreview = {
 };
 
 type OwnedCardOption = {
-  binder_id: string;
+  binder_id: string | null;
+  binder_name?: string | null;
   card_id: string;
   set_id: string;
   card?: CardPreview | null;
 };
+
+type BinderOption = {
+  id: string;
+  name: string;
+  type?: string | null;
+  is_public?: boolean | null;
+};
+
+type FlexPickerMode = 'binder' | 'chase' | 'trade' | 'slab' | null;
+
+type LocalStore = {
+  id: string;
+  name: string;
+  description: string | null;
+  town: string | null;
+  postcode: string | null;
+  website_url: string | null;
+};
+
+type LocalFeaturedEvent = {
+  id: string;
+  title: string;
+  description: string | null;
+  venue_name: string | null;
+  town: string | null;
+  postcode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  starts_at: string | null;
+  external_url: string | null;
+};
+
+type LocalMeetup = {
+  id: string;
+  title: string;
+  description: string | null;
+  location_name: string;
+  town: string | null;
+  postcode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  starts_at: string | null;
+  created_by: string;
+};
+type LiveLocalPlace = {
+  place_id: string;
+  name: string;
+  formatted_address: string;
+  category?: string;
+  latitude?: number;
+  longitude?: number;
+};
+type LocalPoint = {
+  label: string;
+  latitude: number;
+  longitude: number;
+};
+
+const LOCAL_TCG_KEYWORDS = [
+  'pokemon',
+  'pokémon',
+  'tcg',
+  'trading card',
+  'trading cards',
+  'collectible card',
+  'collectable card',
+  'card game',
+  'magic the gathering',
+  'mtg',
+  'yu-gi-oh',
+  'yugioh',
+  'lorcana',
+  'flesh and blood',
+  'one piece card',
+  'digimon card',
+  'card shop',
+  'game store',
+  'games store',
+  'tabletop',
+  'board game',
+  'comics',
+  'comic',
+  'hobby',
+];
+
+const LOCAL_STRONG_SHOP_TAGS = ['games', 'collector', 'hobby', 'comics'];
+const LOCAL_EXCLUDED_AMENITIES = ['place_of_worship', 'church', 'community_centre', 'school'];
+const LOCAL_EXCLUDED_NAME_WORDS = ['church', 'chapel', 'parish', 'mosque', 'temple', 'synagogue'];
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasLocalKeyword(text: string) {
+  return LOCAL_TCG_KEYWORDS.some((keyword) => {
+    if (keyword.length <= 4) {
+      return new RegExp(`(^|[^a-z0-9])${escapeRegExp(keyword)}([^a-z0-9]|$)`, 'i').test(text);
+    }
+    return text.includes(keyword);
+  });
+}
+
+function looksLikeCardStore(tags: Record<string, any>) {
+  const shop = String(tags.shop ?? '').toLowerCase();
+  const amenity = String(tags.amenity ?? '').toLowerCase();
+  const name = String(tags.name ?? '').toLowerCase();
+  const searchableText = [
+    tags.name,
+    tags.shop,
+    tags.amenity,
+    tags.description,
+    tags.brand,
+    tags.website,
+    tags['contact:website'],
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  const strongShopTag = LOCAL_STRONG_SHOP_TAGS.some((tag) => shop.includes(tag));
+  const relevantText = hasLocalKeyword(searchableText);
+  const excludedAmenity = LOCAL_EXCLUDED_AMENITIES.includes(amenity);
+  const excludedName = LOCAL_EXCLUDED_NAME_WORDS.some((word) =>
+    new RegExp(`(^|[^a-z0-9])${word}([^a-z0-9]|$)`, 'i').test(name)
+  );
+
+  if ((excludedAmenity || excludedName) && !strongShopTag) return false;
+  return strongShopTag || relevantText;
+}
+
+function isLiveLocalPlace(place: LiveLocalPlace | LocalStore | null): place is LiveLocalPlace {
+  return !!place && 'formatted_address' in place;
+}
+
+function getNearestStoreMeta(place: LiveLocalPlace | LocalStore | null) {
+  if (!place) return 'Use Local to find shops near you.';
+  if (isLiveLocalPlace(place)) return place.formatted_address;
+  return place.town ?? 'Use Local to find shops near you.';
+}
 
 function timeAgo(dateString: string) {
   const then = new Date(dateString).getTime();
@@ -85,56 +222,48 @@ export default function CommunityScreen() {
   const [profiles, setProfiles] = useState<Record<string, ProfilePreview>>({});
   const [cards, setCards] = useState<Record<string, CardPreview>>({});
   const [ownedCards, setOwnedCards] = useState<OwnedCardOption[]>([]);
+  const [chaseCards, setChaseCards] = useState<OwnedCardOption[]>([]);
+  const [binderOptions, setBinderOptions] = useState<BinderOption[]>([]);
+  const [bindersById, setBindersById] = useState<Record<string, BinderOption>>({});
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [mode, setMode] = useState<FeedMode>('global');
-  const [activeSocialTab, setActiveSocialTab] = useState<SocialTab>('Feed');
+  const [activeSocialTab, setActiveSocialTab] = useState<SocialTab>('Home');
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [cardModalOpen, setCardModalOpen] = useState(false);
-
-  const postBoxAnim = useRef(new Animated.Value(1)).current;
-  const postBoxVisible = useRef(true);
-  const feedLastScrollY = useRef(0);
-
-  const handleFeedScroll = useCallback((event: any) => {
-    const y = event.nativeEvent.contentOffset.y;
-    const diff = y - feedLastScrollY.current;
-    feedLastScrollY.current = y;
-
-    if (diff > 6 && y > 10 && postBoxVisible.current) {
-      postBoxVisible.current = false;
-      Animated.timing(postBoxAnim, { toValue: 0, duration: 220, useNativeDriver: false }).start();
-    } else if (diff < -6 && !postBoxVisible.current) {
-      postBoxVisible.current = true;
-      Animated.timing(postBoxAnim, { toValue: 1, duration: 200, useNativeDriver: false }).start();
-    }
-  }, [postBoxAnim]);
+  const [flexPickerMode, setFlexPickerMode] = useState<FlexPickerMode>(null);
 
   const [body, setBody] = useState('');
   const [selectedCard, setSelectedCard] = useState<OwnedCardOption | null>(null);
-  const [userSearch, setUserSearch] = useState('');
-  const [userResults, setUserResults] = useState<ProfilePreview[]>([]);
-  const [userSearchLoading, setUserSearchLoading] = useState(false);
+  const [selectedBinder, setSelectedBinder] = useState<BinderOption | null>(null);
   const [friends, setFriends] = useState<any[]>([]);
+  const [localStoreSearch, setLocalStoreSearch] = useState('');
+  const [localSearchPoint, setLocalSearchPoint] = useState<LocalPoint | null>(null);
+  const [localFilter, setLocalFilter] = useState<LocalFilter>('Stores');
+  const [localStores, setLocalStores] = useState<LocalStore[]>([]);
+  const [liveLocalPlaces, setLiveLocalPlaces] = useState<LiveLocalPlace[]>([]);
+  const [localFeaturedEvents, setLocalFeaturedEvents] = useState<LocalFeaturedEvent[]>([]);
+  const [localMeetups, setLocalMeetups] = useState<LocalMeetup[]>([]);
+  const [localLoading, setLocalLoading] = useState(false);
+  const [liveLocalLoading, setLiveLocalLoading] = useState(false);
+  const [meetupModalOpen, setMeetupModalOpen] = useState(false);
+  const [meetupTitle, setMeetupTitle] = useState('');
+  const [meetupLocation, setMeetupLocation] = useState('');
+  const [meetupPostcode, setMeetupPostcode] = useState('');
+  const [meetupDate, setMeetupDate] = useState('');
 
   const loadFeed = async () => {
     try {
       setLoading(true);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const { error: userError } = await supabase.auth.getUser();
 
       const myFriends = await getMyFriends();
       setFriends(myFriends);
 
       if (userError) throw userError;
-      setCurrentUserId(user?.id ?? null);
-
       const { data: postData, error: postError } = await supabase
         .from('social_posts')
         .select('*')
@@ -149,6 +278,9 @@ export default function CommunityScreen() {
       const userIds = [...new Set(nextPosts.map((post) => post.user_id))];
       const cardIds = [
         ...new Set(nextPosts.map((post) => post.card_id).filter(Boolean)),
+      ] as string[];
+      const binderIds = [
+        ...new Set(nextPosts.map((post) => post.binder_id).filter(Boolean)),
       ] as string[];
 
       if (userIds.length) {
@@ -180,6 +312,17 @@ export default function CommunityScreen() {
       } else {
         setCards({});
       }
+
+      if (binderIds.length) {
+        const { data: binderData } = await supabase
+          .from('binders')
+          .select('id, name, type, is_public')
+          .in('id', binderIds);
+
+        setBindersById(Object.fromEntries((binderData ?? []).map((binder) => [binder.id, binder as BinderOption])));
+      } else {
+        setBindersById({});
+      }
     } catch (error) {
       console.log('Feed load failed', error);
       Alert.alert('Error', 'Could not load community feed.');
@@ -198,87 +341,93 @@ export default function CommunityScreen() {
 
       const { data: binderData, error: binderError } = await supabase
         .from('binders')
-        .select('id')
+        .select('id, name, type, is_public')
         .eq('user_id', user.id);
 
       if (binderError) throw binderError;
 
+      setBinderOptions((binderData ?? []) as BinderOption[]);
       const binderIds = (binderData ?? []).map((binder) => binder.id);
 
       if (!binderIds.length) {
         setOwnedCards([]);
-        return;
+        setBinderOptions([]);
+      } else {
+        const binderNameMap = Object.fromEntries((binderData ?? []).map((binder) => [binder.id, binder.name]));
+
+        const { data: ownedRows, error: ownedError } = await supabase
+          .from('binder_cards')
+          .select('binder_id, card_id, set_id')
+          .in('binder_id', binderIds)
+          .eq('owned', true);
+
+        if (ownedError) throw ownedError;
+
+        const cardIds = [
+          ...new Set((ownedRows ?? []).map((row) => row.card_id)),
+        ];
+
+        if (!cardIds.length) {
+          setOwnedCards([]);
+        } else {
+          const { data: cardData, error: cardError } = await supabase
+            .from('pokemon_cards')
+            .select('id, name, set_id, image_small, image_large, raw_data')
+            .in('id', cardIds);
+
+          if (cardError) throw cardError;
+
+          const cardMap = Object.fromEntries(
+            (cardData ?? []).map((card) => [card.id, card])
+          );
+
+          const options = (ownedRows ?? []).map((row) => ({
+            binder_id: row.binder_id,
+            binder_name: binderNameMap[row.binder_id] ?? null,
+            card_id: row.card_id,
+            set_id: row.set_id,
+            card: cardMap[row.card_id] ?? null,
+          }));
+
+          setOwnedCards(options);
+        }
       }
 
-      const { data: ownedRows, error: ownedError } = await supabase
-        .from('binder_cards')
-        .select('binder_id, card_id, set_id')
-        .in('binder_id', binderIds)
-        .eq('owned', true);
+      const { data: watchRows, error: watchError } = await supabase
+        .from('market_watchlist')
+        .select('card_id, set_id, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
 
-      if (ownedError) throw ownedError;
+      if (watchError) throw watchError;
 
-      const cardIds = [
-        ...new Set((ownedRows ?? []).map((row) => row.card_id)),
-      ];
+      const chaseCardIds = [...new Set((watchRows ?? []).map((row) => row.card_id))];
 
-      if (!cardIds.length) {
-        setOwnedCards([]);
-        return;
+      if (!chaseCardIds.length) {
+        setChaseCards([]);
+      } else {
+        const { data: chaseCardData, error: chaseCardError } = await supabase
+          .from('pokemon_cards')
+          .select('id, name, set_id, image_small, image_large, raw_data')
+          .in('id', chaseCardIds);
+
+        if (chaseCardError) throw chaseCardError;
+
+        const chaseCardMap = Object.fromEntries((chaseCardData ?? []).map((card) => [card.id, card]));
+        setChaseCards((watchRows ?? []).map((row) => ({
+          binder_id: null,
+          binder_name: 'Chase card',
+          card_id: row.card_id,
+          set_id: row.set_id,
+          card: chaseCardMap[row.card_id] ?? null,
+        })));
       }
-
-      const { data: cardData, error: cardError } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, set_id, image_small, image_large, raw_data')
-        .in('id', cardIds);
-
-      if (cardError) throw cardError;
-
-      const cardMap = Object.fromEntries(
-        (cardData ?? []).map((card) => [card.id, card])
-      );
-
-      const options = (ownedRows ?? []).map((row) => ({
-        binder_id: row.binder_id,
-        card_id: row.card_id,
-        set_id: row.set_id,
-        card: cardMap[row.card_id] ?? null,
-      }));
-
-      setOwnedCards(options);
     } catch (error) {
       console.log('Owned cards load failed', error);
       Alert.alert('Error', 'Could not load your owned cards.');
     }
   };
-
-  const searchUsers = async (text: string) => {
-  setUserSearch(text);
-
-  if (text.trim().length < 2) {
-    setUserResults([]);
-    return;
-  }
-
-  try {
-    setUserSearchLoading(true);
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, collector_name, avatar_preset')
-      .ilike('collector_name', `%${text.trim()}%`)
-      .neq('id', currentUserId ?? '')
-      .limit(10);
-
-    if (error) throw error;
-
-    setUserResults((data ?? []) as ProfilePreview[]);
-  } catch (error) {
-    console.log('User search failed', error);
-  } finally {
-    setUserSearchLoading(false);
-  }
-};
 
   useEffect(() => {
     loadFeed();
@@ -286,12 +435,16 @@ export default function CommunityScreen() {
   }, []);
 
  const visiblePosts = useMemo(() => {
-  if (mode === 'global') return posts;
+  const basePosts = mode === 'global'
+    ? posts
+    : posts.filter((post) => friends.some((f) => f.friend_id === post.user_id));
 
-  return posts.filter((post) =>
-    friends.some((f) => f.friend_id === post.user_id)
-  );
-}, [posts, mode, friends]);
+  if (activeSocialTab === 'Flex') {
+    return basePosts.filter((post) => post.post_type === 'card_showcase' || post.post_type === 'binder_showcase');
+  }
+
+  return activeSocialTab === 'Home' ? [] : basePosts;
+}, [posts, mode, friends, activeSocialTab]);
   const handleAdminDeletePost = async (postId: string) => {
     Alert.alert('Delete post', 'Remove this post permanently?', [
       { text: 'Cancel', style: 'cancel' },
@@ -309,8 +462,8 @@ export default function CommunityScreen() {
   const handleCreatePost = async () => {
     const trimmedBody = body.trim();
 
-    if (!trimmedBody && !selectedCard) {
-      Alert.alert('Add something first', 'Write a post or attach a card.');
+    if (!trimmedBody && !selectedCard && !selectedBinder) {
+      Alert.alert('Add something first', 'Write a post, attach a card, or choose a binder.');
       return;
     }
 
@@ -325,11 +478,21 @@ export default function CommunityScreen() {
       if (userError) throw userError;
       if (!user) throw new Error('You must be signed in.');
 
+      if (selectedBinder && !selectedBinder.is_public) {
+        const { error: visibilityError } = await supabase
+          .from('binders')
+          .update({ is_public: true })
+          .eq('id', selectedBinder.id)
+          .eq('user_id', user.id);
+
+        if (visibilityError) throw visibilityError;
+      }
+
       const { error } = await supabase.from('social_posts').insert({
         user_id: user.id,
-        post_type: selectedCard ? 'card_showcase' : 'general',
+        post_type: selectedBinder ? 'binder_showcase' : selectedCard ? 'card_showcase' : 'general',
         body: trimmedBody || null,
-        binder_id: selectedCard?.binder_id ?? null,
+        binder_id: selectedBinder?.id ?? selectedCard?.binder_id ?? null,
         card_id: selectedCard?.card_id ?? null,
         set_id: selectedCard?.set_id ?? null,
       });
@@ -338,6 +501,8 @@ export default function CommunityScreen() {
 
       setBody('');
       setSelectedCard(null);
+      setSelectedBinder(null);
+      setActiveCategory('All');
 
       await loadFeed();
     } catch (error: any) {
@@ -351,12 +516,266 @@ export default function CommunityScreen() {
     }
   };
 
+  const loadLocalData = useCallback(async () => {
+    try {
+      setLocalLoading(true);
+
+      const [storesResult, eventsResult, meetupsResult] = await Promise.all([
+        supabase
+          .from('local_stores')
+          .select('id, name, description, town, postcode, website_url')
+          .eq('is_published', true)
+          .order('name', { ascending: true })
+          .limit(25),
+        supabase
+          .from('local_featured_events')
+          .select('*')
+          .eq('is_published', true)
+          .order('starts_at', { ascending: true })
+          .limit(10),
+        supabase
+          .from('local_meetups')
+          .select('*')
+          .eq('status', 'published')
+          .order('starts_at', { ascending: true, nullsFirst: false })
+          .limit(25),
+      ]);
+
+      if (storesResult.error) throw storesResult.error;
+      if (eventsResult.error) throw eventsResult.error;
+      if (meetupsResult.error) throw meetupsResult.error;
+
+      setLocalStores((storesResult.data ?? []) as LocalStore[]);
+      setLocalFeaturedEvents((eventsResult.data ?? []) as LocalFeaturedEvent[]);
+      setLocalMeetups((meetupsResult.data ?? []) as LocalMeetup[]);
+    } catch (error) {
+      console.log('Local data load failed', error);
+      Alert.alert('Local unavailable', 'Could not load local stores and meet ups.');
+    } finally {
+      setLocalLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSocialTab === 'Local' || activeSocialTab === 'Home') {
+      loadLocalData();
+    }
+  }, [activeSocialTab, loadLocalData]);
+
+  const searchLiveLocalPlaces = useCallback(async (text: string) => {
+    const queryText = text.trim();
+
+    if (!queryText || queryText.length < 2) {
+      setLocalSearchPoint(null);
+      setLiveLocalPlaces([]);
+      return;
+    }
+
+    try {
+      setLiveLocalLoading(true);
+      const point = await geocodeLocalSearch(queryText);
+      setLocalSearchPoint(point);
+
+      const areaResponse = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=gb&q=${encodeURIComponent(queryText)}`, {
+        headers: { 'User-Agent': 'Stackr/1.0' },
+      });
+      const areas = await areaResponse.json();
+      const firstArea = areas?.[0];
+
+      if (!firstArea?.boundingbox) {
+        setLiveLocalPlaces([]);
+        return;
+      }
+
+      const [south, north, west, east] = firstArea.boundingbox.map((value: string) => Number(value));
+      const overpassQuery = `
+        [out:json][timeout:12];
+        (
+          node["shop"~"games|collector|hobby|comics|books"](${south},${west},${north},${east});
+          way["shop"~"games|collector|hobby|comics|books"](${south},${west},${north},${east});
+          node["name"~"pokemon|pokémon|tcg|trading card|magic the gathering|mtg|yugioh|yu-gi-oh|lorcana|tabletop|board game|comic|hobby", i](${south},${west},${north},${east});
+          way["name"~"pokemon|pokémon|tcg|trading card|magic the gathering|mtg|yugioh|yu-gi-oh|lorcana|tabletop|board game|comic|hobby", i](${south},${west},${north},${east});
+        );
+        out center 30;
+      `;
+      const overpassResponse = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'User-Agent': 'Stackr/1.0',
+        },
+        body: `data=${encodeURIComponent(overpassQuery)}`,
+      });
+      const overpassJson = await overpassResponse.json();
+      const places = ((overpassJson?.elements ?? []) as any[])
+        .map((element) => {
+          const tags = element.tags ?? {};
+          const name = tags.name;
+          if (!name) return null;
+          if (!looksLikeCardStore(tags)) return null;
+          const latitude = Number(element.lat ?? element.center?.lat);
+          const longitude = Number(element.lon ?? element.center?.lon);
+          const miles = Number.isFinite(latitude) && Number.isFinite(longitude) && point
+            ? distanceMiles(point, { latitude, longitude })
+            : null;
+          if (miles != null && miles > 15) return null;
+          const address = [
+            tags['addr:housenumber'],
+            tags['addr:street'],
+            tags['addr:city'] ?? tags['addr:town'] ?? tags['addr:village'],
+            tags['addr:postcode'],
+          ].filter(Boolean).join(', ');
+          return {
+            place_id: String(element.id),
+            name,
+            formatted_address: address || tags['addr:full'] || queryText,
+            category: tags.shop ? String(tags.shop) : tags.amenity ? String(tags.amenity) : 'local',
+            latitude: Number.isFinite(latitude) ? latitude : undefined,
+            longitude: Number.isFinite(longitude) ? longitude : undefined,
+          } as LiveLocalPlace;
+        })
+        .filter(Boolean)
+        .sort((a, b) => {
+          const aDistance = point ? distanceMiles(point, a as LiveLocalPlace) ?? 9999 : 9999;
+          const bDistance = point ? distanceMiles(point, b as LiveLocalPlace) ?? 9999 : 9999;
+          return aDistance - bDistance;
+        })
+        .slice(0, 10) as LiveLocalPlace[];
+
+      setLiveLocalPlaces(places);
+    } catch (error) {
+      console.log('Live local search failed', error);
+      setLocalSearchPoint(null);
+      setLiveLocalPlaces([]);
+    } finally {
+      setLiveLocalLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSocialTab !== 'Local') return;
+    const timer = setTimeout(() => {
+      searchLiveLocalPlaces(localStoreSearch);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [activeSocialTab, localStoreSearch, searchLiveLocalPlaces]);
+
+  const handleCreateLocalMeetup = () => {
+    const parsedDate = meetupDate.trim() ? new Date(meetupDate.trim()) : null;
+
+    if (!meetupTitle.trim() || !meetupLocation.trim()) {
+      Alert.alert('Add meetup details', 'Please add a title and location.');
+      return;
+    }
+
+    if (parsedDate && Number.isNaN(parsedDate.getTime())) {
+      Alert.alert('Check the date', 'Use a readable date, for example 31 May 2026 18:30.');
+      return;
+    }
+
+    (async () => {
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) throw userError;
+        if (!user) throw new Error('You must be signed in.');
+        const meetupPoint = meetupPostcode.trim()
+          ? await geocodeLocalSearch(meetupPostcode.trim())
+          : localSearchPoint;
+
+        const meetupPayload = {
+          title: meetupTitle.trim(),
+          location_name: meetupLocation.trim(),
+          postcode: meetupPostcode.trim() || localStoreSearch.trim() || null,
+          latitude: meetupPoint?.latitude ?? null,
+          longitude: meetupPoint?.longitude ?? null,
+          starts_at: parsedDate ? parsedDate.toISOString() : null,
+          status: 'published',
+          created_by: user.id,
+        };
+
+        const { error } = await supabase.from('local_meetups').insert(meetupPayload);
+
+        if (error) throw error;
+
+        setMeetupTitle('');
+        setMeetupLocation('');
+        setMeetupPostcode('');
+        setMeetupDate('');
+        setMeetupModalOpen(false);
+        await loadLocalData();
+        Alert.alert('Meetup created', 'Your local meet up is now visible in Local.');
+      } catch (error: any) {
+        Alert.alert('Could not create meet up', error?.message ?? 'Please try again.');
+      }
+    })();
+  };
+
+  const handleJoinMeetup = async (meetupId: string) => {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) throw userError;
+      if (!user) throw new Error('You must be signed in.');
+
+      const { error } = await supabase
+        .from('local_meetup_attendees')
+        .upsert(
+          { meetup_id: meetupId, user_id: user.id, status: 'going' },
+          { onConflict: 'meetup_id,user_id' }
+        );
+
+      if (error) throw error;
+      Alert.alert('Joined', 'You are marked as going.');
+    } catch (error: any) {
+      Alert.alert('Could not join', error?.message ?? 'Please try again.');
+    }
+  };
+
+  const openFlexPicker = (modeToOpen: Exclude<FlexPickerMode, null>) => {
+    setActiveCategory(
+      modeToOpen === 'binder' ? 'Binder Flex'
+        : modeToOpen === 'chase' ? 'Chase Pull'
+        : modeToOpen === 'trade' ? 'Trade Win'
+        : 'Slab Return'
+    );
+    setFlexPickerMode(modeToOpen);
+  };
+
+  const chooseBinderFlex = (binder: BinderOption) => {
+    setSelectedBinder(binder);
+    setSelectedCard(null);
+    setBody((current) => current || 'Check out this binder!');
+    setFlexPickerMode(null);
+  };
+
+  const chooseCardFlex = (card: OwnedCardOption) => {
+    setSelectedCard(card);
+    setSelectedBinder(null);
+    setBody((current) => current || 'Look what I finally got!');
+    setFlexPickerMode(null);
+  };
+
+  const chooseChaseFlex = (card: OwnedCardOption) => {
+    setSelectedCard(card);
+    setSelectedBinder(null);
+    setBody((current) => current || 'Currently chasing this card!');
+    setFlexPickerMode(null);
+  };
+
   const renderPost = ({ item }: { item: SocialPost }) => {
     const profile = profiles[item.user_id];
     const avatar = AVATAR_PRESETS.find(
       (a) => a.key === profile?.avatar_preset
     );
     const card = item.card_id ? cards[item.card_id] : null;
+    const binder = item.binder_id ? bindersById[item.binder_id] : null;
 
     return (
   <View style={styles.postCard}>
@@ -396,6 +815,10 @@ export default function CommunityScreen() {
   <Text style={styles.body}>{item.body}</Text>
 )}
 
+{item.post_type === 'binder_showcase' && (
+  <Text style={styles.body}>{item.body || 'Sharing a binder flex'}</Text>
+)}
+
         {card && (
           <View style={styles.attachedCard}>
             {card.image_small || card.image_large ? (
@@ -429,45 +852,32 @@ export default function CommunityScreen() {
             </View>
           </View>
         )}
+        {binder && !card && (
+          <Pressable
+            onPress={() => router.push(`/binder/${binder.id}?readOnly=true` as any)}
+            style={styles.attachedCard}
+          >
+            <View style={styles.binderShareIcon}>
+              <Ionicons name="albums-outline" size={28} color={theme.colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cardName}>{binder.name}</Text>
+              <Text style={styles.cardSet}>{binder.type === 'official' ? 'Official binder' : 'Custom binder'}</Text>
+              <Text style={styles.cardTag}>Read-only binder flex</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
+          </Pressable>
+        )}
       </View>
     );
   };
 
-const renderUserResult = ({ item }: { item: ProfilePreview }) => {
-  const avatar = AVATAR_PRESETS.find((a) => a.key === item.avatar_preset);
-
-  return (
-    <Pressable
-      onPress={() => router.push(`/user/${item.id}`)}
-      style={styles.userResultCard}
-    >
-      <View style={styles.userResultAvatar}>
-        {avatar?.image ? (
-          <Image source={avatar.image} style={styles.userResultAvatarImage} />
-        ) : (
-          <Ionicons name="person" size={18} color="#fff" />
-        )}
-      </View>
-
-      <View style={{ flex: 1 }}>
-        <Text style={styles.userResultName}>
-          {item.collector_name ?? 'Collector'}
-        </Text>
-        <Text style={styles.userResultSubtext}>View profile</Text>
-      </View>
-
-      <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
-    </Pressable>
-  );
-};
-
-  const socialTabs: SocialTab[] = ['Feed', 'Flex', 'Local', 'Price Checks', 'Discussions'];
+  const socialTabs: SocialTab[] = ['Home', 'Flex', 'Local', 'News'];
   const socialCategories: Record<SocialTab, { icon: keyof typeof Ionicons.glyphMap; label: string }[]> = {
-    Feed: [
+    Home: [
       { icon: 'albums-outline', label: 'Binder Flex' },
-      { icon: 'sparkles-outline', label: 'Chase Pulls' },
-      { icon: 'swap-horizontal-outline', label: 'Trades' },
-      { icon: 'trophy-outline', label: 'Set Complete' },
+      { icon: 'location-outline', label: 'Local' },
+      { icon: 'newspaper-outline', label: 'News' },
     ],
     Flex: [
       { icon: 'albums-outline', label: 'Binders' },
@@ -481,41 +891,64 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
       { icon: 'people-outline', label: 'Collectors' },
       { icon: 'swap-horizontal-outline', label: 'Trade Tables' },
     ],
-    'Price Checks': [
-      { icon: 'trending-up-outline', label: 'Market' },
-      { icon: 'pricetag-outline', label: 'eBay Sold' },
-      { icon: 'analytics-outline', label: 'TCG' },
-      { icon: 'globe-outline', label: 'Cardmarket' },
-    ],
-    Discussions: [
-      { icon: 'trending-up-outline', label: 'Market' },
-      { icon: 'cube-outline', label: 'Sets' },
-      { icon: 'shield-checkmark-outline', label: 'Grading' },
-      { icon: 'file-tray-full-outline', label: 'Sealed' },
-      { icon: 'swap-horizontal-outline', label: 'Trades' },
-      { icon: 'analytics-outline', label: 'Investing' },
+    News: [
+      { icon: 'newspaper-outline', label: 'Latest' },
+      { icon: 'sparkles-outline', label: 'New Sets' },
+      { icon: 'calendar-outline', label: 'Releases' },
+      { icon: 'trophy-outline', label: 'Events' },
+      { icon: 'pricetag-outline', label: 'Market' },
     ],
   };
   const activeSocialCategories = socialCategories[activeSocialTab] ?? [];
   const flexCards = [
-    { icon: 'albums-outline' as const, label: 'Binder Flex' },
-    { icon: 'sparkles-outline' as const, label: 'Chase Card\nPull' },
-    { icon: 'swap-horizontal-outline' as const, label: 'Trade Win' },
-    { icon: 'trophy-outline' as const, label: 'Set Complete' },
-    { icon: 'id-card-outline' as const, label: 'Slab Return' },
+    { icon: 'albums-outline' as const, label: 'Binder Flex', mode: 'binder' as const },
+    { icon: 'sparkles-outline' as const, label: 'Chase Pull', mode: 'chase' as const },
+    { icon: 'swap-horizontal-outline' as const, label: 'Trade Win', mode: 'trade' as const },
+    { icon: 'trophy-outline' as const, label: 'Set Complete', mode: 'binder' as const },
+    { icon: 'id-card-outline' as const, label: 'Slab Return', mode: 'slab' as const },
   ];
-  const marketTopics = [
-    { icon: 'analytics-outline' as const, label: 'Are vintage holos moving up again?', replies: 56 },
-    { icon: 'podium-outline' as const, label: 'PSA 10 prices this week', replies: 32 },
-    { icon: 'cube-outline' as const, label: 'Sealed product watch', replies: 28 },
-    { icon: 'pricetag-outline' as const, label: "What's undervalued right now?", replies: 41 },
+  const localActions = [
+    { icon: 'storefront-outline' as const, title: 'Local shops', body: 'Find card stores and sellers near you.' },
+    { icon: 'people-outline' as const, title: 'Meet ups', body: 'Discover collector meet ups and casual trades.' },
+    { icon: 'calendar-outline' as const, title: 'Trade nights', body: 'See upcoming events and table nights.' },
   ];
-  const shareActions = [
-    { icon: 'albums-outline' as const, label: 'Flex binder' },
-    { icon: 'sparkles-outline' as const, label: 'Post chase card' },
-    { icon: 'chatbubble-ellipses-outline' as const, label: 'Start discussion' },
-    { icon: 'location-outline' as const, label: 'Organise meetup' },
+  const localStoreResults = localStores.filter((store) =>
+    !localStoreSearch.trim() ||
+    store.name.toLowerCase().includes(localStoreSearch.trim().toLowerCase())
+    || (store.town ?? '').toLowerCase().includes(localStoreSearch.trim().toLowerCase())
+    || (store.postcode ?? '').toLowerCase().includes(localStoreSearch.trim().toLowerCase())
+  );
+  const nearbyLocalMeetups = localSearchPoint
+    ? localMeetups
+        .map((event) => ({ event, miles: distanceMiles(localSearchPoint, event) }))
+        .filter(({ miles, event }) => {
+          if (miles != null) return miles <= 25;
+          const searchTerm = localStoreSearch.trim().toLowerCase();
+          return [event.postcode, event.town, event.location_name].some((value) => (value ?? '').toLowerCase().includes(searchTerm));
+        })
+        .sort((a, b) => (a.miles ?? 9999) - (b.miles ?? 9999))
+    : localMeetups.map((event) => ({ event, miles: null as number | null }));
+  const nearbyFeaturedEvents = localSearchPoint
+    ? localFeaturedEvents
+        .map((event) => ({ event, miles: distanceMiles(localSearchPoint, event) }))
+        .filter(({ miles, event }) => {
+          if (miles != null) return miles <= 25;
+          const searchTerm = localStoreSearch.trim().toLowerCase();
+          return [event.postcode, event.town, event.venue_name].some((value) => (value ?? '').toLowerCase().includes(searchTerm));
+        })
+        .sort((a, b) => (a.miles ?? 9999) - (b.miles ?? 9999))
+    : localFeaturedEvents.map((event) => ({ event, miles: null as number | null }));
+  const newsItems = [
+    { icon: 'newspaper-outline' as const, title: 'Pokemon news hub', body: 'Latest set news, release notes, announcements, and market-moving updates will live here.' },
+    { icon: 'sparkles-outline' as const, title: 'New releases', body: 'Track upcoming English and Japanese set launches.' },
+    { icon: 'megaphone-outline' as const, title: 'Stackr updates', body: 'Use this area for app news, feature updates, and admin posts.' },
   ];
+  const latestFlexPosts = posts
+    .filter((post) => post.post_type === 'card_showcase' || post.post_type === 'binder_showcase')
+    .slice(0, 10);
+  const soonestConvention = localFeaturedEvents[0] ?? null;
+  const nearestStore: LiveLocalPlace | LocalStore | null = liveLocalPlaces[0] ?? localStoreResults[0] ?? null;
+  const latestNewsItem = newsItems[0];
 
   const renderOwnedCard = ({ item }: { item: OwnedCardOption }) => {
     const card = item.card;
@@ -552,6 +985,92 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
     );
   };
 
+  const renderFlexPickerContent = () => {
+    if (flexPickerMode === 'binder') {
+      return (
+        <>
+          <Text style={styles.modalHeading}>Share a binder</Text>
+          <Text style={styles.modalSubheading}>Choose a binder to post as a read-only flex.</Text>
+          {binderOptions.map((binder) => (
+            <Pressable key={binder.id} onPress={() => chooseBinderFlex(binder)} style={styles.flexPickerRow}>
+              <View style={styles.flexPickerIcon}>
+                <Ionicons name="albums-outline" size={20} color={theme.colors.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.flexPickerTitle}>{binder.name}</Text>
+                <Text style={styles.flexPickerSubtitle}>{binder.type === 'official' ? 'Official binder' : 'Custom binder'} · Read-only share</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
+            </Pressable>
+          ))}
+          {!binderOptions.length && <Text style={styles.emptyText}>No binders found yet.</Text>}
+        </>
+      );
+    }
+
+    if (flexPickerMode === 'chase') {
+      return (
+        <>
+          <Text style={styles.modalHeading}>Share a chase card</Text>
+          <Text style={styles.modalSubheading}>Choose from your current market watchlist.</Text>
+          <FlatList
+            data={chaseCards}
+            keyExtractor={(item) => `chase-${item.set_id}-${item.card_id}`}
+            renderItem={({ item }) => (
+              <Pressable onPress={() => chooseChaseFlex(item)} style={styles.ownedCardRow}>
+                {item.card?.image_small || item.card?.image_large ? (
+                  <Image source={{ uri: item.card.image_small ?? item.card.image_large ?? '' }} style={styles.ownedCardImage} resizeMode="contain" />
+                ) : (
+                  <View style={styles.ownedCardImagePlaceholder} />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.ownedCardName}>{item.card?.name ?? item.card_id}</Text>
+                  <Text style={styles.ownedCardSet}>{item.card?.raw_data?.set?.name ?? item.set_id}</Text>
+                </View>
+                <Text style={styles.selectText}>Flex</Text>
+              </Pressable>
+            )}
+            style={{ maxHeight: 420 }}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.placeholderPanel}>
+                <Ionicons name="sparkles-outline" size={28} color={theme.colors.primary} />
+                <Text style={styles.placeholderTitle}>No chase cards yet</Text>
+                <Text style={styles.emptyText}>Add cards to your market watchlist, then use this button to flex what you are chasing.</Text>
+              </View>
+            }
+          />
+        </>
+      );
+    }
+
+    if (flexPickerMode === 'trade') {
+      return (
+        <>
+          <Text style={styles.modalHeading}>Share a trade win</Text>
+          <Text style={styles.modalSubheading}>Recent completed trades will appear here once trade history is wired in.</Text>
+          <View style={styles.placeholderPanel}>
+            <Ionicons name="swap-horizontal-outline" size={28} color={theme.colors.primary} />
+            <Text style={styles.placeholderTitle}>Trade history coming soon</Text>
+            <Text style={styles.emptyText}>For now, write your trade win in the composer and attach a card.</Text>
+          </View>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Text style={styles.modalHeading}>Share a slab return</Text>
+        <Text style={styles.modalSubheading}>Slabs are a placeholder until grading inventory is added.</Text>
+        <View style={styles.placeholderPanel}>
+          <Ionicons name="id-card-outline" size={28} color={theme.colors.primary} />
+          <Text style={styles.placeholderTitle}>Slab support coming soon</Text>
+          <Text style={styles.emptyText}>This will let users flex graded returns once slabs exist in inventory.</Text>
+        </View>
+      </>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <FeatureTipGate
@@ -576,9 +1095,6 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
                 <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
                 <View style={styles.notificationDot} />
               </Pressable>
-              <Pressable style={styles.heroAddButton}>
-                <Ionicons name="add" size={28} color="#FFFFFF" />
-              </Pressable>
             </View>
           </View>
 
@@ -588,7 +1104,15 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
           <View style={styles.heroOrbSmall} />
 
           <Text style={styles.heading}>Social</Text>
-          <Text style={styles.subheading}>Flex, trade, meet and talk cards.</Text>
+          <Text style={styles.subheading}>
+            {activeSocialTab === 'Flex'
+              ? 'Showcase pulls, binders and milestones.'
+              : activeSocialTab === 'Local'
+                ? 'Find shops, meet ups and trade nights.'
+                : activeSocialTab === 'News'
+                    ? 'Latest Pokemon news and Stackr updates.'
+                    : 'A quick look across flex, local and news.'}
+          </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.socialTabs}>
             {socialTabs.map((tab) => {
@@ -610,6 +1134,7 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
           </ScrollView>
         </View>
 
+        {activeSocialTab === 'News' && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -635,199 +1160,395 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
             );
           })}
         </ScrollView>
+        )}
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.flexCardRow}>
-          {flexCards.map((item, index) => (
-            <Pressable key={item.label} style={[styles.flexCard, index === 0 && styles.flexCardActive]}>
-              <Ionicons name={item.icon} size={34} color={theme.colors.primary} />
-              <Text style={styles.flexCardText}>{item.label}</Text>
+        {activeSocialTab === 'Home' && (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+          <View style={styles.homeSummaryGrid}>
+            <Pressable onPress={() => setActiveSocialTab('Flex')} style={styles.homeSummaryCard}>
+              <View style={styles.panelHeader}>
+                <Text style={styles.panelTitle}>Latest flex</Text>
+                <Text style={styles.viewAllText}>Latest 10</Text>
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.flexPreviewRow}>
+                {latestFlexPosts.length ? latestFlexPosts.map((post) => {
+                  const card = post.card_id ? cards[post.card_id] : null;
+                  const profile = profiles[post.user_id];
+                  return (
+                    <Pressable key={post.id} onPress={() => setActiveSocialTab('Flex')} style={styles.flexPreviewCard}>
+                      {card?.image_small || card?.image_large ? (
+                        <Image source={{ uri: card.image_small ?? card.image_large ?? '' }} style={styles.flexPreviewImage} resizeMode="contain" />
+                      ) : (
+                        <View style={styles.flexPreviewPlaceholder}>
+                          <Ionicons name="albums-outline" size={18} color={theme.colors.primary} />
+                        </View>
+                      )}
+                      <Text numberOfLines={1} style={styles.flexPreviewName}>{profile?.collector_name ?? 'Collector'}</Text>
+                    </Pressable>
+                  );
+                }) : (
+                  <Text style={styles.localEmptyText}>No flex posts yet.</Text>
+                )}
+              </ScrollView>
             </Pressable>
-          ))}
+
+            <Pressable onPress={() => setActiveSocialTab('Local')} style={styles.homeSummaryCard}>
+              <View style={styles.panelHeader}>
+                <Text style={styles.panelTitle}>Soonest convention</Text>
+                <Text style={styles.viewAllText}>Local</Text>
+              </View>
+              <Text style={styles.homeFeatureTitle}>{soonestConvention?.title ?? 'No featured shows yet'}</Text>
+              <Text style={styles.homeFeatureMeta}>
+                {soonestConvention ? `${soonestConvention.venue_name ?? soonestConvention.town ?? 'Venue TBC'} - ${shortDateTime(soonestConvention.starts_at)}` : 'Admin-added shows will appear here.'}
+              </Text>
+            </Pressable>
+
+            <Pressable onPress={() => setActiveSocialTab('Local')} style={styles.homeSummaryCard}>
+              <View style={styles.panelHeader}>
+                <Text style={styles.panelTitle}>Nearest shop</Text>
+                <Text style={styles.viewAllText}>Search</Text>
+              </View>
+              <Text style={styles.homeFeatureTitle}>{nearestStore?.name ?? 'Search Local'}</Text>
+              <Text style={styles.homeFeatureMeta}>
+                {getNearestStoreMeta(nearestStore)}
+              </Text>
+            </Pressable>
+
+            <Pressable onPress={() => setActiveSocialTab('News')} style={styles.homeSummaryCard}>
+              <View style={styles.panelHeader}>
+                <Text style={styles.panelTitle}>Latest news</Text>
+                <Text style={styles.viewAllText}>News</Text>
+              </View>
+              <Text style={styles.homeFeatureTitle}>{latestNewsItem.title}</Text>
+              <Text style={styles.homeFeatureMeta}>{latestNewsItem.body}</Text>
+            </Pressable>
+          </View>
         </ScrollView>
+        )}
 
-        <View style={styles.socialGrid}>
-          <View style={[styles.panelCard, styles.panelHalf]}>
-            <View style={styles.panelHeader}>
-              <View style={styles.panelTitleRow}>
-                <Ionicons name="chatbubble-ellipses" size={20} color={theme.colors.primary} />
-                <Text style={styles.panelTitle}>Card Market Talk</Text>
+        {activeSocialTab === 'Local' && (
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+            {localLoading && (
+              <ActivityIndicator color={theme.colors.primary} style={{ marginBottom: 10 }} />
+            )}
+            <View style={styles.localSearchPanel}>
+              <View style={styles.localSearchInputRow}>
+                <Ionicons name="search-outline" size={20} color={theme.colors.textSoft} />
+                <TextInput
+                  value={localStoreSearch}
+                  onChangeText={setLocalStoreSearch}
+                  placeholder="Enter postcode or town"
+                  placeholderTextColor={theme.colors.textSoft}
+                  style={styles.localSearchInput}
+                  returnKeyType="search"
+                  onSubmitEditing={() => searchLiveLocalPlaces(localStoreSearch)}
+                />
+                <Pressable
+                  onPress={() => searchLiveLocalPlaces(localStoreSearch)}
+                  disabled={liveLocalLoading}
+                  style={[styles.localSearchButton, liveLocalLoading && { opacity: 0.6 }]}
+                >
+                  {liveLocalLoading ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Text style={styles.localSearchButtonText}>Search</Text>
+                  )}
+                </Pressable>
               </View>
-              <Text style={styles.viewAllText}>View all</Text>
+              <View style={styles.localSearchQuickRow}>
+                {(['Stores', 'Meet ups', 'Trade nights'] as const).map((label) => (
+                  <Pressable
+                    key={label}
+                    onPress={() => setLocalFilter(label)}
+                    style={[styles.localSearchChip, localFilter === label && styles.localSearchChipActive]}
+                  >
+                    <Text style={[styles.localSearchChipText, localFilter === label && styles.localSearchChipTextActive]}>{label}</Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
-            {marketTopics.map((topic) => (
-              <View key={topic.label} style={styles.topicRow}>
-                <View style={styles.topicIcon}>
-                  <Ionicons name={topic.icon} size={16} color={theme.colors.primary} />
-                </View>
-                <Text numberOfLines={1} style={styles.topicText}>{topic.label}</Text>
-                <Ionicons name="chatbubble-outline" size={14} color={theme.colors.textSoft} />
-                <Text style={styles.topicCount}>{topic.replies}</Text>
-              </View>
-            ))}
-          </View>
 
-          <View style={[styles.panelCard, styles.panelHalf]}>
-            <View style={styles.panelHeader}>
-              <View style={styles.panelTitleRow}>
-                <Ionicons name="location" size={20} color={theme.colors.primary} />
-                <View>
-                  <Text style={styles.panelTitle}>Near You</Text>
-                  <Text style={styles.panelSubtitle}>Collectors and games in your area</Text>
-                </View>
-              </View>
-              <Text style={styles.viewAllText}>View all</Text>
-            </View>
-            <View style={styles.localEventCard}>
+            {localFilter === 'Stores' && (
+            <View style={styles.localHeroPanel}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.localEventTitle}>Derby Card Night</Text>
-                <Text style={styles.localEventMeta}>6 collectors interested</Text>
-                <Text style={styles.localEventMeta}>Saturday · 6:30 PM · 2.1 miles away</Text>
+                <Text style={styles.localHeroTitle}>Find your local card scene</Text>
+                <Text style={styles.localHeroCopy}>
+                  Type a postcode or town, then search OpenStreetMap for game shops, hobby shops and nearby collector spaces.
+                </Text>
               </View>
-              <View style={styles.mapMock}>
-                <Ionicons name="location" size={32} color={theme.colors.primary} />
+              <View style={styles.mapMockLarge}>
+                <View style={styles.mapLineOne} />
+                <View style={styles.mapLineTwo} />
+                <View style={styles.mapLineThree} />
+                <View style={styles.mapDotOne} />
+                <View style={styles.mapDotTwo} />
+                <Ionicons name="location" size={30} color={theme.colors.primary} style={{ zIndex: 2 }} />
               </View>
             </View>
-            <View style={styles.localButtons}>
-              <Pressable style={styles.localPrimaryButton}>
-                <Text style={styles.localPrimaryText}>Join</Text>
-              </Pressable>
-              <Pressable style={styles.localSecondaryButton}>
-                <Text style={styles.localSecondaryText}>Create Meetup</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
+            )}
 
-        <View style={styles.sharePanel}>
-          <View style={styles.panelTitleRow}>
-            <Ionicons name="sparkles" size={18} color={theme.colors.primary} />
-            <Text style={styles.panelTitle}>Share something</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shareActions}>
-            {shareActions.map((item) => (
-              <Pressable key={item.label} style={styles.shareAction}>
-                <Ionicons name={item.icon} size={18} color={theme.colors.primary} />
-                <Text style={styles.shareActionText}>{item.label}</Text>
-              </Pressable>
+            {localFilter === 'Stores' && (
+            <>
+            <View style={styles.localSectionHeader}>
+              <Text style={styles.panelTitle}>Stores near you</Text>
+              <Text style={styles.viewAllText}>OpenStreetMap</Text>
+            </View>
+            <View style={styles.localStoreList}>
+              {liveLocalLoading && (
+                <ActivityIndicator color={theme.colors.primary} style={{ marginVertical: 8 }} />
+              )}
+              {liveLocalPlaces.map((place) => (
+                <View key={place.place_id} style={styles.localStoreRow}>
+                  <View style={styles.localStoreIcon}>
+                    <Ionicons name="map-outline" size={19} color={theme.colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.localEventTitle}>{place.name}</Text>
+                    <Text style={styles.localEventMeta}>{place.formatted_address || 'OpenStreetMap result'}</Text>
+                    {!!place.category && <Text style={styles.localEventMeta}>{place.category}</Text>}
+                  </View>
+                  <Text style={styles.localDistance}>Live</Text>
+                </View>
+              ))}
+              {!liveLocalPlaces.length && localStoreResults.map((store) => (
+                <View key={store.id} style={styles.localStoreRow}>
+                  <View style={styles.localStoreIcon}>
+                    <Ionicons name="storefront-outline" size={19} color={theme.colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.localEventTitle}>{store.name}</Text>
+                    <Text style={styles.localEventMeta}>
+                      {store.description ?? [store.town, store.postcode].filter(Boolean).join(' ') ?? 'Local card store'}
+                    </Text>
+                  </View>
+                  <Text style={styles.localDistance}>{store.town ?? 'Local'}</Text>
+                </View>
+              ))}
+              {!liveLocalLoading && !liveLocalPlaces.length && !localStoreResults.length && (
+                <Text style={styles.localEmptyText}>
+                  Type your postcode or town above to search for card shops, TCG stores, tabletop shops and similar venues.
+                </Text>
+              )}
+            </View>
+            </>
+            )}
+
+            {localFilter === 'Stores' && (
+            <View style={styles.infoGrid}>
+              {localActions.map((item) => (
+                <View key={item.title} style={styles.infoTile}>
+                  <Ionicons name={item.icon} size={24} color={theme.colors.primary} />
+                  <Text style={styles.infoTileTitle}>{item.title}</Text>
+                  <Text style={styles.infoTileBody}>{item.body}</Text>
+                </View>
+              ))}
+            </View>
+            )}
+
+            {localFilter === 'Trade nights' && (
+            <View style={styles.panelCard}>
+              <View style={styles.panelHeader}>
+                <View style={styles.panelTitleRow}>
+                  <Ionicons name="sparkles-outline" size={20} color={theme.colors.primary} />
+                  <Text style={styles.panelTitle}>Featured shows</Text>
+                </View>
+                {isAdmin && <Text style={styles.viewAllText}>Admin</Text>}
+              </View>
+              {nearbyFeaturedEvents.map(({ event, miles }) => (
+                <View key={event.id} style={styles.adminEventCard}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.localEventTitle}>{event.title}</Text>
+                    <Text style={styles.localEventMeta}>
+                      {event.description ?? event.venue_name ?? event.town ?? 'Featured event'}
+                    </Text>
+                    <Text style={styles.adminEventDate}>
+                      {shortDateTime(event.starts_at)}{miles != null ? ` · ${miles.toFixed(1)} mi` : ''}
+                    </Text>
+                  </View>
+                  <Pressable style={styles.localJoinPill}>
+                    <Text style={styles.localJoinText}>{event.external_url ? 'View event' : 'Details'}</Text>
+                  </Pressable>
+                </View>
+              ))}
+              {!nearbyFeaturedEvents.length && (
+                <Text style={styles.localEmptyText}>No nearby trade nights yet. Admin-featured shows with postcodes will appear here.</Text>
+              )}
+            </View>
+            )}
+
+            {localFilter === 'Meet ups' && (
+            <View style={styles.panelCard}>
+              <View style={styles.panelHeader}>
+                <View style={styles.panelTitleRow}>
+                  <Ionicons name="calendar-outline" size={20} color={theme.colors.primary} />
+                  <Text style={styles.panelTitle}>Meet ups from collectors</Text>
+                </View>
+                <Pressable onPress={() => setMeetupModalOpen(true)}>
+                  <Text style={styles.viewAllText}>Create</Text>
+                </Pressable>
+              </View>
+              {nearbyLocalMeetups.map(({ event, miles }) => (
+                <View key={event.id} style={styles.localListRow}>
+                  <View style={styles.dateBadge}>
+                    <Text style={styles.dateBadgeDay}>{shortDate(event.starts_at).split(' ')[0]}</Text>
+                    <Text style={styles.dateBadgeMonth}>{shortDate(event.starts_at).split(' ')[1] ?? 'TBC'}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.localEventTitle}>{event.title}</Text>
+                    <Text style={styles.localEventMeta}>
+                      {event.location_name} - {shortDateTime(event.starts_at)}{miles != null ? ` · ${miles.toFixed(1)} mi` : ''}
+                    </Text>
+                    {!!event.description && <Text style={styles.localEventMeta}>{event.description}</Text>}
+                  </View>
+                  <Pressable onPress={() => handleJoinMeetup(event.id)} style={styles.localJoinPill}>
+                    <Text style={styles.localJoinText}>Join</Text>
+                  </Pressable>
+                </View>
+              ))}
+              {!nearbyLocalMeetups.length && (
+                <Text style={styles.localEmptyText}>No nearby collector meet ups yet. Create the first one.</Text>
+              )}
+            </View>
+            )}
+
+            {localFilter === 'Meet ups' && (
+            <Pressable onPress={() => setMeetupModalOpen(true)} style={styles.createMeetupButton}>
+              <Ionicons name="add-circle-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.createMeetupButtonText}>Create local meet up</Text>
+            </Pressable>
+            )}
+          </ScrollView>
+        )}
+
+        {activeSocialTab === 'News' && (
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+            {newsItems.map((item) => (
+              <View key={item.title} style={styles.newsCard}>
+                <View style={styles.newsIcon}>
+                  <Ionicons name={item.icon} size={24} color={theme.colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.newsTitle}>{item.title}</Text>
+                  <Text style={styles.newsBody}>{item.body}</Text>
+                </View>
+              </View>
             ))}
           </ScrollView>
-        </View>
+        )}
 
-        <View style={styles.searchCard}>
-  <TextInput
-    value={userSearch}
-    onChangeText={searchUsers}
-    placeholder="Search collectors..."
-    placeholderTextColor={theme.colors.textSoft}
-    style={styles.searchInput}
-  />
-
-  {userSearchLoading && (
-    <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 8 }} />
-  )}
-
-  {userResults.length > 0 && (
-    <FlatList
-      data={userResults}
-      keyExtractor={(item) => item.id}
-      renderItem={renderUserResult}
-      scrollEnabled={false}
-      style={{ marginTop: 10 }}
-    />
-  )}
-</View>
-
-        <View style={styles.modeRow}>
-          <Pressable onPress={() => setMode('global')}>
-            <Text style={mode === 'global' ? styles.activeTab : styles.tab}>
-              Global
-            </Text>
-          </Pressable>
-
-          <Pressable onPress={() => setMode('friends')}>
-            <Text style={mode === 'friends' ? styles.activeTab : styles.tab}>
-              Friends
-            </Text>
-          </Pressable>
-        </View>
-
-        <Animated.View style={{
-          opacity: postBoxAnim,
-          maxHeight: postBoxAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 400] }),
-          overflow: 'hidden',
-        }}>
-        <View style={styles.createCard}>
-          <TextInput
-            value={body}
-            onChangeText={setBody}
-            placeholder="What do you want to share?"
-            placeholderTextColor={theme.colors.textSoft}
-            multiline
-            style={styles.input}
-          />
-
-          {selectedCard?.card && (
-            <View style={styles.selectedCardPreview}>
-              <Text style={styles.selectedLabel}>Attached card</Text>
-              <Text style={styles.selectedName}>
-                {selectedCard.card.name}
-              </Text>
-
-              <Pressable onPress={() => setSelectedCard(null)}>
-                <Text style={styles.removeText}>Remove</Text>
-              </Pressable>
-            </View>
-          )}
-
-          <View style={styles.createActions}>
-            <Pressable
-              onPress={() => setCardModalOpen(true)}
-              style={styles.attachButton}
-            >
-              <Ionicons
-                name="albums-outline"
-                size={17}
-                color={theme.colors.text}
-              />
-              <Text style={styles.attachText}>Attach owned card</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={handleCreatePost}
-              disabled={posting}
-              style={[styles.postButton, posting && { opacity: 0.6 }]}
-            >
-              {posting ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.postButtonText}>Post</Text>
-              )}
-            </Pressable>
-          </View>
-        </View>
-        </Animated.View>
-
-        {loading ? (
-          <ActivityIndicator color={theme.colors.primary} />
-        ) : (
+        {activeSocialTab === 'Flex' && (
           <FlatList
             data={visiblePosts}
             keyExtractor={(item) => item.id}
             renderItem={renderPost}
-            onScroll={handleFeedScroll}
-            scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 120 }}
-            ListEmptyComponent={
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyTitle}>No posts yet</Text>
-                <Text style={styles.emptyText}>
-                  Share a card from your binder or write your first update.
-                </Text>
+            ListHeaderComponent={(
+              <View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.flexCardRow}>
+                  {flexCards.map((item) => (
+                    <Pressable
+                      key={item.label}
+                      onPress={() => openFlexPicker(item.mode)}
+                      style={[styles.flexCard, activeCategory === item.label && styles.flexCardActive]}
+                    >
+                      <Ionicons name={item.icon} size={19} color={theme.colors.primary} />
+                      <Text style={styles.flexCardText}>{item.label}</Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+
+                <View style={styles.modeRow}>
+                  <Pressable onPress={() => setMode('global')}>
+                    <Text style={mode === 'global' ? styles.activeTab : styles.tab}>
+                      Global
+                    </Text>
+                  </Pressable>
+
+                  <Pressable onPress={() => setMode('friends')}>
+                    <Text style={mode === 'friends' ? styles.activeTab : styles.tab}>
+                      Friends
+                    </Text>
+                  </Pressable>
+                </View>
+
+                <View style={styles.createCard}>
+                  <TextInput
+                    value={body}
+                    onChangeText={setBody}
+                    placeholder={activeCategory === 'All' ? 'What do you want to share?' : `Share a ${activeCategory.toLowerCase()}...`}
+                    placeholderTextColor={theme.colors.textSoft}
+                    multiline
+                    style={styles.input}
+                  />
+
+                  {selectedCard?.card && (
+                    <View style={styles.selectedCardPreview}>
+                      <Text style={styles.selectedLabel}>Attached card</Text>
+                      <Text style={styles.selectedName}>
+                        {selectedCard.card.name}
+                      </Text>
+
+                      <Pressable onPress={() => setSelectedCard(null)}>
+                        <Text style={styles.removeText}>Remove</Text>
+                      </Pressable>
+                    </View>
+                  )}
+
+                  {selectedBinder && (
+                    <View style={styles.selectedCardPreview}>
+                      <Text style={styles.selectedLabel}>Attached binder</Text>
+                      <Text style={styles.selectedName}>{selectedBinder.name}</Text>
+
+                      <Pressable onPress={() => setSelectedBinder(null)}>
+                        <Text style={styles.removeText}>Remove</Text>
+                      </Pressable>
+                    </View>
+                  )}
+
+                  <View style={styles.createActions}>
+                    <Pressable
+                      onPress={() => setCardModalOpen(true)}
+                      style={styles.attachButton}
+                    >
+                      <Ionicons
+                        name="albums-outline"
+                        size={17}
+                        color={theme.colors.text}
+                      />
+                      <Text style={styles.attachText}>Attach owned card</Text>
+                    </Pressable>
+
+                    <Pressable
+                      onPress={handleCreatePost}
+                      disabled={posting}
+                      style={[styles.postButton, posting && { opacity: 0.6 }]}
+                    >
+                      {posting ? (
+                        <ActivityIndicator color="#fff" />
+                      ) : (
+                        <Text style={styles.postButtonText}>Post</Text>
+                      )}
+                    </Pressable>
+                  </View>
+                </View>
               </View>
+            )}
+            ListEmptyComponent={
+              loading ? (
+                <ActivityIndicator color={theme.colors.primary} />
+              ) : (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyTitle}>No posts yet</Text>
+                  <Text style={styles.emptyText}>
+                    Share a card from your binder or write your first update.
+                  </Text>
+                </View>
+              )
             }
           />
         )}
+
       </View>
 
       <Modal visible={cardModalOpen} animationType="slide">
@@ -865,14 +1586,126 @@ const renderUserResult = ({ item }: { item: ProfilePreview }) => {
           </View>
         </SafeAreaView>
       </Modal>
+
+      <Modal visible={flexPickerMode !== null} animationType="slide" transparent>
+        <View style={styles.meetupModalBackdrop}>
+          <View style={styles.flexPickerModalCard}>
+            <View style={styles.panelHeader}>
+              <View style={{ flex: 1 }} />
+              <Pressable onPress={() => setFlexPickerMode(null)} style={styles.modalCloseIcon}>
+                <Ionicons name="close" size={22} color={theme.colors.text} />
+              </Pressable>
+            </View>
+            {flexPickerMode ? renderFlexPickerContent() : null}
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={meetupModalOpen} animationType="slide" transparent>
+        <View style={styles.meetupModalBackdrop}>
+          <View style={styles.meetupModalCard}>
+            <View style={styles.panelHeader}>
+              <View style={{ flex: 1, paddingRight: 8 }}>
+                <Text style={styles.modalHeading}>Create meet up</Text>
+                <Text style={styles.modalSubheading}>Add the basic details for a local collector event.</Text>
+              </View>
+              <Pressable onPress={() => setMeetupModalOpen(false)} style={styles.modalCloseIcon}>
+                <Ionicons name="close" size={22} color={theme.colors.text} />
+              </Pressable>
+            </View>
+
+            <TextInput
+              value={meetupTitle}
+              onChangeText={setMeetupTitle}
+              placeholder="Meet up title"
+              placeholderTextColor={theme.colors.textSoft}
+              style={styles.meetupInput}
+            />
+            <TextInput
+              value={meetupLocation}
+              onChangeText={setMeetupLocation}
+              placeholder="Location or shop name"
+              placeholderTextColor={theme.colors.textSoft}
+              style={styles.meetupInput}
+            />
+            <TextInput
+              value={meetupPostcode}
+              onChangeText={setMeetupPostcode}
+              placeholder="Postcode or town"
+              placeholderTextColor={theme.colors.textSoft}
+              style={styles.meetupInput}
+              autoCapitalize="characters"
+            />
+            <TextInput
+              value={meetupDate}
+              onChangeText={setMeetupDate}
+              placeholder="Date and time"
+              placeholderTextColor={theme.colors.textSoft}
+              style={styles.meetupInput}
+            />
+
+            <Pressable onPress={handleCreateLocalMeetup} style={styles.createMeetupButton}>
+              <Text style={styles.createMeetupButtonText}>Create meet up</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
+}
+
+async function geocodeLocalSearch(text: string): Promise<LocalPoint | null> {
+  const queryText = text.trim();
+  if (queryText.length < 2) return null;
+
+  const areaResponse = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=gb&q=${encodeURIComponent(queryText)}`, {
+    headers: { 'User-Agent': 'Stackr/1.0' },
+  });
+  const areas = await areaResponse.json();
+  const firstArea = areas?.[0];
+  const latitude = Number(firstArea?.lat);
+  const longitude = Number(firstArea?.lon);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+
+  return {
+    label: firstArea?.display_name ?? queryText,
+    latitude,
+    longitude,
+  };
+}
+
+function distanceMiles(from: LocalPoint | null, to?: { latitude?: number | null; longitude?: number | null }) {
+  if (!from || typeof to?.latitude !== 'number' || typeof to.longitude !== 'number') return null;
+  const radiusMiles = 3958.8;
+  const toRadians = (value: number) => (value * Math.PI) / 180;
+  const lat1 = toRadians(from.latitude);
+  const lat2 = toRadians(to.latitude);
+  const deltaLat = toRadians(to.latitude - from.latitude);
+  const deltaLon = toRadians(to.longitude - from.longitude);
+  const a = Math.sin(deltaLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
+  return radiusMiles * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function shortDate(dateString: string | null) {
+  if (!dateString) return 'TBC';
+  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(new Date(dateString));
+}
+
+function shortDateTime(dateString: string | null) {
+  if (!dateString) return 'Date TBC';
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(dateString));
 }
 
 function makeStyles(theme: any) {
   return StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.bg },
-  container: { flex: 1, paddingHorizontal: 16, paddingTop: 10 },
+  container: { flex: 1, paddingHorizontal: 14, paddingTop: 6 },
 
   hero: {
     position: 'relative',
@@ -884,24 +1717,24 @@ function makeStyles(theme: any) {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 4,
   },
 
   brandLogo: {
-    width: 150,
-    height: 54,
+    width: 124,
+    height: 44,
   },
 
   heroActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 6,
   },
 
   heroIconButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -932,53 +1765,53 @@ function makeStyles(theme: any) {
 
   heroSparkleOne: {
     position: 'absolute',
-    top: 34,
-    left: 154,
+    top: 26,
+    left: 148,
   },
 
   heroSparkleTwo: {
     position: 'absolute',
-    top: 72,
-    right: 112,
+    top: 58,
+    right: 96,
   },
 
   heroOrbLarge: {
     position: 'absolute',
-    right: -52,
-    top: 44,
-    width: 122,
-    height: 122,
-    borderRadius: 61,
+    right: -56,
+    top: 34,
+    width: 98,
+    height: 98,
+    borderRadius: 49,
     backgroundColor: 'rgba(108, 66, 245, 0.14)',
   },
 
   heroOrbSmall: {
     position: 'absolute',
-    right: 54,
-    top: 72,
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    right: 44,
+    top: 58,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: 'rgba(108, 66, 245, 0.10)',
   },
 
   heading: {
     color: theme.colors.text,
-    fontSize: 44,
+    fontSize: 32,
     fontWeight: '900',
     letterSpacing: 0,
   },
 
   subheading: {
     color: theme.colors.textSoft,
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '700',
     marginTop: 2,
   },
 
   socialTabs: {
-    gap: 28,
-    paddingTop: 22,
+    gap: 24,
+    paddingTop: 14,
     paddingRight: 24,
   },
 
@@ -989,7 +1822,7 @@ function makeStyles(theme: any) {
 
   socialTabText: {
     color: theme.colors.textSoft,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
   },
 
@@ -1007,9 +1840,9 @@ function makeStyles(theme: any) {
   },
 
   flexCardRow: {
-    gap: 10,
-    paddingTop: 4,
-    paddingBottom: 12,
+    gap: 8,
+    paddingTop: 2,
+    paddingBottom: 10,
   },
 
   categoryStrip: {
@@ -1051,20 +1884,23 @@ function makeStyles(theme: any) {
   },
 
   flexCard: {
-    width: 116,
-    minHeight: 110,
-    borderRadius: 16,
+    width: 118,
+    minHeight: 58,
+    borderRadius: 14,
     backgroundColor: theme.colors.card,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
+    justifyContent: 'flex-start',
+    gap: 8,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
     shadowColor: '#1E1450',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
 
   flexCardActive: {
@@ -1074,10 +1910,73 @@ function makeStyles(theme: any) {
   flexCardText: {
     color: theme.colors.text,
     fontWeight: '900',
-    textAlign: 'center',
-    fontSize: 13,
-    marginTop: 9,
-    lineHeight: 16,
+    textAlign: 'left',
+    fontSize: 11,
+    marginTop: 0,
+    lineHeight: 13,
+    flex: 1,
+  },
+
+  homeSummaryGrid: {
+    gap: 10,
+    paddingBottom: 12,
+  },
+
+  homeSummaryCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: '#1E1450',
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+
+  flexPreviewRow: {
+    gap: 10,
+    paddingTop: 4,
+  },
+
+  flexPreviewCard: {
+    width: 78,
+  },
+
+  flexPreviewImage: {
+    width: 70,
+    height: 96,
+  },
+
+  flexPreviewPlaceholder: {
+    width: 70,
+    height: 96,
+    borderRadius: 12,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  flexPreviewName: {
+    color: theme.colors.textSoft,
+    fontSize: 10,
+    fontWeight: '800',
+    marginTop: 5,
+  },
+
+  homeFeatureTitle: {
+    color: theme.colors.text,
+    fontSize: 15,
+    fontWeight: '900',
+  },
+
+  homeFeatureMeta: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 5,
+    fontWeight: '700',
   },
 
   socialGrid: {
@@ -1229,6 +2128,398 @@ function makeStyles(theme: any) {
     fontSize: 12,
   },
 
+  localSearchPanel: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 10,
+    marginBottom: 12,
+  },
+
+  localSearchInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: theme.colors.bg,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 12,
+  },
+
+  localSearchInput: {
+    flex: 1,
+    color: theme.colors.text,
+    fontWeight: '800',
+    paddingVertical: 11,
+  },
+
+  localSearchButton: {
+    minWidth: 74,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+
+  localSearchButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+
+  localSearchQuickRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+
+  localSearchChip: {
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+
+  localSearchChipActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+
+  localSearchChipText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+
+  localSearchChipTextActive: {
+    color: '#FFFFFF',
+  },
+
+  localHeroPanel: {
+    flexDirection: 'row',
+    gap: 10,
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 12,
+    marginBottom: 10,
+  },
+
+  localHeroTitle: {
+    color: theme.colors.text,
+    fontSize: 17,
+    fontWeight: '900',
+  },
+
+  localHeroCopy: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 4,
+  },
+
+  mapMockLarge: {
+    width: 96,
+    minHeight: 106,
+    borderRadius: 15,
+    backgroundColor: theme.colors.primary + '12',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+
+  mapLineOne: {
+    position: 'absolute',
+    width: 130,
+    height: 1,
+    backgroundColor: theme.colors.border,
+    transform: [{ rotate: '-22deg' }],
+    top: 30,
+    left: -18,
+  },
+
+  mapLineTwo: {
+    position: 'absolute',
+    width: 120,
+    height: 1,
+    backgroundColor: theme.colors.border,
+    transform: [{ rotate: '28deg' }],
+    top: 66,
+    left: -16,
+  },
+
+  mapLineThree: {
+    position: 'absolute',
+    width: 1,
+    height: 120,
+    backgroundColor: theme.colors.border,
+    transform: [{ rotate: '15deg' }],
+    top: -8,
+    right: 25,
+  },
+
+  mapDotOne: {
+    position: 'absolute',
+    width: 7,
+    height: 7,
+    borderRadius: 999,
+    backgroundColor: '#F59E0B',
+    top: 22,
+    right: 18,
+  },
+
+  mapDotTwo: {
+    position: 'absolute',
+    width: 6,
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: theme.colors.primary,
+    bottom: 18,
+    left: 18,
+  },
+
+  infoGrid: {
+    gap: 10,
+    marginBottom: 12,
+  },
+
+  localSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  localStoreList: {
+    gap: 8,
+    marginBottom: 12,
+  },
+
+  localStoreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 10,
+  },
+
+  localStoreIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary + '12',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  localDistance: {
+    color: theme.colors.primary,
+    fontWeight: '900',
+    fontSize: 12,
+  },
+
+  localEmptyText: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 18,
+    padding: 12,
+    textAlign: 'center',
+  },
+
+  infoTile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 12,
+  },
+
+  infoTileTitle: {
+    color: theme.colors.text,
+    fontWeight: '900',
+    fontSize: 14,
+    minWidth: 92,
+  },
+
+  infoTileBody: {
+    flex: 1,
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+
+  localListRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+
+  dateBadge: {
+    width: 44,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  dateBadgeDay: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 16,
+  },
+
+  dateBadgeMonth: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 9,
+  },
+
+  localJoinPill: {
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    backgroundColor: theme.colors.primary + '14',
+  },
+
+  localJoinText: {
+    color: theme.colors.primary,
+    fontWeight: '900',
+    fontSize: 12,
+  },
+
+  adminEventCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: theme.colors.primary + '08',
+    borderRadius: 14,
+    padding: 10,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '24',
+  },
+
+  adminEventDate: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '900',
+    marginTop: 5,
+  },
+
+  createMeetupButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 16,
+    paddingVertical: 12,
+    backgroundColor: theme.colors.primary,
+    marginTop: 10,
+  },
+
+  createMeetupButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+  },
+
+  meetupModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.35)',
+    justifyContent: 'flex-end',
+  },
+
+  meetupModalCard: {
+    backgroundColor: theme.colors.card,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 16,
+  },
+
+  flexPickerModalCard: {
+    backgroundColor: theme.colors.card,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 18,
+    maxHeight: '82%',
+  },
+
+  modalCloseIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+    marginLeft: 10,
+  },
+
+  meetupInput: {
+    backgroundColor: theme.colors.bg,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    color: theme.colors.text,
+    fontWeight: '800',
+    padding: 12,
+    marginTop: 9,
+  },
+
+  newsCard: {
+    flexDirection: 'row',
+    gap: 12,
+    backgroundColor: theme.colors.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 14,
+    marginBottom: 10,
+  },
+
+  newsIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primary + '12',
+  },
+
+  newsTitle: {
+    color: theme.colors.text,
+    fontSize: 15,
+    fontWeight: '900',
+  },
+
+  newsBody: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 4,
+  },
+
   sharePanel: {
     backgroundColor: theme.colors.card,
     borderRadius: 18,
@@ -1239,6 +2530,8 @@ function makeStyles(theme: any) {
   },
 
   shareActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     paddingTop: 10,
   },
@@ -1248,11 +2541,14 @@ function makeStyles(theme: any) {
     alignItems: 'center',
     gap: 7,
     borderRadius: 12,
-    paddingHorizontal: 11,
+    paddingHorizontal: 10,
     paddingVertical: 10,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    flexGrow: 1,
+    flexBasis: '46%',
+    justifyContent: 'center',
   },
 
   shareActionText: {
@@ -1295,14 +2591,14 @@ function makeStyles(theme: any) {
   },
 
   createActions: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 10,
     marginTop: 10,
   },
 
   attachButton: {
-    flex: 1,
+    width: '100%',
     backgroundColor: theme.colors.bg,
     borderRadius: 14,
     paddingVertical: 11,
@@ -1326,6 +2622,8 @@ function makeStyles(theme: any) {
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 20,
+    width: '100%',
+    alignItems: 'center',
   },
 
   postButtonText: {
@@ -1340,6 +2638,58 @@ function makeStyles(theme: any) {
     marginTop: 10,
     borderWidth: 1,
     borderColor: theme.colors.border,
+  },
+
+  flexPickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: theme.colors.bg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 12,
+    marginBottom: 10,
+  },
+
+  flexPickerIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primary + '12',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  flexPickerTitle: {
+    color: theme.colors.text,
+    fontSize: 15,
+    fontWeight: '900',
+  },
+
+  flexPickerSubtitle: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 3,
+  },
+
+  placeholderPanel: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.bg,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 18,
+  },
+
+  placeholderTitle: {
+    color: theme.colors.text,
+    fontSize: 16,
+    fontWeight: '900',
+    marginTop: 8,
+    marginBottom: 4,
   },
 
   selectedLabel: {
@@ -1430,6 +2780,16 @@ function makeStyles(theme: any) {
     marginRight: 12,
     backgroundColor: theme.colors.surface,
     borderRadius: 8,
+  },
+
+  binderShareIcon: {
+    width: 74,
+    height: 74,
+    marginRight: 12,
+    borderRadius: 18,
+    backgroundColor: theme.colors.primary + '12',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   emptyCardText: {

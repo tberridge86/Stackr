@@ -330,15 +330,99 @@ function getLanguageMismatchReasons(title = '') {
   return languagePattern.test(cleaned) ? ['NON_ENGLISH_LISTING'] : [];
 }
 
+function getGradingMismatchReasons(title = '', { pricingMode = 'raw', gradingCompany = '', grade = '' } = {}) {
+  const cleaned = normaliseForTitleMatch(title);
+  const reasons = [];
+  const hasSlabTerm = /\b(psa|cgc|bgs|beckett|ace grading|ace graded|sgc|graded|slab|slabbed)\b/.test(cleaned);
+
+  if (pricingMode === 'raw') {
+    if (hasSlabTerm) reasons.push('UNREQUESTED_GRADED_SLAB');
+    return reasons;
+  }
+
+  if (pricingMode !== 'graded') return reasons;
+
+  if (!hasSlabTerm) reasons.push('MISSING_GRADED_SLAB');
+
+  const company = normaliseForTitleMatch(gradingCompany);
+  if (company) {
+    const companyPatterns = {
+      psa: /\bpsa\b/,
+      cgc: /\bcgc\b/,
+      beckett: /\b(bgs|beckett)\b/,
+      bgs: /\b(bgs|beckett)\b/,
+      ace: /\bace\b/,
+      sgc: /\bsgc\b/,
+    };
+    const pattern = companyPatterns[company] ?? new RegExp(`\\b${escapeRegExp(company)}\\b`);
+    if (!pattern.test(cleaned)) reasons.push(`MISSING_GRADING_COMPANY (${gradingCompany})`);
+  }
+
+  const gradeText = String(grade || '').trim();
+  if (gradeText) {
+    const escaped = escapeRegExp(gradeText.replace(/\.0$/, ''));
+    const gradePattern = new RegExp(`\\b(${escaped}|${escaped}\\.0)\\b`);
+    if (!gradePattern.test(cleaned)) reasons.push(`MISSING_GRADE (${gradeText})`);
+  }
+
+  return reasons;
+}
+
+function getAllowedConditionTerms(condition = '') {
+  const cleaned = normaliseForTitleMatch(condition);
+  if (cleaned.includes('damaged')) {
+    return ['damaged', 'poor condition', 'creased', 'crease', 'bent', 'inked', 'marked', 'written on', 'torn', 'water damaged'];
+  }
+  if (cleaned.includes('heavily') || cleaned === 'hp') {
+    return ['heavily played', 'heavy play', 'creased', 'crease', 'bent', 'whitening', 'scratched', 'scuffed'];
+  }
+  if (cleaned.includes('moderately') || cleaned === 'mp') {
+    return ['moderate play', 'moderately played', 'whitening', 'scratched', 'scuffed'];
+  }
+  return [];
+}
+
+function getSealedProductMismatchReasons(title = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  const reasons = [];
+  if (/\bempty\s+(box|etb|elite trainer box)\b/.test(cleaned)) reasons.push('EMPTY_PRODUCT');
+  if (/\b(code|codes|digital|online)\b/.test(cleaned)) reasons.push('DIGITAL_CODE_ONLY');
+  if (/\b(single card|singles|individual card)\b/.test(cleaned)) reasons.push('SINGLE_CARD_LISTING');
+  if (/\b(case|display case)\b/.test(cleaned) && !/\bbooster\s+box\b/.test(cleaned)) reasons.push('DISPLAY_CASE_ACCESSORY');
+  return reasons;
+}
+
 function getStructuredTitleRejectionReasons(title = '', query = '', options = {}) {
   const reasons = [];
-  const { name = '', setName = '', number = '', setTotal = '', rarity = '' } = options;
+  const {
+    name = '',
+    setName = '',
+    number = '',
+    setTotal = '',
+    rarity = '',
+    productType = 'card',
+    pricingMode = 'raw',
+    condition = '',
+    gradingCompany = '',
+    grade = '',
+  } = options;
   const collectorNumber = getFullCollectorNumber(number, setTotal);
+
+  if (productType === 'sealed' || productType === 'accessory') {
+    if (!titleLooksGoodForQuery(title, query)) {
+      reasons.push('MISSING_QUERY_KEYWORDS');
+    }
+    if (productType === 'sealed') {
+      reasons.push(...getSealedProductMismatchReasons(title));
+    }
+    return reasons;
+  }
 
   if (titleLooksBad(title)) {
     const cleaned = title.toLowerCase();
-    const matched = BLOCKED_TERMS.filter((term) => cleaned.includes(term));
-    reasons.push(`BLOCKED_TERMS: [${matched.join(', ')}]`);
+    const allowedConditionTerms = getAllowedConditionTerms(condition);
+    const matched = BLOCKED_TERMS.filter((term) => cleaned.includes(term) && !allowedConditionTerms.includes(term));
+    if (matched.length) reasons.push(`BLOCKED_TERMS: [${matched.join(', ')}]`);
   }
 
   if (!titleLooksGoodForQuery(title, query)) {
@@ -359,6 +443,7 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
 
   reasons.push(...getLanguageMismatchReasons(title));
   reasons.push(...getVariantMismatchReasons(title, { name, rarity }));
+  reasons.push(...getGradingMismatchReasons(title, { pricingMode, gradingCompany, grade, condition }));
 
   return reasons;
 }
@@ -519,7 +604,7 @@ function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '
 // ===============================
 
 const priceCache = new Map();
-const PRICE_FILTER_VERSION = 3;
+const PRICE_FILTER_VERSION = 4;
 const PRICE_CACHE_TTL = 2 * 60 * 60 * 1000;
 
 // In-flight dedupe so concurrent identical queries share one upstream call
@@ -558,7 +643,19 @@ function setCachedFailure(key, error) {
   failureCache.set(key, { error, expiresAt: Date.now() + FAILURE_CACHE_TTL });
 }
 
-function normalizePriceKey({ query = '', name = '', setName = '', number = '', setTotal = '', rarity = '' }) {
+function normalizePriceKey({
+  query = '',
+  name = '',
+  setName = '',
+  number = '',
+  setTotal = '',
+  rarity = '',
+  productType = 'card',
+  pricingMode = 'raw',
+  condition = '',
+  gradingCompany = '',
+  grade = '',
+}) {
   return JSON.stringify({
     filterVersion: PRICE_FILTER_VERSION,
     query: String(query || '').trim().toLowerCase(),
@@ -567,6 +664,11 @@ function normalizePriceKey({ query = '', name = '', setName = '', number = '', s
     number: String(number || '').trim().toLowerCase(),
     setTotal: String(setTotal || '').trim().toLowerCase(),
     rarity: String(rarity || '').trim().toLowerCase(),
+    productType: String(productType || 'card').trim().toLowerCase(),
+    pricingMode: String(pricingMode || 'raw').trim().toLowerCase(),
+    condition: String(condition || '').trim().toLowerCase(),
+    gradingCompany: String(gradingCompany || '').trim().toLowerCase(),
+    grade: String(grade || '').trim().toLowerCase(),
   });
 }
 
@@ -780,10 +882,33 @@ function filterItems(items, query, options = {}) {
 
 // Extended signature to pass all card details to fallback
 async function fetchEbaySummary(query, options = {}) {
-  const { name = '', setName = '', number = '', setTotal = '', rarity = '' } = options;
+  const {
+    name = '',
+    setName = '',
+    number = '',
+    setTotal = '',
+    rarity = '',
+    productType = 'card',
+    pricingMode = 'raw',
+    condition = '',
+    gradingCompany = '',
+    grade = '',
+  } = options;
   const cardName = name || query.split(' ')[0];
 
-  const cacheKey = normalizePriceKey({ query, name, setName, number, setTotal, rarity });
+  const cacheKey = normalizePriceKey({
+    query,
+    name,
+    setName,
+    number,
+    setTotal,
+    rarity,
+    productType,
+    pricingMode,
+    condition,
+    gradingCompany,
+    grade,
+  });
 
   const cached = getCachedPrice(cacheKey);
   if (cached) {
@@ -815,13 +940,24 @@ async function fetchEbaySummary(query, options = {}) {
         console.log(`⚠️ Sold-provider failed for "${query}" (${getErrorMessage(soldError)}). Falling back to Browse listings.`);
         rawItems = await searchEbayBrowseListings(query);
       }
-      let cleaned = filterItems(rawItems, query, options);
+      let cleaned = filterItems(rawItems, query, {
+        name,
+        setName,
+        number,
+        setTotal,
+        rarity,
+        productType,
+        pricingMode,
+        condition,
+        gradingCompany,
+        grade,
+      });
 
       let usedFallback = false;
       let fallbackQuery = '';
       let acceptedSourceItems = rawItems;
 
-      if (cleaned.length === 0 && cardName) {
+      if (cleaned.length === 0 && cardName && productType === 'card') {
         fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, setTotal, rarity });
         console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
 
@@ -834,7 +970,18 @@ async function fetchEbaySummary(query, options = {}) {
           console.log(`⚠️ Sold-provider fallback failed for "${fallbackQuery}" (${getErrorMessage(soldFallbackError)}). Falling back to Browse listings.`);
           fallbackItems = await searchEbayBrowseListings(fallbackQuery);
         }
-        cleaned = filterItems(fallbackItems, fallbackQuery, { name: cardName, setName, number, setTotal, rarity });
+        cleaned = filterItems(fallbackItems, fallbackQuery, {
+          name: cardName,
+          setName,
+          number,
+          setTotal,
+          rarity,
+          productType,
+          pricingMode,
+          condition,
+          gradingCompany,
+          grade,
+        });
         acceptedSourceItems = fallbackItems;
         usedFallback = true;
       }
@@ -878,6 +1025,11 @@ async function fetchEbaySummary(query, options = {}) {
               number,
               setTotal,
               rarity,
+              productType,
+              pricingMode,
+              condition,
+              gradingCompany,
+              grade,
             }),
           })),
       };
@@ -982,6 +1134,11 @@ app.get('/test-ebay-token', async (req, res) => {
 app.get('/price', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
+    const productType = String(req.query.productType || 'card').trim();
+    const pricingMode = String(req.query.pricingMode || 'raw').trim();
+    const condition = String(req.query.condition || '').trim();
+    const gradingCompany = String(req.query.gradingCompany || '').trim();
+    const grade = String(req.query.grade || '').trim();
 
     if (!query) {
       return res.status(400).json({ error: 'Missing query' });
@@ -996,7 +1153,17 @@ app.get('/price', async (req, res) => {
     const number = parts.length > 1 ? parts.find(p => /^\d+\/\d+$/.test(p)) || '' : '';
     const setTotal = number.includes('/') ? number.split('/')[1] : '';
     
-    const summary = await fetchEbaySummary(query, { name: cardName, setName, number, setTotal });
+    const summary = await fetchEbaySummary(query, {
+      name: productType === 'sealed' ? '' : cardName,
+      setName,
+      number,
+      setTotal,
+      productType,
+      pricingMode,
+      condition,
+      gradingCompany,
+      grade,
+    });
     return res.json(summary);
   } catch (error) {
     return res.status(500).json({
@@ -1009,15 +1176,41 @@ app.get('/price', async (req, res) => {
 // Structured price endpoint
 app.get('/api/price/ebay', async (req, res) => {
   try {
+    const directQuery = String(req.query.q || req.query.query || '').trim();
     const cardId = String(req.query.cardId || '').trim();
     let name = String(req.query.name || '').trim();
     let setName = String(req.query.setName || '').trim();
     let number = String(req.query.number || '').trim();
     let setTotal = String(req.query.setTotal || req.query.printedTotal || '').trim();
     let rarity = String(req.query.rarity || '').trim();
+    const productType = String(req.query.productType || (directQuery ? 'sealed' : 'card')).trim();
+    const pricingMode = String(req.query.pricingMode || 'raw').trim();
+    const condition = String(req.query.condition || '').trim();
+    const gradingCompany = String(req.query.gradingCompany || '').trim();
+    const grade = String(req.query.grade || '').trim();
 
-    if (!name) {
+    if (!name && !directQuery) {
       return res.status(400).json({ error: 'Missing card name' });
+    }
+
+    if (directQuery) {
+      const summary = await fetchEbaySummary(directQuery, {
+        productType,
+        pricingMode,
+        condition,
+        gradingCompany,
+        grade,
+      });
+
+      return res.json({
+        query: directQuery,
+        productType,
+        pricingMode,
+        condition,
+        gradingCompany,
+        grade,
+        ...summary,
+      });
     }
 
     if (cardId && (!setTotal || !setName || !number || !rarity)) {
@@ -1041,10 +1234,29 @@ app.get('/api/price/ebay', async (req, res) => {
     }
 
     // Build primary query with rarity hints for better matching
-    const query = buildCardQuery({ name, setName, number, setTotal, rarity });
+    const queryParts = [buildCardQuery({ name, setName, number, setTotal, rarity })];
+    if (pricingMode === 'graded') {
+      if (gradingCompany) queryParts.push(gradingCompany);
+      if (grade) queryParts.push(grade);
+      queryParts.push('graded slab');
+    } else if (condition) {
+      queryParts.push(condition);
+    }
+    const query = queryParts.filter(Boolean).join(' ');
     
     // Pass full card details for better fallback matching
-    const summary = await fetchEbaySummary(query, { name, setName, number, setTotal, rarity });
+    const summary = await fetchEbaySummary(query, {
+      name,
+      setName,
+      number,
+      setTotal,
+      rarity,
+      productType,
+      pricingMode,
+      condition,
+      gradingCompany,
+      grade,
+    });
 
     return res.json({
       cardId,
@@ -1054,6 +1266,11 @@ app.get('/api/price/ebay', async (req, res) => {
       setTotal,
       collectorNumber: getFullCollectorNumber(number, setTotal),
       rarity,
+      productType,
+      pricingMode,
+      condition,
+      gradingCompany,
+      grade,
       ...summary,
     });
   } catch (error) {
