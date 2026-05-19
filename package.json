@@ -12,6 +12,8 @@
     "lint": "expo lint",
     "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts",
     "daily-tcgcsv-sync": "tsx scripts/daily-tcgcsv-sync.ts",
+    "sync-market-products-tcgcsv": "tsx scripts/sync-market-products-tcgcsv.ts",
+    "discover-market-products-tcgcsv": "tsx scripts/discover-market-products-tcgcsv.ts",
     "backfill-tcgcsv-history": "tsx scripts/backfill-tcgcsv-history.ts",
     "fingerprint-cards": "npm --prefix scripts/card-fingerprinter start",
     "clip-embed-cards": "npm --prefix scripts/card-clip-embedder start",

@@ -43,6 +43,15 @@ export type TcgcsvUiCardPriceRow = {
   variants: TcgcsvCardVariantPrice[];
 };
 
+export type TcgcsvUiProductPriceRow = {
+  productId: number;
+  name: string;
+  imageUrl: string | null;
+  groupId: number;
+  groupName: string;
+  variants: TcgcsvCardVariantPrice[];
+};
+
 export type TcgVariantPriceSummary = {
   variant: string;
   market: number | null;
@@ -251,6 +260,30 @@ function isUiDisplayableSingleCard(product: TcgcsvProduct): boolean {
   return Boolean(number || rarity);
 }
 
+function isUiDisplayableMarketProduct(product: TcgcsvProduct): boolean {
+  const lowerName = product.name.toLowerCase();
+  if (lowerName.includes('code card')) return false;
+  if (getExtendedDataValue(product, 'Number') || getExtendedDataValue(product, 'Rarity')) return false;
+
+  const productTerms = [
+    'elite trainer box',
+    'etb',
+    'booster box',
+    'booster bundle',
+    'booster pack',
+    'sleeved booster',
+    'collection',
+    'ultra-premium',
+    'ultra premium',
+    'binder',
+    'tin',
+    'sleeves',
+    'playmat',
+  ];
+
+  return productTerms.some((term) => lowerName.includes(term));
+}
+
 export async function fetchTcgcsvPokemonGroupByName(
   setName: string
 ): Promise<TcgcsvGroup | null> {
@@ -314,4 +347,48 @@ export async function fetchTcgcsvUiCardPricesForSet(
   }
 
   return rows;
+}
+
+export async function fetchTcgcsvUiProductPricesForSet(
+  setName: string
+): Promise<TcgcsvUiProductPriceRow[]> {
+  const group = await fetchTcgcsvPokemonGroupByName(setName);
+  if (!group) return [];
+
+  const [productsJson, pricesJson] = await Promise.all([
+    fetchTcgcsvJson<{ results?: TcgcsvProduct[] }>(
+      `${TCGCSV_BASE_URL}/tcgplayer/3/${group.groupId}/products`
+    ),
+    fetchTcgcsvJson<{ results?: TcgcsvPrice[] }>(
+      `${TCGCSV_BASE_URL}/tcgplayer/3/${group.groupId}/prices`
+    ),
+  ]);
+
+  const products = (productsJson.results ?? []).filter(isUiDisplayableMarketProduct);
+  const prices = pricesJson.results ?? [];
+
+  const priceByProductId = new Map<number, TcgcsvCardVariantPrice[]>();
+  for (const price of prices) {
+    if (!priceByProductId.has(price.productId)) {
+      priceByProductId.set(price.productId, []);
+    }
+
+    priceByProductId.get(price.productId)!.push({
+      subTypeName: price.subTypeName,
+      marketPrice: typeof price.marketPrice === 'number' ? price.marketPrice : null,
+      lowPrice: typeof price.lowPrice === 'number' ? price.lowPrice : null,
+      midPrice: typeof price.midPrice === 'number' ? price.midPrice : null,
+    });
+  }
+
+  return products
+    .map((product) => ({
+      productId: product.productId,
+      name: product.name,
+      imageUrl: typeof product.imageUrl === 'string' && product.imageUrl.trim() ? product.imageUrl.trim() : null,
+      groupId: group.groupId,
+      groupName: group.name,
+      variants: priceByProductId.get(product.productId) ?? [],
+    }))
+    .filter((product) => product.variants.length > 0);
 }

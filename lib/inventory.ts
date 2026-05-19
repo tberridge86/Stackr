@@ -160,9 +160,9 @@ export async function loadInventoryItems(): Promise<InventoryItem[]> {
       updated_at: row.updated_at,
     }));
 
-    if (!remoteItems.length && cached.length) {
-      await saveInventoryItems(cached);
-      return cached;
+    if (!remoteItems.length) {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+      return [];
     }
 
     const hydratedItems = await hydrateProductInventoryPrices(remoteItems);

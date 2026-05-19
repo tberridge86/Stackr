@@ -34,6 +34,8 @@ const SERPAPI_API_KEY = process.env.SERPAPI_API_KEY;
 const SERPAPI_ENGINE = process.env.SERPAPI_ENGINE || 'ebay';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
+const POKEWALLET_API_KEY = process.env.POKEWALLET_API_KEY;
+const POKEWALLET_API_BASE_URL = process.env.POKEWALLET_API_BASE_URL || 'https://api.pokewallet.io';
 const PORT = process.env.PORT || 3001;
 const EBAY_SOLD_SEARCH_TIMEOUT_MS = Number(process.env.EBAY_SOLD_SEARCH_TIMEOUT_MS || 3500);
 const EBAY_BROWSE_SEARCH_TIMEOUT_MS = Number(process.env.EBAY_BROWSE_SEARCH_TIMEOUT_MS || 4500);
@@ -52,6 +54,33 @@ const supabase = createClient(
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function getPokeWalletHeaders() {
+  if (!POKEWALLET_API_KEY) {
+    throw new Error('Missing POKEWALLET_API_KEY');
+  }
+
+  return {
+    Accept: 'application/json',
+    'X-API-Key': POKEWALLET_API_KEY,
+  };
+}
+
+function normalizePokeWalletCard(card) {
+  const info = card?.card_info ?? {};
+  return {
+    id: card?.id ?? null,
+    name: info.name ?? info.clean_name ?? null,
+    set_name: info.set_name ?? null,
+    set_code: info.set_code ?? null,
+    set_id: info.set_id ?? null,
+    number: info.card_number ?? null,
+    rarity: info.rarity ?? null,
+    image_url: card?.id ? `/api/pokewallet/images/${encodeURIComponent(card.id)}?size=high` : null,
+    tcgplayer: card?.tcgplayer ?? null,
+    cardmarket: card?.cardmarket ?? null,
+  };
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 5000, label = 'request') {
@@ -1150,9 +1179,95 @@ app.get('/debug-env', (req, res) => {
     hasEbayClientSecret: Boolean(EBAY_CLIENT_SECRET),
     hasXimilarToken: Boolean(XIMILAR_API_TOKEN),
     hasTcgApiKey: Boolean(POKEMON_TCG_API_KEY),
+    hasPokeWalletKey: Boolean(POKEWALLET_API_KEY),
     hasGiblKey: Boolean(process.env.GIBLTCG_API_KEY || process.env.GIBL_API_KEY),
     marketplace: EBAY_MARKETPLACE_ID,
   });
+});
+
+app.get('/api/pokewallet/search', async (req, res) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    const limit = Math.min(Math.max(Number(req.query.limit || 20), 1), 100);
+    const page = Math.max(Number(req.query.page || 1), 1);
+
+    if (q.length < 2) {
+      return res.status(400).json({ error: 'Missing search query' });
+    }
+
+    const params = new URLSearchParams({
+      q,
+      limit: String(limit),
+      page: String(page),
+    });
+
+    const response = await fetchWithTimeout(
+      `${POKEWALLET_API_BASE_URL.replace(/\/$/, '')}/search?${params.toString()}`,
+      { headers: getPokeWalletHeaders() },
+      6000,
+      'PokeWallet search'
+    );
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: 'PokeWallet search failed',
+        detail: data?.message ?? data?.error ?? text.slice(0, 240),
+      });
+    }
+
+    return res.json({
+      query: data?.query ?? q,
+      results: Array.isArray(data?.results) ? data.results.map(normalizePokeWalletCard) : [],
+      pagination: data?.pagination ?? null,
+      metadata: data?.metadata ?? null,
+      rateLimit: {
+        hour: response.headers.get('x-ratelimit-remaining-hour'),
+        day: response.headers.get('x-ratelimit-remaining-day'),
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'PokeWallet search failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+app.get('/api/pokewallet/images/:id', async (req, res) => {
+  try {
+    const id = String(req.params.id || '').trim();
+    const size = String(req.query.size || 'high').trim();
+    if (!id) return res.status(400).json({ error: 'Missing card id' });
+
+    const response = await fetchWithTimeout(
+      `${POKEWALLET_API_BASE_URL.replace(/\/$/, '')}/images/${encodeURIComponent(id)}?size=${encodeURIComponent(size)}`,
+      { headers: getPokeWalletHeaders() },
+      7000,
+      'PokeWallet image'
+    );
+
+    if (!response.ok) {
+      const text = await response.text();
+      return res.status(response.status).json({
+        error: 'PokeWallet image failed',
+        detail: text.slice(0, 240),
+      });
+    }
+
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(buffer);
+  } catch (error) {
+    return res.status(500).json({
+      error: 'PokeWallet image failed',
+      detail: getErrorMessage(error),
+    });
+  }
 });
 
 app.get('/ebay-rate-limits', async (_req, res) => {

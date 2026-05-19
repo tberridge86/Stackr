@@ -36,13 +36,11 @@ import { PRICE_API_URL } from '../../lib/config';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import {
   PRODUCT_LOOKUP_OPTIONS,
-  fetchProductPrice,
   listMarketProducts,
   productLookupLabel,
   productToInventorySnapshot,
   refreshMarketProductPrice,
   searchMarketProducts,
-  toInventoryProductSnapshot,
 } from '../../lib/productSearch';
 import type { ProductLookupType } from '../../lib/productSearch';
 
@@ -72,11 +70,13 @@ const INVENTORY_LOOKUP_OPTIONS: {
   icon: keyof typeof Ionicons.glyphMap;
 }[] = [
   { key: 'raw_card', label: 'Raw Card', icon: 'albums-outline' },
-  ...PRODUCT_LOOKUP_OPTIONS.map((option) => ({
-    key: option.key,
-    label: option.label,
-    icon: option.icon as keyof typeof Ionicons.glyphMap,
-  })),
+  ...PRODUCT_LOOKUP_OPTIONS
+    .filter((option) => option.key !== 'sealed_product')
+    .map((option) => ({
+      key: option.key,
+      label: option.label,
+      icon: option.icon as keyof typeof Ionicons.glyphMap,
+    })),
 ];
 
 type InventoryViewFilter = 'all' | 'lowStock' | 'highValue' | 'noPrice' | 'stockOut';
@@ -97,7 +97,9 @@ const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value) ? `£${value.toFixed(2)}` : '--';
 
 const getPreferredPrice = (card: InventoryCardSnapshot) =>
-  card.ebay_price ?? card.tcg_price ?? card.cardmarket_price ?? null;
+  card.is_product
+    ? card.tcg_price ?? card.ebay_price ?? card.cardmarket_price ?? null
+    : card.ebay_price ?? card.tcg_price ?? card.cardmarket_price ?? null;
 
 const getDraftConditions = (card: InventoryCardSnapshot) =>
   card.is_product ? PRODUCT_INVENTORY_CONDITIONS : INVENTORY_CONDITIONS;
@@ -130,6 +132,18 @@ const getProductConfidence = (card: InventoryCardSnapshot) => {
   if (count >= 3) return { label: 'Medium confidence', color: '#D97706' };
   if (card.is_product) return { label: 'Low confidence', color: '#DC2626' };
   return null;
+};
+
+const getProductResultSubtitle = (card: InventoryCardSnapshot) => {
+  if (!card.is_product) {
+    return `${card.set_name} · #${card.number ?? '--'} · ${money(getPreferredPrice(card))}`;
+  }
+
+  const typeLabel = card.product_type
+    ? productLookupLabel(card.product_type as ProductLookupType)
+    : 'Product';
+  const setLabel = card.set_name && card.set_name !== typeLabel ? card.set_name : null;
+  return `${typeLabel}${setLabel ? ` · ${setLabel}` : ''} · recommended ${money(getPreferredPrice(card))}`;
 };
 
 const toCardSnapshot = (row: any, snapshot?: any): InventoryCardSnapshot => {
@@ -167,10 +181,6 @@ export default function InventoryScreen() {
   const [setFilter, setSetFilter] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [catalogSetFilter, setCatalogSetFilter] = useState('');
-  const [catalogMinPrice, setCatalogMinPrice] = useState('');
-  const [catalogMaxPrice, setCatalogMaxPrice] = useState('');
-  const [catalogConfidenceFilter, setCatalogConfidenceFilter] = useState<'all' | 'priced' | 'strong'>('all');
   const [refreshing, setRefreshing] = useState(false);
   const [saleOpen, setSaleOpen] = useState(false);
   const [saleCart, setSaleCart] = useState<SaleCartLine[]>([]);
@@ -179,6 +189,9 @@ export default function InventoryScreen() {
   const [stockOutCandidates, setStockOutCandidates] = useState<InventoryItem[]>([]);
   const [stockOutContext, setStockOutContext] = useState<'inventory' | 'sale'>('inventory');
   const [stockOutPickerOpen, setStockOutPickerOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<InventoryCardSnapshot | null>(null);
+  const [productQuantity, setProductQuantity] = useState('1');
+  const [productAskingPrice, setProductAskingPrice] = useState('');
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const persist = useCallback(async (nextItems: InventoryItem[]) => {
@@ -258,11 +271,10 @@ export default function InventoryScreen() {
         return;
       }
 
-      const price = await fetchProductPrice(trimmed, type);
-      setResults([toInventoryProductSnapshot(trimmed, type, price)]);
+      setResults([]);
     } catch (error) {
       console.log('Inventory product search failed', error);
-      setResults([toInventoryProductSnapshot(trimmed, type, null)]);
+      setResults([]);
     } finally {
       setSearching(false);
     }
@@ -363,6 +375,12 @@ export default function InventoryScreen() {
     setDrafts((prev) => prev.filter((draft) => draft.card.id !== cardId));
   }, []);
 
+  const openProductStockModal = useCallback((card: InventoryCardSnapshot) => {
+    setSelectedProduct(card);
+    setProductQuantity('1');
+    setProductAskingPrice('');
+  }, []);
+
   const addStockLine = useCallback((currentItems: InventoryItem[], card: InventoryCardSnapshot, condition: InventoryCondition, quantity: number, askingPrice?: number | null) => {
     const existing = currentItems.find((item) => item.card_id === card.id && item.condition === condition);
     const now = new Date().toISOString();
@@ -384,6 +402,20 @@ export default function InventoryScreen() {
           asking_price: askingPrice ?? null,
         }, ...currentItems];
   }, []);
+
+  const addSelectedProductToInventory = useCallback(async () => {
+    if (!selectedProduct) return;
+
+    const quantity = Math.max(1, Math.floor(Number.parseInt(productQuantity, 10) || 1));
+    const parsedAskingPrice = Number.parseFloat(productAskingPrice.replace(/[^0-9.]/g, ''));
+    const askingPrice = Number.isFinite(parsedAskingPrice) ? parsedAskingPrice : null;
+
+    const next = addStockLine(items, selectedProduct, 'Sealed', quantity, askingPrice);
+    await persist(next);
+    setSelectedProduct(null);
+    setProductQuantity('1');
+    setProductAskingPrice('');
+  }, [addStockLine, items, persist, productAskingPrice, productQuantity, selectedProduct]);
 
   const addAllDrafts = useCallback(async () => {
     const totalQuantity = drafts.reduce(
@@ -526,30 +558,8 @@ export default function InventoryScreen() {
   }, [filterCondition, inventoryViewFilter, items, maxPrice, minPrice, setFilter]);
 
   const catalogResults = useMemo(() => {
-    if (lookupType === 'raw_card') return results;
-    const min = Number.parseFloat(catalogMinPrice);
-    const max = Number.parseFloat(catalogMaxPrice);
-    const setTerm = catalogSetFilter.trim().toLowerCase();
-
-    return results.filter((card) => {
-      const price = getPreferredPrice(card);
-      const count = card.product_price_count ?? 0;
-      if (setTerm) {
-        const haystack = `${card.set_name ?? ''} ${card.product_name ?? ''} ${card.name}`.toLowerCase();
-        if (!haystack.includes(setTerm)) return false;
-      }
-      if (Number.isFinite(min) && (price ?? 0) < min) return false;
-      if (Number.isFinite(max) && (price ?? 0) > max) return false;
-      if (catalogConfidenceFilter === 'priced' && price == null) return false;
-      if (catalogConfidenceFilter === 'strong' && count < 3) return false;
-      return true;
-    });
-  }, [catalogConfidenceFilter, catalogMaxPrice, catalogMinPrice, catalogSetFilter, lookupType, results]);
-
-  const activeCatalogFilterCount = (catalogSetFilter.trim() ? 1 : 0)
-    + (catalogMinPrice.trim() ? 1 : 0)
-    + (catalogMaxPrice.trim() ? 1 : 0)
-    + (catalogConfidenceFilter !== 'all' ? 1 : 0);
+    return results;
+  }, [results]);
 
   const totalStock = items.reduce((sum, item) => sum + item.quantity, 0);
   const inventoryValue = items.reduce((sum, item) => sum + (getPreferredPrice(item.card) ?? 0) * item.quantity, 0);
@@ -836,76 +846,65 @@ export default function InventoryScreen() {
           {results.length > 0 && (
             <>
             {stockScanMode === 'add' && lookupType !== 'raw_card' && (
-              <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <View>
-                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14 }}>Product catalog</Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 1 }}>
-                      Browse by type, price, set, and confidence.
+              <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
+                      {productLookupLabel(lookupType)}
+                    </Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2, fontWeight: '700' }}>
+                      {query.trim() ? `${catalogResults.length} matching item${catalogResults.length !== 1 ? 's' : ''}` : `${catalogResults.length} available item${catalogResults.length !== 1 ? 's' : ''}`}
                     </Text>
                   </View>
-                  <TouchableOpacity onPress={() => loadProductCatalog(lookupType)} style={{ borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
-                    <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 11 }}>Refresh</Text>
+                  <TouchableOpacity onPress={() => loadProductCatalog(lookupType)} style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="refresh" size={17} color={theme.colors.primary} />
                   </TouchableOpacity>
                 </View>
-
-                <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-                  <TextInput value={catalogSetFilter} onChangeText={setCatalogSetFilter} placeholder="Set / era" placeholderTextColor={theme.colors.textSoft} style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, color: theme.colors.text, fontWeight: '800' }} />
-                  <TextInput value={catalogMinPrice} onChangeText={setCatalogMinPrice} placeholder="Min" keyboardType="decimal-pad" placeholderTextColor={theme.colors.textSoft} style={{ width: 70, backgroundColor: theme.colors.surface, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, color: theme.colors.text, fontWeight: '800' }} />
-                  <TextInput value={catalogMaxPrice} onChangeText={setCatalogMaxPrice} placeholder="Max" keyboardType="decimal-pad" placeholderTextColor={theme.colors.textSoft} style={{ width: 70, backgroundColor: theme.colors.surface, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, color: theme.colors.text, fontWeight: '800' }} />
-                </View>
-
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 8 }}>
-                  {[
-                    { key: 'all' as const, label: 'All' },
-                    { key: 'priced' as const, label: 'Priced' },
-                    { key: 'strong' as const, label: '3+ comps' },
-                  ].map((filter) => {
-                    const active = catalogConfidenceFilter === filter.key;
-                    return (
-                      <TouchableOpacity key={filter.key} onPress={() => setCatalogConfidenceFilter(filter.key)} style={{ borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7, backgroundColor: active ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: active ? theme.colors.primary : theme.colors.border }}>
-                        <Text style={{ color: active ? '#FFFFFF' : theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>{filter.label}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                  {activeCatalogFilterCount > 0 && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setCatalogSetFilter('');
-                        setCatalogMinPrice('');
-                        setCatalogMaxPrice('');
-                        setCatalogConfidenceFilter('all');
-                      }}
-                      style={{ borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}
-                    >
-                      <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 11 }}>Clear</Text>
-                    </TouchableOpacity>
-                  )}
-                </ScrollView>
               </View>
             )}
             <FlatList
               data={lookupType === 'raw_card' ? results : catalogResults}
               keyExtractor={(item) => item.id}
               keyboardShouldPersistTaps="handled"
-              style={{ maxHeight: lookupType === 'raw_card' ? 220 : 320, marginTop: 10 }}
+              style={{ maxHeight: lookupType === 'raw_card' ? 220 : Math.min(540, Math.max(360, width * 0.95)), marginTop: 10 }}
               renderItem={({ item }) => {
-                const selected = drafts.some((draft) => draft.card.id === item.id);
+                const selected = lookupType === 'raw_card' && drafts.some((draft) => draft.card.id === item.id);
                 const confidence = getProductConfidence(item);
                 return (
-                  <TouchableOpacity onPress={() => toggleDraftCard(item)} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
+                  <TouchableOpacity
+                    onPress={() => lookupType === 'raw_card' ? toggleDraftCard(item) : openProductStockModal(item)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      paddingVertical: lookupType === 'raw_card' ? 9 : 12,
+                      paddingHorizontal: lookupType === 'raw_card' ? 0 : 10,
+                      marginBottom: lookupType === 'raw_card' ? 0 : 8,
+                      borderTopWidth: lookupType === 'raw_card' ? 1 : 0,
+                      borderTopColor: theme.colors.border,
+                      borderRadius: lookupType === 'raw_card' ? 0 : 16,
+                      backgroundColor: lookupType === 'raw_card' ? 'transparent' : theme.colors.surface,
+                      borderWidth: lookupType === 'raw_card' ? 0 : 1,
+                      borderColor: theme.colors.border,
+                    }}
+                  >
                     {item.image_small ? (
-                      <Image source={{ uri: item.image_small }} style={{ width: 46, height: item.is_product ? 46 : 62, borderRadius: item.is_product ? 9 : 0 }} resizeMode="contain" />
+                      <Image source={{ uri: item.image_small }} style={{ width: item.is_product ? 68 : 46, height: item.is_product ? 68 : 62, borderRadius: item.is_product ? 10 : 0 }} resizeMode="contain" />
                     ) : (
-                      <View style={{ width: 46, height: item.is_product ? 46 : 62, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                      <View style={{ width: item.is_product ? 68 : 46, height: item.is_product ? 68 : 62, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
                         <Ionicons name={item.is_product ? 'cube-outline' : 'albums-outline'} size={20} color={theme.colors.primary} />
                       </View>
                     )}
                     <View style={{ flex: 1, marginLeft: 10 }}>
-                      <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900' }}>{item.name}</Text>
+                      <Text numberOfLines={lookupType === 'raw_card' ? 1 : 2} style={{ color: theme.colors.text, fontWeight: '900', fontSize: lookupType === 'raw_card' ? 14 : 15 }}>{item.name}</Text>
                       <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12 }}>
-                        {item.is_product ? `${item.set_name} · recommended ${money(getPreferredPrice(item))}` : `${item.set_name} · #${item.number ?? '--'} · ${money(getPreferredPrice(item))}`}
+                        {getProductResultSubtitle(item)}
                       </Text>
+                      {item.is_product && (
+                        <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}>
+                          <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12 }}>TCG {money(item.tcg_price)}</Text>
+                          <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12 }}>eBay {money(item.ebay_price)}</Text>
+                        </View>
+                      )}
                       {confidence && (
                         <View style={{ alignSelf: 'flex-start', marginTop: 4, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, backgroundColor: `${confidence.color}18` }}>
                           <Text style={{ color: confidence.color, fontWeight: '900', fontSize: 10 }}>
@@ -915,7 +914,7 @@ export default function InventoryScreen() {
                       )}
                     </View>
                     <View style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: selected ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: selected ? theme.colors.primary : theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
-                      <Ionicons name={selected ? 'checkmark' : 'add'} size={18} color={selected ? '#FFFFFF' : theme.colors.textSoft} />
+                      <Ionicons name={lookupType === 'raw_card' ? (selected ? 'checkmark' : 'add') : 'chevron-forward'} size={18} color={selected ? '#FFFFFF' : theme.colors.textSoft} />
                     </View>
                   </TouchableOpacity>
                 );
@@ -1120,6 +1119,112 @@ export default function InventoryScreen() {
           }
         />
       </View>
+
+      <Modal visible={!!selectedProduct} transparent animationType="slide" onRequestClose={() => setSelectedProduct(null)}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(10, 8, 25, 0.34)', justifyContent: 'flex-end' }}>
+          <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 16, borderWidth: 1, borderColor: theme.colors.border, maxHeight: '90%', ...cardShadow }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Add stock</Text>
+                <Text style={{ color: theme.colors.textSoft, marginTop: 3, fontWeight: '700' }}>
+                  {selectedProduct?.product_type ? productLookupLabel(selectedProduct.product_type as ProductLookupType) : 'Sealed product'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setSelectedProduct(null)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="close" size={20} color={theme.colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedProduct && (
+              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                <View style={{ flexDirection: 'row', gap: 14 }}>
+                  {selectedProduct.image_large || selectedProduct.image_small ? (
+                    <Image source={{ uri: selectedProduct.image_large ?? selectedProduct.image_small ?? '' }} style={{ width: 124, height: 124, borderRadius: 14, backgroundColor: theme.colors.surface }} resizeMode="contain" />
+                  ) : (
+                    <View style={{ width: 124, height: 124, borderRadius: 14, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                      <Ionicons name="cube-outline" size={34} color={theme.colors.primary} />
+                    </View>
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '900' }} numberOfLines={3}>{selectedProduct.name}</Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 5 }} numberOfLines={2}>{selectedProduct.set_name ?? 'Product'}</Text>
+                    {getProductConfidence(selectedProduct) ? (
+                      <View style={{ alignSelf: 'flex-start', marginTop: 9, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: `${getProductConfidence(selectedProduct)!.color}18` }}>
+                        <Text style={{ color: getProductConfidence(selectedProduct)!.color, fontWeight: '900', fontSize: 11 }}>
+                          {getProductConfidence(selectedProduct)!.label}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                </View>
+
+                <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 12, borderWidth: 1, borderColor: theme.colors.border }}>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14, marginBottom: 10 }}>Recommended prices</Text>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>TCG</Text>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginTop: 4 }}>{money(selectedProduct.tcg_price)}</Text>
+                    </View>
+                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>eBay sold avg</Text>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginTop: 4 }}>{money(selectedProduct.ebay_price)}</Text>
+                    </View>
+                  </View>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>eBay low</Text>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 4 }}>{money(selectedProduct.product_price_low)}</Text>
+                    </View>
+                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>eBay high</Text>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 4 }}>{money(selectedProduct.product_price_high)}</Text>
+                    </View>
+                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>Sold comps</Text>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 4 }}>{selectedProduct.product_price_count ?? '--'}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={{ marginTop: 14, gap: 10 }}>
+                  <View>
+                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12, marginBottom: 6 }}>Your shop price</Text>
+                    <TextInput
+                      value={productAskingPrice}
+                      onChangeText={(value) => setProductAskingPrice(value.replace(/[^0-9.]/g, '').slice(0, 9))}
+                      placeholder={`Recommended ${money(getPreferredPrice(selectedProduct))}`}
+                      placeholderTextColor={theme.colors.textSoft}
+                      keyboardType="decimal-pad"
+                      style={{ backgroundColor: theme.colors.surface, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 11, color: theme.colors.text, fontWeight: '900' }}
+                    />
+                  </View>
+                  <View>
+                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12, marginBottom: 6 }}>Quantity to add</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                      <TouchableOpacity onPress={() => setProductQuantity((value) => String(Math.max(1, (Number.parseInt(value, 10) || 1) - 1)))} style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
+                        <Ionicons name="remove" size={18} color={theme.colors.text} />
+                      </TouchableOpacity>
+                      <TextInput
+                        value={productQuantity}
+                        onChangeText={(value) => setProductQuantity(value.replace(/[^0-9]/g, '').slice(0, 4) || '1')}
+                        keyboardType="number-pad"
+                        style={{ flex: 1, textAlign: 'center', backgroundColor: theme.colors.surface, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 11, color: theme.colors.text, fontWeight: '900', fontSize: 16 }}
+                      />
+                      <TouchableOpacity onPress={() => setProductQuantity((value) => String((Number.parseInt(value, 10) || 1) + 1))} style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name="add" size={18} color="#FFFFFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+
+                <TouchableOpacity onPress={addSelectedProductToInventory} style={{ marginTop: 16, backgroundColor: theme.colors.primary, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Add to inventory</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={stockOutPickerOpen} transparent animationType="fade" onRequestClose={() => setStockOutPickerOpen(false)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(10, 8, 25, 0.34)', justifyContent: 'center', padding: 18 }}>
