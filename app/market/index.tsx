@@ -26,7 +26,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { scanStore } from '../../lib/scanStore';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
-import { buildProductQuery, getProductPriceWithFallback, searchMarketProducts } from '../../lib/productSearch';
+import { buildProductQuery, searchMarketProducts } from '../../lib/productSearch';
 import type { ProductLookupType, ProductPriceResult } from '../../lib/productSearch';
 
 // ===============================
@@ -132,16 +132,6 @@ const GRADES = ['10', '9.5', '9', '8', '7'];
 
 const isCardLookup = (lookupType: LookupType): lookupType is 'raw_card' | 'graded_slab' =>
   lookupType === 'raw_card' || lookupType === 'graded_slab';
-
-const toEbayDetailData = (price: ProductPriceResult | null): EbayDetailData =>
-  price ? {
-    low: price.low,
-    average: price.average,
-    high: price.high,
-    count: price.count,
-    query: price.query || undefined,
-    soldDataSource: price.soldDataSource || undefined,
-  } : null;
 
 const getLookupSearchHint = (lookupType: LookupType) => {
   switch (lookupType) {
@@ -260,7 +250,7 @@ export default function MarketScreen() {
   const [lookupMenuOpen, setLookupMenuOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
-  const [productPriceData, setProductPriceData] = useState<EbayDetailData>(null);
+  const [productPriceData, setProductPriceData] = useState<ProductPriceResult | null>(null);
   const [productPriceLoading, setProductPriceLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
 
@@ -279,6 +269,7 @@ export default function MarketScreen() {
   const [watchlistCards, setWatchlistCards] = useState<PokemonCard[]>([]);
   const [watchlistPriceMap, setWatchlistPriceMap] = useState<Record<string, WatchlistPriceState>>({});
   const [searchPriceMap, setSearchPriceMap] = useState<Record<string, SearchPriceState>>({});
+  const [searchEbayMap, setSearchEbayMap] = useState<Record<string, EbayDetailData>>({});
   const [watchlistLoading, setWatchlistLoading] = useState(true);
 
   const translateY = useRef(new Animated.Value(0)).current;
@@ -342,7 +333,9 @@ export default function MarketScreen() {
 
     const { data, error } = await supabase
       .from('market_price_snapshots')
-      .select('card_id, ebay_average, tcg_mid, snapshot_at')
+      .select('card_id, tcg_mid, tcg_low, snapshot_at')
+      .is('user_id', null)
+      .or('tcg_mid.not.is.null,tcg_low.not.is.null')
       .in('card_id', cardIds)
       .order('snapshot_at', { ascending: false });
 
@@ -359,8 +352,8 @@ export default function MarketScreen() {
       const snapshots = grouped[cardId] ?? [];
       const latest = snapshots[0];
       const previous = snapshots[1];
-      const latestPrice = latest?.ebay_average ?? latest?.tcg_mid ?? null;
-      const previousPrice = previous?.ebay_average ?? previous?.tcg_mid ?? null;
+      const latestPrice = latest?.tcg_mid ?? latest?.tcg_low ?? null;
+      const previousPrice = previous?.tcg_mid ?? previous?.tcg_low ?? null;
       const change = latestPrice != null && previousPrice != null ? latestPrice - previousPrice : null;
       const percentChange = change != null && previousPrice != null && previousPrice !== 0 ? (change / previousPrice) * 100 : null;
       nextMap[cardId] = { latestPrice, previousPrice, change, percentChange, hasHistory: snapshots.length > 1 };
@@ -372,6 +365,7 @@ export default function MarketScreen() {
   const loadSearchResultPrices = useCallback(async (cardIds: string[]) => {
     if (!cardIds.length) {
       setSearchPriceMap({});
+      setSearchEbayMap({});
       return;
     }
 
@@ -380,7 +374,7 @@ export default function MarketScreen() {
       .select('card_id, ebay_average, ebay_low, ebay_high, ebay_count, tcg_mid, tcg_low, snapshot_at')
       .is('user_id', null)
       .in('card_id', cardIds)
-      .not('tcg_mid', 'is', null)
+      .or('tcg_mid.not.is.null,tcg_low.not.is.null')
       .order('snapshot_at', { ascending: false });
 
     if (error) {
@@ -400,8 +394,8 @@ export default function MarketScreen() {
       const snapshots = grouped[cardId] ?? [];
       const latest = snapshots[0];
       const previous = snapshots[1];
-      const latestTcg = latest?.tcg_mid == null ? null : Number(latest.tcg_mid);
-      const previousTcg = previous?.tcg_mid == null ? null : Number(previous.tcg_mid);
+      const latestTcg = latest?.tcg_mid == null && latest?.tcg_low == null ? null : Number(latest.tcg_mid ?? latest.tcg_low);
+      const previousTcg = previous?.tcg_mid == null && previous?.tcg_low == null ? null : Number(previous.tcg_mid ?? previous.tcg_low);
       const change = latestTcg != null && previousTcg != null ? latestTcg - previousTcg : null;
       const percentChange = change != null && previousTcg != null && previousTcg !== 0 ? (change / previousTcg) * 100 : null;
 
@@ -420,6 +414,66 @@ export default function MarketScreen() {
 
     setSearchPriceMap(nextMap);
   }, []);
+
+  const fetchLiveEbayForCard = useCallback(async (card: PokemonCard): Promise<EbayDetailData> => {
+    if (!PRICE_API_URL) return null;
+
+    const rawSetName = card.set?.name ?? '';
+    const setName = (rawSetName && rawSetName !== card.set?.id) ? rawSetName : '';
+
+    const params = new URLSearchParams({
+      name: card.name ?? '',
+      setName,
+      number: card.number ?? '',
+      rarity: card.rarity ?? '',
+      cardId: card.id ?? '',
+      productType: 'card',
+      pricingMode: lookupType === 'graded_slab' ? 'graded' : 'raw',
+    });
+
+    if (lookupType === 'graded_slab') {
+      params.set('gradingCompany', gradingCompany);
+      params.set('grade', grade);
+    } else {
+      params.set('condition', rawCondition);
+    }
+
+    const printedTotal = card.set?.printedTotal ?? card.set?.total;
+    if (printedTotal != null) params.set('setTotal', String(printedTotal));
+
+    const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
+    if (!response.ok) throw new Error('Failed to fetch eBay price');
+
+    const data = await response.json();
+    return {
+      low: data.low ?? null,
+      average: data.average ?? null,
+      high: data.high ?? null,
+      count: data.count ?? null,
+      query: data.query ?? null,
+      soldDataSource: data.soldDataSource ?? null,
+    };
+  }, [grade, gradingCompany, lookupType, rawCondition]);
+
+  const loadLiveEbayForSearchResults = useCallback(async (cards: PokemonCard[]) => {
+    const visibleCards = cards.slice(0, 12);
+    if (!visibleCards.length || !PRICE_API_URL) {
+      setSearchEbayMap({});
+      return;
+    }
+
+    const nextMap: Record<string, EbayDetailData> = Object.fromEntries(cards.map((card) => [card.id, null]));
+    await Promise.all(visibleCards.map(async (card) => {
+      try {
+        nextMap[card.id] = await fetchLiveEbayForCard(card);
+      } catch (error) {
+        console.log('Search result eBay price error:', card.id, error);
+        nextMap[card.id] = null;
+      }
+    }));
+
+    setSearchEbayMap(nextMap);
+  }, [fetchLiveEbayForCard]);
 
   const loadWatchlist = useCallback(async () => {
     try {
@@ -465,7 +519,7 @@ export default function MarketScreen() {
 
   const searchCards = useCallback(async (searchQuery: string, skipSetFilter = false) => {
   const trimmed = searchQuery.trim();
-  if (!trimmed) { setSearchResults([]); setSearchPriceMap({}); return; }
+  if (!trimmed) { setSearchResults([]); setSearchPriceMap({}); setSearchEbayMap({}); return; }
 
   try {
     setSearching(true);
@@ -477,6 +531,7 @@ export default function MarketScreen() {
     const cards = smartResults.map(mapCard);
     setSearchResults(cards);
     await loadSearchResultPrices(cards.map((card) => card.id));
+    loadLiveEbayForSearchResults(cards);
     if (smartResults.length < 0) {
     const words = trimmed.split(/\s+/).filter(Boolean);
     let cardTerm = trimmed;
@@ -543,15 +598,17 @@ export default function MarketScreen() {
       const fallbackCards = (data ?? []).map(mapCard);
       setSearchResults(fallbackCards);
       await loadSearchResultPrices(fallbackCards.map((card) => card.id));
+      loadLiveEbayForSearchResults(fallbackCards);
     }
     } catch (err) {
       console.log('Search error:', err);
       setSearchResults([]);
       setSearchPriceMap({});
+      setSearchEbayMap({});
     } finally {
       setSearching(false);
     }
-  }, [loadSearchResultPrices]);
+  }, [loadLiveEbayForSearchResults, loadSearchResultPrices]);
 
   const searchProductPrice = useCallback(async (searchQuery: string, productType: ProductLookupType) => {
     const trimmed = searchQuery.trim();
@@ -562,15 +619,10 @@ export default function MarketScreen() {
       setSearching(true);
       setSearchResults([]);
       setSearchPriceMap({});
+      setSearchEbayMap({});
       const catalogResults = await searchMarketProducts(trimmed, productType, 1);
       const catalogPrice = catalogResults[0]?.latest_price ?? null;
-      if (catalogPrice?.average != null) {
-        setProductPriceData(toEbayDetailData(catalogPrice));
-      }
-
-      const data = await getProductPriceWithFallback(trimmed, productType);
-      if (!data && catalogPrice) return;
-      setProductPriceData(toEbayDetailData(data));
+      setProductPriceData(catalogPrice);
     } catch (err) {
       console.log('Product price search error:', err);
       setProductPriceData(null);
@@ -589,6 +641,7 @@ export default function MarketScreen() {
     if (trimmed.length < 2) {
       setSearchResults([]);
       setSearchPriceMap({});
+      setSearchEbayMap({});
       setProductPriceData(null);
       return;
     }
@@ -606,6 +659,7 @@ export default function MarketScreen() {
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     if (text.trim().length < 2) {
       setSearchResults([]);
+      setSearchEbayMap({});
       setProductPriceData(null);
       return;
     }
@@ -804,10 +858,11 @@ try {
   const renderCard = useCallback(({ item }: { item: PokemonCard }) => {
     const watching = isWatching(item.id);
     const tcgMid = getBestTcgPrice(item, 'mid');
-    const ebaySnapshot = searchPriceMap[item.id];
-    const snapshotTcg = ebaySnapshot?.tcgLatest ?? null;
+    const priceSnapshot = searchPriceMap[item.id];
+    const liveEbay = searchEbayMap[item.id];
+    const snapshotTcg = priceSnapshot?.tcgLatest ?? null;
     const displayTcg = snapshotTcg ?? (tcgMid != null ? tcgMid * USD_TO_GBP : null);
-    const tcgChange = ebaySnapshot?.tcgChange ?? null;
+    const tcgChange = priceSnapshot?.tcgChange ?? null;
     const tcgMovementColor = tcgChange == null ? theme.colors.textSoft : tcgChange > 0 ? '#2ECC71' : tcgChange < 0 ? '#FF5A5F' : theme.colors.textSoft;
     const tcgMovementIcon = tcgChange == null ? null : tcgChange > 0 ? 'arrow-up' : tcgChange < 0 ? 'arrow-down' : 'remove';
 
@@ -827,7 +882,7 @@ try {
 
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>
-              {snapshotTcg != null ? formatSnapshotDay(ebaySnapshot?.snapshotAt) : 'TCG'}
+              {snapshotTcg != null ? formatSnapshotDay(priceSnapshot?.snapshotAt) : 'TCG'}
             </Text>
             <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>
               {formatCurrency(displayTcg)}
@@ -836,21 +891,21 @@ try {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                 <Ionicons name={tcgMovementIcon} size={13} color={tcgMovementColor} />
                 <Text style={{ color: tcgMovementColor, fontSize: 12, fontWeight: '800' }}>
-                  {formatDelta(tcgChange)} {formatPercent(ebaySnapshot?.tcgPercentChange)}
+                  {formatDelta(tcgChange)} {formatPercent(priceSnapshot?.tcgPercentChange)}
                 </Text>
               </View>
             ) : null}
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>eBay</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>eBay sold</Text>
             <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>
-              {formatCurrency(ebaySnapshot?.ebayAverage)}
+              {liveEbay === undefined ? 'Checking...' : formatCurrency(liveEbay?.average ?? priceSnapshot?.ebayAverage)}
             </Text>
           </View>
-          {ebaySnapshot?.ebayCount != null && ebaySnapshot.ebayCount > 0 ? (
+          {(liveEbay?.count ?? priceSnapshot?.ebayCount) != null && (liveEbay?.count ?? priceSnapshot?.ebayCount ?? 0) > 0 ? (
             <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>
-              eBay snapshot from {ebaySnapshot.ebayCount} sold listing{ebaySnapshot.ebayCount !== 1 ? 's' : ''}
+              Based on {liveEbay?.count ?? priceSnapshot?.ebayCount} sold listing{(liveEbay?.count ?? priceSnapshot?.ebayCount) !== 1 ? 's' : ''}
             </Text>
           ) : null}
 
@@ -863,7 +918,7 @@ try {
         </View>
       </Pressable>
     );
-  }, [isWatching, openCardDetail, searchPriceMap, theme.colors.text, theme.colors.textSoft, toggleWatchlist]);
+  }, [isWatching, openCardDetail, searchEbayMap, searchPriceMap, theme.colors.text, theme.colors.textSoft, toggleWatchlist]);
 
   const renderWatchlistCard = useCallback(({ item }: { item: PokemonCard }) => {
     const watching = isWatching(item.id);
@@ -1216,6 +1271,30 @@ try {
                         </>
                       )}
 
+                      <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>
+                            {lookupType === 'graded_slab' ? `Live eBay sold - ${gradingCompany} ${grade}` : `Live eBay sold - ${rawCondition}`}
+                          </Text>
+                          {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
+                        </View>
+
+                        {detailPriceLoading ? (
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching live eBay sold prices...</Text>
+                        ) : (
+                          <>
+                            <PriceRow label="Low" value={formatCurrency(detailEbayData?.low)} />
+                            <PriceRow label="Average" value={formatCurrency(detailEbayData?.average)} highlight />
+                            <PriceRow label="High" value={formatCurrency(detailEbayData?.high)} />
+                            {detailEbayData?.count != null && (
+                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
+                                Based on {detailEbayData.count} sold listing{detailEbayData.count !== 1 ? 's' : ''}
+                              </Text>
+                            )}
+                          </>
+                        )}
+                      </View>
+
                       <PriceSection title="TCGPlayer (GBP est.)">
                         <PriceRow label="Low" value={getBestTcgPrice(selectedCard, 'low') != null ? `£${((getBestTcgPrice(selectedCard, 'low') ?? 0) * USD_TO_GBP).toFixed(2)}` : '--'} />
                         <PriceRow label="Mid" value={getBestTcgPrice(selectedCard, 'mid') != null ? `£${((getBestTcgPrice(selectedCard, 'mid') ?? 0) * USD_TO_GBP).toFixed(2)}` : '--'} />
@@ -1229,29 +1308,6 @@ try {
                         </PriceSection>
                       )}
 
-                      <View style={{ marginTop: 12, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>
-                            {lookupType === 'graded_slab' ? `${gradingCompany} ${grade} Slab Prices (GBP)` : `${rawCondition} Raw Prices (GBP)`}
-                          </Text>
-                          {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
-                        </View>
-
-                        {detailPriceLoading ? (
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching live prices...</Text>
-                        ) : (
-                          <>
-                            <PriceRow label="Low" value={formatCurrency(detailEbayData?.low)} />
-                            <PriceRow label="Average" value={formatCurrency(detailEbayData?.average)} highlight />
-                            <PriceRow label="High" value={formatCurrency(detailEbayData?.high)} />
-                            {detailEbayData?.count != null && (
-                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
-                                Based on {detailEbayData.count} listing{detailEbayData.count !== 1 ? 's' : ''}
-                              </Text>
-                            )}
-                          </>
-                        )}
-                      </View>
                     </View>
                   </>
                 )}
@@ -1277,8 +1333,11 @@ function EmptyBox({ text }: { text: string }) {
   );
 }
 
-function ProductPricePanel({ title, data, loading }: { title: string; data: EbayDetailData; loading: boolean }) {
+function ProductPricePanel({ title, data, loading }: { title: string; data: ProductPriceResult | null; loading: boolean }) {
   const { theme } = useTheme();
+  const tcgMarket = data?.tcgMarket ?? null;
+  const tcgMid = data?.tcgMid ?? null;
+  const tcgLow = data?.tcgLow ?? null;
   return (
     <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginHorizontal: 16, marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -1286,20 +1345,28 @@ function ProductPricePanel({ title, data, loading }: { title: string; data: Ebay
         {loading && <ActivityIndicator color={theme.colors.primary} size="small" />}
       </View>
       {loading ? (
-        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching eBay sold prices...</Text>
+        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Checking latest TCG prices...</Text>
       ) : data ? (
         <>
-          <PriceRow label="Low" value={formatCurrency(data.low)} />
-          <PriceRow label="Average" value={formatCurrency(data.average)} highlight />
-          <PriceRow label="High" value={formatCurrency(data.high)} />
-          {data.count != null && (
+          <PriceRow label="TCG Market" value={formatCurrency(tcgMarket)} highlight />
+          <PriceRow label="TCG Mid" value={formatCurrency(tcgMid)} />
+          <PriceRow label="TCG Low" value={formatCurrency(tcgLow)} />
+          <PriceRow label="eBay Sold Avg" value={formatCurrency(data.average)} />
+          <PriceRow label="eBay Low" value={formatCurrency(data.low)} />
+          <PriceRow label="eBay High" value={formatCurrency(data.high)} />
+          {data.tcgProductId != null && (
             <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
-              Based on {data.count} listing{data.count !== 1 ? 's' : ''}
+              TCGCSV product #{data.tcgProductId}
+            </Text>
+          )}
+          {data.count != null && data.count > 0 && (
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>
+              eBay based on {data.count} sold listing{data.count !== 1 ? 's' : ''}
             </Text>
           )}
         </>
       ) : (
-        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Run a search to see recent market prices.</Text>
+        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Search the product catalog to see latest TCG prices.</Text>
       )}
     </View>
   );

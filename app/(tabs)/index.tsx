@@ -123,9 +123,10 @@ const buildDayKeys = (range: ChartRange, availableDays: string[]) => {
   });
 };
 
-const getEbayPriceFromSnapshotGbp = (row: any): number | null => {
+const getSnapshotPriceGbp = (row: any): number | null => {
   if (!row) return null;
-  if (typeof row.ebay_average === 'number') return row.ebay_average;
+  if (typeof row.tcg_mid === 'number') return row.tcg_mid;
+  if (typeof row.tcg_low === 'number') return row.tcg_low;
   return null;
 };
 
@@ -418,43 +419,21 @@ export default function HubScreen() {
         return;
       }
 
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const snapshotColumns = 'user_id, card_id, tcg_mid, tcg_low, snapshot_at';
+      const globalSnapshotsResult = await supabase
+        .from('market_price_snapshots')
+        .select(snapshotColumns)
+        .in('card_id', snapshotCardIds)
+        .is('user_id', null)
+        .or('tcg_mid.not.is.null,tcg_low.not.is.null')
+        .order('snapshot_at', { ascending: false })
+        .limit(1000);
 
-      const snapshotColumns = 'user_id, card_id, ebay_average, snapshot_at';
-      const [globalSnapshotsResult, userSnapshotsResult] = await Promise.all([
-        supabase
-          .from('market_price_snapshots')
-          .select(snapshotColumns)
-          .in('card_id', snapshotCardIds)
-          .is('user_id', null)
-          .order('snapshot_at', { ascending: false })
-          .limit(1000),
-        currentUser?.id
-          ? supabase
-              .from('market_price_snapshots')
-              .select(snapshotColumns)
-              .in('card_id', snapshotCardIds)
-              .eq('user_id', currentUser.id)
-              .order('snapshot_at', { ascending: false })
-              .limit(1000)
-          : Promise.resolve({ data: [], error: null }),
-      ]);
-
-      if (globalSnapshotsResult.error && userSnapshotsResult.error) {
+      if (globalSnapshotsResult.error) {
         throw globalSnapshotsResult.error;
       }
 
-      if (globalSnapshotsResult.error) {
-        console.log('Global eBay snapshots unavailable:', globalSnapshotsResult.error.message);
-      }
-      if (userSnapshotsResult.error) {
-        console.log('User eBay snapshots unavailable:', userSnapshotsResult.error.message);
-      }
-
-      const data = [
-        ...(globalSnapshotsResult.data ?? []),
-        ...(userSnapshotsResult.data ?? []),
-      ];
+      const data = globalSnapshotsResult.data ?? [];
       const snapshotByCardDay = new Map<string, any>();
       for (const row of data) {
         snapshotByCardDay.set(`${row.card_id}:${String(row.snapshot_at).split('T')[0]}`, row);
@@ -464,7 +443,7 @@ export default function HubScreen() {
       );
       const snapshotDays = new Set(snapshotRows.map((row) => String(row.snapshot_at).split('T')[0]));
 
-      // Group snapshots by card and by day. The Hub chart is eBay-only so the total and trend use one source.
+      // Group snapshots by card and by day. Collection value is TCG-only, using shared public daily snapshots.
       const groupedByCard: Record<string, any[]> = {};
       const groupedByDay: Record<string, Record<string, number>> = {};
 
@@ -475,7 +454,7 @@ export default function HubScreen() {
         const day = String(row.snapshot_at).split('T')[0];
         if (!groupedByDay[day]) groupedByDay[day] = {};
 
-        const priceGbp = getEbayPriceFromSnapshotGbp(row);
+        const priceGbp = getSnapshotPriceGbp(row);
         if (priceGbp != null) groupedByDay[day][row.card_id] = priceGbp;
       }
 
@@ -491,8 +470,8 @@ export default function HubScreen() {
         const latest = snapshots[snapshots.length - 1];
         const previous = snapshots[snapshots.length - 2];
 
-        const latestGbp = getEbayPriceFromSnapshotGbp(latest);
-        const previousGbp = getEbayPriceFromSnapshotGbp(previous);
+        const latestGbp = getSnapshotPriceGbp(latest);
+        const previousGbp = getSnapshotPriceGbp(previous);
 
         if (latestGbp != null) {
           totalLatest += latestGbp;
@@ -502,7 +481,7 @@ export default function HubScreen() {
           totalPrevious += previousGbp;
           cardsWithPrevious += 1;
           const cardChange = latestGbp - previousGbp;
-          if (cardChange > 0) {
+          if (cardChange !== 0) {
             moverRows.push({
               cardId: card.card_id,
               name: card.card_name ?? card.card?.name ?? card.card_id,
@@ -547,20 +526,19 @@ export default function HubScreen() {
       const debugText = [
         `owned=${ownedCards.length}`,
         `ids=${snapshotCardIds.length}`,
-        `global=${globalSnapshotsResult.data?.length ?? 0}${globalSnapshotsResult.error ? '!' : ''}`,
-        `user=${userSnapshotsResult.data?.length ?? 0}${userSnapshotsResult.error ? '!' : ''}`,
+        `publicTcg=${globalSnapshotsResult.data?.length ?? 0}`,
         `rows=${snapshotRows.length}`,
         `days=${snapshotDays.size}`,
         `points=${chartValues.length}`,
       ].join(' ');
-      console.log('Hub eBay chart debug:', debugText);
+      console.log('Hub price chart debug:', debugText);
 
       setCollectionTotal(totalLatest);
       setCollectionChangeAmount(change);
       setCollectionChangePercent(percent);
       setChartData(displayChartValues);
       setChartIsPreview(!hasRealChartHistory && displayChartValues.length > 0);
-      setDailyMovers(moverRows.sort((a, b) => b.change - a.change).slice(0, 3));
+      setDailyMovers(moverRows.sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 3));
 
       // Auto-post value change to activity feed
       if (chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
@@ -727,7 +705,7 @@ export default function HubScreen() {
               </TouchableOpacity>
             ))}
             <TouchableOpacity
-              onPress={() => Alert.alert('eBay Market Value', 'Based on owned binder cards using your latest daily eBay average sold-price snapshots.')}
+              onPress={() => Alert.alert('TCG Market Value', 'Based on owned binder cards using shared daily TCG snapshot prices.')}
               style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border }}
               activeOpacity={0.75}
             >
@@ -737,7 +715,7 @@ export default function HubScreen() {
 
           <View style={{ paddingRight: 124 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginBottom: 4 }}>
-              eBay Market Value
+              TCG Market Value
             </Text>
           </View>
 
@@ -788,7 +766,7 @@ export default function HubScreen() {
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18 }}>
                 <Ionicons name="analytics-outline" size={24} color={theme.colors.primary} />
                 <Text style={{ color: theme.colors.textSoft, fontSize: 12, textAlign: 'center', lineHeight: 18, marginTop: 8 }}>
-                No eBay price history yet. Check back after the next daily snapshot.
+                No price history yet. Check back after the next daily snapshot.
                 </Text>
               </View>
             )}
@@ -805,43 +783,46 @@ export default function HubScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Top 3 Movers Today</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Ionicons name="trending-up" size={16} color="#22C55E" />
-                <Text style={{ color: '#22C55E', fontSize: 12, fontWeight: '900' }}>Value drivers</Text>
+                <Ionicons name="swap-vertical" size={16} color={theme.colors.primary} />
+                <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>TCG daily</Text>
               </View>
             </View>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 10 }}>
-              {dailyMovers.map((mover, index) => (
-                <View
-                  key={`${mover.cardId}-${index}`}
-                  style={{
-                    width: 150,
-                    backgroundColor: theme.colors.card,
-                    borderRadius: 18,
-                    padding: 10,
-                    borderWidth: 1,
-                    borderColor: theme.colors.border,
-                    ...cardShadow,
-                  }}
-                >
-                  <View style={{ position: 'absolute', top: 8, left: 8, zIndex: 2, backgroundColor: '#22C55E', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 }}>
-                    <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>#{index + 1}</Text>
-                  </View>
-                  {mover.imageUrl ? (
-                    <Image source={{ uri: mover.imageUrl }} style={{ width: '100%', height: 142, marginBottom: 8 }} resizeMode="contain" />
-                  ) : (
-                    <View style={{ height: 142, borderRadius: 12, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                      <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
+              {dailyMovers.map((mover, index) => {
+                const movementColor = mover.change >= 0 ? '#22C55E' : '#EF4444';
+                return (
+                  <View
+                    key={`${mover.cardId}-${index}`}
+                    style={{
+                      width: 150,
+                      backgroundColor: theme.colors.card,
+                      borderRadius: 18,
+                      padding: 10,
+                      borderWidth: 1,
+                      borderColor: theme.colors.border,
+                      ...cardShadow,
+                    }}
+                  >
+                    <View style={{ position: 'absolute', top: 8, left: 8, zIndex: 2, backgroundColor: movementColor, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>#{index + 1}</Text>
                     </View>
-                  )}
-                  <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{mover.name}</Text>
-                  <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3 }}>{mover.setName}</Text>
-                  <Text style={{ color: '#22C55E', fontSize: 15, fontWeight: '900', marginTop: 8 }}>{formatSignedMoney(mover.change)}</Text>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginTop: 2 }}>
-                    {formatSignedPercent(mover.percent)} to {formatMoney(mover.latest)}
-                  </Text>
-                </View>
-              ))}
+                    {mover.imageUrl ? (
+                      <Image source={{ uri: mover.imageUrl }} style={{ width: '100%', height: 142, marginBottom: 8 }} resizeMode="contain" />
+                    ) : (
+                      <View style={{ height: 142, borderRadius: 12, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                        <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
+                      </View>
+                    )}
+                    <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{mover.name}</Text>
+                    <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3 }}>{mover.setName}</Text>
+                    <Text style={{ color: movementColor, fontSize: 15, fontWeight: '900', marginTop: 8 }}>{formatSignedMoney(mover.change)}</Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginTop: 2 }}>
+                      {formatSignedPercent(mover.percent)} to {formatMoney(mover.latest)}
+                    </Text>
+                  </View>
+                );
+              })}
             </ScrollView>
           </View>
         )}

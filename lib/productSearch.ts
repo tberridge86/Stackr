@@ -16,6 +16,10 @@ export type ProductPriceResult = {
   low: number | null;
   average: number | null;
   high: number | null;
+  tcgLow?: number | null;
+  tcgMid?: number | null;
+  tcgMarket?: number | null;
+  tcgProductId?: number | null;
   count: number | null;
   query: string;
   soldDataSource: string | null;
@@ -98,14 +102,88 @@ const mapProductRow = (row: any): MarketProduct => ({
   source: row.source ?? null,
 });
 
+const shouldShowCatalogProduct = (product: MarketProduct) =>
+  product.source !== 'user' && product.source !== 'local' && Boolean(product.set_name || product.image_url);
+
 const mapSnapshotRow = (row: any): ProductPriceResult => ({
   low: row?.ebay_low == null ? null : Number(row.ebay_low),
   average: row?.ebay_average == null ? null : Number(row.ebay_average),
   high: row?.ebay_high == null ? null : Number(row.ebay_high),
+  tcgLow: row?.tcg_low == null ? null : Number(row.tcg_low),
+  tcgMid: row?.tcg_mid == null ? null : Number(row.tcg_mid),
+  tcgMarket: row?.tcg_market == null ? null : Number(row.tcg_market),
+  tcgProductId: row?.tcg_product_id == null ? null : Number(row.tcg_product_id),
   count: row?.sold_count == null ? null : Number(row.sold_count),
   query: row?.query ?? '',
   soldDataSource: row?.source ?? null,
 });
+
+const mergeSnapshotRows = (rows: any[]): ProductPriceResult => {
+  const merged: ProductPriceResult = {
+    low: null,
+    average: null,
+    high: null,
+    tcgLow: null,
+    tcgMid: null,
+    tcgMarket: null,
+    tcgProductId: null,
+    count: null,
+    query: '',
+    soldDataSource: null,
+  };
+
+  for (const row of rows) {
+    const snapshot = mapSnapshotRow(row);
+    merged.low ??= snapshot.low;
+    merged.average ??= snapshot.average;
+    merged.high ??= snapshot.high;
+    merged.tcgLow ??= snapshot.tcgLow;
+    merged.tcgMid ??= snapshot.tcgMid;
+    merged.tcgMarket ??= snapshot.tcgMarket;
+    merged.tcgProductId ??= snapshot.tcgProductId;
+    merged.count ??= snapshot.count;
+    if (!merged.query && snapshot.query) merged.query = snapshot.query;
+    if (!merged.soldDataSource && snapshot.soldDataSource) merged.soldDataSource = snapshot.soldDataSource;
+  }
+
+  return merged;
+};
+
+const buildLatestProductPriceMap = (snapshots: any[] = []) => {
+  const rowsByProduct = new Map<string, any[]>();
+  for (const snapshot of snapshots) {
+    if (!snapshot.product_id) continue;
+    if (!rowsByProduct.has(snapshot.product_id)) rowsByProduct.set(snapshot.product_id, []);
+    rowsByProduct.get(snapshot.product_id)!.push(snapshot);
+  }
+
+  const latestMap = new Map<string, ProductPriceResult>();
+  for (const [productId, rows] of rowsByProduct.entries()) {
+    latestMap.set(productId, mergeSnapshotRows(rows));
+  }
+
+  return latestMap;
+};
+
+async function fetchProductSnapshots(ids: string[]) {
+  const columnsWithTcg = 'product_id, ebay_low, ebay_average, ebay_high, tcg_low, tcg_mid, tcg_market, tcg_product_id, sold_count, query, source, snapshot_at';
+  const columnsLegacy = 'product_id, ebay_low, ebay_average, ebay_high, sold_count, query, source, snapshot_at';
+  let result: any = await supabase
+    .from('market_product_price_snapshots')
+    .select(columnsWithTcg)
+    .in('product_id', ids)
+    .order('snapshot_at', { ascending: false });
+
+  if (result.error && String(result.error.message ?? '').includes('tcg_')) {
+    result = await supabase
+      .from('market_product_price_snapshots')
+      .select(columnsLegacy)
+      .in('product_id', ids)
+      .order('snapshot_at', { ascending: false });
+  }
+
+  return result;
+}
 
 export async function searchMarketProducts(
   text: string,
@@ -131,22 +209,15 @@ export async function searchMarketProducts(
     return [];
   }
 
-  const products = (data ?? []).map(mapProductRow);
+  const products = (data ?? []).map(mapProductRow).filter(shouldShowCatalogProduct);
   const ids = products.map((product) => product.id);
   if (!ids.length) return products;
 
-  const { data: snapshots, error: snapshotError } = await supabase
-    .from('market_product_price_snapshots')
-    .select('product_id, ebay_low, ebay_average, ebay_high, sold_count, query, source, snapshot_at')
-    .in('product_id', ids)
-    .order('snapshot_at', { ascending: false });
+  const { data: snapshots, error: snapshotError } = await fetchProductSnapshots(ids);
 
   if (snapshotError) return products;
 
-  const latestMap = new Map<string, ProductPriceResult>();
-  for (const snapshot of snapshots ?? []) {
-    if (!latestMap.has(snapshot.product_id)) latestMap.set(snapshot.product_id, mapSnapshotRow(snapshot));
-  }
+  const latestMap = buildLatestProductPriceMap(snapshots ?? []);
 
   return products.map((product) => ({ ...product, latest_price: latestMap.get(product.id) ?? null }));
 }
@@ -170,22 +241,15 @@ export async function listMarketProducts(
     return [];
   }
 
-  const products = (data ?? []).map(mapProductRow);
+  const products = (data ?? []).map(mapProductRow).filter(shouldShowCatalogProduct);
   const ids = products.map((product) => product.id);
   if (!ids.length) return products;
 
-  const { data: snapshots, error: snapshotError } = await supabase
-    .from('market_product_price_snapshots')
-    .select('product_id, ebay_low, ebay_average, ebay_high, sold_count, query, source, snapshot_at')
-    .in('product_id', ids)
-    .order('snapshot_at', { ascending: false });
+  const { data: snapshots, error: snapshotError } = await fetchProductSnapshots(ids);
 
   if (snapshotError) return products;
 
-  const latestMap = new Map<string, ProductPriceResult>();
-  for (const snapshot of snapshots ?? []) {
-    if (!latestMap.has(snapshot.product_id)) latestMap.set(snapshot.product_id, mapSnapshotRow(snapshot));
-  }
+  const latestMap = buildLatestProductPriceMap(snapshots ?? []);
 
   return products.map((product) => ({ ...product, latest_price: latestMap.get(product.id) ?? null }));
 }
@@ -247,16 +311,10 @@ export async function ensureMarketProduct(name: string, type: ProductLookupType)
 }
 
 export async function getLatestProductPrice(productId: string): Promise<ProductPriceResult | null> {
-  const { data, error } = await supabase
-    .from('market_product_price_snapshots')
-    .select('ebay_low, ebay_average, ebay_high, sold_count, query, source, snapshot_at')
-    .eq('product_id', productId)
-    .order('snapshot_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const { data, error } = await fetchProductSnapshots([productId]);
 
-  if (error || !data) return null;
-  return mapSnapshotRow(data);
+  if (error || !data?.length) return null;
+  return mergeSnapshotRows(data);
 }
 
 async function saveProductPriceSnapshot(
@@ -349,7 +407,7 @@ export function productToInventorySnapshot(product: MarketProduct): InventoryCar
     rarity: null,
     image_small: product.image_url,
     image_large: product.image_large_url ?? product.image_url,
-    tcg_price: null,
+    tcg_price: product.latest_price?.tcgMarket ?? product.latest_price?.tcgMid ?? product.latest_price?.tcgLow ?? null,
     ebay_price: product.latest_price?.average ?? null,
     cardmarket_price: null,
     is_product: true,
