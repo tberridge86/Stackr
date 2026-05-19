@@ -17,6 +17,13 @@ import { StackrCardPlaceholder } from '../../components/StackrCardPlaceholder';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../lib/supabase';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import {
+  PRODUCT_LOOKUP_OPTIONS,
+  productLookupLabel,
+  refreshMarketProductPrice,
+  searchMarketProducts,
+} from '../../lib/productSearch';
+import type { ProductLookupType } from '../../lib/productSearch';
 
 
 // ===============================
@@ -31,7 +38,10 @@ type Condition =
   | 'Lightly Played'
   | 'Moderately Played'
   | 'Heavily Played'
-  | 'Damaged';
+  | 'Damaged'
+  | 'Sealed';
+
+type LookupType = 'raw_card' | ProductLookupType;
 
 type CardRow = {
   id: string;
@@ -40,6 +50,11 @@ type CardRow = {
   image_small: string | null;
   image_large: string | null;
   raw_data: any;
+  is_product?: boolean;
+  product_type?: ProductLookupType;
+  product_price_low?: number | null;
+  product_price_high?: number | null;
+  product_price_count?: number | null;
 };
 
 type BuilderItem = {
@@ -66,6 +81,8 @@ const CONDITIONS: Condition[] = [
   'Damaged',
 ];
 
+const PRODUCT_CONDITIONS: Condition[] = ['Sealed'];
+
 const CONDITION_MULTIPLIER: Record<Condition, number> = {
   Mint: 1,
   'Near Mint': 0.95,
@@ -73,7 +90,17 @@ const CONDITION_MULTIPLIER: Record<Condition, number> = {
   'Moderately Played': 0.65,
   'Heavily Played': 0.45,
   Damaged: 0.25,
+  Sealed: 1,
 };
+
+const LOOKUP_OPTIONS: { key: LookupType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'raw_card', label: 'Raw Card', icon: 'albums-outline' },
+  ...PRODUCT_LOOKUP_OPTIONS.map((option) => ({
+    key: option.key,
+    label: option.label,
+    icon: option.icon as keyof typeof Ionicons.glyphMap,
+  })),
+];
 
 const BUILDER_QUICK_FILTERS = [
   { icon: 'time-outline' as const, label: 'Recent', action: 'recent' },
@@ -128,6 +155,8 @@ const getCardmarketPrice = (raw: any): number | null => {
 };
 
 const fetchEbayPrice = async (card: CardRow): Promise<number | null> => {
+  if (card.is_product) return card.raw_data?.productPrice?.average ?? null;
+
   const { data } = await supabase
     .from('market_price_snapshots')
     .select('ebay_average')
@@ -158,6 +187,23 @@ const fetchEbayPrice = async (card: CardRow): Promise<number | null> => {
   }
 };
 
+const productToBuilderRow = (product: Awaited<ReturnType<typeof searchMarketProducts>>[number]): CardRow => ({
+  id: product.id,
+  name: product.name,
+  set_id: product.set_name,
+  image_small: product.image_url,
+  image_large: product.image_large_url ?? product.image_url,
+  raw_data: {
+    set: { name: product.set_name ?? productLookupLabel(product.product_type) },
+    productPrice: product.latest_price,
+  },
+  is_product: true,
+  product_type: product.product_type,
+  product_price_low: product.latest_price?.low ?? null,
+  product_price_high: product.latest_price?.high ?? null,
+  product_price_count: product.latest_price?.count ?? null,
+});
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -167,6 +213,7 @@ export default function PriceBuilderScreen() {
   const insets = useSafeAreaInsets();
 
   const [query, setQuery] = useState('');
+  const [lookupType, setLookupType] = useState<LookupType>('raw_card');
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<CardRow[]>([]);
   const [items, setItems] = useState<BuilderItem[]>([]);
@@ -188,6 +235,20 @@ export default function PriceBuilderScreen() {
     try {
       setSearching(true);
 
+      if (lookupType !== 'raw_card') {
+        const products = await searchMarketProducts(text, lookupType, 30);
+        if (products[0] && products[0].latest_price?.average == null) {
+          try {
+            const price = await refreshMarketProductPrice(products[0]);
+            products[0] = { ...products[0], latest_price: price };
+          } catch (error) {
+            console.log('Product price refresh failed', error);
+          }
+        }
+        setResults(products.map(productToBuilderRow));
+        return;
+      }
+
       const cards = await searchLocalPokemonCards<CardRow>(text, {
         limit: 80,
         select: 'id, name, set_id, image_small, image_large, raw_data',
@@ -200,7 +261,7 @@ export default function PriceBuilderScreen() {
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [lookupType]);
 
   const handleQueryChange = useCallback((text: string) => {
     setQuery(text);
@@ -250,12 +311,12 @@ export default function PriceBuilderScreen() {
     const newItems: BuilderItem[] = cards.map((card) => ({
       localId: `${card.id}-${Date.now()}-${Math.random()}`,
       card,
-      condition: 'Near Mint',
+      condition: card.is_product ? 'Sealed' : 'Near Mint',
       quantity: 1,
-      tcgPrice: getTcgPrice(card.raw_data),
-      ebayPrice: null,
-      cardmarketPrice: getCardmarketPrice(card.raw_data),
-      ebayLoading: true,
+      tcgPrice: card.is_product ? null : getTcgPrice(card.raw_data),
+      ebayPrice: card.is_product ? card.raw_data?.productPrice?.average ?? null : null,
+      cardmarketPrice: card.is_product ? null : getCardmarketPrice(card.raw_data),
+      ebayLoading: !card.is_product,
     }));
 
     setItems((prev) => [...prev, ...newItems]);
@@ -264,6 +325,7 @@ export default function PriceBuilderScreen() {
     setResults([]);
 
     for (const newItem of newItems) {
+      if (newItem.card.is_product) continue;
       fetchEbayPrice(newItem.card).then((ebayPrice) => {
         setItems((prev) =>
           prev.map((item) =>
@@ -307,13 +369,14 @@ export default function PriceBuilderScreen() {
       return;
     }
     if (action === 'raw') {
+      setLookupType('raw_card');
       setQuery('raw');
       runSearch('raw');
       return;
     }
     if (action === 'sealed') {
+      setLookupType('booster_bundle');
       setQuery('booster');
-      runSearch('booster');
       return;
     }
     if (action === 'psa') {
@@ -379,17 +442,17 @@ export default function PriceBuilderScreen() {
         activeOpacity={0.8}
       >
         <View style={{ marginRight: 10 }}>
-          <StackrCardPlaceholder
-            uri={item.image_small}
-            width={44}
-            height={62}
-            borderRadius={6}
-          />
+        <StackrCardPlaceholder
+          uri={item.image_small}
+          width={44}
+          height={62}
+          borderRadius={6}
+        />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{item.name}</Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
-            {item.raw_data?.set?.name ?? item.set_id ?? 'Unknown set'}
+            {item.is_product ? `${item.raw_data?.set?.name ?? item.set_id ?? 'Product'} · ${money(item.raw_data?.productPrice?.average ?? null)}` : item.raw_data?.set?.name ?? item.set_id ?? 'Unknown set'}
           </Text>
         </View>
         <View style={{
@@ -421,6 +484,7 @@ export default function PriceBuilderScreen() {
   // ===============================
 
   const renderBuilderItem = useCallback(({ item }: { item: BuilderItem }) => {
+    const itemConditions = item.card.is_product ? PRODUCT_CONDITIONS : CONDITIONS;
     const m = CONDITION_MULTIPLIER[item.condition];
     const tcg = item.tcgPrice != null ? item.tcgPrice * m : null;
     const ebay = item.ebayPrice != null ? item.ebayPrice * m : null;
@@ -456,6 +520,7 @@ export default function PriceBuilderScreen() {
           </Text>
           <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 1 }}>
             {item.card.raw_data?.set?.name ?? item.card.set_id ?? 'Unknown set'}
+            {item.card.is_product && item.card.product_price_count != null ? ` · ${item.card.product_price_count} comps` : ''}
           </Text>
 
           <ScrollView
@@ -463,7 +528,7 @@ export default function PriceBuilderScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 4, paddingVertical: 4 }}
           >
-            {CONDITIONS.map((condition) => {
+            {itemConditions.map((condition) => {
               const active = item.condition === condition;
               return (
                 <TouchableOpacity
@@ -599,7 +664,7 @@ export default function PriceBuilderScreen() {
             </Text>
           </View>
 
-        {/* Search card */}
+        {/* Search */}
         <View style={{
           backgroundColor: theme.colors.card,
           borderRadius: 16,
@@ -609,10 +674,45 @@ export default function PriceBuilderScreen() {
           borderWidth: 1,
           borderColor: theme.colors.border,
         }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 8 }}>
+            {LOOKUP_OPTIONS.map((option) => {
+              const active = lookupType === option.key;
+              return (
+                <TouchableOpacity
+                  key={option.key}
+                  onPress={() => {
+                    setLookupType(option.key);
+                    setResults([]);
+                    setPendingSelection({});
+                    if (query.trim().length >= 2) {
+                      setTimeout(() => runSearch(query), 0);
+                    }
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    borderRadius: 12,
+                    paddingHorizontal: 10,
+                    paddingVertical: 7,
+                    backgroundColor: active ? '#F6F1FF' : theme.colors.surface,
+                    borderWidth: 1,
+                    borderColor: active ? theme.colors.primary : theme.colors.border,
+                  }}
+                >
+                  <Ionicons name={option.icon} size={15} color={active ? theme.colors.primary : theme.colors.textSoft} />
+                  <Text style={{ color: active ? theme.colors.primary : theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
           <TextInput
             value={query}
             onChangeText={handleQueryChange}
-            placeholder="Search e.g. Charizard base..."
+            placeholder={lookupType === 'raw_card' ? 'Search e.g. Charizard base...' : `Search ${productLookupLabel(lookupType).toLowerCase()}...`}
             placeholderTextColor={theme.colors.textSoft}
             style={{
               backgroundColor: theme.colors.bg,
@@ -777,8 +877,8 @@ export default function PriceBuilderScreen() {
             <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, textAlign: 'center' }}>
               No cards added yet
             </Text>
-            <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 6, lineHeight: 20 }}>
-              Search for cards above, select the ones you want, then tap Add to Builder.
+          <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 6, lineHeight: 20 }}>
+              Search for cards or sealed products above, select the ones you want, then tap Add to Builder.
             </Text>
           </View>
         ) : (
@@ -798,7 +898,7 @@ export default function PriceBuilderScreen() {
               marginBottom: 8,
             }}>
               <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>
-                Your bundle ({items.length} card{items.length === 1 ? '' : 's'})
+                Your bundle ({items.length} item{items.length === 1 ? '' : 's'})
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12 }}>
                 Total items: {items.reduce((sum, item) => sum + item.quantity, 0)}
@@ -826,7 +926,7 @@ export default function PriceBuilderScreen() {
               }}
             >
               <Text style={{ color: theme.colors.primary, fontWeight: '900' }}>
-                + Add another card
+                + Add another item
               </Text>
             </TouchableOpacity>
           </View>

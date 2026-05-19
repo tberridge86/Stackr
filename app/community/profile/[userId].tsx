@@ -732,7 +732,7 @@ const binderId = Array.isArray(id) ? id[0] : id;
               No posts yet
             </Text>
             <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 6 }}>
-              This collector hasn't shared anything yet.
+              This collector hasn&apos;t shared anything yet.
             </Text>
           </View>
         }

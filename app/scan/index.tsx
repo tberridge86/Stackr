@@ -1668,11 +1668,12 @@ export default function ScanScreen() {
             });
           }
         } else {
+          const timingPrintedNumber = printedNumber as PrintedNumber | null;
           console.log('Scan timing:', {
             captureMs: captureDoneAt - scanStartedAt,
             numberOcrMs: numberOcrDoneAt - captureDoneAt,
-            numberRegion: printedNumber.region,
-            numberRegionOcrMs: printedNumber.ocrMs,
+            numberRegion: timingPrintedNumber?.region,
+            numberRegionOcrMs: timingPrintedNumber?.ocrMs,
             firstResolveMs: firstLocalDoneAt - numberOcrDoneAt,
             totalMs: Date.now() - scanStartedAt,
           });

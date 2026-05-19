@@ -207,6 +207,8 @@ const CardItem = React.memo(({ card, ownedVariants, setId, onToggleVariant }: Ca
   );
 });
 
+CardItem.displayName = 'CardItem';
+
 // ===============================
 // MAIN COMPONENT
 // ===============================

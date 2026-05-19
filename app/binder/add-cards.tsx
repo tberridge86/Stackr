@@ -448,7 +448,7 @@ export default function AddCardsToBinderScreen() {
                 </Text>
                 <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
                   Search a Pokémon name or card set.{'\n'}
-                  Tip: search "Psyduck" then tap All to grab them all.
+                  Tip: search &quot;Psyduck&quot; then tap All to grab them all.
                 </Text>
               </View>
             }

@@ -9,6 +9,7 @@ process.on('SIGTERM', () => {
 const JOB_NAME = 'daily-tcgcsv-sync';
 const SET_FETCH_DELAY_MS = 400;
 const CARD_UPSERT_DELAY_MS = 20;
+const CARD_PAGE_SIZE = 1000;
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -25,6 +26,12 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function todayMidnightUTC(): string {
   return new Date().toISOString().split('T')[0] + 'T00:00:00.000Z';
+}
+
+function nextMidnightUTC(snapshotDate: string): string {
+  const date = new Date(snapshotDate);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString();
 }
 
 function normalizeNumber(value: string): string {
@@ -49,6 +56,11 @@ function parseCollectorNumber(value: string): string {
 function toGbpFromUsd(usd: number | null): number | null {
   const USD_TO_GBP = Number(process.env.USD_TO_GBP ?? 0.79);
   return typeof usd === 'number' ? Math.round(usd * USD_TO_GBP * 100) / 100 : null;
+}
+
+function getLargeTcgcsvImageUrl(imageUrl: string | null): string | null {
+  if (!imageUrl) return null;
+  return imageUrl.replace(/_200w(\.[a-z]+)$/i, '_400w$1');
 }
 
 function computeFallbackPriceFromVariants(variants: { lowPrice: number | null; midPrice: number | null; marketPrice: number | null }[]): TcgFallbackPrice {
@@ -84,17 +96,57 @@ async function logCron(jobName: string, status: 'started' | 'success' | 'failed'
   if (error) console.log('⚠️ Failed to write cron log:', error);
 }
 
+async function fetchAllPokemonCards() {
+  const allCards: any[] = [];
+  for (let from = 0; ; from += CARD_PAGE_SIZE) {
+    const to = from + CARD_PAGE_SIZE - 1;
+    const { data, error } = await supabase
+      .from('pokemon_cards')
+      .select('id, name, set_id, raw_data')
+      .range(from, to);
+
+    if (error) throw error;
+    allCards.push(...(data ?? []));
+    if (!data || data.length < CARD_PAGE_SIZE) break;
+  }
+  return allCards;
+}
+
+async function saveMarketPriceSnapshotByDay(snapshot: any, snapshotDate: string) {
+  const nextDay = nextMidnightUTC(snapshotDate);
+  const updatePayload = { ...snapshot };
+  delete updatePayload.user_id;
+  delete updatePayload.card_id;
+  delete updatePayload.set_id;
+
+  const updateQuery = supabase
+    .from('market_price_snapshots')
+    .update(updatePayload)
+    .eq('card_id', snapshot.card_id)
+    .gte('snapshot_at', snapshotDate)
+    .lt('snapshot_at', nextDay);
+
+  const { data: updated, error: updateError } = snapshot.set_id == null
+    ? await updateQuery.is('set_id', null).select('card_id').limit(1)
+    : await updateQuery.eq('set_id', snapshot.set_id).select('card_id').limit(1);
+
+  if (updateError) return updateError;
+  if (updated && updated.length > 0) return null;
+
+  const { error: insertError } = await supabase
+    .from('market_price_snapshots')
+    .insert(snapshot);
+
+  return insertError;
+}
+
 async function runDailyTcgcsvSync() {
   console.log('🚀 Daily TCGCSV sync started');
   await logCron(JOB_NAME, 'started');
 
   const snapshotAt = todayMidnightUTC();
 
-  const { data: cards, error: cardsError } = await supabase
-    .from('pokemon_cards')
-    .select('id, name, set_id, raw_data');
-
-  if (cardsError) throw cardsError;
+  const cards = await fetchAllPokemonCards();
   if (!cards?.length) {
     console.log('⚠️ No cards found in pokemon_cards');
     await logCron(JOB_NAME, 'success', 'No cards to process.');
@@ -164,15 +216,23 @@ async function runDailyTcgcsvSync() {
           snapshot_at: snapshotAt,
         };
 
-        const { error: upsertError } = await supabase
-          .from('market_price_snapshots')
-          .upsert(snapshot, {
-            onConflict: 'user_id,card_id,set_id,snapshot_at',
-            ignoreDuplicates: false,
-          });
+        const upsertError = await saveMarketPriceSnapshotByDay(snapshot, snapshotAt);
 
         if (!upsertError) {
           totalUpdated += 1;
+          if (matched.imageUrl) {
+            const { error: imageError } = await supabase
+              .from('pokemon_cards')
+              .update({
+                image_small: matched.imageUrl,
+                image_large: getLargeTcgcsvImageUrl(matched.imageUrl),
+              })
+              .eq('id', card.id);
+
+            if (imageError) {
+              console.log(`Image update failed for card ${card.id}:`, imageError.message);
+            }
+          }
         } else {
           console.log(`⚠️ Upsert failed for card ${card.id}:`, upsertError.message);
         }

@@ -37,6 +37,7 @@ export type PokemonCard = {
   weaknesses?: any[];
   resistances?: any[];
   retreatCost?: string[];
+  raw_data?: any;
 };
 
 export async function fetchAllSets(): Promise<PokemonSet[]> {

@@ -52,6 +52,8 @@ const LISTING_TYPES: { key: ListingType; label: string; icon: keyof typeof Ionic
   { key: 'graded_slab', label: 'Graded Slab', icon: 'id-card-outline' },
   { key: 'sealed_product', label: 'Sealed Product', icon: 'cube-outline' },
   { key: 'booster_pack', label: 'Booster Pack', icon: 'file-tray-full-outline' },
+  { key: 'sleeved_booster_pack', label: 'Sleeved Pack', icon: 'file-tray-full-outline' },
+  { key: 'booster_bundle', label: 'Booster Bundle', icon: 'file-tray-stacked-outline' },
   { key: 'booster_box', label: 'Booster Box', icon: 'archive-outline' },
   { key: 'elite_trainer_box', label: 'Elite Trainer Box', icon: 'file-tray-stacked-outline' },
   { key: 'collection_bundle', label: 'Collection Bundle', icon: 'cube-outline' },

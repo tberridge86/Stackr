@@ -18,6 +18,7 @@ import { FeatureTipGate } from '../../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AVATAR_PRESETS } from '../../../lib/avatars';
+import { getBinderCover } from '../../../lib/binderCovers';
 import { supabase } from '../../../lib/supabase';
 import { getMyFriends } from '../../../lib/friends';
 import { useProfile } from '../../../components/profile-context';
@@ -65,6 +66,7 @@ type BinderOption = {
   name: string;
   type?: string | null;
   is_public?: boolean | null;
+  cover_key?: string | null;
 };
 
 type FlexPickerMode = 'binder' | 'chase' | 'trade' | 'slab' | null;
@@ -316,7 +318,7 @@ export default function CommunityScreen() {
       if (binderIds.length) {
         const { data: binderData } = await supabase
           .from('binders')
-          .select('id, name, type, is_public')
+          .select('id, name, type, is_public, cover_key')
           .in('id', binderIds);
 
         setBindersById(Object.fromEntries((binderData ?? []).map((binder) => [binder.id, binder as BinderOption])));
@@ -341,7 +343,7 @@ export default function CommunityScreen() {
 
       const { data: binderData, error: binderError } = await supabase
         .from('binders')
-        .select('id, name, type, is_public')
+        .select('id, name, type, is_public, cover_key')
         .eq('user_id', user.id);
 
       if (binderError) throw binderError;
@@ -769,6 +771,23 @@ export default function CommunityScreen() {
     setFlexPickerMode(null);
   };
 
+  const renderBinderCover = (
+    binder: BinderOption,
+    style: any,
+    fallbackStyle: any = styles.binderShareIcon
+  ) => {
+    const cover = getBinderCover(binder.cover_key);
+    if (cover) {
+      return <Image source={cover.image} style={style} resizeMode="cover" />;
+    }
+
+    return (
+      <View style={fallbackStyle}>
+        <Ionicons name="albums-outline" size={28} color={theme.colors.primary} />
+      </View>
+    );
+  };
+
   const renderPost = ({ item }: { item: SocialPost }) => {
     const profile = profiles[item.user_id];
     const avatar = AVATAR_PRESETS.find(
@@ -857,9 +876,7 @@ export default function CommunityScreen() {
             onPress={() => router.push(`/binder/${binder.id}?readOnly=true` as any)}
             style={styles.attachedCard}
           >
-            <View style={styles.binderShareIcon}>
-              <Ionicons name="albums-outline" size={28} color={theme.colors.primary} />
-            </View>
+            {renderBinderCover(binder, styles.binderShareImage)}
             <View style={{ flex: 1 }}>
               <Text style={styles.cardName}>{binder.name}</Text>
               <Text style={styles.cardSet}>{binder.type === 'official' ? 'Official binder' : 'Custom binder'}</Text>
@@ -993,9 +1010,7 @@ export default function CommunityScreen() {
           <Text style={styles.modalSubheading}>Choose a binder to post as a read-only flex.</Text>
           {binderOptions.map((binder) => (
             <Pressable key={binder.id} onPress={() => chooseBinderFlex(binder)} style={styles.flexPickerRow}>
-              <View style={styles.flexPickerIcon}>
-                <Ionicons name="albums-outline" size={20} color={theme.colors.primary} />
-              </View>
+              {renderBinderCover(binder, styles.flexPickerCover, styles.flexPickerIcon)}
               <View style={{ flex: 1 }}>
                 <Text style={styles.flexPickerTitle}>{binder.name}</Text>
                 <Text style={styles.flexPickerSubtitle}>{binder.type === 'official' ? 'Official binder' : 'Custom binder'} · Read-only share</Text>
@@ -1484,25 +1499,41 @@ export default function CommunityScreen() {
 
                   {selectedCard?.card && (
                     <View style={styles.selectedCardPreview}>
-                      <Text style={styles.selectedLabel}>Attached card</Text>
-                      <Text style={styles.selectedName}>
-                        {selectedCard.card.name}
-                      </Text>
-
-                      <Pressable onPress={() => setSelectedCard(null)}>
-                        <Text style={styles.removeText}>Remove</Text>
-                      </Pressable>
+                      <View style={styles.selectedPreviewRow}>
+                        {selectedCard.card.image_small || selectedCard.card.image_large ? (
+                          <Image
+                            source={{ uri: selectedCard.card.image_small ?? selectedCard.card.image_large ?? '' }}
+                            style={styles.selectedCardImage}
+                            resizeMode="contain"
+                          />
+                        ) : (
+                          <View style={styles.selectedCardImagePlaceholder} />
+                        )}
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.selectedLabel}>Attached card</Text>
+                          <Text style={styles.selectedName}>
+                            {selectedCard.card.name}
+                          </Text>
+                        </View>
+                        <Pressable onPress={() => setSelectedCard(null)}>
+                          <Text style={styles.removeText}>Remove</Text>
+                        </Pressable>
+                      </View>
                     </View>
                   )}
 
                   {selectedBinder && (
                     <View style={styles.selectedCardPreview}>
-                      <Text style={styles.selectedLabel}>Attached binder</Text>
-                      <Text style={styles.selectedName}>{selectedBinder.name}</Text>
-
-                      <Pressable onPress={() => setSelectedBinder(null)}>
-                        <Text style={styles.removeText}>Remove</Text>
-                      </Pressable>
+                      <View style={styles.selectedPreviewRow}>
+                        {renderBinderCover(selectedBinder, styles.selectedBinderImage, styles.selectedBinderImagePlaceholder)}
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.selectedLabel}>Attached binder</Text>
+                          <Text style={styles.selectedName}>{selectedBinder.name}</Text>
+                        </View>
+                        <Pressable onPress={() => setSelectedBinder(null)}>
+                          <Text style={styles.removeText}>Remove</Text>
+                        </Pressable>
+                      </View>
                     </View>
                   )}
 
@@ -2640,6 +2671,40 @@ function makeStyles(theme: any) {
     borderColor: theme.colors.border,
   },
 
+  selectedPreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+
+  selectedCardImage: {
+    width: 38,
+    height: 54,
+    borderRadius: 5,
+  },
+
+  selectedCardImagePlaceholder: {
+    width: 38,
+    height: 54,
+    borderRadius: 8,
+    backgroundColor: theme.colors.surface,
+  },
+
+  selectedBinderImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+  },
+
+  selectedBinderImagePlaceholder: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary + '12',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   flexPickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2659,6 +2724,12 @@ function makeStyles(theme: any) {
     backgroundColor: theme.colors.primary + '12',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  flexPickerCover: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
   },
 
   flexPickerTitle: {
@@ -2790,6 +2861,13 @@ function makeStyles(theme: any) {
     backgroundColor: theme.colors.primary + '12',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  binderShareImage: {
+    width: 74,
+    height: 74,
+    marginRight: 12,
+    borderRadius: 18,
   },
 
   emptyCardText: {

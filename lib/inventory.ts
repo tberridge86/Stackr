@@ -79,6 +79,49 @@ export type InventorySaleTransaction = {
 const STORAGE_KEY = 'stackr:inventory-items:v1';
 const SALES_STORAGE_KEY = 'stackr:inventory-sales:v1';
 
+async function hydrateProductInventoryPrices(items: InventoryItem[]): Promise<InventoryItem[]> {
+  const productIds = items
+    .filter((item) => item.card?.is_product || item.card_id.startsWith('product:'))
+    .map((item) => item.card_id);
+
+  if (!productIds.length) return items;
+
+  const { data, error } = await supabase
+    .from('market_product_price_snapshots')
+    .select('product_id, ebay_low, ebay_average, ebay_high, sold_count, query, source, snapshot_at')
+    .in('product_id', [...new Set(productIds)])
+    .order('snapshot_at', { ascending: false });
+
+  if (error) {
+    console.log('Seller inventory product price hydrate failed', error);
+    return items;
+  }
+
+  const latestByProductId = new Map<string, any>();
+  for (const snapshot of data ?? []) {
+    if (!latestByProductId.has(snapshot.product_id)) latestByProductId.set(snapshot.product_id, snapshot);
+  }
+
+  return items.map((item) => {
+    const snapshot = latestByProductId.get(item.card_id);
+    if (!snapshot) return item;
+    return {
+      ...item,
+      card: {
+        ...item.card,
+        ebay_price: snapshot.ebay_average == null ? item.card.ebay_price : Number(snapshot.ebay_average),
+        product_price_low: snapshot.ebay_low == null ? null : Number(snapshot.ebay_low),
+        product_price_high: snapshot.ebay_high == null ? null : Number(snapshot.ebay_high),
+        product_price_count: snapshot.sold_count == null ? null : Number(snapshot.sold_count),
+        product_price_query: snapshot.query ?? null,
+        product_price_source: snapshot.source ?? null,
+        is_product: true,
+      },
+      updated_at: item.updated_at,
+    };
+  });
+}
+
 export async function loadInventoryItems(): Promise<InventoryItem[]> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   const cached = (() => {
@@ -122,11 +165,16 @@ export async function loadInventoryItems(): Promise<InventoryItem[]> {
       return cached;
     }
 
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(remoteItems));
-    return remoteItems;
+    const hydratedItems = await hydrateProductInventoryPrices(remoteItems);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(hydratedItems));
+    return hydratedItems;
   } catch (error) {
     console.log('Seller inventory Supabase load failed', error);
-    return cached;
+    try {
+      return await hydrateProductInventoryPrices(cached);
+    } catch {
+      return cached;
+    }
   }
 }
 
