@@ -366,7 +366,7 @@ export default function OffersScreen() {
             borderColor: theme.colors.border,
           }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontStyle: 'italic' }}>
-              "{offer.message}"
+              &quot;{offer.message}&quot;
             </Text>
           </View>
         )}

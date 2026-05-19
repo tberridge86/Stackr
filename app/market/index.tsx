@@ -68,6 +68,18 @@ type WatchlistPriceState = {
   hasHistory: boolean;
 };
 
+type SearchPriceState = {
+  ebayAverage: number | null;
+  ebayLow: number | null;
+  ebayHigh: number | null;
+  ebayCount: number | null;
+  tcgLatest: number | null;
+  tcgPrevious: number | null;
+  tcgChange: number | null;
+  tcgPercentChange: number | null;
+  snapshotAt: string | null;
+};
+
 type EbayDetailData = {
   low?: number | null;
   average?: number | null;
@@ -82,6 +94,8 @@ type LookupType =
   | 'graded_slab'
   | 'sealed_product'
   | 'booster_pack'
+  | 'sleeved_booster_pack'
+  | 'booster_bundle'
   | 'booster_box'
   | 'elite_trainer_box'
   | 'collection_bundle'
@@ -104,6 +118,8 @@ const LOOKUP_OPTIONS: { key: LookupType; label: string; icon: keyof typeof Ionic
   { key: 'graded_slab', label: 'Graded Slab', icon: 'id-card-outline' },
   { key: 'sealed_product', label: 'Sealed Product', icon: 'cube-outline' },
   { key: 'booster_pack', label: 'Booster Pack', icon: 'file-tray-full-outline' },
+  { key: 'sleeved_booster_pack', label: 'Sleeved Pack', icon: 'file-tray-full-outline' },
+  { key: 'booster_bundle', label: 'Booster Bundle', icon: 'file-tray-stacked-outline' },
   { key: 'booster_box', label: 'Booster Box', icon: 'archive-outline' },
   { key: 'elite_trainer_box', label: 'Elite Trainer Box', icon: 'file-tray-stacked-outline' },
   { key: 'collection_bundle', label: 'Collection Bundle', icon: 'cube-outline' },
@@ -135,6 +151,10 @@ const getLookupSearchHint = (lookupType: LookupType) => {
       return 'Search an ETB, set, or product...';
     case 'booster_pack':
       return 'Search a booster pack...';
+    case 'sleeved_booster_pack':
+      return 'Search a sleeved booster pack...';
+    case 'booster_bundle':
+      return 'Search a booster bundle...';
     case 'booster_box':
       return 'Search a booster box...';
     case 'collection_bundle':
@@ -167,6 +187,17 @@ const formatPercent = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return '';
   const sign = value > 0 ? '+' : '';
   return `(${sign}${value.toFixed(1)}%)`;
+};
+
+const formatSnapshotDay = (value: string | null | undefined): string => {
+  if (!value) return 'Latest TCG';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Latest TCG';
+  const today = new Date();
+  const dateKey = date.toISOString().split('T')[0];
+  const todayKey = today.toISOString().split('T')[0];
+  if (dateKey === todayKey) return "Today's TCG";
+  return `${date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} TCG`;
 };
 
 const getBestTcgPrice = (
@@ -226,6 +257,7 @@ export default function MarketScreen() {
   const { theme } = useTheme();
   const [query, setQuery] = useState('');
   const [lookupType, setLookupType] = useState<LookupType>('raw_card');
+  const [lookupMenuOpen, setLookupMenuOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
   const [productPriceData, setProductPriceData] = useState<EbayDetailData>(null);
@@ -246,6 +278,7 @@ export default function MarketScreen() {
   const [watchlist, setWatchlist] = useState<WatchlistRow[]>([]);
   const [watchlistCards, setWatchlistCards] = useState<PokemonCard[]>([]);
   const [watchlistPriceMap, setWatchlistPriceMap] = useState<Record<string, WatchlistPriceState>>({});
+  const [searchPriceMap, setSearchPriceMap] = useState<Record<string, SearchPriceState>>({});
   const [watchlistLoading, setWatchlistLoading] = useState(true);
 
   const translateY = useRef(new Animated.Value(0)).current;
@@ -336,6 +369,58 @@ export default function MarketScreen() {
     setWatchlistPriceMap(nextMap);
   }, []);
 
+  const loadSearchResultPrices = useCallback(async (cardIds: string[]) => {
+    if (!cardIds.length) {
+      setSearchPriceMap({});
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('market_price_snapshots')
+      .select('card_id, ebay_average, ebay_low, ebay_high, ebay_count, tcg_mid, tcg_low, snapshot_at')
+      .is('user_id', null)
+      .in('card_id', cardIds)
+      .not('tcg_mid', 'is', null)
+      .order('snapshot_at', { ascending: false });
+
+    if (error) {
+      console.log('Search price snapshot error:', error);
+      setSearchPriceMap({});
+      return;
+    }
+
+    const grouped: Record<string, any[]> = {};
+    for (const row of data ?? []) {
+      if (!grouped[row.card_id]) grouped[row.card_id] = [];
+      if (grouped[row.card_id].length < 2) grouped[row.card_id].push(row);
+    }
+
+    const nextMap: Record<string, SearchPriceState> = {};
+    for (const cardId of cardIds) {
+      const snapshots = grouped[cardId] ?? [];
+      const latest = snapshots[0];
+      const previous = snapshots[1];
+      const latestTcg = latest?.tcg_mid == null ? null : Number(latest.tcg_mid);
+      const previousTcg = previous?.tcg_mid == null ? null : Number(previous.tcg_mid);
+      const change = latestTcg != null && previousTcg != null ? latestTcg - previousTcg : null;
+      const percentChange = change != null && previousTcg != null && previousTcg !== 0 ? (change / previousTcg) * 100 : null;
+
+      nextMap[cardId] = {
+        ebayAverage: latest?.ebay_average == null ? null : Number(latest.ebay_average),
+        ebayLow: latest?.ebay_low == null ? null : Number(latest.ebay_low),
+        ebayHigh: latest?.ebay_high == null ? null : Number(latest.ebay_high),
+        ebayCount: latest?.ebay_count == null ? null : Number(latest.ebay_count),
+        tcgLatest: latestTcg,
+        tcgPrevious: previousTcg,
+        tcgChange: change,
+        tcgPercentChange: percentChange,
+        snapshotAt: latest?.snapshot_at ?? null,
+      };
+    }
+
+    setSearchPriceMap(nextMap);
+  }, []);
+
   const loadWatchlist = useCallback(async () => {
     try {
       setWatchlistLoading(true);
@@ -380,7 +465,7 @@ export default function MarketScreen() {
 
   const searchCards = useCallback(async (searchQuery: string, skipSetFilter = false) => {
   const trimmed = searchQuery.trim();
-  if (!trimmed) { setSearchResults([]); return; }
+  if (!trimmed) { setSearchResults([]); setSearchPriceMap({}); return; }
 
   try {
     setSearching(true);
@@ -389,7 +474,9 @@ export default function MarketScreen() {
       select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
       skipSetDetection: skipSetFilter,
     });
-    setSearchResults(smartResults.map(mapCard));
+    const cards = smartResults.map(mapCard);
+    setSearchResults(cards);
+    await loadSearchResultPrices(cards.map((card) => card.id));
     if (smartResults.length < 0) {
     const words = trimmed.split(/\s+/).filter(Boolean);
     let cardTerm = trimmed;
@@ -453,17 +540,20 @@ export default function MarketScreen() {
       const { data, error } = await dbQuery;
       if (error) throw error;
 
-      setSearchResults((data ?? []).map(mapCard));
+      const fallbackCards = (data ?? []).map(mapCard);
+      setSearchResults(fallbackCards);
+      await loadSearchResultPrices(fallbackCards.map((card) => card.id));
     }
     } catch (err) {
       console.log('Search error:', err);
       setSearchResults([]);
+      setSearchPriceMap({});
     } finally {
       setSearching(false);
     }
-  }, []);
+  }, [loadSearchResultPrices]);
 
-  const searchProductPrice = useCallback(async (searchQuery: string) => {
+  const searchProductPrice = useCallback(async (searchQuery: string, productType: ProductLookupType) => {
     const trimmed = searchQuery.trim();
     if (!trimmed) { setProductPriceData(null); return; }
 
@@ -471,7 +561,7 @@ export default function MarketScreen() {
       setProductPriceLoading(true);
       setSearching(true);
       setSearchResults([]);
-      const productType = lookupType as ProductLookupType;
+      setSearchPriceMap({});
       const catalogResults = await searchMarketProducts(trimmed, productType, 1);
       const catalogPrice = catalogResults[0]?.latest_price ?? null;
       if (catalogPrice?.average != null) {
@@ -488,26 +578,42 @@ export default function MarketScreen() {
       setProductPriceLoading(false);
       setSearching(false);
     }
-  }, [lookupType]);
+  }, []);
 
-  const runLookupSearch = useCallback(async (searchQuery: string, skipSetFilter = false) => {
-    if (isCardLookup(lookupType)) {
+  const runLookupSearch = useCallback(async (
+    searchQuery: string,
+    skipSetFilter = false,
+    activeLookupType: LookupType = lookupType
+  ) => {
+    const trimmed = searchQuery.trim();
+    if (trimmed.length < 2) {
+      setSearchResults([]);
+      setSearchPriceMap({});
+      setProductPriceData(null);
+      return;
+    }
+
+    if (isCardLookup(activeLookupType)) {
       setProductPriceData(null);
       await searchCards(searchQuery, skipSetFilter);
     } else {
-      await searchProductPrice(searchQuery);
+      await searchProductPrice(searchQuery, activeLookupType);
     }
   }, [lookupType, searchCards, searchProductPrice]);
 
   const handleSearchChange = useCallback((text: string) => {
     setQuery(text);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    if (isCardLookup(lookupType)) {
-      searchTimerRef.current = setTimeout(() => { searchCards(text); }, 350);
-    } else {
+    if (text.trim().length < 2) {
+      setSearchResults([]);
       setProductPriceData(null);
+      return;
     }
-  }, [lookupType, searchCards]);
+
+    searchTimerRef.current = setTimeout(() => {
+      runLookupSearch(text, false, lookupType);
+    }, isCardLookup(lookupType) ? 350 : 500);
+  }, [lookupType, runLookupSearch]);
 
   const fetchDetailEbayData = useCallback(async (card: PokemonCard) => {
     try {
@@ -698,6 +804,12 @@ try {
   const renderCard = useCallback(({ item }: { item: PokemonCard }) => {
     const watching = isWatching(item.id);
     const tcgMid = getBestTcgPrice(item, 'mid');
+    const ebaySnapshot = searchPriceMap[item.id];
+    const snapshotTcg = ebaySnapshot?.tcgLatest ?? null;
+    const displayTcg = snapshotTcg ?? (tcgMid != null ? tcgMid * USD_TO_GBP : null);
+    const tcgChange = ebaySnapshot?.tcgChange ?? null;
+    const tcgMovementColor = tcgChange == null ? theme.colors.textSoft : tcgChange > 0 ? '#2ECC71' : tcgChange < 0 ? '#FF5A5F' : theme.colors.textSoft;
+    const tcgMovementIcon = tcgChange == null ? null : tcgChange > 0 ? 'arrow-up' : tcgChange < 0 ? 'arrow-down' : 'remove';
 
     return (
       <Pressable
@@ -713,12 +825,34 @@ try {
           </Text>
           {item.rarity && <Text style={{ color: '#FFD166', fontSize: 12, marginTop: 3, fontWeight: '700' }}>{item.rarity}</Text>}
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>TCG</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>
+              {snapshotTcg != null ? formatSnapshotDay(ebaySnapshot?.snapshotAt) : 'TCG'}
+            </Text>
             <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>
-              {tcgMid != null ? `£${(tcgMid * USD_TO_GBP).toFixed(2)}` : '--'}
+              {formatCurrency(displayTcg)}
+            </Text>
+            {tcgMovementIcon ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                <Ionicons name={tcgMovementIcon} size={13} color={tcgMovementColor} />
+                <Text style={{ color: tcgMovementColor, fontSize: 12, fontWeight: '800' }}>
+                  {formatDelta(tcgChange)} {formatPercent(ebaySnapshot?.tcgPercentChange)}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>eBay</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '700' }}>
+              {formatCurrency(ebaySnapshot?.ebayAverage)}
             </Text>
           </View>
+          {ebaySnapshot?.ebayCount != null && ebaySnapshot.ebayCount > 0 ? (
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>
+              eBay snapshot from {ebaySnapshot.ebayCount} sold listing{ebaySnapshot.ebayCount !== 1 ? 's' : ''}
+            </Text>
+          ) : null}
 
           <TouchableOpacity
             onPress={() => toggleWatchlist(item)}
@@ -729,7 +863,7 @@ try {
         </View>
       </Pressable>
     );
-  }, [isWatching, openCardDetail, toggleWatchlist]);
+  }, [isWatching, openCardDetail, searchPriceMap, theme.colors.text, theme.colors.textSoft, toggleWatchlist]);
 
   const renderWatchlistCard = useCallback(({ item }: { item: PokemonCard }) => {
     const watching = isWatching(item.id);
@@ -764,9 +898,16 @@ try {
       <TouchableOpacity
         key={option.key}
         onPress={() => {
+          if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
           setLookupType(option.key);
+          setLookupMenuOpen(false);
           setSearchResults([]);
           setProductPriceData(null);
+          if (query.trim().length >= 2) {
+            searchTimerRef.current = setTimeout(() => {
+              runLookupSearch(query, false, option.key);
+            }, 120);
+          }
         }}
         style={{
           width: '31%',
@@ -793,7 +934,9 @@ try {
         </Text>
       </TouchableOpacity>
     );
-  }, [lookupType, theme.colors.border, theme.colors.card, theme.colors.primary, theme.colors.text]);
+  }, [lookupType, query, runLookupSearch, theme.colors.border, theme.colors.card, theme.colors.primary, theme.colors.text]);
+
+  const selectedLookupOption = LOOKUP_OPTIONS.find((option) => option.key === lookupType) ?? LOOKUP_OPTIONS[0];
 
   // ===============================
   // MAIN RENDER
@@ -821,9 +964,54 @@ try {
               Search raw cards, graded slabs, sealed products, and accessories.
             </Text>
 
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 12 }}>
-              {LOOKUP_OPTIONS.map(renderLookupOption)}
-            </View>
+            <TouchableOpacity
+              onPress={() => setLookupMenuOpen((open) => !open)}
+              activeOpacity={0.85}
+              style={{
+                backgroundColor: theme.colors.card,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: lookupMenuOpen ? theme.colors.primary : theme.colors.border,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                marginBottom: lookupMenuOpen ? 10 : 12,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                <View
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 10,
+                    backgroundColor: theme.colors.primary + '14',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Ionicons name={selectedLookupOption.icon} size={18} color={theme.colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>PRICE MODE</Text>
+                  <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>
+                    {selectedLookupOption.label}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons
+                name={lookupMenuOpen ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={theme.colors.textSoft}
+              />
+            </TouchableOpacity>
+
+            {lookupMenuOpen ? (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 12 }}>
+                {LOOKUP_OPTIONS.map(renderLookupOption)}
+              </View>
+            ) : null}
 
             {/* Search + Scan row */}
             <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
@@ -844,11 +1032,11 @@ try {
                   fontSize: 13,
                 }}
                 returnKeyType="search"
-                onSubmitEditing={() => runLookupSearch(query)}
+                onSubmitEditing={() => runLookupSearch(query, false, lookupType)}
               />
 
               <TouchableOpacity
-                onPress={() => runLookupSearch(query)}
+                onPress={() => runLookupSearch(query, false, lookupType)}
                 style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingHorizontal: 16, justifyContent: 'center', alignItems: 'center' }}
               >
                 <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Search</Text>

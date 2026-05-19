@@ -382,13 +382,70 @@ function getAllowedConditionTerms(condition = '') {
   return [];
 }
 
-function getSealedProductMismatchReasons(title = '') {
+function getSealedProductSubtype(query = '', explicitSubtype = '') {
+  const explicit = normaliseForTitleMatch(explicitSubtype);
+  if (explicit && explicit !== 'sealed product' && explicit !== 'sealed_product') {
+    return explicit.replace(/\s+/g, '_');
+  }
+
+  const cleaned = normaliseForTitleMatch(query);
+  if (/\b(elite trainer box|elite trainer|etb)\b/.test(cleaned)) return 'elite_trainer_box';
+  if (/\bbooster\s+box\b/.test(cleaned)) return 'booster_box';
+  if (/\bsleeved\s+booster\s+pack\b/.test(cleaned)) return 'sleeved_booster_pack';
+  if (/\bbooster\s+bundle\b/.test(cleaned)) return 'booster_bundle';
+  if (/\bbooster\s+pack\b/.test(cleaned)) return 'booster_pack';
+  if (/\b(ultra premium collection|upc)\b/.test(cleaned)) return 'ultra_premium_collection';
+  if (/\b(collection|collector|premium collection|box)\b/.test(cleaned)) return 'collection_bundle';
+  return '';
+}
+
+function getSealedProductMismatchReasons(title = '', query = '', productSubtype = '') {
   const cleaned = normaliseForTitleMatch(title);
+  const subtype = getSealedProductSubtype(query, productSubtype);
   const reasons = [];
   if (/\bempty\s+(box|etb|elite trainer box)\b/.test(cleaned)) reasons.push('EMPTY_PRODUCT');
   if (/\b(code|codes|digital|online)\b/.test(cleaned)) reasons.push('DIGITAL_CODE_ONLY');
   if (/\b(single card|singles|individual card)\b/.test(cleaned)) reasons.push('SINGLE_CARD_LISTING');
   if (/\b(case|display case)\b/.test(cleaned) && !/\bbooster\s+box\b/.test(cleaned)) reasons.push('DISPLAY_CASE_ACCESSORY');
+
+  if (/\b(case|sealed case|display case|master case)\b/.test(cleaned)) reasons.push('SEALED_CASE_OR_DISPLAY');
+  if (/\b(lot|bundle|joblot|job lot|x\s*\d+|\d+\s*x|pack of|set of)\b/.test(cleaned) && subtype !== 'booster_bundle') reasons.push('MULTI_ITEM_OR_BUNDLE');
+
+  if (subtype === 'elite_trainer_box') {
+    if (!/\b(etb|elite trainer box|elite trainer)\b/.test(cleaned)) reasons.push('MISSING_ETB_TERMS');
+    if (/\b(ultra premium collection|upc|collection box|poster collection|binder collection|premium collection|booster box|booster bundle|booster pack|display)\b/.test(cleaned)) reasons.push('WRONG_SEALED_PRODUCT_FOR_ETB');
+  }
+
+  if (subtype === 'booster_box') {
+    if (!/\bbooster\s+box\b/.test(cleaned)) reasons.push('MISSING_BOOSTER_BOX_TERMS');
+    if (/\b(etb|elite trainer|booster bundle|collection box|upc|ultra premium collection)\b/.test(cleaned)) reasons.push('WRONG_SEALED_PRODUCT_FOR_BOOSTER_BOX');
+  }
+
+  if (subtype === 'booster_bundle') {
+    if (!/\bbooster\s+bundle\b/.test(cleaned)) reasons.push('MISSING_BOOSTER_BUNDLE_TERMS');
+    if (/\b(etb|elite trainer|booster box|collection box|upc|ultra premium collection)\b/.test(cleaned)) reasons.push('WRONG_SEALED_PRODUCT_FOR_BOOSTER_BUNDLE');
+  }
+
+  if (subtype === 'booster_pack') {
+    if (!/\bbooster\s+pack\b/.test(cleaned)) reasons.push('MISSING_BOOSTER_PACK_TERMS');
+    if (/\b(etb|elite trainer|booster box|booster bundle|sleeved|collection box|upc|ultra premium collection)\b/.test(cleaned)) reasons.push('WRONG_SEALED_PRODUCT_FOR_BOOSTER_PACK');
+  }
+
+  if (subtype === 'sleeved_booster_pack') {
+    if (!/\bsleeved\s+booster\s+pack\b/.test(cleaned)) reasons.push('MISSING_SLEEVED_BOOSTER_PACK_TERMS');
+    if (/\b(etb|elite trainer|booster box|booster bundle|collection box|upc|ultra premium collection)\b/.test(cleaned)) reasons.push('WRONG_SEALED_PRODUCT_FOR_SLEEVED_PACK');
+  }
+
+  if (subtype === 'ultra_premium_collection') {
+    if (!/\b(ultra premium collection|upc)\b/.test(cleaned)) reasons.push('MISSING_UPC_TERMS');
+    if (/\b(etb|elite trainer|booster box|booster bundle)\b/.test(cleaned)) reasons.push('WRONG_SEALED_PRODUCT_FOR_UPC');
+  }
+
+  if (subtype === 'collection_bundle') {
+    if (!/\b(collection|box|premium collection)\b/.test(cleaned)) reasons.push('MISSING_COLLECTION_TERMS');
+    if (/\b(etb|elite trainer|booster box|booster bundle)\b/.test(cleaned)) reasons.push('WRONG_SEALED_PRODUCT_FOR_COLLECTION');
+  }
+
   return reasons;
 }
 
@@ -401,6 +458,7 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
     setTotal = '',
     rarity = '',
     productType = 'card',
+    productSubtype = '',
     pricingMode = 'raw',
     condition = '',
     gradingCompany = '',
@@ -413,7 +471,7 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
       reasons.push('MISSING_QUERY_KEYWORDS');
     }
     if (productType === 'sealed') {
-      reasons.push(...getSealedProductMismatchReasons(title));
+      reasons.push(...getSealedProductMismatchReasons(title, query, productSubtype));
     }
     return reasons;
   }
@@ -537,7 +595,7 @@ function buildCardQuery({ name = '', setName = '', number = '', setTotal = '', r
   // Add rarity hints to help distinguish holo vs non-holo
   if (rarity) {
     const rarityLower = rarity.toLowerCase();
-    if (rarityLower.includes('holo') || rarityLower === 'rare' || rarityLower === 'ultra rare' || rarityLower === 'secret rare') {
+    if (rarityLower.includes('holo') || rarityLower === 'ultra rare' || rarityLower === 'secret rare') {
       parts.push('holo');
       parts.push('holographic');
     }
@@ -575,7 +633,7 @@ function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '
   // Add rarity hints for better rare card matching
   if (rarity) {
     const rarityLower = rarity.toLowerCase();
-    if (rarityLower.includes('holo') || rarityLower === 'rare' || rarityLower === 'ultra rare' || rarityLower === 'secret rare') {
+    if (rarityLower.includes('holo') || rarityLower === 'ultra rare' || rarityLower === 'secret rare') {
       parts.push('holo');
       parts.push('holographic');
     }
@@ -604,7 +662,7 @@ function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '
 // ===============================
 
 const priceCache = new Map();
-const PRICE_FILTER_VERSION = 4;
+const PRICE_FILTER_VERSION = 5;
 const PRICE_CACHE_TTL = 2 * 60 * 60 * 1000;
 
 // In-flight dedupe so concurrent identical queries share one upstream call
@@ -889,6 +947,7 @@ async function fetchEbaySummary(query, options = {}) {
     setTotal = '',
     rarity = '',
     productType = 'card',
+    productSubtype = '',
     pricingMode = 'raw',
     condition = '',
     gradingCompany = '',
@@ -904,6 +963,7 @@ async function fetchEbaySummary(query, options = {}) {
     setTotal,
     rarity,
     productType,
+    productSubtype,
     pricingMode,
     condition,
     gradingCompany,
@@ -947,6 +1007,7 @@ async function fetchEbaySummary(query, options = {}) {
         setTotal,
         rarity,
         productType,
+        productSubtype,
         pricingMode,
         condition,
         gradingCompany,
@@ -977,6 +1038,7 @@ async function fetchEbaySummary(query, options = {}) {
           setTotal,
           rarity,
           productType,
+          productSubtype,
           pricingMode,
           condition,
           gradingCompany,
@@ -1026,6 +1088,7 @@ async function fetchEbaySummary(query, options = {}) {
               setTotal,
               rarity,
               productType,
+              productSubtype,
               pricingMode,
               condition,
               gradingCompany,
@@ -1135,6 +1198,7 @@ app.get('/price', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
     const productType = String(req.query.productType || 'card').trim();
+    const productSubtype = String(req.query.productSubtype || '').trim();
     const pricingMode = String(req.query.pricingMode || 'raw').trim();
     const condition = String(req.query.condition || '').trim();
     const gradingCompany = String(req.query.gradingCompany || '').trim();
@@ -1159,6 +1223,7 @@ app.get('/price', async (req, res) => {
       number,
       setTotal,
       productType,
+      productSubtype,
       pricingMode,
       condition,
       gradingCompany,
@@ -1184,6 +1249,7 @@ app.get('/api/price/ebay', async (req, res) => {
     let setTotal = String(req.query.setTotal || req.query.printedTotal || '').trim();
     let rarity = String(req.query.rarity || '').trim();
     const productType = String(req.query.productType || (directQuery ? 'sealed' : 'card')).trim();
+    const productSubtype = String(req.query.productSubtype || '').trim();
     const pricingMode = String(req.query.pricingMode || 'raw').trim();
     const condition = String(req.query.condition || '').trim();
     const gradingCompany = String(req.query.gradingCompany || '').trim();
@@ -1196,6 +1262,7 @@ app.get('/api/price/ebay', async (req, res) => {
     if (directQuery) {
       const summary = await fetchEbaySummary(directQuery, {
         productType,
+        productSubtype,
         pricingMode,
         condition,
         gradingCompany,
@@ -1205,6 +1272,7 @@ app.get('/api/price/ebay', async (req, res) => {
       return res.json({
         query: directQuery,
         productType,
+        productSubtype,
         pricingMode,
         condition,
         gradingCompany,
@@ -1252,6 +1320,7 @@ app.get('/api/price/ebay', async (req, res) => {
       setTotal,
       rarity,
       productType,
+      productSubtype,
       pricingMode,
       condition,
       gradingCompany,

@@ -16,6 +16,16 @@ type EbayResponse = {
   high?: number | string | null;
   count?: number | string | null;
   rawCount?: number | string | null;
+  query?: string | null;
+  soldDataSource?: string | null;
+};
+
+type ProductRow = {
+  id: string;
+  product_type: string;
+  name: string;
+  set_name: string | null;
+  aliases?: string[] | null;
 };
 
 // ===============================
@@ -32,6 +42,7 @@ const TCG_BATCH_SIZE = 30;
 const TCG_DELAY_MS = 2000;
 const TCG_RETRY_DELAY_MS = 5000;
 const TCG_MAX_RETRIES = 3;
+const USD_TO_GBP = Number(process.env.USD_TO_GBP ?? 0.79);
 
 // ===============================
 // SUPABASE
@@ -59,8 +70,18 @@ function toInteger(value: number | string | null | undefined): number {
   return parsed == null ? 0 : Math.round(parsed);
 }
 
+function toGbpFromUsd(value: number | null): number | null {
+  return typeof value === 'number' ? Math.round(value * USD_TO_GBP * 100) / 100 : null;
+}
+
 function todayMidnightUTC(): string {
   return new Date().toISOString().split('T')[0] + 'T00:00:00.000Z';
+}
+
+function nextMidnightUTC(snapshotDate: string): string {
+  const date = new Date(snapshotDate);
+  date.setUTCDate(date.getUTCDate() + 1);
+  return date.toISOString();
 }
 
 // ===============================
@@ -78,6 +99,25 @@ function buildEbayQuery(card: any): string {
   return parts.join(' ');
 }
 
+function productTypeLabel(productType: string): string {
+  switch (productType) {
+    case 'booster_pack': return 'pokemon booster pack sealed';
+    case 'sleeved_booster_pack': return 'pokemon sleeved booster pack sealed';
+    case 'booster_bundle': return 'pokemon booster bundle sealed';
+    case 'booster_box': return 'pokemon booster box sealed';
+    case 'elite_trainer_box': return 'pokemon elite trainer box sealed';
+    case 'collection_bundle': return 'pokemon collection box sealed';
+    case 'accessories': return 'pokemon card accessories';
+    case 'sealed_product':
+    default:
+      return 'pokemon sealed product';
+  }
+}
+
+function buildProductEbayQuery(product: ProductRow): string {
+  return `${product.name} ${productTypeLabel(product.product_type)}`.trim();
+}
+
 // ===============================
 // TCG PRICE HELPERS
 // ===============================
@@ -88,11 +128,11 @@ function getPriceFromPokemonCard(card: any): number | null {
   const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
   for (const key of preferred) {
     const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') return toGbpFromUsd(value);
   }
   for (const entry of Object.values(prices) as any[]) {
     const value = entry?.market ?? entry?.mid ?? entry?.low;
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') return toGbpFromUsd(value);
   }
   return null;
 }
@@ -173,6 +213,60 @@ async function fetchTcgPricesInBatches(cardIds: string[]): Promise<Record<string
   return finalPriceMap;
 }
 
+async function fetchCachedTcgPrices(cardIds: string[]): Promise<Record<string, number>> {
+  if (!cardIds.length) return {};
+
+  const { data, error } = await supabase
+    .from('market_price_snapshots')
+    .select('card_id, tcg_mid, tcg_low, snapshot_at')
+    .is('user_id', null)
+    .in('card_id', cardIds)
+    .not('tcg_mid', 'is', null)
+    .order('snapshot_at', { ascending: false });
+
+  if (error) {
+    console.log('⚠️ Failed to fetch cached TCGCSV prices:', error);
+    return {};
+  }
+
+  const prices: Record<string, number> = {};
+  for (const row of data ?? []) {
+    if (prices[row.card_id] == null) {
+      prices[row.card_id] = toNumber(row.tcg_mid ?? row.tcg_low) ?? 0;
+    }
+  }
+
+  return Object.fromEntries(Object.entries(prices).filter(([, value]) => value > 0));
+}
+
+async function saveMarketPriceSnapshotByDay(snapshot: any, snapshotDate: string) {
+  const nextDay = nextMidnightUTC(snapshotDate);
+  const updatePayload = { ...snapshot };
+  delete updatePayload.user_id;
+  delete updatePayload.card_id;
+  delete updatePayload.set_id;
+
+  const updateQuery = supabase
+    .from('market_price_snapshots')
+    .update(updatePayload)
+    .eq('card_id', snapshot.card_id)
+    .gte('snapshot_at', snapshotDate)
+    .lt('snapshot_at', nextDay);
+
+  const { data: updated, error: updateError } = snapshot.set_id == null
+    ? await updateQuery.is('set_id', null).select('card_id').limit(1)
+    : await updateQuery.eq('set_id', snapshot.set_id).select('card_id').limit(1);
+
+  if (updateError) return updateError;
+  if (updated && updated.length > 0) return null;
+
+  const { error: insertError } = await supabase
+    .from('market_price_snapshots')
+    .insert(snapshot);
+
+  return insertError;
+}
+
 // ===============================
 // EBAY FETCHING
 // ===============================
@@ -197,6 +291,43 @@ async function fetchEbayWithRetry(ebayQuery: string, displayName: string): Promi
       return { low: null, average: null, high: null, count: 0 };
     }
   }
+}
+
+async function fetchProductEbayWithRetry(product: ProductRow): Promise<EbayResponse> {
+  const ebayQuery = buildProductEbayQuery(product);
+  const baseUrl = process.env.PRICE_API_URL || process.env.EXPO_PUBLIC_PRICE_API_URL;
+  if (!baseUrl) throw new Error('Missing PRICE_API_URL');
+
+  const params = new URLSearchParams({
+    q: ebayQuery,
+    productType: product.product_type === 'accessories' ? 'accessory' : 'sealed',
+    productSubtype: product.product_type,
+  });
+  const url = `${baseUrl.replace(/\/$/, '')}/api/price/ebay?${params.toString()}`;
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      console.log(`🟡 Product eBay: "${ebayQuery}"`);
+      const response = await fetch(url);
+      const text = await response.text();
+      if (response.status === 429) {
+        console.log(`⚠️ Product eBay rate limited — backing off ${EBAY_RATE_LIMIT_DELAY_MS}ms`);
+        await delay(EBAY_RATE_LIMIT_DELAY_MS);
+        continue;
+      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${text.slice(0, 160)}`);
+      return JSON.parse(text);
+    } catch (error) {
+      if (attempt === 2) {
+        console.log(`🚫 Product eBay final fail for "${product.name}":`, error);
+        return { low: null, average: null, high: null, count: 0, query: ebayQuery };
+      }
+      console.log(`⚠️ Product eBay fetch failed for "${product.name}" — retrying...`);
+      await delay(EBAY_RETRY_DELAY_MS);
+    }
+  }
+
+  return { low: null, average: null, high: null, count: 0, query: ebayQuery };
 }
 
 // ===============================
@@ -237,6 +368,9 @@ async function processUser(userId: string, snapshotDate: string) {
   // Fetch TCG prices
   const cardIds = uniqueCards.map((card) => card.api_card_id || card.card_id).filter(Boolean);
   const priceMap = await fetchTcgPricesInBatches(cardIds);
+  const cachedTcgMap = await fetchCachedTcgPrices(
+    uniqueCards.map((card) => card.card_id).filter(Boolean)
+  );
 
   let saved = 0, missingTcg = 0, ebayFound = 0, ebayFail = 0, upsertFail = 0;
 
@@ -244,7 +378,7 @@ async function processUser(userId: string, snapshotDate: string) {
     const card = uniqueCards[index];
     const lookupId = card.api_card_id || card.card_id;
     const displayName = card.card_name || lookupId;
-    const tcgPrice = priceMap[lookupId];
+    const tcgPrice = priceMap[lookupId] ?? cachedTcgMap[card.card_id];
 
     console.log(`\n📍 [${index + 1}/${uniqueCards.length}] ${displayName}`);
 
@@ -273,12 +407,7 @@ async function processUser(userId: string, snapshotDate: string) {
       snapshot_at: snapshotDate,
     };
 
-    const { error: upsertError } = await supabase
-      .from('market_price_snapshots')
-      .upsert(snapshot, {
-        onConflict: 'user_id,card_id,set_id,snapshot_at',
-        ignoreDuplicates: false,
-      });
+    const upsertError = await saveMarketPriceSnapshotByDay(snapshot, snapshotDate);
 
     if (upsertError) {
       upsertFail += 1;
@@ -292,6 +421,73 @@ async function processUser(userId: string, snapshotDate: string) {
   }
 
   return { saved, missingTcg, ebayFound, ebayFail, upsertFail };
+}
+
+// ===============================
+// PROCESS PRODUCT CATALOG
+// ===============================
+
+async function processMarketProducts() {
+  console.log('\n📦 Processing market products');
+
+  const { data: products, error } = await supabase
+    .from('market_products')
+    .select('id, product_type, name, set_name, aliases')
+    .order('product_type')
+    .order('name');
+
+  if (error) {
+    console.log('❌ Failed to fetch market products:', error);
+    return { saved: 0, priced: 0, failed: 0 };
+  }
+
+  if (!products?.length) {
+    console.log('⚠️ No market products found');
+    return { saved: 0, priced: 0, failed: 0 };
+  }
+
+  let saved = 0;
+  let priced = 0;
+  let failed = 0;
+
+  for (let index = 0; index < products.length; index += 1) {
+    const product = products[index] as ProductRow;
+    console.log(`\n📦 Product [${index + 1}/${products.length}] ${product.name}`);
+
+    const ebay = await fetchProductEbayWithRetry(product);
+    const average = toNumber(ebay.average);
+    if (average !== null) priced += 1; else failed += 1;
+
+    const snapshot = {
+      product_id: product.id,
+      product_type: product.product_type,
+      product_name: product.name,
+      ebay_low: toNumber(ebay.low),
+      ebay_average: average,
+      ebay_high: toNumber(ebay.high),
+      sold_count: toInteger(ebay.count ?? ebay.rawCount),
+      query: ebay.query ?? buildProductEbayQuery(product),
+      source: ebay.soldDataSource ?? null,
+      snapshot_at: new Date().toISOString(),
+      created_by: null,
+    };
+
+    const { error: insertError } = await supabase
+      .from('market_product_price_snapshots')
+      .insert(snapshot);
+
+    if (insertError) {
+      failed += 1;
+      console.error(`❌ Product snapshot insert failed for ${product.name}:`, insertError);
+    } else {
+      saved += 1;
+      console.log(`✅ ${product.name} | eBay avg: ${snapshot.ebay_average ?? 'none'} | sold: ${snapshot.sold_count}`);
+    }
+
+    await delay(EBAY_DELAY_MS);
+  }
+
+  return { saved, priced, failed };
 }
 
 // ===============================
@@ -335,6 +531,11 @@ async function runDailyMarketSnapshot() {
   console.log(`🚫 eBay failed:     ${totalEbayFail}`);
   console.log(`❌ Upsert fails:    ${totalUpsertFail}`);
 
+  const productResult = await processMarketProducts();
+  console.log(`📦 Product snapshots saved: ${productResult.saved}`);
+  console.log(`📦 Product prices found:    ${productResult.priced}`);
+  console.log(`📦 Product price failures:  ${productResult.failed}`);
+
   const { error: updateError } = await supabase.rpc('update_binder_card_prices');
   if (updateError) {
     console.error('⚠️ update_binder_card_prices RPC failed:', updateError);
@@ -343,7 +544,7 @@ async function runDailyMarketSnapshot() {
   }
 
   await logCron(JOB_NAME, 'success',
-    `Users: ${userIds.length}. Saved: ${totalSaved}. Missing TCG: ${totalMissingTcg}. eBay found: ${totalEbayFound}. eBay failed: ${totalEbayFail}. Upsert failed: ${totalUpsertFail}.`
+    `Users: ${userIds.length}. Saved: ${totalSaved}. Missing TCG: ${totalMissingTcg}. eBay found: ${totalEbayFound}. eBay failed: ${totalEbayFail}. Upsert failed: ${totalUpsertFail}. Products saved: ${productResult.saved}. Products priced: ${productResult.priced}. Product failures: ${productResult.failed}.`
   );
 }
 

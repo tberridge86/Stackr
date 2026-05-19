@@ -12,13 +12,17 @@ const API_HEADERS: Record<string, string> = process.env.POKEMON_TCG_API_KEY
   ? { 'X-Api-Key': process.env.POKEMON_TCG_API_KEY }
   : {};
 
+type PokemonTcgListResponse<T> = {
+  data: T[];
+};
+
 async function syncSets() {
   let page = 1;
   let allSets: any[] = [];
 
   while (true) {
     const res = await fetch(`${API_BASE}/sets?page=${page}&pageSize=250`, { headers: API_HEADERS });
-    const json = await res.json();
+    const json = await res.json() as PokemonTcgListResponse<any>;
 
     if (!json.data.length) break;
 
@@ -49,7 +53,7 @@ async function syncCards() {
 
   while (true) {
     const res = await fetch(`${API_BASE}/cards?page=${page}&pageSize=250`, { headers: API_HEADERS });
-    const json = await res.json();
+    const json = await res.json() as PokemonTcgListResponse<any>;
 
     if (!json.data.length) break;
 

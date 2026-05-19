@@ -5,6 +5,8 @@ import type { InventoryCardSnapshot } from './inventory';
 export type ProductLookupType =
   | 'sealed_product'
   | 'booster_pack'
+  | 'sleeved_booster_pack'
+  | 'booster_bundle'
   | 'booster_box'
   | 'elite_trainer_box'
   | 'collection_bundle'
@@ -39,6 +41,8 @@ export const PRODUCT_LOOKUP_OPTIONS: {
 }[] = [
   { key: 'sealed_product', label: 'Sealed Product', icon: 'cube-outline' },
   { key: 'booster_pack', label: 'Booster Pack', icon: 'file-tray-full-outline' },
+  { key: 'sleeved_booster_pack', label: 'Sleeved Pack', icon: 'file-tray-full-outline' },
+  { key: 'booster_bundle', label: 'Booster Bundle', icon: 'file-tray-stacked-outline' },
   { key: 'booster_box', label: 'Booster Box', icon: 'archive-outline' },
   { key: 'elite_trainer_box', label: 'Elite Trainer Box', icon: 'file-tray-stacked-outline' },
   { key: 'collection_bundle', label: 'Collection Bundle', icon: 'cube-outline' },
@@ -50,6 +54,8 @@ export const PRODUCT_QUERY_SUFFIX: Record<ProductLookupType | 'raw_card' | 'grad
   graded_slab: 'pokemon graded slab',
   sealed_product: 'pokemon sealed product',
   booster_pack: 'pokemon booster pack sealed',
+  sleeved_booster_pack: 'pokemon sleeved booster pack sealed',
+  booster_bundle: 'pokemon booster bundle sealed',
   booster_box: 'pokemon booster box sealed',
   elite_trainer_box: 'pokemon elite trainer box sealed',
   collection_bundle: 'pokemon collection box sealed',
@@ -122,6 +128,45 @@ export async function searchMarketProducts(
   const { data, error } = await query;
   if (error) {
     console.log('Market product search failed', error);
+    return [];
+  }
+
+  const products = (data ?? []).map(mapProductRow);
+  const ids = products.map((product) => product.id);
+  if (!ids.length) return products;
+
+  const { data: snapshots, error: snapshotError } = await supabase
+    .from('market_product_price_snapshots')
+    .select('product_id, ebay_low, ebay_average, ebay_high, sold_count, query, source, snapshot_at')
+    .in('product_id', ids)
+    .order('snapshot_at', { ascending: false });
+
+  if (snapshotError) return products;
+
+  const latestMap = new Map<string, ProductPriceResult>();
+  for (const snapshot of snapshots ?? []) {
+    if (!latestMap.has(snapshot.product_id)) latestMap.set(snapshot.product_id, mapSnapshotRow(snapshot));
+  }
+
+  return products.map((product) => ({ ...product, latest_price: latestMap.get(product.id) ?? null }));
+}
+
+export async function listMarketProducts(
+  type?: ProductLookupType,
+  limit = 40
+): Promise<MarketProduct[]> {
+  let query = supabase
+    .from('market_products')
+    .select('*')
+    .order('product_type')
+    .order('name')
+    .limit(limit);
+
+  if (type) query = query.eq('product_type', type);
+
+  const { data, error } = await query;
+  if (error) {
+    console.log('Market product catalog failed', error);
     return [];
   }
 
@@ -238,13 +283,20 @@ async function saveProductPriceSnapshot(
 }
 
 export async function fetchProductPrice(name: string, type: ProductLookupType): Promise<ProductPriceResult> {
+  const product = await ensureMarketProduct(name, type);
+  const price = await fetchLiveProductPrice(name, type);
+  if (product) await saveProductPriceSnapshot(product, price);
+  return price;
+}
+
+async function fetchLiveProductPrice(name: string, type: ProductLookupType): Promise<ProductPriceResult> {
   if (!PRICE_API_URL) throw new Error('Missing price API URL');
 
-  const product = await ensureMarketProduct(name, type);
   const query = buildProductQuery(name, type);
   const params = new URLSearchParams({
     q: query,
     productType: type === 'accessories' ? 'accessory' : 'sealed',
+    productSubtype: type,
   });
 
   const response = await fetch(`${PRICE_API_URL.replace(/\/$/, '')}/api/price/ebay?${params.toString()}`);
@@ -254,7 +306,7 @@ export async function fetchProductPrice(name: string, type: ProductLookupType): 
   }
 
   const data = await response.json();
-  const price = {
+  return {
     low: data.low ?? null,
     average: data.average ?? null,
     high: data.high ?? null,
@@ -262,8 +314,11 @@ export async function fetchProductPrice(name: string, type: ProductLookupType): 
     query: data.query ?? query,
     soldDataSource: data.soldDataSource ?? null,
   };
+}
 
-  if (product) await saveProductPriceSnapshot(product, price);
+export async function refreshMarketProductPrice(product: MarketProduct): Promise<ProductPriceResult> {
+  const price = await fetchLiveProductPrice(product.name, product.product_type);
+  await saveProductPriceSnapshot(product, price);
   return price;
 }
 
@@ -271,12 +326,13 @@ export async function getProductPriceWithFallback(
   name: string,
   type: ProductLookupType
 ): Promise<ProductPriceResult | null> {
-  const product = await ensureMarketProduct(name, type);
+  const matchingProducts = await searchMarketProducts(name, type, 1);
+  const product = matchingProducts[0] ?? await ensureMarketProduct(name, type);
   const cached = product ? await getLatestProductPrice(product.id) : null;
   if (cached?.average != null) return cached;
 
   try {
-    return await fetchProductPrice(name, type);
+    return product ? await refreshMarketProductPrice(product) : await fetchProductPrice(name, type);
   } catch (error) {
     console.log('Live product price fetch failed', error);
     return cached;

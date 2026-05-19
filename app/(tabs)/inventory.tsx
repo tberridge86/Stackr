@@ -37,8 +37,10 @@ import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import {
   PRODUCT_LOOKUP_OPTIONS,
   fetchProductPrice,
+  listMarketProducts,
   productLookupLabel,
   productToInventorySnapshot,
+  refreshMarketProductPrice,
   searchMarketProducts,
   toInventoryProductSnapshot,
 } from '../../lib/productSearch';
@@ -105,6 +107,7 @@ const INVENTORY_FILTER_CONDITIONS = [...INVENTORY_CONDITIONS, ...PRODUCT_INVENTO
 type InventoryDraft = {
   card: InventoryCardSnapshot;
   quantities: Record<InventoryCondition, number>;
+  askingPrice: string;
   expanded: boolean;
 };
 
@@ -119,6 +122,14 @@ const createQuantities = (defaultCondition: InventoryCondition = 'Near Mint') =>
   ) as Record<InventoryCondition, number>;
   quantities[defaultCondition] = 1;
   return quantities;
+};
+
+const getProductConfidence = (card: InventoryCardSnapshot) => {
+  const count = card.product_price_count ?? 0;
+  if (count >= 8) return { label: 'High confidence', color: '#16A34A' };
+  if (count >= 3) return { label: 'Medium confidence', color: '#D97706' };
+  if (card.is_product) return { label: 'Low confidence', color: '#DC2626' };
+  return null;
 };
 
 const toCardSnapshot = (row: any, snapshot?: any): InventoryCardSnapshot => {
@@ -152,9 +163,14 @@ export default function InventoryScreen() {
   const [drafts, setDrafts] = useState<InventoryDraft[]>([]);
   const [filterCondition, setFilterCondition] = useState<InventoryCondition | 'All'>('All');
   const [inventoryViewFilter, setInventoryViewFilter] = useState<InventoryViewFilter>('all');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [setFilter, setSetFilter] = useState('');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+  const [catalogSetFilter, setCatalogSetFilter] = useState('');
+  const [catalogMinPrice, setCatalogMinPrice] = useState('');
+  const [catalogMaxPrice, setCatalogMaxPrice] = useState('');
+  const [catalogConfidenceFilter, setCatalogConfidenceFilter] = useState<'all' | 'priced' | 'strong'>('all');
   const [refreshing, setRefreshing] = useState(false);
   const [saleOpen, setSaleOpen] = useState(false);
   const [saleCart, setSaleCart] = useState<SaleCartLine[]>([]);
@@ -227,6 +243,18 @@ export default function InventoryScreen() {
       const catalogResults = await searchMarketProducts(trimmed, type, 12);
       if (catalogResults.length) {
         setResults(catalogResults.map(productToInventorySnapshot));
+        const needsPrice = catalogResults[0].latest_price?.average == null;
+        if (needsPrice) {
+          try {
+            const price = await refreshMarketProductPrice(catalogResults[0]);
+            setResults([
+              productToInventorySnapshot({ ...catalogResults[0], latest_price: price }),
+              ...catalogResults.slice(1).map(productToInventorySnapshot),
+            ]);
+          } catch (error) {
+            console.log('Inventory product price refresh failed', error);
+          }
+        }
         return;
       }
 
@@ -240,6 +268,19 @@ export default function InventoryScreen() {
     }
   }, []);
 
+  const loadProductCatalog = useCallback(async (type: ProductLookupType) => {
+    try {
+      setSearching(true);
+      const products = await listMarketProducts(type, 40);
+      setResults(products.map(productToInventorySnapshot));
+    } catch (error) {
+      console.log('Inventory product catalog failed', error);
+      setResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, []);
+
   const onSearchChange = useCallback((text: string) => {
     setQuery(text);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
@@ -247,15 +288,23 @@ export default function InventoryScreen() {
       if (lookupType === 'raw_card') {
         searchCards(text);
       } else {
-        searchProduct(text, lookupType);
+        if (text.trim().length < 2) {
+          loadProductCatalog(lookupType);
+        } else {
+          searchProduct(text, lookupType);
+        }
       }
     }, lookupType === 'raw_card' ? 300 : 450);
-  }, [lookupType, searchCards, searchProduct]);
+  }, [loadProductCatalog, lookupType, searchCards, searchProduct]);
 
   const changeLookupType = useCallback((nextType: InventoryLookupType) => {
     setLookupType(nextType);
     setResults([]);
     setDrafts([]);
+    if (nextType !== 'raw_card' && !query.trim()) {
+      loadProductCatalog(nextType);
+      return;
+    }
     if (query.trim()) {
       if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
       searchTimerRef.current = setTimeout(() => {
@@ -266,14 +315,14 @@ export default function InventoryScreen() {
         }
       }, 120);
     }
-  }, [query, searchCards, searchProduct]);
+  }, [loadProductCatalog, query, searchCards, searchProduct]);
 
   const toggleDraftCard = useCallback((card: InventoryCardSnapshot) => {
     setDrafts((prev) => {
       if (prev.some((draft) => draft.card.id === card.id)) {
         return prev.filter((draft) => draft.card.id !== card.id);
       }
-      return [...prev, { card, quantities: createQuantities(card.is_product ? 'Sealed' : 'Near Mint'), expanded: true }];
+      return [...prev, { card, quantities: createQuantities(card.is_product ? 'Sealed' : 'Near Mint'), askingPrice: '', expanded: true }];
     });
   }, []);
 
@@ -300,20 +349,40 @@ export default function InventoryScreen() {
     );
   }, []);
 
+  const updateDraftAskingPrice = useCallback((cardId: string, value: string) => {
+    setDrafts((prev) =>
+      prev.map((draft) =>
+        draft.card.id === cardId
+          ? { ...draft, askingPrice: value.replace(/[^0-9.]/g, '').slice(0, 9) }
+          : draft
+      )
+    );
+  }, []);
+
   const removeDraft = useCallback((cardId: string) => {
     setDrafts((prev) => prev.filter((draft) => draft.card.id !== cardId));
   }, []);
 
-  const addStockLine = useCallback((currentItems: InventoryItem[], card: InventoryCardSnapshot, condition: InventoryCondition, quantity: number) => {
+  const addStockLine = useCallback((currentItems: InventoryItem[], card: InventoryCardSnapshot, condition: InventoryCondition, quantity: number, askingPrice?: number | null) => {
     const existing = currentItems.find((item) => item.card_id === card.id && item.condition === condition);
     const now = new Date().toISOString();
     return existing
       ? currentItems.map((item) =>
           item.id === existing.id
-            ? { ...item, quantity: item.quantity + quantity, updated_at: now, card }
+            ? {
+                ...item,
+                quantity: item.quantity + quantity,
+                asking_price: askingPrice ?? item.asking_price,
+                updated_at: now,
+                card,
+              }
             : item
         )
-      : [{ ...createInventoryItem(card, condition, quantity), id: `${card.id}:${condition}:${Date.now()}:${Math.random()}` }, ...currentItems];
+      : [{
+          ...createInventoryItem(card, condition, quantity),
+          id: `${card.id}:${condition}:${Date.now()}:${Math.random()}`,
+          asking_price: askingPrice ?? null,
+        }, ...currentItems];
   }, []);
 
   const addAllDrafts = useCallback(async () => {
@@ -328,9 +397,11 @@ export default function InventoryScreen() {
 
     let next = items;
     for (const draft of drafts) {
+      const parsedAskingPrice = Number.parseFloat(draft.askingPrice);
+      const askingPrice = Number.isFinite(parsedAskingPrice) ? parsedAskingPrice : null;
       for (const condition of getDraftConditions(draft.card)) {
         const quantity = draft.quantities[condition] ?? 0;
-        if (quantity > 0) next = addStockLine(next, draft.card, condition, quantity);
+        if (quantity > 0) next = addStockLine(next, draft.card, condition, quantity, askingPrice);
       }
     }
     await persist(next);
@@ -454,8 +525,39 @@ export default function InventoryScreen() {
     });
   }, [filterCondition, inventoryViewFilter, items, maxPrice, minPrice, setFilter]);
 
+  const catalogResults = useMemo(() => {
+    if (lookupType === 'raw_card') return results;
+    const min = Number.parseFloat(catalogMinPrice);
+    const max = Number.parseFloat(catalogMaxPrice);
+    const setTerm = catalogSetFilter.trim().toLowerCase();
+
+    return results.filter((card) => {
+      const price = getPreferredPrice(card);
+      const count = card.product_price_count ?? 0;
+      if (setTerm) {
+        const haystack = `${card.set_name ?? ''} ${card.product_name ?? ''} ${card.name}`.toLowerCase();
+        if (!haystack.includes(setTerm)) return false;
+      }
+      if (Number.isFinite(min) && (price ?? 0) < min) return false;
+      if (Number.isFinite(max) && (price ?? 0) > max) return false;
+      if (catalogConfidenceFilter === 'priced' && price == null) return false;
+      if (catalogConfidenceFilter === 'strong' && count < 3) return false;
+      return true;
+    });
+  }, [catalogConfidenceFilter, catalogMaxPrice, catalogMinPrice, catalogSetFilter, lookupType, results]);
+
+  const activeCatalogFilterCount = (catalogSetFilter.trim() ? 1 : 0)
+    + (catalogMinPrice.trim() ? 1 : 0)
+    + (catalogMaxPrice.trim() ? 1 : 0)
+    + (catalogConfidenceFilter !== 'all' ? 1 : 0);
+
   const totalStock = items.reduce((sum, item) => sum + item.quantity, 0);
   const inventoryValue = items.reduce((sum, item) => sum + (getPreferredPrice(item.card) ?? 0) * item.quantity, 0);
+  const activeInventoryFilterCount = (inventoryViewFilter !== 'all' ? 1 : 0)
+    + (filterCondition !== 'All' ? 1 : 0)
+    + (setFilter.trim() ? 1 : 0)
+    + (minPrice.trim() ? 1 : 0)
+    + (maxPrice.trim() ? 1 : 0);
   const saleEstimatedValue = saleCart.reduce(
     (sum, line) => sum + (getPreferredPrice(line.item.card) ?? 0) * line.quantity,
     0
@@ -732,19 +834,70 @@ export default function InventoryScreen() {
           )}
 
           {results.length > 0 && (
+            <>
+            {stockScanMode === 'add' && lookupType !== 'raw_card' && (
+              <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <View>
+                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14 }}>Product catalog</Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 1 }}>
+                      Browse by type, price, set, and confidence.
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => loadProductCatalog(lookupType)} style={{ borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+                    <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 11 }}>Refresh</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+                  <TextInput value={catalogSetFilter} onChangeText={setCatalogSetFilter} placeholder="Set / era" placeholderTextColor={theme.colors.textSoft} style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, color: theme.colors.text, fontWeight: '800' }} />
+                  <TextInput value={catalogMinPrice} onChangeText={setCatalogMinPrice} placeholder="Min" keyboardType="decimal-pad" placeholderTextColor={theme.colors.textSoft} style={{ width: 70, backgroundColor: theme.colors.surface, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, color: theme.colors.text, fontWeight: '800' }} />
+                  <TextInput value={catalogMaxPrice} onChangeText={setCatalogMaxPrice} placeholder="Max" keyboardType="decimal-pad" placeholderTextColor={theme.colors.textSoft} style={{ width: 70, backgroundColor: theme.colors.surface, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, color: theme.colors.text, fontWeight: '800' }} />
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingTop: 8 }}>
+                  {[
+                    { key: 'all' as const, label: 'All' },
+                    { key: 'priced' as const, label: 'Priced' },
+                    { key: 'strong' as const, label: '3+ comps' },
+                  ].map((filter) => {
+                    const active = catalogConfidenceFilter === filter.key;
+                    return (
+                      <TouchableOpacity key={filter.key} onPress={() => setCatalogConfidenceFilter(filter.key)} style={{ borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7, backgroundColor: active ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: active ? theme.colors.primary : theme.colors.border }}>
+                        <Text style={{ color: active ? '#FFFFFF' : theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>{filter.label}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                  {activeCatalogFilterCount > 0 && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setCatalogSetFilter('');
+                        setCatalogMinPrice('');
+                        setCatalogMaxPrice('');
+                        setCatalogConfidenceFilter('all');
+                      }}
+                      style={{ borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}
+                    >
+                      <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 11 }}>Clear</Text>
+                    </TouchableOpacity>
+                  )}
+                </ScrollView>
+              </View>
+            )}
             <FlatList
-              data={results}
+              data={lookupType === 'raw_card' ? results : catalogResults}
               keyExtractor={(item) => item.id}
               keyboardShouldPersistTaps="handled"
-              style={{ maxHeight: 220, marginTop: 10 }}
+              style={{ maxHeight: lookupType === 'raw_card' ? 220 : 320, marginTop: 10 }}
               renderItem={({ item }) => {
                 const selected = drafts.some((draft) => draft.card.id === item.id);
+                const confidence = getProductConfidence(item);
                 return (
-                  <TouchableOpacity onPress={() => toggleDraftCard(item)} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
+                  <TouchableOpacity onPress={() => toggleDraftCard(item)} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 9, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
                     {item.image_small ? (
-                      <Image source={{ uri: item.image_small }} style={{ width: 42, height: 58 }} resizeMode="contain" />
+                      <Image source={{ uri: item.image_small }} style={{ width: 46, height: item.is_product ? 46 : 62, borderRadius: item.is_product ? 9 : 0 }} resizeMode="contain" />
                     ) : (
-                      <View style={{ width: 42, height: 58, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                      <View style={{ width: 46, height: item.is_product ? 46 : 62, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
                         <Ionicons name={item.is_product ? 'cube-outline' : 'albums-outline'} size={20} color={theme.colors.primary} />
                       </View>
                     )}
@@ -753,6 +906,13 @@ export default function InventoryScreen() {
                       <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12 }}>
                         {item.is_product ? `${item.set_name} · recommended ${money(getPreferredPrice(item))}` : `${item.set_name} · #${item.number ?? '--'} · ${money(getPreferredPrice(item))}`}
                       </Text>
+                      {confidence && (
+                        <View style={{ alignSelf: 'flex-start', marginTop: 4, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, backgroundColor: `${confidence.color}18` }}>
+                          <Text style={{ color: confidence.color, fontWeight: '900', fontSize: 10 }}>
+                            {confidence.label}{item.product_price_count != null ? ` - ${item.product_price_count} sold` : ''}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                     <View style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: selected ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: selected ? theme.colors.primary : theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
                       <Ionicons name={selected ? 'checkmark' : 'add'} size={18} color={selected ? '#FFFFFF' : theme.colors.textSoft} />
@@ -761,6 +921,7 @@ export default function InventoryScreen() {
                 );
               }}
             />
+            </>
           )}
         </View>
 
@@ -801,6 +962,26 @@ export default function InventoryScreen() {
 
                   {draft.expanded && (
                     <View style={{ marginTop: 10, gap: 7 }}>
+                      {draft.card.is_product && (
+                        <View style={{ backgroundColor: theme.colors.surface, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>Your price</Text>
+                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }}>
+                                Recommended {money(getPreferredPrice(draft.card))}
+                              </Text>
+                            </View>
+                            <TextInput
+                              value={draft.askingPrice}
+                              onChangeText={(value) => updateDraftAskingPrice(draft.card.id, value)}
+                              placeholder="Ask"
+                              placeholderTextColor={theme.colors.textSoft}
+                              keyboardType="decimal-pad"
+                              style={{ width: 92, backgroundColor: theme.colors.card, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, paddingVertical: 7, color: theme.colors.text, fontWeight: '900' }}
+                            />
+                          </View>
+                        </View>
+                      )}
                       {draftConditions.map((condition) => (
                         <View key={condition} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: theme.colors.surface, borderRadius: 12, paddingVertical: 7, paddingHorizontal: 10 }}>
                           <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>{condition}</Text>
@@ -823,6 +1004,34 @@ export default function InventoryScreen() {
           </View>
         )}
         <View style={{ marginBottom: 12 }}>
+          <TouchableOpacity
+            onPress={() => setFiltersOpen((open) => !open)}
+            style={{
+              backgroundColor: theme.colors.card,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: filtersOpen || activeInventoryFilterCount > 0 ? theme.colors.primary : theme.colors.border,
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name="filter-outline" size={18} color={filtersOpen || activeInventoryFilterCount > 0 ? theme.colors.primary : theme.colors.textSoft} />
+              <Text style={{ color: filtersOpen || activeInventoryFilterCount > 0 ? theme.colors.primary : theme.colors.text, fontWeight: '900' }}>Filters</Text>
+              {activeInventoryFilterCount > 0 && (
+                <View style={{ minWidth: 22, height: 22, borderRadius: 11, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 11 }}>{activeInventoryFilterCount}</Text>
+                </View>
+              )}
+            </View>
+            <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={18} color={theme.colors.textSoft} />
+          </TouchableOpacity>
+
+          {filtersOpen && (
+            <View style={{ marginTop: 10 }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 8 }}>
             {inventoryViewFilters.map((filter) => {
               const active = inventoryViewFilter === filter.key;
@@ -875,6 +1084,22 @@ export default function InventoryScreen() {
             <TextInput value={minPrice} onChangeText={setMinPrice} placeholder="Min £" keyboardType="decimal-pad" placeholderTextColor={theme.colors.textSoft} style={{ width: 78, backgroundColor: theme.colors.card, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, color: theme.colors.text }} />
             <TextInput value={maxPrice} onChangeText={setMaxPrice} placeholder="Max £" keyboardType="decimal-pad" placeholderTextColor={theme.colors.textSoft} style={{ width: 78, backgroundColor: theme.colors.card, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 10, color: theme.colors.text }} />
           </View>
+          {activeInventoryFilterCount > 0 && (
+            <TouchableOpacity
+              onPress={() => {
+                setInventoryViewFilter('all');
+                setFilterCondition('All');
+                setSetFilter('');
+                setMinPrice('');
+                setMaxPrice('');
+              }}
+              style={{ marginTop: 8, alignSelf: 'flex-start', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}
+            >
+              <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 11 }}>Clear filters</Text>
+            </TouchableOpacity>
+          )}
+            </View>
+          )}
         </View>
 
         <FlatList

@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "daily-market-snapshot": "tsx scripts/daily-market-snapshot.ts",
+    "daily-market-snapshot": "tsx ../scripts/daily-market-snapshot.ts",
     "android": "expo run:android",
     "ios": "expo run:ios"
   },

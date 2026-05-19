@@ -16,6 +16,7 @@ type TcgcsvProduct = {
   productId: number;
   name: string;
   groupId: number;
+  imageUrl?: string | null;
   extendedData?: TcgcsvExtendedDataEntry[];
 };
 
@@ -37,6 +38,7 @@ export type TcgcsvCardVariantPrice = {
 export type TcgcsvUiCardPriceRow = {
   productId: number;
   name: string;
+  imageUrl: string | null;
   number: string | null;
   variants: TcgcsvCardVariantPrice[];
 };
@@ -305,6 +307,7 @@ export async function fetchTcgcsvUiCardPricesForSet(
     rows.push({
       productId: product.productId,
       name: product.name,
+      imageUrl: typeof product.imageUrl === 'string' && product.imageUrl.trim() ? product.imageUrl.trim() : null,
       number: getExtendedDataValue(product, 'Number'),
       variants,
     });

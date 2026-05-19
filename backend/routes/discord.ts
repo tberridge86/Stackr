@@ -8,7 +8,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-router.post('/new-trade-listing', async (req, res) => {
+router.post('/new-trade-listing', async (req: any, res: any) => {
   try {
     const { listingId } = req.body;
 
@@ -48,24 +48,27 @@ router.post('/new-trade-listing', async (req, res) => {
       return res.status(404).json({ error: 'Listing not found' });
     }
 
+    const listingRow = listing as any;
+
     const { data: card } = await supabase
       .from('pokemon_cards')
       .select('name, raw_data')
-      .eq('id', listing.card_id)
+      .eq('id', listingRow.card_id)
       .maybeSingle();
 
-    const cardName = card?.name ?? listing.card_id;
-    const setName = card?.raw_data?.set?.name ?? listing.set_id ?? 'Unknown set';
+    const cardRow = card as any;
+    const cardName = cardRow?.name ?? listingRow.card_id;
+    const setName = cardRow?.raw_data?.set?.name ?? listingRow.set_id ?? 'Unknown set';
     const sellerName =
-      Array.isArray(listing.profiles)
-        ? listing.profiles[0]?.collector_name
-        : listing.profiles?.collector_name;
+      Array.isArray(listingRow.profiles)
+        ? listingRow.profiles[0]?.collector_name
+        : listingRow.profiles?.collector_name;
 
     const price =
-      listing.asking_price != null
-        ? `£${Number(listing.asking_price).toFixed(2)}`
-        : listing.value != null
-        ? `£${Number(listing.value).toFixed(2)}`
+      listingRow.asking_price != null
+        ? `£${Number(listingRow.asking_price).toFixed(2)}`
+        : listingRow.value != null
+        ? `£${Number(listingRow.value).toFixed(2)}`
         : 'Open to offers';
 
     const content = [
@@ -73,11 +76,11 @@ router.post('/new-trade-listing', async (req, res) => {
       '',
       `🎴 **${cardName}**`,
       `📦 Set: ${setName}`,
-      listing.condition ? `✨ Condition: ${listing.condition}` : null,
+      listingRow.condition ? `✨ Condition: ${listingRow.condition}` : null,
       `💷 Value: ${price}`,
       sellerName ? `👤 Listed by: ${sellerName}` : null,
-      listing.listing_notes || listing.notes
-        ? `💬 "${listing.listing_notes ?? listing.notes}"`
+      listingRow.listing_notes || listingRow.notes
+        ? `💬 "${listingRow.listing_notes ?? listingRow.notes}"`
         : null,
       '',
       '👀 Anyone interested?',
