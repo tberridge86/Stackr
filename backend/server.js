@@ -2291,6 +2291,12 @@ function pickXimilarTcgCard(data) {
 async function scanTcgWithXimilarBase64(base64Image, options = {}) {
   if (!XIMILAR_API_TOKEN) throw new Error('Missing XIMILAR_API_TOKEN');
 
+  const startedAt = Date.now();
+  console.log('[ximilar-tcg] request', {
+    magicAi: Boolean(options.magicAi),
+    imageBytesApprox: Math.round(stripBase64ImagePrefix(base64Image).length * 0.75),
+  });
+
   const ximilarRes = await fetch('https://api.ximilar.com/collectibles/v2/tcg_id', {
     method: 'POST',
     headers: {
@@ -2307,11 +2313,28 @@ async function scanTcgWithXimilarBase64(base64Image, options = {}) {
   });
 
   const data = await ximilarRes.json().catch(() => null);
+  const match = pickXimilarTcgCard(data);
+  console.log('[ximilar-tcg] response', {
+    ok: ximilarRes.ok,
+    status: ximilarRes.status,
+    magicAi: Boolean(options.magicAi),
+    totalMs: Date.now() - startedAt,
+    match: match ? {
+      name: match.name,
+      setName: match.setName,
+      setCode: match.setCode,
+      number: match.number,
+      printedTotal: match.printedTotal,
+      confidence: match.confidence,
+    } : null,
+    error: ximilarRes.ok ? null : getApiErrorMessage(data),
+  });
+
   return {
     ok: ximilarRes.ok,
     status: ximilarRes.status,
     data,
-    match: pickXimilarTcgCard(data),
+    match,
   };
 }
 
@@ -2335,6 +2358,11 @@ app.post('/api/scan/tcg', async (req, res) => {
   try {
     const { imageUrl, base64Image, magicAi } = req.body;
     if (!imageUrl && !base64Image) return res.status(400).json({ error: 'Missing imageUrl or base64Image' });
+
+    console.log('[api/scan/tcg] hit', {
+      input: base64Image ? 'base64' : 'url',
+      magicAi: Boolean(magicAi),
+    });
 
     const result = base64Image
       ? await scanTcgWithXimilarBase64(base64Image, { magicAi })
