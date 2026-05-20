@@ -10,12 +10,58 @@ const CARD_CROP_HEIGHT_RATIO = 0.98;
 
 type ScanCameraOptions = {
   cropToCard?: boolean;
+  cropFrame?: {
+    previewWidth: number;
+    previewHeight: number;
+    frameWidth: number;
+    frameHeight: number;
+    frameCenterY?: number;
+  };
   resizeWidth?: number;
   compress?: number;
 };
 
-function getCenteredCardCrop(photoWidth?: number, photoHeight?: number) {
+function getCenteredCardCrop(
+  photoWidth?: number,
+  photoHeight?: number,
+  frame?: ScanCameraOptions['cropFrame']
+) {
   if (!photoWidth || !photoHeight) return null;
+
+  if (frame?.previewWidth && frame?.previewHeight && frame.frameWidth && frame.frameHeight) {
+    const sensorAspect = photoWidth / photoHeight;
+    const previewAspect = frame.previewWidth / frame.previewHeight;
+    let visiblePhotoWidth = photoWidth;
+    let visiblePhotoHeight = photoHeight;
+    let hiddenX = 0;
+    let hiddenY = 0;
+
+    if (sensorAspect > previewAspect) {
+      visiblePhotoWidth = photoHeight * previewAspect;
+      hiddenX = (photoWidth - visiblePhotoWidth) / 2;
+    } else {
+      visiblePhotoHeight = photoWidth / previewAspect;
+      hiddenY = (photoHeight - visiblePhotoHeight) / 2;
+    }
+
+    const scaleX = visiblePhotoWidth / frame.previewWidth;
+    const scaleY = visiblePhotoHeight / frame.previewHeight;
+    const frameCenterY = frame.frameCenterY ?? frame.previewHeight / 2;
+    const originX = hiddenX + ((frame.previewWidth - frame.frameWidth) / 2) * scaleX;
+    const originY = hiddenY + (frameCenterY - frame.frameHeight / 2) * scaleY;
+
+    const width = Math.min(photoWidth, Math.round(frame.frameWidth * scaleX));
+    const height = Math.min(photoHeight, Math.round(frame.frameHeight * scaleY));
+    const clampedOriginX = Math.max(0, Math.min(photoWidth - width, Math.round(originX)));
+    const clampedOriginY = Math.max(0, Math.min(photoHeight - height, Math.round(originY)));
+
+    return {
+      originX: clampedOriginX,
+      originY: clampedOriginY,
+      width,
+      height,
+    };
+  }
 
   let cropWidth = photoWidth * CARD_CROP_WIDTH_RATIO;
   let cropHeight = cropWidth / CARD_ASPECT_RATIO;
@@ -26,12 +72,12 @@ function getCenteredCardCrop(photoWidth?: number, photoHeight?: number) {
     cropWidth = cropHeight * CARD_ASPECT_RATIO;
   }
 
-  return {
-    originX: Math.max(0, Math.round((photoWidth - cropWidth) / 2)),
-    originY: Math.max(0, Math.round((photoHeight - cropHeight) / 2)),
-    width: Math.round(cropWidth),
-    height: Math.round(cropHeight),
-  };
+    return {
+      originX: Math.max(0, Math.round((photoWidth - cropWidth) / 2)),
+      originY: Math.max(0, Math.round((photoHeight - cropHeight) / 2)),
+      width: Math.round(cropWidth),
+      height: Math.round(cropHeight),
+    };
 }
 
 export function useScanCamera(
@@ -50,7 +96,7 @@ export function useScanCamera(
   const takePhoto = async () => {
     if (camera.current) {
       const photo = await camera.current.takePhoto();
-      const crop = options.cropToCard ? getCenteredCardCrop(photo.width, photo.height) : null;
+      const crop = options.cropToCard ? getCenteredCardCrop(photo.width, photo.height, options.cropFrame) : null;
       const actions: ImageManipulator.Action[] = [
         ...(crop ? [{ crop }] : []),
         { resize: { width: options.resizeWidth ?? 600 } },

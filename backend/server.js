@@ -18,7 +18,7 @@ import { Buffer } from 'node:buffer';
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '25mb' }));
 app.use('/api/cardsight', cardsightRoutes);
 app.use('/api/gibl', giblRoutes);
 app.use('/api/local-ai', localAiScanRoutes);
@@ -55,6 +55,20 @@ const supabase = createClient(
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function getApiErrorMessage(payload) {
+  if (!payload) return 'Unknown error';
+  if (typeof payload === 'string') return payload;
+  if (typeof payload.message === 'string') return payload.message;
+  if (typeof payload.error === 'string') return payload.error;
+  if (typeof payload.detail === 'string') return payload.detail;
+  if (Array.isArray(payload.message)) return payload.message.join(', ');
+  try {
+    return JSON.stringify(payload);
+  } catch {
+    return String(payload);
+  }
 }
 
 function getPokeWalletHeaders() {
@@ -2080,11 +2094,19 @@ app.post('/api/grade/ximilar', async (req, res) => {
   try {
     if (!XIMILAR_API_TOKEN) return res.status(500).json({ error: 'Missing XIMILAR_API_TOKEN' });
 
-    const base64Images = Array.isArray(req.body.base64Images)
-      ? req.body.base64Images
-      : [req.body.base64Image].filter(Boolean);
-    if (!base64Images.length || base64Images.some((image) => typeof image !== 'string')) {
-      return res.status(400).json({ error: 'Missing base64Images' });
+    const submittedImages = Array.isArray(req.body.images)
+      ? req.body.images
+      : Array.isArray(req.body.base64Images)
+        ? req.body.base64Images.map((image) => ({ base64: image }))
+        : [req.body.base64Image].filter(Boolean).map((image) => ({ base64: image }));
+
+    if (!submittedImages.length || submittedImages.some((image) => typeof image?.base64 !== 'string')) {
+      return res.status(400).json({ error: 'Missing images' });
+    }
+
+    const images = submittedImages.slice(0, 2);
+    if (submittedImages.length > 2) {
+      console.log(`Ximilar grade request received ${submittedImages.length} images; sending first 2 only.`);
     }
 
     const ximilarRes = await fetch('https://api.ximilar.com/card-grader/v2/grade', {
@@ -2093,12 +2115,21 @@ app.post('/api/grade/ximilar', async (req, res) => {
         Authorization: `Token ${XIMILAR_API_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ records: base64Images.map((image) => ({ _base64: image })) }),
+      body: JSON.stringify({
+        records: images.map((image) => ({
+          _base64: image.base64,
+          ...(image.side === 'Front' || image.side === 'Back' ? { Side: image.side } : {}),
+        })),
+      }),
     });
 
     const data = await ximilarRes.json().catch(() => null);
     if (!ximilarRes.ok) {
-      return res.status(ximilarRes.status).json({ error: 'Ximilar grading failed', detail: data });
+      return res.status(ximilarRes.status).json({
+        error: 'Ximilar grading failed',
+        message: getApiErrorMessage(data),
+        detail: data,
+      });
     }
 
     return res.json(data);

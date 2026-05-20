@@ -26,24 +26,63 @@ export type XimilarGradeResponse = {
   }>;
 };
 
-export async function gradeCardWithXimilar(imageBase64: string | string[]): Promise<XimilarGradeResponse> {
+export type XimilarGradeImage = {
+  base64: string;
+  side?: 'Front' | 'Back';
+};
+
+function formatApiErrorDetail(detail: unknown): string {
+  if (!detail) return 'Unknown error';
+  if (typeof detail === 'string') return detail;
+  if (detail instanceof Error) return detail.message;
+
+  if (typeof detail === 'object') {
+    const record = detail as Record<string, unknown>;
+    const directMessage =
+      record.message ??
+      record.error ??
+      record.detail ??
+      record.description;
+
+    if (typeof directMessage === 'string') return directMessage;
+    if (Array.isArray(directMessage)) return directMessage.join(', ');
+
+    try {
+      return JSON.stringify(detail);
+    } catch {
+      return String(detail);
+    }
+  }
+
+  return String(detail);
+}
+
+export async function gradeCardWithXimilar(
+  imageBase64: string | string[] | XimilarGradeImage[]
+): Promise<XimilarGradeResponse> {
   if (!PRICE_API_URL) {
     throw new Error('Price API URL not configured');
   }
 
-  const imageBase64s = Array.isArray(imageBase64) ? imageBase64 : [imageBase64];
+  const records = Array.isArray(imageBase64)
+    ? imageBase64.map((entry) => typeof entry === 'string' ? { base64: entry } : entry)
+    : [{ base64: imageBase64 }];
+  const base64Images = records.map((record) => record.base64);
   const res = await fetch(`${PRICE_API_URL}/api/grade/ximilar`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ base64Images: imageBase64s }),
+    body: JSON.stringify({
+      images: records,
+      base64Images,
+    }),
   });
 
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const detail = data?.detail || data?.error || `HTTP ${res.status}`;
-    throw new Error(`Ximilar grading failed: ${detail}`);
+    const detail = data?.message ?? data?.detail ?? data?.error ?? `HTTP ${res.status}`;
+    throw new Error(`Ximilar grading failed: ${formatApiErrorDetail(detail)}`);
   }
 
   return data ?? {};
