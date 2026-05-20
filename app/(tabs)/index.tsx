@@ -459,8 +459,10 @@ export default function HubScreen() {
       }
 
       let totalLatest = 0;
-      let totalPrevious = 0;
+      let comparableLatest = 0;
+      let comparablePrevious = 0;
       let cardsWithPrevious = 0;
+      let currentlyPricedCards = 0;
       const moverRows: DailyMover[] = [];
 
       for (const card of ownedCards) {
@@ -475,10 +477,12 @@ export default function HubScreen() {
 
         if (latestGbp != null) {
           totalLatest += latestGbp;
+          currentlyPricedCards += 1;
         }
 
         if (latestGbp != null && previousGbp != null) {
-          totalPrevious += previousGbp;
+          comparableLatest += latestGbp;
+          comparablePrevious += previousGbp;
           cardsWithPrevious += 1;
           const cardChange = latestGbp - previousGbp;
           if (cardChange !== 0) {
@@ -496,28 +500,49 @@ export default function HubScreen() {
         }
       }
 
-      const change = cardsWithPrevious > 0 ? totalLatest - totalPrevious : 0;
-      const percent = cardsWithPrevious > 0 && totalPrevious !== 0
-        ? (change / totalPrevious) * 100
+      const change = cardsWithPrevious > 0 ? comparableLatest - comparablePrevious : 0;
+      const percent = cardsWithPrevious > 0 && comparablePrevious !== 0
+        ? (change / comparablePrevious) * 100
         : 0;
 
       const days = buildDayKeys(chartRange, Object.keys(groupedByDay).sort());
+      const firstDay = days[0];
 
       const latestByCard: Record<string, number> = {};
-      const chartValues = days.map((day) => {
+      for (const row of snapshotRows) {
+        const day = String(row.snapshot_at).split('T')[0];
+        if (day >= firstDay) continue;
+        const priceGbp = getSnapshotPriceGbp(row);
+        if (priceGbp != null) latestByCard[row.card_id] = priceGbp;
+      }
+
+      const chartPoints = days.map((day) => {
         const pricesForDay = groupedByDay[day] ?? {};
         Object.entries(pricesForDay).forEach(([cardId, price]) => {
           if (typeof price === 'number') latestByCard[cardId] = price;
         });
         let dayTotal = 0;
+        let pricedCount = 0;
         for (const card of ownedCards as any[]) {
           const price = getSnapshotIdsForCard(card)
             .map((cardId) => latestByCard[cardId])
             .find((value) => typeof value === 'number');
-          if (typeof price === 'number') dayTotal += price;
+          if (typeof price === 'number') {
+            dayTotal += price;
+            pricedCount += 1;
+          }
         }
-        return dayTotal;
-      }).filter((v) => Number.isFinite(v) && v > 0);
+        return { value: dayTotal, pricedCount };
+      });
+
+      const chartValues = chartPoints
+        .filter((point) => (
+          Number.isFinite(point.value) &&
+          point.value > 0 &&
+          currentlyPricedCards > 0 &&
+          point.pricedCount === currentlyPricedCards
+        ))
+        .map((point) => point.value);
 
       const hasRealChartHistory = chartValues.length >= 2;
       const displayChartValues = hasRealChartHistory
@@ -530,6 +555,8 @@ export default function HubScreen() {
         `rows=${snapshotRows.length}`,
         `days=${snapshotDays.size}`,
         `points=${chartValues.length}`,
+        `priced=${currentlyPricedCards}`,
+        `comparable=${cardsWithPrevious}`,
       ].join(' ');
       console.log('Hub price chart debug:', debugText);
 

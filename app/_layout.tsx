@@ -52,7 +52,12 @@ function PersistentTabBar() {
   };
 
   // Hide on splash screen route and auth routes
-  const hideTabBar = pathname.startsWith('/(auth)') || pathname.startsWith('/login') || pathname.startsWith('/signup');
+  const hideTabBar =
+    pathname.startsWith('/(auth)') ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/signup') ||
+    pathname.startsWith('/grade') ||
+    pathname.startsWith('/scan');
 
   if (hideTabBar) return null;
 
