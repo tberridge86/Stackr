@@ -686,17 +686,9 @@ export default function MarketScreen() {
 
         const searchName = card.name;
 
-        console.log('[PPT Debug] Card:', card.name, 'set:', card.set?.name, 'numericId:', numericId);
-
         const ppt = numericId
           ? await fetchPptCardWithPsaGrades(String(numericId))
-          : await fetchPptCardWithPsaGrades(searchName);
-
-        console.log('[PPT Debug] Returned card:', ppt?.name, 'setName:', ppt?.setName);
-        console.log('[PPT Debug] Has salesByGrade:', !!ppt?.ebay?.salesByGrade);
-        if (ppt?.ebay?.salesByGrade) {
-          console.dir(ppt.ebay.salesByGrade.psa10, { depth: 1 });
-        }
+          : await fetchPptCardWithPsaGrades(searchName, card.set?.name);
 
         if (ppt?.ebay?.salesByGrade) {
           const g = grade.replace('.', '_');

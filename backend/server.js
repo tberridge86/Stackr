@@ -34,6 +34,7 @@ const SERPAPI_API_KEY = process.env.SERPAPI_API_KEY;
 const SERPAPI_ENGINE = process.env.SERPAPI_ENGINE || 'ebay';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
+const POKEMON_PRICE_TRACKER_API_KEY = process.env.POKEMON_PRICE_TRACKER_API_KEY;
 const POKEWALLET_API_KEY = process.env.POKEWALLET_API_KEY;
 const POKEWALLET_API_BASE_URL = process.env.POKEWALLET_API_BASE_URL || 'https://api.pokewallet.io';
 const PORT = process.env.PORT || 3001;
@@ -2072,6 +2073,73 @@ app.post('/api/scan/tcg', async (req, res) => {
     return res.json(result.data);
   } catch (error) {
     return res.status(500).json({ error: 'Failed to scan card', detail: getErrorMessage(error) });
+  }
+});
+
+app.post('/api/grade/ximilar', async (req, res) => {
+  try {
+    if (!XIMILAR_API_TOKEN) return res.status(500).json({ error: 'Missing XIMILAR_API_TOKEN' });
+
+    const base64Images = Array.isArray(req.body.base64Images)
+      ? req.body.base64Images
+      : [req.body.base64Image].filter(Boolean);
+    if (!base64Images.length || base64Images.some((image) => typeof image !== 'string')) {
+      return res.status(400).json({ error: 'Missing base64Images' });
+    }
+
+    const ximilarRes = await fetch('https://api.ximilar.com/card-grader/v2/grade', {
+      method: 'POST',
+      headers: {
+        Authorization: `Token ${XIMILAR_API_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ records: base64Images.map((image) => ({ _base64: image })) }),
+    });
+
+    const data = await ximilarRes.json().catch(() => null);
+    if (!ximilarRes.ok) {
+      return res.status(ximilarRes.status).json({ error: 'Ximilar grading failed', detail: data });
+    }
+
+    return res.json(data);
+  } catch (error) {
+    return res.status(500).json({ error: 'Ximilar grading failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/pokemon-price-tracker/card', async (req, res) => {
+  try {
+    if (!POKEMON_PRICE_TRACKER_API_KEY) {
+      return res.status(500).json({ error: 'Missing POKEMON_PRICE_TRACKER_API_KEY' });
+    }
+
+    const identifier = String(req.query.identifier ?? '').trim();
+    const tcgPlayerId = String(req.query.tcgPlayerId ?? '').trim();
+    const setName = String(req.query.setName ?? '').trim();
+    if (!identifier && !tcgPlayerId) {
+      return res.status(400).json({ error: 'Missing identifier' });
+    }
+
+    const params = new URLSearchParams({ includeEbay: 'true' });
+    if (tcgPlayerId || /^\d+$/.test(identifier)) {
+      params.set('tcgPlayerId', tcgPlayerId || identifier);
+    } else {
+      params.set('search', identifier);
+      if (setName) params.set('set', setName);
+    }
+
+    const pptRes = await fetch(`https://www.pokemonpricetracker.com/api/v2/cards?${params.toString()}`, {
+      headers: { Authorization: `Bearer ${POKEMON_PRICE_TRACKER_API_KEY}` },
+    });
+
+    const data = await pptRes.json().catch(() => null);
+    if (!pptRes.ok) {
+      return res.status(pptRes.status).json({ error: 'Pokemon Price Tracker failed', detail: data });
+    }
+
+    return res.json({ card: data?.data?.[0] ?? null, raw: data });
+  } catch (error) {
+    return res.status(500).json({ error: 'Pokemon Price Tracker failed', detail: getErrorMessage(error) });
   }
 });
 
