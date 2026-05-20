@@ -392,3 +392,49 @@ export async function fetchTcgcsvUiProductPricesForSet(
     }))
     .filter((product) => product.variants.length > 0);
 }
+
+const POKEMON_PRICE_TRACKER_BASE = 'https://www.pokemonpricetracker.com';
+const POKEMON_PRICE_TRACKER_KEY = 'pokeprice_free_21f1047bddce9e70900ac05d04af0aac9474bb35da2fcc2f';
+
+type PptEbayGrade = {
+  avg?: number;
+  recent_sales?: number;
+};
+
+type PptCard = {
+  id?: string;
+  name?: string;
+  set?: string;
+  number?: string;
+  prices?: { market?: number };
+  ebay?: {
+    psa8?: PptEbayGrade;
+    psa9?: PptEbayGrade;
+    psa10?: PptEbayGrade;
+  };
+};
+
+export async function fetchPptCardWithPsaGrades(identifier: string, setName?: string): Promise<PptCard | null> {
+  let url = `${POKEMON_PRICE_TRACKER_BASE}/api/v2/cards?includeEbay=true`;
+
+  if (/^\d+$/.test(identifier)) {
+    url += `&tcgPlayerId=${encodeURIComponent(identifier)}`;
+  } else {
+    url += `&search=${encodeURIComponent(identifier)}`;
+    if (setName) url += `&set=${encodeURIComponent(setName)}`;
+  }
+
+  console.log('[PPT Debug] Fetching:', url);
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${POKEMON_PRICE_TRACKER_KEY}` },
+  });
+  if (!res.ok) {
+    console.warn(`PPT PSA fetch failed: ${res.status}`);
+    return null;
+  }
+  const json = await res.json();
+  const card = json?.data?.[0];
+  return card ?? null;
+}
+

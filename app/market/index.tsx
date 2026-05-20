@@ -28,6 +28,8 @@ import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { buildProductQuery, searchMarketProducts } from '../../lib/productSearch';
 import type { ProductLookupType, ProductPriceResult } from '../../lib/productSearch';
+import { fetchPptCardWithPsaGrades } from '../../lib/pricing';
+
 
 // ===============================
 // TYPES
@@ -672,6 +674,47 @@ export default function MarketScreen() {
   const fetchDetailEbayData = useCallback(async (card: PokemonCard) => {
     try {
       setDetailPriceLoading(true);
+
+      if (lookupType === 'graded_slab') {
+        const raw = (card as any)?.raw_data || card;
+        const numericId =
+          raw?.tcgplayer?.id ??
+          raw?.tcgPlayerId ??
+          (card as any)?.tcgplayer?.id ??
+          (card as any)?.tcgPlayerId ??
+          (card.id?.match(/\d{5,}/)?.[0] || null); // only accept real 5+ digit TCGPlayer IDs
+
+        const searchName = card.name;
+
+        console.log('[PPT Debug] Card:', card.name, 'set:', card.set?.name, 'numericId:', numericId);
+
+        const ppt = numericId
+          ? await fetchPptCardWithPsaGrades(String(numericId))
+          : await fetchPptCardWithPsaGrades(searchName);
+
+        console.log('[PPT Debug] Returned card:', ppt?.name, 'setName:', ppt?.setName);
+        console.log('[PPT Debug] Has salesByGrade:', !!ppt?.ebay?.salesByGrade);
+        if (ppt?.ebay?.salesByGrade) {
+          console.dir(ppt.ebay.salesByGrade.psa10, { depth: 1 });
+        }
+
+        if (ppt?.ebay?.salesByGrade) {
+          const g = grade.replace('.', '_');
+          const gradeKey = `psa${g}` as const;
+          const gradeData = (ppt.ebay.salesByGrade as any)[gradeKey] || (ppt.ebay.salesByGrade as any)[`psa${grade}`] || {};
+          setDetailEbayData({
+            low: gradeData.minPrice ?? null,
+            average: gradeData.averagePrice ?? null,
+            high: gradeData.maxPrice ?? null,
+            count: gradeData.count ?? null,
+            query: `PPT PSA ${grade}`,
+            soldDataSource: 'pokemonpricetracker',
+          });
+          setDetailPriceLoading(false);
+          return;
+        }
+      }
+
       if (!PRICE_API_URL) { setDetailEbayData(null); return; }
 
       // set.name falls back to set_id (e.g. "base1") when raw_data is absent —
@@ -726,7 +769,8 @@ export default function MarketScreen() {
   useEffect(() => {
     if (!detailVisible || !selectedCard) return;
     fetchDetailEbayData(selectedCard);
-  }, [detailVisible, fetchDetailEbayData, selectedCard]);
+  }, [detailVisible, fetchDetailEbayData, selectedCard, grade, gradingCompany]);
+
 
   const toggleWatchlist = useCallback(async (card: PokemonCard) => {
     if (!userId) return;
