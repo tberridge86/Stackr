@@ -2258,33 +2258,90 @@ async function scanWithXimilar(imageUrl) {
 }
 
 function normalizeXimilarTcgCard(card) {
-  const rawNumber = card?.card_number ?? card?.number ?? card?.collector_number ?? card?.info?.card_number;
+  const details = card?.info ?? card?.card ?? card?.data ?? card?.details ?? card?.result ?? card;
+  const rawNumber =
+    details?.card_number
+    ?? details?.number
+    ?? details?.collector_number
+    ?? details?.collectorNumber
+    ?? card?.card_number
+    ?? card?.number
+    ?? card?.collector_number;
   const fullNumber = String(rawNumber ?? '').trim();
   const [number, total] = fullNumber.includes('/') ? fullNumber.split('/') : [fullNumber, null];
   return {
     provider: 'ximilar',
-    name: card?.name ?? card?.full_name ?? card?.info?.name ?? null,
-    setName: card?.set ?? card?.set_name ?? card?.info?.set ?? null,
-    setCode: card?.set_code ?? card?.setCode ?? card?.info?.set_code ?? null,
+    name: details?.name ?? details?.full_name ?? details?.card_name ?? card?.name ?? card?.full_name ?? null,
+    setName: details?.set ?? details?.set_name ?? details?.setName ?? card?.set ?? card?.set_name ?? null,
+    setCode: details?.set_code ?? details?.setCode ?? details?.set_id ?? details?.setId ?? card?.set_code ?? card?.setCode ?? null,
     number: number ? number.replace(/^0+/, '') : null,
     printedTotal: total ? Number(String(total).replace(/\D/g, '')) || null : null,
-    rarity: card?.rarity ?? card?.info?.rarity ?? null,
+    rarity: details?.rarity ?? card?.rarity ?? null,
     confidence: typeof card?._score === 'number' ? card._score : typeof card?.score === 'number' ? card.score : null,
-    imageUrl: card?._img_url ?? card?.image_url ?? null,
+    imageUrl: card?._img_url ?? card?.image_url ?? details?.image_url ?? details?.imageUrl ?? null,
     raw: card,
   };
 }
 
-function pickXimilarTcgCard(data) {
-  const records = Array.isArray(data?.records) ? data.records : [];
-  const cards = records.flatMap((record) => {
-    if (Array.isArray(record?._objects)) return record._objects;
-    if (Array.isArray(record?.cards)) return record.cards;
-    if (Array.isArray(record?._matches)) return record._matches;
-    if (record?._identification) return [record._identification];
-    if (record?.name || record?.full_name) return [record];
-    return [];
+function flattenXimilarTcgCandidates(value, depth = 0) {
+  if (!value || depth > 3) return [];
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => flattenXimilarTcgCandidates(item, depth + 1));
+  }
+  if (typeof value !== 'object') return [];
+
+  const candidates = [];
+  const directName = value.name || value.full_name || value.card_name || value.info?.name || value.card?.name || value.data?.name;
+  const directNumber = value.card_number || value.number || value.collector_number || value.info?.card_number || value.card?.number || value.data?.number;
+  if (directName || directNumber) candidates.push(value);
+
+  [
+    '_objects',
+    'objects',
+    'cards',
+    '_matches',
+    'matches',
+    'results',
+    '_identification',
+    'identification',
+    'best_match',
+    'bestMatch',
+    'card',
+    'data',
+    'info',
+  ].forEach((key) => {
+    if (value[key]) candidates.push(...flattenXimilarTcgCandidates(value[key], depth + 1));
   });
+
+  return candidates;
+}
+
+function summarizeXimilarTcgPayload(data) {
+  const records = Array.isArray(data?.records) ? data.records : [];
+  const firstRecord = records[0] ?? null;
+  const candidates = flattenXimilarTcgCandidates(data).slice(0, 5);
+  return {
+    topLevelKeys: data && typeof data === 'object' ? Object.keys(data).slice(0, 20) : [],
+    recordCount: records.length,
+    firstRecordKeys: firstRecord && typeof firstRecord === 'object' ? Object.keys(firstRecord).slice(0, 25) : [],
+    candidateCount: flattenXimilarTcgCandidates(data).length,
+    candidates: candidates.map((candidate) => ({
+      keys: Object.keys(candidate).slice(0, 18),
+      name: candidate?.name ?? candidate?.full_name ?? candidate?.card_name ?? candidate?.info?.name ?? candidate?.card?.name ?? candidate?.data?.name ?? null,
+      number: candidate?.card_number ?? candidate?.number ?? candidate?.collector_number ?? candidate?.info?.card_number ?? candidate?.card?.number ?? candidate?.data?.number ?? null,
+      set: candidate?.set ?? candidate?.set_name ?? candidate?.setName ?? candidate?.info?.set ?? candidate?.card?.set ?? candidate?.data?.set ?? null,
+      score: candidate?._score ?? candidate?.score ?? null,
+      nestedKeys: {
+        info: candidate?.info && typeof candidate.info === 'object' ? Object.keys(candidate.info).slice(0, 18) : [],
+        card: candidate?.card && typeof candidate.card === 'object' ? Object.keys(candidate.card).slice(0, 18) : [],
+        data: candidate?.data && typeof candidate.data === 'object' ? Object.keys(candidate.data).slice(0, 18) : [],
+      },
+    })),
+  };
+}
+
+function pickXimilarTcgCard(data) {
+  const cards = flattenXimilarTcgCandidates(data);
   return cards[0] ? normalizeXimilarTcgCard(cards[0]) : null;
 }
 
@@ -2329,6 +2386,7 @@ async function scanTcgWithXimilarBase64(base64Image, options = {}) {
     } : null,
     error: ximilarRes.ok ? null : getApiErrorMessage(data),
   });
+  console.log('[ximilar-tcg] payload-shape', summarizeXimilarTcgPayload(data));
 
   return {
     ok: ximilarRes.ok,
