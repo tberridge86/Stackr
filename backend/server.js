@@ -71,6 +71,128 @@ function getApiErrorMessage(payload) {
   }
 }
 
+function stripBase64ImagePrefix(value) {
+  return String(value || '').replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
+}
+
+function colorDistance(a, b) {
+  const dr = a[0] - b[0];
+  const dg = a[1] - b[1];
+  const db = a[2] - b[2];
+  return Math.sqrt((dr * dr) + (dg * dg) + (db * db));
+}
+
+function averagePatchColor(data, info, startX, startY, size) {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let count = 0;
+  const endX = Math.min(info.width, startX + size);
+  const endY = Math.min(info.height, startY + size);
+
+  for (let y = Math.max(0, startY); y < endY; y += 1) {
+    for (let x = Math.max(0, startX); x < endX; x += 1) {
+      const idx = ((y * info.width) + x) * info.channels;
+      r += data[idx];
+      g += data[idx + 1];
+      b += data[idx + 2];
+      count += 1;
+    }
+  }
+
+  return count ? [r / count, g / count, b / count] : [0, 0, 0];
+}
+
+function detectForegroundBounds(data, info) {
+  const { width, height, channels } = info;
+  const patch = Math.max(10, Math.floor(Math.min(width, height) * 0.045));
+  const backgrounds = [
+    averagePatchColor(data, info, 0, 0, patch),
+    averagePatchColor(data, info, width - patch, 0, patch),
+    averagePatchColor(data, info, 0, height - patch, patch),
+    averagePatchColor(data, info, width - patch, height - patch, patch),
+  ];
+
+  const rowCounts = new Array(height).fill(0);
+  const colCounts = new Array(width).fill(0);
+  const threshold = 38;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const idx = ((y * width) + x) * channels;
+      const color = [data[idx], data[idx + 1], data[idx + 2]];
+      const minBackgroundDistance = Math.min(...backgrounds.map((bg) => colorDistance(color, bg)));
+      if (minBackgroundDistance > threshold) {
+        rowCounts[y] += 1;
+        colCounts[x] += 1;
+      }
+    }
+  }
+
+  const rowThreshold = Math.max(8, width * 0.08);
+  const colThreshold = Math.max(8, height * 0.08);
+  let top = rowCounts.findIndex((count) => count > rowThreshold);
+  let bottom = rowCounts.length - 1 - [...rowCounts].reverse().findIndex((count) => count > rowThreshold);
+  let left = colCounts.findIndex((count) => count > colThreshold);
+  let right = colCounts.length - 1 - [...colCounts].reverse().findIndex((count) => count > colThreshold);
+
+  if (top < 0 || left < 0 || bottom < top || right < left) return null;
+
+  const detectedWidth = right - left + 1;
+  const detectedHeight = bottom - top + 1;
+  const areaRatio = (detectedWidth * detectedHeight) / (width * height);
+  if (areaRatio < 0.35 || areaRatio > 0.98) return null;
+
+  const padX = Math.round(detectedWidth * 0.025);
+  const padY = Math.round(detectedHeight * 0.025);
+  left = Math.max(0, left - padX);
+  top = Math.max(0, top - padY);
+  right = Math.min(width - 1, right + padX);
+  bottom = Math.min(height - 1, bottom + padY);
+
+  return {
+    left,
+    top,
+    width: right - left + 1,
+    height: bottom - top + 1,
+    areaRatio,
+  };
+}
+
+async function preprocessGradeImage(base64Image) {
+  const inputBuffer = Buffer.from(stripBase64ImagePrefix(base64Image), 'base64');
+  const prepared = sharp(inputBuffer)
+    .rotate()
+    .resize({ width: 1400, withoutEnlargement: true });
+  const { data, info } = await prepared
+    .clone()
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const bounds = detectForegroundBounds(data, info);
+
+  const pipeline = bounds
+    ? prepared.clone().extract({
+      left: bounds.left,
+      top: bounds.top,
+      width: bounds.width,
+      height: bounds.height,
+    })
+    : prepared.clone();
+  const outputBuffer = await pipeline
+    .jpeg({ quality: 92, mozjpeg: true })
+    .toBuffer();
+
+  return {
+    base64: outputBuffer.toString('base64'),
+    debug: {
+      detected: Boolean(bounds),
+      bounds,
+      source: { width: info.width, height: info.height },
+    },
+  };
+}
+
 function getPokeWalletHeaders() {
   if (!POKEWALLET_API_KEY) {
     throw new Error('Missing POKEWALLET_API_KEY');
@@ -2108,6 +2230,9 @@ app.post('/api/grade/ximilar', async (req, res) => {
     if (submittedImages.length > 2) {
       console.log(`Ximilar grade request received ${submittedImages.length} images; sending first 2 only.`);
     }
+    const preprocessedImages = await Promise.all(
+      images.map((image) => preprocessGradeImage(image.base64))
+    );
 
     const ximilarRes = await fetch('https://api.ximilar.com/card-grader/v2/grade', {
       method: 'POST',
@@ -2116,8 +2241,8 @@ app.post('/api/grade/ximilar', async (req, res) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        records: images.map((image) => ({
-          _base64: image.base64,
+        records: images.map((image, index) => ({
+          _base64: preprocessedImages[index].base64,
           ...(image.side === 'Front' || image.side === 'Back' ? { Side: image.side } : {}),
         })),
       }),
@@ -2131,6 +2256,15 @@ app.post('/api/grade/ximilar', async (req, res) => {
         detail: data,
       });
     }
+
+    if (Array.isArray(data?.records)) {
+      data.records = data.records.map((record, index) => ({
+        ...record,
+        _pocketvault_preprocessed_base64: preprocessedImages[index]?.base64 ?? null,
+        _pocketvault_preprocess: preprocessedImages[index]?.debug ?? null,
+      }));
+    }
+    data.pocketvaultPreprocess = preprocessedImages.map((image) => image.debug);
 
     return res.json(data);
   } catch (error) {

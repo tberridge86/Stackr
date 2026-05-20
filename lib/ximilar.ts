@@ -22,6 +22,8 @@ export type XimilarGradeResponse = {
         bottom?: number;
       };
     };
+    _pocketvault_preprocessed_base64?: string | null;
+    _pocketvault_preprocess?: unknown;
     tags?: unknown;
   }>;
 };
