@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
+import FormData from 'form-data';
 import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
 import Jimp from 'jimp';
@@ -35,6 +36,7 @@ const SERPAPI_ENGINE = process.env.SERPAPI_ENGINE || 'ebay';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
 const POKEMON_PRICE_TRACKER_API_KEY = process.env.POKEMON_PRICE_TRACKER_API_KEY;
+const CARDMATRIX_API_KEY = process.env.CARDMATRIX_API_KEY;
 const POKEWALLET_API_KEY = process.env.POKEWALLET_API_KEY;
 const POKEWALLET_API_BASE_URL = process.env.POKEWALLET_API_BASE_URL || 'https://api.pokewallet.io';
 const PORT = process.env.PORT || 3001;
@@ -190,6 +192,81 @@ async function preprocessGradeImage(base64Image) {
       bounds,
       source: { width: info.width, height: info.height },
     },
+  };
+}
+
+async function analyzeEdgeWhitening(base64Image) {
+  const image = sharp(Buffer.from(stripBase64ImagePrefix(base64Image), 'base64'))
+    .rotate()
+    .resize({ width: 1000, withoutEnlargement: true })
+    .removeAlpha();
+  const { data, info } = await image.raw().toBuffer({ resolveWithObject: true });
+  const { width, height, channels } = info;
+  const band = Math.max(8, Math.round(Math.min(width, height) * 0.035));
+  const inset = Math.max(6, Math.round(Math.min(width, height) * 0.02));
+
+  const sampleRegion = (name, x1, y1, x2, y2) => {
+    let total = 0;
+    let white = 0;
+    let bright = 0;
+    let pale = 0;
+    let maxRun = 0;
+
+    for (let y = y1; y < y2; y += 1) {
+      let rowRun = 0;
+      for (let x = x1; x < x2; x += 1) {
+        const idx = ((y * width) + x) * channels;
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const brightness = (r + g + b) / 3;
+        const saturation = max === 0 ? 0 : (max - min) / max;
+        const isBright = brightness > 188;
+        const isPale = brightness > 152 && saturation < 0.22;
+        const isWhite = isBright && saturation < 0.18;
+        total += 1;
+        if (isBright) bright += 1;
+        if (isPale) pale += 1;
+        if (isWhite) {
+          white += 1;
+          rowRun += 1;
+          maxRun = Math.max(maxRun, rowRun);
+        } else {
+          rowRun = 0;
+        }
+      }
+    }
+
+    const whiteRatio = total ? white / total : 0;
+    const paleRatio = total ? pale / total : 0;
+    const brightRatio = total ? bright / total : 0;
+    const score = Math.min(1, (whiteRatio * 1.8) + (paleRatio * 0.8) + (maxRun / Math.max(1, x2 - x1)) * 0.35);
+    return {
+      name,
+      whiteRatio: Number(whiteRatio.toFixed(4)),
+      paleRatio: Number(paleRatio.toFixed(4)),
+      brightRatio: Number(brightRatio.toFixed(4)),
+      maxWhiteRunRatio: Number((maxRun / Math.max(1, x2 - x1)).toFixed(4)),
+      score: Number(score.toFixed(4)),
+      severity: score > 0.32 ? 'high' : score > 0.18 ? 'medium' : score > 0.09 ? 'low' : 'none',
+    };
+  };
+
+  const edges = [
+    sampleRegion('top', inset, inset, width - inset, inset + band),
+    sampleRegion('bottom', inset, height - inset - band, width - inset, height - inset),
+    sampleRegion('left', inset, inset, inset + band, height - inset),
+    sampleRegion('right', width - inset - band, inset, width - inset, height - inset),
+  ];
+  const overallScore = edges.reduce((max, edge) => Math.max(max, edge.score), 0);
+  return {
+    edges,
+    overallScore: Number(overallScore.toFixed(4)),
+    verdict: overallScore > 0.32 ? 'Likely whitening / edge wear' : overallScore > 0.18 ? 'Possible whitening' : overallScore > 0.09 ? 'Minor whitening signal' : 'No obvious whitening signal',
+    confidence: 'experimental',
+    imageSize: { width, height },
   };
 }
 
@@ -2180,6 +2257,64 @@ async function scanWithXimilar(imageUrl) {
   };
 }
 
+function normalizeXimilarTcgCard(card) {
+  const rawNumber = card?.card_number ?? card?.number ?? card?.collector_number ?? card?.info?.card_number;
+  const fullNumber = String(rawNumber ?? '').trim();
+  const [number, total] = fullNumber.includes('/') ? fullNumber.split('/') : [fullNumber, null];
+  return {
+    provider: 'ximilar',
+    name: card?.name ?? card?.full_name ?? card?.info?.name ?? null,
+    setName: card?.set ?? card?.set_name ?? card?.info?.set ?? null,
+    setCode: card?.set_code ?? card?.setCode ?? card?.info?.set_code ?? null,
+    number: number ? number.replace(/^0+/, '') : null,
+    printedTotal: total ? Number(String(total).replace(/\D/g, '')) || null : null,
+    rarity: card?.rarity ?? card?.info?.rarity ?? null,
+    confidence: typeof card?._score === 'number' ? card._score : typeof card?.score === 'number' ? card.score : null,
+    imageUrl: card?._img_url ?? card?.image_url ?? null,
+    raw: card,
+  };
+}
+
+function pickXimilarTcgCard(data) {
+  const records = Array.isArray(data?.records) ? data.records : [];
+  const cards = records.flatMap((record) => {
+    if (Array.isArray(record?._objects)) return record._objects;
+    if (Array.isArray(record?.cards)) return record.cards;
+    if (Array.isArray(record?._matches)) return record._matches;
+    if (record?._identification) return [record._identification];
+    if (record?.name || record?.full_name) return [record];
+    return [];
+  });
+  return cards[0] ? normalizeXimilarTcgCard(cards[0]) : null;
+}
+
+async function scanTcgWithXimilarBase64(base64Image, options = {}) {
+  if (!XIMILAR_API_TOKEN) throw new Error('Missing XIMILAR_API_TOKEN');
+
+  const ximilarRes = await fetch('https://api.ximilar.com/collectibles/v2/tcg_id', {
+    method: 'POST',
+    headers: {
+      Authorization: `Token ${XIMILAR_API_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      records: [{ _base64: stripBase64ImagePrefix(base64Image) }],
+      rotate: true,
+      pricing: false,
+      price_stats: false,
+      magic_ai: Boolean(options.magicAi),
+    }),
+  });
+
+  const data = await ximilarRes.json().catch(() => null);
+  return {
+    ok: ximilarRes.ok,
+    status: ximilarRes.status,
+    data,
+    match: pickXimilarTcgCard(data),
+  };
+}
+
 app.post('/scan', async (req, res) => {
   try {
     const { imageUrl } = req.body;
@@ -2198,15 +2333,21 @@ app.post('/scan', async (req, res) => {
 
 app.post('/api/scan/tcg', async (req, res) => {
   try {
-    const { imageUrl } = req.body;
-    if (!imageUrl) return res.status(400).json({ error: 'Missing imageUrl' });
+    const { imageUrl, base64Image, magicAi } = req.body;
+    if (!imageUrl && !base64Image) return res.status(400).json({ error: 'Missing imageUrl or base64Image' });
 
-    const result = await scanWithXimilar(imageUrl);
+    const result = base64Image
+      ? await scanTcgWithXimilarBase64(base64Image, { magicAi })
+      : await scanWithXimilar(imageUrl);
     if (!result.ok) {
       return res.status(result.status).json({ error: 'Ximilar request failed', detail: result.data });
     }
 
-    return res.json(result.data);
+    return res.json({
+      provider: 'ximilar',
+      match: result.match ?? null,
+      raw: result.data,
+    });
   } catch (error) {
     return res.status(500).json({ error: 'Failed to scan card', detail: getErrorMessage(error) });
   }
@@ -2232,6 +2373,11 @@ app.post('/api/grade/ximilar', async (req, res) => {
     }
     const preprocessedImages = await Promise.all(
       images.map((image) => preprocessGradeImage(image.base64))
+    );
+    const whiteningAnalyses = await Promise.all(
+      preprocessedImages.map((image) => analyzeEdgeWhitening(image.base64).catch((error) => ({
+        error: getErrorMessage(error),
+      })))
     );
 
     const ximilarRes = await fetch('https://api.ximilar.com/card-grader/v2/grade', {
@@ -2262,13 +2408,100 @@ app.post('/api/grade/ximilar', async (req, res) => {
         ...record,
         _pocketvault_preprocessed_base64: preprocessedImages[index]?.base64 ?? null,
         _pocketvault_preprocess: preprocessedImages[index]?.debug ?? null,
+        _pocketvault_edge_whitening: whiteningAnalyses[index] ?? null,
       }));
     }
     data.pocketvaultPreprocess = preprocessedImages.map((image) => image.debug);
+    data.pocketvaultEdgeWhitening = whiteningAnalyses;
 
     return res.json(data);
   } catch (error) {
     return res.status(500).json({ error: 'Ximilar grading failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.post('/api/grade/cardmatrix', async (req, res) => {
+  try {
+    if (!CARDMATRIX_API_KEY) return res.status(500).json({ error: 'Missing CARDMATRIX_API_KEY' });
+
+    const submittedImages = Array.isArray(req.body.images)
+      ? req.body.images
+      : Array.isArray(req.body.base64Images)
+        ? req.body.base64Images.map((image, index) => ({ base64: image, side: index === 0 ? 'Front' : 'Back' }))
+        : [req.body.base64Image].filter(Boolean).map((image) => ({ base64: image, side: 'Front' }));
+
+    if (!submittedImages.length || submittedImages.some((image) => typeof image?.base64 !== 'string')) {
+      return res.status(400).json({ error: 'Missing images' });
+    }
+
+    const images = submittedImages.slice(0, 2);
+    const preprocessedImages = await Promise.all(
+      images.map((image) => preprocessGradeImage(image.base64))
+    );
+
+    const form = new FormData();
+    preprocessedImages.forEach((image, index) => {
+      const side = images[index]?.side === 'Back' ? 'back' : 'front';
+      form.append(side, Buffer.from(image.base64, 'base64'), {
+        filename: `${side}.jpg`,
+        contentType: 'image/jpeg',
+      });
+    });
+    if (req.body.card_id || req.body.cardId) {
+      form.append('card_id', String(req.body.card_id ?? req.body.cardId));
+    }
+    form.append('photo_gate_bypass', String(req.body.photo_gate_bypass ?? req.body.photoGateBypass ?? 'false'));
+
+    const cardMatrixRes = await fetch('https://api.cardmatrix.io/api/analyze-quality', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${CARDMATRIX_API_KEY}`,
+        ...form.getHeaders(),
+      },
+      body: form,
+    });
+
+    const raw = await cardMatrixRes.json().catch(() => null);
+    if (!cardMatrixRes.ok) {
+      return res.status(cardMatrixRes.status).json({
+        error: 'CardMatrix grading failed',
+        message: getApiErrorMessage(raw),
+        detail: raw,
+      });
+    }
+
+    const scores = raw?.scores ?? {};
+    return res.json({
+      provider: 'cardmatrix',
+      records: [{
+        grades: {
+          centering: scores.centering_front ?? scores.centering ?? null,
+          corners: scores.corners ?? null,
+          edges: scores.edges ?? null,
+          surface: scores.surface ?? null,
+          final: scores.overall ?? null,
+          condition: raw?.condition ?? raw?.grade ?? null,
+        },
+        card: {
+          centering: {
+            grade: scores.centering_front ?? scores.centering ?? null,
+          },
+        },
+        _pocketvault_preprocessed_base64: preprocessedImages[0]?.base64 ?? null,
+        _pocketvault_preprocess: preprocessedImages[0]?.debug ?? null,
+        _pocketvault_cardmatrix_raw: raw,
+        _tags: {
+          Confidence: [{
+            name: raw?.verification?.confidence_badge ?? 'Unknown',
+            prob: typeof raw?.confidence === 'number' ? raw.confidence : null,
+          }],
+        },
+      }],
+      raw,
+      pocketvaultPreprocess: preprocessedImages.map((image) => image.debug),
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'CardMatrix grading failed', detail: getErrorMessage(error) });
   }
 });
 

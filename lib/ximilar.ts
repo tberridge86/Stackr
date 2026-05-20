@@ -24,6 +24,7 @@ export type XimilarGradeResponse = {
     };
     _pocketvault_preprocessed_base64?: string | null;
     _pocketvault_preprocess?: unknown;
+    _pocketvault_edge_whitening?: unknown;
     tags?: unknown;
   }>;
 };
@@ -85,6 +86,37 @@ export async function gradeCardWithXimilar(
   if (!res.ok) {
     const detail = data?.message ?? data?.detail ?? data?.error ?? `HTTP ${res.status}`;
     throw new Error(`Ximilar grading failed: ${formatApiErrorDetail(detail)}`);
+  }
+
+  return data ?? {};
+}
+
+export async function gradeCardWithCardMatrix(
+  imageBase64: string | string[] | XimilarGradeImage[]
+): Promise<XimilarGradeResponse> {
+  if (!PRICE_API_URL) {
+    throw new Error('Price API URL not configured');
+  }
+
+  const records = Array.isArray(imageBase64)
+    ? imageBase64.map((entry) => typeof entry === 'string' ? { base64: entry } : entry)
+    : [{ base64: imageBase64 }];
+  const base64Images = records.map((record) => record.base64);
+  const res = await fetch(`${PRICE_API_URL}/api/grade/cardmatrix`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      images: records,
+      base64Images,
+    }),
+  });
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail = data?.message ?? data?.detail ?? data?.error ?? `HTTP ${res.status}`;
+    throw new Error(`CardMatrix grading failed: ${formatApiErrorDetail(detail)}`);
   }
 
   return data ?? {};

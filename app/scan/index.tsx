@@ -1078,6 +1078,35 @@ export default function ScanScreen() {
       }
     };
 
+    const identifyWithXimilarTcg = async (base64Image: string, magicAi = false) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), magicAi ? 7500 : 5500);
+      try {
+        const response = await fetch(`${PRICE_API_URL}/api/scan/tcg`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64Image, magicAi }),
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        console.log('Ximilar TCG scan result:', {
+          status: response.status,
+          magicAi,
+          name: data?.match?.name,
+          set: data?.match?.setName,
+          number: data?.match?.number,
+          confidence: data?.match?.confidence,
+          error: data?.error,
+        });
+        return response.ok ? data?.match ?? null : null;
+      } catch (error) {
+        console.log('Ximilar TCG scan failed:', error instanceof Error ? error.message : String(error));
+        return null;
+      } finally {
+        clearTimeout(timeout);
+      }
+    };
+
     const identifyWithRareCandyStyle = async (
       base64Image?: string | null,
       setId?: string | null,
@@ -1457,6 +1486,8 @@ export default function ScanScreen() {
       const searchParams = new URLSearchParams({ name: parsed.name });
       if (numberClean) searchParams.append('number', numberClean);
       if (setTotalClean) searchParams.append('setTotal', setTotalClean);
+      if (!setId && parsed.setName) searchParams.append('setName', String(parsed.setName));
+      if (!setId && parsed.setCode) searchParams.append('setId', String(parsed.setCode));
       if (setId) {
         searchParams.append('setId', setId);
         searchParams.append('strictSet', '1');
@@ -1504,6 +1535,7 @@ export default function ScanScreen() {
       const elapsedScanMs = () => Date.now() - scanStartedAt;
       const hasFastScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_SOFT_BUDGET_MS;
       const hasHardScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_HARD_BUDGET_MS;
+      const expectedSetId = selectedBinder?.source_set_id ?? null;
       let printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
         fastRegions: PRIMARY_NUMBER_OCR_REGIONS,
         includeFallbackRegions: false,
@@ -1527,6 +1559,17 @@ export default function ScanScreen() {
         return cachedTotalHintText;
       };
 
+      let match: ScannedCard | null = null;
+
+      if (isMarketMode && !isAuto && !expectedSetId) {
+        const ximilarParsed = await identifyWithXimilarTcg(bestBase64, false);
+        match = await lookupParsedCard(ximilarParsed, null, null);
+        if (!match) {
+          const ximilarMagicParsed = await identifyWithXimilarTcg(bestBase64, true);
+          match = await lookupParsedCard(ximilarMagicParsed, null, null);
+        }
+      }
+
       // Duplicate frame check
       const sig = `${base64.slice(0, 48)}:${base64.length}`;
       if (isAuto && sig === lastFrameSigRef.current && now - lastFrameTsRef.current < 2200) {
@@ -1540,7 +1583,6 @@ export default function ScanScreen() {
       lastFrameSigRef.current = sig;
       lastFrameTsRef.current = now;
 
-      const expectedSetId = selectedBinder?.source_set_id ?? null;
       const useLocalAi = SCAN_PROVIDER === 'local-ai' || SCAN_PROVIDER === 'hybrid';
       const useGibl = SCAN_PROVIDER === 'gibl-only' || SCAN_PROVIDER === 'hybrid';
       const useLegacy = SCAN_PROVIDER === 'legacy' || SCAN_PROVIDER === 'hybrid';
@@ -1573,7 +1615,9 @@ export default function ScanScreen() {
       }
 
       // Step 2: official binders can resolve instantly from the printed card number.
-      let match: ScannedCard | null = await lookupCardBySetNumber(expectedSetId, printedNumber);
+      if (!match) {
+        match = await lookupCardBySetNumber(expectedSetId, printedNumber);
+      }
 
       // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
       if (!match && useLocalAi && printedNumber) {
