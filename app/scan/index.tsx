@@ -776,6 +776,28 @@ export default function ScanScreen() {
     }, delay);
   }, [stopScanningMessages]);
 
+  const closeScanner = useCallback(() => {
+    setAutoScanActive(false);
+    setTorch(false);
+    setProcessingOcr(false);
+    setScanning(false);
+    setPendingConfirmation(null);
+    scanCooldownRef.current = false;
+    if (autoScanIntervalRef.current) {
+      clearInterval(autoScanIntervalRef.current);
+      autoScanIntervalRef.current = null;
+    }
+    if (scanningMessageRef.current) {
+      clearInterval(scanningMessageRef.current);
+      scanningMessageRef.current = null;
+    }
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  }, []);
+
   // ===============================
   // TOGGLE AUTO SCAN
   // ===============================
@@ -2546,7 +2568,7 @@ export default function ScanScreen() {
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
           <TouchableOpacity
-            onPress={() => { setAutoScanActive(false); setTorch(false); setStep('select_binder'); }}
+            onPress={closeScanner}
             style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
           >
             <Text style={{ color: '#FFFFFF', fontSize: 22, lineHeight: 24 }}>✕</Text>

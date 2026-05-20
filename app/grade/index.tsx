@@ -1,26 +1,26 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
-  View,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
   ActivityIndicator,
+  Image,
   ScrollView,
+  StyleSheet,
+  TouchableOpacity,
   useWindowDimensions,
+  View,
 } from 'react-native';
-import { Text } from '../../components/Text';
-import { Camera, useCameraPermission } from 'react-native-vision-camera';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router, Stack } from 'expo-router';
-import { useTheme } from '../../components/theme-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useScanCamera } from '../../lib/useScanCamera';
+import { router, Stack } from 'expo-router';
+import { Camera, useCameraPermission } from 'react-native-vision-camera';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text } from '../../components/Text';
+import { useTheme } from '../../components/theme-context';
 import { gradeCardWithXimilar } from '../../lib/ximilar';
+import { useScanCamera } from '../../lib/useScanCamera';
 
 const CAPTURE_STEPS = [
-  { id: 'front', label: 'Front', next: 'Front done. Now capture the back.', gradeSide: 'Front' },
-  { id: 'back', label: 'Back', next: 'Back done. Optional corner photos can help you review flaws.', gradeSide: 'Back' },
+  { id: 'front', label: 'Front', next: 'Front done. Now capture the back.' },
+  { id: 'back', label: 'Back', next: 'Back done. Optional corner photos can help you review flaws.' },
   { id: 'corner_tl', label: 'Top left', next: 'Top-left corner done.' },
   { id: 'corner_tr', label: 'Top right', next: 'Top-right corner done.' },
   { id: 'corner_bl', label: 'Bottom left', next: 'Bottom-left corner done.' },
@@ -54,13 +54,30 @@ function getCornerTargetStyle(step: CaptureStepId) {
   return null;
 }
 
+function getCenteringValue(centering: Record<string, unknown>, key: 'left/right' | 'top/bottom') {
+  const snakeKey = key === 'left/right' ? 'left_right' : 'top_bottom';
+  const direct = centering[key];
+  const snake = centering[snakeKey];
+  return typeof direct === 'string'
+    ? direct
+    : typeof snake === 'string'
+      ? snake
+      : '--';
+}
+
+function formatGradeValue(value: unknown) {
+  return typeof value === 'number' ? value.toFixed(1) : '--';
+}
+
 export default function CardGraderScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const bottomControlsHeight = 204;
+  const headerHeight = insets.top + 74;
   const frameWidth = Math.min(screenWidth - 78, screenHeight < 760 ? 252 : 292);
   const frameHeight = Math.round(frameWidth / 0.716);
-  const frameCenterY = (screenHeight - insets.top - insets.bottom - 178) / 2 + insets.top;
+  const frameCenterY = headerHeight + ((screenHeight - headerHeight - insets.bottom - bottomControlsHeight) / 2) - 32;
   const { camera, device, torch, toggleTorch, takePhoto } = useScanCamera(false, false, {
     cropToCard: true,
     cropFrame: {
@@ -69,6 +86,7 @@ export default function CardGraderScreen() {
       frameWidth,
       frameHeight,
       frameCenterY,
+      marginRatio: 0.08,
     },
     resizeWidth: 2000,
     compress: 0.86,
@@ -80,12 +98,12 @@ export default function CardGraderScreen() {
   const [grading, setGrading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
-  const photosByStage = useMemo(() => {
-    return photos.reduce<Partial<Record<CaptureStepId, GradePhoto>>>((acc, photo) => {
+  const photosByStage = useMemo(() => (
+    photos.reduce<Partial<Record<CaptureStepId, GradePhoto>>>((acc, photo) => {
       acc[photo.stage] = photo;
       return acc;
-    }, {});
-  }, [photos]);
+    }, {})
+  ), [photos]);
 
   const frontPhoto = photosByStage.front;
   const backPhoto = photosByStage.back;
@@ -98,19 +116,28 @@ export default function CardGraderScreen() {
     if (nextStep) setCurrentStep(nextStep.id);
   }, [photosByStage]);
 
+  const closeGrader = useCallback(() => {
+    setGrading(false);
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  }, []);
+
   const handleCapture = useCallback(async () => {
     const photo = await takePhoto();
-    if (photo?.base64) {
-      const step = currentStep;
-      setPhotos(prev => [
-        ...prev.filter(existing => existing.stage !== step),
-        { uri: photo.uri, base64: photo.base64!, stage: step },
-      ]);
-      const stepInfo = CAPTURE_STEPS.find(candidate => candidate.id === step);
-      setCaptureNotice(stepInfo?.next ?? 'Captured.');
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      moveToNextStep(step);
-    }
+    if (!photo?.base64) return;
+
+    const step = currentStep;
+    setPhotos((prev) => [
+      ...prev.filter((existing) => existing.stage !== step),
+      { uri: photo.uri, base64: photo.base64, stage: step },
+    ]);
+    const stepInfo = CAPTURE_STEPS.find((candidate) => candidate.id === step);
+    setCaptureNotice(stepInfo?.next ?? 'Captured.');
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    moveToNextStep(step);
   }, [currentStep, moveToNextStep, takePhoto]);
 
   const handleGrade = async () => {
@@ -119,13 +146,13 @@ export default function CardGraderScreen() {
     setGrading(true);
     try {
       const gradeImages = [
-        frontPhoto ? { base64: frontPhoto.base64, side: 'Front' as const } : null,
+        { base64: frontPhoto.base64, side: 'Front' as const },
         backPhoto ? { base64: backPhoto.base64, side: 'Back' as const } : null,
       ].filter((image): image is { base64: string; side: 'Front' | 'Back' } => Boolean(image));
       const data = await gradeCardWithXimilar(gradeImages);
       setResult(data.records?.[0] || null);
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       alert('Grading failed');
     } finally {
       setGrading(false);
@@ -135,55 +162,110 @@ export default function CardGraderScreen() {
   if (result) {
     const record = result;
     const grades = record.grades || {};
-    const centering = record.card?.centering || {};
+    const cardAnalysis = Array.isArray(record.card) ? record.card[0] : record.card;
+    const centering = cardAnalysis?.centering || {};
+    const exactImageUrl = record._exact_url_card || record._clean_url_card;
+    const fullImageUrl = record._full_url_card;
+    const preprocessedImageUrl = record._pocketvault_preprocessed_base64
+      ? `data:image/jpeg;base64,${record._pocketvault_preprocessed_base64}`
+      : null;
 
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000', padding: 16 }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
         <Stack.Screen options={{ headerShown: false }} />
-        <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700', marginBottom: 16 }}>
-          AI Grade Result
-        </Text>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 28 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+            <TouchableOpacity
+              onPress={() => {
+                setResult(null);
+                setCurrentStep('front');
+                setCaptureNotice('Capture the front of the card');
+              }}
+              style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#111', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}
+            >
+              <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>AI Grade Result</Text>
+          </View>
 
-        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 20 }}>
-          {frontPhoto && <Image source={{ uri: frontPhoto.uri }} style={{ width: 140, height: 190, borderRadius: 8 }} />}
-          {record._clean_url_card && (
-            <Image source={{ uri: record._clean_url_card }} style={{ width: 140, height: 190, borderRadius: 8 }} />
+          <View style={{ backgroundColor: '#111', padding: 16, borderRadius: 12, marginBottom: 18 }}>
+            <Text style={{ color: '#888', fontSize: 12, fontWeight: '800', marginBottom: 4 }}>
+              AI estimate only - not official
+            </Text>
+            <Text style={{ color: '#fff', fontSize: 30, fontWeight: '900' }}>
+              {formatGradeValue(grades.final)}/10
+            </Text>
+            {typeof grades.condition === 'string' && (
+              <Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '900', marginTop: 4 }}>
+                {grades.condition}
+              </Text>
+            )}
+          </View>
+
+          {(exactImageUrl || fullImageUrl || frontPhoto || preprocessedImageUrl) && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', marginBottom: 10 }}>
+                Detection Check
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+                {frontPhoto && (
+                  <View>
+                    <Image source={{ uri: frontPhoto.uri }} style={{ width: 150, height: 210, borderRadius: 10, backgroundColor: '#111' }} resizeMode="contain" />
+                    <Text style={{ color: '#888', fontSize: 11, fontWeight: '800', marginTop: 6, textAlign: 'center' }}>Our crop</Text>
+                  </View>
+                )}
+                {preprocessedImageUrl && (
+                  <View>
+                    <Image source={{ uri: preprocessedImageUrl }} style={{ width: 150, height: 210, borderRadius: 10, backgroundColor: '#111' }} resizeMode="contain" />
+                    <Text style={{ color: '#888', fontSize: 11, fontWeight: '800', marginTop: 6, textAlign: 'center' }}>Sent to Ximilar</Text>
+                  </View>
+                )}
+                {exactImageUrl && (
+                  <View>
+                    <Image source={{ uri: exactImageUrl }} style={{ width: 150, height: 210, borderRadius: 10, backgroundColor: '#111' }} resizeMode="contain" />
+                    <Text style={{ color: '#888', fontSize: 11, fontWeight: '800', marginTop: 6, textAlign: 'center' }}>Centering overlay</Text>
+                  </View>
+                )}
+                {fullImageUrl && (
+                  <View>
+                    <Image source={{ uri: fullImageUrl }} style={{ width: 150, height: 210, borderRadius: 10, backgroundColor: '#111' }} resizeMode="contain" />
+                    <Text style={{ color: '#888', fontSize: 11, fontWeight: '800', marginTop: 6, textAlign: 'center' }}>Full detection</Text>
+                  </View>
+                )}
+              </ScrollView>
+              <Text style={{ color: '#888', fontSize: 12, lineHeight: 17, marginTop: 10 }}>
+                If the overlay is not lined up with the card borders, the centering grade should not be trusted.
+              </Text>
+            </View>
           )}
-        </View>
 
-        <View style={{ backgroundColor: '#111', padding: 16, borderRadius: 12, marginBottom: 20 }}>
-          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>
-            Estimated Grade: {grades.final ? grades.final.toFixed(1) : '--'}/10
-          </Text>
-          <Text style={{ color: '#888', fontSize: 12, marginTop: 4 }}>
-            AI estimate only — not official
-          </Text>
-        </View>
+          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', marginBottom: 10 }}>Centering</Text>
+          <View style={{ backgroundColor: '#111', padding: 14, borderRadius: 10, marginBottom: 18, gap: 6 }}>
+            <Text style={{ color: '#fff' }}>Left/Right: {getCenteringValue(centering, 'left/right')}</Text>
+            <Text style={{ color: '#fff' }}>Top/Bottom: {getCenteringValue(centering, 'top/bottom')}</Text>
+            <Text style={{ color: '#fff' }}>Grade: {formatGradeValue(grades.centering)}</Text>
+          </View>
 
-        <Text style={{ color: '#aaa', marginBottom: 6 }}>Centering</Text>
-        <Text style={{ color: '#fff', fontSize: 16, marginBottom: 16 }}>
-          Left/Right: {centering.left_right || '--'} • Top/Bottom: {centering.top_bottom || '--'}
-        </Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', marginBottom: 10 }}>Breakdown</Text>
+          <View style={{ backgroundColor: '#111', padding: 14, borderRadius: 10, gap: 8 }}>
+            <Text style={{ color: '#fff' }}>Corners: {formatGradeValue(grades.corners)}</Text>
+            <Text style={{ color: '#fff' }}>Edges: {formatGradeValue(grades.edges)}</Text>
+            <Text style={{ color: '#fff' }}>Surface: {formatGradeValue(grades.surface)}</Text>
+            <Text style={{ color: '#fff' }}>Centering: {formatGradeValue(grades.centering)}</Text>
+          </View>
 
-        <Text style={{ color: '#aaa', marginBottom: 6 }}>Breakdown</Text>
-        <View style={{ backgroundColor: '#111', padding: 14, borderRadius: 10, gap: 6 }}>
-          <Text style={{ color: '#fff' }}>Corners: {grades.corners ?? '--'}</Text>
-          <Text style={{ color: '#fff' }}>Edges: {grades.edges ?? '--'}</Text>
-          <Text style={{ color: '#fff' }}>Surface: {grades.surface ?? '--'}</Text>
-          <Text style={{ color: '#fff' }}>Centering: {grades.centering ?? '--'}</Text>
-        </View>
-
-        <TouchableOpacity
-          onPress={() => {
-            setResult(null);
-            setPhotos([]);
-            setCurrentStep('front');
-            setCaptureNotice('Capture the front of the card');
-          }}
-          style={{ backgroundColor: '#3b82f6', padding: 14, borderRadius: 10, marginTop: 24, alignItems: 'center' }}
-        >
-          <Text style={{ color: '#fff', fontWeight: '600' }}>Grade Another Card</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setResult(null);
+              setPhotos([]);
+              setCurrentStep('front');
+              setCaptureNotice('Capture the front of the card');
+            }}
+            style={{ backgroundColor: theme.colors.primary, padding: 14, borderRadius: 10, marginTop: 24, alignItems: 'center' }}
+          >
+            <Text style={{ color: '#fff', fontWeight: '900' }}>Grade Another Card</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -224,19 +306,16 @@ export default function CardGraderScreen() {
       />
 
       <SafeAreaView style={StyleSheet.absoluteFill}>
-        {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingTop: 10, paddingBottom: 8 }}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={closeGrader}
             style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
           >
-            <Text style={{ color: '#FFFFFF', fontSize: 22, lineHeight: 24 }}>×</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 22, lineHeight: 24 }}>x</Text>
           </TouchableOpacity>
 
           <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 8 }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>
-              AI Card Grader
-            </Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>AI Card Grader</Text>
             <Text numberOfLines={1} style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>
               {captureNotice}
             </Text>
@@ -250,8 +329,7 @@ export default function CardGraderScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Frame guide */}
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 178 }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 4, paddingBottom: bottomControlsHeight }}>
           <View style={{
             width: frameWidth,
             height: frameHeight,
@@ -302,38 +380,37 @@ export default function CardGraderScreen() {
           </View>
         </View>
 
-        {/* Bottom controls */}
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingBottom: insets.bottom + 14, gap: 8 }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ minHeight: 42, gap: 7, alignItems: 'center', paddingHorizontal: 16 }}>
             {CAPTURE_STEPS.map((step, index) => {
-                const photo = photosByStage[step.id];
-                const active = currentStep === step.id;
-                return (
-                  <TouchableOpacity
-                    key={step.id}
-                    onPress={() => setCurrentStep(step.id)}
-                    style={{ width: 64, height: 42, borderRadius: 8, overflow: 'hidden', borderWidth: 1, borderColor: active ? theme.colors.primary : 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    {photo ? (
-                      <>
-                        <Image source={{ uri: photo.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-                        <View style={{ position: 'absolute', top: 3, right: 3, width: 16, height: 16, borderRadius: 8, backgroundColor: '#10B981', alignItems: 'center', justifyContent: 'center' }}>
-                          <Ionicons name="checkmark" size={12} color="#FFFFFF" />
-                        </View>
-                      </>
-                    ) : (
-                      <Text style={{ color: active ? '#FFFFFF' : 'rgba(255,255,255,0.7)', fontSize: 9, fontWeight: '900', textAlign: 'center' }}>
-                        {index + 1}. {step.label}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
+              const photo = photosByStage[step.id];
+              const active = currentStep === step.id;
+              return (
+                <TouchableOpacity
+                  key={step.id}
+                  onPress={() => setCurrentStep(step.id)}
+                  style={{ width: 64, height: 42, borderRadius: 8, overflow: 'hidden', borderWidth: 1, borderColor: active ? theme.colors.primary : 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {photo ? (
+                    <>
+                      <Image source={{ uri: photo.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                      <View style={{ position: 'absolute', top: 3, right: 3, width: 16, height: 16, borderRadius: 8, backgroundColor: '#10B981', alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                      </View>
+                    </>
+                  ) : (
+                    <Text style={{ color: active ? '#FFFFFF' : 'rgba(255,255,255,0.7)', fontSize: 9, fontWeight: '900', textAlign: 'center' }}>
+                      {index + 1}. {step.label}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
 
           <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' }}>
             <Text style={{ color: 'rgba(255,255,255,0.82)', fontSize: 10, fontWeight: '800', textAlign: 'center' }}>
-              Good lighting · card flat · edges visible
+              Good lighting - card flat - edges visible
             </Text>
           </View>
 
