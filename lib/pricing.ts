@@ -1,3 +1,5 @@
+import { PRICE_API_URL } from './config';
+
 const TCGCSV_BASE_URL = 'https://tcgcsv.com';
 
 type TcgcsvGroup = {
@@ -393,11 +395,13 @@ export async function fetchTcgcsvUiProductPricesForSet(
     .filter((product) => product.variants.length > 0);
 }
 
-const POKEMON_PRICE_TRACKER_BASE = 'https://www.pokemonpricetracker.com';
-const POKEMON_PRICE_TRACKER_KEY = 'pokeprice_free_21f1047bddce9e70900ac05d04af0aac9474bb35da2fcc2f';
-
 type PptEbayGrade = {
   avg?: number;
+  average?: number;
+  averagePrice?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  count?: number;
   recent_sales?: number;
 };
 
@@ -405,36 +409,32 @@ type PptCard = {
   id?: string;
   name?: string;
   set?: string;
+  setName?: string;
   number?: string;
   prices?: { market?: number };
   ebay?: {
     psa8?: PptEbayGrade;
     psa9?: PptEbayGrade;
     psa10?: PptEbayGrade;
+    salesByGrade?: Record<string, PptEbayGrade>;
   };
 };
 
 export async function fetchPptCardWithPsaGrades(identifier: string, setName?: string): Promise<PptCard | null> {
-  let url = `${POKEMON_PRICE_TRACKER_BASE}/api/v2/cards?includeEbay=true`;
+  if (!PRICE_API_URL) return null;
 
+  const params = new URLSearchParams({ identifier });
   if (/^\d+$/.test(identifier)) {
-    url += `&tcgPlayerId=${encodeURIComponent(identifier)}`;
-  } else {
-    url += `&search=${encodeURIComponent(identifier)}`;
-    if (setName) url += `&set=${encodeURIComponent(setName)}`;
+    params.set('tcgPlayerId', identifier);
   }
+  if (setName) params.set('setName', setName);
 
-  console.log('[PPT Debug] Fetching:', url);
-
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${POKEMON_PRICE_TRACKER_KEY}` },
-  });
+  const res = await fetch(`${PRICE_API_URL}/api/pokemon-price-tracker/card?${params.toString()}`);
   if (!res.ok) {
     console.warn(`PPT PSA fetch failed: ${res.status}`);
     return null;
   }
   const json = await res.json();
-  const card = json?.data?.[0];
+  const card = json?.card ?? json?.data?.[0];
   return card ?? null;
 }
-

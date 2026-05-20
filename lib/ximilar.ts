@@ -1,13 +1,7 @@
-const XIMILAR_BASE = 'https://api.ximilar.com';
-const XIMILAR_TOKEN = process.env.EXPO_PUBLIC_XIMILAR_TOKEN || '';
+import { PRICE_API_URL } from './config';
 
-type XimilarRecord = {
-  _url?: string;
-  _base64?: string;
-};
-
-type XimilarGradeResponse = {
-  records: Array<{
+export type XimilarGradeResponse = {
+  records?: Array<{
     _id?: string;
     _clean_url_card?: string;
     _exact_url_card?: string;
@@ -28,32 +22,29 @@ type XimilarGradeResponse = {
         bottom?: number;
       };
     };
-    tags?: any;
+    tags?: unknown;
   }>;
 };
 
-export async function gradeCardWithXimilar(imageBase64: string): Promise<any> {
-  if (!XIMILAR_TOKEN) {
-    throw new Error('Ximilar token not configured');
+export async function gradeCardWithXimilar(imageBase64: string | string[]): Promise<XimilarGradeResponse> {
+  if (!PRICE_API_URL) {
+    throw new Error('Price API URL not configured');
   }
 
-  const records: XimilarRecord[] = [
-    { _base64: imageBase64 },
-  ];
-
-  const res = await fetch(`${XIMILAR_BASE}/card-grader/v2/grade`, {
+  const imageBase64s = Array.isArray(imageBase64) ? imageBase64 : [imageBase64];
+  const res = await fetch(`${PRICE_API_URL}/api/grade/ximilar`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Token ${XIMILAR_TOKEN}`,
     },
-    body: JSON.stringify({ records }),
+    body: JSON.stringify({ base64Images: imageBase64s }),
   });
 
+  const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Ximilar grading failed: ${res.status} ${text}`);
+    const detail = data?.detail || data?.error || `HTTP ${res.status}`;
+    throw new Error(`Ximilar grading failed: ${detail}`);
   }
 
-  return res.json();
+  return data ?? {};
 }
