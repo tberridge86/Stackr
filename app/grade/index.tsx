@@ -69,6 +69,42 @@ function formatGradeValue(value: unknown) {
   return typeof value === 'number' ? value.toFixed(1) : '--';
 }
 
+function normalizeGradeItems(items: unknown): { name: string; grade: number | null }[] {
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => {
+    const record = item as Record<string, unknown>;
+    return {
+      name: typeof record.name === 'string' ? record.name.replace(/_/g, ' ') : 'Unknown',
+      grade: typeof record.grade === 'number' ? record.grade : null,
+    };
+  });
+}
+
+function getTagSummary(tags: unknown, key: string) {
+  if (!tags || typeof tags !== 'object') return null;
+  const values = (tags as Record<string, unknown>)[key];
+  if (!Array.isArray(values) || !values.length) return null;
+  const first = values[0] as Record<string, unknown>;
+  const name = typeof first.name === 'string' ? first.name : null;
+  const prob = typeof first.prob === 'number' ? first.prob : null;
+  if (!name) return null;
+  return prob == null ? name : `${name} (${Math.round(prob * 100)}%)`;
+}
+
+function gradeColor(grade: number | null) {
+  if (grade == null) return '#888';
+  if (grade >= 8) return '#22C55E';
+  if (grade >= 6) return '#F59E0B';
+  return '#EF4444';
+}
+
+function whiteningColor(severity?: string) {
+  if (severity === 'high') return '#EF4444';
+  if (severity === 'medium') return '#F59E0B';
+  if (severity === 'low') return '#EAB308';
+  return '#22C55E';
+}
+
 export default function CardGraderScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
@@ -169,6 +205,22 @@ export default function CardGraderScreen() {
     const preprocessedImageUrl = record._pocketvault_preprocessed_base64
       ? `data:image/jpeg;base64,${record._pocketvault_preprocessed_base64}`
       : null;
+    const cardMatrixRaw = record._pocketvault_cardmatrix_raw;
+    const providerName = cardMatrixRaw ? 'CardMatrix' : 'AI';
+    const edgeItems = normalizeGradeItems(record.edges);
+    const cornerItems = normalizeGradeItems(record.corners);
+    const whitening = record._pocketvault_edge_whitening as any;
+    const whiteningEdges = Array.isArray(whitening?.edges) ? whitening.edges : [];
+    const whiteningSeverity = whiteningEdges.reduce((worst: string, edge: any) => {
+      const order: Record<string, number> = { none: 0, low: 1, medium: 2, high: 3 };
+      return (order[edge?.severity] ?? 0) > (order[worst] ?? 0) ? edge.severity : worst;
+    }, 'none');
+    const tags = record._tags || cardAnalysis?._tags;
+    const damagedTag = getTagSummary(tags, 'Damaged');
+    const cornerReferencePhotos = CAPTURE_STEPS
+      .filter((step) => step.id.startsWith('corner_'))
+      .map((step) => ({ label: step.label, photo: photosByStage[step.id] }))
+      .filter((item) => item.photo);
 
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
@@ -185,7 +237,7 @@ export default function CardGraderScreen() {
             >
               <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
             </TouchableOpacity>
-            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>AI Grade Result</Text>
+            <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>{providerName} Result</Text>
           </View>
 
           <View style={{ backgroundColor: '#111', padding: 16, borderRadius: 12, marginBottom: 18 }}>
@@ -198,6 +250,16 @@ export default function CardGraderScreen() {
             {typeof grades.condition === 'string' && (
               <Text style={{ color: theme.colors.primary, fontSize: 14, fontWeight: '900', marginTop: 4 }}>
                 {grades.condition}
+              </Text>
+            )}
+            {typeof cardMatrixRaw?.confidence === 'number' && (
+              <Text style={{ color: '#888', fontSize: 12, fontWeight: '800', marginTop: 8 }}>
+                Confidence: {Math.round(cardMatrixRaw.confidence * 100)}%
+              </Text>
+            )}
+            {typeof cardMatrixRaw?.verification?.confidence_reason === 'string' && (
+              <Text style={{ color: '#888', fontSize: 12, lineHeight: 17, marginTop: 4 }}>
+                {cardMatrixRaw.verification.confidence_reason}
               </Text>
             )}
           </View>
@@ -252,6 +314,78 @@ export default function CardGraderScreen() {
             <Text style={{ color: '#fff' }}>Edges: {formatGradeValue(grades.edges)}</Text>
             <Text style={{ color: '#fff' }}>Surface: {formatGradeValue(grades.surface)}</Text>
             <Text style={{ color: '#fff' }}>Centering: {formatGradeValue(grades.centering)}</Text>
+          </View>
+
+          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', marginTop: 20, marginBottom: 10 }}>
+            Whitening / Edge Check
+          </Text>
+          <View style={{ backgroundColor: '#111', padding: 14, borderRadius: 10, gap: 12 }}>
+            {whitening?.verdict && (
+              <View style={{ borderWidth: 1, borderColor: whiteningColor(whiteningSeverity), borderRadius: 12, padding: 10, backgroundColor: 'rgba(255,255,255,0.04)' }}>
+                <Text style={{ color: '#fff', fontWeight: '900' }}>PocketVault whitening check</Text>
+                <Text style={{ color: whiteningColor(whiteningSeverity), fontWeight: '900', marginTop: 4 }}>{whitening.verdict}</Text>
+                <Text style={{ color: '#888', fontSize: 11, marginTop: 4 }}>Experimental edge-pixel analysis. Use it as a warning flag, not a grade.</Text>
+              </View>
+            )}
+            {whiteningEdges.length > 0 && (
+              <View>
+                <Text style={{ color: '#888', fontSize: 12, fontWeight: '900', marginBottom: 8 }}>PocketVault edge whitening signal</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  {whiteningEdges.map((edge: any) => (
+                    <View key={edge.name} style={{ minWidth: 84, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: whiteningColor(edge.severity) }}>
+                      <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>{String(edge.name).toUpperCase()}</Text>
+                      <Text style={{ color: whiteningColor(edge.severity), fontSize: 12, fontWeight: '900', marginTop: 2 }}>{edge.severity}</Text>
+                      <Text style={{ color: '#888', fontSize: 10, marginTop: 2 }}>{Math.round((edge.score ?? 0) * 100)} signal</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+            {damagedTag && (
+              <Text style={{ color: '#fff', fontWeight: '800' }}>Damage tag: {damagedTag}</Text>
+            )}
+            <View>
+              <Text style={{ color: '#888', fontSize: 12, fontWeight: '900', marginBottom: 8 }}>Edges scored by Ximilar</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {edgeItems.length ? edgeItems.map((edge) => (
+                  <View key={edge.name} style={{ minWidth: 84, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: gradeColor(edge.grade) }}>
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>{edge.name}</Text>
+                    <Text style={{ color: gradeColor(edge.grade), fontSize: 16, fontWeight: '900', marginTop: 2 }}>{formatGradeValue(edge.grade)}</Text>
+                  </View>
+                )) : (
+                  <Text style={{ color: '#888' }}>No individual edge scores returned.</Text>
+                )}
+              </View>
+            </View>
+            <View>
+              <Text style={{ color: '#888', fontSize: 12, fontWeight: '900', marginBottom: 8 }}>Corners scored by Ximilar</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {cornerItems.length ? cornerItems.map((corner) => (
+                  <View key={corner.name} style={{ minWidth: 98, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: gradeColor(corner.grade) }}>
+                    <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>{corner.name}</Text>
+                    <Text style={{ color: gradeColor(corner.grade), fontSize: 16, fontWeight: '900', marginTop: 2 }}>{formatGradeValue(corner.grade)}</Text>
+                  </View>
+                )) : (
+                  <Text style={{ color: '#888' }}>No individual corner scores returned.</Text>
+                )}
+              </View>
+            </View>
+            {cornerReferencePhotos.length > 0 && (
+              <View>
+                <Text style={{ color: '#888', fontSize: 12, fontWeight: '900', marginBottom: 8 }}>Your corner reference photos</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+                  {cornerReferencePhotos.map((item) => (
+                    <View key={item.label}>
+                      <Image source={{ uri: item.photo!.uri }} style={{ width: 96, height: 96, borderRadius: 10, backgroundColor: '#000' }} resizeMode="cover" />
+                      <Text style={{ color: '#888', fontSize: 10, fontWeight: '800', marginTop: 5, textAlign: 'center' }}>{item.label}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            <Text style={{ color: '#888', fontSize: 12, lineHeight: 17 }}>
+              Ximilar exposes edge and corner scores, plus the annotated full detection image. It does not expose a separate whitening heatmap, so use this section to compare its scores against visible whitening.
+            </Text>
           </View>
 
           <TouchableOpacity
