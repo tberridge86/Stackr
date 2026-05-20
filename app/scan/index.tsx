@@ -8,6 +8,7 @@ import {
   Image,
   FlatList,
   Vibration,
+  useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -645,6 +646,7 @@ export default function ScanScreen() {
   const device = useCameraDevice('back');
   const camera = useRef<Camera>(null);
   const insets = useSafeAreaInsets();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const params = useLocalSearchParams<{ mode?: string }>();
   const isInventoryMode = params.mode === 'inventory';
@@ -664,6 +666,12 @@ export default function ScanScreen() {
   const [autoScanActive, setAutoScanActive] = useState(false);
   const [scanningMessage, setScanningMessage] = useState('Reading card...');
   const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
+
+  const isCompactScanner = screenHeight < 780;
+  const scannerFrameWidth = Math.min(screenWidth - 64, isCompactScanner ? 286 : 300);
+  const scannerFrameHeight = Math.round(scannerFrameWidth / CARD_ASPECT_RATIO);
+  const shutterSize = isCompactScanner ? 72 : 80;
+  const shutterInnerSize = isCompactScanner ? 54 : 60;
 
   const scanCooldownRef = useRef(false);
   const autoScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -1117,6 +1125,16 @@ export default function ScanScreen() {
       }
     };
 
+    const isGenericXimilarCardName = (name?: string | null) => {
+      const normalized = String(name ?? '').trim().toLowerCase();
+      return !normalized || normalized === 'card' || normalized === 'tcg card' || normalized === 'trading card';
+    };
+
+    const isUsableXimilarParsedCard = (parsed: any) => {
+      if (!parsed || parsed.error || isGenericXimilarCardName(parsed.name)) return false;
+      return Boolean(parsed.number || parsed.setName || parsed.setCode || parsed.imageUrl || parsed.confidence);
+    };
+
     const identifyWithRareCandyStyle = async (
       base64Image?: string | null,
       setId?: string | null,
@@ -1469,6 +1487,7 @@ export default function ScanScreen() {
       setId?: string | null
     ): Promise<ScannedCard | null> => {
       if (!parsed || parsed.error || !parsed.name) return null;
+      if (parsed.provider === 'ximilar' && isGenericXimilarCardName(parsed.name)) return null;
 
       const numberClean = fallbackPrintedNumber?.number != null
         ? String(fallbackPrintedNumber.number)
@@ -1574,7 +1593,9 @@ export default function ScanScreen() {
       if (isMarketMode && !isAuto && !expectedSetId) {
         console.log('[market-scan] primary provider: ximilar');
         const ximilarParsed = await identifyWithXimilarTcg(bestBase64, false);
-        match = await lookupParsedCard(ximilarParsed, null, null);
+        match = isUsableXimilarParsedCard(ximilarParsed)
+          ? await lookupParsedCard(ximilarParsed, printedNumber, null)
+          : null;
         console.log('[market-scan] local resolve after Ximilar', {
           provider: 'ximilar',
           parsed: ximilarParsed ? {
@@ -1582,6 +1603,7 @@ export default function ScanScreen() {
             setName: ximilarParsed.setName,
             setCode: ximilarParsed.setCode,
             number: ximilarParsed.number,
+            usable: isUsableXimilarParsedCard(ximilarParsed),
           } : null,
           resolved: match ? {
             id: match.id,
@@ -1593,13 +1615,16 @@ export default function ScanScreen() {
         if (!match) {
           console.log('[market-scan] retrying Ximilar with Magic AI');
           const ximilarMagicParsed = await identifyWithXimilarTcg(bestBase64, true);
-          match = await lookupParsedCard(ximilarMagicParsed, null, null);
+          match = isUsableXimilarParsedCard(ximilarMagicParsed)
+            ? await lookupParsedCard(ximilarMagicParsed, printedNumber, null)
+            : null;
           console.log('[market-scan] local resolve after Magic AI', {
             parsed: ximilarMagicParsed ? {
               name: ximilarMagicParsed.name,
               setName: ximilarMagicParsed.setName,
               setCode: ximilarMagicParsed.setCode,
               number: ximilarMagicParsed.number,
+              usable: isUsableXimilarParsedCard(ximilarMagicParsed),
             } : null,
             resolved: match ? {
               id: match.id,
@@ -2716,9 +2741,9 @@ export default function ScanScreen() {
         )}
 
         {/* Frame guide */}
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', paddingTop: isCompactScanner ? 18 : 34 }}>
           <View style={{
-            width: 310, height: 433,
+            width: scannerFrameWidth, height: scannerFrameHeight,
             borderRadius: 16,
             borderWidth: 2,
             borderColor: autoScanActive ? '#10B981' : processingOcr ? theme.colors.primary : 'rgba(255,255,255,0.5)',
@@ -2739,10 +2764,18 @@ export default function ScanScreen() {
           </View>
 
           {lastScanned && (
-            <View style={{ marginTop: 16, backgroundColor: lastScanned.startsWith('✅') || lastScanned.startsWith('👉') ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 }}>
+            <View style={{ marginTop: 18, backgroundColor: lastScanned.startsWith('✅') || lastScanned.startsWith('👉') ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 }}>
               <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 14, textAlign: 'center' }}>{lastScanned}</Text>
             </View>
           )}
+
+          <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 28, width: '100%', maxWidth: scannerFrameWidth + 72, marginTop: 18 }}>
+            {['Good lighting', 'Card flat', 'Name + number visible'].map((tip) => (
+              <View key={tip} style={{ flex: 1, minHeight: 34, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, paddingVertical: 7, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}>
+                <Text style={{ color: 'rgba(255,255,255,0.84)', fontSize: 10, fontWeight: '800', textAlign: 'center', lineHeight: 12 }}>{tip}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
         {/* Confirmation overlay */}
@@ -2766,7 +2799,7 @@ export default function ScanScreen() {
         )}
 
         {/* Bottom controls */}
-        <View style={{ alignItems: 'center', paddingBottom: insets.bottom + 48, gap: 14 }}>
+        <View style={{ alignItems: 'center', paddingBottom: Math.max(12, insets.bottom * 0.25), gap: isCompactScanner ? 16 : 18 }}>
           {scannedCards.length > 0 && (
             <TouchableOpacity
               onPress={() => { setAutoScanActive(false); setStep('review'); }}
@@ -2783,28 +2816,20 @@ export default function ScanScreen() {
             </TouchableOpacity>
           )}
 
-          <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 24 }}>
-            {['Good lighting', 'Card flat', 'Name + number visible'].map((tip) => (
-              <View key={tip} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 8, paddingVertical: 6, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}>
-                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 9, fontWeight: '700', textAlign: 'center' }}>{tip}</Text>
-              </View>
-            ))}
-          </View>
-
           {scanMode === 'manual' && (
             <>
               <TouchableOpacity
                 onPress={() => handleCapture(false)}
                 disabled={processingOcr}
-                style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: processingOcr ? 'rgba(255,255,255,0.4)' : '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)' }}
+                style={{ width: shutterSize, height: shutterSize, borderRadius: shutterSize / 2, backgroundColor: processingOcr ? 'rgba(255,255,255,0.4)' : '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)' }}
               >
                 {processingOcr ? (
                   <ActivityIndicator color={theme.colors.primary} size="large" />
                 ) : (
-                  <View style={{ width: 60, height: 60, borderRadius: 30, backgroundColor: theme.colors.primary }} />
+                  <View style={{ width: shutterInnerSize, height: shutterInnerSize, borderRadius: shutterInnerSize / 2, backgroundColor: theme.colors.primary }} />
                 )}
               </TouchableOpacity>
-              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Tap to scan card</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.74)', fontSize: 13, fontWeight: '700' }}>Tap to scan card</Text>
             </>
           )}
 
@@ -2812,7 +2837,7 @@ export default function ScanScreen() {
             <>
               <TouchableOpacity
                 onPress={toggleAutoScan}
-                style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: autoScanActive ? '#EF4444' : '#10B981', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)' }}
+                style={{ width: shutterSize, height: shutterSize, borderRadius: shutterSize / 2, backgroundColor: autoScanActive ? '#EF4444' : '#10B981', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)' }}
               >
                 <Text style={{ fontSize: 28 }}>{autoScanActive ? '⏹' : '▶'}</Text>
               </TouchableOpacity>

@@ -1832,7 +1832,7 @@ app.get('/api/search/tcg', async (req, res) => {
     }
 
     // Fallback 2 — name only, but keep the selected set locked when requested.
-    if (cards.length === 0) {
+    if (cards.length === 0 && ((!number && !setTotal) || strictSet)) {
       console.log('⚠️ Fallback 2 — name only');
       let q3 = `name:"${name}"`;
       if (strictSet && setId) q3 += ` set.id:${setId}`;
