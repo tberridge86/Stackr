@@ -1081,6 +1081,11 @@ export default function ScanScreen() {
     const identifyWithXimilarTcg = async (base64Image: string, magicAi = false) => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), magicAi ? 7500 : 5500);
+      const startedAt = Date.now();
+      console.log('[market-scan] Ximilar start', {
+        magicAi,
+        bytesApprox: Math.round(base64Image.length * 0.75),
+      });
       try {
         const response = await fetch(`${PRICE_API_URL}/api/scan/tcg`, {
           method: 'POST',
@@ -1089,9 +1094,10 @@ export default function ScanScreen() {
           signal: controller.signal,
         });
         const data = await response.json();
-        console.log('Ximilar TCG scan result:', {
+        console.log('[market-scan] Ximilar result', {
           status: response.status,
           magicAi,
+          totalMs: Date.now() - startedAt,
           name: data?.match?.name,
           set: data?.match?.setName,
           number: data?.match?.number,
@@ -1100,7 +1106,11 @@ export default function ScanScreen() {
         });
         return response.ok ? data?.match ?? null : null;
       } catch (error) {
-        console.log('Ximilar TCG scan failed:', error instanceof Error ? error.message : String(error));
+        console.log('[market-scan] Ximilar failed', {
+          magicAi,
+          totalMs: Date.now() - startedAt,
+          error: error instanceof Error ? error.message : String(error),
+        });
         return null;
       } finally {
         clearTimeout(timeout);
@@ -1562,11 +1572,42 @@ export default function ScanScreen() {
       let match: ScannedCard | null = null;
 
       if (isMarketMode && !isAuto && !expectedSetId) {
+        console.log('[market-scan] primary provider: ximilar');
         const ximilarParsed = await identifyWithXimilarTcg(bestBase64, false);
         match = await lookupParsedCard(ximilarParsed, null, null);
+        console.log('[market-scan] local resolve after Ximilar', {
+          provider: 'ximilar',
+          parsed: ximilarParsed ? {
+            name: ximilarParsed.name,
+            setName: ximilarParsed.setName,
+            setCode: ximilarParsed.setCode,
+            number: ximilarParsed.number,
+          } : null,
+          resolved: match ? {
+            id: match.id,
+            name: match.name,
+            set: match.set_name,
+            number: match.number,
+          } : null,
+        });
         if (!match) {
+          console.log('[market-scan] retrying Ximilar with Magic AI');
           const ximilarMagicParsed = await identifyWithXimilarTcg(bestBase64, true);
           match = await lookupParsedCard(ximilarMagicParsed, null, null);
+          console.log('[market-scan] local resolve after Magic AI', {
+            parsed: ximilarMagicParsed ? {
+              name: ximilarMagicParsed.name,
+              setName: ximilarMagicParsed.setName,
+              setCode: ximilarMagicParsed.setCode,
+              number: ximilarMagicParsed.number,
+            } : null,
+            resolved: match ? {
+              id: match.id,
+              name: match.name,
+              set: match.set_name,
+              number: match.number,
+            } : null,
+          });
         }
       }
 
