@@ -19,6 +19,7 @@ const BASE_URL = (process.env.API_BASE_URL || 'http://localhost:3001').replace(/
 
 // Platform fee percentage (e.g. 0.05 = 5%)
 const PLATFORM_FEE_PERCENT = parseFloat(process.env.PLATFORM_FEE_PERCENT || '0.05');
+const BETA_TRADE_DEMO_MODE = process.env.BETA_TRADE_DEMO_MODE !== 'false';
 
 // ===============================
 // CREATE / RESUME CONNECT ACCOUNT
@@ -209,6 +210,12 @@ router.post('/create-payment-intent', async (req, res) => {
 // Recipient must have Stripe Connect set up.
 
 router.post('/create-trade-cash-payment-intent', async (req, res) => {
+  if (BETA_TRADE_DEMO_MODE) {
+    return res.status(403).json({
+      error: 'Demo trade mode is enabled. No real trade cash payment can be started during beta.',
+    });
+  }
+
   const { offerId, payerId } = req.body;
   if (!offerId || !payerId) {
     return res.status(400).json({ error: 'offerId and payerId are required' });

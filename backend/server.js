@@ -2245,7 +2245,7 @@ async function scanWithXimilar(imageUrl) {
       Authorization: `Token ${XIMILAR_API_TOKEN}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ records: [{ _url: imageUrl }] }),
+    body: JSON.stringify({ records: [buildXimilarTcgRecord({ _url: imageUrl })] }),
   });
 
   const data = await ximilarRes.json();
@@ -2257,16 +2257,45 @@ async function scanWithXimilar(imageUrl) {
   };
 }
 
+function buildXimilarTcgRecord(imageFields) {
+  return {
+    ...imageFields,
+    'Top Category': 'Card',
+    Category: 'Card/Trading Card Game',
+    Side: 'front',
+    Alphabet: 'latin',
+    Subcategory: 'Pokemon',
+    Rotation: 'rotation_ok',
+  };
+}
+
 function normalizeXimilarTcgCard(card) {
-  const details = card?.info ?? card?.card ?? card?.data ?? card?.details ?? card?.result ?? card;
+  const details =
+    card?._identification?.best_match
+    ?? card?.best_match
+    ?? card?.info
+    ?? card?.card
+    ?? card?.data
+    ?? card?.details
+    ?? card?.result
+    ?? card;
   const rawNumber =
     details?.card_number
     ?? details?.number
     ?? details?.collector_number
     ?? details?.collectorNumber
+    ?? details?.card_no
     ?? card?.card_number
     ?? card?.number
     ?? card?.collector_number;
+  const rawTotal =
+    details?.out_of
+    ?? details?.printed_total
+    ?? details?.printedTotal
+    ?? details?.total
+    ?? card?.out_of
+    ?? card?.printed_total
+    ?? card?.printedTotal;
   const fullNumber = String(rawNumber ?? '').trim();
   const [number, total] = fullNumber.includes('/') ? fullNumber.split('/') : [fullNumber, null];
   return {
@@ -2274,25 +2303,51 @@ function normalizeXimilarTcgCard(card) {
     name: details?.name ?? details?.full_name ?? details?.card_name ?? card?.name ?? card?.full_name ?? null,
     setName: details?.set ?? details?.set_name ?? details?.setName ?? card?.set ?? card?.set_name ?? null,
     setCode: details?.set_code ?? details?.setCode ?? details?.set_id ?? details?.setId ?? card?.set_code ?? card?.setCode ?? null,
-    number: number ? number.replace(/^0+/, '') : null,
-    printedTotal: total ? Number(String(total).replace(/\D/g, '')) || null : null,
+    number: number ? number.replace(/^#/, '').replace(/^0+/, '') : null,
+    printedTotal: total
+      ? Number(String(total).replace(/\D/g, '')) || null
+      : rawTotal != null
+        ? Number(String(rawTotal).replace(/\D/g, '')) || null
+        : null,
     rarity: details?.rarity ?? card?.rarity ?? null,
-    confidence: typeof card?._score === 'number' ? card._score : typeof card?.score === 'number' ? card.score : null,
+    confidence: typeof card?.prob === 'number'
+      ? card.prob
+      : typeof card?._score === 'number'
+        ? card._score
+        : typeof card?.score === 'number'
+          ? card.score
+          : null,
     imageUrl: card?._img_url ?? card?.image_url ?? details?.image_url ?? details?.imageUrl ?? null,
     raw: card,
   };
 }
 
 function flattenXimilarTcgCandidates(value, depth = 0) {
-  if (!value || depth > 3) return [];
+  if (!value || depth > 8) return [];
   if (Array.isArray(value)) {
     return value.flatMap((item) => flattenXimilarTcgCandidates(item, depth + 1));
   }
   if (typeof value !== 'object') return [];
 
   const candidates = [];
-  const directName = value.name || value.full_name || value.card_name || value.info?.name || value.card?.name || value.data?.name;
-  const directNumber = value.card_number || value.number || value.collector_number || value.info?.card_number || value.card?.number || value.data?.number;
+  const directName =
+    value._identification?.best_match?.name
+    || value.best_match?.name
+    || value.name
+    || value.full_name
+    || value.card_name
+    || value.info?.name
+    || value.card?.name
+    || value.data?.name;
+  const directNumber =
+    value._identification?.best_match?.card_number
+    || value.best_match?.card_number
+    || value.card_number
+    || value.number
+    || value.collector_number
+    || value.info?.card_number
+    || value.card?.number
+    || value.data?.number;
   if (directName || directNumber) candidates.push(value);
 
   [
@@ -2309,6 +2364,7 @@ function flattenXimilarTcgCandidates(value, depth = 0) {
     'card',
     'data',
     'info',
+    'alternatives',
   ].forEach((key) => {
     if (value[key]) candidates.push(...flattenXimilarTcgCandidates(value[key], depth + 1));
   });
@@ -2327,11 +2383,13 @@ function summarizeXimilarTcgPayload(data) {
     candidateCount: flattenXimilarTcgCandidates(data).length,
     candidates: candidates.map((candidate) => ({
       keys: Object.keys(candidate).slice(0, 18),
-      name: candidate?.name ?? candidate?.full_name ?? candidate?.card_name ?? candidate?.info?.name ?? candidate?.card?.name ?? candidate?.data?.name ?? null,
-      number: candidate?.card_number ?? candidate?.number ?? candidate?.collector_number ?? candidate?.info?.card_number ?? candidate?.card?.number ?? candidate?.data?.number ?? null,
-      set: candidate?.set ?? candidate?.set_name ?? candidate?.setName ?? candidate?.info?.set ?? candidate?.card?.set ?? candidate?.data?.set ?? null,
-      score: candidate?._score ?? candidate?.score ?? null,
+      name: candidate?._identification?.best_match?.name ?? candidate?.best_match?.name ?? candidate?.name ?? candidate?.full_name ?? candidate?.card_name ?? candidate?.info?.name ?? candidate?.card?.name ?? candidate?.data?.name ?? null,
+      number: candidate?._identification?.best_match?.card_number ?? candidate?.best_match?.card_number ?? candidate?.card_number ?? candidate?.number ?? candidate?.collector_number ?? candidate?.info?.card_number ?? candidate?.card?.number ?? candidate?.data?.number ?? null,
+      set: candidate?._identification?.best_match?.set ?? candidate?.best_match?.set ?? candidate?.set ?? candidate?.set_name ?? candidate?.setName ?? candidate?.info?.set ?? candidate?.card?.set ?? candidate?.data?.set ?? null,
+      score: candidate?.prob ?? candidate?._score ?? candidate?.score ?? null,
       nestedKeys: {
+        identification: candidate?._identification && typeof candidate._identification === 'object' ? Object.keys(candidate._identification).slice(0, 18) : [],
+        bestMatch: candidate?._identification?.best_match && typeof candidate._identification.best_match === 'object' ? Object.keys(candidate._identification.best_match).slice(0, 18) : [],
         info: candidate?.info && typeof candidate.info === 'object' ? Object.keys(candidate.info).slice(0, 18) : [],
         card: candidate?.card && typeof candidate.card === 'object' ? Object.keys(candidate.card).slice(0, 18) : [],
         data: candidate?.data && typeof candidate.data === 'object' ? Object.keys(candidate.data).slice(0, 18) : [],
@@ -2342,7 +2400,13 @@ function summarizeXimilarTcgPayload(data) {
 
 function pickXimilarTcgCard(data) {
   const cards = flattenXimilarTcgCandidates(data);
-  return cards[0] ? normalizeXimilarTcgCard(cards[0]) : null;
+  const best = cards.find((card) => card?._identification?.best_match || card?.best_match)
+    ?? cards.find((card) => {
+      const normalized = normalizeXimilarTcgCard(card);
+      return normalized.name && normalized.name !== 'Card';
+    })
+    ?? cards[0];
+  return best ? normalizeXimilarTcgCard(best) : null;
 }
 
 async function scanTcgWithXimilarBase64(base64Image, options = {}) {
@@ -2361,8 +2425,9 @@ async function scanTcgWithXimilarBase64(base64Image, options = {}) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      records: [{ _base64: stripBase64ImagePrefix(base64Image) }],
+      records: [buildXimilarTcgRecord({ _base64: stripBase64ImagePrefix(base64Image) })],
       rotate: true,
+      lang: true,
       pricing: false,
       price_stats: false,
       magic_ai: Boolean(options.magicAi),

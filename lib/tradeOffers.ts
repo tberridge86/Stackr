@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { PRICE_API_URL } from './config';
+import { BETA_TRADE_DEMO_MODE, PRICE_API_URL } from './config';
 
 // ===============================
 // TYPES
@@ -443,6 +443,10 @@ export async function createTradeCashPaymentIntent(input: {
   offerId: string;
   payerId: string;
 }): Promise<{ clientSecret: string }> {
+  if (BETA_TRADE_DEMO_MODE) {
+    throw new Error('Demo trade mode is enabled. No real payments can be started during beta.');
+  }
+
   if (!PRICE_API_URL) {
     throw new Error('Missing PRICE_API_URL configuration.');
   }

@@ -29,7 +29,7 @@ import {
   TradeOfferCard,
   TradeCashTerms,
 } from '../../lib/tradeOffers';
-import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { BETA_TRADE_DEMO_MODE, PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
 import { getPriceFromPokemonCard } from '../../lib/pricing';
 
 // ===============================
@@ -799,6 +799,25 @@ export default function OfferDetailScreen() {
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
+          {BETA_TRADE_DEMO_MODE && (
+            <View style={{
+              backgroundColor: '#FEF3C7',
+              borderColor: '#F59E0B',
+              borderWidth: 1,
+              borderRadius: 12,
+              padding: 12,
+              marginHorizontal: 16,
+              marginBottom: 12,
+            }}>
+              <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '900' }}>
+                DEMO TRADE MODE
+              </Text>
+              <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, marginTop: 3 }}>
+                This is a beta trade area. Cash terms are simulated only; no Stripe payment can be started here.
+              </Text>
+            </View>
+          )}
+
           {offer && (
             <View style={styles.reviewHeroCard}>
               <Text style={styles.heroEyebrow}>Review Deal</Text>
@@ -956,7 +975,7 @@ export default function OfferDetailScreen() {
                     {cashTerms.payer_id === currentUserId ? 'you pay' : 'they pay'}
                   </Text>
                   <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
-                    Payment method: Stripe
+                    Payment method: {BETA_TRADE_DEMO_MODE ? 'Demo only - no live payment' : 'Stripe'}
                   </Text>
                   {cashTerms.payment_status && (
                     <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
@@ -1149,8 +1168,9 @@ export default function OfferDetailScreen() {
             <Text style={styles.trustTitle}>Trading on Stackr</Text>
             <Text style={styles.trustText}>
               Stackr connects collectors to arrange trades directly. Keep all communication
-              here so your trade history is recorded. For cash top-ups, use Stripe inside
-              the app and avoid sharing payment details in chat.
+              here so your trade history is recorded. {BETA_TRADE_DEMO_MODE
+                ? 'During beta, cash top-ups are demo records only and no money changes hands.'
+                : 'For cash top-ups, use Stripe inside the app and avoid sharing payment details in chat.'}
             </Text>
           </View>
 

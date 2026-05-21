@@ -12,6 +12,11 @@ import { Text } from '../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StripeProvider } from '@stripe/stripe-react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { BETA_TRADE_DEMO_MODE } from '../lib/config';
+
+void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // ===============================
 // PERSISTENT TAB BAR
@@ -122,63 +127,75 @@ function PersistentTabBar() {
 // APP SHELL (theme-aware)
 // ===============================
 
-function AppShell() {
+function AppNavigation() {
   const { theme, isDark } = useTheme();
+
+  return (
+    <AuthProvider>
+      <ProfileProvider>
+        <AppModeProvider>
+          <CollectionProvider>
+            <TradeProvider>
+              <StatusBar style={isDark ? 'light' : 'dark'} />
+              <Stack
+                screenOptions={{
+                  headerShown: true,
+                  gestureEnabled: true,
+                  fullScreenGestureEnabled: true,
+                  headerStyle: { backgroundColor: theme.colors.bg },
+                  headerTintColor: theme.colors.primary,
+                  headerTitleStyle: { color: theme.colors.text, fontWeight: '900' },
+                  headerShadowVisible: false,
+                  headerBackButtonDisplayMode: 'minimal',
+                  headerBackTitle: '',
+                  contentStyle: { backgroundColor: theme.colors.bg },
+                }}
+              >
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
+                <Stack.Screen name="card/[id]" options={{ title: '' }} />
+                <Stack.Screen name="set/[id]" options={{ title: '' }} />
+                <Stack.Screen name="offer/new" options={{ title: '' }} />
+                <Stack.Screen name="offer/index" options={{ title: '' }} />
+                <Stack.Screen name="offer/[id]" options={{ title: '' }} />
+                <Stack.Screen name="offers" options={{ title: '' }} />
+                <Stack.Screen name="listing/new" options={{ title: '' }} />
+                <Stack.Screen name="seller/onboarding" options={{ title: '' }} />
+                <Stack.Screen name="binder/new" options={{ title: '' }} />
+                <Stack.Screen name="binder/[id]" options={{ title: '' }} />
+                <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
+                <Stack.Screen name="scan" options={{ title: '' }} />
+                <Stack.Screen name="scan/result" options={{ title: '' }} />
+                <Stack.Screen name="market/index" options={{ title: '' }} />
+                <Stack.Screen name="price-builder/index" options={{ title: '' }} />
+                <Stack.Screen name="user/[id]" options={{ title: '' }} />
+                <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
+                <Stack.Screen name="(auth)/login" options={{ title: '' }} />
+                <Stack.Screen name="notifications" options={{ title: '' }} />
+                <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
+              </Stack>
+              <PersistentTabBar />
+            </TradeProvider>
+          </CollectionProvider>
+        </AppModeProvider>
+      </ProfileProvider>
+    </AuthProvider>
+  );
+}
+
+function AppShell() {
+  const { theme } = useTheme();
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}>
-        <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''}>
-        <AuthProvider>
-          <ProfileProvider>
-            <AppModeProvider>
-              <CollectionProvider>
-                <TradeProvider>
-                <StatusBar style={isDark ? 'light' : 'dark'} />
-                <Stack
-                  screenOptions={{
-                    headerShown: true,
-                    gestureEnabled: true,
-                    fullScreenGestureEnabled: true,
-                    headerStyle: { backgroundColor: theme.colors.bg },
-                    headerTintColor: theme.colors.primary,
-                    headerTitleStyle: { color: theme.colors.text, fontWeight: '900' },
-                    headerShadowVisible: false,
-                    headerBackButtonDisplayMode: 'minimal',
-                    headerBackTitle: '',
-                    contentStyle: { backgroundColor: theme.colors.bg },
-                  }}
-                >
-                  <Stack.Screen name="index" options={{ headerShown: false }} />
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
-                  <Stack.Screen name="card/[id]" options={{ title: '' }} />
-                  <Stack.Screen name="set/[id]" options={{ title: '' }} />
-                  <Stack.Screen name="offer/new" options={{ title: '' }} />
-                  <Stack.Screen name="offer/index" options={{ title: '' }} />
-                  <Stack.Screen name="offer/[id]" options={{ title: '' }} />
-                  <Stack.Screen name="offers" options={{ title: '' }} />
-                  <Stack.Screen name="listing/new" options={{ title: '' }} />
-                  <Stack.Screen name="seller/onboarding" options={{ title: '' }} />
-                  <Stack.Screen name="binder/new" options={{ title: '' }} />
-                  <Stack.Screen name="binder/[id]" options={{ title: '' }} />
-                  <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
-                  <Stack.Screen name="scan" options={{ title: '' }} />
-                  <Stack.Screen name="scan/result" options={{ title: '' }} />
-                  <Stack.Screen name="market/index" options={{ title: '' }} />
-                  <Stack.Screen name="price-builder/index" options={{ title: '' }} />
-                  <Stack.Screen name="user/[id]" options={{ title: '' }} />
-                  <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
-                  <Stack.Screen name="(auth)/login" options={{ title: '' }} />
-                  <Stack.Screen name="notifications" options={{ title: '' }} />
-                  <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
-                </Stack>
-                <PersistentTabBar />
-                </TradeProvider>
-              </CollectionProvider>
-            </AppModeProvider>
-          </ProfileProvider>
-        </AuthProvider>
-        </StripeProvider>
+        {BETA_TRADE_DEMO_MODE ? (
+          <AppNavigation />
+        ) : (
+          <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''}>
+            <AppNavigation />
+          </StripeProvider>
+        )}
       </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );
@@ -189,6 +206,14 @@ function AppShell() {
 // ===============================
 
 export default function RootLayout() {
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      void SplashScreen.hideAsync().catch(() => {});
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
     <ThemeProvider>
       <AppShell />
