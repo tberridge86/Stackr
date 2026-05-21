@@ -56,6 +56,7 @@ const SCANNING_MESSAGES = [
 
 const FAST_SCAN_PROFILE = { width: 720, compress: 0.5 };
 const ACCURACY_SCAN_PROFILE = { width: 960, compress: 0.72 };
+const MARKET_XIMILAR_SCAN_PROFILE = { width: 1400, compress: 0.9 };
 const USE_SNAPSHOT_CAPTURE = true;
 const REQUEST_TIMEOUT_MS = 5000;
 const LOCAL_AI_TIMEOUT_MS = 2500;
@@ -1555,7 +1556,12 @@ export default function ScanScreen() {
     try {
       // Step 1: capture at fast profile
       const scanWallStartedAt = Date.now();
-      const initialScanProfile = isAuto ? FAST_SCAN_PROFILE : ACCURACY_SCAN_PROFILE;
+      const initialScanProfile =
+        !isAuto && isMarketMode && !selectedBinder?.source_set_id
+          ? MARKET_XIMILAR_SCAN_PROFILE
+          : isAuto
+            ? FAST_SCAN_PROFILE
+            : ACCURACY_SCAN_PROFILE;
       const capture = await captureCardImage(initialScanProfile);
       const base64 = capture.base64;
       let bestBase64 = base64;

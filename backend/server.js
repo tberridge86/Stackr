@@ -2375,11 +2375,22 @@ function flattenXimilarTcgCandidates(value, depth = 0) {
 function summarizeXimilarTcgPayload(data) {
   const records = Array.isArray(data?.records) ? data.records : [];
   const firstRecord = records[0] ?? null;
+  const firstObjects = Array.isArray(firstRecord?._objects) ? firstRecord._objects : [];
+  const firstObject = firstObjects[0] ?? null;
   const candidates = flattenXimilarTcgCandidates(data).slice(0, 5);
   return {
     topLevelKeys: data && typeof data === 'object' ? Object.keys(data).slice(0, 20) : [],
     recordCount: records.length,
     firstRecordKeys: firstRecord && typeof firstRecord === 'object' ? Object.keys(firstRecord).slice(0, 25) : [],
+    firstRecordStatus: firstRecord?._status ?? null,
+    objectCount: firstObjects.length,
+    firstObjectKeys: firstObject && typeof firstObject === 'object' ? Object.keys(firstObject).slice(0, 25) : [],
+    firstObjectStatus: firstObject?._status ?? null,
+    firstObjectCategory: firstObject?._category ?? firstObject?.category ?? null,
+    firstObjectName: firstObject?.name ?? firstObject?.title ?? null,
+    firstObjectIdentificationKeys: firstObject?._identification && typeof firstObject._identification === 'object'
+      ? Object.keys(firstObject._identification).slice(0, 25)
+      : [],
     candidateCount: flattenXimilarTcgCandidates(data).length,
     candidates: candidates.map((candidate) => ({
       keys: Object.keys(candidate).slice(0, 18),
