@@ -45,27 +45,80 @@ export type BinderCardRecord = {
   created_at: string;
 };
 
-async function attachLatestSnapshotPrices<T extends BinderCardRecord>(
-  rows: T[]
-): Promise<T[]> {
-  const cardIds = [...new Set(rows.map((row) => row.card_id).filter(Boolean))];
-  if (!cardIds.length) return rows;
+type BinderSnapshotPriceFields = {
+  ebay_price: number | null;
+  tcg_price: number | null;
+  cardmarket_price: number | null;
+  last_price_update: string | null;
+};
+
+export async function fetchLatestSnapshotPrices(
+  cardIds: string[]
+): Promise<Map<string, BinderSnapshotPriceFields>> {
+  const uniqueCardIds = [...new Set(cardIds.filter(Boolean))];
+  const latestByCardId = new Map<string, BinderSnapshotPriceFields>();
+
+  if (!uniqueCardIds.length) return latestByCardId;
 
   const { data, error } = await supabase
     .from('market_price_snapshots')
     .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
-    .in('card_id', cardIds)
+    .in('card_id', uniqueCardIds)
     .order('snapshot_at', { ascending: false });
 
   if (error) {
     console.log('Latest binder snapshot prices failed:', error.message);
-    return rows;
+    return latestByCardId;
   }
 
-  const latestByCardId = new Map<string, any>();
   for (const row of data ?? []) {
-    if (!latestByCardId.has(row.card_id)) latestByCardId.set(row.card_id, row);
+    if (latestByCardId.has(row.card_id)) continue;
+
+    latestByCardId.set(row.card_id, {
+      ebay_price: row.ebay_average ?? null,
+      tcg_price: row.tcg_mid ?? null,
+      cardmarket_price: row.cardmarket_trend ?? null,
+      last_price_update: row.snapshot_at ?? null,
+    });
   }
+
+  const missingCardIds = uniqueCardIds.filter((cardId) => !latestByCardId.has(cardId));
+
+  if (missingCardIds.length) {
+    const { data: cards, error: cardError } = await supabase
+      .from('pokemon_cards')
+      .select('id, raw_data')
+      .in('id', missingCardIds);
+
+    if (cardError) {
+      console.log('Fallback binder card prices failed:', cardError.message);
+    } else {
+      for (const card of cards ?? []) {
+        const raw = card.raw_data ?? {};
+        const tcgPrice = getPriceFromPokemonCard(raw);
+        const cardmarketPrice = getCardmarketPriceFromPokemonCard(raw);
+
+        if (tcgPrice == null && cardmarketPrice == null) continue;
+
+        latestByCardId.set(card.id, {
+          ebay_price: null,
+          tcg_price: tcgPrice,
+          cardmarket_price: cardmarketPrice,
+          last_price_update: null,
+        });
+      }
+    }
+  }
+
+  return latestByCardId;
+}
+
+async function attachLatestSnapshotPrices<T extends BinderCardRecord>(
+  rows: T[]
+): Promise<T[]> {
+  const latestByCardId = await fetchLatestSnapshotPrices(
+    rows.map((row) => row.card_id)
+  );
 
   return rows.map((row) => {
     const snapshot = latestByCardId.get(row.card_id);
@@ -73,9 +126,10 @@ async function attachLatestSnapshotPrices<T extends BinderCardRecord>(
 
     return {
       ...row,
-      ebay_price: snapshot.ebay_average ?? row.ebay_price ?? null,
-      tcg_price: snapshot.tcg_mid ?? row.tcg_price ?? null,
-      cardmarket_price: snapshot.cardmarket_trend ?? row.cardmarket_price ?? null,
+      ebay_price: snapshot.ebay_price ?? row.ebay_price ?? null,
+      tcg_price: snapshot.tcg_price ?? row.tcg_price ?? null,
+      cardmarket_price: snapshot.cardmarket_price ?? row.cardmarket_price ?? null,
+      last_price_update: snapshot.last_price_update ?? row.last_price_update ?? null,
     };
   });
 }
@@ -336,19 +390,31 @@ export async function addCardsToBinder(
       ? Math.max(...existing.map((r) => r.slot_order ?? 0))
       : -1;
 
+  const latestPrices = await fetchLatestSnapshotPrices(
+    cards.map((card) => card.cardId)
+  );
+
   const rows = cards
   .filter((card) => !existingKeys.has(`${card.setId}:${card.cardId}`))
-  .map((card, index) => ({
-    binder_id: binderId,
-    card_id: card.cardId,
-    set_id: card.setId,
-    card_name: card.cardName ?? null,
-    image_url: card.imageUrl ?? null,
-    set_name: card.setName ?? null,
-    slot_order: maxSlot + 1 + index,
-    owned: false,
-    notes: '',
-  }));
+  .map((card, index) => {
+    const price = latestPrices.get(card.cardId);
+
+    return {
+      binder_id: binderId,
+      card_id: card.cardId,
+      set_id: card.setId,
+      card_name: card.cardName ?? null,
+      image_url: card.imageUrl ?? null,
+      set_name: card.setName ?? null,
+      slot_order: maxSlot + 1 + index,
+      owned: false,
+      notes: '',
+      ebay_price: price?.ebay_price ?? null,
+      tcg_price: price?.tcg_price ?? null,
+      cardmarket_price: price?.cardmarket_price ?? null,
+      last_price_update: price?.last_price_update ?? null,
+    };
+  });
 
   if (!rows.length) return;
 
@@ -400,6 +466,20 @@ function getPriceFromPokemonCard(card: any, edition?: string | null): number | n
   }
 
   return null;
+}
+
+function getCardmarketPriceFromPokemonCard(card: any): number | null {
+  const prices = card?.cardmarket?.prices;
+  if (!prices) return null;
+
+  const value =
+    prices.trendPrice ??
+    prices.averageSellPrice ??
+    prices.avg1 ??
+    prices.avg7 ??
+    prices.avg30;
+
+  return typeof value === 'number' ? value : null;
 }
 
 // ===============================
@@ -493,11 +573,14 @@ export async function updateBinderCardOwned(
     slotOrder?: number;
     condition?: string;
   }
-): Promise<void> {
+): Promise<BinderSnapshotPriceFields | null> {
   const virtual = parseVirtualBinderCardId(binderCardId);
 
   if (virtual) {
     if (owned) {
+      const latestPrices = await fetchLatestSnapshotPrices([virtual.cardId]);
+      const price = latestPrices.get(virtual.cardId) ?? null;
+
       const { error } = await supabase
         .from('binder_cards')
         .insert({
@@ -513,6 +596,10 @@ export async function updateBinderCardOwned(
           card_number: cardMeta?.cardNumber ?? null,
           image_url: cardMeta?.imageUrl ?? null,
           set_name: cardMeta?.setName ?? null,
+          ebay_price: price?.ebay_price ?? null,
+          tcg_price: price?.tcg_price ?? null,
+          cardmarket_price: price?.cardmarket_price ?? null,
+          last_price_update: price?.last_price_update ?? null,
         })
         .select('id, card_id, set_id, owned')
         .single();
@@ -537,7 +624,7 @@ export async function updateBinderCardOwned(
         console.log('Backfill failed silently', err);
       });
 
-      return;
+      return price;
     }
 
     const { data: existingRow } = await supabase
@@ -557,7 +644,7 @@ export async function updateBinderCardOwned(
       if (error) throw error;
     }
 
-    return;
+    return null;
   }
 
   const { data: existingCard, error: fetchError } = await supabase
@@ -568,9 +655,23 @@ export async function updateBinderCardOwned(
 
   if (fetchError) throw fetchError;
 
+  const latestPrices = owned && existingCard
+    ? await fetchLatestSnapshotPrices([existingCard.card_id])
+    : new Map<string, BinderSnapshotPriceFields>();
+  const price = existingCard ? latestPrices.get(existingCard.card_id) ?? null : null;
+  const updatePayload = owned && price
+    ? {
+        owned,
+        ebay_price: price.ebay_price,
+        tcg_price: price.tcg_price,
+        cardmarket_price: price.cardmarket_price,
+        last_price_update: price.last_price_update,
+      }
+    : { owned };
+
   const { error } = await supabase
     .from('binder_cards')
-    .update({ owned })
+    .update(updatePayload)
     .eq('id', binderCardId);
 
   if (error) throw error;
@@ -584,6 +685,8 @@ export async function updateBinderCardOwned(
       type: 'binder_add',
     });
   }
+
+  return price;
 }
 
 export async function updateBinderCardCondition(

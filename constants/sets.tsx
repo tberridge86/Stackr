@@ -61,7 +61,7 @@ export const SETS: SetItem[] = [
     ],
   },
   {
-    id: 'base',
+    id: 'base1',
     name: 'Base Set',
     subtitle: 'Classic original set',
     totalCards: 102,
@@ -105,7 +105,7 @@ export const SETS: SetItem[] = [
     ],
   },
   {
-    id: 'jungle',
+    id: 'base2',
     name: 'Jungle',
     subtitle: 'Early expansion',
     totalCards: 64,
@@ -141,7 +141,7 @@ export const SETS: SetItem[] = [
     ],
   },
   {
-    id: 'fossil',
+    id: 'base3',
     name: 'Fossil',
     subtitle: 'Vintage expansion',
     totalCards: 62,
@@ -177,7 +177,7 @@ export const SETS: SetItem[] = [
     ],
   },
   {
-    id: 'rocket',
+    id: 'base5',
     name: 'Team Rocket',
     subtitle: 'Dark Pokémon era',
     totalCards: 83,

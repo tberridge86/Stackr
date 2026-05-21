@@ -40,6 +40,23 @@ export type PokemonCard = {
   raw_data?: any;
 };
 
+function getCanonicalPokemonTcgImages(cardId: string, fallbackSetId?: string | null, fallbackNumber?: string | null) {
+  const setId = fallbackSetId || cardId.split('-')[0];
+  const idPrefix = `${setId}-`;
+  const idNumber = cardId.startsWith(idPrefix) ? cardId.slice(idPrefix.length) : null;
+  const rawNumber = idNumber || fallbackNumber || '';
+  const imageNumber = /^\d+$/.test(rawNumber) ? String(Number(rawNumber)) : rawNumber;
+
+  if (!setId || !imageNumber) {
+    return { small: undefined, large: undefined };
+  }
+
+  return {
+    small: `https://images.pokemontcg.io/${setId}/${imageNumber}.png`,
+    large: `https://images.pokemontcg.io/${setId}/${imageNumber}_hires.png`,
+  };
+}
+
 export async function fetchAllSets(): Promise<PokemonSet[]> {
   const { data, error } = await supabase
     .from('pokemon_sets')
@@ -77,31 +94,32 @@ export async function fetchCardsForSet(setId: string): Promise<PokemonCard[]> {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((card) => ({
-    id: card.id,
-    name: card.name,
-    number: card.number ?? '',
-    rarity: card.rarity ?? undefined,
-    images: {
-      small: card.image_small ?? undefined,
-      large: card.image_large ?? undefined,
-    },
-    set: card.raw_data?.set ?? undefined,
-    tcgplayer: card.raw_data?.tcgplayer ?? undefined,
-    cardmarket: card.raw_data?.cardmarket ?? undefined,
-    artist: card.raw_data?.artist ?? undefined,
-    supertype: card.raw_data?.supertype ?? undefined,
-    subtypes: card.raw_data?.subtypes ?? undefined,
-    hp: card.raw_data?.hp ?? undefined,
-    types: card.raw_data?.types ?? undefined,
-    evolvesFrom: card.raw_data?.evolvesFrom ?? undefined,
-    flavorText: card.raw_data?.flavorText ?? undefined,
-    rules: card.raw_data?.rules ?? undefined,
-    attacks: card.raw_data?.attacks ?? undefined,
-    weaknesses: card.raw_data?.weaknesses ?? undefined,
-    resistances: card.raw_data?.resistances ?? undefined,
-    retreatCost: card.raw_data?.retreatCost ?? undefined,
-  }));
+  return (data ?? []).map((card) => {
+    const canonicalImages = getCanonicalPokemonTcgImages(card.id, card.set_id, card.number);
+
+    return {
+      id: card.id,
+      name: card.name,
+      number: card.number ?? '',
+      rarity: card.rarity ?? undefined,
+      images: canonicalImages,
+      set: card.raw_data?.set ?? undefined,
+      tcgplayer: card.raw_data?.tcgplayer ?? undefined,
+      cardmarket: card.raw_data?.cardmarket ?? undefined,
+      artist: card.raw_data?.artist ?? undefined,
+      supertype: card.raw_data?.supertype ?? undefined,
+      subtypes: card.raw_data?.subtypes ?? undefined,
+      hp: card.raw_data?.hp ?? undefined,
+      types: card.raw_data?.types ?? undefined,
+      evolvesFrom: card.raw_data?.evolvesFrom ?? undefined,
+      flavorText: card.raw_data?.flavorText ?? undefined,
+      rules: card.raw_data?.rules ?? undefined,
+      attacks: card.raw_data?.attacks ?? undefined,
+      weaknesses: card.raw_data?.weaknesses ?? undefined,
+      resistances: card.raw_data?.resistances ?? undefined,
+      retreatCost: card.raw_data?.retreatCost ?? undefined,
+    };
+  });
 }
 
 export async function fetchCardById(cardId: string): Promise<PokemonCard | null> {
@@ -118,15 +136,14 @@ export async function fetchCardById(cardId: string): Promise<PokemonCard | null>
 
   if (!data) return null;
 
+  const canonicalImages = getCanonicalPokemonTcgImages(data.id, data.set_id, data.number);
+
   return {
     id: data.id,
     name: data.name,
     number: data.number ?? '',
     rarity: data.rarity ?? undefined,
-    images: {
-      small: data.image_small ?? undefined,
-      large: data.image_large ?? undefined,
-    },
+    images: canonicalImages,
     set: data.raw_data?.set ?? undefined,
     tcgplayer: data.raw_data?.tcgplayer ?? undefined,
     cardmarket: data.raw_data?.cardmarket ?? undefined,
