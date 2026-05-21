@@ -2377,7 +2377,20 @@ function summarizeXimilarTcgPayload(data) {
   const firstRecord = records[0] ?? null;
   const firstObjects = Array.isArray(firstRecord?._objects) ? firstRecord._objects : [];
   const firstObject = firstObjects[0] ?? null;
+  const identification = firstObject?._identification ?? null;
+  const bestMatch = identification?.best_match ?? null;
+  const alternatives = Array.isArray(identification?.alternatives) ? identification.alternatives : [];
+  const ocr = Array.isArray(firstObject?._ocr) ? firstObject._ocr : [];
   const candidates = flattenXimilarTcgCandidates(data).slice(0, 5);
+  const previewMatch = (match) => match && typeof match === 'object'
+    ? {
+        keys: Object.keys(match).slice(0, 25),
+        name: match.name ?? match.full_name ?? match.card_name ?? match.title ?? null,
+        number: match.card_number ?? match.number ?? match.collector_number ?? null,
+        set: match.set ?? match.set_name ?? match.setName ?? null,
+        score: match.prob ?? match._score ?? match.score ?? match.distance ?? null,
+      }
+    : match ?? null;
   return {
     topLevelKeys: data && typeof data === 'object' ? Object.keys(data).slice(0, 20) : [],
     recordCount: records.length,
@@ -2391,6 +2404,14 @@ function summarizeXimilarTcgPayload(data) {
     firstObjectIdentificationKeys: firstObject?._identification && typeof firstObject._identification === 'object'
       ? Object.keys(firstObject._identification).slice(0, 25)
       : [],
+    bestMatch: previewMatch(bestMatch),
+    alternativeCount: alternatives.length,
+    alternatives: alternatives.slice(0, 3).map(previewMatch),
+    ocrPreview: ocr.slice(0, 8).map((entry) => (
+      typeof entry === 'string'
+        ? entry
+        : entry?.text ?? entry?.value ?? entry?.ocr ?? entry?.word ?? entry?.name ?? JSON.stringify(entry).slice(0, 80)
+    )),
     candidateCount: flattenXimilarTcgCandidates(data).length,
     candidates: candidates.map((candidate) => ({
       keys: Object.keys(candidate).slice(0, 18),
