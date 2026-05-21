@@ -105,6 +105,16 @@ type LocalMeetup = {
   starts_at: string | null;
   created_by: string;
 };
+
+type CommunityNewsItem = {
+  id: string;
+  title: string;
+  body: string;
+  category: string | null;
+  icon: keyof typeof Ionicons.glyphMap;
+  external_url: string | null;
+  published_at: string | null;
+};
 type LiveLocalPlace = {
   place_id: string;
   name: string;
@@ -248,6 +258,7 @@ export default function CommunityScreen() {
   const [liveLocalPlaces, setLiveLocalPlaces] = useState<LiveLocalPlace[]>([]);
   const [localFeaturedEvents, setLocalFeaturedEvents] = useState<LocalFeaturedEvent[]>([]);
   const [localMeetups, setLocalMeetups] = useState<LocalMeetup[]>([]);
+  const [communityNews, setCommunityNews] = useState<CommunityNewsItem[]>([]);
   const [localLoading, setLocalLoading] = useState(false);
   const [liveLocalLoading, setLiveLocalLoading] = useState(false);
   const [meetupModalOpen, setMeetupModalOpen] = useState(false);
@@ -563,6 +574,30 @@ export default function CommunityScreen() {
       loadLocalData();
     }
   }, [activeSocialTab, loadLocalData]);
+
+  const loadCommunityNews = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('community_news')
+        .select('id, title, body, category, icon, external_url, published_at')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('published_at', { ascending: false })
+        .limit(25);
+
+      if (error) throw error;
+      setCommunityNews((data ?? []) as CommunityNewsItem[]);
+    } catch (error) {
+      console.log('Community news load failed', error);
+      setCommunityNews([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeSocialTab === 'News' || activeSocialTab === 'Home') {
+      loadCommunityNews();
+    }
+  }, [activeSocialTab, loadCommunityNews]);
 
   const searchLiveLocalPlaces = useCallback(async (text: string) => {
     const queryText = text.trim();
@@ -955,11 +990,18 @@ export default function CommunityScreen() {
         })
         .sort((a, b) => (a.miles ?? 9999) - (b.miles ?? 9999))
     : localFeaturedEvents.map((event) => ({ event, miles: null as number | null }));
-  const newsItems = [
+  const defaultNewsItems = [
     { icon: 'newspaper-outline' as const, title: 'Pokemon news hub', body: 'Latest set news, release notes, announcements, and market-moving updates will live here.' },
     { icon: 'sparkles-outline' as const, title: 'New releases', body: 'Track upcoming English and Japanese set launches.' },
     { icon: 'megaphone-outline' as const, title: 'Stackr updates', body: 'Use this area for app news, feature updates, and admin posts.' },
   ];
+  const newsItems = communityNews.length
+    ? communityNews.map((item) => ({
+        icon: item.icon || 'newspaper-outline' as const,
+        title: item.title,
+        body: item.body,
+      }))
+    : defaultNewsItems;
   const latestFlexPosts = posts
     .filter((post) => post.post_type === 'card_showcase' || post.post_type === 'binder_showcase')
     .slice(0, 10);

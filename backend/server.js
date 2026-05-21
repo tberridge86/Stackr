@@ -821,6 +821,76 @@ function summarisePrices(prices) {
   };
 }
 
+function isSerpApiQuotaErrorMessage(message = '') {
+  const m = String(message || '').toLowerCase();
+  return (
+    m.includes('serpapi') &&
+    (m.includes('429') ||
+      m.includes('run out of searches') ||
+      m.includes('quota') ||
+      m.includes('credits'))
+  );
+}
+
+async function fetchCachedEbayCardPrice(cardId) {
+  if (!cardId) return null;
+
+  const { data, error } = await supabase
+    .from('market_price_snapshots')
+    .select('ebay_low, ebay_average, ebay_high, ebay_count, snapshot_at')
+    .eq('card_id', cardId)
+    .not('ebay_average', 'is', null)
+    .order('snapshot_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.log('Cached eBay card price lookup failed:', error.message);
+    return null;
+  }
+
+  if (!data) return null;
+
+  return {
+    low: data.ebay_low ?? null,
+    average: data.ebay_average ?? null,
+    high: data.ebay_high ?? null,
+    count: data.ebay_count ?? 0,
+    rawCount: data.ebay_count ?? 0,
+    soldDataSource: 'cached-ebay',
+    usedCachedPrice: true,
+    cacheSnapshotAt: data.snapshot_at ?? null,
+  };
+}
+
+async function saveCachedEbayCardPrice({
+  cardId,
+  setId = null,
+  summary,
+}) {
+  if (!cardId || summary?.average == null) return;
+
+  const { error } = await supabase
+    .from('market_price_snapshots')
+    .insert({
+      user_id: null,
+      card_id: cardId,
+      set_id: setId || null,
+      tcg_low: null,
+      tcg_mid: null,
+      cardmarket_trend: null,
+      ebay_low: summary.low ?? null,
+      ebay_average: summary.average ?? null,
+      ebay_high: summary.high ?? null,
+      ebay_count: summary.count ?? summary.rawCount ?? 0,
+      snapshot_at: new Date().toISOString(),
+    });
+
+  if (error) {
+    console.log('Cached eBay card price save failed:', error.message);
+  }
+}
+
 function buildCardQuery({ name = '', setName = '', number = '', setTotal = '', rarity = '' }) {
   const parts = [name];
 
@@ -1572,6 +1642,7 @@ app.get('/api/price/ebay', async (req, res) => {
   try {
     const directQuery = String(req.query.q || req.query.query || '').trim();
     const cardId = String(req.query.cardId || '').trim();
+    let setId = String(req.query.setId || '').trim();
     let name = String(req.query.name || '').trim();
     let setName = String(req.query.setName || '').trim();
     let number = String(req.query.number || '').trim();
@@ -1613,7 +1684,7 @@ app.get('/api/price/ebay', async (req, res) => {
     if (cardId && (!setTotal || !setName || !number || !rarity)) {
       const { data: cardRow, error: cardError } = await supabase
         .from('pokemon_cards')
-        .select('name, number, rarity, raw_data')
+        .select('name, number, rarity, set_id, raw_data')
         .eq('id', cardId)
         .maybeSingle();
 
@@ -1625,6 +1696,7 @@ app.get('/api/price/ebay', async (req, res) => {
         name ||= cardRow.name ?? '';
         number ||= cardRow.number ?? '';
         rarity ||= cardRow.rarity ?? '';
+        setId ||= cardRow.set_id ?? cardRow.raw_data?.set?.id ?? '';
         setName ||= cardRow.raw_data?.set?.name ?? '';
         setTotal ||= String(cardRow.raw_data?.set?.printedTotal ?? cardRow.raw_data?.set?.total ?? '');
       }
@@ -1642,19 +1714,81 @@ app.get('/api/price/ebay', async (req, res) => {
     const query = queryParts.filter(Boolean).join(' ');
     
     // Pass full card details for better fallback matching
-    const summary = await fetchEbaySummary(query, {
-      name,
-      setName,
-      number,
-      setTotal,
-      rarity,
-      productType,
-      productSubtype,
-      pricingMode,
-      condition,
-      gradingCompany,
-      grade,
-    });
+    let summary;
+    try {
+      summary = await fetchEbaySummary(query, {
+        name,
+        setName,
+        number,
+        setTotal,
+        rarity,
+        productType,
+        productSubtype,
+        pricingMode,
+        condition,
+        gradingCompany,
+        grade,
+      });
+    } catch (liveError) {
+      const cached = await fetchCachedEbayCardPrice(cardId);
+      if (cached) {
+        return res.json({
+          cardId,
+          name,
+          setName,
+          number,
+          setTotal,
+          collectorNumber: getFullCollectorNumber(number, setTotal),
+          rarity,
+          productType,
+          pricingMode,
+          condition,
+          gradingCompany,
+          grade,
+          query,
+          originalQuery: query,
+          usedFallback: true,
+          livePriceError: getErrorMessage(liveError),
+          ...cached,
+        });
+      }
+
+      throw liveError;
+    }
+
+    if (cardId && isSerpApiQuotaErrorMessage(summary.soldProviderError)) {
+      const cached = await fetchCachedEbayCardPrice(cardId);
+      if (cached) {
+        summary = {
+          ...summary,
+          ...cached,
+          usedFallback: true,
+          livePriceError: summary.soldProviderError,
+        };
+      }
+    }
+
+    if (
+      cardId &&
+      (summary.average != null || summary.low != null || summary.high != null) &&
+      summary.soldDataSource !== 'cached-ebay'
+    ) {
+      saveCachedEbayCardPrice({ cardId, setId, summary }).catch((cacheError) => {
+        console.log('eBay live price cache write failed:', getErrorMessage(cacheError));
+      });
+    }
+
+    if (cardId && summary.average == null) {
+      const cached = await fetchCachedEbayCardPrice(cardId);
+      if (cached) {
+        summary = {
+          ...summary,
+          ...cached,
+          usedFallback: true,
+          livePriceError: summary.soldProviderError ?? 'Live eBay returned no usable price',
+        };
+      }
+    }
 
     return res.json({
       cardId,
