@@ -223,6 +223,7 @@ export default function ProfileScreen() {
   const { theme, isDark, toggleTheme } = useTheme();
   const { mode, setMode } = useAppMode();
   const { profile, loading, refreshProfile } = useProfile();
+  const isAdmin = profile?.role === 'admin';
 
   const [favoriteCard, setFavoriteCard] = useState<any | null>(null);
   const [chaseCard, setChaseCard] = useState<any | null>(null);
@@ -797,6 +798,14 @@ export default function ProfileScreen() {
             label="Community"
             onPress={() => router.push('/(tabs)/community' as any)}
           />
+
+          {isAdmin && (
+            <QuickAction
+              icon="create-outline"
+              label="Social Content Admin"
+              onPress={() => router.push('/admin/social-content' as any)}
+            />
+          )}
         </View>
 
         {/* ACCOUNT */}
