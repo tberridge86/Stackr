@@ -2497,6 +2497,7 @@ app.post('/api/scan/tcg', async (req, res) => {
     return res.json({
       provider: 'ximilar',
       match: result.match ?? null,
+      debug: summarizeXimilarTcgPayload(result.data),
       raw: result.data,
     });
   } catch (error) {
