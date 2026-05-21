@@ -74,6 +74,10 @@ const formatCurrency = (value?: number | null): string => {
   return `£${Number(value).toFixed(2)}`;
 };
 
+const getPreferredBinderCardPrice = (card: any): number => {
+  return card?.ebay_price ?? card?.tcg_price ?? card?.cardmarket_price ?? 0;
+};
+
 const getBinderLogoUrl = (item: BinderRecord): string | null => {
   if (!item.source_set_id) return null;
   if (BINDER_LOGO_OVERRIDES[item.source_set_id]) {
@@ -287,7 +291,7 @@ export default function BinderLibraryScreen() {
           const owned = cards.filter((c) => c.owned).length;
           const totalValue = cards.reduce((sum, card) => {
             if (!card.owned) return sum;
-            const base = card.ebay_price ?? 0;
+            const base = getPreferredBinderCardPrice(card);
             return sum + getEstimatedValue(base, card.condition ?? 'Near Mint');
           }, 0);
           return [binder.id, { owned, total: cards.length, value: totalValue }] as const;

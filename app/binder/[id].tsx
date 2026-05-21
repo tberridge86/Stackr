@@ -127,6 +127,10 @@ const getBaseCardValue = (card: any): number => {
   return card?.ebay_price ?? card?.tcg_price ?? card?.cardmarket_price ?? 0;
 };
 
+const getPreferredBinderCardPrice = (card: BinderCardWithDetails): number => {
+  return card.ebay_price ?? card.tcg_price ?? card.cardmarket_price ?? 0;
+};
+
 const getCardmarketPrice = (binderCard: any): number | null => {
   if (typeof binderCard?.cardmarket_price === 'number') return binderCard.cardmarket_price;
   const prices = binderCard?.card?.cardmarket?.prices;
@@ -523,6 +527,21 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     }
   }
   const progressPercent = totalCount ? Math.round((ownedCount / totalCount) * 100) : 0;
+  const binderValue = useMemo(() => {
+    return cards.reduce((sum, card) => {
+      const variants = masterSetEnabled ? getVariants(card.card, card.set_id) : ['card'];
+      const ownedUnits = masterSetEnabled
+        ? variants.filter((variant) => ownedVariants.has(`${card.card_id}:${variant}`)).length
+        : card.owned
+          ? 1
+          : 0;
+
+      if (!ownedUnits) return sum;
+
+      const base = getPreferredBinderCardPrice(card);
+      return sum + getEstimatedValue(base, card.condition || 'Near Mint') * ownedUnits;
+    }, 0);
+  }, [cards, masterSetEnabled, ownedVariants]);
 
   // ===============================
   // VISIBILITY TOGGLE
@@ -706,7 +725,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     }
 
     try {
-  await updateBinderCardOwned(item.id, newOwned, {
+  const latestPrice = await updateBinderCardOwned(item.id, newOwned, {
     cardName: item.card?.name ?? item.card_name ?? null,
     cardNumber: item.card?.number ?? item.card_number ?? null,
     imageUrl: item.card?.images?.small ?? item.image_url ?? null,
@@ -715,8 +734,25 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     condition: item.condition,
   });
   setCards((prev) =>
-    prev.map((c) => (c.id === item.id ? { ...c, owned: newOwned } : c))
+    prev.map((c) => (c.id === item.id ? {
+      ...c,
+      owned: newOwned,
+      ebay_price: latestPrice?.ebay_price ?? c.ebay_price,
+      tcg_price: latestPrice?.tcg_price ?? c.tcg_price,
+      cardmarket_price: latestPrice?.cardmarket_price ?? c.cardmarket_price,
+      last_price_update: latestPrice?.last_price_update ?? c.last_price_update,
+    } : c))
   );
+  if (selectedCard?.id === item.id) {
+    setSelectedCard((prev) => prev ? {
+      ...prev,
+      owned: newOwned,
+      ebay_price: latestPrice?.ebay_price ?? prev.ebay_price,
+      tcg_price: latestPrice?.tcg_price ?? prev.tcg_price,
+      cardmarket_price: latestPrice?.cardmarket_price ?? prev.cardmarket_price,
+      last_price_update: latestPrice?.last_price_update ?? prev.last_price_update,
+    } : prev);
+  }
 } catch (error) {
   console.log('Rollback owned toggle', error);
   setCards((prev) =>
@@ -1490,6 +1526,19 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
               {ownedCount} / {totalCount} owned · {progressPercent}%
             </Text>
+
+            <View style={{
+              backgroundColor: theme.colors.primary + '16',
+              borderRadius: 999,
+              paddingHorizontal: 9,
+              paddingVertical: 3,
+              borderWidth: 1,
+              borderColor: theme.colors.primary + '35',
+            }}>
+              <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>
+                {formatCurrency(binderValue)}
+              </Text>
+            </View>
 
             {binder.edition && (
               <View style={{

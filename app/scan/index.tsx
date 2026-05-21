@@ -1556,8 +1556,9 @@ export default function ScanScreen() {
     try {
       // Step 1: capture at fast profile
       const scanWallStartedAt = Date.now();
+      const expectedSetId = selectedBinder?.source_set_id ?? null;
       const initialScanProfile =
-        !isAuto && isMarketMode && !selectedBinder?.source_set_id
+        !isAuto && isMarketMode && !expectedSetId
           ? MARKET_XIMILAR_SCAN_PROFILE
           : isAuto
             ? FAST_SCAN_PROFILE
@@ -1571,14 +1572,26 @@ export default function ScanScreen() {
       const elapsedScanMs = () => Date.now() - scanStartedAt;
       const hasFastScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_SOFT_BUDGET_MS;
       const hasHardScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_HARD_BUDGET_MS;
-      const expectedSetId = selectedBinder?.source_set_id ?? null;
-      let printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
-        fastRegions: PRIMARY_NUMBER_OCR_REGIONS,
-        includeFallbackRegions: false,
-        includeFullCard: false,
-      });
+      const shouldDeferInitialNumberOcr = isMarketMode && !isAuto && !expectedSetId;
+      let printedNumber: PrintedNumber | null = null;
       let triedFallbackNumberRegions = false;
-      const numberOcrDoneAt = Date.now();
+      let numberOcrDoneAt = captureDoneAt;
+      let attemptedInitialNumberOcr = false;
+      const readInitialPrintedNumber = async () => {
+        if (attemptedInitialNumberOcr) return printedNumber;
+        attemptedInitialNumberOcr = true;
+        printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
+          fastRegions: PRIMARY_NUMBER_OCR_REGIONS,
+          includeFallbackRegions: false,
+          includeFullCard: false,
+        });
+        numberOcrDoneAt = Date.now();
+        return printedNumber;
+      };
+
+      if (!shouldDeferInitialNumberOcr) {
+        await readInitialPrintedNumber();
+      }
       let cachedNameText: string | null = null;
       let cachedTotalHintText: string | null = null;
       const getNameText = async (uri: string, width: number, height: number) => {
@@ -1601,7 +1614,7 @@ export default function ScanScreen() {
         console.log('[market-scan] primary provider: ximilar');
         const ximilarParsed = await identifyWithXimilarTcg(bestBase64, false);
         match = isUsableXimilarParsedCard(ximilarParsed)
-          ? await lookupParsedCard(ximilarParsed, printedNumber, null)
+          ? await lookupParsedCard(ximilarParsed, shouldDeferInitialNumberOcr ? null : printedNumber, null)
           : null;
         console.log('[market-scan] local resolve after Ximilar', {
           provider: 'ximilar',
@@ -1623,7 +1636,7 @@ export default function ScanScreen() {
           console.log('[market-scan] retrying Ximilar with Magic AI');
           const ximilarMagicParsed = await identifyWithXimilarTcg(bestBase64, true);
           match = isUsableXimilarParsedCard(ximilarMagicParsed)
-            ? await lookupParsedCard(ximilarMagicParsed, printedNumber, null)
+            ? await lookupParsedCard(ximilarMagicParsed, shouldDeferInitialNumberOcr ? null : printedNumber, null)
             : null;
           console.log('[market-scan] local resolve after Magic AI', {
             parsed: ximilarMagicParsed ? {
@@ -1641,6 +1654,10 @@ export default function ScanScreen() {
             } : null,
           });
         }
+      }
+
+      if (!match && shouldDeferInitialNumberOcr) {
+        await readInitialPrintedNumber();
       }
 
       // Duplicate frame check
