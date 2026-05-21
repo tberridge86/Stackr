@@ -12,6 +12,7 @@ import {
   Modal,
   Alert,
   ScrollView,
+  Linking,
 } from 'react-native';
 import { Text } from '../../../components/Text';
 import { FeatureTipGate } from '../../../components/FeatureTipModal';
@@ -78,6 +79,8 @@ type LocalStore = {
   town: string | null;
   postcode: string | null;
   website_url: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 type LocalFeaturedEvent = {
@@ -122,12 +125,17 @@ type LiveLocalPlace = {
   category?: string;
   latitude?: number;
   longitude?: number;
+  website_url?: string | null;
+  phone?: string | null;
+  opening_hours?: string | null;
+  distance_miles?: number | null;
 };
 type LocalPoint = {
   label: string;
   latitude: number;
   longitude: number;
 };
+type SelectedShop = LiveLocalPlace | LocalStore;
 
 const LOCAL_TCG_KEYWORDS = [
   'pokemon',
