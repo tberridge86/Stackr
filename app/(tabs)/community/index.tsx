@@ -116,6 +116,7 @@ type CommunityNewsItem = {
   category: string | null;
   icon: keyof typeof Ionicons.glyphMap;
   external_url: string | null;
+  source_name: string | null;
   published_at: string | null;
 };
 type LiveLocalPlace = {
@@ -216,6 +217,45 @@ function getNearestStoreMeta(place: LiveLocalPlace | LocalStore | null) {
   return place.town ?? 'Use Local to find shops near you.';
 }
 
+function getLocalRadiusMiles(value: string) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 15;
+  return Math.min(100, Math.max(1, parsed));
+}
+
+function getShopAddress(shop: SelectedShop | null) {
+  if (!shop) return '';
+  if (isLiveLocalPlace(shop)) return shop.formatted_address;
+  return [shop.town, shop.postcode].filter(Boolean).join(' ');
+}
+
+function getShopWebsite(shop: SelectedShop | null) {
+  if (!shop) return null;
+  return isLiveLocalPlace(shop) ? shop.website_url ?? null : shop.website_url ?? null;
+}
+
+function getShopDistanceLabel(shop: SelectedShop | null, point: LocalPoint | null) {
+  if (!shop) return null;
+  if (isLiveLocalPlace(shop) && typeof shop.distance_miles === 'number') {
+    return `${shop.distance_miles.toFixed(1)} mi away`;
+  }
+  const miles = distanceMiles(point, shop);
+  return miles == null ? null : `${miles.toFixed(1)} mi away`;
+}
+
+function buildDirectionsUrl(shop: SelectedShop) {
+  const destination = typeof shop.latitude === 'number' && typeof shop.longitude === 'number'
+    ? `${shop.latitude},${shop.longitude}`
+    : `${shop.name} ${getShopAddress(shop)}`.trim();
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
+}
+
+async function openExternalUrl(url: string) {
+  const safeUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  await Linking.openURL(safeUrl);
+}
+
 function timeAgo(dateString: string) {
   const then = new Date(dateString).getTime();
   const now = Date.now();
@@ -260,10 +300,12 @@ export default function CommunityScreen() {
   const [selectedBinder, setSelectedBinder] = useState<BinderOption | null>(null);
   const [friends, setFriends] = useState<any[]>([]);
   const [localStoreSearch, setLocalStoreSearch] = useState('');
+  const [localRadiusMiles, setLocalRadiusMiles] = useState('15');
   const [localSearchPoint, setLocalSearchPoint] = useState<LocalPoint | null>(null);
   const [localFilter, setLocalFilter] = useState<LocalFilter>('Stores');
   const [localStores, setLocalStores] = useState<LocalStore[]>([]);
   const [liveLocalPlaces, setLiveLocalPlaces] = useState<LiveLocalPlace[]>([]);
+  const [selectedShop, setSelectedShop] = useState<SelectedShop | null>(null);
   const [localFeaturedEvents, setLocalFeaturedEvents] = useState<LocalFeaturedEvent[]>([]);
   const [localMeetups, setLocalMeetups] = useState<LocalMeetup[]>([]);
   const [communityNews, setCommunityNews] = useState<CommunityNewsItem[]>([]);
@@ -544,7 +586,7 @@ export default function CommunityScreen() {
       const [storesResult, eventsResult, meetupsResult] = await Promise.all([
         supabase
           .from('local_stores')
-          .select('id, name, description, town, postcode, website_url')
+          .select('id, name, description, town, postcode, website_url, latitude, longitude')
           .eq('is_published', true)
           .order('name', { ascending: true })
           .limit(25),
@@ -587,7 +629,7 @@ export default function CommunityScreen() {
     try {
       const { data, error } = await supabase
         .from('community_news')
-        .select('id, title, body, category, icon, external_url, published_at')
+        .select('id, title, body, category, icon, external_url, source_name, published_at')
         .eq('is_published', true)
         .order('sort_order', { ascending: true })
         .order('published_at', { ascending: false })
@@ -663,7 +705,7 @@ export default function CommunityScreen() {
           const miles = Number.isFinite(latitude) && Number.isFinite(longitude) && point
             ? distanceMiles(point, { latitude, longitude })
             : null;
-          if (miles != null && miles > 15) return null;
+          if (miles != null && miles > getLocalRadiusMiles(localRadiusMiles)) return null;
           const address = [
             tags['addr:housenumber'],
             tags['addr:street'],
@@ -677,6 +719,10 @@ export default function CommunityScreen() {
             category: tags.shop ? String(tags.shop) : tags.amenity ? String(tags.amenity) : 'local',
             latitude: Number.isFinite(latitude) ? latitude : undefined,
             longitude: Number.isFinite(longitude) ? longitude : undefined,
+            website_url: tags.website ?? tags['contact:website'] ?? null,
+            phone: tags.phone ?? tags['contact:phone'] ?? null,
+            opening_hours: tags.opening_hours ?? null,
+            distance_miles: miles,
           } as LiveLocalPlace;
         })
         .filter(Boolean)
@@ -695,7 +741,7 @@ export default function CommunityScreen() {
     } finally {
       setLiveLocalLoading(false);
     }
-  }, []);
+  }, [localRadiusMiles]);
 
   useEffect(() => {
     if (activeSocialTab !== 'Local') return;
@@ -952,11 +998,9 @@ export default function CommunityScreen() {
       { icon: 'swap-horizontal-outline', label: 'Trade Tables' },
     ],
     News: [
-      { icon: 'newspaper-outline', label: 'Latest' },
-      { icon: 'sparkles-outline', label: 'New Sets' },
-      { icon: 'calendar-outline', label: 'Releases' },
-      { icon: 'trophy-outline', label: 'Events' },
-      { icon: 'pricetag-outline', label: 'Market' },
+      { icon: 'megaphone-outline', label: 'Latest Stackr news' },
+      { icon: 'newspaper-outline', label: 'Pokemon News' },
+      { icon: 'sparkles-outline', label: 'New card set news' },
     ],
   };
   const activeSocialCategories = socialCategories[activeSocialTab] ?? [];
@@ -972,17 +1016,26 @@ export default function CommunityScreen() {
     { icon: 'people-outline' as const, title: 'Meet ups', body: 'Discover collector meet ups and casual trades.' },
     { icon: 'calendar-outline' as const, title: 'Trade nights', body: 'See upcoming events and table nights.' },
   ];
-  const localStoreResults = localStores.filter((store) =>
-    !localStoreSearch.trim() ||
-    store.name.toLowerCase().includes(localStoreSearch.trim().toLowerCase())
-    || (store.town ?? '').toLowerCase().includes(localStoreSearch.trim().toLowerCase())
-    || (store.postcode ?? '').toLowerCase().includes(localStoreSearch.trim().toLowerCase())
-  );
+  const radiusMiles = getLocalRadiusMiles(localRadiusMiles);
+  const localStoreResults = localStores
+    .map((store) => ({ store, miles: distanceMiles(localSearchPoint, store) }))
+    .filter(({ store, miles }) => {
+      if (localSearchPoint && miles != null) return miles <= radiusMiles;
+      if (localSearchPoint && miles == null) {
+        const searchTerm = localStoreSearch.trim().toLowerCase();
+        return [store.name, store.town, store.postcode].some((value) => (value ?? '').toLowerCase().includes(searchTerm));
+      }
+      return !localStoreSearch.trim() ||
+        store.name.toLowerCase().includes(localStoreSearch.trim().toLowerCase())
+        || (store.town ?? '').toLowerCase().includes(localStoreSearch.trim().toLowerCase())
+        || (store.postcode ?? '').toLowerCase().includes(localStoreSearch.trim().toLowerCase());
+    })
+    .sort((a, b) => (a.miles ?? 9999) - (b.miles ?? 9999));
   const nearbyLocalMeetups = localSearchPoint
     ? localMeetups
         .map((event) => ({ event, miles: distanceMiles(localSearchPoint, event) }))
         .filter(({ miles, event }) => {
-          if (miles != null) return miles <= 25;
+          if (miles != null) return miles <= radiusMiles;
           const searchTerm = localStoreSearch.trim().toLowerCase();
           return [event.postcode, event.town, event.location_name].some((value) => (value ?? '').toLowerCase().includes(searchTerm));
         })
@@ -992,29 +1045,35 @@ export default function CommunityScreen() {
     ? localFeaturedEvents
         .map((event) => ({ event, miles: distanceMiles(localSearchPoint, event) }))
         .filter(({ miles, event }) => {
-          if (miles != null) return miles <= 25;
+          if (miles != null) return miles <= radiusMiles;
           const searchTerm = localStoreSearch.trim().toLowerCase();
           return [event.postcode, event.town, event.venue_name].some((value) => (value ?? '').toLowerCase().includes(searchTerm));
         })
         .sort((a, b) => (a.miles ?? 9999) - (b.miles ?? 9999))
     : localFeaturedEvents.map((event) => ({ event, miles: null as number | null }));
   const defaultNewsItems = [
-    { icon: 'newspaper-outline' as const, title: 'Pokemon news hub', body: 'Latest set news, release notes, announcements, and market-moving updates will live here.' },
-    { icon: 'sparkles-outline' as const, title: 'New releases', body: 'Track upcoming English and Japanese set launches.' },
-    { icon: 'megaphone-outline' as const, title: 'Stackr updates', body: 'Use this area for app news, feature updates, and admin posts.' },
+    { icon: 'megaphone-outline' as const, title: 'Stackr beta updates', body: 'App updates posted by the Stackr team will appear here.', category: 'Latest Stackr news', external_url: null, source_name: 'Stackr' },
+    { icon: 'newspaper-outline' as const, title: 'Pokemon news hub', body: 'Major Pokemon game, market, and collecting news will appear here.', category: 'Pokemon News', external_url: null, source_name: 'Stackr' },
+    { icon: 'sparkles-outline' as const, title: 'New card set news', body: 'Upcoming set names, release dates, and TCG product news will appear here.', category: 'New card set news', external_url: null, source_name: 'Stackr' },
   ];
   const newsItems = communityNews.length
     ? communityNews.map((item) => ({
         icon: item.icon || 'newspaper-outline' as const,
         title: item.title,
         body: item.body,
+        category: item.category ?? 'Pokemon News',
+        external_url: item.external_url,
+        source_name: item.source_name,
       }))
     : defaultNewsItems;
+  const visibleNewsItems = activeCategory === 'All'
+    ? newsItems
+    : newsItems.filter((item) => item.category === activeCategory);
   const latestFlexPosts = posts
     .filter((post) => post.post_type === 'card_showcase' || post.post_type === 'binder_showcase')
     .slice(0, 10);
   const soonestConvention = localFeaturedEvents[0] ?? null;
-  const nearestStore: LiveLocalPlace | LocalStore | null = liveLocalPlaces[0] ?? localStoreResults[0] ?? null;
+  const nearestStore: LiveLocalPlace | LocalStore | null = liveLocalPlaces[0] ?? localStoreResults[0]?.store ?? null;
   const latestNewsItem = newsItems[0];
 
   const renderOwnedCard = ({ item }: { item: OwnedCardOption }) => {
@@ -1200,31 +1259,38 @@ export default function CommunityScreen() {
         </View>
 
         {activeSocialTab === 'News' && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryStrip}
-        >
-          {[{ icon: 'apps-outline' as const, label: 'All' }, ...activeSocialCategories].map((item) => {
-            const active = activeCategory === item.label;
-            return (
-              <Pressable
-                key={item.label}
-                onPress={() => setActiveCategory(item.label)}
-                style={[styles.categoryChip, active && styles.categoryChipActive]}
-              >
-                <Ionicons
-                  name={item.icon}
-                  size={16}
-                  color={active ? theme.colors.primary : theme.colors.textSoft}
-                />
-                <Text style={[styles.categoryChipText, active && styles.categoryChipTextActive]}>
-                  {item.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+          <View style={styles.newsCategoryWrap}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.newsCategoryStrip}
+            >
+              {[{ icon: 'apps-outline' as const, label: 'All' }, ...activeSocialCategories].map((item) => {
+                const active = activeCategory === item.label;
+                return (
+                  <Pressable
+                    key={item.label}
+                    onPress={() => setActiveCategory(item.label)}
+                    style={[styles.newsCategoryChip, active && styles.newsCategoryChipActive]}
+                  >
+                    <Ionicons
+                      name={item.icon}
+                      size={15}
+                      color={active ? theme.colors.primary : theme.colors.textSoft}
+                    />
+                    <Text
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.88}
+                      style={[styles.newsCategoryChipText, active && styles.newsCategoryChipTextActive]}
+                    >
+                      {item.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
         )}
 
         {activeSocialTab === 'Home' && (
@@ -1330,6 +1396,17 @@ export default function CommunityScreen() {
                     <Text style={[styles.localSearchChipText, localFilter === label && styles.localSearchChipTextActive]}>{label}</Text>
                   </Pressable>
                 ))}
+                <View style={styles.localRadiusControl}>
+                  <Text style={styles.localRadiusLabel}>Within</Text>
+                  <TextInput
+                    value={localRadiusMiles}
+                    onChangeText={(value) => setLocalRadiusMiles(value.replace(/[^0-9.]/g, ''))}
+                    keyboardType="decimal-pad"
+                    style={styles.localRadiusInput}
+                    maxLength={4}
+                  />
+                  <Text style={styles.localRadiusLabel}>mi</Text>
+                </View>
               </View>
             </View>
 
@@ -1363,7 +1440,7 @@ export default function CommunityScreen() {
                 <ActivityIndicator color={theme.colors.primary} style={{ marginVertical: 8 }} />
               )}
               {liveLocalPlaces.map((place) => (
-                <View key={place.place_id} style={styles.localStoreRow}>
+                <Pressable key={place.place_id} onPress={() => setSelectedShop(place)} style={styles.localStoreRow}>
                   <View style={styles.localStoreIcon}>
                     <Ionicons name="map-outline" size={19} color={theme.colors.primary} />
                   </View>
@@ -1372,11 +1449,13 @@ export default function CommunityScreen() {
                     <Text style={styles.localEventMeta}>{place.formatted_address || 'OpenStreetMap result'}</Text>
                     {!!place.category && <Text style={styles.localEventMeta}>{place.category}</Text>}
                   </View>
-                  <Text style={styles.localDistance}>Live</Text>
-                </View>
+                  <Text style={styles.localDistance}>
+                    {typeof place.distance_miles === 'number' ? `${place.distance_miles.toFixed(1)} mi` : 'Live'}
+                  </Text>
+                </Pressable>
               ))}
-              {!liveLocalPlaces.length && localStoreResults.map((store) => (
-                <View key={store.id} style={styles.localStoreRow}>
+              {!liveLocalPlaces.length && localStoreResults.map(({ store, miles }) => (
+                <Pressable key={store.id} onPress={() => setSelectedShop(store)} style={styles.localStoreRow}>
                   <View style={styles.localStoreIcon}>
                     <Ionicons name="storefront-outline" size={19} color={theme.colors.primary} />
                   </View>
@@ -1386,8 +1465,8 @@ export default function CommunityScreen() {
                       {store.description ?? [store.town, store.postcode].filter(Boolean).join(' ') ?? 'Local card store'}
                     </Text>
                   </View>
-                  <Text style={styles.localDistance}>{store.town ?? 'Local'}</Text>
-                </View>
+                  <Text style={styles.localDistance}>{miles != null ? `${miles.toFixed(1)} mi` : store.town ?? 'Local'}</Text>
+                </Pressable>
               ))}
               {!liveLocalLoading && !liveLocalPlaces.length && !localStoreResults.length && (
                 <Text style={styles.localEmptyText}>
@@ -1486,18 +1565,30 @@ export default function CommunityScreen() {
         )}
 
         {activeSocialTab === 'News' && (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-            {newsItems.map((item) => (
-              <View key={item.title} style={styles.newsCard}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.newsListContent}>
+            {visibleNewsItems.map((item) => (
+              <Pressable
+                key={`${item.category}-${item.title}`}
+                onPress={() => item.external_url && openExternalUrl(item.external_url)}
+                disabled={!item.external_url}
+                style={styles.newsCard}
+              >
                 <View style={styles.newsIcon}>
                   <Ionicons name={item.icon} size={24} color={theme.colors.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.newsTitle}>{item.title}</Text>
                   <Text style={styles.newsBody}>{item.body}</Text>
+                  <Text style={styles.newsSource}>
+                    {[item.category, item.source_name].filter(Boolean).join(' · ')}
+                  </Text>
                 </View>
-              </View>
+                {!!item.external_url && <Ionicons name="open-outline" size={17} color={theme.colors.textSoft} />}
+              </Pressable>
             ))}
+            {!visibleNewsItems.length && (
+              <Text style={styles.localEmptyText}>No news in this category yet.</Text>
+            )}
           </ScrollView>
         )}
 
@@ -1632,6 +1723,67 @@ export default function CommunityScreen() {
 
       </View>
 
+      <Modal visible={!!selectedShop} animationType="slide" transparent>
+        <View style={styles.meetupModalBackdrop}>
+          <View style={styles.shopModalCard}>
+            <View style={styles.panelHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.modalHeading}>{selectedShop?.name ?? 'Local shop'}</Text>
+                <Text style={styles.modalSubheading}>
+                  {getShopDistanceLabel(selectedShop, localSearchPoint) ?? 'Local card shop'}
+                </Text>
+              </View>
+              <Pressable onPress={() => setSelectedShop(null)} style={styles.modalCloseIcon}>
+                <Ionicons name="close" size={18} color={theme.colors.text} />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.shopDetailScroller} contentContainerStyle={styles.shopDetailBlock} showsVerticalScrollIndicator={false}>
+              <InfoLine icon="location-outline" label="Address" value={getShopAddress(selectedShop) || 'Address not listed'} iconColor={theme.colors.primary} styles={styles} />
+              {selectedShop && isLiveLocalPlace(selectedShop) && (
+                <>
+                  <InfoLine icon="time-outline" label="Opening times" value={selectedShop.opening_hours ?? 'Opening times not listed'} iconColor={theme.colors.primary} styles={styles} />
+                  <InfoLine icon="call-outline" label="Phone" value={selectedShop.phone ?? 'Phone not listed'} iconColor={theme.colors.primary} styles={styles} />
+                </>
+              )}
+              <InfoLine icon="globe-outline" label="Website" value={getShopWebsite(selectedShop) ?? 'Website not listed'} iconColor={theme.colors.primary} styles={styles} />
+            </ScrollView>
+
+            <View style={styles.shopActionRow}>
+              {selectedShop && (
+                <Pressable
+                  onPress={() => Linking.openURL(buildDirectionsUrl(selectedShop))}
+                  style={styles.shopActionButton}
+                >
+                  <Ionicons name="navigate-outline" size={18} color="#FFFFFF" />
+                  <Text style={styles.shopActionButtonText}>Navigate</Text>
+                </Pressable>
+              )}
+
+              {!!getShopWebsite(selectedShop) && (
+                <Pressable
+                  onPress={() => openExternalUrl(getShopWebsite(selectedShop) as string)}
+                  style={styles.shopSecondaryButton}
+                >
+                  <Ionicons name="globe-outline" size={18} color={theme.colors.primary} />
+                  <Text style={styles.shopSecondaryButtonText}>Website</Text>
+                </Pressable>
+              )}
+
+              {selectedShop && isLiveLocalPlace(selectedShop) && !!selectedShop.phone && (
+                <Pressable
+                  onPress={() => Linking.openURL(`tel:${selectedShop.phone}`)}
+                  style={styles.shopSecondaryButton}
+                >
+                  <Ionicons name="call-outline" size={18} color={theme.colors.primary} />
+                  <Text style={styles.shopSecondaryButtonText}>Call</Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <Modal visible={cardModalOpen} animationType="slide">
         <SafeAreaView style={styles.safe}>
           <View style={styles.modalContainer}>
@@ -1735,6 +1887,30 @@ export default function CommunityScreen() {
   );
 }
 
+function InfoLine({
+  icon,
+  label,
+  value,
+  iconColor,
+  styles,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+  iconColor: string;
+  styles: ReturnType<typeof makeStyles>;
+}) {
+  return (
+    <View style={styles.shopInfoLine}>
+      <Ionicons name={icon} size={18} color={iconColor} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.shopInfoLabel}>{label}</Text>
+        <Text style={styles.shopInfoValue}>{value}</Text>
+      </View>
+    </View>
+  );
+}
+
 async function geocodeLocalSearch(text: string): Promise<LocalPoint | null> {
   const queryText = text.trim();
   if (queryText.length < 2) return null;
@@ -1791,7 +1967,7 @@ function makeStyles(theme: any) {
   hero: {
     position: 'relative',
     paddingBottom: 8,
-    overflow: 'hidden',
+    overflow: 'visible',
   },
 
   brandRow: {
@@ -1858,7 +2034,7 @@ function makeStyles(theme: any) {
 
   heroOrbLarge: {
     position: 'absolute',
-    right: -56,
+    right: 0,
     top: 34,
     width: 98,
     height: 98,
@@ -1961,6 +2137,56 @@ function makeStyles(theme: any) {
   },
 
   categoryChipTextActive: {
+    color: theme.colors.primary,
+  },
+
+  newsCategoryWrap: {
+    height: 58,
+    justifyContent: 'center',
+    overflow: 'visible',
+    marginBottom: 6,
+    marginRight: -14,
+  },
+
+  newsCategoryStrip: {
+    gap: 8,
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingRight: 32,
+    alignItems: 'center',
+  },
+
+  newsCategoryChip: {
+    height: 38,
+    flexGrow: 0,
+    flexShrink: 0,
+    minWidth: 64,
+    maxWidth: 178,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+
+  newsCategoryChipActive: {
+    backgroundColor: theme.colors.primary + '14',
+    borderColor: theme.colors.primary,
+  },
+
+  newsCategoryChipText: {
+    color: theme.colors.textSoft,
+    fontWeight: '900',
+    fontSize: 12,
+    flexShrink: 1,
+    includeFontPadding: false,
+  },
+
+  newsCategoryChipTextActive: {
     color: theme.colors.primary,
   },
 
@@ -2254,6 +2480,7 @@ function makeStyles(theme: any) {
 
   localSearchQuickRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     marginTop: 10,
   },
@@ -2280,6 +2507,37 @@ function makeStyles(theme: any) {
 
   localSearchChipTextActive: {
     color: '#FFFFFF',
+  },
+
+  localRadiusControl: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: theme.colors.bg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+
+  localRadiusLabel: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+
+  localRadiusInput: {
+    width: 42,
+    minHeight: 26,
+    borderRadius: 9,
+    backgroundColor: theme.colors.card,
+    color: theme.colors.text,
+    fontSize: 12,
+    fontWeight: '900',
+    textAlign: 'center',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
   },
 
   localHeroPanel: {
@@ -2537,6 +2795,101 @@ function makeStyles(theme: any) {
     paddingBottom: 16,
   },
 
+  shopModalCard: {
+    backgroundColor: theme.colors.card,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 36,
+    maxHeight: '70%',
+    marginBottom: 26,
+  },
+
+  shopDetailScroller: {
+    maxHeight: 330,
+  },
+
+  shopDetailBlock: {
+    gap: 10,
+    paddingTop: 4,
+    paddingBottom: 14,
+  },
+
+  shopInfoLine: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.bg,
+    padding: 11,
+  },
+
+  shopInfoIcon: {
+    color: theme.colors.primary,
+  },
+
+  shopInfoLabel: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '900',
+    marginBottom: 2,
+  },
+
+  shopInfoValue: {
+    color: theme.colors.text,
+    fontSize: 13,
+    fontWeight: '800',
+    lineHeight: 18,
+  },
+
+  shopActionRow: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+    paddingTop: 2,
+  },
+
+  shopActionButton: {
+    flexGrow: 1,
+    minHeight: 44,
+    borderRadius: 13,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    paddingHorizontal: 12,
+  },
+
+  shopActionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+
+  shopSecondaryButton: {
+    flexGrow: 1,
+    minHeight: 44,
+    borderRadius: 13,
+    backgroundColor: theme.colors.primary + '12',
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '35',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 7,
+    paddingHorizontal: 12,
+  },
+
+  shopSecondaryButtonText: {
+    color: theme.colors.primary,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+
   flexPickerModalCard: {
     backgroundColor: theme.colors.card,
     borderTopLeftRadius: 26,
@@ -2599,6 +2952,18 @@ function makeStyles(theme: any) {
     fontSize: 12,
     lineHeight: 18,
     marginTop: 4,
+  },
+
+  newsSource: {
+    color: theme.colors.primary,
+    fontSize: 11,
+    fontWeight: '900',
+    marginTop: 8,
+  },
+
+  newsListContent: {
+    paddingBottom: 120,
+    paddingRight: 2,
   },
 
   sharePanel: {

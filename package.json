@@ -15,6 +15,7 @@
     "sync-market-products-tcgcsv": "tsx scripts/sync-market-products-tcgcsv.ts",
     "discover-market-products-tcgcsv": "tsx scripts/discover-market-products-tcgcsv.ts",
     "backfill-tcgcsv-history": "tsx scripts/backfill-tcgcsv-history.ts",
+    "sync-community-news": "tsx scripts/sync-community-news.ts",
     "fingerprint-cards": "npm --prefix scripts/card-fingerprinter start",
     "clip-embed-cards": "npm --prefix scripts/card-clip-embedder start",
     "build-scanner-pack": "tsx scripts/build-scanner-pack.ts"

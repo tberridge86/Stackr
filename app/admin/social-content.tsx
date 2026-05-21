@@ -44,7 +44,7 @@ function emptyForm() {
     website: '',
     url: '',
     startsAt: '',
-    category: 'Latest',
+    category: 'Latest Stackr news',
     icon: 'newspaper-outline',
   };
 }
@@ -253,7 +253,21 @@ export default function AdminSocialContentScreen() {
               <>
                 <Field label="Title" value={form.title} onChangeText={(text) => updateField('title', text)} styles={styles} />
                 <Field label="Body" value={form.body} onChangeText={(text) => updateField('body', text)} multiline styles={styles} />
-                <Field label="Category" value={form.category} onChangeText={(text) => updateField('category', text)} styles={styles} />
+                <Text style={styles.label}>Category</Text>
+                <View style={styles.iconChoiceRow}>
+                  {['Latest Stackr news', 'Pokemon News', 'New card set news'].map((category) => {
+                    const selected = form.category === category;
+                    return (
+                      <Pressable
+                        key={category}
+                        onPress={() => updateField('category', category)}
+                        style={[styles.categoryChoice, selected && styles.categoryChoiceActive]}
+                      >
+                        <Text style={[styles.categoryChoiceText, selected && styles.categoryChoiceTextActive]}>{category}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
                 <Text style={styles.label}>Icon</Text>
                 <View style={styles.iconChoiceRow}>
                   {NEWS_ICONS.map((icon) => {
@@ -455,6 +469,26 @@ function makeStyles(theme: any) {
     iconChoiceActive: {
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.primary + '14',
+    },
+    categoryChoice: {
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.background,
+      paddingHorizontal: 10,
+      paddingVertical: 8,
+    },
+    categoryChoiceActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary + '14',
+    },
+    categoryChoiceText: {
+      color: theme.colors.textSoft,
+      fontSize: 11,
+      fontWeight: '900',
+    },
+    categoryChoiceTextActive: {
+      color: theme.colors.primary,
     },
     saveButton: {
       minHeight: 50,
