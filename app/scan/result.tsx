@@ -16,6 +16,7 @@ import { supabase } from '../../lib/supabase';
 import { fetchBinders } from '../../lib/binders';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { getPriceFromPokemonCard } from '../../lib/pricing';
+import { EUR_TO_GBP, USD_TO_GBP } from '../../lib/config';
 
 type TCGCard = {
   id: string;
@@ -111,12 +112,47 @@ export default function ScanResultScreen() {
         setTcgLoading(true);
         setTcgPrice(null);
 
+        const { data: snapshot } = await supabase
+          .from('market_price_snapshots')
+          .select('tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
+          .eq('card_id', selectedCard.id)
+          .order('snapshot_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (snapshot?.tcg_mid != null || snapshot?.tcg_low != null) {
+          setTcgPrice(Number(snapshot.tcg_mid ?? snapshot.tcg_low));
+          return;
+        }
+
+        const { data: cachedCard } = await supabase
+          .from('pokemon_cards')
+          .select('raw_data')
+          .eq('id', selectedCard.id)
+          .maybeSingle();
+
+        const cachedRaw = cachedCard?.raw_data;
+        const cachedTcgUsd = getPriceFromPokemonCard(cachedRaw);
+        if (cachedTcgUsd != null) {
+          setTcgPrice(Number((cachedTcgUsd * USD_TO_GBP).toFixed(2)));
+          return;
+        }
+
+        const cardmarketEur =
+          cachedRaw?.cardmarket?.prices?.trendPrice ??
+          cachedRaw?.cardmarket?.prices?.averageSellPrice ??
+          cachedRaw?.cardmarket?.prices?.avg30;
+        if (typeof cardmarketEur === 'number') {
+          setTcgPrice(Number((cardmarketEur * EUR_TO_GBP).toFixed(2)));
+          return;
+        }
+
         const response = await fetch(`https://api.pokemontcg.io/v2/cards/${selectedCard.id}`);
         const json = await response.json();
-        const card = json?.data?.[0];
+        const card = json?.data;
         const price = getPriceFromPokemonCard(card);
 
-        setTcgPrice(price);
+        setTcgPrice(price == null ? null : Number((price * USD_TO_GBP).toFixed(2)));
       } catch {
         setTcgPrice(null);
       } finally {
@@ -403,7 +439,7 @@ export default function ScanResultScreen() {
               ) : tcgPrice ? (
                 <View style={{ alignItems: 'center' }}>
                   <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>
-                    ${tcgPrice.toFixed(2)}
+                    £{tcgPrice.toFixed(2)}
                   </Text>
                 </View>
               ) : (
