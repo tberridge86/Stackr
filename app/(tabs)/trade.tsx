@@ -33,7 +33,7 @@ import {
   TradeOffer,
 } from '../../lib/tradeOffers';
 import { supabase } from '../../lib/supabase';
-import { PRICE_API_URL } from '../../lib/config';
+import { BETA_TRADE_DEMO_MODE, PRICE_API_URL } from '../../lib/config';
 import { getProductPriceWithFallback } from '../../lib/productSearch';
 import type { ProductLookupType } from '../../lib/productSearch';
 
@@ -1201,6 +1201,24 @@ const handleArchive = async (listingId: string) => {
           Trade listings, offers, and wanted cards
         </Text>
       </View>
+
+      {BETA_TRADE_DEMO_MODE && (
+        <View style={{
+          backgroundColor: '#FEF3C7',
+          borderColor: '#F59E0B',
+          borderWidth: 1,
+          borderRadius: 12,
+          padding: 12,
+          marginBottom: 12,
+        }}>
+          <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '900' }}>
+            DEMO TRADES - BETA ONLY
+          </Text>
+          <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, marginTop: 3 }}>
+            Listings and offers are test flows. Payments are disabled and no live transaction will happen.
+          </Text>
+        </View>
+      )}
 
       {renderTrading()}
 

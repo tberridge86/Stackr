@@ -16,7 +16,7 @@ import { supabase } from '../../lib/supabase';
 import { createTradeOffer } from '../../lib/tradeOffers';
 import { getCachedCardSync } from '../../lib/pokemonTcgCache';
 import { getPreferredMarketPrice, getPriceFromPokemonCard } from '../../lib/pricing';
-import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { BETA_TRADE_DEMO_MODE, PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
 
 // ===============================
 // CONSTANTS
@@ -488,6 +488,24 @@ export default function NewOfferScreen() {
         {targetUserName ? ` to ${targetUserName}` : ''}.
       </Text>
 
+      {BETA_TRADE_DEMO_MODE && (
+        <View style={{
+          backgroundColor: '#FEF3C7',
+          borderColor: '#F59E0B',
+          borderWidth: 1,
+          borderRadius: 12,
+          padding: 12,
+          marginBottom: 14,
+        }}>
+          <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '900' }}>
+            DEMO TRADE MODE
+          </Text>
+          <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, marginTop: 3 }}>
+            Beta trades are for testing only. Cash top-ups are recorded as demo terms and no real payment is taken.
+          </Text>
+        </View>
+      )}
+
       <View style={styles.tradeSides}>
         <View style={styles.tradeSideCard}>
           <View style={styles.tradeSideHeader}>
@@ -765,7 +783,7 @@ export default function NewOfferScreen() {
           <View style={styles.cashSummary}>
             <Text style={styles.cashSummaryText}>
               {cashPayer === 'sender' ? 'You' : 'They'} pay{' '}
-              £{cashAmountNumber.toFixed(2)} via Stripe
+              £{cashAmountNumber.toFixed(2)} {BETA_TRADE_DEMO_MODE ? 'as demo cash only' : 'via Stripe'}
             </Text>
           </View>
         )}
