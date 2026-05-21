@@ -202,14 +202,15 @@ export default function CardGraderScreen() {
     const centering = cardAnalysis?.centering || {};
     const exactImageUrl = record._exact_url_card || record._clean_url_card;
     const fullImageUrl = record._full_url_card;
-    const preprocessedImageUrl = record._pocketvault_preprocessed_base64
-      ? `data:image/jpeg;base64,${record._pocketvault_preprocessed_base64}`
+    const preprocessedBase64 = record._stackr_preprocessed_base64 ?? record._pocketvault_preprocessed_base64;
+    const preprocessedImageUrl = preprocessedBase64
+      ? `data:image/jpeg;base64,${preprocessedBase64}`
       : null;
-    const cardMatrixRaw = record._pocketvault_cardmatrix_raw;
+    const cardMatrixRaw = record._stackr_cardmatrix_raw ?? record._pocketvault_cardmatrix_raw;
     const providerName = cardMatrixRaw ? 'CardMatrix' : 'AI';
     const edgeItems = normalizeGradeItems(record.edges);
     const cornerItems = normalizeGradeItems(record.corners);
-    const whitening = record._pocketvault_edge_whitening as any;
+    const whitening = (record._stackr_edge_whitening ?? record._pocketvault_edge_whitening) as any;
     const whiteningEdges = Array.isArray(whitening?.edges) ? whitening.edges : [];
     const whiteningSeverity = whiteningEdges.reduce((worst: string, edge: any) => {
       const order: Record<string, number> = { none: 0, low: 1, medium: 2, high: 3 };
@@ -322,14 +323,14 @@ export default function CardGraderScreen() {
           <View style={{ backgroundColor: '#111', padding: 14, borderRadius: 10, gap: 12 }}>
             {whitening?.verdict && (
               <View style={{ borderWidth: 1, borderColor: whiteningColor(whiteningSeverity), borderRadius: 12, padding: 10, backgroundColor: 'rgba(255,255,255,0.04)' }}>
-                <Text style={{ color: '#fff', fontWeight: '900' }}>PocketVault whitening check</Text>
+                <Text style={{ color: '#fff', fontWeight: '900' }}>Stackr whitening check</Text>
                 <Text style={{ color: whiteningColor(whiteningSeverity), fontWeight: '900', marginTop: 4 }}>{whitening.verdict}</Text>
                 <Text style={{ color: '#888', fontSize: 11, marginTop: 4 }}>Experimental edge-pixel analysis. Use it as a warning flag, not a grade.</Text>
               </View>
             )}
             {whiteningEdges.length > 0 && (
               <View>
-                <Text style={{ color: '#888', fontSize: 12, fontWeight: '900', marginBottom: 8 }}>PocketVault edge whitening signal</Text>
+                <Text style={{ color: '#888', fontSize: 12, fontWeight: '900', marginBottom: 8 }}>Stackr edge whitening signal</Text>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
                   {whiteningEdges.map((edge: any) => (
                     <View key={edge.name} style={{ minWidth: 84, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: whiteningColor(edge.severity) }}>

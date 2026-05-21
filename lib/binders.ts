@@ -266,7 +266,7 @@ export async function fetchBinderCards(
         slot_order: existing.slot_order ?? index,
         card_name: existing.card_name ?? card.name ?? null,
         card_number: existing.card_number ?? card.number ?? null,
-        image_url: existing.image_url ?? card.images?.small ?? null,
+        image_url: card.images?.small ?? existing.image_url ?? null,
         card: {
           id: card.id,
           name: card.name,

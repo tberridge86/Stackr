@@ -1156,13 +1156,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           }}>
             {data.length} card{data.length !== 1 ? 's' : ''}
           </Text>
-          <Text style={{
-            color: accent,
-            fontSize: 14,
-            fontWeight: '900',
-          }}>
-            {collapsed ? 'â–¶' : 'â–¼'}
-          </Text>
+          <Ionicons
+            name={collapsed ? 'chevron-forward' : 'chevron-down'}
+            size={18}
+            color={accent}
+          />
         </View>
       </TouchableOpacity>
 
@@ -1267,7 +1265,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}>
-                        <Text style={{ fontSize: 13, color: '#7A5200', fontWeight: '900' }}>âœ“</Text>
+                        <Ionicons name="checkmark" size={13} color="#7A5200" />
                       </View>
                     )}
                     <View style={{ position: 'absolute', bottom: 3, alignItems: 'center' }}>
@@ -1638,9 +1636,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             }}
           >
             <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{currentSortLabel}</Text>
-            <Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>
-              {sortDropdownOpen ? 'â–²' : 'â–¼'}
-            </Text>
+            <Ionicons
+              name={sortDropdownOpen ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={theme.colors.textSoft}
+            />
           </TouchableOpacity>
 
           {sortDropdownOpen && (
@@ -1880,7 +1880,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                     marginLeft: 8,
                   }}>
                     {(alreadyInBinder || isPending) && (
-                      <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900' }}>âœ“</Text>
+                      <Ionicons name="checkmark" size={12} color="#FFFFFF" />
                     )}
                   </View>
                 </TouchableOpacity>
@@ -1974,7 +1974,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                                     >
                                       {owned && (
                                         <View style={{ backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 14, width: 28, height: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 }}>
-                                          <Text style={{ fontSize: 18, color: '#7A5200', fontWeight: '900' }}>âœ“</Text>
+                                          <Ionicons name="checkmark" size={18} color="#7A5200" />
                                         </View>
                                       )}
                                       <View style={{
@@ -2058,7 +2058,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                           }}
                         >
                           <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700' }}>
-                            {modalEbayLoading ? 'Fetching...' : 'â†» Refresh'}
+                            {modalEbayLoading ? 'Fetching...' : 'Refresh'}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -2101,7 +2101,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       <View style={{ height: 1, backgroundColor: theme.colors.border, marginBottom: 16 }} />
 
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                        eBay Sold Prices · Adjusted for {selectedCard.condition || 'Near Mint'}
+                        eBay Sold Prices - Adjusted for {selectedCard.condition || 'Near Mint'}
                       </Text>
 
                       {modalEbayLoading ? (
@@ -2146,7 +2146,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                           )}
                           {modalEbayPrice?.usedFallback && (
                             <Text style={{ color: '#F59E0B', fontSize: 11, marginTop: 2 }}>
-                              âš ï¸ Broad search used â€” results may be less specific
+                              Broad search used - results may be less specific
                             </Text>
                           )}
                           {modalEbayPrice?.count === 0 && (
@@ -2195,7 +2195,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                             return (
                               <ActionButton
                                 key={variant}
-                                label={`${VARIANT_LABELS[variant] ?? variant}${variantOwned ? ' · Owned âœ“' : ' · Not owned'}`}
+                                label={`${VARIANT_LABELS[variant] ?? variant}${variantOwned ? ' - Owned' : ' - Not owned'}`}
                                 active={variantOwned}
                                 onPress={() => handleToggleVariant(selectedCard.card_id, selectedCard.set_id, variant)}
                               />

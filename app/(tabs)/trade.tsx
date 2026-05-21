@@ -1185,20 +1185,20 @@ const handleArchive = async (listingId: string) => {
     <View style={{ flex: 1, backgroundColor: theme.colors.bg, paddingHorizontal: 16, paddingTop: 42, zIndex: 0 }}>
       <FeatureTipGate
         tipKey="trade-screen-v1"
-        title="Trades"
-        subtitle="List cards, browse trade listings, manage offers, and track wanted cards."
+        title="Market Place"
+        subtitle="Buy, sell, and trade with other collectors."
         items={[
-          { icon: 'swap-horizontal-outline', title: 'Trade Listings', body: 'Browse cards other collectors have marked for trade.' },
-          { icon: 'add-circle-outline', title: 'List Cards', body: 'Add your own cards and set trade terms.' },
+          { icon: 'storefront-outline', title: 'Browse Listings', body: 'Find cards other collectors have listed to buy, sell, or trade.' },
+          { icon: 'add-circle-outline', title: 'List Cards', body: 'Add your own cards and set sale or trade terms.' },
           { icon: 'chatbubbles-outline', title: 'Offers', body: 'Review incoming and outgoing trade offers.' },
           { icon: 'heart-outline', title: 'Wanted Cards', body: 'Track cards you are looking for.' },
         ]}
       />
 
       <View style={{ paddingTop: 2, paddingBottom: 12 }}>
-        <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>Trades</Text>
+        <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>Market Place</Text>
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
-          Trade listings, offers, and wanted cards
+          Buy, sell, trade, and track wanted cards
         </Text>
       </View>
 

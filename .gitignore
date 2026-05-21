@@ -43,6 +43,7 @@ app-example
 /android
 .env
 backend/.env
+stackr-*-firebase-adminsdk-*.json
 
 # Backend Android build
 backend/android/

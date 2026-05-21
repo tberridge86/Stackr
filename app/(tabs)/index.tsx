@@ -718,7 +718,7 @@ export default function HubScreen() {
             onPress={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
           />
           <HubQuickAction icon="calculator-outline" label="Price Builder" onPress={() => router.push('/price-builder')} />
-          <HubQuickAction icon="trending-up-outline" label="Market Value" onPress={() => router.push('/market')} />
+          <HubQuickAction icon="trending-up-outline" label="Latest Prices" onPress={() => router.push('/market')} />
           <HubQuickAction icon="sparkles-outline" label="Card Grader" onPress={() => router.push('/grade')} />
         </View>
 
