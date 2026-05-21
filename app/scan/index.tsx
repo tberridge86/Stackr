@@ -1111,6 +1111,7 @@ export default function ScanScreen() {
           number: data?.match?.number,
           confidence: data?.match?.confidence,
           error: data?.error,
+          debug: data?.match ? undefined : data?.debug,
         });
         return response.ok ? data?.match ?? null : null;
       } catch (error) {
