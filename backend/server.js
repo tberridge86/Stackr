@@ -2271,7 +2271,8 @@ function buildXimilarTcgRecord(imageFields) {
 
 function normalizeXimilarTcgCard(card) {
   const details =
-    card?._identification?.best_match
+    card?._ximilar_best_match
+    ?? card?._identification?.best_match
     ?? card?.best_match
     ?? card?.info
     ?? card?.card
@@ -2430,7 +2431,28 @@ function summarizeXimilarTcgPayload(data) {
   };
 }
 
+function getXimilarBestIdentification(data) {
+  const records = Array.isArray(data?.records) ? data.records : [];
+  for (const record of records) {
+    const objects = Array.isArray(record?._objects) ? record._objects : [];
+    for (const object of objects) {
+      const bestMatch = object?._identification?.best_match;
+      if (bestMatch && typeof bestMatch === 'object') {
+        return {
+          ...object,
+          _ximilar_best_match: bestMatch,
+          _ximilar_alternatives: object?._identification?.alternatives ?? [],
+        };
+      }
+    }
+  }
+  return null;
+}
+
 function pickXimilarTcgCard(data) {
+  const directBest = getXimilarBestIdentification(data);
+  if (directBest) return normalizeXimilarTcgCard(directBest);
+
   const cards = flattenXimilarTcgCandidates(data);
   const best = cards.find((card) => card?._identification?.best_match || card?.best_match)
     ?? cards.find((card) => {
