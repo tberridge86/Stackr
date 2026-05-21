@@ -16,7 +16,7 @@ export default function TabLayout() {
         },
         tabBarIcon: ({ color, size, focused }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'ellipse';
-          if (route.name === 'trade') iconName = focused ? 'swap-horizontal' : 'swap-horizontal-outline';
+          if (route.name === 'trade') iconName = focused ? 'storefront' : 'storefront-outline';
           if (route.name === 'community/index') iconName = focused ? 'people' : 'people-outline';
           if (route.name === 'index') iconName = focused ? 'home' : 'home-outline';
           if (route.name === 'binder') iconName = focused ? 'book' : 'book-outline';
@@ -26,7 +26,7 @@ export default function TabLayout() {
         },
       })}
     >
-      <Tabs.Screen name="trade" options={{ title: 'Trades' }} />
+      <Tabs.Screen name="trade" options={{ title: 'Market Place' }} />
       <Tabs.Screen name="community/index" options={{ title: 'Social', tabBarLabel: 'Social' }} />
       <Tabs.Screen name="index" options={{ title: 'Hub' }} />
       <Tabs.Screen name="binder" options={{ title: 'Binder' }} />

@@ -23,7 +23,7 @@ void SplashScreen.preventAutoHideAsync().catch(() => {});
 // ===============================
 
 const TABS = [
-  { name: 'Trades', route: '/(tabs)/trade', icon: 'swap-horizontal', iconOutline: 'swap-horizontal-outline' },
+  { name: 'Market\nPlace', route: '/(tabs)/trade', icon: 'storefront', iconOutline: 'storefront-outline' },
   { name: 'Social', route: '/(tabs)/community', icon: 'people', iconOutline: 'people-outline' },
   { name: 'Hub', route: '/(tabs)', icon: 'home', iconOutline: 'home-outline' },
   { name: 'Binder', route: '/(tabs)/binder', icon: 'book', iconOutline: 'book-outline' },
@@ -109,10 +109,12 @@ function PersistentTabBar() {
               />
             </View>
             <Text style={{
-              fontSize: isHub ? 12 : 11,
+              fontSize: isHub ? 12 : 10,
+              lineHeight: isHub ? 14 : 11,
               fontWeight: isHub ? '900' : '800',
               color: active ? theme.colors.primary : theme.colors.textSoft,
               marginTop: isHub ? 1 : 2,
+              textAlign: 'center',
             }}>
               {tab.name}
             </Text>

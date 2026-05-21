@@ -2746,11 +2746,16 @@ app.post('/api/grade/ximilar', async (req, res) => {
     if (Array.isArray(data?.records)) {
       data.records = data.records.map((record, index) => ({
         ...record,
+        _stackr_preprocessed_base64: preprocessedImages[index]?.base64 ?? null,
+        _stackr_preprocess: preprocessedImages[index]?.debug ?? null,
+        _stackr_edge_whitening: whiteningAnalyses[index] ?? null,
         _pocketvault_preprocessed_base64: preprocessedImages[index]?.base64 ?? null,
         _pocketvault_preprocess: preprocessedImages[index]?.debug ?? null,
         _pocketvault_edge_whitening: whiteningAnalyses[index] ?? null,
       }));
     }
+    data.stackrPreprocess = preprocessedImages.map((image) => image.debug);
+    data.stackrEdgeWhitening = whiteningAnalyses;
     data.pocketvaultPreprocess = preprocessedImages.map((image) => image.debug);
     data.pocketvaultEdgeWhitening = whiteningAnalyses;
 
@@ -2827,6 +2832,9 @@ app.post('/api/grade/cardmatrix', async (req, res) => {
             grade: scores.centering_front ?? scores.centering ?? null,
           },
         },
+        _stackr_preprocessed_base64: preprocessedImages[0]?.base64 ?? null,
+        _stackr_preprocess: preprocessedImages[0]?.debug ?? null,
+        _stackr_cardmatrix_raw: raw,
         _pocketvault_preprocessed_base64: preprocessedImages[0]?.base64 ?? null,
         _pocketvault_preprocess: preprocessedImages[0]?.debug ?? null,
         _pocketvault_cardmatrix_raw: raw,
@@ -2838,6 +2846,7 @@ app.post('/api/grade/cardmatrix', async (req, res) => {
         },
       }],
       raw,
+      stackrPreprocess: preprocessedImages.map((image) => image.debug),
       pocketvaultPreprocess: preprocessedImages.map((image) => image.debug),
     });
   } catch (error) {

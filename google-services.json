@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "937763734829",
+    "project_id": "stackr-d30bf",
+    "storage_bucket": "stackr-d30bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937763734829:android:b6b4a7839efefc2a313fa4",
+        "android_client_info": {
+          "package_name": "com.tommo86.Stackr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOQxjPePsPP247hHoPVUj4D6Vn674XeZY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

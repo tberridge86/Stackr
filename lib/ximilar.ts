@@ -22,8 +22,13 @@ export type XimilarGradeResponse = {
         bottom?: number;
       };
     };
+    _stackr_preprocessed_base64?: string | null;
     _pocketvault_preprocessed_base64?: string | null;
+    _stackr_cardmatrix_raw?: unknown;
+    _pocketvault_cardmatrix_raw?: unknown;
+    _stackr_preprocess?: unknown;
     _pocketvault_preprocess?: unknown;
+    _stackr_edge_whitening?: unknown;
     _pocketvault_edge_whitening?: unknown;
     tags?: unknown;
   }>;

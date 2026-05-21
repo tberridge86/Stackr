@@ -57,6 +57,34 @@ function getCanonicalPokemonTcgImages(cardId: string, fallbackSetId?: string | n
   };
 }
 
+function getBestPokemonTcgImages(card: {
+  id: string;
+  set_id?: string | null;
+  number?: string | null;
+  image_small?: string | null;
+  image_large?: string | null;
+  raw_data?: any;
+}) {
+  const rawImages = card.raw_data?.images;
+  const dbSmall = card.image_small ?? null;
+  const dbLarge = card.image_large ?? null;
+  const rawSmall = rawImages?.small ?? null;
+  const rawLarge = rawImages?.large ?? null;
+
+  const hasScryDexImage = [dbSmall, dbLarge, rawSmall, rawLarge].some((url) =>
+    String(url ?? '').includes('images.scrydex.com')
+  );
+
+  if (hasScryDexImage) {
+    return {
+      small: rawSmall ?? dbSmall ?? undefined,
+      large: rawLarge ?? dbLarge ?? undefined,
+    };
+  }
+
+  return getCanonicalPokemonTcgImages(card.id, card.set_id, card.number);
+}
+
 export async function fetchAllSets(): Promise<PokemonSet[]> {
   const { data, error } = await supabase
     .from('pokemon_sets')
@@ -95,14 +123,14 @@ export async function fetchCardsForSet(setId: string): Promise<PokemonCard[]> {
   }
 
   return (data ?? []).map((card) => {
-    const canonicalImages = getCanonicalPokemonTcgImages(card.id, card.set_id, card.number);
+    const images = getBestPokemonTcgImages(card);
 
     return {
       id: card.id,
       name: card.name,
       number: card.number ?? '',
       rarity: card.rarity ?? undefined,
-      images: canonicalImages,
+      images,
       set: card.raw_data?.set ?? undefined,
       tcgplayer: card.raw_data?.tcgplayer ?? undefined,
       cardmarket: card.raw_data?.cardmarket ?? undefined,
@@ -136,14 +164,14 @@ export async function fetchCardById(cardId: string): Promise<PokemonCard | null>
 
   if (!data) return null;
 
-  const canonicalImages = getCanonicalPokemonTcgImages(data.id, data.set_id, data.number);
+  const images = getBestPokemonTcgImages(data);
 
   return {
     id: data.id,
     name: data.name,
     number: data.number ?? '',
     rarity: data.rarity ?? undefined,
-    images: canonicalImages,
+    images,
     set: data.raw_data?.set ?? undefined,
     tcgplayer: data.raw_data?.tcgplayer ?? undefined,
     cardmarket: data.raw_data?.cardmarket ?? undefined,
