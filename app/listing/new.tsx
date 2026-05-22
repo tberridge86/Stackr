@@ -11,12 +11,13 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Text } from '../../components/Text';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
@@ -125,12 +126,9 @@ const PHOTO_CAPTURE_NOTICES: Record<string, string> = {
 
 export default function NewListingScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const { hasPermission, requestPermission } = useCameraPermission();
-  const { camera, device, torch, toggleTorch, takePhoto } = useScanCamera(false, false, {
-    cropToCard: true,
-    resizeWidth: 1600,
-    compress: 0.82,
-  });
   const [step, setStep] = useState<Step>('category');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SelectedCard[]>([]);
@@ -156,6 +154,34 @@ export default function NewListingScreen() {
 
   const [description, setDescription] = useState('');
   const [posting, setPosting] = useState(false);
+
+  const cameraSlotIndex = Math.min(Math.max(slotIndex, 0), PHOTO_SLOTS.length - 1);
+  const cameraSlot = PHOTO_SLOTS[cameraSlotIndex] ?? PHOTO_SLOTS[0];
+  const isCornerCaptureSlot = Boolean(cameraSlot.corner);
+  const listingBottomControlsHeight = Platform.OS === 'android' ? 214 : 196;
+  const listingHeaderHeight = insets.top + 66;
+  const listingFrameWidth = isCornerCaptureSlot
+    ? Math.min(screenWidth - 62, 360)
+    : Math.min(screenWidth * 0.76, 340);
+  const listingFrameHeight = isCornerCaptureSlot
+    ? listingFrameWidth
+    : Math.round(listingFrameWidth / 0.716);
+  const listingFrameCenterY = listingHeaderHeight
+    + ((screenHeight - listingHeaderHeight - insets.bottom - listingBottomControlsHeight) / 2)
+    - (isCornerCaptureSlot ? 2 : 12);
+  const { camera, device, torch, toggleTorch, takePhoto } = useScanCamera(false, false, {
+    cropToCard: true,
+    cropFrame: {
+      previewWidth: screenWidth,
+      previewHeight: screenHeight,
+      frameWidth: listingFrameWidth,
+      frameHeight: listingFrameHeight,
+      frameCenterY: listingFrameCenterY,
+      marginRatio: isCornerCaptureSlot ? 0.04 : 0.08,
+    },
+    resizeWidth: isCornerCaptureSlot ? 1400 : 1600,
+    compress: 0.82,
+  });
 
   const recommendedValue = prices.ebay ?? prices.tcg ?? prices.cardmarket ?? null;
   const parsedAskingPrice = parseFloat(askingPrice.replace(/[£,]/g, ''));
@@ -350,7 +376,10 @@ export default function NewListingScreen() {
   };
 
   const captureListingPhoto = async () => {
-    const slot = PHOTO_SLOTS[slotIndex];
+    const safeSlotIndex = Math.min(Math.max(slotIndex, 0), PHOTO_SLOTS.length - 1);
+    const slot = PHOTO_SLOTS[safeSlotIndex];
+    if (!slot) return;
+
     const photo = await takePhoto();
     if (!photo?.base64) return;
 
@@ -358,8 +387,10 @@ export default function NewListingScreen() {
     setCaptureNotice(PHOTO_CAPTURE_NOTICES[slot.key] ?? `${slot.label} captured`);
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    if (slotIndex < PHOTO_SLOTS.length - 1) {
-      setSlotIndex(prev => prev + 1);
+    if (safeSlotIndex < PHOTO_SLOTS.length - 1) {
+      setSlotIndex(safeSlotIndex + 1);
+    } else if (slotIndex !== safeSlotIndex) {
+      setSlotIndex(safeSlotIndex);
     }
   };
 
@@ -842,10 +873,14 @@ export default function NewListingScreen() {
   );
 
   const renderPhotos = () => {
-    const slot = PHOTO_SLOTS[slotIndex];
+    const safeSlotIndex = Math.min(Math.max(slotIndex, 0), PHOTO_SLOTS.length - 1);
+    const slot = PHOTO_SLOTS[safeSlotIndex];
+    if (!slot) return null;
+
     const captured = photos[slot.key];
     const requiredFilled = PHOTO_SLOTS.filter(s => s.required).every(s => photos[s.key]);
     const filledCount = Object.keys(photos).length;
+    const isCornerSlot = Boolean(slot.corner);
     const cornerTargetStyle = getListingCornerTargetStyle(slot.corner);
 
     if (!hasPermission) {
@@ -909,11 +944,10 @@ export default function NewListingScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 150 }}>
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: isCornerSlot ? 138 : 150 }}>
             <View style={{
-              width: '76%',
-              maxWidth: 340,
-              aspectRatio: 0.716,
+              width: listingFrameWidth,
+              height: listingFrameHeight,
               borderRadius: 16,
               borderWidth: 2,
               borderColor: captured ? '#10B981' : 'rgba(255,255,255,0.6)',
@@ -947,7 +981,7 @@ export default function NewListingScreen() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ minHeight: 42, gap: 7, alignItems: 'center', paddingHorizontal: 16 }}>
               {PHOTO_SLOTS.map((s, i) => {
                 const photo = photos[s.key];
-                const active = i === slotIndex;
+                const active = i === safeSlotIndex;
                 return (
                   <TouchableOpacity
                     key={s.key}
@@ -1007,7 +1041,7 @@ export default function NewListingScreen() {
         >
           {PHOTO_SLOTS.map((s, i) => {
             const done = !!photos[s.key];
-            const isCurrent = i === slotIndex;
+            const isCurrent = i === safeSlotIndex;
             return (
               <TouchableOpacity
                 key={s.key}
@@ -1091,15 +1125,15 @@ export default function NewListingScreen() {
           <View style={{ flexDirection: 'row', gap: 10 }}>
             {true && (
               <TouchableOpacity
-                onPress={() => slotIndex > 0 ? setSlotIndex(prev => prev - 1) : setStep('condition')}
+                onPress={() => safeSlotIndex > 0 ? setSlotIndex(safeSlotIndex - 1) : setStep('condition')}
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center', backgroundColor: theme.colors.card, borderWidth: 1.5, borderColor: theme.colors.border }}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 14 }}>Back</Text>
               </TouchableOpacity>
             )}
-            {slotIndex < PHOTO_SLOTS.length - 1 && (
+            {safeSlotIndex < PHOTO_SLOTS.length - 1 && (
               <TouchableOpacity
-                onPress={() => setSlotIndex(prev => prev + 1)}
+                onPress={() => setSlotIndex(safeSlotIndex + 1)}
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center', backgroundColor: theme.colors.card, borderWidth: 1.5, borderColor: theme.colors.border }}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 14 }}>Next</Text>
@@ -1273,20 +1307,24 @@ function Row({ label, value, highlight }: { label: string; value: string; highli
 }
 
 function getListingCornerTargetStyle(corner: SlotCorner) {
+  if (!corner) return null;
+
   const base = {
     position: 'absolute' as const,
-    width: 118,
-    height: 118,
+    top: 18,
+    right: 18,
+    bottom: 18,
+    left: 18,
     borderWidth: 2,
     borderColor: '#10B981',
     backgroundColor: 'rgba(16,185,129,0.08)',
+    borderRadius: 16,
   };
 
-  if (corner === 'tl') return { ...base, top: 18, left: 18, borderTopLeftRadius: 14 };
-  if (corner === 'tr') return { ...base, top: 18, right: 18, borderTopRightRadius: 14 };
-  if (corner === 'bl') return { ...base, bottom: 18, left: 18, borderBottomLeftRadius: 14 };
-  if (corner === 'br') return { ...base, bottom: 18, right: 18, borderBottomRightRadius: 14 };
-  return null;
+  if (corner === 'tl') return { ...base, borderTopLeftRadius: 22 };
+  if (corner === 'tr') return { ...base, borderTopRightRadius: 22 };
+  if (corner === 'bl') return { ...base, borderBottomLeftRadius: 22 };
+  return { ...base, borderBottomRightRadius: 22 };
 }
 
 function CardGuideOverlay({ corner, theme }: { corner: SlotCorner; theme: any }) {
@@ -1322,15 +1360,15 @@ function CardGuideOverlay({ corner, theme }: { corner: SlotCorner; theme: any })
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface }}>
       {/* Card outline with highlighted corner bracket */}
-      <View style={{ width: '62%', aspectRatio: 0.72, borderWidth: 1.5, borderColor: border, borderRadius: 14, position: 'relative' }}>
+      <View style={{ width: '74%', aspectRatio: 1, borderWidth: 2, borderColor: accent, borderRadius: 18, borderStyle: 'dashed', position: 'relative', backgroundColor: accent + '10' }}>
         {/* Horizontal bar of L-bracket */}
         <View style={{
           position: 'absolute',
-          top: isTop ? -1.5 : undefined,
-          bottom: !isTop ? -1.5 : undefined,
-          left: isLeft ? -1.5 : undefined,
-          right: !isLeft ? -1.5 : undefined,
-          width: barLen,
+          top: isTop ? -2 : undefined,
+          bottom: !isTop ? -2 : undefined,
+          left: isLeft ? -2 : undefined,
+          right: !isLeft ? -2 : undefined,
+          width: barLen + 16,
           height: barThick,
           backgroundColor: accent,
           borderRadius: barThick,
@@ -1338,18 +1376,18 @@ function CardGuideOverlay({ corner, theme }: { corner: SlotCorner; theme: any })
         {/* Vertical bar of L-bracket */}
         <View style={{
           position: 'absolute',
-          top: isTop ? -1.5 : undefined,
-          bottom: !isTop ? -1.5 : undefined,
-          left: isLeft ? -1.5 : undefined,
-          right: !isLeft ? -1.5 : undefined,
+          top: isTop ? -2 : undefined,
+          bottom: !isTop ? -2 : undefined,
+          left: isLeft ? -2 : undefined,
+          right: !isLeft ? -2 : undefined,
           width: barThick,
-          height: barLen,
+          height: barLen + 16,
           backgroundColor: accent,
           borderRadius: barThick,
         }} />
       </View>
       <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 14, fontWeight: '700' }}>
-        {isTop ? 'Top' : 'Bottom'}-{isLeft ? 'left' : 'right'} corner — zoom in close
+        Fill the frame with the {isTop ? 'top' : 'bottom'}-{isLeft ? 'left' : 'right'} corner
       </Text>
     </View>
   );

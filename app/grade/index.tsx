@@ -38,20 +38,24 @@ const CORNER_STEP_LABELS: Partial<Record<CaptureStepId, string>> = {
 };
 
 function getCornerTargetStyle(step: CaptureStepId) {
+  if (!step.startsWith('corner_')) return null;
+
   const base = {
     position: 'absolute' as const,
-    width: 118,
-    height: 118,
+    top: 18,
+    right: 18,
+    bottom: 18,
+    left: 18,
     borderWidth: 2,
     borderColor: '#10B981',
     backgroundColor: 'rgba(16,185,129,0.08)',
+    borderRadius: 16,
   };
 
-  if (step === 'corner_tl') return { ...base, top: 18, left: 18, borderTopLeftRadius: 14 };
-  if (step === 'corner_tr') return { ...base, top: 18, right: 18, borderTopRightRadius: 14 };
-  if (step === 'corner_bl') return { ...base, bottom: 18, left: 18, borderBottomLeftRadius: 14 };
-  if (step === 'corner_br') return { ...base, bottom: 18, right: 18, borderBottomRightRadius: 14 };
-  return null;
+  if (step === 'corner_tl') return { ...base, borderTopLeftRadius: 22 };
+  if (step === 'corner_tr') return { ...base, borderTopRightRadius: 22 };
+  if (step === 'corner_bl') return { ...base, borderBottomLeftRadius: 22 };
+  return { ...base, borderBottomRightRadius: 22 };
 }
 
 function getCenteringValue(centering: Record<string, unknown>, key: 'left/right' | 'top/bottom') {
@@ -109,11 +113,19 @@ export default function CardGraderScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const [photos, setPhotos] = useState<GradePhoto[]>([]);
+  const [currentStep, setCurrentStep] = useState<CaptureStepId>('front');
+  const [captureNotice, setCaptureNotice] = useState('Capture the front of the card');
+  const [grading, setGrading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const isCornerStep = currentStep.startsWith('corner_');
   const bottomControlsHeight = 204;
   const headerHeight = insets.top + 74;
-  const frameWidth = Math.min(screenWidth - 78, screenHeight < 760 ? 252 : 292);
-  const frameHeight = Math.round(frameWidth / 0.716);
-  const frameCenterY = headerHeight + ((screenHeight - headerHeight - insets.bottom - bottomControlsHeight) / 2) - 32;
+  const frameWidth = isCornerStep
+    ? Math.min(screenWidth - 62, screenHeight < 760 ? 306 : 352)
+    : Math.min(screenWidth - 78, screenHeight < 760 ? 252 : 292);
+  const frameHeight = isCornerStep ? frameWidth : Math.round(frameWidth / 0.716);
+  const frameCenterY = headerHeight + ((screenHeight - headerHeight - insets.bottom - bottomControlsHeight) / 2) - (isCornerStep ? 8 : 32);
   const { camera, device, torch, toggleTorch, takePhoto } = useScanCamera(false, false, {
     cropToCard: true,
     cropFrame: {
@@ -128,11 +140,6 @@ export default function CardGraderScreen() {
     compress: 0.86,
   });
   const { hasPermission, requestPermission } = useCameraPermission();
-  const [photos, setPhotos] = useState<GradePhoto[]>([]);
-  const [currentStep, setCurrentStep] = useState<CaptureStepId>('front');
-  const [captureNotice, setCaptureNotice] = useState('Capture the front of the card');
-  const [grading, setGrading] = useState(false);
-  const [result, setResult] = useState<any>(null);
 
   const photosByStage = useMemo(() => (
     photos.reduce<Partial<Record<CaptureStepId, GradePhoto>>>((acc, photo) => {
