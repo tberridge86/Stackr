@@ -62,7 +62,9 @@ const PADDING = 16;
 const GAP = 10;
 
 const BINDER_LOGO_OVERRIDES: Record<string, string> = {
-  me3: 'https://images.pokemontcg.io/por/logo.png',
+  me2pt5: 'https://images.scrydex.com/pokemon/me2pt5-logo/logo',
+  me3: 'https://images.scrydex.com/pokemon/me3-logo/logo',
+  me4: 'https://images.scrydex.com/pokemon/me4-logo/logo',
 };
 
 // ===============================

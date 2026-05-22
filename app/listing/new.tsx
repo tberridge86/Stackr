@@ -5,6 +5,7 @@ import {
   Alert,
   Image,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,19 +14,22 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
+import { Camera, useCameraPermission } from 'react-native-vision-camera';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { getProductPriceWithFallback } from '../../lib/productSearch';
 import type { ProductLookupType } from '../../lib/productSearch';
+import { useScanCamera } from '../../lib/useScanCamera';
 
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 
-type Step = 'search' | 'condition' | 'photos' | 'review';
+type Step = 'category' | 'search' | 'condition' | 'photos' | 'review';
 type ListingType = 'raw_card' | 'graded_slab' | ProductLookupType;
 
 type SelectedCard = {
@@ -110,9 +114,24 @@ const PHOTO_SLOTS: { key: string; label: string; desc: string; corner: SlotCorne
   { key: 'corner_br', label: 'Bottom-Right', desc: 'Close up of the bottom-right corner (front)', corner: 'br', required: false },
 ];
 
+const PHOTO_CAPTURE_NOTICES: Record<string, string> = {
+  front: 'Front captured',
+  back: 'Back captured',
+  corner_tl: 'Top-left corner captured',
+  corner_tr: 'Top-right corner captured',
+  corner_bl: 'Bottom-left corner captured',
+  corner_br: 'Bottom-right corner captured',
+};
+
 export default function NewListingScreen() {
   const { theme } = useTheme();
-  const [step, setStep] = useState<Step>('search');
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const { camera, device, torch, toggleTorch, takePhoto } = useScanCamera(false, false, {
+    cropToCard: true,
+    resizeWidth: 1600,
+    compress: 0.82,
+  });
+  const [step, setStep] = useState<Step>('category');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SelectedCard[]>([]);
   const [searching, setSearching] = useState(false);
@@ -132,6 +151,7 @@ export default function NewListingScreen() {
   type PhotoMap = { [key: string]: Photo };
   const [photos, setPhotos] = useState<PhotoMap>({});
   const [slotIndex, setSlotIndex] = useState(0);
+  const [captureNotice, setCaptureNotice] = useState('Capture the card front');
   const [uploading, setUploading] = useState(false);
 
   const [description, setDescription] = useState('');
@@ -194,6 +214,17 @@ export default function NewListingScreen() {
     setCondition('');
     setAskingPrice('');
     setPrices({ ebay: null, tcg: null, cardmarket: null, loading: false });
+  };
+
+  const goBack = () => {
+    if (step === 'category') {
+      router.back();
+      return;
+    }
+    if (step === 'search') setStep('category');
+    if (step === 'condition') setStep('search');
+    if (step === 'photos') setStep('condition');
+    if (step === 'review') setStep('photos');
   };
 
   const selectCard = (card: SelectedCard) => {
@@ -315,6 +346,20 @@ export default function NewListingScreen() {
         const idx = PHOTO_SLOTS.findIndex(s => s.key === slotKey);
         if (idx < PHOTO_SLOTS.length - 1) setSlotIndex(idx + 1);
       }
+    }
+  };
+
+  const captureListingPhoto = async () => {
+    const slot = PHOTO_SLOTS[slotIndex];
+    const photo = await takePhoto();
+    if (!photo?.base64) return;
+
+    setPhotos(prev => ({ ...prev, [slot.key]: { uri: photo.uri, base64: photo.base64 } }));
+    setCaptureNotice(PHOTO_CAPTURE_NOTICES[slot.key] ?? `${slot.label} captured`);
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    if (slotIndex < PHOTO_SLOTS.length - 1) {
+      setSlotIndex(prev => prev + 1);
     }
   };
 
@@ -472,11 +517,48 @@ export default function NewListingScreen() {
     );
   };
 
+  const renderCategory = () => (
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 110, gap: 10 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+          {LISTING_TYPES.map(renderListingTypeOption)}
+        </View>
+      </ScrollView>
+
+      <View style={{ padding: 16, paddingTop: 8, paddingBottom: 90 }}>
+        <TouchableOpacity
+          onPress={() => setStep('search')}
+          style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
+        >
+          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Next</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
   const renderSearch = () => (
     <View style={{ flex: 1 }}>
       <View style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 10 }}>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-          {LISTING_TYPES.map(renderListingTypeOption)}
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          backgroundColor: theme.colors.card,
+          borderRadius: 14,
+          padding: 12,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+        }}>
+          <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: theme.colors.primary + '16', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name={LISTING_TYPES.find((item) => item.key === listingType)?.icon ?? 'cube-outline'} size={24} color={theme.colors.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>Listing category</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900' }}>{listingTypeLabel(listingType)}</Text>
+          </View>
+          <TouchableOpacity onPress={() => setStep('category')} style={{ paddingHorizontal: 10, paddingVertical: 7 }}>
+            <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12 }}>Change</Text>
+          </TouchableOpacity>
         </View>
 
         {isCardListing(listingType) ? (
@@ -708,12 +790,18 @@ export default function NewListingScreen() {
       )}
 
     </ScrollView>
-    <View style={{ padding: 16, paddingTop: 8, paddingBottom: 90 }}>
+    <View style={{ padding: 16, paddingTop: 8, paddingBottom: 90, flexDirection: 'row', gap: 10 }}>
+      <TouchableOpacity
+        onPress={goBack}
+        style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 14, paddingVertical: 14, alignItems: 'center', borderWidth: 1.5, borderColor: theme.colors.border }}
+      >
+        <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }}>Back</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         onPress={() => { if (listingType === 'raw_card' && !condition) { Alert.alert('Condition required', 'Please select a condition before continuing.'); return; } if (!askingPrice.trim()) { Alert.alert('Price required', 'Enter a trade value to continue.'); return; } setSlotIndex(0); setStep('photos'); }}
-        style={{ backgroundColor: listingType !== 'raw_card' || condition ? theme.colors.primary : theme.colors.border, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
+        style={{ flex: 1, backgroundColor: listingType !== 'raw_card' || condition ? theme.colors.primary : theme.colors.border, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
       >
-        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Next → Add Photos</Text>
+        <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Next</Text>
       </TouchableOpacity>
     </View>
 
@@ -758,6 +846,156 @@ export default function NewListingScreen() {
     const captured = photos[slot.key];
     const requiredFilled = PHOTO_SLOTS.filter(s => s.required).every(s => photos[s.key]);
     const filledCount = Object.keys(photos).length;
+    const cornerTargetStyle = getListingCornerTargetStyle(slot.corner);
+
+    if (!hasPermission) {
+      return (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+          <Ionicons name="camera-outline" size={42} color={theme.colors.primary} />
+          <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', marginTop: 14, textAlign: 'center' }}>
+            Camera access is needed for listing photos.
+          </Text>
+          <TouchableOpacity
+            onPress={requestPermission}
+            style={{ marginTop: 18, backgroundColor: theme.colors.primary, borderRadius: 14, paddingHorizontal: 18, paddingVertical: 12 }}
+          >
+            <Text style={{ color: '#fff', fontWeight: '900' }}>Allow Camera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={goBack}
+            style={{ marginTop: 12, paddingHorizontal: 18, paddingVertical: 12 }}
+          >
+            <Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>Back</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (device) {
+      return (
+      <View style={{ flex: 1, backgroundColor: '#000' }}>
+        {device && (
+          <Camera
+            ref={camera}
+            style={StyleSheet.absoluteFill}
+            device={device}
+            isActive={step === 'photos'}
+            photo={true}
+            torch={torch}
+          />
+        )}
+
+        <SafeAreaView edges={['top', 'bottom']} style={StyleSheet.absoluteFill}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingTop: 10, paddingBottom: 8 }}>
+            <TouchableOpacity
+              onPress={goBack}
+              style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+            </TouchableOpacity>
+
+            <View style={{ flex: 1, alignItems: 'center', paddingHorizontal: 8 }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>Listing Photos</Text>
+              <Text numberOfLines={1} style={{ color: 'rgba(255,255,255,0.75)', fontSize: 12, marginTop: 2 }}>
+                {captureNotice}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={toggleTorch}
+              style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: torch === 'on' ? '#F59E0B' : 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', borderWidth: torch === 'on' ? 2 : 0, borderColor: '#F59E0B' }}
+            >
+              <Ionicons name={torch === 'on' ? 'flash' : 'flash-outline'} size={20} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 150 }}>
+            <View style={{
+              width: '76%',
+              maxWidth: 340,
+              aspectRatio: 0.716,
+              borderRadius: 16,
+              borderWidth: 2,
+              borderColor: captured ? '#10B981' : 'rgba(255,255,255,0.6)',
+            }}>
+              <View style={{ position: 'absolute', top: -2, left: -2, width: 28, height: 28, borderTopWidth: 4, borderLeftWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
+              <View style={{ position: 'absolute', top: -2, right: -2, width: 28, height: 28, borderTopWidth: 4, borderRightWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
+              <View style={{ position: 'absolute', bottom: -2, left: -2, width: 28, height: 28, borderBottomWidth: 4, borderLeftWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
+              <View style={{ position: 'absolute', bottom: -2, right: -2, width: 28, height: 28, borderBottomWidth: 4, borderRightWidth: 4, borderColor: theme.colors.primary, borderRadius: 4 }} />
+
+              {cornerTargetStyle && (
+                <View style={cornerTargetStyle}>
+                  <View style={{ position: 'absolute', top: 12, left: 12, right: 12, height: 1, backgroundColor: 'rgba(255,255,255,0.7)' }} />
+                  <View style={{ position: 'absolute', bottom: 12, left: 12, right: 12, height: 1, backgroundColor: 'rgba(255,255,255,0.7)' }} />
+                  <View style={{ position: 'absolute', left: 12, top: 12, bottom: 12, width: 1, backgroundColor: 'rgba(255,255,255,0.7)' }} />
+                  <View style={{ position: 'absolute', right: 12, top: 12, bottom: 12, width: 1, backgroundColor: 'rgba(255,255,255,0.7)' }} />
+                </View>
+              )}
+
+              <View style={{ position: 'absolute', left: 18, right: 18, bottom: 18, backgroundColor: 'rgba(0,0,0,0.58)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}>
+                <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '800', textAlign: 'center' }}>
+                  {slot.label}
+                </Text>
+                <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10, textAlign: 'center', marginTop: 2 }} numberOfLines={2}>
+                  {slot.desc}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, alignItems: 'center', paddingBottom: Platform.OS === 'android' ? 54 : 34, gap: 8 }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ minHeight: 42, gap: 7, alignItems: 'center', paddingHorizontal: 16 }}>
+              {PHOTO_SLOTS.map((s, i) => {
+                const photo = photos[s.key];
+                const active = i === slotIndex;
+                return (
+                  <TouchableOpacity
+                    key={s.key}
+                    onPress={() => setSlotIndex(i)}
+                    style={{ width: 72, height: 44, borderRadius: 9, overflow: 'hidden', borderWidth: 1, borderColor: active ? theme.colors.primary : 'rgba(255,255,255,0.45)', backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    {photo ? (
+                      <>
+                        <Image source={{ uri: photo.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                        <View style={{ position: 'absolute', top: 3, right: 3, width: 16, height: 16, borderRadius: 8, backgroundColor: '#10B981', alignItems: 'center', justifyContent: 'center' }}>
+                          <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+                        </View>
+                      </>
+                    ) : (
+                      <Text style={{ color: active ? '#FFFFFF' : 'rgba(255,255,255,0.72)', fontSize: 9, fontWeight: '900', textAlign: 'center' }}>
+                        {i + 1}. {s.label}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            <TouchableOpacity
+              onPress={captureListingPhoto}
+              style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)' }}
+            >
+              <View style={{ width: 52, height: 52, borderRadius: 26, backgroundColor: theme.colors.primary }} />
+            </TouchableOpacity>
+
+            <Text style={{ color: 'rgba(255,255,255,0.72)', fontSize: 11 }}>
+              Tap to capture {slot.label.toLowerCase()}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => setStep('review')}
+              disabled={!requiredFilled}
+              style={{ backgroundColor: theme.colors.primary, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 9, opacity: requiredFilled ? 1 : 0.45 }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13 }}>
+                {requiredFilled ? `Review ${filledCount} photo${filledCount !== 1 ? 's' : ''}` : 'Front and back required'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </View>
+      );
+    }
 
     return (
       <View style={{ flex: 1 }}>
@@ -775,17 +1013,18 @@ export default function NewListingScreen() {
                 key={s.key}
                 onPress={() => setSlotIndex(i)}
                 style={{
-                  paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+                  minWidth: 118, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
                   backgroundColor: isCurrent ? theme.colors.primary : done ? theme.colors.primary + '22' : theme.colors.card,
                   borderWidth: 1.5,
                   borderColor: isCurrent ? theme.colors.primary : done ? theme.colors.primary + '66' : theme.colors.border,
+                  alignItems: 'center',
                 }}
               >
                 <Text style={{
                   color: isCurrent ? '#fff' : done ? theme.colors.primary : theme.colors.textSoft,
                   fontSize: 12, fontWeight: '800',
                 }}>
-                  {done ? '✓ ' : s.required ? '' : ''}{s.label}{s.required ? '' : ' (opt)'}
+                  {done ? 'Done - ' : s.required ? '' : ''}{s.label}{s.required ? '' : ' (opt)'}
                 </Text>
               </TouchableOpacity>
             );
@@ -810,7 +1049,7 @@ export default function NewListingScreen() {
                   backgroundColor: theme.colors.primary,
                   borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5,
                 }}>
-                  <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>✓ {slot.label}</Text>
+                  <Text style={{ color: '#fff', fontSize: 11, fontWeight: '900' }}>{slot.label}</Text>
                 </View>
               </>
             ) : (
@@ -845,17 +1084,17 @@ export default function NewListingScreen() {
               style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}
             >
               <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>
-                {filledCount === PHOTO_SLOTS.length ? 'Done → Review' : `Continue with ${filledCount} photo${filledCount !== 1 ? 's' : ''}`}
+                {filledCount === PHOTO_SLOTS.length ? 'Done - Review' : `Continue with ${filledCount} photo${filledCount !== 1 ? 's' : ''}`}
               </Text>
             </TouchableOpacity>
           )}
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            {slotIndex > 0 && (
+            {true && (
               <TouchableOpacity
-                onPress={() => setSlotIndex(prev => prev - 1)}
+                onPress={() => slotIndex > 0 ? setSlotIndex(prev => prev - 1) : setStep('condition')}
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center', backgroundColor: theme.colors.card, borderWidth: 1.5, borderColor: theme.colors.border }}
               >
-                <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 14 }}>← Back</Text>
+                <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 14 }}>Back</Text>
               </TouchableOpacity>
             )}
             {slotIndex < PHOTO_SLOTS.length - 1 && (
@@ -863,7 +1102,7 @@ export default function NewListingScreen() {
                 onPress={() => setSlotIndex(prev => prev + 1)}
                 style={{ flex: 1, paddingVertical: 12, borderRadius: 14, alignItems: 'center', backgroundColor: theme.colors.card, borderWidth: 1.5, borderColor: theme.colors.border }}
               >
-                <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 14 }}>Next →</Text>
+                <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 14 }}>Next</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -922,11 +1161,28 @@ export default function NewListingScreen() {
         />
       </ScrollView>
 
-      <View style={{ padding: 16, paddingTop: 8, paddingBottom: 90 }}>
+      <View style={{ padding: 16, paddingTop: 8, paddingBottom: 90, flexDirection: 'row', gap: 10 }}>
+        <TouchableOpacity
+          onPress={goBack}
+          disabled={posting}
+          style={{
+            flex: 1,
+            backgroundColor: theme.colors.card,
+            borderRadius: 14,
+            paddingVertical: 16,
+            alignItems: 'center',
+            borderWidth: 1.5,
+            borderColor: theme.colors.border,
+            opacity: posting ? 0.6 : 1,
+          }}
+        >
+          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>Back</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={postListing}
           disabled={posting}
           style={{
+            flex: 1,
             backgroundColor: theme.colors.primary, borderRadius: 14,
             paddingVertical: 16, alignItems: 'center', opacity: posting ? 0.6 : 1,
           }}
@@ -947,19 +1203,27 @@ export default function NewListingScreen() {
   );
 
   const STEP_LABELS: Record<Step, string> = {
+    category: 'Choose Category',
     search: 'Choose Listing',
     condition: 'Details & Value',
     photos: 'Photos',
     review: 'Review & Post',
   };
 
-  const STEPS: Step[] = ['search', 'condition', 'photos', 'review'];
+  const STEPS: Step[] = ['category', 'search', 'condition', 'photos', 'review'];
   const stepIndex = STEPS.indexOf(step);
+
+  if (step === 'photos') {
+    return renderPhotos();
+  }
 
   return (
     <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       {/* Progress bar */}
       <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 }}>
+        <TouchableOpacity onPress={goBack} style={{ width: 44, height: 44, alignItems: 'flex-start', justifyContent: 'center', marginBottom: 4 }}>
+          <Ionicons name="arrow-back" size={26} color={theme.colors.primary} />
+        </TouchableOpacity>
         <View style={{ flexDirection: 'row', gap: 6, marginBottom: 8 }}>
           {STEPS.map((s, i) => (
             <View
@@ -975,9 +1239,9 @@ export default function NewListingScreen() {
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>Step {stepIndex + 1} of {STEPS.length}</Text>
       </View>
 
+      {step === 'category' && renderCategory()}
       {step === 'search' && renderSearch()}
       {step === 'condition' && renderCondition()}
-      {step === 'photos' && renderPhotos()}
       {step === 'review' && renderReview()}
     </SafeAreaView>
   );
@@ -1008,6 +1272,23 @@ function Row({ label, value, highlight }: { label: string; value: string; highli
   );
 }
 
+function getListingCornerTargetStyle(corner: SlotCorner) {
+  const base = {
+    position: 'absolute' as const,
+    width: 118,
+    height: 118,
+    borderWidth: 2,
+    borderColor: '#10B981',
+    backgroundColor: 'rgba(16,185,129,0.08)',
+  };
+
+  if (corner === 'tl') return { ...base, top: 18, left: 18, borderTopLeftRadius: 14 };
+  if (corner === 'tr') return { ...base, top: 18, right: 18, borderTopRightRadius: 14 };
+  if (corner === 'bl') return { ...base, bottom: 18, left: 18, borderBottomLeftRadius: 14 };
+  if (corner === 'br') return { ...base, bottom: 18, right: 18, borderBottomRightRadius: 14 };
+  return null;
+}
+
 function CardGuideOverlay({ corner, theme }: { corner: SlotCorner; theme: any }) {
   const accent = theme.colors.primary;
   const border = theme.colors.border;
@@ -1016,12 +1297,18 @@ function CardGuideOverlay({ corner, theme }: { corner: SlotCorner; theme: any })
 
   if (!corner) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface }}>
+        <View style={{ position: 'absolute', top: 16, left: 16, right: 16, bottom: 16, borderRadius: 16, borderWidth: 1, borderColor: border }} />
         <View style={{
-          width: '58%', aspectRatio: 3 / 4,
-          borderWidth: 2, borderColor: border, borderRadius: 10,
+          width: '62%', aspectRatio: 0.72,
+          borderWidth: 2, borderColor: accent, borderRadius: 14,
           borderStyle: 'dashed',
-        }} />
+        }}>
+          <View style={{ position: 'absolute', top: -2, left: -2, width: 32, height: 32, borderTopWidth: 4, borderLeftWidth: 4, borderColor: accent, borderTopLeftRadius: 14 }} />
+          <View style={{ position: 'absolute', top: -2, right: -2, width: 32, height: 32, borderTopWidth: 4, borderRightWidth: 4, borderColor: accent, borderTopRightRadius: 14 }} />
+          <View style={{ position: 'absolute', bottom: -2, left: -2, width: 32, height: 32, borderBottomWidth: 4, borderLeftWidth: 4, borderColor: accent, borderBottomLeftRadius: 14 }} />
+          <View style={{ position: 'absolute', bottom: -2, right: -2, width: 32, height: 32, borderBottomWidth: 4, borderRightWidth: 4, borderColor: accent, borderBottomRightRadius: 14 }} />
+        </View>
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 14, fontWeight: '700' }}>
           Fill the frame
         </Text>
@@ -1033,9 +1320,9 @@ function CardGuideOverlay({ corner, theme }: { corner: SlotCorner; theme: any })
   const isLeft = corner === 'tl' || corner === 'bl';
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface }}>
       {/* Card outline with highlighted corner bracket */}
-      <View style={{ width: '58%', aspectRatio: 3 / 4, borderWidth: 1.5, borderColor: border, borderRadius: 10, position: 'relative' }}>
+      <View style={{ width: '62%', aspectRatio: 0.72, borderWidth: 1.5, borderColor: border, borderRadius: 14, position: 'relative' }}>
         {/* Horizontal bar of L-bracket */}
         <View style={{
           position: 'absolute',

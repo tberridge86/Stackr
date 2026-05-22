@@ -305,7 +305,7 @@ export async function deleteMarketplaceListing(listingId: string): Promise<void>
 
   const { error } = await supabase
     .from('user_card_flags')
-    .delete()
+    .update({ listing_status: 'archived' })
     .eq('id', listingId)
     .eq('user_id', user.id)
     .eq('flag_type', 'trade');
@@ -384,16 +384,27 @@ export async function archiveMarketplaceListing(
   if (userError) throw new Error(userError.message);
   if (!user) throw new Error('You must be signed in to archive a listing.');
 
-  const { data, error } = await supabase
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const isAdmin = profile?.role === 'admin';
+  let query = supabase
     .from('user_card_flags')
-    .delete()
+    .update({ listing_status: 'archived' })
     .eq('id', listingId)
-    .eq('user_id', user.id)
-    .eq('flag_type', 'trade')
-    .select()
-    .single();
+    .eq('flag_type', 'trade');
+
+  if (!isAdmin) {
+    query = query.eq('user_id', user.id);
+  }
+
+  const { data, error } = await query.select().maybeSingle();
 
   if (error) throw new Error(error.message);
+  if (!data) throw new Error('Listing not found or you do not have permission to archive it.');
 
   return {
     ...mapFlagToListing(data),

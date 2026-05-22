@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -65,19 +66,50 @@ async function registerPushToken(userId: string) {
   }
 }
 
+function isStaleAuthError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return /invalid refresh token|refresh token.*used|auth session missing/i.test(message);
+}
+
+async function clearStoredSupabaseSession() {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const authKeys = keys.filter((key) =>
+      key.startsWith('sb-') || key.toLowerCase().includes('supabase')
+    );
+    if (authKeys.length) {
+      await AsyncStorage.multiRemove(authKeys);
+    }
+  } catch (error) {
+    console.log('Failed to clear stale auth storage:', error);
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      const currentUser = data.user ?? null;
-      setUser(currentUser);
-      setLoading(false);
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) throw error;
 
-      if (currentUser) {
-        await registerPushToken(currentUser.id);
+        const currentUser = data.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          await registerPushToken(currentUser.id);
+        }
+      } catch (error) {
+        if (isStaleAuthError(error)) {
+          await clearStoredSupabaseSession();
+          setUser(null);
+        } else {
+          console.log('Failed to load auth user:', error);
+        }
+      } finally {
+        setLoading(false);
       }
     };
 

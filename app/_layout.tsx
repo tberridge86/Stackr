@@ -61,6 +61,7 @@ function PersistentTabBar() {
     pathname.startsWith('/(auth)') ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/signup') ||
+    pathname.startsWith('/listing') ||
     pathname.startsWith('/grade') ||
     pathname.startsWith('/scan');
 
@@ -161,7 +162,7 @@ function AppNavigation() {
                 <Stack.Screen name="offer/index" options={{ title: '' }} />
                 <Stack.Screen name="offer/[id]" options={{ title: '' }} />
                 <Stack.Screen name="offers" options={{ title: '' }} />
-                <Stack.Screen name="listing/new" options={{ title: '' }} />
+                <Stack.Screen name="listing/new" options={{ headerShown: false, title: '' }} />
                 <Stack.Screen name="seller/onboarding" options={{ title: '' }} />
                 <Stack.Screen name="binder/new" options={{ title: '' }} />
                 <Stack.Screen name="binder/[id]" options={{ title: '' }} />
