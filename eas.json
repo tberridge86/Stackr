@@ -11,8 +11,7 @@
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
         "APP_VARIANT": "development",
         "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt",
-        "EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ha2RiYnpkcXd1cnBqbm9xaG11Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjE0ODU5NiwiZXhwIjoyMDkxNzI0NTk2fQ.pddg-B6e0hka8uEOWQZi_p9grfEPkMSX_b6XfwsXZtI"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
       }
     },
     "preview": {
@@ -23,17 +22,16 @@
       "env": {
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
         "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt",
-        "EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ha2RiYnpkcXd1cnBqbm9xaG11Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjE0ODU5NiwiZXhwIjoyMDkxNzI0NTk2fQ.pddg-B6e0hka8uEOWQZi_p9grfEPkMSX_b6XfwsXZtI"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
+        "EXPO_PUBLIC_SCAN_PROVIDER": "local-ai",
         "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt",
-        "EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ha2RiYnpkcXd1cnBqbm9xaG11Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjE0ODU5NiwiZXhwIjoyMDkxNzI0NTk2fQ.pddg-B6e0hka8uEOWQZi_p9grfEPkMSX_b6XfwsXZtI"
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
       }
     }
   },
