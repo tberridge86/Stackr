@@ -35,6 +35,14 @@
         "@stripe/stripe-react-native",
         {}
       ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.5"
+          }
+        }
+      ],
       "expo-asset"
     ],
     "ios": {
