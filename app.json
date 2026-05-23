@@ -20,14 +20,14 @@
       [
         "react-native-vision-camera",
         {
-          "cameraPermissionText": "Stackr needs camera access to scan your Pokémon cards.",
+          "cameraPermissionText": "Stackr needs camera access so you can scan your Pokémon cards.",
           "enableMicrophonePermission": false
         }
       ],
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Stackr needs camera access to scan Pokémon cards."
+          "cameraPermission": "Stackr needs camera access so you can scan your Pokémon cards."
         }
       ],
       "onnxruntime-react-native",
@@ -49,7 +49,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.tommo86.Stackr",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Stackr needs camera access so you can scan your Pokémon cards.",
+        "NSLocationWhenInUseUsageDescription": "Stackr may use your location while the app is open to support location-based marketplace features, where available."
       }
     },
     "android": {
