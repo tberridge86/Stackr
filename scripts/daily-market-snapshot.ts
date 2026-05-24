@@ -99,6 +99,16 @@ function buildEbayQuery(card: any): string {
   return parts.join(' ');
 }
 
+function buildEbayPriceInput(card: any) {
+  return {
+    cardId: card.api_card_id || card.card_id,
+    name: card.card_name || card.api_card_id || card.card_id,
+    setName: card.set_name ?? undefined,
+    number: card.card_number ?? undefined,
+    setTotal: card.set_total ?? undefined,
+  };
+}
+
 function productTypeLabel(productType: string): string {
   switch (productType) {
     case 'booster_pack': return 'pokemon booster pack sealed';
@@ -271,21 +281,22 @@ async function saveMarketPriceSnapshotByDay(snapshot: any, snapshotDate: string)
 // EBAY FETCHING
 // ===============================
 
-async function fetchEbayWithRetry(ebayQuery: string, displayName: string): Promise<EbayResponse> {
+async function fetchEbayWithRetry(ebayQuery: string, displayName: string, card?: any): Promise<EbayResponse> {
+  const input = card ? buildEbayPriceInput(card) : ebayQuery;
   try {
     console.log(`🟡 eBay: "${ebayQuery}"`);
-    const result = await fetchEbayPrice(ebayQuery);
+    const result = await fetchEbayPrice(input);
     if ((result as any)?.status === 429) {
       console.log(`⚠️ eBay rate limited — backing off ${EBAY_RATE_LIMIT_DELAY_MS}ms`);
       await delay(EBAY_RATE_LIMIT_DELAY_MS);
-      return await fetchEbayPrice(ebayQuery);
+      return await fetchEbayPrice(input);
     }
     return result;
   } catch {
     console.log(`⚠️ eBay fetch failed for "${displayName}" — retrying...`);
     await delay(EBAY_RETRY_DELAY_MS);
     try {
-      return await fetchEbayPrice(ebayQuery);
+      return await fetchEbayPrice(input);
     } catch (secondError) {
       console.log(`🚫 eBay final fail for "${displayName}":`, secondError);
       return { low: null, average: null, high: null, count: 0 };
@@ -388,7 +399,7 @@ async function processUser(userId: string, snapshotDate: string) {
     }
 
     const ebayQuery = buildEbayQuery(card);
-    const ebay = await fetchEbayWithRetry(ebayQuery, displayName);
+    const ebay = await fetchEbayWithRetry(ebayQuery, displayName, card);
     const ebayAverage = toNumber(ebay.average);
 
     if (ebayAverage !== null) { ebayFound += 1; } else { ebayFail += 1; }

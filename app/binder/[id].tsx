@@ -23,6 +23,7 @@ import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect, useLocalSearchParams, Stack } from 'expo-router';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -170,16 +171,52 @@ const getBinderTcgPrice = (card: any, edition?: string | null): number | null =>
 // ===============================
 
 const VARIANT_LABELS: Record<string, string> = {
-  normal: 'Nrm',
+  normal: 'Base',
   holofoil: 'Holo',
-  reverseHolofoil: 'Rev',
+  reverseHolofoil: 'Reverse Holo',
   '1stEditionNormal': '1st',
   '1stEditionHolofoil': '1stH',
-  unlimitedHolofoil: 'âˆžH',
-  unlimited: 'âˆž',
-  reverseHoloEnergy: 'Nrg',
-  reverseHoloPokeball: 'Ball',
+  unlimitedHolofoil: 'Unlimited Holo',
+  unlimited: 'Unlimited',
+  reverseHoloEnergy: 'Reverse Holo',
+  reverseHoloPokeball: 'Reverse Holo',
 };
+
+type MasterVariantKind = 'base' | 'holo' | 'reverse';
+
+const MASTER_VARIANT_COPY: Record<MasterVariantKind, { label: string; helper: string; icon: string; bg: string; color: string; border: string; rainbow?: boolean }> = {
+  base: {
+    label: 'Base',
+    helper: 'Left third',
+    icon: 'square-outline',
+    bg: '#EEF2FF',
+    color: '#0B1746',
+    border: '#D9E0FF',
+  },
+  holo: {
+    label: 'Holo',
+    helper: 'Middle third',
+    icon: 'sparkles',
+    bg: '#EFE7FF',
+    color: '#6D3DFF',
+    border: '#DED1FF',
+  },
+  reverse: {
+    label: 'Reverse Holo',
+    helper: 'Right third',
+    icon: 'sparkles',
+    bg: '#F6E7FF',
+    color: '#6D3DFF',
+    border: '#F0C9FF',
+    rainbow: true,
+  },
+};
+
+function getMasterVariantKind(key: string): MasterVariantKind {
+  if (key === 'normal' || key === '1stEditionNormal' || key === 'unlimited') return 'base';
+  if (key === 'holofoil' || key === '1stEditionHolofoil' || key === 'unlimitedHolofoil') return 'holo';
+  return 'reverse';
+}
 
 // Per-set variant overrides (e.g. for sets with multiple reverse holo patterns like Poké Ball)
 const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> = {
@@ -236,10 +273,6 @@ function getVariants(card: any, explicitSetId?: string): string[] {
 
   // 3. Fallback: Default to a single variant if no multi-variant data is found
   return keys.length > 0 ? [keys[0]] : ['normal'];
-}
-
-function shortVariant(key: string): string {
-  return VARIANT_LABELS[key] ?? key.slice(0, 4);
 }
 
 // ===============================
@@ -299,6 +332,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [ownedVariants, setOwnedVariants] = useState<Set<string>>(new Set());
   const [masterSetEnabled, setMasterSetEnabled] = useState(false);
+  const [masterSetIntroVisible, setMasterSetIntroVisible] = useState(false);
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -575,9 +609,15 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       setUpdatingMasterSet(true);
       setMasterSetEnabled(value);
       await AsyncStorage.setItem(getMasterSetStorageKey(binderId), value ? 'true' : 'false');
+      if (value) {
+        setTimeout(() => setMasterSetIntroVisible(true), 80);
+      } else {
+        setMasterSetIntroVisible(false);
+      }
     } catch (error) {
       console.log('Toggle master set error:', error);
       setMasterSetEnabled((prev) => !prev);
+      setMasterSetIntroVisible(false);
       Alert.alert('Could not update binder', 'Please try again.');
     } finally {
       setUpdatingMasterSet(false);
@@ -968,14 +1008,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 };
 
   // ===============================
-  // SCAN (scaffolded)
+  // SCAN
   // ===============================
 
   const handleScanCard = async () => {
-    Alert.alert(
-      'Coming soon',
-      'Card scanning is built into the app architecture, but this feature is coming soon.'
-    );
+    if (!binder?.id) return;
+    router.push({ pathname: '/scan', params: { binderId: binder.id } });
   };
 
   // ===============================
@@ -1269,26 +1307,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       </View>
                     )}
                     <View style={{ position: 'absolute', bottom: 3, alignItems: 'center' }}>
-                      {variant === 'reverseHoloEnergy' ? (
-                        <Ionicons name="flash" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
-                      ) : variant === 'reverseHoloPokeball' ? (
-                        <Ionicons name="aperture" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
-                      ) : variant === 'holofoil' || variant === '1stEditionHolofoil' || variant === 'unlimitedHolofoil' ? (
-                        <Ionicons name="star" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
-                      ) : variant === 'reverseHolofoil' ? (
-                        <Ionicons name="sync" size={10} color={owned ? '#7A5200' : 'rgba(255,255,255,0.9)'} />
-                      ) : (
-                        <Text style={{
-                          fontSize: 8,
-                          fontWeight: '900',
-                          color: owned ? '#7A5200' : 'rgba(255,255,255,0.9)',
-                          textShadowColor: 'rgba(0,0,0,0.5)',
-                          textShadowOffset: { width: 0, height: 1 },
-                          textShadowRadius: 2,
-                        }}>
-                          {shortVariant(variant)}
-                        </Text>
-                      )}
+                      <MasterVariantIcon variant={variant} size="tiny" active={owned} />
                     </View>
                   </Pressable>
                 );
@@ -1493,10 +1512,23 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             {!isReadOnly && (
               <View style={{ alignItems: 'flex-end', marginTop: 8 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
+                <TouchableOpacity
+                  onPress={handleScanCard}
+                  style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.primary }}
+                >
+                  <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
+                </TouchableOpacity>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
                     Master set
                   </Text>
+                  <TouchableOpacity
+                    onPress={() => setMasterSetIntroVisible(true)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={{ width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface }}
+                  >
+                    <Ionicons name="information-circle-outline" size={16} color={theme.colors.textSoft} />
+                  </TouchableOpacity>
                   <Switch
                     value={masterSetEnabled}
                     onValueChange={toggleMasterSet}
@@ -1681,6 +1713,143 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
         />
       </View>
+
+      {/* MASTER SET INTRO MODAL */}
+      <Modal
+        visible={masterSetIntroVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMasterSetIntroVisible(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(28,32,52,0.42)', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <BlurView intensity={28} tint="light" style={StyleSheet.absoluteFill} />
+          <View style={{
+            width: Math.min(width - 40, 430),
+            maxHeight: screenHeight - 70,
+            backgroundColor: '#FFFFFF',
+            borderRadius: 30,
+            paddingHorizontal: 24,
+            paddingTop: 22,
+            paddingBottom: 24,
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOpacity: 0.18,
+            shadowRadius: 18,
+            shadowOffset: { width: 0, height: 12 },
+            elevation: 12,
+          }}>
+            <TouchableOpacity
+              onPress={() => setMasterSetIntroVisible(false)}
+              style={{
+                position: 'absolute',
+                right: 14,
+                top: 14,
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                backgroundColor: '#F0EEF8',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 2,
+              }}
+            >
+              <Ionicons name="close" size={22} color="#0B1746" />
+            </TouchableOpacity>
+
+            <View style={{ alignItems: 'center', marginBottom: 4 }}>
+              <Ionicons name="sparkles" size={34} color="#FFAA4C" />
+            </View>
+
+            <Text style={{ color: '#061547', fontSize: 29, lineHeight: 34, fontWeight: '900', textAlign: 'center' }}>
+              Welcome Completionist
+            </Text>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
+              <Ionicons name="sparkles" size={15} color="#6D3DFF" />
+              <Text style={{ color: '#6D3DFF', fontSize: 22, fontWeight: '900' }}>Track Variants</Text>
+              <Ionicons name="sparkles" size={15} color="#6D3DFF" />
+            </View>
+
+            <Text style={{ color: '#59617F', fontSize: 15, lineHeight: 21, textAlign: 'center', marginTop: 8, maxWidth: 320 }}>
+              Tap the card by thirds to mark the version you own.
+            </Text>
+            <Text style={{ color: '#59617F', fontSize: 14, lineHeight: 20, textAlign: 'center', marginTop: 2, maxWidth: 330 }}>
+              Left = Base, Middle = Holo, Right = Reverse Holo.
+            </Text>
+
+            <View style={{
+              width: Math.min(width - 118, 240),
+              aspectRatio: 0.72,
+              marginTop: 14,
+              borderRadius: 18,
+              padding: 7,
+              backgroundColor: '#FFFFFF',
+              borderWidth: 1,
+              borderColor: '#D8C9FF',
+              shadowColor: '#6D3DFF',
+              shadowOpacity: 0.14,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 6 },
+              elevation: 5,
+            }}>
+              <LinearGradient
+                colors={['#DCD6FF', '#9189EF', '#C9B6FF', '#FFE6A8', '#B7F2FF']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ flex: 1, borderRadius: 13, overflow: 'hidden' }}
+              >
+                <View style={{ position: 'absolute', left: '33.33%', top: 0, bottom: 0, borderLeftWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.86)' }} />
+                <View style={{ position: 'absolute', left: '66.66%', top: 0, bottom: 0, borderLeftWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.86)' }} />
+                <View style={{ position: 'absolute', left: '30%', right: '30%', top: '35%', aspectRatio: 1, borderRadius: 999, borderWidth: 12, borderColor: 'rgba(94,78,180,0.72)' }} />
+                <View style={{ position: 'absolute', left: '18%', right: '18%', top: '47%', height: 4, backgroundColor: 'rgba(94,78,180,0.72)' }} />
+                <Ionicons name="sparkles" size={28} color="#FFFFFF" style={{ position: 'absolute', top: '12%', alignSelf: 'center' }} />
+                <View style={{ position: 'absolute', left: 12, right: 12, bottom: 18, flexDirection: 'row', justifyContent: 'space-between' }}>
+                  {['normal', 'holofoil', 'reverseHolofoil'].map((variant) => (
+                    <View key={variant} style={{ alignItems: 'center' }}>
+                      <View style={{ width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.14)' }}>
+                        <Ionicons name="finger-print" size={22} color="#FFFFFF" />
+                      </View>
+                      <MasterVariantIcon variant={variant} size="tiny" active />
+                    </View>
+                  ))}
+                </View>
+              </LinearGradient>
+            </View>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 18, marginTop: 14, flexWrap: 'wrap' }}>
+              {['normal', 'holofoil', 'reverseHolofoil'].map((variant) => {
+                const copy = MASTER_VARIANT_COPY[getMasterVariantKind(variant)];
+                return (
+                  <View key={variant} style={{ alignItems: 'center', width: 86 }}>
+                    <MasterVariantIcon variant={variant} size="large" active />
+                    <Text style={{ color: '#061547', fontSize: 13, fontWeight: '900', marginTop: 6, textAlign: 'center' }}>{copy.label}</Text>
+                    <Text style={{ color: '#68708D', fontSize: 11, fontWeight: '700', marginTop: 1, textAlign: 'center' }}>{copy.helper}</Text>
+                  </View>
+                );
+              })}
+            </View>
+
+            <TouchableOpacity
+              onPress={() => setMasterSetIntroVisible(false)}
+              style={{
+                marginTop: 18,
+                width: '100%',
+                backgroundColor: '#5D2DD3',
+                borderRadius: 10,
+                paddingVertical: 14,
+                alignItems: 'center',
+                shadowColor: '#5D2DD3',
+                shadowOpacity: 0.25,
+                shadowRadius: 10,
+                shadowOffset: { width: 0, height: 6 },
+                elevation: 4,
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900' }}>Got it</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* ADD CARD MODAL */}
 {!isReadOnly && (
@@ -1980,26 +2149,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                                       <View style={{
                                         position: 'absolute',
                                         bottom: 12,
-                                        backgroundColor: 'rgba(0,0,0,0.6)',
-                                        paddingHorizontal: 8,
-                                        paddingVertical: 4,
-                                        borderRadius: 6,
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                       }}>
-                                        {variant === 'reverseHoloEnergy' ? (
-                                          <Ionicons name="flash" size={12} color="#FFFFFF" />
-                                        ) : variant === 'reverseHoloPokeball' ? (
-                                          <Ionicons name="aperture" size={12} color="#FFFFFF" />
-                                        ) : (
-                                          <Text style={{
-                                            fontSize: 10,
-                                            fontWeight: '900',
-                                            color: '#FFFFFF',
-                                          }}>
-                                            {shortVariant(variant)}
-                                          </Text>
-                                        )}
+                                        <MasterVariantIcon variant={variant} size="medium" active={owned} />
                                       </View>
                                     </Pressable>
                                   );
@@ -2193,8 +2346,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                           {modalVariants.map((variant) => {
                             const variantOwned = ownedVariants.has(`${selectedCard.card_id}:${variant}`);
                             return (
-                              <ActionButton
+                              <VariantActionButton
                                 key={variant}
+                                variant={variant}
                                 label={`${VARIANT_LABELS[variant] ?? variant}${variantOwned ? ' - Owned' : ' - Not owned'}`}
                                 active={variantOwned}
                                 onPress={() => handleToggleVariant(selectedCard.card_id, selectedCard.set_id, variant)}
@@ -2277,6 +2431,96 @@ function Row({ label, value }: { label: string; value: string }) {
       <Text style={{ color: theme.colors.textSoft }}>{label}</Text>
       <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{value}</Text>
     </View>
+  );
+}
+
+function MasterVariantIcon({
+  variant,
+  size = 'small',
+  active = false,
+}: {
+  variant: string;
+  size?: 'tiny' | 'small' | 'medium' | 'large';
+  active?: boolean;
+}) {
+  const copy = MASTER_VARIANT_COPY[getMasterVariantKind(variant)];
+  const dimension = size === 'large' ? 42 : size === 'medium' ? 30 : size === 'small' ? 24 : 18;
+  const iconSize = size === 'large' ? 24 : size === 'medium' ? 17 : size === 'small' ? 14 : 11;
+  const icon = (
+    <Ionicons
+      name={copy.icon as any}
+      size={iconSize}
+      color={active ? copy.color : 'rgba(255,255,255,0.95)'}
+    />
+  );
+
+  const baseStyle = {
+    width: dimension,
+    height: dimension,
+    borderRadius: dimension / 2,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    borderWidth: 1,
+    borderColor: active ? copy.border : 'rgba(255,255,255,0.65)',
+  };
+
+  if (copy.rainbow) {
+    return (
+      <LinearGradient
+        colors={active ? ['#F9D6FF', '#D7F5FF', '#FFF0B8'] : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.12)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={baseStyle}
+      >
+        {icon}
+      </LinearGradient>
+    );
+  }
+
+  return (
+    <View style={[baseStyle, { backgroundColor: active ? copy.bg : 'rgba(0,0,0,0.38)' }]}>
+      {icon}
+    </View>
+  );
+}
+
+function VariantActionButton({
+  variant,
+  label,
+  onPress,
+  active,
+}: {
+  variant: string;
+  label: string;
+  onPress: () => void | Promise<void>;
+  active?: boolean;
+}) {
+  const { theme } = useTheme();
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        backgroundColor: active ? theme.colors.primary : theme.colors.card,
+        borderRadius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: active ? theme.colors.primary : theme.colors.border,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+      }}
+    >
+      <MasterVariantIcon variant={variant} size="medium" active />
+      <Text style={{
+        color: active ? '#FFFFFF' : theme.colors.text,
+        fontWeight: '900',
+        flex: 1,
+      }}>
+        {label}
+      </Text>
+    </TouchableOpacity>
   );
 }
 
