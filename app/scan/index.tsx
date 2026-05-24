@@ -9,6 +9,7 @@ import {
   FlatList,
   Vibration,
   useWindowDimensions,
+  Share,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -42,6 +43,7 @@ import {
   syncScannerPack,
 } from '../../lib/scannerPack';
 import clipVisionModel from '../../assets/models/clip-vit-base-patch32-vision-quantized.zip';
+import type { NormalisedScanResponse, ScanCandidate, ScanErrorResponse, ScanErrorStage } from '../../types/scan';
 
 setBundledOnDeviceVisualModel(clipVisionModel);
 
@@ -103,6 +105,55 @@ const NAME_OCR_REGIONS = [
   { name: 'title-left', x: 0.02, y: 0.04, width: 0.76, height: 0.18 },
   { name: 'title-band', x: 0, y: 0.02, width: 1, height: 0.18 },
 ];
+const SHOW_SCAN_DEBUG =
+  __DEV__ ||
+  process.env.EXPO_PUBLIC_SHOW_SCAN_DEBUG === 'true' ||
+  process.env.EXPO_PUBLIC_APP_ENV === 'beta';
+
+function logScanStage(stage: string, payload: Record<string, unknown> = {}) {
+  console.log(`[scan:${stage}]`, payload);
+}
+
+function stageMessage(stage?: ScanErrorStage) {
+  switch (stage) {
+    case 'image':
+      return 'The camera image could not be captured or encoded. Try again with the card flat in frame.';
+    case 'upload':
+      return 'The scan request could not be sent. Check your connection and try again.';
+    case 'ximilar':
+      return 'The card recognition service did not complete the scan.';
+    case 'normalisation':
+      return 'The recognition service responded, but no usable card candidate was found.';
+    case 'card_lookup':
+      return 'The card was recognised, but extra card details could not be loaded.';
+    case 'render':
+      return 'The scan result could not be displayed.';
+    case 'backend':
+    default:
+      return 'The scan service hit an unexpected problem. Please retry the scan.';
+  }
+}
+
+function makeScanError(
+  stage: ScanErrorStage,
+  code: string,
+  message: string,
+  details?: string,
+  httpStatus?: number,
+  stack?: string
+): ScanErrorState {
+  return {
+    ok: false,
+    provider: 'ximilar',
+    stage,
+    code,
+    message,
+    details,
+    httpStatus,
+    debugDetails: details,
+    stack,
+  };
+}
 
 // ===============================
 // TYPES
@@ -161,9 +212,15 @@ type ScanStep = 'select_binder' | 'scanning' | 'review';
 type ScanMode = 'manual' | 'auto';
 
 type PendingConfirmation = {
-  card: ScannedCard;
+  card?: ScannedCard | null;
+  candidates?: ScanCandidate[];
   base64: string;
   isMarket: boolean;
+};
+
+type ScanErrorState = ScanErrorResponse & {
+  debugDetails?: string;
+  stack?: string;
 };
 
 function getCenteredCardCrop(photoWidth?: number, photoHeight?: number) {
@@ -649,7 +706,7 @@ export default function ScanScreen() {
   const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
-  const params = useLocalSearchParams<{ mode?: string }>();
+  const params = useLocalSearchParams<{ mode?: string; binderId?: string }>();
   const isInventoryMode = params.mode === 'inventory';
   const isMarketMode = params.mode === 'market' || isInventoryMode;
 
@@ -667,6 +724,7 @@ export default function ScanScreen() {
   const [autoScanActive, setAutoScanActive] = useState(false);
   const [scanningMessage, setScanningMessage] = useState('Reading card...');
   const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
+  const [scanError, setScanError] = useState<ScanErrorState | null>(null);
 
   const isCompactScanner = screenHeight < 780;
   const scannerFrameWidth = Math.min(screenWidth - 64, isCompactScanner ? 286 : 300);
@@ -680,6 +738,8 @@ export default function ScanScreen() {
   const scanningMessageRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastFrameSigRef = useRef<string | null>(null);
   const lastFrameTsRef = useRef<number>(0);
+  const handleCaptureRef = useRef<((isAuto?: boolean) => Promise<void>) | null>(null);
+  const pendingRenderLoggedRef = useRef(false);
   const lastScanDebugRef = useRef<number>(0);
 
   // ===============================
@@ -705,6 +765,37 @@ export default function ScanScreen() {
         console.log('Scanner pack sync failed:', error);
       });
   }, []);
+
+  useEffect(() => {
+    if (isMarketMode || !params.binderId || selectedBinder) return;
+    const binder = binders.find((item) => item.id === params.binderId);
+    if (!binder) return;
+    setSelectedBinder(binder);
+    setStep('scanning');
+  }, [binders, isMarketMode, params.binderId, selectedBinder]);
+
+  useEffect(() => {
+    if (!pendingConfirmation) {
+      pendingRenderLoggedRef.current = false;
+      return;
+    }
+    if (!pendingRenderLoggedRef.current) {
+      logScanStage('CANDIDATES_RENDER_STARTED', {
+        candidates: pendingConfirmation.candidates?.length ?? (pendingConfirmation.card ? 1 : 0),
+        names: pendingConfirmation.candidates?.map((candidate) => candidate.name).slice(0, 5)
+          ?? (pendingConfirmation.card ? [pendingConfirmation.card.name] : []),
+      });
+      pendingRenderLoggedRef.current = true;
+    }
+
+    const timer = setTimeout(() => {
+      logScanStage('CANDIDATES_RENDER_COMPLETE', {
+        candidates: pendingConfirmation.candidates?.length ?? (pendingConfirmation.card ? 1 : 0),
+      });
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [pendingConfirmation]);
 
   // ===============================
   // PERMISSION
@@ -742,7 +833,7 @@ export default function ScanScreen() {
 
     if (step === 'scanning' && scanMode === 'auto' && autoScanActive) {
       autoScanIntervalRef.current = setInterval(() => {
-        if (!processingOcr) handleCapture(true);
+        if (!scanCooldownRef.current) void handleCaptureRef.current?.(true);
       }, 950);
     }
 
@@ -756,6 +847,10 @@ export default function ScanScreen() {
   // ===============================
 
   const startScanningMessages = useCallback(() => {
+    if (scanningMessageRef.current) {
+      clearInterval(scanningMessageRef.current);
+      scanningMessageRef.current = null;
+    }
     let i = 0;
     setScanningMessage(SCANNING_MESSAGES[0]);
     scanningMessageRef.current = setInterval(() => {
@@ -782,6 +877,7 @@ export default function ScanScreen() {
       scanCooldownRef.current = false;
       setLastScanned(null);
       setProcessingOcr(false);
+      setScanError(null);
     }, delay);
   }, [stopScanningMessages]);
 
@@ -791,6 +887,7 @@ export default function ScanScreen() {
     setProcessingOcr(false);
     setScanning(false);
     setPendingConfirmation(null);
+    setScanError(null);
     scanCooldownRef.current = false;
     if (autoScanIntervalRef.current) {
       clearInterval(autoScanIntervalRef.current);
@@ -1006,6 +1103,7 @@ export default function ScanScreen() {
     }
 
     setProcessingOcr(true);
+    setScanError(null);
     scanCooldownRef.current = true;
     startScanningMessages();
     if (isAuto) logScanDebug('capture-started');
@@ -1030,6 +1128,12 @@ export default function ScanScreen() {
         }
       }
       const photoDoneAt = Date.now();
+      logScanStage('IMAGE_CAPTURED', {
+        source,
+        width: photo.width,
+        height: photo.height,
+        path: photo.path ? '[file]' : null,
+      });
       const crop = getCenteredCardCrop(photo.width, photo.height);
       const actions: ImageManipulator.Action[] = [
         ...(crop ? [{ crop }] : []),
@@ -1040,6 +1144,12 @@ export default function ScanScreen() {
         actions,
         { compress: profile.compress, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
+      logScanStage('IMAGE_ENCODED', {
+        width: manipulated.width,
+        height: manipulated.height,
+        bytesApprox: Math.round((manipulated.base64?.length ?? 0) * 0.75),
+        hasBase64: Boolean(manipulated.base64),
+      });
       console.log('Capture timing:', {
         source,
         profile,
@@ -1087,11 +1197,12 @@ export default function ScanScreen() {
       }
     };
 
-    const identifyWithXimilarTcg = async (base64Image: string, magicAi = false) => {
+    const identifyWithXimilarTcg = async (base64Image: string, magicAi = false): Promise<NormalisedScanResponse> => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), magicAi ? 7500 : 5500);
       const startedAt = Date.now();
-      console.log('[market-scan] Ximilar start', {
+      logScanStage('API_REQUEST_STARTED', {
+        provider: 'ximilar',
         magicAi,
         bytesApprox: Math.round(base64Image.length * 0.75),
       });
@@ -1102,26 +1213,74 @@ export default function ScanScreen() {
           body: JSON.stringify({ base64Image, magicAi }),
           signal: controller.signal,
         });
-        const data = await response.json();
-        console.log('[market-scan] Ximilar result', {
+        const responseBody = await response.text();
+        let data: NormalisedScanResponse | any = null;
+        try {
+          data = responseBody ? JSON.parse(responseBody) : null;
+        } catch (parseError) {
+          data = makeScanError(
+            'backend',
+            'XIMILAR_INVALID_RESPONSE',
+            'The scan service returned an unreadable response.',
+            responseBody.slice(0, 2000),
+            response.status,
+            parseError instanceof Error ? parseError.stack : undefined
+          );
+        }
+        logScanStage('API_RESPONSE_RECEIVED', {
           status: response.status,
           magicAi,
           totalMs: Date.now() - startedAt,
-          name: data?.match?.name,
-          set: data?.match?.setName,
-          number: data?.match?.number,
-          confidence: data?.match?.confidence,
-          error: data?.error,
-          debug: data?.match ? undefined : data?.debug,
+          ok: response.ok,
+          responseOk: data?.ok,
+          candidates: data?.candidates?.length,
+          code: data?.code,
+          stage: data?.stage,
+          body: SHOW_SCAN_DEBUG ? responseBody.slice(0, 2000) : undefined,
         });
-        return response.ok ? data?.match ?? null : null;
+
+        if (!response.ok || data?.ok === false) {
+          return {
+            ok: false,
+            provider: 'ximilar',
+            stage: data?.stage ?? 'backend',
+            code: data?.code ?? 'SCAN_API_REQUEST_FAILED',
+            message: data?.message ?? 'The scan request failed.',
+            details: data?.details ?? responseBody.slice(0, 2000),
+            httpStatus: data?.httpStatus ?? response.status,
+          };
+        }
+
+        if (data?.ok === true && Array.isArray(data.candidates)) {
+          return data as NormalisedScanResponse;
+        }
+
+        return makeScanError(
+          'normalisation',
+          'XIMILAR_INVALID_RESPONSE',
+          'The scan service response did not include any candidates.',
+          responseBody.slice(0, 2000),
+          response.status
+        );
       } catch (error) {
-        console.log('[market-scan] Ximilar failed', {
+        const isAbort = error instanceof Error && error.name === 'AbortError';
+        const scanError = makeScanError(
+          'upload',
+          'SCAN_API_REQUEST_FAILED',
+          isAbort ? 'The scan request timed out.' : 'The scan request could not be sent.',
+          error instanceof Error ? error.message : String(error),
+          undefined,
+          error instanceof Error ? error.stack : undefined
+        );
+        logScanStage('API_RESPONSE_RECEIVED', {
           magicAi,
           totalMs: Date.now() - startedAt,
-          error: error instanceof Error ? error.message : String(error),
+          ok: false,
+          code: scanError.code,
+          error: scanError.details,
+          stack: SHOW_SCAN_DEBUG ? scanError.stack : undefined,
         });
-        return null;
+        return scanError;
       } finally {
         clearTimeout(timeout);
       }
@@ -1130,11 +1289,6 @@ export default function ScanScreen() {
     const isGenericXimilarCardName = (name?: string | null) => {
       const normalized = String(name ?? '').trim().toLowerCase();
       return !normalized || normalized === 'card' || normalized === 'tcg card' || normalized === 'trading card';
-    };
-
-    const isUsableXimilarParsedCard = (parsed: any) => {
-      if (!parsed || parsed.error || isGenericXimilarCardName(parsed.name)) return false;
-      return Boolean(parsed.number || parsed.setName || parsed.setCode || parsed.imageUrl || parsed.confidence);
     };
 
     const identifyWithRareCandyStyle = async (
@@ -1553,6 +1707,45 @@ export default function ScanScreen() {
       return card;
     };
 
+    const resolveXimilarCandidates = async (
+      candidates: ScanCandidate[],
+      fallbackPrintedNumber?: PrintedNumber | null,
+      setId?: string | null
+    ): Promise<ScanCandidate[]> => {
+      const resolved: ScanCandidate[] = [];
+
+      for (const candidate of candidates) {
+        logScanStage('POKEMON_API_LOOKUP_STARTED', {
+          name: candidate.name,
+          number: candidate.number,
+          setName: candidate.setName,
+          setCode: candidate.setCode,
+        });
+
+        try {
+          const card = await lookupParsedCard(candidate, fallbackPrintedNumber, setId);
+          resolved.push({ ...candidate, resolvedCard: card });
+          logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
+            name: candidate.name,
+            resolved: Boolean(card),
+            cardId: card?.id,
+            cardName: card?.name,
+          });
+        } catch (lookupError) {
+          resolved.push({ ...candidate, resolvedCard: null });
+          logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
+            name: candidate.name,
+            resolved: false,
+            code: 'CARD_LOOKUP_FAILED',
+            error: lookupError instanceof Error ? lookupError.message : String(lookupError),
+            stack: SHOW_SCAN_DEBUG && lookupError instanceof Error ? lookupError.stack : undefined,
+          });
+        }
+      }
+
+      return resolved;
+    };
+
     try {
       // Step 1: capture at fast profile
       const scanWallStartedAt = Date.now();
@@ -1565,6 +1758,25 @@ export default function ScanScreen() {
             : ACCURACY_SCAN_PROFILE;
       const capture = await captureCardImage(initialScanProfile);
       const base64 = capture.base64;
+      if (!base64) {
+        const imageError = makeScanError(
+          'image',
+          'SCAN_IMAGE_READ_FAILED',
+          'The camera image did not include readable image data.',
+          'ImageManipulator returned an empty base64 payload.'
+        );
+        logScanStage('API_RESPONSE_RECEIVED', {
+          ok: false,
+          code: imageError.code,
+          stage: imageError.stage,
+          details: imageError.details,
+        });
+        if (!isAuto) setScanError(imageError);
+        stopScanningMessages();
+        scanCooldownRef.current = false;
+        setProcessingOcr(false);
+        return;
+      }
       let bestBase64 = base64;
       let bestUri = capture.uri;
       const scanStartedAt = Date.now();
@@ -1609,22 +1821,34 @@ export default function ScanScreen() {
       };
 
       let match: ScannedCard | null = null;
+      let ximilarCandidatesForConfirmation: ScanCandidate[] | null = null;
+      let ximilarError: ScanErrorState | null = null;
 
-      if (isMarketMode && !isAuto && !expectedSetId) {
+      if (!isAuto && !expectedSetId && (isMarketMode || selectedBinder)) {
         console.log('[market-scan] primary provider: ximilar');
-        const ximilarParsed = await identifyWithXimilarTcg(bestBase64, false);
-        match = isUsableXimilarParsedCard(ximilarParsed)
-          ? await lookupParsedCard(ximilarParsed, shouldDeferInitialNumberOcr ? null : printedNumber, null)
-          : null;
+        const ximilarResponse = await identifyWithXimilarTcg(bestBase64, false);
+        if (!ximilarResponse.ok) {
+          ximilarError = { ...ximilarResponse, debugDetails: ximilarResponse.details };
+          setScanError(ximilarError);
+        } else {
+          ximilarError = null;
+          setScanError(null);
+          ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
+            ximilarResponse.candidates,
+            shouldDeferInitialNumberOcr ? null : printedNumber,
+            null
+          );
+          match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+        }
         console.log('[market-scan] local resolve after Ximilar', {
           provider: 'ximilar',
-          parsed: ximilarParsed ? {
-            name: ximilarParsed.name,
-            setName: ximilarParsed.setName,
-            setCode: ximilarParsed.setCode,
-            number: ximilarParsed.number,
-            usable: isUsableXimilarParsedCard(ximilarParsed),
-          } : null,
+          candidates: ximilarCandidatesForConfirmation?.map((candidate) => ({
+            name: candidate.name,
+            setName: candidate.setName,
+            setCode: candidate.setCode,
+            number: candidate.number,
+            resolved: Boolean(candidate.resolvedCard),
+          })).slice(0, 5) ?? null,
           resolved: match ? {
             id: match.id,
             name: match.name,
@@ -1632,20 +1856,30 @@ export default function ScanScreen() {
             number: match.number,
           } : null,
         });
-        if (!match) {
+        if (!match && !ximilarCandidatesForConfirmation?.length) {
           console.log('[market-scan] retrying Ximilar with Magic AI');
-          const ximilarMagicParsed = await identifyWithXimilarTcg(bestBase64, true);
-          match = isUsableXimilarParsedCard(ximilarMagicParsed)
-            ? await lookupParsedCard(ximilarMagicParsed, shouldDeferInitialNumberOcr ? null : printedNumber, null)
-            : null;
+          const ximilarMagicResponse = await identifyWithXimilarTcg(bestBase64, true);
+          if (!ximilarMagicResponse.ok) {
+            ximilarError = { ...ximilarMagicResponse, debugDetails: ximilarMagicResponse.details };
+            setScanError(ximilarError);
+          } else {
+            ximilarError = null;
+            setScanError(null);
+            ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
+              ximilarMagicResponse.candidates,
+              shouldDeferInitialNumberOcr ? null : printedNumber,
+              null
+            );
+            match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+          }
           console.log('[market-scan] local resolve after Magic AI', {
-            parsed: ximilarMagicParsed ? {
-              name: ximilarMagicParsed.name,
-              setName: ximilarMagicParsed.setName,
-              setCode: ximilarMagicParsed.setCode,
-              number: ximilarMagicParsed.number,
-              usable: isUsableXimilarParsedCard(ximilarMagicParsed),
-            } : null,
+            candidates: ximilarCandidatesForConfirmation?.map((candidate) => ({
+              name: candidate.name,
+              setName: candidate.setName,
+              setCode: candidate.setCode,
+              number: candidate.number,
+              resolved: Boolean(candidate.resolvedCard),
+            })).slice(0, 5) ?? null,
             resolved: match ? {
               id: match.id,
               name: match.name,
@@ -1653,6 +1887,13 @@ export default function ScanScreen() {
               number: match.number,
             } : null,
           });
+        }
+
+        if (!match && !ximilarCandidatesForConfirmation?.length && ximilarError) {
+          stopScanningMessages();
+          scanCooldownRef.current = false;
+          setProcessingOcr(false);
+          return;
         }
       }
 
@@ -2157,18 +2398,48 @@ export default function ScanScreen() {
       if (!match) {
         if (expectedSetId) {
           if (!isAuto) {
-            Alert.alert(
-              'Could not read card',
-              'Try again with the card flat and the bottom number clearly visible.'
-            );
+            const ximilarFallbackResponse = await identifyWithXimilarTcg(bestBase64, false);
+            if (ximilarFallbackResponse.ok) {
+              ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
+                ximilarFallbackResponse.candidates,
+                printedNumber,
+                expectedSetId
+              );
+              match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+              if (!match && ximilarCandidatesForConfirmation.length) {
+                stopScanningMessages();
+                setProcessingOcr(false);
+                setPendingConfirmation({
+                  candidates: ximilarCandidatesForConfirmation,
+                  base64: bestBase64,
+                  isMarket: isMarketMode,
+                });
+                return;
+              }
+            } else {
+              setScanError({ ...ximilarFallbackResponse, debugDetails: ximilarFallbackResponse.details });
+              stopScanningMessages();
+              scanCooldownRef.current = false;
+              setProcessingOcr(false);
+              return;
+            }
           }
-          stopScanningMessages();
-          scanCooldownRef.current = false;
-          setProcessingOcr(false);
-          return;
+
+          if (!match) {
+            if (!isAuto) {
+              Alert.alert(
+                'Could not read card',
+                'Try again with the card flat and the bottom number clearly visible.'
+              );
+            }
+            stopScanningMessages();
+            scanCooldownRef.current = false;
+            setProcessingOcr(false);
+            return;
+          }
         }
 
-        if (!useLegacy || isAuto) {
+        if (!match && (!useLegacy || isAuto)) {
           if (!isAuto) {
             Alert.alert(
               'Could not read card',
@@ -2205,6 +2476,17 @@ export default function ScanScreen() {
       }
 
       // Step 4: handle result
+      if (!match && ximilarCandidatesForConfirmation?.length) {
+        stopScanningMessages();
+        setProcessingOcr(false);
+        setPendingConfirmation({
+          candidates: ximilarCandidatesForConfirmation,
+          base64: bestBase64,
+          isMarket: isMarketMode,
+        });
+        return;
+      }
+
       if (!match) {
         if (!isAuto) {
           Alert.alert(
@@ -2258,22 +2540,44 @@ export default function ScanScreen() {
       // Manual + market: show confirmation overlay
       stopScanningMessages();
       setProcessingOcr(false);
-      setPendingConfirmation({ card: match, base64: bestBase64, isMarket: isMarketMode });
+      setPendingConfirmation({
+        card: match,
+        candidates: ximilarCandidatesForConfirmation ?? undefined,
+        base64: bestBase64,
+        isMarket: isMarketMode,
+      });
 
     } catch (error: any) {
-      console.log('Scan error:', error);
-      if (!isAuto) {
-        const timeoutMsg = error?.name === 'AbortError'
-          ? 'Scan timed out. Try again with better lighting.'
-          : 'Something went wrong. Try again.';
-        Alert.alert('Scan failed', timeoutMsg);
-      }
+      const isAbort = error?.name === 'AbortError';
+      const errorMessage = error?.message ?? String(error);
+      const isImageError = /camera|image|photo|snapshot|manipulat|base64/i.test(errorMessage);
+      const nextError = makeScanError(
+        isAbort ? 'upload' : isImageError ? 'image' : 'render',
+        isAbort ? 'SCAN_API_REQUEST_FAILED' : isImageError ? 'SCAN_IMAGE_READ_FAILED' : 'SCAN_RESULT_RENDER_FAILED',
+        isAbort ? 'Scan timed out. Try again with better lighting.' : 'Something went wrong while completing the scan.',
+        errorMessage,
+        undefined,
+        error?.stack
+      );
+      logScanStage('API_RESPONSE_RECEIVED', {
+        ok: false,
+        code: nextError.code,
+        stage: nextError.stage,
+        message: nextError.message,
+        details: nextError.details,
+        stack: SHOW_SCAN_DEBUG ? nextError.stack : undefined,
+      });
+      if (!isAuto) setScanError(nextError);
       stopScanningMessages();
       scanCooldownRef.current = false;
       setProcessingOcr(false);
       setLastScanned(null);
     }
   }, [fingerprintScan, isMarketMode, logScanDebug, lookupCardBySetNumber, processingOcr, resetScanState, resolveCardInExpectedSet, selectedBinder, startScanningMessages, stopScanningMessages]);
+
+  useEffect(() => {
+    handleCaptureRef.current = handleCapture;
+  }, [handleCapture]);
 
   // ===============================
   // TRAINING DATA + CONFIRMATION
@@ -2290,7 +2594,18 @@ export default function ScanScreen() {
 
   const handleConfirm = useCallback(async () => {
     if (!pendingConfirmation) return;
-    const { card, base64, isMarket } = pendingConfirmation;
+    const { base64, isMarket } = pendingConfirmation;
+    const card = pendingConfirmation.card
+      ?? (pendingConfirmation.candidates?.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null | undefined);
+    if (!card) {
+      setScanError(makeScanError(
+        'card_lookup',
+        'CARD_LOOKUP_FAILED',
+        'This candidate could not be matched to a card in the database yet.',
+        JSON.stringify(pendingConfirmation.candidates ?? []).slice(0, 2000)
+      ));
+      return;
+    }
     setPendingConfirmation(null);
     scanCooldownRef.current = false;
     saveTrainingData(card.id, base64);
@@ -2318,6 +2633,26 @@ export default function ScanScreen() {
     setPendingConfirmation(null);
     scanCooldownRef.current = false;
     setLastScanned(null);
+  }, []);
+
+  const handleSearchManually = useCallback(() => {
+    setPendingConfirmation(null);
+    setScanError(null);
+    setAutoScanActive(false);
+    scanCooldownRef.current = false;
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/market' as any);
+    }
+  }, []);
+
+  const shareDebugDetails = useCallback(async (details: string) => {
+    try {
+      await Share.share({ message: details });
+    } catch (error) {
+      console.log('Copy/share debug details failed:', error);
+    }
   }, []);
 
   // ===============================
@@ -2803,13 +3138,15 @@ export default function ScanScreen() {
         </View>
 
         {/* Confirmation overlay */}
-        {pendingConfirmation && (
+        {pendingConfirmation?.card && (
           <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
             <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>Is this the right card?</Text>
-            {pendingConfirmation.card.image_small ? (
+            {pendingConfirmation.card?.image_small ? (
               <Image source={{ uri: pendingConfirmation.card.image_small }} style={{ width: 160, height: 224, borderRadius: 10, marginBottom: 16 }} resizeMode="contain" />
             ) : null}
-            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>{pendingConfirmation.card.name}</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>
+              {pendingConfirmation.card?.name ?? pendingConfirmation.candidates?.[0]?.name ?? 'Unknown card'}
+            </Text>
             <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 32 }}>{pendingConfirmation.card.set_name} · #{pendingConfirmation.card.number}</Text>
             <View style={{ flexDirection: 'row', gap: 16 }}>
               <TouchableOpacity onPress={handleReject} style={{ flex: 1, backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
@@ -2818,6 +3155,106 @@ export default function ScanScreen() {
               <TouchableOpacity onPress={handleConfirm} style={{ flex: 1, backgroundColor: '#10B981', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
                 <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>✓ Correct</Text>
               </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {pendingConfirmation && !pendingConfirmation.card && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>Is this the right card?</Text>
+            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>
+              {pendingConfirmation.candidates?.[0]?.name ?? 'Unknown card'}
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 10, textAlign: 'center' }}>
+              {`${pendingConfirmation.candidates?.[0]?.setName ?? 'Set unknown'}${pendingConfirmation.candidates?.[0]?.number ? ` - #${pendingConfirmation.candidates[0].number}` : ''}`}
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.72)', fontSize: 13, marginBottom: 20, textAlign: 'center', maxWidth: 280 }}>
+              Details unavailable - search manually or confirm later.
+            </Text>
+            {(pendingConfirmation.candidates?.length ?? 0) > 1 && (
+              <View style={{ width: '100%', maxWidth: 360, gap: 8, marginBottom: 20 }}>
+                {pendingConfirmation.candidates?.slice(0, 4).map((candidate, index) => {
+                  const candidateCard = candidate.resolvedCard as ScannedCard | null | undefined;
+                  return (
+                    <TouchableOpacity
+                      key={`${candidate.name}-${candidate.number ?? index}-${candidate.setCode ?? candidate.setName ?? 'unknown'}`}
+                      onPress={() => {
+                        if (candidateCard) {
+                          setPendingConfirmation((current) => current ? { ...current, card: candidateCard } : current);
+                        }
+                      }}
+                      style={{
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: candidateCard ? 'rgba(16,185,129,0.65)' : 'rgba(255,255,255,0.18)',
+                        backgroundColor: candidateCard ? 'rgba(16,185,129,0.14)' : 'rgba(255,255,255,0.08)',
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
+                      }}
+                    >
+                      <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }} numberOfLines={1}>
+                        {candidateCard?.name ?? candidate.name}
+                      </Text>
+                      <Text style={{ color: 'rgba(255,255,255,0.62)', fontSize: 11, fontWeight: '700', marginTop: 2 }} numberOfLines={1}>
+                        {candidateCard
+                          ? `${candidateCard.set_name} - #${candidateCard.number}`
+                          : `${candidate.setName ?? 'Details unavailable'}${candidate.number ? ` - #${candidate.number}` : ''}`}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+            <View style={{ flexDirection: 'row', gap: 16 }}>
+              <TouchableOpacity onPress={handleReject} style={{ flex: 1, backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
+                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Wrong</Text>
+              </TouchableOpacity>
+              {pendingConfirmation.candidates?.some((candidate) => candidate.resolvedCard) ? (
+                <TouchableOpacity onPress={handleConfirm} style={{ flex: 1, backgroundColor: '#10B981', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Correct</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={handleSearchManually} style={{ flex: 1, backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Search</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        )}
+
+        {scanError && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 10 }}>Scan couldn&apos;t be completed</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.76)', fontSize: 14, lineHeight: 20, textAlign: 'center', maxWidth: 330, marginBottom: 12 }}>
+              {stageMessage(scanError.stage)}
+            </Text>
+            {(SHOW_SCAN_DEBUG || scanError.code) && (
+              <Text style={{ color: 'rgba(255,255,255,0.64)', fontSize: 12, fontWeight: '800', textAlign: 'center', marginBottom: 20 }}>
+                Error code: {scanError.code}
+              </Text>
+            )}
+            <View style={{ width: '100%', maxWidth: 330, gap: 10 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setScanError(null);
+                  scanCooldownRef.current = false;
+                  setProcessingOcr(false);
+                }}
+                style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Retry Scan</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSearchManually} style={{ backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}>
+                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Search Manually</Text>
+              </TouchableOpacity>
+              {SHOW_SCAN_DEBUG && (
+                <TouchableOpacity
+                  onPress={() => shareDebugDetails(JSON.stringify(scanError, null, 2))}
+                  style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', borderRadius: 14, paddingVertical: 13, alignItems: 'center' }}
+                >
+                  <Text style={{ color: 'rgba(255,255,255,0.86)', fontWeight: '900', fontSize: 14 }}>Copy Debug Details</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         )}

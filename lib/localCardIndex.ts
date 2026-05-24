@@ -248,7 +248,7 @@ export async function lookupLocalCardsByPrintedNumber(
   if (!printedNumber) return null;
 
   const index = memoryIndex
-    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+    ?? (options?.allowBuild === false ? await loadStoredIndex() : await getLocalCardIndex());
   if (!index) return null;
   memoryIndex = index;
 
@@ -268,7 +268,7 @@ export async function lookupLocalCardsByPrintedTotal(
   if (!total) return null;
 
   const index = memoryIndex
-    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+    ?? (options?.allowBuild === false ? await loadStoredIndex() : await getLocalCardIndex());
   if (!index) return null;
   memoryIndex = index;
 
@@ -285,7 +285,7 @@ export async function lookupLocalCardsBySet(
   if (!setId) return null;
 
   const index = memoryIndex
-    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+    ?? (options?.allowBuild === false ? await loadStoredIndex() : await getLocalCardIndex());
   if (!index) return null;
   memoryIndex = index;
 
@@ -303,7 +303,7 @@ export async function lookupLocalCardsByNameText(
   if (!ocrText) return null;
 
   const index = memoryIndex
-    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+    ?? (options?.allowBuild === false ? await loadStoredIndex() : await getLocalCardIndex());
   if (!index) return null;
   memoryIndex = index;
 
@@ -403,7 +403,7 @@ export async function resolveLocalCardByFusion(
   options?: { allowBuild?: boolean }
 ): Promise<LocalFusionResolveResult | null> {
   const index = memoryIndex
-    ?? (options?.allowBuild ? await getLocalCardIndex() : await loadStoredIndex());
+    ?? (options?.allowBuild === false ? await loadStoredIndex() : await getLocalCardIndex());
   if (!index) return null;
   memoryIndex = index;
 

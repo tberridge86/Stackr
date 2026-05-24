@@ -414,11 +414,6 @@ const BLOCKED_TERMS = [
   'foreign', 'non english', 'non-english', 'world championship', 'championship deck',
 ];
 
-function titleLooksBad(title = '') {
-  const t = title.toLowerCase();
-  return BLOCKED_TERMS.some((term) => t.includes(term));
-}
-
 function extractCardNumber(query = '') {
   const match = query.match(/\b(\d+\/\d+)\b/);
   return match ? match[1].toLowerCase() : null;
@@ -434,9 +429,21 @@ function normaliseForTitleMatch(value = '') {
     .replace(/pok[eÃ©]mon/g, 'pokemon')
     .replace(/[’`]/g, "'")
     .replace(/&/g, ' and ')
+    .replace(/'/g, '')
     .replace(/[^a-z0-9/'\s-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function titleHasBlockedTerm(title = '', term = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  const target = normaliseForTitleMatch(term);
+  if (!target) return false;
+  return new RegExp(`(^|[^a-z0-9])${escapeRegExp(target)}([^a-z0-9]|$)`).test(cleaned);
+}
+
+function titleLooksBad(title = '') {
+  return BLOCKED_TERMS.some((term) => titleHasBlockedTerm(title, term));
 }
 
 function titleHasWord(title = '', word = '') {
@@ -487,7 +494,9 @@ function titleHasCollectorNumber(title = '', number = '') {
   return candidates.some((candidate) => {
     if (candidate.includes('/')) {
       const [left, right] = candidate.split('/').map((part) => escapeRegExp(part));
-      return new RegExp(`(^|[^0-9])0*${left}\\s*/\\s*0*${right}([^0-9]|$)`).test(cleaned);
+      return new RegExp(`(^|[^0-9])0*${left}\\s*/\\s*0*${right}([^0-9]|$)`).test(cleaned)
+        || new RegExp(`(^|[^0-9])0*${left}\\s*-\\s*0*${right}([^0-9]|$)`).test(cleaned)
+        || new RegExp(`(^|[^0-9])0*${left}\\s+of\\s+0*${right}([^0-9]|$)`).test(cleaned);
     }
 
     if (/^[a-z]+\d+$/i.test(candidate)) {
@@ -562,6 +571,25 @@ function getVariantMismatchReasons(title = '', { name = '', rarity = '' } = {}) 
 
   if ((rarityLower === 'common' || rarityLower === 'uncommon') && /\b(secret\s+rare|ultra\s+rare|rare\s+holo|holo\s+rare|holographic|rare)\b/.test(cleanedWithoutName)) {
     reasons.push('RARITY_MISMATCH');
+  }
+
+  return reasons;
+}
+
+function getRarityMismatchReasons(title = '', { rarity = '' } = {}) {
+  const cleaned = normaliseForTitleMatch(title);
+  const rarityLower = normaliseForTitleMatch(rarity);
+  const reasons = [];
+
+  if (!rarityLower) return reasons;
+
+  const hasSpecialIllustration = /\b(sir|special illustration|special illustration rare)\b/.test(cleaned);
+  const hasIllustration = hasSpecialIllustration || /\b(ir|illustration rare)\b/.test(cleaned);
+  const hasGold = /\b(gold|hyper rare|secret rare)\b/.test(cleaned);
+  const hasFullArt = /\b(full art)\b/.test(cleaned);
+
+  if (rarityLower.includes('double rare') && (hasSpecialIllustration || hasIllustration || hasGold || hasFullArt)) {
+    reasons.push('RARITY_TOO_HIGH_FOR_DOUBLE_RARE');
   }
 
   return reasons;
@@ -722,7 +750,7 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
   if (titleLooksBad(title)) {
     const cleaned = title.toLowerCase();
     const allowedConditionTerms = getAllowedConditionTerms(condition);
-    const matched = BLOCKED_TERMS.filter((term) => cleaned.includes(term) && !allowedConditionTerms.includes(term));
+    const matched = BLOCKED_TERMS.filter((term) => titleHasBlockedTerm(title, term) && !allowedConditionTerms.includes(term));
     if (matched.length) reasons.push(`BLOCKED_TERMS: [${matched.join(', ')}]`);
   }
 
@@ -744,6 +772,7 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
 
   reasons.push(...getLanguageMismatchReasons(title));
   reasons.push(...getVariantMismatchReasons(title, { name, rarity }));
+  reasons.push(...getRarityMismatchReasons(title, { rarity }));
   reasons.push(...getGradingMismatchReasons(title, { pricingMode, gradingCompany, grade, condition }));
 
   return reasons;
@@ -761,8 +790,7 @@ function getImportantWords(query = '') {
     'star', 'Radiant', 'illustrator', 'special',
   ]);
 
-  const words = query
-    .toLowerCase()
+  const words = normaliseForTitleMatch(query)
     .split(/\s+/)
     .map((w) => w.replace(/[^a-z0-9'é]/g, ''))
     .filter((w) => w.length >= 2 && !stopWords.has(w) && !/^\d+$/.test(w));
@@ -771,16 +799,15 @@ function getImportantWords(query = '') {
 }
 
 function titleLooksGoodForQuery(title = '', query = '') {
-  const t = title.toLowerCase();
   const cardNumber = extractCardNumber(query);
   const importantWords = getImportantWords(query);
 
   if (importantWords.length > 0) {
-    const allWordsPresent = importantWords.every((word) => t.includes(word));
+    const allWordsPresent = importantWords.every((word) => titleHasWord(title, word));
     if (!allWordsPresent) return false;
   }
 
-  if (cardNumber && !t.includes(cardNumber)) return false;
+  if (cardNumber && !titleHasCollectorNumber(title, cardNumber)) return false;
 
   return true;
 }
@@ -975,7 +1002,7 @@ function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '
 // ===============================
 
 const priceCache = new Map();
-const PRICE_FILTER_VERSION = 5;
+const PRICE_FILTER_VERSION = 7;
 const PRICE_CACHE_TTL = 2 * 60 * 60 * 1000;
 
 // In-flight dedupe so concurrent identical queries share one upstream call
@@ -1139,6 +1166,7 @@ function normalizeSerpApiSoldItems(data) {
       return {
         title,
         price: { value: priceValue },
+        source: 'serpapi',
       };
     })
     .filter((item) => item.title && item.price.value !== null);
@@ -1234,21 +1262,110 @@ async function searchEbayBrowseListings(query) {
     .map((item) => ({
       title: item?.title ?? '',
       price: { value: item?.price?.value ?? item?.currentBidPrice?.value ?? null },
+      source: 'browse',
     }));
 }
 
+function getVariationListingReasons(title = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  const reasons = [];
+
+  if (/\b(choose|select|pick)\b.{0,32}\b(card|cards|single|singles)\b/.test(cleaned)) {
+    reasons.push('CHOOSE_YOUR_OWN_LISTING');
+  }
+  if (/\b(card|cards|single|singles)\b.{0,32}\b(choose|select|pick)\b/.test(cleaned)) {
+    reasons.push('CHOOSE_YOUR_OWN_LISTING');
+  }
+  if (/\b(random|mystery)\b.{0,24}\b(card|cards|single|singles)\b/.test(cleaned)) {
+    reasons.push('RANDOM_CARD_LISTING');
+  }
+  if (/\b(joblot|job lot|lot of|bundle|bulk)\b/.test(cleaned)) {
+    reasons.push('MULTI_CARD_LOT');
+  }
+
+  return [...new Set(reasons)];
+}
+
+function getPokemonCardListingScore(title = '', query = '', options = {}) {
+  const {
+    name = '',
+    setName = '',
+    number = '',
+    setTotal = '',
+    rarity = '',
+  } = options;
+  let score = 0;
+  const collectorNumber = getFullCollectorNumber(number, setTotal);
+
+  if (name && titleHasCardName(title, name)) score += 34;
+  if (setName && titleHasSetName(title, setName)) score += 18;
+  if (collectorNumber && titleHasCollectorNumber(title, collectorNumber)) score += 34;
+  if (!collectorNumber && titleLooksGoodForQuery(title, query)) score += 20;
+  if (rarity && getRarityMismatchReasons(title, { rarity }).length === 0) score += 8;
+  if (getVariationListingReasons(title).length === 0) score += 6;
+
+  return Math.min(100, score);
+}
+
+function getListingConfidence(score, accepted) {
+  if (!accepted) return 'rejected';
+  if (score >= 82) return 'high';
+  if (score >= 65) return 'medium';
+  return 'low';
+}
+
+function evaluatePokemonCardListing(item, query, options = {}) {
+  const title = item.title || '';
+  const price = numberFromPrice(item.price?.value);
+  const reasons = [];
+
+  if (!price) reasons.push('NO_PRICE');
+  if (price !== null && price < 0.5) reasons.push(`PRICE_TOO_LOW (£${price})`);
+  if (price !== null && price > 5000) reasons.push(`PRICE_TOO_HIGH (£${price})`);
+
+  reasons.push(...getStructuredTitleRejectionReasons(title, query, options));
+
+  const isCardListing = (options.productType ?? 'card') === 'card';
+
+  if (isCardListing) {
+    reasons.push(...getVariationListingReasons(title));
+  }
+
+  const uniqueReasons = [...new Set(reasons)];
+  const score = isCardListing ? getPokemonCardListingScore(title, query, options) : 100;
+  const accepted = uniqueReasons.length === 0 && (!isCardListing || score >= 65);
+  const finalReasons = accepted
+    ? ['ACCEPTED']
+    : uniqueReasons.length
+      ? uniqueReasons
+      : [`LOW_MATCH_SCORE (${score})`];
+
+  return {
+    item,
+    title,
+    price,
+    accepted,
+    score,
+    confidence: getListingConfidence(score, accepted),
+    reasons: finalReasons,
+  };
+}
+
+function analysePriceItems(items, query, options = {}) {
+  return items.map((item) => evaluatePokemonCardListing(item, query, options));
+}
+
 function filterItems(items, query, options = {}) {
-  return items.filter((item) => {
-    const title = item.title || '';
-    const price = numberFromPrice(item.price?.value);
-
-    if (!price) return false;
-    if (price < 0.5) return false;
-    if (price > 5000) return false;
-    if (getStructuredTitleRejectionReasons(title, query, options).length > 0) return false;
-
-    return true;
-  });
+  return analysePriceItems(items, query, options)
+    .filter((analysis) => analysis.accepted)
+    .map((analysis) => ({
+      ...analysis.item,
+      _match: {
+        score: analysis.score,
+        confidence: analysis.confidence,
+        reasons: analysis.reasons,
+      },
+    }));
 }
 
 // Extended signature to pass all card details to fallback
@@ -1361,15 +1478,51 @@ async function fetchEbaySummary(query, options = {}) {
         usedFallback = true;
       }
 
+      const activeQuery = usedFallback ? fallbackQuery : query;
+      const activeOptions = {
+        name: usedFallback ? cardName : name,
+        setName,
+        number,
+        setTotal,
+        rarity,
+        productType,
+        productSubtype,
+        pricingMode,
+        condition,
+        gradingCompany,
+        grade,
+      };
+      const activeAnalysis = analysePriceItems(acceptedSourceItems, activeQuery, activeOptions);
+      const acceptedAnalysis = activeAnalysis.filter((analysis) => analysis.accepted);
+      const rejectedAnalysis = activeAnalysis.filter((analysis) => !analysis.accepted);
+      cleaned = acceptedAnalysis.map((analysis) => ({
+        ...analysis.item,
+        _match: {
+          score: analysis.score,
+          confidence: analysis.confidence,
+          reasons: analysis.reasons,
+        },
+      }));
+
       const prices = cleaned
         .map((item) => numberFromPrice(item.price?.value))
         .filter((p) => p !== null);
 
       const summary = summarisePrices(prices);
+      const averageScore = acceptedAnalysis.length
+        ? acceptedAnalysis.reduce((sum, analysis) => sum + analysis.score, 0) / acceptedAnalysis.length
+        : 0;
+      const marketConfidence = acceptedAnalysis.length >= 3 && averageScore >= 82
+        ? 'high'
+        : acceptedAnalysis.length >= 2 && averageScore >= 72
+          ? 'medium'
+          : acceptedAnalysis.length >= 1
+            ? 'low'
+            : 'none';
 
       const result = {
         marketplace: EBAY_MARKETPLACE_ID,
-        query: usedFallback ? fallbackQuery : query,
+        query: activeQuery,
         originalQuery: query,
         usedFallback,
         low: summary.low,
@@ -1379,34 +1532,31 @@ async function fetchEbaySummary(query, options = {}) {
         rawCount: rawItems.length,
         soldDataSource: usedSoldProvider ? 'serpapi' : 'browse',
         soldProviderError,
+        matchConfidence: marketConfidence,
+        averageMatchScore: acceptedAnalysis.length ? Number(averageScore.toFixed(1)) : null,
+        filterVersion: PRICE_FILTER_VERSION,
         elapsedMs: Date.now() - startedAt,
         sampleTitles: rawItems.slice(0, 10).map((item) => ({
           title: item.title,
           price: item.price?.value,
+          source: item.source,
         })),
         acceptedTitles: cleaned.slice(0, 10).map((item) => ({
           title: item.title,
           price: item.price?.value,
+          source: item.source,
+          score: item._match?.score,
+          confidence: item._match?.confidence,
         })),
-        rejectedTitles: acceptedSourceItems
-          .filter((item) => !cleaned.includes(item))
+        rejectedTitles: rejectedAnalysis
           .slice(0, 10)
-          .map((item) => ({
-            title: item.title,
-            price: item.price?.value,
-            reasons: getStructuredTitleRejectionReasons(item.title || '', usedFallback ? fallbackQuery : query, {
-              name: cardName,
-              setName,
-              number,
-              setTotal,
-              rarity,
-              productType,
-              productSubtype,
-              pricingMode,
-              condition,
-              gradingCompany,
-              grade,
-            }),
+          .map((analysis) => ({
+            title: analysis.title,
+            price: analysis.item.price?.value,
+            source: analysis.item.source,
+            score: analysis.score,
+            confidence: analysis.confidence,
+            reasons: analysis.reasons,
           })),
       };
 
@@ -1607,11 +1757,15 @@ app.get('/price', async (req, res) => {
       return res.status(400).json({ error: 'Missing query' });
     }
 
-    // Extract card name from query for fallback
-    const cardName = query.split(' ')[0];
-    
-    // Try to parse additional info from query string for better fallback
     const parts = query.split(' ');
+    const numberIndex = parts.findIndex(p => /^\d+\/\d+$/.test(p));
+    const cardName = productType === 'sealed'
+      ? ''
+      : numberIndex > 0
+        ? parts.slice(0, numberIndex).join(' ')
+        : query.split(/\b(?:pokemon|tcg|card)\b/i)[0].trim() || query.split(' ')[0];
+
+    // Try to parse additional info from query string for better fallback
     const setName = parts.length > 1 ? parts.find(p => /^(base|xy|swsh|sv|sm|bw|dp|hgss)/i.test(p)) || '' : '';
     const number = parts.length > 1 ? parts.find(p => /^\d+\/\d+$/.test(p)) || '' : '';
     const setTotal = number.includes('/') ? number.split('/')[1] : '';
@@ -1849,13 +2003,17 @@ app.get('/price/debug', async (req, res) => {
         if (price !== null && price > 5000) reasons.push(`PRICE_TOO_HIGH (£${price})`);
 
         reasons.push(...getStructuredTitleRejectionReasons(title, query, options));
+        reasons.push(...getVariationListingReasons(title));
 
-        const accepted = reasons.length === 0;
+        const score = getPokemonCardListingScore(title, query, options);
+        const accepted = reasons.length === 0 && score >= 65;
 
         return {
           title,
           price: item.price?.value ?? null,
           accepted,
+          score,
+          confidence: getListingConfidence(score, accepted),
           reasons: accepted ? ['✅ ACCEPTED'] : reasons,
         };
       });
@@ -2457,6 +2615,122 @@ function normalizeXimilarTcgCard(card) {
   };
 }
 
+function logScanStage(stage, payload = {}) {
+  console.log(`[scan:${stage}]`, payload);
+}
+
+function createScanError({ stage, code, message, details, httpStatus, provider = 'ximilar' }) {
+  return {
+    ok: false,
+    provider,
+    stage,
+    code,
+    message,
+    ...(details ? { details } : {}),
+    ...(httpStatus ? { httpStatus } : {}),
+  };
+}
+
+function normalizeXimilarIdentificationMatch(match) {
+  if (!match || typeof match !== 'object') return null;
+
+  const rawNumber =
+    match.card_number
+    ?? match.number
+    ?? match.collector_number
+    ?? match.collectorNumber
+    ?? match.card_no
+    ?? null;
+  const [number] = String(rawNumber ?? '').trim().split('/');
+  const name =
+    match.name
+    ?? match.full_name
+    ?? match.card_name
+    ?? match.title
+    ?? null;
+
+  if (!name || !String(name).trim()) return null;
+
+  const confidence =
+    typeof match.prob === 'number'
+      ? match.prob
+      : typeof match._score === 'number'
+        ? match._score
+        : typeof match.score === 'number'
+          ? match.score
+          : typeof match.confidence === 'number'
+            ? match.confidence
+            : null;
+
+  return {
+    id: match.id ?? match.card_id ?? undefined,
+    name: String(name).trim(),
+    number: number ? number.replace(/^#/, '').replace(/^0+/, '') || '0' : null,
+    setName: match.set ?? match.set_name ?? match.setName ?? null,
+    setCode: match.set_code ?? match.setCode ?? match.set_id ?? match.setId ?? null,
+    confidence,
+    source: 'ximilar',
+    resolvedCard: null,
+  };
+}
+
+function normalizeXimilarTcgResponse(data) {
+  const objects = data?.records?.[0]?._objects ?? [];
+  const objectList = Array.isArray(objects) ? objects : [];
+  const cardObject =
+    objectList.find((obj) => obj?.name === 'Card') ??
+    objectList.find((obj) => obj?._category === 'Card' || obj?.category === 'Card') ??
+    objectList[0];
+
+  const identification = cardObject?._identification;
+  const bestMatch = identification?.best_match;
+  const alternatives = Array.isArray(identification?.alternatives)
+    ? identification.alternatives
+    : [];
+
+  if (!bestMatch || typeof bestMatch !== 'object') {
+    return createScanError({
+      stage: 'normalisation',
+      code: 'NO_CARD_MATCH',
+      message: 'No card candidate was returned by Ximilar.',
+      details: JSON.stringify(summarizeXimilarTcgPayload(data)).slice(0, 2000),
+    });
+  }
+
+  const dedupe = new Set();
+  const candidates = [bestMatch, ...alternatives]
+    .map(normalizeXimilarIdentificationMatch)
+    .filter(Boolean)
+    .filter((candidate) => {
+      const key = [
+        candidate.name,
+        candidate.number ?? '',
+        candidate.setCode ?? '',
+        candidate.setName ?? '',
+      ].join('|').toLowerCase();
+      if (dedupe.has(key)) return false;
+      dedupe.add(key);
+      return true;
+    });
+
+  if (!candidates.length) {
+    return createScanError({
+      stage: 'normalisation',
+      code: 'XIMILAR_NO_MATCH',
+      message: 'Ximilar returned candidates, but none included a readable card name.',
+      details: JSON.stringify(summarizeXimilarTcgPayload(data)).slice(0, 2000),
+    });
+  }
+
+  return {
+    ok: true,
+    provider: 'ximilar',
+    requiresConfirmation: true,
+    candidates,
+    rawDebug: summarizeXimilarTcgPayload(data),
+  };
+}
+
 function flattenXimilarTcgCandidates(value, depth = 0) {
   if (!value || depth > 8) return [];
   if (Array.isArray(value)) {
@@ -2601,7 +2875,7 @@ async function scanTcgWithXimilarBase64(base64Image, options = {}) {
   if (!XIMILAR_API_TOKEN) throw new Error('Missing XIMILAR_API_TOKEN');
 
   const startedAt = Date.now();
-  console.log('[ximilar-tcg] request', {
+  logScanStage('XIMILAR_REQUEST_STARTED', {
     magicAi: Boolean(options.magicAi),
     imageBytesApprox: Math.round(stripBase64ImagePrefix(base64Image).length * 0.75),
   });
@@ -2623,6 +2897,13 @@ async function scanTcgWithXimilarBase64(base64Image, options = {}) {
   });
 
   const data = await ximilarRes.json().catch(() => null);
+  logScanStage('XIMILAR_RESPONSE_RECEIVED', {
+    ok: ximilarRes.ok,
+    status: ximilarRes.status,
+    magicAi: Boolean(options.magicAi),
+    totalMs: Date.now() - startedAt,
+    bodyPreview: JSON.stringify(data).slice(0, 800),
+  });
   const match = pickXimilarTcgCard(data);
   console.log('[ximilar-tcg] response', {
     ok: ximilarRes.ok,
@@ -2641,11 +2922,33 @@ async function scanTcgWithXimilarBase64(base64Image, options = {}) {
   });
   console.log('[ximilar-tcg] payload-shape', summarizeXimilarTcgPayload(data));
 
+  const normalised = ximilarRes.ok
+    ? normalizeXimilarTcgResponse(data)
+    : createScanError({
+        stage: 'ximilar',
+        code: ximilarRes.status === 401 || ximilarRes.status === 403
+          ? 'XIMILAR_UNAUTHORISED'
+          : ximilarRes.status === 429
+            ? 'XIMILAR_RATE_LIMITED'
+            : 'XIMILAR_INVALID_RESPONSE',
+        message: 'Ximilar request failed.',
+        details: getApiErrorMessage(data) ?? JSON.stringify(data).slice(0, 2000),
+        httpStatus: ximilarRes.status,
+      });
+  logScanStage('XIMILAR_RESPONSE_NORMALISED', {
+    ok: normalised.ok,
+    code: normalised.ok ? null : normalised.code,
+    stage: normalised.ok ? null : normalised.stage,
+    candidates: normalised.ok ? normalised.candidates.length : 0,
+    candidateNames: normalised.ok ? normalised.candidates.slice(0, 5).map((candidate) => candidate.name) : [],
+  });
+
   return {
     ok: ximilarRes.ok,
     status: ximilarRes.status,
     data,
     match,
+    normalised,
   };
 }
 
@@ -2668,9 +2971,16 @@ app.post('/scan', async (req, res) => {
 app.post('/api/scan/tcg', async (req, res) => {
   try {
     const { imageUrl, base64Image, magicAi } = req.body;
-    if (!imageUrl && !base64Image) return res.status(400).json({ error: 'Missing imageUrl or base64Image' });
+    if (!imageUrl && !base64Image) {
+      return res.status(400).json(createScanError({
+        stage: 'upload',
+        code: 'SCAN_API_REQUEST_FAILED',
+        message: 'Missing imageUrl or base64Image.',
+        httpStatus: 400,
+      }));
+    }
 
-    console.log('[api/scan/tcg] hit', {
+    logScanStage('API_REQUEST_STARTED', {
       input: base64Image ? 'base64' : 'url',
       magicAi: Boolean(magicAi),
     });
@@ -2679,17 +2989,48 @@ app.post('/api/scan/tcg', async (req, res) => {
       ? await scanTcgWithXimilarBase64(base64Image, { magicAi })
       : await scanWithXimilar(imageUrl);
     if (!result.ok) {
-      return res.status(result.status).json({ error: 'Ximilar request failed', detail: result.data });
+      const errorPayload = result.normalised ?? createScanError({
+        stage: 'ximilar',
+        code: result.status === 401 || result.status === 403
+          ? 'XIMILAR_UNAUTHORISED'
+          : result.status === 429
+            ? 'XIMILAR_RATE_LIMITED'
+            : 'XIMILAR_INVALID_RESPONSE',
+        message: 'Ximilar request failed.',
+        details: JSON.stringify(result.data).slice(0, 2000),
+        httpStatus: result.status,
+      });
+      logScanStage('API_RESPONSE_RECEIVED', {
+        ok: false,
+        status: result.status,
+        body: errorPayload,
+      });
+      return res.status(result.status).json(errorPayload);
     }
 
-    return res.json({
-      provider: 'ximilar',
-      match: result.match ?? null,
-      debug: summarizeXimilarTcgPayload(result.data),
-      raw: result.data,
+    const normalised = result.normalised ?? normalizeXimilarTcgResponse(result.data);
+    logScanStage('API_RESPONSE_RECEIVED', {
+      ok: normalised.ok,
+      status: normalised.ok ? 200 : 422,
+      candidates: normalised.ok ? normalised.candidates.length : 0,
+      body: normalised.ok ? undefined : normalised,
     });
+    return res.status(normalised.ok ? 200 : 422).json(normalised);
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to scan card', detail: getErrorMessage(error) });
+    const payload = createScanError({
+      stage: 'backend',
+      code: 'SCAN_API_REQUEST_FAILED',
+      message: 'Failed to scan card.',
+      details: getErrorMessage(error),
+      httpStatus: 500,
+    });
+    logScanStage('API_RESPONSE_RECEIVED', {
+      ok: false,
+      status: 500,
+      error: payload,
+      stack: error?.stack,
+    });
+    return res.status(500).json(payload);
   }
 });
 

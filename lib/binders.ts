@@ -600,6 +600,7 @@ export async function updateBinderCardOwned(
           tcg_price: price?.tcg_price ?? null,
           cardmarket_price: price?.cardmarket_price ?? null,
           last_price_update: price?.last_price_update ?? null,
+          condition: cardMeta?.condition ?? 'Near Mint',
         })
         .select('id, card_id, set_id, owned')
         .single();
@@ -693,6 +694,26 @@ export async function updateBinderCardCondition(
   binderCardId: string,
   condition: string
 ): Promise<void> {
+  const virtual = parseVirtualBinderCardId(binderCardId);
+
+  if (virtual) {
+    const { error } = await supabase
+      .from('binder_cards')
+      .upsert({
+        binder_id: virtual.binderId,
+        card_id: virtual.cardId,
+        set_id: virtual.setId,
+        api_card_id: virtual.cardId,
+        api_set_id: virtual.setId,
+        owned: true,
+        notes: '',
+        condition,
+      }, { onConflict: 'binder_id,card_id' });
+
+    if (error) throw error;
+    return;
+  }
+
   const { error } = await supabase
     .from('binder_cards')
     .update({ condition })
