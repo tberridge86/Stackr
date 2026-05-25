@@ -42,6 +42,21 @@ type TradeCardOption = {
   price_source?: string | null;
 };
 
+type OfferListingRow = {
+  id: string;
+  user_id: string;
+  card_id: string | null;
+  set_id: string | null;
+  flag_type: string | null;
+  listing_status?: string | null;
+  product_type?: string | null;
+  product_name?: string | null;
+  asking_price?: number | null;
+  market_estimate?: number | null;
+  listing_images?: string[] | null;
+  condition?: string | null;
+};
+
 // ===============================
 // HELPERS
 // ===============================
@@ -124,6 +139,7 @@ export default function NewOfferScreen() {
   const [sending, setSending] = useState(false);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [listingOwnerId, setListingOwnerId] = useState<string | null>(null);
   const [targetUserName, setTargetUserName] = useState<string | null>(null);
   const [targetCard, setTargetCard] = useState<TradeCardOption | null>(null);
   const [myTradeCards, setMyTradeCards] = useState<TradeCardOption[]>([]);
@@ -183,18 +199,29 @@ export default function NewOfferScreen() {
   const fairnessColor = fairnessState === 'balanced' ? theme.colors.primary : '#F59E0B';
 
   useEffect(() => {
-    loadScreen();
-    // The offer params are fixed for the lifetime of this screen.
+    let active = true;
+    loadScreen(() => active);
+    return () => {
+      active = false;
+    };
+    // Reload only when the route identity changes; loadScreen is defined below and closes over these values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [listingId, targetUserId, cardId, setId]);
 
   // ===============================
   // LOAD
   // ===============================
 
-  async function loadScreen() {
+  async function loadScreen(isActive = () => true) {
     try {
       setLoading(true);
+      setTargetCard(null);
+      setMyTradeCards([]);
+      setSelectedCardIds([]);
+      setCashAmount('');
+      setCashPayer('sender');
+      setMessage('');
+      setListingOwnerId(null);
 
       const { data: { user }, error: userError } = await supabase.auth.getUser();
 
@@ -208,27 +235,67 @@ export default function NewOfferScreen() {
 
       setCurrentUserId(user.id);
 
-      if (!listingId || !targetUserId || !cardId) {
+      if (!listingId) {
         Alert.alert('Missing trade details', 'This offer is missing listing information.');
         router.replace('/offer');
         return;
       }
 
+      const listing = await fetchListingForOffer(listingId);
+      if (!listing?.card_id || !listing.user_id) {
+        throw new Error('This trade listing could not be found.');
+      }
+
+      if (targetUserId && listing.user_id !== targetUserId) {
+        console.log('Offer route target mismatch; using listing owner', {
+          listingId,
+          routeTargetUserId: targetUserId,
+          listingUserId: listing.user_id,
+        });
+      }
+
+      if (cardId && listing.card_id !== cardId) {
+        console.log('Offer route card mismatch; using listing card', {
+          listingId,
+          routeCardId: cardId,
+          listingCardId: listing.card_id,
+        });
+      }
+
       const [target, receiverProfile, ownCards] = await Promise.all([
-        buildTargetCard(cardId, setId ?? null),
-        supabase.from('profiles').select('collector_name').eq('id', targetUserId).maybeSingle(),
+        buildTargetCard(listing.card_id, listing.set_id ?? null, listing),
+        supabase.from('profiles').select('collector_name').eq('id', listing.user_id).maybeSingle(),
         fetchMyTradeCards(user.id),
       ]);
 
+      if (!isActive()) return;
       setTargetCard(target);
+      setListingOwnerId(listing.user_id);
       setTargetUserName(receiverProfile.data?.collector_name ?? null);
       setMyTradeCards(ownCards);
     } catch (error: any) {
+      if (!isActive()) return;
       console.error('Failed to load offer screen:', error);
       Alert.alert('Could not load offer', error?.message ?? 'Something went wrong.');
     } finally {
-      setLoading(false);
+      if (isActive()) setLoading(false);
     }
+  }
+
+  async function fetchListingForOffer(listingIdValue: string): Promise<OfferListingRow | null> {
+    const { data, error } = await supabase
+      .from('user_card_flags')
+      .select(`
+        id, user_id, card_id, set_id, flag_type, listing_status,
+        product_type, product_name, asking_price, market_estimate,
+        listing_images, condition
+      `)
+      .eq('id', listingIdValue)
+      .eq('flag_type', 'trade')
+      .maybeSingle();
+
+    if (error) throw error;
+    return (data as OfferListingRow | null) ?? null;
   }
 
   // ===============================
@@ -237,8 +304,27 @@ export default function NewOfferScreen() {
 
   async function buildTargetCard(
     cardIdValue: string,
-    setIdValue: string | null
+    setIdValue: string | null,
+    listing?: OfferListingRow | null
   ): Promise<TradeCardOption> {
+    const isProductListing = listing?.product_type &&
+      listing.product_type !== 'raw_card' &&
+      listing.product_type !== 'graded_slab';
+
+    if (isProductListing) {
+      return {
+        id: cardIdValue,
+        card_id: cardIdValue,
+        set_id: setIdValue ?? null,
+        name: listing?.product_name ?? cardIdValue,
+        image_url: Array.isArray(listing?.listing_images) ? listing?.listing_images?.[0] ?? null : null,
+        set_name: listing?.product_type?.replace(/_/g, ' ') ?? 'Product',
+        number: null,
+        estimated_value: listing?.market_estimate ?? listing?.asking_price ?? null,
+        price_source: listing?.market_estimate != null ? 'listing' : null,
+      };
+    }
+
     const cached = setIdValue
       ? (getCachedCardSync(setIdValue, cardIdValue) as any)
       : null;
@@ -266,8 +352,8 @@ export default function NewOfferScreen() {
           null,
         set_name: rawData?.set?.name ?? null,
         number: (cardRow as any)?.number ?? cached?.number ?? null,
-        estimated_value: price.value,
-        price_source: price.source,
+        estimated_value: listing?.market_estimate ?? price.value,
+        price_source: listing?.market_estimate != null ? 'listing' : price.source,
       };
     }
 
@@ -285,7 +371,7 @@ export default function NewOfferScreen() {
       image_url: data?.image_url ?? null,
       set_name: null,
       number: null,
-      estimated_value: null,
+      estimated_value: listing?.market_estimate ?? listing?.asking_price ?? null,
       price_source: null,
     };
   }
@@ -399,7 +485,8 @@ export default function NewOfferScreen() {
 
   async function sendOffer() {
     try {
-      if (!currentUserId || !targetUserId || !listingId || !cardId) {
+      const receiverUserId = listingOwnerId ?? targetUserId ?? null;
+      if (!currentUserId || !receiverUserId || !listingId || !targetCard?.card_id) {
         Alert.alert('Missing details', 'This offer is missing required trade information.');
         return;
       }
@@ -414,11 +501,11 @@ export default function NewOfferScreen() {
       const newOffer = await createTradeOffer({
         listingId,
         senderUserId: currentUserId,
-        receiverUserId: targetUserId,
+        receiverUserId,
         requestedCards: [
           {
-            cardId,
-            setId: targetCard?.set_id ?? setId ?? null,
+            cardId: targetCard.card_id,
+            setId: targetCard.set_id ?? null,
             quantity: 1,
           },
         ],
@@ -446,7 +533,7 @@ export default function NewOfferScreen() {
         .maybeSingle();
 
       sendPushNotification('/api/notify/trade-offer', {
-        recipientUserId: targetUserId,
+        recipientUserId: receiverUserId,
         senderUsername: senderProfile?.collector_name ?? 'Someone',
         cardName: targetCard?.name ?? undefined,
       });
