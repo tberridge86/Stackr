@@ -29,7 +29,7 @@ import { useAppMode } from '../../components/app-mode-context';
 import { fetchBinders, fetchBinderCards } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { createActivityPost } from '../../lib/activity';
-import { PRICE_API_URL } from '../../lib/config';
+import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
 
 // ===============================
 // TYPES
@@ -77,6 +77,7 @@ const cardShadow = {
 };
 
 const HUB_TIP_STORAGE_KEY = 'stackr:feature-tip-dismissed:hub-overview-v1';
+const HOME_MASTER_SET_STORAGE_PREFIX = 'stackr:binder-master-set:';
 
 const HUB_TIP_ITEMS = [
   {
@@ -128,6 +129,86 @@ const getSnapshotPriceGbp = (row: any): number | null => {
   if (typeof row.tcg_mid === 'number') return row.tcg_mid;
   if (typeof row.tcg_low === 'number') return row.tcg_low;
   return null;
+};
+
+const TCG_PRICE_VARIANT_PRIORITY = [
+  'holofoil',
+  'reverseHolofoil',
+  'reverseHoloEnergy',
+  'reverseHoloPokeball',
+  'normal',
+  'unlimitedHolofoil',
+  'unlimited',
+  '1stEditionHolofoil',
+  '1stEditionNormal',
+];
+
+const TCG_PRICE_VARIANT_FALLBACKS: Record<string, string[]> = {
+  card: TCG_PRICE_VARIANT_PRIORITY,
+  normal: ['normal', 'unlimited', '1stEditionNormal'],
+  unlimited: ['unlimited', 'normal', '1stEditionNormal'],
+  holofoil: ['holofoil', 'unlimitedHolofoil', '1stEditionHolofoil'],
+  unlimitedHolofoil: ['unlimitedHolofoil', 'holofoil', '1stEditionHolofoil'],
+  reverseHolofoil: ['reverseHolofoil', 'reverseHoloEnergy', 'reverseHoloPokeball', 'holofoil', 'normal'],
+  reverseHoloEnergy: ['reverseHoloEnergy', 'reverseHolofoil', 'normal'],
+  reverseHoloPokeball: ['reverseHoloPokeball', 'reverseHolofoil', 'normal'],
+  '1stEditionNormal': ['1stEditionNormal', 'normal', 'unlimited'],
+  '1stEditionHolofoil': ['1stEditionHolofoil', 'holofoil', 'unlimitedHolofoil'],
+};
+
+const toGbpFromUsd = (value: number) => Math.round(value * USD_TO_GBP * 100) / 100;
+
+const getTcgEntryUsd = (entry: any): number | null => {
+  const value = entry?.market ?? entry?.mid ?? entry?.low;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+};
+
+const getTcgPriceFromPricesGbp = (prices: any, variant?: string | null): number | null => {
+  if (!prices) return null;
+
+  const preferred = variant
+    ? TCG_PRICE_VARIANT_FALLBACKS[variant] ?? [variant, ...TCG_PRICE_VARIANT_PRIORITY]
+    : TCG_PRICE_VARIANT_PRIORITY;
+
+  for (const key of preferred) {
+    const usd = getTcgEntryUsd(prices[key]);
+    if (usd != null) return toGbpFromUsd(usd);
+  }
+
+  for (const entry of Object.values(prices) as any[]) {
+    const usd = getTcgEntryUsd(entry);
+    if (usd != null) return toGbpFromUsd(usd);
+  }
+
+  return null;
+};
+
+const getOwnedCardCurrentTcgGbp = (card: any, variant?: string | null): number | null => {
+  const prices =
+    card?.card?.tcgplayer?.prices ??
+    card?.card?.raw_data?.tcgplayer?.prices ??
+    card?.raw_data?.tcgplayer?.prices ??
+    card?.tcgplayer?.prices ??
+    null;
+  const variantPrice = getTcgPriceFromPricesGbp(prices, variant);
+  const direct = card?.tcg_price;
+  const directPrice = typeof direct === 'number' && Number.isFinite(direct) && direct > 0
+    ? Math.round(direct * 100) / 100
+    : null;
+
+  if (variant && variantPrice != null) return variantPrice;
+  return directPrice ?? variantPrice;
+};
+
+const getHomeMasterSetStorageKey = (binderId: string) => `${HOME_MASTER_SET_STORAGE_PREFIX}${binderId}`;
+
+const isHomeMasterSetEnabled = async (binderId: string) => {
+  try {
+    return (await AsyncStorage.getItem(getHomeMasterSetStorageKey(binderId))) === 'true';
+  } catch (error) {
+    console.log('Failed to load home master set setting', error);
+    return false;
+  }
 };
 
 const normaliseChartValues = (values: number[]): number[] =>
@@ -399,17 +480,103 @@ export default function HubScreen() {
   const loadCollectionValue = useCallback(async () => {
     try {
       const binders = await fetchBinders();
-      const allCards = (await Promise.all(binders.map((b) => fetchBinderCards(b.id)))).flat();
-      const ownedCards = allCards.filter((c) => c.owned);
-      setOwnedCardCount(ownedCards.length);
+      const cardsByBinder = await Promise.all(
+        binders.map(async (binder) => {
+          const [binderCards, masterSetEnabled] = await Promise.all([
+            fetchBinderCards(binder.id),
+            isHomeMasterSetEnabled(binder.id),
+          ]);
 
-      const storedCardIds = [...new Set(ownedCards.map((c) => c.card_id))];
+          return binderCards.map((card) => ({
+            ...card,
+            __binderId: binder.id,
+            __masterSetEnabled: masterSetEnabled,
+          }));
+        })
+      );
+      const allCards = cardsByBinder.flat() as any[];
+
       const getSnapshotIdsForCard = (card: any) => [
         ...new Set([card.card_id, card.api_card_id].filter(Boolean)),
       ] as string[];
-      const snapshotCardIds = [...new Set(ownedCards.flatMap((card: any) => getSnapshotIdsForCard(card)))];
 
-      if (!storedCardIds.length) {
+      const masterSetIds = [
+        ...new Set(
+          allCards
+            .filter((card) => card.__masterSetEnabled)
+            .map((card) => card.set_id)
+            .filter(Boolean)
+        ),
+      ] as string[];
+      const ownedVariantsByCard = new Map<string, Set<string>>();
+
+      if (masterSetIds.length) {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          console.log('Hub master set user lookup failed:', userError.message);
+        }
+
+        if (user) {
+          const { data: variantRows, error: variantError } = await supabase
+            .from('user_card_variants')
+            .select('card_id, set_id, variant')
+            .eq('user_id', user.id)
+            .in('set_id', masterSetIds);
+
+          if (variantError) {
+            console.log('Hub master set variants failed:', variantError.message);
+          } else {
+            for (const row of variantRows ?? []) {
+              if (!row.card_id || !row.set_id || !row.variant) continue;
+              const key = `${row.set_id}:${row.card_id}`;
+              if (!ownedVariantsByCard.has(key)) ownedVariantsByCard.set(key, new Set());
+              ownedVariantsByCard.get(key)!.add(row.variant);
+            }
+          }
+        }
+      }
+
+      const ownedUnits: {
+        card: any;
+        variant: string | null;
+        snapshotIds: string[];
+        currentTcgPriceGbp: number | null;
+      }[] = [];
+      const countedMasterVariantKeys = new Set<string>();
+
+      const addOwnedUnit = (card: any, variant: string | null) => {
+        ownedUnits.push({
+          card,
+          variant,
+          snapshotIds: getSnapshotIdsForCard(card),
+          currentTcgPriceGbp: getOwnedCardCurrentTcgGbp(card, variant),
+        });
+      };
+
+      for (const card of allCards) {
+        const variantCardKey = `${card.set_id}:${card.card_id}`;
+        const ownedVariants = card.__masterSetEnabled
+          ? [...(ownedVariantsByCard.get(variantCardKey) ?? new Set<string>())]
+          : [];
+
+        if (card.__masterSetEnabled && ownedVariants.length) {
+          for (const variant of ownedVariants) {
+            const variantUnitKey = `${variantCardKey}:${variant}`;
+            if (countedMasterVariantKeys.has(variantUnitKey)) continue;
+            countedMasterVariantKeys.add(variantUnitKey);
+            addOwnedUnit(card, variant);
+          }
+          continue;
+        }
+
+        if (card.owned) addOwnedUnit(card, null);
+      }
+
+      setOwnedCardCount(ownedUnits.length);
+
+      const snapshotCardIds = [...new Set(ownedUnits.flatMap((unit) => unit.snapshotIds))];
+
+      if (!ownedUnits.length) {
         setCollectionTotal(0);
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
@@ -420,20 +587,24 @@ export default function HubScreen() {
       }
 
       const snapshotColumns = 'user_id, card_id, tcg_mid, tcg_low, snapshot_at';
-      const globalSnapshotsResult = await supabase
-        .from('market_price_snapshots')
-        .select(snapshotColumns)
-        .in('card_id', snapshotCardIds)
-        .is('user_id', null)
-        .or('tcg_mid.not.is.null,tcg_low.not.is.null')
-        .order('snapshot_at', { ascending: false })
-        .limit(1000);
+      let data: any[] = [];
+      if (snapshotCardIds.length) {
+        const globalSnapshotsResult = await supabase
+          .from('market_price_snapshots')
+          .select(snapshotColumns)
+          .in('card_id', snapshotCardIds)
+          .is('user_id', null)
+          .or('tcg_mid.not.is.null,tcg_low.not.is.null')
+          .order('snapshot_at', { ascending: false })
+          .limit(1000);
 
-      if (globalSnapshotsResult.error) {
-        throw globalSnapshotsResult.error;
+        if (globalSnapshotsResult.error) {
+          throw globalSnapshotsResult.error;
+        }
+
+        data = globalSnapshotsResult.data ?? [];
       }
 
-      const data = globalSnapshotsResult.data ?? [];
       const snapshotByCardDay = new Map<string, any>();
       for (const row of data) {
         snapshotByCardDay.set(`${row.card_id}:${String(row.snapshot_at).split('T')[0]}`, row);
@@ -443,7 +614,7 @@ export default function HubScreen() {
       );
       const snapshotDays = new Set(snapshotRows.map((row) => String(row.snapshot_at).split('T')[0]));
 
-      // Group snapshots by card and by day. Collection value is TCG-only, using shared public daily snapshots.
+      // Collection value is TCG-only: public daily snapshots first, current TCG card/variant prices as instant fallback.
       const groupedByCard: Record<string, any[]> = {};
       const groupedByDay: Record<string, Record<string, number>> = {};
 
@@ -465,14 +636,15 @@ export default function HubScreen() {
       let currentlyPricedCards = 0;
       const moverRows: DailyMover[] = [];
 
-      for (const card of ownedCards) {
-        const snapshots = getSnapshotIdsForCard(card)
+      for (const unit of ownedUnits) {
+        const { card } = unit;
+        const snapshots = unit.snapshotIds
           .flatMap((cardId) => groupedByCard[cardId] ?? [])
           .sort((a, b) => new Date(a.snapshot_at).getTime() - new Date(b.snapshot_at).getTime());
         const latest = snapshots[snapshots.length - 1];
         const previous = snapshots[snapshots.length - 2];
 
-        const latestGbp = getSnapshotPriceGbp(latest);
+        const latestGbp = unit.currentTcgPriceGbp ?? getSnapshotPriceGbp(latest);
         const previousGbp = getSnapshotPriceGbp(previous);
 
         if (latestGbp != null) {
@@ -487,7 +659,7 @@ export default function HubScreen() {
           const cardChange = latestGbp - previousGbp;
           if (cardChange !== 0) {
             moverRows.push({
-              cardId: card.card_id,
+              cardId: `${card.card_id}:${unit.variant ?? 'card'}`,
               name: card.card_name ?? card.card?.name ?? card.card_id,
               setName: card.set_name ?? card.card?.set?.name ?? card.set_id ?? '',
               imageUrl: card.image_url ?? card.card?.images?.small ?? null,
@@ -507,6 +679,7 @@ export default function HubScreen() {
 
       const days = buildDayKeys(chartRange, Object.keys(groupedByDay).sort());
       const firstDay = days[0];
+      const lastDay = days[days.length - 1];
 
       const latestByCard: Record<string, number> = {};
       for (const row of snapshotRows) {
@@ -523,10 +696,12 @@ export default function HubScreen() {
         });
         let dayTotal = 0;
         let pricedCount = 0;
-        for (const card of ownedCards as any[]) {
-          const price = getSnapshotIdsForCard(card)
-            .map((cardId) => latestByCard[cardId])
-            .find((value) => typeof value === 'number');
+        for (const unit of ownedUnits) {
+          const price = day === lastDay && unit.currentTcgPriceGbp != null
+            ? unit.currentTcgPriceGbp
+            : unit.snapshotIds
+              .map((cardId) => latestByCard[cardId])
+              .find((value) => typeof value === 'number');
           if (typeof price === 'number') {
             dayTotal += price;
             pricedCount += 1;
@@ -549,9 +724,11 @@ export default function HubScreen() {
         ? chartValues
         : buildFallbackTrend(totalLatest, chartRange);
       const debugText = [
-        `owned=${ownedCards.length}`,
+        `ownedUnits=${ownedUnits.length}`,
+        `masterVariants=${countedMasterVariantKeys.size}`,
         `ids=${snapshotCardIds.length}`,
-        `publicTcg=${globalSnapshotsResult.data?.length ?? 0}`,
+        `publicTcg=${data.length}`,
+        `currentTcg=${ownedUnits.filter((unit) => unit.currentTcgPriceGbp != null).length}`,
         `rows=${snapshotRows.length}`,
         `days=${snapshotDays.size}`,
         `points=${chartValues.length}`,
@@ -737,7 +914,7 @@ export default function HubScreen() {
               </TouchableOpacity>
             ))}
             <TouchableOpacity
-              onPress={() => Alert.alert('TCG Market Value', 'Based on owned binder cards using shared daily TCG snapshot prices.')}
+              onPress={() => Alert.alert('TCG Market Value', 'Based only on TCG prices. The latest point uses owned cards and Master Set variants immediately, with shared daily snapshots for history.')}
               style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border }}
               activeOpacity={0.75}
             >
@@ -988,7 +1165,7 @@ export default function HubScreen() {
             <View style={{ width: `${Math.min(100, Math.max(8, ownedCardCount > 0 ? 48 : 8))}%`, height: '100%', backgroundColor: theme.colors.primary, borderRadius: 999 }} />
           </View>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 8 }}>
-            {ownedCardCount > 0 ? `${ownedCardCount} cards tracked so far` : 'Start scanning to unlock your first badge'}
+            {ownedCardCount > 0 ? `${ownedCardCount} cards/variants tracked so far` : 'Start scanning to unlock your first badge'}
           </Text>
         </View>
 

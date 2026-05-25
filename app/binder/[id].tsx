@@ -1709,6 +1709,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           key={numColumns}
           numColumns={numColumns}
           columnWrapperStyle={{ gap: 8, marginBottom: 8 }}
+          initialNumToRender={numColumns * 4}
+          maxToRenderPerBatch={numColumns * 3}
+          updateCellsBatchingPeriod={50}
+          windowSize={7}
+          removeClippedSubviews
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
         />

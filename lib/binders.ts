@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { fetchCardsForSet } from './pokemonTcg';
 import { createActivityPost } from './activity';
+import { USD_TO_GBP } from './config';
 
 export type BinderType = 'official' | 'custom';
 
@@ -62,7 +63,7 @@ export async function fetchLatestSnapshotPrices(
 
   const { data, error } = await supabase
     .from('market_price_snapshots')
-    .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
+    .select('card_id, ebay_average, tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
     .in('card_id', uniqueCardIds)
     .order('snapshot_at', { ascending: false });
 
@@ -76,13 +77,16 @@ export async function fetchLatestSnapshotPrices(
 
     latestByCardId.set(row.card_id, {
       ebay_price: row.ebay_average ?? null,
-      tcg_price: row.tcg_mid ?? null,
+      tcg_price: row.tcg_mid ?? row.tcg_low ?? null,
       cardmarket_price: row.cardmarket_trend ?? null,
       last_price_update: row.snapshot_at ?? null,
     });
   }
 
-  const missingCardIds = uniqueCardIds.filter((cardId) => !latestByCardId.has(cardId));
+  const missingCardIds = uniqueCardIds.filter((cardId) => {
+    const existing = latestByCardId.get(cardId);
+    return !existing || existing.tcg_price == null || existing.cardmarket_price == null;
+  });
 
   if (missingCardIds.length) {
     const { data: cards, error: cardError } = await supabase
@@ -98,13 +102,14 @@ export async function fetchLatestSnapshotPrices(
         const tcgPrice = getPriceFromPokemonCard(raw);
         const cardmarketPrice = getCardmarketPriceFromPokemonCard(raw);
 
-        if (tcgPrice == null && cardmarketPrice == null) continue;
+        const existing = latestByCardId.get(card.id);
+        if (!existing && tcgPrice == null && cardmarketPrice == null) continue;
 
         latestByCardId.set(card.id, {
-          ebay_price: null,
-          tcg_price: tcgPrice,
-          cardmarket_price: cardmarketPrice,
-          last_price_update: null,
+          ebay_price: existing?.ebay_price ?? null,
+          tcg_price: existing?.tcg_price ?? tcgPrice,
+          cardmarket_price: existing?.cardmarket_price ?? cardmarketPrice,
+          last_price_update: existing?.last_price_update ?? null,
         });
       }
     }
@@ -431,6 +436,8 @@ function getPriceFromPokemonCard(card: any, edition?: string | null): number | n
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;
 
+  const toGbpFromUsd = (value: number) => Math.round(value * USD_TO_GBP * 100) / 100;
+
   // If 1st edition binder, prefer 1st edition prices first
   if (edition === '1st_edition') {
     const preferred = [
@@ -438,11 +445,15 @@ function getPriceFromPokemonCard(card: any, edition?: string | null): number | n
       '1stEditionNormal',
       'holofoil',
       'reverseHolofoil',
+      'reverseHoloEnergy',
+      'reverseHoloPokeball',
       'normal',
+      'unlimitedHolofoil',
+      'unlimited',
     ];
     for (const key of preferred) {
       const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
-      if (typeof value === 'number') return value;
+      if (typeof value === 'number') return toGbpFromUsd(value);
     }
   }
 
@@ -450,19 +461,23 @@ function getPriceFromPokemonCard(card: any, edition?: string | null): number | n
   const preferred = [
     'holofoil',
     'reverseHolofoil',
+    'reverseHoloEnergy',
+    'reverseHoloPokeball',
     'normal',
+    'unlimitedHolofoil',
+    'unlimited',
     '1stEditionHolofoil',
     '1stEditionNormal',
   ];
 
   for (const key of preferred) {
     const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') return toGbpFromUsd(value);
   }
 
   for (const entry of Object.values(prices) as any[]) {
     const value = entry?.market ?? entry?.mid ?? entry?.low;
-    if (typeof value === 'number') return value;
+    if (typeof value === 'number') return toGbpFromUsd(value);
   }
 
   return null;

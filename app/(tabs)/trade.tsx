@@ -1142,7 +1142,12 @@ const handleArchive = async (listingId: string) => {
               keyExtractor={(item) => item.id}
               renderItem={renderOffer}
               onScroll={handleTradingScroll}
-              scrollEventThrottle={16}
+              scrollEventThrottle={32}
+              initialNumToRender={8}
+              maxToRenderPerBatch={6}
+              updateCellsBatchingPeriod={50}
+              windowSize={7}
+              removeClippedSubviews
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingTop: listPaddingTop, paddingBottom: 200 }}
               refreshControl={<RefreshControl refreshing={false} onRefresh={loadMyOffers} tintColor={theme.colors.primary} />}
@@ -1160,7 +1165,12 @@ const handleArchive = async (listingId: string) => {
             renderItem={renderListing}
             numColumns={1}
             onScroll={handleTradingScroll}
-            scrollEventThrottle={16}
+            scrollEventThrottle={32}
+            initialNumToRender={8}
+            maxToRenderPerBatch={6}
+            updateCellsBatchingPeriod={50}
+            windowSize={7}
+            removeClippedSubviews
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingTop: listPaddingTop, paddingBottom: 200, flexGrow: displayData.length === 0 ? 1 : 0 }}
             refreshControl={<RefreshControl refreshing={tradeLoading} onRefresh={refreshTrade} tintColor={theme.colors.primary} />}
