@@ -20,6 +20,8 @@ import { scanStore } from '../../lib/scanStore';
 import * as ImageManipulator from 'expo-image-manipulator';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { PRICE_API_URL } from '../../lib/config';
+import { Buffer } from 'buffer';
+import { decode as decodeJpeg } from 'jpeg-js';
 import {
   lookupLocalCardsByPrintedNumber,
   lookupLocalCardsByPrintedTotal,
@@ -105,6 +107,23 @@ const NAME_OCR_REGIONS = [
   { name: 'title-left', x: 0.02, y: 0.04, width: 0.76, height: 0.18 },
   { name: 'title-band', x: 0, y: 0.02, width: 1, height: 0.18 },
 ];
+const FIRST_EDITION_CAPABLE_SET_IDS = new Set([
+  'base1',
+  'base2',
+  'base3',
+  'base5',
+  'gym1',
+  'gym2',
+  'neo1',
+  'neo2',
+  'neo3',
+  'neo4',
+]);
+const FIRST_EDITION_STAMP_REGIONS: OcrRegion[] = [
+  { name: 'stamp-left-art-lower', x: 0.055, y: 0.385, width: 0.22, height: 0.14 },
+  { name: 'stamp-left-body-upper', x: 0.055, y: 0.445, width: 0.22, height: 0.14 },
+  { name: 'stamp-left-body-mid', x: 0.055, y: 0.505, width: 0.22, height: 0.14 },
+];
 const SHOW_SCAN_DEBUG =
   __DEV__ ||
   process.env.EXPO_PUBLIC_SHOW_SCAN_DEBUG === 'true' ||
@@ -170,6 +189,13 @@ type ScannedCard = {
   rarity: string;
   editionHint?: ScanEditionHint | null;
   editionSource?: ScanCandidate['editionSource'];
+};
+
+type ScanEditionDetection = {
+  hint: ScanEditionHint | null;
+  confidence: number;
+  reason: string;
+  metrics?: Record<string, unknown>;
 };
 
 function toScannedCard(card: LocalScanCard): ScannedCard {
@@ -239,10 +265,14 @@ function getEffectiveScanEditionHint(parsed: any, binderEdition?: string | null)
   hint: ScanEditionHint | null;
   source: ScanCandidate['editionSource'];
 } {
+  const explicitHint = normalizeScanEditionHint(parsed?.editionHint);
+  if (explicitHint && parsed?.editionSource === 'image_ocr') {
+    return { hint: explicitHint, source: 'image_ocr' };
+  }
+
   const binderHint = normalizeScanEditionHint(binderEdition);
   if (binderHint) return { hint: binderHint, source: 'binder' };
 
-  const explicitHint = normalizeScanEditionHint(parsed?.editionHint);
   if (explicitHint) {
     return { hint: explicitHint, source: parsed?.editionSource ?? 'ximilar' };
   }
@@ -329,6 +359,39 @@ function formatScanCardSubtitle(setName?: string | null, number?: string | null,
     formatScanEditionHint(editionHint),
   ].filter(Boolean);
   return parts.join(' - ');
+}
+
+function isFirstEditionCapableScanTarget(value: any, fallbackSetId?: string | null) {
+  const setId = String(
+    fallbackSetId
+    ?? value?.set_id
+    ?? value?.setCode
+    ?? value?.set_code
+    ?? value?.set?.id
+    ?? ''
+  ).toLowerCase();
+
+  if (setId && FIRST_EDITION_CAPABLE_SET_IDS.has(setId)) return true;
+  if (setId === 'base4' || setId === 'base6') return false;
+
+  const setName = String(
+    value?.set_name
+    ?? value?.setName
+    ?? value?.set?.name
+    ?? ''
+  ).toLowerCase();
+
+  if (!setName) return false;
+  if (/\bbase\s*set\s*2\b/.test(setName) || /\blegendary\s+collection\b/.test(setName)) return false;
+
+  return (
+    /\bbase\b/.test(setName)
+    || /\bjungle\b/.test(setName)
+    || /\bfossil\b/.test(setName)
+    || /\bteam\s+rocket\b/.test(setName)
+    || /\bgym\s+(heroes|challenge)\b/.test(setName)
+    || /\bneo\s+(genesis|discovery|revelation|destiny)\b/.test(setName)
+  );
 }
 
 type CaptureResult = {
@@ -638,6 +701,179 @@ async function readOcrRegionText(
   );
   const result = await TextRecognition.recognize(manipulated.uri);
   return result?.text ?? '';
+}
+
+function getPixelRegionStats(
+  decoded: { width: number; height: number; data: Uint8Array | Buffer },
+  region: OcrRegion
+) {
+  const startX = Math.max(0, Math.round(decoded.width * region.x));
+  const startY = Math.max(0, Math.round(decoded.height * region.y));
+  const regionWidth = Math.max(1, Math.min(decoded.width - startX, Math.round(decoded.width * region.width)));
+  const regionHeight = Math.max(1, Math.min(decoded.height - startY, Math.round(decoded.height * region.height)));
+  const rowInk = new Array(regionHeight).fill(0);
+  const columnInk = new Array(regionWidth).fill(0);
+  let dark = 0;
+  let veryDark = 0;
+  let ink = 0;
+  let total = 0;
+
+  for (let y = 0; y < regionHeight; y += 1) {
+    for (let x = 0; x < regionWidth; x += 1) {
+      const index = ((startY + y) * decoded.width + startX + x) * 4;
+      const r = decoded.data[index];
+      const g = decoded.data[index + 1];
+      const b = decoded.data[index + 2];
+      const luma = (0.299 * r) + (0.587 * g) + (0.114 * b);
+      total += 1;
+
+      if (luma < 110) {
+        ink += 1;
+        rowInk[y] += 1;
+        columnInk[x] += 1;
+      }
+      if (luma < 82) dark += 1;
+      if (luma < 55) veryDark += 1;
+    }
+  }
+
+  const rowsWithInk = rowInk.filter((count) => count / regionWidth > 0.035).length;
+  const columnsWithInk = columnInk.filter((count) => count / regionHeight > 0.035).length;
+
+  return {
+    name: region.name,
+    darkRatio: total ? dark / total : 0,
+    veryDarkRatio: total ? veryDark / total : 0,
+    inkRatio: total ? ink / total : 0,
+    inkRowsRatio: rowsWithInk / regionHeight,
+    inkColumnsRatio: columnsWithInk / regionWidth,
+  };
+}
+
+function detectFirstEditionStampByPixels(base64Image: string): ScanEditionDetection {
+  try {
+    const decoded = decodeJpeg(Buffer.from(base64Image, 'base64'), { useTArray: true });
+    const metrics = FIRST_EDITION_STAMP_REGIONS.map((region) => getPixelRegionStats(decoded, region));
+    const scored = metrics
+      .map((metric) => ({
+        ...metric,
+        score:
+          (metric.darkRatio * 1.2)
+          + (metric.veryDarkRatio * 1.5)
+          + (metric.inkRowsRatio * 0.05)
+          + (metric.inkColumnsRatio * 0.05),
+      }))
+      .sort((a, b) => b.score - a.score);
+    const best = scored[0];
+
+    if (
+      best
+      && best.darkRatio > 0.05
+      && best.veryDarkRatio > 0.018
+      && best.inkRowsRatio > 0.24
+      && best.inkColumnsRatio > 0.24
+    ) {
+      return {
+        hint: '1st_edition',
+        confidence: Math.min(0.96, 0.72 + best.score),
+        reason: `dark stamp mark detected in ${best.name}`,
+        metrics: { best, regions: scored },
+      };
+    }
+
+    if (
+      best
+      && best.darkRatio < 0.036
+      && best.veryDarkRatio < 0.012
+      && best.inkRowsRatio < 0.28
+    ) {
+      return {
+        hint: 'unlimited',
+        confidence: 0.68,
+        reason: 'no 1st Edition stamp mark detected in expected area',
+        metrics: { best, regions: scored },
+      };
+    }
+
+    return {
+      hint: null,
+      confidence: 0,
+      reason: 'stamp region was inconclusive',
+      metrics: { best, regions: scored },
+    };
+  } catch (error) {
+    return {
+      hint: null,
+      confidence: 0,
+      reason: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+async function detectFirstEditionStampByOcr(
+  uri: string,
+  width: number,
+  height: number
+): Promise<ScanEditionDetection | null> {
+  const chunks: string[] = [];
+
+  for (const region of FIRST_EDITION_STAMP_REGIONS) {
+    try {
+      const text = await readOcrRegionText(uri, width, height, region, { resizeWidth: 1400 });
+      if (text.trim()) chunks.push(text);
+    } catch (error) {
+      console.log('Edition stamp OCR region failed:', {
+        region: region.name,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const ocrText = chunks.join('\n').replace(/\s+/g, ' ').trim();
+  const normalized = ocrText.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const joined = normalized.replace(/\s+/g, '');
+
+  if (
+    /\b(1st|first)\s*(edition|ed)\b/.test(normalized)
+    || /\bedition\b/.test(normalized)
+    || joined.includes('1stedition')
+    || joined.includes('firstedition')
+  ) {
+    return {
+      hint: '1st_edition',
+      confidence: 0.94,
+      reason: '1st Edition stamp text detected',
+      metrics: { ocrText },
+    };
+  }
+
+  return ocrText
+    ? {
+        hint: null,
+        confidence: 0,
+        reason: 'edition OCR text did not contain stamp wording',
+        metrics: { ocrText },
+      }
+    : null;
+}
+
+async function readVisualEditionHintFromCardImage(
+  uri: string,
+  width: number,
+  height: number,
+  base64Image: string
+): Promise<ScanEditionDetection> {
+  const pixelResult = detectFirstEditionStampByPixels(base64Image);
+  if (pixelResult.hint === '1st_edition' && pixelResult.confidence >= 0.82) {
+    return pixelResult;
+  }
+
+  const ocrResult = await detectFirstEditionStampByOcr(uri, width, height);
+  if (ocrResult?.hint === '1st_edition') return ocrResult;
+
+  if (pixelResult.hint) return pixelResult;
+
+  return ocrResult ?? pixelResult;
 }
 
 async function readNameTextFromCardImage(
@@ -1799,30 +2035,48 @@ export default function ScanScreen() {
       };
     };
 
+    let imageEditionDetection: ScanEditionDetection | null = null;
+    const getImageEditionDetectionForTarget = (target: any, setId?: string | null) => {
+      if (!imageEditionDetection?.hint) return null;
+      if (!isFirstEditionCapableScanTarget(target, setId)) return null;
+      return imageEditionDetection;
+    };
+    const applyImageEditionHintToScanTarget = <T extends Record<string, any>>(target: T, setId?: string | null): T => {
+      const detection = getImageEditionDetectionForTarget(target, setId);
+      if (!detection?.hint) return target;
+
+      return {
+        ...target,
+        editionHint: detection.hint,
+        editionSource: 'image_ocr',
+      };
+    };
+
     const lookupParsedCard = async (
       parsed: any,
       fallbackPrintedNumber?: PrintedNumber | null,
       setId?: string | null
     ): Promise<ScannedCard | null> => {
-      if (!parsed || parsed.error || !parsed.name) return null;
-      if (parsed.provider === 'ximilar' && isGenericXimilarCardName(parsed.name)) return null;
+      const parsedForLookup = applyImageEditionHintToScanTarget(parsed, setId);
+      if (!parsedForLookup || parsedForLookup.error || !parsedForLookup.name) return null;
+      if (parsedForLookup.provider === 'ximilar' && isGenericXimilarCardName(parsedForLookup.name)) return null;
 
       const numberClean = fallbackPrintedNumber?.number != null
         ? String(fallbackPrintedNumber.number)
         : setId
           ? null
-          : parsed.number
-            ? String(parsed.number).split('/')[0].trim().replace(/^0+/, '')
+          : parsedForLookup.number
+            ? String(parsedForLookup.number).split('/')[0].trim().replace(/^0+/, '')
             : null;
       const setTotalClean = fallbackPrintedNumber?.total != null
         ? String(fallbackPrintedNumber.total)
         : setId
           ? null
-          : parsed.printedTotal
-            ? String(parsed.printedTotal)
+          : parsedForLookup.printedTotal
+            ? String(parsedForLookup.printedTotal)
             : null;
-      const { hint: editionHint, source: editionSource } = getEffectiveScanEditionHint(parsed, selectedBinder?.edition);
-      const lookupSetName = stripScanEditionFromSetName(parsed.setName);
+      const { hint: editionHint, source: editionSource } = getEffectiveScanEditionHint(parsedForLookup, selectedBinder?.edition);
+      const lookupSetName = stripScanEditionFromSetName(parsedForLookup.setName);
 
       if (
         fallbackPrintedNumber
@@ -1832,11 +2086,11 @@ export default function ScanScreen() {
         return null;
       }
 
-      const searchParams = new URLSearchParams({ name: parsed.name });
+      const searchParams = new URLSearchParams({ name: parsedForLookup.name });
       if (numberClean) searchParams.append('number', numberClean);
       if (setTotalClean) searchParams.append('setTotal', setTotalClean);
       if (!setId && lookupSetName) searchParams.append('setName', String(lookupSetName));
-      if (!setId && parsed.setCode) searchParams.append('setId', String(parsed.setCode));
+      if (!setId && parsedForLookup.setCode) searchParams.append('setId', String(parsedForLookup.setCode));
       if (editionHint) searchParams.append('editionHint', editionHint);
       if (setId) {
         searchParams.append('setId', setId);
@@ -1887,7 +2141,8 @@ export default function ScanScreen() {
       const resolved: ScanCandidate[] = [];
 
       for (const candidate of candidates) {
-        const candidateWithEdition = withCandidateEditionHint(candidate, selectedBinder?.edition);
+        const imageTaggedCandidate = applyImageEditionHintToScanTarget(candidate, setId);
+        const candidateWithEdition = withCandidateEditionHint(imageTaggedCandidate, selectedBinder?.edition);
         logScanStage('POKEMON_API_LOOKUP_STARTED', {
           name: candidateWithEdition.name,
           number: candidateWithEdition.number,
@@ -1956,6 +2211,8 @@ export default function ScanScreen() {
       }
       let bestBase64 = base64;
       let bestUri = capture.uri;
+      let bestWidth = capture.width;
+      let bestHeight = capture.height;
       const scanStartedAt = Date.now();
       const captureDoneAt = Date.now();
       const elapsedScanMs = () => Date.now() - scanStartedAt;
@@ -1996,6 +2253,21 @@ export default function ScanScreen() {
         cachedTotalHintText = await readTotalHintTextFromCardImage(uri, width, height);
         return cachedTotalHintText;
       };
+      const ensureImageEditionDetection = async (targets?: any[] | null) => {
+        if (isAuto || imageEditionDetection) return imageEditionDetection;
+        if (targets?.length && !targets.some((target) => isFirstEditionCapableScanTarget(target, expectedSetId))) {
+          return imageEditionDetection;
+        }
+
+        imageEditionDetection = await readVisualEditionHintFromCardImage(bestUri, bestWidth, bestHeight, bestBase64);
+        logScanStage('EDITION_DETECTION_COMPLETE', {
+          hint: imageEditionDetection.hint,
+          confidence: imageEditionDetection.confidence,
+          reason: imageEditionDetection.reason,
+          metrics: SHOW_SCAN_DEBUG ? imageEditionDetection.metrics : undefined,
+        });
+        return imageEditionDetection;
+      };
 
       let match: ScannedCard | null = null;
       let ximilarCandidatesForConfirmation: ScanCandidate[] | null = null;
@@ -2010,6 +2282,7 @@ export default function ScanScreen() {
         } else {
           ximilarError = null;
           setScanError(null);
+          await ensureImageEditionDetection(ximilarResponse.candidates);
           ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
             ximilarResponse.candidates,
             shouldDeferInitialNumberOcr ? null : printedNumber,
@@ -2042,6 +2315,7 @@ export default function ScanScreen() {
           } else {
             ximilarError = null;
             setScanError(null);
+            await ensureImageEditionDetection(ximilarMagicResponse.candidates);
             ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
               ximilarMagicResponse.candidates,
               shouldDeferInitialNumberOcr ? null : printedNumber,
@@ -2450,6 +2724,8 @@ export default function ScanScreen() {
         const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
+        bestWidth = hqCapture.width;
+        bestHeight = hqCapture.height;
         printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
         let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
         const totalCandidates = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
@@ -2560,6 +2836,8 @@ export default function ScanScreen() {
         const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
         bestBase64 = hqCapture.base64;
         bestUri = hqCapture.uri;
+        bestWidth = hqCapture.width;
+        bestHeight = hqCapture.height;
         const hqPrintedNumber = printedNumber ?? await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
         match = await lookupCardBySetNumber(expectedSetId, hqPrintedNumber);
         if (!match) {
@@ -2578,6 +2856,7 @@ export default function ScanScreen() {
           if (!isAuto) {
             const ximilarFallbackResponse = await identifyWithXimilarTcg(bestBase64, false);
             if (ximilarFallbackResponse.ok) {
+              await ensureImageEditionDetection(ximilarFallbackResponse.candidates);
               ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
                 ximilarFallbackResponse.candidates,
                 printedNumber,
@@ -2642,6 +2921,8 @@ export default function ScanScreen() {
           const base64Hq = hqCapture.base64;
           bestBase64 = base64Hq;
           bestUri = hqCapture.uri;
+          bestWidth = hqCapture.width;
+          bestHeight = hqCapture.height;
           const hqPrintedNumber = printedNumber ?? await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
           match = await fingerprintScan(base64Hq, expectedSetId, hqPrintedNumber?.total);
           if (!match) parsed = await identifyWithCardSight(base64Hq);
@@ -2681,10 +2962,13 @@ export default function ScanScreen() {
       }
 
       match = await resolveCardInExpectedSet(match, expectedSetId, printedNumber);
+      await ensureImageEditionDetection([match]);
+      const imageEditionForMatch = getImageEditionDetectionForTarget(match, expectedSetId);
+      const binderEditionHint = normalizeScanEditionHint(selectedBinder?.edition);
       match = withScannedCardEditionHint(
         match,
-        normalizeScanEditionHint(selectedBinder?.edition) ?? match.editionHint ?? null,
-        normalizeScanEditionHint(selectedBinder?.edition) ? 'binder' : match.editionSource
+        imageEditionForMatch?.hint ?? binderEditionHint ?? match.editionHint ?? null,
+        imageEditionForMatch?.hint ? 'image_ocr' : binderEditionHint ? 'binder' : match.editionSource
       );
       console.log('Scan completed:', {
         card: match.name,
