@@ -152,7 +152,7 @@ const getBinderTcgPrice = (card: any, edition?: string | null): number | null =>
     }
   }
 
-  const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
+  const preferred = ['unlimitedHolofoil', 'unlimited', 'holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
   for (const key of preferred) {
     const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
     if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;

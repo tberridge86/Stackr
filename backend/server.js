@@ -2063,6 +2063,47 @@ app.get('/price/debug', async (req, res) => {
 // Used by the scan feature
 // ===============================
 
+function normalizeScanEditionHintValue(value) {
+  if (!value) return null;
+  const normalised = String(value).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const joined = normalised.replace(/\s+/g, '');
+
+  if (!normalised) return null;
+  if (/\bshadowless\b/.test(normalised)) return 'shadowless';
+  if (
+    /\b1st\s*(edition|ed)\b/.test(normalised)
+    || /\bfirst\s*(edition|ed)\b/.test(normalised)
+    || joined.includes('1stedition')
+    || joined.includes('firstedition')
+  ) {
+    return '1st_edition';
+  }
+  if (/\bunlimited\b/.test(normalised)) return 'unlimited';
+
+  return null;
+}
+
+function inferTcgSearchCardEdition(card) {
+  return normalizeScanEditionHintValue([
+    card?.id,
+    card?.set_id,
+    card?.set_name,
+    card?.rarity,
+  ].filter(Boolean).join(' '));
+}
+
+function scoreTcgSearchCardForEdition(card, editionHint) {
+  if (!editionHint) return 0;
+
+  const cardEdition = inferTcgSearchCardEdition(card);
+  if (cardEdition === editionHint) return 5;
+  if (!cardEdition && editionHint === 'unlimited') return 3;
+  if (!cardEdition) return 1;
+  if (editionHint === 'unlimited' && (cardEdition === '1st_edition' || cardEdition === 'shadowless')) return -4;
+  if (editionHint === '1st_edition' && cardEdition === 'unlimited') return -4;
+  return -1;
+}
+
 app.get('/api/search/tcg', async (req, res) => {
   try {
     const name = String(req.query.name || '').trim();
@@ -2070,6 +2111,7 @@ app.get('/api/search/tcg', async (req, res) => {
     const setTotal = String(req.query.setTotal || '').trim();
     const setName = String(req.query.setName || '').trim();
     const setId = String(req.query.setId || '').trim();
+    const editionHint = normalizeScanEditionHintValue(String(req.query.editionHint || '').trim());
     const strictSet = String(req.query.strictSet || '').trim() === '1';
 
     if (!name) {
@@ -2169,7 +2211,13 @@ app.get('/api/search/tcg', async (req, res) => {
       }
     }
 
-    console.log(`📦 Returning ${formatted.length} cards`);
+    if (editionHint) {
+      formatted = [...formatted].sort(
+        (a, b) => scoreTcgSearchCardForEdition(b, editionHint) - scoreTcgSearchCardForEdition(a, editionHint)
+      );
+    }
+
+    console.log(`📦 Returning ${formatted.length} cards`, { editionHint });
 
     return res.json({ cards: formatted, total: formatted.length });
   } catch (error) {
@@ -2631,6 +2679,78 @@ function createScanError({ stage, code, message, details, httpStatus, provider =
   };
 }
 
+function collectXimilarEditionFragments(match) {
+  if (!match || typeof match !== 'object') return [];
+
+  const fields = [
+    'name',
+    'full_name',
+    'card_name',
+    'title',
+    'set',
+    'set_name',
+    'setName',
+    'set_code',
+    'setCode',
+    'set_id',
+    'setId',
+    'rarity',
+    'variant',
+    'variants',
+    'edition',
+    'printing',
+    'print',
+    'sub_type',
+    'subtype',
+    'product_name',
+    'productName',
+  ];
+
+  return fields
+    .flatMap((field) => {
+      const value = match[field];
+      if (Array.isArray(value)) return value;
+      return value == null ? [] : [value];
+    })
+    .filter((value) => typeof value === 'string' || typeof value === 'number')
+    .map((value) => String(value));
+}
+
+function detectXimilarEditionHint(match) {
+  const text = collectXimilarEditionFragments(match).join(' ').toLowerCase();
+  const compact = text.replace(/[^a-z0-9]+/g, ' ').trim();
+  const joined = compact.replace(/\s+/g, '');
+
+  if (!compact) return null;
+  if (/\bshadowless\b/.test(compact)) return 'shadowless';
+  if (
+    /\b1st\s*(edition|ed)\b/.test(compact)
+    || /\bfirst\s*(edition|ed)\b/.test(compact)
+    || joined.includes('1stedition')
+    || joined.includes('firstedition')
+  ) {
+    return '1st_edition';
+  }
+  if (/\bunlimited\b/.test(compact)) return 'unlimited';
+
+  return null;
+}
+
+function stripXimilarEditionFromSetName(setName) {
+  if (!setName || typeof setName !== 'string') return setName ?? null;
+
+  const cleaned = setName
+    .replace(/\b(1st|first)\s*(edition|ed)\b/gi, '')
+    .replace(/\bunlimited\b/gi, '')
+    .replace(/\bshadowless\b/gi, '')
+    .replace(/[()[\]{}]/g, ' ')
+    .replace(/\s*[-:/]\s*$/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  return cleaned || setName;
+}
+
 function normalizeXimilarIdentificationMatch(match) {
   if (!match || typeof match !== 'object') return null;
 
@@ -2661,13 +2781,17 @@ function normalizeXimilarIdentificationMatch(match) {
           : typeof match.confidence === 'number'
             ? match.confidence
             : null;
+  const rawSetName = match.set ?? match.set_name ?? match.setName ?? null;
+  const editionHint = detectXimilarEditionHint(match);
 
   return {
     id: match.id ?? match.card_id ?? undefined,
     name: String(name).trim(),
     number: number ? number.replace(/^#/, '').replace(/^0+/, '') || '0' : null,
-    setName: match.set ?? match.set_name ?? match.setName ?? null,
+    setName: stripXimilarEditionFromSetName(rawSetName),
     setCode: match.set_code ?? match.setCode ?? match.set_id ?? match.setId ?? null,
+    editionHint,
+    editionSource: editionHint ? 'ximilar' : null,
     confidence,
     source: 'ximilar',
     resolvedCard: null,
@@ -2707,6 +2831,7 @@ function normalizeXimilarTcgResponse(data) {
         candidate.number ?? '',
         candidate.setCode ?? '',
         candidate.setName ?? '',
+        candidate.editionHint ?? '',
       ].join('|').toLowerCase();
       if (dedupe.has(key)) return false;
       dedupe.add(key);

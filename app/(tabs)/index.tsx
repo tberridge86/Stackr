@@ -2,6 +2,7 @@ import { useTheme } from '../../components/theme-context';
 import React, {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -21,7 +22,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
-import { LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FeatureTipModal } from '../../components/FeatureTipModal';
@@ -156,6 +156,31 @@ const TCG_PRICE_VARIANT_FALLBACKS: Record<string, string[]> = {
   '1stEditionHolofoil': ['1stEditionHolofoil', 'holofoil', 'unlimitedHolofoil'],
 };
 
+const TCG_PRICE_EDITION_FALLBACKS: Record<string, string[]> = {
+  '1st_edition': [
+    '1stEditionHolofoil',
+    '1stEditionNormal',
+    'holofoil',
+    'normal',
+    'unlimitedHolofoil',
+    'unlimited',
+    'reverseHolofoil',
+    'reverseHoloEnergy',
+    'reverseHoloPokeball',
+  ],
+  unlimited: [
+    'unlimitedHolofoil',
+    'unlimited',
+    'holofoil',
+    'normal',
+    'reverseHolofoil',
+    'reverseHoloEnergy',
+    'reverseHoloPokeball',
+    '1stEditionHolofoil',
+    '1stEditionNormal',
+  ],
+};
+
 const toGbpFromUsd = (value: number) => Math.round(value * USD_TO_GBP * 100) / 100;
 
 const getTcgEntryUsd = (entry: any): number | null => {
@@ -163,12 +188,14 @@ const getTcgEntryUsd = (entry: any): number | null => {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
 };
 
-const getTcgPriceFromPricesGbp = (prices: any, variant?: string | null): number | null => {
+const getTcgPriceFromPricesGbp = (prices: any, variant?: string | null, edition?: string | null): number | null => {
   if (!prices) return null;
 
   const preferred = variant
     ? TCG_PRICE_VARIANT_FALLBACKS[variant] ?? [variant, ...TCG_PRICE_VARIANT_PRIORITY]
-    : TCG_PRICE_VARIANT_PRIORITY;
+    : edition
+      ? TCG_PRICE_EDITION_FALLBACKS[edition] ?? TCG_PRICE_VARIANT_PRIORITY
+      : TCG_PRICE_VARIANT_PRIORITY;
 
   for (const key of preferred) {
     const usd = getTcgEntryUsd(prices[key]);
@@ -183,20 +210,20 @@ const getTcgPriceFromPricesGbp = (prices: any, variant?: string | null): number 
   return null;
 };
 
-const getOwnedCardCurrentTcgGbp = (card: any, variant?: string | null): number | null => {
+const getOwnedCardCurrentTcgGbp = (card: any, variant?: string | null, edition?: string | null): number | null => {
   const prices =
     card?.card?.tcgplayer?.prices ??
     card?.card?.raw_data?.tcgplayer?.prices ??
     card?.raw_data?.tcgplayer?.prices ??
     card?.tcgplayer?.prices ??
     null;
-  const variantPrice = getTcgPriceFromPricesGbp(prices, variant);
+  const variantPrice = getTcgPriceFromPricesGbp(prices, variant, edition);
   const direct = card?.tcg_price;
   const directPrice = typeof direct === 'number' && Number.isFinite(direct) && direct > 0
     ? Math.round(direct * 100) / 100
     : null;
 
-  if (variant && variantPrice != null) return variantPrice;
+  if ((variant || edition) && variantPrice != null) return variantPrice;
   return directPrice ?? variantPrice;
 };
 
@@ -228,6 +255,106 @@ const buildFallbackTrend = (latestTotal: number, range: ChartRange) => {
 // ===============================
 // SUB COMPONENTS
 // ===============================
+
+function NativeLineChart({
+  values,
+  width,
+  height,
+  color,
+  gridColor,
+}: {
+  values: number[];
+  width: number;
+  height: number;
+  color: string;
+  gridColor: string;
+}) {
+  const geometry = useMemo(() => {
+    const data = normaliseChartValues(values).filter((value) => Number.isFinite(value));
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = Math.max(1, max - min);
+    const padX = 18;
+    const padTop = 18;
+    const padBottom = 20;
+    const chartWidth = Math.max(1, width - padX * 2);
+    const chartHeight = Math.max(1, height - padTop - padBottom);
+
+    const points = data.map((value, index) => ({
+      x: padX + (data.length <= 1 ? 0 : (index / (data.length - 1)) * chartWidth),
+      y: padTop + ((max - value) / range) * chartHeight,
+    }));
+
+    const segments = points.slice(1).map((point, index) => {
+      const previous = points[index];
+      const dx = point.x - previous.x;
+      const dy = point.y - previous.y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      return {
+        key: `${index}-${point.x.toFixed(1)}-${point.y.toFixed(1)}`,
+        left: (previous.x + point.x) / 2 - length / 2,
+        top: (previous.y + point.y) / 2 - 1.5,
+        length,
+        angle,
+      };
+    });
+
+    return { points, segments };
+  }, [height, values, width]);
+
+  return (
+    <View style={{ width: '100%', height, overflow: 'hidden' }}>
+      {[0.25, 0.5, 0.75].map((position) => (
+        <View
+          key={position}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: 12,
+            right: 12,
+            top: Math.round(height * position),
+            height: 1,
+            backgroundColor: gridColor,
+            opacity: 0.55,
+          }}
+        />
+      ))}
+      {geometry.segments.map((segment) => (
+        <View
+          key={segment.key}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: segment.left,
+            top: segment.top,
+            width: segment.length,
+            height: 3,
+            borderRadius: 999,
+            backgroundColor: color,
+            transform: [{ rotateZ: `${segment.angle}deg` }],
+          }}
+        />
+      ))}
+      {geometry.points.map((point, index) => (
+        <View
+          key={`${index}-${point.x.toFixed(1)}-${point.y.toFixed(1)}`}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: point.x - 3,
+            top: point.y - 3,
+            width: 6,
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: color,
+            opacity: index === geometry.points.length - 1 ? 1 : 0.35,
+          }}
+        />
+      ))}
+    </View>
+  );
+}
 
 function HubQuickAction({ icon, label, onPress }: {
   icon: any;
@@ -490,6 +617,7 @@ export default function HubScreen() {
           return binderCards.map((card) => ({
             ...card,
             __binderId: binder.id,
+            __binderEdition: binder.edition ?? null,
             __masterSetEnabled: masterSetEnabled,
           }));
         })
@@ -549,7 +677,7 @@ export default function HubScreen() {
           card,
           variant,
           snapshotIds: getSnapshotIdsForCard(card),
-          currentTcgPriceGbp: getOwnedCardCurrentTcgGbp(card, variant),
+          currentTcgPriceGbp: getOwnedCardCurrentTcgGbp(card, variant, card.__binderEdition),
         });
       };
 
@@ -942,34 +1070,12 @@ export default function HubScreen() {
 
           <View style={{ marginTop: 8, height: 152, backgroundColor: theme.colors.surface, borderRadius: 15, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
             {hasChartData ? (
-              <LineChart
-                data={{
-                  labels: activeChartValues.map(() => ''),
-                  datasets: [
-                    { data: activeChartValues, color: (opacity = 1) => `rgba(108,75,255,${opacity})` },
-                  ],
-                }}
-                width={Math.max(320, screenWidth - 44)}
+              <NativeLineChart
+                values={activeChartValues}
+                width={Math.max(280, screenWidth - 58)}
                 height={152}
-                withDots={false}
-                withInnerLines={false}
-                withOuterLines={false}
-                withVerticalLines={false}
-                withHorizontalLines={false}
-                withHorizontalLabels={false}
-                withVerticalLabels={false}
-                fromZero={false}
-                bezier
-                chartConfig={{
-                  backgroundGradientFrom: theme.colors.surface,
-                  backgroundGradientTo: theme.colors.surface,
-                  decimalPlaces: 2,
-                  color: (opacity = 1) => `rgba(108,75,255,${opacity})`,
-                  labelColor: () => theme.colors.textSoft,
-                  propsForBackgroundLines: { stroke: 'transparent' },
-                  propsForLabels: { fontSize: 9 },
-                }}
-                style={{ marginTop: 0, marginLeft: -28, borderRadius: 14 }}
+                color={theme.colors.primary}
+                gridColor={theme.colors.border}
               />
             ) : (
               <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18 }}>

@@ -43,7 +43,7 @@ import {
   syncScannerPack,
 } from '../../lib/scannerPack';
 import clipVisionModel from '../../assets/models/clip-vit-base-patch32-vision-quantized.zip';
-import type { NormalisedScanResponse, ScanCandidate, ScanErrorResponse, ScanErrorStage } from '../../types/scan';
+import type { NormalisedScanResponse, ScanCandidate, ScanEditionHint, ScanErrorResponse, ScanErrorStage } from '../../types/scan';
 
 setBundledOnDeviceVisualModel(clipVisionModel);
 
@@ -168,6 +168,8 @@ type ScannedCard = {
   set_printed_total?: number | null;
   image_small: string;
   rarity: string;
+  editionHint?: ScanEditionHint | null;
+  editionSource?: ScanCandidate['editionSource'];
 };
 
 function toScannedCard(card: LocalScanCard): ScannedCard {
@@ -181,6 +183,152 @@ function toScannedCard(card: LocalScanCard): ScannedCard {
     image_small: card.image_small,
     rarity: card.rarity,
   };
+}
+
+const SCAN_EDITION_LABELS: Record<ScanEditionHint, string> = {
+  '1st_edition': '1st Edition',
+  unlimited: 'Unlimited',
+  shadowless: 'Shadowless',
+};
+
+function normalizeScanEditionHint(value?: string | null): ScanEditionHint | null {
+  if (!value) return null;
+  const normalised = value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const joined = normalised.replace(/\s+/g, '');
+
+  if (!normalised) return null;
+  if (normalised === 'shadowless' || /\bshadowless\b/.test(normalised)) return 'shadowless';
+  if (
+    normalised === '1st edition'
+    || normalised === '1st ed'
+    || normalised === 'first edition'
+    || /\b1st\s*(edition|ed)\b/.test(normalised)
+    || /\bfirst\s*(edition|ed)\b/.test(normalised)
+    || joined.includes('1stedition')
+    || joined.includes('firstedition')
+  ) {
+    return '1st_edition';
+  }
+  if (normalised === 'unlimited' || /\bunlimited\b/.test(normalised)) return 'unlimited';
+
+  return null;
+}
+
+function detectEditionHintFromScanFields(value: any): ScanEditionHint | null {
+  const text = [
+    value?.editionHint,
+    value?.edition,
+    value?.printing,
+    value?.variant,
+    value?.name,
+    value?.full_name,
+    value?.card_name,
+    value?.setName,
+    value?.set_name,
+    value?.set,
+    value?.rarity,
+  ]
+    .filter(Boolean)
+    .map(String)
+    .join(' ');
+
+  return normalizeScanEditionHint(text);
+}
+
+function getEffectiveScanEditionHint(parsed: any, binderEdition?: string | null): {
+  hint: ScanEditionHint | null;
+  source: ScanCandidate['editionSource'];
+} {
+  const binderHint = normalizeScanEditionHint(binderEdition);
+  if (binderHint) return { hint: binderHint, source: 'binder' };
+
+  const explicitHint = normalizeScanEditionHint(parsed?.editionHint);
+  if (explicitHint) {
+    return { hint: explicitHint, source: parsed?.editionSource ?? 'ximilar' };
+  }
+
+  const detectedHint = detectEditionHintFromScanFields(parsed);
+  return {
+    hint: detectedHint,
+    source: detectedHint ? 'ximilar' : null,
+  };
+}
+
+function withCandidateEditionHint(candidate: ScanCandidate, binderEdition?: string | null): ScanCandidate {
+  const { hint, source } = getEffectiveScanEditionHint(candidate, binderEdition);
+  if (!hint) return candidate;
+  return {
+    ...candidate,
+    editionHint: hint,
+    editionSource: source,
+  };
+}
+
+function withScannedCardEditionHint(
+  card: ScannedCard,
+  hint?: ScanEditionHint | null,
+  source?: ScanCandidate['editionSource']
+): ScannedCard {
+  if (!hint) return card;
+  return {
+    ...card,
+    editionHint: hint,
+    editionSource: source ?? card.editionSource ?? 'resolver',
+  };
+}
+
+function stripScanEditionFromSetName(setName?: string | null) {
+  if (!setName) return setName ?? null;
+  const cleaned = String(setName)
+    .replace(/\b(1st|first)\s*(edition|ed)\b/gi, '')
+    .replace(/\bunlimited\b/gi, '')
+    .replace(/\bshadowless\b/gi, '')
+    .replace(/[()[\]{}]/g, ' ')
+    .replace(/\s*[-:/]\s*$/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return cleaned || setName;
+}
+
+function detectEditionHintFromCard(card: ScannedCard): ScanEditionHint | null {
+  return detectEditionHintFromScanFields({
+    id: card.id,
+    set_id: card.set_id,
+    set_name: card.set_name,
+    rarity: card.rarity,
+  });
+}
+
+function scoreCardForEditionHint(card: ScannedCard, editionHint?: ScanEditionHint | null) {
+  if (!editionHint) return 0;
+
+  const cardHint = detectEditionHintFromCard(card);
+  if (cardHint === editionHint) return 5;
+  if (!cardHint && editionHint === 'unlimited') return 3;
+  if (!cardHint) return 1;
+  if (editionHint === 'unlimited' && (cardHint === '1st_edition' || cardHint === 'shadowless')) return -4;
+  if (editionHint === '1st_edition' && cardHint === 'unlimited') return -4;
+  return -1;
+}
+
+function pickCardForEditionHint(cards: ScannedCard[], editionHint?: ScanEditionHint | null) {
+  if (!cards.length) return null;
+  if (!editionHint) return cards[0];
+
+  return [...cards].sort((a, b) => scoreCardForEditionHint(b, editionHint) - scoreCardForEditionHint(a, editionHint))[0];
+}
+
+function formatScanEditionHint(hint?: ScanEditionHint | null) {
+  return hint ? SCAN_EDITION_LABELS[hint] : null;
+}
+
+function formatScanCardSubtitle(setName?: string | null, number?: string | null, editionHint?: ScanEditionHint | null) {
+  const parts = [
+    setName,
+    number ? `#${number}` : null,
+    formatScanEditionHint(editionHint),
+  ].filter(Boolean);
+  return parts.join(' - ');
 }
 
 type CaptureResult = {
@@ -725,6 +873,7 @@ export default function ScanScreen() {
   const [scanningMessage, setScanningMessage] = useState('Reading card...');
   const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
   const [scanError, setScanError] = useState<ScanErrorState | null>(null);
+  const [frozenFrameUri, setFrozenFrameUri] = useState<string | null>(null);
 
   const isCompactScanner = screenHeight < 780;
   const scannerFrameWidth = Math.min(screenWidth - 64, isCompactScanner ? 286 : 300);
@@ -878,6 +1027,7 @@ export default function ScanScreen() {
       setLastScanned(null);
       setProcessingOcr(false);
       setScanError(null);
+      setFrozenFrameUri(null);
     }, delay);
   }, [stopScanningMessages]);
 
@@ -888,6 +1038,7 @@ export default function ScanScreen() {
     setScanning(false);
     setPendingConfirmation(null);
     setScanError(null);
+    setFrozenFrameUri(null);
     scanCooldownRef.current = false;
     if (autoScanIntervalRef.current) {
       clearInterval(autoScanIntervalRef.current);
@@ -1025,6 +1176,8 @@ export default function ScanScreen() {
         set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
         image_small: candidate.image_small ?? '',
         rarity: candidate.rarity ?? '',
+        editionHint: card.editionHint,
+        editionSource: card.editionSource,
       };
     } catch (error) {
       console.log('Expected set card resolve failed:', error);
@@ -1104,6 +1257,7 @@ export default function ScanScreen() {
 
     setProcessingOcr(true);
     setScanError(null);
+    setFrozenFrameUri(null);
     scanCooldownRef.current = true;
     startScanningMessages();
     if (isAuto) logScanDebug('capture-started');
@@ -1128,6 +1282,14 @@ export default function ScanScreen() {
         }
       }
       const photoDoneAt = Date.now();
+      const capturedUri = photo.path
+        ? photo.path.startsWith('file://')
+          ? photo.path
+          : `file://${photo.path}`
+        : null;
+      if (capturedUri) {
+        setFrozenFrameUri(capturedUri);
+      }
       logScanStage('IMAGE_CAPTURED', {
         source,
         width: photo.width,
@@ -1659,6 +1821,8 @@ export default function ScanScreen() {
           : parsed.printedTotal
             ? String(parsed.printedTotal)
             : null;
+      const { hint: editionHint, source: editionSource } = getEffectiveScanEditionHint(parsed, selectedBinder?.edition);
+      const lookupSetName = stripScanEditionFromSetName(parsed.setName);
 
       if (
         fallbackPrintedNumber
@@ -1671,8 +1835,9 @@ export default function ScanScreen() {
       const searchParams = new URLSearchParams({ name: parsed.name });
       if (numberClean) searchParams.append('number', numberClean);
       if (setTotalClean) searchParams.append('setTotal', setTotalClean);
-      if (!setId && parsed.setName) searchParams.append('setName', String(parsed.setName));
+      if (!setId && lookupSetName) searchParams.append('setName', String(lookupSetName));
       if (!setId && parsed.setCode) searchParams.append('setId', String(parsed.setCode));
+      if (editionHint) searchParams.append('editionHint', editionHint);
       if (setId) {
         searchParams.append('setId', setId);
         searchParams.append('strictSet', '1');
@@ -1684,11 +1849,11 @@ export default function ScanScreen() {
 
       if (cards.length === 0) return null;
 
-      let card = cards[0];
+      let card = pickCardForEditionHint(cards, editionHint) ?? cards[0];
       const parsedTotal = setTotalClean ? Number(setTotalClean) : null;
       if (parsedTotal) {
         const totalMatches = cards.filter((c) => c.set_printed_total === parsedTotal);
-        if (totalMatches.length > 0) card = totalMatches[0];
+        if (totalMatches.length > 0) card = pickCardForEditionHint(totalMatches, editionHint) ?? totalMatches[0];
       }
       if (numberClean) {
         const numberMatches = cards.filter((c) =>
@@ -1698,13 +1863,20 @@ export default function ScanScreen() {
         if (numberMatches.length === 1) {
           card = numberMatches[0];
         } else if (numberMatches.length > 1) {
-          card = setId
-            ? numberMatches.find((c) => c.set_id === setId) ?? numberMatches[0]
-            : numberMatches[0];
+          if (setId) {
+            const setMatches = numberMatches.filter((c) => c.set_id === setId);
+            card =
+              pickCardForEditionHint(setMatches, editionHint)
+              ?? numberMatches.find((c) => c.set_id === setId)
+              ?? pickCardForEditionHint(numberMatches, editionHint)
+              ?? numberMatches[0];
+          } else {
+            card = pickCardForEditionHint(numberMatches, editionHint) ?? numberMatches[0];
+          }
         }
       }
 
-      return card;
+      return withScannedCardEditionHint(card, editionHint, editionSource);
     };
 
     const resolveXimilarCandidates = async (
@@ -1715,26 +1887,30 @@ export default function ScanScreen() {
       const resolved: ScanCandidate[] = [];
 
       for (const candidate of candidates) {
+        const candidateWithEdition = withCandidateEditionHint(candidate, selectedBinder?.edition);
         logScanStage('POKEMON_API_LOOKUP_STARTED', {
-          name: candidate.name,
-          number: candidate.number,
-          setName: candidate.setName,
-          setCode: candidate.setCode,
+          name: candidateWithEdition.name,
+          number: candidateWithEdition.number,
+          setName: candidateWithEdition.setName,
+          setCode: candidateWithEdition.setCode,
+          editionHint: candidateWithEdition.editionHint,
+          editionSource: candidateWithEdition.editionSource,
         });
 
         try {
-          const card = await lookupParsedCard(candidate, fallbackPrintedNumber, setId);
-          resolved.push({ ...candidate, resolvedCard: card });
+          const card = await lookupParsedCard(candidateWithEdition, fallbackPrintedNumber, setId);
+          resolved.push({ ...candidateWithEdition, resolvedCard: card });
           logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
-            name: candidate.name,
+            name: candidateWithEdition.name,
             resolved: Boolean(card),
             cardId: card?.id,
             cardName: card?.name,
+            editionHint: card?.editionHint ?? candidateWithEdition.editionHint,
           });
         } catch (lookupError) {
-          resolved.push({ ...candidate, resolvedCard: null });
+          resolved.push({ ...candidateWithEdition, resolvedCard: null });
           logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
-            name: candidate.name,
+            name: candidateWithEdition.name,
             resolved: false,
             code: 'CARD_LOOKUP_FAILED',
             error: lookupError instanceof Error ? lookupError.message : String(lookupError),
@@ -1775,6 +1951,7 @@ export default function ScanScreen() {
         stopScanningMessages();
         scanCooldownRef.current = false;
         setProcessingOcr(false);
+        if (isAuto) setFrozenFrameUri(null);
         return;
       }
       let bestBase64 = base64;
@@ -1942,6 +2119,7 @@ export default function ScanScreen() {
         stopScanningMessages();
         scanCooldownRef.current = false;
         setProcessingOcr(false);
+        setFrozenFrameUri(null);
         return;
       }
 
@@ -2498,14 +2676,21 @@ export default function ScanScreen() {
         stopScanningMessages();
         scanCooldownRef.current = false;
         setProcessingOcr(false);
+        setFrozenFrameUri(null);
         return;
       }
 
       match = await resolveCardInExpectedSet(match, expectedSetId, printedNumber);
+      match = withScannedCardEditionHint(
+        match,
+        normalizeScanEditionHint(selectedBinder?.edition) ?? match.editionHint ?? null,
+        normalizeScanEditionHint(selectedBinder?.edition) ? 'binder' : match.editionSource
+      );
       console.log('Scan completed:', {
         card: match.name,
         number: match.number,
         set: match.set_name,
+        editionHint: match.editionHint,
         printedNumber: printedNumber ? `${printedNumber.number}/${printedNumber.total}` : null,
         numberRegion: printedNumber?.region,
         numberRegionOcrMs: printedNumber?.ocrMs,
@@ -2572,6 +2757,7 @@ export default function ScanScreen() {
       scanCooldownRef.current = false;
       setProcessingOcr(false);
       setLastScanned(null);
+      if (isAuto) setFrozenFrameUri(null);
     }
   }, [fingerprintScan, isMarketMode, logScanDebug, lookupCardBySetNumber, processingOcr, resetScanState, resolveCardInExpectedSet, selectedBinder, startScanningMessages, stopScanningMessages]);
 
@@ -2613,12 +2799,14 @@ export default function ScanScreen() {
     if (isInventoryMode) {
       scanStore.triggerCallback(base64);
       setAutoScanActive(false);
+      setFrozenFrameUri(null);
       router.back();
       return;
     }
 
     if (isMarket) {
       setAutoScanActive(false);
+      setFrozenFrameUri(null);
       router.replace({ pathname: '/scan/result', params: { cardsJson: JSON.stringify([card]) } });
       return;
     }
@@ -2626,12 +2814,14 @@ export default function ScanScreen() {
     scannedCardIdsRef.current.add(card.id);
     setScannedCards((prev) => [...prev, card]);
     setLastScanned(`✅ ${card.name} #${card.number} added!`);
+    setFrozenFrameUri(null);
     Vibration.vibrate([0, 90, 40, 90]);
   }, [isInventoryMode, pendingConfirmation, saveTrainingData]);
 
   const handleReject = useCallback(() => {
     setPendingConfirmation(null);
     scanCooldownRef.current = false;
+    setFrozenFrameUri(null);
     setLastScanned(null);
   }, []);
 
@@ -2639,6 +2829,7 @@ export default function ScanScreen() {
     setPendingConfirmation(null);
     setScanError(null);
     setAutoScanActive(false);
+    setFrozenFrameUri(null);
     scanCooldownRef.current = false;
     if (router.canGoBack()) {
       router.back();
@@ -2876,7 +3067,9 @@ export default function ScanScreen() {
                     )}
                     <View style={{ flex: 1 }}>
                       <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14 }} numberOfLines={1}>{item.name}</Text>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>{item.set_name} · #{item.number}</Text>
+                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
+                        {formatScanCardSubtitle(item.set_name, item.number, item.editionHint)}
+                      </Text>
                       {item.rarity && <Text style={{ color: '#FFD166', fontSize: 11, marginTop: 2, fontWeight: '700' }}>{item.rarity}</Text>}
                     </View>
                     <TouchableOpacity
@@ -3032,6 +3225,16 @@ export default function ScanScreen() {
         }}
       />
 
+      {frozenFrameUri && step === 'scanning' && (
+        <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+          <Image
+            source={{ uri: frozenFrameUri }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        </View>
+      )}
+
       <SafeAreaView style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
 
         {/* Header */}
@@ -3064,7 +3267,7 @@ export default function ScanScreen() {
 
             {scannedCards.length > 0 && (
               <TouchableOpacity
-                onPress={() => { setAutoScanActive(false); setStep('review'); }}
+                onPress={() => { setAutoScanActive(false); setFrozenFrameUri(null); setStep('review'); }}
                 style={{ backgroundColor: theme.colors.primary, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 }}
               >
                 <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>Review ({scannedCards.length})</Text>
@@ -3078,13 +3281,13 @@ export default function ScanScreen() {
           <View style={{ alignItems: 'center', marginTop: 8 }}>
             <View style={{ flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 999, padding: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
               <TouchableOpacity
-                onPress={() => { setScanMode('manual'); setAutoScanActive(false); }}
+                onPress={() => { setScanMode('manual'); setAutoScanActive(false); setFrozenFrameUri(null); }}
                 style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999, backgroundColor: scanMode === 'manual' ? '#FFFFFF' : 'transparent' }}
               >
                 <Text style={{ color: scanMode === 'manual' ? '#000000' : 'rgba(255,255,255,0.7)', fontWeight: '900', fontSize: 13 }}>Manual</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setScanMode('auto')}
+                onPress={() => { setScanMode('auto'); setFrozenFrameUri(null); }}
                 style={{ paddingHorizontal: 20, paddingVertical: 8, borderRadius: 999, backgroundColor: scanMode === 'auto' ? theme.colors.primary : 'transparent' }}
               >
                 <Text style={{ color: scanMode === 'auto' ? '#FFFFFF' : 'rgba(255,255,255,0.7)', fontWeight: '900', fontSize: 13 }}>Auto</Text>
@@ -3147,7 +3350,13 @@ export default function ScanScreen() {
             <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>
               {pendingConfirmation.card?.name ?? pendingConfirmation.candidates?.[0]?.name ?? 'Unknown card'}
             </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 32 }}>{pendingConfirmation.card.set_name} · #{pendingConfirmation.card.number}</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 32 }}>
+              {formatScanCardSubtitle(
+                pendingConfirmation.card.set_name,
+                pendingConfirmation.card.number,
+                pendingConfirmation.card.editionHint ?? pendingConfirmation.candidates?.[0]?.editionHint
+              )}
+            </Text>
             <View style={{ flexDirection: 'row', gap: 16 }}>
               <TouchableOpacity onPress={handleReject} style={{ flex: 1, backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
                 <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>✕ Wrong</Text>
@@ -3166,7 +3375,11 @@ export default function ScanScreen() {
               {pendingConfirmation.candidates?.[0]?.name ?? 'Unknown card'}
             </Text>
             <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 10, textAlign: 'center' }}>
-              {`${pendingConfirmation.candidates?.[0]?.setName ?? 'Set unknown'}${pendingConfirmation.candidates?.[0]?.number ? ` - #${pendingConfirmation.candidates[0].number}` : ''}`}
+              {formatScanCardSubtitle(
+                pendingConfirmation.candidates?.[0]?.setName ?? 'Set unknown',
+                pendingConfirmation.candidates?.[0]?.number,
+                pendingConfirmation.candidates?.[0]?.editionHint
+              )}
             </Text>
             <Text style={{ color: 'rgba(255,255,255,0.72)', fontSize: 13, marginBottom: 20, textAlign: 'center', maxWidth: 280 }}>
               Details unavailable - search manually or confirm later.
@@ -3197,8 +3410,8 @@ export default function ScanScreen() {
                       </Text>
                       <Text style={{ color: 'rgba(255,255,255,0.62)', fontSize: 11, fontWeight: '700', marginTop: 2 }} numberOfLines={1}>
                         {candidateCard
-                          ? `${candidateCard.set_name} - #${candidateCard.number}`
-                          : `${candidate.setName ?? 'Details unavailable'}${candidate.number ? ` - #${candidate.number}` : ''}`}
+                          ? formatScanCardSubtitle(candidateCard.set_name, candidateCard.number, candidateCard.editionHint ?? candidate.editionHint)
+                          : formatScanCardSubtitle(candidate.setName ?? 'Details unavailable', candidate.number, candidate.editionHint)}
                       </Text>
                     </TouchableOpacity>
                   );
@@ -3237,6 +3450,7 @@ export default function ScanScreen() {
               <TouchableOpacity
                 onPress={() => {
                   setScanError(null);
+                  setFrozenFrameUri(null);
                   scanCooldownRef.current = false;
                   setProcessingOcr(false);
                 }}
@@ -3263,7 +3477,7 @@ export default function ScanScreen() {
         <View style={{ alignItems: 'center', paddingBottom: Math.max(12, insets.bottom * 0.25), gap: isCompactScanner ? 16 : 18 }}>
           {scannedCards.length > 0 && (
             <TouchableOpacity
-              onPress={() => { setAutoScanActive(false); setStep('review'); }}
+              onPress={() => { setAutoScanActive(false); setFrozenFrameUri(null); setStep('review'); }}
               style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 6, alignItems: 'center' }}
             >
               {scannedCards.slice(-5).map((card) => (

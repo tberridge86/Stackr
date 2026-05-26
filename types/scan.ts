@@ -1,9 +1,13 @@
+export type ScanEditionHint = '1st_edition' | 'unlimited' | 'shadowless';
+
 export type ScanCandidate = {
   id?: string;
   name: string;
   number?: string | null;
   setName?: string | null;
   setCode?: string | null;
+  editionHint?: ScanEditionHint | null;
+  editionSource?: 'ximilar' | 'binder' | 'image_ocr' | 'resolver' | null;
   confidence?: number | null;
   source: 'ximilar';
   resolvedCard?: any | null;
