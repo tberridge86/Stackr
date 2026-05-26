@@ -120,10 +120,11 @@ const FIRST_EDITION_CAPABLE_SET_IDS = new Set([
   'neo4',
 ]);
 const FIRST_EDITION_STAMP_REGIONS: OcrRegion[] = [
-  { name: 'stamp-left-art-lower', x: 0.055, y: 0.385, width: 0.22, height: 0.14 },
-  { name: 'stamp-left-body-upper', x: 0.055, y: 0.445, width: 0.22, height: 0.14 },
-  { name: 'stamp-left-body-mid', x: 0.055, y: 0.505, width: 0.22, height: 0.14 },
+  { name: 'stamp-left-art-lower', x: 0.07, y: 0.39, width: 0.17, height: 0.1 },
+  { name: 'stamp-left-between-art-text', x: 0.07, y: 0.45, width: 0.17, height: 0.1 },
+  { name: 'stamp-left-text-top', x: 0.07, y: 0.51, width: 0.17, height: 0.1 },
 ];
+const FIRST_EDITION_STRONG_CONFIDENCE = 0.92;
 const SHOW_SCAN_DEBUG =
   __DEV__ ||
   process.env.EXPO_PUBLIC_SHOW_SCAN_DEBUG === 'true' ||
@@ -713,6 +714,7 @@ function getPixelRegionStats(
   const regionHeight = Math.max(1, Math.min(decoded.height - startY, Math.round(decoded.height * region.height)));
   const rowInk = new Array(regionHeight).fill(0);
   const columnInk = new Array(regionWidth).fill(0);
+  const darkMask = new Uint8Array(regionWidth * regionHeight);
   let dark = 0;
   let veryDark = 0;
   let ink = 0;
@@ -732,13 +734,90 @@ function getPixelRegionStats(
         rowInk[y] += 1;
         columnInk[x] += 1;
       }
-      if (luma < 82) dark += 1;
+      if (luma < 82) {
+        dark += 1;
+        darkMask[(y * regionWidth) + x] = 1;
+      }
       if (luma < 55) veryDark += 1;
     }
   }
 
   const rowsWithInk = rowInk.filter((count) => count / regionWidth > 0.035).length;
   const columnsWithInk = columnInk.filter((count) => count / regionHeight > 0.035).length;
+  const visited = new Uint8Array(darkMask.length);
+  const components: {
+    area: number;
+    width: number;
+    height: number;
+    density: number;
+    aspect: number;
+    score: number;
+  }[] = [];
+
+  for (let i = 0; i < darkMask.length; i += 1) {
+    if (!darkMask[i] || visited[i]) continue;
+
+    const stack = [i];
+    visited[i] = 1;
+    let area = 0;
+    let minX = regionWidth;
+    let maxX = 0;
+    let minY = regionHeight;
+    let maxY = 0;
+
+    while (stack.length) {
+      const current = stack.pop()!;
+      const x = current % regionWidth;
+      const y = Math.floor(current / regionWidth);
+      area += 1;
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+
+      const neighbours = [
+        x > 0 ? current - 1 : -1,
+        x < regionWidth - 1 ? current + 1 : -1,
+        y > 0 ? current - regionWidth : -1,
+        y < regionHeight - 1 ? current + regionWidth : -1,
+      ];
+
+      for (const next of neighbours) {
+        if (next < 0 || visited[next] || !darkMask[next]) continue;
+        visited[next] = 1;
+        stack.push(next);
+      }
+    }
+
+    const componentWidth = maxX - minX + 1;
+    const componentHeight = maxY - minY + 1;
+    if (area < 8 || componentWidth < 3 || componentHeight < 3) continue;
+
+    const density = area / (componentWidth * componentHeight);
+    const aspect = componentWidth / componentHeight;
+    const widthRatio = componentWidth / regionWidth;
+    const heightRatio = componentHeight / regionHeight;
+    const stampLikeShape =
+      aspect >= 0.45
+      && aspect <= 2.2
+      && widthRatio >= 0.12
+      && widthRatio <= 0.58
+      && heightRatio >= 0.18
+      && heightRatio <= 0.78
+      && density >= 0.12
+      && density <= 0.75;
+
+    components.push({
+      area,
+      width: componentWidth,
+      height: componentHeight,
+      density,
+      aspect,
+      score: stampLikeShape ? (area / (regionWidth * regionHeight)) + (density * 0.08) + (Math.min(widthRatio, heightRatio) * 0.12) : 0,
+    });
+  }
+
+  const compactStampComponent = components.sort((a, b) => b.score - a.score)[0] ?? null;
 
   return {
     name: region.name,
@@ -747,6 +826,7 @@ function getPixelRegionStats(
     inkRatio: total ? ink / total : 0,
     inkRowsRatio: rowsWithInk / regionHeight,
     inkColumnsRatio: columnsWithInk / regionWidth,
+    compactStampComponent,
   };
 }
 
@@ -761,44 +841,36 @@ function detectFirstEditionStampByPixels(base64Image: string): ScanEditionDetect
           (metric.darkRatio * 1.2)
           + (metric.veryDarkRatio * 1.5)
           + (metric.inkRowsRatio * 0.05)
-          + (metric.inkColumnsRatio * 0.05),
+          + (metric.inkColumnsRatio * 0.05)
+          + ((metric.compactStampComponent?.score ?? 0) * 1.8),
       }))
       .sort((a, b) => b.score - a.score);
     const best = scored[0];
-
-    if (
+    const compactScore = best?.compactStampComponent?.score ?? 0;
+    const hasStrongStampShape = Boolean(
       best
-      && best.darkRatio > 0.05
-      && best.veryDarkRatio > 0.018
-      && best.inkRowsRatio > 0.24
-      && best.inkColumnsRatio > 0.24
-    ) {
+      && compactScore > 0.11
+      && best.darkRatio > 0.075
+      && best.veryDarkRatio > 0.032
+      && best.inkRowsRatio > 0.22
+      && best.inkRowsRatio < 0.74
+      && best.inkColumnsRatio > 0.22
+      && best.inkColumnsRatio < 0.78
+    );
+
+    if (hasStrongStampShape) {
       return {
         hint: '1st_edition',
-        confidence: Math.min(0.96, 0.72 + best.score),
+        confidence: Math.min(0.97, 0.9 + (compactScore * 0.4) + (best.veryDarkRatio * 0.8)),
         reason: `dark stamp mark detected in ${best.name}`,
         metrics: { best, regions: scored },
       };
     }
 
-    if (
-      best
-      && best.darkRatio < 0.036
-      && best.veryDarkRatio < 0.012
-      && best.inkRowsRatio < 0.28
-    ) {
-      return {
-        hint: 'unlimited',
-        confidence: 0.68,
-        reason: 'no 1st Edition stamp mark detected in expected area',
-        metrics: { best, regions: scored },
-      };
-    }
-
     return {
-      hint: null,
-      confidence: 0,
-      reason: 'stamp region was inconclusive',
+      hint: 'unlimited',
+      confidence: best?.veryDarkRatio && best.veryDarkRatio > 0.04 ? 0.62 : 0.74,
+      reason: 'no strong 1st Edition stamp mark detected in expected area',
       metrics: { best, regions: scored },
     };
   } catch (error) {
@@ -864,16 +936,30 @@ async function readVisualEditionHintFromCardImage(
   base64Image: string
 ): Promise<ScanEditionDetection> {
   const pixelResult = detectFirstEditionStampByPixels(base64Image);
-  if (pixelResult.hint === '1st_edition' && pixelResult.confidence >= 0.82) {
+  if (pixelResult.hint === '1st_edition' && pixelResult.confidence >= FIRST_EDITION_STRONG_CONFIDENCE) {
     return pixelResult;
   }
 
   const ocrResult = await detectFirstEditionStampByOcr(uri, width, height);
   if (ocrResult?.hint === '1st_edition') return ocrResult;
 
+  if (pixelResult.hint === '1st_edition') {
+    return {
+      hint: 'unlimited',
+      confidence: 0.58,
+      reason: `possible 1st Edition mark was below confidence threshold (${pixelResult.confidence.toFixed(2)})`,
+      metrics: pixelResult.metrics,
+    };
+  }
+
   if (pixelResult.hint) return pixelResult;
 
-  return ocrResult ?? pixelResult;
+  return ocrResult ?? {
+    ...pixelResult,
+    hint: 'unlimited',
+    confidence: 0.58,
+    reason: 'no readable 1st Edition stamp evidence was found',
+  };
 }
 
 async function readNameTextFromCardImage(
