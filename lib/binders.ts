@@ -459,13 +459,13 @@ function getPriceFromPokemonCard(card: any, edition?: string | null): number | n
 
   // Unlimited or no edition — prefer non-1st edition prices
   const preferred = [
+    'unlimitedHolofoil',
+    'unlimited',
     'holofoil',
     'reverseHolofoil',
     'reverseHoloEnergy',
     'reverseHoloPokeball',
     'normal',
-    'unlimitedHolofoil',
-    'unlimited',
     '1stEditionHolofoil',
     '1stEditionNormal',
   ];

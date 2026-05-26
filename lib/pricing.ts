@@ -94,17 +94,28 @@ export const getPreferredMarketPrice = (
   return { source: null, value: null };
 };
 
-export const getPriceFromPokemonCard = (card: any): number | null => {
+export const getPriceFromPokemonCard = (card: any, edition?: string | null): number | null => {
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;
 
-  const preferred = [
-    'holofoil',
-    'reverseHolofoil',
-    'normal',
-    '1stEditionHolofoil',
-    '1stEditionNormal',
-  ];
+  const preferred = edition === '1st_edition'
+    ? [
+        '1stEditionHolofoil',
+        '1stEditionNormal',
+        'holofoil',
+        'normal',
+        'unlimitedHolofoil',
+        'unlimited',
+      ]
+    : [
+        'unlimitedHolofoil',
+        'unlimited',
+        'holofoil',
+        'reverseHolofoil',
+        'normal',
+        '1stEditionHolofoil',
+        '1stEditionNormal',
+      ];
 
   for (const key of preferred) {
     const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;

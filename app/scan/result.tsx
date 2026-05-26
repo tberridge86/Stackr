@@ -30,6 +30,7 @@ type TCGCard = {
   image_small: string;
   image_large: string;
   release_date: string;
+  editionHint?: '1st_edition' | 'unlimited' | 'shadowless' | null;
 };
 
 type BinderOption = {
@@ -92,7 +93,9 @@ export default function ScanResultScreen() {
           setName: selectedCard.set_name,
           number: selectedCard.number,
           setTotal: selectedCard.set_printed_total,
-          rarity: selectedCard.rarity,
+          rarity: selectedCard.editionHint === '1st_edition'
+            ? `${selectedCard.rarity ?? ''} 1st edition`.trim()
+            : selectedCard.rarity,
         });
         console.log('eBay result:', result);
 
@@ -132,7 +135,7 @@ export default function ScanResultScreen() {
           .maybeSingle();
 
         const cachedRaw = cachedCard?.raw_data;
-        const cachedTcgUsd = getPriceFromPokemonCard(cachedRaw);
+        const cachedTcgUsd = getPriceFromPokemonCard(cachedRaw, selectedCard.editionHint);
         if (cachedTcgUsd != null) {
           setTcgPrice(Number((cachedTcgUsd * USD_TO_GBP).toFixed(2)));
           return;
@@ -150,7 +153,7 @@ export default function ScanResultScreen() {
         const response = await fetch(`https://api.pokemontcg.io/v2/cards/${selectedCard.id}`);
         const json = await response.json();
         const card = json?.data;
-        const price = getPriceFromPokemonCard(card);
+        const price = getPriceFromPokemonCard(card, selectedCard.editionHint);
 
         setTcgPrice(price == null ? null : Number((price * USD_TO_GBP).toFixed(2)));
       } catch {
