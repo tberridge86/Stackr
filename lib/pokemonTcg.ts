@@ -146,6 +146,7 @@ export async function fetchCardsForSet(setId: string): Promise<PokemonCard[]> {
       weaknesses: card.raw_data?.weaknesses ?? undefined,
       resistances: card.raw_data?.resistances ?? undefined,
       retreatCost: card.raw_data?.retreatCost ?? undefined,
+      raw_data: card.raw_data ?? undefined,
     };
   });
 }
@@ -183,5 +184,6 @@ export async function fetchCardById(cardId: string): Promise<PokemonCard | null>
     attacks: data.raw_data?.attacks ?? undefined,
     weaknesses: data.raw_data?.weaknesses ?? undefined,
     resistances: data.raw_data?.resistances ?? undefined,
+    raw_data: data.raw_data ?? undefined,
   };
 }

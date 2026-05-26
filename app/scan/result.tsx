@@ -1,8 +1,7 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
@@ -10,6 +9,7 @@ import {
   FlatList,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -17,6 +17,7 @@ import { fetchBinders } from '../../lib/binders';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { getPriceFromPokemonCard } from '../../lib/pricing';
 import { EUR_TO_GBP, USD_TO_GBP } from '../../lib/config';
+import type { ScanEditionHint } from '../../types/scan';
 
 type TCGCard = {
   id: string;
@@ -28,10 +29,85 @@ type TCGCard = {
   series: string;
   rarity: string;
   image_small: string;
-  image_large: string;
+  image_large?: string | null;
+  raw_data?: any;
   release_date: string;
   editionHint?: '1st_edition' | 'unlimited' | 'shadowless' | null;
 };
+
+const EDITION_LABELS: Record<NonNullable<TCGCard['editionHint']>, string> = {
+  '1st_edition': '1st Edition',
+  unlimited: 'Unlimited',
+  shadowless: 'Shadowless',
+};
+
+type TcgPriceVariant = {
+  key: string;
+  label: string;
+  priceUsd: number;
+  editionHint?: ScanEditionHint | null;
+};
+
+const TCG_VARIANT_LABELS: Record<string, string> = {
+  normal: 'Normal',
+  holofoil: 'Holo',
+  reverseHolofoil: 'Reverse Holo',
+  unlimited: 'Unlimited',
+  unlimitedHolofoil: 'Unlimited Holo',
+  '1stEditionNormal': '1st Edition Normal',
+  '1stEditionHolofoil': '1st Edition Holo',
+};
+
+function getTcgVariantLabel(key: string) {
+  return TCG_VARIANT_LABELS[key] ?? key.replace(/([A-Z])/g, ' $1').replace(/^./, (char) => char.toUpperCase());
+}
+
+function getEditionHintForVariantKey(key?: string | null): ScanEditionHint | null {
+  if (!key) return null;
+  if (key.startsWith('1stEdition')) return '1st_edition';
+  if (key.startsWith('unlimited')) return 'unlimited';
+  return null;
+}
+
+function getPriceValueFromVariant(value: any) {
+  const price = value?.market ?? value?.mid ?? value?.low;
+  return typeof price === 'number' && Number.isFinite(price) ? price : null;
+}
+
+function buildTcgVariantOptions(card: any): TcgPriceVariant[] {
+  const prices = card?.tcgplayer?.prices ?? {};
+  return Object.entries(prices)
+    .map(([key, value]) => {
+      const priceUsd = getPriceValueFromVariant(value);
+      if (priceUsd == null) return null;
+      return {
+        key,
+        label: getTcgVariantLabel(key),
+        priceUsd,
+        editionHint: getEditionHintForVariantKey(key),
+      };
+    })
+    .filter(Boolean) as TcgPriceVariant[];
+}
+
+function pickDefaultVariantKey(options: TcgPriceVariant[], editionHint?: TCGCard['editionHint']) {
+  if (!options.length) return null;
+  if (editionHint === '1st_edition') {
+    return options.find((option) => option.key === '1stEditionHolofoil')?.key
+      ?? options.find((option) => option.key === '1stEditionNormal')?.key
+      ?? options[0].key;
+  }
+  if (editionHint === 'unlimited') {
+    return options.find((option) => option.key === 'unlimitedHolofoil')?.key
+      ?? options.find((option) => option.key === 'unlimited')?.key
+      ?? options.find((option) => option.key === 'holofoil')?.key
+      ?? options.find((option) => option.key === 'normal')?.key
+      ?? options[0].key;
+  }
+  return options.find((option) => option.key === 'holofoil')?.key
+    ?? options.find((option) => option.key === 'normal')?.key
+    ?? options[0].key;
+}
 
 type BinderOption = {
   id: string;
@@ -50,6 +126,9 @@ export default function ScanResultScreen() {
 
   const cards: TCGCard[] = params.cardsJson ? JSON.parse(params.cardsJson) : [];
 
+  const getEditionLabel = (card?: TCGCard | null) =>
+    card?.editionHint ? EDITION_LABELS[card.editionHint] : null;
+
   const [selectedCard, setSelectedCard] = useState<TCGCard | null>(
     cards.length === 1 ? cards[0] : null
   );
@@ -62,6 +141,9 @@ export default function ScanResultScreen() {
   } | null>(null);
   const [ebayLoading, setEbayLoading] = useState(false);
   const [tcgPrice, setTcgPrice] = useState<number | null>(null);
+  const [tcgPriceSource, setTcgPriceSource] = useState<string | null>(null);
+  const [tcgVariants, setTcgVariants] = useState<TcgPriceVariant[]>([]);
+  const [selectedVariantKey, setSelectedVariantKey] = useState<string | null>(null);
   const [tcgLoading, setTcgLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -80,6 +162,16 @@ export default function ScanResultScreen() {
   }, []);
 
   useEffect(() => {
+    setSelectedVariantKey(null);
+    setTcgVariants([]);
+  }, [selectedCard?.id]);
+
+  const selectedTcgVariant = useMemo(
+    () => tcgVariants.find((variant) => variant.key === selectedVariantKey) ?? null,
+    [selectedVariantKey, tcgVariants]
+  );
+
+  useEffect(() => {
     if (!selectedCard) return;
 
     const run = async () => {
@@ -93,9 +185,11 @@ export default function ScanResultScreen() {
           setName: selectedCard.set_name,
           number: selectedCard.number,
           setTotal: selectedCard.set_printed_total,
-          rarity: selectedCard.editionHint === '1st_edition'
-            ? `${selectedCard.rarity ?? ''} 1st edition`.trim()
-            : selectedCard.rarity,
+          rarity: [
+            selectedCard.rarity,
+            selectedTcgVariant?.label,
+            selectedTcgVariant?.editionHint === '1st_edition' ? '1st edition' : null,
+          ].filter(Boolean).join(' '),
         });
         console.log('eBay result:', result);
 
@@ -114,6 +208,65 @@ export default function ScanResultScreen() {
       try {
         setTcgLoading(true);
         setTcgPrice(null);
+        setTcgPriceSource(null);
+
+        const { data: cachedCard } = await supabase
+          .from('pokemon_cards')
+          .select('raw_data')
+          .eq('id', selectedCard.id)
+          .maybeSingle();
+
+        const cachedRaw = cachedCard?.raw_data ?? selectedCard.raw_data;
+
+        const response = await fetch(`https://api.pokemontcg.io/v2/cards/${selectedCard.id}`);
+        const json = await response.json();
+        const card = json?.data;
+        const variants = buildTcgVariantOptions(cachedRaw).length
+          ? buildTcgVariantOptions(cachedRaw)
+          : buildTcgVariantOptions(card);
+        setTcgVariants(variants);
+
+        const nextVariantKey = selectedVariantKey && variants.some((variant) => variant.key === selectedVariantKey)
+          ? selectedVariantKey
+          : pickDefaultVariantKey(variants, selectedCard.editionHint);
+        if (nextVariantKey !== selectedVariantKey) setSelectedVariantKey(nextVariantKey);
+
+        const selectedVariant = variants.find((variant) => variant.key === nextVariantKey);
+        if (selectedVariant) {
+          setTcgPrice(Number((selectedVariant.priceUsd * USD_TO_GBP).toFixed(2)));
+          setTcgPriceSource(`${selectedVariant.label} TCGPlayer`);
+          console.log('Scan result TCG variant price selected:', {
+            cardId: selectedCard.id,
+            variant: selectedVariant.key,
+            priceUsd: selectedVariant.priceUsd,
+          });
+          return;
+        }
+
+        const cachedTcgUsd = getPriceFromPokemonCard(cachedRaw, selectedCard.editionHint);
+        const price = cachedTcgUsd ?? getPriceFromPokemonCard(card, selectedCard.editionHint);
+
+        if (price != null) {
+          setTcgPrice(Number((price * USD_TO_GBP).toFixed(2)));
+          setTcgPriceSource(selectedCard.editionHint ? `${getEditionLabel(selectedCard)} TCGPlayer` : 'TCGPlayer');
+          console.log('Scan result TCG price selected:', {
+            cardId: selectedCard.id,
+            editionHint: selectedCard.editionHint,
+            source: 'pokemon-tcg-api',
+            priceUsd: price,
+          });
+          return;
+        }
+
+        if (selectedCard.editionHint) {
+          console.log('Scan result TCG price skipped generic snapshot for edition-specific scan:', {
+            cardId: selectedCard.id,
+            editionHint: selectedCard.editionHint,
+            priceKeys: Object.keys(cachedRaw?.tcgplayer?.prices ?? card?.tcgplayer?.prices ?? {}),
+          });
+          setTcgPrice(null);
+          return;
+        }
 
         const { data: snapshot } = await supabase
           .from('market_price_snapshots')
@@ -125,19 +278,7 @@ export default function ScanResultScreen() {
 
         if (snapshot?.tcg_mid != null || snapshot?.tcg_low != null) {
           setTcgPrice(Number(snapshot.tcg_mid ?? snapshot.tcg_low));
-          return;
-        }
-
-        const { data: cachedCard } = await supabase
-          .from('pokemon_cards')
-          .select('raw_data')
-          .eq('id', selectedCard.id)
-          .maybeSingle();
-
-        const cachedRaw = cachedCard?.raw_data;
-        const cachedTcgUsd = getPriceFromPokemonCard(cachedRaw, selectedCard.editionHint);
-        if (cachedTcgUsd != null) {
-          setTcgPrice(Number((cachedTcgUsd * USD_TO_GBP).toFixed(2)));
+          setTcgPriceSource('Daily snapshot');
           return;
         }
 
@@ -147,24 +288,19 @@ export default function ScanResultScreen() {
           cachedRaw?.cardmarket?.prices?.avg30;
         if (typeof cardmarketEur === 'number') {
           setTcgPrice(Number((cardmarketEur * EUR_TO_GBP).toFixed(2)));
+          setTcgPriceSource('Cardmarket fallback');
           return;
         }
-
-        const response = await fetch(`https://api.pokemontcg.io/v2/cards/${selectedCard.id}`);
-        const json = await response.json();
-        const card = json?.data;
-        const price = getPriceFromPokemonCard(card, selectedCard.editionHint);
-
-        setTcgPrice(price == null ? null : Number((price * USD_TO_GBP).toFixed(2)));
       } catch {
         setTcgPrice(null);
+        setTcgPriceSource(null);
       } finally {
         setTcgLoading(false);
       }
     };
 
     run();
-  }, [selectedCard]);
+  }, [selectedCard, selectedTcgVariant?.label, selectedTcgVariant?.editionHint, selectedVariantKey]);
 
   const handleAddToBinder = async () => {
     if (!selectedBinderId || !selectedCard) return;
@@ -172,9 +308,9 @@ export default function ScanResultScreen() {
     try {
       setAdding(true);
 
-      const { error } = await supabase
-        .from('binder_cards')
-        .upsert(
+        const { error } = await supabase
+          .from('binder_cards')
+          .upsert(
           {
             binder_id: selectedBinderId,
             card_id: selectedCard.id,
@@ -193,6 +329,29 @@ export default function ScanResultScreen() {
         );
 
       if (error) throw error;
+
+      if (selectedTcgVariant?.key) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('user_card_variants')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('card_id', selectedCard.id)
+            .eq('set_id', selectedCard.set_id)
+            .eq('variant', selectedTcgVariant.key);
+
+          const { error: variantError } = await supabase
+            .from('user_card_variants')
+            .insert({
+              user_id: user.id,
+              card_id: selectedCard.id,
+              set_id: selectedCard.set_id,
+              variant: selectedTcgVariant.key,
+            });
+          if (variantError) throw variantError;
+        }
+      }
 
       setAdded(true);
       Alert.alert('✅ Added!', `${selectedCard.name} has been added to your binder.`, [{ text: 'OK' }]);
@@ -227,8 +386,12 @@ export default function ScanResultScreen() {
         activeOpacity={0.8}
       >
         {item.image_small ? (
-          <Image
-            source={{ uri: item.image_small }}
+          <EditionAwareCardImage
+            uri={item.image_small}
+            cardId={item.id}
+            rawData={item.raw_data}
+            editionHint={item.editionHint}
+            sourceSize="small"
             style={{ width: 50, height: 70, borderRadius: 6 }}
             resizeMode="contain"
           />
@@ -245,7 +408,7 @@ export default function ScanResultScreen() {
             {item.name}
           </Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
-            {item.set_name} · #{item.number}
+            {item.set_name} · #{item.number}{getEditionLabel(item) ? ` · ${getEditionLabel(item)}` : ''}
           </Text>
           {item.rarity && (
             <Text style={{ color: '#FFD166', fontSize: 11, marginTop: 2, fontWeight: '700' }}>
@@ -327,8 +490,12 @@ export default function ScanResultScreen() {
           <>
             {/* Card image */}
             <View style={{ alignItems: 'center', marginBottom: 16 }}>
-              <Image
-                source={{ uri: selectedCard.image_large ?? selectedCard.image_small }}
+              <EditionAwareCardImage
+                uri={selectedCard.image_large ?? selectedCard.image_small}
+                cardId={selectedCard.id}
+                rawData={selectedCard.raw_data}
+                editionHint={selectedTcgVariant?.editionHint ?? selectedCard.editionHint}
+                sourceSize="large"
                 style={{ width: 220, height: 308, borderRadius: 16 }}
                 resizeMode="contain"
               />
@@ -345,7 +512,7 @@ export default function ScanResultScreen() {
                 {selectedCard.name}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 4 }}>
-                {selectedCard.set_name} · #{selectedCard.number}
+                {selectedCard.set_name} · #{selectedCard.number}{getEditionLabel(selectedCard) ? ` · ${getEditionLabel(selectedCard)}` : ''}
               </Text>
               {selectedCard.rarity && (
                 <Text style={{ color: '#FFD166', fontSize: 13, fontWeight: '700', marginBottom: 4 }}>
@@ -358,7 +525,9 @@ export default function ScanResultScreen() {
 
               {/* View full details */}
               <TouchableOpacity
-                onPress={() => router.push(`/card/${selectedCard.id}?setId=${selectedCard.set_id}`)}
+                onPress={() => router.push(
+                  `/card/${selectedCard.id}?setId=${selectedCard.set_id}${selectedTcgVariant?.editionHint ?? selectedCard.editionHint ? `&editionHint=${selectedTcgVariant?.editionHint ?? selectedCard.editionHint}` : ''}`
+                )}
                 style={{
                   marginTop: 12,
                   backgroundColor: theme.colors.surface,
@@ -429,8 +598,42 @@ export default function ScanResultScreen() {
               marginBottom: 14,
             }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginBottom: 12 }}>
-                TCG Market Price (GBP)
+                TCG Market Price (GBP){getEditionLabel(selectedCard) ? ` · ${getEditionLabel(selectedCard)}` : ''}
               </Text>
+
+              {tcgVariants.length > 1 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
+                  style={{ marginBottom: 10 }}
+                >
+                  {tcgVariants.map((variant) => {
+                    const selected = selectedVariantKey === variant.key;
+                    return (
+                      <TouchableOpacity
+                        key={variant.key}
+                        onPress={() => setSelectedVariantKey(variant.key)}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 9,
+                          borderRadius: 12,
+                          backgroundColor: selected ? theme.colors.primary : theme.colors.surface,
+                          borderWidth: 1,
+                          borderColor: selected ? theme.colors.primary : theme.colors.border,
+                        }}
+                      >
+                        <Text style={{ color: selected ? '#FFFFFF' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>
+                          {variant.label}
+                        </Text>
+                        <Text style={{ color: selected ? 'rgba(255,255,255,0.8)' : theme.colors.textSoft, fontWeight: '800', fontSize: 10, marginTop: 2, textAlign: 'center' }}>
+                          GBP {(variant.priceUsd * USD_TO_GBP).toFixed(2)}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              )}
 
               {tcgLoading ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -444,6 +647,11 @@ export default function ScanResultScreen() {
                   <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>
                     £{tcgPrice.toFixed(2)}
                   </Text>
+                  {tcgPriceSource && (
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginTop: 4 }}>
+                      {tcgPriceSource}
+                    </Text>
+                  )}
                 </View>
               ) : (
                 <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>

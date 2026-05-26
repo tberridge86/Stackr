@@ -443,21 +443,32 @@ function getPriceFromPokemonCard(card: any, edition?: string | null): number | n
     const preferred = [
       '1stEditionHolofoil',
       '1stEditionNormal',
-      'holofoil',
-      'reverseHolofoil',
-      'reverseHoloEnergy',
-      'reverseHoloPokeball',
-      'normal',
-      'unlimitedHolofoil',
-      'unlimited',
     ];
     for (const key of preferred) {
       const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
       if (typeof value === 'number') return toGbpFromUsd(value);
     }
+    return null;
   }
 
-  // Unlimited or no edition — prefer non-1st edition prices
+  if (edition === 'unlimited') {
+    const preferred = [
+      'unlimitedHolofoil',
+      'unlimited',
+      'holofoil',
+      'reverseHolofoil',
+      'reverseHoloEnergy',
+      'reverseHoloPokeball',
+      'normal',
+    ];
+    for (const key of preferred) {
+      const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+      if (typeof value === 'number') return toGbpFromUsd(value);
+    }
+    return null;
+  }
+
+  // No edition selected - prefer non-1st edition prices, then fall back.
   const preferred = [
     'unlimitedHolofoil',
     'unlimited',
@@ -615,7 +626,6 @@ export async function updateBinderCardOwned(
           tcg_price: price?.tcg_price ?? null,
           cardmarket_price: price?.cardmarket_price ?? null,
           last_price_update: price?.last_price_update ?? null,
-          condition: cardMeta?.condition ?? 'Near Mint',
         })
         .select('id, card_id, set_id, owned')
         .single();
@@ -722,10 +732,15 @@ export async function updateBinderCardCondition(
         api_set_id: virtual.setId,
         owned: true,
         notes: '',
-        condition,
       }, { onConflict: 'binder_id,card_id' });
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === 'PGRST204') {
+        console.log('Binder condition column missing; skipping condition update.');
+        return;
+      }
+      throw error;
+    }
     return;
   }
 
@@ -734,7 +749,13 @@ export async function updateBinderCardCondition(
     .update({ condition })
     .eq('id', binderCardId);
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'PGRST204') {
+      console.log('Binder condition column missing; skipping condition update.');
+      return;
+    }
+    throw error;
+  }
 }
 
 // ===============================

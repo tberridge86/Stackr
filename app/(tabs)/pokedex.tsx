@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -12,9 +12,10 @@ import {
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { fetchOwnedPokemonNameSet, pokemonNameMatchesCardName } from '../../lib/pokedexCollection';
 
 type PokemonListItem = {
   name: string;
@@ -92,6 +93,7 @@ export default function PokedexScreen() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<RangeKey>('all');
+  const [ownedPokemonNames, setOwnedPokemonNames] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadPokemon = async () => {
@@ -125,6 +127,24 @@ export default function PokedexScreen() {
     loadPokemon();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      fetchOwnedPokemonNameSet()
+        .then((names) => {
+          if (active) setOwnedPokemonNames(names);
+        })
+        .catch((error) => {
+          console.log('Failed to load Pokedex ownership', error);
+        });
+
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
+
   const filteredPokemon = useMemo(() => {
     const cleanQuery = query.trim().toLowerCase();
 
@@ -156,6 +176,10 @@ export default function PokedexScreen() {
   };
 
   const renderPokemon = ({ item }: { item: PokemonEntry }) => {
+  const owned = Array.from(ownedPokemonNames).some((cardName) =>
+    pokemonNameMatchesCardName(item.name, cardName)
+  );
+
   return (
     <Pressable
       onPress={() => router.push(`/pokemon/${item.id}`)}
@@ -167,6 +191,11 @@ export default function PokedexScreen() {
           style={styles.gridImage}
           resizeMode="contain"
         />
+        {owned && (
+          <View style={styles.ownedBadge}>
+            <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+          </View>
+        )}
       </View>
       <Text numberOfLines={1} style={styles.gridName}>
         {formatPokemonName(item.name)}
@@ -437,6 +466,19 @@ gridImageWrap: {
   alignItems: 'center',
   justifyContent: 'center',
   marginBottom: 6,
+},
+ownedBadge: {
+  position: 'absolute',
+  right: 6,
+  top: 6,
+  width: 22,
+  height: 22,
+  borderRadius: 11,
+  backgroundColor: theme.colors.primary,
+  borderWidth: 2,
+  borderColor: theme.colors.card,
+  alignItems: 'center',
+  justifyContent: 'center',
 },
 gridImage: {
   width: '80%',

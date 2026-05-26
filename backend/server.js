@@ -35,6 +35,9 @@ const SERPAPI_API_KEY = process.env.SERPAPI_API_KEY;
 const SERPAPI_ENGINE = process.env.SERPAPI_ENGINE || 'ebay';
 const XIMILAR_API_TOKEN = process.env.XIMILAR_API_TOKEN;
 const POKEMON_TCG_API_KEY = process.env.POKEMON_TCG_API_KEY;
+const SCRYDEX_API_KEY = process.env.SCRYDEX_API_KEY;
+const SCRYDEX_TEAM_ID = process.env.SCRYDEX_TEAM_ID;
+const SCRYDEX_API_BASE_URL = process.env.SCRYDEX_API_BASE_URL || 'https://api.scrydex.com';
 const POKEMON_PRICE_TRACKER_API_KEY = process.env.POKEMON_PRICE_TRACKER_API_KEY;
 const CARDMATRIX_API_KEY = process.env.CARDMATRIX_API_KEY;
 const POKEWALLET_API_KEY = process.env.POKEWALLET_API_KEY;
@@ -468,6 +471,9 @@ function getCollectorNumberCandidates(number = '') {
   const candidates = new Set([raw]);
   const full = raw.match(/^0*(\d+)\s*\/\s*0*(\d+)$/);
   if (full) {
+    candidates.add(String(Number(full[1])));
+    candidates.add(full[1].padStart(2, '0'));
+    candidates.add(full[1].padStart(3, '0'));
     candidates.add(`${Number(full[1])}/${Number(full[2])}`);
     candidates.add(`${full[1]}/${full[2]}`);
     candidates.add(`${full[1].padStart(3, '0')}/${full[2].padStart(3, '0')}`);
@@ -767,7 +773,16 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
   }
 
   if (collectorNumber && !titleHasCollectorNumber(title, collectorNumber)) {
-    reasons.push(`MISSING_COLLECTOR_NUMBER (${collectorNumber})`);
+    const hasStrongIdentity = Boolean(
+      name &&
+      setName &&
+      titleHasCardName(title, name) &&
+      titleHasSetName(title, setName)
+    );
+
+    if (!hasStrongIdentity) {
+      reasons.push(`MISSING_COLLECTOR_NUMBER (${collectorNumber})`);
+    }
   }
 
   reasons.push(...getLanguageMismatchReasons(title));
@@ -1524,7 +1539,7 @@ async function fetchEbaySummary(query, options = {}) {
         marketplace: EBAY_MARKETPLACE_ID,
         query: activeQuery,
         originalQuery: query,
-        usedFallback,
+        usedFallback: usedFallback && acceptedAnalysis.length > 0,
         low: summary.low,
         average: summary.average,
         high: summary.high,
@@ -2103,6 +2118,193 @@ function scoreTcgSearchCardForEdition(card, editionHint) {
   if (editionHint === '1st_edition' && cardEdition === 'unlimited') return -4;
   return -1;
 }
+
+function normalizeEditionImageText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function collectEditionImageText(value) {
+  if (!value || typeof value !== 'object') return '';
+
+  return [
+    value.name,
+    value.type,
+    value.variant,
+    value.variantName,
+    value.variant_name,
+    value.printing,
+    value.edition,
+    value.label,
+    value.key,
+    value.id,
+  ]
+    .map(normalizeEditionImageText)
+    .filter(Boolean)
+    .join(' ');
+}
+
+function editionImageMatches(value, editionHint) {
+  const text = collectEditionImageText(value);
+  if (!text || !editionHint) return false;
+
+  const compact = text.replace(/\s+/g, '');
+  const hasFirstEdition =
+    /\b1st\s*(edition|ed)\b/.test(text)
+    || /\bfirst\s*(edition|ed)\b/.test(text)
+    || compact.includes('firstedition')
+    || compact.includes('1stedition');
+  const hasUnlimited = /\bunlimited\b/.test(text);
+  const hasShadowless = /\bshadowless\b/.test(text);
+
+  if (editionHint === '1st_edition') return hasFirstEdition;
+  if (editionHint === 'unlimited') return hasUnlimited && !hasFirstEdition;
+  if (editionHint === 'shadowless') return hasShadowless;
+
+  return false;
+}
+
+function imageUrlFromEditionEntry(entry, size = 'large') {
+  if (!entry) return null;
+  if (typeof entry === 'string') return entry;
+  if (typeof entry !== 'object') return null;
+
+  const preferred =
+    size === 'small'
+      ? ['small', 'medium', 'large', 'url', 'imageUrl', 'image_url']
+      : size === 'medium'
+        ? ['medium', 'large', 'small', 'url', 'imageUrl', 'image_url']
+        : ['large', 'medium', 'small', 'url', 'imageUrl', 'image_url'];
+
+  for (const key of preferred) {
+    const value = entry[key];
+    if (typeof value === 'string' && value.startsWith('http')) return value;
+  }
+
+  return null;
+}
+
+function getEditionImageVariants(rawData) {
+  const variants = rawData?.variants;
+  if (Array.isArray(variants)) return variants;
+  if (!variants || typeof variants !== 'object') return [];
+
+  return Object.entries(variants).map(([name, value]) => ({
+    name,
+    ...(value && typeof value === 'object' ? value : { value }),
+  }));
+}
+
+function getEditionVariantImageUrl(rawData, editionHint, size = 'large') {
+  if (!rawData || !editionHint) return null;
+
+  for (const variant of getEditionImageVariants(rawData)) {
+    if (!editionImageMatches(variant, editionHint)) continue;
+
+    const images = Array.isArray(variant.images)
+      ? variant.images
+      : [variant.image, variant.imageUrl, variant.image_url].filter(Boolean);
+
+    for (const image of images) {
+      const url = imageUrlFromEditionEntry(image, size);
+      if (url) return url;
+    }
+  }
+
+  const topLevelImages = Array.isArray(rawData?.images) ? rawData.images : [];
+  for (const image of topLevelImages) {
+    if (!editionImageMatches(image, editionHint)) continue;
+    const url = imageUrlFromEditionEntry(image, size);
+    if (url) return url;
+  }
+
+  return null;
+}
+
+const editionImageCache = new Map();
+const EDITION_IMAGE_CACHE_MS = 6 * 60 * 60 * 1000;
+
+async function fetchScrydexCard(cardId) {
+  if (!SCRYDEX_API_KEY || !SCRYDEX_TEAM_ID) return null;
+
+  const url = `${SCRYDEX_API_BASE_URL.replace(/\/$/, '')}/pokemon/v1/cards/${encodeURIComponent(cardId)}`;
+  const response = await fetch(url, {
+    headers: {
+      'X-Api-Key': SCRYDEX_API_KEY,
+      'X-Team-ID': SCRYDEX_TEAM_ID,
+    },
+  });
+
+  if (!response.ok) {
+    console.log('[edition-image] Scrydex card fetch failed', { cardId, status: response.status });
+    return null;
+  }
+
+  const payload = await response.json();
+  return payload?.data ?? payload;
+}
+
+app.get('/api/card-image/edition', async (req, res) => {
+  try {
+    const cardId = String(req.query.cardId || '').trim();
+    const editionHint = normalizeScanEditionHintValue(String(req.query.editionHint || '').trim());
+    const requestedSize = String(req.query.size || 'large').trim();
+    const size = ['small', 'medium', 'large'].includes(requestedSize) ? requestedSize : 'large';
+
+    if (!cardId) {
+      return res.status(400).json({ ok: false, code: 'MISSING_CARD_ID', message: 'Missing cardId.' });
+    }
+    if (!editionHint) {
+      return res.status(400).json({ ok: false, code: 'MISSING_EDITION_HINT', message: 'Missing editionHint.' });
+    }
+
+    const cacheKey = `${cardId}:${editionHint}:${size}`;
+    const cached = editionImageCache.get(cacheKey);
+    if (cached && Date.now() - cached.at < EDITION_IMAGE_CACHE_MS) {
+      return res.json(cached.value);
+    }
+
+    const { data: dbCard, error: dbError } = await supabase
+      .from('pokemon_cards')
+      .select('id, raw_data, image_small, image_large')
+      .eq('id', cardId)
+      .maybeSingle();
+    if (dbError) throw dbError;
+
+    const dbVariantImage = getEditionVariantImageUrl(dbCard?.raw_data, editionHint, size);
+    if (dbVariantImage) {
+      const value = { ok: true, imageUri: dbVariantImage, source: 'database_variant' };
+      editionImageCache.set(cacheKey, { at: Date.now(), value });
+      return res.json(value);
+    }
+
+    const scrydexCard = await fetchScrydexCard(cardId);
+    const scrydexVariantImage = getEditionVariantImageUrl(scrydexCard, editionHint, size);
+    if (scrydexVariantImage) {
+      const value = { ok: true, imageUri: scrydexVariantImage, source: 'scrydex_variant' };
+      editionImageCache.set(cacheKey, { at: Date.now(), value });
+      return res.json(value);
+    }
+
+    const value = {
+      ok: false,
+      code: 'NO_EDITION_IMAGE_SOURCE',
+      message: 'No edition-specific image is available from the configured source.',
+      source: SCRYDEX_API_KEY && SCRYDEX_TEAM_ID ? 'scrydex_variant' : 'database_variant',
+    };
+    editionImageCache.set(cacheKey, { at: Date.now(), value });
+    return res.status(404).json(value);
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      code: 'EDITION_IMAGE_LOOKUP_FAILED',
+      message: 'Edition image lookup failed.',
+      details: getErrorMessage(error),
+    });
+  }
+});
 
 app.get('/api/search/tcg', async (req, res) => {
   try {
@@ -2751,6 +2953,37 @@ function stripXimilarEditionFromSetName(setName) {
   return cleaned || setName;
 }
 
+function collectXimilarImageEntries(value, depth = 0) {
+  if (!value || depth > 3) return [];
+  if (typeof value === 'string') return value.startsWith('http') ? [value] : [];
+  if (Array.isArray(value)) return value.flatMap((item) => collectXimilarImageEntries(item, depth + 1));
+  if (typeof value !== 'object') return [];
+
+  const direct = [
+    value.small,
+    value.medium,
+    value.large,
+    value.url,
+    value.image,
+    value.image_url,
+    value.imageUrl,
+    value.front,
+  ].filter((item) => typeof item === 'string' && item.startsWith('http'));
+
+  return [
+    ...direct,
+    ...collectXimilarImageEntries(value.images, depth + 1),
+    ...collectXimilarImageEntries(value.links, depth + 1),
+  ];
+}
+
+function pickXimilarImageUrl(match, size) {
+  const entries = collectXimilarImageEntries(match);
+  if (!entries.length) return null;
+  const preferred = entries.find((url) => url.toLowerCase().includes(`/${size}`));
+  return preferred ?? entries[0];
+}
+
 function normalizeXimilarIdentificationMatch(match) {
   if (!match || typeof match !== 'object') return null;
 
@@ -2792,6 +3025,9 @@ function normalizeXimilarIdentificationMatch(match) {
     setCode: match.set_code ?? match.setCode ?? match.set_id ?? match.setId ?? null,
     editionHint,
     editionSource: editionHint ? 'ximilar' : null,
+    imageSmall: pickXimilarImageUrl(match, 'small'),
+    imageLarge: pickXimilarImageUrl(match, 'large'),
+    imageSource: pickXimilarImageUrl(match, 'large') || pickXimilarImageUrl(match, 'small') ? 'ximilar' : null,
     confidence,
     source: 'ximilar',
     resolvedCard: null,
