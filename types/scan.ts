@@ -8,6 +8,9 @@ export type ScanCandidate = {
   setCode?: string | null;
   editionHint?: ScanEditionHint | null;
   editionSource?: 'ximilar' | 'binder' | 'image_ocr' | 'resolver' | null;
+  imageSmall?: string | null;
+  imageLarge?: string | null;
+  imageSource?: 'ximilar' | 'scrydex' | null;
   confidence?: number | null;
   source: 'ximilar';
   resolvedCard?: any | null;

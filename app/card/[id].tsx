@@ -4,13 +4,13 @@ import {
   View,
   StyleSheet,
   ActivityIndicator,
-  Image,
   ScrollView,
   TouchableOpacity,
   Alert,
   TextInput,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import { useLocalSearchParams } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
 import { useProfile } from '../../components/profile-context';
@@ -71,6 +71,7 @@ type PokemonCard = {
     updatedAt?: string;
     prices?: Record<string, any>;
   };
+  raw_data?: any;
 };
 
 type TcgFallbackPrice = {
@@ -98,9 +99,20 @@ const CONDITIONS = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Played'];
 export default function CardDetailScreen() {
   const { theme } = useTheme();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
-  const params = useLocalSearchParams<{ id?: string; setId?: string }>();
+  const params = useLocalSearchParams<{ id?: string; setId?: string; editionHint?: string }>();
   const cardId = typeof params.id === 'string' ? params.id : '';
   const paramSetId = typeof params.setId === 'string' ? params.setId : '';
+  const editionHint = params.editionHint === '1st_edition' || params.editionHint === 'unlimited' || params.editionHint === 'shadowless'
+    ? params.editionHint
+    : null;
+  const editionLabel =
+    editionHint === '1st_edition'
+      ? '1st Edition'
+      : editionHint === 'unlimited'
+        ? 'Unlimited'
+        : editionHint === 'shadowless'
+          ? 'Shadowless'
+          : null;
 
   const {
     isForTrade,
@@ -401,13 +413,19 @@ export default function CardDetailScreen() {
     const prices = card.tcgplayer?.prices;
     if (!prices) return null;
 
-    const preferred = [
-      'holofoil',
-      'reverseHolofoil',
-      'normal',
-      '1stEditionHolofoil',
-      '1stEditionNormal',
-    ];
+    const preferred = editionHint === '1st_edition'
+      ? ['1stEditionHolofoil', '1stEditionNormal']
+      : editionHint === 'unlimited'
+        ? ['unlimitedHolofoil', 'unlimited', 'holofoil', 'reverseHolofoil', 'normal']
+        : [
+            'holofoil',
+            'reverseHolofoil',
+            'normal',
+            'unlimitedHolofoil',
+            'unlimited',
+            '1stEditionHolofoil',
+            '1stEditionNormal',
+          ];
 
     let entry: any = null;
 
@@ -418,7 +436,7 @@ export default function CardDetailScreen() {
       }
     }
 
-    if (!entry) {
+    if (!entry && !editionHint) {
       entry = Object.values(prices)[0] ?? null;
     }
 
@@ -431,9 +449,9 @@ export default function CardDetailScreen() {
       mid: toGBP(entry.mid),
       market: toGBP(entry.market),
     };
-  }, [card]);
+  }, [card, editionHint]);
 
-  const snapshotTcgPrices = latestSnapshotPrice?.tcg_mid != null || latestSnapshotPrice?.tcg_low != null
+  const snapshotTcgPrices = !editionHint && (latestSnapshotPrice?.tcg_mid != null || latestSnapshotPrice?.tcg_low != null)
     ? {
         low: latestSnapshotPrice.tcg_low ?? null,
         mid: latestSnapshotPrice.tcg_mid ?? null,
@@ -441,7 +459,7 @@ export default function CardDetailScreen() {
       }
     : null;
 
-  const resolvedTcgPrices = snapshotTcgPrices ?? tcgPrices ?? tcgFallbackPrice;
+  const resolvedTcgPrices = snapshotTcgPrices ?? tcgPrices ?? (editionHint ? null : tcgFallbackPrice);
 
   // CardMarket prices — converted from EUR to GBP
   const cardmarketPrice = useMemo(() => {
@@ -624,8 +642,12 @@ const handleListOnMarketplace = async () => {
       {/* Card Image */}
       <View style={styles.heroCard}>
         {card.images?.large || card.images?.small ? (
-          <Image
-            source={{ uri: card.images?.large || card.images?.small }}
+          <EditionAwareCardImage
+            uri={card.images?.large || card.images?.small}
+            cardId={card.id}
+            rawData={card.raw_data}
+            editionHint={editionHint}
+            sourceSize="large"
             style={styles.cardImage}
             resizeMode="contain"
           />
@@ -644,6 +666,7 @@ const handleListOnMarketplace = async () => {
       </Text>
 
       <View style={styles.metaRow}>
+        {!!editionLabel && <Text style={styles.metaChip}>{editionLabel}</Text>}
         {!!card.rarity && <Text style={styles.metaChip}>{card.rarity}</Text>}
         {!!card.supertype && <Text style={styles.metaChip}>{card.supertype}</Text>}
         {!!card.hp && <Text style={styles.metaChip}>HP {card.hp}</Text>}

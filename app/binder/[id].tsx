@@ -128,8 +128,8 @@ const getBaseCardValue = (card: any): number => {
   return card?.ebay_price ?? card?.tcg_price ?? card?.cardmarket_price ?? 0;
 };
 
-const getPreferredBinderCardPrice = (card: BinderCardWithDetails): number => {
-  return card.ebay_price ?? card.tcg_price ?? card.cardmarket_price ?? 0;
+const getPreferredBinderCardPrice = (card: BinderCardWithDetails, variant?: string | null, edition?: string | null): number => {
+  return getBinderTcgPrice(card.card, edition, variant) ?? card.ebay_price ?? card.tcg_price ?? card.cardmarket_price ?? 0;
 };
 
 const getCardmarketPrice = (binderCard: any): number | null => {
@@ -140,16 +140,32 @@ const getCardmarketPrice = (binderCard: any): number | null => {
   return typeof eur === 'number' ? Math.round(eur * EUR_TO_GBP * 100) / 100 : null;
 };
 
-const getBinderTcgPrice = (card: any, edition?: string | null): number | null => {
+const getBinderTcgPrice = (card: any, edition?: string | null, variant?: string | null): number | null => {
   const prices = card?.tcgplayer?.prices;
   if (!prices) return null;
 
+  if (variant) {
+    const value = prices[variant]?.market ?? prices[variant]?.mid ?? prices[variant]?.low;
+    if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;
+    return null;
+  }
+
   if (edition === '1st_edition') {
-    const preferred = ['1stEditionHolofoil', '1stEditionNormal', 'holofoil', 'reverseHolofoil', 'normal'];
+    const preferred = ['1stEditionHolofoil', '1stEditionNormal'];
     for (const key of preferred) {
       const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
       if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;
     }
+    return null;
+  }
+
+  if (edition === 'unlimited') {
+    const preferred = ['unlimitedHolofoil', 'unlimited', 'holofoil', 'reverseHolofoil', 'normal'];
+    for (const key of preferred) {
+      const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+      if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;
+    }
+    return null;
   }
 
   const preferred = ['unlimitedHolofoil', 'unlimited', 'holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
@@ -343,8 +359,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   };
 
   const [showcaseCollapsed, setShowcaseCollapsed] = useState<Record<ShowcaseType, boolean>>({
-  favorite: false,
-  chase: false,
+  favorite: true,
+  chase: true,
 });
 
   const modalTranslateY = useRef(new Animated.Value(0)).current;
@@ -551,31 +567,40 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   let ownedCount = 0;
   let totalCount = 0;
   for (const c of cards) {
+    const savedVariants = [...ownedVariants]
+      .filter((key) => key.startsWith(`${c.card_id}:`))
+      .map((key) => key.slice(c.card_id.length + 1));
     const variants = masterSetEnabled ? getVariants(c.card, c.set_id) : ['card'];
-    if (variants.length > 1) {
+    if (masterSetEnabled && variants.length > 1) {
       totalCount += variants.length;
       ownedCount += variants.filter((v) => ownedVariants.has(`${c.card_id}:${v}`)).length;
     } else {
       totalCount += 1;
-      if (c.owned) ownedCount += 1;
+      if (c.owned || savedVariants.length > 0) ownedCount += 1;
     }
   }
   const progressPercent = totalCount ? Math.round((ownedCount / totalCount) * 100) : 0;
   const binderValue = useMemo(() => {
     return cards.reduce((sum, card) => {
-      const variants = masterSetEnabled ? getVariants(card.card, card.set_id) : ['card'];
-      const ownedUnits = masterSetEnabled
-        ? variants.filter((variant) => ownedVariants.has(`${card.card_id}:${variant}`)).length
-        : card.owned
-          ? 1
-          : 0;
+      const variants = masterSetEnabled
+        ? getVariants(card.card, card.set_id).filter((variant) => ownedVariants.has(`${card.card_id}:${variant}`))
+        : [...ownedVariants]
+            .filter((key) => key.startsWith(`${card.card_id}:`))
+            .map((key) => key.slice(card.card_id.length + 1));
 
-      if (!ownedUnits) return sum;
+      if (variants.length) {
+        return sum + variants.reduce((variantSum, variant) => {
+          const base = getPreferredBinderCardPrice(card, variant, binder?.edition);
+          return variantSum + getEstimatedValue(base, card.condition || 'Near Mint');
+        }, 0);
+      }
 
-      const base = getPreferredBinderCardPrice(card);
-      return sum + getEstimatedValue(base, card.condition || 'Near Mint') * ownedUnits;
+      if (!card.owned) return sum;
+
+      const base = getPreferredBinderCardPrice(card, null, binder?.edition);
+      return sum + getEstimatedValue(base, card.condition || 'Near Mint');
     }, 0);
-  }, [cards, masterSetEnabled, ownedVariants]);
+  }, [binder?.edition, cards, masterSetEnabled, ownedVariants]);
 
   // ===============================
   // VISIBILITY TOGGLE
@@ -1239,12 +1264,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         style={{
           width: cardWidth,
           marginBottom: 8,
-          backgroundColor: theme.colors.card,
           borderRadius: 14,
           padding: 6,
           borderWidth: 1,
-          borderColor: isOwned ? theme.colors.secondary : theme.colors.border,
-          opacity: isOwned ? 1 : 0.6,
+          borderColor: isOwned ? theme.colors.primary : theme.colors.border,
+          backgroundColor: isOwned ? theme.colors.primary + '10' : theme.colors.card,
+          opacity: 1,
           ...cardShadow,
         }}
       >
@@ -1252,7 +1277,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           width: '100%',
           aspectRatio: 0.72,
           borderRadius: 10,
-          backgroundColor: theme.colors.surface,
+          backgroundColor: isOwned ? '#FFFFFF' : theme.colors.surface,
           overflow: 'hidden',
           alignItems: 'center',
           justifyContent: 'center',
@@ -1285,33 +1310,56 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       flex: 1,
                       backgroundColor: pressed
                         ? 'rgba(108,75,255,0.25)'
-                        : owned
-                          ? 'rgba(255,209,102,0.45)'
-                          : 'rgba(0,0,0,0.04)',
+                        : 'transparent',
                       borderLeftWidth: i > 0 ? 1 : 0,
                       borderColor: 'rgba(255,255,255,0.3)',
                       alignItems: 'center',
                       justifyContent: 'center',
                     })}
                   >
-                    {owned && (
-                      <View style={{
-                        backgroundColor: 'rgba(255,255,255,0.7)',
-                        borderRadius: 10,
-                        width: 20,
-                        height: 20,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <Ionicons name="checkmark" size={13} color="#7A5200" />
-                      </View>
-                    )}
-                    <View style={{ position: 'absolute', bottom: 3, alignItems: 'center' }}>
-                      <MasterVariantIcon variant={variant} size="tiny" active={owned} />
+                    <View style={{
+                      position: 'absolute',
+                      bottom: 5,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
+                      backgroundColor: owned ? theme.colors.primary : theme.colors.card,
+                      borderWidth: 2,
+                      borderColor: theme.colors.card,
+                    }}>
+                      {owned ? (
+                        <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                      ) : (
+                        <MasterVariantIcon variant={variant} size="tiny" active={false} />
+                      )}
                     </View>
                   </Pressable>
                 );
               })}
+            </View>
+          )}
+
+          {!multiVariant && (
+            <View style={{
+              position: 'absolute',
+              right: 7,
+              top: 7,
+              width: 26,
+              height: 26,
+              borderRadius: 13,
+              backgroundColor: isOwned ? theme.colors.primary : theme.colors.card,
+              borderWidth: 2,
+              borderColor: theme.colors.card,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Ionicons
+                name={isOwned ? 'checkmark' : 'add'}
+                size={14}
+                color={isOwned ? '#FFFFFF' : theme.colors.primary}
+              />
             </View>
           )}
         </View>
@@ -1726,16 +1774,16 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         animationType="fade"
         onRequestClose={() => setMasterSetIntroVisible(false)}
       >
-        <View style={{ flex: 1, backgroundColor: 'rgba(28,32,52,0.42)', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(28,32,52,0.42)', alignItems: 'center', justifyContent: 'center', padding: 18 }}>
           <BlurView intensity={28} tint="light" style={StyleSheet.absoluteFill} />
           <View style={{
-            width: Math.min(width - 40, 430),
-            maxHeight: screenHeight - 70,
+            width: Math.min(width - 54, 354),
+            maxHeight: screenHeight - 96,
             backgroundColor: '#FFFFFF',
-            borderRadius: 30,
-            paddingHorizontal: 24,
-            paddingTop: 22,
-            paddingBottom: 24,
+            borderRadius: 24,
+            paddingHorizontal: 18,
+            paddingTop: 16,
+            paddingBottom: 18,
             alignItems: 'center',
             shadowColor: '#000',
             shadowOpacity: 0.18,
@@ -1747,47 +1795,47 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
               onPress={() => setMasterSetIntroVisible(false)}
               style={{
                 position: 'absolute',
-                right: 14,
-                top: 14,
-                width: 34,
-                height: 34,
-                borderRadius: 17,
+                right: 10,
+                top: 10,
+                width: 30,
+                height: 30,
+                borderRadius: 15,
                 backgroundColor: '#F0EEF8',
                 alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 2,
               }}
             >
-              <Ionicons name="close" size={22} color="#0B1746" />
+              <Ionicons name="close" size={19} color="#0B1746" />
             </TouchableOpacity>
 
-            <View style={{ alignItems: 'center', marginBottom: 4 }}>
-              <Ionicons name="sparkles" size={34} color="#FFAA4C" />
+            <View style={{ alignItems: 'center', marginBottom: 2 }}>
+              <Ionicons name="sparkles" size={25} color="#FFAA4C" />
             </View>
 
-            <Text style={{ color: '#061547', fontSize: 29, lineHeight: 34, fontWeight: '900', textAlign: 'center' }}>
+            <Text style={{ color: '#061547', fontSize: 23, lineHeight: 27, fontWeight: '900', textAlign: 'center' }}>
               Welcome Completionist
             </Text>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
-              <Ionicons name="sparkles" size={15} color="#6D3DFF" />
-              <Text style={{ color: '#6D3DFF', fontSize: 22, fontWeight: '900' }}>Track Variants</Text>
-              <Ionicons name="sparkles" size={15} color="#6D3DFF" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5 }}>
+              <Ionicons name="sparkles" size={12} color="#6D3DFF" />
+              <Text style={{ color: '#6D3DFF', fontSize: 18, fontWeight: '900' }}>Track Variants</Text>
+              <Ionicons name="sparkles" size={12} color="#6D3DFF" />
             </View>
 
-            <Text style={{ color: '#59617F', fontSize: 15, lineHeight: 21, textAlign: 'center', marginTop: 8, maxWidth: 320 }}>
+            <Text style={{ color: '#59617F', fontSize: 13, lineHeight: 17, textAlign: 'center', marginTop: 6, maxWidth: 275 }}>
               Tap the card by thirds to mark the version you own.
             </Text>
-            <Text style={{ color: '#59617F', fontSize: 14, lineHeight: 20, textAlign: 'center', marginTop: 2, maxWidth: 330 }}>
+            <Text style={{ color: '#59617F', fontSize: 12, lineHeight: 16, textAlign: 'center', marginTop: 1, maxWidth: 285 }}>
               Left = Base, Middle = Holo, Right = Reverse Holo.
             </Text>
 
             <View style={{
-              width: Math.min(width - 118, 240),
+              width: Math.min(width - 152, 178),
               aspectRatio: 0.72,
-              marginTop: 14,
-              borderRadius: 18,
-              padding: 7,
+              marginTop: 10,
+              borderRadius: 15,
+              padding: 5,
               backgroundColor: '#FFFFFF',
               borderWidth: 1,
               borderColor: '#D8C9FF',
@@ -1801,18 +1849,27 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                 colors={['#DCD6FF', '#9189EF', '#C9B6FF', '#FFE6A8', '#B7F2FF']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={{ flex: 1, borderRadius: 13, overflow: 'hidden' }}
+                style={{ flex: 1, borderRadius: 11, overflow: 'hidden' }}
               >
                 <View style={{ position: 'absolute', left: '33.33%', top: 0, bottom: 0, borderLeftWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.86)' }} />
                 <View style={{ position: 'absolute', left: '66.66%', top: 0, bottom: 0, borderLeftWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.86)' }} />
-                <View style={{ position: 'absolute', left: '30%', right: '30%', top: '35%', aspectRatio: 1, borderRadius: 999, borderWidth: 12, borderColor: 'rgba(94,78,180,0.72)' }} />
-                <View style={{ position: 'absolute', left: '18%', right: '18%', top: '47%', height: 4, backgroundColor: 'rgba(94,78,180,0.72)' }} />
-                <Ionicons name="sparkles" size={28} color="#FFFFFF" style={{ position: 'absolute', top: '12%', alignSelf: 'center' }} />
-                <View style={{ position: 'absolute', left: 12, right: 12, bottom: 18, flexDirection: 'row', justifyContent: 'space-between' }}>
-                  {['normal', 'holofoil', 'reverseHolofoil'].map((variant) => (
+                <View style={{ position: 'absolute', left: '30%', right: '30%', top: '35%', aspectRatio: 1, borderRadius: 999, borderWidth: 9, borderColor: 'rgba(94,78,180,0.72)' }} />
+                <View style={{ position: 'absolute', left: '18%', right: '18%', top: '47%', height: 3, backgroundColor: 'rgba(94,78,180,0.72)' }} />
+                <Ionicons name="sparkles" size={22} color="#FFFFFF" style={{ position: 'absolute', top: '12%', alignSelf: 'center' }} />
+                <View style={{ position: 'absolute', left: 9, right: 9, bottom: 13, flexDirection: 'row', justifyContent: 'space-between' }}>
+                  {['normal', 'holofoil', 'reverseHolofoil'].map((variant, index) => (
                     <View key={variant} style={{ alignItems: 'center' }}>
-                      <View style={{ width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.14)' }}>
-                        <Ionicons name="finger-print" size={22} color="#FFFFFF" />
+                      <View style={{
+                        width: 26,
+                        height: 26,
+                        borderRadius: 13,
+                        borderWidth: index === 2 ? 3 : 2,
+                        borderColor: index === 2 ? '#FFC83D' : '#FFFFFF',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: index === 2 ? 'rgba(255,200,61,0.34)' : 'rgba(255,255,255,0.14)',
+                      }}>
+                        <Ionicons name="finger-print" size={16} color={index === 2 ? '#FFE89A' : '#FFFFFF'} />
                       </View>
                       <MasterVariantIcon variant={variant} size="tiny" active />
                     </View>
@@ -1821,14 +1878,14 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
               </LinearGradient>
             </View>
 
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 18, marginTop: 14, flexWrap: 'wrap' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
               {['normal', 'holofoil', 'reverseHolofoil'].map((variant) => {
                 const copy = MASTER_VARIANT_COPY[getMasterVariantKind(variant)];
                 return (
-                  <View key={variant} style={{ alignItems: 'center', width: 86 }}>
-                    <MasterVariantIcon variant={variant} size="large" active />
-                    <Text style={{ color: '#061547', fontSize: 13, fontWeight: '900', marginTop: 6, textAlign: 'center' }}>{copy.label}</Text>
-                    <Text style={{ color: '#68708D', fontSize: 11, fontWeight: '700', marginTop: 1, textAlign: 'center' }}>{copy.helper}</Text>
+                  <View key={variant} style={{ alignItems: 'center', width: 72 }}>
+                    <MasterVariantIcon variant={variant} size="medium" active />
+                    <Text style={{ color: '#061547', fontSize: 11, fontWeight: '900', marginTop: 4, textAlign: 'center' }}>{copy.label}</Text>
+                    <Text style={{ color: '#68708D', fontSize: 9, fontWeight: '700', marginTop: 1, textAlign: 'center' }}>{copy.helper}</Text>
                   </View>
                 );
               })}
@@ -1837,11 +1894,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             <TouchableOpacity
               onPress={() => setMasterSetIntroVisible(false)}
               style={{
-                marginTop: 18,
+                marginTop: 14,
                 width: '100%',
                 backgroundColor: '#5D2DD3',
                 borderRadius: 10,
-                paddingVertical: 14,
+                paddingVertical: 11,
                 alignItems: 'center',
                 shadowColor: '#5D2DD3',
                 shadowOpacity: 0.25,
@@ -1850,7 +1907,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                 elevation: 4,
               }}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900' }}>Got it</Text>
+              <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>Got it</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -2091,7 +2148,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                   onPress={closeDetailModal}
                   style={{
                     position: 'absolute',
-                    top: 20, right: 16,
+                    top: 48, right: 16,
                     zIndex: 50,
                     backgroundColor: theme.colors.card,
                     borderRadius: 999,
@@ -2106,7 +2163,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
                 {selectedCard && (
                   <ScrollView
-                    contentContainerStyle={{ padding: 16, paddingTop: 42, paddingBottom: 40 }}
+                    contentContainerStyle={{ padding: 16, paddingTop: 72, paddingBottom: 40 }}
                     showsVerticalScrollIndicator={false}
                   >
                     <View style={{ width: '100%', aspectRatio: 0.72, maxHeight: screenHeight * 0.48, alignSelf: 'center', borderRadius: 20, overflow: 'hidden' }}>
@@ -2137,27 +2194,30 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                                         flex: 1,
                                         backgroundColor: pressed
                                           ? 'rgba(108,75,255,0.25)'
-                                          : owned
-                                            ? 'rgba(255,209,102,0.3)'
-                                            : 'transparent',
+                                          : 'transparent',
                                         borderLeftWidth: i > 0 ? 1 : 0,
                                         borderColor: 'rgba(255,255,255,0.2)',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                       })}
                                     >
-                                      {owned && (
-                                        <View style={{ backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 14, width: 28, height: 28, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 4, elevation: 3 }}>
-                                          <Ionicons name="checkmark" size={18} color="#7A5200" />
-                                        </View>
-                                      )}
                                       <View style={{
                                         position: 'absolute',
                                         bottom: 12,
                                         alignItems: 'center',
                                         justifyContent: 'center',
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 17,
+                                        backgroundColor: owned ? theme.colors.primary : theme.colors.card,
+                                        borderWidth: 2,
+                                        borderColor: theme.colors.card,
                                       }}>
-                                        <MasterVariantIcon variant={variant} size="medium" active={owned} />
+                                        {owned ? (
+                                          <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+                                        ) : (
+                                          <MasterVariantIcon variant={variant} size="medium" active={false} />
+                                        )}
                                       </View>
                                     </Pressable>
                                   );
@@ -2302,7 +2362,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                               Based on {modalEbayPrice.count} listing{modalEbayPrice.count !== 1 ? 's' : ''}
                             </Text>
                           )}
-                          {modalEbayPrice?.usedFallback && (
+                          {modalEbayPrice?.usedFallback && (modalEbayPrice?.count ?? 0) > 0 && (
                             <Text style={{ color: '#F59E0B', fontSize: 11, marginTop: 2 }}>
                               Broad search used - results may be less specific
                             </Text>
@@ -2448,43 +2508,111 @@ function MasterVariantIcon({
   size?: 'tiny' | 'small' | 'medium' | 'large';
   active?: boolean;
 }) {
-  const copy = MASTER_VARIANT_COPY[getMasterVariantKind(variant)];
-  const dimension = size === 'large' ? 42 : size === 'medium' ? 30 : size === 'small' ? 24 : 18;
-  const iconSize = size === 'large' ? 24 : size === 'medium' ? 17 : size === 'small' ? 14 : 11;
-  const icon = (
-    <Ionicons
-      name={copy.icon as any}
-      size={iconSize}
-      color={active ? copy.color : 'rgba(255,255,255,0.95)'}
-    />
-  );
+  const kind = getMasterVariantKind(variant);
+  const width = size === 'large' ? 38 : size === 'medium' ? 30 : size === 'small' ? 25 : 20;
+  const height = size === 'large' ? 46 : size === 'medium' ? 36 : size === 'small' ? 30 : 24;
+  const iconSize = size === 'large' ? 18 : size === 'medium' ? 14 : size === 'small' ? 12 : 10;
+  const purple = '#6D3DFF';
+  const isEnergyReverse = variant === 'reverseHoloEnergy';
+  const isPokeballReverse = variant === 'reverseHoloPokeball';
+  const isFirstEdition = variant === '1stEditionNormal' || variant === '1stEditionHolofoil';
+  const isHolo = kind === 'holo';
+  const isReverse = kind === 'reverse';
 
   const baseStyle = {
-    width: dimension,
-    height: dimension,
-    borderRadius: dimension / 2,
+    width,
+    height,
+    borderRadius: 5,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    borderWidth: 1,
-    borderColor: active ? copy.border : 'rgba(255,255,255,0.65)',
+    borderWidth: isReverse ? 2 : 1,
+    borderColor: isReverse ? '#FFC83D' : '#DED1FF',
+    overflow: 'hidden' as const,
   };
 
-  if (copy.rainbow) {
+  if (isEnergyReverse) {
+    return (
+      <View style={[baseStyle, { backgroundColor: '#F5F0FF' }]}>
+        <Ionicons name="flash" size={iconSize + 2} color={purple} />
+      </View>
+    );
+  }
+
+  if (isPokeballReverse) {
+    return (
+      <View style={[baseStyle, { backgroundColor: '#F5F0FF' }]}>
+        <View style={{
+          width: iconSize + 8,
+          height: iconSize + 8,
+          borderRadius: 999,
+          borderWidth: 2,
+          borderColor: purple,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <View style={{ position: 'absolute', left: 0, right: 0, height: 2, backgroundColor: purple }} />
+          <View style={{ width: 6, height: 6, borderRadius: 3, borderWidth: 2, borderColor: purple, backgroundColor: '#FFFFFF' }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (isReverse) {
     return (
       <LinearGradient
-        colors={active ? ['#F9D6FF', '#D7F5FF', '#FFF0B8'] : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.12)']}
+        colors={['#FFE27A', '#F9D6FF', '#D7F5FF', '#FFF0B8']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={baseStyle}
       >
-        {icon}
+        <Ionicons name="sparkles" size={iconSize} color={purple} style={{ position: 'absolute', top: 4, left: 4 }} />
+        <Ionicons name="sparkles" size={Math.max(8, iconSize - 2)} color={purple} style={{ position: 'absolute', bottom: 4, right: 4 }} />
       </LinearGradient>
     );
   }
 
+  if (isHolo) {
+    return (
+      <View style={[baseStyle, { backgroundColor: '#F3EEFF', borderColor: '#C9B6FF' }]}>
+        <Ionicons name="sparkles" size={iconSize + 1} color={purple} />
+        {isFirstEdition && (
+          <Text style={{
+            position: 'absolute',
+            right: 3,
+            bottom: 1,
+            color: purple,
+            fontSize: Math.max(7, iconSize - 4),
+            fontWeight: '900',
+          }}>
+            1
+          </Text>
+        )}
+      </View>
+    );
+  }
+
   return (
-    <View style={[baseStyle, { backgroundColor: active ? copy.bg : 'rgba(0,0,0,0.38)' }]}>
-      {icon}
+    <View style={[baseStyle, { backgroundColor: '#F3EEFF' }]}>
+      <View style={{
+        width: '62%',
+        height: '72%',
+        borderRadius: 3,
+        borderWidth: 1.5,
+        borderColor: purple,
+        backgroundColor: active ? '#FFFFFF' : 'transparent',
+      }} />
+      {isFirstEdition && (
+        <Text style={{
+          position: 'absolute',
+          right: 3,
+          bottom: 1,
+          color: purple,
+          fontSize: Math.max(7, iconSize - 4),
+          fontWeight: '900',
+        }}>
+          1
+        </Text>
+      )}
     </View>
   );
 }

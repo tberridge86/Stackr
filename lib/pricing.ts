@@ -102,10 +102,13 @@ export const getPriceFromPokemonCard = (card: any, edition?: string | null): num
     ? [
         '1stEditionHolofoil',
         '1stEditionNormal',
-        'holofoil',
-        'normal',
+      ]
+    : edition === 'unlimited'
+    ? [
         'unlimitedHolofoil',
         'unlimited',
+        'holofoil',
+        'normal',
       ]
     : [
         'unlimitedHolofoil',
@@ -121,6 +124,8 @@ export const getPriceFromPokemonCard = (card: any, edition?: string | null): num
     const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
     if (typeof value === 'number') return value;
   }
+
+  if (edition === '1st_edition' || edition === 'unlimited') return null;
 
   for (const entry of Object.values(prices) as any[]) {
     const value = entry?.market ?? entry?.mid ?? entry?.low;

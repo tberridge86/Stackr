@@ -11,6 +11,7 @@ export type PokemonCard = {
     id?: string;
     name?: string;
   };
+  raw_data?: any;
 };
 
 export type PokemonSet = {

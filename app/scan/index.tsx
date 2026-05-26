@@ -12,6 +12,7 @@ import {
   Share,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
@@ -187,6 +188,8 @@ type ScannedCard = {
   set_name: string;
   set_printed_total?: number | null;
   image_small: string;
+  image_large?: string | null;
+  raw_data?: any;
   rarity: string;
   editionHint?: ScanEditionHint | null;
   editionSource?: ScanCandidate['editionSource'];
@@ -428,6 +431,7 @@ type PendingConfirmation = {
   candidates?: ScanCandidate[];
   base64: string;
   isMarket: boolean;
+  editionChoiceRequired?: boolean;
 };
 
 type ScanErrorState = ScanErrorResponse & {
@@ -939,6 +943,9 @@ async function readVisualEditionHintFromCardImage(
   if (pixelResult.hint === '1st_edition' && pixelResult.confidence >= FIRST_EDITION_STRONG_CONFIDENCE) {
     return pixelResult;
   }
+  if (pixelResult.hint === 'unlimited') {
+    return pixelResult;
+  }
 
   const ocrResult = await detectFirstEditionStampByOcr(uri, width, height);
   if (ocrResult?.hint === '1st_edition') return ocrResult;
@@ -1428,7 +1435,7 @@ export default function ScanScreen() {
       const { supabase } = await import('../../lib/supabase');
       const { data: card } = await supabase
         .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, set_id, raw_data')
+        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
         .eq('id', match.card_id)
         .single();
       if (!card) return null;
@@ -1450,6 +1457,8 @@ export default function ScanScreen() {
         set_name: card.raw_data?.set?.name ?? card.set_id,
         set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
         image_small: card.image_small ?? '',
+        image_large: card.image_large ?? card.raw_data?.images?.large ?? null,
+        raw_data: card.raw_data ?? null,
         rarity: card.rarity ?? '',
       };
     } catch {
@@ -1475,7 +1484,7 @@ export default function ScanScreen() {
       const { supabase } = await import('../../lib/supabase');
       const { data } = await supabase
         .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, set_id, raw_data')
+        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
         .eq('set_id', setId)
         .ilike('name', card.name)
         .limit(20);
@@ -1497,6 +1506,8 @@ export default function ScanScreen() {
         set_name: candidate.raw_data?.set?.name ?? candidate.set_id,
         set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
         image_small: candidate.image_small ?? '',
+        image_large: candidate.image_large ?? candidate.raw_data?.images?.large ?? null,
+        raw_data: candidate.raw_data ?? null,
         rarity: candidate.rarity ?? '',
         editionHint: card.editionHint,
         editionSource: card.editionSource,
@@ -1517,7 +1528,7 @@ export default function ScanScreen() {
       const { supabase } = await import('../../lib/supabase');
       const { data } = await supabase
         .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, set_id, raw_data')
+        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
         .eq('set_id', setId)
         .eq('number', String(printedNumber.number))
         .limit(1);
@@ -1542,6 +1553,8 @@ export default function ScanScreen() {
         set_name: card.raw_data?.set?.name ?? card.set_id,
         set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
         image_small: card.image_small ?? '',
+        image_large: card.image_large ?? card.raw_data?.images?.large ?? null,
+        raw_data: card.raw_data ?? null,
         rarity: card.rarity ?? '',
       };
     } catch (error) {
@@ -2121,29 +2134,12 @@ export default function ScanScreen() {
       };
     };
 
-    let imageEditionDetection: ScanEditionDetection | null = null;
-    const getImageEditionDetectionForTarget = (target: any, setId?: string | null) => {
-      if (!imageEditionDetection?.hint) return null;
-      if (!isFirstEditionCapableScanTarget(target, setId)) return null;
-      return imageEditionDetection;
-    };
-    const applyImageEditionHintToScanTarget = <T extends Record<string, any>>(target: T, setId?: string | null): T => {
-      const detection = getImageEditionDetectionForTarget(target, setId);
-      if (!detection?.hint) return target;
-
-      return {
-        ...target,
-        editionHint: detection.hint,
-        editionSource: 'image_ocr',
-      };
-    };
-
     const lookupParsedCard = async (
       parsed: any,
       fallbackPrintedNumber?: PrintedNumber | null,
       setId?: string | null
     ): Promise<ScannedCard | null> => {
-      const parsedForLookup = applyImageEditionHintToScanTarget(parsed, setId);
+      const parsedForLookup = parsed;
       if (!parsedForLookup || parsedForLookup.error || !parsedForLookup.name) return null;
       if (parsedForLookup.provider === 'ximilar' && isGenericXimilarCardName(parsedForLookup.name)) return null;
 
@@ -2227,8 +2223,7 @@ export default function ScanScreen() {
       const resolved: ScanCandidate[] = [];
 
       for (const candidate of candidates) {
-        const imageTaggedCandidate = applyImageEditionHintToScanTarget(candidate, setId);
-        const candidateWithEdition = withCandidateEditionHint(imageTaggedCandidate, selectedBinder?.edition);
+        const candidateWithEdition = withCandidateEditionHint(candidate, selectedBinder?.edition);
         logScanStage('POKEMON_API_LOOKUP_STARTED', {
           name: candidateWithEdition.name,
           number: candidateWithEdition.number,
@@ -2339,22 +2334,6 @@ export default function ScanScreen() {
         cachedTotalHintText = await readTotalHintTextFromCardImage(uri, width, height);
         return cachedTotalHintText;
       };
-      const ensureImageEditionDetection = async (targets?: any[] | null) => {
-        if (isAuto || imageEditionDetection) return imageEditionDetection;
-        if (targets?.length && !targets.some((target) => isFirstEditionCapableScanTarget(target, expectedSetId))) {
-          return imageEditionDetection;
-        }
-
-        imageEditionDetection = await readVisualEditionHintFromCardImage(bestUri, bestWidth, bestHeight, bestBase64);
-        logScanStage('EDITION_DETECTION_COMPLETE', {
-          hint: imageEditionDetection.hint,
-          confidence: imageEditionDetection.confidence,
-          reason: imageEditionDetection.reason,
-          metrics: SHOW_SCAN_DEBUG ? imageEditionDetection.metrics : undefined,
-        });
-        return imageEditionDetection;
-      };
-
       let match: ScannedCard | null = null;
       let ximilarCandidatesForConfirmation: ScanCandidate[] | null = null;
       let ximilarError: ScanErrorState | null = null;
@@ -2368,7 +2347,6 @@ export default function ScanScreen() {
         } else {
           ximilarError = null;
           setScanError(null);
-          await ensureImageEditionDetection(ximilarResponse.candidates);
           ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
             ximilarResponse.candidates,
             shouldDeferInitialNumberOcr ? null : printedNumber,
@@ -2401,7 +2379,6 @@ export default function ScanScreen() {
           } else {
             ximilarError = null;
             setScanError(null);
-            await ensureImageEditionDetection(ximilarMagicResponse.candidates);
             ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
               ximilarMagicResponse.candidates,
               shouldDeferInitialNumberOcr ? null : printedNumber,
@@ -2942,7 +2919,6 @@ export default function ScanScreen() {
           if (!isAuto) {
             const ximilarFallbackResponse = await identifyWithXimilarTcg(bestBase64, false);
             if (ximilarFallbackResponse.ok) {
-              await ensureImageEditionDetection(ximilarFallbackResponse.candidates);
               ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
                 ximilarFallbackResponse.candidates,
                 printedNumber,
@@ -3048,13 +3024,11 @@ export default function ScanScreen() {
       }
 
       match = await resolveCardInExpectedSet(match, expectedSetId, printedNumber);
-      await ensureImageEditionDetection([match]);
-      const imageEditionForMatch = getImageEditionDetectionForTarget(match, expectedSetId);
       const binderEditionHint = normalizeScanEditionHint(selectedBinder?.edition);
       match = withScannedCardEditionHint(
         match,
-        imageEditionForMatch?.hint ?? binderEditionHint ?? match.editionHint ?? null,
-        imageEditionForMatch?.hint ? 'image_ocr' : binderEditionHint ? 'binder' : match.editionSource
+        binderEditionHint ?? match.editionHint ?? null,
+        binderEditionHint ? 'binder' : match.editionSource
       );
       console.log('Scan completed:', {
         card: match.name,
@@ -3100,6 +3074,7 @@ export default function ScanScreen() {
         candidates: ximilarCandidatesForConfirmation ?? undefined,
         base64: bestBase64,
         isMarket: isMarketMode,
+        editionChoiceRequired: false,
       });
 
     } catch (error: any) {
@@ -3148,10 +3123,11 @@ export default function ScanScreen() {
     }
   }, []);
 
-  const handleConfirm = useCallback(async () => {
+  const confirmPendingCard = useCallback(async (cardOverride?: ScannedCard | null) => {
     if (!pendingConfirmation) return;
     const { base64, isMarket } = pendingConfirmation;
-    const card = pendingConfirmation.card
+    const card = cardOverride
+      ?? pendingConfirmation.card
       ?? (pendingConfirmation.candidates?.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null | undefined);
     if (!card) {
       setScanError(makeScanError(
@@ -3187,6 +3163,35 @@ export default function ScanScreen() {
     setFrozenFrameUri(null);
     Vibration.vibrate([0, 90, 40, 90]);
   }, [isInventoryMode, pendingConfirmation, saveTrainingData]);
+
+  const handleConfirm = useCallback(() => {
+    confirmPendingCard();
+  }, [confirmPendingCard]);
+
+  const handleSelectEditionChoice = useCallback((editionHint: ScanEditionHint) => {
+    if (!pendingConfirmation?.card) return;
+
+    const card = withScannedCardEditionHint(pendingConfirmation.card, editionHint, 'resolver');
+    const candidates = pendingConfirmation.candidates?.map((candidate) => {
+      const resolvedCard = candidate.resolvedCard as ScannedCard | null | undefined;
+      if (resolvedCard?.id !== card.id) return candidate;
+      return {
+        ...candidate,
+        editionHint,
+        editionSource: 'resolver' as const,
+        resolvedCard: card,
+      };
+    });
+
+    setPendingConfirmation((current) => current ? {
+      ...current,
+      card,
+      candidates,
+      editionChoiceRequired: false,
+    } : current);
+
+    confirmPendingCard(card);
+  }, [confirmPendingCard, pendingConfirmation]);
 
   const handleReject = useCallback(() => {
     setPendingConfirmation(null);
@@ -3431,7 +3436,15 @@ export default function ScanScreen() {
                 renderItem={({ item }) => (
                   <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.card, borderRadius: 14, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: theme.colors.border, gap: 12 }}>
                     {item.image_small ? (
-                      <Image source={{ uri: item.image_small }} style={{ width: 50, height: 70, borderRadius: 6 }} resizeMode="contain" />
+                      <EditionAwareCardImage
+                        uri={item.image_small}
+                        cardId={item.id}
+                        rawData={item.raw_data}
+                        editionHint={item.editionHint}
+                        sourceSize="small"
+                        style={{ width: 50, height: 70, borderRadius: 6 }}
+                        resizeMode="contain"
+                      />
                     ) : (
                       <View style={{ width: 50, height: 70, borderRadius: 6, backgroundColor: theme.colors.surface }} />
                     )}
@@ -3713,9 +3726,19 @@ export default function ScanScreen() {
         {/* Confirmation overlay */}
         {pendingConfirmation?.card && (
           <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>Is this the right card?</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>
+              {pendingConfirmation.editionChoiceRequired ? 'Card found - choose the edition' : 'Is this the right card?'}
+            </Text>
             {pendingConfirmation.card?.image_small ? (
-              <Image source={{ uri: pendingConfirmation.card.image_small }} style={{ width: 160, height: 224, borderRadius: 10, marginBottom: 16 }} resizeMode="contain" />
+              <EditionAwareCardImage
+                uri={pendingConfirmation.card.image_large ?? pendingConfirmation.card.image_small}
+                cardId={pendingConfirmation.card.id}
+                rawData={pendingConfirmation.card.raw_data}
+                editionHint={pendingConfirmation.card.editionHint ?? pendingConfirmation.candidates?.[0]?.editionHint}
+                sourceSize="large"
+                style={{ width: 160, height: 224, borderRadius: 10, marginBottom: 16 }}
+                resizeMode="contain"
+              />
             ) : null}
             <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>
               {pendingConfirmation.card?.name ?? pendingConfirmation.candidates?.[0]?.name ?? 'Unknown card'}
@@ -3788,6 +3811,21 @@ export default function ScanScreen() {
                 })}
               </View>
             )}
+            {pendingConfirmation.editionChoiceRequired ? (
+              <View style={{ width: '100%', maxWidth: 340, gap: 12 }}>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <TouchableOpacity onPress={() => handleSelectEditionChoice('unlimited')} style={{ flex: 1, backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}>
+                    <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Unlimited</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleSelectEditionChoice('1st_edition')} style={{ flex: 1, backgroundColor: '#7C3AED', borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}>
+                    <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>1st Edition</Text>
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={handleReject} style={{ backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Wrong card</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
             <View style={{ flexDirection: 'row', gap: 16 }}>
               <TouchableOpacity onPress={handleReject} style={{ flex: 1, backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
                 <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Wrong</Text>
@@ -3802,6 +3840,7 @@ export default function ScanScreen() {
                 </TouchableOpacity>
               )}
             </View>
+            )}
           </View>
         )}
 
@@ -3851,7 +3890,16 @@ export default function ScanScreen() {
               style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 6, alignItems: 'center' }}
             >
               {scannedCards.slice(-5).map((card) => (
-                <Image key={card.id} source={{ uri: card.image_small }} style={{ width: 36, height: 50, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' }} resizeMode="cover" />
+                <EditionAwareCardImage
+                  key={card.id}
+                  uri={card.image_small}
+                  cardId={card.id}
+                  rawData={card.raw_data}
+                  editionHint={card.editionHint}
+                  sourceSize="small"
+                  style={{ width: 36, height: 50, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' }}
+                  resizeMode="cover"
+                />
               ))}
               {scannedCards.length > 5 && (
                 <View style={{ width: 36, height: 50, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' }}>

@@ -143,8 +143,8 @@ function AppNavigation() {
               <Stack
                 screenOptions={{
                   headerShown: true,
-                  gestureEnabled: true,
-                  fullScreenGestureEnabled: true,
+                  gestureEnabled: false,
+                  fullScreenGestureEnabled: false,
                   headerStyle: { backgroundColor: theme.colors.bg },
                   headerTintColor: theme.colors.primary,
                   headerTitleStyle: { color: theme.colors.text, fontWeight: '900' },
@@ -172,6 +172,7 @@ function AppNavigation() {
                 <Stack.Screen name="market/index" options={{ title: '' }} />
                 <Stack.Screen name="price-builder/index" options={{ title: '' }} />
                 <Stack.Screen name="user/[id]" options={{ title: '' }} />
+                <Stack.Screen name="pokemon/[id]" options={{ title: '' }} />
                 <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
                 <Stack.Screen name="(auth)/login" options={{ title: '' }} />
                 <Stack.Screen name="notifications" options={{ title: '' }} />

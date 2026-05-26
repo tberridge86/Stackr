@@ -60,6 +60,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 const PADDING = 16;
 const GAP = 10;
+const POKEDEX_ICON = require('../../assets/images/pokedex_icon.png');
 
 const BINDER_LOGO_OVERRIDES: Record<string, string> = {
   me2pt5: 'https://images.scrydex.com/pokemon/me2pt5-logo/logo',
@@ -417,6 +418,29 @@ export default function BinderLibraryScreen() {
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8 }}>
+            {/* Pokedex shortcut */}
+            <TouchableOpacity
+              onPress={() => router.push('/(tabs)/pokedex' as any)}
+              accessibilityRole="button"
+              accessibilityLabel="Open Pokedex"
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 12,
+                backgroundColor: theme.colors.card,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Image
+                source={POKEDEX_ICON}
+                style={{ width: 26, height: 26 }}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+
             {/* Reorder toggle */}
             <TouchableOpacity
               onPress={() => setReorderMode((prev) => !prev)}

@@ -145,28 +145,21 @@ const TCG_PRICE_VARIANT_PRIORITY = [
 
 const TCG_PRICE_VARIANT_FALLBACKS: Record<string, string[]> = {
   card: TCG_PRICE_VARIANT_PRIORITY,
-  normal: ['normal', 'unlimited', '1stEditionNormal'],
-  unlimited: ['unlimited', 'normal', '1stEditionNormal'],
-  holofoil: ['holofoil', 'unlimitedHolofoil', '1stEditionHolofoil'],
-  unlimitedHolofoil: ['unlimitedHolofoil', 'holofoil', '1stEditionHolofoil'],
+  normal: ['normal', 'unlimited'],
+  unlimited: ['unlimited', 'normal'],
+  holofoil: ['holofoil', 'unlimitedHolofoil'],
+  unlimitedHolofoil: ['unlimitedHolofoil', 'holofoil'],
   reverseHolofoil: ['reverseHolofoil', 'reverseHoloEnergy', 'reverseHoloPokeball', 'holofoil', 'normal'],
   reverseHoloEnergy: ['reverseHoloEnergy', 'reverseHolofoil', 'normal'],
   reverseHoloPokeball: ['reverseHoloPokeball', 'reverseHolofoil', 'normal'],
-  '1stEditionNormal': ['1stEditionNormal', 'normal', 'unlimited'],
-  '1stEditionHolofoil': ['1stEditionHolofoil', 'holofoil', 'unlimitedHolofoil'],
+  '1stEditionNormal': ['1stEditionNormal'],
+  '1stEditionHolofoil': ['1stEditionHolofoil'],
 };
 
 const TCG_PRICE_EDITION_FALLBACKS: Record<string, string[]> = {
   '1st_edition': [
     '1stEditionHolofoil',
     '1stEditionNormal',
-    'holofoil',
-    'normal',
-    'unlimitedHolofoil',
-    'unlimited',
-    'reverseHolofoil',
-    'reverseHoloEnergy',
-    'reverseHoloPokeball',
   ],
   unlimited: [
     'unlimitedHolofoil',
@@ -176,8 +169,6 @@ const TCG_PRICE_EDITION_FALLBACKS: Record<string, string[]> = {
     'reverseHolofoil',
     'reverseHoloEnergy',
     'reverseHoloPokeball',
-    '1stEditionHolofoil',
-    '1stEditionNormal',
   ],
 };
 
@@ -201,6 +192,8 @@ const getTcgPriceFromPricesGbp = (prices: any, variant?: string | null, edition?
     const usd = getTcgEntryUsd(prices[key]);
     if (usd != null) return toGbpFromUsd(usd);
   }
+
+  if (variant || edition) return null;
 
   for (const entry of Object.values(prices) as any[]) {
     const usd = getTcgEntryUsd(entry);
@@ -628,20 +621,19 @@ export default function HubScreen() {
         ...new Set([card.card_id, card.api_card_id].filter(Boolean)),
       ] as string[];
 
-      const masterSetIds = [
+      const variantSetIds = [
         ...new Set(
           allCards
-            .filter((card) => card.__masterSetEnabled)
             .map((card) => card.set_id)
             .filter(Boolean)
         ),
       ] as string[];
       const ownedVariantsByCard = new Map<string, Set<string>>();
 
-      if (masterSetIds.length) {
+      if (variantSetIds.length) {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError) {
-          console.log('Hub master set user lookup failed:', userError.message);
+          console.log('Hub variant user lookup failed:', userError.message);
         }
 
         if (user) {
@@ -649,10 +641,10 @@ export default function HubScreen() {
             .from('user_card_variants')
             .select('card_id, set_id, variant')
             .eq('user_id', user.id)
-            .in('set_id', masterSetIds);
+            .in('set_id', variantSetIds);
 
           if (variantError) {
-            console.log('Hub master set variants failed:', variantError.message);
+            console.log('Hub variants failed:', variantError.message);
           } else {
             for (const row of variantRows ?? []) {
               if (!row.card_id || !row.set_id || !row.variant) continue;
@@ -683,15 +675,20 @@ export default function HubScreen() {
 
       for (const card of allCards) {
         const variantCardKey = `${card.set_id}:${card.card_id}`;
-        const ownedVariants = card.__masterSetEnabled
-          ? [...(ownedVariantsByCard.get(variantCardKey) ?? new Set<string>())]
-          : [];
+        const ownedVariants = [...(ownedVariantsByCard.get(variantCardKey) ?? new Set<string>())];
 
         if (card.__masterSetEnabled && ownedVariants.length) {
           for (const variant of ownedVariants) {
             const variantUnitKey = `${variantCardKey}:${variant}`;
             if (countedMasterVariantKeys.has(variantUnitKey)) continue;
             countedMasterVariantKeys.add(variantUnitKey);
+            addOwnedUnit(card, variant);
+          }
+          continue;
+        }
+
+        if (!card.__masterSetEnabled && ownedVariants.length) {
+          for (const variant of ownedVariants) {
             addOwnedUnit(card, variant);
           }
           continue;
