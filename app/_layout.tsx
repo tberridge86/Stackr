@@ -175,6 +175,7 @@ function AppNavigation() {
                 <Stack.Screen name="pokemon/[id]" options={{ title: '' }} />
                 <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
                 <Stack.Screen name="(auth)/login" options={{ title: '' }} />
+                <Stack.Screen name="(auth)/reset-password" options={{ title: '' }} />
                 <Stack.Screen name="notifications" options={{ title: '' }} />
                 <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
               </Stack>
