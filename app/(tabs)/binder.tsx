@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -15,9 +15,9 @@ import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import {
   fetchBinders,
-  fetchBinderCards,
   deleteBinder,
   BinderRecord,
   getEstimatedValue,
@@ -255,6 +255,17 @@ function BinderCard({ item, counts, value, confirmDeleteBinder, index, cardWidth
 
 type BinderValueMap = Record<string, number>;
 
+type BinderSummaryRow = {
+  binder_id: string;
+  card_id: string;
+  set_id: string | null;
+  owned: boolean | null;
+  ebay_price: number | null;
+  tcg_price: number | null;
+  cardmarket_price: number | null;
+  condition?: string | null;
+};
+
 export default function BinderLibraryScreen() {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
@@ -268,6 +279,7 @@ export default function BinderLibraryScreen() {
   const [sortBy, setSortBy] = useState<SortKey>('recent');
   const [sortOpen, setSortOpen] = useState(false);
   const [reorderMode, setReorderMode] = useState(false);
+  const loadedOnceRef = useRef(false);
 
   // ===============================
   // SCAN (scaffolded — coming soon)
@@ -281,37 +293,98 @@ export default function BinderLibraryScreen() {
   // LOAD
   // ===============================
 
+  const loadBinderSummaries = useCallback(async (data: BinderRecord[]) => {
+    const binderIds = data.map((binder) => binder.id);
+
+    if (!binderIds.length) {
+      setCounts({});
+      setValues({});
+      return;
+    }
+
+    const setIds = data.map((binder) => binder.source_set_id).filter(Boolean) as string[];
+
+    const [cardRowsResult, setRowsResult] = await Promise.all([
+      supabase
+        .from('binder_cards')
+        .select('binder_id, card_id, set_id, owned, ebay_price, tcg_price, cardmarket_price, condition')
+        .in('binder_id', binderIds),
+      setIds.length
+        ? supabase
+            .from('pokemon_sets')
+            .select('id, printed_total, total')
+            .in('id', setIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    if (cardRowsResult.error) throw cardRowsResult.error;
+    if (setRowsResult.error) throw setRowsResult.error;
+
+    const rows = (cardRowsResult.data ?? []) as BinderSummaryRow[];
+    const setTotals = new Map(
+      (setRowsResult.data ?? []).map((set) => [
+        set.id,
+        Number(set.printed_total ?? set.total ?? 0),
+      ])
+    );
+
+    const rowsByBinder = new Map<string, BinderSummaryRow[]>();
+    const globalOwnedKeys = new Set(
+      rows
+        .filter((row) => row.owned)
+        .map((row) => `${row.set_id ?? ''}:${row.card_id}`)
+    );
+
+    for (const row of rows) {
+      const current = rowsByBinder.get(row.binder_id) ?? [];
+      current.push(row);
+      rowsByBinder.set(row.binder_id, current);
+    }
+
+    const nextCounts: BinderCardCountMap = {};
+    const nextValues: BinderValueMap = {};
+
+    for (const binder of data) {
+      const binderRows = rowsByBinder.get(binder.id) ?? [];
+      const ownedRows = binderRows.filter((row) => row.owned || globalOwnedKeys.has(`${row.set_id ?? ''}:${row.card_id}`));
+      const officialTotal = binder.source_set_id ? setTotals.get(binder.source_set_id) ?? 0 : 0;
+      const total = binder.type === 'official' && officialTotal > 0
+        ? officialTotal
+        : binderRows.length;
+
+      nextCounts[binder.id] = {
+        owned: ownedRows.length,
+        total,
+      };
+
+      nextValues[binder.id] = ownedRows.reduce((sum, row) => {
+        const base = getPreferredBinderCardPrice(row);
+        return sum + getEstimatedValue(base, row.condition ?? 'Near Mint');
+      }, 0);
+    }
+
+    setCounts(nextCounts);
+    setValues(nextValues);
+  }, []);
+
   const load = useCallback(async () => {
     try {
-      setLoading(true);
+      if (!loadedOnceRef.current) setLoading(true);
 
       const data = await fetchBinders();
       setBinders(data);
+      loadedOnceRef.current = true;
+      setLoading(false);
 
-      const entries = await Promise.all(
-        data.map(async (binder) => {
-          const cards = await fetchBinderCards(binder.id);
-          const owned = cards.filter((c) => c.owned).length;
-          const totalValue = cards.reduce((sum, card) => {
-            if (!card.owned) return sum;
-            const base = getPreferredBinderCardPrice(card);
-            return sum + getEstimatedValue(base, card.condition ?? 'Near Mint');
-          }, 0);
-          return [binder.id, { owned, total: cards.length, value: totalValue }] as const;
-        })
-      );
-
-      const countEntries = entries.map(([id, { owned, total }]) => [id, { owned, total }]);
-      const valueEntries = entries.map(([id, { value }]) => [id, value]);
-
-      setCounts(Object.fromEntries(countEntries));
-      setValues(Object.fromEntries(valueEntries));
+      loadBinderSummaries(data).catch((summaryError) => {
+        console.log('Failed to load binder summaries', summaryError);
+      });
     } catch (error) {
       console.log('Failed to load binders', error);
-    } finally {
       setLoading(false);
+    } finally {
     }
-  }, []);
+  }, [loadBinderSummaries]);
 
   useFocusEffect(
     useCallback(() => {
@@ -436,7 +509,7 @@ export default function BinderLibraryScreen() {
             >
               <Image
                 source={POKEDEX_ICON}
-                style={{ width: 26, height: 26 }}
+                style={{ width: 34, height: 34 }}
                 resizeMode="contain"
               />
             </TouchableOpacity>
@@ -446,19 +519,30 @@ export default function BinderLibraryScreen() {
               onPress={() => setReorderMode((prev) => !prev)}
               style={{
                 backgroundColor: reorderMode ? theme.colors.secondary : theme.colors.card,
-                paddingHorizontal: 12, paddingVertical: 10,
+                width: reorderMode ? undefined : 42,
+                height: 42,
+                paddingHorizontal: reorderMode ? 12 : 0,
+                paddingVertical: reorderMode ? 10 : 0,
                 borderRadius: 12,
                 borderWidth: 1,
                 borderColor: reorderMode ? theme.colors.secondary : theme.colors.border,
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
+              {reorderMode && (
               <Text style={{
-                color: reorderMode ? theme.colors.text : theme.colors.textSoft,
+                color: theme.colors.text,
                 fontWeight: '900',
                 fontSize: 13,
+                lineHeight: 16,
               }}>
                 {reorderMode ? '✓ Done' : '⇅'}
               </Text>
+              )}
+              {!reorderMode && (
+                <Ionicons name="grid-outline" size={23} color={theme.colors.textSoft} style={{ position: 'absolute' }} />
+              )}
             </TouchableOpacity>
 
             {/* New binder */}

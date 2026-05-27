@@ -291,6 +291,22 @@ function getVariants(card: any, explicitSetId?: string): string[] {
   return keys.length > 0 ? [keys[0]] : ['normal'];
 }
 
+const getDefaultOwnedVariant = (variants: string[]): string | null => {
+  const preferred = [
+    'normal',
+    'unlimited',
+    'holofoil',
+    'unlimitedHolofoil',
+    '1stEditionNormal',
+    '1stEditionHolofoil',
+    'reverseHolofoil',
+    'reverseHoloEnergy',
+    'reverseHoloPokeball',
+  ];
+
+  return preferred.find((variant) => variants.includes(variant)) ?? variants[0] ?? null;
+};
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -463,7 +479,6 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       setIsPublic(Boolean(binderData?.is_public));
 
       const binderCards = await fetchBinderCards(binderId);
-      setCards(binderCards);
 
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -480,6 +495,32 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         if (error) throw error;
         setShowcaseRows((data ?? []) as ShowcaseRow[]);
 
+        const { data: userBinders, error: userBindersError } = await supabase
+          .from('binders')
+          .select('id')
+          .eq('user_id', user.id);
+
+        if (userBindersError) throw userBindersError;
+
+        const userBinderIds = (userBinders ?? []).map((row) => row.id).filter(Boolean);
+        const { data: ownedRows, error: ownedRowsError } = userBinderIds.length
+          ? await supabase
+              .from('binder_cards')
+              .select('card_id, set_id')
+              .in('binder_id', userBinderIds)
+              .eq('owned', true)
+          : { data: [], error: null };
+
+        if (ownedRowsError) throw ownedRowsError;
+
+        const nextGlobalOwnedKeys = new Set(
+          (ownedRows ?? []).map((row) => `${row.set_id}:${row.card_id}`)
+        );
+        setCards(binderCards.map((card) => ({
+          ...card,
+          owned: card.owned || nextGlobalOwnedKeys.has(`${card.set_id}:${card.card_id}`),
+        })));
+
         // Load variant ownership for all cards in this binder
         const cardIds = binderCards.map((c) => c.card_id);
         if (cardIds.length > 0) {
@@ -490,6 +531,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             .in('card_id', cardIds);
           setOwnedVariants(new Set((variantRows ?? []).map((r) => `${r.card_id}:${r.variant}`)));
         }
+      } else {
+        setCards(binderCards);
       }
     } catch (error) {
       console.log('Failed to load binder', error);
@@ -573,7 +616,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     const variants = masterSetEnabled ? getVariants(c.card, c.set_id) : ['card'];
     if (masterSetEnabled && variants.length > 1) {
       totalCount += variants.length;
-      ownedCount += variants.filter((v) => ownedVariants.has(`${c.card_id}:${v}`)).length;
+      const ownedVariantCount = variants.filter((v) => ownedVariants.has(`${c.card_id}:${v}`)).length;
+      ownedCount += ownedVariantCount > 0 ? ownedVariantCount : c.owned ? 1 : 0;
     } else {
       totalCount += 1;
       if (c.owned || savedVariants.length > 0) ownedCount += 1;
@@ -582,11 +626,16 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const progressPercent = totalCount ? Math.round((ownedCount / totalCount) * 100) : 0;
   const binderValue = useMemo(() => {
     return cards.reduce((sum, card) => {
-      const variants = masterSetEnabled
+      let variants = masterSetEnabled
         ? getVariants(card.card, card.set_id).filter((variant) => ownedVariants.has(`${card.card_id}:${variant}`))
         : [...ownedVariants]
             .filter((key) => key.startsWith(`${card.card_id}:`))
             .map((key) => key.slice(card.card_id.length + 1));
+
+      if (masterSetEnabled && card.owned && variants.length === 0) {
+        const defaultVariant = getDefaultOwnedVariant(getVariants(card.card, card.set_id));
+        variants = defaultVariant ? [defaultVariant] : [];
+      }
 
       if (variants.length) {
         return sum + variants.reduce((variantSum, variant) => {
@@ -798,8 +847,26 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     slotOrder: item.slot_order,
     condition: item.condition,
   });
+
+  if (userId) {
+    const { data: userBinders } = await supabase
+      .from('binders')
+      .select('id')
+      .eq('user_id', userId);
+    const userBinderIds = (userBinders ?? []).map((row) => row.id).filter(Boolean);
+
+    if (userBinderIds.length) {
+      await supabase
+        .from('binder_cards')
+        .update({ owned: newOwned })
+        .in('binder_id', userBinderIds)
+        .eq('card_id', item.card_id)
+        .eq('set_id', item.set_id);
+    }
+  }
+
   setCards((prev) =>
-    prev.map((c) => (c.id === item.id ? {
+    prev.map((c) => (c.card_id === item.card_id && c.set_id === item.set_id ? {
       ...c,
       owned: newOwned,
       ebay_price: latestPrice?.ebay_price ?? c.ebay_price,

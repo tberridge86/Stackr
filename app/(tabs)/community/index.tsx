@@ -426,8 +426,41 @@ export default function CommunityScreen() {
 
         if (ownedError) throw ownedError;
 
+        const { data: variantRows, error: variantError } = await supabase
+          .from('user_card_variants')
+          .select('card_id, set_id')
+          .eq('user_id', user.id);
+
+        if (variantError) throw variantError;
+
+        const rowsByKey = new Map<string, {
+          binder_id: string | null;
+          card_id: string;
+          set_id: string;
+        }>();
+
+        for (const row of ownedRows ?? []) {
+          rowsByKey.set(`${row.set_id}:${row.card_id}`, {
+            binder_id: row.binder_id,
+            card_id: row.card_id,
+            set_id: row.set_id,
+          });
+        }
+
+        for (const row of variantRows ?? []) {
+          const key = `${row.set_id}:${row.card_id}`;
+          if (!rowsByKey.has(key)) {
+            rowsByKey.set(key, {
+              binder_id: null,
+              card_id: row.card_id,
+              set_id: row.set_id,
+            });
+          }
+        }
+
+        const flexRows = Array.from(rowsByKey.values());
         const cardIds = [
-          ...new Set((ownedRows ?? []).map((row) => row.card_id)),
+          ...new Set(flexRows.map((row) => row.card_id)),
         ];
 
         if (!cardIds.length) {
@@ -444,9 +477,9 @@ export default function CommunityScreen() {
             (cardData ?? []).map((card) => [card.id, card])
           );
 
-          const options = (ownedRows ?? []).map((row) => ({
+          const options = flexRows.map((row) => ({
             binder_id: row.binder_id,
-            binder_name: binderNameMap[row.binder_id] ?? null,
+            binder_name: row.binder_id ? binderNameMap[row.binder_id] ?? null : 'Master set variant',
             card_id: row.card_id,
             set_id: row.set_id,
             card: cardMap[row.card_id] ?? null,

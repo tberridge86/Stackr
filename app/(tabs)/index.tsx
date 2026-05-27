@@ -662,7 +662,8 @@ export default function HubScreen() {
         snapshotIds: string[];
         currentTcgPriceGbp: number | null;
       }[] = [];
-      const countedMasterVariantKeys = new Set<string>();
+      const countedVariantKeys = new Set<string>();
+      const countedOwnedCardKeys = new Set<string>();
 
       const addOwnedUnit = (card: any, variant: string | null) => {
         ownedUnits.push({
@@ -680,8 +681,8 @@ export default function HubScreen() {
         if (card.__masterSetEnabled && ownedVariants.length) {
           for (const variant of ownedVariants) {
             const variantUnitKey = `${variantCardKey}:${variant}`;
-            if (countedMasterVariantKeys.has(variantUnitKey)) continue;
-            countedMasterVariantKeys.add(variantUnitKey);
+            if (countedVariantKeys.has(variantUnitKey)) continue;
+            countedVariantKeys.add(variantUnitKey);
             addOwnedUnit(card, variant);
           }
           continue;
@@ -689,12 +690,21 @@ export default function HubScreen() {
 
         if (!card.__masterSetEnabled && ownedVariants.length) {
           for (const variant of ownedVariants) {
+            const variantUnitKey = `${variantCardKey}:${variant}`;
+            if (countedVariantKeys.has(variantUnitKey)) continue;
+            countedVariantKeys.add(variantUnitKey);
             addOwnedUnit(card, variant);
           }
           continue;
         }
 
-        if (card.owned) addOwnedUnit(card, null);
+        if (card.owned) {
+          if (countedOwnedCardKeys.has(variantCardKey) || [...countedVariantKeys].some((key) => key.startsWith(`${variantCardKey}:`))) {
+            continue;
+          }
+          countedOwnedCardKeys.add(variantCardKey);
+          addOwnedUnit(card, null);
+        }
       }
 
       setOwnedCardCount(ownedUnits.length);
@@ -850,7 +860,7 @@ export default function HubScreen() {
         : buildFallbackTrend(totalLatest, chartRange);
       const debugText = [
         `ownedUnits=${ownedUnits.length}`,
-        `masterVariants=${countedMasterVariantKeys.size}`,
+        `masterVariants=${countedVariantKeys.size}`,
         `ids=${snapshotCardIds.length}`,
         `publicTcg=${data.length}`,
         `currentTcg=${ownedUnits.filter((unit) => unit.currentTcgPriceGbp != null).length}`,

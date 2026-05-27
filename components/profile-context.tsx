@@ -73,8 +73,14 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabase
       .from('profiles')
-      .update(updates)
-      .eq('id', user.id);
+      .upsert(
+        {
+          id: user.id,
+          email: user.email ?? null,
+          ...updates,
+        },
+        { onConflict: 'id' }
+      );
 
     if (!error) {
       await refreshProfile();

@@ -24,6 +24,7 @@ export default function LoginScreen() {
   const [loadingAction, setLoadingAction] = useState<'login' | 'signup' | null>(
     null
   );
+  const [resetLoading, setResetLoading] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
@@ -100,6 +101,35 @@ export default function LoginScreen() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    const trimmedEmail = email.trim();
+    setError('');
+    setMessage('');
+
+    if (!trimmedEmail) {
+      setError('Enter your email first, then tap Forgot password.');
+      return;
+    }
+
+    try {
+      setResetLoading(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
+        redirectTo: 'stackr://auth/reset-password',
+      });
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      setMessage('Password reset email sent. Open the link in the email to choose a new password.');
+    } catch (err: any) {
+      setError(err?.message || 'Could not send password reset email.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.keyboard}
@@ -152,6 +182,18 @@ export default function LoginScreen() {
               secureTextEntry
               style={styles.input}
             />
+
+            <Pressable
+              style={styles.forgotButton}
+              onPress={handleForgotPassword}
+              disabled={loading || resetLoading}
+            >
+              {resetLoading ? (
+                <ActivityIndicator color={theme.colors.primary} />
+              ) : (
+                <Text style={styles.forgotText}>Forgot password?</Text>
+              )}
+            </Pressable>
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
             {message ? <Text style={styles.message}>{message}</Text> : null}
@@ -261,6 +303,17 @@ function makeStyles(theme: any) {
     padding: 10,
   },
   secondaryText: {
+    color: theme.colors.primary,
+    fontWeight: '800',
+  },
+  forgotButton: {
+    alignSelf: 'flex-end',
+    minHeight: 32,
+    justifyContent: 'center',
+    marginTop: -4,
+    marginBottom: 8,
+  },
+  forgotText: {
     color: theme.colors.primary,
     fontWeight: '800',
   },
