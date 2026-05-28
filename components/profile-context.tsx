@@ -11,6 +11,8 @@ export type Profile = {
   banner_url: string | null;
   pokemon_type: string | null;
   background_key: string | null;
+  profile_banner_cosmetic_id?: string | null;
+  profile_border_cosmetic_id?: string | null;
 
   favorite_card_id: string | null;
   favorite_set_id: string | null;

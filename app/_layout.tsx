@@ -5,6 +5,7 @@ import { AuthProvider } from '../components/auth-context';
 import { ProfileProvider } from '../components/profile-context';
 import { TradeProvider } from '../components/trade-context';
 import { CollectionProvider } from '../components/collection-context';
+import { AchievementProvider } from '../components/achievement-context';
 import { AppModeProvider, useAppMode } from '../components/app-mode-context';
 import { ThemeProvider, useTheme } from '../components/theme-context';
 import { KeyboardAvoidingView, Platform, TouchableOpacity, View } from 'react-native';
@@ -139,47 +140,54 @@ function AppNavigation() {
         <AppModeProvider>
           <CollectionProvider>
             <TradeProvider>
-              <StatusBar style={isDark ? 'light' : 'dark'} />
-              <Stack
-                screenOptions={{
-                  headerShown: true,
-                  gestureEnabled: false,
-                  fullScreenGestureEnabled: false,
-                  headerStyle: { backgroundColor: theme.colors.bg },
-                  headerTintColor: theme.colors.primary,
-                  headerTitleStyle: { color: theme.colors.text, fontWeight: '900' },
-                  headerShadowVisible: false,
-                  headerBackButtonDisplayMode: 'minimal',
-                  headerBackTitle: '',
-                  contentStyle: { backgroundColor: theme.colors.bg },
-                }}
-              >
-                <Stack.Screen name="index" options={{ headerShown: false }} />
-                <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
-                <Stack.Screen name="card/[id]" options={{ title: '' }} />
-                <Stack.Screen name="set/[id]" options={{ title: '' }} />
-                <Stack.Screen name="offer/new" options={{ title: '' }} />
-                <Stack.Screen name="offer/index" options={{ title: '' }} />
-                <Stack.Screen name="offer/[id]" options={{ title: '' }} />
-                <Stack.Screen name="offers" options={{ title: '' }} />
-                <Stack.Screen name="listing/new" options={{ headerShown: false, title: '' }} />
-                <Stack.Screen name="seller/onboarding" options={{ title: '' }} />
-                <Stack.Screen name="binder/new" options={{ title: '' }} />
-                <Stack.Screen name="binder/[id]" options={{ title: '' }} />
-                <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
-                <Stack.Screen name="scan" options={{ title: '' }} />
-                <Stack.Screen name="scan/result" options={{ title: '' }} />
-                <Stack.Screen name="market/index" options={{ title: '' }} />
-                <Stack.Screen name="price-builder/index" options={{ title: '' }} />
-                <Stack.Screen name="user/[id]" options={{ title: '' }} />
-                <Stack.Screen name="pokemon/[id]" options={{ title: '' }} />
-                <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
-                <Stack.Screen name="(auth)/login" options={{ title: '' }} />
-                <Stack.Screen name="(auth)/reset-password" options={{ title: '' }} />
-                <Stack.Screen name="notifications" options={{ title: '' }} />
-                <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
-              </Stack>
-              <PersistentTabBar />
+              <AchievementProvider>
+                <StatusBar style={isDark ? 'light' : 'dark'} />
+                <Stack
+                  screenOptions={{
+                    headerShown: true,
+                    gestureEnabled: false,
+                    fullScreenGestureEnabled: false,
+                    headerStyle: { backgroundColor: theme.colors.bg },
+                    headerTintColor: theme.colors.primary,
+                    headerTitleStyle: { color: theme.colors.text, fontWeight: '900' },
+                    headerShadowVisible: false,
+                    headerBackButtonDisplayMode: 'minimal',
+                    headerBackTitle: '',
+                    contentStyle: { backgroundColor: theme.colors.bg },
+                  }}
+                >
+                  <Stack.Screen name="index" options={{ headerShown: false }} />
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="card/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="set/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="offer/new" options={{ title: '' }} />
+                  <Stack.Screen name="offer/index" options={{ title: '' }} />
+                  <Stack.Screen name="offer/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="offers" options={{ title: '' }} />
+                  <Stack.Screen name="listing/new" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="seller/onboarding" options={{ title: '' }} />
+                  <Stack.Screen name="binder/new" options={{ title: '' }} />
+                  <Stack.Screen name="binder/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
+                  <Stack.Screen name="scan" options={{ title: '' }} />
+                  <Stack.Screen name="scan/result" options={{ title: '' }} />
+                  <Stack.Screen name="market/index" options={{ title: '' }} />
+                  <Stack.Screen name="price-builder/index" options={{ title: '' }} />
+                  <Stack.Screen name="user/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="pokemon/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
+                  <Stack.Screen name="(auth)/login" options={{ title: '' }} />
+                  <Stack.Screen name="(auth)/callback" options={{ title: '' }} />
+                  <Stack.Screen name="(auth)/reset-password" options={{ title: '' }} />
+                  <Stack.Screen name="callback" options={{ title: '' }} />
+                  <Stack.Screen name="reset-password" options={{ title: '' }} />
+                  <Stack.Screen name="auth/callback" options={{ title: '' }} />
+                  <Stack.Screen name="auth/reset-password" options={{ title: '' }} />
+                  <Stack.Screen name="notifications" options={{ title: '' }} />
+                  <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
+                </Stack>
+                <PersistentTabBar />
+              </AchievementProvider>
             </TradeProvider>
           </CollectionProvider>
         </AppModeProvider>

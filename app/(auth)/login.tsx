@@ -12,13 +12,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
 export default function LoginScreen() {
   const { theme } = useTheme();
-  const styles = React.useMemo(() => makeStyles(theme), [theme]);
+  const { height } = useWindowDimensions();
+  const compact = height < 760;
+  const styles = React.useMemo(() => makeStyles(theme, compact), [theme, compact]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loadingAction, setLoadingAction] = useState<'login' | 'signup' | null>(
@@ -78,7 +81,7 @@ export default function LoginScreen() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: 'stackr://auth/callback',
+          emailRedirectTo: 'stackr://callback',
         },
       });
 
@@ -114,7 +117,7 @@ export default function LoginScreen() {
     try {
       setResetLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-        redirectTo: 'stackr://auth/reset-password',
+        redirectTo: 'stackr://reset-password',
       });
 
       if (error) {
@@ -143,12 +146,12 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.logoWrap}>
-  <Image
-    source={require('../../assets/images/icon-with-text.png')}
-    style={styles.logo}
-    resizeMode="contain"
-  />
-</View>
+            <Image
+              source={require('../../assets/images/icon-with-text.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
           <View style={styles.container}>
              <Text style={styles.subtitle}>
               Track your cards, value your collection, and trade with other
@@ -228,7 +231,7 @@ export default function LoginScreen() {
   );
 }
 
-function makeStyles(theme: any) {
+function makeStyles(theme: any, compact: boolean) {
   return StyleSheet.create({
   safe: {
     flex: 1,
@@ -240,10 +243,13 @@ function makeStyles(theme: any) {
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 40,
+    paddingTop: compact ? 6 : 14,
+    paddingBottom: compact ? 24 : 34,
   },
   container: {
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: compact ? 8 : 12,
+    paddingBottom: 20,
   },
   title: {
     color: theme.colors.text,
@@ -253,7 +259,7 @@ function makeStyles(theme: any) {
   },
   subtitle: {
     color: theme.colors.textSoft,
-    marginBottom: 18,
+    marginBottom: compact ? 12 : 16,
     lineHeight: 20,
   },
   infoBox: {
@@ -261,8 +267,8 @@ function makeStyles(theme: any) {
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: 14,
-    padding: 14,
-    marginBottom: 18,
+    padding: compact ? 12 : 14,
+    marginBottom: compact ? 12 : 16,
   },
   infoTitle: {
     color: theme.colors.text,
@@ -278,14 +284,14 @@ function makeStyles(theme: any) {
     backgroundColor: theme.colors.card,
     color: theme.colors.text,
     borderRadius: 12,
-    padding: 14,
-    marginBottom: 12,
+    padding: compact ? 12 : 14,
+    marginBottom: compact ? 10 : 12,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   button: {
     backgroundColor: theme.colors.primary,
-    padding: 14,
+    padding: compact ? 13 : 14,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
@@ -328,13 +334,13 @@ function makeStyles(theme: any) {
   },
 logoWrap: {
   alignItems: 'center',
-  marginTop: 60,
-  marginBottom: 40,
+  marginTop: compact ? 10 : 20,
+  marginBottom: compact ? 8 : 14,
 },
 
 logo: {
-  width: 350,
-  height: 200,
+  width: compact ? 210 : 240,
+  height: compact ? 126 : 144,
 },
 
 });

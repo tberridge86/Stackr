@@ -29,6 +29,24 @@ const BASE_ERA_SET_IDS = [
   'gym1', 'gym2', 'neo1', 'neo2', 'neo3', 'neo4',
 ];
 
+const CONDITION_OPTIONS = [
+  'Mint',
+  'Near Mint',
+  'Lightly Played',
+  'Moderately Played',
+  'Heavily Played',
+  'Damaged',
+];
+
+const CONDITION_SHORT_LABELS: Record<string, string> = {
+  Mint: 'Mint',
+  'Near Mint': 'NM',
+  'Lightly Played': 'LP',
+  'Moderately Played': 'MP',
+  'Heavily Played': 'HP',
+  Damaged: 'DMG',
+};
+
 const cardShadow = {
   shadowColor: '#000',
   shadowOpacity: 0.05,
@@ -123,6 +141,7 @@ export default function NewBinderScreen() {
     paramType === 'official' ? 'official' : 'custom'
   );
   const [edition, setEdition] = useState<'1st_edition' | 'unlimited' | null>(null);
+  const [defaultCondition, setDefaultCondition] = useState('Near Mint');
   const [editionModalVisible, setEditionModalVisible] = useState(false);
 
   const [sets, setSets] = useState<PokemonSet[]>([]);
@@ -185,6 +204,7 @@ export default function NewBinderScreen() {
       setCoverKey(binder.cover_key ?? null);
       setType(binder.type ?? 'custom');
       setEdition((binder.edition as "1st_edition" | "unlimited" | null) ?? null);
+      setDefaultCondition(binder.default_condition ?? 'Near Mint');
     } catch (err) {
       console.log('Failed to load binder', err);
       Alert.alert('Error', 'Could not load binder details.');
@@ -227,16 +247,29 @@ export default function NewBinderScreen() {
       setSaving(true);
 
       if (isEditMode && binderId) {
-        const { error } = await supabase
+        const updatePayload = {
+          name: name.trim(),
+          color: theme.colors.primary,
+          gradient: null,
+          cover_key: coverKey ?? null,
+          edition: resolvedEdition ?? null,
+          default_condition: defaultCondition,
+        };
+
+        let { error } = await supabase
           .from('binders')
-          .update({
-            name: name.trim(),
-            color: theme.colors.primary,
-            gradient: null,
-            cover_key: coverKey ?? null,
-            edition: resolvedEdition ?? null,
-          })
+          .update(updatePayload)
           .eq('id', binderId);
+
+        if (error?.code === 'PGRST204') {
+          const { default_condition, ...fallbackPayload } = updatePayload;
+          void default_condition;
+          const fallback = await supabase
+            .from('binders')
+            .update(fallbackPayload)
+            .eq('id', binderId);
+          error = fallback.error;
+        }
 
         if (error) throw error;
 
@@ -254,6 +287,7 @@ export default function NewBinderScreen() {
         type,
         sourceSetId: type === 'official' ? selectedSet?.id : null,
         edition: resolvedEdition ?? null,
+        defaultCondition,
       });
 
       router.replace(`/binder/${binder.id}`);
@@ -397,6 +431,38 @@ export default function NewBinderScreen() {
                 marginBottom: 16,
               }}
             />
+
+            <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
+              Default card condition
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginBottom: 10 }}>
+              New cards in this binder will use this condition. You can still edit any card individually later.
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
+              {CONDITION_OPTIONS.map((condition) => {
+                const active = defaultCondition === condition;
+                return (
+                  <TouchableOpacity
+                    key={condition}
+                    onPress={() => setDefaultCondition(condition)}
+                    style={{
+                      minWidth: 58,
+                      paddingHorizontal: 12,
+                      paddingVertical: 9,
+                      borderRadius: 999,
+                      backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                      borderWidth: 1,
+                      borderColor: active ? theme.colors.primary : theme.colors.border,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: active ? '#FFFFFF' : theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>
+                      {CONDITION_SHORT_LABELS[condition] ?? condition}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
             {/* Cover dropdown */}
             <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>

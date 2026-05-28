@@ -857,9 +857,15 @@ try {
           openCardDetail(match);
         }
       }
-    } catch (err) {
-      console.log('Scan error:', err);
-      Alert.alert('Scan failed', 'Something went wrong. Please try again.');
+    } catch (err: any) {
+      console.log('Market scan callback failed:', {
+        message: err?.message ?? String(err),
+        stack: err?.stack,
+      });
+      Alert.alert(
+        'Scan failed',
+        `Something went wrong before the market result could open.\n\n${err?.message ?? String(err)}`
+      );
     } finally {
       setScanning(false);
     }
