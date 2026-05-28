@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { fetchCardsForSet } from './pokemonTcg';
 import { createActivityPost } from './activity';
 import { USD_TO_GBP } from './config';
+import { recordAchievementEvent } from './achievements';
 
 export type BinderType = 'official' | 'custom';
 
@@ -20,6 +21,8 @@ export type BinderRecord = {
   tcg_value?: number | null;
   cardmarket_value?: number | null;
   edition?: string | null;
+  default_condition?: string | null;
+  master_set_enabled?: boolean | null;
 };
 
 export type BinderCardRecord = {
@@ -264,6 +267,7 @@ export async function fetchBinderCards(
   const rows = setCards.map((card, index) => {
     const setId = binder.source_set_id as string;
     const existing = savedByCardKey.get(`${setId}:${card.id}`);
+    const defaultCondition = binder.default_condition || 'Near Mint';
 
     if (existing) {
       return {
@@ -302,7 +306,7 @@ export async function fetchBinderCards(
       set_total: setCards.length,
       slot_order: index,
       owned: false,
-      condition: 'Near Mint',
+      condition: defaultCondition,
       notes: '',
       ebay_price: null,
       tcg_price: null,
@@ -340,6 +344,7 @@ export async function createBinder(input: {
   type: BinderType;
   sourceSetId?: string | null;
   edition?: string | null;
+  defaultCondition?: string | null;
 }): Promise<BinderRecord> {
   const {
     data: { user },
@@ -349,22 +354,45 @@ export async function createBinder(input: {
   if (userError) throw userError;
   if (!user) throw new Error('You must be signed in.');
 
-  const { data, error } = await supabase
+  const insertPayload = {
+    user_id: user.id,
+    name: input.name,
+    color: input.color,
+    gradient: input.gradient ?? null,
+    cover_key: input.coverKey ?? null,
+    type: input.type,
+    source_set_id: input.sourceSetId ?? null,
+    edition: input.edition ?? null,
+    default_condition: input.defaultCondition ?? 'Near Mint',
+  };
+
+  let { data, error } = await supabase
     .from('binders')
-    .insert({
-      user_id: user.id,
-      name: input.name,
-      color: input.color,
-      gradient: input.gradient ?? null,
-      cover_key: input.coverKey ?? null,
-      type: input.type,
-      source_set_id: input.sourceSetId ?? null,
-      edition: input.edition ?? null,
-    })
+    .insert(insertPayload)
     .select()
     .single();
 
+  if (error?.code === 'PGRST204') {
+    const { default_condition, ...fallbackPayload } = insertPayload;
+    void default_condition;
+    const fallback = await supabase
+      .from('binders')
+      .insert(fallbackPayload)
+      .select()
+      .single();
+    data = fallback.data;
+    error = fallback.error;
+  }
+
   if (error) throw error;
+
+  recordAchievementEvent('binder_created', {
+    binderId: data.id,
+    type: input.type,
+    sourceSetId: input.sourceSetId ?? null,
+  }).catch((achievementError) => {
+    console.log('Binder achievement check failed:', achievementError);
+  });
 
   return data as BinderRecord;
 }
@@ -377,6 +405,9 @@ export async function addCardsToBinder(
   binderId: string,
   cards: { cardId: string; setId: string; cardName?: string | null; imageUrl?: string | null; setName?: string | null }[]
 ): Promise<void> {
+  const binder = await fetchBinderById(binderId);
+  const defaultCondition = binder?.default_condition || 'Near Mint';
+
   const { data: existingRows, error: existingError } = await supabase
     .from('binder_cards')
     .select('card_id, set_id, slot_order')
@@ -413,6 +444,7 @@ export async function addCardsToBinder(
       set_name: card.setName ?? null,
       slot_order: maxSlot + 1 + index,
       owned: false,
+      condition: defaultCondition,
       notes: '',
       ebay_price: price?.ebay_price ?? null,
       tcg_price: price?.tcg_price ?? null,
@@ -626,6 +658,7 @@ export async function updateBinderCardOwned(
           tcg_price: price?.tcg_price ?? null,
           cardmarket_price: price?.cardmarket_price ?? null,
           last_price_update: price?.last_price_update ?? null,
+          condition: cardMeta?.condition ?? 'Near Mint',
         })
         .select('id, card_id, set_id, owned')
         .single();
@@ -638,6 +671,14 @@ export async function updateBinderCardOwned(
         cardId: virtual.cardId,
         setId: virtual.setId,
         type: 'binder_add',
+      });
+
+      recordAchievementEvent('card_owned', {
+        binderId: virtual.binderId,
+        cardId: virtual.cardId,
+        setId: virtual.setId,
+      }).catch((achievementError) => {
+        console.log('Card achievement check failed:', achievementError);
       });
 
       backfillCardPriceHistory(
@@ -710,6 +751,13 @@ export async function updateBinderCardOwned(
       setId: existingCard.set_id,
       type: 'binder_add',
     });
+
+    recordAchievementEvent('card_owned', {
+      cardId: existingCard.card_id,
+      setId: existingCard.set_id,
+    }).catch((achievementError) => {
+      console.log('Card achievement check failed:', achievementError);
+    });
   }
 
   return price;
@@ -731,6 +779,7 @@ export async function updateBinderCardCondition(
         api_card_id: virtual.cardId,
         api_set_id: virtual.setId,
         owned: true,
+        condition,
         notes: '',
       }, { onConflict: 'binder_id,card_id' });
 

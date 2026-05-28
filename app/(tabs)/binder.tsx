@@ -11,6 +11,7 @@ import {
   FlatList,
   useWindowDimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -36,6 +37,7 @@ import DraggableFlatList, {
 // ===============================
 
 type BinderCardCountMap = Record<string, { owned: number; total: number }>;
+type BinderMasterSetMap = Record<string, boolean>;
 
 type SortKey =
   | 'recent'
@@ -66,6 +68,21 @@ const BINDER_LOGO_OVERRIDES: Record<string, string> = {
   me2pt5: 'https://images.scrydex.com/pokemon/me2pt5-logo/logo',
   me3: 'https://images.scrydex.com/pokemon/me3-logo/logo',
   me4: 'https://images.scrydex.com/pokemon/me4-logo/logo',
+};
+
+const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> = {
+  asc: {
+    Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+    Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+  },
+  me2pt5: {
+    Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+    Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+  },
+  me3: {
+    Common: ['normal', 'reverseHolofoil'],
+    Uncommon: ['normal', 'reverseHolofoil'],
+  },
 };
 
 // ===============================
@@ -107,6 +124,7 @@ const isDark = (color?: string): boolean => {
 type BinderCardProps = {
   item: BinderRecord;
   counts: BinderCardCountMap;
+  masterSets: BinderMasterSetMap;
   value: number | null;
   confirmDeleteBinder: (binder: BinderRecord) => void;
   index: number;
@@ -114,11 +132,12 @@ type BinderCardProps = {
   columns: number;
 };
 
-function BinderCard({ item, counts, value, confirmDeleteBinder, index, cardWidth, columns }: BinderCardProps) {
+function BinderCard({ item, counts, masterSets, value, confirmDeleteBinder, index, cardWidth, columns }: BinderCardProps) {
   const { theme } = useTheme();
   const [logoFailed, setLogoFailed] = useState(false);
 
   const progress = counts[item.id] ?? { owned: 0, total: 0 };
+  const isMasterSet = masterSets[item.id] === true;
   const percentage = progress.total
     ? Math.round((progress.owned / progress.total) * 100)
     : 0;
@@ -239,6 +258,11 @@ function BinderCard({ item, counts, value, confirmDeleteBinder, index, cardWidth
         <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }}>
           {progress.owned}/{progress.total} · {percentage}%
         </Text>
+        {isMasterSet && (
+          <View style={{ alignSelf: 'flex-start', backgroundColor: theme.colors.primary + '18', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, marginTop: 4, borderWidth: 1, borderColor: theme.colors.primary + '55' }}>
+            <Text style={{ color: theme.colors.primary, fontSize: 9, fontWeight: '900' }}>Master set</Text>
+          </View>
+        )}
         {value !== null && (
           <Text style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '700', marginTop: 2 }}>
             £{value.toFixed(2)}
@@ -266,6 +290,50 @@ type BinderSummaryRow = {
   condition?: string | null;
 };
 
+type BinderOfficialCardRow = {
+  id: string;
+  set_id: string | null;
+  name?: string | null;
+  number?: string | null;
+  rarity?: string | null;
+  raw_data?: any;
+};
+
+type OwnedVariantRow = {
+  card_id: string;
+  set_id: string | null;
+  variant: string | null;
+};
+
+const getMasterSetStorageKey = (binderId: string) => `stackr:binder-master-set:${binderId}`;
+
+const getVariants = (card: any, explicitSetId?: string | null): string[] => {
+  const setId = String(explicitSetId ?? card?.set?.id ?? card?.set_id ?? '').toLowerCase();
+  const setName = String(card?.set?.name ?? card?.raw_data?.set?.name ?? '').toLowerCase();
+  let override = SET_VARIANT_OVERRIDES[setId] || SET_VARIANT_OVERRIDES[setId.toUpperCase()];
+
+  if (!override && setName.includes('ascended')) {
+    override = {
+      Common: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+      Uncommon: ['normal', 'reverseHoloEnergy', 'reverseHoloPokeball'],
+    };
+  }
+
+  if (override && card?.rarity) {
+    const rarity = String(card.rarity);
+    const variants =
+      override[rarity] ||
+      override[rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase()] ||
+      override[rarity.toLowerCase()];
+    if (variants) return variants;
+  }
+
+  const prices = card?.tcgplayer?.prices ?? card?.raw_data?.tcgplayer?.prices;
+  const keys = Object.keys(prices ?? {}).filter((key) => key !== 'unlimited');
+  if (keys.length > 1) return keys;
+  return keys.length > 0 ? [keys[0]] : ['normal'];
+};
+
 export default function BinderLibraryScreen() {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
@@ -274,6 +342,7 @@ export default function BinderLibraryScreen() {
 
   const [binders, setBinders] = useState<BinderRecord[]>([]);
   const [counts, setCounts] = useState<BinderCardCountMap>({});
+  const [masterSets, setMasterSets] = useState<BinderMasterSetMap>({});
   const [values, setValues] = useState<BinderValueMap>({});
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortKey>('recent');
@@ -298,13 +367,24 @@ export default function BinderLibraryScreen() {
 
     if (!binderIds.length) {
       setCounts({});
+      setMasterSets({});
       setValues({});
       return;
     }
 
     const setIds = data.map((binder) => binder.source_set_id).filter(Boolean) as string[];
+    const storedMasterEntries = await Promise.all(
+      data.map(async (binder) => {
+        const stored = await AsyncStorage.getItem(getMasterSetStorageKey(binder.id));
+        return [binder.id, stored === 'true' || binder.master_set_enabled === true] as const;
+      })
+    );
+    const nextMasterSets = Object.fromEntries(storedMasterEntries) as BinderMasterSetMap;
+    const masterSetIds = data
+      .filter((binder) => binder.source_set_id && nextMasterSets[binder.id])
+      .map((binder) => binder.source_set_id as string);
 
-    const [cardRowsResult, setRowsResult] = await Promise.all([
+    const [cardRowsResult, setRowsResult, officialCardsResult, userResult] = await Promise.all([
       supabase
         .from('binder_cards')
         .select('binder_id, card_id, set_id, owned, ebay_price, tcg_price, cardmarket_price, condition')
@@ -315,12 +395,21 @@ export default function BinderLibraryScreen() {
             .select('id, printed_total, total')
             .in('id', setIds)
         : Promise.resolve({ data: [], error: null }),
+      masterSetIds.length
+        ? supabase
+            .from('pokemon_cards')
+            .select('id, set_id, name, number, rarity, raw_data')
+            .in('set_id', masterSetIds)
+        : Promise.resolve({ data: [], error: null }),
+      supabase.auth.getUser(),
     ]);
 
     if (cardRowsResult.error) throw cardRowsResult.error;
     if (setRowsResult.error) throw setRowsResult.error;
+    if (officialCardsResult.error) throw officialCardsResult.error;
 
     const rows = (cardRowsResult.data ?? []) as BinderSummaryRow[];
+    const officialCards = (officialCardsResult.data ?? []) as BinderOfficialCardRow[];
     const setTotals = new Map(
       (setRowsResult.data ?? []).map((set) => [
         set.id,
@@ -334,6 +423,38 @@ export default function BinderLibraryScreen() {
         .filter((row) => row.owned)
         .map((row) => `${row.set_id ?? ''}:${row.card_id}`)
     );
+    const cardsBySet = new Map<string, BinderOfficialCardRow[]>();
+    for (const card of officialCards) {
+      if (!card.set_id) continue;
+      const current = cardsBySet.get(card.set_id) ?? [];
+      current.push(card);
+      cardsBySet.set(card.set_id, current);
+    }
+
+    const variantSetIds = [...new Set(masterSetIds)];
+    let ownedVariantRows: OwnedVariantRow[] = [];
+    const userId = userResult.data.user?.id;
+    if (userId && variantSetIds.length) {
+      const { data: variantRows, error: variantError } = await supabase
+        .from('user_card_variants')
+        .select('card_id, set_id, variant')
+        .eq('user_id', userId)
+        .in('set_id', variantSetIds);
+
+      if (variantError) {
+        console.log('Failed to load binder master-set variants', variantError.message);
+      } else {
+        ownedVariantRows = (variantRows ?? []) as OwnedVariantRow[];
+      }
+    }
+
+    const ownedVariantsByCard = new Map<string, Set<string>>();
+    for (const row of ownedVariantRows) {
+      if (!row.card_id || !row.set_id || !row.variant) continue;
+      const key = `${row.set_id}:${row.card_id}`;
+      if (!ownedVariantsByCard.has(key)) ownedVariantsByCard.set(key, new Set());
+      ownedVariantsByCard.get(key)!.add(row.variant);
+    }
 
     for (const row of rows) {
       const current = rowsByBinder.get(row.binder_id) ?? [];
@@ -348,12 +469,29 @@ export default function BinderLibraryScreen() {
       const binderRows = rowsByBinder.get(binder.id) ?? [];
       const ownedRows = binderRows.filter((row) => row.owned || globalOwnedKeys.has(`${row.set_id ?? ''}:${row.card_id}`));
       const officialTotal = binder.source_set_id ? setTotals.get(binder.source_set_id) ?? 0 : 0;
-      const total = binder.type === 'official' && officialTotal > 0
+      const isMasterSet = nextMasterSets[binder.id] === true;
+      const masterCards = binder.source_set_id ? cardsBySet.get(binder.source_set_id) ?? [] : [];
+      let total = binder.type === 'official' && officialTotal > 0
         ? officialTotal
         : binderRows.length;
+      let owned = ownedRows.length;
+
+      if (isMasterSet && binder.type === 'official' && binder.source_set_id && masterCards.length) {
+        const ownedRowsByCard = new Map(ownedRows.map((row) => [`${row.set_id ?? ''}:${row.card_id}`, row]));
+        total = 0;
+        owned = 0;
+
+        for (const card of masterCards) {
+          const variants = getVariants(card, binder.source_set_id);
+          const cardKey = `${binder.source_set_id}:${card.id}`;
+          const ownedVariantCount = variants.filter((variant) => ownedVariantsByCard.get(cardKey)?.has(variant)).length;
+          total += variants.length > 1 ? variants.length : 1;
+          owned += ownedVariantCount > 0 ? ownedVariantCount : ownedRowsByCard.has(cardKey) ? 1 : 0;
+        }
+      }
 
       nextCounts[binder.id] = {
-        owned: ownedRows.length,
+        owned,
         total,
       };
 
@@ -364,6 +502,7 @@ export default function BinderLibraryScreen() {
     }
 
     setCounts(nextCounts);
+    setMasterSets(nextMasterSets);
     setValues(nextValues);
   }, []);
 
@@ -761,6 +900,7 @@ export default function BinderLibraryScreen() {
               <BinderCard
                 item={item}
                 counts={counts}
+                masterSets={masterSets}
                 value={values[item.id] ?? null}
                 confirmDeleteBinder={confirmDeleteBinder}
                 index={index}

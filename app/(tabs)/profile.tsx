@@ -22,6 +22,8 @@ import {
   getCachedCardSync,
   getCachedCardsForSet,
 } from '../../lib/pokemonTcgCache';
+import { useAchievements } from '../../components/achievement-context';
+import { COSMETIC_ITEMS, equipCosmetic, fetchOwnedCosmeticIds, purchaseCosmetic } from '../../lib/cosmetics';
 
 // ===============================
 // CONSTANTS
@@ -215,6 +217,93 @@ function QuickAction({
   );
 }
 
+function CoinShopItem({
+  item,
+  owned,
+  equipped,
+  coinBalance,
+  onBuy,
+  onEquip,
+}: {
+  item: typeof COSMETIC_ITEMS[number];
+  owned: boolean;
+  equipped: boolean;
+  coinBalance: number;
+  onBuy: (cosmeticId: string) => void;
+  onEquip: (cosmeticId: string) => void;
+}) {
+  const { theme } = useTheme();
+  const affordable = coinBalance >= item.price;
+
+  return (
+    <View
+      style={{
+        width: '48%',
+        backgroundColor: theme.colors.card,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: owned ? item.color : theme.colors.border,
+        padding: 12,
+      }}
+    >
+      <View
+        style={{
+          height: 42,
+          borderRadius: 10,
+          backgroundColor: item.color,
+          borderWidth: item.type === 'border' ? 3 : 0,
+          borderColor: item.accentColor,
+          marginBottom: 10,
+          overflow: 'hidden',
+        }}
+      >
+        <View
+          style={{
+            position: 'absolute',
+            right: -10,
+            top: -16,
+            width: 54,
+            height: 54,
+            borderRadius: 27,
+            backgroundColor: item.accentColor + '66',
+          }}
+        />
+      </View>
+
+      <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900' }} numberOfLines={1}>
+        {item.name}
+      </Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '700', marginTop: 3 }} numberOfLines={2}>
+        {item.description}
+      </Text>
+
+      <TouchableOpacity
+        onPress={() => owned ? onEquip(item.id) : onBuy(item.id)}
+        disabled={equipped || (!owned && !affordable)}
+        style={{
+          marginTop: 10,
+          borderRadius: 10,
+          paddingVertical: 8,
+          alignItems: 'center',
+          backgroundColor: equipped ? item.color + '22' : owned ? item.color : affordable ? theme.colors.primary : theme.colors.surface,
+          borderWidth: 1,
+          borderColor: owned ? item.color : affordable ? theme.colors.primary : theme.colors.border,
+        }}
+      >
+        <Text
+          style={{
+            color: equipped ? item.color : owned || affordable ? '#FFFFFF' : theme.colors.textSoft,
+            fontSize: 11,
+            fontWeight: '900',
+          }}
+        >
+          {equipped ? 'Using' : owned ? 'Use' : `${item.price} coins`}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -223,6 +312,7 @@ export default function ProfileScreen() {
   const { theme, isDark, toggleTheme } = useTheme();
   const { mode, setMode } = useAppMode();
   const { profile, loading, refreshProfile } = useProfile();
+  const { unlocks, coinBalance, refreshAchievements, refreshCoins } = useAchievements();
   const isAdmin = profile?.role === 'admin';
 
   const [favoriteCard, setFavoriteCard] = useState<any | null>(null);
@@ -242,13 +332,20 @@ export default function ProfileScreen() {
   } | null>(null);
 
   const [unreadCount, setUnreadCount] = useState(0);
+  const [ownedCosmetics, setOwnedCosmetics] = useState<Set<string>>(new Set());
 
   const avatar = useMemo(() => {
     return AVATAR_PRESETS.find((a) => a.key === profile?.avatar_preset) ?? null;
   }, [profile?.avatar_preset]);
+  const equippedBanner = useMemo(() => {
+    return COSMETIC_ITEMS.find((item) => item.id === profile?.profile_banner_cosmetic_id && item.type === 'banner') ?? null;
+  }, [profile?.profile_banner_cosmetic_id]);
+  const equippedBorder = useMemo(() => {
+    return COSMETIC_ITEMS.find((item) => item.id === profile?.profile_border_cosmetic_id && item.type === 'border') ?? null;
+  }, [profile?.profile_border_cosmetic_id]);
 
   const profileColor =
-    TYPE_COLOR_MAP[profile?.pokemon_type ?? ''] ?? theme.colors.primary;
+    equippedBanner?.color ?? TYPE_COLOR_MAP[profile?.pokemon_type ?? ''] ?? theme.colors.primary;
 
   const heroTextColor = getTextColorForBg(profileColor);
 
@@ -377,6 +474,20 @@ export default function ProfileScreen() {
     }
   }, []);
 
+  const loadCosmetics = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setOwnedCosmetics(new Set());
+        return;
+      }
+
+      setOwnedCosmetics(await fetchOwnedCosmeticIds(user.id));
+    } catch (error) {
+      console.log('Failed to load cosmetics', error);
+    }
+  }, []);
+
   // ===============================
   // FOCUS EFFECT
   // ===============================
@@ -385,7 +496,8 @@ export default function ProfileScreen() {
     useCallback(() => {
       loadShowcaseCards();
       loadStats();
-    }, [loadShowcaseCards, loadStats])
+      loadCosmetics();
+    }, [loadCosmetics, loadShowcaseCards, loadStats])
   );
 
   useEffect(() => {
@@ -403,6 +515,8 @@ export default function ProfileScreen() {
         refreshProfile(),
         loadShowcaseCards(),
         loadStats(),
+        loadCosmetics(),
+        refreshCoins(),
       ]);
     } finally {
       setRefreshing(false);
@@ -425,7 +539,7 @@ export default function ProfileScreen() {
       }
 
       router.replace('/login');
-    } catch (error) {
+    } catch {
       Alert.alert('Logout failed', 'Something went wrong. Please try again.');
     } finally {
       setLoggingOut(false);
@@ -441,6 +555,27 @@ export default function ProfileScreen() {
         { text: 'Log out', style: 'destructive', onPress: handleLogout },
       ]
     );
+  };
+
+  const handleBuyCosmetic = async (cosmeticId: string) => {
+    const result = await purchaseCosmetic(cosmeticId);
+    if (!result.ok) {
+      Alert.alert('Could not unlock', result.message);
+      return;
+    }
+
+    await Promise.all([loadCosmetics(), refreshCoins()]);
+    Alert.alert('Unlocked', result.message);
+  };
+
+  const handleEquipCosmetic = async (cosmeticId: string) => {
+    const result = await equipCosmetic(cosmeticId);
+    if (!result.ok) {
+      Alert.alert('Could not equip', result.message);
+      return;
+    }
+
+    await refreshProfile();
   };
 
   // ===============================
@@ -566,6 +701,8 @@ export default function ProfileScreen() {
               justifyContent: 'center',
               alignItems: 'center',
               overflow: 'hidden',
+              borderWidth: equippedBorder ? 3 : 0,
+              borderColor: equippedBorder?.accentColor ?? 'transparent',
             }}>
               {avatar?.image ? (
                 <Image source={avatar.image} style={{ width: '100%', height: '100%' }} />
@@ -696,6 +833,28 @@ export default function ProfileScreen() {
             <StatBox label="Binders" value={binderCount} />
             <StatBox label="Trades" value={tradeCount} />
           </View>
+
+          <View
+            style={{
+              marginTop: 10,
+              backgroundColor: 'rgba(0,0,0,0.15)',
+              borderRadius: 14,
+              padding: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Ionicons name="cash-outline" size={18} color="#FFD166" />
+              <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }}>
+                Stackr Coins
+              </Text>
+            </View>
+            <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900' }}>
+              {coinBalance}
+            </Text>
+          </View>
         </View>
 
         {/* SHOWCASE */}
@@ -749,6 +908,114 @@ export default function ProfileScreen() {
               Set showcase cards from your binders →
             </Text>
           </TouchableOpacity>
+        </View>
+
+        {/* ACHIEVEMENTS */}
+        <View style={{ marginBottom: 20 }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 12,
+          }}>
+            <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800' }}>
+              Achievements
+            </Text>
+            <TouchableOpacity onPress={refreshAchievements}>
+              <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>
+                Refresh
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {unlocks.length ? (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {unlocks.slice(0, 6).map((achievement) => {
+                const tierColor =
+                  achievement.tier === 'rainbow' ? '#8B5CF6' :
+                  achievement.tier === 'gold' ? '#F6C453' :
+                  achievement.tier === 'silver' ? '#94A3B8' :
+                  '#C08457';
+
+                return (
+                  <View
+                    key={achievement.id}
+                    style={{
+                      width: '48%',
+                      backgroundColor: theme.colors.card,
+                      borderRadius: 14,
+                      borderWidth: 1,
+                      borderColor: tierColor + '88',
+                      padding: 12,
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: tierColor + '22', alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name={achievement.icon as any} size={16} color={tierColor} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900' }} numberOfLines={1}>
+                          {achievement.title}
+                        </Text>
+                        <Text style={{ color: tierColor, fontSize: 10, fontWeight: '900', marginTop: 2 }} numberOfLines={1}>
+                          {achievement.accolade}
+                        </Text>
+                        <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '800', marginTop: 2 }} numberOfLines={1}>
+                          +{achievement.coinReward} coins
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          ) : (
+            <View style={{ backgroundColor: theme.colors.card, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, padding: 14 }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 4 }}>
+                No achievements yet
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18 }}>
+                Create a binder, add a card, or scan a card to unlock your first badge.
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* COIN SHOP */}
+        <View style={{ marginBottom: 20 }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 12,
+          }}>
+            <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '800' }}>
+              Coin Shop
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <Ionicons name="cash-outline" size={14} color="#F6C453" />
+              <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900' }}>
+                {coinBalance}
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {COSMETIC_ITEMS.map((item) => (
+              <CoinShopItem
+                key={item.id}
+                item={item}
+                owned={ownedCosmetics.has(item.id)}
+                equipped={
+                  profile.profile_banner_cosmetic_id === item.id ||
+                  profile.profile_border_cosmetic_id === item.id
+                }
+                coinBalance={coinBalance}
+                onBuy={handleBuyCosmetic}
+                onEquip={handleEquipCosmetic}
+              />
+            ))}
+          </View>
         </View>
 
         {/* QUICK ACCESS */}

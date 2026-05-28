@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Text } from '../../components/Text';
@@ -10,24 +10,45 @@ export default function AuthCallbackScreen() {
   const params = useLocalSearchParams<{
     access_token?: string;
     code?: string;
+    error?: string;
+    error_description?: string;
     refresh_token?: string;
     type?: string;
   }>();
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const checkSession = async () => {
+      const authError = Array.isArray(params.error) ? params.error[0] : params.error;
+      const authErrorDescription = Array.isArray(params.error_description)
+        ? params.error_description[0]
+        : params.error_description;
+
+      if (authError || authErrorDescription) {
+        setErrorMessage(authErrorDescription || authError || 'The sign-in link could not be verified.');
+        return;
+      }
+
       const code = Array.isArray(params.code) ? params.code[0] : params.code;
       const accessToken = Array.isArray(params.access_token) ? params.access_token[0] : params.access_token;
       const refreshToken = Array.isArray(params.refresh_token) ? params.refresh_token[0] : params.refresh_token;
       const type = Array.isArray(params.type) ? params.type[0] : params.type;
 
       if (code) {
-        await supabase.auth.exchangeCodeForSession(code);
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          setErrorMessage(error.message);
+          return;
+        }
       } else if (accessToken && refreshToken) {
-        await supabase.auth.setSession({
+        const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         });
+        if (error) {
+          setErrorMessage(error.message);
+          return;
+        }
       } else {
         await supabase.auth.getSession();
       }
@@ -41,7 +62,7 @@ export default function AuthCallbackScreen() {
     };
 
     checkSession();
-  }, [params.access_token, params.code, params.refresh_token, params.type]);
+  }, [params.access_token, params.code, params.error, params.error_description, params.refresh_token, params.type]);
 
   return (
     <View
@@ -52,10 +73,23 @@ export default function AuthCallbackScreen() {
         justifyContent: 'center',
       }}
     >
-      <ActivityIndicator color={theme.colors.primary} size="large" />
-      <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
-        Verifying account...
-      </Text>
+      {errorMessage ? (
+        <>
+          <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', textAlign: 'center' }}>
+            Email link could not be completed
+          </Text>
+          <Text style={{ color: theme.colors.textSoft, marginTop: 8, textAlign: 'center', paddingHorizontal: 24 }}>
+            {errorMessage}
+          </Text>
+        </>
+      ) : (
+        <>
+          <ActivityIndicator color={theme.colors.primary} size="large" />
+          <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
+            Verifying account...
+          </Text>
+        </>
+      )}
     </View>
   );
 }

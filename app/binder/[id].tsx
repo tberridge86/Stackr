@@ -44,6 +44,7 @@ import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import { checkAchievements, recordAchievementEvent } from '../../lib/achievements';
 
 // ===============================
 // CONSTANTS
@@ -367,6 +368,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [masterSetIntroVisible, setMasterSetIntroVisible] = useState(false);
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const achievementProgressRef = useRef<Record<string, number>>({});
 
   const showToast = (msg: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -555,7 +557,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       if (!binderId) return;
       try {
         const stored = await AsyncStorage.getItem(getMasterSetStorageKey(binderId));
-        if (mounted) setMasterSetEnabled(stored === 'true');
+        if (mounted) setMasterSetEnabled(stored === 'true' || binder?.master_set_enabled === true);
       } catch (error) {
         console.log('Failed to load master set setting', error);
       }
@@ -566,7 +568,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     return () => {
       mounted = false;
     };
-  }, [binderId]);
+  }, [binder?.master_set_enabled, binderId]);
 
   // ===============================
   // DEBOUNCED SEARCH
@@ -624,6 +626,37 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     }
   }
   const progressPercent = totalCount ? Math.round((ownedCount / totalCount) * 100) : 0;
+
+  useEffect(() => {
+    if (!binderId || totalCount <= 0 || loading) return;
+
+    const lastProgress = achievementProgressRef.current[binderId] ?? -1;
+    if (progressPercent <= lastProgress && progressPercent < 100) return;
+    achievementProgressRef.current[binderId] = progressPercent;
+
+    checkAchievements({
+      binderId,
+      binderCompletion: progressPercent,
+      masterSetEnabled,
+    }).catch((achievementError) => {
+      console.log('Binder progress achievement check failed:', achievementError);
+    });
+
+    if (progressPercent >= 100 && lastProgress < 100) {
+      recordAchievementEvent(
+        masterSetEnabled ? 'master_set_complete' : 'binder_complete',
+        {
+          binderId,
+          binderCompletion: progressPercent,
+          complete: true,
+          masterSetEnabled,
+        }
+      ).catch((achievementError) => {
+        console.log('Binder complete achievement event failed:', achievementError);
+      });
+    }
+  }, [binderId, loading, masterSetEnabled, progressPercent, totalCount]);
+
   const binderValue = useMemo(() => {
     return cards.reduce((sum, card) => {
       let variants = masterSetEnabled
@@ -668,6 +701,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         .eq('id', binder.id);
 
       if (error) throw error;
+
+      if (newValue) {
+        checkAchievements({ publicBinder: true }).catch((achievementError) => {
+          console.log('Public binder achievement check failed:', achievementError);
+        });
+      }
     } catch (err) {
       console.log('Toggle public error:', err);
       setIsPublic((prev) => !prev);
@@ -683,6 +722,19 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       setUpdatingMasterSet(true);
       setMasterSetEnabled(value);
       await AsyncStorage.setItem(getMasterSetStorageKey(binderId), value ? 'true' : 'false');
+      if (value) {
+        recordAchievementEvent('master_set_enabled', { binderId }).catch((achievementError) => {
+          console.log('Master set achievement check failed:', achievementError);
+        });
+      }
+      const { error } = await supabase
+        .from('binders')
+        .update({ master_set_enabled: value })
+        .eq('id', binderId);
+
+      if (error && error.code !== 'PGRST204') throw error;
+
+      setBinder((current) => current ? { ...current, master_set_enabled: value } : current);
       if (value) {
         setTimeout(() => setMasterSetIntroVisible(true), 80);
       } else {

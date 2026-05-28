@@ -21,6 +21,7 @@ import { scanStore } from '../../lib/scanStore';
 import * as ImageManipulator from 'expo-image-manipulator';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { PRICE_API_URL } from '../../lib/config';
+import { recordAchievementEvent } from '../../lib/achievements';
 import { Buffer } from 'buffer';
 import { decode as decodeJpeg } from 'jpeg-js';
 import {
@@ -1622,6 +1623,9 @@ export default function ScanScreen() {
           ? photo.path
           : `file://${photo.path}`
         : null;
+      if (!capturedUri) {
+        throw new Error('Camera returned a photo without a file path.');
+      }
       if (capturedUri) {
         setFrozenFrameUri(capturedUri);
       }
@@ -1637,7 +1641,7 @@ export default function ScanScreen() {
         { resize: { width: profile.width } },
       ];
       const manipulated = await ImageManipulator.manipulateAsync(
-        `file://${photo.path}`,
+        capturedUri,
         actions,
         { compress: profile.compress, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
@@ -3060,6 +3064,13 @@ export default function ScanScreen() {
         scannedCardIdsRef.current.add(match.id);
         setScannedCards((prev) => [...prev, match!]);
         setLastScanned(`✅ ${match.name} #${match.number} added!`);
+        recordAchievementEvent('card_scanned', {
+          cardId: match.id,
+          setId: match.set_id,
+          mode: 'auto',
+        }).catch((achievementError) => {
+          console.log('Scan achievement check failed:', achievementError);
+        });
         Vibration.vibrate([0, 90, 40, 90]);
         setTimeout(() => setLastScanned('👉 Next card!'), 500);
         resetScanState(900);
@@ -3141,12 +3152,34 @@ export default function ScanScreen() {
     setPendingConfirmation(null);
     scanCooldownRef.current = false;
     saveTrainingData(card.id, base64);
+    recordAchievementEvent('card_scanned', {
+      cardId: card.id,
+      setId: card.set_id,
+      mode: isMarket ? 'market' : isInventoryMode ? 'inventory' : 'binder',
+    }).catch((achievementError) => {
+      console.log('Scan achievement check failed:', achievementError);
+    });
 
     if (isInventoryMode) {
-      scanStore.triggerCallback(base64);
-      setAutoScanActive(false);
-      setFrozenFrameUri(null);
-      router.back();
+      try {
+        await scanStore.triggerCallback(base64);
+        setAutoScanActive(false);
+        setFrozenFrameUri(null);
+        router.back();
+      } catch (error: any) {
+        console.log('Scan callback failed', {
+          message: error?.message ?? String(error),
+          stack: SHOW_SCAN_DEBUG ? error?.stack : undefined,
+        });
+        setScanError(makeScanError(
+          'render',
+          'SCAN_CALLBACK_FAILED',
+          'The scan completed, but the result could not be handed back to the previous screen.',
+          error?.message ?? String(error),
+          undefined,
+          error?.stack
+        ));
+      }
       return;
     }
 
