@@ -218,6 +218,25 @@ function toScannedCard(card: LocalScanCard): ScannedCard {
   };
 }
 
+function pokemonRowToScannedCard(card: any, editionHint?: ScanEditionHint | null, editionSource?: ScanCandidate['editionSource']): ScannedCard {
+  const setPrintedTotal = Number(card?.raw_data?.set?.printedTotal ?? card?.raw_data?.set?.total ?? NaN);
+
+  return {
+    id: card.id,
+    name: card.name,
+    number: card.number ?? '',
+    set_id: card.set_id,
+    set_name: card.raw_data?.set?.name ?? card.set_id,
+    set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
+    image_small: card.image_small ?? card.raw_data?.images?.small ?? '',
+    image_large: card.image_large ?? card.raw_data?.images?.large ?? null,
+    raw_data: card.raw_data ?? null,
+    rarity: card.rarity ?? card.raw_data?.rarity ?? '',
+    editionHint: editionHint ?? null,
+    editionSource: editionHint ? editionSource : undefined,
+  };
+}
+
 const SCAN_EDITION_LABELS: Record<ScanEditionHint, string> = {
   '1st_edition': '1st Edition',
   unlimited: 'Unlimited',
@@ -2230,6 +2249,80 @@ export default function ScanScreen() {
       return withScannedCardEditionHint(card, editionHint, editionSource);
     };
 
+    const lookupXimilarCandidateLocally = async (candidate: ScanCandidate): Promise<ScannedCard | null> => {
+      if (!candidate.name || isGenericXimilarCardName(candidate.name)) return null;
+
+      try {
+        const { supabase } = await import('../../lib/supabase');
+        const { hint: editionHint, source: editionSource } = getEffectiveScanEditionHint(candidate, selectedBinder?.edition);
+        const candidateNumber = candidate.number ? String(candidate.number).split('/')[0].trim().replace(/^0+/, '') : null;
+        const candidateSetName = stripScanEditionFromSetName(candidate.setName);
+        const normaliseLookupText = (value?: string | null) =>
+          String(value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+        let query = supabase
+          .from('pokemon_cards')
+          .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+          .ilike('name', `%${candidate.name}%`)
+          .limit(80);
+
+        if (candidateNumber) query = query.eq('number', candidateNumber);
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        let rows = data ?? [];
+        if (rows.length === 0 && candidateNumber) {
+          const { data: looseRows, error: looseError } = await supabase
+            .from('pokemon_cards')
+            .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+            .eq('number', candidateNumber)
+            .limit(120);
+          if (looseError) throw looseError;
+          rows = looseRows ?? [];
+        }
+
+        if (!rows.length) return null;
+
+        const normalizedCandidateName = normalizeCardName(candidate.name);
+        const normalizedSetName = normaliseLookupText(candidateSetName);
+        const normalizedSetCode = normaliseLookupText(candidate.setCode);
+
+        const numberMatches = candidateNumber
+          ? rows.filter((row) => String(parseInt(row.number ?? '', 10)) === candidateNumber || String(row.number ?? '') === candidateNumber)
+          : rows;
+        const nameMatches = numberMatches.filter((row) => {
+          const rowName = normalizeCardName(row.name);
+          return rowName === normalizedCandidateName || rowName.includes(normalizedCandidateName) || normalizedCandidateName.includes(rowName);
+        });
+        const candidates = nameMatches.length ? nameMatches : numberMatches;
+
+        const setMatches = candidates.filter((row) => {
+          const rowSetName = normaliseLookupText(row.raw_data?.set?.name);
+          const rowSetId = normaliseLookupText(row.set_id);
+          const rowPtcgoCode = normaliseLookupText(row.raw_data?.set?.ptcgoCode);
+
+          return Boolean(
+            (normalizedSetName && (rowSetName === normalizedSetName || rowSetName.includes(normalizedSetName) || normalizedSetName.includes(rowSetName)))
+            || (normalizedSetCode && (rowSetId === normalizedSetCode || rowPtcgoCode === normalizedSetCode))
+          );
+        });
+
+        const row = setMatches[0] ?? candidates[0] ?? null;
+        if (!row) return null;
+
+        return pokemonRowToScannedCard(row, editionHint, editionSource);
+      } catch (error) {
+        console.log('Fast local Ximilar resolve failed:', {
+          name: candidate.name,
+          code: 'LOCAL_CARD_LOOKUP_FAILED',
+          error: error instanceof Error ? error.message : String(error),
+          stack: SHOW_SCAN_DEBUG && error instanceof Error ? error.stack : undefined,
+        });
+        return null;
+      }
+    };
+
     const resolveXimilarCandidates = async (
       candidates: ScanCandidate[],
       fallbackPrintedNumber?: PrintedNumber | null,
@@ -2247,13 +2340,15 @@ export default function ScanScreen() {
         });
 
         try {
-          const card = await lookupParsedCard(candidateWithEdition, fallbackPrintedNumber, setId);
+          const localCard = await lookupXimilarCandidateLocally(candidateWithEdition);
+          const card = localCard ?? await lookupParsedCard(candidateWithEdition, fallbackPrintedNumber, setId);
           logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
             name: candidateWithEdition.name,
             resolved: Boolean(card),
             cardId: card?.id,
             cardName: card?.name,
             editionHint: card?.editionHint ?? candidateWithEdition.editionHint,
+            source: localCard ? 'supabase' : 'backend',
           });
           return { ...candidateWithEdition, resolvedCard: card };
         } catch (lookupError) {
