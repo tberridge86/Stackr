@@ -48,6 +48,29 @@ export const pokemonNameMatchesCardName = (pokemonName: string, cardName: string
   return new RegExp(`(^|\\s)${escaped}(\\s|$)`).test(card);
 };
 
+const getPokemonCardSearchTerms = (pokemonName: string) => {
+  const displayName = formatPokedexName(pokemonName);
+  const terms = new Set([displayName]);
+  const normalized = normalise(displayName);
+
+  if (normalized === 'mr mime') terms.add('Mr. Mime');
+  if (normalized === 'mr rime') terms.add('Mr. Rime');
+  if (normalized === 'mime jr') terms.add('Mime Jr.');
+  if (normalized === 'farfetchd') terms.add("Farfetch'd");
+  if (normalized === 'sirfetchd') terms.add("Sirfetch'd");
+  if (normalized === 'flabebe') terms.add('Flabébé');
+  if (normalized === 'nidoran f') {
+    terms.add('Nidoran♀');
+    terms.add('Nidoran Female');
+  }
+  if (normalized === 'nidoran m') {
+    terms.add('Nidoran♂');
+    terms.add('Nidoran Male');
+  }
+
+  return Array.from(terms);
+};
+
 const uniqueUrls = (urls: Array<string | null | undefined>) =>
   Array.from(new Set(urls.filter((url): url is string => Boolean(url))));
 
@@ -84,13 +107,44 @@ const mapCardRow = (card: any): PokedexCard => {
 
 export async function fetchCardsForPokemon(pokemonName: string): Promise<PokedexCard[]> {
   const displayName = formatPokedexName(pokemonName);
-  const rows = await searchLocalPokemonCards<any>(displayName, {
-    limit: 1000,
-    skipSetDetection: true,
-    select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
-  });
+  const searchTerms = getPokemonCardSearchTerms(pokemonName);
+  const rowsById = new Map<string, any>();
 
-  return rows
+  for (const term of searchTerms) {
+    const { data, error } = await supabase
+      .from('pokemon_cards')
+      .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+      .ilike('name', `%${term}%`)
+      .limit(1000);
+
+    if (error) {
+      console.log('Pokedex direct card lookup failed:', {
+        pokemonName,
+        term,
+        message: error.message,
+        code: error.code,
+      });
+      continue;
+    }
+
+    for (const row of data ?? []) {
+      rowsById.set(row.id, row);
+    }
+  }
+
+  if (rowsById.size === 0) {
+    const fallbackRows = await searchLocalPokemonCards<any>(displayName, {
+      limit: 1000,
+      skipSetDetection: true,
+      select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
+    });
+
+    for (const row of fallbackRows) {
+      rowsById.set(row.id, row);
+    }
+  }
+
+  return Array.from(rowsById.values())
     .filter((card) => pokemonNameMatchesCardName(displayName, card.name ?? ''))
     .map(mapCardRow)
     .sort((a, b) => {
