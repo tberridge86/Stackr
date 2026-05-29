@@ -46,10 +46,14 @@ const getPokemonSpriteUrl = (id: number) =>
 
 const makeOwnedKey = (card: Pick<PokedexCard, 'id' | 'set_id'>) => `${card.set_id ?? ''}:${card.id}`;
 
+const getParamValue = (value?: string | string[]) => Array.isArray(value) ? value[0] : value;
+
 export default function PokemonDetailScreen() {
   const { theme } = useTheme();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id: string; name?: string }>();
+  const id = getParamValue(params.id);
+  const routeName = getParamValue(params.name);
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const columns = width >= 900 ? 5 : width >= 620 ? 4 : 2;
@@ -76,20 +80,46 @@ export default function PokemonDetailScreen() {
       try {
         setLoading(true);
 
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-        const json = await response.json();
+        let nextPokemon: PokemonData | null = null;
+
+        try {
+          const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+          if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
+          const json = await response.json();
+          nextPokemon = json as PokemonData;
+        } catch (pokemonError) {
+          console.log('Pokedex Pokemon metadata lookup failed', {
+            id,
+            routeName,
+            error: pokemonError instanceof Error ? pokemonError.message : String(pokemonError),
+          });
+
+          if (routeName) {
+            nextPokemon = {
+              id: Number(id) || 0,
+              name: routeName,
+              types: [],
+            };
+          }
+        }
+
+        if (!nextPokemon) throw new Error('Pokemon metadata was unavailable.');
         if (!active) return;
 
-        const nextPokemon = json as PokemonData;
         setPokemon(nextPokemon);
 
-        const [pokemonCards] = await Promise.all([
-          fetchCardsForPokemon(nextPokemon.name),
-          loadOwnership(),
-        ]);
+        const pokemonCards = await fetchCardsForPokemon(nextPokemon.name);
 
         if (!active) return;
         setCards(pokemonCards);
+        console.log('Pokedex cards loaded', {
+          pokemon: nextPokemon.name,
+          count: pokemonCards.length,
+        });
+
+        loadOwnership().catch((ownershipError) => {
+          console.log('Failed to load Pokemon ownership after cards', ownershipError);
+        });
       } catch (error) {
         console.log('Failed to load Pokemon collection page', error);
       } finally {
@@ -102,7 +132,7 @@ export default function PokemonDetailScreen() {
     return () => {
       active = false;
     };
-  }, [id, loadOwnership]);
+  }, [id, loadOwnership, routeName]);
 
   useFocusEffect(
     useCallback(() => {

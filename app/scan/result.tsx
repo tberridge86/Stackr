@@ -109,6 +109,11 @@ function pickDefaultVariantKey(options: TcgPriceVariant[], editionHint?: TCGCard
     ?? options[0].key;
 }
 
+function formatTcgGbp(priceUsd?: number | null) {
+  if (priceUsd == null || Number.isNaN(priceUsd)) return '--';
+  return `£${(priceUsd * USD_TO_GBP).toFixed(2)}`;
+}
+
 type BinderOption = {
   id: string;
   name: string;
@@ -627,7 +632,7 @@ export default function ScanResultScreen() {
                           {variant.label}
                         </Text>
                         <Text style={{ color: selected ? 'rgba(255,255,255,0.8)' : theme.colors.textSoft, fontWeight: '800', fontSize: 10, marginTop: 2, textAlign: 'center' }}>
-                          GBP {(variant.priceUsd * USD_TO_GBP).toFixed(2)}
+                          {formatTcgGbp(variant.priceUsd)}
                         </Text>
                       </TouchableOpacity>
                     );

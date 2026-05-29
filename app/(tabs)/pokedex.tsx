@@ -182,7 +182,12 @@ export default function PokedexScreen() {
 
   return (
     <Pressable
-      onPress={() => router.push(`/pokemon/${item.id}`)}
+      onPress={() =>
+        router.push({
+          pathname: '/pokemon/[id]',
+          params: { id: String(item.id), name: item.name },
+        })
+      }
       style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
     >
       <View style={styles.gridImageWrap}>
@@ -211,12 +216,12 @@ export default function PokedexScreen() {
     <SafeAreaView style={styles.safe}>
       <FeatureTipGate
         tipKey="pokedex-screen-v1"
-        title="Pokedex"
-        subtitle="Browse Pokemon by name, number, and region."
+        title="Pokedex collection"
+        subtitle="Track cards by Pokemon, not just by set."
         items={[
-          { icon: 'search-outline', title: 'Search', body: 'Find a Pokemon by name or Pokedex number.' },
-          { icon: 'filter-outline', title: 'Regions', body: 'Use the chips to jump between generations.' },
-          { icon: 'albums-outline', title: 'Profiles', body: 'Tap a Pokemon to open its detail page.' },
+          { icon: 'albums-outline', title: 'All cards', body: 'Tap a Pokemon to see every card for that Pokemon across all sets.' },
+          { icon: 'checkmark-circle-outline', title: 'Ownership', body: 'Mark cards owned inside each Pokemon page to build a Pokemon collection.' },
+          { icon: 'sync-outline', title: 'Binder sync', body: 'Cards owned in your binders also count here, without creating extra binders.' },
         ]}
       />
       <View style={styles.container}>

@@ -105,6 +105,57 @@ const mapCardRow = (card: any): PokedexCard => {
   };
 };
 
+const mapApiCard = (card: any): PokedexCard => ({
+  id: card.id,
+  name: card.name,
+  number: card.number ?? null,
+  rarity: card.rarity ?? null,
+  set_id: card.set?.id ?? null,
+  image_small: card.images?.small ?? null,
+  image_large: card.images?.large ?? null,
+  image_urls: uniqueUrls([card.images?.large, card.images?.small]),
+  raw_data: card,
+});
+
+async function fetchPokemonTcgApiCardsForPokemon(pokemonName: string): Promise<PokedexCard[]> {
+  const displayName = formatPokedexName(pokemonName);
+  const terms = getPokemonCardSearchTerms(pokemonName);
+  const cardsById = new Map<string, PokedexCard>();
+
+  for (const term of terms) {
+    const query = `name:"*${term.replace(/"/g, '')}*"`;
+    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(query)}&pageSize=250&orderBy=-set.releaseDate`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        console.log('Pokedex Pokemon TCG API fallback failed:', {
+          pokemonName,
+          term,
+          status: response.status,
+        });
+        continue;
+      }
+
+      const json = await response.json();
+      const rows = Array.isArray(json?.data) ? json.data : [];
+
+      for (const row of rows) {
+        if (!pokemonNameMatchesCardName(displayName, row.name ?? '')) continue;
+        cardsById.set(row.id, mapApiCard(row));
+      }
+    } catch (error) {
+      console.log('Pokedex Pokemon TCG API fallback errored:', {
+        pokemonName,
+        term,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return Array.from(cardsById.values());
+}
+
 export async function fetchCardsForPokemon(pokemonName: string): Promise<PokedexCard[]> {
   const displayName = formatPokedexName(pokemonName);
   const searchTerms = getPokemonCardSearchTerms(pokemonName);
@@ -144,7 +195,7 @@ export async function fetchCardsForPokemon(pokemonName: string): Promise<Pokedex
     }
   }
 
-  return Array.from(rowsById.values())
+  let cards = Array.from(rowsById.values())
     .filter((card) => pokemonNameMatchesCardName(displayName, card.name ?? ''))
     .map(mapCardRow)
     .sort((a, b) => {
@@ -153,6 +204,12 @@ export async function fetchCardsForPokemon(pokemonName: string): Promise<Pokedex
       if (dateA !== dateB) return dateB.localeCompare(dateA);
       return String(a.number ?? '').localeCompare(String(b.number ?? ''), undefined, { numeric: true });
     });
+
+  if (cards.length === 0) {
+    cards = await fetchPokemonTcgApiCardsForPokemon(pokemonName);
+  }
+
+  return cards;
 }
 
 export async function fetchOwnedPokedexCards(): Promise<Map<string, OwnedPokedexCard>> {

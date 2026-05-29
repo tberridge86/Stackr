@@ -65,6 +65,8 @@ const ACCURACY_SCAN_PROFILE = { width: 960, compress: 0.72 };
 const MARKET_XIMILAR_SCAN_PROFILE = { width: 1400, compress: 0.9 };
 const USE_SNAPSHOT_CAPTURE = true;
 const REQUEST_TIMEOUT_MS = 5000;
+const MANUAL_SCAN_HARD_TIMEOUT_MS = 30000;
+const CARD_LOOKUP_TIMEOUT_MS = 3500;
 const LOCAL_AI_TIMEOUT_MS = 2500;
 const LOCAL_AI_VISUAL_TIMEOUT_MS = 3500;
 const RARE_CANDY_STYLE_TIMEOUT_MS = 3500;
@@ -2183,7 +2185,16 @@ export default function ScanScreen() {
         searchParams.append('strictSet', '1');
       }
 
-      const searchRes = await fetch(`${PRICE_API_URL}/api/search/tcg?${searchParams.toString()}`);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), CARD_LOOKUP_TIMEOUT_MS);
+      let searchRes: Response;
+      try {
+        searchRes = await fetch(`${PRICE_API_URL}/api/search/tcg?${searchParams.toString()}`, {
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
       const searchData = await searchRes.json();
       const cards = (searchData.cards ?? []) as ScannedCard[];
 
@@ -2224,9 +2235,7 @@ export default function ScanScreen() {
       fallbackPrintedNumber?: PrintedNumber | null,
       setId?: string | null
     ): Promise<ScanCandidate[]> => {
-      const resolved: ScanCandidate[] = [];
-
-      for (const candidate of candidates) {
+      const resolveCandidate = async (candidate: ScanCandidate): Promise<ScanCandidate> => {
         const candidateWithEdition = withCandidateEditionHint(candidate, selectedBinder?.edition);
         logScanStage('POKEMON_API_LOOKUP_STARTED', {
           name: candidateWithEdition.name,
@@ -2239,7 +2248,6 @@ export default function ScanScreen() {
 
         try {
           const card = await lookupParsedCard(candidateWithEdition, fallbackPrintedNumber, setId);
-          resolved.push({ ...candidateWithEdition, resolvedCard: card });
           logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
             name: candidateWithEdition.name,
             resolved: Boolean(card),
@@ -2247,8 +2255,8 @@ export default function ScanScreen() {
             cardName: card?.name,
             editionHint: card?.editionHint ?? candidateWithEdition.editionHint,
           });
+          return { ...candidateWithEdition, resolvedCard: card };
         } catch (lookupError) {
-          resolved.push({ ...candidateWithEdition, resolvedCard: null });
           logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
             name: candidateWithEdition.name,
             resolved: false,
@@ -2256,10 +2264,42 @@ export default function ScanScreen() {
             error: lookupError instanceof Error ? lookupError.message : String(lookupError),
             stack: SHOW_SCAN_DEBUG && lookupError instanceof Error ? lookupError.stack : undefined,
           });
+          return { ...candidateWithEdition, resolvedCard: null };
         }
-      }
+      };
 
-      return resolved;
+      return Promise.all(candidates.slice(0, 5).map(resolveCandidate));
+    };
+
+    let scanTimedOut = false;
+    const hardTimeout = !isAuto
+      ? setTimeout(() => {
+          scanTimedOut = true;
+          const timeoutError = makeScanError(
+            'upload',
+            'SCAN_TIMEOUT',
+            'The scan took too long to complete.',
+            `No scan result after ${MANUAL_SCAN_HARD_TIMEOUT_MS}ms.`
+          );
+          logScanStage('API_RESPONSE_RECEIVED', {
+            ok: false,
+            code: timeoutError.code,
+            stage: timeoutError.stage,
+            details: timeoutError.details,
+          });
+          setScanError(timeoutError);
+          stopScanningMessages();
+          scanCooldownRef.current = false;
+          setProcessingOcr(false);
+          setFrozenFrameUri(null);
+        }, MANUAL_SCAN_HARD_TIMEOUT_MS)
+      : null;
+
+    const throwIfScanTimedOut = () => {
+      if (!scanTimedOut) return;
+      const error = new Error(`Scan exceeded ${MANUAL_SCAN_HARD_TIMEOUT_MS}ms.`);
+      error.name = 'AbortError';
+      throw error;
     };
 
     try {
@@ -2273,6 +2313,7 @@ export default function ScanScreen() {
             ? FAST_SCAN_PROFILE
             : ACCURACY_SCAN_PROFILE;
       const capture = await captureCardImage(initialScanProfile);
+      throwIfScanTimedOut();
       const base64 = capture.base64;
       if (!base64) {
         const imageError = makeScanError(
@@ -2322,6 +2363,7 @@ export default function ScanScreen() {
 
       if (!shouldDeferInitialNumberOcr) {
         await readInitialPrintedNumber();
+        throwIfScanTimedOut();
       }
       let cachedNameText: string | null = null;
       let cachedTotalHintText: string | null = null;
@@ -2345,18 +2387,32 @@ export default function ScanScreen() {
       if (!isAuto && !expectedSetId && (isMarketMode || selectedBinder)) {
         console.log('[market-scan] primary provider: ximilar');
         const ximilarResponse = await identifyWithXimilarTcg(bestBase64, false);
+        throwIfScanTimedOut();
         if (!ximilarResponse.ok) {
           ximilarError = { ...ximilarResponse, debugDetails: ximilarResponse.details };
           setScanError(ximilarError);
         } else {
           ximilarError = null;
           setScanError(null);
-          ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
-            ximilarResponse.candidates,
+          const primaryCandidates = await resolveXimilarCandidates(
+            ximilarResponse.candidates.slice(0, 1),
             shouldDeferInitialNumberOcr ? null : printedNumber,
             null
           );
-          match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+          throwIfScanTimedOut();
+          match = (primaryCandidates.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+          ximilarCandidatesForConfirmation = primaryCandidates;
+
+          if (!match && ximilarResponse.candidates.length > 1) {
+            const fallbackCandidates = await resolveXimilarCandidates(
+              ximilarResponse.candidates.slice(1),
+              shouldDeferInitialNumberOcr ? null : printedNumber,
+              null
+            );
+            throwIfScanTimedOut();
+            ximilarCandidatesForConfirmation = [...primaryCandidates, ...fallbackCandidates];
+            match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+          }
         }
         console.log('[market-scan] local resolve after Ximilar', {
           provider: 'ximilar',
@@ -2377,18 +2433,32 @@ export default function ScanScreen() {
         if (!match && !ximilarCandidatesForConfirmation?.length) {
           console.log('[market-scan] retrying Ximilar with Magic AI');
           const ximilarMagicResponse = await identifyWithXimilarTcg(bestBase64, true);
+          throwIfScanTimedOut();
           if (!ximilarMagicResponse.ok) {
             ximilarError = { ...ximilarMagicResponse, debugDetails: ximilarMagicResponse.details };
             setScanError(ximilarError);
           } else {
             ximilarError = null;
             setScanError(null);
-            ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
-              ximilarMagicResponse.candidates,
+            const primaryCandidates = await resolveXimilarCandidates(
+              ximilarMagicResponse.candidates.slice(0, 1),
               shouldDeferInitialNumberOcr ? null : printedNumber,
               null
             );
-            match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+            throwIfScanTimedOut();
+            match = (primaryCandidates.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+            ximilarCandidatesForConfirmation = primaryCandidates;
+
+            if (!match && ximilarMagicResponse.candidates.length > 1) {
+              const fallbackCandidates = await resolveXimilarCandidates(
+                ximilarMagicResponse.candidates.slice(1),
+                shouldDeferInitialNumberOcr ? null : printedNumber,
+                null
+              );
+              throwIfScanTimedOut();
+              ximilarCandidatesForConfirmation = [...primaryCandidates, ...fallbackCandidates];
+              match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+            }
           }
           console.log('[market-scan] local resolve after Magic AI', {
             candidates: ximilarCandidatesForConfirmation?.map((candidate) => ({
@@ -2417,6 +2487,7 @@ export default function ScanScreen() {
 
       if (!match && shouldDeferInitialNumberOcr) {
         await readInitialPrintedNumber();
+        throwIfScanTimedOut();
       }
 
       // Duplicate frame check
@@ -3002,6 +3073,7 @@ export default function ScanScreen() {
 
       // Step 4: handle result
       if (!match && ximilarCandidatesForConfirmation?.length) {
+        throwIfScanTimedOut();
         stopScanningMessages();
         setProcessingOcr(false);
         setPendingConfirmation({
@@ -3078,6 +3150,7 @@ export default function ScanScreen() {
       }
 
       // Manual + market: show confirmation overlay
+      throwIfScanTimedOut();
       stopScanningMessages();
       setProcessingOcr(false);
       setPendingConfirmation({
@@ -3108,12 +3181,14 @@ export default function ScanScreen() {
         details: nextError.details,
         stack: SHOW_SCAN_DEBUG ? nextError.stack : undefined,
       });
-      if (!isAuto) setScanError(nextError);
+      if (!isAuto && !scanTimedOut) setScanError(nextError);
       stopScanningMessages();
       scanCooldownRef.current = false;
       setProcessingOcr(false);
       setLastScanned(null);
       if (isAuto) setFrozenFrameUri(null);
+    } finally {
+      if (hardTimeout) clearTimeout(hardTimeout);
     }
   }, [fingerprintScan, isMarketMode, logScanDebug, lookupCardBySetNumber, processingOcr, resetScanState, resolveCardInExpectedSet, selectedBinder, startScanningMessages, stopScanningMessages]);
 
