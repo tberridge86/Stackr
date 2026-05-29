@@ -9,7 +9,11 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { PRICE_API_URL } from '../lib/config';
-import { getEditionVariantImageUrl, type EditionImageSize } from '../lib/editionImages';
+import {
+  getEditionVariantImageUrl,
+  getPublicScrydexCardImageUrl,
+  type EditionImageSize,
+} from '../lib/editionImages';
 import type { ScanEditionHint } from '../types/scan';
 import { Text } from './Text';
 
@@ -72,15 +76,19 @@ export default function EditionAwareCardImage({
     };
   }, [cardId, editionHint, rawVariantUri, sourceSize]);
 
-  const displayUri = rawVariantUri ?? remoteVariantUri ?? uri ?? null;
-  const hasSourceVariant = Boolean(rawVariantUri || remoteVariantUri);
-  const needsVisualPatch = Boolean(editionHint && !hasSourceVariant);
+  const scrydexUnlimitedUri = React.useMemo(
+    () => getPublicScrydexCardImageUrl(cardId, editionHint, sourceSize),
+    [cardId, editionHint, sourceSize]
+  );
+  const resolvedDisplayUri = rawVariantUri ?? scrydexUnlimitedUri ?? remoteVariantUri ?? uri ?? null;
+  const hasSourceVariant = Boolean(rawVariantUri || scrydexUnlimitedUri || remoteVariantUri);
+  const needsVisualPatch = Boolean(editionHint && !hasSourceVariant && editionHint !== 'unlimited');
 
   return (
     <View style={[styles.container, style]}>
-      {displayUri ? (
+      {resolvedDisplayUri ? (
         <Image
-          source={{ uri: displayUri }}
+          source={{ uri: resolvedDisplayUri }}
           style={[styles.image, imageStyle]}
           resizeMode={resizeMode}
         />
@@ -92,12 +100,6 @@ export default function EditionAwareCardImage({
         <View pointerEvents="none" style={styles.firstEditionStamp}>
           <Text style={styles.firstEditionOne}>1st</Text>
           <Text style={styles.firstEditionText}>EDITION</Text>
-        </View>
-      )}
-
-      {needsVisualPatch && editionHint === 'unlimited' && (
-        <View pointerEvents="none" style={styles.unlimitedCover}>
-          <Text style={styles.unlimitedText}>UNLIMITED</Text>
         </View>
       )}
 
@@ -149,26 +151,6 @@ const styles = StyleSheet.create({
     color: '#111111',
     fontSize: 5,
     lineHeight: 6,
-    fontWeight: '900',
-    letterSpacing: 0,
-  },
-  unlimitedCover: {
-    position: 'absolute',
-    left: '7%',
-    top: '43%',
-    width: '23%',
-    minHeight: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(17, 24, 39, 0.18)',
-    backgroundColor: 'rgba(245, 205, 118, 0.94)',
-  },
-  unlimitedText: {
-    color: '#111111',
-    fontSize: 7,
-    lineHeight: 9,
     fontWeight: '900',
     letterSpacing: 0,
   },

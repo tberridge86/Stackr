@@ -240,6 +240,24 @@ const mapCard = (card: any): PokemonCard => ({
 const normalise = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
+async function fetchJsonWithTimeout(url: string, options: RequestInit, timeoutMs = 12000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    const body = await response.text();
+    let json: any = null;
+    try {
+      json = body ? JSON.parse(body) : null;
+    } catch {
+      throw new Error(`Server returned an unreadable response (${response.status}).`);
+    }
+    return { response, json };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -781,23 +799,23 @@ export default function MarketScreen() {
     try {
       setScanning(true);
 
-      const cardSightResponse = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ base64Image }),
-});
+      if (!PRICE_API_URL) {
+        throw new Error('Price API URL is not configured.');
+      }
 
-let parsed: any = null;
+      const { response: cardSightResponse, json: parsed } = await fetchJsonWithTimeout(
+        `${PRICE_API_URL}/api/cardsight/identify`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64Image }),
+        },
+        12000
+      );
 
-try {
-  parsed = await cardSightResponse.json();
-} catch {
-  Alert.alert(
-    'Could not identify card',
-    'Try taking a clearer photo of the card.'
-  );
-  return;
-}
+      if (!cardSightResponse.ok) {
+        throw new Error(parsed?.error ?? `Card scan failed with status ${cardSightResponse.status}.`);
+      }
 
       if (parsed?.error || !parsed?.name) {
         Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');

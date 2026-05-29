@@ -27,6 +27,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import {
   BinderRecord,
   BinderCardRecord,
@@ -45,6 +46,7 @@ import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { checkAchievements, recordAchievementEvent } from '../../lib/achievements';
+import type { ScanEditionHint } from '../../types/scan';
 
 // ===============================
 // CONSTANTS
@@ -118,6 +120,11 @@ type TcgFallbackPrice = {
 const getSetIdFromCardId = (cardId: string) => {
   const parts = cardId.split('-');
   return parts.length > 1 ? parts[0] : '';
+};
+
+const getBinderEditionHint = (edition?: string | null): ScanEditionHint | null => {
+  if (edition === '1st_edition' || edition === 'unlimited' || edition === 'shadowless') return edition;
+  return null;
 };
 
 const formatCurrency = (value: number | null | undefined): string => {
@@ -1372,6 +1379,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
   const renderCard = ({ item }: { item: BinderCardWithDetails }) => {
     const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
+    const imageEditionHint = getBinderEditionHint(binder?.edition);
     const cardName = item.card?.name ?? item.card_id;
     const forTrade = isForTrade(item.card_id, item.set_id);
     const wanted = isWanted(item.card_id, item.set_id);
@@ -1411,8 +1419,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           justifyContent: 'center',
         }}>
           {imageUri ? (
-            <Image
-              source={{ uri: imageUri }}
+            <EditionAwareCardImage
+              uri={imageUri}
+              cardId={item.card_id}
+              rawData={item.card}
+              editionHint={imageEditionHint}
+              sourceSize="small"
               style={{ width: '100%', height: '100%' }}
               resizeMode="contain"
             />
@@ -2300,8 +2312,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         onHandlerStateChange={onPinchHandlerStateChange}
                       >
                         <Animated.View style={{ flex: 1, transform: [{ scale: imageScale }] }}>
-                          <Image
-                            source={{ uri: modalCard?.images?.large ?? modalCard?.images?.small ?? undefined }}
+                          <EditionAwareCardImage
+                            uri={modalCard?.images?.large ?? modalCard?.images?.small ?? undefined}
+                            cardId={selectedCard.card_id}
+                            rawData={modalCard}
+                            editionHint={getBinderEditionHint(binder.edition)}
+                            sourceSize="large"
                             style={{ width: '100%', height: '100%' }}
                             resizeMode="contain"
                           />

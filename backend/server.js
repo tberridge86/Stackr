@@ -2232,6 +2232,11 @@ function getEditionVariantImageUrl(rawData, editionHint, size = 'large') {
   return null;
 }
 
+function getPublicScrydexCardImageUrl(cardId, editionHint, size = 'large') {
+  if (!cardId || editionHint !== 'unlimited') return null;
+  return `https://images.scrydex.com/pokemon/${encodeURIComponent(cardId)}/${size}`;
+}
+
 const editionImageCache = new Map();
 const EDITION_IMAGE_CACHE_MS = 6 * 60 * 60 * 1000;
 
@@ -2285,6 +2290,13 @@ app.get('/api/card-image/edition', async (req, res) => {
     const dbVariantImage = getEditionVariantImageUrl(dbCard?.raw_data, editionHint, size);
     if (dbVariantImage) {
       const value = { ok: true, imageUri: dbVariantImage, source: 'database_variant' };
+      editionImageCache.set(cacheKey, { at: Date.now(), value });
+      return res.json(value);
+    }
+
+    const publicScrydexImage = getPublicScrydexCardImageUrl(cardId, editionHint, size);
+    if (publicScrydexImage) {
+      const value = { ok: true, imageUri: publicScrydexImage, source: 'scrydex_public_image' };
       editionImageCache.set(cacheKey, { at: Date.now(), value });
       return res.json(value);
     }
