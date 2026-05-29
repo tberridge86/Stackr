@@ -109,16 +109,6 @@ export function getEditionVariantImageUrl(
     if (url) return url;
   }
 
-  if (editionHint === 'unlimited') {
-    const images = rawData?.images;
-    const topLevelImage = images && !Array.isArray(images)
-      ? imageUrlFromEntry(images, size)
-      : null;
-    if (topLevelImage && !/1st|first\s*edition/i.test(topLevelImage)) {
-      return topLevelImage;
-    }
-  }
-
   return null;
 }
 
