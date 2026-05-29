@@ -375,6 +375,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [masterSetIntroVisible, setMasterSetIntroVisible] = useState(false);
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  const lastGridScrollYRef = useRef(0);
   const achievementProgressRef = useRef<Record<string, number>>({});
   const isOwner = Boolean(userId && binder?.user_id === userId);
   const isReadOnly = routeReadOnly || (Boolean(binder) && !isOwner);
@@ -408,6 +410,22 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
   const currentSortLabel =
     sortOptions.find((o) => o.value === sortMode)?.label ?? 'Binder order';
+
+  const handleGridScroll = useCallback((event: any) => {
+    const y = event.nativeEvent.contentOffset.y;
+    const delta = y - lastGridScrollYRef.current;
+
+    if (y < 12) {
+      setHeaderCollapsed(false);
+    } else if (delta > 10) {
+      setHeaderCollapsed(true);
+      if (sortDropdownOpen) setSortDropdownOpen(false);
+    } else if (delta < -10) {
+      setHeaderCollapsed(false);
+    }
+
+    lastGridScrollYRef.current = y;
+  }, [sortDropdownOpen]);
 
   // ===============================
   // MODAL HELPERS
@@ -1403,9 +1421,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           borderRadius: 14,
           padding: 6,
           borderWidth: 1,
-          borderColor: isOwned ? theme.colors.primary : theme.colors.border,
-          backgroundColor: isOwned ? theme.colors.primary + '10' : theme.colors.card,
-          opacity: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.card,
           ...cardShadow,
         }}
       >
@@ -1413,10 +1430,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           width: '100%',
           aspectRatio: 0.72,
           borderRadius: 10,
-          backgroundColor: isOwned ? '#FFFFFF' : theme.colors.surface,
+          backgroundColor: theme.colors.surface,
           overflow: 'hidden',
           alignItems: 'center',
           justifyContent: 'center',
+          opacity: multiVariant ? 1 : isOwned ? 1 : 0.36,
         }}>
           {imageUri ? (
             <EditionAwareCardImage
@@ -1448,9 +1466,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                     delayLongPress={400}
                     style={({ pressed }) => ({
                       flex: 1,
+                      opacity: owned ? 1 : 0.36,
                       backgroundColor: pressed
                         ? 'rgba(108,75,255,0.25)'
-                        : 'transparent',
+                        : owned
+                          ? 'transparent'
+                          : 'rgba(255,255,255,0.58)',
                       borderLeftWidth: i > 0 ? 1 : 0,
                       borderColor: 'rgba(255,255,255,0.3)',
                       alignItems: 'center',
@@ -1510,6 +1531,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           fontWeight: '900',
           marginTop: 6,
           minHeight: 28,
+          opacity: multiVariant ? anyVariantOwned ? 1 : 0.48 : isOwned ? 1 : 0.48,
         }}>
           {cardName}
         </Text>
@@ -1688,96 +1710,122 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
   return (
     <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
-
-        {/* Header */}
-        <View style={{ marginBottom: 10 }}>
-          <View>
-            <Text numberOfLines={2} style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', lineHeight: 29 }}>
+      <Stack.Screen
+        options={{
+          headerTitle: '',
+          headerRight: () => (
+            <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900', maxWidth: width * 0.68, textAlign: 'right' }}>
               {binder.name}
             </Text>
+          ),
+        }}
+      />
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
 
+        {/* Header */}
+        {!headerCollapsed && (
+          <View style={{ marginBottom: 8, position: 'relative' }}>
             {!isReadOnly && (
-              <View style={{ alignItems: 'flex-end', marginTop: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
-                <TouchableOpacity
-                  onPress={handleScanCard}
-                  style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.primary }}
-                >
-                  <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
-                </TouchableOpacity>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
-                    Master set
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => setMasterSetIntroVisible(true)}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    style={{ width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface }}
-                  >
-                    <Ionicons name="information-circle-outline" size={16} color={theme.colors.textSoft} />
-                  </TouchableOpacity>
-                  <Switch
-                    value={masterSetEnabled}
-                    onValueChange={toggleMasterSet}
-                    disabled={updatingMasterSet}
-                    style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
-                  />
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>
-                    {isPublic ? 'Public' : 'Private'}
-                  </Text>
-                  <Switch
-                    value={isPublic}
-                    onValueChange={togglePublic}
-                    disabled={updatingVisibility}
-                    style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
-                  />
-                </View>
-              </View>
-              </View>
+              <TouchableOpacity
+                onPress={handleScanCard}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 42,
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: theme.colors.primary,
+                  zIndex: 5,
+                }}
+              >
+                <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
             )}
-          </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 }}>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-              {ownedCount} / {totalCount} owned · {progressPercent}%
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+              {!isReadOnly && (
+                <View style={{ flex: 0.28 }} />
+              )}
 
-            <View style={{
-              backgroundColor: theme.colors.primary + '16',
-              borderRadius: 999,
-              paddingHorizontal: 9,
-              paddingVertical: 3,
-              borderWidth: 1,
-              borderColor: theme.colors.primary + '35',
-            }}>
-              <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>
-                {formatCurrency(binderValue)}
-              </Text>
+              <View style={{ flex: 1, alignItems: 'flex-end', paddingTop: 0 }}>
+                {!isReadOnly && (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 0 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+                        Master set
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => setMasterSetIntroVisible(true)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        style={{ width: 19, height: 19, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface }}
+                      >
+                        <Ionicons name="information-circle-outline" size={15} color={theme.colors.textSoft} />
+                      </TouchableOpacity>
+                      <Switch
+                        value={masterSetEnabled}
+                        onValueChange={toggleMasterSet}
+                        disabled={updatingMasterSet}
+                        style={{ transform: [{ scaleX: 0.68 }, { scaleY: 0.68 }] }}
+                      />
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+                        {isPublic ? 'Public' : 'Private'}
+                      </Text>
+                      <Switch
+                        value={isPublic}
+                        onValueChange={togglePublic}
+                        disabled={updatingVisibility}
+                        style={{ transform: [{ scaleX: 0.68 }, { scaleY: 0.68 }] }}
+                      />
+                    </View>
+                  </View>
+                )}
+              </View>
             </View>
 
-            {binder.edition && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>
+                {ownedCount} / {totalCount} owned · {progressPercent}%
+              </Text>
+
               <View style={{
-                backgroundColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.surface,
+                backgroundColor: theme.colors.primary + '16',
                 borderRadius: 999,
-                paddingHorizontal: 8,
-                paddingVertical: 2,
+                paddingHorizontal: 9,
+                paddingVertical: 3,
                 borderWidth: 1,
-                borderColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.border,
+                borderColor: theme.colors.primary + '35',
               }}>
-                <Text style={{
-                  color: binder.edition === '1st_edition' ? '#FFFFFF' : theme.colors.textSoft,
-                  fontSize: 10,
-                  fontWeight: '900',
-                }}>
-                  {binder.edition === '1st_edition' ? '1st Edition' : 'Unlimited'}
+                <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>
+                  {formatCurrency(binderValue)}
                 </Text>
               </View>
-            )}
+
+              {binder.edition && (
+                <View style={{
+                  backgroundColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.surface,
+                  borderRadius: 999,
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
+                  borderWidth: 1,
+                  borderColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.border,
+                }}>
+                  <Text style={{
+                    color: binder.edition === '1st_edition' ? '#FFFFFF' : theme.colors.textSoft,
+                    fontSize: 10,
+                    fontWeight: '900',
+                  }}>
+                    {binder.edition === '1st_edition' ? '1st Edition' : 'Unlimited'}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        )}
         {/* Progress bar */}
         <View style={{
           height: 6,
@@ -1795,7 +1843,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         </View>
 
         {/* Read only banner */}
-        {isReadOnly && (
+        {!headerCollapsed && isReadOnly && (
           <View style={{
             backgroundColor: theme.colors.surface,
             borderRadius: 12,
@@ -1816,11 +1864,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         )}
 
         {/* Showcase strips */}
-        {renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
-        {renderShowcaseStrip('chase', 'Chase Cards')}
+        {!headerCollapsed && renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
+        {!headerCollapsed && renderShowcaseStrip('chase', 'Chase Cards')}
 
         {/* Add card button */}
-        {binder.type === 'custom' && !isReadOnly && (
+        {!headerCollapsed && binder.type === 'custom' && !isReadOnly && (
           <TouchableOpacity
             onPress={() => setShowAddModal(true)}
             style={{
@@ -1836,6 +1884,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         )}
 
         {/* Sort dropdown */}
+        {!headerCollapsed && (
         <View style={{ marginBottom: 14, zIndex: 20 }}>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900', marginBottom: 6 }}>
             Sort:
@@ -1888,6 +1937,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             </View>
           )}
         </View>
+        )}
 
         {/* Card grid */}
         <FlatList
@@ -1903,6 +1953,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           windowSize={7}
           removeClippedSubviews
           showsVerticalScrollIndicator={false}
+          onScroll={handleGridScroll}
+          scrollEventThrottle={16}
           contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
         />
       </View>
