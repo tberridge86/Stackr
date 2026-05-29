@@ -38,7 +38,7 @@ export default function Index() {
       <Image
         source={require('../assets/images/splash.png')}
         style={styles.logo}
-        resizeMode="contain"
+        resizeMode="cover"
       />
     </View>
   );
@@ -48,13 +48,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 48,
   },
   logo: {
-    width: '72%',
-    maxWidth: 260,
-    height: 260,
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
   },
 });
