@@ -316,7 +316,7 @@ export default function BinderDetailScreen() {
   const { theme } = useTheme();
   const { id, readOnly } = useLocalSearchParams<{ id: string; readOnly?: string }>();
   const binderId = Array.isArray(id) ? id[0] : id;
-  const isReadOnly = readOnly === 'true';
+  const routeReadOnly = readOnly === 'true';
   const insets = useSafeAreaInsets();
   const { width, height: screenHeight } = useWindowDimensions();
   const numColumns = width >= 900 ? 6 : width >= 600 ? 4 : 2;
@@ -369,6 +369,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const achievementProgressRef = useRef<Record<string, number>>({});
+  const isOwner = Boolean(userId && binder?.user_id === userId);
+  const isReadOnly = routeReadOnly || (Boolean(binder) && !isOwner);
 
   const showToast = (msg: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -476,17 +478,24 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     try {
       setLoading(true);
 
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id ?? null);
+
       const binderData = await fetchBinderById(binderId);
+
+      if (!binderData || (binderData.user_id !== user?.id && !binderData.is_public)) {
+        setBinder(null);
+        setCards([]);
+        setShowcaseRows([]);
+        return;
+      }
+
       setBinder(binderData);
       setIsPublic(Boolean(binderData?.is_public));
 
       const binderCards = await fetchBinderCards(binderId);
 
-      const { data: { user } } = await supabase.auth.getUser();
-
       if (user) {
-        setUserId(user.id);
-
         const { data, error } = await supabase
           .from('binder_card_showcases')
           .select('*')

@@ -1464,7 +1464,15 @@ async function fetchEbaySummary(query, options = {}) {
       let acceptedSourceItems = rawItems;
 
       if (cleaned.length === 0 && cardName && productType === 'card') {
-        fallbackQuery = buildFallbackQuery({ name: cardName, setName, number, setTotal, rarity });
+        const fallbackParts = [buildFallbackQuery({ name: cardName, setName, number, setTotal, rarity })];
+        if (pricingMode === 'graded') {
+          if (gradingCompany) fallbackParts.push(gradingCompany);
+          if (grade) fallbackParts.push(grade);
+          fallbackParts.push('graded slab');
+        } else if (condition) {
+          fallbackParts.push(condition);
+        }
+        fallbackQuery = fallbackParts.filter(Boolean).join(' ');
         console.log(`⚠️ No results for "${query}" — retrying with "${fallbackQuery}"`);
 
         let fallbackItems = [];
@@ -1899,7 +1907,7 @@ app.get('/api/price/ebay', async (req, res) => {
         grade,
       });
     } catch (liveError) {
-      const cached = await fetchCachedEbayCardPrice(cardId);
+      const cached = pricingMode === 'raw' ? await fetchCachedEbayCardPrice(cardId) : null;
       if (cached) {
         return res.json({
           cardId,
@@ -1925,7 +1933,7 @@ app.get('/api/price/ebay', async (req, res) => {
       throw liveError;
     }
 
-    if (cardId && isSerpApiQuotaErrorMessage(summary.soldProviderError)) {
+    if (pricingMode === 'raw' && cardId && isSerpApiQuotaErrorMessage(summary.soldProviderError)) {
       const cached = await fetchCachedEbayCardPrice(cardId);
       if (cached) {
         summary = {
@@ -1938,6 +1946,7 @@ app.get('/api/price/ebay', async (req, res) => {
     }
 
     if (
+      pricingMode === 'raw' &&
       cardId &&
       (summary.average != null || summary.low != null || summary.high != null) &&
       summary.soldDataSource !== 'cached-ebay'
@@ -1947,7 +1956,7 @@ app.get('/api/price/ebay', async (req, res) => {
       });
     }
 
-    if (cardId && summary.average == null) {
+    if (pricingMode === 'raw' && cardId && summary.average == null) {
       const cached = await fetchCachedEbayCardPrice(cardId);
       if (cached) {
         summary = {

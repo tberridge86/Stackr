@@ -16,6 +16,7 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { BETA_TRADE_DEMO_MODE } from '../lib/config';
+import { LatestFeaturesModal } from '../components/LatestFeaturesModal';
 
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -186,6 +187,7 @@ function AppNavigation() {
                   <Stack.Screen name="notifications" options={{ title: '' }} />
                   <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
                 </Stack>
+                <LatestFeaturesModal />
                 <PersistentTabBar />
               </AchievementProvider>
             </TradeProvider>

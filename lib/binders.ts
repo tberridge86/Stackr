@@ -205,7 +205,7 @@ export async function fetchBinders(): Promise<BinderRecord[]> {
 
   if (error) throw error;
 
-  return (data ?? []) as BinderRecord[];
+  return ((data ?? []) as BinderRecord[]).filter((binder) => binder.user_id === user.id);
 }
 
 export async function fetchBinderById(
