@@ -28,7 +28,6 @@ import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { buildProductQuery, searchMarketProducts } from '../../lib/productSearch';
 import type { ProductLookupType, ProductPriceResult } from '../../lib/productSearch';
-import { fetchPptCardWithPsaGrades } from '../../lib/pricing';
 
 
 // ===============================
@@ -447,6 +446,20 @@ export default function MarketScreen() {
     if (!response.ok) throw new Error('Failed to fetch eBay price');
 
     const data = await response.json();
+    if (__DEV__) {
+      console.log('[market:eBay:card]', {
+        cardId: card.id,
+        pricingMode: lookupType === 'graded_slab' ? 'graded' : 'raw',
+        gradingCompany: lookupType === 'graded_slab' ? gradingCompany : undefined,
+        grade: lookupType === 'graded_slab' ? grade : undefined,
+        condition: lookupType === 'raw_card' ? rawCondition : undefined,
+        query: data.query,
+        count: data.count,
+        average: data.average,
+        source: data.soldDataSource,
+        usedCachedPrice: data.usedCachedPrice,
+      });
+    }
     return {
       low: data.low ?? null,
       average: data.average ?? null,
@@ -533,7 +546,6 @@ export default function MarketScreen() {
     const cards = smartResults.map(mapCard);
     setSearchResults(cards);
     await loadSearchResultPrices(cards.map((card) => card.id));
-    loadLiveEbayForSearchResults(cards);
     if (smartResults.length < 0) {
     const words = trimmed.split(/\s+/).filter(Boolean);
     let cardTerm = trimmed;
@@ -600,7 +612,6 @@ export default function MarketScreen() {
       const fallbackCards = (data ?? []).map(mapCard);
       setSearchResults(fallbackCards);
       await loadSearchResultPrices(fallbackCards.map((card) => card.id));
-      loadLiveEbayForSearchResults(fallbackCards);
     }
     } catch (err) {
       console.log('Search error:', err);
@@ -610,7 +621,12 @@ export default function MarketScreen() {
     } finally {
       setSearching(false);
     }
-  }, [loadLiveEbayForSearchResults, loadSearchResultPrices]);
+  }, [loadSearchResultPrices]);
+
+  useEffect(() => {
+    if (!isCardLookup(lookupType) || !searchResults.length) return;
+    loadLiveEbayForSearchResults(searchResults);
+  }, [grade, gradingCompany, loadLiveEbayForSearchResults, lookupType, rawCondition, searchResults]);
 
   const searchProductPrice = useCallback(async (searchQuery: string, productType: ProductLookupType) => {
     const trimmed = searchQuery.trim();
@@ -675,38 +691,6 @@ export default function MarketScreen() {
     try {
       setDetailPriceLoading(true);
 
-      if (lookupType === 'graded_slab') {
-        const raw = (card as any)?.raw_data || card;
-        const numericId =
-          raw?.tcgplayer?.id ??
-          raw?.tcgPlayerId ??
-          (card as any)?.tcgplayer?.id ??
-          (card as any)?.tcgPlayerId ??
-          (card.id?.match(/\d{5,}/)?.[0] || null); // only accept real 5+ digit TCGPlayer IDs
-
-        const searchName = card.name;
-
-        const ppt = numericId
-          ? await fetchPptCardWithPsaGrades(String(numericId))
-          : await fetchPptCardWithPsaGrades(searchName, card.set?.name);
-
-        if (ppt?.ebay?.salesByGrade) {
-          const g = grade.replace('.', '_');
-          const gradeKey = `psa${g}` as const;
-          const gradeData = (ppt.ebay.salesByGrade as any)[gradeKey] || (ppt.ebay.salesByGrade as any)[`psa${grade}`] || {};
-          setDetailEbayData({
-            low: gradeData.minPrice ?? null,
-            average: gradeData.averagePrice ?? null,
-            high: gradeData.maxPrice ?? null,
-            count: gradeData.count ?? null,
-            query: `PPT PSA ${grade}`,
-            soldDataSource: 'pokemonpricetracker',
-          });
-          setDetailPriceLoading(false);
-          return;
-        }
-      }
-
       if (!PRICE_API_URL) { setDetailEbayData(null); return; }
 
       // set.name falls back to set_id (e.g. "base1") when raw_data is absent —
@@ -736,6 +720,20 @@ export default function MarketScreen() {
       if (!response.ok) throw new Error('Failed to fetch eBay price');
 
       const data = await response.json();
+      if (__DEV__) {
+        console.log('[market:eBay:detail]', {
+          cardId: card.id,
+          pricingMode: lookupType === 'graded_slab' ? 'graded' : 'raw',
+          gradingCompany: lookupType === 'graded_slab' ? gradingCompany : undefined,
+          grade: lookupType === 'graded_slab' ? grade : undefined,
+          condition: lookupType === 'raw_card' ? rawCondition : undefined,
+          query: data.query,
+          count: data.count,
+          average: data.average,
+          source: data.soldDataSource,
+          usedCachedPrice: data.usedCachedPrice,
+        });
+      }
       setDetailEbayData({
         low: data.low ?? null,
         average: data.average ?? null,
