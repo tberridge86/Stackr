@@ -158,6 +158,11 @@ function stageMessage(stage?: ScanErrorStage) {
   }
 }
 
+function isLikelyImageCaptureError(message?: string | null) {
+  return /camera|capture|image|photo|snapshot|manipulat|base64|file path|takephoto|takesnapshot|permission|denied|uri|codec|decode|width|height/i
+    .test(String(message ?? ''));
+}
+
 function makeScanError(
   stage: ScanErrorStage,
   code: string,
@@ -2397,6 +2402,10 @@ export default function ScanScreen() {
       throw error;
     };
 
+    let recoveryBase64 = '';
+    let recoveryXimilarCandidates: ScanCandidate[] | null = null;
+    let recoveryMatch: ScannedCard | null = null;
+
     try {
       // Step 1: capture at fast profile
       const scanWallStartedAt = Date.now();
@@ -2431,6 +2440,7 @@ export default function ScanScreen() {
         return;
       }
       let bestBase64 = base64;
+      recoveryBase64 = bestBase64;
       let bestUri = capture.uri;
       let bestWidth = capture.width;
       let bestHeight = capture.height;
@@ -2497,6 +2507,8 @@ export default function ScanScreen() {
           throwIfScanTimedOut();
           match = (primaryCandidates.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
           ximilarCandidatesForConfirmation = primaryCandidates;
+          recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+          recoveryMatch = match;
 
           if (!match && ximilarResponse.candidates.length > 1) {
             const fallbackCandidates = await resolveXimilarCandidates(
@@ -2507,6 +2519,8 @@ export default function ScanScreen() {
             throwIfScanTimedOut();
             ximilarCandidatesForConfirmation = [...primaryCandidates, ...fallbackCandidates];
             match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+            recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+            recoveryMatch = match;
           }
         }
         console.log('[market-scan] local resolve after Ximilar', {
@@ -2543,6 +2557,8 @@ export default function ScanScreen() {
             throwIfScanTimedOut();
             match = (primaryCandidates.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
             ximilarCandidatesForConfirmation = primaryCandidates;
+            recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+            recoveryMatch = match;
 
             if (!match && ximilarMagicResponse.candidates.length > 1) {
               const fallbackCandidates = await resolveXimilarCandidates(
@@ -2553,6 +2569,8 @@ export default function ScanScreen() {
               throwIfScanTimedOut();
               ximilarCandidatesForConfirmation = [...primaryCandidates, ...fallbackCandidates];
               match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+              recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+              recoveryMatch = match;
             }
           }
           console.log('[market-scan] local resolve after Magic AI', {
@@ -3152,6 +3170,7 @@ export default function ScanScreen() {
           const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
           const base64Hq = hqCapture.base64;
           bestBase64 = base64Hq;
+          recoveryBase64 = bestBase64;
           bestUri = hqCapture.uri;
           bestWidth = hqCapture.width;
           bestHeight = hqCapture.height;
@@ -3201,6 +3220,7 @@ export default function ScanScreen() {
         binderEditionHint ?? match.editionHint ?? null,
         binderEditionHint ? 'binder' : match.editionSource
       );
+      recoveryMatch = match;
       console.log('Scan completed:', {
         card: match.name,
         number: match.number,
@@ -3259,7 +3279,27 @@ export default function ScanScreen() {
     } catch (error: any) {
       const isAbort = error?.name === 'AbortError';
       const errorMessage = error?.message ?? String(error);
-      const isImageError = /camera|image|photo|snapshot|manipulat|base64/i.test(errorMessage);
+      const isImageError = isLikelyImageCaptureError(errorMessage);
+
+      if (!isAbort && recoveryXimilarCandidates?.length) {
+        logScanStage('CANDIDATES_RENDER_STARTED', {
+          recoveredFrom: 'SCAN_RESULT_RENDER_FAILED',
+          error: errorMessage,
+          candidates: recoveryXimilarCandidates.length,
+        });
+        stopScanningMessages();
+        setScanError(null);
+        setProcessingOcr(false);
+        setPendingConfirmation({
+          card: recoveryMatch ?? undefined,
+          candidates: recoveryXimilarCandidates,
+          base64: recoveryBase64,
+          isMarket: isMarketMode,
+          editionChoiceRequired: false,
+        });
+        return;
+      }
+
       const nextError = makeScanError(
         isAbort ? 'upload' : isImageError ? 'image' : 'render',
         isAbort ? 'SCAN_API_REQUEST_FAILED' : isImageError ? 'SCAN_IMAGE_READ_FAILED' : 'SCAN_RESULT_RENDER_FAILED',
@@ -4073,7 +4113,7 @@ export default function ScanScreen() {
               <TouchableOpacity onPress={handleSearchManually} style={{ backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}>
                 <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Search Manually</Text>
               </TouchableOpacity>
-              {SHOW_SCAN_DEBUG && (
+              {(SHOW_SCAN_DEBUG || scanError.details || scanError.stack) && (
                 <TouchableOpacity
                   onPress={() => shareDebugDetails(JSON.stringify(scanError, null, 2))}
                   style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', borderRadius: 14, paddingVertical: 13, alignItems: 'center' }}
