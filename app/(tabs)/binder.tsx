@@ -138,6 +138,8 @@ function BinderCard({ item, counts, masterSets, value, confirmDeleteBinder, inde
 
   const progress = counts[item.id] ?? { owned: 0, total: 0 };
   const isMasterSet = masterSets[item.id] === true;
+  const isGraded = item.card_mode === 'graded';
+  const gradeLabel = [item.default_grade_company, item.default_grade].filter(Boolean).join(' ');
   const percentage = progress.total
     ? Math.round((progress.owned / progress.total) * 100)
     : 0;
@@ -259,9 +261,20 @@ function BinderCard({ item, counts, masterSets, value, confirmDeleteBinder, inde
         <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }}>
           {progress.owned}/{progress.total} · {percentage}%
         </Text>
-        {isMasterSet && (
-          <View style={{ alignSelf: 'flex-start', backgroundColor: theme.colors.primary + '18', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, marginTop: 4, borderWidth: 1, borderColor: theme.colors.primary + '55' }}>
-            <Text style={{ color: theme.colors.primary, fontSize: 9, fontWeight: '900' }}>Master set</Text>
+        {(isMasterSet || isGraded) && (
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+            {isGraded && (
+              <View style={{ alignSelf: 'flex-start', backgroundColor: '#EEF2FF', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, borderWidth: 1, borderColor: '#A5B4FC' }}>
+                <Text style={{ color: '#3730A3', fontSize: 9, fontWeight: '900' }}>
+                  {gradeLabel ? `Graded ${gradeLabel}` : 'Graded'}
+                </Text>
+              </View>
+            )}
+            {isMasterSet && (
+              <View style={{ alignSelf: 'flex-start', backgroundColor: theme.colors.primary + '18', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, borderWidth: 1, borderColor: theme.colors.primary + '55' }}>
+                <Text style={{ color: theme.colors.primary, fontSize: 9, fontWeight: '900' }}>Master set</Text>
+              </View>
+            )}
           </View>
         )}
         {value !== null && (

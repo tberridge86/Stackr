@@ -5,6 +5,7 @@ import { USD_TO_GBP } from './config';
 import { recordAchievementEvent } from './achievements';
 
 export type BinderType = 'official' | 'custom';
+export type BinderCardMode = 'raw' | 'graded';
 
 export type BinderRecord = {
   id: string;
@@ -23,6 +24,9 @@ export type BinderRecord = {
   edition?: string | null;
   default_condition?: string | null;
   master_set_enabled?: boolean | null;
+  card_mode?: BinderCardMode | null;
+  default_grade_company?: string | null;
+  default_grade?: string | null;
 };
 
 export type BinderCardRecord = {
@@ -345,6 +349,9 @@ export async function createBinder(input: {
   sourceSetId?: string | null;
   edition?: string | null;
   defaultCondition?: string | null;
+  cardMode?: BinderCardMode | null;
+  defaultGradeCompany?: string | null;
+  defaultGrade?: string | null;
 }): Promise<BinderRecord> {
   const {
     data: { user },
@@ -364,6 +371,9 @@ export async function createBinder(input: {
     source_set_id: input.sourceSetId ?? null,
     edition: input.edition ?? null,
     default_condition: input.defaultCondition ?? 'Near Mint',
+    card_mode: input.cardMode ?? 'raw',
+    default_grade_company: input.cardMode === 'graded' ? input.defaultGradeCompany ?? 'PSA' : null,
+    default_grade: input.cardMode === 'graded' ? input.defaultGrade ?? '10' : null,
   };
 
   let { data, error } = await supabase
@@ -373,8 +383,11 @@ export async function createBinder(input: {
     .single();
 
   if (error?.code === 'PGRST204') {
-    const { default_condition, ...fallbackPayload } = insertPayload;
+    const { default_condition, card_mode, default_grade_company, default_grade, ...fallbackPayload } = insertPayload;
     void default_condition;
+    void card_mode;
+    void default_grade_company;
+    void default_grade;
     const fallback = await supabase
       .from('binders')
       .insert(fallbackPayload)
