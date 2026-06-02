@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Text } from '../../components/Text';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
+import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { useLocalSearchParams } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
 import { useProfile } from '../../components/profile-context';
@@ -22,7 +23,7 @@ import {
 } from '../../lib/pokemonTcgCache';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
-import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
+import { fetchPokeTraceCardPrice, fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 import { supabase } from '../../lib/supabase';
 
 type PokemonCard = {
@@ -212,6 +213,24 @@ export default function CardDetailScreen() {
     try {
       setEbayLoading(true);
       setEbayError(false);
+
+      const pokeTrace = await fetchPokeTraceCardPrice({
+        identifier: cardData.name ?? cardData.id,
+        setName: cardData.set?.name ?? null,
+        number: cardData.number ?? null,
+        market: 'US',
+      });
+
+      if (pokeTrace?.ebay_average != null) {
+        setEbayPrice({
+          low: pokeTrace.ebay_low,
+          average: pokeTrace.ebay_average,
+          high: pokeTrace.ebay_high,
+          count: pokeTrace.ebay_count,
+          usedFallback: false,
+        });
+        return;
+      }
 
       const result = await fetchEbayPrice({
         cardId: cardData.id,
@@ -813,6 +832,12 @@ const handleListOnMarketplace = async () => {
           </Text>
         </View>
       </View>
+
+      <PokeTraceMarketInsights
+        cardName={card.name ?? card.id}
+        setName={card.set?.name ?? null}
+        number={card.number ?? null}
+      />
 
       {/* Trade Actions */}
       <View style={styles.actions}>

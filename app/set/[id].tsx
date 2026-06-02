@@ -11,6 +11,8 @@ import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
+  Modal,
+  Alert,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +22,11 @@ import { supabase } from '../../lib/supabase';
 
 type FilterType = 'all' | 'owned' | 'missing';
 type SortType = 'number' | 'name' | 'rarity';
+
+type QuantityTarget = {
+  card: PokemonCard;
+  variant: string;
+} | null;
 
 const VARIANT_LABELS: Record<string, string> = {
   normal: 'Nrm',
@@ -83,16 +90,18 @@ function shortVariant(key: string): string {
 
 type CardItemProps = {
   card: PokemonCard;
-  ownedVariants: Set<string>;
+  variantQuantities: Map<string, number>;
   setId: string;
-  onToggleVariant: (cardId: string, variant: string) => void;
+  onOpenQuantity: (card: PokemonCard, variant: string) => void;
 };
 
-const CardItem = React.memo(({ card, ownedVariants, setId, onToggleVariant }: CardItemProps) => {
+const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity }: CardItemProps) => {
   const { theme } = useTheme();
   const variants = useMemo(() => getVariants(card, setId), [card, setId]);
-  const anyOwned = variants.some((v) => ownedVariants.has(`${card.id}:${v}`));
-  const allOwned = variants.every((v) => ownedVariants.has(`${card.id}:${v}`));
+  const quantities = variants.map((v) => variantQuantities.get(`${card.id}:${v}`) ?? 0);
+  const totalQuantity = quantities.reduce((sum, qty) => sum + qty, 0);
+  const anyOwned = totalQuantity > 0;
+  const allOwned = variants.every((v) => (variantQuantities.get(`${card.id}:${v}`) ?? 0) > 0);
   const slicePct = 100 / variants.length;
 
   return (
@@ -145,11 +154,12 @@ const CardItem = React.memo(({ card, ownedVariants, setId, onToggleVariant }: Ca
         )}
 
         {variants.map((variant, i) => {
-          const owned = ownedVariants.has(`${card.id}:${variant}`);
+          const quantity = variantQuantities.get(`${card.id}:${variant}`) ?? 0;
+          const owned = quantity > 0;
           return (
             <TouchableOpacity
               key={variant}
-              onPress={() => onToggleVariant(card.id, variant)}
+              onPress={() => onOpenQuantity(card, variant)}
               activeOpacity={0.7}
               style={{
                 position: 'absolute',
@@ -166,6 +176,21 @@ const CardItem = React.memo(({ card, ownedVariants, setId, onToggleVariant }: Ca
             >
               {owned && (
                 <Ionicons name="checkmark-circle" size={22} color="#7A5200" />
+              )}
+              {quantity > 1 && (
+                <View style={{
+                  position: 'absolute',
+                  top: 5,
+                  alignSelf: 'center',
+                  borderRadius: 999,
+                  backgroundColor: 'rgba(11,15,42,0.82)',
+                  paddingHorizontal: 7,
+                  paddingVertical: 2,
+                }}>
+                  <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>
+                    x{quantity}
+                  </Text>
+                </View>
               )}
               <View style={{ position: 'absolute', bottom: 3, alignItems: 'center' }}>
                 {variant === 'reverseHoloEnergy' ? (
@@ -188,6 +213,27 @@ const CardItem = React.memo(({ card, ownedVariants, setId, onToggleVariant }: Ca
             </TouchableOpacity>
           );
         })}
+
+        {totalQuantity > 1 && (
+          <View style={{
+            position: 'absolute',
+            top: 6,
+            right: 6,
+            minWidth: 28,
+            height: 28,
+            borderRadius: 14,
+            paddingHorizontal: 8,
+            backgroundColor: '#FFD166',
+            borderWidth: 2,
+            borderColor: '#FFFFFF',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Text style={{ color: '#0b0f2a', fontSize: 12, fontWeight: '900' }}>
+              x{totalQuantity}
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Name + rarity */}
@@ -221,8 +267,11 @@ export default function SetDetailScreen() {
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ownedVariants, setOwnedVariants] = useState<Set<string>>(new Set());
+  const [variantQuantities, setVariantQuantities] = useState<Map<string, number>>(new Map());
   const [userId, setUserId] = useState<string | null>(null);
+  const [quantityTarget, setQuantityTarget] = useState<QuantityTarget>(null);
+  const [quantityDraft, setQuantityDraft] = useState('1');
+  const [quantitySaving, setQuantitySaving] = useState(false);
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
@@ -253,13 +302,30 @@ export default function SetDetailScreen() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
-        const { data: variantRows } = await supabase
+        let { data: variantRows, error: variantError } = await supabase
           .from('user_card_variants')
-          .select('card_id, variant')
+          .select('card_id, variant, quantity')
           .eq('user_id', user.id)
           .eq('set_id', setId);
 
-        setOwnedVariants(new Set((variantRows ?? []).map((r) => `${r.card_id}:${r.variant}`)));
+        if (variantError && variantError.message.includes('quantity')) {
+          const fallback = await supabase
+            .from('user_card_variants')
+            .select('card_id, variant')
+            .eq('user_id', user.id)
+            .eq('set_id', setId);
+          variantRows = fallback.data?.map((row) => ({ ...row, quantity: 1 })) ?? [];
+          variantError = fallback.error;
+        }
+
+        if (variantError) throw variantError;
+
+        setVariantQuantities(new Map(
+          (variantRows ?? []).map((row: any) => [
+            `${row.card_id}:${row.variant}`,
+            Math.max(1, Number(row.quantity) || 1),
+          ])
+        ));
       }
     } catch (e) {
       console.log('Failed to load set data', e);
@@ -271,40 +337,101 @@ export default function SetDetailScreen() {
   useEffect(() => { loadSetData(); }, [loadSetData]);
 
   // ===============================
-  // TOGGLE VARIANT
+  // QUANTITY
   // ===============================
 
-  const handleToggleVariant = useCallback(async (cardId: string, variant: string) => {
+  const openQuantityModal = useCallback((card: PokemonCard, variant: string) => {
+    const currentQuantity = variantQuantities.get(`${card.id}:${variant}`) ?? 0;
+    setQuantityTarget({ card, variant });
+    setQuantityDraft(String(Math.max(1, currentQuantity || 1)));
+  }, [variantQuantities]);
+
+  const handleSetVariantQuantity = useCallback(async (cardId: string, variant: string, nextQuantity: number) => {
     if (!userId) return;
     const key = `${cardId}:${variant}`;
-    let removing = false;
+    const previousQuantity = variantQuantities.get(key) ?? 0;
 
-    setOwnedVariants((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-        removing = true;
-      } else {
-        next.add(key);
-        removing = false;
-      }
+    setVariantQuantities((prev) => {
+      const next = new Map(prev);
+      if (nextQuantity <= 0) next.delete(key);
+      else next.set(key, nextQuantity);
       return next;
     });
 
-    if (removing) {
-      await supabase
-        .from('user_card_variants')
-        .delete()
-        .eq('user_id', userId)
-        .eq('card_id', cardId)
-        .eq('set_id', setId)
-        .eq('variant', variant);
-    } else {
-      await supabase
-        .from('user_card_variants')
-        .insert({ user_id: userId, card_id: cardId, set_id: setId, variant });
+    try {
+      if (nextQuantity <= 0) {
+        await supabase
+          .from('user_card_variants')
+          .delete()
+          .eq('user_id', userId)
+          .eq('card_id', cardId)
+          .eq('set_id', setId)
+          .eq('variant', variant);
+        return;
+      }
+
+      if (previousQuantity > 0) {
+        const { error } = await supabase
+          .from('user_card_variants')
+          .update({ quantity: nextQuantity })
+          .eq('user_id', userId)
+          .eq('card_id', cardId)
+          .eq('set_id', setId)
+          .eq('variant', variant);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('user_card_variants')
+          .insert({ user_id: userId, card_id: cardId, set_id: setId, variant, quantity: nextQuantity });
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      setVariantQuantities((prev) => {
+        const next = new Map(prev);
+        if (previousQuantity <= 0) next.delete(key);
+        else next.set(key, previousQuantity);
+        return next;
+      });
+
+      console.log('Failed to save card quantity', error);
+      Alert.alert(
+        'Could not save quantity',
+        error?.message?.includes('quantity')
+          ? 'Quantity tracking needs the new database migration before it can save.'
+          : 'Could not save this card quantity.'
+      );
+      throw error;
     }
-  }, [userId, setId]);
+  }, [userId, setId, variantQuantities]);
+
+  const saveQuantityModal = useCallback(async () => {
+    if (!quantityTarget) return;
+    const nextQuantity = Math.max(1, Math.min(99, Number.parseInt(quantityDraft, 10) || 1));
+
+    try {
+      setQuantitySaving(true);
+      await handleSetVariantQuantity(quantityTarget.card.id, quantityTarget.variant, nextQuantity);
+      setQuantityTarget(null);
+    } catch {
+      // Error is surfaced in handleSetVariantQuantity.
+    } finally {
+      setQuantitySaving(false);
+    }
+  }, [handleSetVariantQuantity, quantityDraft, quantityTarget]);
+
+  const removeQuantityModal = useCallback(async () => {
+    if (!quantityTarget) return;
+
+    try {
+      setQuantitySaving(true);
+      await handleSetVariantQuantity(quantityTarget.card.id, quantityTarget.variant, 0);
+      setQuantityTarget(null);
+    } catch {
+      // Error is surfaced in handleSetVariantQuantity.
+    } finally {
+      setQuantitySaving(false);
+    }
+  }, [handleSetVariantQuantity, quantityTarget]);
 
   // ===============================
   // FILTER + SORT
@@ -318,7 +445,7 @@ export default function SetDetailScreen() {
   const filteredCards = useMemo(() => {
     let result = cards.filter((card) => {
       const variants = getVariants(card, setId);
-      const anyOwned = variants.some((v) => ownedVariants.has(`${card.id}:${v}`));
+      const anyOwned = variants.some((v) => (variantQuantities.get(`${card.id}:${v}`) ?? 0) > 0);
       const matchesSearch =
         card.name.toLowerCase().includes(search.toLowerCase()) ||
         card.number.toLowerCase().includes(search.toLowerCase());
@@ -335,11 +462,11 @@ export default function SetDetailScreen() {
     else if (sort === 'rarity') result.sort((a, b) => (a.rarity ?? '').localeCompare(b.rarity ?? ''));
 
     return result;
-  }, [cards, ownedVariants, search, filter, selectedRarity, sort]);
+  }, [cards, variantQuantities, search, filter, selectedRarity, sort, setId]);
 
   const ownedCardCount = useMemo(() =>
-    cards.filter((c) => getVariants(c, setId).some((v) => ownedVariants.has(`${c.id}:${v}`))).length,
-    [cards, ownedVariants, setId]
+    cards.filter((c) => getVariants(c, setId).some((v) => (variantQuantities.get(`${c.id}:${v}`) ?? 0) > 0)).length,
+    [cards, variantQuantities, setId]
   );
 
   const progressPercent = setInfo?.total && setInfo.total > 0
@@ -349,11 +476,11 @@ export default function SetDetailScreen() {
   const renderCard = useCallback(({ item: card }: { item: PokemonCard }) => (
     <CardItem
       card={card}
-      ownedVariants={ownedVariants}
+      variantQuantities={variantQuantities}
       setId={setId ?? ''}
-      onToggleVariant={handleToggleVariant}
+      onOpenQuantity={openQuantityModal}
     />
-  ), [ownedVariants, setId, handleToggleVariant]);
+  ), [variantQuantities, setId, openQuantityModal]);
 
   // ===============================
   // LOADING STATE
@@ -382,6 +509,10 @@ export default function SetDetailScreen() {
       </SafeAreaView>
     );
   }
+
+  const selectedVariantQuantity = quantityTarget
+    ? variantQuantities.get(`${quantityTarget.card.id}:${quantityTarget.variant}`) ?? 0
+    : 0;
 
   // ===============================
   // MAIN RENDER
@@ -566,6 +697,151 @@ export default function SetDetailScreen() {
           </View>
         }
       />
+
+      <Modal visible={quantityTarget !== null} animationType="slide" transparent>
+        <View style={{
+          flex: 1,
+          justifyContent: 'flex-end',
+          backgroundColor: 'rgba(15,23,42,0.35)',
+        }}>
+          <View style={{
+            backgroundColor: theme.colors.card,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingHorizontal: 20,
+            paddingTop: 18,
+            paddingBottom: 34,
+            borderTopWidth: 1,
+            borderColor: theme.colors.border,
+          }}>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+              {quantityTarget?.card.images?.small ? (
+                <Image
+                  source={{ uri: quantityTarget.card.images.small }}
+                  style={{ width: 58, height: 80, borderRadius: 8, backgroundColor: theme.colors.surface }}
+                  resizeMode="contain"
+                />
+              ) : (
+                <View style={{
+                  width: 58,
+                  height: 80,
+                  borderRadius: 8,
+                  backgroundColor: theme.colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Ionicons name="image-outline" size={22} color={theme.colors.textSoft} />
+                </View>
+              )}
+
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>
+                  {quantityTarget?.card.name ?? 'Card'}
+                </Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 4 }}>
+                  {quantityTarget ? shortVariant(quantityTarget.variant) : ''} · #{quantityTarget?.card.number ?? ''}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => setQuantityTarget(null)}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: theme.colors.surface,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="close" size={18} color={theme.colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13, marginBottom: 8 }}>
+              Quantity owned
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <TouchableOpacity
+                onPress={() => setQuantityDraft((value) => String(Math.max(1, (Number.parseInt(value, 10) || 1) - 1)))}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: theme.colors.surface,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="remove" size={20} color={theme.colors.text} />
+              </TouchableOpacity>
+
+              <TextInput
+                value={quantityDraft}
+                onChangeText={(value) => setQuantityDraft(value.replace(/[^0-9]/g, '').slice(0, 2) || '1')}
+                keyboardType="number-pad"
+                selectTextOnFocus
+                style={{
+                  flex: 1,
+                  minHeight: 46,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.bg,
+                  color: theme.colors.text,
+                  fontSize: 20,
+                  fontWeight: '900',
+                  textAlign: 'center',
+                }}
+              />
+
+              <TouchableOpacity
+                onPress={() => setQuantityDraft((value) => String(Math.min(99, (Number.parseInt(value, 10) || 1) + 1)))}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: theme.colors.primary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Ionicons name="add" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              onPress={saveQuantityModal}
+              disabled={quantitySaving}
+              style={{
+                backgroundColor: theme.colors.primary,
+                borderRadius: 14,
+                paddingVertical: 14,
+                alignItems: 'center',
+                opacity: quantitySaving ? 0.65 : 1,
+              }}
+            >
+              {quantitySaving ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Save quantity</Text>
+              )}
+            </TouchableOpacity>
+
+            {selectedVariantQuantity > 0 && (
+              <TouchableOpacity
+                onPress={removeQuantityModal}
+                disabled={quantitySaving}
+                style={{ alignItems: 'center', paddingVertical: 13, marginTop: 4 }}
+              >
+                <Text style={{ color: '#EF4444', fontWeight: '900' }}>Mark as missing</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

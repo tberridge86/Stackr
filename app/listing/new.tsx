@@ -17,6 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Text } from '../../components/Text';
+import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -27,6 +28,7 @@ import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { getProductPriceWithFallback } from '../../lib/productSearch';
 import type { ProductLookupType } from '../../lib/productSearch';
 import { useScanCamera } from '../../lib/useScanCamera';
+import { fetchPokeTraceCardPrice } from '../../lib/pricing';
 
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 
@@ -158,17 +160,19 @@ export default function NewListingScreen() {
   const cameraSlotIndex = Math.min(Math.max(slotIndex, 0), PHOTO_SLOTS.length - 1);
   const cameraSlot = PHOTO_SLOTS[cameraSlotIndex] ?? PHOTO_SLOTS[0];
   const isCornerCaptureSlot = Boolean(cameraSlot.corner);
-  const listingBottomControlsHeight = Platform.OS === 'android' ? 214 : 196;
-  const listingHeaderHeight = insets.top + 66;
+  const listingHeaderHeight = insets.top + 58;
+  const listingFrameBottomPadding = isCornerCaptureSlot ? 138 : 150;
   const listingFrameWidth = isCornerCaptureSlot
     ? Math.min(screenWidth - 62, 360)
     : Math.min(screenWidth * 0.76, 340);
   const listingFrameHeight = isCornerCaptureSlot
     ? listingFrameWidth
     : Math.round(listingFrameWidth / 0.716);
-  const listingFrameCenterY = listingHeaderHeight
-    + ((screenHeight - listingHeaderHeight - insets.bottom - listingBottomControlsHeight) / 2)
-    - (isCornerCaptureSlot ? 2 : 12);
+  const listingFrameX = Math.round((screenWidth - listingFrameWidth) / 2);
+  const listingFrameY = Math.round(
+    listingHeaderHeight
+    + ((screenHeight - listingHeaderHeight - insets.bottom - listingFrameBottomPadding - listingFrameHeight) / 2)
+  );
   const { camera, device, torch, toggleTorch, takePhoto } = useScanCamera(false, false, {
     cropToCard: true,
     cropFrame: {
@@ -176,8 +180,9 @@ export default function NewListingScreen() {
       previewHeight: screenHeight,
       frameWidth: listingFrameWidth,
       frameHeight: listingFrameHeight,
-      frameCenterY: listingFrameCenterY,
-      marginRatio: isCornerCaptureSlot ? 0.04 : 0.08,
+      frameX: listingFrameX,
+      frameY: listingFrameY,
+      marginRatio: 0,
     },
     resizeWidth: isCornerCaptureSlot ? 1400 : 1600,
     compress: 0.82,
@@ -279,7 +284,33 @@ export default function NewListingScreen() {
     try {
       const rawSetName = card.set_name ?? '';
       const setName = (rawSetName && rawSetName !== card.set_id) ? rawSetName : '';
+      const pokeTrace = await fetchPokeTraceCardPrice({
+        identifier: card.name,
+        setName,
+        number: card.number ?? null,
+        market: 'US',
+        gradingCompany,
+        grade,
+      });
       const fetchCardEbayPrice = async () => {
+        if (listingType === 'raw_card' && pokeTrace?.ebay_average != null) {
+          return {
+            low: pokeTrace.ebay_low,
+            average: pokeTrace.ebay_average,
+            high: pokeTrace.ebay_high,
+            count: pokeTrace.ebay_count,
+          };
+        }
+
+        if (listingType === 'graded_slab' && pokeTrace?.graded_average != null) {
+          return {
+            low: pokeTrace.graded_low,
+            average: pokeTrace.graded_average,
+            high: pokeTrace.graded_high,
+            count: pokeTrace.graded_count,
+          };
+        }
+
         if (listingType === 'raw_card') {
           return fetchEbayPrice({
             cardId: card.id,
@@ -313,16 +344,17 @@ export default function NewListingScreen() {
       const [ebayResult] = await Promise.allSettled([fetchCardEbayPrice()]);
 
       const tcgPrices = card.raw_data?.tcgplayer?.prices;
-      let tcg: number | null = null;
+      let tcg: number | null = pokeTrace?.tcg_mid ?? pokeTrace?.tcg_low ?? null;
       if (tcgPrices) {
         for (const key of ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal']) {
           const val = tcgPrices[key]?.market ?? tcgPrices[key]?.mid;
-          if (typeof val === 'number') { tcg = Math.round(val * USD_TO_GBP * 100) / 100; break; }
+          if (tcg == null && typeof val === 'number') { tcg = Math.round(val * USD_TO_GBP * 100) / 100; break; }
         }
       }
 
       const cm = card.raw_data?.cardmarket?.prices;
-      const cardmarket = cm?.trendPrice != null ? Math.round(cm.trendPrice * EUR_TO_GBP * 100) / 100 : null;
+      const cardmarket = pokeTrace?.cardmarket_trend
+        ?? (cm?.trendPrice != null ? Math.round(cm.trendPrice * EUR_TO_GBP * 100) / 100 : null);
 
       const ebay = ebayResult.status === 'fulfilled' ? (ebayResult.value?.average ?? null) : null;
 
@@ -795,6 +827,17 @@ export default function NewListingScreen() {
         )}
       </View>
 
+      {selectedCard && isCardListing(listingType) && (
+        <PokeTraceMarketInsights
+          cardName={selectedCard.name}
+          setName={selectedCard.set_name ?? null}
+          number={selectedCard.number ?? null}
+          rawCondition={listingType === 'raw_card' ? condition || 'Near Mint' : null}
+          gradingCompany={listingType === 'graded_slab' ? gradingCompany : null}
+          grade={listingType === 'graded_slab' ? grade : null}
+        />
+      )}
+
       {/* Asking price */}
       <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginBottom: 6 }}>Your Trade Value</Text>
       <View style={{
@@ -880,7 +923,6 @@ export default function NewListingScreen() {
     const captured = photos[slot.key];
     const requiredFilled = PHOTO_SLOTS.filter(s => s.required).every(s => photos[s.key]);
     const filledCount = Object.keys(photos).length;
-    const isCornerSlot = Boolean(slot.corner);
     const cornerTargetStyle = getListingCornerTargetStyle(slot.corner);
 
     if (!hasPermission) {
@@ -944,8 +986,11 @@ export default function NewListingScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: isCornerSlot ? 138 : 150 }}>
+          <View pointerEvents="none" style={StyleSheet.absoluteFill}>
             <View style={{
+              position: 'absolute',
+              left: listingFrameX,
+              top: listingFrameY,
               width: listingFrameWidth,
               height: listingFrameHeight,
               borderRadius: 16,

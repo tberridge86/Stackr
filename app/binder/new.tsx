@@ -126,11 +126,13 @@ export default function NewBinderScreen() {
     id?: string;
     sourceSetId?: string;
     type?: string;
+    returnTo?: string;
   }>();
 
   const binderId = Array.isArray(params.id) ? params.id[0] : params.id;
   const paramSourceSetId = Array.isArray(params.sourceSetId) ? params.sourceSetId[0] : params.sourceSetId;
   const paramType = Array.isArray(params.type) ? params.type[0] : params.type;
+  const returnTo = Array.isArray(params.returnTo) ? params.returnTo[0] : params.returnTo;
 
   const isEditMode = Boolean(binderId);
 
@@ -290,7 +292,11 @@ export default function NewBinderScreen() {
         defaultCondition,
       });
 
-      router.replace(`/binder/${binder.id}`);
+      if (returnTo === 'scan-review') {
+        router.back();
+      } else {
+        router.replace(`/binder/${binder.id}`);
+      }
     } catch (err) {
       console.log('Save binder failed', err);
       Alert.alert('Error', 'Could not save binder.');

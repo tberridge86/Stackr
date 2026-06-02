@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { StackrCardPlaceholder } from '../../components/StackrCardPlaceholder';
+import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTrade } from '../../components/trade-context';
@@ -1382,6 +1383,17 @@ const handleArchive = async (listingId: string) => {
                           Sold prices from eBay. Historical prices from TCG data.
                         </Text>
                       </View>
+
+                      {selectedCard && (!selectedListing?.product_type || selectedListing.product_type === 'raw_card' || selectedListing.product_type === 'graded_slab') && (
+                        <PokeTraceMarketInsights
+                          cardName={selectedCard.name ?? selectedListing?.product_name ?? selectedListing?.card_id ?? ''}
+                          setName={selectedCard.set?.name ?? null}
+                          number={selectedCard.number ?? null}
+                          rawCondition={selectedListing?.pricing_mode === 'graded' ? null : selectedListing?.condition ?? null}
+                          gradingCompany={selectedListing?.pricing_mode === 'graded' ? selectedListing?.grade_company ?? null : null}
+                          grade={selectedListing?.pricing_mode === 'graded' ? selectedListing?.grade ?? null : null}
+                        />
+                      )}
 
                       {!!selectedListing?.listing_notes && (
                         <View style={{ marginTop: 14, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>

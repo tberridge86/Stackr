@@ -293,7 +293,12 @@ export default function CommunityScreen() {
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [cardModalOpen, setCardModalOpen] = useState(false);
+  const [cardPickerSearch, setCardPickerSearch] = useState('');
   const [flexPickerMode, setFlexPickerMode] = useState<FlexPickerMode>(null);
+  const [collectorModalOpen, setCollectorModalOpen] = useState(false);
+  const [collectorSearch, setCollectorSearch] = useState('');
+  const [allCollectors, setAllCollectors] = useState<ProfilePreview[]>([]);
+  const [collectorLoading, setCollectorLoading] = useState(false);
 
   const [body, setBody] = useState('');
   const [selectedCard, setSelectedCard] = useState<OwnedCardOption | null>(null);
@@ -530,17 +535,65 @@ export default function CommunityScreen() {
     loadOwnedCards();
   }, []);
 
+  const friendIds = useMemo(
+    () => new Set(friends.map((friend) => friend.friend_id)),
+    [friends]
+  );
+
+  const filteredCollectors = useMemo(() => {
+    const query = collectorSearch.trim().toLowerCase();
+
+    if (!query) return allCollectors;
+
+    return allCollectors.filter((collector) =>
+      (collector.collector_name ?? 'Collector').toLowerCase().includes(query)
+    );
+  }, [allCollectors, collectorSearch]);
+
+  const loadCollectors = useCallback(async () => {
+    try {
+      setCollectorLoading(true);
+
+      const currentUserId = myProfile?.id;
+      let query = supabase
+        .from('profiles')
+        .select('id, collector_name, avatar_preset')
+        .order('collector_name', { ascending: true, nullsFirst: false })
+        .limit(250);
+
+      if (currentUserId) {
+        query = query.neq('id', currentUserId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      setAllCollectors((data ?? []) as ProfilePreview[]);
+    } catch (error) {
+      console.log('Collector directory load failed', error);
+      Alert.alert('Could not load collectors', 'Please try again in a moment.');
+    } finally {
+      setCollectorLoading(false);
+    }
+  }, [myProfile?.id]);
+
+  const openCollectorDirectory = useCallback(() => {
+    setCollectorModalOpen(true);
+    setCollectorSearch('');
+    void loadCollectors();
+  }, [loadCollectors]);
+
  const visiblePosts = useMemo(() => {
   const basePosts = mode === 'global'
     ? posts
-    : posts.filter((post) => friends.some((f) => f.friend_id === post.user_id));
+    : posts.filter((post) => friendIds.has(post.user_id));
 
   if (activeSocialTab === 'Flex') {
     return basePosts.filter((post) => post.post_type === 'card_showcase' || post.post_type === 'binder_showcase');
   }
 
   return activeSocialTab === 'Home' ? [] : basePosts;
-}, [posts, mode, friends, activeSocialTab]);
+}, [posts, mode, friendIds, activeSocialTab]);
   const handleAdminDeletePost = async (postId: string) => {
     Alert.alert('Delete post', 'Remove this post permanently?', [
       { text: 'Cancel', style: 'cancel' },
@@ -1108,6 +1161,29 @@ export default function CommunityScreen() {
   const soonestConvention = localFeaturedEvents[0] ?? null;
   const nearestStore: LiveLocalPlace | LocalStore | null = liveLocalPlaces[0] ?? localStoreResults[0]?.store ?? null;
   const latestNewsItem = newsItems[0];
+  const filteredOwnedCards = useMemo(() => {
+    const query = cardPickerSearch.trim().toLowerCase();
+    if (!query) return ownedCards;
+
+    const words = query.split(/\s+/).filter(Boolean);
+    return ownedCards.filter((item) => {
+      const card = item.card;
+      const haystack = [
+        card?.name,
+        card?.raw_data?.set?.name,
+        card?.raw_data?.number,
+        card?.id,
+        item.card_id,
+        item.set_id,
+        item.binder_name,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return words.every((word) => haystack.includes(word));
+    });
+  }, [cardPickerSearch, ownedCards]);
 
   const renderOwnedCard = ({ item }: { item: OwnedCardOption }) => {
     const card = item.card;
@@ -1116,6 +1192,7 @@ export default function CommunityScreen() {
       <Pressable
         onPress={() => {
           setSelectedCard(item);
+          setCardPickerSearch('');
           setCardModalOpen(false);
         }}
         style={styles.ownedCardRow}
@@ -1245,7 +1322,7 @@ export default function CommunityScreen() {
           <View style={styles.brandRow}>
             <Image source={require('../../../assets/images/hub.png')} style={styles.brandLogo} resizeMode="contain" />
             <View style={styles.heroActions}>
-              <Pressable style={styles.heroIconButton}>
+              <Pressable onPress={openCollectorDirectory} style={styles.heroIconButton}>
                 <Ionicons name="search-outline" size={22} color={theme.colors.text} />
               </Pressable>
               <Pressable style={styles.heroIconButton}>
@@ -1713,7 +1790,10 @@ export default function CommunityScreen() {
 
                   <View style={styles.createActions}>
                     <Pressable
-                      onPress={() => setCardModalOpen(true)}
+                      onPress={() => {
+                        setCardPickerSearch('');
+                        setCardModalOpen(true);
+                      }}
                       style={styles.attachButton}
                     >
                       <Ionicons
@@ -1755,6 +1835,99 @@ export default function CommunityScreen() {
         )}
 
       </View>
+
+      <Modal visible={collectorModalOpen} animationType="slide" transparent>
+        <View style={styles.meetupModalBackdrop}>
+          <View style={styles.collectorModalCard}>
+            <View style={styles.panelHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.modalHeading}>Find collectors</Text>
+                <Text style={styles.modalSubheading}>
+                  Browse everyone on Stackr and open a profile to add them.
+                </Text>
+              </View>
+              <Pressable onPress={() => setCollectorModalOpen(false)} style={styles.modalCloseIcon}>
+                <Ionicons name="close" size={18} color={theme.colors.text} />
+              </Pressable>
+            </View>
+
+            <View style={styles.collectorSearchRow}>
+              <Ionicons name="search-outline" size={18} color={theme.colors.textSoft} />
+              <TextInput
+                value={collectorSearch}
+                onChangeText={setCollectorSearch}
+                placeholder="Filter collectors..."
+                placeholderTextColor={theme.colors.textSoft}
+                autoCapitalize="none"
+                style={styles.collectorSearchInput}
+              />
+              {collectorSearch.trim().length > 0 && (
+                <Pressable onPress={() => setCollectorSearch('')} style={styles.collectorSearchClear}>
+                  <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
+                </Pressable>
+              )}
+            </View>
+
+            {collectorLoading ? (
+              <View style={styles.collectorLoadingBox}>
+                <ActivityIndicator color={theme.colors.primary} />
+                <Text style={styles.userResultSubtext}>Loading collectors...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={filteredCollectors}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={filteredCollectors.length ? styles.collectorListContent : styles.emptyState}
+                ListEmptyComponent={
+                  <>
+                    <Text style={styles.emptyTitle}>No collectors found</Text>
+                    <Text style={styles.emptyText}>
+                      Try a different name, or clear the filter to see everyone.
+                    </Text>
+                  </>
+                }
+                renderItem={({ item }) => {
+                  const avatar = AVATAR_PRESETS.find((a) => a.key === item.avatar_preset);
+                  const isFriend = friendIds.has(item.id);
+
+                  return (
+                    <Pressable
+                      onPress={() => {
+                        setCollectorModalOpen(false);
+                        router.push(`/community/profile/${item.id}` as any);
+                      }}
+                      style={styles.userResultCard}
+                    >
+                      <View style={styles.userResultAvatar}>
+                        {avatar?.image ? (
+                          <Image source={avatar.image} style={styles.userResultAvatarImage} resizeMode="contain" />
+                        ) : (
+                          <Ionicons name="person" size={18} color="#FFFFFF" />
+                        )}
+                      </View>
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text numberOfLines={1} style={styles.userResultName}>
+                          {item.collector_name ?? 'Collector'}
+                        </Text>
+                        <Text style={styles.userResultSubtext}>
+                          {isFriend ? 'Friend' : 'Open profile to add friend'}
+                        </Text>
+                      </View>
+                      {isFriend && (
+                        <View style={styles.friendBadge}>
+                          <Text style={styles.friendBadgeText}>Friend</Text>
+                        </View>
+                      )}
+                      <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
+                    </Pressable>
+                  );
+                }}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={!!selectedShop} animationType="slide" transparent>
         <View style={styles.meetupModalBackdrop}>
@@ -1825,8 +1998,30 @@ export default function CommunityScreen() {
               Only cards you have marked as owned will appear here.
             </Text>
 
+            <View style={styles.cardPickerSearchRow}>
+              <Ionicons name="search-outline" size={18} color={theme.colors.textSoft} />
+              <TextInput
+                value={cardPickerSearch}
+                onChangeText={setCardPickerSearch}
+                placeholder="Search by card, set, number or binder"
+                placeholderTextColor={theme.colors.textSoft}
+                autoCapitalize="none"
+                autoCorrect={false}
+                style={styles.cardPickerSearchInput}
+              />
+              {cardPickerSearch.trim() ? (
+                <Pressable onPress={() => setCardPickerSearch('')} style={styles.cardPickerClearButton}>
+                  <Ionicons name="close" size={16} color={theme.colors.textSoft} />
+                </Pressable>
+              ) : null}
+            </View>
+
+            <Text style={styles.cardPickerCountText}>
+              {filteredOwnedCards.length} of {ownedCards.length} cards
+            </Text>
+
             <FlatList
-              data={ownedCards}
+              data={filteredOwnedCards}
               keyExtractor={(item) =>
                 `${item.binder_id}-${item.set_id}-${item.card_id}`
               }
@@ -1834,17 +2029,21 @@ export default function CommunityScreen() {
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>No owned cards found</Text>
+                  <Text style={styles.emptyTitle}>{ownedCards.length ? 'No matching cards' : 'No owned cards found'}</Text>
                   <Text style={styles.emptyText}>
-                    Mark cards as owned in a binder first, then come back to
-                    attach them.
+                    {ownedCards.length
+                      ? 'Try a different card name, set, number or binder.'
+                      : 'Mark cards as owned in a binder first, then come back to attach them.'}
                   </Text>
                 </View>
               }
             />
 
             <Pressable
-              onPress={() => setCardModalOpen(false)}
+              onPress={() => {
+                setCardPickerSearch('');
+                setCardModalOpen(false);
+              }}
               style={styles.closeButton}
             >
               <Text style={styles.closeButtonText}>Close</Text>
@@ -2839,6 +3038,70 @@ function makeStyles(theme: any) {
     marginBottom: 26,
   },
 
+  collectorModalCard: {
+    backgroundColor: theme.colors.card,
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 36,
+    maxHeight: '76%',
+    marginBottom: 26,
+  },
+
+  collectorSearchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: theme.colors.bg,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 12,
+    marginTop: 14,
+    marginBottom: 12,
+    minHeight: 46,
+  },
+
+  collectorSearchInput: {
+    flex: 1,
+    color: theme.colors.text,
+    fontWeight: '800',
+    paddingVertical: 10,
+  },
+
+  collectorSearchClear: {
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  collectorLoadingBox: {
+    minHeight: 180,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+
+  collectorListContent: {
+    paddingBottom: 14,
+  },
+
+  friendBadge: {
+    borderRadius: 999,
+    backgroundColor: theme.colors.primary + '18',
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    marginRight: 4,
+  },
+
+  friendBadgeText: {
+    color: theme.colors.primary,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+
   shopDetailScroller: {
     maxHeight: 330,
   },
@@ -3357,6 +3620,42 @@ function makeStyles(theme: any) {
     color: theme.colors.textSoft,
     marginTop: 4,
     marginBottom: 14,
+  },
+
+  cardPickerSearchRow: {
+    minHeight: 46,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: theme.colors.card,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+
+  cardPickerSearchInput: {
+    flex: 1,
+    color: theme.colors.text,
+    fontWeight: '700',
+    paddingVertical: 11,
+  },
+
+  cardPickerClearButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+  },
+
+  cardPickerCountText: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 10,
   },
 
   ownedCardRow: {

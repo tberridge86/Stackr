@@ -1,4 +1,4 @@
-import { PRICE_API_URL } from './config';
+import { EUR_TO_GBP, PRICE_API_URL, USD_TO_GBP } from './config';
 
 const TCGCSV_BASE_URL = 'https://tcgcsv.com';
 
@@ -28,6 +28,92 @@ type TcgcsvPrice = {
   marketPrice: number | null;
   lowPrice: number | null;
   midPrice: number | null;
+};
+
+type PokeTracePriceTier = {
+  avg?: number | null;
+  average?: number | null;
+  market?: number | null;
+  low?: number | null;
+  high?: number | null;
+  saleCount?: number | null;
+  count?: number | null;
+  avg1d?: number | null;
+  avg7d?: number | null;
+  avg30d?: number | null;
+  median3d?: number | null;
+  median7d?: number | null;
+  median30d?: number | null;
+};
+
+type PokeTraceCard = {
+  id?: string;
+  name?: string;
+  cardNumber?: string;
+  number?: string;
+  set?: { name?: string; slug?: string } | string | null;
+  market?: 'US' | 'EU' | string;
+  currency?: 'USD' | 'EUR' | 'GBP' | string;
+  prices?: {
+    ebay?: Record<string, PokeTracePriceTier>;
+    tcgplayer?: Record<string, PokeTracePriceTier>;
+    cardmarket?: Record<string, PokeTracePriceTier>;
+    cardmarket_unsold?: Record<string, PokeTracePriceTier>;
+  };
+  gradedOptions?: string[];
+  conditionOptions?: string[];
+  totalSaleCount?: number;
+  refs?: {
+    tcgplayerId?: string | number | null;
+    cardmarketId?: string | number | null;
+  };
+};
+
+export type PokeTraceCardPriceResult = {
+  source: 'poketrace';
+  providerCardId: string | null;
+  name: string | null;
+  setName: string | null;
+  number: string | null;
+  market: string | null;
+  currency: string | null;
+  tcg_low: number | null;
+  tcg_mid: number | null;
+  ebay_low: number | null;
+  ebay_average: number | null;
+  ebay_high: number | null;
+  ebay_count: number;
+  cardmarket_trend: number | null;
+  graded_average: number | null;
+  graded_low: number | null;
+  graded_high: number | null;
+  graded_count: number;
+  graded_tier: string | null;
+  gradedOptions: string[];
+  conditionOptions: string[];
+  raw: PokeTraceCard;
+};
+
+export type PokeTraceCardPriceInput = {
+  identifier: string;
+  tcgPlayerId?: string | number | null;
+  setName?: string | null;
+  number?: string | null;
+  market?: 'US' | 'EU';
+  gradingCompany?: string | null;
+  grade?: string | number | null;
+};
+
+export type PokeTraceHistoryPeriod = '7d' | '30d' | '90d' | '1y' | 'all';
+
+export type PokeTraceHistoryPoint = {
+  date: string;
+  source: string;
+  avg: number | null;
+  low: number | null;
+  high: number | null;
+  value: number | null;
+  saleCount: number | null;
 };
 
 export type TcgcsvCardVariantPrice = {
@@ -93,6 +179,193 @@ export const getPreferredMarketPrice = (
 
   return { source: null, value: null };
 };
+
+const RAW_TIER_PRIORITY = [
+  'NEAR_MINT',
+  'MINT',
+  'LIGHTLY_PLAYED',
+  'EXCELLENT',
+  'MODERATELY_PLAYED',
+  'HEAVILY_PLAYED',
+  'DAMAGED',
+  'AGGREGATED',
+];
+
+const normalizePokeTraceTierKey = (value?: string | number | null) =>
+  String(value ?? '')
+    .trim()
+    .toUpperCase()
+    .replace(/\./g, '_')
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+
+export const buildPokeTraceGradedTier = (
+  gradingCompany?: string | null,
+  grade?: string | number | null
+) => {
+  const company = normalizePokeTraceTierKey(gradingCompany);
+  const gradeKey = normalizePokeTraceTierKey(grade);
+  return company && gradeKey ? `${company}_${gradeKey}` : null;
+};
+
+function toNumberOrNull(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function convertPokeTracePrice(value: unknown, currency?: string | null): number | null {
+  const parsed = toNumberOrNull(value);
+  if (parsed == null) return null;
+  const rate = currency === 'EUR' ? EUR_TO_GBP : currency === 'GBP' ? 1 : USD_TO_GBP;
+  return Math.round(parsed * rate * 100) / 100;
+}
+
+function getTierAverage(tier?: PokeTracePriceTier | null): number | null {
+  return toNumberOrNull(
+    tier?.avg ??
+    tier?.average ??
+    tier?.market ??
+    tier?.median7d ??
+    tier?.median30d ??
+    tier?.avg7d ??
+    tier?.avg30d
+  );
+}
+
+function pickPokeTraceTier(
+  tiers?: Record<string, PokeTracePriceTier>,
+  preferredKeys: string[] = RAW_TIER_PRIORITY
+) {
+  if (!tiers) return { key: null as string | null, tier: null as PokeTracePriceTier | null };
+  for (const key of preferredKeys) {
+    const direct = tiers[key];
+    if (direct) return { key, tier: direct };
+
+    const match = Object.keys(tiers).find((candidate) => normalizePokeTraceTierKey(candidate) === key);
+    if (match) return { key: match, tier: tiers[match] };
+  }
+
+  const firstKey = Object.keys(tiers)[0] ?? null;
+  return { key: firstKey, tier: firstKey ? tiers[firstKey] : null };
+}
+
+export function normalizePokeTraceCardPrice(
+  card: PokeTraceCard | null | undefined,
+  options: Pick<PokeTraceCardPriceInput, 'gradingCompany' | 'grade'> = {}
+): PokeTraceCardPriceResult | null {
+  if (!card) return null;
+
+  const currency = typeof card.currency === 'string' ? card.currency.toUpperCase() : 'USD';
+  const rawTcg = pickPokeTraceTier(card.prices?.tcgplayer);
+  const rawEbay = pickPokeTraceTier(card.prices?.ebay);
+  const cardmarket = pickPokeTraceTier(card.prices?.cardmarket, ['AGGREGATED', ...RAW_TIER_PRIORITY]);
+  const cardmarketUnsold = pickPokeTraceTier(card.prices?.cardmarket_unsold);
+  const requestedGradedTier = buildPokeTraceGradedTier(options.gradingCompany, options.grade);
+  const gradedTier = requestedGradedTier
+    ? pickPokeTraceTier(card.prices?.ebay ?? card.prices?.cardmarket_unsold, [requestedGradedTier])
+    : { key: null as string | null, tier: null as PokeTracePriceTier | null };
+  const setName = typeof card.set === 'string' ? card.set : card.set?.name ?? null;
+
+  return {
+    source: 'poketrace',
+    providerCardId: card.id ?? null,
+    name: card.name ?? null,
+    setName,
+    number: card.cardNumber ?? card.number ?? null,
+    market: card.market ?? null,
+    currency,
+    tcg_low: convertPokeTracePrice(rawTcg.tier?.low, currency),
+    tcg_mid: convertPokeTracePrice(getTierAverage(rawTcg.tier), currency),
+    ebay_low: convertPokeTracePrice(rawEbay.tier?.low, currency),
+    ebay_average: convertPokeTracePrice(getTierAverage(rawEbay.tier), currency),
+    ebay_high: convertPokeTracePrice(rawEbay.tier?.high, currency),
+    ebay_count: Math.round(toNumberOrNull(rawEbay.tier?.saleCount ?? rawEbay.tier?.count ?? card.totalSaleCount) ?? 0),
+    cardmarket_trend: convertPokeTracePrice(getTierAverage(cardmarket.tier ?? cardmarketUnsold.tier), currency),
+    graded_average: convertPokeTracePrice(getTierAverage(gradedTier.tier), currency),
+    graded_low: convertPokeTracePrice(gradedTier.tier?.low, currency),
+    graded_high: convertPokeTracePrice(gradedTier.tier?.high, currency),
+    graded_count: Math.round(toNumberOrNull(gradedTier.tier?.saleCount ?? gradedTier.tier?.count) ?? 0),
+    graded_tier: gradedTier.key,
+    gradedOptions: Array.isArray(card.gradedOptions) ? card.gradedOptions : [],
+    conditionOptions: Array.isArray(card.conditionOptions) ? card.conditionOptions : [],
+    raw: card,
+  };
+}
+
+export async function fetchPokeTraceCardPrice(
+  input: PokeTraceCardPriceInput
+): Promise<PokeTraceCardPriceResult | null> {
+  if (!PRICE_API_URL || !input.identifier?.trim()) return null;
+
+  const params = new URLSearchParams({
+    identifier: input.identifier.trim(),
+    market: input.market ?? 'US',
+  });
+  if (input.tcgPlayerId != null && String(input.tcgPlayerId).trim()) {
+    params.set('tcgPlayerId', String(input.tcgPlayerId).trim());
+  }
+  if (input.setName?.trim()) params.set('setName', input.setName.trim());
+  if (input.number?.trim()) params.set('number', input.number.trim());
+
+  const response = await fetch(`${PRICE_API_URL}/api/poketrace/card?${params.toString()}`);
+  if (!response.ok) {
+    console.warn(`PokeTrace fetch failed: ${response.status}`);
+    return null;
+  }
+
+  const json = await response.json();
+  return normalizePokeTraceCardPrice(json?.card, {
+    gradingCompany: input.gradingCompany,
+    grade: input.grade,
+  });
+}
+
+export async function fetchPokeTracePriceHistory(
+  providerCardId: string,
+  tier: string,
+  period: PokeTraceHistoryPeriod = '30d'
+): Promise<PokeTraceHistoryPoint[]> {
+  if (!PRICE_API_URL || !providerCardId || !tier) return [];
+
+  const params = new URLSearchParams({
+    period,
+    limit: period === '7d' ? '14' : period === '30d' ? '45' : period === '90d' ? '100' : '365',
+  });
+
+  const response = await fetch(
+    `${PRICE_API_URL}/api/poketrace/card/${encodeURIComponent(providerCardId)}/prices/${encodeURIComponent(tier)}/history?${params.toString()}`
+  );
+  if (!response.ok) {
+    console.warn(`PokeTrace history fetch failed: ${response.status}`);
+    return [];
+  }
+
+  const json = await response.json();
+  const rows = Array.isArray(json?.data) ? json.data : [];
+  return rows
+    .map((row: any): PokeTraceHistoryPoint | null => {
+      const currency = typeof row?.currency === 'string' ? row.currency.toUpperCase() : 'USD';
+      const value = row?.median7d ?? row?.median30d ?? row?.avg7d ?? row?.avg30d ?? row?.avg;
+      const date = typeof row?.date === 'string' ? row.date : null;
+      const source = typeof row?.source === 'string' ? row.source : 'unknown';
+      if (!date) return null;
+      return {
+        date,
+        source,
+        avg: convertPokeTracePrice(row?.avg, currency),
+        low: convertPokeTracePrice(row?.low, currency),
+        high: convertPokeTracePrice(row?.high, currency),
+        value: convertPokeTracePrice(value, currency),
+        saleCount: toNumberOrNull(row?.saleCount),
+      };
+    })
+    .filter((row: PokeTraceHistoryPoint | null): row is PokeTraceHistoryPoint => Boolean(row))
+    .sort((a: PokeTraceHistoryPoint, b: PokeTraceHistoryPoint) => a.date.localeCompare(b.date));
+}
 
 export const getPriceFromPokemonCard = (card: any, edition?: string | null): number | null => {
   const prices = card?.tcgplayer?.prices;

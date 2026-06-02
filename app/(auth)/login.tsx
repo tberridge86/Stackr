@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { getAuthCallbackRedirectUrl, getPasswordResetRedirectUrl } from '../../lib/authRedirects';
 
 export default function LoginScreen() {
   const { theme } = useTheme();
@@ -81,7 +82,7 @@ export default function LoginScreen() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: 'stackr://callback',
+          emailRedirectTo: getAuthCallbackRedirectUrl(),
         },
       });
 
@@ -117,7 +118,7 @@ export default function LoginScreen() {
     try {
       setResetLoading(true);
       const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-        redirectTo: 'stackr://reset-password',
+        redirectTo: getPasswordResetRedirectUrl(),
       });
 
       if (error) {

@@ -28,6 +28,7 @@ import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
+import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import {
   BinderRecord,
   BinderCardRecord,
@@ -397,6 +398,17 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const pinchScale = useRef(new Animated.Value(1)).current;
   const lastScale = useRef(1);
   const imageScale = Animated.multiply(baseScale, pinchScale);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 150],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+  const headerMaxHeight = scrollY.interpolate({
+    inputRange: [0, 150],
+    outputRange: [260, 0],
+    extrapolate: 'clamp',
+  });
 
   const { createTradeListing, toggleWishlistCard, isForTrade, isWanted } = useTrade();
 
@@ -411,21 +423,13 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const currentSortLabel =
     sortOptions.find((o) => o.value === sortMode)?.label ?? 'Binder order';
 
-  const handleGridScroll = useCallback((event: any) => {
-    const y = event.nativeEvent.contentOffset.y;
-    const delta = y - lastGridScrollYRef.current;
-
-    if (y < 12) {
-      setHeaderCollapsed(false);
-    } else if (delta > 10) {
-      setHeaderCollapsed(true);
-      if (sortDropdownOpen) setSortDropdownOpen(false);
-    } else if (delta < -10) {
-      setHeaderCollapsed(false);
-    }
-
-    lastGridScrollYRef.current = y;
-  }, [sortDropdownOpen]);
+  const handleGridScroll = useCallback(
+    Animated.event(
+      [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+      { useNativeDriver: false }
+    ),
+    [scrollY]
+  );
 
   // ===============================
   // MODAL HELPERS
@@ -1723,27 +1727,26 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
 
         {/* Header */}
-        {!headerCollapsed && (
-          <View style={{ marginBottom: 8, position: 'relative' }}>
-            {!isReadOnly && (
-              <TouchableOpacity
-                onPress={handleScanCard}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 42,
-                  width: 34,
-                  height: 34,
-                  borderRadius: 17,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: theme.colors.primary,
-                  zIndex: 5,
-                }}
-              >
-                <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
-              </TouchableOpacity>
-            )}
+        <Animated.View style={{ opacity: headerOpacity, marginBottom: 8, overflow: 'hidden', maxHeight: headerMaxHeight }}>
+          {!isReadOnly && (
+            <TouchableOpacity
+              onPress={handleScanCard}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 8,
+                width: 34,
+                height: 34,
+                borderRadius: 17,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.colors.primary,
+                zIndex: 5,
+              }}
+            >
+              <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
 
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
               {!isReadOnly && (
@@ -1824,8 +1827,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                 </View>
               )}
             </View>
-          </View>
-        )}
+
+          </Animated.View>
+
         {/* Progress bar */}
         <View style={{
           height: 6,
@@ -1843,7 +1847,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         </View>
 
         {/* Read only banner */}
-        {!headerCollapsed && isReadOnly && (
+        <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+          {isReadOnly && (
           <View style={{
             backgroundColor: theme.colors.surface,
             borderRadius: 12,
@@ -1861,83 +1866,88 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
               Viewing another collector&apos;s binder â€” read only
             </Text>
           </View>
-        )}
+          )}
+        </Animated.View>
 
         {/* Showcase strips */}
-        {!headerCollapsed && renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
-        {!headerCollapsed && renderShowcaseStrip('chase', 'Chase Cards')}
+        <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+          {renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
+          {renderShowcaseStrip('chase', 'Chase Cards')}
+        </Animated.View>
 
         {/* Add card button */}
-        {!headerCollapsed && binder.type === 'custom' && !isReadOnly && (
-          <TouchableOpacity
-            onPress={() => setShowAddModal(true)}
-            style={{
-              backgroundColor: theme.colors.primary,
-              borderRadius: 14,
-              paddingVertical: 13,
-              alignItems: 'center',
-              marginBottom: 12,
-            }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>+ Add Card to Binder</Text>
-          </TouchableOpacity>
-        )}
+        <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+          {binder.type === 'custom' && !isReadOnly && (
+            <TouchableOpacity
+              onPress={() => setShowAddModal(true)}
+              style={{
+                backgroundColor: theme.colors.primary,
+                borderRadius: 14,
+                paddingVertical: 13,
+                alignItems: 'center',
+                marginBottom: 12,
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>+ Add Card to Binder</Text>
+            </TouchableOpacity>
+          )}
+        </Animated.View>
 
         {/* Sort dropdown */}
-        {!headerCollapsed && (
-        <View style={{ marginBottom: 14, zIndex: 20 }}>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900', marginBottom: 6 }}>
-            Sort:
-          </Text>
+        <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+          <View style={{ marginBottom: 14, zIndex: 20 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900', marginBottom: 6 }}>
+              Sort:
+            </Text>
 
-          <TouchableOpacity
-            onPress={() => setSortDropdownOpen((prev) => !prev)}
-            style={{
-              backgroundColor: theme.colors.card,
-              borderRadius: 14,
-              paddingVertical: 12,
-              paddingHorizontal: 14,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{currentSortLabel}</Text>
-            <Ionicons
-              name={sortDropdownOpen ? 'chevron-up' : 'chevron-down'}
-              size={18}
-              color={theme.colors.textSoft}
-            />
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setSortDropdownOpen((prev) => !prev)}
+              style={{
+                backgroundColor: theme.colors.card,
+                borderRadius: 14,
+                paddingVertical: 12,
+                paddingHorizontal: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{currentSortLabel}</Text>
+              <Ionicons
+                name={sortDropdownOpen ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={theme.colors.textSoft}
+              />
+            </TouchableOpacity>
 
-          {sortDropdownOpen && (
-            <View style={{
-              marginTop: 8,
-              backgroundColor: theme.colors.card,
-              borderRadius: 14,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              overflow: 'hidden',
-            }}>
-              {sortOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.value}
-                  onPress={() => { setSortMode(option.value); setSortDropdownOpen(false); }}
-                  style={{
-                    paddingVertical: 12,
-                    paddingHorizontal: 14,
-                    backgroundColor: sortMode === option.value ? theme.colors.secondary : theme.colors.card,
-                  }}
-                >
-                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{option.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-        )}
+            {sortDropdownOpen && (
+              <View style={{
+                marginTop: 8,
+                backgroundColor: theme.colors.card,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                overflow: 'hidden',
+              }}>
+                {sortOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    onPress={() => { setSortMode(option.value); setSortDropdownOpen(false); }}
+                    style={{
+                      paddingVertical: 12,
+                      paddingHorizontal: 14,
+                      backgroundColor: sortMode === option.value ? theme.colors.secondary : theme.colors.card,
+                    }}
+                  >
+                    <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{option.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        </Animated.View>
 
         {/* Card grid */}
         <FlatList
@@ -2597,6 +2607,13 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         Updated daily
                       </Text>
                     </View>
+
+                    <PokeTraceMarketInsights
+                      cardName={modalCard?.name ?? selectedCard.card_name ?? selectedCard.card_id}
+                      setName={modalCard?.set?.name ?? selectedCard.set_name ?? selectedCard.set_id}
+                      number={modalCard?.number ?? selectedCard.card_number ?? null}
+                      rawCondition={selectedCard.condition || 'Near Mint'}
+                    />
 
                     {!isReadOnly && masterSetEnabled && (() => {
                       const modalVariants = getVariants(selectedCard.card, selectedCard.set_id);

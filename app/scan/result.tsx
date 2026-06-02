@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Text } from '../../components/Text';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
+import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -664,6 +665,12 @@ export default function ScanResultScreen() {
                 </Text>
               )}
             </View>
+
+            <PokeTraceMarketInsights
+              cardName={selectedCard.name}
+              setName={selectedCard.set_name}
+              number={selectedCard.number}
+            />
 
             {/* Add to binder */}
             {!added ? (

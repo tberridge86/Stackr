@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { Text } from '../../components/Text';
 import { useTheme } from '../../components/theme-context';
 import { supabase } from '../../lib/supabase';
+import { firstAuthParam, getAuthParamsFromUrl, mergeAuthLinkParams } from '../../lib/authRedirects';
 
 export default function AuthCallbackScreen() {
   const { theme } = useTheme();
-  const params = useLocalSearchParams<{
+  const routeParams = useLocalSearchParams<{
     access_token?: string;
     code?: string;
     error?: string;
@@ -15,24 +17,24 @@ export default function AuthCallbackScreen() {
     refresh_token?: string;
     type?: string;
   }>();
+  const url = Linking.useURL();
+  const params = mergeAuthLinkParams(routeParams, getAuthParamsFromUrl(url));
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const checkSession = async () => {
-      const authError = Array.isArray(params.error) ? params.error[0] : params.error;
-      const authErrorDescription = Array.isArray(params.error_description)
-        ? params.error_description[0]
-        : params.error_description;
+      const authError = firstAuthParam(params.error);
+      const authErrorDescription = firstAuthParam(params.error_description);
 
       if (authError || authErrorDescription) {
         setErrorMessage(authErrorDescription || authError || 'The sign-in link could not be verified.');
         return;
       }
 
-      const code = Array.isArray(params.code) ? params.code[0] : params.code;
-      const accessToken = Array.isArray(params.access_token) ? params.access_token[0] : params.access_token;
-      const refreshToken = Array.isArray(params.refresh_token) ? params.refresh_token[0] : params.refresh_token;
-      const type = Array.isArray(params.type) ? params.type[0] : params.type;
+      const code = firstAuthParam(params.code);
+      const accessToken = firstAuthParam(params.access_token);
+      const refreshToken = firstAuthParam(params.refresh_token);
+      const type = firstAuthParam(params.type);
 
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);

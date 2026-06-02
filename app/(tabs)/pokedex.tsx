@@ -190,7 +190,7 @@ export default function PokedexScreen() {
       }
       style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
     >
-      <View style={styles.gridImageWrap}>
+      <View style={[styles.gridImageWrap, owned && { backgroundColor: 'transparent' }]}>
         <Image
           source={{ uri: getPokemonImageUrl(item.id) }}
           style={styles.gridImage}

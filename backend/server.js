@@ -39,6 +39,8 @@ const SCRYDEX_API_KEY = process.env.SCRYDEX_API_KEY;
 const SCRYDEX_TEAM_ID = process.env.SCRYDEX_TEAM_ID;
 const SCRYDEX_API_BASE_URL = process.env.SCRYDEX_API_BASE_URL || 'https://api.scrydex.com';
 const POKEMON_PRICE_TRACKER_API_KEY = process.env.POKEMON_PRICE_TRACKER_API_KEY;
+const POKETRACE_API_KEY = process.env.POKETRACE_API_KEY;
+const POKETRACE_API_BASE_URL = process.env.POKETRACE_API_BASE_URL || 'https://api.poketrace.com/v1';
 const CARDMATRIX_API_KEY = process.env.CARDMATRIX_API_KEY;
 const POKEWALLET_API_KEY = process.env.POKEWALLET_API_KEY;
 const POKEWALLET_API_BASE_URL = process.env.POKEWALLET_API_BASE_URL || 'https://api.pokewallet.io';
@@ -3574,6 +3576,171 @@ app.post('/api/grade/cardmatrix', async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ error: 'CardMatrix grading failed', detail: getErrorMessage(error) });
+  }
+});
+
+function normalizePokeTraceCompare(value = '') {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/pok[eé]mon/g, 'pokemon')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function getPokeTraceCardNumber(card) {
+  return String(card?.cardNumber ?? card?.number ?? '').trim();
+}
+
+function getPokeTraceSetName(card) {
+  return typeof card?.set === 'string' ? card.set : String(card?.set?.name ?? '').trim();
+}
+
+function scorePokeTraceCard(card, target) {
+  let score = 0;
+  const targetTcgPlayerId = String(target.tcgPlayerId || '').trim();
+  const cardTcgPlayerId = String(card?.refs?.tcgplayerId ?? '').trim();
+  if (targetTcgPlayerId && cardTcgPlayerId && targetTcgPlayerId === cardTcgPlayerId) score += 120;
+
+  const cardNumber = normalizePokeTraceCompare(getPokeTraceCardNumber(card));
+  const targetNumber = normalizePokeTraceCompare(target.number);
+  if (targetNumber && cardNumber === targetNumber) score += 35;
+  if (targetNumber && cardNumber && cardNumber.split('/')[0] === targetNumber.split('/')[0]) score += 12;
+
+  const cardSet = normalizePokeTraceCompare(getPokeTraceSetName(card));
+  const targetSet = normalizePokeTraceCompare(target.setName);
+  if (targetSet && cardSet === targetSet) score += 30;
+  if (targetSet && cardSet.includes(targetSet)) score += 15;
+
+  const cardName = normalizePokeTraceCompare(card?.name ?? '');
+  const targetName = normalizePokeTraceCompare(target.identifier);
+  if (targetName && cardName === targetName) score += 30;
+  if (targetName && cardName.includes(targetName)) score += 12;
+
+  if (card?.market === target.market) score += 5;
+  return score;
+}
+
+function unwrapPokeTraceCards(payload) {
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.cards)) return payload.cards;
+  if (Array.isArray(payload?.results)) return payload.results;
+  if (payload?.data && typeof payload.data === 'object') return [payload.data];
+  return [];
+}
+
+async function fetchPokeTraceJson(path, params) {
+  const query = params ? `?${params.toString()}` : '';
+  const response = await fetch(`${POKETRACE_API_BASE_URL.replace(/\/$/, '')}${path}${query}`, {
+    headers: {
+      'X-API-Key': POKETRACE_API_KEY,
+      Accept: 'application/json',
+    },
+  });
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(getApiErrorMessage(data));
+    error.status = response.status;
+    error.detail = data;
+    throw error;
+  }
+
+  return data;
+}
+
+app.get('/api/poketrace/card', async (req, res) => {
+  try {
+    if (!POKETRACE_API_KEY) {
+      return res.status(500).json({ error: 'Missing POKETRACE_API_KEY' });
+    }
+
+    const identifier = String(req.query.identifier ?? '').trim();
+    const tcgPlayerId = String(req.query.tcgPlayerId ?? '').trim();
+    const setName = String(req.query.setName ?? '').trim();
+    const number = String(req.query.number ?? '').trim();
+    const requestedMarket = String(req.query.market ?? 'US').trim().toUpperCase();
+    const market = requestedMarket === 'EU' ? 'EU' : 'US';
+
+    if (!identifier && !tcgPlayerId) {
+      return res.status(400).json({ error: 'Missing identifier' });
+    }
+
+    const looksLikePokeTraceId = /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(identifier);
+    if (looksLikePokeTraceId) {
+      const detailParams = new URLSearchParams({ market });
+      const detail = await fetchPokeTraceJson(`/cards/${encodeURIComponent(identifier)}`, detailParams);
+      return res.json({ card: detail?.data ?? detail?.card ?? detail, raw: detail });
+    }
+
+    const params = new URLSearchParams({ market, limit: '20' });
+    if (tcgPlayerId) {
+      params.set('tcgplayer_ids', tcgPlayerId);
+    } else {
+      params.set('search', identifier);
+      if (number) params.set('card_number', number);
+      if (/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(setName)) params.set('set', setName);
+    }
+    params.set('product_type', 'single');
+
+    const searchPayload = await fetchPokeTraceJson('/cards', params);
+    const cards = unwrapPokeTraceCards(searchPayload);
+    const match = cards
+      .map((card) => ({ card, score: scorePokeTraceCard(card, { identifier, setName, number, tcgPlayerId, market }) }))
+      .sort((a, b) => b.score - a.score)[0]?.card ?? cards[0] ?? null;
+
+    if (!match) {
+      return res.json({ card: null, raw: searchPayload });
+    }
+
+    const providerId = match?.id ? String(match.id) : '';
+    if (!providerId) {
+      return res.json({ card: match, raw: searchPayload });
+    }
+
+    const detailParams = new URLSearchParams({ market });
+    const detail = await fetchPokeTraceJson(`/cards/${encodeURIComponent(providerId)}`, detailParams);
+    return res.json({
+      card: detail?.data ?? detail?.card ?? detail,
+      match,
+      raw: searchPayload,
+    });
+  } catch (error) {
+    return res.status(error?.status ?? 500).json({
+      error: 'PokeTrace failed',
+      detail: error?.detail ?? getErrorMessage(error),
+    });
+  }
+});
+
+app.get('/api/poketrace/card/:id/prices/:tier/history', async (req, res) => {
+  try {
+    if (!POKETRACE_API_KEY) {
+      return res.status(500).json({ error: 'Missing POKETRACE_API_KEY' });
+    }
+
+    const id = String(req.params.id ?? '').trim();
+    const tier = String(req.params.tier ?? '').trim();
+    const period = String(req.query.period ?? '30d').trim();
+    const limit = String(req.query.limit ?? '90').trim();
+    if (!id || !tier) {
+      return res.status(400).json({ error: 'Missing card id or tier' });
+    }
+
+    const params = new URLSearchParams({ period, limit });
+    const cursor = String(req.query.cursor ?? '').trim();
+    if (cursor) params.set('cursor', cursor);
+
+    const history = await fetchPokeTraceJson(
+      `/cards/${encodeURIComponent(id)}/prices/${encodeURIComponent(tier)}/history`,
+      params
+    );
+
+    return res.json(history);
+  } catch (error) {
+    return res.status(error?.status ?? 500).json({
+      error: 'PokeTrace history failed',
+      detail: error?.detail ?? getErrorMessage(error),
+    });
   }
 });
 

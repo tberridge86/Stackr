@@ -223,16 +223,17 @@ function BinderCard({ item, counts, masterSets, value, confirmDeleteBinder, inde
         {/* Options button */}
         <Pressable
           onPress={handleOptions}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           style={{
             position: 'absolute',
-            top: 5, right: 5,
-            width: 22, height: 22,
-            borderRadius: 11,
-            backgroundColor: 'rgba(0,0,0,0.55)',
+            top: 4, right: 4,
+            width: 32, height: 32,
+            borderRadius: 16,
+            backgroundColor: 'rgba(0,0,0,0.6)',
             alignItems: 'center', justifyContent: 'center',
           }}
         >
-          <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900', lineHeight: 12 }}>⋯</Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', lineHeight: 16 }}>⋯</Text>
         </Pressable>
 
         {/* Progress bar */}
