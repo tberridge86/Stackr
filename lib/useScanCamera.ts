@@ -15,6 +15,8 @@ type ScanCameraOptions = {
     previewHeight: number;
     frameWidth: number;
     frameHeight: number;
+    frameX?: number;
+    frameY?: number;
     frameCenterY?: number;
     marginRatio?: number;
   };
@@ -48,8 +50,10 @@ function getCenteredCardCrop(
     const scaleX = visiblePhotoWidth / frame.previewWidth;
     const scaleY = visiblePhotoHeight / frame.previewHeight;
     const frameCenterY = frame.frameCenterY ?? frame.previewHeight / 2;
-    const originX = hiddenX + ((frame.previewWidth - frame.frameWidth) / 2) * scaleX;
-    const originY = hiddenY + (frameCenterY - frame.frameHeight / 2) * scaleY;
+    const frameX = frame.frameX ?? (frame.previewWidth - frame.frameWidth) / 2;
+    const frameY = frame.frameY ?? frameCenterY - frame.frameHeight / 2;
+    const originX = hiddenX + frameX * scaleX;
+    const originY = hiddenY + frameY * scaleY;
 
     const marginRatio = frame.marginRatio ?? 0;
     const rawWidth = frame.frameWidth * scaleX;

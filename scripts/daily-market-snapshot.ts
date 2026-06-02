@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { fetchEbayPrice } from '../lib/ebay';
+import { fetchPokeTraceCardPrice } from '../lib/pricing';
 
 process.on('SIGTERM', () => {
   console.log('🛑 SIGTERM received, finishing job...');
@@ -341,6 +342,32 @@ async function fetchProductEbayWithRetry(product: ProductRow): Promise<EbayRespo
   return { low: null, average: null, high: null, count: 0, query: ebayQuery };
 }
 
+async function fetchPokeTraceWithRetry(card: any) {
+  const identifier = String(card.card_name || card.api_card_id || card.card_id || '').trim();
+  if (!identifier) return null;
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      console.log(`PokeTrace: "${identifier}"`);
+      return await fetchPokeTraceCardPrice({
+        identifier,
+        setName: card.set_name ?? null,
+        number: card.card_number ?? null,
+        market: 'US',
+      });
+    } catch (error) {
+      if (attempt === 2) {
+        console.log(`PokeTrace final fail for "${identifier}":`, error);
+        return null;
+      }
+      console.log(`PokeTrace fetch failed for "${identifier}" - retrying...`);
+      await delay(TCG_RETRY_DELAY_MS);
+    }
+  }
+
+  return null;
+}
+
 // ===============================
 // PROCESS ONE USER
 // ===============================
@@ -376,9 +403,10 @@ async function processUser(userId: string, snapshotDate: string) {
 
   console.log(`🔢 ${uniqueCards.length} unique cards after deduplication`);
 
-  // Fetch TCG prices
   const cardIds = uniqueCards.map((card) => card.api_card_id || card.card_id).filter(Boolean);
-  const priceMap = await fetchTcgPricesInBatches(cardIds);
+  const pokemonTcgFallbackMap = process.env.ENABLE_POKEMONTCG_CARD_PRICE_FALLBACK === 'true'
+    ? await fetchTcgPricesInBatches(cardIds)
+    : {};
   const cachedTcgMap = await fetchCachedTcgPrices(
     uniqueCards.map((card) => card.card_id).filter(Boolean)
   );
@@ -389,7 +417,12 @@ async function processUser(userId: string, snapshotDate: string) {
     const card = uniqueCards[index];
     const lookupId = card.api_card_id || card.card_id;
     const displayName = card.card_name || lookupId;
-    const tcgPrice = priceMap[lookupId] ?? cachedTcgMap[card.card_id];
+    const pokeTrace = await fetchPokeTraceWithRetry(card);
+    const tcgPrice =
+      pokeTrace?.tcg_mid ??
+      pokeTrace?.tcg_low ??
+      pokemonTcgFallbackMap[lookupId] ??
+      cachedTcgMap[card.card_id];
 
     console.log(`\n📍 [${index + 1}/${uniqueCards.length}] ${displayName}`);
 
@@ -399,7 +432,15 @@ async function processUser(userId: string, snapshotDate: string) {
     }
 
     const ebayQuery = buildEbayQuery(card);
-    const ebay = await fetchEbayWithRetry(ebayQuery, displayName, card);
+    const ebay = pokeTrace?.ebay_average != null
+      ? {
+          low: pokeTrace.ebay_low,
+          average: pokeTrace.ebay_average,
+          high: pokeTrace.ebay_high,
+          count: pokeTrace.ebay_count,
+          soldDataSource: 'poketrace',
+        }
+      : await fetchEbayWithRetry(ebayQuery, displayName, card);
     const ebayAverage = toNumber(ebay.average);
 
     if (ebayAverage !== null) { ebayFound += 1; } else { ebayFail += 1; }
@@ -410,7 +451,7 @@ async function processUser(userId: string, snapshotDate: string) {
       set_id: card.set_id,
       tcg_low: null,
       tcg_mid: typeof tcgPrice === 'number' ? tcgPrice : null,
-      cardmarket_trend: null,
+      cardmarket_trend: pokeTrace?.cardmarket_trend ?? null,
       ebay_low: toNumber(ebay.low),
       ebay_average: ebayAverage,
       ebay_high: toNumber(ebay.high),

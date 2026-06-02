@@ -2,17 +2,21 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as Linking from 'expo-linking';
 import { supabase } from '../../lib/supabase';
 import { useTheme } from '../../components/theme-context';
+import { firstAuthParam, getAuthParamsFromUrl, mergeAuthLinkParams } from '../../lib/authRedirects';
 
 export default function ResetPasswordScreen() {
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const params = useLocalSearchParams<{
+  const routeParams = useLocalSearchParams<{
     access_token?: string;
     code?: string;
     refresh_token?: string;
   }>();
+  const url = Linking.useURL();
+  const params = mergeAuthLinkParams(routeParams, getAuthParamsFromUrl(url));
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [checkingLink, setCheckingLink] = useState(true);
@@ -26,9 +30,9 @@ export default function ResetPasswordScreen() {
         setCheckingLink(true);
         setError('');
 
-        const code = Array.isArray(params.code) ? params.code[0] : params.code;
-        const accessToken = Array.isArray(params.access_token) ? params.access_token[0] : params.access_token;
-        const refreshToken = Array.isArray(params.refresh_token) ? params.refresh_token[0] : params.refresh_token;
+        const code = firstAuthParam(params.code);
+        const accessToken = firstAuthParam(params.access_token);
+        const refreshToken = firstAuthParam(params.refresh_token);
 
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);

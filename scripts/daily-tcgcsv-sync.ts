@@ -58,11 +58,6 @@ function toGbpFromUsd(usd: number | null): number | null {
   return typeof usd === 'number' ? Math.round(usd * USD_TO_GBP * 100) / 100 : null;
 }
 
-function getLargeTcgcsvImageUrl(imageUrl: string | null): string | null {
-  if (!imageUrl) return null;
-  return imageUrl.replace(/_200w(\.[a-z]+)$/i, '_400w$1');
-}
-
 function computeFallbackPriceFromVariants(variants: { lowPrice: number | null; midPrice: number | null; marketPrice: number | null }[]): TcgFallbackPrice {
   const values = variants
     .flatMap((v) => [v.lowPrice, v.midPrice, v.marketPrice])
@@ -143,6 +138,15 @@ async function saveMarketPriceSnapshotByDay(snapshot: any, snapshotDate: string)
 async function runDailyTcgcsvSync() {
   console.log('🚀 Daily TCGCSV sync started');
   await logCron(JOB_NAME, 'started');
+  if (process.env.ENABLE_TCGCSV_CARD_SYNC !== 'true') {
+    await logCron(
+      JOB_NAME,
+      'success',
+      'Skipped: card pricing now uses PokeTrace. Keep TCGCSV for market product sync only.'
+    );
+    console.log('Daily TCGCSV card sync skipped: card pricing now uses PokeTrace.');
+    return;
+  }
 
   const snapshotAt = todayMidnightUTC();
 
@@ -220,19 +224,6 @@ async function runDailyTcgcsvSync() {
 
         if (!upsertError) {
           totalUpdated += 1;
-          if (matched.imageUrl) {
-            const { error: imageError } = await supabase
-              .from('pokemon_cards')
-              .update({
-                image_small: matched.imageUrl,
-                image_large: getLargeTcgcsvImageUrl(matched.imageUrl),
-              })
-              .eq('id', card.id);
-
-            if (imageError) {
-              console.log(`Image update failed for card ${card.id}:`, imageError.message);
-            }
-          }
         } else {
           console.log(`⚠️ Upsert failed for card ${card.id}:`, upsertError.message);
         }

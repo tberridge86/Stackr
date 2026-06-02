@@ -22,6 +22,7 @@ import { useFocusEffect , router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 
 import { scanStore } from '../../lib/scanStore';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
@@ -1365,6 +1366,15 @@ export default function MarketScreen() {
                           <PriceRow label="30d Avg" value={selectedCard.cardmarket.prices.avg30 != null ? `£${(selectedCard.cardmarket.prices.avg30 * EUR_TO_GBP).toFixed(2)}` : '--'} />
                         </PriceSection>
                       )}
+
+                      <PokeTraceMarketInsights
+                        cardName={selectedCard.name}
+                        setName={selectedCard.set?.name ?? null}
+                        number={selectedCard.number ?? null}
+                        rawCondition={lookupType === 'raw_card' ? rawCondition : null}
+                        gradingCompany={lookupType === 'graded_slab' ? gradingCompany : null}
+                        grade={lookupType === 'graded_slab' ? grade : null}
+                      />
 
                     </View>
                   </>

@@ -3717,6 +3717,38 @@ export default function ScanScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  onPress={() => router.push('/binder/new?returnTo=scan-review')}
+                  style={{ backgroundColor: theme.colors.secondary, borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>+ Add to New Binder</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!scannedCards.length) return;
+                    Alert.alert(
+                      'Discard scanned cards?',
+                      'Remove all scanned cards from this batch review.',
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        {
+                          text: 'Discard All',
+                          style: 'destructive',
+                          onPress: () => {
+                            scannedCardIdsRef.current.clear();
+                            setScannedCards([]);
+                            setStep('scanning');
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                  style={{ backgroundColor: '#F3F4F6', borderRadius: 14, paddingVertical: 15, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Discard All</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   onPress={async () => {
                     if (!selectedBinder) return;
                     try {
