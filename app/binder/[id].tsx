@@ -1808,6 +1808,21 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                 </Text>
               </View>
 
+              {binder.card_mode === 'graded' && (
+                <View style={{
+                  backgroundColor: '#EEF2FF',
+                  borderRadius: 999,
+                  paddingHorizontal: 9,
+                  paddingVertical: 3,
+                  borderWidth: 1,
+                  borderColor: '#A5B4FC',
+                }}>
+                  <Text style={{ color: '#3730A3', fontSize: 11, fontWeight: '900' }}>
+                    {`Graded ${[binder.default_grade_company, binder.default_grade].filter(Boolean).join(' ') || 'cards'}`}
+                  </Text>
+                </View>
+              )}
+
               {binder.edition && (
                 <View style={{
                   backgroundColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.surface,
@@ -2612,7 +2627,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       cardName={modalCard?.name ?? selectedCard.card_name ?? selectedCard.card_id}
                       setName={modalCard?.set?.name ?? selectedCard.set_name ?? selectedCard.set_id}
                       number={modalCard?.number ?? selectedCard.card_number ?? null}
-                      rawCondition={selectedCard.condition || 'Near Mint'}
+                      rawCondition={binder.card_mode === 'graded' ? null : selectedCard.condition || 'Near Mint'}
+                      gradingCompany={binder.card_mode === 'graded' ? binder.default_grade_company ?? 'PSA' : null}
+                      grade={binder.card_mode === 'graded' ? binder.default_grade ?? '10' : null}
                     />
 
                     {!isReadOnly && masterSetEnabled && (() => {
