@@ -38,6 +38,7 @@ import {
   updateBinderCardOwned,
   updateBinderCardCondition,
   updateBinderCardGrading,
+  updateBinderCardQuantity,
   CONDITION_MULTIPLIERS,
   getEstimatedValue,
 } from '../../lib/binders';
@@ -131,6 +132,17 @@ const getBinderEditionHint = (edition?: string | null): ScanEditionHint | null =
   if (edition === '1st_edition' || edition === 'unlimited' || edition === 'shadowless') return edition;
   return null;
 };
+
+const getOwnedQuantity = (card?: Pick<BinderCardRecord, 'owned_quantity'> | null) =>
+  Math.max(1, Math.floor(Number(card?.owned_quantity ?? 1) || 1));
+
+const getVariantKey = (cardId: string, variant: string) => `${cardId}:${variant}`;
+
+const getVariantQuantityFromMap = (
+  variants: Map<string, number>,
+  cardId: string,
+  variant: string
+) => Math.max(0, Math.floor(Number(variants.get(getVariantKey(cardId, variant)) ?? 0) || 0));
 
 const formatCurrency = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return '--';
@@ -540,7 +552,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [tradeOnly, setTradeOnly] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [ownedVariants, setOwnedVariants] = useState<Set<string>>(new Set());
+  const [ownedVariants, setOwnedVariants] = useState<Map<string, number>>(new Map());
   const [masterSetEnabled, setMasterSetEnabled] = useState(false);
   const [masterSetIntroVisible, setMasterSetIntroVisible] = useState(false);
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
@@ -738,12 +750,26 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         // Load variant ownership for all cards in this binder
         const cardIds = binderCards.map((c) => c.card_id);
         if (cardIds.length > 0) {
-          const { data: variantRows } = await supabase
+          const { data: variantRowsWithQuantity, error: variantQuantityError } = await supabase
             .from('user_card_variants')
-            .select('card_id, variant')
+            .select('card_id, variant, quantity')
             .eq('user_id', user.id)
             .in('card_id', cardIds);
-          setOwnedVariants(new Set((variantRows ?? []).map((r) => `${r.card_id}:${r.variant}`)));
+
+          const variantRows = variantQuantityError
+            ? (await supabase
+                .from('user_card_variants')
+                .select('card_id, variant')
+                .eq('user_id', user.id)
+                .in('card_id', cardIds)).data
+            : variantRowsWithQuantity;
+
+          setOwnedVariants(new Map(
+            ((variantRows ?? []) as { card_id: string; variant: string; quantity?: number | null }[]).map((row) => [
+              getVariantKey(row.card_id, row.variant),
+              Math.max(1, Number(row.quantity ?? 1)),
+            ])
+          ));
         }
       } else {
         setCards(binderCards);
@@ -824,13 +850,16 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   let ownedCount = 0;
   let totalCount = 0;
   for (const c of cards) {
-    const savedVariants = [...ownedVariants]
+    const savedVariants = [...ownedVariants.keys()]
       .filter((key) => key.startsWith(`${c.card_id}:`))
       .map((key) => key.slice(c.card_id.length + 1));
     const variants = masterSetEnabled ? getVariants(c.card, c.set_id) : ['card'];
     if (masterSetEnabled && variants.length > 1) {
       totalCount += variants.length;
-      const ownedVariantCount = variants.filter((v) => ownedVariants.has(`${c.card_id}:${v}`)).length;
+      const defaultVariant = c.owned ? getDefaultOwnedVariant(variants) : null;
+      const ownedVariantCount = variants.filter((v) =>
+        getVariantQuantityFromMap(ownedVariants, c.card_id, v) > 0 || v === defaultVariant
+      ).length;
       ownedCount += ownedVariantCount > 0 ? ownedVariantCount : c.owned ? 1 : 0;
     } else {
       totalCount += 1;
@@ -872,8 +901,13 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const binderValue = useMemo(() => {
     return cards.reduce((sum, card) => {
       let variants = masterSetEnabled
-        ? getVariants(card.card, card.set_id).filter((variant) => ownedVariants.has(`${card.card_id}:${variant}`))
-        : [...ownedVariants]
+        ? getVariants(card.card, card.set_id).filter((variant) => {
+            const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, variant);
+            if (savedQuantity > 0) return true;
+            const defaultVariant = card.owned ? getDefaultOwnedVariant(getVariants(card.card, card.set_id)) : null;
+            return variant === defaultVariant;
+          })
+        : [...ownedVariants.keys()]
             .filter((key) => key.startsWith(`${card.card_id}:`))
             .map((key) => key.slice(card.card_id.length + 1));
 
@@ -885,7 +919,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       if (variants.length) {
         return sum + variants.reduce((variantSum, variant) => {
           const base = getPreferredBinderCardPrice(card, variant, binder?.edition);
-          return variantSum + getEstimatedValue(base, card.condition || 'Near Mint');
+          const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, variant);
+          const quantity = savedQuantity > 0 ? savedQuantity : getOwnedQuantity(card);
+          return variantSum + getEstimatedValue(base, card.condition || 'Near Mint') * quantity;
         }, 0);
       }
 
@@ -895,6 +931,28 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       return sum + getEstimatedValue(base, card.condition || 'Near Mint');
     }, 0);
   }, [binder?.edition, cards, masterSetEnabled, ownedVariants]);
+
+  const getDisplayedVariantQuantity = useCallback((card: BinderCardWithDetails, variant: string) => {
+    const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, variant);
+    if (savedQuantity > 0) return savedQuantity;
+    if (!masterSetEnabled || !card.owned) return 0;
+
+    const defaultVariant = getDefaultOwnedVariant(getVariants(card.card, card.set_id));
+    return variant === defaultVariant ? getOwnedQuantity(card) : 0;
+  }, [masterSetEnabled, ownedVariants]);
+
+  const getDisplayedOwnedQuantity = useCallback((card: BinderCardWithDetails) => {
+    const baseQuantity = card.owned ? getOwnedQuantity(card) : 0;
+    if (!masterSetEnabled) return baseQuantity;
+
+    const variants = getVariants(card.card, card.set_id);
+    if (variants.length <= 1) return baseQuantity;
+
+    const ownedVariantCount = variants.reduce((sum, variant) =>
+      sum + getDisplayedVariantQuantity(card, variant), 0);
+
+    return Math.max(baseQuantity, ownedVariantCount);
+  }, [getDisplayedVariantQuantity, masterSetEnabled]);
 
   // ===============================
   // VISIBILITY TOGGLE
@@ -1091,10 +1149,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     newOwned: boolean,
     grading?: { company: string; grade: string }
   ) => {
+    const nextQuantity = newOwned ? getOwnedQuantity(item) : 1;
     setCards((prev) =>
       prev.map((c) => (c.id === item.id ? {
         ...c,
         owned: newOwned,
+        owned_quantity: nextQuantity,
         grade_company: grading?.company ?? c.grade_company ?? null,
         grade: grading?.grade ?? c.grade ?? null,
       } : c))
@@ -1104,6 +1164,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       setSelectedCard({
         ...item,
         owned: newOwned,
+        owned_quantity: nextQuantity,
         grade_company: grading?.company ?? item.grade_company ?? null,
         grade: grading?.grade ?? item.grade ?? null,
       });
@@ -1119,6 +1180,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     condition: item.condition,
     gradeCompany: grading?.company ?? item.grade_company ?? null,
     grade: grading?.grade ?? item.grade ?? null,
+    ownedQuantity: nextQuantity,
   });
 
   if (userId) {
@@ -1131,7 +1193,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     if (userBinderIds.length) {
       await supabase
         .from('binder_cards')
-        .update({ owned: newOwned })
+        .update({ owned: newOwned, owned_quantity: nextQuantity })
         .in('binder_id', userBinderIds)
         .eq('card_id', item.card_id)
         .eq('set_id', item.set_id);
@@ -1142,6 +1204,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     prev.map((c) => (c.card_id === item.card_id && c.set_id === item.set_id ? {
       ...c,
       owned: newOwned,
+      owned_quantity: nextQuantity,
       grade_company: grading?.company ?? c.grade_company ?? null,
       grade: grading?.grade ?? c.grade ?? null,
       ebay_price: latestPrice?.ebay_price ?? c.ebay_price,
@@ -1154,6 +1217,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     setSelectedCard((prev) => prev ? {
       ...prev,
       owned: newOwned,
+      owned_quantity: nextQuantity,
       grade_company: grading?.company ?? prev.grade_company ?? null,
       grade: grading?.grade ?? prev.grade ?? null,
       ebay_price: latestPrice?.ebay_price ?? prev.ebay_price,
@@ -1165,7 +1229,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 } catch (error) {
   console.log('Rollback owned toggle', error);
   setCards((prev) =>
-    prev.map((c) => (c.id === item.id ? { ...c, owned: !newOwned } : c))
+    prev.map((c) => (c.id === item.id ? { ...c, owned: !newOwned, owned_quantity: getOwnedQuantity(item) } : c))
   );
   Alert.alert('Error', 'Failed to update card.');
 }
@@ -1266,32 +1330,54 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     ]);
   };
 
-  const handleToggleVariant = useCallback(async (cardId: string, setId: string, variant: string) => {
+  const handleSetVariantQuantity = useCallback(async (
+    cardId: string,
+    setId: string,
+    variant: string,
+    quantity: number
+  ) => {
     if (!userId || isReadOnly) return;
-    const key = `${cardId}:${variant}`;
-    let removing = false;
+    const key = getVariantKey(cardId, variant);
+    const nextQuantity = Math.max(0, Math.min(999, Math.floor(Number(quantity) || 0)));
 
     setOwnedVariants((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) { next.delete(key); removing = true; }
-      else { next.add(key); removing = false; }
+      const next = new Map(prev);
+      if (nextQuantity > 0) next.set(key, nextQuantity);
+      else next.delete(key);
       return next;
     });
 
-    if (removing) {
-      await supabase
-        .from('user_card_variants')
-        .delete()
-        .eq('user_id', userId)
-        .eq('card_id', cardId)
-        .eq('set_id', setId)
-        .eq('variant', variant);
-    } else {
-      await supabase
-        .from('user_card_variants')
-        .insert({ user_id: userId, card_id: cardId, set_id: setId, variant });
+    try {
+      if (nextQuantity <= 0) {
+        await supabase
+          .from('user_card_variants')
+          .delete()
+          .eq('user_id', userId)
+          .eq('card_id', cardId)
+          .eq('set_id', setId)
+          .eq('variant', variant);
+      } else {
+        await supabase
+          .from('user_card_variants')
+          .upsert({
+            user_id: userId,
+            card_id: cardId,
+            set_id: setId,
+            variant,
+            quantity: nextQuantity,
+          }, { onConflict: 'user_id,card_id,set_id,variant' });
+      }
+    } catch (error) {
+      console.log('Failed to update variant quantity', error);
+      Alert.alert('Error', 'Failed to update variant quantity.');
+      load();
     }
-  }, [userId, isReadOnly]);
+  }, [userId, isReadOnly, load]);
+
+  const handleToggleVariant = useCallback(async (cardId: string, setId: string, variant: string) => {
+    const currentQuantity = getVariantQuantityFromMap(ownedVariants, cardId, variant);
+    await handleSetVariantQuantity(cardId, setId, variant, currentQuantity > 0 ? 0 : 1);
+  }, [handleSetVariantQuantity, ownedVariants]);
 
   const handleSetCondition = async (item: BinderCardWithDetails, condition: string) => {
     if (isReadOnly) return;
@@ -1308,6 +1394,58 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     } catch (error) {
       console.log('Failed to update condition', error);
       Alert.alert('Error', 'Failed to update condition.');
+      load();
+    }
+  };
+
+  const handleSetOwnedQuantity = async (item: BinderCardWithDetails, quantity: number) => {
+    if (isReadOnly) return;
+
+    const nextQuantity = Math.max(1, Math.min(999, Math.floor(Number(quantity) || 1)));
+    const updatedCard = { ...item, owned: true, owned_quantity: nextQuantity };
+
+    setCards((prev) =>
+      prev.map((c) => (
+        c.card_id === item.card_id && c.set_id === item.set_id
+          ? { ...c, owned: true, owned_quantity: nextQuantity }
+          : c
+      ))
+    );
+    if (selectedCard?.id === item.id) {
+      setSelectedCard(updatedCard);
+    }
+
+    try {
+      await updateBinderCardQuantity(item.id, nextQuantity, {
+        cardName: item.card?.name ?? item.card_name ?? null,
+        cardNumber: item.card?.number ?? item.card_number ?? null,
+        imageUrl: item.card?.images?.small ?? item.image_url ?? null,
+        setName: item.card?.set?.name ?? item.set_name ?? null,
+        slotOrder: item.slot_order,
+        condition: item.condition,
+        gradeCompany: item.grade_company ?? null,
+        grade: item.grade ?? null,
+      });
+
+      if (userId) {
+        const { data: userBinders } = await supabase
+          .from('binders')
+          .select('id')
+          .eq('user_id', userId);
+        const userBinderIds = (userBinders ?? []).map((row) => row.id).filter(Boolean);
+
+        if (userBinderIds.length) {
+          await supabase
+            .from('binder_cards')
+            .update({ owned: true, owned_quantity: nextQuantity })
+            .in('binder_id', userBinderIds)
+            .eq('card_id', item.card_id)
+            .eq('set_id', item.set_id);
+        }
+      }
+    } catch (error) {
+      console.log('Failed to update owned quantity', error);
+      Alert.alert('Error', 'Failed to update quantity owned.');
       load();
     }
   };
@@ -1505,6 +1643,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
     const imageEditionHint = getBinderEditionHint(binder?.edition);
     const isGradedBinder = binder?.card_mode === 'graded';
+    const ownedQuantity = getOwnedQuantity(item);
 
     return (
       <TouchableOpacity
@@ -1558,6 +1697,27 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             borderWidth: 1,
             borderColor: 'rgba(255,255,255,0.7)',
           }} />
+          )}
+
+          {item.owned && ownedQuantity > 1 && (
+            <View style={{
+              position: 'absolute',
+              left: 8,
+              bottom: 8,
+              minWidth: 28,
+              height: 24,
+              borderRadius: 12,
+              paddingHorizontal: 7,
+              backgroundColor: theme.colors.primary,
+              borderWidth: 2,
+              borderColor: theme.colors.card,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>
+                x{ownedQuantity}
+              </Text>
+            </View>
           )}
         </View>
 
@@ -1684,8 +1844,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
     const variants = masterSetEnabled ? getVariants(item.card, item.set_id) : ['card'];
     const multiVariant = variants.length > 1;
-    const anyVariantOwned = variants.some((v) => ownedVariants.has(`${item.card_id}:${v}`));
-    const isOwned = multiVariant ? anyVariantOwned : item.owned;
+    const anyVariantOwned = variants.some((v) => getDisplayedVariantQuantity(item, v) > 0);
+    const displayedOwnedQuantity = getDisplayedOwnedQuantity(item);
+    const isOwned = multiVariant ? anyVariantOwned || displayedOwnedQuantity > 0 : item.owned;
 
     const Container = multiVariant ? View : TouchableOpacity;
 
@@ -1740,7 +1901,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           {multiVariant && (
             <View style={[StyleSheet.absoluteFill, { flexDirection: 'row' }]}>
               {variants.map((variant, i) => {
-                const owned = ownedVariants.has(`${item.card_id}:${variant}`);
+                const variantQuantity = getDisplayedVariantQuantity(item, variant);
+                const owned = variantQuantity > 0;
                 return (
                   <Pressable
                     key={variant}
@@ -1777,7 +1939,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       borderWidth: 2,
                       borderColor: theme.colors.card,
                     }}>
-                      {owned ? (
+                      {owned && variantQuantity > 1 ? (
+                        <Text style={{ color: '#FFFFFF', fontSize: 9, fontWeight: '900' }}>
+                          x{variantQuantity}
+                        </Text>
+                      ) : owned ? (
                         <Ionicons name="checkmark" size={14} color="#FFFFFF" />
                       ) : (
                         <MasterVariantIcon variant={variant} size="tiny" active={false} />
@@ -1808,6 +1974,27 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                 size={14}
                 color={isOwned ? '#FFFFFF' : theme.colors.primary}
               />
+            </View>
+          )}
+
+          {isOwned && displayedOwnedQuantity > 1 && (
+            <View style={{
+              position: 'absolute',
+              left: 7,
+              top: 7,
+              minWidth: 28,
+              height: 24,
+              borderRadius: 12,
+              paddingHorizontal: 7,
+              backgroundColor: theme.colors.primary,
+              borderWidth: 2,
+              borderColor: theme.colors.card,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>
+                x{displayedOwnedQuantity}
+              </Text>
             </View>
           )}
         </View>
@@ -2900,7 +3087,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                             return (
                               <View style={[StyleSheet.absoluteFill, { flexDirection: 'row' }]} pointerEvents="box-none">
                                 {modalVariants.map((variant, i) => {
-                                  const owned = ownedVariants.has(`${selectedCard.card_id}:${variant}`);
+                                  const variantQuantity = getDisplayedVariantQuantity(selectedCard, variant);
+                                  const owned = variantQuantity > 0;
                                   return (
                                     <Pressable
                                       key={variant}
@@ -2928,7 +3116,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                                         borderWidth: 2,
                                         borderColor: theme.colors.card,
                                       }}>
-                                        {owned ? (
+                                        {owned && variantQuantity > 1 ? (
+                                          <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '900' }}>
+                                            x{variantQuantity}
+                                          </Text>
+                                        ) : owned ? (
                                           <Ionicons name="checkmark" size={18} color="#FFFFFF" />
                                         ) : (
                                           <MasterVariantIcon variant={variant} size="medium" active={false} />
@@ -2942,6 +3134,30 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                           })()}
                         </Animated.View>
                       </PinchGestureHandler>
+
+                      {getDisplayedOwnedQuantity(selectedCard) > 1 && (
+                        <View
+                          pointerEvents="none"
+                          style={{
+                            position: 'absolute',
+                            left: 14,
+                            bottom: 14,
+                            minWidth: 42,
+                            height: 34,
+                            borderRadius: 17,
+                            paddingHorizontal: 11,
+                            backgroundColor: theme.colors.primary,
+                            borderWidth: 2,
+                            borderColor: theme.colors.card,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>
+                            x{getDisplayedOwnedQuantity(selectedCard)}
+                          </Text>
+                        </View>
+                      )}
                     </View>
 
                     <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900', marginTop: 18 }}>
@@ -3100,6 +3316,64 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         </View>
                       )}
 
+                      {(!isReadOnly || getOwnedQuantity(selectedCard) > 1) && (
+                        <View style={{ marginBottom: 16 }}>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+                            Copies Owned
+                          </Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                            <TouchableOpacity
+                              onPress={() => handleSetOwnedQuantity(selectedCard, getOwnedQuantity(selectedCard) - 1)}
+                              disabled={isReadOnly || getOwnedQuantity(selectedCard) <= 1}
+                              style={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: 12,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: theme.colors.surface,
+                                borderWidth: 1,
+                                borderColor: theme.colors.border,
+                                opacity: isReadOnly || getOwnedQuantity(selectedCard) <= 1 ? 0.45 : 1,
+                              }}
+                            >
+                              <Ionicons name="remove" size={18} color={theme.colors.text} />
+                            </TouchableOpacity>
+                            <View style={{
+                              minWidth: 58,
+                              height: 38,
+                              borderRadius: 12,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: theme.colors.primary + '18',
+                              borderWidth: 1,
+                              borderColor: theme.colors.primary,
+                            }}>
+                              <Text style={{ color: theme.colors.primary, fontSize: 18, fontWeight: '900' }}>
+                                {getOwnedQuantity(selectedCard)}
+                              </Text>
+                            </View>
+                            <TouchableOpacity
+                              onPress={() => handleSetOwnedQuantity(selectedCard, getOwnedQuantity(selectedCard) + 1)}
+                              disabled={isReadOnly}
+                              style={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: 12,
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                backgroundColor: theme.colors.surface,
+                                borderWidth: 1,
+                                borderColor: theme.colors.border,
+                                opacity: isReadOnly ? 0.45 : 1,
+                              }}
+                            >
+                              <Ionicons name="add" size={18} color={theme.colors.text} />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      )}
+
                       <View style={{ height: 1, backgroundColor: theme.colors.border, marginBottom: 16 }} />
 
                       <PokeTraceMarketInsights
@@ -3224,15 +3498,101 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         <View style={boxStyle}>
                           <Text style={boxTitleStyle}>Variants Owned</Text>
                           {modalVariants.map((variant) => {
-                            const variantOwned = ownedVariants.has(`${selectedCard.card_id}:${variant}`);
+                            const variantQuantity = getDisplayedVariantQuantity(selectedCard, variant);
+                            const variantOwned = variantQuantity > 0;
                             return (
-                              <VariantActionButton
+                              <View
                                 key={variant}
-                                variant={variant}
-                                label={`${VARIANT_LABELS[variant] ?? variant}${variantOwned ? ' - Owned' : ' - Not owned'}`}
-                                active={variantOwned}
-                                onPress={() => handleToggleVariant(selectedCard.card_id, selectedCard.set_id, variant)}
-                              />
+                                style={{
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: 10,
+                                  paddingVertical: 10,
+                                  borderBottomWidth: 1,
+                                  borderBottomColor: theme.colors.border,
+                                }}
+                              >
+                                <TouchableOpacity
+                                  onPress={() => handleToggleVariant(selectedCard.card_id, selectedCard.set_id, variant)}
+                                  style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}
+                                  activeOpacity={0.75}
+                                >
+                                  <View style={{
+                                    width: 34,
+                                    height: 34,
+                                    borderRadius: 17,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: variantOwned ? theme.colors.primary : theme.colors.surface,
+                                    borderWidth: 1,
+                                    borderColor: variantOwned ? theme.colors.primary : theme.colors.border,
+                                  }}>
+                                    {variantOwned ? (
+                                      <Ionicons name="checkmark" size={17} color="#FFFFFF" />
+                                    ) : (
+                                      <MasterVariantIcon variant={variant} size="small" active={false} />
+                                    )}
+                                  </View>
+                                  <View style={{ flex: 1 }}>
+                                    <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>
+                                      {VARIANT_LABELS[variant] ?? variant}
+                                    </Text>
+                                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }}>
+                                      {variantOwned ? `${variantQuantity} owned` : 'Not owned'}
+                                    </Text>
+                                  </View>
+                                </TouchableOpacity>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                                  <TouchableOpacity
+                                    onPress={() => handleSetVariantQuantity(selectedCard.card_id, selectedCard.set_id, variant, variantQuantity - 1)}
+                                    disabled={variantQuantity <= 0}
+                                    style={{
+                                      width: 32,
+                                      height: 32,
+                                      borderRadius: 10,
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      backgroundColor: theme.colors.surface,
+                                      borderWidth: 1,
+                                      borderColor: theme.colors.border,
+                                      opacity: variantQuantity <= 0 ? 0.45 : 1,
+                                    }}
+                                  >
+                                    <Ionicons name="remove" size={16} color={theme.colors.text} />
+                                  </TouchableOpacity>
+                                  <View style={{
+                                    minWidth: 42,
+                                    height: 32,
+                                    borderRadius: 10,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: variantOwned ? theme.colors.primary + '18' : theme.colors.surface,
+                                    borderWidth: 1,
+                                    borderColor: variantOwned ? theme.colors.primary : theme.colors.border,
+                                  }}>
+                                    <Text style={{ color: variantOwned ? theme.colors.primary : theme.colors.textSoft, fontSize: 14, fontWeight: '900' }}>
+                                      {variantQuantity}
+                                    </Text>
+                                  </View>
+                                  <TouchableOpacity
+                                    onPress={() => handleSetVariantQuantity(selectedCard.card_id, selectedCard.set_id, variant, variantQuantity + 1)}
+                                    style={{
+                                      width: 32,
+                                      height: 32,
+                                      borderRadius: 10,
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      backgroundColor: theme.colors.surface,
+                                      borderWidth: 1,
+                                      borderColor: theme.colors.border,
+                                    }}
+                                  >
+                                    <Ionicons name="add" size={16} color={theme.colors.text} />
+                                  </TouchableOpacity>
+                                </View>
+                              </View>
                             );
                           })}
                         </View>
@@ -3429,46 +3789,6 @@ function MasterVariantIcon({
         </Text>
       )}
     </View>
-  );
-}
-
-function VariantActionButton({
-  variant,
-  label,
-  onPress,
-  active,
-}: {
-  variant: string;
-  label: string;
-  onPress: () => void | Promise<void>;
-  active?: boolean;
-}) {
-  const { theme } = useTheme();
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        backgroundColor: active ? theme.colors.primary : theme.colors.card,
-        borderRadius: 14,
-        paddingVertical: 11,
-        paddingHorizontal: 12,
-        marginBottom: 10,
-        borderWidth: 1,
-        borderColor: active ? theme.colors.primary : theme.colors.border,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-      }}
-    >
-      <MasterVariantIcon variant={variant} size="medium" active />
-      <Text style={{
-        color: active ? '#FFFFFF' : theme.colors.text,
-        fontWeight: '900',
-        flex: 1,
-      }}>
-        {label}
-      </Text>
-    </TouchableOpacity>
   );
 }
 
