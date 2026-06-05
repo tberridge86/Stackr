@@ -1,8 +1,7 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  Animated,
   View,
   FlatList,
   TextInput,
@@ -27,6 +26,8 @@ type QuantityTarget = {
   card: PokemonCard;
   variant: string;
 } | null;
+
+const getVariantKey = (cardId: string, setId: string, variant: string) => `${setId}:${cardId}:${variant}`;
 
 const VARIANT_LABELS: Record<string, string> = {
   normal: 'Nrm',
@@ -98,10 +99,10 @@ type CardItemProps = {
 const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity }: CardItemProps) => {
   const { theme } = useTheme();
   const variants = useMemo(() => getVariants(card, setId), [card, setId]);
-  const quantities = variants.map((v) => variantQuantities.get(`${card.id}:${v}`) ?? 0);
+  const quantities = variants.map((v) => variantQuantities.get(getVariantKey(card.id, setId, v)) ?? 0);
   const totalQuantity = quantities.reduce((sum, qty) => sum + qty, 0);
   const anyOwned = totalQuantity > 0;
-  const allOwned = variants.every((v) => (variantQuantities.get(`${card.id}:${v}`) ?? 0) > 0);
+  const allOwned = variants.every((v) => (variantQuantities.get(getVariantKey(card.id, setId, v)) ?? 0) > 0);
   const slicePct = 100 / variants.length;
 
   return (
@@ -154,7 +155,7 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity }:
         )}
 
         {variants.map((variant, i) => {
-          const quantity = variantQuantities.get(`${card.id}:${variant}`) ?? 0;
+          const quantity = variantQuantities.get(getVariantKey(card.id, setId, variant)) ?? 0;
           const owned = quantity > 0;
           return (
             <TouchableOpacity
@@ -278,14 +279,6 @@ export default function SetDetailScreen() {
   const [selectedRarity, setSelectedRarity] = useState<string>('All');
   const [sort, setSort] = useState<SortType>('number');
 
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const headerOpacity = scrollY.interpolate({ inputRange: [0, 60], outputRange: [1, 0], extrapolate: 'clamp' });
-  const headerMaxHeight = scrollY.interpolate({ inputRange: [0, 60], outputRange: [600, 0], extrapolate: 'clamp' });
-  const onScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    { useNativeDriver: false }
-  );
-
   // ===============================
   // LOAD DATA
   // ===============================
@@ -322,7 +315,7 @@ export default function SetDetailScreen() {
 
         setVariantQuantities(new Map(
           (variantRows ?? []).map((row: any) => [
-            `${row.card_id}:${row.variant}`,
+            getVariantKey(row.card_id, setId, row.variant),
             Math.max(1, Number(row.quantity) || 1),
           ])
         ));
@@ -341,14 +334,14 @@ export default function SetDetailScreen() {
   // ===============================
 
   const openQuantityModal = useCallback((card: PokemonCard, variant: string) => {
-    const currentQuantity = variantQuantities.get(`${card.id}:${variant}`) ?? 0;
+    const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
     setQuantityTarget({ card, variant });
     setQuantityDraft(String(Math.max(1, currentQuantity || 1)));
   }, [variantQuantities]);
 
   const handleSetVariantQuantity = useCallback(async (cardId: string, variant: string, nextQuantity: number) => {
     if (!userId) return;
-    const key = `${cardId}:${variant}`;
+    const key = getVariantKey(cardId, setId ?? '', variant);
     const previousQuantity = variantQuantities.get(key) ?? 0;
 
     setVariantQuantities((prev) => {
@@ -445,7 +438,7 @@ export default function SetDetailScreen() {
   const filteredCards = useMemo(() => {
     let result = cards.filter((card) => {
       const variants = getVariants(card, setId);
-      const anyOwned = variants.some((v) => (variantQuantities.get(`${card.id}:${v}`) ?? 0) > 0);
+      const anyOwned = variants.some((v) => (variantQuantities.get(getVariantKey(card.id, setId ?? '', v)) ?? 0) > 0);
       const matchesSearch =
         card.name.toLowerCase().includes(search.toLowerCase()) ||
         card.number.toLowerCase().includes(search.toLowerCase());
@@ -465,7 +458,7 @@ export default function SetDetailScreen() {
   }, [cards, variantQuantities, search, filter, selectedRarity, sort, setId]);
 
   const ownedCardCount = useMemo(() =>
-    cards.filter((c) => getVariants(c, setId).some((v) => (variantQuantities.get(`${c.id}:${v}`) ?? 0) > 0)).length,
+    cards.filter((c) => getVariants(c, setId).some((v) => (variantQuantities.get(getVariantKey(c.id, setId ?? '', v)) ?? 0) > 0)).length,
     [cards, variantQuantities, setId]
   );
 
@@ -511,7 +504,7 @@ export default function SetDetailScreen() {
   }
 
   const selectedVariantQuantity = quantityTarget
-    ? variantQuantities.get(`${quantityTarget.card.id}:${quantityTarget.variant}`) ?? 0
+    ? variantQuantities.get(getVariantKey(quantityTarget.card.id, setId ?? '', quantityTarget.variant)) ?? 0
     : 0;
 
   // ===============================
@@ -550,8 +543,8 @@ export default function SetDetailScreen() {
         </Text>
       </View>
 
-      {/* Collapsible header */}
-      <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+      {/* Header */}
+      <View>
         <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
 
           <View style={{ marginBottom: 12, marginTop: 4 }}>
@@ -668,7 +661,7 @@ export default function SetDetailScreen() {
             ))}
           </ScrollView>
         </View>
-      </Animated.View>
+      </View>
 
       {/* Card grid */}
       <FlatList
@@ -679,8 +672,6 @@ export default function SetDetailScreen() {
         renderItem={renderCard}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 8 }}
         showsVerticalScrollIndicator={false}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
         windowSize={5}
         maxToRenderPerBatch={10}
         initialNumToRender={12}

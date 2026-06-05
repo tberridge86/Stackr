@@ -136,13 +136,15 @@ const getBinderEditionHint = (edition?: string | null): ScanEditionHint | null =
 const getOwnedQuantity = (card?: Pick<BinderCardRecord, 'owned_quantity'> | null) =>
   Math.max(1, Math.floor(Number(card?.owned_quantity ?? 1) || 1));
 
-const getVariantKey = (cardId: string, variant: string) => `${cardId}:${variant}`;
+const getVariantKey = (cardId: string, setId: string, variant: string) => `${setId}:${cardId}:${variant}`;
+const getVariantCardKey = (cardId: string, setId: string) => `${setId}:${cardId}`;
 
 const getVariantQuantityFromMap = (
   variants: Map<string, number>,
   cardId: string,
+  setId: string,
   variant: string
-) => Math.max(0, Math.floor(Number(variants.get(getVariantKey(cardId, variant)) ?? 0) || 0));
+) => Math.max(0, Math.floor(Number(variants.get(getVariantKey(cardId, setId, variant)) ?? 0) || 0));
 
 const formatCurrency = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(value)) return '--';
@@ -553,6 +555,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [ownedVariants, setOwnedVariants] = useState<Map<string, number>>(new Map());
+  const [variantManagedCards, setVariantManagedCards] = useState<Set<string>>(new Set());
   const [masterSetEnabled, setMasterSetEnabled] = useState(false);
   const [masterSetIntroVisible, setMasterSetIntroVisible] = useState(false);
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
@@ -579,17 +582,6 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const pinchScale = useRef(new Animated.Value(1)).current;
   const lastScale = useRef(1);
   const imageScale = Animated.multiply(baseScale, pinchScale);
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 150],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
-  const headerMaxHeight = scrollY.interpolate({
-    inputRange: [0, 150],
-    outputRange: [260, 0],
-    extrapolate: 'clamp',
-  });
 
   const { createTradeListing, toggleWishlistCard, isForTrade, isWanted } = useTrade();
 
@@ -603,14 +595,6 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
   const currentSortLabel =
     sortOptions.find((o) => o.value === sortMode)?.label ?? 'Binder order';
-
-  const handleGridScroll = useCallback(
-    Animated.event(
-      [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-      { useNativeDriver: false }
-    ),
-    [scrollY]
-  );
 
   // ===============================
   // MODAL HELPERS
@@ -750,29 +734,52 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         // Load variant ownership for all cards in this binder
         const cardIds = binderCards.map((c) => c.card_id);
         if (cardIds.length > 0) {
+          const setIds = Array.from(new Set(binderCards.map((c) => c.set_id).filter(Boolean)));
+          const binderVariantCardKeys = new Set(
+            binderCards.map((card) => getVariantCardKey(card.card_id, card.set_id))
+          );
           const { data: variantRowsWithQuantity, error: variantQuantityError } = await supabase
             .from('user_card_variants')
-            .select('card_id, variant, quantity')
+            .select('card_id, set_id, variant, quantity')
             .eq('user_id', user.id)
-            .in('card_id', cardIds);
+            .in('card_id', cardIds)
+            .in('set_id', setIds);
 
           const variantRows = variantQuantityError
             ? (await supabase
                 .from('user_card_variants')
-                .select('card_id, variant')
+                .select('card_id, set_id, variant')
                 .eq('user_id', user.id)
-                .in('card_id', cardIds)).data
+                .in('card_id', cardIds)
+                .in('set_id', setIds)).data
             : variantRowsWithQuantity;
 
+          const typedVariantRows = ((variantRows ?? []) as {
+            card_id: string;
+            set_id?: string | null;
+            variant: string;
+            quantity?: number | null;
+          }[]).filter((row) =>
+            Boolean(row.set_id) && binderVariantCardKeys.has(getVariantCardKey(row.card_id, row.set_id ?? ''))
+          );
+
           setOwnedVariants(new Map(
-            ((variantRows ?? []) as { card_id: string; variant: string; quantity?: number | null }[]).map((row) => [
-              getVariantKey(row.card_id, row.variant),
+            typedVariantRows.map((row) => [
+              getVariantKey(row.card_id, row.set_id ?? '', row.variant),
               Math.max(1, Number(row.quantity ?? 1)),
             ])
           ));
+          setVariantManagedCards(new Set(
+            typedVariantRows.map((row) => getVariantCardKey(row.card_id, row.set_id ?? ''))
+          ));
+        } else {
+          setOwnedVariants(new Map());
+          setVariantManagedCards(new Set());
         }
       } else {
         setCards(binderCards);
+        setOwnedVariants(new Map());
+        setVariantManagedCards(new Set());
       }
     } catch (error) {
       console.log('Failed to load binder', error);
@@ -851,16 +858,17 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   let totalCount = 0;
   for (const c of cards) {
     const savedVariants = [...ownedVariants.keys()]
-      .filter((key) => key.startsWith(`${c.card_id}:`))
-      .map((key) => key.slice(c.card_id.length + 1));
+      .filter((key) => key.startsWith(`${c.set_id}:${c.card_id}:`))
+      .map((key) => key.slice(`${c.set_id}:${c.card_id}:`.length));
     const variants = masterSetEnabled ? getVariants(c.card, c.set_id) : ['card'];
     if (masterSetEnabled && variants.length > 1) {
       totalCount += variants.length;
-      const defaultVariant = c.owned ? getDefaultOwnedVariant(variants) : null;
+      const variantManaged = variantManagedCards.has(getVariantCardKey(c.card_id, c.set_id));
+      const defaultVariant = c.owned && !variantManaged ? getDefaultOwnedVariant(variants) : null;
       const ownedVariantCount = variants.filter((v) =>
-        getVariantQuantityFromMap(ownedVariants, c.card_id, v) > 0 || v === defaultVariant
+        getVariantQuantityFromMap(ownedVariants, c.card_id, c.set_id, v) > 0 || v === defaultVariant
       ).length;
-      ownedCount += ownedVariantCount > 0 ? ownedVariantCount : c.owned ? 1 : 0;
+      ownedCount += ownedVariantCount > 0 ? ownedVariantCount : !variantManaged && c.owned ? 1 : 0;
     } else {
       totalCount += 1;
       if (c.owned || savedVariants.length > 0) ownedCount += 1;
@@ -900,18 +908,21 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
   const binderValue = useMemo(() => {
     return cards.reduce((sum, card) => {
+      const variantManaged = variantManagedCards.has(getVariantCardKey(card.card_id, card.set_id));
       let variants = masterSetEnabled
         ? getVariants(card.card, card.set_id).filter((variant) => {
-            const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, variant);
+            const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, card.set_id, variant);
             if (savedQuantity > 0) return true;
-            const defaultVariant = card.owned ? getDefaultOwnedVariant(getVariants(card.card, card.set_id)) : null;
+            const defaultVariant = card.owned && !variantManaged
+              ? getDefaultOwnedVariant(getVariants(card.card, card.set_id))
+              : null;
             return variant === defaultVariant;
           })
         : [...ownedVariants.keys()]
-            .filter((key) => key.startsWith(`${card.card_id}:`))
-            .map((key) => key.slice(card.card_id.length + 1));
+            .filter((key) => key.startsWith(`${card.set_id}:${card.card_id}:`))
+            .map((key) => key.slice(`${card.set_id}:${card.card_id}:`.length));
 
-      if (masterSetEnabled && card.owned && variants.length === 0) {
+      if (masterSetEnabled && card.owned && !variantManaged && variants.length === 0) {
         const defaultVariant = getDefaultOwnedVariant(getVariants(card.card, card.set_id));
         variants = defaultVariant ? [defaultVariant] : [];
       }
@@ -919,7 +930,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       if (variants.length) {
         return sum + variants.reduce((variantSum, variant) => {
           const base = getPreferredBinderCardPrice(card, variant, binder?.edition);
-          const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, variant);
+          const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, card.set_id, variant);
           const quantity = savedQuantity > 0 ? savedQuantity : getOwnedQuantity(card);
           return variantSum + getEstimatedValue(base, card.condition || 'Near Mint') * quantity;
         }, 0);
@@ -930,16 +941,18 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       const base = getPreferredBinderCardPrice(card, null, binder?.edition);
       return sum + getEstimatedValue(base, card.condition || 'Near Mint');
     }, 0);
-  }, [binder?.edition, cards, masterSetEnabled, ownedVariants]);
+  }, [binder?.edition, cards, masterSetEnabled, ownedVariants, variantManagedCards]);
 
   const getDisplayedVariantQuantity = useCallback((card: BinderCardWithDetails, variant: string) => {
-    const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, variant);
+    const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, card.set_id, variant);
     if (savedQuantity > 0) return savedQuantity;
+    const variantManaged = variantManagedCards.has(getVariantCardKey(card.card_id, card.set_id));
+    if (variantManaged) return 0;
     if (!masterSetEnabled || !card.owned) return 0;
 
     const defaultVariant = getDefaultOwnedVariant(getVariants(card.card, card.set_id));
     return variant === defaultVariant ? getOwnedQuantity(card) : 0;
-  }, [masterSetEnabled, ownedVariants]);
+  }, [masterSetEnabled, ownedVariants, variantManagedCards]);
 
   const getDisplayedOwnedQuantity = useCallback((card: BinderCardWithDetails) => {
     const baseQuantity = card.owned ? getOwnedQuantity(card) : 0;
@@ -950,9 +963,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
     const ownedVariantCount = variants.reduce((sum, variant) =>
       sum + getDisplayedVariantQuantity(card, variant), 0);
+    if (variantManagedCards.has(getVariantCardKey(card.card_id, card.set_id))) return ownedVariantCount;
 
     return Math.max(baseQuantity, ownedVariantCount);
-  }, [getDisplayedVariantQuantity, masterSetEnabled]);
+  }, [getDisplayedVariantQuantity, masterSetEnabled, variantManagedCards]);
 
   // ===============================
   // VISIBILITY TOGGLE
@@ -1337,8 +1351,16 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     quantity: number
   ) => {
     if (!userId || isReadOnly) return;
-    const key = getVariantKey(cardId, variant);
+    const key = getVariantKey(cardId, setId, variant);
+    const cardKey = getVariantCardKey(cardId, setId);
     const nextQuantity = Math.max(0, Math.min(999, Math.floor(Number(quantity) || 0)));
+    const targetCard = cards.find((card) => card.card_id === cardId && card.set_id === setId);
+    const cardVariants = targetCard ? getVariants(targetCard.card, setId) : [variant];
+    const nextCardOwned = cardVariants.some((candidateVariant) =>
+      candidateVariant === variant
+        ? nextQuantity > 0
+        : getVariantQuantityFromMap(ownedVariants, cardId, setId, candidateVariant) > 0
+    );
 
     setOwnedVariants((prev) => {
       const next = new Map(prev);
@@ -1346,6 +1368,23 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       else next.delete(key);
       return next;
     });
+    setVariantManagedCards((prev) => {
+      const next = new Set(prev);
+      next.add(cardKey);
+      return next;
+    });
+    setCards((prev) =>
+      prev.map((card) =>
+        card.card_id === cardId && card.set_id === setId
+          ? { ...card, owned: nextCardOwned, owned_quantity: nextCardOwned ? getOwnedQuantity(card) : 1 }
+          : card
+      )
+    );
+    setSelectedCard((prev) =>
+      prev && prev.card_id === cardId && prev.set_id === setId
+        ? { ...prev, owned: nextCardOwned, owned_quantity: nextCardOwned ? getOwnedQuantity(prev) : 1 }
+        : prev
+    );
 
     try {
       if (nextQuantity <= 0) {
@@ -1367,17 +1406,42 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             quantity: nextQuantity,
           }, { onConflict: 'user_id,card_id,set_id,variant' });
       }
+
+      const { data: userBinders } = await supabase
+        .from('binders')
+        .select('id')
+        .eq('user_id', userId);
+      const userBinderIds = (userBinders ?? []).map((row) => row.id).filter(Boolean);
+      if (userBinderIds.length) {
+        await supabase
+          .from('binder_cards')
+          .update({ owned: nextCardOwned })
+          .in('binder_id', userBinderIds)
+          .eq('card_id', cardId)
+          .eq('set_id', setId);
+      }
     } catch (error) {
       console.log('Failed to update variant quantity', error);
       Alert.alert('Error', 'Failed to update variant quantity.');
       load();
     }
-  }, [userId, isReadOnly, load]);
+  }, [cards, isReadOnly, load, ownedVariants, userId]);
 
   const handleToggleVariant = useCallback(async (cardId: string, setId: string, variant: string) => {
-    const currentQuantity = getVariantQuantityFromMap(ownedVariants, cardId, variant);
+    const savedQuantity = getVariantQuantityFromMap(ownedVariants, cardId, setId, variant);
+    const targetCard = cards.find((card) => card.card_id === cardId && card.set_id === setId);
+    const cardVariants = targetCard ? getVariants(targetCard.card, setId) : [variant];
+    const isManaged = variantManagedCards.has(getVariantCardKey(cardId, setId));
+    const defaultVariant = targetCard && !isManaged && targetCard.owned
+      ? getDefaultOwnedVariant(cardVariants)
+      : null;
+    const currentQuantity = savedQuantity > 0
+      ? savedQuantity
+      : defaultVariant === variant && targetCard
+        ? getOwnedQuantity(targetCard)
+        : 0;
     await handleSetVariantQuantity(cardId, setId, variant, currentQuantity > 0 ? 0 : 1);
-  }, [handleSetVariantQuantity, ownedVariants]);
+  }, [cards, handleSetVariantQuantity, ownedVariants, variantManagedCards]);
 
   const handleSetCondition = async (item: BinderCardWithDetails, condition: string) => {
     if (isReadOnly) return;
@@ -2208,7 +2272,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
 
         {/* Header */}
-        <Animated.View style={{ opacity: headerOpacity, marginBottom: 8, overflow: 'hidden', maxHeight: headerMaxHeight }}>
+        <View style={{ marginBottom: 8 }}>
           {!isReadOnly && (
             <TouchableOpacity
               onPress={handleScanCard}
@@ -2324,7 +2388,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
               )}
             </View>
 
-          </Animated.View>
+          </View>
 
         {/* Progress bar */}
         <View style={{
@@ -2343,7 +2407,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         </View>
 
         {/* Read only banner */}
-        <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+        <View>
           {isReadOnly && (
           <View style={{
             backgroundColor: theme.colors.surface,
@@ -2363,16 +2427,16 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             </Text>
           </View>
           )}
-        </Animated.View>
+        </View>
 
         {/* Showcase strips */}
-        <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+        <View>
           {renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
           {renderShowcaseStrip('chase', 'Chase Cards')}
-        </Animated.View>
+        </View>
 
         {/* Add card button */}
-        <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+        <View>
           {binder.type === 'custom' && !isReadOnly && (
             <TouchableOpacity
               onPress={() => setShowAddModal(true)}
@@ -2387,10 +2451,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
               <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>+ Add Card to Binder</Text>
             </TouchableOpacity>
           )}
-        </Animated.View>
+        </View>
 
         {/* Sort dropdown */}
-        <Animated.View style={{ opacity: headerOpacity, maxHeight: headerMaxHeight, overflow: 'hidden' }}>
+        <View>
           <View style={{ marginBottom: 14, zIndex: 20 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900', marginBottom: 6 }}>
               Sort:
@@ -2443,7 +2507,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
               </View>
             )}
           </View>
-        </Animated.View>
+        </View>
 
         {/* Card grid */}
         <FlatList
@@ -2459,8 +2523,6 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           windowSize={7}
           removeClippedSubviews
           showsVerticalScrollIndicator={false}
-          onScroll={handleGridScroll}
-          scrollEventThrottle={16}
           contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
         />
       </View>
