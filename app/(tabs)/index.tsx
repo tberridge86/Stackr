@@ -1094,7 +1094,7 @@ export default function HubScreen() {
             )}
             {chartIsPreview && (
               <View style={{ position: 'absolute', top: 10, left: 10, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>Preview trend</Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>Estimated trend</Text>
               </View>
             )}
           </View>
