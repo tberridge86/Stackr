@@ -37,6 +37,7 @@ import {
   fetchBinderCards,
   updateBinderCardOwned,
   updateBinderCardCondition,
+  updateBinderCardGrading,
   CONDITION_MULTIPLIERS,
   getEstimatedValue,
 } from '../../lib/binders';
@@ -61,6 +62,9 @@ const CONDITION_OPTIONS = [
   'Heavily Played',
   'Damaged',
 ];
+
+const GRADING_COMPANIES = ['PSA', 'CGC', 'BGS', 'Ace'];
+const GRADES = ['10', '9.5', '9', '8', '7'];
 
 
 const cardShadow = {
@@ -141,6 +145,26 @@ const getPreferredBinderCardPrice = (card: BinderCardWithDetails, variant?: stri
   return getBinderTcgPrice(card.card, edition, variant) ?? card.ebay_price ?? card.tcg_price ?? card.cardmarket_price ?? 0;
 };
 
+const getGradeDescriptor = (grade?: string | null): string => {
+  const numeric = Number(grade);
+  if (Number.isNaN(numeric)) return 'AUTHENTIC';
+  if (numeric >= 10) return 'GEM MINT';
+  if (numeric >= 9.5) return 'GEM MINT';
+  if (numeric >= 9) return 'MINT';
+  if (numeric >= 8) return 'NM-MT';
+  if (numeric >= 7) return 'NEAR MINT';
+  return 'GRADED';
+};
+
+const getSlabAccent = (company?: string | null): string => {
+  const key = (company ?? '').toUpperCase();
+  if (key === 'PSA') return '#DC2626';
+  if (key === 'CGC') return '#2563EB';
+  if (key === 'BGS') return '#D97706';
+  if (key === 'ACE') return '#7C3AED';
+  return '#334155';
+};
+
 const getCardmarketPrice = (binderCard: any): number | null => {
   if (typeof binderCard?.cardmarket_price === 'number') return binderCard.cardmarket_price;
   const prices = binderCard?.card?.cardmarket?.prices;
@@ -190,6 +214,146 @@ const getBinderTcgPrice = (card: any, edition?: string | null, variant?: string 
 
   return null;
 };
+
+function GradedSlabCard({
+  item,
+  imageUri,
+  editionHint,
+  size = 'grid',
+  opacity = 1,
+}: {
+  item: BinderCardWithDetails;
+  imageUri: string | null;
+  editionHint: ScanEditionHint | null;
+  size?: 'showcase' | 'grid' | 'modal';
+  opacity?: number;
+}) {
+  const company = (item.grade_company ?? 'PSA').toUpperCase();
+  const grade = item.grade ?? '10';
+  const accent = getSlabAccent(company);
+  const cardName = item.card?.name ?? item.card_name ?? item.card_id;
+  const setName = item.card?.set?.name ?? item.set_name ?? item.set_id;
+  const number = item.card?.number ?? item.card_number ?? null;
+  const compact = size !== 'modal';
+  const labelHeight = compact ? (size === 'showcase' ? 46 : 54) : 86;
+  const outerPadding = compact ? 4 : 8;
+  const bodyPadding = compact ? 4 : 8;
+  const companyWidth = compact ? (size === 'showcase' ? 38 : 44) : 94;
+  const gradeWidth = compact ? (size === 'showcase' ? 34 : 40) : 76;
+
+  return (
+    <View style={{
+      width: '100%',
+      height: '100%',
+      opacity,
+      borderRadius: compact ? 11 : 24,
+      backgroundColor: '#DDE3EC',
+      padding: outerPadding,
+      borderWidth: compact ? 1 : 2,
+      borderColor: '#AAB4C2',
+    }}>
+      <View style={{
+        backgroundColor: '#F8FAFC',
+        borderRadius: compact ? 8 : 16,
+        borderWidth: 1,
+        borderColor: '#CBD5E1',
+        overflow: 'hidden',
+        marginBottom: compact ? 5 : 8,
+      }}>
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'stretch',
+          minHeight: labelHeight,
+        }}>
+          <View style={{
+            width: companyWidth,
+            backgroundColor: accent,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: compact ? 3 : 10,
+          }}>
+            <Text numberOfLines={1} style={{ color: '#FFFFFF', fontSize: compact ? (size === 'showcase' ? 10 : 12) : 24, fontWeight: '900' }}>
+              {company}
+            </Text>
+          </View>
+
+          <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: compact ? 5 : 10, paddingVertical: compact ? 3 : 7 }}>
+            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={{ color: '#0F172A', fontSize: compact ? (size === 'showcase' ? 7 : 9) : 15, fontWeight: '900' }}>
+              {cardName}
+            </Text>
+            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.68} style={{ color: '#64748B', fontSize: compact ? (size === 'showcase' ? 5.5 : 7) : 11, fontWeight: '800', marginTop: compact ? 1 : 3 }}>
+              {setName}{number ? ` #${number}` : ''}
+            </Text>
+            <Text numberOfLines={1} style={{ color: '#64748B', fontSize: compact ? 5 : 10, fontWeight: '800', marginTop: compact ? 0 : 3 }}>
+              POKEMON CARD
+            </Text>
+          </View>
+
+          <View style={{
+            width: gradeWidth,
+            backgroundColor: '#FFFFFF',
+            borderLeftWidth: 1,
+            borderLeftColor: '#CBD5E1',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Text numberOfLines={1} style={{ color: accent, fontSize: compact ? (size === 'showcase' ? 14 : 17) : 32, fontWeight: '900' }}>
+              {grade}
+            </Text>
+            {!compact && (
+              <Text numberOfLines={1} style={{ color: '#334155', fontSize: 9, fontWeight: '900' }}>
+                {getGradeDescriptor(grade)}
+              </Text>
+            )}
+          </View>
+        </View>
+      </View>
+
+      <View style={{
+        flex: 1,
+        borderRadius: compact ? 8 : 18,
+        backgroundColor: '#C7D2E1',
+        padding: bodyPadding,
+        borderWidth: 1,
+        borderColor: '#94A3B8',
+      }}>
+        <View style={{
+          flex: 1,
+          borderRadius: compact ? 6 : 12,
+          overflow: 'hidden',
+          backgroundColor: '#F8FAFC',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          {imageUri ? (
+            <EditionAwareCardImage
+              uri={imageUri}
+              cardId={item.card_id}
+              rawData={item.card}
+              editionHint={editionHint}
+              sourceSize={size === 'modal' ? 'large' : 'small'}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text style={{ color: '#64748B', fontSize: compact ? 9 : 13, fontWeight: '800' }}>No image</Text>
+          )}
+        </View>
+      </View>
+
+      <View style={{
+        position: 'absolute',
+        left: compact ? 3 : 6,
+        right: compact ? 3 : 6,
+        top: compact ? 3 : 6,
+        bottom: compact ? 3 : 6,
+        borderRadius: compact ? 10 : 22,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.72)',
+      }} pointerEvents="none" />
+    </View>
+  );
+}
 
 // ===============================
 // VARIANT HELPERS
@@ -362,6 +526,11 @@ export default function BinderDetailScreen() {
   const [addingCardId, setAddingCardId] = useState<string | null>(null);
 const [pendingAddIds, setPendingAddIds] = useState<Record<string, CardPreviewResult>>({});
 const pendingAddCount = Object.keys(pendingAddIds).length;
+  const [addGradeCompany, setAddGradeCompany] = useState('PSA');
+  const [addGrade, setAddGrade] = useState('10');
+  const [gradingCardToAdd, setGradingCardToAdd] = useState<BinderCardWithDetails | null>(null);
+  const [gradingPromptCompany, setGradingPromptCompany] = useState('PSA');
+  const [gradingPromptGrade, setGradingPromptGrade] = useState('10');
 
   const [tradeModalVisible, setTradeModalVisible] = useState(false);
   const [tradeCard, setTradeCard] = useState<BinderCardWithDetails | null>(null);
@@ -469,6 +638,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       const number = card.card?.number ?? card.card_number ?? '';
       const cardId = card.card?.id ?? card.card_id ?? '';
       const baseRarity = card.card?.rarity ?? '';
+      const isGraded = binder?.card_mode === 'graded';
       const rarity = binder?.edition === '1st_edition'
         ? `${baseRarity} 1st edition`.trim()
         : baseRarity;
@@ -480,6 +650,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         number,
         setTotal: card.card?.set?.printedTotal ?? card.card?.set?.total ?? null,
         rarity,
+        pricingMode: isGraded ? 'graded' : 'raw',
+        condition: isGraded ? null : card.condition || 'Near Mint',
+        gradingCompany: isGraded ? card.grade_company ?? 'PSA' : null,
+        grade: isGraded ? card.grade ?? '10' : null,
       });
 
       setModalEbayPrice({
@@ -490,12 +664,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         usedFallback: result.usedFallback ?? false,
       });
     } catch (err) {
-      console.error('Modal eBay fetch failed:', err);
+      console.warn('Modal eBay price unavailable:', err instanceof Error ? err.message : err);
       setModalEbayError(true);
     } finally {
       setModalEbayLoading(false);
     }
-  }, [binder?.edition]);
+  }, [binder?.card_mode, binder?.edition]);
 
   // ===============================
   // LOAD
@@ -912,20 +1086,27 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     fetchModalEbayPrice(latestCard);
   };
 
-  const handleCardPress = async (item: BinderCardWithDetails) => {
-    if (isReadOnly) {
-      openCardDetail(item);
-      return;
-    }
-
-    const newOwned = !item.owned;
-
+  const applyCardOwnedChange = async (
+    item: BinderCardWithDetails,
+    newOwned: boolean,
+    grading?: { company: string; grade: string }
+  ) => {
     setCards((prev) =>
-      prev.map((c) => (c.id === item.id ? { ...c, owned: newOwned } : c))
+      prev.map((c) => (c.id === item.id ? {
+        ...c,
+        owned: newOwned,
+        grade_company: grading?.company ?? c.grade_company ?? null,
+        grade: grading?.grade ?? c.grade ?? null,
+      } : c))
     );
 
     if (selectedCard?.id === item.id) {
-      setSelectedCard({ ...item, owned: newOwned });
+      setSelectedCard({
+        ...item,
+        owned: newOwned,
+        grade_company: grading?.company ?? item.grade_company ?? null,
+        grade: grading?.grade ?? item.grade ?? null,
+      });
     }
 
     try {
@@ -936,6 +1117,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     setName: item.card?.set?.name ?? item.set_name ?? null,
     slotOrder: item.slot_order,
     condition: item.condition,
+    gradeCompany: grading?.company ?? item.grade_company ?? null,
+    grade: grading?.grade ?? item.grade ?? null,
   });
 
   if (userId) {
@@ -959,6 +1142,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     prev.map((c) => (c.card_id === item.card_id && c.set_id === item.set_id ? {
       ...c,
       owned: newOwned,
+      grade_company: grading?.company ?? c.grade_company ?? null,
+      grade: grading?.grade ?? c.grade ?? null,
       ebay_price: latestPrice?.ebay_price ?? c.ebay_price,
       tcg_price: latestPrice?.tcg_price ?? c.tcg_price,
       cardmarket_price: latestPrice?.cardmarket_price ?? c.cardmarket_price,
@@ -969,6 +1154,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     setSelectedCard((prev) => prev ? {
       ...prev,
       owned: newOwned,
+      grade_company: grading?.company ?? prev.grade_company ?? null,
+      grade: grading?.grade ?? prev.grade ?? null,
       ebay_price: latestPrice?.ebay_price ?? prev.ebay_price,
       tcg_price: latestPrice?.tcg_price ?? prev.tcg_price,
       cardmarket_price: latestPrice?.cardmarket_price ?? prev.cardmarket_price,
@@ -982,6 +1169,34 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   );
   Alert.alert('Error', 'Failed to update card.');
 }
+  };
+
+  const handleCardPress = async (item: BinderCardWithDetails) => {
+    if (isReadOnly) {
+      openCardDetail(item);
+      return;
+    }
+
+    const newOwned = !item.owned;
+
+    if (binder?.card_mode === 'graded' && newOwned) {
+      setGradingPromptCompany(item.grade_company ?? 'PSA');
+      setGradingPromptGrade(item.grade ?? '10');
+      setGradingCardToAdd(item);
+      return;
+    }
+
+    await applyCardOwnedChange(item, newOwned);
+  };
+
+  const confirmGradedCardAdd = async () => {
+    if (!gradingCardToAdd) return;
+    const card = gradingCardToAdd;
+    setGradingCardToAdd(null);
+    await applyCardOwnedChange(card, true, {
+      company: gradingPromptCompany,
+      grade: gradingPromptGrade,
+    });
   };
 
   const handleRemoveCustomBinderCard = async (item: BinderCardWithDetails) => {
@@ -1097,6 +1312,33 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     }
   };
 
+  const handleSetGrading = async (
+    item: BinderCardWithDetails,
+    updates: { company?: string; grade?: string }
+  ) => {
+    if (isReadOnly) return;
+
+    const nextCompany = updates.company ?? item.grade_company ?? 'PSA';
+    const nextGrade = updates.grade ?? item.grade ?? '10';
+    const updatedCard = { ...item, grade_company: nextCompany, grade: nextGrade };
+
+    setCards((prev) =>
+      prev.map((c) => (c.id === item.id ? { ...c, grade_company: nextCompany, grade: nextGrade } : c))
+    );
+    if (selectedCard?.id === item.id) {
+      setSelectedCard(updatedCard);
+    }
+
+    try {
+      await updateBinderCardGrading(item.id, nextCompany, nextGrade);
+      fetchModalEbayPrice(updatedCard);
+    } catch (error) {
+      console.log('Failed to update grading', error);
+      Alert.alert('Error', 'Failed to update grading details.');
+      load();
+    }
+  };
+
   // ===============================
   // SEARCH (custom binder)
   // ===============================
@@ -1144,12 +1386,21 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
 
     try {
       setAddingCardId(card.card_id);
-      await addCardsToBinder(binderId, [{ cardId: card.card_id, setId: derivedSetId }]);
+      await addCardsToBinder(binderId, [{
+        cardId: card.card_id,
+        setId: derivedSetId,
+        cardName: card.name ?? null,
+        imageUrl: card.image_url ?? null,
+        setName: card.set_name ?? null,
+        gradeCompany: binder?.card_mode === 'graded' ? addGradeCompany : null,
+        grade: binder?.card_mode === 'graded' ? addGrade : null,
+      }]);
       setShowAddModal(false);
       setAddSearch('');
       setAddSearchResults([]);
+      setPendingAddIds({});
       await load();
-      Alert.alert('Added', `${card.name} has been added as missing.`);
+      Alert.alert('Added', `${card.name} has been added${binder?.card_mode === 'graded' ? ` as ${addGradeCompany} ${addGrade}` : ' as missing'}.`);
     } catch (error: any) {
       Alert.alert('Could not add card', error?.message ?? 'Something went wrong.');
     } finally {
@@ -1161,6 +1412,16 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   if (!binderId || pendingAddCount === 0) return;
 
   const cardsToAdd = Object.values(pendingAddIds);
+
+  if (binder?.card_mode === 'graded' && cardsToAdd.length === 1) {
+    await handleAddCardToCustomBinder(cardsToAdd[0]);
+    return;
+  }
+
+  if (binder?.card_mode === 'graded') {
+    Alert.alert('Choose one slab', 'Graded binders add one card at a time so you can choose the grading company and grade.');
+    return;
+  }
 
   try {
     setAddingCardId('bulk');
@@ -1242,6 +1503,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     isActive,
   }: RenderItemParams<BinderCardWithDetails>) => {
     const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
+    const imageEditionHint = getBinderEditionHint(binder?.edition);
+    const isGradedBinder = binder?.card_mode === 'graded';
 
     return (
       <TouchableOpacity
@@ -1258,7 +1521,17 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           backgroundColor: theme.colors.card,
           ...cardShadow,
         }}>
-          {imageUri ? (
+          {isGradedBinder ? (
+            <View style={{ width: '100%', aspectRatio: 0.68 }}>
+              <GradedSlabCard
+                item={item}
+                imageUri={imageUri}
+                editionHint={imageEditionHint}
+                size="showcase"
+                opacity={item.owned ? 1 : 0.35}
+              />
+            </View>
+          ) : imageUri ? (
             <Image
               source={{ uri: imageUri }}
               style={{ width: '100%', aspectRatio: 0.72, borderRadius: 7, opacity: item.owned ? 1 : 0.35 }}
@@ -1277,13 +1550,15 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             </View>
           )}
 
-          <View style={{
+          {!isGradedBinder && (
+            <View style={{
             position: 'absolute',
             left: 7, right: 7, top: 7, bottom: 7,
             borderRadius: 8,
             borderWidth: 1,
             borderColor: 'rgba(255,255,255,0.7)',
           }} />
+          )}
         </View>
 
         <Text numberOfLines={1} style={{
@@ -1405,6 +1680,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     const cardName = item.card?.name ?? item.card_id;
     const forTrade = isForTrade(item.card_id, item.set_id);
     const wanted = isWanted(item.card_id, item.set_id);
+    const isGradedBinder = binder?.card_mode === 'graded';
 
     const variants = masterSetEnabled ? getVariants(item.card, item.set_id) : ['card'];
     const multiVariant = variants.length > 1;
@@ -1432,7 +1708,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       >
         <View style={{
           width: '100%',
-          aspectRatio: 0.72,
+          aspectRatio: isGradedBinder ? 0.68 : 0.72,
           borderRadius: 10,
           backgroundColor: theme.colors.surface,
           overflow: 'hidden',
@@ -1440,7 +1716,14 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           justifyContent: 'center',
           opacity: multiVariant ? 1 : isOwned ? 1 : 0.36,
         }}>
-          {imageUri ? (
+          {isGradedBinder ? (
+            <GradedSlabCard
+              item={item}
+              imageUri={imageUri}
+              editionHint={imageEditionHint}
+              size="grid"
+            />
+          ) : imageUri ? (
             <EditionAwareCardImage
               uri={imageUri}
               cardId={item.card_id}
@@ -1510,7 +1793,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             <View style={{
               position: 'absolute',
               right: 7,
-              top: 7,
+              ...(isGradedBinder ? { bottom: 7 } : { top: 7 }),
               width: 26,
               height: 26,
               borderRadius: 13,
@@ -1540,7 +1823,18 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           {cardName}
         </Text>
 
-        {item.owned && item.condition && item.condition !== 'Near Mint' && (
+        {item.owned && binder?.card_mode === 'graded' && (
+          <Text style={{
+            color: '#3730A3',
+            fontSize: 9,
+            fontWeight: '900',
+            marginTop: 2,
+          }}>
+            {[item.grade_company ?? 'PSA', item.grade ?? '10'].filter(Boolean).join(' ')}
+          </Text>
+        )}
+
+        {item.owned && binder?.card_mode !== 'graded' && item.condition && item.condition !== 'Near Mint' && (
           <Text style={{
             color: theme.colors.textSoft,
             fontSize: 9,
@@ -1818,7 +2112,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                   borderColor: '#A5B4FC',
                 }}>
                   <Text style={{ color: '#3730A3', fontSize: 11, fontWeight: '900' }}>
-                    {`Graded ${[binder.default_grade_company, binder.default_grade].filter(Boolean).join(' ') || 'cards'}`}
+                    Graded slabs
                   </Text>
                 </View>
               )}
@@ -2177,6 +2471,72 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           }}
         />
 
+        {binder?.card_mode === 'graded' && (
+          <View style={{
+            backgroundColor: theme.colors.card,
+            borderRadius: 14,
+            padding: 12,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            marginBottom: 12,
+          }}>
+            <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
+              Choose grading company and grade
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginBottom: 8 }}>
+              This applies to the card you add next.
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginBottom: 7 }}>
+              Company
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+              {GRADING_COMPANIES.map((company) => {
+                const active = addGradeCompany === company;
+                return (
+                  <TouchableOpacity
+                    key={company}
+                    onPress={() => setAddGradeCompany(company)}
+                    style={{
+                      borderRadius: 999,
+                      paddingHorizontal: 12,
+                      paddingVertical: 7,
+                      backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                      borderWidth: 1,
+                      borderColor: active ? theme.colors.primary : theme.colors.border,
+                    }}
+                  >
+                    <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{company}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginBottom: 7 }}>
+              Grade
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {GRADES.map((grade) => {
+                const active = addGrade === grade;
+                return (
+                  <TouchableOpacity
+                    key={grade}
+                    onPress={() => setAddGrade(grade)}
+                    style={{
+                      borderRadius: 999,
+                      paddingHorizontal: 12,
+                      paddingVertical: 7,
+                      backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                      borderWidth: 1,
+                      borderColor: active ? theme.colors.primary : theme.colors.border,
+                    }}
+                  >
+                    <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{grade}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
         {/* Select all / count row */}
         {addSearchResults.length > 0 && !addSearchLoading && (
           <View style={{
@@ -2185,7 +2545,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
             justifyContent: 'space-between',
             marginBottom: 10,
           }}>
-            <TouchableOpacity
+            {binder?.card_mode !== 'graded' ? (
+              <TouchableOpacity
               onPress={() => {
                 const allEligible = addSearchResults.filter((r) => {
                   const setId = getSetIdFromCardId(r.card_id);
@@ -2220,6 +2581,11 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                   : 'Select All'}
               </Text>
             </TouchableOpacity>
+            ) : (
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
+                Select one card, then add it as {addGradeCompany} {addGrade}
+              </Text>
+            )}
 
             {pendingAddCount > 0 && (
               <TouchableOpacity
@@ -2240,7 +2606,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
                   <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>
-                    Add {pendingAddCount} to Binder
+                    {binder?.card_mode === 'graded'
+                      ? `Add ${addGradeCompany} ${addGrade}`
+                      : `Add ${pendingAddCount} to Binder`}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -2270,6 +2638,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       return;
                     }
                     setPendingAddIds((prev) => {
+                      if (binder?.card_mode === 'graded') {
+                        return { [item.card_id]: item };
+                      }
                       const next = { ...prev };
                       if (next[item.card_id]) {
                         delete next[item.card_id];
@@ -2341,6 +2712,113 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   </Modal>
 )}
 
+      {/* GRADED CARD PROMPT */}
+      {!isReadOnly && (
+        <Modal
+          visible={Boolean(gradingCardToAdd)}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setGradingCardToAdd(null)}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(27,42,75,0.35)', justifyContent: 'center', padding: 18 }}>
+            <View style={{
+              backgroundColor: theme.colors.card,
+              borderRadius: 18,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              ...cardShadow,
+            }}>
+              <Text style={{ color: theme.colors.text, fontSize: 19, fontWeight: '900', marginBottom: 4 }}>
+                Add graded card
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginBottom: 14 }}>
+                Choose the grading company and grade for this card.
+              </Text>
+
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginBottom: 8 }}>
+                Company
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+                {GRADING_COMPANIES.map((company) => {
+                  const active = gradingPromptCompany === company;
+                  return (
+                    <TouchableOpacity
+                      key={company}
+                      onPress={() => setGradingPromptCompany(company)}
+                      style={{
+                        borderRadius: 999,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                        borderWidth: 1,
+                        borderColor: active ? theme.colors.primary : theme.colors.border,
+                      }}
+                    >
+                      <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{company}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginBottom: 8 }}>
+                Grade
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                {GRADES.map((grade) => {
+                  const active = gradingPromptGrade === grade;
+                  return (
+                    <TouchableOpacity
+                      key={grade}
+                      onPress={() => setGradingPromptGrade(grade)}
+                      style={{
+                        borderRadius: 999,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                        borderWidth: 1,
+                        borderColor: active ? theme.colors.primary : theme.colors.border,
+                      }}
+                    >
+                      <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{grade}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <TouchableOpacity
+                  onPress={() => setGradingCardToAdd(null)}
+                  style={{
+                    flex: 1,
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    alignItems: 'center',
+                    backgroundColor: theme.colors.surface,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                  }}
+                >
+                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={confirmGradedCardAdd}
+                  style={{
+                    flex: 1,
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    alignItems: 'center',
+                    backgroundColor: theme.colors.primary,
+                  }}
+                >
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Add {gradingPromptCompany} {gradingPromptGrade}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
       {/* CARD DETAIL MODAL */}
       <Modal
         visible={detailVisible}
@@ -2383,24 +2861,40 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                     contentContainerStyle={{ padding: 16, paddingTop: 72, paddingBottom: 40 }}
                     showsVerticalScrollIndicator={false}
                   >
-                    <View style={{ width: '100%', aspectRatio: 0.72, maxHeight: screenHeight * 0.48, alignSelf: 'center', borderRadius: 20, overflow: 'hidden' }}>
+                    <View style={{
+                      width: '100%',
+                      aspectRatio: binder.card_mode === 'graded' ? 0.68 : 0.72,
+                      maxHeight: screenHeight * 0.62,
+                      alignSelf: 'center',
+                      borderRadius: 20,
+                      overflow: 'hidden',
+                    }}>
                       <PinchGestureHandler
                         onGestureEvent={onPinchGestureEvent}
                         onHandlerStateChange={onPinchHandlerStateChange}
                       >
                         <Animated.View style={{ flex: 1, transform: [{ scale: imageScale }] }}>
-                          <EditionAwareCardImage
-                            uri={modalCard?.images?.large ?? modalCard?.images?.small ?? undefined}
-                            cardId={selectedCard.card_id}
-                            rawData={modalCard}
-                            editionHint={getBinderEditionHint(binder.edition)}
-                            sourceSize="large"
-                            style={{ width: '100%', height: '100%' }}
-                            resizeMode="contain"
-                          />
+                          {binder.card_mode === 'graded' ? (
+                            <GradedSlabCard
+                              item={selectedCard}
+                              imageUri={modalCard?.images?.large ?? modalCard?.images?.small ?? null}
+                              editionHint={getBinderEditionHint(binder.edition)}
+                              size="modal"
+                            />
+                          ) : (
+                            <EditionAwareCardImage
+                              uri={modalCard?.images?.large ?? modalCard?.images?.small ?? undefined}
+                              cardId={selectedCard.card_id}
+                              rawData={modalCard}
+                              editionHint={getBinderEditionHint(binder.edition)}
+                              sourceSize="large"
+                              style={{ width: '100%', height: '100%' }}
+                              resizeMode="contain"
+                            />
+                          )}
 
                           {/* Variant slices in Modal */}
-                          {!isReadOnly && masterSetEnabled && (() => {
+                          {binder.card_mode !== 'graded' && !isReadOnly && masterSetEnabled && (() => {
                             const modalVariants = getVariants(selectedCard.card, selectedCard.set_id);
                             if (modalVariants.length <= 1) return null;
                             return (
@@ -2502,45 +2996,126 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         </TouchableOpacity>
                       </View>
 
-                      {/* Condition Selection */}
-                      <View style={{ marginBottom: 16 }}>
-                        <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                          Card Condition
-                        </Text>
-                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-                          {CONDITION_OPTIONS.map((c) => {
-                            const active = (selectedCard.condition || 'Near Mint') === c;
-                            return (
-                              <TouchableOpacity
-                                key={c}
-                                onPress={() => handleSetCondition(selectedCard, c)}
-                                disabled={isReadOnly}
-                                style={{
-                                  paddingHorizontal: 10,
-                                  paddingVertical: 6,
-                                  borderRadius: 10,
-                                  backgroundColor: active ? theme.colors.primary : theme.colors.surface,
-                                  borderWidth: 1,
-                                  borderColor: active ? theme.colors.primary : theme.colors.border,
-                                }}
-                              >
-                                <Text style={{
-                                  color: active ? '#FFFFFF' : theme.colors.text,
-                                  fontSize: 11,
-                                  fontWeight: '900',
-                                }}>
-                                  {c}
-                                </Text>
-                              </TouchableOpacity>
-                            );
-                          })}
+                      {binder.card_mode === 'graded' ? (
+                        <View style={{ marginBottom: 16 }}>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+                            Slab Details
+                          </Text>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginBottom: 7 }}>
+                            Company
+                          </Text>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                            {GRADING_COMPANIES.map((company) => {
+                              const active = (selectedCard.grade_company ?? 'PSA') === company;
+                              return (
+                                <TouchableOpacity
+                                  key={company}
+                                  onPress={() => handleSetGrading(selectedCard, { company })}
+                                  disabled={isReadOnly}
+                                  style={{
+                                    paddingHorizontal: 10,
+                                    paddingVertical: 6,
+                                    borderRadius: 10,
+                                    backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                                    borderWidth: 1,
+                                    borderColor: active ? theme.colors.primary : theme.colors.border,
+                                  }}
+                                >
+                                  <Text style={{
+                                    color: active ? '#FFFFFF' : theme.colors.text,
+                                    fontSize: 11,
+                                    fontWeight: '900',
+                                  }}>
+                                    {company}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginBottom: 7 }}>
+                            Grade
+                          </Text>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                            {GRADES.map((grade) => {
+                              const active = (selectedCard.grade ?? '10') === grade;
+                              return (
+                                <TouchableOpacity
+                                  key={grade}
+                                  onPress={() => handleSetGrading(selectedCard, { grade })}
+                                  disabled={isReadOnly}
+                                  style={{
+                                    paddingHorizontal: 10,
+                                    paddingVertical: 6,
+                                    borderRadius: 10,
+                                    backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                                    borderWidth: 1,
+                                    borderColor: active ? theme.colors.primary : theme.colors.border,
+                                  }}
+                                >
+                                  <Text style={{
+                                    color: active ? '#FFFFFF' : theme.colors.text,
+                                    fontSize: 11,
+                                    fontWeight: '900',
+                                  }}>
+                                    {grade}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
                         </View>
-                      </View>
+                      ) : (
+                        <View style={{ marginBottom: 16 }}>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+                            Card Condition
+                          </Text>
+                          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                            {CONDITION_OPTIONS.map((c) => {
+                              const active = (selectedCard.condition || 'Near Mint') === c;
+                              return (
+                                <TouchableOpacity
+                                  key={c}
+                                  onPress={() => handleSetCondition(selectedCard, c)}
+                                  disabled={isReadOnly}
+                                  style={{
+                                    paddingHorizontal: 10,
+                                    paddingVertical: 6,
+                                    borderRadius: 10,
+                                    backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                                    borderWidth: 1,
+                                    borderColor: active ? theme.colors.primary : theme.colors.border,
+                                  }}
+                                >
+                                  <Text style={{
+                                    color: active ? '#FFFFFF' : theme.colors.text,
+                                    fontSize: 11,
+                                    fontWeight: '900',
+                                  }}>
+                                    {c}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+                        </View>
+                      )}
 
                       <View style={{ height: 1, backgroundColor: theme.colors.border, marginBottom: 16 }} />
 
+                      <PokeTraceMarketInsights
+                        cardName={modalCard?.name ?? selectedCard.card_name ?? selectedCard.card_id}
+                        setName={modalCard?.set?.name ?? selectedCard.set_name ?? selectedCard.set_id}
+                        number={modalCard?.number ?? selectedCard.card_number ?? null}
+                        rawCondition={binder.card_mode === 'graded' ? null : selectedCard.condition || 'Near Mint'}
+                        gradingCompany={binder.card_mode === 'graded' ? selectedCard.grade_company ?? 'PSA' : null}
+                        grade={binder.card_mode === 'graded' ? selectedCard.grade ?? '10' : null}
+                        summaryOnly
+                      />
+
                       <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                        eBay Sold Prices - Adjusted for {selectedCard.condition || 'Near Mint'}
+                        {binder.card_mode === 'graded'
+                          ? `eBay fallback - ${selectedCard.grade_company ?? 'PSA'} ${selectedCard.grade ?? '10'}`
+                          : `eBay Sold Prices - Adjusted for ${selectedCard.condition || 'Near Mint'}`}
                       </Text>
 
                       {modalEbayLoading ? (
@@ -2561,19 +3136,25 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                             <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
                               <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Low</Text>
                               <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
-                                {modalEbayPrice?.low != null ? formatCurrency(getEstimatedValue(modalEbayPrice.low, selectedCard.condition || 'Near Mint')) : '--'}
+                                {modalEbayPrice?.low != null
+                                  ? formatCurrency(binder.card_mode === 'graded' ? modalEbayPrice.low : getEstimatedValue(modalEbayPrice.low, selectedCard.condition || 'Near Mint'))
+                                  : '--'}
                               </Text>
                             </View>
                             <View style={{ flex: 1, backgroundColor: theme.colors.primary + '18', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.primary }}>
                               <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Avg</Text>
                               <Text style={{ color: theme.colors.primary, fontWeight: '900', textAlign: 'center', fontSize: 15 }}>
-                                {modalEbayPrice?.average != null ? formatCurrency(getEstimatedValue(modalEbayPrice.average, selectedCard.condition || 'Near Mint')) : '--'}
+                                {modalEbayPrice?.average != null
+                                  ? formatCurrency(binder.card_mode === 'graded' ? modalEbayPrice.average : getEstimatedValue(modalEbayPrice.average, selectedCard.condition || 'Near Mint'))
+                                  : '--'}
                               </Text>
                             </View>
                             <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
                               <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>High</Text>
                               <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
-                                {modalEbayPrice?.high != null ? formatCurrency(getEstimatedValue(modalEbayPrice.high, selectedCard.condition || 'Near Mint')) : '--'}
+                                {modalEbayPrice?.high != null
+                                  ? formatCurrency(binder.card_mode === 'graded' ? modalEbayPrice.high : getEstimatedValue(modalEbayPrice.high, selectedCard.condition || 'Near Mint'))
+                                  : '--'}
                               </Text>
                             </View>
                           </View>
@@ -2596,31 +3177,35 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         </>
                       )}
 
-                      <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
+                      {binder.card_mode !== 'graded' && (
+                        <>
+                          <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
 
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                        Stored Prices (Adjusted)
-                      </Text>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+                            Stored Prices (Adjusted)
+                          </Text>
 
-                      <Row label="eBay (cached)" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
-                      <Row
-                        label="TCGPlayer"
-                        value={formatCurrency(
-                          getEstimatedValue(
-                            getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
-                              modalTcgFallbackPrice?.market ??
-                              modalTcgFallbackPrice?.mid ??
-                              modalTcgFallbackPrice?.low ??
-                              0,
-                            selectedCard.condition || 'Near Mint'
-                          )
-                        )}
-                      />
-                      <Row label="CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row label="eBay (cached)" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row
+                            label="TCGPlayer"
+                            value={formatCurrency(
+                              getEstimatedValue(
+                                getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
+                                  modalTcgFallbackPrice?.market ??
+                                  modalTcgFallbackPrice?.mid ??
+                                  modalTcgFallbackPrice?.low ??
+                                  0,
+                                selectedCard.condition || 'Near Mint'
+                              )
+                            )}
+                          />
+                          <Row label="CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
 
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
-                        Updated daily
-                      </Text>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
+                            Updated daily
+                          </Text>
+                        </>
+                      )}
                     </View>
 
                     <PokeTraceMarketInsights
@@ -2628,8 +3213,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                       setName={modalCard?.set?.name ?? selectedCard.set_name ?? selectedCard.set_id}
                       number={modalCard?.number ?? selectedCard.card_number ?? null}
                       rawCondition={binder.card_mode === 'graded' ? null : selectedCard.condition || 'Near Mint'}
-                      gradingCompany={binder.card_mode === 'graded' ? binder.default_grade_company ?? 'PSA' : null}
-                      grade={binder.card_mode === 'graded' ? binder.default_grade ?? '10' : null}
+                      gradingCompany={binder.card_mode === 'graded' ? selectedCard.grade_company ?? 'PSA' : null}
+                      grade={binder.card_mode === 'graded' ? selectedCard.grade ?? '10' : null}
                     />
 
                     {!isReadOnly && masterSetEnabled && (() => {

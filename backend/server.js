@@ -41,6 +41,7 @@ const SCRYDEX_API_BASE_URL = process.env.SCRYDEX_API_BASE_URL || 'https://api.sc
 const POKEMON_PRICE_TRACKER_API_KEY = process.env.POKEMON_PRICE_TRACKER_API_KEY;
 const POKETRACE_API_KEY = process.env.POKETRACE_API_KEY;
 const POKETRACE_API_BASE_URL = process.env.POKETRACE_API_BASE_URL || 'https://api.poketrace.com/v1';
+const POKETRACE_API_CACHE_TTL_MS = Number(process.env.POKETRACE_API_CACHE_TTL_MS || 12 * 60 * 60 * 1000);
 const CARDMATRIX_API_KEY = process.env.CARDMATRIX_API_KEY;
 const POKEWALLET_API_KEY = process.env.POKEWALLET_API_KEY;
 const POKEWALLET_API_BASE_URL = process.env.POKEWALLET_API_BASE_URL || 'https://api.pokewallet.io';
@@ -805,6 +806,8 @@ function getImportantWords(query = '') {
     'ultra', 'secret', 'rare', 'amazing', 'rare',
     'vmax', 'vstar', 'vunion', 'ex', 'gx', 'prism',
     'star', 'Radiant', 'illustrator', 'special',
+    'graded', 'grade', 'slab', 'slabbed', 'psa', 'cgc', 'bgs',
+    'beckett', 'ace', 'sgc',
   ]);
 
   const words = normaliseForTitleMatch(query)
@@ -1019,7 +1022,7 @@ function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '
 // ===============================
 
 const priceCache = new Map();
-const PRICE_FILTER_VERSION = 7;
+const PRICE_FILTER_VERSION = 8;
 const PRICE_CACHE_TTL = 2 * 60 * 60 * 1000;
 
 // In-flight dedupe so concurrent identical queries share one upstream call
@@ -1932,7 +1935,23 @@ app.get('/api/price/ebay', async (req, res) => {
         });
       }
 
-      throw liveError;
+      summary = {
+        marketplace: EBAY_MARKETPLACE_ID,
+        query,
+        originalQuery: query,
+        usedFallback: false,
+        low: null,
+        average: null,
+        high: null,
+        count: 0,
+        rawCount: 0,
+        soldDataSource: 'unavailable',
+        soldProviderError: getErrorMessage(liveError),
+        livePriceError: getErrorMessage(liveError),
+        matchConfidence: 'none',
+        averageMatchScore: null,
+        filterVersion: PRICE_FILTER_VERSION,
+      };
     }
 
     if (pricingMode === 'raw' && cardId && isSerpApiQuotaErrorMessage(summary.soldProviderError)) {
@@ -3628,6 +3647,89 @@ function unwrapPokeTraceCards(payload) {
   return [];
 }
 
+const poketraceCacheWarnings = new Set();
+
+function normalizePokeTraceCachePart(value) {
+  return String(value ?? '').trim().toLowerCase();
+}
+
+function getPokeTraceCacheKey(kind, parts = {}) {
+  const sorted = Object.keys(parts)
+    .sort()
+    .map((key) => `${key}=${normalizePokeTraceCachePart(parts[key])}`);
+  return ['poketrace', kind, ...sorted].join('|');
+}
+
+function addPokeTraceCacheMeta(payload, row, options = {}) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return payload;
+  return {
+    ...payload,
+    cache: {
+      hit: true,
+      stale: Boolean(options.stale),
+      cachedAt: row.cached_at,
+      expiresAt: row.expires_at,
+      liveError: options.liveError ?? null,
+    },
+  };
+}
+
+function shouldUseStalePokeTraceCache(error) {
+  const status = Number(error?.status ?? 0);
+  return status === 429 || status >= 500;
+}
+
+async function readPokeTraceApiCache(cacheKey, options = {}) {
+  if (!cacheKey) return null;
+
+  const { data, error } = await supabase
+    .from('poketrace_api_cache')
+    .select('response,cached_at,expires_at')
+    .eq('cache_key', cacheKey)
+    .maybeSingle();
+
+  if (error) {
+    const warningKey = error.code || error.message || 'unknown';
+    if (!poketraceCacheWarnings.has(warningKey)) {
+      poketraceCacheWarnings.add(warningKey);
+      console.log('PokeTrace API cache lookup unavailable:', error.message);
+    }
+    return null;
+  }
+
+  if (!data) return null;
+
+  const stale = new Date(data.expires_at).getTime() <= Date.now();
+  if (stale && !options.allowStale) return null;
+  return addPokeTraceCacheMeta(data.response, data, {
+    stale,
+    liveError: options.liveError ?? null,
+  });
+}
+
+async function savePokeTraceApiCache(cacheKey, response) {
+  if (!cacheKey || !response) return;
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + POKETRACE_API_CACHE_TTL_MS);
+  const { error } = await supabase
+    .from('poketrace_api_cache')
+    .upsert({
+      cache_key: cacheKey,
+      response,
+      cached_at: now.toISOString(),
+      expires_at: expiresAt.toISOString(),
+    }, { onConflict: 'cache_key' });
+
+  if (error) {
+    const warningKey = error.code || error.message || 'unknown';
+    if (!poketraceCacheWarnings.has(warningKey)) {
+      poketraceCacheWarnings.add(warningKey);
+      console.log('PokeTrace API cache save unavailable:', error.message);
+    }
+  }
+}
+
 async function fetchPokeTraceJson(path, params) {
   const query = params ? `?${params.toString()}` : '';
   const response = await fetch(`${POKETRACE_API_BASE_URL.replace(/\/$/, '')}${path}${query}`, {
@@ -3649,6 +3751,7 @@ async function fetchPokeTraceJson(path, params) {
 }
 
 app.get('/api/poketrace/card', async (req, res) => {
+  let cacheKey = '';
   try {
     if (!POKETRACE_API_KEY) {
       return res.status(500).json({ error: 'Missing POKETRACE_API_KEY' });
@@ -3665,11 +3768,23 @@ app.get('/api/poketrace/card', async (req, res) => {
       return res.status(400).json({ error: 'Missing identifier' });
     }
 
+    cacheKey = getPokeTraceCacheKey('card', {
+      identifier,
+      tcgPlayerId,
+      setName,
+      number,
+      market,
+    });
+    const cached = await readPokeTraceApiCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const looksLikePokeTraceId = /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(identifier);
     if (looksLikePokeTraceId) {
       const detailParams = new URLSearchParams({ market });
       const detail = await fetchPokeTraceJson(`/cards/${encodeURIComponent(identifier)}`, detailParams);
-      return res.json({ card: detail?.data ?? detail?.card ?? detail, raw: detail });
+      const payload = { card: detail?.data ?? detail?.card ?? detail, raw: detail };
+      await savePokeTraceApiCache(cacheKey, payload);
+      return res.json(payload);
     }
 
     const params = new URLSearchParams({ market, limit: '20' });
@@ -3689,22 +3804,43 @@ app.get('/api/poketrace/card', async (req, res) => {
       .sort((a, b) => b.score - a.score)[0]?.card ?? cards[0] ?? null;
 
     if (!match) {
-      return res.json({ card: null, raw: searchPayload });
+      const payload = { card: null, raw: searchPayload };
+      await savePokeTraceApiCache(cacheKey, payload);
+      return res.json(payload);
     }
 
     const providerId = match?.id ? String(match.id) : '';
     if (!providerId) {
-      return res.json({ card: match, raw: searchPayload });
+      const payload = { card: match, raw: searchPayload };
+      await savePokeTraceApiCache(cacheKey, payload);
+      return res.json(payload);
     }
 
     const detailParams = new URLSearchParams({ market });
     const detail = await fetchPokeTraceJson(`/cards/${encodeURIComponent(providerId)}`, detailParams);
-    return res.json({
+    const payload = {
       card: detail?.data ?? detail?.card ?? detail,
       match,
       raw: searchPayload,
-    });
+    };
+    await savePokeTraceApiCache(cacheKey, payload);
+    await savePokeTraceApiCache(getPokeTraceCacheKey('card', {
+      identifier: providerId,
+      tcgPlayerId: '',
+      setName: '',
+      number: '',
+      market,
+    }), { card: payload.card, raw: detail });
+    return res.json(payload);
   } catch (error) {
+    if (cacheKey && shouldUseStalePokeTraceCache(error)) {
+      const stale = await readPokeTraceApiCache(cacheKey, {
+        allowStale: true,
+        liveError: getErrorMessage(error),
+      });
+      if (stale) return res.json(stale);
+    }
+
     return res.status(error?.status ?? 500).json({
       error: 'PokeTrace failed',
       detail: error?.detail ?? getErrorMessage(error),
@@ -3713,6 +3849,7 @@ app.get('/api/poketrace/card', async (req, res) => {
 });
 
 app.get('/api/poketrace/card/:id/prices/:tier/history', async (req, res) => {
+  let cacheKey = '';
   try {
     if (!POKETRACE_API_KEY) {
       return res.status(500).json({ error: 'Missing POKETRACE_API_KEY' });
@@ -3730,13 +3867,32 @@ app.get('/api/poketrace/card/:id/prices/:tier/history', async (req, res) => {
     const cursor = String(req.query.cursor ?? '').trim();
     if (cursor) params.set('cursor', cursor);
 
+    cacheKey = getPokeTraceCacheKey('history', {
+      id,
+      tier,
+      period,
+      limit,
+      cursor,
+    });
+    const cached = await readPokeTraceApiCache(cacheKey);
+    if (cached) return res.json(cached);
+
     const history = await fetchPokeTraceJson(
       `/cards/${encodeURIComponent(id)}/prices/${encodeURIComponent(tier)}/history`,
       params
     );
 
+    await savePokeTraceApiCache(cacheKey, history);
     return res.json(history);
   } catch (error) {
+    if (cacheKey && shouldUseStalePokeTraceCache(error)) {
+      const stale = await readPokeTraceApiCache(cacheKey, {
+        allowStale: true,
+        liveError: getErrorMessage(error),
+      });
+      if (stale) return res.json(stale);
+    }
+
     return res.status(error?.status ?? 500).json({
       error: 'PokeTrace history failed',
       detail: error?.detail ?? getErrorMessage(error),
