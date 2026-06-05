@@ -26,6 +26,7 @@ type Props = {
   rawCondition?: string | null;
   gradingCompany?: string | null;
   grade?: string | number | null;
+  summaryOnly?: boolean;
 };
 
 const PERIODS: PokeTraceHistoryPeriod[] = ['7d', '30d', '90d'];
@@ -169,6 +170,7 @@ export default function PokeTraceMarketInsights({
   rawCondition,
   gradingCompany,
   grade,
+  summaryOnly = false,
 }: Props) {
   const { theme } = useTheme();
   const { width: screenWidth } = useWindowDimensions();
@@ -204,6 +206,11 @@ export default function PokeTraceMarketInsights({
         if (!mounted) return;
         setPrice(current);
 
+        if (summaryOnly) {
+          setHistory([]);
+          return;
+        }
+
         const tier = current?.graded_tier ?? getRawTier(current, rawCondition);
         const rows = current?.providerCardId
           ? await fetchPokeTracePriceHistory(current.providerCardId, tier, period)
@@ -221,7 +228,7 @@ export default function PokeTraceMarketInsights({
     return () => {
       mounted = false;
     };
-  }, [cardName, grade, gradingCompany, number, period, rawCondition, setName]);
+  }, [cardName, grade, gradingCompany, number, period, rawCondition, setName, summaryOnly]);
 
   const depthRows = useMemo(() => {
     const rows = [
@@ -265,6 +272,48 @@ export default function PokeTraceMarketInsights({
     ? (((getChartValue(lastHistory) as number) - (getChartValue(firstHistory) as number)) / (getChartValue(firstHistory) as number)) * 100
     : null;
   const chartWidth = Math.max(280, Math.min(screenWidth - 62, 720));
+
+  if (summaryOnly) {
+    const primaryLabel = isGradedMode ? `${gradingCompany} ${grade}` : 'PokeTrace market';
+    const primaryValue = isGradedMode ? price?.graded_average ?? null : price?.ebay_average ?? null;
+    const primaryLow = isGradedMode ? price?.graded_low ?? null : price?.ebay_low ?? null;
+    const primaryHigh = isGradedMode ? price?.graded_high ?? null : price?.ebay_high ?? null;
+    const primaryCount = isGradedMode ? price?.graded_count ?? 0 : price?.ebay_count ?? 0;
+
+    return (
+      <View style={[styles.summaryPanel, { backgroundColor: theme.colors.primary + '10', borderColor: theme.colors.primary + '35' }]}>
+        <View style={styles.summaryHeader}>
+          <View>
+            <Text style={[styles.eyebrow, { color: theme.colors.textSoft }]}>Primary price</Text>
+            <Text style={[styles.title, { color: theme.colors.text }]}>PokeTrace {primaryLabel}</Text>
+          </View>
+          {loading && <ActivityIndicator size="small" color={theme.colors.primary} />}
+        </View>
+
+        {error ? (
+          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>PokeTrace pricing is unavailable right now.</Text>
+        ) : (
+          <View style={styles.summaryGrid}>
+            <View style={[styles.summaryMain, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>Average</Text>
+              <Text style={{ color: theme.colors.primary, fontSize: 24, fontWeight: '900', marginTop: 2 }}>
+                {formatCurrency(primaryValue)}
+              </Text>
+            </View>
+            <View style={[styles.summarySide, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>Range</Text>
+              <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900', marginTop: 4 }}>
+                {formatCurrency(primaryLow)} - {formatCurrency(primaryHigh)}
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>
+                {primaryCount ? `${primaryCount}+ sales` : 'Volume --'}
+              </Text>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.panel, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
@@ -375,6 +424,35 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '900',
+  },
+  summaryPanel: {
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+  },
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 12,
+  },
+  summaryGrid: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  summaryMain: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+  },
+  summarySide: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
   },
   periodRow: {
     flexDirection: 'row',

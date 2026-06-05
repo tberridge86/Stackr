@@ -45,6 +45,8 @@ export type BinderCardRecord = {
   slot_order: number;
   owned: boolean;
   condition: string;
+  grade_company?: string | null;
+  grade?: string | null;
   notes: string;
   ebay_price: number | null;
   tcg_price: number | null;
@@ -350,8 +352,6 @@ export async function createBinder(input: {
   edition?: string | null;
   defaultCondition?: string | null;
   cardMode?: BinderCardMode | null;
-  defaultGradeCompany?: string | null;
-  defaultGrade?: string | null;
 }): Promise<BinderRecord> {
   const {
     data: { user },
@@ -372,8 +372,6 @@ export async function createBinder(input: {
     edition: input.edition ?? null,
     default_condition: input.defaultCondition ?? 'Near Mint',
     card_mode: input.cardMode ?? 'raw',
-    default_grade_company: input.cardMode === 'graded' ? input.defaultGradeCompany ?? 'PSA' : null,
-    default_grade: input.cardMode === 'graded' ? input.defaultGrade ?? '10' : null,
   };
 
   let { data, error } = await supabase
@@ -383,11 +381,9 @@ export async function createBinder(input: {
     .single();
 
   if (error?.code === 'PGRST204') {
-    const { default_condition, card_mode, default_grade_company, default_grade, ...fallbackPayload } = insertPayload;
+    const { default_condition, card_mode, ...fallbackPayload } = insertPayload;
     void default_condition;
     void card_mode;
-    void default_grade_company;
-    void default_grade;
     const fallback = await supabase
       .from('binders')
       .insert(fallbackPayload)
@@ -416,7 +412,15 @@ export async function createBinder(input: {
 
 export async function addCardsToBinder(
   binderId: string,
-  cards: { cardId: string; setId: string; cardName?: string | null; imageUrl?: string | null; setName?: string | null }[]
+  cards: {
+    cardId: string;
+    setId: string;
+    cardName?: string | null;
+    imageUrl?: string | null;
+    setName?: string | null;
+    gradeCompany?: string | null;
+    grade?: string | null;
+  }[]
 ): Promise<void> {
   const binder = await fetchBinderById(binderId);
   const defaultCondition = binder?.default_condition || 'Near Mint';
@@ -458,6 +462,8 @@ export async function addCardsToBinder(
       slot_order: maxSlot + 1 + index,
       owned: false,
       condition: defaultCondition,
+      grade_company: card.gradeCompany ?? null,
+      grade: card.grade ?? null,
       notes: '',
       ebay_price: price?.ebay_price ?? null,
       tcg_price: price?.tcg_price ?? null,
@@ -643,6 +649,8 @@ export async function updateBinderCardOwned(
     setName?: string | null;
     slotOrder?: number;
     condition?: string;
+    gradeCompany?: string | null;
+    grade?: string | null;
   }
 ): Promise<BinderSnapshotPriceFields | null> {
   const virtual = parseVirtualBinderCardId(binderCardId);
@@ -672,6 +680,8 @@ export async function updateBinderCardOwned(
           cardmarket_price: price?.cardmarket_price ?? null,
           last_price_update: price?.last_price_update ?? null,
           condition: cardMeta?.condition ?? 'Near Mint',
+          grade_company: cardMeta?.gradeCompany ?? null,
+          grade: cardMeta?.grade ?? null,
         })
         .select('id, card_id, set_id, owned')
         .single();
@@ -746,6 +756,8 @@ export async function updateBinderCardOwned(
         tcg_price: price.tcg_price,
         cardmarket_price: price.cardmarket_price,
         last_price_update: price.last_price_update,
+        grade_company: cardMeta?.gradeCompany ?? undefined,
+        grade: cardMeta?.grade ?? undefined,
       }
     : { owned };
 
@@ -818,6 +830,41 @@ export async function updateBinderCardCondition(
     }
     throw error;
   }
+}
+
+export async function updateBinderCardGrading(
+  binderCardId: string,
+  gradeCompany: string | null,
+  grade: string | null
+): Promise<void> {
+  const virtual = parseVirtualBinderCardId(binderCardId);
+
+  if (virtual) {
+    const { error } = await supabase
+      .from('binder_cards')
+      .upsert({
+        binder_id: virtual.binderId,
+        card_id: virtual.cardId,
+        set_id: virtual.setId,
+        api_card_id: virtual.cardId,
+        api_set_id: virtual.setId,
+        owned: true,
+        condition: 'Near Mint',
+        grade_company: gradeCompany,
+        grade,
+        notes: '',
+      }, { onConflict: 'binder_id,card_id' });
+
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabase
+    .from('binder_cards')
+    .update({ grade_company: gradeCompany, grade })
+    .eq('id', binderCardId);
+
+  if (error) throw error;
 }
 
 // ===============================

@@ -116,6 +116,39 @@ export type PokeTraceHistoryPoint = {
   saleCount: number | null;
 };
 
+const POKETRACE_PRICE_CACHE_TTL_MS = 60 * 1000;
+const POKETRACE_HISTORY_CACHE_TTL_MS = 60 * 1000;
+const POKETRACE_ERROR_CACHE_TTL_MS = 30 * 1000;
+const POKETRACE_RATE_LIMIT_CACHE_TTL_MS = 2 * 60 * 1000;
+const POKETRACE_WARNING_TTL_MS = 60 * 1000;
+
+const pokeTracePriceCache = new Map<string, { expiresAt: number; value: PokeTraceCardPriceResult | null }>();
+const pokeTracePriceInflight = new Map<string, Promise<PokeTraceCardPriceResult | null>>();
+const pokeTraceHistoryCache = new Map<string, { expiresAt: number; value: PokeTraceHistoryPoint[] }>();
+const pokeTraceHistoryInflight = new Map<string, Promise<PokeTraceHistoryPoint[]>>();
+const pokeTraceWarnings = new Map<string, number>();
+
+const getPokeTraceFailureTtl = (status: number) =>
+  status === 429 ? POKETRACE_RATE_LIMIT_CACHE_TTL_MS : POKETRACE_ERROR_CACHE_TTL_MS;
+
+const warnPokeTraceOnce = (key: string, message: string) => {
+  const now = Date.now();
+  const lastWarning = pokeTraceWarnings.get(key) ?? 0;
+  if (now - lastWarning < POKETRACE_WARNING_TTL_MS) return;
+  pokeTraceWarnings.set(key, now);
+  console.warn(message);
+};
+
+const getPokeTracePriceCacheKey = (input: PokeTraceCardPriceInput) => JSON.stringify({
+  identifier: input.identifier?.trim().toLowerCase() ?? '',
+  tcgPlayerId: input.tcgPlayerId != null ? String(input.tcgPlayerId).trim().toLowerCase() : '',
+  setName: input.setName?.trim().toLowerCase() ?? '',
+  number: input.number?.trim().toLowerCase() ?? '',
+  market: input.market ?? 'US',
+  gradingCompany: input.gradingCompany != null ? String(input.gradingCompany).trim().toLowerCase() : '',
+  grade: input.grade != null ? String(input.grade).trim().toLowerCase() : '',
+});
+
 export type TcgcsvCardVariantPrice = {
   subTypeName: string;
   marketPrice: number | null;
@@ -300,28 +333,50 @@ export async function fetchPokeTraceCardPrice(
   input: PokeTraceCardPriceInput
 ): Promise<PokeTraceCardPriceResult | null> {
   if (!PRICE_API_URL || !input.identifier?.trim()) return null;
+  const cacheKey = getPokeTracePriceCacheKey(input);
+  const cached = pokeTracePriceCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
 
-  const params = new URLSearchParams({
-    identifier: input.identifier.trim(),
-    market: input.market ?? 'US',
-  });
-  if (input.tcgPlayerId != null && String(input.tcgPlayerId).trim()) {
-    params.set('tcgPlayerId', String(input.tcgPlayerId).trim());
+  const inflight = pokeTracePriceInflight.get(cacheKey);
+  if (inflight) return inflight;
+
+  const request = (async () => {
+    const params = new URLSearchParams({
+      identifier: input.identifier.trim(),
+      market: input.market ?? 'US',
+    });
+    if (input.tcgPlayerId != null && String(input.tcgPlayerId).trim()) {
+      params.set('tcgPlayerId', String(input.tcgPlayerId).trim());
+    }
+    if (input.setName?.trim()) params.set('setName', input.setName.trim());
+    if (input.number?.trim()) params.set('number', input.number.trim());
+
+    const response = await fetch(`${PRICE_API_URL}/api/poketrace/card?${params.toString()}`);
+    if (!response.ok) {
+      const ttl = getPokeTraceFailureTtl(response.status);
+      const message = response.status === 429
+        ? 'PokeTrace rate limit reached; cooling down price requests briefly.'
+        : `PokeTrace fetch unavailable: ${response.status}`;
+      warnPokeTraceOnce(`price:${response.status}`, message);
+      pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + ttl, value: null });
+      return null;
+    }
+
+    const json = await response.json();
+    const value = normalizePokeTraceCardPrice(json?.card, {
+      gradingCompany: input.gradingCompany,
+      grade: input.grade,
+    });
+    pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_PRICE_CACHE_TTL_MS, value });
+    return value;
+  })();
+
+  pokeTracePriceInflight.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    pokeTracePriceInflight.delete(cacheKey);
   }
-  if (input.setName?.trim()) params.set('setName', input.setName.trim());
-  if (input.number?.trim()) params.set('number', input.number.trim());
-
-  const response = await fetch(`${PRICE_API_URL}/api/poketrace/card?${params.toString()}`);
-  if (!response.ok) {
-    console.warn(`PokeTrace fetch failed: ${response.status}`);
-    return null;
-  }
-
-  const json = await response.json();
-  return normalizePokeTraceCardPrice(json?.card, {
-    gradingCompany: input.gradingCompany,
-    grade: input.grade,
-  });
 }
 
 export async function fetchPokeTracePriceHistory(
@@ -330,41 +385,64 @@ export async function fetchPokeTracePriceHistory(
   period: PokeTraceHistoryPeriod = '30d'
 ): Promise<PokeTraceHistoryPoint[]> {
   if (!PRICE_API_URL || !providerCardId || !tier) return [];
+  const cacheKey = JSON.stringify({ providerCardId, tier, period });
+  const cached = pokeTraceHistoryCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
 
-  const params = new URLSearchParams({
-    period,
-    limit: period === '7d' ? '14' : period === '30d' ? '45' : period === '90d' ? '100' : '365',
-  });
+  const inflight = pokeTraceHistoryInflight.get(cacheKey);
+  if (inflight) return inflight;
 
-  const response = await fetch(
-    `${PRICE_API_URL}/api/poketrace/card/${encodeURIComponent(providerCardId)}/prices/${encodeURIComponent(tier)}/history?${params.toString()}`
-  );
-  if (!response.ok) {
-    console.warn(`PokeTrace history fetch failed: ${response.status}`);
-    return [];
+  const request = (async () => {
+    const params = new URLSearchParams({
+      period,
+      limit: period === '7d' ? '14' : period === '30d' ? '45' : period === '90d' ? '100' : '365',
+    });
+
+    const response = await fetch(
+      `${PRICE_API_URL}/api/poketrace/card/${encodeURIComponent(providerCardId)}/prices/${encodeURIComponent(tier)}/history?${params.toString()}`
+    );
+    if (!response.ok) {
+      const ttl = getPokeTraceFailureTtl(response.status);
+      const message = response.status === 429
+        ? 'PokeTrace rate limit reached; cooling down history requests briefly.'
+        : `PokeTrace history unavailable: ${response.status}`;
+      warnPokeTraceOnce(`history:${response.status}`, message);
+      pokeTraceHistoryCache.set(cacheKey, { expiresAt: Date.now() + ttl, value: [] });
+      return [];
+    }
+
+    const json = await response.json();
+    const rows = Array.isArray(json?.data) ? json.data : [];
+    const value = rows
+      .map((row: any): PokeTraceHistoryPoint | null => {
+        const currency = typeof row?.currency === 'string' ? row.currency.toUpperCase() : 'USD';
+        const pointValue = row?.median7d ?? row?.median30d ?? row?.avg7d ?? row?.avg30d ?? row?.avg;
+        const date = typeof row?.date === 'string' ? row.date : null;
+        const source = typeof row?.source === 'string' ? row.source : 'unknown';
+        if (!date) return null;
+        return {
+          date,
+          source,
+          avg: convertPokeTracePrice(row?.avg, currency),
+          low: convertPokeTracePrice(row?.low, currency),
+          high: convertPokeTracePrice(row?.high, currency),
+          value: convertPokeTracePrice(pointValue, currency),
+          saleCount: toNumberOrNull(row?.saleCount),
+        };
+      })
+      .filter((row: PokeTraceHistoryPoint | null): row is PokeTraceHistoryPoint => Boolean(row))
+      .sort((a: PokeTraceHistoryPoint, b: PokeTraceHistoryPoint) => a.date.localeCompare(b.date));
+
+    pokeTraceHistoryCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_HISTORY_CACHE_TTL_MS, value });
+    return value;
+  })();
+
+  pokeTraceHistoryInflight.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    pokeTraceHistoryInflight.delete(cacheKey);
   }
-
-  const json = await response.json();
-  const rows = Array.isArray(json?.data) ? json.data : [];
-  return rows
-    .map((row: any): PokeTraceHistoryPoint | null => {
-      const currency = typeof row?.currency === 'string' ? row.currency.toUpperCase() : 'USD';
-      const value = row?.median7d ?? row?.median30d ?? row?.avg7d ?? row?.avg30d ?? row?.avg;
-      const date = typeof row?.date === 'string' ? row.date : null;
-      const source = typeof row?.source === 'string' ? row.source : 'unknown';
-      if (!date) return null;
-      return {
-        date,
-        source,
-        avg: convertPokeTracePrice(row?.avg, currency),
-        low: convertPokeTracePrice(row?.low, currency),
-        high: convertPokeTracePrice(row?.high, currency),
-        value: convertPokeTracePrice(value, currency),
-        saleCount: toNumberOrNull(row?.saleCount),
-      };
-    })
-    .filter((row: PokeTraceHistoryPoint | null): row is PokeTraceHistoryPoint => Boolean(row))
-    .sort((a: PokeTraceHistoryPoint, b: PokeTraceHistoryPoint) => a.date.localeCompare(b.date));
 }
 
 export const getPriceFromPokemonCard = (card: any, edition?: string | null): number | null => {

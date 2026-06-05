@@ -29,27 +29,6 @@ const BASE_ERA_SET_IDS = [
   'gym1', 'gym2', 'neo1', 'neo2', 'neo3', 'neo4',
 ];
 
-const CONDITION_OPTIONS = [
-  'Mint',
-  'Near Mint',
-  'Lightly Played',
-  'Moderately Played',
-  'Heavily Played',
-  'Damaged',
-];
-
-const CONDITION_SHORT_LABELS: Record<string, string> = {
-  Mint: 'Mint',
-  'Near Mint': 'NM',
-  'Lightly Played': 'LP',
-  'Moderately Played': 'MP',
-  'Heavily Played': 'HP',
-  Damaged: 'DMG',
-};
-
-const GRADING_COMPANIES = ['PSA', 'CGC', 'BGS', 'Ace'];
-const GRADES = ['10', '9.5', '9', '8', '7'];
-
 const cardShadow = {
   shadowColor: '#000',
   shadowOpacity: 0.05,
@@ -146,8 +125,6 @@ export default function NewBinderScreen() {
     paramType === 'official' ? 'official' : 'custom'
   );
   const [cardMode, setCardMode] = useState<'raw' | 'graded'>('raw');
-  const [defaultGradeCompany, setDefaultGradeCompany] = useState('PSA');
-  const [defaultGrade, setDefaultGrade] = useState('10');
   const [edition, setEdition] = useState<'1st_edition' | 'unlimited' | null>(null);
   const [defaultCondition, setDefaultCondition] = useState('Near Mint');
   const [editionModalVisible, setEditionModalVisible] = useState(false);
@@ -212,8 +189,6 @@ export default function NewBinderScreen() {
       setCoverKey(binder.cover_key ?? null);
       setType(binder.type ?? 'custom');
       setCardMode(binder.card_mode === 'graded' ? 'graded' : 'raw');
-      setDefaultGradeCompany(binder.default_grade_company ?? 'PSA');
-      setDefaultGrade(binder.default_grade ?? '10');
       setEdition((binder.edition as "1st_edition" | "unlimited" | null) ?? null);
       setDefaultCondition(binder.default_condition ?? 'Near Mint');
     } catch (err) {
@@ -266,8 +241,6 @@ export default function NewBinderScreen() {
           edition: resolvedEdition ?? null,
           default_condition: defaultCondition,
           card_mode: cardMode,
-          default_grade_company: cardMode === 'graded' ? defaultGradeCompany : null,
-          default_grade: cardMode === 'graded' ? defaultGrade : null,
         };
 
         let { error } = await supabase
@@ -276,11 +249,9 @@ export default function NewBinderScreen() {
           .eq('id', binderId);
 
         if (error?.code === 'PGRST204') {
-          const { default_condition, card_mode, default_grade_company, default_grade, ...fallbackPayload } = updatePayload;
+          const { default_condition, card_mode, ...fallbackPayload } = updatePayload;
           void default_condition;
           void card_mode;
-          void default_grade_company;
-          void default_grade;
           const fallback = await supabase
             .from('binders')
             .update(fallbackPayload)
@@ -306,8 +277,6 @@ export default function NewBinderScreen() {
         edition: resolvedEdition ?? null,
         defaultCondition,
         cardMode,
-        defaultGradeCompany,
-        defaultGrade,
       });
 
       if (returnTo === 'scan-review') {
@@ -523,68 +492,6 @@ export default function NewBinderScreen() {
               </>
             )}
 
-            {cardMode === 'graded' && (
-              <View style={{
-                backgroundColor: theme.colors.primary + '10',
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: theme.colors.primary + '35',
-                padding: 12,
-                marginBottom: 18,
-              }}>
-                <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
-                  Default slab details
-                </Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginBottom: 10 }}>
-                  These will prefill cards added to this graded binder. You can change individual cards later.
-                </Text>
-                <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12, marginBottom: 8 }}>Company</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-                  {GRADING_COMPANIES.map((company) => {
-                    const active = defaultGradeCompany === company;
-                    return (
-                      <TouchableOpacity
-                        key={company}
-                        onPress={() => setDefaultGradeCompany(company)}
-                        style={{
-                          borderRadius: 999,
-                          paddingHorizontal: 12,
-                          paddingVertical: 8,
-                          backgroundColor: active ? theme.colors.primary : theme.colors.surface,
-                          borderWidth: 1,
-                          borderColor: active ? theme.colors.primary : theme.colors.border,
-                        }}
-                      >
-                        <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{company}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-                <Text style={{ color: theme.colors.textSoft, fontWeight: '800', fontSize: 12, marginBottom: 8 }}>Grade</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {GRADES.map((grade) => {
-                    const active = defaultGrade === grade;
-                    return (
-                      <TouchableOpacity
-                        key={grade}
-                        onPress={() => setDefaultGrade(grade)}
-                        style={{
-                          borderRadius: 999,
-                          paddingHorizontal: 12,
-                          paddingVertical: 8,
-                          backgroundColor: active ? theme.colors.primary : theme.colors.surface,
-                          borderWidth: 1,
-                          borderColor: active ? theme.colors.primary : theme.colors.border,
-                        }}
-                      >
-                        <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{grade}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
-
             {/* Name */}
             <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
               Binder name
@@ -605,42 +512,6 @@ export default function NewBinderScreen() {
                 marginBottom: 16,
               }}
             />
-
-            {cardMode === 'raw' && (
-              <>
-                <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
-                  Default card condition
-                </Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginBottom: 10 }}>
-                  New cards in this binder will use this condition. You can still edit any card individually later.
-                </Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
-                  {CONDITION_OPTIONS.map((condition) => {
-                    const active = defaultCondition === condition;
-                    return (
-                      <TouchableOpacity
-                        key={condition}
-                        onPress={() => setDefaultCondition(condition)}
-                        style={{
-                          minWidth: 58,
-                          paddingHorizontal: 12,
-                          paddingVertical: 9,
-                          borderRadius: 999,
-                          backgroundColor: active ? theme.colors.primary : theme.colors.surface,
-                          borderWidth: 1,
-                          borderColor: active ? theme.colors.primary : theme.colors.border,
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Text style={{ color: active ? '#FFFFFF' : theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>
-                          {CONDITION_SHORT_LABELS[condition] ?? condition}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </>
-            )}
 
             {/* Cover dropdown */}
             <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>

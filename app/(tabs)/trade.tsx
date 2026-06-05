@@ -48,7 +48,7 @@ const PHOTO_SLOT_LABELS = ['Card Front', 'Card Back', 'Top-Left', 'Top-Right', '
 // TYPES
 // ===============================
 
-type SegmentKey = 'tradeListings' | 'myListings' | 'wanted' | 'myOffers';
+type SegmentKey = 'tradeListings' | 'myListings' | 'wanted' | 'myOffers' | 'adminReview';
 type TradeCardTypeFilter = 'any' | 'raw' | 'graded' | 'sealed';
 
 // ===============================
@@ -404,6 +404,7 @@ const openTradeCardDetail = async (item: any) => {
   // Raw data used for loading card details - no filter dependencies
   const currentData = useMemo(() => {
     if (segment === 'tradeListings') return tradeListings;
+    if (segment === 'adminReview') return tradeListings.filter((item) => item.admin_review_required);
     if (segment === 'myListings') return myListings;
     if (segment === 'wanted') return wantedCards;
     return [];
@@ -411,7 +412,7 @@ const openTradeCardDetail = async (item: any) => {
 
   // Filtered/sorted data for display - depends on cardDetailsMap but not the other way round
   const displayData = useMemo(() => {
-    if (segment !== 'tradeListings') return currentData;
+    if (segment !== 'tradeListings' && segment !== 'adminReview') return currentData;
 
     let data = [...currentData];
 
@@ -554,6 +555,37 @@ const handleArchive = async (listingId: string) => {
         },
       ]
     );
+  };
+
+  const handleApproveAdminReview = async (listingId: string) => {
+    if (!isAdmin) return;
+
+    try {
+      setActionBusy(listingId);
+      const { error } = await supabase
+        .from('user_card_flags')
+        .update({
+          admin_review_required: false,
+          admin_review_reason: null,
+        })
+        .eq('id', listingId)
+        .eq('flag_type', 'trade');
+
+      if (error) throw error;
+      await refreshTrade();
+      if (selectedListing?.id === listingId) {
+        setSelectedListing((current: any) => current ? {
+          ...current,
+          admin_review_required: false,
+          admin_review_reason: null,
+        } : current);
+      }
+      Alert.alert('Approved', 'Listing has been cleared from admin review.');
+    } catch (err) {
+      Alert.alert('Error', err instanceof Error ? err.message : 'Could not approve listing.');
+    } finally {
+      setActionBusy(null);
+    }
   };
 
   const handleMakeOffer = (item: any) => {
@@ -710,7 +742,18 @@ const handleArchive = async (listingId: string) => {
                 <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '900' }}>Make Offer</Text>
               </TouchableOpacity>
             )}
-            {segment === 'tradeListings' && isAdmin && !isMyListing && (
+            {isAdmin && item.admin_review_required && (
+              <TouchableOpacity
+                onPress={() => handleApproveAdminReview(item.id)}
+                disabled={actionBusy === item.id}
+                style={{ borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: '#10B981', backgroundColor: '#ECFDF5' }}
+              >
+                <Text style={{ color: '#047857', textAlign: 'center', fontWeight: '900' }}>
+                  {actionBusy === item.id ? 'Approving...' : 'Approve Listing'}
+                </Text>
+              </TouchableOpacity>
+            )}
+            {(segment === 'tradeListings' || segment === 'adminReview') && isAdmin && !isMyListing && (
               <TouchableOpacity
                 onPress={() => Alert.alert('Delete listing', 'Remove this listing?', [
                   { text: 'Cancel', style: 'cancel' },
@@ -775,7 +818,18 @@ const handleArchive = async (listingId: string) => {
               <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '900' }}>Make Offer</Text>
             </TouchableOpacity>
           )}
-          {segment === 'tradeListings' && isAdmin && !isMyListing && (
+          {isAdmin && item.admin_review_required && (
+            <TouchableOpacity
+              onPress={() => handleApproveAdminReview(item.id)}
+              disabled={actionBusy === item.id}
+              style={{ borderRadius: 12, paddingVertical: 10, borderWidth: 1, borderColor: '#10B981', backgroundColor: '#ECFDF5' }}
+            >
+              <Text style={{ color: '#047857', textAlign: 'center', fontWeight: '900' }}>
+                {actionBusy === item.id ? 'Approving...' : 'Approve Listing'}
+              </Text>
+            </TouchableOpacity>
+          )}
+          {(segment === 'tradeListings' || segment === 'adminReview') && isAdmin && !isMyListing && (
             <TouchableOpacity
               onPress={() => Alert.alert('Delete listing', 'Remove this listing?', [
                 { text: 'Cancel', style: 'cancel' },
@@ -897,12 +951,13 @@ const handleArchive = async (listingId: string) => {
 
         <View style={{ flexDirection: 'row', marginBottom: 16 }}>
           {renderSegmentButton('tradeListings', 'Listings')}
+          {isAdmin && renderSegmentButton('adminReview', 'Review')}
           {renderSegmentButton('myListings', 'Mine')}
           {renderSegmentButton('myOffers', `Offers${pendingOfferCount > 0 ? ` (${pendingOfferCount})` : ''}`)}
           {renderSegmentButton('wanted', 'Wanted')}
         </View>
 
-        {segment === 'tradeListings' && (
+        {(segment === 'tradeListings' || segment === 'adminReview') && (
           <View style={{ marginBottom: 12 }}>
             {/* Search + Filter button */}
             <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
@@ -1178,7 +1233,13 @@ const handleArchive = async (listingId: string) => {
             ListEmptyComponent={
               <View style={{ paddingVertical: 50 }}>
                 <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
-                  {segment === 'tradeListings' ? 'No active trade listings yet.' : segment === 'wanted' ? 'You have no wanted cards yet.' : 'You have no cards marked for trade yet.'}
+                  {segment === 'tradeListings'
+                    ? 'No active trade listings yet.'
+                    : segment === 'adminReview'
+                      ? 'No listings currently need admin review.'
+                      : segment === 'wanted'
+                        ? 'You have no wanted cards yet.'
+                        : 'You have no cards marked for trade yet.'}
                 </Text>
               </View>
             }
@@ -1265,12 +1326,22 @@ const handleArchive = async (listingId: string) => {
                               style={{ borderRadius: 16, overflow: 'hidden' }}
                             >
                               {listingPhotos.map((uri, i) => (
-                                <Image
+                                <View
                                   key={i}
-                                  source={{ uri }}
-                                  style={{ width: width - 32, height: 300 }}
-                                  resizeMode="cover"
-                                />
+                                  style={{
+                                    width: width - 32,
+                                    height: 360,
+                                    backgroundColor: theme.colors.surface,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                  }}
+                                >
+                                  <Image
+                                    source={{ uri }}
+                                    style={{ width: '100%', height: '100%' }}
+                                    resizeMode="contain"
+                                  />
+                                </View>
                               ))}
                             </ScrollView>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
@@ -1417,15 +1488,28 @@ const handleArchive = async (listingId: string) => {
                             <Text style={{ color: '#FFFFFF', textAlign: 'center', fontWeight: '900' }}>Make Offer</Text>
                           </TouchableOpacity>
                           {isAdmin && (
-                            <TouchableOpacity
-                              onPress={() => Alert.alert('Delete listing', 'Remove this listing as admin?', [
-                                { text: 'Cancel', style: 'cancel' },
-                                { text: 'Delete', style: 'destructive', onPress: () => { closeDetail(); handleArchive(selectedListing.id); } },
-                              ])}
-                              style={{ marginTop: 8, backgroundColor: '#FEE2E2', borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: '#FCA5A5' }}
-                            >
-                              <Text style={{ color: '#991B1B', textAlign: 'center', fontWeight: '900' }}>Admin: Remove Listing</Text>
-                            </TouchableOpacity>
+                            <>
+                              {selectedListing.admin_review_required && (
+                                <TouchableOpacity
+                                  onPress={() => handleApproveAdminReview(selectedListing.id)}
+                                  disabled={actionBusy === selectedListing.id}
+                                  style={{ marginTop: 8, backgroundColor: '#ECFDF5', borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: '#10B981' }}
+                                >
+                                  <Text style={{ color: '#047857', textAlign: 'center', fontWeight: '900' }}>
+                                    {actionBusy === selectedListing.id ? 'Approving...' : 'Admin: Approve Listing'}
+                                  </Text>
+                                </TouchableOpacity>
+                              )}
+                              <TouchableOpacity
+                                onPress={() => Alert.alert('Delete listing', 'Remove this listing as admin?', [
+                                  { text: 'Cancel', style: 'cancel' },
+                                  { text: 'Delete', style: 'destructive', onPress: () => { closeDetail(); handleArchive(selectedListing.id); } },
+                                ])}
+                                style={{ marginTop: 8, backgroundColor: '#FEE2E2', borderRadius: 14, paddingVertical: 13, borderWidth: 1, borderColor: '#FCA5A5' }}
+                              >
+                                <Text style={{ color: '#991B1B', textAlign: 'center', fontWeight: '900' }}>Admin: Remove Listing</Text>
+                              </TouchableOpacity>
+                            </>
                           )}
                         </>
                       ) : selectedListing ? (

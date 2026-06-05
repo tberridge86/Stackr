@@ -7,6 +7,10 @@ type FetchEbayPriceInput =
       setTotal?: string | number | null;
       rarity?: string;
       cardId?: string;
+      pricingMode?: 'raw' | 'graded';
+      condition?: string | null;
+      gradingCompany?: string | null;
+      grade?: string | number | null;
     };
 
 export async function fetchEbayPrice(input: FetchEbayPriceInput) {
@@ -40,6 +44,10 @@ export async function fetchEbayPrice(input: FetchEbayPriceInput) {
   if (input.setTotal != null) params.set('setTotal', String(input.setTotal));
   if (input.rarity) params.set('rarity', input.rarity);
   if (input.cardId) params.set('cardId', input.cardId);
+  if (input.pricingMode) params.set('pricingMode', input.pricingMode);
+  if (input.condition) params.set('condition', input.condition);
+  if (input.gradingCompany) params.set('gradingCompany', input.gradingCompany);
+  if (input.grade != null) params.set('grade', String(input.grade));
 
   const res = await fetch(
     `${cleanBaseUrl}/api/price/ebay?${params.toString()}`
