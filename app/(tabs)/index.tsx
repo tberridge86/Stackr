@@ -234,6 +234,23 @@ const isHomeMasterSetEnabled = async (binderId: string) => {
 const normaliseChartValues = (values: number[]): number[] =>
   values.length >= 2 ? values : values.length === 1 ? [values[0], values[0]] : [0, 0];
 
+const formatCompactMoney = (value: number) => {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+  if (abs >= 1000) {
+    const rounded = abs >= 10000 ? (abs / 1000).toFixed(0) : (abs / 1000).toFixed(1);
+    return `${sign}\u00A3${rounded}k`;
+  }
+  return `${sign}\u00A3${abs.toFixed(0)}`;
+};
+
+const formatChartDate = (dayKey?: string | null) => {
+  if (!dayKey) return '';
+  const date = new Date(`${dayKey}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+};
+
 const buildFallbackTrend = (latestTotal: number, range: ChartRange) => {
   if (latestTotal <= 0) return [];
   const count = range === '7D' ? 8 : 31;
@@ -251,12 +268,14 @@ const buildFallbackTrend = (latestTotal: number, range: ChartRange) => {
 
 function NativeLineChart({
   values,
+  labels,
   width,
   height,
   color,
   gridColor,
 }: {
   values: number[];
+  labels?: string[];
   width: number;
   height: number;
   color: string;
@@ -266,10 +285,11 @@ function NativeLineChart({
     const data = normaliseChartValues(values).filter((value) => Number.isFinite(value));
     const min = Math.min(...data);
     const max = Math.max(...data);
+    const mid = min + (max - min) / 2;
     const range = Math.max(1, max - min);
-    const padX = 18;
+    const padX = 46;
     const padTop = 18;
-    const padBottom = 20;
+    const padBottom = 30;
     const chartWidth = Math.max(1, width - padX * 2);
     const chartHeight = Math.max(1, height - padTop - padBottom);
 
@@ -293,8 +313,28 @@ function NativeLineChart({
       };
     });
 
-    return { points, segments };
-  }, [height, values, width]);
+    const dateLabels = labels?.length
+      ? [
+          labels[0],
+          labels[Math.floor((labels.length - 1) / 2)],
+          labels[labels.length - 1],
+        ]
+      : [];
+
+    return {
+      points,
+      segments,
+      chartLeft: padX,
+      chartRight: padX + chartWidth,
+      chartBottom: padTop + chartHeight,
+      valueLabels: [
+        { value: max, top: padTop - 7 },
+        { value: mid, top: padTop + chartHeight / 2 - 7 },
+        { value: min, top: padTop + chartHeight - 7 },
+      ],
+      dateLabels,
+    };
+  }, [height, labels, values, width]);
 
   return (
     <View style={{ width: '100%', height, overflow: 'hidden' }}>
@@ -345,6 +385,36 @@ function NativeLineChart({
           }}
         />
       ))}
+      {geometry.valueLabels.map((label, index) => (
+        <Text
+          key={`value-${index}`}
+          style={{
+            position: 'absolute',
+            left: 8,
+            top: label.top,
+            width: 34,
+            color: '#000000',
+            fontSize: 9,
+            fontWeight: '800',
+            textAlign: 'right',
+          }}
+        >
+          {formatCompactMoney(label.value)}
+        </Text>
+      ))}
+      {geometry.dateLabels.length > 0 && (
+        <>
+          <Text style={{ position: 'absolute', left: geometry.chartLeft - 2, top: geometry.chartBottom + 8, color: '#000000', fontSize: 9, fontWeight: '800' }}>
+            {formatChartDate(geometry.dateLabels[0])}
+          </Text>
+          <Text style={{ position: 'absolute', left: width / 2 - 24, top: geometry.chartBottom + 8, width: 48, color: '#000000', fontSize: 9, fontWeight: '800', textAlign: 'center' }}>
+            {formatChartDate(geometry.dateLabels[1])}
+          </Text>
+          <Text style={{ position: 'absolute', right: width - geometry.chartRight - 2, top: geometry.chartBottom + 8, color: '#000000', fontSize: 9, fontWeight: '800', textAlign: 'right' }}>
+            {formatChartDate(geometry.dateLabels[2])}
+          </Text>
+        </>
+      )}
     </View>
   );
 }
@@ -418,7 +488,7 @@ export default function HubScreen() {
   // Chart
   const [chartRange, setChartRange] = useState<ChartRange>('7D');
   const [chartData, setChartData] = useState<number[]>([]);
-  const [chartIsPreview, setChartIsPreview] = useState(false);
+  const [chartLabels, setChartLabels] = useState<string[]>([]);
 
   // Collection value
   const [collectionTotal, setCollectionTotal] = useState(0);
@@ -716,7 +786,7 @@ export default function HubScreen() {
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setChartData([]);
-        setChartIsPreview(false);
+        setChartLabels([]);
         setDailyMovers([]);
         return;
       }
@@ -845,19 +915,24 @@ export default function HubScreen() {
         return { value: dayTotal, pricedCount };
       });
 
-      const chartValues = chartPoints
+      const usableChartPoints = chartPoints
+        .map((point, index) => ({ ...point, day: days[index] }))
         .filter((point) => (
           Number.isFinite(point.value) &&
           point.value > 0 &&
           currentlyPricedCards > 0 &&
           point.pricedCount === currentlyPricedCards
-        ))
-        .map((point) => point.value);
+        ));
+      const chartValues = usableChartPoints.map((point) => point.value);
+      const chartValueLabels = usableChartPoints.map((point) => point.day);
 
       const hasRealChartHistory = chartValues.length >= 2;
       const displayChartValues = hasRealChartHistory
         ? chartValues
         : buildFallbackTrend(totalLatest, chartRange);
+      const displayChartLabels = hasRealChartHistory
+        ? chartValueLabels
+        : buildDayKeys(chartRange, []).slice(-displayChartValues.length);
       const debugText = [
         `ownedUnits=${ownedUnits.length}`,
         `masterVariants=${countedVariantKeys.size}`,
@@ -876,7 +951,7 @@ export default function HubScreen() {
       setCollectionChangeAmount(change);
       setCollectionChangePercent(percent);
       setChartData(displayChartValues);
-      setChartIsPreview(!hasRealChartHistory && displayChartValues.length > 0);
+      setChartLabels(displayChartLabels);
       setDailyMovers(moverRows.sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 3));
 
       // Auto-post value change to activity feed
@@ -912,7 +987,7 @@ export default function HubScreen() {
       setCollectionChangeAmount(0);
       setCollectionChangePercent(0);
       setChartData([]);
-      setChartIsPreview(false);
+      setChartLabels([]);
       setDailyMovers([]);
     }
   }, [chartRange]);
@@ -960,6 +1035,11 @@ export default function HubScreen() {
   // ===============================
 
   const activeChartValues = normaliseChartValues(chartData);
+  const activeChartLabels = chartLabels.length >= 2
+    ? chartLabels
+    : chartLabels.length === 1
+      ? [chartLabels[0], chartLabels[0]]
+      : [];
   const hasChartData = chartData.length > 0;
 
   // ===============================
@@ -1079,6 +1159,7 @@ export default function HubScreen() {
             {hasChartData ? (
               <NativeLineChart
                 values={activeChartValues}
+                labels={activeChartLabels}
                 width={Math.max(280, screenWidth - 58)}
                 height={152}
                 color={theme.colors.primary}
@@ -1090,11 +1171,6 @@ export default function HubScreen() {
                 <Text style={{ color: theme.colors.textSoft, fontSize: 12, textAlign: 'center', lineHeight: 18, marginTop: 8 }}>
                 No price history yet. Check back after the next daily snapshot.
                 </Text>
-              </View>
-            )}
-            {chartIsPreview && (
-              <View style={{ position: 'absolute', top: 10, left: 10, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>Estimated trend</Text>
               </View>
             )}
           </View>

@@ -44,6 +44,7 @@ export type BinderCardRecord = {
   set_total: number | null;
   slot_order: number;
   owned: boolean;
+  owned_quantity: number;
   condition: string;
   grade_company?: string | null;
   grade?: string | null;
@@ -135,11 +136,13 @@ async function attachLatestSnapshotPrices<T extends BinderCardRecord>(
   );
 
   return rows.map((row) => {
+    const ownedQuantity = Math.max(1, Number(row.owned_quantity ?? 1));
     const snapshot = latestByCardId.get(row.card_id);
-    if (!snapshot) return row;
+    if (!snapshot) return { ...row, owned_quantity: ownedQuantity };
 
     return {
       ...row,
+      owned_quantity: ownedQuantity,
       ebay_price: snapshot.ebay_price ?? row.ebay_price ?? null,
       tcg_price: snapshot.tcg_price ?? row.tcg_price ?? null,
       cardmarket_price: snapshot.cardmarket_price ?? row.cardmarket_price ?? null,
@@ -252,6 +255,7 @@ export async function fetchBinderCards(
   if (binder.type !== 'official' || !binder.source_set_id) {
   return attachLatestSnapshotPrices(savedRows.map((row) => ({
     ...row,
+    owned_quantity: Math.max(1, Number(row.owned_quantity ?? 1)),
     condition: row.condition || 'Near Mint',
     card: row.card ?? (row.card_name ? {
       id: row.card_id,
@@ -278,6 +282,7 @@ export async function fetchBinderCards(
     if (existing) {
       return {
         ...existing,
+        owned_quantity: Math.max(1, Number(existing.owned_quantity ?? 1)),
         slot_order: existing.slot_order ?? index,
         card_name: existing.card_name ?? card.name ?? null,
         card_number: existing.card_number ?? card.number ?? null,
@@ -312,6 +317,7 @@ export async function fetchBinderCards(
       set_total: setCards.length,
       slot_order: index,
       owned: false,
+      owned_quantity: 1,
       condition: defaultCondition,
       notes: '',
       ebay_price: null,
@@ -461,6 +467,7 @@ export async function addCardsToBinder(
       set_name: card.setName ?? null,
       slot_order: maxSlot + 1 + index,
       owned: false,
+      owned_quantity: 1,
       condition: defaultCondition,
       grade_company: card.gradeCompany ?? null,
       grade: card.grade ?? null,
@@ -651,6 +658,7 @@ export async function updateBinderCardOwned(
     condition?: string;
     gradeCompany?: string | null;
     grade?: string | null;
+    ownedQuantity?: number;
   }
 ): Promise<BinderSnapshotPriceFields | null> {
   const virtual = parseVirtualBinderCardId(binderCardId);
@@ -670,6 +678,7 @@ export async function updateBinderCardOwned(
           api_set_id: virtual.setId,
           slot_order: cardMeta?.slotOrder ?? 0,
           owned: true,
+          owned_quantity: Math.max(1, Number(cardMeta?.ownedQuantity ?? 1)),
           notes: '',
           card_name: cardMeta?.cardName ?? null,
           card_number: cardMeta?.cardNumber ?? null,
@@ -683,7 +692,7 @@ export async function updateBinderCardOwned(
           grade_company: cardMeta?.gradeCompany ?? null,
           grade: cardMeta?.grade ?? null,
         })
-        .select('id, card_id, set_id, owned')
+        .select('id, card_id, set_id, owned, owned_quantity')
         .single();
 
       if (error) throw error;
@@ -739,7 +748,7 @@ export async function updateBinderCardOwned(
 
   const { data: existingCard, error: fetchError } = await supabase
     .from('binder_cards')
-    .select('card_id, set_id, card_name, owned')
+    .select('card_id, set_id, card_name, owned, owned_quantity')
     .eq('id', binderCardId)
     .maybeSingle();
 
@@ -752,6 +761,7 @@ export async function updateBinderCardOwned(
   const updatePayload = owned && price
     ? {
         owned,
+        owned_quantity: Math.max(1, Number((existingCard as any)?.owned_quantity ?? 1)),
         ebay_price: price.ebay_price,
         tcg_price: price.tcg_price,
         cardmarket_price: price.cardmarket_price,
@@ -759,7 +769,7 @@ export async function updateBinderCardOwned(
         grade_company: cardMeta?.gradeCompany ?? undefined,
         grade: cardMeta?.grade ?? undefined,
       }
-    : { owned };
+    : { owned, owned_quantity: owned ? Math.max(1, Number((existingCard as any)?.owned_quantity ?? 1)) : 1 };
 
   const { error } = await supabase
     .from('binder_cards')
@@ -786,6 +796,64 @@ export async function updateBinderCardOwned(
   }
 
   return price;
+}
+
+export async function updateBinderCardQuantity(
+  binderCardId: string,
+  quantity: number,
+  cardMeta?: {
+    cardName?: string | null;
+    cardNumber?: string | null;
+    imageUrl?: string | null;
+    setName?: string | null;
+    slotOrder?: number;
+    condition?: string;
+    gradeCompany?: string | null;
+    grade?: string | null;
+  }
+): Promise<void> {
+  const ownedQuantity = Math.max(1, Math.min(999, Math.floor(Number(quantity) || 1)));
+  const virtual = parseVirtualBinderCardId(binderCardId);
+
+  if (virtual) {
+    const latestPrices = await fetchLatestSnapshotPrices([virtual.cardId]);
+    const price = latestPrices.get(virtual.cardId) ?? null;
+
+    const { error } = await supabase
+      .from('binder_cards')
+      .upsert({
+        binder_id: virtual.binderId,
+        card_id: virtual.cardId,
+        set_id: virtual.setId,
+        api_card_id: virtual.cardId,
+        api_set_id: virtual.setId,
+        slot_order: cardMeta?.slotOrder ?? 0,
+        owned: true,
+        owned_quantity: ownedQuantity,
+        notes: '',
+        card_name: cardMeta?.cardName ?? null,
+        card_number: cardMeta?.cardNumber ?? null,
+        image_url: cardMeta?.imageUrl ?? null,
+        set_name: cardMeta?.setName ?? null,
+        ebay_price: price?.ebay_price ?? null,
+        tcg_price: price?.tcg_price ?? null,
+        cardmarket_price: price?.cardmarket_price ?? null,
+        last_price_update: price?.last_price_update ?? null,
+        condition: cardMeta?.condition ?? 'Near Mint',
+        grade_company: cardMeta?.gradeCompany ?? null,
+        grade: cardMeta?.grade ?? null,
+      }, { onConflict: 'binder_id,card_id' });
+
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabase
+    .from('binder_cards')
+    .update({ owned: true, owned_quantity: ownedQuantity })
+    .eq('id', binderCardId);
+
+  if (error) throw error;
 }
 
 export async function updateBinderCardCondition(
