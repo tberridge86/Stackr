@@ -173,6 +173,7 @@ function AppNavigation() {
                   <Stack.Screen name="scan" options={{ title: '' }} />
                   <Stack.Screen name="scan/result" options={{ title: '' }} />
                   <Stack.Screen name="market/index" options={{ title: '' }} />
+                  <Stack.Screen name="community/profile/[userId]" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="price-builder/index" options={{ title: '' }} />
                   <Stack.Screen name="user/[id]" options={{ title: '' }} />
                   <Stack.Screen name="pokemon/[id]" options={{ title: '' }} />
