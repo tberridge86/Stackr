@@ -61,6 +61,46 @@ const getRawTier = (price: PokeTraceCardPriceResult | null, rawCondition?: strin
 
 const getChartValue = (point: PokeTraceHistoryPoint) => point.value ?? point.avg;
 
+const getRawPrimaryPrice = (price: PokeTraceCardPriceResult | null) => {
+  if (price?.ebay_average != null || price?.ebay_low != null || price?.ebay_high != null) {
+    return {
+      label: 'eBay sold',
+      value: price.ebay_average ?? null,
+      low: price.ebay_low ?? null,
+      high: price.ebay_high ?? null,
+      count: price.ebay_count ?? 0,
+    };
+  }
+
+  if (price?.tcg_mid != null || price?.tcg_low != null) {
+    return {
+      label: 'TCGPlayer',
+      value: price.tcg_mid ?? price.tcg_low ?? null,
+      low: price.tcg_low ?? null,
+      high: null,
+      count: 0,
+    };
+  }
+
+  if (price?.cardmarket_trend != null) {
+    return {
+      label: 'CardMarket',
+      value: price.cardmarket_trend,
+      low: null,
+      high: null,
+      count: 0,
+    };
+  }
+
+  return {
+    label: 'market',
+    value: null,
+    low: null,
+    high: null,
+    count: 0,
+  };
+};
+
 function buildLinePath(points: { x: number; y: number }[]) {
   if (!points.length) return '';
   return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(' ');
@@ -274,11 +314,12 @@ export default function PokeTraceMarketInsights({
   const chartWidth = Math.max(280, Math.min(screenWidth - 62, 720));
 
   if (summaryOnly) {
-    const primaryLabel = isGradedMode ? `${gradingCompany} ${grade}` : 'PokeTrace market';
-    const primaryValue = isGradedMode ? price?.graded_average ?? null : price?.ebay_average ?? null;
-    const primaryLow = isGradedMode ? price?.graded_low ?? null : price?.ebay_low ?? null;
-    const primaryHigh = isGradedMode ? price?.graded_high ?? null : price?.ebay_high ?? null;
-    const primaryCount = isGradedMode ? price?.graded_count ?? 0 : price?.ebay_count ?? 0;
+    const rawPrimary = getRawPrimaryPrice(price);
+    const primaryLabel = isGradedMode ? `${gradingCompany} ${grade}` : rawPrimary.label;
+    const primaryValue = isGradedMode ? price?.graded_average ?? null : rawPrimary.value;
+    const primaryLow = isGradedMode ? price?.graded_low ?? null : rawPrimary.low;
+    const primaryHigh = isGradedMode ? price?.graded_high ?? null : rawPrimary.high;
+    const primaryCount = isGradedMode ? price?.graded_count ?? 0 : rawPrimary.count;
 
     return (
       <View style={[styles.summaryPanel, { backgroundColor: theme.colors.primary + '10', borderColor: theme.colors.primary + '35' }]}>
