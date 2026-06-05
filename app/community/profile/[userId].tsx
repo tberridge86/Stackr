@@ -104,8 +104,9 @@ function renderStars(rating: number | null): string {
 
 export default function PublicCollectorProfileScreen() {
   const { theme } = useTheme();
-const { id, readOnly } = useLocalSearchParams<{ id: string; readOnly?: string }>();
-const binderId = Array.isArray(id) ? id[0] : id;
+  const params = useLocalSearchParams<{ userId?: string; id?: string; readOnly?: string }>();
+  const routeUserId = params.userId ?? params.id;
+  const binderId = Array.isArray(routeUserId) ? routeUserId[0] : routeUserId;
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [binders, setBinders] = useState<Binder[]>([]);
@@ -133,7 +134,10 @@ const binderId = Array.isArray(id) ? id[0] : id;
   // ===============================
 
   const loadProfile = useCallback(async () => {
-    if (!binderId) return;
+    if (!binderId) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
