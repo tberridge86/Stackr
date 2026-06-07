@@ -1325,7 +1325,7 @@ export default function CommunityScreen() {
               <Pressable onPress={openCollectorDirectory} style={styles.heroIconButton}>
                 <Ionicons name="search-outline" size={22} color={theme.colors.text} />
               </Pressable>
-              <Pressable style={styles.heroIconButton}>
+              <Pressable onPress={() => router.push('/notifications')} style={styles.heroIconButton}>
                 <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
                 <View style={styles.notificationDot} />
               </Pressable>

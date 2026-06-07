@@ -7,6 +7,15 @@ const supabase = createClient(
 );
 
 function canonicalImages(card) {
+  const rawSmall = card.raw_data?.images?.small;
+  const rawLarge = card.raw_data?.images?.large;
+  if (rawSmall || rawLarge) {
+    return {
+      small: rawSmall ?? card.image_small ?? null,
+      large: rawLarge ?? card.image_large ?? null,
+    };
+  }
+
   const setId = card.set_id || String(card.id).split('-')[0];
   const prefix = `${setId}-`;
   const idNumber = String(card.id).startsWith(prefix)
@@ -26,9 +35,9 @@ async function loadMismatches() {
   let total = 0;
 
   while (true) {
-    const { data, error } = await supabase
+      const { data, error } = await supabase
       .from('pokemon_cards')
-      .select('id,set_id,number,image_small,image_large')
+      .select('id,set_id,number,image_small,image_large,raw_data')
       .range(from, from + pageSize - 1)
       .order('id');
 

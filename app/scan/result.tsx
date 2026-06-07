@@ -339,22 +339,18 @@ export default function ScanResultScreen() {
       if (selectedTcgVariant?.key) {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          await supabase
-            .from('user_card_variants')
-            .delete()
-            .eq('user_id', user.id)
-            .eq('card_id', selectedCard.id)
-            .eq('set_id', selectedCard.set_id)
-            .eq('variant', selectedTcgVariant.key);
-
           const { error: variantError } = await supabase
             .from('user_card_variants')
-            .insert({
-              user_id: user.id,
-              card_id: selectedCard.id,
-              set_id: selectedCard.set_id,
-              variant: selectedTcgVariant.key,
-            });
+            .upsert(
+              {
+                user_id: user.id,
+                card_id: selectedCard.id,
+                set_id: selectedCard.set_id,
+                variant: selectedTcgVariant.key,
+                quantity: 1,
+              },
+              { onConflict: 'user_id,card_id,set_id,variant', ignoreDuplicates: true }
+            );
           if (variantError) throw variantError;
         }
       }
@@ -766,7 +762,7 @@ export default function ScanResultScreen() {
 
             {/* Scan another */}
             <TouchableOpacity
-              onPress={() => router.replace('/scan')}
+              onPress={() => router.replace({ pathname: '/scan', params: { mode: 'market' } })}
               style={{
                 borderRadius: 14, paddingVertical: 14,
                 alignItems: 'center',

@@ -363,21 +363,13 @@ export default function SetDetailScreen() {
         return;
       }
 
-      if (previousQuantity > 0) {
-        const { error } = await supabase
-          .from('user_card_variants')
-          .update({ quantity: nextQuantity })
-          .eq('user_id', userId)
-          .eq('card_id', cardId)
-          .eq('set_id', setId)
-          .eq('variant', variant);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('user_card_variants')
-          .insert({ user_id: userId, card_id: cardId, set_id: setId, variant, quantity: nextQuantity });
-        if (error) throw error;
-      }
+      const { error } = await supabase
+        .from('user_card_variants')
+        .upsert(
+          { user_id: userId, card_id: cardId, set_id: setId, variant, quantity: nextQuantity },
+          { onConflict: 'user_id,card_id,set_id,variant' }
+        );
+      if (error) throw error;
     } catch (error: any) {
       setVariantQuantities((prev) => {
         const next = new Map(prev);

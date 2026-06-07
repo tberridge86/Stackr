@@ -293,6 +293,12 @@ const openTradeCardDetail = async (item: any) => {
           return;
         }
 
+        if (item.pricing_mode === 'graded') {
+          setEbayData(null);
+          setEbayLoading(false);
+          return;
+        }
+
         const params = new URLSearchParams({
               name: cardName,
               setName,
@@ -300,12 +306,8 @@ const openTradeCardDetail = async (item: any) => {
               rarity,
               cardId: cardDetails?.id ?? item.card_id ?? '',
               productType: 'card',
-              pricingMode: item.pricing_mode === 'graded' ? 'graded' : 'raw',
+              pricingMode: 'raw',
             });
-        if (item.pricing_mode === 'graded') {
-          if (item.grade_company) params.set('gradingCompany', item.grade_company);
-          if (item.grade) params.set('grade', item.grade);
-        }
         const printedTotal = cardDetails?.set?.printedTotal ?? cardDetails?.set?.total;
         if (printedTotal != null) params.set('setTotal', String(printedTotal));
 
@@ -1403,6 +1405,8 @@ const handleArchive = async (listingId: string) => {
                           </>
                         )}
                         
+                        {selectedListing?.pricing_mode !== 'graded' && (
+                          <>
                         {/* Live eBay Prices */}
                         <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
@@ -1423,6 +1427,8 @@ const handleArchive = async (listingId: string) => {
                         ) : (
                           <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>Live prices unavailable</Text>
                         )}
+                          </>
+                        )}
                         
 {/* Reference Prices - only show if prices exist */}
                         {selectedListing?.prices && (selectedListing.prices.ebay_average != null || selectedListing.prices.tcg_mid != null || selectedListing.prices.cardmarket_trend != null) && (
@@ -1431,7 +1437,7 @@ const handleArchive = async (listingId: string) => {
                             <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '800', marginBottom: 8 }}>Reference Prices</Text>
                             {selectedListing.prices?.ebay_average != null && (
                               <DetailRow 
-                                label="eBay Avg" 
+                                label={selectedListing.pricing_mode === 'graded' ? 'PokeTrace Graded Avg' : 'eBay Avg'}
                                 value={`£${Number(selectedListing.prices.ebay_average).toFixed(2)}`} 
                               />
                             )}
@@ -1450,9 +1456,11 @@ const handleArchive = async (listingId: string) => {
                           </>
                         )}
                         
-                        <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 16, marginTop: 6 }}>
-                          Sold prices from eBay. Historical prices from TCG data.
-                        </Text>
+                        {selectedListing?.pricing_mode !== 'graded' && (
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 16, marginTop: 6 }}>
+                            Sold prices from eBay. Historical prices from TCG data.
+                          </Text>
+                        )}
                       </View>
 
                       {selectedCard && (!selectedListing?.product_type || selectedListing.product_type === 'raw_card' || selectedListing.product_type === 'graded_slab') && (

@@ -635,6 +635,10 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       const cardId = card.card?.id ?? card.card_id ?? '';
       const baseRarity = card.card?.rarity ?? '';
       const isGraded = binder?.card_mode === 'graded';
+      if (isGraded) {
+        setModalEbayLoading(false);
+        return;
+      }
       const rarity = binder?.edition === '1st_edition'
         ? `${baseRarity} 1st edition`.trim()
         : baseRarity;
@@ -646,7 +650,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         number,
         setTotal: card.card?.set?.printedTotal ?? card.card?.set?.total ?? null,
         rarity,
-        pricingMode: isGraded ? 'graded' : 'raw',
+        pricingMode: 'raw',
         condition: isGraded ? null : card.condition || 'Near Mint',
         gradingCompany: isGraded ? card.grade_company ?? 'PSA' : null,
         grade: isGraded ? card.grade ?? '10' : null,
@@ -3256,22 +3260,24 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                     <View style={boxStyle}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                         <Text style={boxTitleStyle}>Market Value</Text>
-                        <TouchableOpacity
-                          onPress={() => selectedCard && fetchModalEbayPrice(selectedCard)}
-                          disabled={modalEbayLoading}
-                          style={{
-                            backgroundColor: theme.colors.surface,
-                            borderRadius: 999,
-                            paddingHorizontal: 10,
-                            paddingVertical: 5,
-                            borderWidth: 1,
-                            borderColor: theme.colors.border,
-                          }}
-                        >
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700' }}>
-                            {modalEbayLoading ? 'Fetching...' : 'Refresh'}
-                          </Text>
-                        </TouchableOpacity>
+                        {binder.card_mode !== 'graded' && (
+                          <TouchableOpacity
+                            onPress={() => selectedCard && fetchModalEbayPrice(selectedCard)}
+                            disabled={modalEbayLoading}
+                            style={{
+                              backgroundColor: theme.colors.surface,
+                              borderRadius: 999,
+                              paddingHorizontal: 10,
+                              paddingVertical: 5,
+                              borderWidth: 1,
+                              borderColor: theme.colors.border,
+                            }}
+                          >
+                            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700' }}>
+                              {modalEbayLoading ? 'Fetching...' : 'Refresh'}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
 
                       {binder.card_mode === 'graded' ? (
@@ -3448,67 +3454,69 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
                         summaryOnly
                       />
 
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                        {binder.card_mode === 'graded'
-                          ? `eBay fallback - ${selectedCard.grade_company ?? 'PSA'} ${selectedCard.grade ?? '10'}`
-                          : `eBay Sold Prices - Adjusted for ${selectedCard.condition || 'Near Mint'}`}
-                      </Text>
-
-                      {modalEbayLoading ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 }}>
-                          <ActivityIndicator size="small" color={theme.colors.primary} />
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching live prices...</Text>
-                        </View>
-                      ) : modalEbayError ? (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6 }}>
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Could not fetch eBay prices. </Text>
-                          <TouchableOpacity onPress={() => selectedCard && fetchModalEbayPrice(selectedCard)}>
-                            <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Retry</Text>
-                          </TouchableOpacity>
-                        </View>
-                      ) : (
+                      {binder.card_mode !== 'graded' && (
                         <>
-                          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 6 }}>
-                            <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
-                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Low</Text>
-                              <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
-                                {modalEbayPrice?.low != null
-                                  ? formatCurrency(binder.card_mode === 'graded' ? modalEbayPrice.low : getEstimatedValue(modalEbayPrice.low, selectedCard.condition || 'Near Mint'))
-                                  : '--'}
-                              </Text>
-                            </View>
-                            <View style={{ flex: 1, backgroundColor: theme.colors.primary + '18', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.primary }}>
-                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Avg</Text>
-                              <Text style={{ color: theme.colors.primary, fontWeight: '900', textAlign: 'center', fontSize: 15 }}>
-                                {modalEbayPrice?.average != null
-                                  ? formatCurrency(binder.card_mode === 'graded' ? modalEbayPrice.average : getEstimatedValue(modalEbayPrice.average, selectedCard.condition || 'Near Mint'))
-                                  : '--'}
-                              </Text>
-                            </View>
-                            <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
-                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>High</Text>
-                              <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
-                                {modalEbayPrice?.high != null
-                                  ? formatCurrency(binder.card_mode === 'graded' ? modalEbayPrice.high : getEstimatedValue(modalEbayPrice.high, selectedCard.condition || 'Near Mint'))
-                                  : '--'}
-                              </Text>
-                            </View>
-                          </View>
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+                            eBay Sold Prices - Adjusted for {selectedCard.condition || 'Near Mint'}
+                          </Text>
 
-                          {modalEbayPrice?.count != null && modalEbayPrice.count > 0 && (
-                            <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }}>
-                              Based on {modalEbayPrice.count} listing{modalEbayPrice.count !== 1 ? 's' : ''}
-                            </Text>
-                          )}
-                          {modalEbayPrice?.usedFallback && (modalEbayPrice?.count ?? 0) > 0 && (
-                            <Text style={{ color: '#F59E0B', fontSize: 11, marginTop: 2 }}>
-                              Broad search used - results may be less specific
-                            </Text>
-                          )}
-                          {modalEbayPrice?.count === 0 && (
-                            <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }}>
-                              No listings found on eBay
-                            </Text>
+                          {modalEbayLoading ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 }}>
+                              <ActivityIndicator size="small" color={theme.colors.primary} />
+                              <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching live prices...</Text>
+                            </View>
+                          ) : modalEbayError ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6 }}>
+                              <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Could not fetch eBay prices. </Text>
+                              <TouchableOpacity onPress={() => selectedCard && fetchModalEbayPrice(selectedCard)}>
+                                <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '700' }}>Retry</Text>
+                              </TouchableOpacity>
+                            </View>
+                          ) : (
+                            <>
+                              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 6 }}>
+                                <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+                                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Low</Text>
+                                  <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
+                                    {modalEbayPrice?.low != null
+                                      ? formatCurrency(getEstimatedValue(modalEbayPrice.low, selectedCard.condition || 'Near Mint'))
+                                      : '--'}
+                                  </Text>
+                                </View>
+                                <View style={{ flex: 1, backgroundColor: theme.colors.primary + '18', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.primary }}>
+                                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Avg</Text>
+                                  <Text style={{ color: theme.colors.primary, fontWeight: '900', textAlign: 'center', fontSize: 15 }}>
+                                    {modalEbayPrice?.average != null
+                                      ? formatCurrency(getEstimatedValue(modalEbayPrice.average, selectedCard.condition || 'Near Mint'))
+                                      : '--'}
+                                  </Text>
+                                </View>
+                                <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+                                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>High</Text>
+                                  <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
+                                    {modalEbayPrice?.high != null
+                                      ? formatCurrency(getEstimatedValue(modalEbayPrice.high, selectedCard.condition || 'Near Mint'))
+                                      : '--'}
+                                  </Text>
+                                </View>
+                              </View>
+
+                              {modalEbayPrice?.count != null && modalEbayPrice.count > 0 && (
+                                <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }}>
+                                  Based on {modalEbayPrice.count} listing{modalEbayPrice.count !== 1 ? 's' : ''}
+                                </Text>
+                              )}
+                              {modalEbayPrice?.usedFallback && (modalEbayPrice?.count ?? 0) > 0 && (
+                                <Text style={{ color: '#F59E0B', fontSize: 11, marginTop: 2 }}>
+                                  Broad search used - results may be less specific
+                                </Text>
+                              )}
+                              {modalEbayPrice?.count === 0 && (
+                                <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 2 }}>
+                                  No listings found on eBay
+                                </Text>
+                              )}
+                            </>
                           )}
                         </>
                       )}
