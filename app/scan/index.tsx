@@ -466,6 +466,27 @@ type ScanErrorState = ScanErrorResponse & {
   stack?: string;
 };
 
+type ImageCropRect = {
+  originX: number;
+  originY: number;
+  width: number;
+  height: number;
+};
+
+function clampImageCrop(crop: ImageCropRect, imageWidth: number, imageHeight: number) {
+  const originX = Math.max(0, Math.min(imageWidth - 1, Math.floor(crop.originX)));
+  const originY = Math.max(0, Math.min(imageHeight - 1, Math.floor(crop.originY)));
+  const maxWidth = Math.max(1, imageWidth - originX);
+  const maxHeight = Math.max(1, imageHeight - originY);
+
+  return {
+    originX,
+    originY,
+    width: Math.max(1, Math.min(maxWidth, Math.floor(crop.width))),
+    height: Math.max(1, Math.min(maxHeight, Math.floor(crop.height))),
+  };
+}
+
 function getCenteredCardCrop(photoWidth?: number, photoHeight?: number) {
   if (!photoWidth || !photoHeight) return null;
 
@@ -478,12 +499,12 @@ function getCenteredCardCrop(photoWidth?: number, photoHeight?: number) {
     cropWidth = cropHeight * CARD_ASPECT_RATIO;
   }
 
-  return {
-    originX: Math.max(0, Math.round((photoWidth - cropWidth) / 2)),
-    originY: Math.max(0, Math.round((photoHeight - cropHeight) / 2)),
-    width: Math.max(1, Math.round(cropWidth)),
-    height: Math.max(1, Math.round(cropHeight)),
-  };
+  return clampImageCrop({
+    originX: (photoWidth - cropWidth) / 2,
+    originY: (photoHeight - cropHeight) / 2,
+    width: cropWidth,
+    height: cropHeight,
+  }, photoWidth, photoHeight);
 }
 
 function parsePrintedNumber(text?: string | null): PrintedNumber | null {
@@ -710,12 +731,12 @@ function getOcrRegionCrop(
   height: number,
   region: OcrRegion
 ) {
-  return {
-    originX: Math.max(0, Math.round(width * region.x)),
-    originY: Math.max(0, Math.round(height * region.y)),
-    width: Math.max(1, Math.min(width, Math.round(width * region.width))),
-    height: Math.max(1, Math.min(height, Math.round(height * region.height))),
-  };
+  return clampImageCrop({
+    originX: width * region.x,
+    originY: height * region.y,
+    width: width * region.width,
+    height: height * region.height,
+  }, width, height);
 }
 
 async function readOcrRegionText(

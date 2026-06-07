@@ -30,7 +30,7 @@ import type { ProductLookupType } from '../../lib/productSearch';
 import { useScanCamera } from '../../lib/useScanCamera';
 import { fetchPokeTraceCardPrice } from '../../lib/pricing';
 
-import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
+import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 
 type Step = 'category' | 'search' | 'condition' | 'photos' | 'review';
 type ListingType = 'raw_card' | 'graded_slab' | ProductLookupType;
@@ -322,23 +322,7 @@ export default function NewListingScreen() {
           });
         }
 
-        if (!PRICE_API_URL) throw new Error('Missing price API URL');
-        const params = new URLSearchParams({
-          cardId: card.id,
-          name: card.name,
-          setName,
-          number: card.number ?? '',
-          rarity: card.rarity ?? '',
-          productType: 'card',
-          pricingMode: 'graded',
-          gradingCompany,
-          grade,
-        });
-        const setTotal = card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? null;
-        if (setTotal != null) params.set('setTotal', String(setTotal));
-        const response = await fetch(`${PRICE_API_URL.replace(/\/$/, '')}/api/price/ebay?${params.toString()}`);
-        if (!response.ok) throw new Error('Failed to fetch graded price');
-        return response.json();
+        return null;
       };
 
       const [ebayResult] = await Promise.allSettled([fetchCardEbayPrice()]);
@@ -812,7 +796,7 @@ export default function NewListingScreen() {
           </View>
         ) : (
           <>
-            <PriceRow label="eBay Sold Avg" value={prices.ebay} />
+            <PriceRow label={listingType === 'graded_slab' ? 'PokeTrace Graded Avg' : 'eBay Sold Avg'} value={prices.ebay} />
             {isCardListing(listingType) && <PriceRow label="TCGPlayer Market" value={prices.tcg} />}
             {isCardListing(listingType) && <PriceRow label="Cardmarket Trend" value={prices.cardmarket} />}
             {recommendedValue != null && (

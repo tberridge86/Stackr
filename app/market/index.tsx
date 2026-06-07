@@ -24,7 +24,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 
-import { scanStore } from '../../lib/scanStore';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { buildProductQuery, searchMarketProducts } from '../../lib/productSearch';
@@ -241,24 +240,6 @@ const mapCard = (card: any): PokemonCard => ({
 const normalise = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 
-async function fetchJsonWithTimeout(url: string, options: RequestInit, timeoutMs = 12000) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
-    const body = await response.text();
-    let json: any = null;
-    try {
-      json = body ? JSON.parse(body) : null;
-    } catch {
-      throw new Error(`Server returned an unreadable response (${response.status}).`);
-    }
-    return { response, json };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -272,8 +253,6 @@ export default function MarketScreen() {
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
   const [productPriceData, setProductPriceData] = useState<ProductPriceResult | null>(null);
   const [productPriceLoading, setProductPriceLoading] = useState(false);
-  const [scanning, setScanning] = useState(false);
-
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailEbayData, setDetailEbayData] = useState<EbayDetailData>(null);
@@ -437,6 +416,7 @@ export default function MarketScreen() {
 
   const fetchLiveEbayForCard = useCallback(async (card: PokemonCard): Promise<EbayDetailData> => {
     if (!PRICE_API_URL) return null;
+    if (lookupType === 'graded_slab') return null;
 
     const rawSetName = card.set?.name ?? '';
     const setName = (rawSetName && rawSetName !== card.set?.id) ? rawSetName : '';
@@ -448,15 +428,10 @@ export default function MarketScreen() {
       rarity: card.rarity ?? '',
       cardId: card.id ?? '',
       productType: 'card',
-      pricingMode: lookupType === 'graded_slab' ? 'graded' : 'raw',
+      pricingMode: 'raw',
     });
 
-    if (lookupType === 'graded_slab') {
-      params.set('gradingCompany', gradingCompany);
-      params.set('grade', grade);
-    } else {
-      params.set('condition', rawCondition);
-    }
+    params.set('condition', rawCondition);
 
     const printedTotal = card.set?.printedTotal ?? card.set?.total;
     if (printedTotal != null) params.set('setTotal', String(printedTotal));
@@ -468,10 +443,8 @@ export default function MarketScreen() {
     if (__DEV__) {
       console.log('[market:eBay:card]', {
         cardId: card.id,
-        pricingMode: lookupType === 'graded_slab' ? 'graded' : 'raw',
-        gradingCompany: lookupType === 'graded_slab' ? gradingCompany : undefined,
-        grade: lookupType === 'graded_slab' ? grade : undefined,
-        condition: lookupType === 'raw_card' ? rawCondition : undefined,
+        pricingMode: 'raw',
+        condition: rawCondition,
         query: data.query,
         count: data.count,
         average: data.average,
@@ -709,6 +682,10 @@ export default function MarketScreen() {
   const fetchDetailEbayData = useCallback(async (card: PokemonCard) => {
     try {
       setDetailPriceLoading(true);
+      if (lookupType === 'graded_slab') {
+        setDetailEbayData(null);
+        return;
+      }
 
       if (!PRICE_API_URL) { setDetailEbayData(null); return; }
 
@@ -724,14 +701,9 @@ export default function MarketScreen() {
         rarity: card.rarity ?? '',
         cardId: card.id ?? '',
         productType: 'card',
-        pricingMode: lookupType === 'graded_slab' ? 'graded' : 'raw',
+        pricingMode: 'raw',
       });
-      if (lookupType === 'graded_slab') {
-        params.set('gradingCompany', gradingCompany);
-        params.set('grade', grade);
-      } else {
-        params.set('condition', rawCondition);
-      }
+      params.set('condition', rawCondition);
       const printedTotal = card.set?.printedTotal ?? card.set?.total;
       if (printedTotal != null) params.set('setTotal', String(printedTotal));
 
@@ -742,10 +714,8 @@ export default function MarketScreen() {
       if (__DEV__) {
         console.log('[market:eBay:detail]', {
           cardId: card.id,
-          pricingMode: lookupType === 'graded_slab' ? 'graded' : 'raw',
-          gradingCompany: lookupType === 'graded_slab' ? gradingCompany : undefined,
-          grade: lookupType === 'graded_slab' ? grade : undefined,
-          condition: lookupType === 'raw_card' ? rawCondition : undefined,
+          pricingMode: 'raw',
+          condition: rawCondition,
           query: data.query,
           count: data.count,
           average: data.average,
@@ -796,100 +766,8 @@ export default function MarketScreen() {
   // ===============================
 
   const handleScanCard = useCallback(async () => {
-  scanStore.setCallback(async (base64Image: string) => {
-    try {
-      setScanning(true);
-
-      if (!PRICE_API_URL) {
-        throw new Error('Price API URL is not configured.');
-      }
-
-      const { response: cardSightResponse, json: parsed } = await fetchJsonWithTimeout(
-        `${PRICE_API_URL}/api/cardsight/identify`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base64Image }),
-        },
-        12000
-      );
-
-      if (!cardSightResponse.ok) {
-        throw new Error(parsed?.error ?? `Card scan failed with status ${cardSightResponse.status}.`);
-      }
-
-      if (parsed?.error || !parsed?.name) {
-        Alert.alert('Could not identify card', 'Try taking a clearer photo of the card.');
-        return;
-      }
-
-      setQuery(parsed.name.trim());
-      await searchCards(parsed.name.trim(), true);
-
-      if (parsed.number) {
-        const numberClean = parsed.number.split('/')[0].trim().replace(/^0+/, '');
-
-        const { data: cardData } = await supabase
-          .from('pokemon_cards')
-          .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-          .ilike('name', `%${parsed.name.trim()}%`)
-          .limit(120);
-
-        const cards = (cardData ?? []).map(mapCard);
-
-        const numberMatches = cards.filter((c) => {
-          const cardNum = (c.number ?? '').replace(/^0+/, '');
-          return cardNum === numberClean;
-        });
-
-        let match: PokemonCard | undefined;
-
-        if (numberMatches.length === 1) {
-          match = numberMatches[0];
-        } else if (numberMatches.length > 1) {
-          if (parsed.set) {
-            const setNameLower = parsed.set.toLowerCase();
-            const fuzzyMatch = numberMatches.find((c) =>
-              c.set?.name?.toLowerCase().includes(setNameLower.split(' ')[0]) ||
-              setNameLower.includes((c.set?.name ?? '').toLowerCase().split(' ')[0])
-            );
-            if (fuzzyMatch) { match = fuzzyMatch; }
-          }
-
-          if (!match) {
-            const setIds = [...new Set(numberMatches.map(c => c.set?.id).filter(Boolean))];
-            const { data: setsData } = await supabase
-              .from('pokemon_sets')
-              .select('id, release_date')
-              .in('id', setIds as string[])
-              .order('release_date', { ascending: false });
-
-            const mostRecentSetId = setsData?.[0]?.id;
-            match = numberMatches.find(c => c.set?.id === mostRecentSetId) ?? numberMatches[0];
-          }
-        }
-
-        if (match) {
-          setSearchResults(cards);
-          openCardDetail(match);
-        }
-      }
-    } catch (err: any) {
-      console.log('Market scan callback failed:', {
-        message: err?.message ?? String(err),
-        stack: err?.stack,
-      });
-      Alert.alert(
-        'Scan failed',
-        `Something went wrong before the market result could open.\n\n${err?.message ?? String(err)}`
-      );
-    } finally {
-      setScanning(false);
-    }
-  });
-
-  router.push({ pathname: '/scan', params: { mode: 'market' } });
-}, [searchCards, openCardDetail]);
+    router.push({ pathname: '/scan', params: { mode: 'market' } });
+  }, []);
 
   // ===============================
   // RENDER HELPERS
@@ -1159,14 +1037,9 @@ export default function MarketScreen() {
               {isCardLookup(lookupType) && (
                 <TouchableOpacity
                   onPress={handleScanCard}
-                  disabled={scanning}
-                  style={{ backgroundColor: theme.colors.card, borderRadius: 14, width: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border, opacity: scanning ? 0.6 : 1 }}
+                  style={{ backgroundColor: theme.colors.card, borderRadius: 14, width: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
                 >
-                  {scanning ? (
-                    <ActivityIndicator size="small" color={theme.colors.primary} />
-                  ) : (
-                    <Ionicons name="camera-outline" size={22} color={theme.colors.text} />
-                  )}
+                  <Ionicons name="camera-outline" size={22} color={theme.colors.text} />
                 </TouchableOpacity>
               )}
             </View>
@@ -1330,29 +1203,31 @@ export default function MarketScreen() {
                         </>
                       )}
 
-                      <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                          <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>
-                            {lookupType === 'graded_slab' ? `Live eBay sold - ${gradingCompany} ${grade}` : `Live eBay sold - ${rawCondition}`}
-                          </Text>
-                          {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
-                        </View>
+                      {lookupType !== 'graded_slab' && (
+                        <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                            <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>
+                              Live eBay sold - {rawCondition}
+                            </Text>
+                            {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
+                          </View>
 
-                        {detailPriceLoading ? (
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching live eBay sold prices...</Text>
-                        ) : (
-                          <>
-                            <PriceRow label="Low" value={formatCurrency(detailEbayData?.low)} />
-                            <PriceRow label="Average" value={formatCurrency(detailEbayData?.average)} highlight />
-                            <PriceRow label="High" value={formatCurrency(detailEbayData?.high)} />
-                            {detailEbayData?.count != null && (
-                              <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
-                                Based on {detailEbayData.count} sold listing{detailEbayData.count !== 1 ? 's' : ''}
-                              </Text>
-                            )}
-                          </>
-                        )}
-                      </View>
+                          {detailPriceLoading ? (
+                            <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Fetching live eBay sold prices...</Text>
+                          ) : (
+                            <>
+                              <PriceRow label="Low" value={formatCurrency(detailEbayData?.low)} />
+                              <PriceRow label="Average" value={formatCurrency(detailEbayData?.average)} highlight />
+                              <PriceRow label="High" value={formatCurrency(detailEbayData?.high)} />
+                              {detailEbayData?.count != null && (
+                                <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
+                                  Based on {detailEbayData.count} sold listing{detailEbayData.count !== 1 ? 's' : ''}
+                                </Text>
+                              )}
+                            </>
+                          )}
+                        </View>
+                      )}
 
                       <PriceSection title="TCGPlayer (GBP est.)">
                         <PriceRow label="Low" value={getBestTcgPrice(selectedCard, 'low') != null ? `£${((getBestTcgPrice(selectedCard, 'low') ?? 0) * USD_TO_GBP).toFixed(2)}` : '--'} />
