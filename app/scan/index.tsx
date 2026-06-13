@@ -438,6 +438,11 @@ type CaptureResult = {
   uri: string;
   width: number;
   height: number;
+  originalUri: string;
+  originalWidth: number;
+  originalHeight: number;
+  crop: ImageCropRect | null;
+  sourceLabel: 'frame-crop' | 'full-frame';
 };
 
 type PrintedNumber = {
@@ -683,6 +688,60 @@ function isBroadNumberRegion(region?: string) {
 
 function normalizeCardName(value?: string | null) {
   return String(value ?? '').trim().toLowerCase();
+}
+
+function getNumericCollectorNumber(value?: string | null) {
+  const match = String(value ?? '').match(/\d+/);
+  if (!match) return null;
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getScannedCardPrintedTotal(card?: ScannedCard | null) {
+  if (!card) return null;
+  if (typeof card.set_printed_total === 'number' && Number.isFinite(card.set_printed_total) && card.set_printed_total > 0) {
+    return card.set_printed_total;
+  }
+
+  const rawTotal = card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total;
+  const parsed = Number(rawTotal);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function isReliablePrintedNumberForValidation(printedNumber?: PrintedNumber | null) {
+  return Boolean(printedNumber && !isSuspiciousPrintedNumber(printedNumber));
+}
+
+function doesScannedCardMatchPrintedNumber(card: ScannedCard | null | undefined, printedNumber?: PrintedNumber | null) {
+  if (!isReliablePrintedNumberForValidation(printedNumber)) return true;
+  if (!card || !printedNumber) return false;
+
+  const cardNumber = getNumericCollectorNumber(card.number);
+  if (cardNumber == null || cardNumber !== printedNumber.number) return false;
+
+  const setPrintedTotal = getScannedCardPrintedTotal(card);
+  if (setPrintedTotal != null && printedNumber.total >= 10 && setPrintedTotal !== printedNumber.total) {
+    return false;
+  }
+
+  return true;
+}
+
+function removePrintedNumberMismatches(candidates: ScanCandidate[], printedNumber?: PrintedNumber | null) {
+  if (!isReliablePrintedNumberForValidation(printedNumber)) return candidates;
+
+  return candidates.map((candidate) => {
+    const resolvedCard = candidate.resolvedCard as ScannedCard | null | undefined;
+    if (!resolvedCard || doesScannedCardMatchPrintedNumber(resolvedCard, printedNumber)) return candidate;
+    return { ...candidate, resolvedCard: null };
+  });
+}
+
+function findPrintedNumberAlignedMatch(candidates: ScanCandidate[], printedNumber?: PrintedNumber | null) {
+  return (candidates.find((candidate) => {
+    const resolvedCard = candidate.resolvedCard as ScannedCard | null | undefined;
+    return Boolean(resolvedCard && doesScannedCardMatchPrintedNumber(resolvedCard, printedNumber));
+  })?.resolvedCard as ScannedCard | null | undefined) ?? null;
 }
 
 function parsePrintedNumberFromOcr(text?: string | null): PrintedNumber | null {
@@ -1381,7 +1440,7 @@ export default function ScanScreen() {
           frameY: y,
           frameWidth: width,
           frameHeight: height,
-          marginRatio: 0.08,
+          marginRatio: 0.18,
         };
       });
     });
@@ -1768,6 +1827,54 @@ export default function ScanScreen() {
     startScanningMessages();
     if (isAuto) logScanDebug('capture-started');
 
+    const encodeCapturedFrame = async (
+      capturedUri: string,
+      originalWidth: number,
+      originalHeight: number,
+      profile: { width: number; compress: number },
+      crop: ImageCropRect | null,
+      sourceLabel: CaptureResult['sourceLabel']
+    ): Promise<CaptureResult> => {
+      const actions: ImageManipulator.Action[] = [
+        ...(crop ? [{ crop }] : []),
+        { resize: { width: profile.width } },
+      ];
+      const manipulated = await ImageManipulator.manipulateAsync(
+        capturedUri,
+        actions,
+        { compress: profile.compress, format: ImageManipulator.SaveFormat.JPEG, base64: true }
+      );
+      logScanStage('IMAGE_ENCODED', {
+        sourceLabel,
+        width: manipulated.width,
+        height: manipulated.height,
+        bytesApprox: Math.round((manipulated.base64?.length ?? 0) * 0.75),
+        hasBase64: Boolean(manipulated.base64),
+        crop: crop
+          ? {
+              originX: crop.originX,
+              originY: crop.originY,
+              width: crop.width,
+              height: crop.height,
+              originalWidth,
+              originalHeight,
+            }
+          : null,
+      });
+
+      return {
+        base64: manipulated.base64 ?? '',
+        uri: manipulated.uri,
+        width: manipulated.width,
+        height: manipulated.height,
+        originalUri: capturedUri,
+        originalWidth,
+        originalHeight,
+        crop,
+        sourceLabel,
+      };
+    };
+
     const captureCardImage = async (profile: { width: number; compress: number }): Promise<CaptureResult> => {
       const captureStartedAt = Date.now();
       let photo;
@@ -1806,21 +1913,7 @@ export default function ScanScreen() {
         path: photo.path ? '[file]' : null,
       });
       const crop = getCenteredCardCrop(photo.width, photo.height, scannerFrameRectRef.current);
-      const actions: ImageManipulator.Action[] = [
-        ...(crop ? [{ crop }] : []),
-        { resize: { width: profile.width } },
-      ];
-      const manipulated = await ImageManipulator.manipulateAsync(
-        capturedUri,
-        actions,
-        { compress: profile.compress, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-      );
-      logScanStage('IMAGE_ENCODED', {
-        width: manipulated.width,
-        height: manipulated.height,
-        bytesApprox: Math.round((manipulated.base64?.length ?? 0) * 0.75),
-        hasBase64: Boolean(manipulated.base64),
-      });
+      const encoded = await encodeCapturedFrame(capturedUri, photo.width, photo.height, profile, crop, 'frame-crop');
       console.log('Capture timing:', {
         source,
         profile,
@@ -1828,12 +1921,7 @@ export default function ScanScreen() {
         manipulateMs: Date.now() - photoDoneAt,
         totalMs: Date.now() - captureStartedAt,
       });
-      return {
-        base64: manipulated.base64 ?? '',
-        uri: manipulated.uri,
-        width: manipulated.width,
-        height: manipulated.height,
-      };
+      return encoded;
     };
 
     const identifyWithCardSight = async (base64Image: string) => {
@@ -2601,7 +2689,7 @@ export default function ScanScreen() {
       const readInitialPrintedNumber = async () => {
         if (attemptedInitialNumberOcr) return printedNumber;
         attemptedInitialNumberOcr = true;
-        printedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
+        printedNumber = await readPrintedNumberFromCardImage(bestUri, bestWidth, bestHeight, {
           fastRegions: PRIMARY_NUMBER_OCR_REGIONS,
           includeFallbackRegions: false,
           includeFullCard: false,
@@ -2629,9 +2717,46 @@ export default function ScanScreen() {
         cachedTotalHintText = await readTotalHintTextFromCardImage(uri, width, height);
         return cachedTotalHintText;
       };
+      const switchToFullFrameCapture = async (reason: string) => {
+        if (!capture.crop) return false;
+
+        logScanStage('FULL_FRAME_RETRY_STARTED', {
+          reason,
+          crop: {
+            originX: capture.crop.originX,
+            originY: capture.crop.originY,
+            width: capture.crop.width,
+            height: capture.crop.height,
+            originalWidth: capture.originalWidth,
+            originalHeight: capture.originalHeight,
+          },
+        });
+
+        const fullFrameCapture = await encodeCapturedFrame(
+          capture.originalUri,
+          capture.originalWidth,
+          capture.originalHeight,
+          initialScanProfile,
+          null,
+          'full-frame'
+        );
+        if (!fullFrameCapture.base64) return false;
+
+        bestBase64 = fullFrameCapture.base64;
+        recoveryBase64 = bestBase64;
+        bestUri = fullFrameCapture.uri;
+        bestWidth = fullFrameCapture.width;
+        bestHeight = fullFrameCapture.height;
+        attemptedInitialNumberOcr = Boolean(printedNumber);
+        cachedNameText = null;
+        cachedTotalHintText = null;
+        numberOcrDoneAt = Date.now();
+        return true;
+      };
       let match: ScannedCard | null = null;
       let ximilarCandidatesForConfirmation: ScanCandidate[] | null = null;
       let ximilarError: ScanErrorState | null = null;
+      let ximilarResultRejectedByOcr = false;
 
       if (!isAuto && !expectedSetId && (isMarketMode || selectedBinder)) {
         console.log('[market-scan] primary provider: ximilar');
@@ -2643,26 +2768,80 @@ export default function ScanScreen() {
         } else {
           ximilarError = null;
           setScanError(null);
-          const primaryCandidates = await resolveXimilarCandidates(
+          let primaryCandidates = await resolveXimilarCandidates(
             ximilarResponse.candidates.slice(0, 1),
             shouldDeferInitialNumberOcr ? null : printedNumber,
             null
           );
           throwIfScanTimedOut();
-          match = (primaryCandidates.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+          match = findPrintedNumberAlignedMatch(primaryCandidates, printedNumber);
           ximilarCandidatesForConfirmation = primaryCandidates;
           recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
           recoveryMatch = match;
 
+          if (match && shouldDeferInitialNumberOcr) {
+            const ocrPrintedNumber = await readInitialPrintedNumber();
+            throwIfScanTimedOut();
+            const validatedPrimaryCandidates = removePrintedNumberMismatches(primaryCandidates, ocrPrintedNumber);
+            const validatedMatch = findPrintedNumberAlignedMatch(validatedPrimaryCandidates, ocrPrintedNumber);
+
+            if (!validatedMatch && ocrPrintedNumber) {
+              ximilarResultRejectedByOcr = true;
+              logScanStage('XIMILAR_RESULT_REJECTED_BY_OCR', {
+                printedNumber: `${ocrPrintedNumber.number}/${ocrPrintedNumber.total}`,
+                numberRegion: ocrPrintedNumber.region,
+                candidate: match.name,
+                candidateNumber: match.number,
+                candidateSet: match.set_name,
+                candidateTotal: getScannedCardPrintedTotal(match),
+              });
+            }
+
+            primaryCandidates = validatedPrimaryCandidates;
+            match = validatedMatch;
+            ximilarCandidatesForConfirmation = primaryCandidates;
+            recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+            recoveryMatch = match;
+          }
+
           if (!match && ximilarResponse.candidates.length > 1) {
             const fallbackCandidates = await resolveXimilarCandidates(
               ximilarResponse.candidates.slice(1),
-              shouldDeferInitialNumberOcr ? null : printedNumber,
+              printedNumber,
               null
             );
             throwIfScanTimedOut();
-            ximilarCandidatesForConfirmation = [...primaryCandidates, ...fallbackCandidates];
-            match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+            ximilarCandidatesForConfirmation = removePrintedNumberMismatches(
+              [...primaryCandidates, ...fallbackCandidates],
+              printedNumber
+            );
+            match = findPrintedNumberAlignedMatch(ximilarCandidatesForConfirmation, printedNumber);
+            recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+            recoveryMatch = match;
+          }
+
+          if (match && shouldDeferInitialNumberOcr && !printedNumber) {
+            const ocrPrintedNumber = await readInitialPrintedNumber();
+            throwIfScanTimedOut();
+            ximilarCandidatesForConfirmation = removePrintedNumberMismatches(
+              ximilarCandidatesForConfirmation,
+              ocrPrintedNumber
+            );
+            const validatedMatch = findPrintedNumberAlignedMatch(ximilarCandidatesForConfirmation, ocrPrintedNumber);
+
+            if (!validatedMatch && ocrPrintedNumber) {
+              ximilarResultRejectedByOcr = true;
+              logScanStage('XIMILAR_RESULT_REJECTED_BY_OCR', {
+                printedNumber: `${ocrPrintedNumber.number}/${ocrPrintedNumber.total}`,
+                numberRegion: ocrPrintedNumber.region,
+                candidate: match.name,
+                candidateNumber: match.number,
+                candidateSet: match.set_name,
+                candidateTotal: getScannedCardPrintedTotal(match),
+              });
+            }
+
+            match = validatedMatch;
             recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
             recoveryMatch = match;
           }
@@ -2683,6 +2862,60 @@ export default function ScanScreen() {
             number: match.number,
           } : null,
         });
+
+        if (
+          !match
+          && shouldDeferInitialNumberOcr
+          && capture.crop
+          && (ximilarResultRejectedByOcr || Boolean(ximilarCandidatesForConfirmation?.length))
+        ) {
+          const switchedToFullFrame = await switchToFullFrameCapture(
+            ximilarResultRejectedByOcr ? 'ocr-rejected-crop-result' : 'unresolved-crop-candidates'
+          );
+          throwIfScanTimedOut();
+
+          if (switchedToFullFrame) {
+            const fullFrameXimilarResponse = await identifyWithXimilarTcg(bestBase64, false);
+            throwIfScanTimedOut();
+
+            if (fullFrameXimilarResponse.ok) {
+              const fullFramePrintedNumber = await readInitialPrintedNumber();
+              throwIfScanTimedOut();
+              const fullFrameCandidates = await resolveXimilarCandidates(
+                fullFrameXimilarResponse.candidates,
+                fullFramePrintedNumber,
+                null
+              );
+              throwIfScanTimedOut();
+
+              ximilarCandidatesForConfirmation = removePrintedNumberMismatches(
+                fullFrameCandidates,
+                fullFramePrintedNumber
+              );
+              match = findPrintedNumberAlignedMatch(ximilarCandidatesForConfirmation, fullFramePrintedNumber);
+              recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+              recoveryMatch = match;
+
+              console.log('[market-scan] local resolve after full-frame Ximilar retry', {
+                printedNumber: fullFramePrintedNumber ? `${fullFramePrintedNumber.number}/${fullFramePrintedNumber.total}` : null,
+                candidates: ximilarCandidatesForConfirmation.map((candidate) => ({
+                  name: candidate.name,
+                  setName: candidate.setName,
+                  setCode: candidate.setCode,
+                  number: candidate.number,
+                  resolved: Boolean(candidate.resolvedCard),
+                })).slice(0, 5),
+                resolved: match ? {
+                  id: match.id,
+                  name: match.name,
+                  set: match.set_name,
+                  number: match.number,
+                } : null,
+              });
+            }
+          }
+        }
+
         if (!match && !ximilarCandidatesForConfirmation?.length) {
           console.log('[market-scan] retrying Ximilar with Magic AI');
           const ximilarMagicResponse = await identifyWithXimilarTcg(bestBase64, true);
@@ -2693,13 +2926,13 @@ export default function ScanScreen() {
           } else {
             ximilarError = null;
             setScanError(null);
-            const primaryCandidates = await resolveXimilarCandidates(
+            let primaryCandidates = await resolveXimilarCandidates(
               ximilarMagicResponse.candidates.slice(0, 1),
-              shouldDeferInitialNumberOcr ? null : printedNumber,
+              printedNumber,
               null
             );
             throwIfScanTimedOut();
-            match = (primaryCandidates.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+            match = findPrintedNumberAlignedMatch(primaryCandidates, printedNumber);
             ximilarCandidatesForConfirmation = primaryCandidates;
             recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
             recoveryMatch = match;
@@ -2707,12 +2940,44 @@ export default function ScanScreen() {
             if (!match && ximilarMagicResponse.candidates.length > 1) {
               const fallbackCandidates = await resolveXimilarCandidates(
                 ximilarMagicResponse.candidates.slice(1),
-                shouldDeferInitialNumberOcr ? null : printedNumber,
+                printedNumber,
                 null
               );
               throwIfScanTimedOut();
-              ximilarCandidatesForConfirmation = [...primaryCandidates, ...fallbackCandidates];
-              match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
+              ximilarCandidatesForConfirmation = removePrintedNumberMismatches(
+                [...primaryCandidates, ...fallbackCandidates],
+                printedNumber
+              );
+              match = findPrintedNumberAlignedMatch(ximilarCandidatesForConfirmation, printedNumber);
+              recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+              recoveryMatch = match;
+            }
+
+            if (match && shouldDeferInitialNumberOcr && !printedNumber) {
+              const ocrPrintedNumber = await readInitialPrintedNumber();
+              throwIfScanTimedOut();
+              const validatedCandidates = removePrintedNumberMismatches(
+                ximilarCandidatesForConfirmation,
+                ocrPrintedNumber
+              );
+              const validatedMatch = findPrintedNumberAlignedMatch(validatedCandidates, ocrPrintedNumber);
+
+              if (!validatedMatch && ocrPrintedNumber) {
+                ximilarResultRejectedByOcr = true;
+                logScanStage('XIMILAR_RESULT_REJECTED_BY_OCR', {
+                  source: 'magic-ai',
+                  printedNumber: `${ocrPrintedNumber.number}/${ocrPrintedNumber.total}`,
+                  numberRegion: ocrPrintedNumber.region,
+                  candidate: match.name,
+                  candidateNumber: match.number,
+                  candidateSet: match.set_name,
+                  candidateTotal: getScannedCardPrintedTotal(match),
+                });
+              }
+
+              primaryCandidates = validatedCandidates.slice(0, primaryCandidates.length);
+              match = validatedMatch;
+              ximilarCandidatesForConfirmation = validatedCandidates;
               recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
               recoveryMatch = match;
             }
