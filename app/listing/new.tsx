@@ -247,9 +247,18 @@ export default function NewListingScreen() {
     setPrices({ ebay: null, tcg: null, cardmarket: null, loading: false });
   };
 
+  const exitListing = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(tabs)/trade' as any);
+  };
+
   const goBack = () => {
     if (step === 'category') {
-      router.back();
+      exitListing();
       return;
     }
     if (step === 'search') setStep('category');
@@ -658,7 +667,11 @@ export default function NewListingScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}>
+      <ScrollView
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode="interactive"
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 320 }}
+      >
         {isCardListing(listingType) && searchResults.map(card => (
           <TouchableOpacity
             key={card.id}
@@ -1281,7 +1294,7 @@ export default function NewListingScreen() {
   }
 
   return (
-    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       {/* Progress bar */}
       <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 }}>
         <TouchableOpacity onPress={goBack} style={{ width: 44, height: 44, alignItems: 'flex-start', justifyContent: 'center', marginBottom: 4 }}>

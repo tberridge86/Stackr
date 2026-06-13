@@ -2,7 +2,6 @@ import { useTheme } from '../../components/theme-context';
 import React, {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -26,26 +25,31 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FeatureTipModal } from '../../components/FeatureTipModal';
 import { useAppMode } from '../../components/app-mode-context';
-import { fetchBinders, fetchBinderCards } from '../../lib/binders';
+import { fetchBinders, fetchBinderCards, type BinderCardRecord, type BinderRecord } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { createActivityPost } from '../../lib/activity';
 import { PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { ValueTrackerCard } from '../../components/ValueTrackerCard';
+import {
+  ChaseOrMissingSection,
+  ContinueBinderCard,
+  HomeActionsRow,
+  TradeProtectionSummaryCard,
+  TradeableDuplicatesCard,
+  RecentActivitySection,
+  type HomeActivityItem,
+  type HomeBinderSummary,
+  type HomeCardPreview,
+  type HomeDuplicateItem,
+  type HomeDuplicateSummary,
+} from '../../components/HomeCommandCenter';
+import { loadInventoryMovements, type InventoryMovement } from '../../lib/inventory';
 
 // ===============================
 // TYPES
 // ===============================
 
 type ChartRange = '7D' | '30D';
-type DailyMover = {
-  cardId: string;
-  name: string;
-  setName: string;
-  imageUrl: string | null;
-  latest: number;
-  previous: number;
-  change: number;
-  percent: number;
-};
 type HubListing = {
   id?: string;
   user_id?: string;
@@ -61,6 +65,17 @@ type HubListing = {
     image_url?: string | null;
     set_name?: string | null;
   } | null;
+};
+
+type HomeBinderCard = BinderCardRecord & {
+  __binderId: string;
+  __binderEdition: string | null;
+  __masterSetEnabled: boolean;
+};
+
+type HomeBinderCardGroup = {
+  binder: BinderRecord;
+  cards: HomeBinderCard[];
 };
 
 // ===============================
@@ -101,9 +116,15 @@ const HUB_TIP_ITEMS = [
 // HELPERS
 // ===============================
 
-const formatMoney = (value: number) => `£${value.toFixed(2)}`;
-const formatSignedMoney = (value: number) => `${value > 0 ? '+' : ''}£${value.toFixed(2)}`;
+const formatMoney = (value: number) => `\u00A3${value.toFixed(2)}`;
+const formatSignedMoney = (value: number) => `${value > 0 ? '+' : ''}\u00A3${value.toFixed(2)}`;
 const formatSignedPercent = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
+
+const EMPTY_DUPLICATE_SUMMARY: HomeDuplicateSummary = {
+  count: 0,
+  estimatedValue: 0,
+  items: [],
+};
 
 const toDayKey = (value: Date | string) => {
   const date = typeof value === 'string' ? new Date(value) : value;
@@ -231,235 +252,186 @@ const isHomeMasterSetEnabled = async (binderId: string) => {
   }
 };
 
-const normaliseChartValues = (values: number[]): number[] =>
-  values.length >= 2 ? values : values.length === 1 ? [values[0], values[0]] : [0, 0];
-
-const formatCompactMoney = (value: number) => {
-  const abs = Math.abs(value);
-  const sign = value < 0 ? '-' : '';
-  if (abs >= 1000) {
-    const rounded = abs >= 10000 ? (abs / 1000).toFixed(0) : (abs / 1000).toFixed(1);
-    return `${sign}\u00A3${rounded}k`;
-  }
-  return `${sign}\u00A3${abs.toFixed(0)}`;
-};
-
-const formatChartDate = (dayKey?: string | null) => {
-  if (!dayKey) return '';
-  const date = new Date(`${dayKey}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-};
-
-const buildFallbackTrend = (latestTotal: number, range: ChartRange) => {
+const buildFallbackTrend = (latestTotal: number, range: ChartRange, changeAmount = 0) => {
   if (latestTotal <= 0) return [];
   const count = range === '7D' ? 8 : 31;
+  const previousTotal = Number.isFinite(changeAmount) && changeAmount !== 0
+    ? Math.max(0, latestTotal - changeAmount)
+    : latestTotal;
+
   return Array.from({ length: count }, (_, index) => {
     const progress = index / (count - 1);
-    const baseline = latestTotal * (0.975 + progress * 0.025);
+    const baseline = previousTotal + (latestTotal - previousTotal) * progress;
     const wiggle = Math.sin(index * 1.7) * latestTotal * 0.003;
-    return Number((index === count - 1 ? latestTotal : baseline + wiggle).toFixed(2));
+    return Number((index === count - 1 || changeAmount === 0 ? baseline : baseline + wiggle).toFixed(2));
   });
+};
+
+const alignTrendWithChange = (values: number[], changeAmount: number) => {
+  if (values.length < 2 || !Number.isFinite(changeAmount) || changeAmount === 0) return values;
+  const chartChange = values[values.length - 1] - values[0];
+  if ((changeAmount < 0 && chartChange > 0) || (changeAmount > 0 && chartChange < 0)) {
+    return [...values].reverse();
+  }
+  return values;
+};
+
+const getOwnedQuantity = (card: BinderCardRecord) =>
+  card.owned ? Math.max(1, Number(card.owned_quantity ?? 1)) : 0;
+
+const getCardImageUrl = (card: BinderCardRecord): string | null =>
+  card.image_url ??
+  card.card?.images?.small ??
+  card.card?.images?.large ??
+  card.card?.raw_data?.images?.small ??
+  null;
+
+const getCardDisplayName = (card: BinderCardRecord) =>
+  card.card_name ?? card.card?.name ?? card.card?.raw_data?.name ?? card.card_id ?? 'Unknown card';
+
+const getCardSetName = (card: BinderCardRecord) =>
+  card.set_name ?? card.card?.set?.name ?? card.card?.raw_data?.set?.name ?? card.set_id ?? 'Unknown set';
+
+const getCardRarity = (card: BinderCardRecord) =>
+  card.card?.rarity ?? card.card?.raw_data?.rarity ?? null;
+
+const getBinderCardPriceGbp = (card: BinderCardRecord, edition?: string | null) => {
+  const tcg = getOwnedCardCurrentTcgGbp(card, null, edition);
+  const fallback = [card.tcg_price, card.ebay_price, card.cardmarket_price].find(
+    (value) => typeof value === 'number' && Number.isFinite(value) && value > 0
+  );
+  return tcg ?? fallback ?? null;
+};
+
+const buildBinderSummaries = (groups: HomeBinderCardGroup[]): HomeBinderSummary[] =>
+  groups.map(({ binder, cards }) => {
+    const ownedCards = cards.filter((card) => getOwnedQuantity(card) > 0);
+    const owned = ownedCards.length;
+    const total = cards.length;
+    const value = ownedCards.reduce((sum, card) => {
+      const price = getBinderCardPriceGbp(card, binder.edition) ?? 0;
+      return sum + price * getOwnedQuantity(card);
+    }, 0);
+    const duplicateCount = ownedCards.reduce(
+      (sum, card) => sum + Math.max(0, getOwnedQuantity(card) - 1),
+      0
+    );
+    const coverCard = ownedCards.find((card) => getCardImageUrl(card)) ?? cards.find((card) => getCardImageUrl(card));
+
+    return {
+      id: binder.id,
+      name: binder.name,
+      color: binder.color ?? null,
+      coverImageUrl: coverCard ? getCardImageUrl(coverCard) : null,
+      owned,
+      total,
+      missing: Math.max(0, total - owned),
+      duplicateCount,
+      value,
+      completionPercent: total ? Math.round((owned / total) * 100) : 0,
+    };
+  });
+
+const selectActiveBinder = (summaries: HomeBinderSummary[]) => {
+  const active = summaries
+    .filter((binder) => binder.total > 0 && binder.owned > 0 && binder.missing > 0)
+    .sort((a, b) => b.completionPercent - a.completionPercent || b.owned - a.owned);
+  return active[0] ?? summaries.find((binder) => binder.owned > 0) ?? summaries[0] ?? null;
+};
+
+const buildDuplicateSummary = (groups: HomeBinderCardGroup[]): HomeDuplicateSummary => {
+  const duplicateMap = new Map<string, HomeDuplicateItem>();
+
+  for (const { binder, cards } of groups) {
+    for (const card of cards) {
+      const extraQuantity = Math.max(0, getOwnedQuantity(card) - 1);
+      if (!extraQuantity) continue;
+
+      const key = `${card.set_id ?? ''}:${card.card_id}`;
+      const price = getBinderCardPriceGbp(card, binder.edition) ?? 0;
+      const current = duplicateMap.get(key);
+      const estimatedValue = price * extraQuantity;
+
+      if (current) {
+        current.extraQuantity += extraQuantity;
+        current.estimatedValue += estimatedValue;
+      } else {
+        duplicateMap.set(key, {
+          cardId: card.card_id,
+          setId: card.set_id,
+          name: getCardDisplayName(card),
+          setName: getCardSetName(card),
+          imageUrl: getCardImageUrl(card),
+          extraQuantity,
+          estimatedValue,
+        });
+      }
+    }
+  }
+
+  const items = [...duplicateMap.values()].sort((a, b) => b.estimatedValue - a.estimatedValue);
+  return {
+    count: items.reduce((sum, item) => sum + item.extraQuantity, 0),
+    estimatedValue: items.reduce((sum, item) => sum + item.estimatedValue, 0),
+    items,
+  };
+};
+
+const buildMissingCards = (
+  groups: HomeBinderCardGroup[],
+  activeBinder: HomeBinderSummary | null
+): HomeCardPreview[] => {
+  if (!activeBinder) return [];
+  const group = groups.find((item) => item.binder.id === activeBinder.id);
+  if (!group) return [];
+
+  return group.cards
+    .filter((card) => getOwnedQuantity(card) === 0)
+    .map((card) => ({
+      cardId: card.card_id,
+      setId: card.set_id,
+      name: getCardDisplayName(card),
+      setName: getCardSetName(card),
+      number: card.card_number ?? card.card?.number ?? null,
+      rarity: getCardRarity(card),
+      imageUrl: getCardImageUrl(card),
+      estimatedValue: getBinderCardPriceGbp(card, group.binder.edition),
+    }))
+    .sort((a, b) => (b.estimatedValue ?? 0) - (a.estimatedValue ?? 0))
+    .slice(0, 5);
+};
+
+const activityIconForType = (type?: string | null): keyof typeof Ionicons.glyphMap => {
+  if (type === 'value_change') return 'trending-up-outline';
+  if (type === 'trade_listed') return 'swap-horizontal-outline';
+  if (type === 'binder_add') return 'albums-outline';
+  return 'sparkles-outline';
+};
+
+const inventoryMovementToActivity = (movement: InventoryMovement): HomeActivityItem => {
+  const isOut = movement.action_type === 'scan_out';
+  const duplicate = movement.reason === 'Added as Duplicate';
+  return {
+    id: `movement:${movement.id}`,
+    title: duplicate
+      ? `Added duplicate: ${movement.card_name}`
+      : `${isOut ? 'Scanned out' : 'Scanned in'}: ${movement.card_name}`,
+    subtitle: movement.binder_name ?? movement.reason,
+    createdAt: movement.created_at,
+    valueChange: movement.value_at_time == null
+      ? null
+      : movement.value_at_time * movement.quantity * (isOut ? -1 : 1),
+    isPositive: !isOut,
+    icon: isOut ? 'log-out-outline' : duplicate ? 'copy-outline' : 'scan-outline',
+    cardId: movement.card_id,
+    setId: movement.set_id,
+  };
 };
 
 // ===============================
 // SUB COMPONENTS
 // ===============================
 
-function NativeLineChart({
-  values,
-  labels,
-  width,
-  height,
-  color,
-  gridColor,
-}: {
-  values: number[];
-  labels?: string[];
-  width: number;
-  height: number;
-  color: string;
-  gridColor: string;
-}) {
-  const geometry = useMemo(() => {
-    const data = normaliseChartValues(values).filter((value) => Number.isFinite(value));
-    const min = Math.min(...data);
-    const max = Math.max(...data);
-    const mid = min + (max - min) / 2;
-    const range = Math.max(1, max - min);
-    const padX = 46;
-    const padTop = 18;
-    const padBottom = 30;
-    const chartWidth = Math.max(1, width - padX * 2);
-    const chartHeight = Math.max(1, height - padTop - padBottom);
-
-    const points = data.map((value, index) => ({
-      x: padX + (data.length <= 1 ? 0 : (index / (data.length - 1)) * chartWidth),
-      y: padTop + ((max - value) / range) * chartHeight,
-    }));
-
-    const segments = points.slice(1).map((point, index) => {
-      const previous = points[index];
-      const dx = point.x - previous.x;
-      const dy = point.y - previous.y;
-      const length = Math.sqrt(dx * dx + dy * dy);
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      return {
-        key: `${index}-${point.x.toFixed(1)}-${point.y.toFixed(1)}`,
-        left: (previous.x + point.x) / 2 - length / 2,
-        top: (previous.y + point.y) / 2 - 1.5,
-        length,
-        angle,
-      };
-    });
-
-    const dateLabels = labels?.length
-      ? [
-          labels[0],
-          labels[Math.floor((labels.length - 1) / 2)],
-          labels[labels.length - 1],
-        ]
-      : [];
-
-    return {
-      points,
-      segments,
-      chartLeft: padX,
-      chartRight: padX + chartWidth,
-      chartBottom: padTop + chartHeight,
-      valueLabels: [
-        { value: max, top: padTop - 7 },
-        { value: mid, top: padTop + chartHeight / 2 - 7 },
-        { value: min, top: padTop + chartHeight - 7 },
-      ],
-      dateLabels,
-    };
-  }, [height, labels, values, width]);
-
-  return (
-    <View style={{ width: '100%', height, overflow: 'hidden' }}>
-      {[0.25, 0.5, 0.75].map((position) => (
-        <View
-          key={position}
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: 12,
-            right: 12,
-            top: Math.round(height * position),
-            height: 1,
-            backgroundColor: gridColor,
-            opacity: 0.55,
-          }}
-        />
-      ))}
-      {geometry.segments.map((segment) => (
-        <View
-          key={segment.key}
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: segment.left,
-            top: segment.top,
-            width: segment.length,
-            height: 3,
-            borderRadius: 999,
-            backgroundColor: color,
-            transform: [{ rotateZ: `${segment.angle}deg` }],
-          }}
-        />
-      ))}
-      {geometry.points.map((point, index) => (
-        <View
-          key={`${index}-${point.x.toFixed(1)}-${point.y.toFixed(1)}`}
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            left: point.x - 3,
-            top: point.y - 3,
-            width: 6,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: color,
-            opacity: index === geometry.points.length - 1 ? 1 : 0.35,
-          }}
-        />
-      ))}
-      {geometry.valueLabels.map((label, index) => (
-        <Text
-          key={`value-${index}`}
-          style={{
-            position: 'absolute',
-            left: 8,
-            top: label.top,
-            width: 34,
-            color: '#000000',
-            fontSize: 9,
-            fontWeight: '800',
-            textAlign: 'right',
-          }}
-        >
-          {formatCompactMoney(label.value)}
-        </Text>
-      ))}
-      {geometry.dateLabels.length > 0 && (
-        <>
-          <Text style={{ position: 'absolute', left: geometry.chartLeft - 2, top: geometry.chartBottom + 8, color: '#000000', fontSize: 9, fontWeight: '800' }}>
-            {formatChartDate(geometry.dateLabels[0])}
-          </Text>
-          <Text style={{ position: 'absolute', left: width / 2 - 24, top: geometry.chartBottom + 8, width: 48, color: '#000000', fontSize: 9, fontWeight: '800', textAlign: 'center' }}>
-            {formatChartDate(geometry.dateLabels[1])}
-          </Text>
-          <Text style={{ position: 'absolute', right: width - geometry.chartRight - 2, top: geometry.chartBottom + 8, color: '#000000', fontSize: 9, fontWeight: '800', textAlign: 'right' }}>
-            {formatChartDate(geometry.dateLabels[2])}
-          </Text>
-        </>
-      )}
-    </View>
-  );
-}
-
-function HubQuickAction({ icon, label, onPress }: {
-  icon: any;
-  label: string;
-  onPress: () => void;
-}) {
-  const { theme } = useTheme();
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.82}
-      style={{
-        flex: 1,
-        minHeight: 82,
-        backgroundColor: theme.colors.card,
-        borderRadius: 18,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 12,
-        ...cardShadow,
-      }}
-    >
-      <View style={{
-        width: 34,
-        height: 34,
-        borderRadius: 12,
-        backgroundColor: theme.colors.surface,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 8,
-      }}>
-        <Ionicons name={icon} size={19} color={theme.colors.primary} />
-      </View>
-      <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900', textAlign: 'center' }}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-}
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -488,14 +460,23 @@ export default function HubScreen() {
   // Chart
   const [chartRange, setChartRange] = useState<ChartRange>('7D');
   const [chartData, setChartData] = useState<number[]>([]);
-  const [chartLabels, setChartLabels] = useState<string[]>([]);
 
   // Collection value
   const [collectionTotal, setCollectionTotal] = useState(0);
   const [collectionChangeAmount, setCollectionChangeAmount] = useState(0);
   const [collectionChangePercent, setCollectionChangePercent] = useState(0);
-  const [dailyMovers, setDailyMovers] = useState<DailyMover[]>([]);
-
+  const [collectionValueLoading, setCollectionValueLoading] = useState(true);
+  const [collectionValueError, setCollectionValueError] = useState<string | null>(null);
+  const [homeDataError, setHomeDataError] = useState<string | null>(null);
+  const [activeBinder, setActiveBinder] = useState<HomeBinderSummary | null>(null);
+  const [duplicateSummary, setDuplicateSummary] = useState<HomeDuplicateSummary>(EMPTY_DUPLICATE_SUMMARY);
+  const [missingCards, setMissingCards] = useState<HomeCardPreview[]>([]);
+  const [chaseCards, setChaseCards] = useState<HomeCardPreview[]>([]);
+  const [chaseLoading, setChaseLoading] = useState(true);
+  const [chaseError, setChaseError] = useState<string | null>(null);
+  const [recentActivity, setRecentActivity] = useState<HomeActivityItem[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [activityError, setActivityError] = useState<string | null>(null);
   // Stats
   const [ownedCardCount, setOwnedCardCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -507,7 +488,6 @@ export default function HubScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   const valuePostKeyRef = useRef<string | null>(null);
-  const collectionUp = collectionChangeAmount >= 0;
 
   // ===============================
   // SUBMIT BUG REPORT
@@ -668,24 +648,36 @@ export default function HubScreen() {
   // ===============================
 
   const loadCollectionValue = useCallback(async () => {
+    setCollectionValueLoading(true);
+    setCollectionValueError(null);
+    setHomeDataError(null);
     try {
       const binders = await fetchBinders();
-      const cardsByBinder = await Promise.all(
+      const binderGroups: HomeBinderCardGroup[] = await Promise.all(
         binders.map(async (binder) => {
           const [binderCards, masterSetEnabled] = await Promise.all([
             fetchBinderCards(binder.id),
             isHomeMasterSetEnabled(binder.id),
           ]);
 
-          return binderCards.map((card) => ({
-            ...card,
-            __binderId: binder.id,
-            __binderEdition: binder.edition ?? null,
-            __masterSetEnabled: masterSetEnabled,
-          }));
+          return {
+            binder,
+            cards: binderCards.map((card) => ({
+              ...card,
+              __binderId: binder.id,
+              __binderEdition: binder.edition ?? null,
+              __masterSetEnabled: masterSetEnabled,
+            })),
+          };
         })
       );
-      const allCards = cardsByBinder.flat() as any[];
+      const allCards = binderGroups.flatMap((group) => group.cards);
+      const binderSummaries = buildBinderSummaries(binderGroups);
+      const nextActiveBinder = selectActiveBinder(binderSummaries);
+
+      setActiveBinder(nextActiveBinder);
+      setDuplicateSummary(buildDuplicateSummary(binderGroups));
+      setMissingCards(buildMissingCards(binderGroups, nextActiveBinder));
 
       const getSnapshotIdsForCard = (card: any) => [
         ...new Set([card.card_id, card.api_card_id].filter(Boolean)),
@@ -786,8 +778,6 @@ export default function HubScreen() {
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setChartData([]);
-        setChartLabels([]);
-        setDailyMovers([]);
         return;
       }
 
@@ -839,10 +829,8 @@ export default function HubScreen() {
       let comparablePrevious = 0;
       let cardsWithPrevious = 0;
       let currentlyPricedCards = 0;
-      const moverRows: DailyMover[] = [];
 
       for (const unit of ownedUnits) {
-        const { card } = unit;
         const snapshots = unit.snapshotIds
           .flatMap((cardId) => groupedByCard[cardId] ?? [])
           .sort((a, b) => new Date(a.snapshot_at).getTime() - new Date(b.snapshot_at).getTime());
@@ -861,19 +849,6 @@ export default function HubScreen() {
           comparableLatest += latestGbp;
           comparablePrevious += previousGbp;
           cardsWithPrevious += 1;
-          const cardChange = latestGbp - previousGbp;
-          if (cardChange !== 0) {
-            moverRows.push({
-              cardId: `${card.card_id}:${unit.variant ?? 'card'}`,
-              name: card.card_name ?? card.card?.name ?? card.card_id,
-              setName: card.set_name ?? card.card?.set?.name ?? card.set_id ?? '',
-              imageUrl: card.image_url ?? card.card?.images?.small ?? null,
-              latest: latestGbp,
-              previous: previousGbp,
-              change: cardChange,
-              percent: previousGbp !== 0 ? (cardChange / previousGbp) * 100 : 0,
-            });
-          }
         }
       }
 
@@ -922,17 +897,13 @@ export default function HubScreen() {
           point.value > 0 &&
           currentlyPricedCards > 0 &&
           point.pricedCount === currentlyPricedCards
-        ));
+      ));
       const chartValues = usableChartPoints.map((point) => point.value);
-      const chartValueLabels = usableChartPoints.map((point) => point.day);
 
       const hasRealChartHistory = chartValues.length >= 2;
       const displayChartValues = hasRealChartHistory
-        ? chartValues
-        : buildFallbackTrend(totalLatest, chartRange);
-      const displayChartLabels = hasRealChartHistory
-        ? chartValueLabels
-        : buildDayKeys(chartRange, []).slice(-displayChartValues.length);
+        ? alignTrendWithChange(chartValues, change)
+        : buildFallbackTrend(totalLatest, chartRange, change);
       const debugText = [
         `ownedUnits=${ownedUnits.length}`,
         `masterVariants=${countedVariantKeys.size}`,
@@ -951,8 +922,7 @@ export default function HubScreen() {
       setCollectionChangeAmount(change);
       setCollectionChangePercent(percent);
       setChartData(displayChartValues);
-      setChartLabels(displayChartLabels);
-      setDailyMovers(moverRows.sort((a, b) => Math.abs(b.change) - Math.abs(a.change)).slice(0, 3));
+      setCollectionValueError(null);
 
       // Auto-post value change to activity feed
       if (chartRange === '7D' && cardsWithPrevious > 0 && Math.abs(change) > 1) {
@@ -987,10 +957,144 @@ export default function HubScreen() {
       setCollectionChangeAmount(0);
       setCollectionChangePercent(0);
       setChartData([]);
-      setChartLabels([]);
-      setDailyMovers([]);
+      setCollectionValueError('We could not refresh market prices. Pull to refresh or try again.');
+      setHomeDataError('Could not refresh collector data. Pull to refresh or try again.');
+      setActiveBinder(null);
+      setDuplicateSummary(EMPTY_DUPLICATE_SUMMARY);
+      setMissingCards([]);
+    } finally {
+      setCollectionValueLoading(false);
     }
   }, [chartRange]);
+
+  const loadChaseCards = useCallback(async () => {
+    setChaseLoading(true);
+    setChaseError(null);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setChaseCards([]);
+        return;
+      }
+
+      const [wishlistResult, watchlistResult] = await Promise.all([
+        supabase
+          .from('user_card_flags')
+          .select('id, card_id, set_id, asking_price, market_estimate, created_at')
+          .eq('user_id', user.id)
+          .eq('flag_type', 'wishlist')
+          .order('created_at', { ascending: false })
+          .limit(8),
+        supabase
+          .from('market_watchlist')
+          .select('id, card_id, set_id, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(8),
+      ]);
+
+      if (wishlistResult.error) throw wishlistResult.error;
+      if (watchlistResult.error) throw watchlistResult.error;
+
+      const mergedRows: any[] = [];
+      const seen = new Set<string>();
+      for (const row of [...(wishlistResult.data ?? []), ...(watchlistResult.data ?? [])]) {
+        if (!row.card_id) continue;
+        const key = `${row.card_id}:${row.set_id ?? ''}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        mergedRows.push(row);
+      }
+
+      if (!mergedRows.length) {
+        setChaseCards([]);
+        return;
+      }
+
+      const cardIds = [...new Set(mergedRows.map((row) => row.card_id))];
+      const { data: previews, error: previewsError } = await supabase
+        .from('card_previews')
+        .select('card_id, name, image_url, set_name')
+        .in('card_id', cardIds);
+
+      if (previewsError) {
+        console.log('Home chase previews failed', previewsError.message);
+      }
+
+      const previewMap: Record<string, any> = {};
+      (previews ?? []).forEach((preview: any) => {
+        previewMap[preview.card_id] = preview;
+      });
+
+      setChaseCards(mergedRows.slice(0, 5).map((row) => {
+        const preview = previewMap[row.card_id] ?? null;
+        const estimated = row.market_estimate ?? row.asking_price ?? null;
+        return {
+          cardId: row.card_id,
+          setId: row.set_id ?? null,
+          name: preview?.name ?? row.card_id,
+          setName: preview?.set_name ?? row.set_id ?? 'Wanted card',
+          imageUrl: preview?.image_url ?? null,
+          estimatedValue: typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated),
+        };
+      }));
+    } catch (error) {
+      console.log('Failed to load home chase cards', error);
+      setChaseCards([]);
+      setChaseError('Could not refresh chase cards.');
+    } finally {
+      setChaseLoading(false);
+    }
+  }, []);
+
+  const loadRecentActivity = useCallback(async () => {
+    setActivityLoading(true);
+    setActivityError(null);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setRecentActivity([]);
+        return;
+      }
+
+      const [feedResult, movements] = await Promise.all([
+        supabase
+          .from('activity_feed')
+          .select('id, type, title, subtitle, card_id, set_id, value_change, is_positive, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(8),
+        loadInventoryMovements(),
+      ]);
+
+      if (feedResult.error) throw feedResult.error;
+
+      const feedItems: HomeActivityItem[] = (feedResult.data ?? []).map((post: any) => ({
+        id: `post:${post.id}`,
+        title: post.title ?? 'Collection update',
+        subtitle: post.subtitle ?? null,
+        createdAt: post.created_at,
+        valueChange: post.value_change == null ? null : Number(post.value_change),
+        isPositive: post.is_positive ?? null,
+        icon: activityIconForType(post.type),
+        cardId: post.card_id ?? null,
+        setId: post.set_id ?? null,
+      }));
+
+      const movementItems = movements.slice(0, 8).map(inventoryMovementToActivity);
+      const combined = [...feedItems, ...movementItems]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5);
+
+      setRecentActivity(combined);
+    } catch (error) {
+      console.log('Failed to load recent home activity', error);
+      setRecentActivity([]);
+      setActivityError('Could not refresh recent activity.');
+    } finally {
+      setActivityLoading(false);
+    }
+  }, []);
 
 
   const checkHubTip = useCallback(async () => {
@@ -1019,7 +1123,9 @@ export default function HubScreen() {
   useFocusEffect(useCallback(() => {
     loadAll();
     loadCollectionValue();
-  }, [loadAll, loadCollectionValue]));
+    loadChaseCards();
+    loadRecentActivity();
+  }, [loadAll, loadCollectionValue, loadChaseCards, loadRecentActivity]));
 
   useEffect(() => {
     if (!hasChosenMode) {
@@ -1030,17 +1136,35 @@ export default function HubScreen() {
   }, [checkHubTip, hasChosenMode]);
   useEffect(() => { loadCollectionValue(); }, [chartRange, loadCollectionValue]);
 
-  // ===============================
-  // CHART DATA
-  // ===============================
+  const showChaseCards = chaseCards.length > 0;
 
-  const activeChartValues = normaliseChartValues(chartData);
-  const activeChartLabels = chartLabels.length >= 2
-    ? chartLabels
-    : chartLabels.length === 1
-      ? [chartLabels[0], chartLabels[0]]
-      : [];
-  const hasChartData = chartData.length > 0;
+  const openCardPreview = useCallback((item: HomeCardPreview) => {
+    router.push({
+      pathname: '/card/[id]',
+      params: {
+        id: item.cardId,
+        setId: item.setId ?? undefined,
+      },
+    });
+  }, []);
+
+  const openActivityItem = useCallback((item: HomeActivityItem) => {
+    if (item.id === 'scan-empty') {
+      router.push({ pathname: '/scan', params: { mode: 'market' } });
+      return;
+    }
+    if (item.cardId) {
+      router.push({
+        pathname: '/card/[id]',
+        params: {
+          id: item.cardId,
+          setId: item.setId ?? undefined,
+        },
+      });
+      return;
+    }
+    router.push('/community');
+  }, []);
 
   // ===============================
   // MAIN RENDER
@@ -1062,7 +1186,12 @@ export default function HubScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => { loadAll(true); loadCollectionValue(); }}
+            onRefresh={() => {
+              loadAll(true);
+              loadCollectionValue();
+              loadChaseCards();
+              loadRecentActivity();
+            }}
             tintColor={theme.colors.primary}
           />
         }
@@ -1071,7 +1200,7 @@ export default function HubScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16, gap: 8 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Image source={require('../../assets/images/hub.png')} style={{ width: Math.min(180, screenWidth - 178), height: 60 }} resizeMode="contain" />
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 4 }}>Collector Dashboard</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 4 }}>Your collection</Text>
           </View>
 
           <View style={{ flexDirection: 'row', gap: 4, flexShrink: 0, transform: [{ translateX: -2 }] }}>
@@ -1098,265 +1227,99 @@ export default function HubScreen() {
               onPress={() => setMenuOpen(true)}
               style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
             >
-              <Ionicons name="menu-outline" size={26} color={theme.colors.text} />
+              <Ionicons name="person-circle-outline" size={26} color={theme.colors.text} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
-          <HubQuickAction
-            icon="scan-outline"
-            label="Scan Card"
-            onPress={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
+        {/* VALUE TRACKER */}
+        <View style={{ marginBottom: 16 }}>
+          <ValueTrackerCard
+            totalValue={collectionTotal}
+            currency="GBP"
+            percentageChange={collectionChangePercent}
+            absoluteChange={collectionChangeAmount}
+            changePeriodLabel={`${chartRange} movement`}
+            trendData={chartData}
+            isLoading={collectionValueLoading}
+            error={collectionValueError}
+            onPress={() => Alert.alert('TCG Market Value', 'Based only on TCG prices. The latest point uses owned cards and Master Set variants immediately, with shared daily snapshots for history.')}
+            onRetry={loadCollectionValue}
+            onEmptyAction={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
           />
-          <HubQuickAction icon="calculator-outline" label="Price Builder" onPress={() => router.push('/price-builder')} />
-          <HubQuickAction icon="trending-up-outline" label="Latest Prices" onPress={() => router.push('/market')} />
-          <HubQuickAction icon="sparkles-outline" label="Card Grader" onPress={() => router.push('/grade')} />
-        </View>
 
-        {/* PORTFOLIO CARD */}
-        <View style={{ backgroundColor: theme.colors.card, borderRadius: 20, padding: 10, marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden', ...cardShadow }}>
-          <View style={{ position: 'absolute', width: 180, height: 180, borderRadius: 999, backgroundColor: 'rgba(108,75,255,0.10)', top: -80, right: -70 }} />
-
-          <View style={{ position: 'absolute', top: 10, right: 10, flexDirection: 'row', alignItems: 'center', gap: 6, zIndex: 2 }}>
-            {(['7D', '30D'] as const).map((range) => (
-              <TouchableOpacity
-                key={range}
-                onPress={() => setChartRange(range)}
-                style={{ height: 28, minWidth: 38, paddingHorizontal: 9, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: chartRange === range ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: chartRange === range ? theme.colors.primary : theme.colors.border }}
-              >
-                <Text style={{ color: chartRange === range ? '#FFFFFF' : theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>{range}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity
-              onPress={() => Alert.alert('TCG Market Value', 'Based only on TCG prices. The latest point uses owned cards and Master Set variants immediately, with shared daily snapshots for history.')}
-              style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border }}
-              activeOpacity={0.75}
-            >
-              <Ionicons name="information-circle-outline" size={18} color={theme.colors.textSoft} />
-            </TouchableOpacity>
-          </View>
-
-          <View style={{ paddingRight: 124 }}>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginBottom: 4 }}>
-              TCG Market Value
-            </Text>
-          </View>
-
-          <View style={{ marginTop: 2, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 10 }}>
-            <Text style={{ flexShrink: 1, color: theme.colors.text, fontSize: 28, fontWeight: '900' }}>
-              {formatMoney(collectionTotal)}
-            </Text>
-            <View style={{ flexShrink: 0, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 9, paddingVertical: 7, borderRadius: 12, backgroundColor: collectionUp ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)' }}>
-              <Ionicons name={collectionUp ? 'arrow-up-circle' : 'arrow-down-circle'} size={15} color={collectionUp ? '#22C55E' : '#EF4444'} />
-              <Text style={{ fontSize: 12, fontWeight: '900', color: collectionUp ? '#22C55E' : '#EF4444' }}>
-                {formatSignedMoney(collectionChangeAmount)} ({formatSignedPercent(collectionChangePercent)})
-              </Text>
-            </View>
-          </View>
-
-          <View style={{ marginTop: 8, height: 152, backgroundColor: theme.colors.surface, borderRadius: 15, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
-            {hasChartData ? (
-              <NativeLineChart
-                values={activeChartValues}
-                labels={activeChartLabels}
-                width={Math.max(280, screenWidth - 58)}
-                height={152}
-                color={theme.colors.primary}
-                gridColor={theme.colors.border}
-              />
-            ) : (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 18 }}>
-                <Ionicons name="analytics-outline" size={24} color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, textAlign: 'center', lineHeight: 18, marginTop: 8 }}>
-                No price history yet. Check back after the next daily snapshot.
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {dailyMovers.length > 0 && (
-          <View style={{ marginBottom: 22 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Top 3 Movers Today</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Ionicons name="swap-vertical" size={16} color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>TCG daily</Text>
-              </View>
-            </View>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 10 }}>
-              {dailyMovers.map((mover, index) => {
-                const movementColor = mover.change >= 0 ? '#22C55E' : '#EF4444';
-                return (
-                  <View
-                    key={`${mover.cardId}-${index}`}
-                    style={{
-                      width: 150,
-                      backgroundColor: theme.colors.card,
-                      borderRadius: 18,
-                      padding: 10,
-                      borderWidth: 1,
-                      borderColor: theme.colors.border,
-                      ...cardShadow,
-                    }}
-                  >
-                    <View style={{ position: 'absolute', top: 8, left: 8, zIndex: 2, backgroundColor: movementColor, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 }}>
-                      <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>#{index + 1}</Text>
-                    </View>
-                    {mover.imageUrl ? (
-                      <Image source={{ uri: mover.imageUrl }} style={{ width: '100%', height: 142, marginBottom: 8 }} resizeMode="contain" />
-                    ) : (
-                      <View style={{ height: 142, borderRadius: 12, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                        <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
-                      </View>
-                    )}
-                    <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{mover.name}</Text>
-                    <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3 }}>{mover.setName}</Text>
-                    <Text style={{ color: movementColor, fontSize: 15, fontWeight: '900', marginTop: 8 }}>{formatSignedMoney(mover.change)}</Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800', marginTop: 2 }}>
-                      {formatSignedPercent(mover.percent)} to {formatMoney(mover.latest)}
-                    </Text>
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
-        )}
-
-        {/* RECENT TRADE LISTINGS */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Recent Trade Listings</Text>
-          <TouchableOpacity onPress={() => router.push('/trade')}>
-            <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>View all</Text>
-          </TouchableOpacity>
-        </View>
-
-        {recentListings.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingRight: 10, marginBottom: 22 }}>
-            {recentListings.map((item, index) => {
-              const preview = item.preview;
-              const imageUri = preview?.image_url ?? null;
-              const cardName = preview?.name ?? item.card_id ?? 'Unknown card';
-              const setName = preview?.set_name ?? item.set_id ?? 'Unknown set';
-              return (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, backgroundColor: theme.colors.card, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, padding: 8, ...cardShadow }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '900', paddingLeft: 4 }}>Value window</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              {(['7D', '30D'] as const).map((range) => (
                 <TouchableOpacity
-                  key={`${item.card_id}-${index}`}
-                  onPress={() => router.push('/trade')}
-                  style={{ width: 128, backgroundColor: theme.colors.card, borderRadius: 20, padding: 10, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
-                  activeOpacity={0.8}
-                >
-                  {imageUri ? (
-                    <Image source={{ uri: imageUri }} style={{ width: '100%', height: 130, marginBottom: 8 }} resizeMode="contain" />
-                  ) : (
-                    <View style={{ height: 130, borderRadius: 16, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                      <Ionicons name="albums-outline" size={30} color={theme.colors.primary} />
-                    </View>
-                  )}
-                  <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{cardName}</Text>
-                  <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3 }}>{setName}</Text>
-                  {item.asking_price != null ? (
-                    <Text style={{ color: '#22C55E', fontSize: 12, fontWeight: '900', marginTop: 8 }}>{formatMoney(Number(item.asking_price))}</Text>
-                  ) : (
-                    <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900', marginTop: 8 }}>{item.condition ?? 'Listed'}</Text>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        ) : (
-          <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginBottom: 22, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
-            <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>No active trade listings yet. Mark cards for trade in your binders.</Text>
-          </View>
-        )}
-
-        {/* MARKETPLACE MATCHES */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <View>
-            <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Marketplace Matches</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 3 }}>Wanted cards listed by other collectors</Text>
-          </View>
-          <TouchableOpacity onPress={() => router.push('/trade')}>
-            <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>View all</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={{ backgroundColor: theme.colors.card, borderRadius: 22, padding: 12, marginBottom: 22, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
-          {marketplaceMatches.length > 0 ? (
-            marketplaceMatches.map((item, index) => {
-              const preview = item.preview;
-              const imageUri = preview?.image_url ?? null;
-              const cardName = preview?.name ?? item.card_id ?? 'Wanted card';
-              const setName = preview?.set_name ?? item.set_id ?? 'Unknown set';
-              return (
-                <TouchableOpacity
-                  key={`${item.id ?? item.card_id}-${index}`}
-                  onPress={() => router.push('/trade')}
+                  key={range}
+                  onPress={() => setChartRange(range)}
+                  style={{ height: 32, minWidth: 46, paddingHorizontal: 12, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: chartRange === range ? theme.colors.primary : theme.colors.surface, borderWidth: 1, borderColor: chartRange === range ? theme.colors.primary : theme.colors.border }}
                   activeOpacity={0.82}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    paddingVertical: 10,
-                    borderBottomWidth: index === marketplaceMatches.length - 1 ? 0 : 1,
-                    borderBottomColor: theme.colors.border,
-                    gap: 10,
-                  }}
                 >
-                  {imageUri ? (
-                    <Image source={{ uri: imageUri }} style={{ width: 42, height: 58, borderRadius: 6 }} resizeMode="contain" />
-                  ) : (
-                    <View style={{ width: 42, height: 58, borderRadius: 8, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-                      <Ionicons name="albums-outline" size={20} color={theme.colors.primary} />
-                    </View>
-                  )}
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>{cardName}</Text>
-                    <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>{setName}</Text>
-                    <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900', marginTop: 4 }}>{item.condition ?? 'Listed'}</Text>
-                  </View>
-                  <View style={{ alignItems: 'flex-end', gap: 8 }}>
-                    {item.asking_price != null && (
-                      <Text style={{ color: '#22C55E', fontSize: 13, fontWeight: '900' }}>{formatMoney(Number(item.asking_price))}</Text>
-                    )}
-                    <View style={{ backgroundColor: theme.colors.primary, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 }}>
-                      <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900' }}>View</Text>
-                    </View>
-                  </View>
+                  <Text style={{ color: chartRange === range ? '#FFFFFF' : theme.colors.textSoft, fontSize: 12, fontWeight: '900' }}>{range}</Text>
                 </TouchableOpacity>
-              );
-            })
-          ) : (
-            <View style={{ padding: 18, alignItems: 'center' }}>
-              <Ionicons name="sparkles-outline" size={28} color={theme.colors.primary} />
-              <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900', marginTop: 8, textAlign: 'center' }}>No wanted matches yet</Text>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 5, lineHeight: 18, textAlign: 'center' }}>
-                Add cards to your market watchlist and matching trade listings will appear here.
-              </Text>
+              ))}
             </View>
-          )}
+          </View>
         </View>
 
-        {/* ACHIEVEMENTS */}
-        <View style={{ backgroundColor: theme.colors.card, borderRadius: 22, padding: 16, marginBottom: 22, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Achievements</Text>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 4 }}>
-                Badges, streaks, and set milestones will live here.
-              </Text>
-            </View>
-            <View style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: 'rgba(108,75,255,0.12)', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="ribbon-outline" size={28} color={theme.colors.primary} />
-            </View>
-          </View>
-          <View style={{ marginTop: 14, height: 9, borderRadius: 999, backgroundColor: theme.colors.surface, overflow: 'hidden' }}>
-            <View style={{ width: `${Math.min(100, Math.max(8, ownedCardCount > 0 ? 48 : 8))}%`, height: '100%', backgroundColor: theme.colors.primary, borderRadius: 999 }} />
-          </View>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 8 }}>
-            {ownedCardCount > 0 ? `${ownedCardCount} cards/variants tracked so far` : 'Start scanning to unlock your first badge'}
-          </Text>
-        </View>
+        <HomeActionsRow
+          ownedCount={ownedCardCount}
+          listingCount={recentListings.length}
+          onScan={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
+          onBinders={() => router.push('/binder')}
+          onTrade={() => router.push('/trade')}
+        />
+
+        <ContinueBinderCard
+          binder={activeBinder}
+          isLoading={collectionValueLoading && !activeBinder && !homeDataError}
+          error={homeDataError}
+          onView={(binderId) => router.push({ pathname: '/binder/[id]', params: { id: binderId } })}
+          onScan={(binderId) => router.push({ pathname: '/scan', params: { mode: 'binder', binderId } })}
+          onCreate={() => router.push('/binder/new')}
+        />
+
+        <TradeableDuplicatesCard
+          summary={duplicateSummary}
+          isLoading={collectionValueLoading && duplicateSummary.count === 0 && !homeDataError}
+          error={homeDataError}
+          matchCount={marketplaceMatches.length}
+          onAction={() => router.push('/trade')}
+        />
+
+        <ChaseOrMissingSection
+          mode={showChaseCards ? 'chase' : 'missing'}
+          binderName={activeBinder?.name ?? null}
+          items={showChaseCards ? chaseCards : missingCards}
+          isLoading={showChaseCards ? chaseLoading : (collectionValueLoading && missingCards.length === 0 && !homeDataError)}
+          error={showChaseCards ? chaseError : homeDataError}
+          onViewAll={() => {
+            if (showChaseCards) {
+              router.push('/trade');
+              return;
+            }
+            if (activeBinder) {
+              router.push({ pathname: '/binder/[id]', params: { id: activeBinder.id } });
+              return;
+            }
+            router.push('/binder');
+          }}
+          onItemPress={openCardPreview}
+          onEmptyAction={() => router.push(showChaseCards ? '/trade' : '/binder')}
+        />
+
+        <RecentActivitySection
+          items={recentActivity}
+          isLoading={activityLoading}
+          error={activityError}
+          onRetry={loadRecentActivity}
+          onItemPress={openActivityItem}
+        />
+
+        <TradeProtectionSummaryCard onPress={() => router.push('/trade')} />
 
       </ScrollView>
 

@@ -19,6 +19,10 @@ import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { StackrCardPlaceholder } from '../../components/StackrCardPlaceholder';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
+import {
+  EmptyStateCard,
+  TrustBadge,
+} from '../../components/PremiumUI';
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTrade } from '../../components/trade-context';
@@ -141,35 +145,6 @@ const [myUserId, setMyUserId] = useState<string>('');
   const [ebayLoading, setEbayLoading] = useState(false);
 
   const translateY = useRef(new Animated.Value(0)).current;
-
-  // Scroll-aware header for trading tab
-  const tradingHeaderAnim = useRef(new Animated.Value(0)).current;
-  const tradingLastScrollY = useRef(0);
-  const tradingHeaderVisible = useRef(true);
-  const tradingHeaderHeightRef = useRef(0);
-  const [tradingHeaderHeight, setTradingHeaderHeight] = useState(0);
-
-  const handleTradingScroll = useCallback((event: any) => {
-    const y = event.nativeEvent.contentOffset.y;
-    const diff = y - tradingLastScrollY.current;
-    tradingLastScrollY.current = y;
-
-    if (diff > 6 && y > 10 && tradingHeaderVisible.current) {
-      tradingHeaderVisible.current = false;
-      Animated.timing(tradingHeaderAnim, {
-        toValue: -tradingHeaderHeightRef.current,
-        duration: 220,
-        useNativeDriver: true,
-      }).start();
-    } else if (diff < -6 && !tradingHeaderVisible.current) {
-      tradingHeaderVisible.current = true;
-      Animated.timing(tradingHeaderAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [tradingHeaderAnim]);
 
   const {
     marketplaceListings: tradeListings,
@@ -713,6 +688,10 @@ const handleArchive = async (listingId: string) => {
             <View style={{ paddingTop: 12 }}>
               <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '900' }} numberOfLines={2}>{cardName}</Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 3, textTransform: 'capitalize' }} numberOfLines={1}>{setName}</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
+                <TrustBadge label={listingPhoto ? 'Photo checked' : 'Photo pending'} icon="camera-outline" tone={listingPhoto ? 'green' : 'gold'} />
+                <TrustBadge label={item.asking_price != null ? 'Value shown' : 'Open value'} icon="scale-outline" tone={item.asking_price != null ? 'green' : 'neutral'} />
+              </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 10 }}>
                 <View>
                   <Text style={{ color: '#22C55E', fontWeight: '900', fontSize: 18 }}>
@@ -794,6 +773,10 @@ const handleArchive = async (listingId: string) => {
             {item.condition && (
               <Text style={{ color: getConditionColor(item.condition), marginBottom: 3, fontWeight: '700', fontSize: 11 }}>{item.condition}</Text>
             )}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 5 }}>
+              <TrustBadge label={listingPhoto ? 'Photo checked' : 'Photo pending'} icon="camera-outline" tone={listingPhoto ? 'green' : 'gold'} />
+              {item.condition ? <TrustBadge label={item.condition} icon="shield-outline" tone="purple" /> : null}
+            </View>
             {item.asking_price != null && (
               <Text style={{ color: '#22C55E', fontWeight: '900', fontSize: 13 }}>£{Number(item.asking_price).toFixed(2)}</Text>
             )}
@@ -868,6 +851,14 @@ const handleArchive = async (listingId: string) => {
     const isAccepted = offer.status === 'accepted';
     const isSentStatus = offer.status === 'sent';
     const isCompleted = offer.status === 'completed';
+    const offerCards = offer.trade_offer_cards ?? [];
+    const myCardCount = offerCards
+      .filter((card) => card.owner_id === myUserId)
+      .reduce((sum, card) => sum + Math.max(1, Number(card.quantity ?? 1)), 0);
+    const theirCardCount = offerCards
+      .filter((card) => card.owner_id !== myUserId)
+      .reduce((sum, card) => sum + Math.max(1, Number(card.quantity ?? 1)), 0);
+    const cashTotal = (offer.trade_cash_terms ?? []).reduce((sum, term) => sum + Number(term.amount ?? 0), 0);
 
     return (
       <TouchableOpacity
@@ -882,6 +873,32 @@ const handleArchive = async (listingId: string) => {
           <View style={{ backgroundColor: statusColor + '20', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: statusColor + '40' }}>
             <Text style={{ color: statusColor, fontSize: 11, fontWeight: '800' }}>{statusLabel}</Text>
           </View>
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
+          <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 14, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>Your Offer</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginTop: 4 }}>{myCardCount}</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '700' }}>card{myCardCount !== 1 ? 's' : ''}</Text>
+          </View>
+          <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 14, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>Their Offer</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginTop: 4 }}>{theirCardCount}</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '700' }}>card{theirCardCount !== 1 ? 's' : ''}</Text>
+          </View>
+          <View style={{ flex: 1, backgroundColor: theme.colors.primary + '10', borderRadius: 14, padding: 10, borderWidth: 1, borderColor: theme.colors.primary + '25' }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>Balance</Text>
+            <Text style={{ color: theme.colors.primary, fontSize: 16, fontWeight: '900', marginTop: 4 }}>
+              {cashTotal > 0 ? `£${cashTotal.toFixed(0)}` : 'Cards'}
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '700' }}>review</Text>
+          </View>
+        </View>
+
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+          <TrustBadge label="Value balance" icon="scale-outline" tone="green" />
+          <TrustBadge label={isAccepted || isCompleted ? 'Agreed' : 'Needs action'} icon={isAccepted || isCompleted ? 'checkmark-circle-outline' : 'alert-circle-outline'} tone={isAccepted || isCompleted ? 'green' : 'gold'} />
+          <TrustBadge label="Protected timeline" icon="shield-outline" tone="purple" />
         </View>
 
         {['accepted', 'sent', 'received'].includes(offer.status) && (
@@ -925,31 +942,84 @@ const handleArchive = async (listingId: string) => {
 
   const renderTrading = () => {
     const pendingOfferCount = myOffers.filter((o) => o.status === 'pending' && o.receiver_id === myUserId).length;
-    const listPaddingTop = tradingHeaderHeight + 4;
+    const activeOfferCount = myOffers.filter((o) => ['pending', 'accepted', 'sent', 'received'].includes(o.status)).length;
+    const completedOfferCount = myOffers.filter((o) => o.status === 'completed').length;
+    const myListingCount = myListings.length;
+    const visibleCount =
+      segment === 'myOffers'
+        ? myOffers.length
+        : segment === 'myListings'
+          ? myListings.length
+          : segment === 'wanted'
+            ? wantedCards.length
+            : displayData.length;
+    const visibleLabel =
+      segment === 'myOffers'
+        ? `${visibleCount} offer${visibleCount !== 1 ? 's' : ''}`
+        : segment === 'wanted'
+          ? `${visibleCount} wanted card${visibleCount !== 1 ? 's' : ''}`
+          : `${visibleCount} listing${visibleCount !== 1 ? 's' : ''}`;
 
     const header = (
-      <Animated.View
-        style={{
-          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
-          backgroundColor: theme.colors.bg,
-          transform: [{ translateY: tradingHeaderAnim }],
-        }}
-        onLayout={(e) => {
-          const h = e.nativeEvent.layout.height;
-          tradingHeaderHeightRef.current = h;
-          setTradingHeaderHeight(h);
-        }}
-      >
-        <TouchableOpacity
-          onPress={() => router.push('/listing/new' as any)}
-          style={{
-            backgroundColor: theme.colors.primary,
-            borderRadius: 14, paddingVertical: 14,
-            alignItems: 'center', marginBottom: 14,
-          }}
-        >
-          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>+ Add Listing</Text>
-        </TouchableOpacity>
+      <View style={{ gap: 10, marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '900' }}>
+              {visibleLabel}
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
+              {segment === 'tradeListings' || segment === 'adminReview'
+                ? displayData.length !== currentData.length
+                  ? `Showing ${displayData.length} of ${currentData.length}`
+                  : 'Marketplace listings'
+                : segment === 'myListings'
+                  ? `${myListingCount} active from your collection`
+                  : segment === 'myOffers'
+                    ? `${activeOfferCount} active, ${completedOfferCount} completed`
+                    : 'Cards you are looking for'}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => router.push('/listing/new' as any)}
+            style={{
+              minWidth: 72,
+              height: 38,
+              paddingHorizontal: 12,
+              borderRadius: 12,
+              backgroundColor: theme.colors.primary,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row',
+              gap: 5,
+            }}
+          >
+            <Ionicons name="add" size={17} color="#fff" />
+            <Text style={{ color: '#fff', fontWeight: '900', fontSize: 13 }}>List</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setSegment('myOffers')}
+            style={{
+              minWidth: 82,
+              height: 38,
+              paddingHorizontal: 12,
+              borderRadius: 12,
+              backgroundColor: theme.colors.card,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'row',
+              gap: 5,
+            }}
+          >
+            <Ionicons name="chatbubbles-outline" size={16} color={theme.colors.textSoft} />
+            <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+              {pendingOfferCount > 0 ? `Offers ${pendingOfferCount}` : 'Offers'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={{ flexDirection: 'row', marginBottom: 16 }}>
           {renderSegmentButton('tradeListings', 'Listings')}
@@ -1175,31 +1245,35 @@ const handleArchive = async (listingId: string) => {
           </View>
         )}
 
-      </Animated.View>
+      </View>
     );
 
     return (
-      <View style={{ flex: 1, overflow: 'hidden' }}>
+      <View style={{ flex: 1 }}>
         {header}
 
         {!!tradeError && (
-          <View style={{ marginTop: listPaddingTop, backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 12 }}>
+          <View style={{ backgroundColor: '#FEE2E2', borderColor: '#FCA5A5', borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 12 }}>
             <Text style={{ color: '#991B1B' }}>{tradeError}</Text>
           </View>
         )}
 
         {segment === 'myOffers' ? (
           myOffers.length === 0 ? (
-            <View style={{ alignItems: 'center', paddingTop: listPaddingTop + 40, paddingBottom: 40 }}>
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>No trade offers yet</Text>
-              <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 8 }}>Browse listings and make an offer to get started.</Text>
+            <View style={{ paddingTop: 12, paddingBottom: 40 }}>
+              <EmptyStateCard
+                icon="chatbubbles-outline"
+                title="No trade offers yet"
+                body="Browse listings, make an offer, or create a listing so another collector can start a trade."
+                actionLabel="Browse Listings"
+                onAction={() => setSegment('tradeListings')}
+              />
             </View>
           ) : (
             <FlatList
               data={myOffers}
               keyExtractor={(item) => item.id}
               renderItem={renderOffer}
-              onScroll={handleTradingScroll}
               scrollEventThrottle={32}
               initialNumToRender={8}
               maxToRenderPerBatch={6}
@@ -1207,12 +1281,12 @@ const handleArchive = async (listingId: string) => {
               windowSize={7}
               removeClippedSubviews
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingTop: listPaddingTop, paddingBottom: 200 }}
+              contentContainerStyle={{ paddingBottom: 200 }}
               refreshControl={<RefreshControl refreshing={false} onRefresh={loadMyOffers} tintColor={theme.colors.primary} />}
             />
           )
         ) : tradeLoading && displayData.length === 0 ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: listPaddingTop }}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         ) : (
@@ -1222,7 +1296,6 @@ const handleArchive = async (listingId: string) => {
             keyExtractor={(item, index) => item.id ? String(item.id) : `${item.card_id}-${item.set_id}-${index}`}
             renderItem={renderListing}
             numColumns={1}
-            onScroll={handleTradingScroll}
             scrollEventThrottle={32}
             initialNumToRender={8}
             maxToRenderPerBatch={6}
@@ -1230,19 +1303,33 @@ const handleArchive = async (listingId: string) => {
             windowSize={7}
             removeClippedSubviews
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingTop: listPaddingTop, paddingBottom: 200, flexGrow: displayData.length === 0 ? 1 : 0 }}
+            contentContainerStyle={{ paddingBottom: 200, flexGrow: displayData.length === 0 ? 1 : 0 }}
             refreshControl={<RefreshControl refreshing={tradeLoading} onRefresh={refreshTrade} tintColor={theme.colors.primary} />}
             ListEmptyComponent={
-              <View style={{ paddingVertical: 50 }}>
-                <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>
-                  {segment === 'tradeListings'
-                    ? 'No active trade listings yet.'
-                    : segment === 'adminReview'
-                      ? 'No listings currently need admin review.'
-                      : segment === 'wanted'
-                        ? 'You have no wanted cards yet.'
-                        : 'You have no cards marked for trade yet.'}
-                </Text>
+              <View style={{ paddingVertical: 26 }}>
+                <EmptyStateCard
+                  icon={segment === 'wanted' ? 'heart-outline' : 'swap-horizontal-outline'}
+                  title={
+                    segment === 'tradeListings'
+                      ? 'No active trade listings'
+                      : segment === 'adminReview'
+                        ? 'No listings need review'
+                        : segment === 'wanted'
+                          ? 'No wanted cards yet'
+                          : 'No cards marked for trade'
+                  }
+                  body={
+                    segment === 'tradeListings'
+                      ? 'Create a listing or check back as collectors add new cards.'
+                      : segment === 'adminReview'
+                        ? 'Everything looks clear right now.'
+                        : segment === 'wanted'
+                          ? 'Mark cards as wanted from card details to build your trade target list.'
+                          : 'Mark cards for trade from your binder or card detail pages.'
+                  }
+                  actionLabel={segment === 'tradeListings' ? 'Add Listing' : undefined}
+                  onAction={segment === 'tradeListings' ? () => router.push('/listing/new' as any) : undefined}
+                />
               </View>
             }
           />
@@ -1259,8 +1346,8 @@ const handleArchive = async (listingId: string) => {
     <View style={{ flex: 1, backgroundColor: theme.colors.bg, paddingHorizontal: 16, paddingTop: 42, zIndex: 0 }}>
       <FeatureTipGate
         tipKey="trade-screen-v1"
-        title="Market Place"
-        subtitle="Buy, sell, and trade with other collectors."
+        title="Trade"
+        subtitle="Build safer card trades with other collectors."
         items={[
           { icon: 'storefront-outline', title: 'Browse Listings', body: 'Find cards other collectors have listed to buy, sell, or trade.' },
           { icon: 'add-circle-outline', title: 'List Cards', body: 'Add your own cards and set sale or trade terms.' },
@@ -1270,9 +1357,9 @@ const handleArchive = async (listingId: string) => {
       />
 
       <View style={{ paddingTop: 2, paddingBottom: 12 }}>
-        <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>Market Place</Text>
+        <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>Trade</Text>
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
-          Buy, sell, trade, and track wanted cards
+          Compare values, manage offers, and track wanted cards
         </Text>
       </View>
 

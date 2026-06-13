@@ -41,6 +41,8 @@ export type InventoryCardSnapshot = {
   product_price_count?: number | null;
   product_price_query?: string | null;
   product_price_source?: string | null;
+  inventory_binder_id?: string | null;
+  inventory_binder_name?: string | null;
 };
 
 export type InventoryItem = {
@@ -76,8 +78,39 @@ export type InventorySaleTransaction = {
   created_at: string;
 };
 
+export type InventoryMovementAction = 'scan_in' | 'scan_out';
+
+export type InventoryMovementReason =
+  | 'Added to Collection'
+  | 'Added to Binder'
+  | 'Added as Duplicate'
+  | 'Added to Sell/Trade'
+  | 'Sold'
+  | 'Traded'
+  | 'Shipped'
+  | 'Lost/Damaged'
+  | 'Removed from Collection'
+  | 'Other';
+
+export type InventoryMovement = {
+  id: string;
+  action_type: InventoryMovementAction;
+  card_id: string;
+  set_id: string | null;
+  card_name: string;
+  quantity: number;
+  reason: InventoryMovementReason;
+  binder_id?: string | null;
+  binder_name?: string | null;
+  collection_id?: string | null;
+  value_at_time?: number | null;
+  image_small?: string | null;
+  created_at: string;
+};
+
 const STORAGE_KEY = 'stackr:inventory-items:v1';
 const SALES_STORAGE_KEY = 'stackr:inventory-sales:v1';
+const MOVEMENTS_STORAGE_KEY = 'stackr:inventory-movements:v1';
 
 async function hydrateProductInventoryPrices(items: InventoryItem[]): Promise<InventoryItem[]> {
   const productIds = items
@@ -229,6 +262,93 @@ export async function loadInventorySales(): Promise<InventorySaleTransaction[]> 
 
 export async function saveInventorySales(sales: InventorySaleTransaction[]) {
   await AsyncStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(sales));
+}
+
+export async function loadInventoryMovements(): Promise<InventoryMovement[]> {
+  const raw = await AsyncStorage.getItem(MOVEMENTS_STORAGE_KEY);
+  const cached = (() => {
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  })();
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return cached;
+
+    const { data, error } = await supabase
+      .from('inventory_movements')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+
+    const remoteMovements = (data ?? []).map((row: any): InventoryMovement => ({
+      id: row.id,
+      action_type: row.action_type,
+      card_id: row.card_id ?? row.product_id,
+      set_id: row.set_id ?? null,
+      card_name: row.card_name ?? row.product_name ?? 'Unknown item',
+      quantity: Number(row.quantity ?? 1),
+      reason: row.reason ?? (row.action_type === 'scan_out' ? 'Removed from Collection' : 'Added to Collection'),
+      binder_id: row.binder_id ?? null,
+      binder_name: row.binder_name ?? null,
+      collection_id: row.collection_id ?? null,
+      value_at_time: row.value_at_time == null ? null : Number(row.value_at_time),
+      image_small: row.image_small ?? null,
+      created_at: row.created_at,
+    }));
+
+    await AsyncStorage.setItem(MOVEMENTS_STORAGE_KEY, JSON.stringify(remoteMovements));
+    return remoteMovements;
+  } catch (error) {
+    console.log('Inventory movement Supabase load failed', error);
+    return cached;
+  }
+}
+
+export async function saveInventoryMovements(movements: InventoryMovement[]) {
+  await AsyncStorage.setItem(MOVEMENTS_STORAGE_KEY, JSON.stringify(movements));
+}
+
+export async function addInventoryMovement(input: Omit<InventoryMovement, 'id' | 'created_at'> & { created_at?: string }) {
+  const movement: InventoryMovement = {
+    ...input,
+    id: `movement:${Date.now()}:${Math.random()}`,
+    created_at: input.created_at ?? new Date().toISOString(),
+  };
+  const current = await loadInventoryMovements();
+  const next = [movement, ...current].slice(0, 100);
+  await saveInventoryMovements(next);
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return movement;
+
+    const { error } = await supabase.from('inventory_movements').insert({
+      id: movement.id,
+      user_id: user.id,
+      card_id: movement.card_id,
+      action_type: movement.action_type,
+      quantity: movement.quantity,
+      reason: movement.reason,
+      binder_id: movement.binder_id ?? null,
+      collection_id: movement.collection_id ?? null,
+      value_at_time: movement.value_at_time ?? null,
+      created_at: movement.created_at,
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.log('Inventory movement Supabase save failed', error);
+  }
+
+  return movement;
 }
 
 export async function addInventorySale(sale: InventorySaleTransaction) {

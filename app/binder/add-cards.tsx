@@ -11,7 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Text } from '../../components/Text';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { addCardsToBinder } from '../../lib/binders';
@@ -40,6 +40,7 @@ const cardShadow = {
 
 export default function AddCardsToBinderScreen() {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ binderId?: string }>();
   const binderId = typeof params.binderId === 'string' ? params.binderId : '';
 
@@ -57,6 +58,23 @@ export default function AddCardsToBinderScreen() {
 
   const selectedCount = Object.keys(selectedCards).length;
   const selectedList = Object.values(selectedCards);
+
+  const handleBack = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    if (binderId) {
+      router.replace({
+        pathname: '/binder/[id]',
+        params: { id: binderId },
+      });
+      return;
+    }
+
+    router.replace('/(tabs)/binder' as any);
+  }, [binderId]);
 
   // ===============================
   // SEARCH
@@ -245,13 +263,13 @@ export default function AddCardsToBinderScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top', 'bottom', 'left', 'right']}>
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={handleBack}
             style={{
               width: 40, height: 40,
               borderRadius: 12,
@@ -438,8 +456,8 @@ export default function AddCardsToBinderScreen() {
             keyExtractor={(item) => item.id}
             renderItem={renderCard}
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: 100 }}
+            keyboardShouldPersistTaps="always"
+            contentContainerStyle={{ paddingBottom: insets.bottom + 320 }}
             ListEmptyComponent={
               <View style={{ paddingTop: 40, alignItems: 'center' }}>
                 <Ionicons name="albums-outline" size={42} color={theme.colors.textSoft} />
@@ -461,7 +479,7 @@ export default function AddCardsToBinderScreen() {
           disabled={saving || selectedCount === 0}
           style={{
             position: 'absolute',
-            left: 16, right: 16, bottom: 24,
+            left: 16, right: 16, bottom: Math.max(insets.bottom + 12, 24),
             backgroundColor: selectedCount === 0
               ? theme.colors.textSoft
               : theme.colors.primary,

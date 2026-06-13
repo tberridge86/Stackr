@@ -6,8 +6,10 @@ import {
   Animated,
   FlatList,
   Image,
+  KeyboardAvoidingView,
   Modal,
   PanResponder,
+  Platform,
   Pressable,
   ScrollView,
   TextInput,
@@ -29,6 +31,12 @@ import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flat
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
+import {
+  HeroActionPanel,
+  ProgressBadge,
+  StatPill,
+  TrustBadge,
+} from '../../components/PremiumUI';
 import {
   BinderRecord,
   BinderCardRecord,
@@ -566,6 +574,15 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const isOwner = Boolean(userId && binder?.user_id === userId);
   const isReadOnly = routeReadOnly || (Boolean(binder) && !isOwner);
 
+  const goBackToBinderLibrary = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace('/(tabs)/binder' as any);
+  }, []);
+
   const showToast = (msg: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToastMessage(msg);
@@ -586,15 +603,15 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
   const { createTradeListing, toggleWishlistCard, isForTrade, isWanted } = useTrade();
 
   const sortOptions: { label: string; value: SortMode }[] = [
+    { label: 'Number', value: 'number' },
     { label: 'Binder order', value: 'binder' },
     { label: 'Name', value: 'name' },
     { label: 'Owned first', value: 'owned' },
     { label: 'Missing first', value: 'missing' },
-    { label: 'Number', value: 'number' },
   ];
 
   const currentSortLabel =
-    sortOptions.find((o) => o.value === sortMode)?.label ?? 'Binder order';
+    sortOptions.find((o) => o.value === sortMode)?.label ?? 'Number';
 
   // ===============================
   // MODAL HELPERS
@@ -2256,205 +2273,149 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
     fontWeight: '900' as const,
     marginBottom: 10,
   };
+  const missingCount = Math.max(0, totalCount - ownedCount);
+  const duplicateCount = cards.reduce((sum, card) => {
+    const quantity = getDisplayedOwnedQuantity(card);
+    return sum + Math.max(0, quantity - 1);
+  }, 0);
+  const binderModeLabel = binder.card_mode === 'graded' ? 'Graded slabs' : masterSetEnabled ? 'Master set' : binder.type === 'official' ? 'Official set' : 'Custom binder';
 
   // ===============================
   // MAIN RENDER
   // ===============================
 
   return (
-    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <Stack.Screen
         options={{
           headerTitle: '',
-          headerRight: () => (
-            <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900', maxWidth: width * 0.68, textAlign: 'right' }}>
-              {binder.name}
-            </Text>
+          headerLeft: () => (
+            <TouchableOpacity
+              onPress={goBackToBinderLibrary}
+              hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+              style={{ paddingRight: 12, paddingVertical: 8 }}
+            >
+              <Ionicons name="chevron-back" size={28} color={theme.colors.primary} />
+            </TouchableOpacity>
           ),
         }}
       />
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
+      <FlatList
+        data={sortedCards}
+        keyExtractor={(item) => item.id}
+        renderItem={renderCard}
+        key={numColumns}
+        numColumns={numColumns}
+        columnWrapperStyle={{ gap: 8, marginBottom: 8 }}
+        initialNumToRender={numColumns * 4}
+        maxToRenderPerBatch={numColumns * 3}
+        updateCellsBatchingPeriod={50}
+        windowSize={7}
+        removeClippedSubviews
+        showsVerticalScrollIndicator={false}
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 16,
+          paddingBottom: insets.bottom + 130,
+        }}
+        ListHeaderComponent={
+          <View>
 
         {/* Header */}
-        <View style={{ marginBottom: 8 }}>
+        <View style={{ gap: 12, marginBottom: 14 }}>
+          <HeroActionPanel
+            title={binder.name}
+            subtitle={`${binderModeLabel} - ${ownedCount}/${totalCount || 0} tracked slots`}
+            icon={binder.card_mode === 'graded' ? 'shield-outline' : 'albums-outline'}
+            primaryLabel={!isReadOnly ? 'Scan to Binder' : undefined}
+            onPrimaryPress={!isReadOnly ? handleScanCard : undefined}
+            secondaryLabel={binder.type === 'custom' && !isReadOnly ? 'Add Manually' : undefined}
+            onSecondaryPress={binder.type === 'custom' && !isReadOnly ? () => setShowAddModal(true) : undefined}
+          >
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <StatPill label="Value" value={formatCurrency(binderValue)} icon="cash-outline" tone="green" />
+              <StatPill label="Complete" value={`${progressPercent}%`} icon="analytics-outline" tone={progressPercent >= 100 ? 'gold' : 'purple'} />
+              <StatPill label="Missing" value={String(missingCount)} icon="search-outline" tone={missingCount === 0 && totalCount > 0 ? 'green' : 'gold'} />
+              <StatPill label="Duplicates" value={String(duplicateCount)} icon="copy-outline" tone={duplicateCount > 0 ? 'gold' : 'neutral'} />
+            </View>
+            <View style={{ marginTop: 13 }}>
+              <ProgressBadge value={progressPercent} complete={progressPercent >= 100} label="Binder completion" />
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 12 }}>
+              <TrustBadge label={binder.type === 'official' ? 'Official binder' : 'Custom binder'} icon={binder.type === 'official' ? 'ribbon-outline' : 'folder-outline'} tone={binder.type === 'official' ? 'gold' : 'purple'} />
+              {binder.card_mode === 'graded' ? <TrustBadge label="Graded slabs" icon="shield-outline" tone="purple" /> : null}
+              {binder.edition ? <TrustBadge label={binder.edition === '1st_edition' ? '1st Edition' : 'Unlimited'} icon="sparkles-outline" tone="gold" /> : null}
+              {progressPercent >= 100 && totalCount > 0 ? <TrustBadge label="Complete" icon="trophy-outline" tone="gold" /> : null}
+            </View>
+          </HeroActionPanel>
+
           {!isReadOnly && (
-            <TouchableOpacity
-              onPress={handleScanCard}
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 8,
-                width: 34,
-                height: 34,
-                borderRadius: 17,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: theme.colors.primary,
-                zIndex: 5,
-              }}
-            >
-              <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                onPress={handleScanCard}
+                style={{ flex: 1, backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 12, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>Scan</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setSortMode('missing')}
+                style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 14, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>Missing</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setSortMode('owned')}
+                style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 14, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>Duplicates</Text>
+              </TouchableOpacity>
+            </View>
           )}
 
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
-              {!isReadOnly && (
-                <View style={{ flex: 0.28 }} />
-              )}
-
-              <View style={{ flex: 1, alignItems: 'flex-end', paddingTop: 0 }}>
-                {!isReadOnly && (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 10, marginTop: 0 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
-                        Master set
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => setMasterSetIntroVisible(true)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                        style={{ width: 19, height: 19, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface }}
-                      >
-                        <Ionicons name="information-circle-outline" size={15} color={theme.colors.textSoft} />
-                      </TouchableOpacity>
-                      <Switch
-                        value={masterSetEnabled}
-                        onValueChange={toggleMasterSet}
-                        disabled={updatingMasterSet}
-                        style={{ transform: [{ scaleX: 0.68 }, { scaleY: 0.68 }] }}
-                      />
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
-                        {isPublic ? 'Public' : 'Private'}
-                      </Text>
-                      <Switch
-                        value={isPublic}
-                        onValueChange={togglePublic}
-                        disabled={updatingVisibility}
-                        style={{ transform: [{ scaleX: 0.68 }, { scaleY: 0.68 }] }}
-                      />
-                    </View>
-                  </View>
-                )}
+          {!isReadOnly && (
+            <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+              <View style={{ flex: 1, minWidth: 150, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: theme.colors.card, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>Master set</Text>
+                  <TouchableOpacity onPress={() => setMasterSetIntroVisible(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Ionicons name="information-circle-outline" size={15} color={theme.colors.textSoft} />
+                  </TouchableOpacity>
+                </View>
+                <Switch value={masterSetEnabled} onValueChange={toggleMasterSet} disabled={updatingMasterSet} style={{ transform: [{ scaleX: 0.72 }, { scaleY: 0.72 }] }} />
               </View>
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>
-                {ownedCount} / {totalCount} owned · {progressPercent}%
-              </Text>
-
-              <View style={{
-                backgroundColor: theme.colors.primary + '16',
-                borderRadius: 999,
-                paddingHorizontal: 9,
-                paddingVertical: 3,
-                borderWidth: 1,
-                borderColor: theme.colors.primary + '35',
-              }}>
-                <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>
-                  {formatCurrency(binderValue)}
+              <View style={{ flex: 1, minWidth: 150, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: theme.colors.card, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 8 }}>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+                  {isPublic ? 'Public binder' : 'Private binder'}
                 </Text>
+                <Switch value={isPublic} onValueChange={togglePublic} disabled={updatingVisibility} style={{ transform: [{ scaleX: 0.72 }, { scaleY: 0.72 }] }} />
               </View>
-
-              {binder.card_mode === 'graded' && (
-                <View style={{
-                  backgroundColor: '#EEF2FF',
-                  borderRadius: 999,
-                  paddingHorizontal: 9,
-                  paddingVertical: 3,
-                  borderWidth: 1,
-                  borderColor: '#A5B4FC',
-                }}>
-                  <Text style={{ color: '#3730A3', fontSize: 11, fontWeight: '900' }}>
-                    Graded slabs
-                  </Text>
-                </View>
-              )}
-
-              {binder.edition && (
-                <View style={{
-                  backgroundColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.surface,
-                  borderRadius: 999,
-                  paddingHorizontal: 8,
-                  paddingVertical: 2,
-                  borderWidth: 1,
-                  borderColor: binder.edition === '1st_edition' ? '#F59E0B' : theme.colors.border,
-                }}>
-                  <Text style={{
-                    color: binder.edition === '1st_edition' ? '#FFFFFF' : theme.colors.textSoft,
-                    fontSize: 10,
-                    fontWeight: '900',
-                  }}>
-                    {binder.edition === '1st_edition' ? '1st Edition' : 'Unlimited'}
-                  </Text>
-                </View>
-              )}
             </View>
+          )}
 
-          </View>
-
-        {/* Progress bar */}
-        <View style={{
-          height: 6,
-          borderRadius: 999,
-          backgroundColor: theme.colors.surface,
-          overflow: 'hidden',
-          marginBottom: 10,
-        }}>
-          <View style={{
-            width: totalCount ? `${(ownedCount / totalCount) * 100}%` : '0%',
-            height: '100%',
-            backgroundColor: binder.color || theme.colors.primary,
-            borderRadius: 999,
-          }} />
-        </View>
-
-        {/* Read only banner */}
-        <View>
           {isReadOnly && (
-          <View style={{
-            backgroundColor: theme.colors.surface,
-            borderRadius: 12,
-            paddingVertical: 10,
-            paddingHorizontal: 14,
-            marginBottom: 12,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-          }}>
-            <Text style={{ fontSize: 16 }}>ðŸ‘ï¸</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>
-              Viewing another collector&apos;s binder â€” read only
-            </Text>
+            <View style={{
+              backgroundColor: theme.colors.surface,
+              borderRadius: 14,
+              paddingVertical: 11,
+              paddingHorizontal: 14,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <Ionicons name="eye-outline" size={17} color={theme.colors.textSoft} />
+              <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700', flex: 1 }}>
+                Viewing another collector&apos;s binder - read only
+              </Text>
+            </View>
+          )}
+
+          <View>
+            {renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
+            {renderShowcaseStrip('chase', 'Chase Cards')}
           </View>
-          )}
-        </View>
-
-        {/* Showcase strips */}
-        <View>
-          {renderShowcaseStrip('favorite', 'Favourite Top Loaders')}
-          {renderShowcaseStrip('chase', 'Chase Cards')}
-        </View>
-
-        {/* Add card button */}
-        <View>
-          {binder.type === 'custom' && !isReadOnly && (
-            <TouchableOpacity
-              onPress={() => setShowAddModal(true)}
-              style={{
-                backgroundColor: theme.colors.primary,
-                borderRadius: 14,
-                paddingVertical: 13,
-                alignItems: 'center',
-                marginBottom: 12,
-              }}
-            >
-              <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>+ Add Card to Binder</Text>
-            </TouchableOpacity>
-          )}
         </View>
 
         {/* Sort dropdown */}
@@ -2513,23 +2474,9 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           </View>
         </View>
 
-        {/* Card grid */}
-        <FlatList
-          data={sortedCards}
-          keyExtractor={(item) => item.id}
-          renderItem={renderCard}
-          key={numColumns}
-          numColumns={numColumns}
-          columnWrapperStyle={{ gap: 8, marginBottom: 8 }}
-          initialNumToRender={numColumns * 4}
-          maxToRenderPerBatch={numColumns * 3}
-          updateCellsBatchingPeriod={50}
-          windowSize={7}
-          removeClippedSubviews
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 130 }}
-        />
-      </View>
+          </View>
+        }
+      />
 
       {/* MASTER SET INTRO MODAL */}
       <Modal
@@ -2680,7 +2627,12 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
       {/* ADD CARD MODAL */}
 {!isReadOnly && (
   <Modal visible={showAddModal} animationType="slide">
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: theme.colors.bg }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
+    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <View style={{ padding: 16, flex: 1 }}>
 
         {/* Header */}
@@ -2875,7 +2827,8 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
           <FlatList
             data={addSearchResults}
             keyExtractor={(item) => `${getSetIdFromCardId(item.card_id)}-${item.card_id}`}
-            keyboardShouldPersistTaps="handled"
+            keyboardShouldPersistTaps="always"
+            contentContainerStyle={{ paddingBottom: insets.bottom + 320 }}
             renderItem={({ item }) => {
               const derivedSetId = getSetIdFromCardId(item.card_id);
               const alreadyInBinder = cards.some(
@@ -2962,6 +2915,7 @@ const pendingAddCount = Object.keys(pendingAddIds).length;
         )}
       </View>
     </SafeAreaView>
+    </KeyboardAvoidingView>
   </Modal>
 )}
 

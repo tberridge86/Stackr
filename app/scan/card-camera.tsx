@@ -4,28 +4,51 @@ import {
   View,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
-  StatusBar,
   ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { Camera } from 'react-native-vision-camera';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '../../components/theme-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useScanCamera } from '../../lib/useScanCamera'; // NEW HOOK
 import { useScanStore } from '../../lib/scanStore'; // ENHANCED STORE
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('screen');
-const STATUS_BAR_HEIGHT = StatusBar.currentHeight ?? 0;
-const CARD_WIDTH = SCREEN_WIDTH * 0.78;
-const CARD_HEIGHT = CARD_WIDTH / 0.716;
-const VERTICAL_OFFSET = -(STATUS_BAR_HEIGHT + 80);
+const CARD_ASPECT_RATIO = 0.716;
 
 export default function CardCameraScreen() {
   const { theme } = useTheme();
-  const { camera, device, torch, toggleTorch, takePhoto, isContinuous, setIsContinuous } = useScanCamera(true); // Continuous ON by default
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const safeWidth = Math.max(1, screenWidth - insets.left - insets.right);
+  const safeHeight = Math.max(1, screenHeight - insets.top - insets.bottom);
+  const isCompact = safeHeight < 760 || safeWidth < 360;
+  const topControlsHeight = isCompact ? 104 : 122;
+  const bottomControlsHeight = isCompact ? 122 : 140;
+  const scanAreaTop = insets.top + topControlsHeight;
+  const scanAreaBottom = screenHeight - insets.bottom - bottomControlsHeight;
+  const availableFrameHeight = Math.max(180, scanAreaBottom - scanAreaTop);
+  const horizontalGutter = safeWidth < 360 ? 36 : 56;
+  const maxFrameWidth = Math.max(160, Math.min(isCompact ? 292 : 320, safeWidth - horizontalGutter));
+  const CARD_WIDTH = Math.round(Math.max(160, Math.min(maxFrameWidth, availableFrameHeight * CARD_ASPECT_RATIO)));
+  const CARD_HEIGHT = Math.round(CARD_WIDTH / CARD_ASPECT_RATIO);
+  const overlayTop = scanAreaTop + Math.max(0, (availableFrameHeight - CARD_HEIGHT) / 2);
+  const overlayLeft = (screenWidth - CARD_WIDTH) / 2;
+  const topButtonOffset = insets.top + 16;
+  const { camera, device, torch, toggleTorch, takePhoto, isContinuous, setIsContinuous } = useScanCamera(true, true, {
+    cropToCard: true,
+    cropFrame: {
+      previewWidth: screenWidth,
+      previewHeight: screenHeight,
+      frameX: overlayLeft,
+      frameY: overlayTop,
+      frameWidth: CARD_WIDTH,
+      frameHeight: CARD_HEIGHT,
+      marginRatio: 0.08,
+    },
+  }); // Continuous ON by default
   const scanStore = useScanStore();
   const [capturing, setCapturing] = useState(false);
 
@@ -47,11 +70,8 @@ export default function CardCameraScreen() {
     );
   }
 
-  const overlayTop = (SCREEN_HEIGHT - CARD_HEIGHT) / 2 + VERTICAL_OFFSET;
-  const overlayLeft = (SCREEN_WIDTH - CARD_WIDTH) / 2;
-
   return (
-    <View style={{ flex: 1, backgroundColor: '#000', paddingTop: STATUS_BAR_HEIGHT }}>
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
       <Camera
         ref={camera}
         style={StyleSheet.absoluteFill}
@@ -65,7 +85,7 @@ export default function CardCameraScreen() {
       <View style={{
         position: 'absolute',
         top: 0, left: 0, right: 0,
-        height: STATUS_BAR_HEIGHT,
+        height: insets.top,
         backgroundColor: '#000',
         zIndex: 10,
       }} />
@@ -99,7 +119,7 @@ export default function CardCameraScreen() {
       </View>
 
       {/* Instructions */}
-      <View style={{ position: 'absolute', top: overlayTop - 48, left: 0, right: 0, alignItems: 'center' }}>
+      <View style={{ position: 'absolute', top: Math.max(insets.top + 70, overlayTop - 48), left: 0, right: 0, alignItems: 'center' }}>
         <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700', opacity: 0.9 }}>
           {isContinuous ? 'Continuous scanning...' : 'Align card within the frame'}
         </Text>
@@ -115,7 +135,7 @@ export default function CardCameraScreen() {
           router.back();
         }}
         style={{
-          position: 'absolute', top: 56, left: 16,
+          position: 'absolute', top: topButtonOffset, left: 16,
           width: 44, height: 44, borderRadius: 22,
           backgroundColor: 'rgba(0,0,0,0.5)',
           alignItems: 'center', justifyContent: 'center',
@@ -128,7 +148,7 @@ export default function CardCameraScreen() {
       <TouchableOpacity
         onPress={toggleTorch}
         style={{
-          position: 'absolute', top: 56, right: 16,
+          position: 'absolute', top: topButtonOffset, right: 16,
           width: 44, height: 44, borderRadius: 22,
           backgroundColor: 'rgba(0,0,0,0.5)',
           alignItems: 'center', justifyContent: 'center',
@@ -141,7 +161,7 @@ export default function CardCameraScreen() {
       <TouchableOpacity
         onPress={() => setIsContinuous(!isContinuous)}
         style={{
-          position: 'absolute', top: 56, right: 70,
+          position: 'absolute', top: topButtonOffset, right: 70,
           width: 44, height: 44, borderRadius: 22,
           backgroundColor: isContinuous ? theme.colors.primary : 'rgba(0,0,0,0.5)',
           alignItems: 'center', justifyContent: 'center',
@@ -151,7 +171,7 @@ export default function CardCameraScreen() {
       </TouchableOpacity>
 
       {/* Capture Button (Unchanged UI) */}
-      <View style={{ position: 'absolute', top: overlayTop + CARD_HEIGHT + 20, left: 0, right: 0, alignItems: 'center' }}>
+      <View style={{ position: 'absolute', bottom: insets.bottom + 24, left: 0, right: 0, alignItems: 'center' }}>
         <TouchableOpacity
           onPress={handleCapture}
           disabled={capturing}
