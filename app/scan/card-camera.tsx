@@ -46,7 +46,7 @@ export default function CardCameraScreen() {
       frameY: overlayTop,
       frameWidth: CARD_WIDTH,
       frameHeight: CARD_HEIGHT,
-      marginRatio: 0.08,
+      marginRatio: 0.18,
     },
   }); // Continuous ON by default
   const scanStore = useScanStore();
