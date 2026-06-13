@@ -7,9 +7,11 @@ import {
   Pressable,
   StyleSheet,
   TextInput,
+  type DimensionValue,
   useWindowDimensions,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { router, useFocusEffect } from 'expo-router';
@@ -40,7 +42,11 @@ type RangeKey =
   | 'galar'
   | 'paldea';
 
-const POKEAPI_LIST_URL = 'https://pokeapi.co/api/v2/pokemon?limit=20000';
+const POKEDEX_LIST_LIMIT = 1350;
+const POKEAPI_LIST_URL = `https://pokeapi.co/api/v2/pokemon?limit=${POKEDEX_LIST_LIMIT}`;
+const POKEDEX_CACHE_KEY = 'stackr:pokedex:pokemon-list:v1';
+
+let pokemonMemoryCache: PokemonEntry[] | null = null;
 
 const cardShadow = {
   shadowColor: '#000',
@@ -62,6 +68,27 @@ const getPokemonIdFromUrl = (url: string) => {
   const id = Number(parts[parts.length - 1]);
   return Number.isFinite(id) ? id : 0;
 };
+
+const mapPokemonResults = (results: PokemonListItem[]): PokemonEntry[] =>
+  results
+    .map((item) => ({
+      id: getPokemonIdFromUrl(item.url),
+      name: item.name,
+      url: item.url,
+    }))
+    .filter((item) => item.id > 0)
+    .sort((a, b) => a.id - b.id);
+
+const isPokemonEntryArray = (value: unknown): value is PokemonEntry[] =>
+  Array.isArray(value) &&
+  value.every(
+    (item) =>
+      item &&
+      typeof item === 'object' &&
+      typeof (item as PokemonEntry).id === 'number' &&
+      typeof (item as PokemonEntry).name === 'string' &&
+      typeof (item as PokemonEntry).url === 'string'
+  );
 
 const getPokemonImageUrl = (id: number) => {
   return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
@@ -96,35 +123,72 @@ export default function PokedexScreen() {
   const [ownedPokemonNames, setOwnedPokemonNames] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const loadPokemon = async () => {
+    let active = true;
+
+    const applyPokemon = (mapped: PokemonEntry[]) => {
+      pokemonMemoryCache = mapped;
+      if (!active) return;
+      setPokemon(mapped);
+      setLoading(false);
+    };
+
+    const loadCachedPokemon = async () => {
+      if (pokemonMemoryCache?.length) {
+        applyPokemon(pokemonMemoryCache);
+        return true;
+      }
+
       try {
-        setLoading(true);
+        const cached = await AsyncStorage.getItem(POKEDEX_CACHE_KEY);
+        if (!cached) return false;
+
+        const parsed = JSON.parse(cached);
+        if (!isPokemonEntryArray(parsed) || parsed.length === 0) return false;
+
+        applyPokemon(parsed);
+        return true;
+      } catch (error) {
+        console.log('Failed to load cached Pokédex', error);
+        return false;
+      }
+    };
+
+    const loadRemotePokemon = async (hasCachedPokemon: boolean) => {
+      try {
+        if (!hasCachedPokemon && active) setLoading(true);
 
         const response = await fetch(POKEAPI_LIST_URL);
+        if (!response.ok) throw new Error(`PokeAPI returned ${response.status}`);
+
         const json = await response.json();
 
         const results: PokemonListItem[] = Array.isArray(json?.results)
           ? json.results
           : [];
 
-        const mapped = results
-          .map((item) => ({
-            id: getPokemonIdFromUrl(item.url),
-            name: item.name,
-            url: item.url,
-          }))
-          .filter((item) => item.id > 0)
-          .sort((a, b) => a.id - b.id);
+        const mapped = mapPokemonResults(results);
 
-        setPokemon(mapped);
+        applyPokemon(mapped);
+        AsyncStorage.setItem(POKEDEX_CACHE_KEY, JSON.stringify(mapped)).catch((cacheError) => {
+          console.log('Failed to cache Pokédex', cacheError);
+        });
       } catch (error) {
         console.log('Failed to load Pokédex', error);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
+    const loadPokemon = async () => {
+      const hasCachedPokemon = await loadCachedPokemon();
+      await loadRemotePokemon(hasCachedPokemon);
+    };
+
     loadPokemon();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useFocusEffect(
@@ -160,6 +224,36 @@ export default function PokedexScreen() {
     });
   }, [pokemon, query, selectedRange]);
 
+  const ownedPokemonNameList = useMemo(
+    () => Array.from(ownedPokemonNames),
+    [ownedPokemonNames]
+  );
+
+  const isPokemonOwned = useCallback(
+    (pokemonName: string) =>
+      ownedPokemonNameList.some((cardName) =>
+        pokemonNameMatchesCardName(pokemonName, cardName)
+      ),
+    [ownedPokemonNameList]
+  );
+
+  const ownedPokemonIds = useMemo(() => {
+    const ids = new Set<number>();
+
+    for (const item of pokemon) {
+      if (isPokemonOwned(item.name)) ids.add(item.id);
+    }
+
+    return ids;
+  }, [isPokemonOwned, pokemon]);
+
+  const ownedPokedexCount = ownedPokemonIds.size;
+  const pokedexTotal = pokemon.length || POKEDEX_LIST_LIMIT;
+
+  const mastersetProgress = pokedexTotal ? ownedPokedexCount / pokedexTotal : 0;
+  const mastersetPercent = Math.round(mastersetProgress * 100);
+  const mastersetFillWidth = `${Math.min(100, mastersetProgress * 100)}%` as DimensionValue;
+
   const renderRangeChip = (key: RangeKey, label: string) => {
     const active = selectedRange === key;
 
@@ -176,41 +270,39 @@ export default function PokedexScreen() {
   };
 
   const renderPokemon = ({ item }: { item: PokemonEntry }) => {
-  const owned = Array.from(ownedPokemonNames).some((cardName) =>
-    pokemonNameMatchesCardName(item.name, cardName)
-  );
+    const owned = ownedPokemonIds.has(item.id);
 
-  return (
-    <Pressable
-      onPress={() =>
-        router.push({
-          pathname: '/pokemon/[id]',
-          params: { id: String(item.id), name: item.name },
-        })
-      }
-      style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
-    >
-      <View style={[styles.gridImageWrap, owned && { backgroundColor: 'transparent' }]}>
-        <Image
-          source={{ uri: getPokemonImageUrl(item.id) }}
-          style={styles.gridImage}
-          resizeMode="contain"
-        />
-        {owned && (
-          <View style={styles.ownedBadge}>
-            <Ionicons name="checkmark" size={12} color="#FFFFFF" />
-          </View>
-        )}
-      </View>
-      <Text numberOfLines={1} style={styles.gridName}>
-        {formatPokemonName(item.name)}
-      </Text>
-      <Text style={styles.gridNumber}>
-        #{String(item.id).padStart(4, '0')}
-      </Text>
-    </Pressable>
-  );
-};
+    return (
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: '/pokemon/[id]',
+            params: { id: String(item.id), name: item.name },
+          })
+        }
+        style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
+      >
+        <View style={[styles.gridImageWrap, owned && { backgroundColor: 'transparent' }]}>
+          <Image
+            source={{ uri: getPokemonImageUrl(item.id) }}
+            style={styles.gridImage}
+            resizeMode="contain"
+          />
+          {owned && (
+            <View style={styles.ownedBadge}>
+              <Ionicons name="checkmark" size={12} color="#FFFFFF" />
+            </View>
+          )}
+        </View>
+        <Text numberOfLines={1} style={styles.gridName}>
+          {formatPokemonName(item.name)}
+        </Text>
+        <Text style={styles.gridNumber}>
+          #{String(item.id).padStart(4, '0')}
+        </Text>
+      </Pressable>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -230,6 +322,19 @@ export default function PokedexScreen() {
           <Text style={styles.subheading}>
             Browse every Pokémon and build this into your collection encyclopedia.
           </Text>
+
+          <View style={styles.mastersetProgress}>
+            <View style={styles.mastersetProgressTop}>
+              <Text style={styles.mastersetProgressLabel}>Masterset progress</Text>
+              <Text style={styles.mastersetProgressValue}>
+                {ownedPokedexCount}/{pokedexTotal} Pokemon owned
+              </Text>
+            </View>
+            <View style={styles.mastersetTrack}>
+              <View style={[styles.mastersetFill, { width: mastersetFillWidth }]} />
+            </View>
+            <Text style={styles.mastersetPercent}>{mastersetPercent}% complete</Text>
+          </View>
 
           <View style={styles.searchWrap}>
             <Ionicons name="search-outline" size={18} color={theme.colors.textSoft} />
@@ -269,16 +374,20 @@ export default function PokedexScreen() {
           </View>
         ) : (
           <FlatList
-  style={styles.list}
-  data={filteredPokemon}
-  keyExtractor={(item) => String(item.id)}
-  renderItem={renderPokemon}
-  key={numColumns}
-  numColumns={numColumns}
-  columnWrapperStyle={{ gap: 6, marginBottom: 6, paddingHorizontal: 6 }}
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: insets.bottom + 170,
+            style={styles.list}
+            data={filteredPokemon}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderPokemon}
+            key={numColumns}
+            numColumns={numColumns}
+            initialNumToRender={numColumns * 4}
+            maxToRenderPerBatch={numColumns * 5}
+            windowSize={7}
+            removeClippedSubviews
+            columnWrapperStyle={{ gap: 6, marginBottom: 6, paddingHorizontal: 6 }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 170,
             }}
             ListFooterComponent={<View style={{ height: 40 }} />}
             ListEmptyComponent={
@@ -331,6 +440,46 @@ function makeStyles(theme: any) {
     fontSize: 14,
     lineHeight: 21,
     marginBottom: 16,
+  },
+  mastersetProgress: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  mastersetProgressTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  mastersetProgressLabel: {
+    color: theme.colors.text,
+    fontSize: 13,
+    fontWeight: '900',
+    flexShrink: 1,
+  },
+  mastersetProgressValue: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    fontWeight: '800',
+    textAlign: 'right',
+  },
+  mastersetTrack: {
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+  },
+  mastersetFill: {
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: theme.colors.primary,
+  },
+  mastersetPercent: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '900',
   },
   searchWrap: {
     flexDirection: 'row',

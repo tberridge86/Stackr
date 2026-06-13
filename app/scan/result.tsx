@@ -11,6 +11,13 @@ import {
 import { Text } from '../../components/Text';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
+import {
+  EmptyStateCard,
+  HeroActionPanel,
+  PremiumCard,
+  ProgressBadge,
+  TrustBadge,
+} from '../../components/PremiumUI';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
@@ -374,64 +381,49 @@ export default function ScanResultScreen() {
     return (
       <TouchableOpacity
         onPress={() => { setSelectedCard(item); setAdded(false); }}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          backgroundColor: selected ? theme.colors.primary + '18' : theme.colors.card,
-          borderRadius: 14,
-          padding: 10,
-          marginBottom: 8,
-          borderWidth: 2,
-          borderColor: selected ? theme.colors.primary : theme.colors.border,
-          gap: 12,
-        }}
         activeOpacity={0.8}
       >
-        {item.image_small ? (
-          <EditionAwareCardImage
-            uri={item.image_small}
-            cardId={item.id}
-            rawData={item.raw_data}
-            editionHint={item.editionHint}
-            sourceSize="small"
-            style={{ width: 50, height: 70, borderRadius: 6 }}
-            resizeMode="contain"
-          />
-        ) : (
-          <View style={{
-            width: 50, height: 70,
-            borderRadius: 6,
-            backgroundColor: theme.colors.surface,
-          }} />
-        )}
+        <PremiumCard selected={selected} style={{ marginBottom: 8, padding: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {item.image_small ? (
+              <EditionAwareCardImage
+                uri={item.image_small}
+                cardId={item.id}
+                rawData={item.raw_data}
+                editionHint={item.editionHint}
+                sourceSize="small"
+                style={{ width: 52, height: 72, borderRadius: 8 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <View style={{
+                width: 52, height: 72,
+                borderRadius: 8,
+                backgroundColor: theme.colors.surface,
+              }} />
+            )}
 
-        <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14 }} numberOfLines={1}>
-            {item.name}
-          </Text>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
-            {item.set_name} · #{item.number}{getEditionLabel(item) ? ` · ${getEditionLabel(item)}` : ''}
-          </Text>
-          {item.rarity && (
-            <Text style={{ color: '#FFD166', fontSize: 11, marginTop: 2, fontWeight: '700' }}>
-              {item.rarity}
-            </Text>
-          )}
-          <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }}>
-            {item.release_date}
-          </Text>
-        </View>
-
-        {selected && (
-          <View style={{
-            width: 24, height: 24,
-            borderRadius: 12,
-            backgroundColor: theme.colors.primary,
-            alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900' }}>✓</Text>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14, flex: 1 }} numberOfLines={1}>
+                  {item.name}
+                </Text>
+                {selected ? <TrustBadge label="Selected" icon="checkmark-circle-outline" tone="green" /> : null}
+              </View>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3, fontWeight: '700' }}>
+                {item.set_name} - #{item.number}{getEditionLabel(item) ? ` - ${getEditionLabel(item)}` : ''}
+              </Text>
+              {item.rarity && (
+                <Text style={{ color: '#B7791F', fontSize: 11, marginTop: 3, fontWeight: '900' }}>
+                  {item.rarity}
+                </Text>
+              )}
+              <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }}>
+                {item.release_date}
+              </Text>
+            </View>
           </View>
-        )}
+        </PremiumCard>
       </TouchableOpacity>
     );
   };
@@ -450,30 +442,35 @@ export default function ScanResultScreen() {
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingTop: 35, paddingBottom: 60 }}
       >
-        <View style={{ marginBottom: 14 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12, paddingTop: 4 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 24 }}>←</Text>
-            </TouchableOpacity>
-            <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
-              {cards.length === 1 ? 'Card Found!' : `${cards.length} Results`}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+          <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+            <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>←</Text>
+          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>
+              Scan result
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 1 }}>
+              Confirm the match, value, and destination.
             </Text>
           </View>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-            {cards.length === 1
-              ? 'Confirm and add to your binder'
-              : 'Select the correct version'}
-          </Text>
         </View>
+
+        <HeroActionPanel
+          title={cards.length === 1 ? 'Card Found' : `${cards.length} Matches`}
+          subtitle={cards.length === 1 ? 'Stackr found a likely match. Review the details before saving it.' : 'Choose the version that matches your physical card.'}
+          icon="sparkles-outline"
+        >
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <TrustBadge label={selectedCard ? 'High confidence' : 'Select match'} icon={selectedCard ? 'checkmark-circle-outline' : 'help-circle-outline'} tone={selectedCard ? 'green' : 'gold'} />
+            {selectedCard?.rarity ? <TrustBadge label={selectedCard.rarity} icon="ribbon-outline" tone="gold" /> : null}
+            {getEditionLabel(selectedCard) ? <TrustBadge label={getEditionLabel(selectedCard) ?? ''} icon="layers-outline" tone="purple" /> : null}
+          </View>
+        </HeroActionPanel>
 
         {/* If multiple results — show list to pick from */}
         {cards.length > 1 && (
-          <View style={{
-            backgroundColor: theme.colors.card,
-            borderRadius: 18, padding: 14,
-            borderWidth: 1, borderColor: theme.colors.border,
-            marginBottom: 16,
-          }}>
+          <PremiumCard style={{ marginTop: 16, marginBottom: 16 }}>
             <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginBottom: 12 }}>
               Which version is this?
             </Text>
@@ -484,46 +481,43 @@ export default function ScanResultScreen() {
               renderItem={renderCardOption}
               scrollEnabled={false}
             />
-          </View>
+          </PremiumCard>
         )}
 
         {/* Selected card details */}
         {selectedCard && (
           <>
             {/* Card image */}
-            <View style={{ alignItems: 'center', marginBottom: 16 }}>
-              <EditionAwareCardImage
-                uri={selectedCard.image_large ?? selectedCard.image_small}
-                cardId={selectedCard.id}
-                rawData={selectedCard.raw_data}
-                editionHint={selectedTcgVariant?.editionHint ?? selectedCard.editionHint}
-                sourceSize="large"
-                style={{ width: 220, height: 308, borderRadius: 16 }}
-                resizeMode="contain"
-              />
-            </View>
+            <PremiumCard style={{ alignItems: 'center', marginTop: 16, marginBottom: 16, paddingVertical: 18 }}>
+              <View style={{ padding: 8, borderRadius: 22, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+                <EditionAwareCardImage
+                  uri={selectedCard.image_large ?? selectedCard.image_small}
+                  cardId={selectedCard.id}
+                  rawData={selectedCard.raw_data}
+                  editionHint={selectedTcgVariant?.editionHint ?? selectedCard.editionHint}
+                  sourceSize="large"
+                  style={{ width: 220, height: 308, borderRadius: 16 }}
+                  resizeMode="contain"
+                />
+              </View>
+              <View style={{ marginTop: 14, width: '100%' }}>
+                <ProgressBadge value={96} label="Match confidence" />
+              </View>
+            </PremiumCard>
 
             {/* Card info */}
-            <View style={{
-              backgroundColor: theme.colors.card,
-              borderRadius: 18, padding: 16,
-              borderWidth: 1, borderColor: theme.colors.border,
-              marginBottom: 14,
-            }}>
+            <PremiumCard style={{ marginBottom: 14 }}>
               <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900', marginBottom: 4 }}>
                 {selectedCard.name}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 4 }}>
-                {selectedCard.set_name} · #{selectedCard.number}{getEditionLabel(selectedCard) ? ` · ${getEditionLabel(selectedCard)}` : ''}
+                {selectedCard.set_name} - #{selectedCard.number}{getEditionLabel(selectedCard) ? ` - ${getEditionLabel(selectedCard)}` : ''}
               </Text>
-              {selectedCard.rarity && (
-                <Text style={{ color: '#FFD166', fontSize: 13, fontWeight: '700', marginBottom: 4 }}>
-                  {selectedCard.rarity}
-                </Text>
-              )}
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
-                Released: {selectedCard.release_date}
-              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 8 }}>
+                {selectedCard.rarity ? <TrustBadge label={selectedCard.rarity} icon="ribbon-outline" tone="gold" /> : null}
+                <TrustBadge label={`No. ${selectedCard.number}`} icon="pricetag-outline" tone="purple" />
+                <TrustBadge label={selectedCard.release_date || 'Release unknown'} icon="calendar-outline" tone="neutral" />
+              </View>
 
               {/* View full details */}
               <TouchableOpacity
@@ -541,10 +535,10 @@ export default function ScanResultScreen() {
                 }}
               >
                 <Text style={{ color: theme.colors.primary, fontWeight: '700', fontSize: 13 }}>
-                  View Full Card Details →
+                  View Full Card Details
                 </Text>
               </TouchableOpacity>
-            </View>
+            </PremiumCard>
 
             {/* eBay price */}
             <View style={{
@@ -744,20 +738,15 @@ export default function ScanResultScreen() {
                 )}
               </View>
             ) : (
-              <View style={{
-                backgroundColor: '#D1FAE5',
-                borderRadius: 18, padding: 16,
-                borderWidth: 1, borderColor: '#6EE7B7',
-                marginBottom: 14,
-                alignItems: 'center',
-              }}>
-                <Text style={{ color: '#065F46', fontSize: 18, fontWeight: '900', marginBottom: 4 }}>
-                  ✅ Added to Binder!
+              <PremiumCard selected style={{ marginBottom: 14, alignItems: 'center' }}>
+                <TrustBadge label="Added to Binder" icon="checkmark-circle-outline" tone="green" />
+                <Text style={{ color: '#065F46', fontSize: 18, fontWeight: '900', marginTop: 10, marginBottom: 4 }}>
+                  Collection updated
                 </Text>
-                <Text style={{ color: '#065F46', fontSize: 13 }}>
-                  {selectedCard.name} is now in your collection.
+                <Text style={{ color: '#065F46', fontSize: 13, textAlign: 'center' }}>
+                  {selectedCard.name} is now saved and ready to track.
                 </Text>
-              </View>
+              </PremiumCard>
             )}
 
             {/* Scan another */}
@@ -772,10 +761,19 @@ export default function ScanResultScreen() {
               }}
             >
               <Text style={{ color: theme.colors.text, fontWeight: '900' }}>
-                📷 Scan Another Card
+                Scan Another Card
               </Text>
             </TouchableOpacity>
           </>
+        )}
+        {!selectedCard && (
+          <View style={{ marginTop: 16 }}>
+            <EmptyStateCard
+              icon="help-circle-outline"
+              title="Choose a match"
+              body="Select the card version that matches your scan to unlock pricing and binder actions."
+            />
+          </View>
         )}
       </ScrollView>
     </SafeAreaView>

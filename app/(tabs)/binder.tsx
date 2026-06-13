@@ -13,6 +13,11 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '../../components/Text';
+import {
+  EmptyStateCard,
+  ProgressBadge,
+  TrustBadge,
+} from '../../components/PremiumUI';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -89,11 +94,6 @@ const SET_VARIANT_OVERRIDES: Record<string, Partial<Record<string, string[]>>> =
 // HELPERS
 // ===============================
 
-const formatCurrency = (value?: number | null): string => {
-  if (value === null || value === undefined) return '—';
-  return `£${Number(value).toFixed(2)}`;
-};
-
 const getPreferredBinderCardPrice = (card: any): number => {
   return card?.ebay_price ?? card?.tcg_price ?? card?.cardmarket_price ?? 0;
 };
@@ -142,6 +142,7 @@ function BinderCard({ item, counts, masterSets, value, confirmDeleteBinder, inde
   const percentage = progress.total
     ? Math.round((progress.owned / progress.total) * 100)
     : 0;
+  const innerWidth = Math.max(96, cardWidth - 18);
 
   const cover = getBinderCover(item.cover_key);
 
@@ -177,16 +178,29 @@ function BinderCard({ item, counts, masterSets, value, confirmDeleteBinder, inde
       activeOpacity={0.85}
       style={{
         width: cardWidth,
-        marginBottom: 24,
+        marginBottom: 18,
+        backgroundColor: theme.colors.card,
+        borderRadius: 18,
+        padding: 9,
+        borderWidth: 1,
+        borderColor: percentage >= 100 ? theme.colors.secondary : theme.colors.border,
+        shadowColor: '#1B2A4B',
+        shadowOpacity: 0.08,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 8 },
+        elevation: 4,
         transform: [{ rotate: rotation }],
       }}
     >
       {/* Binder image */}
       <View style={{
-        width: cardWidth,
-        height: cardWidth,
-        borderRadius: 6,
+        width: innerWidth,
+        height: innerWidth,
+        borderRadius: 14,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
       }}>
         {cover ? (
           <Image
@@ -253,33 +267,29 @@ function BinderCard({ item, counts, masterSets, value, confirmDeleteBinder, inde
       </View>
 
       {/* Name + stats */}
-      <View style={{ marginTop: 6, paddingHorizontal: 2 }}>
-        <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 11, fontWeight: '900' }}>
+      <View style={{ marginTop: 10 }}>
+        <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>
           {item.name}
         </Text>
-        <Text style={{ color: theme.colors.textSoft, fontSize: 10, marginTop: 2 }}>
-          {progress.owned}/{progress.total} · {percentage}%
-        </Text>
+        <View style={{ marginTop: 8 }}>
+          <ProgressBadge value={percentage} complete={percentage >= 100} label={`${progress.owned}/${progress.total} owned`} />
+        </View>
         {(isMasterSet || isGraded) && (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
             {isGraded && (
-              <View style={{ alignSelf: 'flex-start', backgroundColor: '#EEF2FF', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, borderWidth: 1, borderColor: '#A5B4FC' }}>
-                <Text style={{ color: '#3730A3', fontSize: 9, fontWeight: '900' }}>
-                  Graded slabs
-                </Text>
-              </View>
+              <TrustBadge label="Graded" icon="shield-outline" tone="purple" />
             )}
             {isMasterSet && (
-              <View style={{ alignSelf: 'flex-start', backgroundColor: theme.colors.primary + '18', borderRadius: 999, paddingHorizontal: 7, paddingVertical: 3, borderWidth: 1, borderColor: theme.colors.primary + '55' }}>
-                <Text style={{ color: theme.colors.primary, fontSize: 9, fontWeight: '900' }}>Master set</Text>
-              </View>
+              <TrustBadge label="Master set" icon="sparkles-outline" tone="gold" />
             )}
           </View>
         )}
         {value !== null && (
-          <Text style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '700', marginTop: 2 }}>
-            £{value.toFixed(2)}
-          </Text>
+          <View style={{ marginTop: 8, backgroundColor: theme.colors.primary + '10', borderRadius: 12, borderWidth: 1, borderColor: theme.colors.primary + '25', paddingHorizontal: 9, paddingVertical: 6 }}>
+            <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>
+              £{value.toFixed(2)}
+            </Text>
+          </View>
         )}
       </View>
     </TouchableOpacity>
@@ -612,7 +622,6 @@ export default function BinderLibraryScreen() {
   }, [binders, counts, sortBy]);
 
   const currentSortLabel = SORT_OPTIONS.find((o) => o.key === sortBy)?.label ?? 'Recent';
-
   // ===============================
   // MAIN RENDER
   // ===============================
@@ -632,124 +641,116 @@ export default function BinderLibraryScreen() {
       <View style={{ flex: 1, paddingHorizontal: PADDING, paddingTop: 8 }}>
 
         {/* Header */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>
-              Binder
-            </Text>
-            <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 12, fontWeight: '700' }}>
-              {binders.length} binder{binders.length !== 1 ? 's' : ''} in your collection
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {/* Pokedex shortcut */}
-            <TouchableOpacity
-              onPress={() => router.push('/(tabs)/pokedex' as any)}
-              accessibilityRole="button"
-              accessibilityLabel="Open Pokedex"
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 12,
-                backgroundColor: theme.colors.card,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Image
-                source={POKEDEX_ICON}
-                style={{ width: 34, height: 34 }}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-
-            {/* Reorder toggle */}
-            <TouchableOpacity
-              onPress={() => setReorderMode((prev) => !prev)}
-              style={{
-                backgroundColor: reorderMode ? theme.colors.secondary : theme.colors.card,
-                width: reorderMode ? undefined : 42,
-                height: 42,
-                paddingHorizontal: reorderMode ? 12 : 0,
-                paddingVertical: reorderMode ? 10 : 0,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: reorderMode ? theme.colors.secondary : theme.colors.border,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              {reorderMode && (
-              <Text style={{
-                color: theme.colors.text,
-                fontWeight: '900',
-                fontSize: 13,
-                lineHeight: 16,
-              }}>
-                {reorderMode ? '✓ Done' : '⇅'}
+        <View style={{ gap: 14, marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flex: 1, paddingRight: 12 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>
+                Binder Vault
               </Text>
-              )}
-              {!reorderMode && (
-                <Ionicons name="grid-outline" size={23} color={theme.colors.textSoft} style={{ position: 'absolute' }} />
-              )}
-            </TouchableOpacity>
+              <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 12, fontWeight: '700' }}>
+                {binders.length} binder{binders.length !== 1 ? 's' : ''} curated across your collection
+              </Text>
+            </View>
 
-            {/* New binder */}
-            <TouchableOpacity
-              onPress={() => router.push('/binder/new')}
-              style={{
-                backgroundColor: theme.colors.primary,
-                paddingHorizontal: 14, paddingVertical: 10,
-                borderRadius: 12,
-              }}
-            >
-              <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>+ New</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                onPress={() => router.push('/(tabs)/pokedex' as any)}
+                accessibilityRole="button"
+                accessibilityLabel="Open Pokedex"
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 14,
+                  backgroundColor: theme.colors.card,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Image
+                  source={POKEDEX_ICON}
+                  style={{ width: 34, height: 34 }}
+                  resizeMode="contain"
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setReorderMode((prev) => !prev)}
+                style={{
+                  backgroundColor: reorderMode ? theme.colors.secondary : theme.colors.card,
+                  width: reorderMode ? undefined : 42,
+                  height: 42,
+                  paddingHorizontal: reorderMode ? 12 : 0,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: reorderMode ? theme.colors.secondary : theme.colors.border,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {reorderMode ? (
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>Done</Text>
+                ) : (
+                  <Ionicons name="grid-outline" size={23} color={theme.colors.textSoft} />
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => router.push('/binder/new')}
+                style={{
+                  backgroundColor: theme.colors.primary,
+                  paddingHorizontal: 14,
+                  height: 42,
+                  borderRadius: 14,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>New</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+
+          {!reorderMode && (
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                onPress={handleScanCard}
+                style={{
+                  flex: 1,
+                  backgroundColor: theme.colors.secondary,
+                  borderRadius: 14,
+                  paddingVertical: 12,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+                  Scan Card
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setSortOpen((prev) => !prev)}
+                style={{
+                  flex: 1,
+                  backgroundColor: theme.colors.card,
+                  borderRadius: 14,
+                  paddingVertical: 12,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+                  Sort: {currentSortLabel}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
-
-        {/* Action row — only show when not in reorder mode */}
-        {!reorderMode && (
-          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
-            <TouchableOpacity
-              onPress={handleScanCard}
-              style={{
-                flex: 1,
-                backgroundColor: theme.colors.secondary,
-                borderRadius: 12,
-                paddingVertical: 11,
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
-                📷 Scan Card
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => setSortOpen((prev) => !prev)}
-              style={{
-                flex: 1,
-                backgroundColor: theme.colors.card,
-                borderRadius: 12,
-                paddingVertical: 11,
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                flexDirection: 'row',
-                justifyContent: 'center',
-                gap: 6,
-              }}
-            >
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
-                ↕ {currentSortLabel}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
         {/* Sort dropdown */}
         {sortOpen && !reorderMode && (
@@ -922,25 +923,14 @@ export default function BinderLibraryScreen() {
               />
             )}
             ListEmptyComponent={
-              <View style={{ alignItems: 'center', paddingTop: 60, paddingHorizontal: 20 }}>
-                <Text style={{ fontSize: 48, marginBottom: 16 }}>📚</Text>
-                <Text style={{ color: theme.colors.text, textAlign: 'center', fontSize: 18, fontWeight: '900', marginBottom: 8 }}>
-                  No binders yet
-                </Text>
-                <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontSize: 13, lineHeight: 20, marginBottom: 20 }}>
-                  Create your first official set binder or a themed custom one.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => router.push('/binder/new')}
-                  style={{
-                    backgroundColor: theme.colors.primary,
-                    borderRadius: 14,
-                    paddingVertical: 12,
-                    paddingHorizontal: 24,
-                  }}
-                >
-                  <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Create Binder</Text>
-                </TouchableOpacity>
+              <View style={{ paddingTop: 34 }}>
+                <EmptyStateCard
+                  icon="albums-outline"
+                  title="No binders yet"
+                  body="Create an official set binder or a custom vault, then scan cards straight into it."
+                  actionLabel="Create Binder"
+                  onAction={() => router.push('/binder/new')}
+                />
               </View>
             }
           />
