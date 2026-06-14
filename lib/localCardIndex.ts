@@ -79,6 +79,28 @@ function nameAppearsInText(name: string, text: string) {
   return new RegExp(`(?:^| )${normalizedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?: |$)`).test(text);
 }
 
+const OPTIONAL_CARD_NAME_TOKENS = new Set([
+  'ex',
+  'gx',
+  'v',
+  'vmax',
+  'vstar',
+  'break',
+  'union',
+]);
+
+function nameLooselyAppearsInText(name: string, text: string) {
+  if (nameAppearsInText(name, text)) return true;
+
+  const tokens = normalizeOcrText(name)
+    .split(' ')
+    .filter((token) => token.length >= 3 && !OPTIONAL_CARD_NAME_TOKENS.has(token));
+
+  if (tokens.length < 2) return false;
+
+  return tokens.every((token) => new RegExp(`(?:^| )${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?: |$)`).test(text));
+}
+
 function inferPrintedTotalsFromText(text?: string | null) {
   if (!text) return [];
   const normalised = String(text)
@@ -316,6 +338,38 @@ export async function lookupLocalCardsByNameText(
     .filter((card) => {
       if (setId && card.set_id !== setId) return false;
       return nameAppearsInText(card.name, text);
+    })
+    .slice(0, limit);
+}
+
+export async function lookupLocalCardsByLooseNameText(
+  ocrText?: string | null,
+  setId?: string | null,
+  options?: { allowBuild?: boolean; limit?: number }
+) {
+  if (!ocrText) return null;
+
+  const index = memoryIndex
+    ?? (options?.allowBuild === false ? await loadStoredIndex() : await getLocalCardIndex());
+  if (!index) return null;
+  memoryIndex = index;
+
+  const text = normalizeOcrText(ocrText);
+
+  if (!text) return null;
+
+  const limit = options?.limit ?? 80;
+  const exactMatches = index.cards.filter((card) => {
+    if (setId && card.set_id !== setId) return false;
+    return nameAppearsInText(card.name, text);
+  });
+
+  if (exactMatches.length) return exactMatches.slice(0, limit);
+
+  return index.cards
+    .filter((card) => {
+      if (setId && card.set_id !== setId) return false;
+      return nameLooselyAppearsInText(card.name, text);
     })
     .slice(0, limit);
 }
