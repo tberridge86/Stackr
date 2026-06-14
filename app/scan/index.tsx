@@ -35,6 +35,7 @@ import { decode as decodeJpeg } from 'jpeg-js';
 import {
   lookupLocalCardsByPrintedNumber,
   lookupLocalCardsByPrintedTotal,
+  lookupLocalCardsByLooseNameText,
   lookupLocalCardsByNameText,
   lookupLocalCardsBySet,
   lookupLocalCardByNameTotalAndNumberHint,
@@ -228,6 +229,22 @@ function toScannedCard(card: LocalScanCard): ScannedCard {
     set_printed_total: card.set_printed_total,
     image_small: card.image_small,
     rarity: card.rarity,
+  };
+}
+
+function localCardToScanCandidate(card: LocalScanCard): ScanCandidate {
+  const resolvedCard = toScannedCard(card);
+  return {
+    id: card.id,
+    name: card.name,
+    number: card.number,
+    setName: card.set_name,
+    setCode: card.set_id,
+    imageSmall: card.image_small,
+    imageLarge: null,
+    imageSource: 'scrydex',
+    source: 'ximilar',
+    resolvedCard,
   };
 }
 
@@ -2704,6 +2721,7 @@ export default function ScanScreen() {
       }
       let cachedNameText: string | null = null;
       let cachedTotalHintText: string | null = null;
+      let cachedNameCandidates: LocalScanCard[] | null | undefined;
       const getNameText = async (uri: string, width: number, height: number) => {
         if (cachedNameText !== null) return cachedNameText;
         cachedNameText = await readNameTextFromCardImage(uri, width, height, {
@@ -2716,6 +2734,18 @@ export default function ScanScreen() {
         if (cachedTotalHintText !== null) return cachedTotalHintText;
         cachedTotalHintText = await readTotalHintTextFromCardImage(uri, width, height);
         return cachedTotalHintText;
+      };
+      const getLocalNameCandidates = async () => {
+        const nameText = await getNameText(bestUri, bestWidth, bestHeight);
+        if (cachedNameCandidates === undefined) {
+          cachedNameCandidates = nameText
+            ? await lookupLocalCardsByLooseNameText(nameText, expectedSetId, { limit: 12 })
+            : null;
+        }
+        return {
+          nameText,
+          candidates: cachedNameCandidates ?? [],
+        };
       };
       const switchToFullFrameCapture = async (reason: string) => {
         if (!capture.crop) return false;
@@ -2750,6 +2780,7 @@ export default function ScanScreen() {
         attemptedInitialNumberOcr = Boolean(printedNumber);
         cachedNameText = null;
         cachedTotalHintText = null;
+        cachedNameCandidates = undefined;
         numberOcrDoneAt = Date.now();
         return true;
       };
@@ -2757,6 +2788,68 @@ export default function ScanScreen() {
       let ximilarCandidatesForConfirmation: ScanCandidate[] | null = null;
       let ximilarError: ScanErrorState | null = null;
       let ximilarResultRejectedByOcr = false;
+      let ximilarResultRejectedByNameOcr = false;
+
+      const applyNameOcrGuardToXimilarResults = async (source: string) => {
+        const currentCandidates = ximilarCandidatesForConfirmation ?? [];
+        const currentResolvedCards = currentCandidates
+          .map((candidate) => candidate.resolvedCard as ScannedCard | null | undefined)
+          .filter(Boolean) as ScannedCard[];
+
+        if (!match && currentResolvedCards.length === 0) return false;
+
+        const { nameText, candidates: localNameCards } = await getLocalNameCandidates();
+        throwIfScanTimedOut();
+
+        if (!nameText || localNameCards.length === 0) return false;
+
+        const localNameIds = new Set(localNameCards.map((card) => card.id));
+        const matchDisagreesWithTitle = Boolean(match && !localNameIds.has(match.id));
+        const resolvedCandidateDisagreesWithTitle = currentResolvedCards.some((card) => !localNameIds.has(card.id));
+
+        if (!matchDisagreesWithTitle && !resolvedCandidateDisagreesWithTitle) return false;
+
+        const localCandidates = localNameCards.slice(0, 5).map(localCardToScanCandidate);
+        const validatedLocalCandidates = removePrintedNumberMismatches(localCandidates, printedNumber);
+        const validatedLocalMatch = isReliablePrintedNumberForValidation(printedNumber)
+          ? findPrintedNumberAlignedMatch(validatedLocalCandidates, printedNumber)
+          : null;
+        const singleLocalMatch = validatedLocalCandidates.length === 1
+          ? validatedLocalCandidates[0].resolvedCard as ScannedCard | null
+          : null;
+
+        logScanStage('XIMILAR_RESULT_REJECTED_BY_NAME_OCR', {
+          source,
+          nameText: nameText.slice(0, 180),
+          rejectedMatch: match
+            ? {
+                id: match.id,
+                name: match.name,
+                set: match.set_name,
+                number: match.number,
+              }
+            : null,
+          rejectedCandidates: currentResolvedCards.map((card) => ({
+            id: card.id,
+            name: card.name,
+            set: card.set_name,
+            number: card.number,
+          })).slice(0, 5),
+          replacementCandidates: localNameCards.map((card) => ({
+            id: card.id,
+            name: card.name,
+            set: card.set_name,
+            number: card.number,
+          })).slice(0, 5),
+        });
+
+        ximilarResultRejectedByNameOcr = true;
+        ximilarCandidatesForConfirmation = validatedLocalCandidates;
+        match = validatedLocalMatch ?? singleLocalMatch ?? null;
+        recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
+        recoveryMatch = match;
+        return true;
+      };
 
       if (!isAuto && !expectedSetId && (isMarketMode || selectedBinder)) {
         console.log('[market-scan] primary provider: ximilar');
@@ -2862,15 +2955,20 @@ export default function ScanScreen() {
             number: match.number,
           } : null,
         });
+        await applyNameOcrGuardToXimilarResults('ximilar-crop');
 
         if (
           !match
           && shouldDeferInitialNumberOcr
           && capture.crop
-          && (ximilarResultRejectedByOcr || Boolean(ximilarCandidatesForConfirmation?.length))
+          && (ximilarResultRejectedByOcr || ximilarResultRejectedByNameOcr || Boolean(ximilarCandidatesForConfirmation?.length))
         ) {
           const switchedToFullFrame = await switchToFullFrameCapture(
-            ximilarResultRejectedByOcr ? 'ocr-rejected-crop-result' : 'unresolved-crop-candidates'
+            ximilarResultRejectedByOcr
+              ? 'ocr-rejected-crop-result'
+              : ximilarResultRejectedByNameOcr
+                ? 'name-ocr-rejected-crop-result'
+                : 'unresolved-crop-candidates'
           );
           throwIfScanTimedOut();
 
@@ -2912,6 +3010,7 @@ export default function ScanScreen() {
                   number: match.number,
                 } : null,
               });
+              await applyNameOcrGuardToXimilarResults('ximilar-full-frame');
             }
           }
         }
@@ -2997,6 +3096,7 @@ export default function ScanScreen() {
               number: match.number,
             } : null,
           });
+          await applyNameOcrGuardToXimilarResults('magic-ai');
         }
 
         if (!match && !ximilarCandidatesForConfirmation?.length && ximilarError) {
@@ -3076,7 +3176,7 @@ export default function ScanScreen() {
             || localResult?.needsVisualRerank
           )
         ) {
-          const nameText = await getNameText(bestUri, capture.width, capture.height);
+          const nameText = await getNameText(bestUri, bestWidth, bestHeight);
           localResult = await identifyWithLocalFusion(
             printedNumber,
             expectedSetId,
@@ -3110,7 +3210,7 @@ export default function ScanScreen() {
                 : localResult;
         const firstLocalDoneAt = Date.now();
         if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
-          const nameText = await getNameText(bestUri, capture.width, capture.height);
+          const nameText = await getNameText(bestUri, bestWidth, bestHeight);
           const nameOcrDoneAt = Date.now();
           if (nameText) {
             printedNumber = {
@@ -3225,7 +3325,7 @@ export default function ScanScreen() {
                   ? await identifyWithLocalAi(printedNumber, expectedSetId)
                   : localIndexResult;
         if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult) && hasHardScanBudget(1200)) {
-          const nameText = await getNameText(bestUri, capture.width, capture.height);
+          const nameText = await getNameText(bestUri, bestWidth, bestHeight);
           if (nameText) {
               printedNumber = {
                 ...printedNumber,
@@ -3302,7 +3402,7 @@ export default function ScanScreen() {
               : await identifyWithLocalFusion(printedNumber, expectedSetId);
 
           if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult) && hasHardScanBudget(1200)) {
-            const nameText = await getNameText(bestUri, capture.width, capture.height);
+            const nameText = await getNameText(bestUri, bestWidth, bestHeight);
             if (nameText) {
               printedNumber = {
                 ...printedNumber,
@@ -3320,7 +3420,7 @@ export default function ScanScreen() {
       }
 
       if (!match && useLocalAi && !printedNumber && hasHardScanBudget(1600)) {
-        const nameText = await getNameText(bestUri, capture.width, capture.height);
+        const nameText = await getNameText(bestUri, bestWidth, bestHeight);
         let totalHintText = '';
         let totalHintPrintedNumber: PrintedNumber | null = null;
         let inferredTotal: number | null = null;
@@ -3328,7 +3428,7 @@ export default function ScanScreen() {
         let fusionResult = await identifyWithLocalFusion(null, expectedSetId, nameText);
         const nameCandidates = await lookupLocalCardsByNameText(nameText, expectedSetId);
         if (!fusionResult?.match && hasHardScanBudget(900)) {
-          totalHintText = await getTotalHintText(bestUri, capture.width, capture.height);
+          totalHintText = await getTotalHintText(bestUri, bestWidth, bestHeight);
           const combinedNameAndTotalText = `${nameText}\n${totalHintText}`.trim();
           totalHintPrintedNumber = parsePrintedNumberSignalFromText(totalHintText);
           inferredTotal = inferPrintedTotalFromText(combinedNameAndTotalText);
