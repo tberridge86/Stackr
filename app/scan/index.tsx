@@ -2693,12 +2693,15 @@ export default function ScanScreen() {
       let bestUri = capture.uri;
       let bestWidth = capture.width;
       let bestHeight = capture.height;
+      let ximilarBase64 = bestBase64;
+      let ximilarSourceLabel: CaptureResult['sourceLabel'] = capture.sourceLabel;
       const scanStartedAt = Date.now();
       const captureDoneAt = Date.now();
       const elapsedScanMs = () => Date.now() - scanStartedAt;
       const hasFastScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_SOFT_BUDGET_MS;
       const hasHardScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_HARD_BUDGET_MS;
       const shouldDeferInitialNumberOcr = isMarketMode && !isAuto && !expectedSetId;
+      const shouldUseXimilarProvider = !isAuto && !expectedSetId && (isMarketMode || selectedBinder);
       let printedNumber: PrintedNumber | null = null;
       let triedFallbackNumberRegions = false;
       let numberOcrDoneAt = captureDoneAt;
@@ -2746,6 +2749,22 @@ export default function ScanScreen() {
           nameText,
           candidates: cachedNameCandidates ?? [],
         };
+      };
+      const prepareFullFrameForXimilar = async () => {
+        if (!shouldUseXimilarProvider || !capture.crop) return;
+
+        const fullFrameCapture = await encodeCapturedFrame(
+          capture.originalUri,
+          capture.originalWidth,
+          capture.originalHeight,
+          initialScanProfile,
+          null,
+          'full-frame'
+        );
+        if (!fullFrameCapture.base64) return;
+
+        ximilarBase64 = fullFrameCapture.base64;
+        ximilarSourceLabel = fullFrameCapture.sourceLabel;
       };
       const switchToFullFrameCapture = async (reason: string) => {
         if (!capture.crop) return false;
@@ -2851,9 +2870,15 @@ export default function ScanScreen() {
         return true;
       };
 
-      if (!isAuto && !expectedSetId && (isMarketMode || selectedBinder)) {
-        console.log('[market-scan] primary provider: ximilar');
-        const ximilarResponse = await identifyWithXimilarTcg(bestBase64, false);
+      await prepareFullFrameForXimilar();
+      throwIfScanTimedOut();
+
+      if (shouldUseXimilarProvider) {
+        console.log('[market-scan] primary provider: ximilar', {
+          sourceLabel: ximilarSourceLabel,
+          magicAi: true,
+        });
+        const ximilarResponse = await identifyWithXimilarTcg(ximilarBase64, true);
         throwIfScanTimedOut();
         if (!ximilarResponse.ok) {
           ximilarError = { ...ximilarResponse, debugDetails: ximilarResponse.details };
@@ -3016,7 +3041,7 @@ export default function ScanScreen() {
         }
 
         if (!match && !ximilarCandidatesForConfirmation?.length) {
-          console.log('[market-scan] retrying Ximilar with Magic AI');
+          console.log('[market-scan] retrying Ximilar with framed crop + Magic AI');
           const ximilarMagicResponse = await identifyWithXimilarTcg(bestBase64, true);
           throwIfScanTimedOut();
           if (!ximilarMagicResponse.ok) {
