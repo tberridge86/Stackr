@@ -39,6 +39,14 @@ app.use('/api/discord', discordRoutes);
 app.use('/api/shippo', shippoRoutes);
 app.use('/api/stripe', stripeRoutes);
 
+app.get(['/health', '/api/health'], (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'stackr-api',
+    time: new Date().toISOString(),
+  });
+});
+
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_MARKETPLACE_ID = process.env.EBAY_MARKETPLACE_ID || 'EBAY_GB';
@@ -59,6 +67,7 @@ const POKEWALLET_API_BASE_URL = process.env.POKEWALLET_API_BASE_URL || 'https://
 const PORT = process.env.PORT || 3001;
 const EBAY_SOLD_SEARCH_TIMEOUT_MS = Number(process.env.EBAY_SOLD_SEARCH_TIMEOUT_MS || 3500);
 const EBAY_BROWSE_SEARCH_TIMEOUT_MS = Number(process.env.EBAY_BROWSE_SEARCH_TIMEOUT_MS || 4500);
+const POKEMON_TCG_SEARCH_TIMEOUT_MS = Number(process.env.POKEMON_TCG_SEARCH_TIMEOUT_MS || 3500);
 const EBAY_OAUTH_SCOPES = (
   process.env.EBAY_OAUTH_SCOPES ||
   'https://api.ebay.com/oauth/api_scope'
@@ -2644,7 +2653,12 @@ app.get('/api/search/tcg', async (req, res) => {
     console.log(`🔍 Primary query: ${q}`);
     console.log(`🔍 URL: ${url}`);
 
-    const response = await fetch(url, { headers });
+    const response = await fetchWithTimeout(
+      url,
+      { headers },
+      POKEMON_TCG_SEARCH_TIMEOUT_MS,
+      'PokemonTCG primary search'
+    );
     let cards = [];
 
     if (response.ok) {
@@ -2662,9 +2676,11 @@ app.get('/api/search/tcg', async (req, res) => {
     if (cards.length === 0 && !strictSet && (setId || setName) && number) {
       console.log('⚠️ Fallback 1 — name + number only');
       const q2 = `name:"${name}" number:${number}`;
-      const res2 = await fetch(
+      const res2 = await fetchWithTimeout(
         `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q2)}&pageSize=20&orderBy=-set.releaseDate`,
-        { headers }
+        { headers },
+        POKEMON_TCG_SEARCH_TIMEOUT_MS,
+        'PokemonTCG fallback name-number search'
       );
       if (res2.ok) {
         const data2 = await res2.json();
@@ -2682,9 +2698,11 @@ app.get('/api/search/tcg', async (req, res) => {
       let q3 = `name:"${name}"`;
       if (strictSet && setId) q3 += ` set.id:${setId}`;
       if (strictSet && setName) q3 += ` set.name:"${setName}"`;
-      const res3 = await fetch(
+      const res3 = await fetchWithTimeout(
         `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(q3)}&pageSize=20&orderBy=-set.releaseDate`,
-        { headers }
+        { headers },
+        POKEMON_TCG_SEARCH_TIMEOUT_MS,
+        'PokemonTCG fallback name-only search'
       );
       if (res3.ok) {
         const data3 = await res3.json();
