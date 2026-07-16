@@ -1342,9 +1342,12 @@ export default function CreateListingScreen() {
     setDraftSaved(false);
   }, []);
 
-  const returnToMarket = useCallback(() => {
-    if (router.canGoBack()) router.back();
-    else router.replace({ pathname: '/(tabs)/market', params: { segment: 'myListings' } } as any);
+  const returnToMarketHome = useCallback(() => {
+    router.replace('/(tabs)/market' as any);
+  }, []);
+
+  const returnToMyListings = useCallback(() => {
+    router.replace({ pathname: '/(tabs)/market', params: { segment: 'myListings' } } as any);
   }, []);
 
   const saveAndExitDraft = useCallback(async () => {
@@ -1353,12 +1356,12 @@ export default function CreateListingScreen() {
       await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(buildDraftState()));
       setDraftSaved(true);
       Alert.alert('Listing saved as a draft', 'You can resume it from My Listings when you are ready.', [
-        { text: 'OK', onPress: returnToMarket },
+        { text: 'OK', onPress: returnToMyListings },
       ]);
     } catch (error) {
       Alert.alert('Could not save draft', 'Please keep editing and try again.');
     }
-  }, [buildDraftState, returnToMarket]);
+  }, [buildDraftState, returnToMyListings]);
 
   const discardAndExitDraft = useCallback(async () => {
     try {
@@ -1368,8 +1371,9 @@ export default function CreateListingScreen() {
       console.log('Listing draft discard failed:', error);
     } finally {
       resetListingFlowToCategory();
+      returnToMarketHome();
     }
-  }, [resetListingFlowToCategory]);
+  }, [resetListingFlowToCategory, returnToMarketHome]);
 
   const saveExitDraft = useCallback(() => {
     Alert.alert(

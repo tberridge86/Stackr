@@ -57,8 +57,7 @@ expo-go-tunnel-qr.png
 .npmrc
 backend/.npmrc
 
-# design review/source capture folders that should not ship with the app
-assets/rev2/impecccable/
+# browser source captures that should not ship with the app
 assets/**/ChatGPT Images 2.0 _ AI Image Generator*
 
 # generated native folders
