@@ -176,8 +176,10 @@ export default function SlabStickerLabel({
   const meta = compactLabel ? '' : cleanSetName && numberLabel ? numberLabel : '';
   const sizes = TEXT_SIZES[size];
   const descriptor = getGraderGradeLabel(company, rawGradeText);
+  const cleanDescriptor = descriptor && descriptor !== 'GRADED' ? descriptor : '';
   const gradeFontSize = getGradeFontSize(sizes.grade, gradeText);
-  const showDescriptor = Boolean(descriptor) && size === 'modal';
+  const showInlinePsaDescriptor = stickerKey === 'PSA' && size === 'modal' && Boolean(cleanDescriptor);
+  const showDescriptor = Boolean(cleanDescriptor) && size === 'modal' && !showInlinePsaDescriptor;
 
   if (!stickerKey) {
     return (
@@ -266,15 +268,36 @@ export default function SlabStickerLabel({
           </Text>
         ) : null}
       </View>
-      <View style={[styles.gradeBlock, layout.grade]}>
-        <Text
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          minimumFontScale={0.44}
-          style={[styles.gradeText, { color: layout.gradeColor, fontSize: gradeFontSize, lineHeight: gradeFontSize * 1.02 }]}
-        >
-          {gradeText}
-        </Text>
+      <View style={[styles.gradeBlock, layout.grade, showInlinePsaDescriptor && styles.psaInlineGradeBlock]}>
+        {showInlinePsaDescriptor ? (
+          <View style={styles.psaInlineGradeRow}>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.5}
+              style={[styles.gradeText, styles.psaInlineGradeNumber, { color: layout.gradeColor, fontSize: gradeFontSize, lineHeight: gradeFontSize * 1.02 }]}
+            >
+              {gradeText}
+            </Text>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.58}
+              style={[styles.psaInlineDescriptorText, { color: layout.descriptorColor, fontSize: sizes.descriptor * 0.96 }]}
+            >
+              {cleanDescriptor}
+            </Text>
+          </View>
+        ) : (
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.44}
+            style={[styles.gradeText, { color: layout.gradeColor, fontSize: gradeFontSize, lineHeight: gradeFontSize * 1.02 }]}
+          >
+            {gradeText}
+          </Text>
+        )}
         {showDescriptor ? (
           <Text
             numberOfLines={1}
@@ -282,7 +305,7 @@ export default function SlabStickerLabel({
             minimumFontScale={0.5}
             style={[styles.descriptorText, { color: layout.descriptorColor, fontSize: sizes.descriptor }]}
           >
-            {descriptor}
+            {cleanDescriptor}
           </Text>
         ) : null}
       </View>
@@ -325,6 +348,26 @@ const styles = StyleSheet.create({
     width: '100%',
     fontWeight: '900',
     textAlign: 'center',
+    includeFontPadding: false,
+  },
+  psaInlineGradeBlock: {
+    paddingHorizontal: 1,
+  },
+  psaInlineGradeRow: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    gap: 3,
+  },
+  psaInlineGradeNumber: {
+    width: 'auto',
+    flexShrink: 0,
+  },
+  psaInlineDescriptorText: {
+    flexShrink: 1,
+    fontWeight: '900',
+    textAlign: 'left',
     includeFontPadding: false,
   },
   descriptorText: {
