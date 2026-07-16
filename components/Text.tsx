@@ -1,13 +1,29 @@
 import React from 'react';
-import { Text as RNText, TextProps } from 'react-native';
+import { StyleSheet, Text as RNText, TextProps } from 'react-native';
 import { useTheme } from './theme-context';
+import { resolveTypographyStyle, tabularNumberStyle, type TypeScaleKey } from '../lib/typography';
 
-export function Text(props: TextProps) {
+type StackrTextProps = TextProps & {
+  variant?: TypeScaleKey;
+  numeric?: boolean;
+};
+
+export function Text({ variant, numeric = false, style, ...props }: StackrTextProps) {
   const { theme } = useTheme();
+  const flattenedStyle = StyleSheet.flatten(style) ?? {};
+  const typographyStyle = resolveTypographyStyle(flattenedStyle, variant, numeric);
+
   return (
     <RNText
       {...props}
-      style={[{ color: theme.colors.text }, props.style]}
+      allowFontScaling={props.allowFontScaling ?? true}
+      maxFontSizeMultiplier={props.maxFontSizeMultiplier ?? 1.25}
+      style={[
+        style,
+        { color: flattenedStyle.color ?? theme.colors.text },
+        typographyStyle,
+        numeric ? tabularNumberStyle : null,
+      ]}
     />
   );
 }

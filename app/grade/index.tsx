@@ -10,10 +10,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useIsFocused } from '@react-navigation/native';
 import { router, Stack } from 'expo-router';
 import { Camera, useCameraPermission } from 'react-native-vision-camera';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
+import { StackrBackButton } from '../../components/StackrBackButton';
 import { useTheme } from '../../components/theme-context';
 import { gradeCardWithXimilar } from '../../lib/ximilar';
 import { useScanCamera } from '../../lib/useScanCamera';
@@ -111,6 +113,7 @@ function whiteningColor(severity?: string) {
 
 export default function CardGraderScreen() {
   const { theme } = useTheme();
+  const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const [photos, setPhotos] = useState<GradePhoto[]>([]);
@@ -235,16 +238,15 @@ export default function CardGraderScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: insets.bottom + 28 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-            <TouchableOpacity
-              onPress={() => {
-                setResult(null);
-                setCurrentStep('front');
-                setCaptureNotice('Capture the front of the card');
-              }}
-              style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#111', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}
-            >
-              <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
-            </TouchableOpacity>
+            <View style={{ marginRight: 12 }}>
+              <StackrBackButton
+                onPress={() => {
+                  setResult(null);
+                  setCurrentStep('front');
+                  setCaptureNotice('Capture the front of the card');
+                }}
+              />
+            </View>
             <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900' }}>{providerName} Result</Text>
           </View>
 
@@ -442,7 +444,7 @@ export default function CardGraderScreen() {
         ref={camera}
         style={{ flex: 1 }}
         device={device}
-        isActive={true}
+        isActive={isFocused}
         photo={true}
         torch={torch}
       />

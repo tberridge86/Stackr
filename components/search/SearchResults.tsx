@@ -1,0 +1,428 @@
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import {
+  type ImageSourcePropType,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Text } from '../Text';
+import { StackrImage } from '../StackrImage';
+import { StackrCardActionIcon } from '../StackrScreen';
+import { useTheme } from '../theme-context';
+import { searchIcons, type SearchIconName } from '../../lib/searchIcons';
+import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
+
+const money = (value: number | null | undefined) =>
+  typeof value === 'number' && Number.isFinite(value)
+    ? `\u00A3${value.toFixed(2)}`
+    : null;
+
+export function SearchCategoryChip({
+  label,
+  icon,
+  imageIcon,
+  active,
+  onPress,
+}: {
+  label: string;
+  icon: SearchIconName;
+  imageIcon?: ImageSourcePropType;
+  active: boolean;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.82}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      style={{
+        minHeight: 36,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: active ? theme.colors.primary + '55' : theme.colors.border,
+        backgroundColor: active ? theme.colors.primary + '12' : theme.colors.card,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+      }}
+    >
+      {imageIcon ? (
+        <StackrCardActionIcon
+          source={imageIcon}
+          frameSize={stackrSellCategoryIconSizes.chipFrame}
+          artworkSize={stackrSellCategoryIconSizes.chipArtwork}
+        />
+      ) : (
+        <Ionicons name={icon} size={15} color={active ? theme.colors.primary : theme.colors.textSoft} />
+      )}
+      <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, fontWeight: '900' }}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
+export function SearchResultSection({
+  title,
+  count,
+  children,
+  onViewAll,
+}: {
+  title: string;
+  count?: number;
+  children: React.ReactNode;
+  onViewAll?: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <View style={{ gap: 9, marginBottom: 18 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 7 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 17, lineHeight: 22, fontWeight: '900' }}>
+            {title}
+          </Text>
+          {count != null ? (
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, fontWeight: '800' }}>
+              {count}
+            </Text>
+          ) : null}
+        </View>
+        {onViewAll ? (
+          <TouchableOpacity onPress={onViewAll} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>View all</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      <View style={{ gap: 9 }}>{children}</View>
+    </View>
+  );
+}
+
+export function SearchCardResult({
+  name,
+  imageUri,
+  setName,
+  setLogoUri,
+  number,
+  rarity,
+  estimatedValue,
+  listingCount,
+  ownedQuantity,
+  onPress,
+}: {
+  name: string;
+  imageUri?: string | null;
+  setName?: string | null;
+  setLogoUri?: string | null;
+  number?: string | null;
+  rarity?: string | null;
+  estimatedValue?: number | null;
+  listingCount?: number;
+  ownedQuantity?: number;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <SearchResultShell
+      onPress={onPress}
+      accessibilityLabel={`Open card ${name}${setName ? ` from ${setName}` : ''}`}
+      leading={<StackrImage uri={imageUri} contentFit="contain" rounded={9} style={{ width: 58, height: 80, borderRadius: 9, backgroundColor: theme.colors.surface }} />}
+    >
+      <Text style={{ color: theme.colors.text, fontSize: 14.5, lineHeight: 19, fontWeight: '900' }} numberOfLines={2}>
+        {name}
+      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+        {setLogoUri ? (
+          <StackrImage uri={setLogoUri} contentFit="contain" rounded={0} style={{ width: 40, height: 16, backgroundColor: 'transparent' }} showFallbackIcon={false} />
+        ) : null}
+        <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }} numberOfLines={1}>
+          {setName ?? 'Unknown set'}
+        </Text>
+      </View>
+      <MetaRow
+        items={[
+          number ? `#${number}` : null,
+          rarity ?? null,
+          money(estimatedValue) ? `Est. ${money(estimatedValue)}` : null,
+          listingCount ? `${listingCount} Market listing${listingCount === 1 ? '' : 's'}` : null,
+          ownedQuantity ? `Owned x${ownedQuantity}` : null,
+        ]}
+      />
+    </SearchResultShell>
+  );
+}
+
+export function SearchSetResult({
+  name,
+  logoUri,
+  artworkUri,
+  series,
+  year,
+  total,
+  ownedCount,
+  completionPercent,
+  onPress,
+}: {
+  name: string;
+  logoUri?: string | null;
+  artworkUri?: string | null;
+  series?: string | null;
+  year?: string | number | null;
+  total?: number | null;
+  ownedCount?: number | null;
+  completionPercent?: number | null;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <SearchResultShell
+      onPress={onPress}
+      accessibilityLabel={`Open set ${name}`}
+      leading={
+        <View style={{ width: 64, height: 52, borderRadius: 12, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
+          <StackrImage uri={logoUri ?? artworkUri} contentFit="contain" rounded={12} style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }} showFallbackIcon={false} />
+          {!logoUri && !artworkUri ? <Ionicons name={searchIcons.sets} size={24} color={theme.colors.textSoft} /> : null}
+        </View>
+      }
+    >
+      <Text style={{ color: theme.colors.text, fontSize: 14.5, lineHeight: 19, fontWeight: '900' }} numberOfLines={2}>
+        {name}
+      </Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 3 }} numberOfLines={1}>
+        {[series, year].filter(Boolean).join(' · ') || 'Pokémon set'}
+      </Text>
+      <MetaRow
+        items={[
+          total ? `${total} cards` : null,
+          ownedCount != null ? `${ownedCount} owned` : null,
+          completionPercent != null ? `${Math.round(completionPercent)}% complete` : null,
+        ]}
+      />
+    </SearchResultShell>
+  );
+}
+
+export function SearchSealedResult({
+  name,
+  imageUri,
+  setName,
+  setLogoUri,
+  productType,
+  estimatedValue,
+  listingCount,
+  lowestPrice,
+  saved,
+  onPress,
+}: {
+  name: string;
+  imageUri?: string | null;
+  setName?: string | null;
+  setLogoUri?: string | null;
+  productType?: string | null;
+  estimatedValue?: number | null;
+  listingCount?: number;
+  lowestPrice?: number | null;
+  saved?: boolean;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <SearchResultShell
+      onPress={onPress}
+      accessibilityLabel={`Open sealed product ${name}`}
+      leading={<StackrImage uri={imageUri} contentFit="cover" rounded={12} style={{ width: 66, height: 66, borderRadius: 12, backgroundColor: theme.colors.surface }} />}
+    >
+      <Text style={{ color: theme.colors.text, fontSize: 14.5, lineHeight: 19, fontWeight: '900' }} numberOfLines={2}>
+        {name}
+      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+        {setLogoUri ? (
+          <StackrImage uri={setLogoUri} contentFit="contain" rounded={0} style={{ width: 40, height: 16, backgroundColor: 'transparent' }} showFallbackIcon={false} />
+        ) : null}
+        <Text style={{ flex: 1, color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }} numberOfLines={1}>
+          {setName ?? productType ?? 'Sealed product'}
+        </Text>
+      </View>
+      <MetaRow
+        items={[
+          productType,
+          money(estimatedValue) ? `Estimated ${money(estimatedValue)}` : null,
+          lowestPrice != null ? `Lowest listing ${money(lowestPrice)}` : null,
+          listingCount ? `${listingCount} listing${listingCount === 1 ? '' : 's'}` : null,
+          saved ? 'Saved' : null,
+        ]}
+      />
+    </SearchResultShell>
+  );
+}
+
+export function SearchListingResult({
+  title,
+  imageUri,
+  subtitle,
+  price,
+  modeLabel,
+  onPress,
+}: {
+  title: string;
+  imageUri?: string | null;
+  subtitle?: string | null;
+  price?: number | null;
+  modeLabel?: string | null;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <SearchResultShell
+      onPress={onPress}
+      accessibilityLabel={`Open Market listing ${title}`}
+      leading={<StackrImage uri={imageUri} contentFit="contain" rounded={10} style={{ width: 58, height: 72, borderRadius: 10, backgroundColor: theme.colors.surface }} />}
+    >
+      <Text style={{ color: theme.colors.text, fontSize: 14.5, lineHeight: 19, fontWeight: '900' }} numberOfLines={2}>
+        {title}
+      </Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 3 }} numberOfLines={1}>
+        {subtitle ?? 'The Market'}
+      </Text>
+      <MetaRow items={[modeLabel ?? 'Market listing', money(price)]} />
+    </SearchResultShell>
+  );
+}
+
+export function SearchCollectorResult({
+  name,
+  avatarUri,
+  subtitle,
+  onPress,
+}: {
+  name: string;
+  avatarUri?: string | null;
+  subtitle?: string | null;
+  onPress: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <SearchResultShell
+      onPress={onPress}
+      accessibilityLabel={`Open collector profile ${name}`}
+      leading={<StackrImage uri={avatarUri} contentFit="cover" rounded={22} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: theme.colors.surface }} />}
+    >
+      <Text style={{ color: theme.colors.text, fontSize: 14.5, lineHeight: 19, fontWeight: '900' }} numberOfLines={1}>
+        {name}
+      </Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 3 }} numberOfLines={1}>
+        {subtitle ?? 'Collector profile'}
+      </Text>
+    </SearchResultShell>
+  );
+}
+
+export function RecentSearchPill({
+  label,
+  onPress,
+  onRemove,
+}: {
+  label: string;
+  onPress: () => void;
+  onRemove: () => void;
+}) {
+  const { theme } = useTheme();
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.82}
+      style={{
+        minHeight: 34,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.card,
+        paddingLeft: 11,
+        paddingRight: 7,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 7,
+      }}
+    >
+      <Ionicons name={searchIcons.recent} size={14} color={theme.colors.textSoft} />
+      <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900' }}>{label}</Text>
+      <TouchableOpacity onPress={onRemove} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }} accessibilityRole="button" accessibilityLabel={`Remove ${label} from recent searches`}>
+        <Ionicons name="close" size={14} color={theme.colors.textSoft} />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  );
+}
+
+export function SearchSkeleton() {
+  const { theme } = useTheme();
+  return (
+    <View style={{ gap: 10 }}>
+      {[0, 1, 2, 3].map((item) => (
+        <View key={item} style={{ minHeight: 92, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.card, padding: 11, flexDirection: 'row', gap: 11 }}>
+          <View style={{ width: 58, height: 72, borderRadius: 10, backgroundColor: theme.colors.surface }} />
+          <View style={{ flex: 1, gap: 8, paddingTop: 4 }}>
+            <View style={{ width: '78%', height: 15, borderRadius: 8, backgroundColor: theme.colors.surface }} />
+            <View style={{ width: '56%', height: 12, borderRadius: 8, backgroundColor: theme.colors.surface }} />
+            <View style={{ width: '42%', height: 12, borderRadius: 8, backgroundColor: theme.colors.surface }} />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function SearchResultShell({
+  leading,
+  children,
+  onPress,
+  accessibilityLabel,
+}: {
+  leading: React.ReactNode;
+  children: React.ReactNode;
+  onPress: () => void;
+  accessibilityLabel: string;
+}) {
+  const { theme } = useTheme();
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.84}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      style={{
+        minHeight: 92,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.card,
+        padding: 11,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 11,
+      }}
+    >
+      {leading}
+      <View style={{ flex: 1, minWidth: 0 }}>{children}</View>
+      <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
+    </TouchableOpacity>
+  );
+}
+
+function MetaRow({ items }: { items: (string | number | null | undefined | false)[] }) {
+  const { theme } = useTheme();
+  const filtered = items.filter((item): item is string | number => item !== null && item !== undefined && item !== false && String(item).length > 0);
+  if (!filtered.length) return null;
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, paddingTop: 7 }}>
+      {filtered.map((item) => (
+        <View key={String(item)} style={{ minHeight: 23, borderRadius: 999, paddingHorizontal: 8, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, fontWeight: '900' }}>{item}</Text>
+        </View>
+      ))}
+    </ScrollView>
+  );
+}

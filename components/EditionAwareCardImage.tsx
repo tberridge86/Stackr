@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Image,
   type ImageProps,
   type ImageStyle,
   StyleSheet,
@@ -16,6 +15,7 @@ import {
 } from '../lib/editionImages';
 import type { ScanEditionHint } from '../types/scan';
 import { Text } from './Text';
+import { StackrImage } from './StackrImage';
 
 type Props = {
   uri?: string | null;
@@ -28,7 +28,7 @@ type Props = {
   resizeMode?: ImageProps['resizeMode'];
 };
 
-export default function EditionAwareCardImage({
+function EditionAwareCardImageBase({
   uri,
   cardId,
   rawData,
@@ -83,14 +83,19 @@ export default function EditionAwareCardImage({
   const resolvedDisplayUri = rawVariantUri ?? scrydexUnlimitedUri ?? remoteVariantUri ?? uri ?? null;
   const hasSourceVariant = Boolean(rawVariantUri || scrydexUnlimitedUri || remoteVariantUri);
   const needsVisualPatch = Boolean(editionHint && !hasSourceVariant && editionHint !== 'unlimited');
+  const contentFit = resizeMode === 'cover' ? 'cover' : resizeMode === 'stretch' ? 'fill' : 'contain';
 
   return (
     <View style={[styles.container, style]}>
       {resolvedDisplayUri ? (
-        <Image
-          source={{ uri: resolvedDisplayUri }}
-          style={[styles.image, imageStyle]}
-          resizeMode={resizeMode}
+        <StackrImage
+          uri={resolvedDisplayUri}
+          style={styles.image}
+          imageStyle={imageStyle}
+          contentFit={contentFit}
+          priority={sourceSize === 'small' ? 'low' : 'normal'}
+          transition={sourceSize === 'small' ? 140 : 220}
+          showFallbackIcon={false}
         />
       ) : (
         <View style={styles.fallback} />
@@ -111,6 +116,8 @@ export default function EditionAwareCardImage({
     </View>
   );
 }
+
+export default React.memo(EditionAwareCardImageBase);
 
 const styles = StyleSheet.create({
   container: {

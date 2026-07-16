@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '../../components/Text';
+import { StackrBackButton } from '../../components/StackrBackButton';
 import { useTheme } from '../../components/theme-context';
 import { useAuth } from '../../components/auth-context';
 import { PRICE_API_URL } from '../../lib/config';
@@ -127,9 +128,7 @@ export default function SellerOnboardingScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       {/* Header */}
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16, gap: 12 }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 4 }}>
-          <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
+        <StackrBackButton onPress={() => router.back()} />
         <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 20 }}>Seller Account</Text>
       </View>
 

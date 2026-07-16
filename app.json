@@ -4,7 +4,7 @@
     "slug": "Stackr",
     "version": "1.0.3",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/rev2/01-brand/app/icon.png",
     "scheme": "stackr",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -12,7 +12,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash.png",
+          "image": "./assets/rev2/01-brand/app/splash.png",
           "resizeMode": "cover",
           "backgroundColor": "#ffffff"
         }
@@ -59,7 +59,7 @@
     "android": {
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/rev2/01-brand/app/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -70,7 +70,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/rev2/01-brand/app/favicon.png"
     },
     "extra": {
       "eas": {

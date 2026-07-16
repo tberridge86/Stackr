@@ -13,7 +13,11 @@ import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchAllSets, PokemonSet } from '../../lib/pokemonTcg';
+import { fetchAllSets, getPokemonSetLogoUrl, normalizePokemonCardLanguage, type PokemonSet } from '../../lib/pokemonTcg';
+import { StackrBackdrop, StackrHeroBackdrop } from '../../components/StackrBackdrop';
+import { StackrPageTitle } from '../../components/StackrScreen';
+import { supabase } from '../../lib/supabase';
+import { stackrTabContentPadding } from '../../lib/stackrSizing';
 
 // ===============================
 // CONSTANTS
@@ -68,13 +72,62 @@ function groupSetsBySeries(sets: PokemonSet[]): { series: string; sets: PokemonS
     );
 }
 
+type ExistingBinderSummary = {
+  id: string;
+  name: string | null;
+  sourceSetId: string;
+  language: string;
+};
+
+function normaliseSetKey(setId?: string | null, language?: string | null) {
+  return `${normalizePokemonCardLanguage(language)}:${String(setId ?? '').trim().toLowerCase()}`;
+}
+
+async function fetchExistingSetBinders() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return {};
+
+  const { data, error } = await supabase
+    .from('binders')
+    .select('id, name, source_set_id, language')
+    .eq('user_id', user.id)
+    .not('source_set_id', 'is', null);
+
+  if (error) {
+    console.log('Failed to load existing set binders', error.message);
+    return {};
+  }
+
+  return (data ?? []).reduce<Record<string, ExistingBinderSummary>>((map, binder: any) => {
+    const key = normaliseSetKey(binder.source_set_id, binder.language);
+    if (!key || map[key]) return map;
+    map[key] = {
+      id: binder.id,
+      name: binder.name ?? null,
+      sourceSetId: binder.source_set_id,
+      language: normalizePokemonCardLanguage(binder.language),
+    };
+    return map;
+  }, {});
+}
+
 // ===============================
 // SET CARD COMPONENT
 // ===============================
 
-function SetCard({ item }: { item: PokemonSet }) {
+function SetCard({
+  item,
+  existingBinder,
+}: {
+  item: PokemonSet;
+  existingBinder?: ExistingBinderSummary;
+}) {
   const [logoFailed, setLogoFailed] = useState(false);
-  const logoUrl = `https://images.pokemontcg.io/${item.id}/logo.png`;
+  const logoUrl = item.images?.logo ?? getPokemonSetLogoUrl(item.id);
+  const hasExistingBinder = Boolean(existingBinder);
 
   return (
     <TouchableOpacity
@@ -95,17 +148,17 @@ function SetCard({ item }: { item: PokemonSet }) {
     >
       {/* Set logo */}
       <View style={{
-        width: 80,
+        width: 88,
         height: 44,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.colors.surface,
-        borderRadius: 8,
+        backgroundColor: 'transparent',
+        borderRadius: 0,
       }}>
         {!logoFailed ? (
           <Image
-            source={{ uri: logoUrl }}
-            style={{ width: 76, height: 40 }}
+            source={{ uri: logoUrl ?? '' }}
+            style={{ width: 84, height: 40 }}
             resizeMode="contain"
             onError={() => setLogoFailed(true)}
           />
@@ -126,27 +179,52 @@ function SetCard({ item }: { item: PokemonSet }) {
 
       {/* CTA */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-        <TouchableOpacity
-          onPress={(e) => {
-            e.stopPropagation();
-            router.push({
-              pathname: '/binder/new',
-              params: { sourceSetId: item.id, type: 'official' },
-            });
-          }}
-          style={{
-            backgroundColor: theme.colors.primary + '18',
-            borderRadius: 8,
-            paddingHorizontal: 8,
-            paddingVertical: 5,
-            borderWidth: 1,
-            borderColor: theme.colors.primary + '40',
-          }}
-        >
-          <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
-            + Binder
-          </Text>
-        </TouchableOpacity>
+        {hasExistingBinder ? (
+          <View
+            accessibilityRole="text"
+            accessibilityLabel={`${item.name} already has a binder in your vault`}
+            style={{
+              backgroundColor: '#F3F0FF',
+              borderRadius: 8,
+              paddingHorizontal: 8,
+              paddingVertical: 5,
+              borderWidth: 1,
+              borderColor: '#DED5FF',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <Ionicons name="checkmark-circle" size={13} color={theme.colors.primary} />
+            <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
+              In Vault
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={(e) => {
+              e.stopPropagation();
+              router.push({
+                pathname: '/binder/new',
+                params: { sourceSetId: item.id, type: 'official', language: item.language ?? 'en' },
+              });
+            }}
+            accessibilityRole="button"
+            accessibilityLabel={`Create binder for ${item.name}`}
+            style={{
+              backgroundColor: theme.colors.primary + '18',
+              borderRadius: 8,
+              paddingHorizontal: 8,
+              paddingVertical: 5,
+              borderWidth: 1,
+              borderColor: theme.colors.primary + '40',
+            }}
+          >
+            <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
+              + Binder
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <Ionicons name="chevron-forward" size={16} color={theme.colors.textSoft} />
       </View>
@@ -163,6 +241,7 @@ export default function ExploreScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [existingBindersBySet, setExistingBindersBySet] = useState<Record<string, ExistingBinderSummary>>({});
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(
     new Set(['Scarlet & Violet', 'Sword & Shield'])
   );
@@ -176,8 +255,12 @@ export default function ExploreScreen() {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
 
-      const data = await fetchAllSets();
+      const [data, existingBinders] = await Promise.all([
+        fetchAllSets(),
+        fetchExistingSetBinders(),
+      ]);
       setSets(data);
+      setExistingBindersBySet(existingBinders);
     } catch (error) {
       console.log('Failed to load sets', error);
     } finally {
@@ -268,7 +351,8 @@ export default function ExploreScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+        <StackrBackdrop />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
@@ -280,13 +364,14 @@ export default function ExploreScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+      <StackrBackdrop />
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}>
 
+        <View style={{ position: 'relative', borderRadius: 24, padding: 12, marginBottom: 12, overflow: 'hidden', backgroundColor: `${theme.colors.card}CC`, borderWidth: 1, borderColor: theme.colors.border }}>
+          <StackrHeroBackdrop opacity={0.24} />
         {/* Header */}
-        <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '900', marginBottom: 4 }}>
-          Explore
-        </Text>
+        <StackrPageTitle title="Discover Sets" accentText="Sets" style={{ marginBottom: 4 }} />
         <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 14 }}>
           Browse all Pokémon TCG sets · {sets.length} sets available
         </Text>
@@ -301,7 +386,6 @@ export default function ExploreScreen() {
           paddingVertical: 12,
           borderWidth: 1,
           borderColor: theme.colors.border,
-          marginBottom: 12,
           gap: 10,
         }}>
           <Ionicons name="search" size={16} color={theme.colors.textSoft} />
@@ -310,6 +394,8 @@ export default function ExploreScreen() {
             onChangeText={setSearch}
             placeholder="Search sets by name or series..."
             placeholderTextColor={theme.colors.textSoft}
+            autoCorrect={false}
+            autoCapitalize="words"
             style={{ flex: 1, color: theme.colors.text, fontSize: 15, fontWeight: '600' }}
           />
           {search.length > 0 && (
@@ -320,6 +406,8 @@ export default function ExploreScreen() {
         </View>
 
         {/* Expand / collapse all — only when not searching */}
+        </View>
+
         {!isSearching && (
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 10 }}>
             <TouchableOpacity
@@ -365,7 +453,7 @@ export default function ExploreScreen() {
             item.type === 'header' ? `header-${item.series}` : `set-${item.set.id}`
           }
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
+          contentContainerStyle={{ paddingBottom: stackrTabContentPadding.standard }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -405,7 +493,12 @@ export default function ExploreScreen() {
               );
             }
 
-            return <SetCard item={item.set} />;
+            return (
+              <SetCard
+                item={item.set}
+                existingBinder={existingBindersBySet[normaliseSetKey(item.set.id, item.set.language)]}
+              />
+            );
           }}
           ListEmptyComponent={
             <View style={{ alignItems: 'center', paddingVertical: 40 }}>

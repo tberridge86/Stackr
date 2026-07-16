@@ -2,19 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
-
-// Configure how notifications appear when app is foregrounded
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
 
 type AuthContextType = {
   user: any;
@@ -26,8 +13,33 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
 });
 
+let notificationHandlerConfigured = false;
+
+async function getNotificationModules() {
+  const [Notifications, Device] = await Promise.all([
+    import('expo-notifications'),
+    import('expo-device'),
+  ]);
+
+  if (!notificationHandlerConfigured) {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+    notificationHandlerConfigured = true;
+  }
+
+  return { Notifications, Device };
+}
+
 async function registerPushToken(userId: string) {
   try {
+    const { Notifications, Device } = await getNotificationModules();
     if (!Device.isDevice) return; // won't work on simulator
 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -99,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(currentUser);
 
         if (currentUser) {
-          await registerPushToken(currentUser.id);
+          void registerPushToken(currentUser.id);
         }
       } catch (error) {
         if (isStaleAuthError(error)) {
@@ -116,12 +128,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadUser();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      (_event, session) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-          await registerPushToken(currentUser.id);
+          void registerPushToken(currentUser.id);
         }
       }
     );

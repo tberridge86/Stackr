@@ -19,14 +19,31 @@ import { FeatureTipGate } from '../../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AVATAR_PRESETS } from '../../../lib/avatars';
-import { getBinderCover } from '../../../lib/binderCovers';
+import { BinderArtwork } from '../../../components/BinderArtwork';
 import { supabase } from '../../../lib/supabase';
 import { getMyFriends } from '../../../lib/friends';
 import { useProfile } from '../../../components/profile-context';
+import { StackrBackdrop, StackrHeroBackdrop } from '../../../components/StackrBackdrop';
+import { StackrCardActionIcon, StackrPageTitle } from '../../../components/StackrScreen';
+import { stackrIcons } from '../../../lib/stackrIcons';
+import { stackrTabContentPadding } from '../../../lib/stackrSizing';
 
 type FeedMode = 'global' | 'friends';
-type SocialTab = 'Home' | 'Flex' | 'Local' | 'News';
+type SocialTab = 'Social' | 'Flex' | 'Trades' | 'Local' | 'News';
 type LocalFilter = 'Stores' | 'Meet ups' | 'Trade nights';
+type CommunityChannelKey =
+  | 'all'
+  | 'social'
+  | 'question'
+  | 'flex'
+  | 'binder_flex'
+  | 'chase_flex'
+  | 'slab_flex'
+  | 'milestone'
+  | 'trade_talk'
+  | 'deal_check'
+  | 'looking_for_trade'
+  | 'trade_win';
 
 type SocialPost = {
   id: string;
@@ -68,6 +85,7 @@ type BinderOption = {
   type?: string | null;
   is_public?: boolean | null;
   cover_key?: string | null;
+  source_set_id?: string | null;
 };
 
 type FlexPickerMode = 'binder' | 'chase' | 'trade' | 'slab' | null;
@@ -119,6 +137,15 @@ type CommunityNewsItem = {
   source_name: string | null;
   published_at: string | null;
 };
+
+type CommunityChannel = {
+  key: CommunityChannelKey;
+  label: string;
+  shortLabel?: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  prompt: string;
+  postType?: string;
+};
 type LiveLocalPlace = {
   place_id: string;
   name: string;
@@ -169,6 +196,60 @@ const LOCAL_STRONG_SHOP_TAGS = ['games', 'collector', 'hobby', 'comics'];
 const LOCAL_EXCLUDED_AMENITIES = ['place_of_worship', 'church', 'community_centre', 'school'];
 const LOCAL_EXCLUDED_NAME_WORDS = ['church', 'chapel', 'parish', 'mosque', 'temple', 'synagogue'];
 
+const POST_FEED_TABS: SocialTab[] = ['Social', 'Flex', 'Trades'];
+
+const COMMUNITY_CHANNELS: Record<Exclude<SocialTab, 'Local' | 'News'>, CommunityChannel[]> = {
+  Social: [
+    { key: 'all', label: 'All chat', shortLabel: 'All', icon: 'chatbubbles-outline', prompt: 'Start a collector chat, ask a question, or share what you are working on.' },
+    { key: 'social', label: 'Social', icon: 'people-outline', prompt: 'What are you collecting, opening, sorting, or chasing today?', postType: 'social' },
+    { key: 'question', label: 'Questions', icon: 'help-circle-outline', prompt: 'Ask the community about variants, pricing, storage, grading or binder choices.', postType: 'question' },
+    { key: 'flex', label: 'Flex talk', icon: 'sparkles-outline', prompt: 'Show the story behind a pull, binder page or collection moment.', postType: 'general' },
+  ],
+  Flex: [
+    { key: 'all', label: 'All flexes', shortLabel: 'All', icon: 'sparkles-outline', prompt: 'Post a card, binder, slab or milestone you want collectors to react to.' },
+    { key: 'binder_flex', label: 'Binder Flex', icon: 'albums-outline', prompt: 'Show a binder page, master set push or completion progress.', postType: 'binder_showcase' },
+    { key: 'chase_flex', label: 'Chase Cards', icon: 'flame-outline', prompt: 'Show the chase, the pull, or the card you finally landed.', postType: 'card_showcase' },
+    { key: 'slab_flex', label: 'Slabs', icon: 'id-card-outline', prompt: 'Share a slab return, grade result or label win.', postType: 'slab_flex' },
+    { key: 'milestone', label: 'Milestones', icon: 'trophy-outline', prompt: 'Celebrate a completed set, grail pickup, value milestone or trade win.', postType: 'milestone' },
+  ],
+  Trades: [
+    { key: 'all', label: 'All trades', shortLabel: 'All', icon: 'swap-horizontal-outline', prompt: 'Talk through trades, offers, fairness checks and collector deal ideas.' },
+    { key: 'trade_talk', label: 'Trade Talk', icon: 'chatbubble-ellipses-outline', prompt: 'Talk through a possible swap and what would make it fair.', postType: 'trade_discussion' },
+    { key: 'deal_check', label: 'Deal Check', icon: 'scale-outline', prompt: 'Ask if a deal, cash top-up, condition gap or trade value feels fair.', postType: 'deal_check' },
+    { key: 'looking_for_trade', label: 'Looking For', icon: 'search-outline', prompt: 'Tell collectors what you want and what you might move.', postType: 'looking_for_trade' },
+    { key: 'trade_win', label: 'Trade Wins', icon: 'trophy-outline', prompt: 'Show a completed trade and what made it work.', postType: 'trade_win' },
+  ],
+};
+
+const POST_TYPE_TO_CHANNEL: Record<string, CommunityChannelKey> = {
+  general: 'social',
+  social: 'social',
+  question: 'question',
+  card_showcase: 'chase_flex',
+  binder_showcase: 'binder_flex',
+  slab_flex: 'slab_flex',
+  milestone: 'milestone',
+  trade_discussion: 'trade_talk',
+  deal_check: 'deal_check',
+  looking_for_trade: 'looking_for_trade',
+  trade_win: 'trade_win',
+};
+
+const DISCUSSION_STARTERS: Record<CommunityChannelKey, string[]> = {
+  all: ['What would you do?', 'Any thoughts?', 'Who else is chasing this?'],
+  social: ['What are you collecting next?', 'What are you sorting today?', 'Any binder plans?'],
+  question: ['Anyone know the variant?', 'Would you grade this?', 'What would you check first?'],
+  flex: ['Rate the pickup', 'Keep or move?', 'What page does this belong on?'],
+  binder_flex: ['Favourite page?', 'What is missing?', 'Master set or normal set?'],
+  chase_flex: ['Worth the chase?', 'Hold or trade up?', 'What would you pair with it?'],
+  slab_flex: ['Grade match your expectation?', 'Crack, cross or hold?', 'Label choice working?'],
+  milestone: ['Next goal?', 'Best card in the run?', 'How long did it take?'],
+  trade_talk: ['Fair swap?', 'Who adds cash?', 'Which side wins?'],
+  deal_check: ['Condition gap?', 'Market value fair?', 'Would you accept?'],
+  looking_for_trade: ['What would you offer?', 'Any duplicates available?', 'Cash top-up needed?'],
+  trade_win: ['Best part of the deal?', 'Would you do it again?', 'What did you move?'],
+};
+
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -211,12 +292,6 @@ function isLiveLocalPlace(place: LiveLocalPlace | LocalStore | null): place is L
   return !!place && 'formatted_address' in place;
 }
 
-function getNearestStoreMeta(place: LiveLocalPlace | LocalStore | null) {
-  if (!place) return 'Use Local to find shops near you.';
-  if (isLiveLocalPlace(place)) return place.formatted_address;
-  return place.town ?? 'Use Local to find shops near you.';
-}
-
 function getLocalRadiusMiles(value: string) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 15;
@@ -256,6 +331,64 @@ async function openExternalUrl(url: string) {
   await Linking.openURL(safeUrl);
 }
 
+function getTabChannels(tab: SocialTab): CommunityChannel[] {
+  if (tab === 'Local' || tab === 'News') return [];
+  return COMMUNITY_CHANNELS[tab];
+}
+
+function getActiveChannel(tab: SocialTab, activeCategory: string): CommunityChannel {
+  const channels = getTabChannels(tab);
+  return channels.find((channel) => channel.label === activeCategory || channel.key === activeCategory) ?? channels[0] ?? COMMUNITY_CHANNELS.Social[0];
+}
+
+function getPostChannelKey(post: SocialPost): CommunityChannelKey {
+  const explicit = POST_TYPE_TO_CHANNEL[post.post_type];
+  if (explicit) return explicit;
+
+  const body = (post.body ?? '').toLowerCase();
+  if (/\b(trade|swap|offer|deal|cash|top[- ]?up|would you accept|fair)\b/.test(body)) {
+    if (/\b(win|completed|done|agreed)\b/.test(body)) return 'trade_win';
+    if (/\b(check|fair|value|condition|top[- ]?up)\b/.test(body)) return 'deal_check';
+    if (/\b(looking for|lf|want|chasing|seeking)\b/.test(body)) return 'looking_for_trade';
+    return 'trade_talk';
+  }
+
+  if (/\b(question|anyone know|help|which|should i|would you)\b/.test(body)) return 'question';
+  if (/\b(flex|pull|grail|chase|slab|graded|psa|cgc|bgs|ace|tag)\b/.test(body)) return 'chase_flex';
+  return 'social';
+}
+
+function getPostTab(post: SocialPost): Exclude<SocialTab, 'Local' | 'News'> {
+  const channel = getPostChannelKey(post);
+  if (['binder_flex', 'chase_flex', 'slab_flex', 'milestone', 'flex'].includes(channel)) return 'Flex';
+  if (['trade_talk', 'deal_check', 'looking_for_trade', 'trade_win'].includes(channel)) return 'Trades';
+  return 'Social';
+}
+
+function getChannelMeta(post: SocialPost): CommunityChannel {
+  const tab = getPostTab(post);
+  const channelKey = getPostChannelKey(post);
+  return COMMUNITY_CHANNELS[tab].find((channel) => channel.key === channelKey) ?? COMMUNITY_CHANNELS[tab][0];
+}
+
+function getDiscussionStarters(channelKey: CommunityChannelKey) {
+  return DISCUSSION_STARTERS[channelKey] ?? DISCUSSION_STARTERS.all;
+}
+
+function getComposerPostType(tab: SocialTab, channel: CommunityChannel, hasCard: boolean, hasBinder: boolean) {
+  if (tab === 'Flex') {
+    if (hasBinder) return 'binder_showcase';
+    if (hasCard) return 'card_showcase';
+    return channel.postType ?? 'milestone';
+  }
+
+  if (tab === 'Trades') {
+    return channel.postType ?? 'trade_discussion';
+  }
+
+  return channel.postType ?? 'social';
+}
+
 function timeAgo(dateString: string) {
   const then = new Date(dateString).getTime();
   const now = Date.now();
@@ -287,7 +420,7 @@ export default function CommunityScreen() {
   const [bindersById, setBindersById] = useState<Record<string, BinderOption>>({});
 
   const [mode, setMode] = useState<FeedMode>('global');
-  const [activeSocialTab, setActiveSocialTab] = useState<SocialTab>('Home');
+  const [activeSocialTab, setActiveSocialTab] = useState<SocialTab>('Social');
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const [loading, setLoading] = useState(true);
@@ -384,7 +517,7 @@ export default function CommunityScreen() {
       if (binderIds.length) {
         const { data: binderData } = await supabase
           .from('binders')
-          .select('id, name, type, is_public, cover_key')
+          .select('id, name, type, is_public, cover_key, source_set_id')
           .in('id', binderIds);
 
         setBindersById(Object.fromEntries((binderData ?? []).map((binder) => [binder.id, binder as BinderOption])));
@@ -409,7 +542,7 @@ export default function CommunityScreen() {
 
       const { data: binderData, error: binderError } = await supabase
         .from('binders')
-        .select('id, name, type, is_public, cover_key')
+        .select('id, name, type, is_public, cover_key, source_set_id')
         .eq('user_id', user.id);
 
       if (binderError) throw binderError;
@@ -588,12 +721,20 @@ export default function CommunityScreen() {
     ? posts
     : posts.filter((post) => friendIds.has(post.user_id));
 
-  if (activeSocialTab === 'Flex') {
-    return basePosts.filter((post) => post.post_type === 'card_showcase' || post.post_type === 'binder_showcase');
-  }
+  if (!POST_FEED_TABS.includes(activeSocialTab)) return [];
 
-  return activeSocialTab === 'Home' ? [] : basePosts;
-}, [posts, mode, friendIds, activeSocialTab]);
+  const activeChannel = getActiveChannel(activeSocialTab, activeCategory);
+  return basePosts.filter((post) => {
+    const postTab = getPostTab(post);
+    if (activeSocialTab === 'Social') {
+      if (activeChannel.key === 'all') return true;
+      return postTab === 'Social' && getPostChannelKey(post) === activeChannel.key;
+    }
+    if (postTab !== activeSocialTab) return false;
+    if (activeChannel.key === 'all') return true;
+    return getPostChannelKey(post) === activeChannel.key;
+  });
+}, [posts, mode, friendIds, activeSocialTab, activeCategory]);
   const handleAdminDeletePost = async (postId: string) => {
     Alert.alert('Delete post', 'Remove this post permanently?', [
       { text: 'Cancel', style: 'cancel' },
@@ -637,9 +778,12 @@ export default function CommunityScreen() {
         if (visibilityError) throw visibilityError;
       }
 
+      const activeChannel = getActiveChannel(activeSocialTab, activeCategory);
+      const postType = getComposerPostType(activeSocialTab, activeChannel, Boolean(selectedCard), Boolean(selectedBinder));
+
       const { error } = await supabase.from('social_posts').insert({
         user_id: user.id,
-        post_type: selectedBinder ? 'binder_showcase' : selectedCard ? 'card_showcase' : 'general',
+        post_type: postType,
         body: trimmedBody || null,
         binder_id: selectedBinder?.id ?? selectedCard?.binder_id ?? null,
         card_id: selectedCard?.card_id ?? null,
@@ -706,7 +850,7 @@ export default function CommunityScreen() {
   }, []);
 
   useEffect(() => {
-    if (activeSocialTab === 'Local' || activeSocialTab === 'Home') {
+    if (activeSocialTab === 'Local') {
       loadLocalData();
     }
   }, [activeSocialTab, loadLocalData]);
@@ -730,7 +874,7 @@ export default function CommunityScreen() {
   }, []);
 
   useEffect(() => {
-    if (activeSocialTab === 'News' || activeSocialTab === 'Home') {
+    if (activeSocialTab === 'News') {
       loadCommunityNews();
     }
   }, [activeSocialTab, loadCommunityNews]);
@@ -918,47 +1062,58 @@ export default function CommunityScreen() {
   const openFlexPicker = (modeToOpen: Exclude<FlexPickerMode, null>) => {
     setActiveCategory(
       modeToOpen === 'binder' ? 'Binder Flex'
-        : modeToOpen === 'chase' ? 'Chase Pull'
-        : modeToOpen === 'trade' ? 'Trade Win'
-        : 'Slab Return'
+        : modeToOpen === 'chase' ? 'Chase Cards'
+        : modeToOpen === 'trade' ? 'Trade Wins'
+        : 'Slabs'
     );
     setFlexPickerMode(modeToOpen);
+  };
+
+  const handleChannelPress = (channel: CommunityChannel) => {
+    setActiveCategory(channel.label);
+
+    if (activeSocialTab !== 'Flex') return;
+    if (channel.key === 'binder_flex') openFlexPicker('binder');
+    if (channel.key === 'chase_flex') openFlexPicker('chase');
+    if (channel.key === 'slab_flex') openFlexPicker('slab');
   };
 
   const chooseBinderFlex = (binder: BinderOption) => {
     setSelectedBinder(binder);
     setSelectedCard(null);
-    setBody((current) => current || 'Check out this binder!');
-    setFlexPickerMode(null);
-  };
-
-  const chooseCardFlex = (card: OwnedCardOption) => {
-    setSelectedCard(card);
-    setSelectedBinder(null);
-    setBody((current) => current || 'Look what I finally got!');
+    setBody((current) => current || 'Binder flex - what page should I finish next?');
     setFlexPickerMode(null);
   };
 
   const chooseChaseFlex = (card: OwnedCardOption) => {
     setSelectedCard(card);
     setSelectedBinder(null);
-    setBody((current) => current || 'Currently chasing this card!');
+    setBody((current) => current || 'Chase card check - hold, grade or trade up?');
     setFlexPickerMode(null);
   };
 
-  const renderBinderCover = (
-    binder: BinderOption,
-    style: any,
-    fallbackStyle: any = styles.binderShareIcon
-  ) => {
-    const cover = getBinderCover(binder.cover_key);
-    if (cover) {
-      return <Image source={cover.image} style={style} resizeMode="cover" />;
-    }
+  const renderBinderCover = (binder: BinderOption, style: any) => {
+    const flatStyle = StyleSheet.flatten(style) ?? {};
+    const frameWidth = typeof flatStyle.width === 'number' ? flatStyle.width : 74;
+    const compact = frameWidth <= 50;
 
     return (
-      <View style={fallbackStyle}>
-        <Ionicons name="albums-outline" size={28} color={theme.colors.primary} />
+      <View style={[style, { alignItems: 'center', justifyContent: 'center', overflow: 'visible', backgroundColor: 'transparent' }]}>
+        <BinderArtwork
+          coverKey={binder.cover_key}
+          sourceSetId={binder.type === 'official' ? binder.source_set_id : null}
+          setName={binder.type === 'official' ? binder.name : null}
+          fallbackColor={theme.colors.primary}
+          width={compact ? frameWidth : 70}
+          stageHeight={compact ? frameWidth + 20 : 78}
+          plateWidth={compact ? 36 : 54}
+          plateHeight={compact ? 44 : 64}
+          artworkWidth={compact ? 27 : 42}
+          artworkHeight={compact ? 36 : 54}
+          progressWidth={compact ? 36 : 54}
+          progressHeight={compact ? 4 : 5}
+          showFan={!compact}
+        />
       </View>
     );
   };
@@ -970,6 +1125,23 @@ export default function CommunityScreen() {
     );
     const card = item.card_id ? cards[item.card_id] : null;
     const binder = item.binder_id ? bindersById[item.binder_id] : null;
+    const channel = getChannelMeta(item);
+    const postTab = getPostTab(item);
+    const starters = getDiscussionStarters(channel.key).slice(0, 3);
+    const fallbackBody = item.post_type === 'card_showcase'
+      ? 'Added this card to the collection. Thoughts?'
+      : item.post_type === 'binder_showcase'
+        ? 'Sharing a binder flex. What should I chase next?'
+        : channel.prompt;
+    const cardTagLabel = postTab === 'Trades'
+      ? 'Trade discussion'
+      : card?.raw_data?.rarity === 'Rare Holo'
+        ? 'Holo pull'
+        : card?.raw_data?.rarity === 'Ultra Rare'
+          ? 'Ultra Rare'
+          : card?.raw_data?.rarity === 'Secret Rare'
+            ? 'Secret Rare'
+            : 'From collection';
 
     return (
   <View style={styles.postCard}>
@@ -982,11 +1154,22 @@ export default function CommunityScreen() {
         )}
       </View>
 
-      <View style={{ flex: 1 }}>
-        <Text style={styles.name}>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={styles.name} numberOfLines={1}>
           {profile?.collector_name ?? 'Collector'}
         </Text>
-        <Text style={styles.time}>{timeAgo(item.created_at)}</Text>
+        <View style={styles.postMetaRow}>
+          <Text style={styles.time}>{timeAgo(item.created_at)}</Text>
+          <Text style={styles.postMetaDot}>|</Text>
+          <Text style={styles.time}>{postTab}</Text>
+        </View>
+      </View>
+
+      <View style={[styles.channelPill, postTab === 'Trades' && styles.channelPillTrade]}>
+        <Ionicons name={channel.icon} size={13} color={postTab === 'Trades' ? '#A15C07' : theme.colors.primary} />
+        <Text style={[styles.channelPillText, postTab === 'Trades' && styles.channelPillTextTrade]} numberOfLines={1}>
+          {channel.shortLabel ?? channel.label}
+        </Text>
       </View>
 
       {isAdmin && (
@@ -999,17 +1182,19 @@ export default function CommunityScreen() {
       )}
     </View>
  
-        {item.post_type === 'card_showcase' && (
+        <Text style={styles.body}>{item.body || fallbackBody}</Text>
+
+        {false && item.post_type === 'card_showcase' && (
   <Text style={styles.body}>
     {item.body || 'Just added this to my collection 👀'}
   </Text>
 )}
 
-{item.post_type === 'general' && item.body && (
+{false && item.post_type === 'general' && item.body && (
   <Text style={styles.body}>{item.body}</Text>
 )}
 
-{item.post_type === 'binder_showcase' && (
+{false && item.post_type === 'binder_showcase' && (
   <Text style={styles.body}>{item.body || 'Sharing a binder flex'}</Text>
 )}
 
@@ -1037,7 +1222,8 @@ export default function CommunityScreen() {
   <Text style={styles.cardRarity}>{card.raw_data.rarity}</Text>
 )}
 
-<Text style={styles.cardTag}>
+<Text style={styles.cardTag}>{cardTagLabel}</Text>
+<Text style={[styles.cardTag, { display: 'none' }]}>
   {card.raw_data?.rarity === 'Rare Holo' && '✨ Holo Pull'}
   {card.raw_data?.rarity === 'Ultra Rare' && '🔥 Ultra Rare'}
   {card.raw_data?.rarity === 'Secret Rare' && '👑 Secret Rare'}
@@ -1060,22 +1246,35 @@ export default function CommunityScreen() {
             <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
           </Pressable>
         )}
+        <View style={styles.discussionPromptRow}>
+          {starters.map((starter) => (
+            <View key={starter} style={styles.discussionPromptChip}>
+              <Text style={styles.discussionPromptText}>{starter}</Text>
+            </View>
+          ))}
+        </View>
       </View>
     );
   };
 
-  const socialTabs: SocialTab[] = ['Home', 'Flex', 'Local', 'News'];
+  const socialTabs: SocialTab[] = ['Social', 'Flex', 'Trades', 'Local', 'News'];
   const socialCategories: Record<SocialTab, { icon: keyof typeof Ionicons.glyphMap; label: string }[]> = {
-    Home: [
-      { icon: 'albums-outline', label: 'Binder Flex' },
-      { icon: 'location-outline', label: 'Local' },
-      { icon: 'newspaper-outline', label: 'News' },
+    Social: [
+      { icon: 'chatbubbles-outline', label: 'All chat' },
+      { icon: 'people-outline', label: 'Social' },
+      { icon: 'help-circle-outline', label: 'Questions' },
     ],
     Flex: [
-      { icon: 'albums-outline', label: 'Binders' },
+      { icon: 'albums-outline', label: 'Binder Flex' },
       { icon: 'sparkles-outline', label: 'Chase Cards' },
       { icon: 'id-card-outline', label: 'Slabs' },
       { icon: 'trophy-outline', label: 'Milestones' },
+    ],
+    Trades: [
+      { icon: 'swap-horizontal-outline', label: 'Trade Talk' },
+      { icon: 'scale-outline', label: 'Deal Check' },
+      { icon: 'search-outline', label: 'Looking For' },
+      { icon: 'trophy-outline', label: 'Trade Wins' },
     ],
     Local: [
       { icon: 'location-outline', label: 'Near Me' },
@@ -1090,13 +1289,8 @@ export default function CommunityScreen() {
     ],
   };
   const activeSocialCategories = socialCategories[activeSocialTab] ?? [];
-  const flexCards = [
-    { icon: 'albums-outline' as const, label: 'Binder Flex', mode: 'binder' as const },
-    { icon: 'sparkles-outline' as const, label: 'Chase Pull', mode: 'chase' as const },
-    { icon: 'swap-horizontal-outline' as const, label: 'Trade Win', mode: 'trade' as const },
-    { icon: 'trophy-outline' as const, label: 'Set Complete', mode: 'binder' as const },
-    { icon: 'id-card-outline' as const, label: 'Slab Return', mode: 'slab' as const },
-  ];
+  const activePostChannels = getTabChannels(activeSocialTab);
+  const activePostChannel = getActiveChannel(activeSocialTab, activeCategory);
   const localActions = [
     { icon: 'storefront-outline' as const, title: 'Local shops', body: 'Find card stores and sellers near you.' },
     { icon: 'people-outline' as const, title: 'Meet ups', body: 'Discover collector meet ups and casual trades.' },
@@ -1155,12 +1349,6 @@ export default function CommunityScreen() {
   const visibleNewsItems = activeCategory === 'All'
     ? newsItems
     : newsItems.filter((item) => item.category === activeCategory);
-  const latestFlexPosts = posts
-    .filter((post) => post.post_type === 'card_showcase' || post.post_type === 'binder_showcase')
-    .slice(0, 10);
-  const soonestConvention = localFeaturedEvents[0] ?? null;
-  const nearestStore: LiveLocalPlace | LocalStore | null = liveLocalPlaces[0] ?? localStoreResults[0]?.store ?? null;
-  const latestNewsItem = newsItems[0];
   const filteredOwnedCards = useMemo(() => {
     const query = cardPickerSearch.trim().toLowerCase();
     if (!query) return ownedCards;
@@ -1229,7 +1417,7 @@ export default function CommunityScreen() {
           <Text style={styles.modalSubheading}>Choose a binder to post as a read-only flex.</Text>
           {binderOptions.map((binder) => (
             <Pressable key={binder.id} onPress={() => chooseBinderFlex(binder)} style={styles.flexPickerRow}>
-              {renderBinderCover(binder, styles.flexPickerCover, styles.flexPickerIcon)}
+              {renderBinderCover(binder, styles.flexPickerCover)}
               <View style={{ flex: 1 }}>
                 <Text style={styles.flexPickerTitle}>{binder.name}</Text>
                 <Text style={styles.flexPickerSubtitle}>{binder.type === 'official' ? 'Official binder' : 'Custom binder'} · Read-only share</Text>
@@ -1307,6 +1495,7 @@ export default function CommunityScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <StackrBackdrop />
       <FeatureTipGate
         tipKey="social-screen-v1"
         title="Social"
@@ -1320,33 +1509,30 @@ export default function CommunityScreen() {
       <View style={styles.container}>
         <View style={styles.hero}>
           <View style={styles.brandRow}>
-            <Image source={require('../../../assets/images/hub.png')} style={styles.brandLogo} resizeMode="contain" />
+            <View style={styles.heroTitleBlock}>
+              <StackrPageTitle title="Community" accentText="ity" />
+              <Text style={styles.subheading}>
+                {activeSocialTab === 'Social'
+                  ? 'Collector posts, questions and daily chat.'
+                  : activeSocialTab === 'Flex'
+                    ? 'Push flexes, chase cards and collection milestones.'
+                    : activeSocialTab === 'Trades'
+                      ? 'Talk through trade ideas, deal checks and swaps.'
+                      : activeSocialTab === 'Local'
+                        ? 'Find shops, meet ups and trade nights.'
+                        : 'Latest Pokemon news and Stackr updates.'}
+              </Text>
+            </View>
             <View style={styles.heroActions}>
               <Pressable onPress={openCollectorDirectory} style={styles.heroIconButton}>
-                <Ionicons name="search-outline" size={22} color={theme.colors.text} />
+                <StackrCardActionIcon source={stackrIcons.searchCard} frameSize={34} artworkSize={28} />
               </Pressable>
               <Pressable onPress={() => router.push('/notifications')} style={styles.heroIconButton}>
-                <Ionicons name="notifications-outline" size={22} color={theme.colors.text} />
+                <Image source={stackrIcons.notifications} style={{ width: 30, height: 30 }} resizeMode="contain" />
                 <View style={styles.notificationDot} />
               </Pressable>
             </View>
           </View>
-
-          <Ionicons name="sparkles" size={24} color="#D9CCFF" style={styles.heroSparkleOne} />
-          <Ionicons name="sparkles" size={14} color="#F59E0B" style={styles.heroSparkleTwo} />
-          <View style={styles.heroOrbLarge} />
-          <View style={styles.heroOrbSmall} />
-
-          <Text style={styles.heading}>Social</Text>
-          <Text style={styles.subheading}>
-            {activeSocialTab === 'Flex'
-              ? 'Showcase pulls, binders and milestones.'
-              : activeSocialTab === 'Local'
-                ? 'Find shops, meet ups and trade nights.'
-                : activeSocialTab === 'News'
-                    ? 'Latest Pokemon news and Stackr updates.'
-                    : 'A quick look across flex, local and news.'}
-          </Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.socialTabs}>
             {socialTabs.map((tab) => {
@@ -1403,72 +1589,8 @@ export default function CommunityScreen() {
           </View>
         )}
 
-        {activeSocialTab === 'Home' && (
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-          <View style={styles.homeSummaryGrid}>
-            <Pressable onPress={() => setActiveSocialTab('Flex')} style={styles.homeSummaryCard}>
-              <View style={styles.panelHeader}>
-                <Text style={styles.panelTitle}>Latest flex</Text>
-                <Text style={styles.viewAllText}>Latest 10</Text>
-              </View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.flexPreviewRow}>
-                {latestFlexPosts.length ? latestFlexPosts.map((post) => {
-                  const card = post.card_id ? cards[post.card_id] : null;
-                  const profile = profiles[post.user_id];
-                  return (
-                    <Pressable key={post.id} onPress={() => setActiveSocialTab('Flex')} style={styles.flexPreviewCard}>
-                      {card?.image_small || card?.image_large ? (
-                        <Image source={{ uri: card.image_small ?? card.image_large ?? '' }} style={styles.flexPreviewImage} resizeMode="contain" />
-                      ) : (
-                        <View style={styles.flexPreviewPlaceholder}>
-                          <Ionicons name="albums-outline" size={18} color={theme.colors.primary} />
-                        </View>
-                      )}
-                      <Text numberOfLines={1} style={styles.flexPreviewName}>{profile?.collector_name ?? 'Collector'}</Text>
-                    </Pressable>
-                  );
-                }) : (
-                  <Text style={styles.localEmptyText}>No flex posts yet.</Text>
-                )}
-              </ScrollView>
-            </Pressable>
-
-            <Pressable onPress={() => setActiveSocialTab('Local')} style={styles.homeSummaryCard}>
-              <View style={styles.panelHeader}>
-                <Text style={styles.panelTitle}>Soonest convention</Text>
-                <Text style={styles.viewAllText}>Local</Text>
-              </View>
-              <Text style={styles.homeFeatureTitle}>{soonestConvention?.title ?? 'No featured shows yet'}</Text>
-              <Text style={styles.homeFeatureMeta}>
-                {soonestConvention ? `${soonestConvention.venue_name ?? soonestConvention.town ?? 'Venue TBC'} - ${shortDateTime(soonestConvention.starts_at)}` : 'Admin-added shows will appear here.'}
-              </Text>
-            </Pressable>
-
-            <Pressable onPress={() => setActiveSocialTab('Local')} style={styles.homeSummaryCard}>
-              <View style={styles.panelHeader}>
-                <Text style={styles.panelTitle}>Nearest shop</Text>
-                <Text style={styles.viewAllText}>Search</Text>
-              </View>
-              <Text style={styles.homeFeatureTitle}>{nearestStore?.name ?? 'Search Local'}</Text>
-              <Text style={styles.homeFeatureMeta}>
-                {getNearestStoreMeta(nearestStore)}
-              </Text>
-            </Pressable>
-
-            <Pressable onPress={() => setActiveSocialTab('News')} style={styles.homeSummaryCard}>
-              <View style={styles.panelHeader}>
-                <Text style={styles.panelTitle}>Latest news</Text>
-                <Text style={styles.viewAllText}>News</Text>
-              </View>
-              <Text style={styles.homeFeatureTitle}>{latestNewsItem.title}</Text>
-              <Text style={styles.homeFeatureMeta}>{latestNewsItem.body}</Text>
-            </Pressable>
-          </View>
-        </ScrollView>
-        )}
-
         {activeSocialTab === 'Local' && (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: stackrTabContentPadding.standard }}>
             {localLoading && (
               <ActivityIndicator color={theme.colors.primary} style={{ marginBottom: 10 }} />
             )}
@@ -1522,6 +1644,7 @@ export default function CommunityScreen() {
 
             {localFilter === 'Stores' && (
             <View style={styles.localHeroPanel}>
+              <StackrHeroBackdrop opacity={0.20} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.localHeroTitle}>Find your local card scene</Text>
                 <Text style={styles.localHeroCopy}>
@@ -1702,27 +1825,40 @@ export default function CommunityScreen() {
           </ScrollView>
         )}
 
-        {activeSocialTab === 'Flex' && (
+        {POST_FEED_TABS.includes(activeSocialTab) && (
           <FlatList
             data={visiblePosts}
             keyExtractor={(item) => item.id}
             renderItem={renderPost}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={{ paddingBottom: stackrTabContentPadding.standard }}
             ListHeaderComponent={(
               <View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.flexCardRow}>
-                  {flexCards.map((item) => (
+                  {activePostChannels.map((item) => {
+                    const active = activePostChannel.key === item.key;
+                    return (
                     <Pressable
                       key={item.label}
-                      onPress={() => openFlexPicker(item.mode)}
-                      style={[styles.flexCard, activeCategory === item.label && styles.flexCardActive]}
+                      onPress={() => handleChannelPress(item)}
+                      style={[styles.flexCard, active && styles.flexCardActive]}
                     >
-                      <Ionicons name={item.icon} size={19} color={theme.colors.primary} />
+                      <Ionicons name={item.icon} size={19} color={active ? theme.colors.primary : theme.colors.textSoft} />
                       <Text style={styles.flexCardText}>{item.label}</Text>
                     </Pressable>
-                  ))}
+                    );
+                  })}
                 </ScrollView>
+
+                <View style={styles.channelIntroCard}>
+                  <View style={styles.channelIntroIcon}>
+                    <Ionicons name={activePostChannel.icon} size={22} color={theme.colors.primary} />
+                  </View>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={styles.channelIntroTitle}>{activePostChannel.label}</Text>
+                    <Text style={styles.channelIntroCopy}>{activePostChannel.prompt}</Text>
+                  </View>
+                </View>
 
                 <View style={styles.modeRow}>
                   <Pressable onPress={() => setMode('global')}>
@@ -1742,7 +1878,7 @@ export default function CommunityScreen() {
                   <TextInput
                     value={body}
                     onChangeText={setBody}
-                    placeholder={activeCategory === 'All' ? 'What do you want to share?' : `Share a ${activeCategory.toLowerCase()}...`}
+                    placeholder={activePostChannel.prompt}
                     placeholderTextColor={theme.colors.textSoft}
                     multiline
                     style={styles.input}
@@ -1776,7 +1912,7 @@ export default function CommunityScreen() {
                   {selectedBinder && (
                     <View style={styles.selectedCardPreview}>
                       <View style={styles.selectedPreviewRow}>
-                        {renderBinderCover(selectedBinder, styles.selectedBinderImage, styles.selectedBinderImagePlaceholder)}
+                        {renderBinderCover(selectedBinder, styles.selectedBinderImage)}
                         <View style={{ flex: 1 }}>
                           <Text style={styles.selectedLabel}>Attached binder</Text>
                           <Text style={styles.selectedName}>{selectedBinder.name}</Text>
@@ -1789,6 +1925,20 @@ export default function CommunityScreen() {
                   )}
 
                   <View style={styles.createActions}>
+                    {activeSocialTab === 'Flex' && (
+                      <Pressable
+                        onPress={() => openFlexPicker('binder')}
+                        style={styles.attachButton}
+                      >
+                        <Ionicons
+                          name="albums-outline"
+                          size={17}
+                          color={theme.colors.text}
+                        />
+                        <Text style={styles.attachText}>Attach binder</Text>
+                      </Pressable>
+                    )}
+
                     <Pressable
                       onPress={() => {
                         setCardPickerSearch('');
@@ -1801,7 +1951,9 @@ export default function CommunityScreen() {
                         size={17}
                         color={theme.colors.text}
                       />
-                      <Text style={styles.attachText}>Attach owned card</Text>
+                      <Text style={styles.attachText}>
+                        {activeSocialTab === 'Trades' ? 'Attach trade card' : 'Attach owned card'}
+                      </Text>
                     </Pressable>
 
                     <Pressable
@@ -1824,9 +1976,19 @@ export default function CommunityScreen() {
                 <ActivityIndicator color={theme.colors.primary} />
               ) : (
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>No posts yet</Text>
+                  <Text style={styles.emptyTitle}>
+                    {activeSocialTab === 'Trades'
+                      ? 'No trade talk yet'
+                      : activeSocialTab === 'Flex'
+                        ? 'No flexes yet'
+                        : 'No posts yet'}
+                  </Text>
                   <Text style={styles.emptyText}>
-                    Share a card from your binder or write your first update.
+                    {activeSocialTab === 'Trades'
+                      ? 'Start a deal check, ask what is fair, or attach a card you might move.'
+                      : activeSocialTab === 'Flex'
+                        ? 'Push a binder flex, chase card or milestone to get collectors talking.'
+                        : 'Start a collector chat, ask a question, or share what you are working on.'}
                   </Text>
                 </View>
               )
@@ -2193,25 +2355,26 @@ function shortDateTime(dateString: string | null) {
 
 function makeStyles(theme: any) {
   return StyleSheet.create({
-  safe: { flex: 1, backgroundColor: theme.colors.bg },
+  safe: { flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' },
   container: { flex: 1, paddingHorizontal: 14, paddingTop: 6 },
 
   hero: {
     position: 'relative',
-    paddingBottom: 8,
+    paddingBottom: 6,
     overflow: 'visible',
   },
 
   brandRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    gap: 12,
+    marginBottom: 2,
   },
 
-  brandLogo: {
-    width: 124,
-    height: 44,
+  heroTitleBlock: {
+    flex: 1,
+    minWidth: 0,
   },
 
   heroActions: {
@@ -2221,9 +2384,12 @@ function makeStyles(theme: any) {
   },
 
   heroIconButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 42,
+    height: 42,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.78)',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2250,38 +2416,6 @@ function makeStyles(theme: any) {
     height: 8,
     borderRadius: 4,
     backgroundColor: theme.colors.primary,
-  },
-
-  heroSparkleOne: {
-    position: 'absolute',
-    top: 26,
-    left: 148,
-  },
-
-  heroSparkleTwo: {
-    position: 'absolute',
-    top: 58,
-    right: 96,
-  },
-
-  heroOrbLarge: {
-    position: 'absolute',
-    right: 0,
-    top: 34,
-    width: 98,
-    height: 98,
-    borderRadius: 49,
-    backgroundColor: 'rgba(108, 66, 245, 0.14)',
-  },
-
-  heroOrbSmall: {
-    position: 'absolute',
-    right: 44,
-    top: 58,
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: 'rgba(108, 66, 245, 0.10)',
   },
 
   heading: {
@@ -2454,6 +2588,41 @@ function makeStyles(theme: any) {
     marginTop: 0,
     lineHeight: 13,
     flex: 1,
+  },
+
+  channelIntroCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+    padding: 12,
+    marginBottom: 10,
+  },
+
+  channelIntroIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: theme.colors.primary + '12',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  channelIntroTitle: {
+    color: theme.colors.text,
+    fontWeight: '900',
+    fontSize: 16,
+  },
+
+  channelIntroCopy: {
+    color: theme.colors.textSoft,
+    fontWeight: '700',
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 3,
   },
 
   homeSummaryGrid: {
@@ -2773,6 +2942,7 @@ function makeStyles(theme: any) {
   },
 
   localHeroPanel: {
+    position: 'relative',
     flexDirection: 'row',
     gap: 10,
     backgroundColor: theme.colors.card,
@@ -2781,6 +2951,7 @@ function makeStyles(theme: any) {
     borderColor: theme.colors.border,
     padding: 12,
     marginBottom: 10,
+    overflow: 'hidden',
   },
 
   localHeroTitle: {
@@ -3258,7 +3429,7 @@ function makeStyles(theme: any) {
   },
 
   newsListContent: {
-    paddingBottom: 120,
+    paddingBottom: stackrTabContentPadding.standard,
     paddingRight: 2,
   },
 
@@ -3533,6 +3704,49 @@ function makeStyles(theme: any) {
     marginTop: 2,
   },
 
+  postMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  postMetaDot: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '900',
+    marginTop: 2,
+  },
+
+  channelPill: {
+    minHeight: 30,
+    maxWidth: 126,
+    borderRadius: 999,
+    backgroundColor: theme.colors.primary + '10',
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '24',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    marginLeft: 8,
+  },
+
+  channelPillTrade: {
+    backgroundColor: '#FFF7E6',
+    borderColor: '#F4C777',
+  },
+
+  channelPillText: {
+    color: theme.colors.primary,
+    fontSize: 11,
+    fontWeight: '900',
+    flexShrink: 1,
+  },
+
+  channelPillTextTrade: {
+    color: '#A15C07',
+  },
+
   body: {
     color: theme.colors.text,
     marginTop: 12,
@@ -3602,6 +3816,28 @@ function makeStyles(theme: any) {
     color: theme.colors.primary,
     marginTop: 10,
     fontSize: 12,
+    fontWeight: '900',
+  },
+
+  discussionPromptRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10,
+  },
+
+  discussionPromptChip: {
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: theme.colors.primary + '0D',
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '18',
+  },
+
+  discussionPromptText: {
+    color: theme.colors.primary,
+    fontSize: 11,
     fontWeight: '900',
   },
 

@@ -12,13 +12,29 @@ import {
   Modal,
 } from 'react-native';
 import { Text } from '../../components/Text';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchAllSets, PokemonSet } from '../../lib/pokemonTcg';
+import {
+  fetchAllSets,
+  getPokemonSetLogoUrl,
+  normalizePokemonCardLanguage,
+  type PokemonCardLanguage,
+  type PokemonSet,
+} from '../../lib/pokemonTcg';
 import { createBinder, fetchBinderById } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
 import { BINDER_COVERS } from '../../lib/binderCovers';
+import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { StackrPageHeader, StackrScreen } from '../../components/StackrScreen';
+import { BinderArtwork } from '../../components/BinderArtwork';
+import { BinderModeIconBadge } from '../../components/BinderModeBadge';
+import {
+  CUSTOM_BINDER_NAME_ART,
+  getCustomBinderNameArt,
+  getCustomBinderNameArtKeyForBinder,
+  getRandomCustomBinderNameArtKey,
+  setCustomBinderNameArtKeyForBinder,
+} from '../../lib/customBinderNameArt';
 
 // ===============================
 // CONSTANTS
@@ -27,6 +43,11 @@ import { BINDER_COVERS } from '../../lib/binderCovers';
 const BASE_ERA_SET_IDS = [
   'base1', 'base2', 'base3', 'base4', 'base5',
   'gym1', 'gym2', 'neo1', 'neo2', 'neo3', 'neo4',
+];
+
+const SET_LANGUAGE_OPTIONS: { key: PokemonCardLanguage; label: string }[] = [
+  { key: 'en', label: 'English' },
+  { key: 'ja', label: 'Japan' },
 ];
 
 const cardShadow = {
@@ -44,56 +65,69 @@ const cardShadow = {
 function BinderPreview({
   name,
   coverKey,
+  sourceSetId,
+  type,
+  cardMode,
+  customNameArtKey,
 }: {
   name: string;
   coverKey: string | null;
+  sourceSetId?: string | null;
+  type: 'official' | 'custom';
+  cardMode?: 'raw' | 'graded';
+  customNameArtKey?: string | null;
 }) {
   const { theme } = useTheme();
   const cover = BINDER_COVERS.find((c) => c.key === coverKey) ?? null;
-
-  if (cover) {
-    return (
-      <View style={{
-        borderRadius: 16,
-        marginBottom: 20,
-        height: 100,
-        overflow: 'hidden',
-        borderWidth: 2,
-        borderColor: cover.accentColor,
-        ...cardShadow,
-      }}>
-        <Image
-          source={cover.image}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' }}
-          resizeMode="cover"
-        />
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)' }} />
-        <View style={{ flex: 1, padding: 16, justifyContent: 'center' }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '700', opacity: 0.8 }}>PREVIEW</Text>
-          <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '900', marginTop: 4 }} numberOfLines={1}>
-            {name.trim() || 'Binder name'}
-          </Text>
-        </View>
-      </View>
-    );
-  }
+  const customNameArt = type === 'custom' ? getCustomBinderNameArt(customNameArtKey) : null;
+  const officialLogoUrl = type === 'official' ? getPokemonSetLogoUrl(sourceSetId) : null;
 
   return (
     <View style={{
       borderRadius: 16,
       marginBottom: 20,
-      height: 100,
-      justifyContent: 'center',
-      padding: 16,
-      borderWidth: 2,
-      borderColor: theme.colors.border,
+      minHeight: 132,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: cover?.accentColor ?? theme.colors.border,
       backgroundColor: theme.colors.card,
       ...cardShadow,
     }}>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', opacity: 0.8 }}>PREVIEW</Text>
-      <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginTop: 4 }} numberOfLines={1}>
-        {name.trim() || 'Binder name'}
-      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        <View style={{ position: 'relative' }}>
+          <BinderArtwork
+            coverKey={coverKey}
+            sourceSetId={type === 'official' ? sourceSetId : null}
+            setName={type === 'official' ? name : null}
+            fallbackArtSource={customNameArt?.source ?? null}
+            fallbackColor={cover?.accentColor ?? theme.colors.primary}
+            width={92}
+            stageHeight={104}
+            plateWidth={76}
+            plateHeight={86}
+            artworkWidth={60}
+            artworkHeight={74}
+            progressWidth={76}
+          />
+          {cardMode === 'graded' ? (
+            <BinderModeIconBadge type="graded" size={44} style={{ position: 'absolute', top: 5, left: 5 }} />
+          ) : null}
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', opacity: 0.8 }}>PREVIEW</Text>
+          {customNameArt ? (
+            <Image source={customNameArt.source} style={{ width: '100%', height: 32, marginTop: 4 }} resizeMode="contain" />
+          ) : officialLogoUrl ? (
+            <Image source={{ uri: officialLogoUrl }} style={{ width: '100%', height: 32, marginTop: 4 }} resizeMode="contain" />
+          ) : null}
+          <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900', marginTop: 4 }} numberOfLines={1}>
+            {name.trim() || 'Binder name'}
+          </Text>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 5 }} numberOfLines={1}>
+            {cover?.label ?? 'No cover selected'}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -107,12 +141,16 @@ export default function NewBinderScreen() {
   const params = useLocalSearchParams<{
     id?: string;
     sourceSetId?: string;
+    language?: string;
     type?: string;
     returnTo?: string;
   }>();
 
   const binderId = Array.isArray(params.id) ? params.id[0] : params.id;
   const paramSourceSetId = Array.isArray(params.sourceSetId) ? params.sourceSetId[0] : params.sourceSetId;
+  const paramLanguage = normalizePokemonCardLanguage(
+    Array.isArray(params.language) ? params.language[0] : params.language
+  );
   const paramType = Array.isArray(params.type) ? params.type[0] : params.type;
   const returnTo = Array.isArray(params.returnTo) ? params.returnTo[0] : params.returnTo;
 
@@ -120,6 +158,9 @@ export default function NewBinderScreen() {
 
   const [name, setName] = useState('');
   const [coverKey, setCoverKey] = useState<string | null>(null);
+  const [sourceSetId, setSourceSetId] = useState<string | null>(paramSourceSetId ?? null);
+  const [setLanguage, setSetLanguage] = useState<PokemonCardLanguage>(paramLanguage);
+  const [customNameArtKey, setCustomNameArtKey] = useState<string>(getRandomCustomBinderNameArtKey());
   const [coverDropdownOpen, setCoverDropdownOpen] = useState(false);
   const [type, setType] = useState<'official' | 'custom'>(
     paramType === 'official' ? 'official' : 'custom'
@@ -136,7 +177,7 @@ export default function NewBinderScreen() {
   const [loadingBinder, setLoadingBinder] = useState(isEditMode);
   const [saving, setSaving] = useState(false);
 
-  const isBaseEra = selectedSet ? BASE_ERA_SET_IDS.includes(selectedSet.id) : false;
+  const isBaseEra = selectedSet && setLanguage === 'en' ? BASE_ERA_SET_IDS.includes(selectedSet.id) : false;
 
   const selectedCover = BINDER_COVERS.find((c) => c.key === coverKey) ?? null;
 
@@ -146,14 +187,17 @@ export default function NewBinderScreen() {
 
   const loadSets = useCallback(async () => {
     try {
-      const data = await fetchAllSets();
+      setLoadingSets(true);
+      const data = await fetchAllSets({ language: setLanguage });
       setSets(data);
 
       if (paramSourceSetId) {
         const found = data.find((s) => s.id === paramSourceSetId);
         if (found) {
           setSelectedSet(found);
+          setSourceSetId(found.id);
           setName(found.name);
+          setSetLanguage(normalizePokemonCardLanguage(found.language ?? setLanguage));
           setType('official');
         }
       }
@@ -162,7 +206,7 @@ export default function NewBinderScreen() {
     } finally {
       setLoadingSets(false);
     }
-  }, [paramSourceSetId]);
+  }, [paramSourceSetId, setLanguage]);
 
   useEffect(() => {
     loadSets();
@@ -188,6 +232,11 @@ export default function NewBinderScreen() {
       setName(binder.name ?? '');
       setCoverKey(binder.cover_key ?? null);
       setType(binder.type ?? 'custom');
+      setSourceSetId(binder.source_set_id ?? null);
+      setSetLanguage(normalizePokemonCardLanguage(binder.language));
+      if ((binder.type ?? 'custom') === 'custom') {
+        setCustomNameArtKey(await getCustomBinderNameArtKeyForBinder(binder.id, binder.name));
+      }
       setCardMode(binder.card_mode === 'graded' ? 'graded' : 'raw');
       setEdition((binder.edition as "1st_edition" | "unlimited" | null) ?? null);
       setDefaultCondition(binder.default_condition ?? 'Near Mint');
@@ -223,9 +272,21 @@ export default function NewBinderScreen() {
 
   const handleSelectSet = (set: PokemonSet) => {
     if (isEditMode) return;
+    setSetLanguage(normalizePokemonCardLanguage(set.language ?? setLanguage));
     setSelectedSet(set);
+    setSourceSetId(set.id);
     setName(set.name);
     setEdition(null);
+  };
+
+  const handleSetLanguageChange = (language: PokemonCardLanguage) => {
+    if (isEditMode || language === setLanguage) return;
+    setSetLanguage(language);
+    setSelectedSet(null);
+    setSourceSetId(null);
+    setSetSearch('');
+    setEdition(null);
+    if (type === 'official') setName('');
   };
 
   const saveBinder = async (resolvedEdition: '1st_edition' | 'unlimited' | null) => {
@@ -238,6 +299,7 @@ export default function NewBinderScreen() {
           color: theme.colors.primary,
           gradient: null,
           cover_key: coverKey ?? null,
+          language: type === 'official' ? setLanguage : 'en',
           edition: resolvedEdition ?? null,
           default_condition: defaultCondition,
           card_mode: cardMode,
@@ -249,9 +311,10 @@ export default function NewBinderScreen() {
           .eq('id', binderId);
 
         if (error?.code === 'PGRST204') {
-          const { default_condition, card_mode, ...fallbackPayload } = updatePayload;
+          const { default_condition, card_mode, language, ...fallbackPayload } = updatePayload;
           void default_condition;
           void card_mode;
+          void language;
           const fallback = await supabase
             .from('binders')
             .update(fallbackPayload)
@@ -260,6 +323,10 @@ export default function NewBinderScreen() {
         }
 
         if (error) throw error;
+
+        if (type === 'custom') {
+          await setCustomBinderNameArtKeyForBinder(binderId, customNameArtKey);
+        }
 
         Alert.alert('Saved', 'Binder updated successfully.', [
           { text: 'OK', onPress: () => router.back() },
@@ -274,10 +341,15 @@ export default function NewBinderScreen() {
         coverKey: coverKey ?? null,
         type,
         sourceSetId: type === 'official' ? selectedSet?.id : null,
+        language: type === 'official' ? setLanguage : 'en',
         edition: resolvedEdition ?? null,
         defaultCondition,
         cardMode,
       });
+
+      if (type === 'custom') {
+        await setCustomBinderNameArtKeyForBinder(binder.id, customNameArtKey);
+      }
 
       if (returnTo === 'scan-review') {
         router.back();
@@ -319,12 +391,13 @@ export default function NewBinderScreen() {
 
   if (loadingBinder) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <StackrScreen variant="form">
+        <StackrBackdrop />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>Loading binder...</Text>
         </View>
-      </SafeAreaView>
+      </StackrScreen>
     );
   }
 
@@ -333,22 +406,21 @@ export default function NewBinderScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['bottom', 'left', 'right']}>
+    <StackrScreen variant="form">
+      <StackrBackdrop />
       <View style={{ flex: 1, padding: 16, paddingBottom: 0 }}>
 
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
-              {isEditMode ? 'Edit Binder' : 'New Binder'}
-            </Text>
-            <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 13 }}>
-              {isEditMode
-                ? 'Update your binder name and cover.'
-                : 'Choose raw cards or graded slabs, then build your collection.'}
-            </Text>
-          </View>
-        </View>
+        <StackrPageHeader
+          title={isEditMode ? 'Edit Binder' : 'New Binder'}
+          accentText="Binder"
+          subtitle={
+            isEditMode
+              ? 'Update your binder name and cover.'
+              : 'Choose raw cards or graded slabs, then build your collection.'
+          }
+          style={{ marginBottom: 2 }}
+        />
 
         {!isEditMode && (
           <View style={{
@@ -374,7 +446,7 @@ export default function NewBinderScreen() {
                     style={{
                       flex: 1,
                       minHeight: 58,
-                      backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                      backgroundColor: active ? theme.colors.primary + '12' : theme.colors.surface,
                       paddingHorizontal: 12,
                       paddingVertical: 10,
                       borderRadius: 14,
@@ -384,10 +456,13 @@ export default function NewBinderScreen() {
                       justifyContent: 'center',
                     }}
                   >
-                    <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900' }}>
-                      {mode === 'raw' ? 'Raw cards' : 'Graded slabs'}
-                    </Text>
-                    <Text style={{ color: active ? 'rgba(255,255,255,0.78)' : theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginTop: 2 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                      {mode === 'graded' ? <BinderModeIconBadge type="graded" size={44} /> : null}
+                      <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontWeight: '900' }}>
+                        {mode === 'raw' ? 'Raw cards' : 'Graded slabs'}
+                      </Text>
+                    </View>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
                       {mode === 'raw' ? 'Normal binder' : 'Slab binder'}
                     </Text>
                   </TouchableOpacity>
@@ -404,7 +479,14 @@ export default function NewBinderScreen() {
         >
           {/* Live preview */}
           <View style={{ marginTop: 4 }}>
-            <BinderPreview name={name} coverKey={coverKey} />
+            <BinderPreview
+              name={name}
+              coverKey={coverKey}
+              sourceSetId={type === 'official' ? selectedSet?.id ?? sourceSetId : null}
+              type={type}
+              cardMode={cardMode}
+              customNameArtKey={customNameArtKey}
+            />
           </View>
 
           {/* Main form card */}
@@ -433,7 +515,7 @@ export default function NewBinderScreen() {
                         onPress={() => setType(t)}
                         style={{
                           flex: 1,
-                          backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                          backgroundColor: active ? theme.colors.primary + '12' : theme.colors.surface,
                           paddingHorizontal: 14, paddingVertical: 12,
                           borderRadius: 14,
                           borderWidth: 1,
@@ -441,7 +523,7 @@ export default function NewBinderScreen() {
                           alignItems: 'center',
                         }}
                       >
-                        <Text style={{ color: active ? '#FFFFFF' : theme.colors.textSoft, fontWeight: '900' }}>
+                        <Text style={{ color: active ? theme.colors.primary : theme.colors.textSoft, fontWeight: '900' }}>
                           {t.toUpperCase()}
                         </Text>
                       </TouchableOpacity>
@@ -469,7 +551,7 @@ export default function NewBinderScreen() {
                         style={{
                           flex: 1,
                           minHeight: 58,
-                          backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                          backgroundColor: active ? theme.colors.primary + '12' : theme.colors.surface,
                           paddingHorizontal: 12,
                           paddingVertical: 10,
                           borderRadius: 14,
@@ -479,10 +561,13 @@ export default function NewBinderScreen() {
                           justifyContent: 'center',
                         }}
                       >
-                        <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontWeight: '900' }}>
-                          {mode === 'raw' ? 'Raw cards' : 'Graded slabs'}
-                        </Text>
-                        <Text style={{ color: active ? 'rgba(255,255,255,0.78)' : theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginTop: 2 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                          {mode === 'graded' ? <BinderModeIconBadge type="graded" size={44} /> : null}
+                          <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontWeight: '900' }}>
+                            {mode === 'raw' ? 'Raw cards' : 'Graded slabs'}
+                          </Text>
+                        </View>
+                        <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
                           {mode === 'raw' ? 'Condition based' : 'PSA / CGC / BGS'}
                         </Text>
                       </TouchableOpacity>
@@ -494,12 +579,12 @@ export default function NewBinderScreen() {
 
             {/* Name */}
             <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
-              Binder name
+              {type === 'custom' ? 'Custom title wording' : 'Binder name'}
             </Text>
             <TextInput
               value={name}
               onChangeText={setName}
-              placeholder="e.g. Base Set, My Charizard Collection..."
+              placeholder={type === 'custom' ? 'e.g. My Owned Hits, Trade Vault...' : 'e.g. Base Set, My Charizard Collection...'}
               placeholderTextColor={theme.colors.textSoft}
               style={{
                 backgroundColor: theme.colors.surface,
@@ -512,6 +597,45 @@ export default function NewBinderScreen() {
                 marginBottom: 16,
               }}
             />
+
+            {type === 'custom' ? (
+              <>
+                <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
+                  Name art style
+                </Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginBottom: 10 }}>
+                  This artwork appears anywhere an official set logo would normally appear.
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingRight: 8, marginBottom: 16 }}>
+                  {CUSTOM_BINDER_NAME_ART.map((art) => {
+                    const selected = customNameArtKey === art.key;
+                    return (
+                      <TouchableOpacity
+                        key={art.key}
+                        onPress={() => setCustomNameArtKey(art.key)}
+                        activeOpacity={0.82}
+                        style={{
+                          width: 126,
+                          minHeight: 72,
+                          borderRadius: 16,
+                          borderWidth: 1,
+                          borderColor: selected ? theme.colors.primary : theme.colors.border,
+                          backgroundColor: selected ? `${theme.colors.primary}12` : theme.colors.surface,
+                          padding: 8,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Image source={art.source} style={{ width: 106, height: 34 }} resizeMode="contain" />
+                        <Text style={{ color: selected ? theme.colors.primary : theme.colors.textSoft, fontSize: 10, fontWeight: '900', marginTop: 5 }} numberOfLines={1}>
+                          {art.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </>
+            ) : null}
 
             {/* Cover dropdown */}
             <Text style={{ color: theme.colors.text, fontWeight: '900', marginBottom: 8 }}>
@@ -613,7 +737,7 @@ export default function NewBinderScreen() {
                       <Image
                         source={cover.image}
                         style={{ width: 48, height: 48, borderRadius: 8 }}
-                        resizeMode="cover"
+                        resizeMode="contain"
                       />
                       <Text style={{ flex: 1, color: theme.colors.text, fontWeight: '700' }}>
                         {cover.label}
@@ -641,6 +765,42 @@ export default function NewBinderScreen() {
                 Select set
               </Text>
 
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                {SET_LANGUAGE_OPTIONS.map((option) => {
+                  const active = setLanguage === option.key;
+                  return (
+                    <TouchableOpacity
+                      key={option.key}
+                      onPress={() => handleSetLanguageChange(option.key)}
+                      activeOpacity={0.84}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Show ${option.label} sets`}
+                      style={{
+                        flex: 1,
+                        minHeight: 42,
+                        borderRadius: 14,
+                        borderWidth: 1,
+                        borderColor: active ? theme.colors.primary : theme.colors.border,
+                        backgroundColor: active ? theme.colors.primary + '12' : theme.colors.surface,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexDirection: 'row',
+                        gap: 7,
+                      }}
+                    >
+                      <Ionicons
+                        name={option.key === 'ja' ? 'sparkles-outline' : 'albums-outline'}
+                        size={15}
+                        color={active ? theme.colors.primary : theme.colors.textSoft}
+                      />
+                      <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
               {selectedSet && (
                 <View style={{
                   backgroundColor: theme.colors.secondary + '20',
@@ -649,15 +809,17 @@ export default function NewBinderScreen() {
                   flexDirection: 'row', alignItems: 'center', gap: 10,
                 }}>
                   <Image
-                    source={{ uri: `https://images.pokemontcg.io/${selectedSet.id}/logo.png` }}
-                    style={{ width: 60, height: 28 }}
+                    source={{ uri: selectedSet.images?.logo ?? getPokemonSetLogoUrl(selectedSet.id) ?? '' }}
+                    style={{ width: 84, height: 38 }}
                     resizeMode="contain"
                   />
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{selectedSet.name}</Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>{selectedSet.total} cards</Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12 }}>
+                      {setLanguage === 'ja' ? 'Japan' : selectedSet.series} · {selectedSet.total} cards
+                    </Text>
                   </View>
-                  <TouchableOpacity onPress={() => { setSelectedSet(null); setName(''); setEdition(null); }}>
+                  <TouchableOpacity onPress={() => { setSelectedSet(null); setSourceSetId(null); setName(''); setEdition(null); }}>
                     <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>Change</Text>
                   </TouchableOpacity>
                 </View>
@@ -668,9 +830,10 @@ export default function NewBinderScreen() {
                   <TextInput
                     value={setSearch}
                     onChangeText={setSetSearch}
-                    placeholder="Search sets..."
+                    placeholder={setLanguage === 'ja' ? 'Search Japanese sets...' : 'Search English sets...'}
                     placeholderTextColor={theme.colors.textSoft}
-                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoCapitalize="words"
                     style={{
                       backgroundColor: theme.colors.surface,
                       color: theme.colors.text,
@@ -701,10 +864,24 @@ export default function NewBinderScreen() {
                           }}
                         >
                           <Image
-                            source={{ uri: `https://images.pokemontcg.io/${item.id}/logo.png` }}
-                            style={{ width: 60, height: 26 }}
+                            source={{ uri: item.images?.logo ?? getPokemonSetLogoUrl(item.id) ?? '' }}
+                            style={{ width: 84, height: 38 }}
                             resizeMode="contain"
                           />
+                          {setLanguage === 'ja' ? (
+                            <View style={{
+                              borderRadius: 999,
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              backgroundColor: theme.colors.primary + '12',
+                              borderWidth: 1,
+                              borderColor: theme.colors.primary + '40',
+                            }}>
+                              <Text style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '900' }}>
+                                JP
+                              </Text>
+                            </View>
+                          ) : null}
                           <View style={{ flex: 1 }}>
                             <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{item.name}</Text>
                             <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
@@ -798,6 +975,6 @@ export default function NewBinderScreen() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </StackrScreen>
   );
 }

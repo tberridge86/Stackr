@@ -1,8 +1,8 @@
 import { useTheme } from '../../components/theme-context';
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,6 +21,8 @@ import {
   PokedexCard,
   setPokedexCardOwned,
 } from '../../lib/pokedexCollection';
+import { getDisplaySetName } from '../../lib/setDisplay';
+import { stackrCardImageSizes } from '../../lib/stackrSizing';
 
 type PokemonData = {
   id: number;
@@ -48,6 +50,11 @@ const makeOwnedKey = (card: Pick<PokedexCard, 'id' | 'set_id'>) => `${card.set_i
 
 const getParamValue = (value?: string | string[]) => Array.isArray(value) ? value[0] : value;
 
+const formatMoney = (value: number | null | undefined) =>
+  typeof value === 'number' && Number.isFinite(value)
+    ? `£${value.toFixed(value >= 100 ? 0 : 2)}`
+    : 'Value pending';
+
 export default function PokemonDetailScreen() {
   const { theme } = useTheme();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
@@ -67,6 +74,7 @@ export default function PokemonDetailScreen() {
   const [ownershipLoading, setOwnershipLoading] = useState(false);
   const [busyCardId, setBusyCardId] = useState<string | null>(null);
   const [failedImageUrls, setFailedImageUrls] = useState<Set<string>>(new Set());
+  const longPressedCardId = useRef<string | null>(null);
 
   const loadOwnership = useCallback(async () => {
     const owned = await fetchOwnedPokedexCards();
@@ -216,14 +224,32 @@ export default function PokemonDetailScreen() {
 
   const renderCard = ({ item }: { item: PokedexCard }) => {
     const owned = ownedKeys.has(makeOwnedKey(item));
-    const setName = item.raw_data?.set?.name ?? item.set_id ?? 'Unknown set';
+    const setName = getDisplaySetName({
+      setId: item.set_id,
+      setName: item.set_name,
+      rawData: item.raw_data,
+    });
     const imageUrl = (item.image_urls ?? [item.image_large, item.image_small])
       .filter((url): url is string => Boolean(url))
       .find((url) => !failedImageUrls.has(`${item.id}:${url}`));
 
     return (
       <Pressable
-        onPress={() => toggleCardOwned(item)}
+        delayLongPress={360}
+        onLongPress={() => {
+          longPressedCardId.current = item.id;
+          router.push({
+            pathname: '/card/[id]',
+            params: { id: item.id, setId: item.set_id ?? undefined },
+          });
+        }}
+        onPress={() => {
+          if (longPressedCardId.current === item.id) {
+            longPressedCardId.current = null;
+            return;
+          }
+          toggleCardOwned(item);
+        }}
         style={({ pressed }) => [
           styles.cardTile,
           { width: cardWidth },
@@ -264,6 +290,7 @@ export default function PokemonDetailScreen() {
 
         <Text numberOfLines={2} style={styles.cardName}>{item.name}</Text>
         <Text numberOfLines={1} style={styles.cardMeta}>{setName}</Text>
+        <Text numberOfLines={1} style={styles.cardValue}>{formatMoney(item.estimated_value)}</Text>
         <Text numberOfLines={1} style={styles.cardMeta}>
           {item.number ? `#${item.number}` : 'No number'}{item.rarity ? ` - ${item.rarity}` : ''}
         </Text>
@@ -345,7 +372,7 @@ export default function PokemonDetailScreen() {
                   <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
                 </View>
                 <Text style={styles.progressSub}>
-                  Tap cards below to mark them owned. This syncs with your binders.
+                  Tap cards below to mark them owned. Long hold a card to open its details.
                 </Text>
               </View>
 
@@ -552,7 +579,7 @@ function makeStyles(theme: any) {
     },
     cardImageWrap: {
       width: '100%',
-      aspectRatio: 0.72,
+      aspectRatio: stackrCardImageSizes.cardAspectRatio,
       backgroundColor: theme.colors.surface,
       borderRadius: 10,
       alignItems: 'center',
@@ -595,6 +622,13 @@ function makeStyles(theme: any) {
       lineHeight: 13,
       fontWeight: '700',
       marginTop: 3,
+    },
+    cardValue: {
+      color: theme.colors.primary,
+      fontSize: 11,
+      lineHeight: 14,
+      fontWeight: '900',
+      marginTop: 4,
     },
     emptyCard: {
       backgroundColor: theme.colors.card,

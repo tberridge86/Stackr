@@ -1,0 +1,87 @@
+name: Stackr Price Refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: Price refresh lane to run
+        required: true
+        default: queued
+        type: choice
+        options:
+          - queued
+          - market-listings
+          - chase
+          - high-value
+          - owned
+          - full-universe
+  schedule:
+    # Priority queue and market listings: every 30 minutes.
+    - cron: '*/30 * * * *'
+    # Chase/watchlist cards: every 2 hours.
+    - cron: '17 */2 * * *'
+    # High-value owned cards: every 6 hours.
+    - cron: '32 */6 * * *'
+    # Normal owned cards: every 12 hours.
+    - cron: '47 */12 * * *'
+    # Full catalogue/universe sync: daily.
+    - cron: '8 2 * * *'
+
+jobs:
+  refresh-prices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PRICE_API_URL: ${{ secrets.PRICE_API_URL }}
+      EXPO_PUBLIC_PRICE_API_URL: ${{ secrets.PRICE_API_URL }}
+      POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
+      USD_TO_GBP: ${{ vars.USD_TO_GBP || '0.79' }}
+      EUR_TO_GBP: ${{ vars.EUR_TO_GBP || '0.86' }}
+      ENABLE_TCGCSV_CARD_SYNC: ${{ vars.ENABLE_TCGCSV_CARD_SYNC || 'true' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run manual lane
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.lane != 'full-universe'
+        run: npm run price-refresh -- --lane=${{ github.event.inputs.lane }} --force
+
+      - name: Run manual full universe sync
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'full-universe'
+        run: npm run daily-tcgcsv-sync
+
+      - name: Run queued priority refresh
+        if: github.event_name == 'schedule' && github.event.schedule == '*/30 * * * *'
+        run: npm run price-refresh:queued
+
+      - name: Run market listing refresh
+        if: github.event_name == 'schedule' && github.event.schedule == '*/30 * * * *'
+        run: npm run price-refresh:market-listings
+
+      - name: Run chase/watchlist refresh
+        if: github.event_name == 'schedule' && github.event.schedule == '17 */2 * * *'
+        run: npm run price-refresh:chase
+
+      - name: Run high-value refresh
+        if: github.event_name == 'schedule' && github.event.schedule == '32 */6 * * *'
+        run: npm run price-refresh:high-value
+
+      - name: Run owned-card refresh
+        if: github.event_name == 'schedule' && github.event.schedule == '47 */12 * * *'
+        run: npm run price-refresh:owned
+
+      - name: Run full universe sync
+        if: github.event_name == 'schedule' && github.event.schedule == '8 2 * * *'
+        run: npm run daily-tcgcsv-sync

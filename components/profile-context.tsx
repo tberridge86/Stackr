@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './auth-context';
 
@@ -46,7 +46,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (!user) {
       setProfile(null);
       setLoading(false);
@@ -68,9 +68,9 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
 
     setLoading(false);
-  };
+  }, [user]);
 
-  const updateProfile = async (updates: Partial<Profile>) => {
+  const updateProfile = useCallback(async (updates: Partial<Profile>) => {
     if (!user) return { error: 'No user' };
 
     const { error } = await supabase
@@ -89,31 +89,31 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
 
     return { error };
-  };
+  }, [refreshProfile, user]);
 
-  const setFavoriteCard = async (cardId: string, setId: string) => {
+  const setFavoriteCard = useCallback(async (cardId: string, setId: string) => {
     if (!user) return;
 
     await updateProfile({
       favorite_card_id: cardId,
       favorite_set_id: setId,
     });
-  };
+  }, [updateProfile, user]);
 
-  const setChaseCard = async (cardId: string, setId: string) => {
+  const setChaseCard = useCallback(async (cardId: string, setId: string) => {
     if (!user) return;
 
     await updateProfile({
       chase_card_id: cardId,
       chase_set_id: setId,
     });
-  };
+  }, [updateProfile, user]);
 
   useEffect(() => {
     if (!authLoading) {
       refreshProfile();
     }
-  }, [user, authLoading]);
+  }, [authLoading, refreshProfile]);
 
   return (
     <ProfileContext.Provider

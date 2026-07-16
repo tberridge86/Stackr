@@ -1,14 +1,39 @@
 import { supabase } from './supabase';
 import { USD_TO_GBP, EUR_TO_GBP } from './config';
 import { getPreferredMarketPrice } from './pricing';
+import { MARKETPLACE_STATUS_LABELS, normaliseMarketplaceStatus, type MarketplaceLifecycleStatus } from './transactionStates';
+import { getCachedOrFetch, invalidateRequestCache } from './requestCache';
 
 const API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
+const ACTIVE_LISTING_STATUS_FILTER = 'listing_status.eq.active,listing_status.is.null';
+const MARKETPLACE_LISTINGS_CACHE_TTL_MS = 20 * 1000;
+
+const getMarketplaceListingSelect = (includeMediaMetadata = true) => `
+  id, user_id, card_id, set_id, condition, notes, value,
+  product_type, product_name, pricing_mode, grade_company, grade,
+  admin_review_required, admin_review_reason,
+  asking_price, market_estimate, trade_only, has_damage,
+  damage_notes, damage_image_url, listing_notes, listing_images${includeMediaMetadata ? ', listing_media, official_image_url, seller_front_image_url, seller_back_image_url' : ''},
+  listing_status, created_at, updated_at
+`;
+
+const isMissingListingMediaColumnError = (error: any) => {
+  if (!error) return false;
+  const message = [
+    error.code,
+    error.message,
+    error.details,
+    error.hint,
+  ].filter(Boolean).join(' ');
+  return /listing_media|official_image_url|seller_front_image_url|seller_back_image_url/i.test(message)
+    && /42703|PGRST204|schema cache|column|could not find/i.test(message);
+};
 
 // ===============================
 // TYPES
 // ===============================
 
-export type MarketplaceListingStatus = 'active' | 'archived' | 'sold';
+export type MarketplaceListingStatus = MarketplaceLifecycleStatus;
 
 export type MarketplaceListingPrices = {
   tcg_mid: number | null;
@@ -42,6 +67,10 @@ export type MarketplaceListing = {
   damage_image_url: string | null;
   listing_notes: string | null;
   listing_images: string[] | null;
+  listing_media: any[] | null;
+  official_image_url: string | null;
+  seller_front_image_url: string | null;
+  seller_back_image_url: string | null;
   status: MarketplaceListingStatus;
   created_at: string;
   updated_at?: string | null;
@@ -89,7 +118,11 @@ function mapFlagToListing(row: any): MarketplaceListing {
     damage_image_url: row.damage_image_url ?? null,
     listing_notes: row.listing_notes ?? null,
     listing_images: Array.isArray(row.listing_images) ? row.listing_images : null,
-    status: row.listing_status ?? 'active',
+    listing_media: Array.isArray(row.listing_media) ? row.listing_media : null,
+    official_image_url: row.official_image_url ?? null,
+    seller_front_image_url: row.seller_front_image_url ?? null,
+    seller_back_image_url: row.seller_back_image_url ?? null,
+    status: normaliseMarketplaceStatus(row.listing_status),
     created_at: row.created_at,
     updated_at: row.updated_at ?? null,
   };
@@ -251,25 +284,32 @@ async function notifyDiscordNewTradeListing(listingId: string) {
 // ===============================
 
 export async function fetchMarketplaceListings(): Promise<MarketplaceListing[]> {
-  const { data, error } = await supabase
-    .from('user_card_flags')
-    .select(`
-      id, user_id, card_id, set_id, condition, notes, value,
-      product_type, product_name, pricing_mode, grade_company, grade,
-      admin_review_required, admin_review_reason,
-      asking_price, market_estimate, trade_only, has_damage,
-      damage_notes, damage_image_url, listing_notes, listing_images, listing_status,
-      created_at, updated_at
-    `)
-    .eq('flag_type', 'trade')
-    .eq('listing_status', 'active')
-    .order('created_at', { ascending: false });
+  return getCachedOrFetch(
+    'marketplace:listings:active',
+    MARKETPLACE_LISTINGS_CACHE_TTL_MS,
+    async () => {
+      const primaryResult = await supabase
+        .from('user_card_flags')
+        .select(getMarketplaceListingSelect(true))
+        .eq('flag_type', 'trade')
+        .or(ACTIVE_LISTING_STATUS_FILTER)
+        .order('created_at', { ascending: false });
+      const { data, error } = isMissingListingMediaColumnError(primaryResult.error)
+        ? await supabase
+          .from('user_card_flags')
+          .select(getMarketplaceListingSelect(false))
+          .eq('flag_type', 'trade')
+          .or(ACTIVE_LISTING_STATUS_FILTER)
+          .order('created_at', { ascending: false })
+        : primaryResult;
 
-  if (error) throw new Error(error.message);
+      if (error) throw new Error(error.message);
 
-  const listings = ((data ?? []) as any[]).map(mapFlagToListing);
-  const withProfiles = await attachProfiles(listings);
-  return attachPrices(withProfiles);
+      const listings = ((data ?? []) as any[]).map(mapFlagToListing);
+      const withProfiles = await attachProfiles(listings);
+      return attachPrices(withProfiles);
+    }
+  );
 }
 
 export async function fetchMyListings(): Promise<MarketplaceListing[]> {
@@ -277,25 +317,38 @@ export async function fetchMyListings(): Promise<MarketplaceListing[]> {
   if (userError) throw new Error(userError.message);
   if (!user) return [];
 
-  const { data, error } = await supabase
-    .from('user_card_flags')
-    .select(`
-      id, user_id, card_id, set_id, condition, notes, value,
-      product_type, product_name, pricing_mode, grade_company, grade,
-      admin_review_required, admin_review_reason,
-      asking_price, market_estimate, trade_only, has_damage,
-      damage_notes, damage_image_url, listing_notes, listing_images, listing_status,
-      created_at, updated_at
-    `)
-    .eq('user_id', user.id)
-    .eq('flag_type', 'trade')
-    .order('created_at', { ascending: false });
+  return getCachedOrFetch(
+    `marketplace:listings:user:${user.id}`,
+    MARKETPLACE_LISTINGS_CACHE_TTL_MS,
+    async () => {
+      const primaryResult = await supabase
+        .from('user_card_flags')
+        .select(getMarketplaceListingSelect(true))
+        .eq('user_id', user.id)
+        .eq('flag_type', 'trade')
+        .or(ACTIVE_LISTING_STATUS_FILTER)
+        .order('created_at', { ascending: false });
+      const { data, error } = isMissingListingMediaColumnError(primaryResult.error)
+        ? await supabase
+          .from('user_card_flags')
+          .select(getMarketplaceListingSelect(false))
+          .eq('user_id', user.id)
+          .eq('flag_type', 'trade')
+          .or(ACTIVE_LISTING_STATUS_FILTER)
+          .order('created_at', { ascending: false })
+        : primaryResult;
 
-  if (error) throw new Error(error.message);
+      if (error) throw new Error(error.message);
 
-  const listings = ((data ?? []) as any[]).map(mapFlagToListing);
-  const withProfiles = await attachProfiles(listings);
-  return attachPrices(withProfiles);
+      const listings = ((data ?? []) as any[]).map(mapFlagToListing);
+      const withProfiles = await attachProfiles(listings);
+      return attachPrices(withProfiles);
+    }
+  );
+}
+
+export function invalidateMarketplaceListingCaches() {
+  invalidateRequestCache('marketplace:listings:');
 }
 
 export async function deleteMarketplaceListing(listingId: string): Promise<void> {
@@ -311,6 +364,7 @@ export async function deleteMarketplaceListing(listingId: string): Promise<void>
     .eq('flag_type', 'trade');
 
   if (error) throw new Error(error.message);
+  invalidateMarketplaceListingCaches();
 }
 
 export async function createMarketplaceListing(input: {
@@ -338,6 +392,7 @@ export async function createMarketplaceListing(input: {
     .eq('user_id', user.id)
     .eq('card_id', input.card_id)
     .eq('flag_type', 'trade')
+    .or(ACTIVE_LISTING_STATUS_FILTER)
     .maybeSingle();
 
   if (existingError) throw new Error(existingError.message);
@@ -363,11 +418,13 @@ export async function createMarketplaceListing(input: {
           : String(input.custom_value),
       condition: input.condition ?? null,
       notes: input.notes ?? null,
+      listing_status: 'active',
     })
     .select()
     .single();
 
   if (error) throw new Error(error.message);
+  invalidateMarketplaceListingCaches();
 
   console.log('✅ Marketplace listing created in Supabase:', data.id);
 
@@ -406,8 +463,14 @@ export async function archiveMarketplaceListing(
   if (error) throw new Error(error.message);
   if (!data) throw new Error('Listing not found or you do not have permission to archive it.');
 
+  invalidateMarketplaceListingCaches();
+
   return {
     ...mapFlagToListing(data),
     status: 'archived',
   };
+}
+
+export function getMarketplaceStatusLabel(status?: string | null) {
+  return MARKETPLACE_STATUS_LABELS[normaliseMarketplaceStatus(status)];
 }

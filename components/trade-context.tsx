@@ -5,13 +5,10 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from 'react';
-import {
-  MarketplaceListing,
-  fetchMarketplaceListings,
-  fetchMyListings,
-  archiveMarketplaceListing,
-} from '../lib/marketplace';
+import { InteractionManager } from 'react-native';
+import type { MarketplaceListing } from '../lib/marketplace';
 import { supabase } from '../lib/supabase';
 import { createActivityPost } from '../lib/activity';
 
@@ -125,6 +122,16 @@ const makeFlagKey = (cardId: string, setId?: string | null): FlagKey => {
   return `${setId ?? 'unknown'}:${cardId}`;
 };
 
+const loadMarketplaceApi = () => import('../lib/marketplace');
+
+function invalidateMarketplaceCachesSoon() {
+  loadMarketplaceApi()
+    .then(({ invalidateMarketplaceListingCaches }) => invalidateMarketplaceListingCaches())
+    .catch((error) => {
+      console.log('Marketplace cache invalidation failed', error);
+    });
+}
+
 // ===============================
 // PUSH NOTIFICATION HELPER
 // ===============================
@@ -162,6 +169,8 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [myListings, setMyListings] = useState<MarketplaceListing[]>([]);
   const [tradeLoading, setTradeLoading] = useState(false);
   const [tradeError, setTradeError] = useState<string | null>(null);
+  const refreshTradeInFlightRef = useRef<Promise<void> | null>(null);
+  const marketListingsHydratedRef = useRef(false);
 
   // ===============================
   // LOAD FLAGS FROM DB
@@ -235,34 +244,56 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   // ===============================
 
   const refreshTrade = useCallback(async () => {
-    try {
-      setTradeError(null);
-      setTradeLoading(true);
+    if (refreshTradeInFlightRef.current) return refreshTradeInFlightRef.current;
 
-      await loadFlags();
+    const request = (async () => {
+      try {
+        setTradeError(null);
+        setTradeLoading(true);
 
-      const [marketplace, mine] = await Promise.all([
-        fetchMarketplaceListings(),
-        fetchMyListings(),
-      ]);
+        await loadFlags();
 
-      setMarketplaceListings(marketplace ?? []);
-      setMyListings(mine ?? []);
-    } catch (error) {
-      console.log('refreshTrade failed', error);
-      setMarketplaceListings([]);
-      setMyListings([]);
-      setTradeError(
-        error instanceof Error ? error.message : 'Failed to refresh trade data'
-      );
-    } finally {
-      setTradeLoading(false);
-    }
+        const { fetchMarketplaceListings, fetchMyListings } = await loadMarketplaceApi();
+        const [marketplace, mine] = await Promise.all([
+          fetchMarketplaceListings(),
+          fetchMyListings(),
+        ]);
+
+        setMarketplaceListings(marketplace ?? []);
+        setMyListings(mine ?? []);
+        marketListingsHydratedRef.current = true;
+      } catch (error) {
+        console.log('refreshTrade failed', error);
+        setTradeError(
+          error instanceof Error ? error.message : 'Failed to refresh trade data'
+        );
+      } finally {
+        setTradeLoading(false);
+        refreshTradeInFlightRef.current = null;
+      }
+    })();
+
+    refreshTradeInFlightRef.current = request;
+    return request;
   }, [loadFlags]);
 
   useEffect(() => {
-    refreshTrade();
-  }, [refreshTrade]);
+    let cancelled = false;
+
+    void loadFlags().catch((error) => {
+      console.log('Initial trade flags load failed', error);
+    });
+
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (cancelled || marketListingsHydratedRef.current) return;
+      void refreshTrade();
+    });
+
+    return () => {
+      cancelled = true;
+      task.cancel?.();
+    };
+  }, [loadFlags, refreshTrade]);
 
   // ===============================
   // ARCHIVE LISTING
@@ -270,6 +301,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
   const archiveListing = useCallback(
     async (listingId: string) => {
+      const { archiveMarketplaceListing } = await loadMarketplaceApi();
       await archiveMarketplaceListing(listingId);
       await refreshTrade();
     },
@@ -603,6 +635,9 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        if (flag === 'trade') {
+          invalidateMarketplaceCachesSoon();
+        }
         await loadFlags();
       } catch (error) {
         console.log('Rollback triggered', error);
@@ -651,6 +686,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (error) throw error;
+      invalidateMarketplaceCachesSoon();
 
  // ── Notify Discord ─────────────────────────────────────────────
       console.log('🔥 createTradeListing — notifying Discord');
@@ -808,6 +844,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         await loadFlags();
         throw error;
       }
+      invalidateMarketplaceCachesSoon();
     },
     [loadFlags]
   );

@@ -8,7 +8,9 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Text } from './Text';
+import { StackrButtonPattern } from './StackrEmboss';
 import { useTheme } from './theme-context';
+import { numericTextStyle } from '../lib/typography';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 type Tone = 'purple' | 'gold' | 'green' | 'neutral' | 'danger';
@@ -123,11 +125,11 @@ export function StatPill({
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
         {icon ? <Ionicons name={icon} size={14} color={color} /> : null}
-        <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>
+        <Text variant="micro" numberOfLines={1} style={{ color: theme.colors.textSoft, fontWeight: '600' }}>
           {label}
         </Text>
       </View>
-      <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={{ color, fontSize: 16, fontWeight: '900' }}>
+      <Text numeric numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={{ color, ...numericTextStyle, fontSize: 16, lineHeight: 20 }}>
         {value}
       </Text>
     </View>
@@ -149,10 +151,10 @@ export function ProgressBadge({
   return (
     <View style={{ gap: 7 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+        <Text variant="caption" style={{ color: theme.colors.textSoft, fontWeight: '600' }}>
           {label ?? 'Completion'}
         </Text>
-        <Text style={{ color, fontSize: 12, fontWeight: '900' }}>{Math.max(0, Math.min(100, value))}%</Text>
+        <Text numeric style={{ color, ...numericTextStyle, fontSize: 12, lineHeight: 15 }}>{Math.max(0, Math.min(100, value))}%</Text>
       </View>
       <View style={{ height: 7, borderRadius: 999, backgroundColor: theme.colors.surface, overflow: 'hidden' }}>
         <View
@@ -201,10 +203,10 @@ export function EmptyStateCard({
         >
           <Ionicons name={icon} size={27} color={theme.colors.primary} />
         </View>
-        <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', textAlign: 'center' }}>
+        <Text variant="sectionTitleCompact" style={{ color: theme.colors.text, fontSize: 18, textAlign: 'center' }}>
           {title}
         </Text>
-        <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, textAlign: 'center', marginTop: 7 }}>
+        <Text variant="support" style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 7 }}>
           {body}
         </Text>
         {actionLabel && onAction ? (
@@ -216,9 +218,12 @@ export function EmptyStateCard({
               borderRadius: 14,
               paddingHorizontal: 18,
               paddingVertical: 12,
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>{actionLabel}</Text>
+            <StackrButtonPattern tone="purple" />
+            <Text variant="buttonPrimary" style={{ color: '#FFFFFF' }}>{actionLabel}</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -259,6 +264,8 @@ export function ActionTile({
         borderWidth: 1,
         borderColor: selected ? color : theme.colors.border,
         padding: 13,
+        position: 'relative',
+        overflow: 'hidden',
         ...premiumShadow,
       }}
     >
@@ -277,15 +284,15 @@ export function ActionTile({
         </View>
         {badge ? (
           <View style={{ backgroundColor: theme.colors.secondary + '30', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 10, fontWeight: '900' }}>{badge}</Text>
+            <Text variant="micro" style={{ color: theme.colors.text, fontWeight: '600' }}>{badge}</Text>
           </View>
         ) : null}
       </View>
-      <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>
+      <Text variant="cardTitle" numberOfLines={1} style={{ color: theme.colors.text, fontSize: 14 }}>
         {title}
       </Text>
       {body ? (
-        <Text numberOfLines={2} style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: 4 }}>
+        <Text variant="caption" numberOfLines={2} style={{ color: theme.colors.textSoft, marginTop: 4 }}>
           {body}
         </Text>
       ) : null}
@@ -321,7 +328,7 @@ export function TrustBadge({
       }}
     >
       <Ionicons name={icon} size={13} color={color} />
-      <Text style={{ color, fontSize: 10, fontWeight: '900' }}>{label}</Text>
+      <Text variant="micro" style={{ color, fontWeight: '600' }}>{label}</Text>
     </View>
   );
 }
@@ -344,18 +351,18 @@ export function ValueSummaryCard({
 
   return (
     <PremiumCard style={{ flex: 1, minWidth: 102, padding: 12 }}>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900', marginBottom: 5 }}>
+      <Text variant="micro" style={{ color: theme.colors.textSoft, fontWeight: '600', marginBottom: 5 }}>
         {label}
       </Text>
       {loading ? (
         <ActivityIndicator size="small" color={color} />
       ) : (
-        <Text adjustsFontSizeToFit minimumFontScale={0.72} numberOfLines={1} style={{ color, fontSize: 18, fontWeight: '900' }}>
+        <Text numeric adjustsFontSizeToFit minimumFontScale={0.72} numberOfLines={1} style={{ color, ...numericTextStyle, fontSize: 18, lineHeight: 22 }}>
           {value}
         </Text>
       )}
       {helper ? (
-        <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '700', marginTop: 4 }}>
+        <Text variant="micro" numberOfLines={1} style={{ color: theme.colors.textSoft, marginTop: 4 }}>
           {helper}
         </Text>
       ) : null}
@@ -397,10 +404,10 @@ export function BinderProgressCard({
       <PremiumCard>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <View style={{ flex: 1 }}>
-            <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900' }}>
+            <Text variant="cardTitle" numberOfLines={1} style={{ color: theme.colors.text, fontSize: 15 }}>
               {title}
             </Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginTop: 3 }}>
+            <Text variant="caption" style={{ color: theme.colors.textSoft, marginTop: 3 }}>
               {owned}/{total} owned{value ? ` - ${value}` : ''}
             </Text>
           </View>
@@ -450,8 +457,8 @@ export function TradeTypeCard({
             <Ionicons name={icon} size={21} color={theme.colors.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900' }}>{title}</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 3 }}>{description}</Text>
+            <Text variant="cardTitle" style={{ color: theme.colors.text, fontSize: 15 }}>{title}</Text>
+            <Text variant="support" style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 3 }}>{description}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
               <TrustBadge label={trustLevel} tone="green" />
               {valueRange ? <TrustBadge label={valueRange} icon="cash-outline" tone="gold" /> : null}
@@ -502,10 +509,10 @@ export function HeroActionPanel({
           <Ionicons name={icon} size={27} color={theme.colors.primary} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900' }}>
+          <Text variant="pageTitle" style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29 }}>
             {title}
           </Text>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 5 }}>
+          <Text variant="support" style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, marginTop: 5 }}>
             {subtitle}
           </Text>
         </View>
@@ -526,9 +533,11 @@ export function HeroActionPanel({
                 backgroundColor: theme.colors.surface,
                 alignItems: 'center',
                 paddingVertical: 12,
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
-              <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{secondaryLabel}</Text>
+              <Text variant="buttonSecondary" style={{ color: theme.colors.text }}>{secondaryLabel}</Text>
             </TouchableOpacity>
           ) : null}
           {primaryLabel && onPrimaryPress ? (
@@ -540,9 +549,12 @@ export function HeroActionPanel({
                 backgroundColor: theme.colors.primary,
                 alignItems: 'center',
                 paddingVertical: 12,
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
-              <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>{primaryLabel}</Text>
+              <StackrButtonPattern tone="purple" />
+              <Text variant="buttonPrimary" style={{ color: '#FFFFFF' }}>{primaryLabel}</Text>
             </TouchableOpacity>
           ) : null}
         </View>

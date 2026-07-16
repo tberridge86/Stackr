@@ -17,6 +17,9 @@ import { createTradeOffer } from '../../lib/tradeOffers';
 import { getCachedCardSync } from '../../lib/pokemonTcgCache';
 import { getPreferredMarketPrice, getPriceFromPokemonCard } from '../../lib/pricing';
 import { BETA_TRADE_DEMO_MODE, PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { fetchUserCardAvailability } from '../../lib/cardOwnership';
+import { fetchOwnedCardRows } from '../../lib/ownership';
+import { stackrBrand } from '../../lib/stackrBrand';
 
 // ===============================
 // CONSTANTS
@@ -29,6 +32,7 @@ const MAX_OFFER_CARDS = 6;
 // ===============================
 
 type CashPayer = 'sender' | 'receiver';
+type OfferCardFilter = 'all' | 'duplicates' | 'priced';
 
 type TradeCardOption = {
   id: string;
@@ -40,7 +44,26 @@ type TradeCardOption = {
   number?: string | null;
   estimated_value?: number | null;
   price_source?: string | null;
+  owned_quantity?: number | null;
 };
+
+type OwnedTradeSource = {
+  id?: string | null;
+  card_id: string;
+  set_id: string | null;
+  quantity: number;
+  name?: string | null;
+  image_url?: string | null;
+  set_name?: string | null;
+  number?: string | null;
+  fallback_price?: number | null;
+};
+
+const OFFER_CARD_FILTERS: { key: OfferCardFilter; label: string }[] = [
+  { key: 'all', label: 'All owned' },
+  { key: 'duplicates', label: 'Duplicates' },
+  { key: 'priced', label: 'Priced' },
+];
 
 type OfferListingRow = {
   id: string;
@@ -144,6 +167,8 @@ export default function NewOfferScreen() {
   const [targetCard, setTargetCard] = useState<TradeCardOption | null>(null);
   const [myTradeCards, setMyTradeCards] = useState<TradeCardOption[]>([]);
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+  const [offerCardSearch, setOfferCardSearch] = useState('');
+  const [offerCardFilter, setOfferCardFilter] = useState<OfferCardFilter>('all');
 
   const [cashAmount, setCashAmount] = useState('');
   const [cashPayer, setCashPayer] = useState<CashPayer>('sender');
@@ -160,6 +185,25 @@ export default function NewOfferScreen() {
     () => myTradeCards.filter((card) => selectedCardIds.includes(card.card_id)),
     [myTradeCards, selectedCardIds]
   );
+  const filteredTradeCards = useMemo(() => {
+    const query = offerCardSearch.trim().toLowerCase();
+    return myTradeCards.filter((card) => {
+      const searchable = [
+        card.name,
+        card.set_name,
+        card.set_id,
+        card.number,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      const matchesSearch = !query || searchable.includes(query);
+      if (!matchesSearch) return false;
+      if (offerCardFilter === 'duplicates') return (card.owned_quantity ?? 1) > 1;
+      if (offerCardFilter === 'priced') return (card.estimated_value ?? 0) > 0;
+      return true;
+    });
+  }, [myTradeCards, offerCardFilter, offerCardSearch]);
   const requestedSideValue = targetCard?.estimated_value ?? 0;
   const offeredCardsValue = selectedTradeCards.reduce(
     (total, card) => total + (card.estimated_value ?? 0),
@@ -218,6 +262,8 @@ export default function NewOfferScreen() {
       setTargetCard(null);
       setMyTradeCards([]);
       setSelectedCardIds([]);
+      setOfferCardSearch('');
+      setOfferCardFilter('all');
       setCashAmount('');
       setCashPayer('sender');
       setMessage('');
@@ -228,7 +274,7 @@ export default function NewOfferScreen() {
       if (userError) throw userError;
 
       if (!user) {
-        Alert.alert('Sign in required', 'You need to be signed in to make trade offers.');
+        Alert.alert('Sign in required', 'You need to be signed in to make Market offers.');
         router.replace('/offer');
         return;
       }
@@ -236,14 +282,14 @@ export default function NewOfferScreen() {
       setCurrentUserId(user.id);
 
       if (!listingId) {
-        Alert.alert('Missing trade details', 'This offer is missing listing information.');
+        Alert.alert('Missing offer details', 'This offer is missing listing information.');
         router.replace('/offer');
         return;
       }
 
       const listing = await fetchListingForOffer(listingId);
       if (!listing?.card_id || !listing.user_id) {
-        throw new Error('This trade listing could not be found.');
+        throw new Error('This Market listing could not be found.');
       }
 
       if (targetUserId && listing.user_id !== targetUserId) {
@@ -380,18 +426,115 @@ export default function NewOfferScreen() {
   // FETCH MY TRADE CARDS
   // ===============================
 
+  async function fetchBinderOwnedTradeSources(userId: string): Promise<OwnedTradeSource[]> {
+    const { data: binders, error: bindersError } = await supabase
+      .from('binders')
+      .select('id')
+      .eq('user_id', userId);
+
+    if (bindersError) {
+      console.log('Owned binder lookup failed:', bindersError.message);
+      return [];
+    }
+
+    const binderIds = (binders ?? []).map((binder: any) => binder.id).filter(Boolean);
+    if (binderIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from('binder_cards')
+      .select(`
+        id, card_id, set_id, card_name, set_name, card_number, image_url,
+        owned_quantity, ebay_price, tcg_price, cardmarket_price, owned
+      `)
+      .in('binder_id', binderIds)
+      .eq('owned', true);
+
+    if (error) {
+      console.log('Owned binder card lookup failed:', error.message);
+      return [];
+    }
+
+    return (data ?? [])
+      .filter((row: any) => row.card_id)
+      .map((row: any) => ({
+        id: row.id ?? null,
+        card_id: row.card_id,
+        set_id: row.set_id ?? null,
+        quantity: Math.max(1, Number(row.owned_quantity ?? 1) || 1),
+        name: row.card_name ?? null,
+        image_url: row.image_url ?? null,
+        set_name: row.set_name ?? null,
+        number: row.card_number ?? null,
+        fallback_price:
+          row.tcg_price ??
+          row.ebay_price ??
+          row.cardmarket_price ??
+          null,
+      }));
+  }
+
   async function fetchMyTradeCards(userId: string): Promise<TradeCardOption[]> {
-    const { data: flags, error: flagsError } = await supabase
-      .from('user_card_flags')
-      .select('id, card_id, set_id')
-      .eq('user_id', userId)
-      .eq('flag_type', 'trade')
-      .order('created_at', { ascending: false });
+    let ownedSources: OwnedTradeSource[] = [];
+    let useCanonicalAvailability = false;
 
-    if (flagsError) throw flagsError;
-    if (!flags || flags.length === 0) return [];
+    try {
+      const ownedRows = await fetchOwnedCardRows();
+      useCanonicalAvailability = ownedRows.length > 0;
+      ownedSources = ownedRows.map((row) => ({
+        id: row.id ?? null,
+        card_id: row.card_id,
+        set_id: row.set_id ?? null,
+        quantity: Math.max(1, Number(row.quantity ?? 1) || 1),
+      }));
+    } catch (error: any) {
+      console.log('Owned variant lookup failed:', error?.message ?? error);
+    }
 
-    const cardIds = flags.map((flag: any) => flag.card_id);
+    if (ownedSources.length === 0) {
+      ownedSources = await fetchBinderOwnedTradeSources(userId);
+    }
+
+    const grouped = new Map<string, OwnedTradeSource>();
+    for (const source of ownedSources) {
+      if (!source.card_id) continue;
+      const key = `${source.set_id ?? 'unknown'}:${source.card_id}`;
+      const current = grouped.get(key);
+      if (!current) {
+        grouped.set(key, { ...source, quantity: Math.max(1, Number(source.quantity ?? 1) || 1) });
+        continue;
+      }
+      grouped.set(key, {
+        ...current,
+        quantity: Math.max(1, Number(current.quantity ?? 1) || 1) + Math.max(1, Number(source.quantity ?? 1) || 1),
+        name: current.name ?? source.name ?? null,
+        image_url: current.image_url ?? source.image_url ?? null,
+        set_name: current.set_name ?? source.set_name ?? null,
+        number: current.number ?? source.number ?? null,
+        fallback_price: current.fallback_price ?? source.fallback_price ?? null,
+      });
+    }
+
+    const ownedCards = Array.from(grouped.values());
+    if (ownedCards.length === 0) return [];
+
+    const cardIds = [...new Set(ownedCards.map((card) => card.card_id).filter(Boolean))];
+    const availableQuantityByKey = new Map<string, number>();
+
+    if (useCanonicalAvailability) {
+      await Promise.all(ownedCards.map(async (owned) => {
+        try {
+          const availability = await fetchUserCardAvailability({
+            userId,
+            cardId: owned.card_id,
+            setId: owned.set_id,
+          });
+          availableQuantityByKey.set(`${owned.set_id ?? 'unknown'}:${owned.card_id}`, availability.availableQuantity);
+        } catch (error: any) {
+          console.log('Offer availability lookup failed:', error?.message ?? error);
+          availableQuantityByKey.set(`${owned.set_id ?? 'unknown'}:${owned.card_id}`, owned.quantity);
+        }
+      }));
+    }
 
     const [cardRowsResult, previewsResult, snapshotsResult] = await Promise.all([
       supabase
@@ -399,7 +542,7 @@ export default function NewOfferScreen() {
         .select('id, name, set_id, number, image_small, image_large, raw_data')
         .in('id', cardIds),
       supabase
-        .from('card_previews')
+      .from('card_previews')
         .select('card_id, name, image_url')
         .in('card_id', cardIds),
       supabase
@@ -428,35 +571,43 @@ export default function NewOfferScreen() {
       }
     }
 
-    return flags.map((flag: any) => {
-      const preview = previewMap.get(flag.card_id) as any;
-      const row = cardRowMap.get(flag.card_id) as any;
-      const cached = flag.set_id
-        ? (getCachedCardSync(flag.set_id, flag.card_id) as any)
+    const options: TradeCardOption[] = [];
+
+    for (const owned of ownedCards) {
+      const availableQuantity = availableQuantityByKey.get(`${owned.set_id ?? 'unknown'}:${owned.card_id}`) ?? owned.quantity;
+      if (availableQuantity <= 0) continue;
+      const preview = previewMap.get(owned.card_id) as any;
+      const row = cardRowMap.get(owned.card_id) as any;
+      const cached = owned.set_id
+        ? (getCachedCardSync(owned.set_id, owned.card_id) as any)
         : null;
       const rawData = row?.raw_data ?? cached;
-      const price = getPreferredMarketPrice(snapshotMap.get(flag.card_id), {
-        tcg: getRawTcgPriceGbp(rawData),
+      const price = getPreferredMarketPrice(snapshotMap.get(owned.card_id), {
+        tcg: owned.fallback_price ?? getRawTcgPriceGbp(rawData),
       });
 
-      return {
-        id: flag.id,
-        card_id: flag.card_id,
-        set_id: flag.set_id ?? row?.set_id ?? preview?.set_id ?? cached?.set?.id ?? null,
-        name: row?.name ?? preview?.name ?? cached?.name ?? flag.card_id,
+      options.push({
+        id: owned.id ?? `${owned.set_id ?? 'owned'}:${owned.card_id}`,
+        card_id: owned.card_id,
+        set_id: owned.set_id ?? row?.set_id ?? cached?.set?.id ?? null,
+        name: row?.name ?? preview?.name ?? cached?.name ?? owned.name ?? owned.card_id,
         image_url:
           row?.image_small ??
           row?.image_large ??
           preview?.image_url ??
           cached?.images?.small ??
           cached?.images?.large ??
+          owned.image_url ??
           null,
-        set_name: row?.raw_data?.set?.name ?? preview?.set_name ?? cached?.set?.name ?? null,
-        number: row?.number ?? preview?.number ?? cached?.number ?? null,
-        estimated_value: price.value,
-        price_source: price.source,
-      };
-    });
+        set_name: rawData?.set?.name ?? owned.set_name ?? cached?.set?.name ?? null,
+        number: row?.number ?? owned.number ?? cached?.number ?? null,
+        estimated_value: price.value ?? owned.fallback_price ?? null,
+        price_source: price.source ?? (owned.fallback_price != null ? 'owned' : null),
+        owned_quantity: availableQuantity,
+      });
+    }
+
+    return options.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   // ===============================
@@ -471,7 +622,7 @@ export default function NewOfferScreen() {
       if (current.length >= MAX_OFFER_CARDS) {
         Alert.alert(
           'Too many cards',
-          `You can offer up to ${MAX_OFFER_CARDS} cards in a single trade.`
+          `You can offer up to ${MAX_OFFER_CARDS} cards in a single offer.`
         );
         return current;
       }
@@ -487,13 +638,29 @@ export default function NewOfferScreen() {
     try {
       const receiverUserId = listingOwnerId ?? targetUserId ?? null;
       if (!currentUserId || !receiverUserId || !listingId || !targetCard?.card_id) {
-        Alert.alert('Missing details', 'This offer is missing required trade information.');
+        Alert.alert('Missing details', 'This offer is missing required Market information.');
         return;
       }
 
       if (selectedCardIds.length === 0 && !cashInvolved) {
         Alert.alert('Empty offer', 'Add at least one card or a cash amount.');
         return;
+      }
+
+      for (const card of selectedTradeCards) {
+        const availability = await fetchUserCardAvailability({
+          userId: currentUserId,
+          cardId: card.card_id,
+          setId: card.set_id,
+        });
+        if (availability.availableQuantity < 1) {
+          Alert.alert(
+            'Card no longer available',
+            `${card.name} is already committed to another listing, reservation or pending transaction.`
+          );
+          setSelectedCardIds((current) => current.filter((id) => id !== card.card_id));
+          return;
+        }
       }
 
       setSending(true);
@@ -525,7 +692,7 @@ export default function NewOfferScreen() {
         message: message.trim() || null,
       } as any);
 
-      // Notify the receiver they have a new trade offer
+      // Notify the receiver they have a new Market offer.
       const { data: senderProfile } = await supabase
         .from('profiles')
         .select('collector_name')
@@ -541,7 +708,7 @@ export default function NewOfferScreen() {
       const destination = newOffer?.id ? `/offer/${newOffer.id}?new=1` : '/offers';
       router.push(destination as any);
     } catch (error: any) {
-      console.error('Failed to send trade offer:', error);
+      console.error('Failed to send Market offer:', error);
       Alert.alert('Could not send offer', error?.message ?? 'Something went wrong.');
     } finally {
       setSending(false);
@@ -568,10 +735,10 @@ export default function NewOfferScreen() {
   return (
     <View style={styles.screen}>
     <ScrollView contentContainerStyle={styles.content}>
-      <Image source={require('../../assets/images/hub.png')} style={styles.brandLogo} resizeMode="contain" />
-      <Text style={styles.title}>Build a Trade</Text>
+      <Image source={stackrBrand.wordmark} style={styles.brandLogo} resizeMode="contain" />
+      <Text style={styles.title}>Build an Offer</Text>
       <Text style={styles.subtitle}>
-        Add cards, cash or offers
+        Add cards, cash or a message
         {targetUserName ? ` to ${targetUserName}` : ''}.
       </Text>
 
@@ -588,7 +755,7 @@ export default function NewOfferScreen() {
             DEMO TRADE MODE
           </Text>
           <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, marginTop: 3 }}>
-            Beta trades are for testing only. Cash top-ups are recorded as demo terms and no real payment is taken.
+            Beta Market offers are for testing only. Cash top-ups are recorded as demo terms and no real payment is taken.
           </Text>
         </View>
       )}
@@ -601,7 +768,7 @@ export default function NewOfferScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.tradeSideName}>You</Text>
-              <Text style={styles.trustedText}>Trusted Trader</Text>
+              <Text style={styles.trustedText}>Collector</Text>
             </View>
           </View>
 
@@ -667,8 +834,8 @@ export default function NewOfferScreen() {
               <Text style={styles.avatarText}>{(targetUserName ?? 'T').charAt(0)}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.tradeSideName}>{targetUserName ?? 'Trader'}</Text>
-              <Text style={styles.trustedText}>Trusted Trader</Text>
+              <Text style={styles.tradeSideName}>{targetUserName ?? 'Collector'}</Text>
+              <Text style={styles.trustedText}>Collector</Text>
             </View>
           </View>
 
@@ -699,7 +866,7 @@ export default function NewOfferScreen() {
 
       <View style={styles.fairnessBox}>
         <View style={styles.fairnessHeader}>
-          <Text style={styles.fairnessTitle}>Trade Fairness</Text>
+          <Text style={styles.fairnessTitle}>Offer Balance</Text>
           <Text
             style={[
               styles.fairnessPill,
@@ -738,7 +905,7 @@ export default function NewOfferScreen() {
 
         <View style={styles.tradeSummaryCard}>
           <View style={styles.tradeSummaryHeader}>
-            <Text style={styles.tradeSummaryTitle}>Trade Summary</Text>
+            <Text style={styles.tradeSummaryTitle}>Offer Summary</Text>
             <Text style={styles.tradeSummaryDelta}>{Math.round(differencePercent)}%</Text>
           </View>
           <View style={styles.valueGrid}>
@@ -788,17 +955,49 @@ export default function NewOfferScreen() {
       <Section title={`Cards you are offering (max ${MAX_OFFER_CARDS})`}>
         {myTradeCards.length === 0 ? (
           <Text style={styles.muted}>
-            You have no cards currently marked for trade.
+            No owned cards found yet. Scan cards into your collection first.
           </Text>
         ) : (
           <>
+            <TextInput
+              value={offerCardSearch}
+              onChangeText={setOfferCardSearch}
+              placeholder="Search your owned cards"
+              placeholderTextColor={theme.colors.textSoft}
+              autoCorrect={false}
+              autoCapitalize="words"
+              style={styles.offerSearchInput}
+            />
+
+            <View style={styles.offerFilterRow}>
+              {OFFER_CARD_FILTERS.map((filter) => {
+                const active = offerCardFilter === filter.key;
+                return (
+                  <TouchableOpacity
+                    key={filter.key}
+                    onPress={() => setOfferCardFilter(filter.key)}
+                    activeOpacity={0.78}
+                    style={[styles.offerFilterChip, active && styles.offerFilterChipActive]}
+                  >
+                    <Text style={[styles.offerFilterText, active && styles.offerFilterTextActive]}>
+                      {filter.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
             {selectedCardIds.length > 0 && (
               <Text style={styles.selectedCount}>
                 {selectedCardIds.length} / {MAX_OFFER_CARDS} selected
               </Text>
             )}
 
-            {myTradeCards.map((card) => {
+            {filteredTradeCards.length === 0 ? (
+              <Text style={styles.muted}>
+                No owned cards match that search or filter.
+              </Text>
+            ) : filteredTradeCards.map((card) => {
               const selected = selectedCardIds.includes(card.card_id);
               return (
                 <TouchableOpacity
@@ -819,6 +1018,7 @@ export default function NewOfferScreen() {
                     <Text style={styles.cardMeta}>
                       {card.set_name ?? card.set_id ?? 'Unknown set'}
                       {card.number ? ` · ${card.number}` : ''}
+                      {card.owned_quantity ? ` · x${card.owned_quantity} owned` : ''}
                     </Text>
                     <Text style={styles.priceMeta}>
                       {money(card.estimated_value)}
@@ -1171,6 +1371,43 @@ function makeStyles(theme: any) {
     fontSize: 12,
     fontWeight: '700',
     marginBottom: 8,
+  },
+  offerSearchInput: {
+    backgroundColor: theme.colors.surface,
+    color: theme.colors.text,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 10,
+    fontWeight: '700',
+  },
+  offerFilterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+  },
+  offerFilterChip: {
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 7,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  offerFilterChipActive: {
+    backgroundColor: theme.colors.primary + '14',
+    borderColor: theme.colors.primary,
+  },
+  offerFilterText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  offerFilterTextActive: {
+    color: theme.colors.primary,
   },
   cardRow: {
     flexDirection: 'row',

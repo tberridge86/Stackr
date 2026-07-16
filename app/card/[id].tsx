@@ -8,19 +8,23 @@ import {
   TouchableOpacity,
   Alert,
   TextInput,
+  Image,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useTrade } from '../../components/trade-context';
 import { useProfile } from '../../components/profile-context';
-import { createMarketplaceListing, deleteMarketplaceListing } from '../../lib/marketplace';
+import { deleteMarketplaceListing } from '../../lib/marketplace';
+import { createActivityPost } from '../../lib/activity';
 import {
   getCachedCardSync,
   getCachedCardsForSet,
   getCachedSets,
 } from '../../lib/pokemonTcgCache';
+import { getPokemonSetLogoUrl } from '../../lib/pokemonTcg';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchPokeTraceCardPrice, fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
@@ -40,6 +44,8 @@ type PokemonCard = {
     series?: string;
   };
   number?: string;
+  language?: string | null;
+  raw_data?: any;
   artist?: string;
   supertype?: string;
   subtypes?: string[];
@@ -72,7 +78,6 @@ type PokemonCard = {
     updatedAt?: string;
     prices?: Record<string, any>;
   };
-  raw_data?: any;
 };
 
 type TcgFallbackPrice = {
@@ -123,6 +128,7 @@ export default function CardDetailScreen() {
     getMeta,
     updateTradeMeta,
     myListings,
+    marketplaceListings,
     refreshTrade,
   } = useTrade();
 
@@ -183,6 +189,35 @@ export default function CardDetailScreen() {
           }
         }
 
+        if (!found && cardId) {
+          const { data: dbCard, error: dbCardError } = await supabase
+            .from('pokemon_cards')
+            .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
+            .eq('id', cardId)
+            .maybeSingle();
+
+          if (dbCardError) {
+            console.log('Card detail database fallback failed:', dbCardError.message);
+          }
+
+          if (dbCard) {
+            const raw = (dbCard as any).raw_data ?? {};
+            found = {
+              ...raw,
+              id: (dbCard as any).id,
+              name: (dbCard as any).name ?? raw.name,
+              number: (dbCard as any).number ?? raw.number,
+              rarity: (dbCard as any).rarity ?? raw.rarity,
+              images: {
+                small: (dbCard as any).image_small ?? raw.images?.small,
+                large: (dbCard as any).image_large ?? raw.images?.large,
+              },
+              set: raw.set ?? { id: (dbCard as any).set_id },
+              raw_data: raw,
+            };
+          }
+        }
+
         if (mounted) {
           setCard(found ?? null);
         }
@@ -218,6 +253,7 @@ export default function CardDetailScreen() {
         identifier: cardData.name ?? cardData.id,
         setName: cardData.set?.name ?? null,
         number: cardData.number ?? null,
+        language: cardData.language ?? (cardData as any).raw_data?.language ?? null,
         market: 'US',
       });
 
@@ -239,6 +275,7 @@ export default function CardDetailScreen() {
         number: cardData.number ?? '',
         setTotal: (cardData.set as any)?.printedTotal ?? (cardData.set as any)?.total ?? null,
         rarity: cardData.rarity ?? '',
+        language: cardData.language ?? (cardData as any).raw_data?.language ?? null,
       });
 
       setEbayPrice({
@@ -292,9 +329,10 @@ export default function CardDetailScreen() {
   }, [card?.id]);
 
   // Fetch TCG/Cardmarket prices directly if missing from cache
+  const remotePriceCardId = card && !card.tcgplayer && !card.cardmarket ? card.id : null;
   useEffect(() => {
-    if (!card || card.tcgplayer || card.cardmarket) return;
-    fetch(`https://api.pokemontcg.io/v2/cards/${card.id}`)
+    if (!remotePriceCardId) return;
+    fetch(`https://api.pokemontcg.io/v2/cards/${remotePriceCardId}`)
       .then(r => r.json())
       .then(json => {
         const d = json?.data;
@@ -307,7 +345,7 @@ export default function CardDetailScreen() {
         }
       })
       .catch(() => {});
-  }, [card?.id]);
+  }, [remotePriceCardId]);
 
   useEffect(() => {
     let mounted = true;
@@ -398,7 +436,7 @@ export default function CardDetailScreen() {
           mid: toGbp(avg(midValues)),
           market: toGbp(avg(marketValues)),
         });
-      } catch (err) {
+      } catch {
         if (mounted) setTcgFallbackPrice(null);
       }
     };
@@ -421,9 +459,38 @@ export default function CardDetailScreen() {
   const existingActiveListing = useMemo(() => {
     if (!card) return null;
     return myListings.find(
-      (listing) => listing.card_id === card.id && listing.status === 'active'
+      (listing) => listing.card_id === card.id && (listing.status === 'published' || String(listing.status) === 'active')
     );
   }, [card, myListings]);
+
+  const resolvedSetId = card?.set?.id ?? paramSetId ?? '';
+  const setLogoUrl = resolvedSetId ? getPokemonSetLogoUrl(resolvedSetId) : null;
+
+  const cardMarketListings = useMemo(() => {
+    if (!card) return [];
+    return marketplaceListings.filter((listing) => {
+      if (listing.card_id !== card.id) return false;
+      if (resolvedSetId && listing.set_id && listing.set_id !== resolvedSetId) return false;
+      return !['archived', 'cancelled', 'completed', 'sold', 'refunded'].includes(String(listing.status));
+    });
+  }, [card, marketplaceListings, resolvedSetId]);
+
+  const purchaseListings = useMemo(
+    () => cardMarketListings.filter((listing) => !listing.trade_only && listing.asking_price != null),
+    [cardMarketListings]
+  );
+
+  const tradeListings = useMemo(
+    () => cardMarketListings.filter((listing) => listing.trade_only || listing.asking_price == null),
+    [cardMarketListings]
+  );
+
+  const lowestPurchasePrice = useMemo(() => {
+    const prices = purchaseListings
+      .map((listing) => Number(listing.asking_price))
+      .filter((value) => Number.isFinite(value));
+    return prices.length ? Math.min(...prices) : null;
+  }, [purchaseListings]);
 
 
   // TCGPlayer prices — converted from USD to GBP
@@ -491,6 +558,8 @@ export default function CardDetailScreen() {
     return typeof eur === 'number' ? Math.round(eur * EUR_TO_GBP * 100) / 100 : null;
   }, [card, latestSnapshotPrice]);
 
+  const estimatedCardValue = ebayPrice?.average ?? resolvedTcgPrices?.market ?? cardmarketPrice ?? null;
+
   const isFavorite =
     !!card &&
     profile?.favorite_card_id === card.id &&
@@ -535,8 +604,19 @@ export default function CardDetailScreen() {
       }
       setFavoriteBusy(true);
       await setFavoriteCard(card.id, setId);
+      if (!isFavorite) {
+        createActivityPost({
+          type: 'favorite_card',
+          title: `Favourited: ${card.name ?? 'Card'}`,
+          subtitle: card.set?.name ?? 'Favourite card',
+          cardId: card.id,
+          setId,
+        }).catch((err) => {
+          console.log('Failed to create favourite activity post', err);
+        });
+      }
       Alert.alert('Favourite updated', `${card.name ?? 'Card'} is now your favourite card.`);
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Could not update favourite card.');
     } finally {
       setFavoriteBusy(false);
@@ -554,47 +634,32 @@ export default function CardDetailScreen() {
       setChaseBusy(true);
       await setChaseCard(card.id, setId);
       Alert.alert('Chase updated', `${card.name ?? 'Card'} is now your chase card.`);
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Could not update chase card.');
     } finally {
       setChaseBusy(false);
     }
   };
 
-const handleListOnMarketplace = async () => {
-    try {
-      if (!card) {
-        Alert.alert('Error', 'Card data not loaded yet.');
-        return;
-      }
-
-      if (existingActiveListing) {
-        Alert.alert('Already Listed', 'This card already has an active marketplace listing.');
-        return;
-      }
-
-      setListingBusy(true);
-
-      const result = await createMarketplaceListing({
-        card_id: card.id,
-        set_id: card.set?.id ?? paramSetId ?? null,
-        custom_value:
-          tradeMeta?.value && !Number.isNaN(Number(tradeMeta.value))
-            ? Number(tradeMeta.value)
-            : null,
-        condition: tradeMeta?.condition ?? 'Unspecified',
-        notes: tradeMeta?.notes ?? null,
-      });
-
-      console.log('Marketplace listing created:', result);
-      await refreshTrade();
-      Alert.alert('Listed', `${card.name ?? 'Card'} has been added to the marketplace.`);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to list card on marketplace.';
-      Alert.alert('Marketplace Error', message);
-    } finally {
-      setListingBusy(false);
+const handleListOnMarket = async () => {
+    if (!card) {
+      Alert.alert('Error', 'Card data not loaded yet.');
+      return;
     }
+
+    if (existingActiveListing) {
+      Alert.alert('Already listed', 'This card already has an active listing in The Market.');
+      return;
+    }
+
+    router.push({
+      pathname: '/listing/new',
+      params: {
+        cardId: card.id,
+        setId: card.set?.id ?? paramSetId ?? undefined,
+        type: 'raw_card',
+      },
+    });
   };
 
   const handleDeleteListing = async () => {
@@ -602,7 +667,7 @@ const handleListOnMarketplace = async () => {
     
     Alert.alert(
       'Remove Listing',
-      'Are you sure you want to remove this card from the marketplace?',
+      'Are you sure you want to remove this card from The Market?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -613,7 +678,7 @@ const handleListOnMarketplace = async () => {
               setListingBusy(true);
               await deleteMarketplaceListing(existingActiveListing.id);
               await refreshTrade();
-              Alert.alert('Removed', 'Card has been removed from the marketplace.');
+              Alert.alert('Removed', 'Card has been removed from The Market.');
             } catch (err) {
               const message = err instanceof Error ? err.message : 'Failed to remove listing.';
               Alert.alert('Error', message);
@@ -650,6 +715,8 @@ const handleListOnMarketplace = async () => {
 
   const isTradeMarked = isForTrade(card.id);
   const isWishlisted = isWanted(card.id);
+  const hasEbayValues = ebayPrice?.low != null || ebayPrice?.average != null || ebayPrice?.high != null;
+  const hasTcgValues = resolvedTcgPrices?.low != null || resolvedTcgPrices?.mid != null || resolvedTcgPrices?.market != null;
 
   // ===============================
   // RENDER
@@ -677,12 +744,28 @@ const handleListOnMarketplace = async () => {
         )}
       </View>
 
-      {/* Title + Meta */}
-      <Text style={styles.title}>{card.name ?? 'Unknown card'}</Text>
-      <Text style={styles.subtitle}>
-        {card.set?.name ?? 'Unknown set'}
-        {card.number ? ` • #${card.number}` : ''}
-      </Text>
+      <StackrCardIdentity
+        name={card.name ?? 'Unknown card'}
+        setName={card.set?.name ?? 'Unknown set'}
+        number={card.number ?? null}
+        size="hero"
+        style={{ marginBottom: 10 }}
+      />
+
+      {resolvedSetId ? (
+        <TouchableOpacity
+          style={styles.setLinkRow}
+          activeOpacity={0.82}
+          onPress={() => router.push({ pathname: '/set/[id]', params: { id: resolvedSetId } })}
+          accessibilityRole="button"
+          accessibilityLabel={`Open set ${card.set?.name ?? resolvedSetId}`}
+        >
+          {setLogoUrl ? <Image source={{ uri: setLogoUrl }} style={styles.setLogoImage} resizeMode="contain" /> : null}
+          <Text style={styles.setLinkText} numberOfLines={1}>
+            View {card.set?.name ?? 'set'}
+          </Text>
+        </TouchableOpacity>
+      ) : null}
 
       <View style={styles.metaRow}>
         {!!editionLabel && <Text style={styles.metaChip}>{editionLabel}</Text>}
@@ -711,7 +794,7 @@ const handleListOnMarketplace = async () => {
         <View style={styles.infoCard}>
 
           {/* eBay Live Prices */}
-          <Text style={styles.priceSourceLabel}>eBay Sold Prices · GBP</Text>
+          <Text style={styles.priceSourceLabel}>eBay sold comps · live GBP</Text>
 
           {ebayLoading ? (
             <View style={styles.ebayLoadingRow}>
@@ -721,11 +804,18 @@ const handleListOnMarketplace = async () => {
           ) : ebayError ? (
             <View style={styles.ebayErrorRow}>
               <Text style={styles.ebayErrorText}>
-                Could not fetch eBay prices.{' '}
+                Could not fetch live eBay comps.{' '}
               </Text>
               <TouchableOpacity onPress={() => fetchEbay(card)}>
                 <Text style={styles.ebayRetryText}>Retry</Text>
               </TouchableOpacity>
+            </View>
+          ) : !hasEbayValues ? (
+            <View style={styles.pricingEmptyState}>
+              <Text style={styles.pricingEmptyTitle}>No eBay sold prices yet</Text>
+              <Text style={styles.pricingEmptyCopy}>
+                Refresh market data or use the other pricing sources as a guide.
+              </Text>
             </View>
           ) : (
             <>
@@ -737,7 +827,7 @@ const handleListOnMarketplace = async () => {
                 >
                   <Text style={styles.marketButtonLabel}>Low</Text>
                   <Text style={styles.marketButtonValue}>
-                    {ebayPrice?.low != null ? `£${ebayPrice.low.toFixed(2)}` : 'N/A'}
+                    {ebayPrice?.low != null ? `£${ebayPrice.low.toFixed(2)}` : '--'}
                   </Text>
                 </TouchableOpacity>
 
@@ -748,7 +838,7 @@ const handleListOnMarketplace = async () => {
                 >
                   <Text style={styles.marketButtonLabel}>Average</Text>
                   <Text style={[styles.marketButtonValue, styles.marketButtonValueHighlight]}>
-                    {ebayPrice?.average != null ? `£${ebayPrice.average.toFixed(2)}` : 'N/A'}
+                    {ebayPrice?.average != null ? `£${ebayPrice.average.toFixed(2)}` : '--'}
                   </Text>
                 </TouchableOpacity>
 
@@ -759,7 +849,7 @@ const handleListOnMarketplace = async () => {
                 >
                   <Text style={styles.marketButtonLabel}>High</Text>
                   <Text style={styles.marketButtonValue}>
-                    {ebayPrice?.high != null ? `£${ebayPrice.high.toFixed(2)}` : 'N/A'}
+                    {ebayPrice?.high != null ? `£${ebayPrice.high.toFixed(2)}` : '--'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -773,7 +863,7 @@ const handleListOnMarketplace = async () => {
                 )}
                 {ebayPrice?.usedFallback && (
                   <Text style={styles.ebayFallbackText}>
-                    ⚠️ Broad search used — results may be less specific
+                    Backup lookup used - results may be broader.
                   </Text>
                 )}
                 {ebayPrice?.count === 0 && (
@@ -787,48 +877,66 @@ const handleListOnMarketplace = async () => {
           <View style={styles.divider} />
 
           {/* TCGPlayer — GBP */}
-          <Text style={styles.priceSourceLabel}>TCGPlayer · GBP</Text>
+          <Text style={styles.priceSourceLabel}>TCGPlayer · cached GBP</Text>
 
-          <View style={styles.marketButtonsRow}>
-            <View style={styles.marketButton}>
-              <Text style={styles.marketButtonLabel}>Low</Text>
-              <Text style={styles.marketButtonValue}>
-                {resolvedTcgPrices?.low != null ? `£${resolvedTcgPrices.low.toFixed(2)}` : 'N/A'}
+          {!hasTcgValues ? (
+            <View style={styles.pricingEmptyState}>
+              <Text style={styles.pricingEmptyTitle}>No TCGPlayer price yet</Text>
+              <Text style={styles.pricingEmptyCopy}>
+                We will show low, mid and market values when this card has a usable price.
               </Text>
             </View>
+          ) : (
+            <View style={styles.marketButtonsRow}>
+              <View style={styles.marketButton}>
+                <Text style={styles.marketButtonLabel}>Low</Text>
+                <Text style={styles.marketButtonValue}>
+                  {resolvedTcgPrices?.low != null ? `£${resolvedTcgPrices.low.toFixed(2)}` : '--'}
+                </Text>
+              </View>
 
-            <View style={styles.marketButton}>
-              <Text style={styles.marketButtonLabel}>Mid</Text>
-              <Text style={styles.marketButtonValue}>
-                {resolvedTcgPrices?.mid != null ? `£${resolvedTcgPrices.mid.toFixed(2)}` : 'N/A'}
-              </Text>
-            </View>
+              <View style={styles.marketButton}>
+                <Text style={styles.marketButtonLabel}>Mid</Text>
+                <Text style={styles.marketButtonValue}>
+                  {resolvedTcgPrices?.mid != null ? `£${resolvedTcgPrices.mid.toFixed(2)}` : '--'}
+                </Text>
+              </View>
 
-            <View style={styles.marketButton}>
-              <Text style={styles.marketButtonLabel}>Market</Text>
-              <Text style={styles.marketButtonValue}>
-                {resolvedTcgPrices?.market != null ? `£${resolvedTcgPrices.market.toFixed(2)}` : 'N/A'}
-              </Text>
+              <View style={styles.marketButton}>
+                <Text style={styles.marketButtonLabel}>Market</Text>
+                <Text style={styles.marketButtonValue}>
+                  {resolvedTcgPrices?.market != null ? `£${resolvedTcgPrices.market.toFixed(2)}` : '--'}
+                </Text>
+              </View>
             </View>
-          </View>
+          )}
 
           {/* Divider */}
           <View style={styles.divider} />
 
           {/* CardMarket — GBP */}
-          <Text style={styles.priceSourceLabel}>CardMarket · GBP</Text>
+          <Text style={styles.priceSourceLabel}>CardMarket · cached GBP</Text>
 
-          <View style={styles.marketButtonsRow}>
-            <View style={[styles.marketButton, { flex: 0, paddingHorizontal: 20 }]}>
-              <Text style={styles.marketButtonLabel}>Trend</Text>
-              <Text style={styles.marketButtonValue}>
-                {cardmarketPrice != null ? `£${cardmarketPrice.toFixed(2)}` : 'N/A'}
+          {cardmarketPrice == null ? (
+            <View style={styles.pricingEmptyState}>
+              <Text style={styles.pricingEmptyTitle}>No CardMarket trend yet</Text>
+              <Text style={styles.pricingEmptyCopy}>
+                Trend pricing will appear here once the source has enough data.
               </Text>
             </View>
-          </View>
+          ) : (
+            <View style={styles.marketButtonsRow}>
+              <View style={[styles.marketButton, { flex: 0, paddingHorizontal: 20 }]}>
+                <Text style={styles.marketButtonLabel}>Trend</Text>
+                <Text style={styles.marketButtonValue}>
+                  £{cardmarketPrice.toFixed(2)}
+                </Text>
+              </View>
+            </View>
+          )}
 
           <Text style={styles.marketHint}>
-            Tap an eBay value to auto-fill your asking price.
+            Tap an eBay sold value to auto-fill your asking price.
           </Text>
         </View>
       </View>
@@ -837,7 +945,61 @@ const handleListOnMarketplace = async () => {
         cardName={card.name ?? card.id}
         setName={card.set?.name ?? null}
         number={card.number ?? null}
+        language={card.language ?? (card as any).raw_data?.language ?? null}
       />
+
+      <View style={styles.section}>
+        <View style={styles.sectionTitleRow}>
+          <Text style={styles.sectionTitle}>The Market</Text>
+          <TouchableOpacity
+            onPress={() => router.push({ pathname: '/(tabs)/market', params: { mode: 'buy', cardId: card.id, q: card.name ?? card.id } } as any)}
+            style={styles.marketLinkButton}
+          >
+            <Text style={styles.marketLinkButtonText}>View all listings</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.infoCard}>
+          <View style={styles.marketSummaryGrid}>
+            <View style={styles.marketSummaryItem}>
+              <Text style={styles.marketSummaryLabel}>Lowest purchase</Text>
+              <Text style={styles.marketSummaryValue}>
+                {lowestPurchasePrice != null ? `£${lowestPurchasePrice.toFixed(2)}` : 'No active price'}
+              </Text>
+            </View>
+            <View style={styles.marketSummaryItem}>
+              <Text style={styles.marketSummaryLabel}>Estimated value</Text>
+              <Text style={styles.marketSummaryValue}>
+                {estimatedCardValue != null ? `£${estimatedCardValue.toFixed(2)}` : 'Price pending'}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.marketCountsRow}>
+            <Text style={styles.marketCountText}>
+              {purchaseListings.length} buy listing{purchaseListings.length === 1 ? '' : 's'}
+            </Text>
+            <Text style={styles.marketCountText}>
+              {tradeListings.length} trade listing{tradeListings.length === 1 ? '' : 's'}
+            </Text>
+          </View>
+          <Text style={styles.marketHint}>
+            Prices are estimates from available sources. View The Market for condition, grade, seller, protection and delivery details.
+          </Text>
+          <View style={styles.marketActionsRow}>
+            <TouchableOpacity
+              style={styles.marketSecondaryAction}
+              onPress={() => router.push({ pathname: '/(tabs)/market', params: { mode: 'buy', cardId: card.id, q: card.name ?? card.id } } as any)}
+            >
+              <Text style={styles.marketSecondaryActionText}>Buy listings</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.marketSecondaryAction}
+              onPress={() => router.push({ pathname: '/(tabs)/market', params: { mode: 'trade', cardId: card.id, q: card.name ?? card.id } } as any)}
+            >
+              <Text style={styles.marketSecondaryActionText}>Trade listings</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
 
       {/* Trade Actions */}
       <View style={styles.actions}>
@@ -933,7 +1095,7 @@ const handleListOnMarketplace = async () => {
         </View>
       </View>
 
-{/* Marketplace Button(s) */}
+{/* The Market Button(s) */}
       {existingActiveListing ? (
         <View style={styles.marketplaceButtonsRow}>
           <TouchableOpacity
@@ -952,11 +1114,11 @@ const handleListOnMarketplace = async () => {
             styles.marketplaceButton,
             listingBusy && styles.buttonDisabled,
           ]}
-          onPress={handleListOnMarketplace}
+          onPress={handleListOnMarket}
           disabled={listingBusy}
         >
           <Text style={styles.marketplaceButtonText}>
-            {listingBusy ? 'Listing...' : 'List on Marketplace'}
+            {listingBusy ? 'Listing...' : 'List in The Market'}
           </Text>
         </TouchableOpacity>
       )}
@@ -1135,16 +1297,28 @@ function makeStyles(theme: any) {
   imageFallbackText: {
     color: theme.colors.textSoft,
   },
-  title: {
-    color: theme.colors.text,
-    fontSize: 28,
-    fontWeight: '800',
-    marginBottom: 6,
-  },
-  subtitle: {
-    color: theme.colors.textSoft,
-    fontSize: 15,
+  setLinkRow: {
+    minHeight: 40,
+    alignSelf: 'flex-start',
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: 12,
+  },
+  setLogoImage: {
+    width: 48,
+    height: 20,
+  },
+  setLinkText: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '800',
   },
   metaRow: {
     flexDirection: 'row',
@@ -1243,6 +1417,26 @@ function makeStyles(theme: any) {
   ebayFallbackText: {
     color: '#F59E0B',
     fontSize: 11,
+  },
+  pricingEmptyState: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    paddingVertical: 12,
+    paddingHorizontal: 13,
+    marginBottom: 10,
+  },
+  pricingEmptyTitle: {
+    color: theme.colors.text,
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 3,
+  },
+  pricingEmptyCopy: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 17,
   },
   divider: {
     height: 1,
@@ -1425,6 +1619,80 @@ marketplaceButton: {
     color: theme.colors.textSoft,
     fontSize: 12,
     marginTop: 4,
+  },
+  marketLinkButton: {
+    minHeight: 34,
+    borderRadius: 12,
+    backgroundColor: theme.colors.primary + '12',
+    paddingHorizontal: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  marketLinkButtonText: {
+    color: theme.colors.primary,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  marketSummaryGrid: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  marketSummaryItem: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    padding: 11,
+  },
+  marketSummaryLabel: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  marketSummaryValue: {
+    color: theme.colors.text,
+    fontSize: 16,
+    lineHeight: 21,
+    fontWeight: '900',
+    marginTop: 4,
+  },
+  marketCountsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10,
+  },
+  marketCountText: {
+    color: theme.colors.textSoft,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  marketActionsRow: {
+    flexDirection: 'row',
+    gap: 9,
+    marginTop: 12,
+  },
+  marketSecondaryAction: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  marketSecondaryActionText: {
+    color: theme.colors.text,
+    fontSize: 12,
+    fontWeight: '800',
   },
   infoLine: {
     color: theme.colors.textSoft,

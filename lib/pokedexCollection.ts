@@ -1,4 +1,6 @@
 import { searchLocalPokemonCards } from './cardSearch';
+import { USD_TO_GBP } from './config';
+import { getPreferredMarketPrice, getPriceFromPokemonCard } from './pricing';
 import { supabase } from './supabase';
 
 export type PokedexCard = {
@@ -7,9 +9,12 @@ export type PokedexCard = {
   number?: string | null;
   rarity?: string | null;
   set_id?: string | null;
+  set_name?: string | null;
   image_small?: string | null;
   image_large?: string | null;
   image_urls?: string[];
+  estimated_value?: number | null;
+  price_source?: string | null;
   raw_data?: any;
 };
 
@@ -71,7 +76,7 @@ const getPokemonCardSearchTerms = (pokemonName: string) => {
   return Array.from(terms);
 };
 
-const uniqueUrls = (urls: Array<string | null | undefined>) =>
+const uniqueUrls = (urls: (string | null | undefined)[]) =>
   Array.from(new Set(urls.filter((url): url is string => Boolean(url))));
 
 const buildPokedexImageUrls = (card: any) => {
@@ -98,6 +103,7 @@ const mapCardRow = (card: any): PokedexCard => {
     number: card.number ?? null,
     rarity: card.rarity ?? card.raw_data?.rarity ?? null,
     set_id: card.set_id ?? card.raw_data?.set?.id ?? null,
+    set_name: card.raw_data?.set?.name ?? card.set_name ?? null,
     image_small: imageUrls[1] ?? imageUrls[0] ?? null,
     image_large: imageUrls[0] ?? null,
     image_urls: imageUrls,
@@ -111,11 +117,82 @@ const mapApiCard = (card: any): PokedexCard => ({
   number: card.number ?? null,
   rarity: card.rarity ?? null,
   set_id: card.set?.id ?? null,
+  set_name: card.set?.name ?? null,
   image_small: card.images?.small ?? null,
   image_large: card.images?.large ?? null,
   image_urls: uniqueUrls([card.images?.large, card.images?.small]),
   raw_data: card,
 });
+
+async function addSetNames(cards: PokedexCard[]): Promise<PokedexCard[]> {
+  const missingSetNameIds = [...new Set(
+    cards
+      .filter((card) => !card.set_name && card.set_id)
+      .map((card) => card.set_id as string)
+  )];
+
+  if (!missingSetNameIds.length) return cards;
+
+  const { data, error } = await supabase
+    .from('pokemon_sets')
+    .select('id, name')
+    .in('id', missingSetNameIds);
+
+  if (error) {
+    console.log('Pokedex set name lookup failed:', error.message);
+    return cards;
+  }
+
+  const setNameMap = new Map((data ?? []).map((set: any) => [set.id, set.name]));
+  return cards.map((card) => ({
+    ...card,
+    set_name: card.set_name ?? (card.set_id ? setNameMap.get(card.set_id) ?? null : null),
+  }));
+}
+
+async function addLatestPrices(cards: PokedexCard[]): Promise<PokedexCard[]> {
+  const cardIds = [...new Set(cards.map((card) => card.id).filter(Boolean))];
+  if (!cardIds.length) return cards;
+
+  const snapshotMap = new Map<string, any>();
+  for (let i = 0; i < cardIds.length; i += 250) {
+    const batch = cardIds.slice(i, i + 250);
+    const { data, error } = await supabase
+      .from('market_price_snapshots')
+      .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
+      .in('card_id', batch)
+      .order('snapshot_at', { ascending: false });
+
+    if (error) {
+      console.log('Pokedex price lookup failed:', error.message);
+      continue;
+    }
+
+    for (const row of data ?? []) {
+      if (!snapshotMap.has((row as any).card_id)) {
+        snapshotMap.set((row as any).card_id, row);
+      }
+    }
+  }
+
+  return cards.map((card) => {
+    const fallbackTcgUsd = getPriceFromPokemonCard(card.raw_data);
+    const price = getPreferredMarketPrice(snapshotMap.get(card.id), {
+      tcg: typeof fallbackTcgUsd === 'number' ? fallbackTcgUsd * USD_TO_GBP : null,
+    });
+
+    return {
+      ...card,
+      estimated_value: price.value,
+      price_source: price.source,
+    };
+  });
+}
+
+async function enrichPokedexCards(cards: PokedexCard[]): Promise<PokedexCard[]> {
+  const withSetNames = await addSetNames(cards);
+  return addLatestPrices(withSetNames);
+}
 
 async function fetchPokemonTcgApiCardsForPokemon(pokemonName: string): Promise<PokedexCard[]> {
   const displayName = formatPokedexName(pokemonName);
@@ -209,7 +286,7 @@ export async function fetchCardsForPokemon(pokemonName: string): Promise<Pokedex
     cards = await fetchPokemonTcgApiCardsForPokemon(pokemonName);
   }
 
-  return cards;
+  return enrichPokedexCards(cards);
 }
 
 export async function fetchOwnedPokedexCards(): Promise<Map<string, OwnedPokedexCard>> {

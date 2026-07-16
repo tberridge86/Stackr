@@ -13,7 +13,17 @@ import giblRoutes from './routes/gibl.js';
 import localAiScanRoutes from './routes/localAiScan.js';
 import rareCandyScanRoutes from './routes/rareCandyScan.js';
 import scannerPackRoutes from './routes/scannerPacks.js';
+import shippoRoutes from './routes/shippo.js';
 import stripeRoutes from './routes/stripe.js';
+import {
+  fetchTcgdexCardDetail,
+  fetchTcgdexCardPrice,
+  fetchTcgdexLanguages,
+  fetchTcgdexSet,
+  fetchTcgdexSets,
+  searchTcgdexCards,
+  searchTcgdexCardsDetailed,
+} from './lib/tcgdex.js';
 import { Buffer } from 'node:buffer';
 
 const app = express();
@@ -26,6 +36,7 @@ app.use('/api/local-ai', localAiScanRoutes);
 app.use('/api/rare-candy-scan', rareCandyScanRoutes);
 app.use('/api/scanner-packs', scannerPackRoutes);
 app.use('/api/discord', discordRoutes);
+app.use('/api/shippo', shippoRoutes);
 app.use('/api/stripe', stripeRoutes);
 
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
@@ -414,10 +425,8 @@ const BLOCKED_TERMS = [
   'written on', 'torn', 'water damaged',
   'whitening', 'scratched', 'scuffed', 'faded',
 
-  // Language/version mismatches. The current app prices English cards by default.
-  'japanese', 'japan', 'jpn', 'jp ', 'korean', 'chinese', 'thai', 'indonesian',
-  'french', 'german', 'spanish', 'italian', 'portuguese', 'dutch',
-  'foreign', 'non english', 'non-english', 'world championship', 'championship deck',
+  // Version mismatches.
+  'world championship', 'championship deck',
 ];
 
 function extractCardNumber(query = '') {
@@ -604,8 +613,33 @@ function getRarityMismatchReasons(title = '', { rarity = '' } = {}) {
   return reasons;
 }
 
-function getLanguageMismatchReasons(title = '') {
+function normalizePriceLanguage(value = '') {
+  const cleaned = normaliseForTitleMatch(value);
+  if (['ja', 'jp', 'jpn', 'japanese', 'japan'].includes(cleaned)) return 'ja';
+  return 'en';
+}
+
+function titleHasJapaneseLanguageMarker(title = '') {
   const cleaned = normaliseForTitleMatch(title);
+  return /\b(japanese|japan|jpn|jp)\b/.test(cleaned);
+}
+
+function titleHasNonJapaneseForeignMarker(title = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  return /\b(korean|chinese|thai|indonesian|french|german|spanish|italian|portuguese|dutch|foreign|non\s*-?\s*english)\b/.test(cleaned);
+}
+
+function getLanguageMismatchReasons(title = '', language = 'en') {
+  const cleaned = normaliseForTitleMatch(title);
+  const normalizedLanguage = normalizePriceLanguage(language);
+
+  if (normalizedLanguage === 'ja') {
+    const reasons = [];
+    if (!titleHasJapaneseLanguageMarker(cleaned)) reasons.push('MISSING_JAPANESE_LANGUAGE_MARKER');
+    if (titleHasNonJapaneseForeignMarker(cleaned)) reasons.push('WRONG_NON_JAPANESE_LANGUAGE');
+    return reasons;
+  }
+
   const languagePattern = /\b(japanese|japan|jpn|jp|korean|chinese|thai|indonesian|french|german|spanish|italian|portuguese|dutch|foreign|non\s*-?\s*english)\b/;
   return languagePattern.test(cleaned) ? ['NON_ENGLISH_LISTING'] : [];
 }
@@ -737,6 +771,7 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
     number = '',
     setTotal = '',
     rarity = '',
+    language = 'en',
     productType = 'card',
     productSubtype = '',
     pricingMode = 'raw',
@@ -752,6 +787,7 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
     }
     if (productType === 'sealed') {
       reasons.push(...getSealedProductMismatchReasons(title, query, productSubtype));
+      reasons.push(...getLanguageMismatchReasons(title, language));
     }
     return reasons;
   }
@@ -788,7 +824,7 @@ function getStructuredTitleRejectionReasons(title = '', query = '', options = {}
     }
   }
 
-  reasons.push(...getLanguageMismatchReasons(title));
+  reasons.push(...getLanguageMismatchReasons(title, language));
   reasons.push(...getVariantMismatchReasons(title, { name, rarity }));
   reasons.push(...getRarityMismatchReasons(title, { rarity }));
   reasons.push(...getGradingMismatchReasons(title, { pricingMode, gradingCompany, grade, condition }));
@@ -808,6 +844,7 @@ function getImportantWords(query = '') {
     'star', 'Radiant', 'illustrator', 'special',
     'graded', 'grade', 'slab', 'slabbed', 'psa', 'cgc', 'bgs',
     'beckett', 'ace', 'sgc',
+    'japanese', 'japan', 'jpn', 'jp',
   ]);
 
   const words = normaliseForTitleMatch(query)
@@ -879,13 +916,14 @@ function isSerpApiQuotaErrorMessage(message = '') {
   );
 }
 
-async function fetchCachedEbayCardPrice(cardId) {
+async function fetchCachedEbayCardPrice(cardId, language = 'en') {
   if (!cardId) return null;
 
   const { data, error } = await supabase
     .from('market_price_snapshots')
     .select('ebay_low, ebay_average, ebay_high, ebay_count, snapshot_at')
     .eq('card_id', cardId)
+    .eq('language', normalizePriceLanguage(language))
     .not('ebay_average', 'is', null)
     .order('snapshot_at', { ascending: false })
     .limit(1)
@@ -914,6 +952,9 @@ async function saveCachedEbayCardPrice({
   cardId,
   setId = null,
   summary,
+  language = 'en',
+  refreshLane = null,
+  refreshReason = null,
 }) {
   if (!cardId || summary?.average == null) return;
 
@@ -923,6 +964,9 @@ async function saveCachedEbayCardPrice({
       user_id: null,
       card_id: cardId,
       set_id: setId || null,
+      language: normalizePriceLanguage(language),
+      refresh_lane: refreshLane,
+      refresh_reason: refreshReason,
       tcg_low: null,
       tcg_mid: null,
       cardmarket_trend: null,
@@ -938,12 +982,16 @@ async function saveCachedEbayCardPrice({
   }
 }
 
-function buildCardQuery({ name = '', setName = '', number = '', setTotal = '', rarity = '' }) {
+function buildCardQuery({ name = '', setName = '', number = '', setTotal = '', rarity = '', language = 'en' }) {
   const parts = [name];
 
   // Add set name if available
   if (setName) {
     parts.push(setName);
+  }
+
+  if (normalizePriceLanguage(language) === 'ja') {
+    parts.push('Japanese');
   }
 
   // Add full collector number when we know the printed set total (e.g. "46/102").
@@ -976,12 +1024,16 @@ function buildCardQuery({ name = '', setName = '', number = '', setTotal = '', r
 }
 
 // Build better fallback query with set hints when primary fails
-function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '', rarity = '' }) {
+function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '', rarity = '', language = 'en' }) {
   const parts = [name];
   
   // Prioritize set name in fallback to maintain specificity
   if (setName) {
     parts.push(setName);
+  }
+
+  if (normalizePriceLanguage(language) === 'ja') {
+    parts.push('Japanese');
   }
   
   // Always add collector number if available (critical for uniqueness)
@@ -1068,6 +1120,7 @@ function normalizePriceKey({
   number = '',
   setTotal = '',
   rarity = '',
+  language = 'en',
   productType = 'card',
   pricingMode = 'raw',
   condition = '',
@@ -1082,6 +1135,7 @@ function normalizePriceKey({
     number: String(number || '').trim().toLowerCase(),
     setTotal: String(setTotal || '').trim().toLowerCase(),
     rarity: String(rarity || '').trim().toLowerCase(),
+    language: normalizePriceLanguage(language),
     productType: String(productType || 'card').trim().toLowerCase(),
     pricingMode: String(pricingMode || 'raw').trim().toLowerCase(),
     condition: String(condition || '').trim().toLowerCase(),
@@ -1396,6 +1450,7 @@ async function fetchEbaySummary(query, options = {}) {
     number = '',
     setTotal = '',
     rarity = '',
+    language = 'en',
     productType = 'card',
     productSubtype = '',
     pricingMode = 'raw',
@@ -1412,6 +1467,7 @@ async function fetchEbaySummary(query, options = {}) {
     number,
     setTotal,
     rarity,
+    language,
     productType,
     productSubtype,
     pricingMode,
@@ -1456,6 +1512,7 @@ async function fetchEbaySummary(query, options = {}) {
         number,
         setTotal,
         rarity,
+        language,
         productType,
         productSubtype,
         pricingMode,
@@ -1469,7 +1526,7 @@ async function fetchEbaySummary(query, options = {}) {
       let acceptedSourceItems = rawItems;
 
       if (cleaned.length === 0 && cardName && productType === 'card') {
-        const fallbackParts = [buildFallbackQuery({ name: cardName, setName, number, setTotal, rarity })];
+        const fallbackParts = [buildFallbackQuery({ name: cardName, setName, number, setTotal, rarity, language })];
         if (pricingMode === 'graded') {
           if (gradingCompany) fallbackParts.push(gradingCompany);
           if (grade) fallbackParts.push(grade);
@@ -1495,6 +1552,7 @@ async function fetchEbaySummary(query, options = {}) {
           number,
           setTotal,
           rarity,
+          language,
           productType,
           productSubtype,
           pricingMode,
@@ -1513,6 +1571,7 @@ async function fetchEbaySummary(query, options = {}) {
         number,
         setTotal,
         rarity,
+        language,
         productType,
         productSubtype,
         pricingMode,
@@ -1770,12 +1829,209 @@ app.get('/test-ebay-token', async (req, res) => {
   }
 });
 
+app.get('/api/tcgdex/search', async (req, res) => {
+  try {
+    const query = String(req.query.q || req.query.query || '').trim();
+    const language = String(req.query.language || 'ja').trim();
+    const limit = Math.min(Math.max(Number(req.query.limit || 20), 1), 100);
+
+    if (query.length < 2) {
+      return res.status(400).json({ error: 'Missing search query' });
+    }
+
+    const cards = await searchTcgdexCards({ query, language, limit });
+    return res.json({ source: 'tcgdex', language: normalizePriceLanguage(language), query, cards });
+  } catch (error) {
+    return res.status(500).json({ error: 'TCGdex search failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/foreign/languages', async (_req, res) => {
+  try {
+    return res.json({ source: 'tcgdex', languages: await fetchTcgdexLanguages() });
+  } catch (error) {
+    return res.status(500).json({ error: 'Foreign language lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/foreign/sets', async (req, res) => {
+  try {
+    const language = String(req.query.language || 'ja').trim();
+    const query = String(req.query.q || req.query.query || '').trim();
+    const limit = Math.min(Math.max(Number(req.query.limit || 250), 1), 500);
+    const sets = await fetchTcgdexSets({ language, query, limit });
+    return res.json({ source: 'tcgdex', language, count: sets.length, sets });
+  } catch (error) {
+    return res.status(500).json({ error: 'Foreign set lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/foreign/sets/:setId', async (req, res) => {
+  try {
+    const language = String(req.query.language || 'ja').trim();
+    const set = await fetchTcgdexSet(req.params.setId, language);
+    if (!set) return res.status(404).json({ error: 'Foreign set not found' });
+    return res.json({ source: 'tcgdex', language, set });
+  } catch (error) {
+    return res.status(500).json({ error: 'Foreign set fetch failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/foreign/cards/search', async (req, res) => {
+  try {
+    const query = String(req.query.q || req.query.query || '').trim();
+    const language = String(req.query.language || 'ja').trim();
+    const setId = String(req.query.setId || '').trim();
+    const number = String(req.query.number || '').trim();
+    const includeDetails = String(req.query.includeDetails || '').toLowerCase() === 'true';
+    const limit = Math.min(Math.max(Number(req.query.limit || 20), 1), 100);
+
+    if (query.length < 2 && !setId) {
+      return res.status(400).json({ error: 'Pass q/query or setId' });
+    }
+
+    const cards = await searchTcgdexCardsDetailed({ query, language, setId, number, limit, includeDetails });
+    return res.json({ source: 'tcgdex', language, count: cards.length, cards });
+  } catch (error) {
+    return res.status(500).json({ error: 'Foreign card search failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/foreign/cards/:cardId', async (req, res) => {
+  try {
+    const language = String(req.query.language || 'ja').trim();
+    const card = await fetchTcgdexCardDetail(req.params.cardId, language);
+    if (!card) return res.status(404).json({ error: 'Foreign card not found' });
+    return res.json({ source: 'tcgdex', language, card });
+  } catch (error) {
+    return res.status(500).json({ error: 'Foreign card fetch failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/foreign/cards/:cardId/prices', async (req, res) => {
+  try {
+    const language = String(req.query.language || 'ja').trim();
+    const card = await fetchTcgdexCardDetail(req.params.cardId, language);
+    if (!card) return res.status(404).json({ error: 'Foreign card not found' });
+    return res.json({
+      source: 'tcgdex',
+      language,
+      card: {
+        id: card.id,
+        name: card.name,
+        set: card.set,
+        number: card.number,
+        image: card.image,
+      },
+      pricing: card.pricing,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Foreign card price fetch failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/price/tcgdex', async (req, res) => {
+  try {
+    const cardId = String(req.query.cardId || '').trim();
+    let setId = String(req.query.setId || '').trim();
+    let name = String(req.query.name || '').trim();
+    let setName = String(req.query.setName || '').trim();
+    let number = String(req.query.number || '').trim();
+    let language = String(req.query.language || 'ja').trim();
+    let tcgdexCardId = String(req.query.tcgdexCardId || '').trim();
+    const refreshLane = String(req.query.refreshLane || '').trim() || null;
+    const refreshReason = String(req.query.refreshReason || '').trim() || null;
+
+    if (cardId && (!name || !setName || !number)) {
+      const { data: cardRow, error: cardError } = await supabase
+        .from('pokemon_cards')
+        .select('name, number, set_id, language, external_ids, raw_data')
+        .eq('id', cardId)
+        .maybeSingle();
+
+      if (cardError) {
+        console.log('TCGdex card lookup failed:', cardError.message);
+      }
+
+      if (cardRow) {
+        name ||= cardRow.name ?? '';
+        number ||= cardRow.number ?? cardRow.raw_data?.localId ?? '';
+        setId ||= cardRow.set_id ?? cardRow.raw_data?.set?.id ?? '';
+        setName ||= cardRow.raw_data?.set?.name ?? '';
+        language ||= String(cardRow.language ?? cardRow.raw_data?.language ?? '').trim();
+        tcgdexCardId ||= String(cardRow.external_ids?.tcgdex ?? cardRow.raw_data?.id ?? '').trim();
+      }
+    }
+
+    if (!cardId && !name) {
+      return res.status(400).json({ error: 'Missing cardId or name' });
+    }
+
+    const result = await fetchTcgdexCardPrice({
+      cardId: tcgdexCardId || cardId,
+      name,
+      setName,
+      number,
+      language,
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        source: 'tcgdex',
+        language: normalizePriceLanguage(language),
+        cardId,
+        name,
+        setName,
+        number,
+        price: null,
+        error: 'No matching TCGdex card price found',
+      });
+    }
+
+    if (cardId && result.price != null) {
+      supabase.from('market_price_snapshots').insert({
+        user_id: null,
+        card_id: cardId,
+        set_id: setId || null,
+        language: result.language,
+        tcg_low: result.tcg_low,
+        tcg_mid: result.tcg_mid,
+        cardmarket_trend: result.cardmarket_trend,
+        ebay_low: null,
+        ebay_average: null,
+        ebay_high: null,
+        ebay_count: 0,
+        tcgdex_card_id: result.providerCardId,
+        tcgdex_price: result.price,
+        tcgdex_price_updated_at: result.pricingUpdatedAt,
+        price_source: result.priceSource,
+        refresh_lane: refreshLane,
+        refresh_reason: refreshReason,
+        source_payload: result.raw ?? null,
+        snapshot_at: new Date().toISOString(),
+      }).then(({ error }) => {
+        if (error) console.log('TCGdex snapshot insert failed:', error.message);
+      });
+    }
+
+    return res.json({
+      cardId,
+      setId,
+      requested: { name, setName, number, language: normalizePriceLanguage(language) },
+      ...result,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'TCGdex price failed', detail: getErrorMessage(error) });
+  }
+});
+
 // Simple price endpoint
 app.get('/price', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
     const productType = String(req.query.productType || 'card').trim();
     const productSubtype = String(req.query.productSubtype || '').trim();
+    const language = String(req.query.language || (/\b(japanese|japan|jpn|jp)\b/i.test(query) ? 'ja' : 'en')).trim();
     const pricingMode = String(req.query.pricingMode || 'raw').trim();
     const condition = String(req.query.condition || '').trim();
     const gradingCompany = String(req.query.gradingCompany || '').trim();
@@ -1805,6 +2061,7 @@ app.get('/price', async (req, res) => {
       setTotal,
       productType,
       productSubtype,
+      language,
       pricingMode,
       condition,
       gradingCompany,
@@ -1832,6 +2089,9 @@ app.get('/api/price/ebay', async (req, res) => {
     let rarity = String(req.query.rarity || '').trim();
     const productType = String(req.query.productType || (directQuery ? 'sealed' : 'card')).trim();
     const productSubtype = String(req.query.productSubtype || '').trim();
+    let language = String(req.query.language || (/\b(japanese|japan|jpn|jp)\b/i.test(directQuery) ? 'ja' : 'en')).trim();
+    const refreshLane = String(req.query.refreshLane || '').trim() || null;
+    const refreshReason = String(req.query.refreshReason || '').trim() || null;
     const pricingMode = String(req.query.pricingMode || 'raw').trim();
     const condition = String(req.query.condition || '').trim();
     const gradingCompany = String(req.query.gradingCompany || '').trim();
@@ -1845,6 +2105,7 @@ app.get('/api/price/ebay', async (req, res) => {
       const summary = await fetchEbaySummary(directQuery, {
         productType,
         productSubtype,
+        language,
         pricingMode,
         condition,
         gradingCompany,
@@ -1855,6 +2116,7 @@ app.get('/api/price/ebay', async (req, res) => {
         query: directQuery,
         productType,
         productSubtype,
+        language: normalizePriceLanguage(language),
         pricingMode,
         condition,
         gradingCompany,
@@ -1881,11 +2143,12 @@ app.get('/api/price/ebay', async (req, res) => {
         setId ||= cardRow.set_id ?? cardRow.raw_data?.set?.id ?? '';
         setName ||= cardRow.raw_data?.set?.name ?? '';
         setTotal ||= String(cardRow.raw_data?.set?.printedTotal ?? cardRow.raw_data?.set?.total ?? '');
+        language ||= String(cardRow.raw_data?.language ?? cardRow.raw_data?.lang ?? '').trim();
       }
     }
 
     // Build primary query with rarity hints for better matching
-    const queryParts = [buildCardQuery({ name, setName, number, setTotal, rarity })];
+    const queryParts = [buildCardQuery({ name, setName, number, setTotal, rarity, language })];
     if (pricingMode === 'graded') {
       if (gradingCompany) queryParts.push(gradingCompany);
       if (grade) queryParts.push(grade);
@@ -1904,6 +2167,7 @@ app.get('/api/price/ebay', async (req, res) => {
         number,
         setTotal,
         rarity,
+        language,
         productType,
         productSubtype,
         pricingMode,
@@ -1912,7 +2176,7 @@ app.get('/api/price/ebay', async (req, res) => {
         grade,
       });
     } catch (liveError) {
-      const cached = pricingMode === 'raw' ? await fetchCachedEbayCardPrice(cardId) : null;
+      const cached = pricingMode === 'raw' ? await fetchCachedEbayCardPrice(cardId, language) : null;
       if (cached) {
         return res.json({
           cardId,
@@ -1923,6 +2187,7 @@ app.get('/api/price/ebay', async (req, res) => {
           collectorNumber: getFullCollectorNumber(number, setTotal),
           rarity,
           productType,
+          language: normalizePriceLanguage(language),
           pricingMode,
           condition,
           gradingCompany,
@@ -1955,7 +2220,7 @@ app.get('/api/price/ebay', async (req, res) => {
     }
 
     if (pricingMode === 'raw' && cardId && isSerpApiQuotaErrorMessage(summary.soldProviderError)) {
-      const cached = await fetchCachedEbayCardPrice(cardId);
+      const cached = await fetchCachedEbayCardPrice(cardId, language);
       if (cached) {
         summary = {
           ...summary,
@@ -1972,13 +2237,13 @@ app.get('/api/price/ebay', async (req, res) => {
       (summary.average != null || summary.low != null || summary.high != null) &&
       summary.soldDataSource !== 'cached-ebay'
     ) {
-      saveCachedEbayCardPrice({ cardId, setId, summary }).catch((cacheError) => {
+      saveCachedEbayCardPrice({ cardId, setId, summary, language, refreshLane, refreshReason }).catch((cacheError) => {
         console.log('eBay live price cache write failed:', getErrorMessage(cacheError));
       });
     }
 
     if (pricingMode === 'raw' && cardId && summary.average == null) {
-      const cached = await fetchCachedEbayCardPrice(cardId);
+      const cached = await fetchCachedEbayCardPrice(cardId, language);
       if (cached) {
         summary = {
           ...summary,
@@ -1998,6 +2263,7 @@ app.get('/api/price/ebay', async (req, res) => {
       collectorNumber: getFullCollectorNumber(number, setTotal),
       rarity,
       productType,
+      language: normalizePriceLanguage(language),
       pricingMode,
       condition,
       gradingCompany,
@@ -2023,13 +2289,14 @@ app.get('/price/debug', async (req, res) => {
     const number = String(req.query.number || '').trim();
     const setTotal = String(req.query.setTotal || req.query.printedTotal || '').trim();
     const rarity = String(req.query.rarity || '').trim();
+    const language = String(req.query.language || 'en').trim();
 
     if (!name) {
       return res.status(400).json({ error: 'Missing ?name= param' });
     }
 
-    const primaryQuery = buildCardQuery({ name, setName, number, setTotal, rarity });
-    const fallbackQuery = buildFallbackQuery({ name, setName, number, setTotal, rarity });
+    const primaryQuery = buildCardQuery({ name, setName, number, setTotal, rarity, language });
+    const fallbackQuery = buildFallbackQuery({ name, setName, number, setTotal, rarity, language });
 
     const [primaryRaw, fallbackRaw] = await Promise.all([
       searchEbayBrowseListings(primaryQuery),
@@ -2064,8 +2331,8 @@ app.get('/price/debug', async (req, res) => {
       });
     }
 
-    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery, { name, setName, number, setTotal, rarity });
-    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery, { name, setName, number, setTotal, rarity });
+    const primaryAnalysis = analyseItems(primaryRaw, primaryQuery, { name, setName, number, setTotal, rarity, language });
+    const fallbackAnalysis = analyseItems(fallbackRaw, fallbackQuery, { name, setName, number, setTotal, rarity, language });
 
     const primaryAccepted = primaryAnalysis.filter((i) => i.accepted);
     const fallbackAccepted = fallbackAnalysis.filter((i) => i.accepted);
@@ -2074,7 +2341,7 @@ app.get('/price/debug', async (req, res) => {
     const fallbackPrices = fallbackAccepted.map((i) => numberFromPrice(i.price)).filter(Boolean);
 
     return res.json({
-      queries: { primary: primaryQuery, fallback: fallbackQuery },
+      queries: { primary: primaryQuery, fallback: fallbackQuery, language: normalizePriceLanguage(language) },
       parsed: {
         importantWords: getImportantWords(primaryQuery),
         cardNumber: extractCardNumber(primaryQuery) ?? 'none found',
@@ -3761,6 +4028,7 @@ app.get('/api/poketrace/card', async (req, res) => {
     const tcgPlayerId = String(req.query.tcgPlayerId ?? '').trim();
     const setName = String(req.query.setName ?? '').trim();
     const number = String(req.query.number ?? '').trim();
+    const language = normalizePriceLanguage(String(req.query.language ?? 'en').trim());
     const requestedMarket = String(req.query.market ?? 'US').trim().toUpperCase();
     const market = requestedMarket === 'EU' ? 'EU' : 'US';
 
@@ -3773,6 +4041,7 @@ app.get('/api/poketrace/card', async (req, res) => {
       tcgPlayerId,
       setName,
       number,
+      language,
       market,
     });
     const cached = await readPokeTraceApiCache(cacheKey);

@@ -96,7 +96,14 @@ function buildEbayQuery(card: any): string {
   } else if (card.card_number) {
     number = String(card.card_number);
   }
-  const parts = [card.card_name, number, card.set_name, 'pokemon card'].filter(Boolean);
+  const language = String(card.language ?? card.card_language ?? '').trim().toLowerCase();
+  const parts = [
+    card.card_name,
+    number,
+    card.set_name,
+    ['ja', 'jp', 'jpn', 'japanese'].includes(language) ? 'Japanese' : null,
+    'pokemon card',
+  ].filter(Boolean);
   return parts.join(' ');
 }
 
@@ -107,6 +114,7 @@ function buildEbayPriceInput(card: any) {
     setName: card.set_name ?? undefined,
     number: card.card_number ?? undefined,
     setTotal: card.set_total ?? undefined,
+    language: card.language ?? card.card_language ?? undefined,
   };
 }
 
@@ -261,6 +269,7 @@ async function saveMarketPriceSnapshotByDay(snapshot: any, snapshotDate: string)
     .from('market_price_snapshots')
     .update(updatePayload)
     .eq('card_id', snapshot.card_id)
+    .eq('language', snapshot.language ?? 'en')
     .gte('snapshot_at', snapshotDate)
     .lt('snapshot_at', nextDay);
 
@@ -378,7 +387,7 @@ async function processUser(userId: string, snapshotDate: string) {
   // Get all owned cards for this user
   const { data: cards, error } = await supabase
     .from('binder_cards')
-    .select('card_id, set_id, api_card_id, api_set_id, card_name, card_number, set_name, set_total')
+    .select('card_id, set_id, api_card_id, api_set_id, card_name, card_number, set_name, set_total, language')
     .eq('owned', true)
     .in('binder_id',
       (await supabase.from('binders').select('id').eq('user_id', userId)).data?.map((b: any) => b.id) ?? []
@@ -449,6 +458,7 @@ async function processUser(userId: string, snapshotDate: string) {
       user_id: userId,
       card_id: card.card_id,
       set_id: card.set_id,
+      language: card.language ?? 'en',
       tcg_low: null,
       tcg_mid: typeof tcgPrice === 'number' ? tcgPrice : null,
       cardmarket_trend: pokeTrace?.cardmarket_trend ?? null,

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import { StackrBackButton } from '../../components/StackrBackButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { createTradeReview } from '../../lib/tradeOffers';
@@ -65,22 +66,7 @@ export default function LeaveReviewScreen() {
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60 }}>
 
         {/* Header */}
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            backgroundColor: theme.colors.card,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 20,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-          }}
-        >
-          <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-        </TouchableOpacity>
+        <StackrBackButton onPress={() => router.back()} style={{ marginBottom: 20 }} />
 
         <Text style={{ color: theme.colors.text, fontSize: 28, fontWeight: '900', marginBottom: 6 }}>
           Leave a Review

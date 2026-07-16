@@ -9,6 +9,8 @@ import {
   FlatList,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import { StackrBackButton } from '../../components/StackrBackButton';
+import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import {
@@ -39,6 +41,7 @@ type TCGCard = {
   image_small: string;
   image_large?: string | null;
   raw_data?: any;
+  language?: string | null;
   release_date: string;
   editionHint?: '1st_edition' | 'unlimited' | 'shadowless' | null;
 };
@@ -443,9 +446,7 @@ export default function ScanResultScreen() {
         contentContainerStyle={{ padding: 16, paddingTop: 35, paddingBottom: 60 }}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-          <TouchableOpacity onPress={() => router.back()} style={{ width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
-            <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>←</Text>
-          </TouchableOpacity>
+          <StackrBackButton onPress={() => router.back()} />
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>
               Scan result
@@ -507,12 +508,14 @@ export default function ScanResultScreen() {
 
             {/* Card info */}
             <PremiumCard style={{ marginBottom: 14 }}>
-              <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900', marginBottom: 4 }}>
-                {selectedCard.name}
-              </Text>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 4 }}>
-                {selectedCard.set_name} - #{selectedCard.number}{getEditionLabel(selectedCard) ? ` - ${getEditionLabel(selectedCard)}` : ''}
-              </Text>
+              <StackrCardIdentity
+                name={selectedCard.name}
+                setName={selectedCard.set_name}
+                number={selectedCard.number}
+                edition={getEditionLabel(selectedCard)}
+                size="compact"
+                style={{ marginBottom: 8 }}
+              />
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 8 }}>
                 {selectedCard.rarity ? <TrustBadge label={selectedCard.rarity} icon="ribbon-outline" tone="gold" /> : null}
                 <TrustBadge label={`No. ${selectedCard.number}`} icon="pricetag-outline" tone="purple" />
@@ -548,7 +551,7 @@ export default function ScanResultScreen() {
               marginBottom: 14,
             }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginBottom: 12 }}>
-                eBay Sold Prices (GBP)
+                eBay sold comps (GBP)
               </Text>
 
               {ebayLoading ? (
@@ -594,7 +597,7 @@ export default function ScanResultScreen() {
               marginBottom: 14,
             }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginBottom: 12 }}>
-                TCG Market Price (GBP){getEditionLabel(selectedCard) ? ` · ${getEditionLabel(selectedCard)}` : ''}
+                TCGPlayer cached price (GBP){getEditionLabel(selectedCard) ? ` · ${getEditionLabel(selectedCard)}` : ''}
               </Text>
 
               {tcgVariants.length > 1 && (
@@ -660,6 +663,7 @@ export default function ScanResultScreen() {
               cardName={selectedCard.name}
               setName={selectedCard.set_name}
               number={selectedCard.number}
+              language={selectedCard.language ?? selectedCard.raw_data?.language ?? null}
             />
 
             {/* Add to binder */}

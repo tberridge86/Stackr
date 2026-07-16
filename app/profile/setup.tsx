@@ -11,10 +11,12 @@ import {
   Alert,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import { StackrBackButton } from '../../components/StackrBackButton';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '../../components/profile-context';
 import { AVATAR_PRESETS } from '../../lib/avatars';
+import { stackrTabContentPadding } from '../../lib/stackrSizing';
 
 // ===============================
 // CONSTANTS
@@ -110,7 +112,7 @@ export default function ProfileSetupScreen() {
         pokemon_type: pokemonType,
         background_key: backgroundKey,
         avatar_preset: avatarPreset,
-        avatar_url: null,
+        avatar_url: avatarPreset ? null : profile?.avatar_url ?? null,
       });
 
       if (result?.error) {
@@ -139,27 +141,13 @@ export default function ProfileSetupScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <ScrollView
-        contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
+        contentContainerStyle={{ padding: 20, paddingBottom: stackrTabContentPadding.standard }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
           {isEditing && (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{
-                width: 40, height: 40,
-                borderRadius: 12,
-                backgroundColor: theme.colors.card,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: 12,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-              }}
-            >
-              <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-            </TouchableOpacity>
+            <StackrBackButton onPress={() => router.back()} style={{ marginRight: 12 }} />
           )}
 
           <View style={{ flex: 1 }}>

@@ -10,6 +10,8 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import { StackrPageTitle } from '../../components/StackrScreen';
+import { StackrBackButton } from '../../components/StackrBackButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -336,26 +338,10 @@ export default function FriendsScreen() {
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              width: 40, height: 40,
-              borderRadius: 12,
-              backgroundColor: theme.colors.card,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 12,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-          </TouchableOpacity>
+          <StackrBackButton onPress={() => router.back()} style={{ marginRight: 12 }} />
 
           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
-              Friends
-            </Text>
+            <StackrPageTitle title="Friends" accentText="nds" />
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
               {friends.length} friend{friends.length !== 1 ? 's' : ''}
               {requests.length > 0 ? ` · ${requests.length} pending` : ''}

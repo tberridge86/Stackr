@@ -6,18 +6,22 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { fetchAllSets } from '../lib/pokemonTcg';
 import { createBinder, deleteBinder, fetchBinders } from '../lib/binders';
+import { normalizePokemonCardLanguage, type PokemonCardLanguage } from '../lib/pokemonTcg';
 
 type CollectionContextType = {
   trackedSetIds: string[];
   loadingTrackedSets: boolean;
-  toggleTrackedSet: (setId: string) => Promise<void>;
-  isTracked: (setId: string) => boolean;
+  toggleTrackedSet: (setId: string, language?: PokemonCardLanguage | string | null) => Promise<void>;
+  isTracked: (setId: string, language?: PokemonCardLanguage | string | null) => boolean;
   refreshTrackedSets: () => Promise<void>;
 };
 
 const CollectionContext = createContext<CollectionContextType | null>(null);
+
+function getTrackedSetKey(setId: string, language?: PokemonCardLanguage | string | null) {
+  return `${normalizePokemonCardLanguage(language)}:${setId}`;
+}
 
 export function CollectionProvider({ children }: { children: React.ReactNode }) {
   const [trackedSetIds, setTrackedSetIds] = useState<string[]>([]);
@@ -31,7 +35,7 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
 
       const officialSetIds = binders
         .filter((binder) => binder.type === 'official' && binder.source_set_id)
-        .map((binder) => binder.source_set_id as string);
+        .map((binder) => getTrackedSetKey(binder.source_set_id as string, binder.language));
 
       setTrackedSetIds(officialSetIds);
     } catch (error) {
@@ -47,13 +51,15 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
   }, [refreshTrackedSets]);
 
   const toggleTrackedSet = useCallback(
-    async (setId: string) => {
+    async (setId: string, requestedLanguage?: PokemonCardLanguage | string | null) => {
+      const language = normalizePokemonCardLanguage(requestedLanguage);
       const binders = await fetchBinders();
 
       const existingBinder = binders.find(
         (binder) =>
           binder.type === 'official' &&
-          binder.source_set_id === setId
+          binder.source_set_id === setId &&
+          normalizePokemonCardLanguage(binder.language) === language
       );
 
       if (existingBinder) {
@@ -62,7 +68,8 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
         return;
       }
 
-      const sets = await fetchAllSets();
+      const { fetchAllSets } = await import('../lib/pokemonTcg');
+      const sets = await fetchAllSets({ language });
       const selectedSet = sets.find((set) => set.id === setId);
 
       await createBinder({
@@ -70,6 +77,7 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
         color: '#2563eb',
         type: 'official',
         sourceSetId: setId,
+        language,
       });
 
       await refreshTrackedSets();
@@ -82,7 +90,8 @@ export function CollectionProvider({ children }: { children: React.ReactNode }) 
       trackedSetIds,
       loadingTrackedSets,
       toggleTrackedSet,
-      isTracked: (setId: string) => trackedSetIds.includes(setId),
+      isTracked: (setId: string, language?: PokemonCardLanguage | string | null) =>
+        trackedSetIds.includes(getTrackedSetKey(setId, language)),
       refreshTrackedSets,
     }),
     [trackedSetIds, loadingTrackedSets, toggleTrackedSet, refreshTrackedSets]

@@ -31,6 +31,7 @@ import {
 } from '../../lib/tradeOffers';
 import { BETA_TRADE_DEMO_MODE, PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
 import { getPriceFromPokemonCard } from '../../lib/pricing';
+import { stackrBrand } from '../../lib/stackrBrand';
 
 // ===============================
 // CONSTANTS
@@ -772,7 +773,7 @@ export default function OfferDetailScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
-            <Image source={require('../../assets/images/hub.png')} style={styles.headerLogo} resizeMode="contain" />
+            <Image source={stackrBrand.wordmark} style={styles.headerLogo} resizeMode="contain" />
             <Text style={styles.title}>Negotiation</Text>
             <Text style={styles.subtitle}>Private trade discussion</Text>
           </View>
@@ -938,10 +939,10 @@ export default function OfferDetailScreen() {
             </View>
           )}
 
-          {/* Trade Summary */}
+          {/* Offer Summary */}
           {offer && (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Trade Summary</Text>
+              <Text style={styles.cardTitle}>Offer Summary</Text>
 
               {mySentCards.length > 0 && (
                 <View style={{ marginBottom: 10 }}>

@@ -1,4 +1,5 @@
 import { PRICE_API_URL } from './config';
+import { fetchAllSets, type PokemonSet } from './pokemonTcg';
 import { supabase } from './supabase';
 import type { InventoryCardSnapshot } from './inventory';
 
@@ -30,6 +31,8 @@ export type MarketProduct = {
   product_type: ProductLookupType;
   name: string;
   set_name: string | null;
+  language?: string | null;
+  release_year?: string | null;
   image_url: string | null;
   image_large_url: string | null;
   aliases: string[];
@@ -90,11 +93,157 @@ const buildSearchText = (name: string, type: ProductLookupType, aliases: string[
     ...aliases,
   ].map(normaliseText).filter(Boolean).join(' ');
 
+const PRODUCT_FALLBACK_LABELS: Record<ProductLookupType, string> = {
+  sealed_product: 'Sealed Product',
+  booster_pack: 'Booster Pack',
+  sleeved_booster_pack: 'Sleeved Booster Pack',
+  booster_bundle: 'Booster Bundle',
+  booster_box: 'Booster Box',
+  elite_trainer_box: 'Elite Trainer Box',
+  collection_bundle: 'Collection Box',
+  accessories: 'Accessories',
+};
+
+const PRODUCT_FALLBACK_ALIASES: Record<ProductLookupType, string[]> = {
+  sealed_product: ['sealed', 'sealed product'],
+  booster_pack: ['pack', 'single pack', 'loose pack'],
+  sleeved_booster_pack: ['sleeved pack', 'blister pack', 'sleeved booster'],
+  booster_bundle: ['bundle', 'booster bundle'],
+  booster_box: ['box', 'booster box', 'booster display', 'display box'],
+  elite_trainer_box: ['etb', 'elite trainer box'],
+  collection_bundle: ['collection', 'collection box', 'premium collection'],
+  accessories: ['accessory', 'sleeves', 'binder', 'deck box', 'playmat'],
+};
+
+const PRODUCT_QUERY_STOPWORDS: Record<ProductLookupType, string[]> = {
+  sealed_product: ['sealed', 'product'],
+  booster_pack: ['booster', 'pack', 'single', 'loose', 'sealed'],
+  sleeved_booster_pack: ['sleeved', 'blister', 'booster', 'pack', 'sealed'],
+  booster_bundle: ['booster', 'bundle', 'sealed'],
+  booster_box: ['booster', 'box', 'display', 'sealed'],
+  elite_trainer_box: ['elite', 'trainer', 'box', 'etb', 'sealed'],
+  collection_bundle: ['collection', 'box', 'premium', 'ultra', 'sealed'],
+  accessories: ['accessory', 'accessories'],
+};
+
+function getSetFallbackQuery(text: string, type?: ProductLookupType) {
+  const words = normaliseText(text).split(/\s+/).filter(Boolean);
+  if (!type) return words.join(' ');
+  const stopwords = new Set([...PRODUCT_QUERY_STOPWORDS[type], 'pokemon', 'tcg']);
+  const setWords = words.filter((word) => !stopwords.has(word));
+  return (setWords.length ? setWords : words).join(' ');
+}
+
+function setMatchesProductSearch(set: PokemonSet, normalizedQuery: string) {
+  const queryWords = normalizedQuery.split(/\s+/).filter(Boolean);
+  if (!queryWords.length) return false;
+
+  const haystack = normaliseText([
+    set.name,
+    set.id,
+    set.series,
+    set.language === 'ja' ? 'ja jp jpn japan japanese vintage modern' : 'en english',
+    set.region ?? '',
+    set.externalIds ? Object.values(set.externalIds).join(' ') : '',
+    set.releaseDate ? new Date(set.releaseDate).getFullYear().toString() : '',
+  ].filter(Boolean).join(' '));
+
+  return queryWords.every((word) => haystack.includes(word));
+}
+
+function setProductFallbackName(setName: string, type: ProductLookupType) {
+  if (type === 'sealed_product') return `${setName} sealed product`;
+  if (type === 'accessories') return `${setName} accessories`;
+  return `${setName} ${PRODUCT_FALLBACK_LABELS[type]}`;
+}
+
+function buildSetProductFallback(set: PokemonSet, type: ProductLookupType): MarketProduct {
+  const label = PRODUCT_FALLBACK_LABELS[type];
+  const name = setProductFallbackName(set.name, type);
+  const releaseYear = set.releaseDate ? String(new Date(set.releaseDate).getFullYear()) : null;
+  const languageLabel = set.language === 'ja' ? 'Japanese' : 'English';
+  const aliases = [
+    set.id,
+    set.series,
+    set.language,
+    languageLabel,
+    releaseYear,
+    ...PRODUCT_FALLBACK_ALIASES[type],
+    ...PRODUCT_FALLBACK_ALIASES[type].map((alias) => `${set.name} ${alias}`),
+  ].filter((value): value is string => Boolean(value?.trim()));
+
+  return {
+    id: productInventoryId(name, type),
+    product_type: type,
+    name,
+    set_name: set.name,
+    language: languageLabel,
+    release_year: releaseYear,
+    image_url: null,
+    image_large_url: null,
+    aliases,
+    search_text: buildSearchText(name, type, aliases, set.name),
+    source: 'set_catalog',
+    latest_price: null,
+  };
+}
+
+async function getSetCatalogFallbackProducts(
+  text: string,
+  type?: ProductLookupType,
+  limit = 20
+): Promise<MarketProduct[]> {
+  if (!type || type === 'accessories') return [];
+
+  const trimmed = normaliseText(text);
+  if (trimmed.length < 2) return [];
+  const setQuery = getSetFallbackQuery(text, type);
+  if (setQuery.length < 2) return [];
+
+  try {
+    const sets = await fetchAllSets({ language: 'all' });
+    return sets
+      .filter((set) => setMatchesProductSearch(set, setQuery))
+      .slice(0, limit)
+      .map((set) => buildSetProductFallback(set, type));
+  } catch (error) {
+    console.log('Set catalogue product fallback failed', error);
+    return [];
+  }
+}
+
+function productDedupeKey(product: MarketProduct) {
+  return [
+    product.product_type,
+    normaliseText(product.set_name ?? ''),
+    normaliseText(product.name),
+  ].join(':');
+}
+
+function mergeProductResults(
+  primary: MarketProduct[],
+  fallback: MarketProduct[],
+  limit: number
+) {
+  const seen = new Set<string>();
+  const merged: MarketProduct[] = [];
+  for (const product of [...primary, ...fallback]) {
+    const key = productDedupeKey(product);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(product);
+    if (merged.length >= limit) break;
+  }
+  return merged;
+}
+
 const mapProductRow = (row: any): MarketProduct => ({
   id: row.id,
   product_type: row.product_type,
   name: row.name,
   set_name: row.set_name ?? null,
+  language: row.language ?? null,
+  release_year: row.release_year == null ? null : String(row.release_year),
   image_url: row.image_url ?? null,
   image_large_url: row.image_large_url ?? null,
   aliases: Array.isArray(row.aliases) ? row.aliases : [],
@@ -211,15 +360,24 @@ export async function searchMarketProducts(
 
   const products = (data ?? []).map(mapProductRow).filter(shouldShowCatalogProduct);
   const ids = products.map((product) => product.id);
-  if (!ids.length) return products;
+  if (!ids.length) {
+    return getSetCatalogFallbackProducts(text, type, limit);
+  }
 
   const { data: snapshots, error: snapshotError } = await fetchProductSnapshots(ids);
 
-  if (snapshotError) return products;
+  if (snapshotError) {
+    const fallback = await getSetCatalogFallbackProducts(text, type, Math.max(0, limit - products.length));
+    return mergeProductResults(products, fallback, limit);
+  }
 
   const latestMap = buildLatestProductPriceMap(snapshots ?? []);
 
-  return products.map((product) => ({ ...product, latest_price: latestMap.get(product.id) ?? null }));
+  const pricedProducts = products.map((product) => ({ ...product, latest_price: latestMap.get(product.id) ?? null }));
+  if (pricedProducts.length >= limit) return pricedProducts;
+
+  const fallback = await getSetCatalogFallbackProducts(text, type, limit - pricedProducts.length);
+  return mergeProductResults(pricedProducts, fallback, limit);
 }
 
 export async function listMarketProducts(
@@ -252,6 +410,28 @@ export async function listMarketProducts(
   const latestMap = buildLatestProductPriceMap(snapshots ?? []);
 
   return products.map((product) => ({ ...product, latest_price: latestMap.get(product.id) ?? null }));
+}
+
+export async function getMarketProductById(productId: string): Promise<MarketProduct | null> {
+  const id = productId.trim();
+  if (!id) return null;
+
+  const { data, error } = await supabase
+    .from('market_products')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error || !data) {
+    if (error) console.log('Market product lookup failed', error);
+    return null;
+  }
+
+  const product = mapProductRow(data);
+  if (!shouldShowCatalogProduct(product)) return null;
+
+  const latestPrice = await getLatestProductPrice(product.id);
+  return { ...product, latest_price: latestPrice };
 }
 
 export async function ensureMarketProduct(name: string, type: ProductLookupType): Promise<MarketProduct | null> {

@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'react-native';
 import { useTheme } from '../../components/theme-context';
+import { stackrIcons } from '../../lib/stackrIcons';
+import { StackrCardActionIcon } from '../../components/StackrScreen';
+import { stackrTabBarSizes } from '../../lib/stackrSizing';
 
 export default function TabLayout() {
   const { theme } = useTheme();
@@ -14,27 +17,39 @@ export default function TabLayout() {
         sceneStyle: {
           backgroundColor: theme.colors.bg,
         },
-        tabBarIcon: ({ color, size, focused }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = 'ellipse';
-          if (route.name === 'trade') iconName = focused ? 'storefront' : 'storefront-outline';
-          if (route.name === 'community/index') iconName = focused ? 'people' : 'people-outline';
-          if (route.name === 'index') iconName = focused ? 'home' : 'home-outline';
-          if (route.name === 'binder') iconName = focused ? 'book' : 'book-outline';
-          if (route.name === 'pokedex') iconName = focused ? 'desktop' : 'desktop-outline';
-          if (route.name === 'inventory') iconName = focused ? 'file-tray-full' : 'file-tray-full-outline';
-          return <Ionicons name={iconName} size={size} color={color} />;
+        tabBarIcon: ({ size }) => {
+          const icon =
+            route.name === 'market' ? stackrIcons.marketplace :
+            route.name === 'search' ? stackrIcons.searchCard :
+            route.name === 'index' ? stackrIcons.hub :
+            route.name === 'binder' ? stackrIcons.binders :
+            route.name === 'inventory' ? stackrIcons.sellerMode :
+            null;
+
+          if (!icon) return null;
+          if (route.name === 'search') {
+            return (
+              <StackrCardActionIcon
+                source={icon}
+                frameSize={size}
+                artworkSize={Math.max(stackrTabBarSizes.nativeSearchMinArtwork, size - 4)}
+              />
+            );
+          }
+          return <Image source={icon} resizeMode="contain" style={{ width: size, height: size }} />;
         },
       })}
     >
-      <Tabs.Screen name="trade" options={{ title: 'Market Place' }} />
-      <Tabs.Screen name="community/index" options={{ title: 'Social', tabBarLabel: 'Social' }} />
-      <Tabs.Screen name="index" options={{ title: 'Hub' }} />
-      <Tabs.Screen name="binder" options={{ title: 'Binder' }} />
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="binder" options={{ title: 'Collection' }} />
+      <Tabs.Screen name="market" options={{ title: 'The Market' }} />
+      <Tabs.Screen name="search" options={{ title: 'Search' }} />
+      <Tabs.Screen name="community/index" options={{ title: 'Community', href: null }} />
       <Tabs.Screen name="inventory" options={{ title: 'Inventory' }} />
-      <Tabs.Screen name="pokedex" options={{ title: 'Pokédex' }} />
       <Tabs.Screen name="profile" options={{ href: null }} />
-      <Tabs.Screen name="market" options={{ href: null }} />
+      <Tabs.Screen name="trade" options={{ href: null }} />
       <Tabs.Screen name="explore" options={{ href: null }} />
+      <Tabs.Screen name="pokedex" options={{ href: null }} />
     </Tabs>
   );
 }

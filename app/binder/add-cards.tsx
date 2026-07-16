@@ -1,5 +1,5 @@
 import { useTheme } from '../../components/theme-context';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   TextInput,
@@ -11,11 +11,14 @@ import {
   ScrollView,
 } from 'react-native';
 import { Text } from '../../components/Text';
+import { StackrBackButton } from '../../components/StackrBackButton';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { addCardsToBinder } from '../../lib/binders';
-import { searchPokemonCards, PokemonSearchCard } from '../../lib/pokemonTcgSearch';
+import { addCardsToBinder, fetchBinderById } from '../../lib/binders';
+import { searchPokemonCards, type PokemonSearchCard } from '../../lib/pokemonTcgSearch';
+import { normalizePokemonCardLanguage, type PokemonCardLanguage } from '../../lib/pokemonTcg';
+import { getDisplaySetName } from '../../lib/setDisplay';
 
 // ===============================
 // CONSTANTS
@@ -48,6 +51,7 @@ export default function AddCardsToBinderScreen() {
   const [results, setResults] = useState<PokemonSearchCard[]>([]);
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [binderLanguage, setBinderLanguage] = useState<PokemonCardLanguage>('en');
 
   // Persists selections across searches
   const [selectedCards, setSelectedCards] = useState<
@@ -58,6 +62,23 @@ export default function AddCardsToBinderScreen() {
 
   const selectedCount = Object.keys(selectedCards).length;
   const selectedList = Object.values(selectedCards);
+
+  useEffect(() => {
+    if (!binderId) return;
+    let cancelled = false;
+
+    fetchBinderById(binderId)
+      .then((binder) => {
+        if (!cancelled) setBinderLanguage(normalizePokemonCardLanguage(binder?.language));
+      })
+      .catch(() => {
+        if (!cancelled) setBinderLanguage('en');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [binderId]);
 
   const handleBack = useCallback(() => {
     if (router.canGoBack()) {
@@ -92,14 +113,14 @@ export default function AddCardsToBinderScreen() {
 
     try {
       setSearching(true);
-      const data = await searchPokemonCards(searchTerm);
+      const data = await searchPokemonCards(searchTerm, { language: binderLanguage });
       setResults(data);
     } catch (error: any) {
       Alert.alert('Search error', error?.message ?? 'Could not search cards.');
     } finally {
       setSearching(false);
     }
-  }, [query]);
+  }, [binderLanguage, query]);
 
   // Debounced search on type
   const handleQueryChange = useCallback((text: string) => {
@@ -167,6 +188,7 @@ export default function AddCardsToBinderScreen() {
         selectedList.map((card) => ({
           cardId: card.id,
           setId: card.set?.id ?? '',
+          language: card.language ?? binderLanguage,
         }))
       );
 
@@ -179,7 +201,7 @@ export default function AddCardsToBinderScreen() {
     } finally {
       setSaving(false);
     }
-  }, [binderId, selectedList]);
+  }, [binderId, binderLanguage, selectedList]);
 
   // ===============================
   // RENDER CARD
@@ -187,10 +209,23 @@ export default function AddCardsToBinderScreen() {
 
   const renderCard = useCallback(({ item }: { item: PokemonSearchCard }) => {
     const selected = Boolean(selectedCards[item.id]);
+    const setName = getDisplaySetName({
+      setId: item.set?.id,
+      setName: item.set?.name,
+      set: item.set,
+      rawData: (item as any).raw_data,
+    });
 
     return (
       <TouchableOpacity
         onPress={() => toggleCard(item)}
+        onLongPress={() => router.push({
+          pathname: '/card/[id]',
+          params: { id: item.id, setId: item.set?.id ?? '' },
+        })}
+        delayLongPress={320}
+        accessibilityRole="button"
+        accessibilityLabel={`${item.name ?? 'Card'}. Tap to select for binder. Hold for details.`}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -230,7 +265,7 @@ export default function AddCardsToBinderScreen() {
             {item.name ?? 'Unknown card'}
           </Text>
           <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 13 }} numberOfLines={1}>
-            {item.set?.name ?? 'Unknown set'}
+            {setName}
             {item.number ? ` • #${item.number}` : ''}
           </Text>
           {!!item.rarity && (
@@ -256,7 +291,16 @@ export default function AddCardsToBinderScreen() {
         </View>
       </TouchableOpacity>
     );
-  }, [selectedCards, toggleCard]);
+  }, [
+    selectedCards,
+    theme.colors.border,
+    theme.colors.card,
+    theme.colors.primary,
+    theme.colors.surface,
+    theme.colors.text,
+    theme.colors.textSoft,
+    toggleCard,
+  ]);
 
   // ===============================
   // MAIN RENDER
@@ -268,21 +312,7 @@ export default function AddCardsToBinderScreen() {
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <TouchableOpacity
-            onPress={handleBack}
-            style={{
-              width: 40, height: 40,
-              borderRadius: 12,
-              backgroundColor: theme.colors.card,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 12,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-          </TouchableOpacity>
+          <StackrBackButton onPress={handleBack} style={{ marginRight: 12 }} />
 
           <View style={{ flex: 1 }}>
             <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
@@ -313,6 +343,8 @@ export default function AddCardsToBinderScreen() {
               onChangeText={handleQueryChange}
               placeholder="Search Pokémon, card name, set..."
               placeholderTextColor={theme.colors.textSoft}
+              autoCorrect={false}
+              autoCapitalize="words"
               style={{
                 flex: 1,
                 color: theme.colors.text,

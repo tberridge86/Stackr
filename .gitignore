@@ -5,6 +5,7 @@ node_modules/
 
 # Expo
 .expo/
+.cache/
 dist/
 web-build/
 expo-env.d.ts
@@ -16,10 +17,12 @@ expo-env.d.ts
 *.p8
 *.p12
 *.key
+*.keystore
 *.mobileprovision
 
 # Metro
 .metro-health-check*
+.metro-cache/
 
 # debug
 npm-debug.*
@@ -37,6 +40,26 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# local/generated artifacts
+tmp/
+.tmp/
+.tmp_video_frames/
+.expo-start*.log
+expo-qr.png
+expo-go-qr.png
+expo-go-tunnel-qr.png
+
+# local editor/tool state
+.claude/
+.idea/
+.vscode/
+.npmrc
+backend/.npmrc
+
+# design review/source capture folders that should not ship with the app
+assets/rev2/impecccable/
+assets/**/ChatGPT Images 2.0 _ AI Image Generator*
 
 # generated native folders
 /ios

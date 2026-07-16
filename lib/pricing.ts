@@ -1,4 +1,5 @@
 import { EUR_TO_GBP, PRICE_API_URL, USD_TO_GBP } from './config';
+import { normalizeGradeKey, normalizeGraderKey } from './graderRegistry';
 
 const TCGCSV_BASE_URL = 'https://tcgcsv.com';
 
@@ -99,9 +100,11 @@ export type PokeTraceCardPriceInput = {
   tcgPlayerId?: string | number | null;
   setName?: string | null;
   number?: string | null;
+  language?: string | null;
   market?: 'US' | 'EU';
   gradingCompany?: string | null;
   grade?: string | number | null;
+  gradeLabel?: string | null;
 };
 
 export type PokeTraceHistoryPeriod = '7d' | '30d' | '90d' | '1y' | 'all';
@@ -121,12 +124,16 @@ const POKETRACE_HISTORY_CACHE_TTL_MS = 60 * 1000;
 const POKETRACE_ERROR_CACHE_TTL_MS = 30 * 1000;
 const POKETRACE_RATE_LIMIT_CACHE_TTL_MS = 2 * 60 * 1000;
 const POKETRACE_WARNING_TTL_MS = 60 * 1000;
+const TCGCSV_JSON_CACHE_TTL_MS = 10 * 60 * 1000;
+const TCGCSV_UI_PRICE_CACHE_TTL_MS = 10 * 60 * 1000;
 
 const pokeTracePriceCache = new Map<string, { expiresAt: number; value: PokeTraceCardPriceResult | null }>();
 const pokeTracePriceInflight = new Map<string, Promise<PokeTraceCardPriceResult | null>>();
 const pokeTraceHistoryCache = new Map<string, { expiresAt: number; value: PokeTraceHistoryPoint[] }>();
 const pokeTraceHistoryInflight = new Map<string, Promise<PokeTraceHistoryPoint[]>>();
 const pokeTraceWarnings = new Map<string, number>();
+const tcgcsvJsonCache = new Map<string, { expiresAt: number; value: unknown }>();
+const tcgcsvJsonInflight = new Map<string, Promise<unknown>>();
 
 const getPokeTraceFailureTtl = (status: number) =>
   status === 429 ? POKETRACE_RATE_LIMIT_CACHE_TTL_MS : POKETRACE_ERROR_CACHE_TTL_MS;
@@ -144,9 +151,11 @@ const getPokeTracePriceCacheKey = (input: PokeTraceCardPriceInput) => JSON.strin
   tcgPlayerId: input.tcgPlayerId != null ? String(input.tcgPlayerId).trim().toLowerCase() : '',
   setName: input.setName?.trim().toLowerCase() ?? '',
   number: input.number?.trim().toLowerCase() ?? '',
+  language: input.language != null ? String(input.language).trim().toLowerCase() : 'en',
   market: input.market ?? 'US',
-  gradingCompany: input.gradingCompany != null ? String(input.gradingCompany).trim().toLowerCase() : '',
-  grade: input.grade != null ? String(input.grade).trim().toLowerCase() : '',
+  gradingCompany: normalizeGraderKey(input.gradingCompany) ?? String(input.gradingCompany ?? '').trim().toLowerCase(),
+  grade: normalizeGradeKey(input.grade).toLowerCase(),
+  gradeLabel: normalizeGradeKey(input.gradeLabel).toLowerCase(),
 });
 
 export type TcgcsvCardVariantPrice = {
@@ -172,6 +181,11 @@ export type TcgcsvUiProductPriceRow = {
   groupName: string;
   variants: TcgcsvCardVariantPrice[];
 };
+
+const tcgcsvUiCardPriceCache = new Map<string, { expiresAt: number; value: TcgcsvUiCardPriceRow[] }>();
+const tcgcsvUiCardPriceInflight = new Map<string, Promise<TcgcsvUiCardPriceRow[]>>();
+const tcgcsvUiProductPriceCache = new Map<string, { expiresAt: number; value: TcgcsvUiProductPriceRow[] }>();
+const tcgcsvUiProductPriceInflight = new Map<string, Promise<TcgcsvUiProductPriceRow[]>>();
 
 export type TcgVariantPriceSummary = {
   variant: string;
@@ -224,7 +238,7 @@ const RAW_TIER_PRIORITY = [
   'AGGREGATED',
 ];
 
-const normalizePokeTraceTierKey = (value?: string | number | null) =>
+export const normalizePokeTraceTierKey = (value?: string | number | null) =>
   String(value ?? '')
     .trim()
     .toUpperCase()
@@ -234,12 +248,45 @@ const normalizePokeTraceTierKey = (value?: string | number | null) =>
 
 export const buildPokeTraceGradedTier = (
   gradingCompany?: string | null,
-  grade?: string | number | null
+  grade?: string | number | null,
+  gradeLabel?: string | null
 ) => {
-  const company = normalizePokeTraceTierKey(gradingCompany);
-  const gradeKey = normalizePokeTraceTierKey(grade);
-  return company && gradeKey ? `${company}_${gradeKey}` : null;
+  const company = normalizeGraderKey(gradingCompany) ?? normalizePokeTraceTierKey(gradingCompany);
+  const gradeKey = normalizeGradeKey(grade);
+  const labelKey = normalizeGradeKey(gradeLabel);
+  return company && gradeKey ? [company, gradeKey, labelKey].filter(Boolean).join('_') : null;
 };
+
+export type StackrPricingKey = {
+  canonicalCardId: string;
+  language: string;
+  edition: string | null;
+  variant: string | null;
+  rawOrGraded: 'raw' | 'graded';
+  grader: string | null;
+  grade: string | null;
+  gradeLabel: string | null;
+  currency: string;
+  source: string;
+  salesWindow: string;
+};
+
+export function buildStackrPricingKey(input: Partial<StackrPricingKey>) {
+  const rawOrGraded = input.rawOrGraded ?? 'raw';
+  return JSON.stringify({
+    canonicalCardId: input.canonicalCardId ?? '',
+    language: String(input.language ?? 'en').trim().toLowerCase(),
+    edition: input.edition ?? null,
+    variant: input.variant ?? null,
+    rawOrGraded,
+    grader: rawOrGraded === 'graded' ? normalizeGraderKey(input.grader) ?? normalizePokeTraceTierKey(input.grader) : null,
+    grade: rawOrGraded === 'graded' ? normalizeGradeKey(input.grade) || null : null,
+    gradeLabel: rawOrGraded === 'graded' ? normalizeGradeKey(input.gradeLabel) || null : null,
+    currency: String(input.currency ?? 'GBP').trim().toUpperCase(),
+    source: input.source ?? 'unknown',
+    salesWindow: input.salesWindow ?? 'current',
+  } satisfies StackrPricingKey);
+}
 
 function toNumberOrNull(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
@@ -286,9 +333,26 @@ function pickPokeTraceTier(
   return { key: firstKey, tier: firstKey ? tiers[firstKey] : null };
 }
 
+function pickExactPokeTraceTier(
+  tiers?: Record<string, PokeTracePriceTier>,
+  preferredKeys: (string | null)[] = []
+) {
+  if (!tiers) return { key: null as string | null, tier: null as PokeTracePriceTier | null };
+  for (const key of preferredKeys.filter(Boolean) as string[]) {
+    const direct = tiers[key];
+    if (direct) return { key, tier: direct };
+
+    const normalizedKey = normalizePokeTraceTierKey(key);
+    const match = Object.keys(tiers).find((candidate) => normalizePokeTraceTierKey(candidate) === normalizedKey);
+    if (match) return { key: match, tier: tiers[match] };
+  }
+
+  return { key: null as string | null, tier: null as PokeTracePriceTier | null };
+}
+
 export function normalizePokeTraceCardPrice(
   card: PokeTraceCard | null | undefined,
-  options: Pick<PokeTraceCardPriceInput, 'gradingCompany' | 'grade'> = {}
+  options: Pick<PokeTraceCardPriceInput, 'gradingCompany' | 'grade' | 'gradeLabel'> = {}
 ): PokeTraceCardPriceResult | null {
   if (!card) return null;
 
@@ -297,9 +361,10 @@ export function normalizePokeTraceCardPrice(
   const rawEbay = pickPokeTraceTier(card.prices?.ebay);
   const cardmarket = pickPokeTraceTier(card.prices?.cardmarket, ['AGGREGATED', ...RAW_TIER_PRIORITY]);
   const cardmarketUnsold = pickPokeTraceTier(card.prices?.cardmarket_unsold);
-  const requestedGradedTier = buildPokeTraceGradedTier(options.gradingCompany, options.grade);
+  const requestedGradedTier = buildPokeTraceGradedTier(options.gradingCompany, options.grade, options.gradeLabel);
+  const requestedWithoutLabel = buildPokeTraceGradedTier(options.gradingCompany, options.grade);
   const gradedTier = requestedGradedTier
-    ? pickPokeTraceTier(card.prices?.ebay ?? card.prices?.cardmarket_unsold, [requestedGradedTier])
+    ? pickExactPokeTraceTier(card.prices?.ebay ?? card.prices?.cardmarket_unsold, [requestedGradedTier, requestedWithoutLabel])
     : { key: null as string | null, tier: null as PokeTracePriceTier | null };
   const setName = typeof card.set === 'string' ? card.set : card.set?.name ?? null;
 
@@ -350,6 +415,7 @@ export async function fetchPokeTraceCardPrice(
     }
     if (input.setName?.trim()) params.set('setName', input.setName.trim());
     if (input.number?.trim()) params.set('number', input.number.trim());
+    if (input.language?.trim()) params.set('language', input.language.trim());
 
     const response = await fetch(`${PRICE_API_URL}/api/poketrace/card?${params.toString()}`);
     if (!response.ok) {
@@ -366,6 +432,7 @@ export async function fetchPokeTraceCardPrice(
     const value = normalizePokeTraceCardPrice(json?.card, {
       gradingCompany: input.gradingCompany,
       grade: input.grade,
+      gradeLabel: input.gradeLabel,
     });
     pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_PRICE_CACHE_TTL_MS, value });
     return value;
@@ -570,18 +637,43 @@ export const fetchCardsBySetNameWithPriceAvailability = async (
 };
 
 async function fetchTcgcsvJson<T>(url: string): Promise<T> {
-  const response = await fetch(url, {
-    headers: {
-      'User-Agent': 'PocketVault/1.0.0',
-    },
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`TCGCSV request failed: ${response.status} ${text}`);
+  const now = Date.now();
+  const cached = tcgcsvJsonCache.get(url);
+  if (cached && cached.expiresAt > now) {
+    return cached.value as T;
   }
 
-  return response.json() as Promise<T>;
+  const inflight = tcgcsvJsonInflight.get(url);
+  if (inflight) {
+    return inflight as Promise<T>;
+  }
+
+  const request = (async () => {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'PocketVault/1.0.0',
+      },
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`TCGCSV request failed: ${response.status} ${text}`);
+    }
+
+    const json = await response.json() as T;
+    tcgcsvJsonCache.set(url, {
+      expiresAt: Date.now() + TCGCSV_JSON_CACHE_TTL_MS,
+      value: json,
+    });
+    return json;
+  })();
+
+  tcgcsvJsonInflight.set(url, request as Promise<unknown>);
+  try {
+    return await request;
+  } finally {
+    tcgcsvJsonInflight.delete(url);
+  }
 }
 
 function normalizeForCompare(value: string): string {
@@ -672,6 +764,18 @@ export async function fetchTcgcsvPokemonGroupByName(
 export async function fetchTcgcsvUiCardPricesForSet(
   setName: string
 ): Promise<TcgcsvUiCardPriceRow[]> {
+  const cacheKey = normalizeForCompare(setName);
+  const cached = tcgcsvUiCardPriceCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+
+  const inflight = tcgcsvUiCardPriceInflight.get(cacheKey);
+  if (inflight) {
+    return inflight;
+  }
+
+  const request = (async () => {
   const group = await fetchTcgcsvPokemonGroupByName(setName);
   if (!group) return [];
 
@@ -715,12 +819,36 @@ export async function fetchTcgcsvUiCardPricesForSet(
     });
   }
 
-  return rows;
+    tcgcsvUiCardPriceCache.set(cacheKey, {
+      expiresAt: Date.now() + TCGCSV_UI_PRICE_CACHE_TTL_MS,
+      value: rows,
+    });
+    return rows;
+  })();
+
+  tcgcsvUiCardPriceInflight.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    tcgcsvUiCardPriceInflight.delete(cacheKey);
+  }
 }
 
 export async function fetchTcgcsvUiProductPricesForSet(
   setName: string
 ): Promise<TcgcsvUiProductPriceRow[]> {
+  const cacheKey = normalizeForCompare(setName);
+  const cached = tcgcsvUiProductPriceCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.value;
+  }
+
+  const inflight = tcgcsvUiProductPriceInflight.get(cacheKey);
+  if (inflight) {
+    return inflight;
+  }
+
+  const request = (async () => {
   const group = await fetchTcgcsvPokemonGroupByName(setName);
   if (!group) return [];
 
@@ -750,7 +878,7 @@ export async function fetchTcgcsvUiProductPricesForSet(
     });
   }
 
-  return products
+    const rows = products
     .map((product) => ({
       productId: product.productId,
       name: product.name,
@@ -760,6 +888,20 @@ export async function fetchTcgcsvUiProductPricesForSet(
       variants: priceByProductId.get(product.productId) ?? [],
     }))
     .filter((product) => product.variants.length > 0);
+
+    tcgcsvUiProductPriceCache.set(cacheKey, {
+      expiresAt: Date.now() + TCGCSV_UI_PRICE_CACHE_TTL_MS,
+      value: rows,
+    });
+    return rows;
+  })();
+
+  tcgcsvUiProductPriceInflight.set(cacheKey, request);
+  try {
+    return await request;
+  } finally {
+    tcgcsvUiProductPriceInflight.delete(cacheKey);
+  }
 }
 
 type PptEbayGrade = {

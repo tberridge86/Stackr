@@ -12,9 +12,11 @@ const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 export type LocalScanCard = {
   id: string;
   name: string;
+  language: string;
   number: string;
   set_id: string;
   set_name: string;
+  set_code: string;
   set_printed_total: number | null;
   image_small: string;
   rarity: string;
@@ -52,9 +54,11 @@ function toScanCard(row: any): LocalScanCard {
   return {
     id: row.id,
     name: row.name,
+    language: row.language ?? row.raw_data?.language ?? 'en',
     number: row.number ?? '',
     set_id: row.set_id,
     set_name: row.raw_data?.set?.name ?? row.set_id,
+    set_code: row.raw_data?.set?.ptcgoCode ?? row.raw_data?.set?.id ?? row.set_id ?? '',
     set_printed_total: getPrintedTotal(row.raw_data),
     image_small: row.image_small ?? '',
     rarity: row.rarity ?? '',
@@ -183,7 +187,7 @@ async function fetchAllScanCards() {
   while (true) {
     const { data, error } = await supabase
       .from('pokemon_cards')
-      .select('id, name, number, rarity, image_small, set_id, raw_data')
+      .select('id, name, language, number, rarity, image_small, set_id, raw_data')
       .range(from, from + PAGE_SIZE - 1);
 
     if (error) throw error;

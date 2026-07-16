@@ -17,6 +17,7 @@ import {
 import { router } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { getAuthCallbackRedirectUrl, getPasswordResetRedirectUrl } from '../../lib/authRedirects';
+import { stackrLogoSizes } from '../../lib/stackrSizing';
 
 export default function LoginScreen() {
   const { theme } = useTheme();
@@ -148,7 +149,7 @@ export default function LoginScreen() {
         >
           <View style={styles.logoWrap}>
             <Image
-              source={require('../../assets/images/icon-with-text.png')}
+              source={require('../../assets/rev2/01-brand/app/icon-with-text.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -233,6 +234,8 @@ export default function LoginScreen() {
 }
 
 function makeStyles(theme: any, compact: boolean) {
+  const authLogoSize = compact ? stackrLogoSizes.authLogo.compact : stackrLogoSizes.authLogo.regular;
+
   return StyleSheet.create({
   safe: {
     flex: 1,
@@ -340,8 +343,8 @@ logoWrap: {
 },
 
 logo: {
-  width: compact ? 210 : 240,
-  height: compact ? 126 : 144,
+  width: authLogoSize.width,
+  height: authLogoSize.height,
 },
 
 });

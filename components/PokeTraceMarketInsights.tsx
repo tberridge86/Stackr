@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   StyleSheet,
   TouchableOpacity,
   useWindowDimensions,
@@ -9,6 +10,7 @@ import {
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Stop } from 'react-native-svg';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
+import { formatSlabCompanyLabel } from './SlabStickerLabel';
 import {
   PokeTraceCardPriceResult,
   PokeTraceHistoryPeriod,
@@ -23,6 +25,7 @@ type Props = {
   cardName: string;
   setName?: string | null;
   number?: string | null;
+  language?: string | null;
   rawCondition?: string | null;
   gradingCompany?: string | null;
   grade?: string | number | null;
@@ -30,6 +33,7 @@ type Props = {
 };
 
 const PERIODS: PokeTraceHistoryPeriod[] = ['7d', '30d', '90d'];
+const MINTY_REV2_SOURCE = require('../assets/rev2/03-ui-illustrations/mascot/Stackrrev2_mascot-cutout.png');
 
 const SOURCE_COPY: Record<SourceKey, { label: string; color: string }> = {
   ebay: { label: 'eBay sold', color: '#20C997' },
@@ -38,7 +42,7 @@ const SOURCE_COPY: Record<SourceKey, { label: string; color: string }> = {
 };
 
 const formatCurrency = (value: number | null | undefined) =>
-  typeof value === 'number' && Number.isFinite(value) ? `£${value.toFixed(2)}` : '--';
+  typeof value === 'number' && Number.isFinite(value) ? `\u00A3${value.toFixed(2)}` : '--';
 
 const formatPercent = (value: number | null) => {
   if (value == null || !Number.isFinite(value)) return '--';
@@ -93,7 +97,7 @@ const getRawPrimaryPrice = (price: PokeTraceCardPriceResult | null) => {
   }
 
   return {
-    label: 'market',
+    label: 'No live price',
     value: null,
     low: null,
     high: null,
@@ -153,7 +157,7 @@ function MiniMarketChart({
   if (!geometry) {
     return (
       <View style={[styles.chartEmpty, { height }]}>
-        <Text style={styles.chartEmptyText}>History appears after PokeTrace has enough rows for this tier.</Text>
+        <Text style={styles.chartEmptyText}>More price history will appear after another refresh.</Text>
       </View>
     );
   }
@@ -207,6 +211,7 @@ export default function PokeTraceMarketInsights({
   cardName,
   setName,
   number,
+  language,
   rawCondition,
   gradingCompany,
   grade,
@@ -220,6 +225,7 @@ export default function PokeTraceMarketInsights({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const isGradedMode = Boolean(gradingCompany && grade);
+  const displayGradingCompany = formatSlabCompanyLabel(gradingCompany);
 
   useEffect(() => {
     let mounted = true;
@@ -239,8 +245,9 @@ export default function PokeTraceMarketInsights({
           identifier: trimmedName,
           setName: setName ?? null,
           number: number ?? null,
+          language: language ?? null,
           market: 'US',
-          gradingCompany,
+          gradingCompany: displayGradingCompany,
           grade,
         });
         if (!mounted) return;
@@ -268,13 +275,13 @@ export default function PokeTraceMarketInsights({
     return () => {
       mounted = false;
     };
-  }, [cardName, grade, gradingCompany, number, period, rawCondition, setName, summaryOnly]);
+  }, [cardName, displayGradingCompany, grade, language, number, period, rawCondition, setName, summaryOnly]);
 
   const depthRows = useMemo(() => {
     const rows = [
       {
         key: 'ebay',
-        label: isGradedMode ? `${gradingCompany} ${grade}` : 'eBay sold',
+        label: isGradedMode ? `${displayGradingCompany} ${grade}` : 'eBay sold',
         value: isGradedMode ? price?.graded_average ?? null : price?.ebay_average ?? null,
         low: isGradedMode ? price?.graded_low ?? null : price?.ebay_low ?? null,
         high: isGradedMode ? price?.graded_high ?? null : price?.ebay_high ?? null,
@@ -301,7 +308,7 @@ export default function PokeTraceMarketInsights({
       },
     ];
     return rows.filter((row) => row.value != null || row.low != null || row.high != null);
-  }, [grade, gradingCompany, isGradedMode, price]);
+  }, [displayGradingCompany, grade, isGradedMode, price]);
 
   const priceValues = depthRows.flatMap((row) => [row.value, row.low, row.high]).filter((value): value is number => typeof value === 'number');
   const low = priceValues.length ? Math.min(...priceValues) : null;
@@ -315,7 +322,7 @@ export default function PokeTraceMarketInsights({
 
   if (summaryOnly) {
     const rawPrimary = getRawPrimaryPrice(price);
-    const primaryLabel = isGradedMode ? `${gradingCompany} ${grade}` : rawPrimary.label;
+    const primaryLabel = isGradedMode ? `${displayGradingCompany} ${grade}` : rawPrimary.label;
     const primaryValue = isGradedMode ? price?.graded_average ?? null : rawPrimary.value;
     const primaryLow = isGradedMode ? price?.graded_low ?? null : rawPrimary.low;
     const primaryHigh = isGradedMode ? price?.graded_high ?? null : rawPrimary.high;
@@ -324,15 +331,29 @@ export default function PokeTraceMarketInsights({
     return (
       <View style={[styles.summaryPanel, { backgroundColor: theme.colors.primary + '10', borderColor: theme.colors.primary + '35' }]}>
         <View style={styles.summaryHeader}>
-          <View>
-            <Text style={[styles.eyebrow, { color: theme.colors.textSoft }]}>Primary price</Text>
-            <Text style={[styles.title, { color: theme.colors.text }]}>PokeTrace {primaryLabel}</Text>
+          <View style={styles.insightTitleCluster}>
+            <View style={styles.insightMascotBadge}>
+              <Image source={MINTY_REV2_SOURCE} style={styles.insightMascot} resizeMode="contain" />
+            </View>
+            <View style={styles.insightCopy}>
+              <Text style={[styles.eyebrow, { color: theme.colors.textSoft }]}>PokeTrace live sold comps</Text>
+              <Text
+                style={[styles.title, { color: theme.colors.text }]}
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.86}
+              >
+                {primaryLabel}
+              </Text>
+            </View>
           </View>
           {loading && <ActivityIndicator size="small" color={theme.colors.primary} />}
         </View>
 
         {error ? (
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>PokeTrace pricing is unavailable right now.</Text>
+          <Text style={styles.unavailableText}>
+            Live pricing is unavailable right now. Stored values may still appear elsewhere on this card.
+          </Text>
         ) : (
           <View style={styles.summaryGrid}>
             <View style={[styles.summaryMain, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
@@ -347,7 +368,7 @@ export default function PokeTraceMarketInsights({
                 {formatCurrency(primaryLow)} - {formatCurrency(primaryHigh)}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>
-                {primaryCount ? `${primaryCount}+ sales` : 'Volume --'}
+                {primaryCount ? `${primaryCount}+ sales` : 'No sales yet'}
               </Text>
             </View>
           </View>
@@ -359,9 +380,14 @@ export default function PokeTraceMarketInsights({
   return (
     <View style={[styles.panel, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
       <View style={styles.headerRow}>
-        <View>
-          <Text style={[styles.eyebrow, { color: theme.colors.textSoft }]}>Market insights</Text>
-          <Text style={[styles.title, { color: theme.colors.text }]}>Price movement</Text>
+          <View style={styles.insightTitleCluster}>
+            <View style={styles.insightMascotBadge}>
+              <Image source={MINTY_REV2_SOURCE} style={styles.insightMascot} resizeMode="contain" />
+            </View>
+          <View style={styles.insightCopy}>
+            <Text style={[styles.eyebrow, { color: theme.colors.textSoft }]}>Minty market read</Text>
+            <Text style={[styles.title, { color: theme.colors.text }]} numberOfLines={2}>Price movement</Text>
+          </View>
         </View>
         <View style={styles.periodRow}>
           {PERIODS.map((item) => (
@@ -390,7 +416,7 @@ export default function PokeTraceMarketInsights({
           <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Loading market history...</Text>
         </View>
       ) : error ? (
-        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Market history is unavailable right now.</Text>
+        <Text style={styles.unavailableText}>Market history is unavailable right now.</Text>
       ) : (
         <>
           <View style={styles.statGrid}>
@@ -463,7 +489,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   title: {
-    fontSize: 17,
+    fontSize: 16,
+    lineHeight: 20,
     fontWeight: '900',
   },
   summaryPanel: {
@@ -478,6 +505,30 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
     marginBottom: 12,
+  },
+  insightTitleCluster: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    minWidth: 0,
+  },
+  insightCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  insightMascotBadge: {
+    width: 58,
+    height: 58,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+  insightMascot: {
+    width: 70,
+    height: 70,
   },
   summaryGrid: {
     flexDirection: 'row',
@@ -512,6 +563,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingVertical: 18,
+  },
+  unavailableText: {
+    color: '#716BA8',
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontWeight: '700',
   },
   statGrid: {
     flexDirection: 'row',

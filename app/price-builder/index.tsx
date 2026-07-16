@@ -538,15 +538,15 @@ export default function PriceBuilderScreen() {
                     borderRadius: 999,
                     paddingHorizontal: 7,
                     paddingVertical: 3,
-                    backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                    backgroundColor: active ? theme.colors.primary + '12' : theme.colors.surface,
                     borderWidth: 1,
                     borderColor: active ? theme.colors.primary : theme.colors.border,
                   }}
                 >
                   <Text style={{
-                    color: active ? '#FFFFFF' : theme.colors.textSoft,
+                    color: active ? theme.colors.primary : theme.colors.textSoft,
                     fontWeight: '900',
-                    fontSize: 9,
+                    fontSize: 12,
                   }}>
                     {condition}
                   </Text>
@@ -714,6 +714,8 @@ export default function PriceBuilderScreen() {
             onChangeText={handleQueryChange}
             placeholder={lookupType === 'raw_card' ? 'Search e.g. Charizard base...' : `Search ${productLookupLabel(lookupType).toLowerCase()}...`}
             placeholderTextColor={theme.colors.textSoft}
+            autoCorrect={false}
+            autoCapitalize="words"
             style={{
               backgroundColor: theme.colors.bg,
               borderRadius: 12,

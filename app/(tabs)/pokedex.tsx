@@ -5,9 +5,11 @@ import {
   FlatList,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   type DimensionValue,
+  type ImageSourcePropType,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -15,9 +17,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '../../components/Text';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { router, useFocusEffect } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchOwnedPokemonNameSet, pokemonNameMatchesCardName } from '../../lib/pokedexCollection';
+import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { PokemonArtworkGlow, StackrPageHeader, StackrScreen } from '../../components/StackrScreen';
+import { stackrIcons } from '../../lib/stackrIcons';
 
 type PokemonListItem = {
   name: string;
@@ -41,6 +46,19 @@ type RangeKey =
   | 'alola'
   | 'galar'
   | 'paldea';
+
+const REGION_FILTERS: { key: RangeKey; label: string; source: ImageSourcePropType }[] = [
+  { key: 'all', label: 'All', source: stackrIcons.pokedex },
+  { key: 'kanto', label: 'Kanto', source: require('../../assets/rev2/08-pokedex-regions/Kanto.png') },
+  { key: 'johto', label: 'Johto', source: require('../../assets/rev2/08-pokedex-regions/johto.png') },
+  { key: 'hoenn', label: 'Hoenn', source: require('../../assets/rev2/08-pokedex-regions/Hoenn.png') },
+  { key: 'sinnoh', label: 'Sinnoh', source: require('../../assets/rev2/08-pokedex-regions/Sinnoh.png') },
+  { key: 'unova', label: 'Unova', source: require('../../assets/rev2/08-pokedex-regions/unova.png') },
+  { key: 'kalos', label: 'Kalos', source: require('../../assets/rev2/08-pokedex-regions/Kalos.png') },
+  { key: 'alola', label: 'Alola', source: require('../../assets/rev2/08-pokedex-regions/Alola.png') },
+  { key: 'galar', label: 'Galar', source: require('../../assets/rev2/08-pokedex-regions/Galar.png') },
+  { key: 'paldea', label: 'Paldea', source: require('../../assets/rev2/08-pokedex-regions/Paldea.png') },
+];
 
 const POKEDEX_LIST_LIMIT = 1350;
 const POKEAPI_LIST_URL = `https://pokeapi.co/api/v2/pokemon?limit=${POKEDEX_LIST_LIMIT}`;
@@ -254,17 +272,31 @@ export default function PokedexScreen() {
   const mastersetPercent = Math.round(mastersetProgress * 100);
   const mastersetFillWidth = `${Math.min(100, mastersetProgress * 100)}%` as DimensionValue;
 
-  const renderRangeChip = (key: RangeKey, label: string) => {
+  const renderRangeChip = (option: { key: RangeKey; label: string; source: ImageSourcePropType }) => {
+    const { key, label, source } = option;
     const active = selectedRange === key;
 
     return (
       <Pressable
+        key={key}
         onPress={() => setSelectedRange(key)}
-        style={[styles.rangeChip, active && styles.rangeChipActive]}
+        accessibilityRole="button"
+        accessibilityLabel={`${label} region filter`}
+        accessibilityState={{ selected: active }}
+        style={({ pressed }) => [
+          styles.regionTile,
+          active && styles.regionTileActive,
+          pressed && styles.regionTilePressed,
+        ]}
       >
-        <Text style={[styles.rangeChipText, active && styles.rangeChipTextActive]}>
-          {label}
-        </Text>
+        <View style={styles.regionIconFrame}>
+          <Image
+            source={source}
+            style={styles.regionIcon}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
+        </View>
       </Pressable>
     );
   };
@@ -280,14 +312,18 @@ export default function PokedexScreen() {
             params: { id: String(item.id), name: item.name },
           })
         }
+        accessibilityRole="button"
+        accessibilityLabel={`${formatPokemonName(item.name)}, number ${String(item.id).padStart(4, '0')}${owned ? ', owned' : ', not owned'}`}
         style={({ pressed }) => [styles.gridCard, { width: itemWidth }, pressed && styles.cardPressed]}
       >
         <View style={[styles.gridImageWrap, owned && { backgroundColor: 'transparent' }]}>
-          <Image
-            source={{ uri: getPokemonImageUrl(item.id) }}
-            style={styles.gridImage}
-            resizeMode="contain"
-          />
+          <PokemonArtworkGlow style={styles.pokemonArtworkFrame}>
+            <Image
+              source={{ uri: getPokemonImageUrl(item.id) }}
+              style={styles.gridImage}
+              resizeMode="contain"
+            />
+          </PokemonArtworkGlow>
           {owned && (
             <View style={styles.ownedBadge}>
               <Ionicons name="checkmark" size={12} color="#FFFFFF" />
@@ -305,36 +341,25 @@ export default function PokedexScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <StackrScreen variant="tab" style={styles.safe}>
+      <StackrBackdrop />
       <FeatureTipGate
         tipKey="pokedex-screen-v1"
-        title="Pokedex collection"
-        subtitle="Track cards by Pokemon, not just by set."
+        title="Pokédex collection"
+        subtitle="Track cards by Pokémon, not just by set."
         items={[
-          { icon: 'albums-outline', title: 'All cards', body: 'Tap a Pokemon to see every card for that Pokemon across all sets.' },
-          { icon: 'checkmark-circle-outline', title: 'Ownership', body: 'Mark cards owned inside each Pokemon page to build a Pokemon collection.' },
+          { icon: 'albums-outline', title: 'All cards', body: 'Tap a Pokémon to see every card for that Pokémon across all sets.' },
+          { icon: 'checkmark-circle-outline', title: 'Ownership', body: 'Mark cards owned inside each Pokémon page to build a Pokémon collection.' },
           { icon: 'sync-outline', title: 'Binder sync', body: 'Cards owned in your binders also count here, without creating extra binders.' },
         ]}
       />
       <View style={styles.container}>
-        <View style={styles.headerCard}>
-          <Text style={styles.heading}>Pokédex</Text>
-          <Text style={styles.subheading}>
-            Browse every Pokémon and build this into your collection encyclopedia.
-          </Text>
-
-          <View style={styles.mastersetProgress}>
-            <View style={styles.mastersetProgressTop}>
-              <Text style={styles.mastersetProgressLabel}>Masterset progress</Text>
-              <Text style={styles.mastersetProgressValue}>
-                {ownedPokedexCount}/{pokedexTotal} Pokemon owned
-              </Text>
-            </View>
-            <View style={styles.mastersetTrack}>
-              <View style={[styles.mastersetFill, { width: mastersetFillWidth }]} />
-            </View>
-            <Text style={styles.mastersetPercent}>{mastersetPercent}% complete</Text>
-          </View>
+        <View style={styles.headerBlock}>
+          <StackrPageHeader
+            title="Pokédex"
+            accentText="dex"
+            subtitle="Explore Pokémon and discover every card linked to them."
+          />
 
           <View style={styles.searchWrap}>
             <Ionicons name="search-outline" size={18} color={theme.colors.textSoft} />
@@ -343,22 +368,34 @@ export default function PokedexScreen() {
               onChangeText={setQuery}
               placeholder="Search Pokémon or number..."
               placeholderTextColor={theme.colors.textSoft}
+              autoCorrect={false}
+              autoCapitalize="words"
               style={styles.searchInput}
             />
           </View>
         </View>
 
-        <View style={styles.rangeRow}>
-          {renderRangeChip('all', 'All')}
-          {renderRangeChip('kanto', 'Kanto')}
-          {renderRangeChip('johto', 'Johto')}
-          {renderRangeChip('hoenn', 'Hoenn')}
-          {renderRangeChip('sinnoh', 'Sinnoh')}
-          {renderRangeChip('unova', 'Unova')}
-          {renderRangeChip('kalos', 'Kalos')}
-          {renderRangeChip('alola', 'Alola')}
-          {renderRangeChip('galar', 'Galar')}
-          {renderRangeChip('paldea', 'Paldea')}
+        <View style={styles.regionScroller}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.regionRail}
+          >
+            {REGION_FILTERS.map(renderRangeChip)}
+          </ScrollView>
+        </View>
+
+        <View style={styles.mastersetProgress}>
+          <View style={styles.mastersetProgressTop}>
+            <Text style={styles.mastersetProgressLabel}>Masterset progress</Text>
+            <Text style={styles.mastersetProgressValue}>
+              {ownedPokedexCount}/{pokedexTotal} Pokémon owned
+            </Text>
+          </View>
+          <View style={styles.mastersetTrack}>
+            <View style={[styles.mastersetFill, { width: mastersetFillWidth }]} />
+          </View>
+          <Text style={styles.mastersetPercent}>{mastersetPercent}% complete</Text>
         </View>
 
         <View style={styles.summaryRow}>
@@ -401,7 +438,7 @@ export default function PokedexScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </StackrScreen>
   );
 }
 
@@ -410,39 +447,27 @@ function makeStyles(theme: any) {
   safe: {
     flex: 1,
     backgroundColor: theme.colors.bg,
+    overflow: 'hidden',
   },
   container: {
     flex: 1,
     paddingHorizontal: 18,
-    paddingTop: 18,
+    paddingTop: theme.spacing.sm,
   },
   list: {
     flex: 1,
-    marginBottom: -50,
   },
-  headerCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 26,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginBottom: 14,
-    ...cardShadow,
-  },
-  heading: {
-    color: theme.colors.text,
-    fontSize: 30,
-    fontWeight: '900',
-    marginBottom: 8,
-  },
-  subheading: {
-    color: theme.colors.textSoft,
-    fontSize: 14,
-    lineHeight: 21,
-    marginBottom: 16,
+  headerBlock: {
+    gap: 12,
+    marginBottom: 12,
   },
   mastersetProgress: {
-    marginBottom: 16,
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 12,
+    marginBottom: 10,
     gap: 8,
   },
   mastersetProgressTop: {
@@ -498,31 +523,45 @@ function makeStyles(theme: any) {
     fontSize: 15,
     fontWeight: '600',
   },
-  rangeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  regionScroller: {
     marginBottom: 12,
+    marginHorizontal: -18,
   },
-  rangeChip: {
+  regionRail: {
+    gap: 10,
+    paddingHorizontal: 18,
+    paddingBottom: 2,
+  },
+  regionTile: {
+    width: 82,
+    minHeight: 72,
     backgroundColor: theme.colors.card,
-    borderRadius: 999,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
+    borderRadius: 18,
+    paddingHorizontal: 8,
+    paddingVertical: 7,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...cardShadow,
   },
-  rangeChipActive: {
-    backgroundColor: theme.colors.primary,
+  regionTileActive: {
+    backgroundColor: theme.colors.primary + '12',
     borderColor: theme.colors.primary,
   },
-  rangeChipText: {
-    color: theme.colors.textSoft,
-    fontSize: 12,
-    fontWeight: '800',
+  regionTilePressed: {
+    transform: [{ scale: 0.98 }],
+    opacity: 0.94,
   },
-  rangeChipTextActive: {
-    color: '#FFFFFF',
+  regionIconFrame: {
+    width: 68,
+    height: 58,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  regionIcon: {
+    width: 66,
+    height: 56,
   },
   summaryRow: {
     marginBottom: 10,
@@ -620,6 +659,11 @@ gridImageWrap: {
   alignItems: 'center',
   justifyContent: 'center',
   marginBottom: 6,
+  overflow: 'visible',
+},
+pokemonArtworkFrame: {
+  width: '100%',
+  height: '100%',
 },
 ownedBadge: {
   position: 'absolute',

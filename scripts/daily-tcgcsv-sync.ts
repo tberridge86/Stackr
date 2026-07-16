@@ -97,7 +97,7 @@ async function fetchAllPokemonCards() {
     const to = from + CARD_PAGE_SIZE - 1;
     const { data, error } = await supabase
       .from('pokemon_cards')
-      .select('id, name, set_id, raw_data')
+      .select('id, name, set_id, language, raw_data')
       .range(from, to);
 
     if (error) throw error;
@@ -118,6 +118,7 @@ async function saveMarketPriceSnapshotByDay(snapshot: any, snapshotDate: string)
     .from('market_price_snapshots')
     .update(updatePayload)
     .eq('card_id', snapshot.card_id)
+    .eq('language', snapshot.language ?? 'en')
     .gte('snapshot_at', snapshotDate)
     .lt('snapshot_at', nextDay);
 
@@ -210,6 +211,7 @@ async function runDailyTcgcsvSync() {
           user_id: null,
           card_id: card.id,
           set_id: card.set_id ?? card?.raw_data?.set?.id ?? null,
+          language: card.language ?? 'en',
           tcg_low: fallback.low,
           tcg_mid: fallback.market ?? fallback.mid ?? fallback.low,
           cardmarket_trend: null,

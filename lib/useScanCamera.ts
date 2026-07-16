@@ -1,5 +1,4 @@
-// lib/useScanCamera.ts (New File)
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Camera, useCameraDevices } from 'react-native-vision-camera';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { useScanStore } from './scanStore';
@@ -23,6 +22,12 @@ type ScanCameraOptions = {
   resizeWidth?: number;
   compress?: number;
 };
+
+function toFileUri(path?: string | null) {
+  if (!path) return null;
+  if (path.startsWith('file://') || path.startsWith('content://')) return path;
+  return `file://${path}`;
+}
 
 function getCenteredCardCrop(
   photoWidth?: number,
@@ -101,18 +106,34 @@ export function useScanCamera(
   const devices = useCameraDevices();
   const device = devices.find(d => d.position === 'back');
   const scanStore = useScanStore();
+  const continuousTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+      if (continuousTimeoutRef.current) {
+        clearTimeout(continuousTimeoutRef.current);
+        continuousTimeoutRef.current = null;
+      }
+    };
+  }, []);
   
 
   const takePhoto = async () => {
     if (camera.current) {
-      const photo = await camera.current.takePhoto();
+      const photo = await camera.current.takePhoto({ flash: 'off', enableShutterSound: false });
+      const photoUri = toFileUri(photo.path);
+      if (!photoUri) {
+        throw new Error('Camera returned a photo without a file path.');
+      }
       const crop = options.cropToCard ? getCenteredCardCrop(photo.width, photo.height, options.cropFrame) : null;
       const actions: ImageManipulator.Action[] = [
         ...(crop ? [{ crop }] : []),
         { resize: { width: options.resizeWidth ?? 600 } },
       ];
       const manipulated = await ImageManipulator.manipulateAsync(
-        `file://${photo.path}`,
+        photoUri,
         actions,
         { compress: options.compress ?? 0.4, format: ImageManipulator.SaveFormat.JPEG, base64: true }
       );
@@ -123,9 +144,12 @@ export function useScanCamera(
         scanStore.triggerCallback(manipulated.base64!); // Backward compat
       }
       
-      if (isContinuous) {
+      if (isContinuous && mountedRef.current) {
         // Auto-loop for pack scanning (1s delay to reposition)
-        setTimeout(() => takePhoto(), 1000);
+        if (continuousTimeoutRef.current) clearTimeout(continuousTimeoutRef.current);
+        continuousTimeoutRef.current = setTimeout(() => {
+          if (mountedRef.current) void takePhoto();
+        }, 1000);
       }
 
       return {

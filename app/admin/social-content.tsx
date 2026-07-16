@@ -12,6 +12,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
+import { StackrBackButton } from '../../components/StackrBackButton';
 import { useTheme } from '../../components/theme-context';
 import { useProfile } from '../../components/profile-context';
 import { supabase } from '../../lib/supabase';
@@ -177,9 +178,7 @@ export default function AdminSocialContentScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.iconButton}>
-          <Ionicons name="chevron-back" size={22} color={theme.colors.text} />
-        </Pressable>
+        <StackrBackButton onPress={() => router.back()} />
         <View style={{ flex: 1 }}>
           <Text style={styles.heading}>Social Content</Text>
           <Text style={styles.subheading}>Admin publishing for shops, events, meetups and news.</Text>

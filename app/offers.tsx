@@ -10,9 +10,12 @@ import {
   View,
 } from 'react-native';
 import { Text } from '../components/Text';
+import { StackrPageTitle } from '../components/StackrScreen';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { StackrBackdrop } from '../components/StackrBackdrop';
+import { StackrBackButton } from '../components/StackrBackButton';
 import {
   fetchMyTradeOffers,
   updateTradeOfferStatus,
@@ -212,7 +215,7 @@ export default function OffersScreen() {
 
     return (
       <TouchableOpacity
-        onPress={() => router.push(`/offer?id=${offer.id}`)}
+        onPress={() => router.push(`/offer/${offer.id}` as any)}
         style={{
           backgroundColor: theme.colors.card,
           borderRadius: 18,
@@ -485,32 +488,16 @@ export default function OffersScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+      <StackrBackdrop />
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 12 }}>
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              backgroundColor: theme.colors.card,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 12,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-            }}
-          >
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 26 }}>‹</Text>
-          </TouchableOpacity>
+          <StackrBackButton onPress={() => router.back()} style={{ marginRight: 12 }} />
 
           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>
-              Trade Offers
-            </Text>
+            <StackrPageTitle title="Offers" accentText="ers" />
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
               Manage your incoming and outgoing offers
             </Text>
@@ -533,7 +520,7 @@ export default function OffersScreen() {
                 onPress={() => setSegment(key)}
                 style={{
                   flex: 1,
-                  backgroundColor: active ? theme.colors.primary : theme.colors.card,
+                  backgroundColor: active ? theme.colors.primary + '12' : theme.colors.card,
                   borderRadius: 12,
                   paddingVertical: 10,
                   alignItems: 'center',
@@ -542,7 +529,7 @@ export default function OffersScreen() {
                 }}
               >
                 <Text style={{
-                  color: active ? '#FFFFFF' : theme.colors.textSoft,
+                  color: active ? theme.colors.primary : theme.colors.textSoft,
                   fontWeight: '800',
                   fontSize: 13,
                 }}>
@@ -557,7 +544,7 @@ export default function OffersScreen() {
                   backgroundColor: active ? 'rgba(255,255,255,0.2)' : theme.colors.surface,
                 }}>
                   <Text style={{
-                    color: active ? '#FFFFFF' : theme.colors.textSoft,
+                    color: active ? theme.colors.primary : theme.colors.textSoft,
                     fontWeight: '900',
                     fontSize: 11,
                     textAlign: 'center',
@@ -599,7 +586,7 @@ export default function OffersScreen() {
                 </Text>
                 <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontSize: 13 }}>
                   {segment === 'received'
-                    ? 'When someone sends you a trade offer it will appear here.'
+                    ? 'When someone sends you a Market offer it will appear here.'
                     : segment === 'sent'
                     ? 'Offers you send to other collectors will appear here.'
                     : 'Completed and declined offers will appear here.'}

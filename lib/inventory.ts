@@ -335,12 +335,16 @@ export async function addInventoryMovement(input: Omit<InventoryMovement, 'id' |
       id: movement.id,
       user_id: user.id,
       card_id: movement.card_id,
+      set_id: movement.set_id ?? null,
+      card_name: movement.card_name ?? null,
       action_type: movement.action_type,
       quantity: movement.quantity,
       reason: movement.reason,
       binder_id: movement.binder_id ?? null,
+      binder_name: movement.binder_name ?? null,
       collection_id: movement.collection_id ?? null,
       value_at_time: movement.value_at_time ?? null,
+      image_small: movement.image_small ?? null,
       created_at: movement.created_at,
     });
     if (error) throw error;

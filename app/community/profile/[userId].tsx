@@ -5,11 +5,11 @@ import {
   Alert,
   FlatList,
   Image,
-  ScrollView,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { Text } from '../../../components/Text';
+import { StackrBackButton } from '../../../components/StackrBackButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,10 +18,10 @@ import { supabase } from '../../../lib/supabase';
 import {
   sendFriendRequest,
   acceptFriendRequest,
-  declineFriendRequest,
   removeFriend,
   getFriendStatus,
 } from '../../../lib/friends';
+import { stackrTabContentPadding } from '../../../lib/stackrSizing';
 
 // ===============================
 // TYPES
@@ -468,17 +468,13 @@ export default function PublicCollectorProfileScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderPost}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: stackrTabContentPadding.standard }}
         ListHeaderComponent={
           <View>
             {/* Back button */}
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}
-            >
-              <Ionicons name="chevron-back" size={20} color={theme.colors.text} />
-              <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Back</Text>
-            </TouchableOpacity>
+            <View style={{ marginBottom: 16 }}>
+              <StackrBackButton onPress={() => router.back()} />
+            </View>
 
             {/* Profile header */}
             <View style={{

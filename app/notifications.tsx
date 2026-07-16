@@ -14,6 +14,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
 import { StackrScreenHeader } from '../components/StackrScreenHeader';
+import { StackrBackdrop } from '../components/StackrBackdrop';
+import { stackrTabContentPadding } from '../lib/stackrSizing';
 
 // ===============================
 // TYPES
@@ -99,7 +101,7 @@ function getNotificationRoute(item: Notification): string {
     case 'offer_accepted':
     case 'offer_declined':
     case 'trade_completed':
-      return item.offer_id ? `/offer?id=${item.offer_id}` : '/offers';
+      return item.offer_id ? `/offer/${item.offer_id}` : '/offers';
     case 'friend_request':
     case 'friend_accepted':
       return '/friends';
@@ -331,9 +333,10 @@ export default function NotificationsScreen() {
       <View>
         <StackrScreenHeader
           title="Activity"
-          subtitle="Stay in the loop with your trades"
+          accentText="ity"
+          subtitle="Stay in the loop with The Market"
           rightIcon="search-outline"
-          onRightPress={() => router.push('/trade' as any)}
+          onRightPress={() => router.push('/(tabs)/market' as any)}
         />
 
         <View style={{
@@ -526,7 +529,8 @@ export default function NotificationsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+        <StackrBackdrop />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
@@ -542,7 +546,8 @@ export default function NotificationsScreen() {
   // ===============================
 
   return (
-    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+      <StackrBackdrop />
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 0 }}>
         <FlatList
           data={filteredNotifications}
@@ -551,7 +556,7 @@ export default function NotificationsScreen() {
           ListHeaderComponent={renderActivityHeader}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: 120,
+            paddingBottom: stackrTabContentPadding.standard,
             flexGrow: filteredNotifications.length === 0 ? 1 : 0,
           }}
           refreshControl={

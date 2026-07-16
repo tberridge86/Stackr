@@ -1,6 +1,6 @@
 import { identifyCards, type IdentifiedCard } from './cardSight';
 
-type ScanCallback = (base64: string) => void | Promise<void>;
+type ScanCallback = (base64: string, resolvedCard?: any) => void | Promise<void>;
 let _callback: ScanCallback | null = null;
 
 export interface QueuedScan {
@@ -20,7 +20,7 @@ export interface ScanState {
   addScanned: (base64: string) => void;
   clear: () => void;
   processQueue: () => Promise<IdentifiedCard[]>;
-  triggerCallback: (base64: string) => Promise<void>;
+  triggerCallback: (base64: string, resolvedCard?: any) => Promise<void>;
 }
 
 const listeners = new Set<() => void>();
@@ -75,10 +75,10 @@ const state: ScanState = {
     notify();
     return results;
   },
-  triggerCallback: async (base64: string) => {
+  triggerCallback: async (base64: string, resolvedCard?: any) => {
     const callback = _callback;
     _callback = null;
-    await callback?.(base64);
+    await callback?.(base64, resolvedCard);
   },
 };
 
@@ -102,10 +102,10 @@ export const scanStore = {
     _callback = cb;
     state.clear();
   },
-  triggerCallback: async (base64: string) => {
+  triggerCallback: async (base64: string, resolvedCard?: any) => {
     const callback = _callback;
     _callback = null;
-    await callback?.(base64);
+    await callback?.(base64, resolvedCard);
   },
   clear: () => {
     _callback = null;

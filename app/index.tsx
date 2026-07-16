@@ -4,7 +4,7 @@ import { Image, StyleSheet, View } from 'react-native';
 import { useAuth } from '../components/auth-context';
 import { useProfile } from '../components/profile-context';
 
-const MIN_SPLASH_MS = 900;
+const MIN_SPLASH_MS = 120;
 
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
@@ -36,7 +36,7 @@ export default function Index() {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/images/splash.png')}
+        source={require('../assets/rev2/01-brand/app/splash.png')}
         style={styles.logo}
         resizeMode="cover"
       />

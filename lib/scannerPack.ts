@@ -9,6 +9,7 @@ const PACK_DIR = `${FileSystem.documentDirectory ?? ''}scanner-packs`;
 export type ScannerPackCard = {
   id: string;
   name: string;
+  language?: string | null;
   setId: string | null;
   setName: string | null;
   number: string;
@@ -42,9 +43,11 @@ function toLocalScanCard(card: ScannerPackCard): LocalScanCard {
   return {
     id: card.id,
     name: card.name,
+    language: card.language ?? 'en',
     number: card.number,
     set_id: card.setId ?? '',
     set_name: card.setName ?? card.setId ?? '',
+    set_code: card.setId ?? '',
     set_printed_total: card.printedTotal,
     image_small: card.imageSmall,
     rarity: card.rarity,

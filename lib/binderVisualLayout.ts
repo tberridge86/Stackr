@@ -1,0 +1,3 @@
+export const BINDER_ARTWORK_OPTICAL_SHIFT_X = -6;
+export const BINDER_ARTWORK_OPTICAL_SHIFT_Y = 0;
+export const BINDER_ARTWORK_SCALE = 1.42;

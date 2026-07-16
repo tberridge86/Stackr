@@ -1,7 +1,10 @@
 import { searchLocalPokemonCards } from './cardSearch';
+import { correctPokemonNameQuery } from './pokemonNameAutocorrect';
+import { normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
 
 export type PokemonSearchCard = {
   id: string;
+  language?: PokemonCardLanguage;
   name?: string;
   number?: string;
   images?: {
@@ -18,12 +21,17 @@ export type PokemonSearchCard = {
   subtypes?: string[];
 };
 
-export async function searchPokemonCards(query: string): Promise<PokemonSearchCard[]> {
+export async function searchPokemonCards(
+  query: string,
+  options: { language?: PokemonCardLanguage | string | null } = {}
+): Promise<PokemonSearchCard[]> {
   const trimmed = query.trim();
+  const language = normalizePokemonCardLanguage(options.language);
 
   if (!trimmed) return [];
 
   const localResults = await searchLocalPokemonCards<any>(trimmed, {
+    language,
     limit: 80,
     select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
   });
@@ -31,6 +39,7 @@ export async function searchPokemonCards(query: string): Promise<PokemonSearchCa
   if (localResults.length > 0) {
     return localResults.map((card) => ({
       id: card.id,
+      language,
       name: card.name,
       number: card.number ?? undefined,
       rarity: card.rarity ?? card.raw_data?.rarity ?? undefined,
@@ -48,7 +57,11 @@ export async function searchPokemonCards(query: string): Promise<PokemonSearchCa
     }));
   }
 
-  const encoded = encodeURIComponent(`name:"*${trimmed}*"`);
+  const corrected = await correctPokemonNameQuery(trimmed, { allowIndex: false });
+  if (language === 'ja') return [];
+
+  const fallbackQuery = corrected.changed ? corrected.correctedQuery : trimmed;
+  const encoded = encodeURIComponent(`name:"*${fallbackQuery}*"`);
   const url = `https://api.pokemontcg.io/v2/cards?q=${encoded}&pageSize=60`;
 
   const response = await fetch(url);

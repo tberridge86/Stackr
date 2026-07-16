@@ -16,8 +16,11 @@ import {
 import { Text } from '../../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { fetchAllSets, fetchCardsForSet, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
+import { fetchAllSets, fetchCardsForSet, getPokemonSetLogoUrl, PokemonCard, PokemonSet } from '../../lib/pokemonTcg';
 import { supabase } from '../../lib/supabase';
+import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { createActivityPost } from '../../lib/activity';
+import { stackrTabContentPadding } from '../../lib/stackrSizing';
 
 type FilterType = 'all' | 'owned' | 'missing';
 type SortType = 'number' | 'name' | 'rarity';
@@ -94,9 +97,10 @@ type CardItemProps = {
   variantQuantities: Map<string, number>;
   setId: string;
   onOpenQuantity: (card: PokemonCard, variant: string) => void;
+  onQuickAdd: (card: PokemonCard, variant: string) => void;
 };
 
-const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity }: CardItemProps) => {
+const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity, onQuickAdd }: CardItemProps) => {
   const { theme } = useTheme();
   const variants = useMemo(() => getVariants(card, setId), [card, setId]);
   const quantities = variants.map((v) => variantQuantities.get(getVariantKey(card.id, setId, v)) ?? 0);
@@ -104,6 +108,7 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity }:
   const anyOwned = totalQuantity > 0;
   const allOwned = variants.every((v) => (variantQuantities.get(getVariantKey(card.id, setId, v)) ?? 0) > 0);
   const slicePct = 100 / variants.length;
+  const quickAddVariant = variants.find((variant) => (variantQuantities.get(getVariantKey(card.id, setId, variant)) ?? 0) > 0) ?? variants[0];
 
   return (
     <View style={{
@@ -219,7 +224,7 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity }:
           <View style={{
             position: 'absolute',
             top: 6,
-            right: 6,
+            left: 6,
             minWidth: 28,
             height: 28,
             borderRadius: 14,
@@ -235,6 +240,26 @@ const CardItem = React.memo(({ card, variantQuantities, setId, onOpenQuantity }:
             </Text>
           </View>
         )}
+
+        <TouchableOpacity
+          onPress={() => onQuickAdd(card, quickAddVariant)}
+          activeOpacity={0.82}
+          style={{
+            position: 'absolute',
+            top: 6,
+            right: 6,
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            backgroundColor: theme.colors.primary,
+            borderWidth: 2,
+            borderColor: '#FFFFFF',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Ionicons name="add" size={16} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
 
       {/* Name + rarity */}
@@ -268,6 +293,7 @@ export default function SetDetailScreen() {
   const [setInfo, setSetInfo] = useState<PokemonSet | null>(null);
   const [cards, setCards] = useState<PokemonCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const [setLogoFailed, setSetLogoFailed] = useState(false);
   const [variantQuantities, setVariantQuantities] = useState<Map<string, number>>(new Map());
   const [userId, setUserId] = useState<string | null>(null);
   const [quantityTarget, setQuantityTarget] = useState<QuantityTarget>(null);
@@ -329,6 +355,10 @@ export default function SetDetailScreen() {
 
   useEffect(() => { loadSetData(); }, [loadSetData]);
 
+  useEffect(() => {
+    setSetLogoFailed(false);
+  }, [setId]);
+
   // ===============================
   // QUANTITY
   // ===============================
@@ -337,12 +367,13 @@ export default function SetDetailScreen() {
     const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
     setQuantityTarget({ card, variant });
     setQuantityDraft(String(Math.max(1, currentQuantity || 1)));
-  }, [variantQuantities]);
+  }, [setId, variantQuantities]);
 
   const handleSetVariantQuantity = useCallback(async (cardId: string, variant: string, nextQuantity: number) => {
     if (!userId) return;
     const key = getVariantKey(cardId, setId ?? '', variant);
     const previousQuantity = variantQuantities.get(key) ?? 0;
+    const targetCard = cards.find((card) => card.id === cardId);
 
     setVariantQuantities((prev) => {
       const next = new Map(prev);
@@ -360,6 +391,16 @@ export default function SetDetailScreen() {
           .eq('card_id', cardId)
           .eq('set_id', setId)
           .eq('variant', variant);
+        if (previousQuantity > 0) {
+          await createActivityPost({
+            title: 'Removed from collection',
+            subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
+            cardId,
+            setId,
+            type: 'binder_remove',
+            isPositive: false,
+          });
+        }
         return;
       }
 
@@ -368,8 +409,27 @@ export default function SetDetailScreen() {
         .upsert(
           { user_id: userId, card_id: cardId, set_id: setId, variant, quantity: nextQuantity },
           { onConflict: 'user_id,card_id,set_id,variant' }
-        );
+      );
       if (error) throw error;
+      if (previousQuantity > nextQuantity) {
+        await createActivityPost({
+          title: `Quantity reduced from ${previousQuantity} to ${nextQuantity}`,
+          subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
+          cardId,
+          setId,
+          type: 'quantity_reduced',
+          isPositive: false,
+        });
+      } else if (previousQuantity === 0 && nextQuantity > 0) {
+        await createActivityPost({
+          title: 'Added to collection',
+          subtitle: `${targetCard?.name ?? cardId} · ${shortVariant(variant)}`,
+          cardId,
+          setId,
+          type: 'binder_add',
+          isPositive: true,
+        });
+      }
     } catch (error: any) {
       setVariantQuantities((prev) => {
         const next = new Map(prev);
@@ -387,7 +447,12 @@ export default function SetDetailScreen() {
       );
       throw error;
     }
-  }, [userId, setId, variantQuantities]);
+  }, [cards, userId, setId, variantQuantities]);
+
+  const handleQuickAddVariant = useCallback(async (card: PokemonCard, variant: string) => {
+    const currentQuantity = variantQuantities.get(getVariantKey(card.id, setId ?? '', variant)) ?? 0;
+    await handleSetVariantQuantity(card.id, variant, currentQuantity + 1);
+  }, [handleSetVariantQuantity, setId, variantQuantities]);
 
   const saveQuantityModal = useCallback(async () => {
     if (!quantityTarget) return;
@@ -457,6 +522,7 @@ export default function SetDetailScreen() {
   const progressPercent = setInfo?.total && setInfo.total > 0
     ? (ownedCardCount / setInfo.total) * 100
     : 0;
+  const setLogoUrl = setInfo?.images?.logo ?? getPokemonSetLogoUrl(setInfo?.id);
 
   const renderCard = useCallback(({ item: card }: { item: PokemonCard }) => (
     <CardItem
@@ -464,8 +530,9 @@ export default function SetDetailScreen() {
       variantQuantities={variantQuantities}
       setId={setId ?? ''}
       onOpenQuantity={openQuantityModal}
+      onQuickAdd={handleQuickAddVariant}
     />
-  ), [variantQuantities, setId, openQuantityModal]);
+  ), [variantQuantities, setId, openQuantityModal, handleQuickAddVariant]);
 
   // ===============================
   // LOADING STATE
@@ -473,7 +540,8 @@ export default function SetDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+        <StackrBackdrop />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>Loading set...</Text>
@@ -484,7 +552,8 @@ export default function SetDetailScreen() {
 
   if (!setInfo) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+        <StackrBackdrop />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Set not found</Text>
           <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 16 }}>
@@ -504,7 +573,8 @@ export default function SetDetailScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+      <StackrBackdrop />
 
       {/* Progress bar — always pinned */}
       <View style={{
@@ -539,11 +609,33 @@ export default function SetDetailScreen() {
       <View>
         <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
 
-          <View style={{ marginBottom: 12, marginTop: 4 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>{setInfo.name}</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
-              {setInfo.series} · {setInfo.total} cards
-            </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12, marginTop: 4 }}>
+            {setLogoUrl && !setLogoFailed ? (
+              <View style={{
+                width: 108,
+                height: 52,
+                borderRadius: 0,
+                backgroundColor: 'transparent',
+                borderWidth: 0,
+                borderColor: 'transparent',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 0,
+              }}>
+                <Image
+                  source={{ uri: setLogoUrl }}
+                  style={{ width: 104, height: 42 }}
+                  resizeMode="contain"
+                  onError={() => setSetLogoFailed(true)}
+                />
+              </View>
+            ) : null}
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }} numberOfLines={2}>{setInfo.name}</Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 2 }}>
+                {setInfo.series} · {setInfo.total} cards
+              </Text>
+            </View>
           </View>
 
           <TouchableOpacity
@@ -578,6 +670,8 @@ export default function SetDetailScreen() {
               onChangeText={setSearch}
               placeholder="Search cards..."
               placeholderTextColor={theme.colors.textSoft}
+              autoCorrect={false}
+              autoCapitalize="words"
               style={{ flex: 1, color: theme.colors.text, fontSize: 15 }}
             />
             {search.length > 0 && (
@@ -662,7 +756,7 @@ export default function SetDetailScreen() {
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
         renderItem={renderCard}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 8 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: stackrTabContentPadding.standard, paddingTop: 8 }}
         showsVerticalScrollIndicator={false}
         windowSize={5}
         maxToRenderPerBatch={10}
