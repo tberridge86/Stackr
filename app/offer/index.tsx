@@ -32,6 +32,7 @@ import {
 import { BETA_TRADE_DEMO_MODE, PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
 import { getPriceFromPokemonCard } from '../../lib/pricing';
 import { stackrBrand } from '../../lib/stackrBrand';
+import { StackrCenterModal } from '../../components/StackrModalSystem';
 
 // ===============================
 // CONSTANTS
@@ -49,6 +50,8 @@ type CardPreview = {
   estimated_value?: number | null;
 };
 
+type OfferConfirmAction = 'accept' | 'decline' | 'withdraw' | 'dispute';
+
 const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
     ? `£${value.toFixed(2)}`
@@ -56,6 +59,40 @@ const money = (value: number | null | undefined) =>
 
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
+
+function getOfferConfirmCopy(action: OfferConfirmAction | null) {
+  if (!action) return null;
+  if (action === 'accept') {
+    return {
+      title: 'Accept trade?',
+      body: 'This records the deal and moves both collectors into the protected trade flow.',
+      actionLabel: 'Accept Trade',
+      destructive: false,
+    };
+  }
+  if (action === 'decline') {
+    return {
+      title: 'Decline offer?',
+      body: 'This closes the pending offer and lets the other collector know.',
+      actionLabel: 'Decline',
+      destructive: true,
+    };
+  }
+  if (action === 'withdraw') {
+    return {
+      title: 'Withdraw offer?',
+      body: 'This cancels your pending offer before it is accepted.',
+      actionLabel: 'Withdraw',
+      destructive: true,
+    };
+  }
+  return {
+    title: 'Raise dispute?',
+    body: 'Use this only when there is a serious problem with the trade. The trade will be marked as disputed.',
+    actionLabel: 'Raise Dispute',
+    destructive: true,
+  };
+}
 
 // ===============================
 // HELPERS
@@ -130,6 +167,7 @@ export default function OfferDetailScreen() {
   const [counterAmount, setCounterAmount] = useState('');
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<OfferConfirmAction | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { new: isNew } = useLocalSearchParams<{ new?: string }>();
 
@@ -204,6 +242,7 @@ export default function OfferDetailScreen() {
         ? `You are sending about ${money(absoluteTradeDifference)} more.`
         : `They are sending about ${money(absoluteTradeDifference)} more.`;
   const fairnessColor = tradeFairnessState === 'balanced' ? theme.colors.primary : '#F59E0B';
+  const confirmCopy = getOfferConfirmCopy(confirmAction);
 
   // ===============================
   // LOAD
@@ -415,7 +454,7 @@ export default function OfferDetailScreen() {
     }
   };
 
-  const handleAcceptOffer = async () => {
+  const performAcceptOffer = async () => {
     try {
       setSending(true);
       await updateTradeOfferStatus(offerId, 'accepted', 'Offer accepted.');
@@ -436,64 +475,42 @@ export default function OfferDetailScreen() {
     }
   };
 
-  const handleDeclineOffer = async () => {
-    Alert.alert(
-      'Decline offer',
-      'Are you sure you want to decline this offer?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Decline',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setSending(true);
-              await updateTradeOfferStatus(offerId, 'declined', 'Offer declined.');
+  const performDeclineOffer = async () => {
+    try {
+      setSending(true);
+      await updateTradeOfferStatus(offerId, 'declined', 'Offer declined.');
 
-              if (offer?.sender_id) {
-                sendPushNotification('/api/notify/trade-status', {
-                  recipientUserId: offer.sender_id,
-                  status: 'declined',
-                  cardName: getFirstCardName(),
-                });
-              }
+      if (offer?.sender_id) {
+        sendPushNotification('/api/notify/trade-status', {
+          recipientUserId: offer.sender_id,
+          status: 'declined',
+          cardName: getFirstCardName(),
+        });
+      }
 
-              await load();
-            } catch (error: any) {
-              Alert.alert('Error', error?.message ?? 'Could not decline.');
-            } finally {
-              setSending(false);
-            }
-          },
-        },
-      ]
-    );
+      await load();
+    } catch (error: any) {
+      Alert.alert('Error', error?.message ?? 'Could not decline.');
+    } finally {
+      setSending(false);
+    }
   };
 
-  const handleWithdrawOffer = async () => {
-    Alert.alert(
-      'Withdraw offer',
-      'Are you sure you want to withdraw this offer?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Withdraw',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setSending(true);
-              await updateTradeOfferStatus(offerId, 'cancelled', 'Offer withdrawn.');
-              router.replace('/offers');
-            } catch (error: any) {
-              Alert.alert('Error', error?.message ?? 'Could not withdraw.');
-            } finally {
-              setSending(false);
-            }
-          },
-        },
-      ]
-    );
+  const performWithdrawOffer = async () => {
+    try {
+      setSending(true);
+      await updateTradeOfferStatus(offerId, 'cancelled', 'Offer withdrawn.');
+      router.replace('/offers');
+    } catch (error: any) {
+      Alert.alert('Error', error?.message ?? 'Could not withdraw.');
+    } finally {
+      setSending(false);
+    }
   };
+
+  const handleAcceptOffer = () => setConfirmAction('accept');
+  const handleDeclineOffer = () => setConfirmAction('decline');
+  const handleWithdrawOffer = () => setConfirmAction('withdraw');
 
   const handleAcceptCounter = async (event: TradeOfferEvent) => {
     try {
@@ -565,29 +582,34 @@ export default function OfferDetailScreen() {
     }
   };
 
-  const handleRaiseDispute = async () => {
-    Alert.alert(
-      'Raise dispute',
-      'Are you sure you want to raise a dispute? Use this only if there is a serious problem with the trade.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Raise Dispute',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setSending(true);
-              await updateTradeOfferStatus(offerId, 'disputed', 'Dispute raised.');
-              await load();
-            } catch (error: any) {
-              Alert.alert('Error', error?.message ?? 'Could not raise dispute.');
-            } finally {
-              setSending(false);
-            }
-          },
-        },
-      ]
-    );
+  const performRaiseDispute = async () => {
+    try {
+      setSending(true);
+      await updateTradeOfferStatus(offerId, 'disputed', 'Dispute raised.');
+      await load();
+    } catch (error: any) {
+      Alert.alert('Error', error?.message ?? 'Could not raise dispute.');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleRaiseDispute = () => setConfirmAction('dispute');
+
+  const runConfirmedOfferAction = async () => {
+    const action = confirmAction;
+    if (!action) return;
+
+    setConfirmAction(null);
+    if (action === 'accept') {
+      await performAcceptOffer();
+    } else if (action === 'decline') {
+      await performDeclineOffer();
+    } else if (action === 'withdraw') {
+      await performWithdrawOffer();
+    } else {
+      await performRaiseDispute();
+    }
   };
 
   // ===============================
@@ -1249,6 +1271,85 @@ export default function OfferDetailScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      <StackrCenterModal
+        visible={Boolean(confirmCopy)}
+        onClose={() => !sending && setConfirmAction(null)}
+        dismissible={!sending}
+        contentStyle={{ padding: 20 }}
+      >
+        {confirmCopy ? (
+          <View style={{ gap: 14 }}>
+            <View
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 18,
+                alignSelf: 'center',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: confirmCopy.destructive ? '#FEE2E2' : theme.colors.primary + '12',
+                borderWidth: 1,
+                borderColor: confirmCopy.destructive ? '#FCA5A5' : theme.colors.primary + '28',
+              }}
+            >
+              <Text style={{ color: confirmCopy.destructive ? '#991B1B' : theme.colors.primary, fontSize: 22, fontWeight: '900' }}>
+                {confirmCopy.destructive ? '!' : 'OK'}
+              </Text>
+            </View>
+            <View style={{ gap: 6 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 26, fontWeight: '900', textAlign: 'center' }}>
+                {confirmCopy.title}
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 14, lineHeight: 20, fontWeight: '700', textAlign: 'center' }}>
+                {confirmCopy.body}
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 2 }}>
+              <TouchableOpacity
+                disabled={sending}
+                onPress={() => setConfirmAction(null)}
+                activeOpacity={0.82}
+                style={{
+                  flex: 1,
+                  borderRadius: 14,
+                  minHeight: 48,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.surface,
+                }}
+              >
+                <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                disabled={sending}
+                onPress={runConfirmedOfferAction}
+                activeOpacity={0.82}
+                style={{
+                  flex: 1,
+                  borderRadius: 14,
+                  minHeight: 48,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: confirmCopy.destructive ? '#DC2626' : theme.colors.primary,
+                }}
+              >
+                {sending ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>
+                    {confirmCopy.actionLabel}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : null}
+      </StackrCenterModal>
 
       {toast && (
         <View style={{

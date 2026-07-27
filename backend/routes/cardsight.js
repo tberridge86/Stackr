@@ -8,6 +8,10 @@ const client = new CardSightAI({
   apiKey: process.env.CARDSIGHTAI_API_KEY,
 });
 
+function stripBase64ImagePrefix(base64Image) {
+  return String(base64Image ?? '').trim().replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
+}
+
 router.get('/identify', (req, res) => {
   res.json({
     ok: true,
@@ -27,14 +31,16 @@ router.post('/identify', async (req, res) => {
       });
     }
 
-    if (base64Image.length < 100) {
+    const cleanBase64Image = stripBase64ImagePrefix(base64Image);
+
+    if (cleanBase64Image.length < 100) {
       return res.status(400).json({
         error: 'Invalid base64Image payload',
       });
     }
 
     const decodeStart = Date.now();
-    const imageBuffer = Buffer.from(base64Image, 'base64');
+    const imageBuffer = Buffer.from(cleanBase64Image, 'base64');
     const decodeMs = Date.now() - decodeStart;
 
     if (!imageBuffer || imageBuffer.length < 1024) {

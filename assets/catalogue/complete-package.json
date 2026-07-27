@@ -1,0 +1,29 @@
+{
+  "packVersion": "stackr-card-identity-catalogue-v0.0.0-blocked",
+  "status": "blocked",
+  "files": [
+    "assets/catalogue/card-catalogue.sqlite",
+    "assets/catalogue/card-embeddings.bin",
+    "assets/catalogue/catalogue-manifest.json"
+  ],
+  "checksums": {
+    "sqlite": {
+      "path": "assets/catalogue/card-catalogue.sqlite",
+      "sha256": "922999764ea332850c2633f715b83b8609a4e0e7cfdc33bba16647179b1a00d5",
+      "bytes": 45056
+    },
+    "embeddings": {
+      "path": "assets/catalogue/card-embeddings.bin",
+      "sha256": "478c1a620cec82698ede2f0c394d9f80bc5c0c64525ef6f89fab7c88e2aa9901",
+      "bytes": 64,
+      "headerBytes": 64
+    }
+  },
+  "atomicInstallInstructions": [
+    "Download files to a temporary catalogue directory.",
+    "Verify catalogue-manifest.json checksum entries before opening SQLite.",
+    "Verify requiredInstalledModelVersion matches the installed card identity model version.",
+    "Move the complete directory into place with a single filesystem rename only after all checks pass.",
+    "Reject blocked packs and keep the previously installed approved pack."
+  ]
+}

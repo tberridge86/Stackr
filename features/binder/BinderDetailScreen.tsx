@@ -43,7 +43,10 @@ import { StackrBackButton } from '../../components/StackrBackButton';
 import { StackrActionButton } from '../../components/StackrActionButton';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import { StackrButtonPattern } from '../../components/StackrEmboss';
+import { StackrBottomSheet, StackrQuickActionSheet, type StackrQuickAction } from '../../components/StackrModalSystem';
 import { StackrImage, prefetchStackrImagesAfterInteractions } from '../../components/StackrImage';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
+import { ScrollToEndButton } from '../../components/ScrollToEndButton';
 import {
   BinderRecord,
   BinderCardRecord,
@@ -56,19 +59,32 @@ import {
   updateBinderCardQuantity,
   getEstimatedValue,
 } from '../../lib/binders';
+import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { useTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
-import { getPokemonSetLogoUrl, normalizePokemonCardLanguage, type PokemonCardLanguage } from '../../lib/pokemonTcg';
+import {
+  getKnownPokemonSetTotal,
+  getPokemonSetLogoUrl,
+  normalizePokemonCardLanguage,
+  type PokemonCardLanguage,
+} from '../../lib/pokemonTcg';
+import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { checkAchievements, recordAchievementEvent } from '../../lib/achievements';
 import {
   getCustomBinderNameArt,
   getCustomBinderNameArtKeyForBinder,
 } from '../../lib/customBinderNameArt';
-import { measureAsync, stackrListPerformance } from '../../lib/performance';
+import {
+  getEnglishCardDisplayName,
+  getLocalCardName,
+  getPreferredCardDisplayName,
+  getPreferredSetDisplayName,
+} from '../../lib/pokemonDisplayNames';
+import { getIncrementalListWindow, measureAsync, stackrListPerformance } from '../../lib/performance';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { createActivityPost } from '../../lib/activity';
@@ -107,6 +123,148 @@ type BinderCardWithDetails = BinderCardRecord & {
   card?: any | null;
 };
 
+function getBinderCardDisplayName(item: BinderCardWithDetails | null | undefined, fallback = 'Card') {
+  if (!item) return fallback;
+
+  const card = item.card ?? {};
+  const raw = card.raw_data ?? card.raw ?? {};
+  const rawSet = raw?.set && typeof raw.set === 'object' ? raw.set : {};
+  const language = normalizePokemonCardLanguage(card.language ?? item.language ?? raw?.language);
+
+  return getPreferredCardDisplayName({
+    id: card.id ?? item.card_id ?? null,
+    sourceId: card.externalIds?.tcgdex ?? raw?.source_id ?? raw?.provider_card_id ?? raw?.id ?? item.api_card_id ?? item.card_id ?? null,
+    setId: item.set_id ?? card.set?.id ?? rawSet.id ?? null,
+    collectorNumber: card.number ?? item.card_number ?? raw?.localId ?? raw?.number ?? null,
+    language,
+    region: card.region ?? raw?.region ?? null,
+    localName: card.localName ?? raw?.local_name ?? (language !== 'en' ? raw?.name ?? item.card_name ?? card.name ?? null : null),
+    englishDisplayName: card.englishDisplayName ?? raw?.english_display_name ?? raw?.englishDisplayName ?? null,
+    canonicalName: card.canonicalName ?? raw?.canonical_name ?? null,
+    fallbackName: card.name ?? item.card_name ?? item.card_id ?? fallback,
+    raw,
+  });
+}
+
+const cleanPreviewText = (value: unknown) => {
+  const text = String(value ?? '').trim();
+  return text.length ? text : null;
+};
+
+const containsCjkText = (value: unknown) => /[\u3040-\u30ff\u3400-\u9fff]/.test(String(value ?? ''));
+
+function getPreviewCardRawData(card: CardPreviewResult | null | undefined) {
+  return card?.raw_data ?? {};
+}
+
+function getPreviewCardLocalName(card: CardPreviewResult | null | undefined) {
+  if (!card) return null;
+  const raw = getPreviewCardRawData(card);
+  const language = normalizePokemonCardLanguage(card.language ?? raw.language);
+
+  return cleanPreviewText(card.local_name)
+    ?? getLocalCardName({
+      id: card.card_id,
+      sourceId: raw.source_id ?? raw.provider_card_id ?? raw.id ?? card.card_id,
+      setId: card.set_id ?? raw.set?.id ?? null,
+      collectorNumber: card.number ?? raw.localId ?? raw.number ?? null,
+      language,
+      region: raw.region ?? null,
+      localName: card.local_name ?? (language !== 'en' ? card.name ?? raw.name ?? null : null),
+      englishDisplayName: card.english_name ?? raw.english_display_name ?? raw.englishDisplayName ?? null,
+      canonicalName: raw.canonical_name ?? null,
+      fallbackName: card.name ?? card.card_id,
+      raw,
+    });
+}
+
+function getPreviewCardEnglishName(card: CardPreviewResult | null | undefined) {
+  if (!card) return null;
+  const raw = getPreviewCardRawData(card);
+  const language = normalizePokemonCardLanguage(card.language ?? raw.language);
+  const localName = getPreviewCardLocalName(card);
+
+  return cleanPreviewText(card.english_name)
+    ?? getEnglishCardDisplayName({
+      id: card.card_id,
+      sourceId: raw.source_id ?? raw.provider_card_id ?? raw.id ?? card.card_id,
+      setId: card.set_id ?? raw.set?.id ?? null,
+      collectorNumber: card.number ?? raw.localId ?? raw.number ?? null,
+      language,
+      region: raw.region ?? null,
+      localName,
+      englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? null,
+      canonicalName: raw.canonical_name ?? null,
+      fallbackName: card.name ?? card.card_id,
+      raw,
+    })
+    ?? (!containsCjkText(card.name) ? cleanPreviewText(card.name) : null);
+}
+
+function getPreviewCardDisplayName(card: CardPreviewResult | null | undefined, fallback = 'Card') {
+  if (!card) return fallback;
+  const englishName = getPreviewCardEnglishName(card);
+  if (englishName) return englishName;
+
+  const localName = getPreviewCardLocalName(card);
+  const language = normalizePokemonCardLanguage(card.language);
+
+  return getPreferredCardDisplayName({
+    id: card.card_id,
+    setId: card.set_id ?? null,
+    language,
+    localName,
+    englishDisplayName: card.english_name ?? null,
+    fallbackName: card.name ?? card.card_id ?? fallback,
+    raw: {
+      name: card.name,
+      local_name: localName,
+      english_display_name: card.english_name ?? englishName,
+      language,
+      set: {
+        id: card.set_id ?? null,
+        name: card.set_name ?? null,
+      },
+    },
+  });
+}
+
+function getPreviewCardSupportingName(card: CardPreviewResult | null | undefined, primaryName: string) {
+  const englishName = getPreviewCardEnglishName(card);
+  const localName = getPreviewCardLocalName(card);
+  if (containsCjkText(primaryName) && englishName && englishName !== primaryName) return englishName;
+  if (localName && localName !== primaryName && containsCjkText(localName)) return localName;
+  return null;
+}
+
+function getPreviewSetDisplayName(card: CardPreviewResult | null | undefined, fallback?: string | null) {
+  if (!card) return cleanPreviewText(fallback) ?? 'Unknown set';
+  const raw = getPreviewCardRawData(card);
+  return cleanPreviewText(card.english_set_name)
+    ?? getPreferredSetDisplayName({
+      id: card.set_id ?? raw.set?.id ?? null,
+      sourceId: raw.set?.tcgdex_id ?? raw.set?.source_id ?? raw.source_id ?? card.set_id ?? null,
+      setCode: raw.set?.set_code ?? raw.set?.tcgdex_id ?? raw.set_code ?? card.set_id ?? null,
+      language: card.language ?? raw.language ?? raw.set?.language ?? null,
+      region: raw.region ?? raw.set?.region ?? null,
+      localName: card.local_set_name ?? raw.set?.local_name ?? raw.set?.name ?? null,
+      englishDisplayName: raw.set?.english_display_name ?? raw.set?.englishDisplayName ?? null,
+      canonicalName: card.set_name ?? raw.set?.name ?? null,
+      fallbackName: fallback ?? card.set_id ?? null,
+      raw: raw.set ?? raw,
+    })
+    ?? cleanPreviewText(fallback)
+    ?? 'Unknown set';
+}
+
+function getPreviewSetSupportingName(card: CardPreviewResult | null | undefined, primarySetName: string) {
+  const localSetName = cleanPreviewText(card?.local_set_name ?? getPreviewCardRawData(card)?.set?.local_name);
+  const englishSetName = cleanPreviewText(card?.english_set_name);
+  if (containsCjkText(primarySetName) && englishSetName && englishSetName !== primarySetName) return englishSetName;
+  if (localSetName && localSetName !== primarySetName && containsCjkText(localSetName)) return localSetName;
+  return null;
+}
+
 type ShowcaseType = 'favorite' | 'chase';
 
 type ShowcaseRow = {
@@ -124,12 +282,18 @@ type CardPreviewResult = {
   set_id?: string | null;
   language?: PokemonCardLanguage | null;
   name: string;
+  local_name?: string | null;
+  english_name?: string | null;
   set_name?: string | null;
+  local_set_name?: string | null;
+  english_set_name?: string | null;
+  number?: string | null;
   image_url?: string | null;
   rarity?: string | null;
   card_type?: string | null;
   value?: number | null;
   finish_keys?: string[];
+  raw_data?: any;
 };
 
 type SortMode = 'binder' | 'name' | 'owned' | 'missing' | 'number';
@@ -208,6 +372,15 @@ const getSetIdFromCardId = (cardId: string) => {
 
 const getPreviewSetId = (card: Pick<CardPreviewResult, 'card_id' | 'set_id'>) =>
   card.set_id || getSetIdFromCardId(card.card_id);
+
+const inferBinderLanguage = (language?: PokemonCardLanguage | string | null, setId?: string | null): PokemonCardLanguage => {
+  const explicit = String(language ?? '').trim();
+  if (explicit) return normalizePokemonCardLanguage(explicit);
+  const rawSetId = String(setId ?? '').trim().toLowerCase();
+  const strippedSetId = rawSetId.replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(rawSetId)) return 'zh-tw';
+  return rawSetId.startsWith('ja:') || rawSetId.startsWith('jp:') || /^sv\d+[a-z]$/i.test(strippedSetId) ? 'ja' : 'en';
+};
 
 const getBinderEditionHint = (edition?: string | null): ScanEditionHint | null => {
   if (edition === '1st_edition' || edition === 'unlimited' || edition === 'shadowless') return edition;
@@ -322,7 +495,11 @@ const getAddFilterCount = (filters: AddCardFilters) =>
 const matchesAddCardFilters = (card: CardPreviewResult, filters: AddCardFilters) => {
   const rarity = normalizeAddFilterText(card.rarity);
   const type = normalizeAddFilterText(card.card_type);
-  const setName = normalizeAddFilterText(card.set_name);
+  const setName = normalizeAddFilterText([
+    card.set_name,
+    card.english_set_name,
+    card.local_set_name,
+  ].filter(Boolean).join(' '));
   const setId = normalizeAddFilterText(getPreviewSetId(card));
   const finishKeys = (card.finish_keys ?? []).map(normalizeAddFilterText);
   const hasHoloFinish = finishKeys.some((key) => key.includes('holo')) || rarity.includes('holo');
@@ -378,7 +555,7 @@ function GradedSlabCard({
   const company = item.grade_company ?? 'PSA';
   const grade = item.grade ?? '10';
   const accent = getSlabAccent(company);
-  const cardName = item.card?.name ?? item.card_name ?? item.card_id;
+  const cardName = getBinderCardDisplayName(item, item.card_id);
   const setName = item.card?.set?.name ?? item.set_name ?? item.set_id;
   const number = item.card?.number ?? item.card_number ?? null;
   const compact = size !== 'modal';
@@ -471,43 +648,23 @@ const VARIANT_LABELS: Record<string, string> = {
   '1stEditionHolofoil': '1stH',
   unlimitedHolofoil: 'Unlimited Holo',
   unlimited: 'Unlimited',
-  reverseHoloEnergy: 'Reverse Holo',
-  reverseHoloPokeball: 'Reverse Holo',
+  reverseHoloEnergy: 'Energy Holo',
+  reverseHoloPokeball: 'Poke Ball Holo',
+  speckledHolofoil: 'Speckled Holo',
+  lineHolofoil: 'Line Holo',
+  masterBallPatternHolofoil: 'Master Ball',
+  stampedHolofoil: 'Stamped',
+  quickBallPatternHolofoil: 'Quick Ball',
+  loveBallPatternHolofoil: 'Love Ball',
+  duskBallPatternHolofoil: 'Dusk Ball',
+  friendBallPatternHolofoil: 'Friend Ball',
 };
 
 type MasterVariantKind = 'base' | 'holo' | 'reverse';
 
-const MASTER_VARIANT_COPY: Record<MasterVariantKind, { label: string; helper: string; icon: string; bg: string; color: string; border: string; rainbow?: boolean }> = {
-  base: {
-    label: 'Base',
-    helper: 'Left third',
-    icon: 'square-outline',
-    bg: '#EEF2FF',
-    color: '#0B1746',
-    border: '#D9E0FF',
-  },
-  holo: {
-    label: 'Holo',
-    helper: 'Middle third',
-    icon: 'sparkles',
-    bg: '#EFE7FF',
-    color: '#4B22A2',
-    border: '#DED1FF',
-  },
-  reverse: {
-    label: 'Reverse Holo',
-    helper: 'Right third',
-    icon: 'sparkles',
-    bg: '#F6E7FF',
-    color: '#4B22A2',
-    border: '#F0C9FF',
-    rainbow: true,
-  },
-};
-
 function getMasterVariantKind(key: string): MasterVariantKind {
   if (key === 'normal' || key === '1stEditionNormal' || key === 'unlimited') return 'base';
-  if (key === 'holofoil' || key === '1stEditionHolofoil' || key === 'unlimitedHolofoil') return 'holo';
+  if ((key === 'holofoil' || key === '1stEditionHolofoil' || key === 'unlimitedHolofoil') && !key.toLowerCase().includes('pattern')) return 'holo';
   return 'reverse';
 }
 
@@ -584,6 +741,14 @@ const getDefaultOwnedVariant = (variants: string[]): string | null => {
   return preferred.find((variant) => variants.includes(variant)) ?? variants[0] ?? null;
 };
 
+function isJapaneseSecretBinderCard(card: BinderCardWithDetails) {
+  const language = normalizePokemonCardLanguage(card.language ?? card.card?.language ?? card.card?.raw_data?.language);
+  if (language !== 'ja') return false;
+  const raw = card.card?.raw_data ?? {};
+  const rarity = String(card.card?.rarity ?? raw?.rarity ?? '').toLowerCase();
+  return raw?.secret === true || rarity.includes('secret');
+}
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -608,12 +773,20 @@ export default function BinderDetailScreen() {
   const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [cards, setCards] = useState<BinderCardWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const gridWindow = useMemo(() => getIncrementalListWindow(numColumns), [numColumns]);
+  const addSearchWindow = useMemo(
+    () => getIncrementalListWindow(1, { initialRows: 18, pageRows: 14, minInitial: 18, minPage: 14 }),
+    []
+  );
+  const [visibleCardCount, setVisibleCardCount] = useState(gridWindow.initialCount);
+  const [visibleAddSearchCount, setVisibleAddSearchCount] = useState(addSearchWindow.initialCount);
 
   const [sortMode, setSortMode] = useState<SortMode>('number');
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const [selectedCard, setSelectedCard] = useState<BinderCardWithDetails | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
+  const [quickActionCard, setQuickActionCard] = useState<BinderCardWithDetails | null>(null);
 
   const [modalEbayPrice, setModalEbayPrice] = useState<EbayModalPrice | null>(null);
   const [modalEbayLoading, setModalEbayLoading] = useState(false);
@@ -644,10 +817,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const addSearchRequestRef = useRef(0);
   const addResultLongPressRef = useRef<string | null>(null);
+  const binderListRef = useRef<FlatList<BinderCardWithDetails>>(null);
+  const addCardListRef = useRef<FlatList<CardPreviewResult>>(null);
   const [ownedVariants, setOwnedVariants] = useState<Map<string, number>>(new Map());
   const [variantManagedCards, setVariantManagedCards] = useState<Set<string>>(new Set());
   const [masterSetEnabled, setMasterSetEnabled] = useState(false);
-  const [masterSetIntroVisible, setMasterSetIntroVisible] = useState(false);
   const [updatingMasterSet, setUpdatingMasterSet] = useState(false);
   const [setLogoFailed, setSetLogoFailed] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -700,7 +874,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
   useEffect(() => {
     setSetLogoFailed(false);
-  }, [binder?.source_set_id, binder?.cover_key]);
+  }, [binder?.source_set_id, binder?.cover_key, binder?.source_set_logo_url, binder?.source_set_symbol_url]);
 
   // ===============================
   // MODAL HELPERS
@@ -727,7 +901,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       setModalEbayError(false);
       setModalEbayPrice(null);
 
-      const name = card.card?.name ?? card.card_name ?? '';
+      const name = getBinderCardDisplayName(card, '');
       const setName = card.card?.set?.name ?? card.set_name ?? '';
       const number = card.card?.number ?? card.card_number ?? '';
       const cardId = card.card?.id ?? card.card_id ?? '';
@@ -958,8 +1132,16 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   // SORTED CARDS
   // ===============================
 
+  const displayCards = useMemo(() => {
+    const language = normalizePokemonCardLanguage(binder?.language);
+    if (binder?.type === 'official' && language === 'ja' && !masterSetEnabled) {
+      return cards.filter((card) => !isJapaneseSecretBinderCard(card));
+    }
+    return cards;
+  }, [binder?.language, binder?.type, cards, masterSetEnabled]);
+
   const sortedCards = useMemo(() => {
-    const next = [...cards];
+    const next = [...displayCards];
     if (sortMode === 'binder') return next.sort((a, b) => a.slot_order - b.slot_order);
     if (sortMode === 'name') return next.sort((a, b) =>
       String(a.card?.name ?? a.card_id).localeCompare(String(b.card?.name ?? b.card_id))
@@ -974,7 +1156,52 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       )
     );
     return next;
-  }, [cards, sortMode]);
+  }, [displayCards, sortMode]);
+
+  const rendersFullOfficialSet = binder?.type === 'official';
+
+  useEffect(() => {
+    setVisibleCardCount(
+      rendersFullOfficialSet
+        ? sortedCards.length
+        : Math.min(sortedCards.length, gridWindow.initialCount)
+    );
+  }, [gridWindow.initialCount, rendersFullOfficialSet, sortedCards.length, sortMode]);
+
+  useEffect(() => {
+    setVisibleAddSearchCount(Math.min(addSearchResults.length, addSearchWindow.initialCount));
+  }, [addFilters, addSearchResults.length, addSearchWindow.initialCount, debouncedAddSearch]);
+
+  const visibleCards = useMemo(
+    () => (rendersFullOfficialSet ? sortedCards : sortedCards.slice(0, visibleCardCount)),
+    [rendersFullOfficialSet, sortedCards, visibleCardCount]
+  );
+  const visibleAddSearchResults = useMemo(
+    () => addSearchResults.slice(0, visibleAddSearchCount),
+    [addSearchResults, visibleAddSearchCount]
+  );
+  const hasMoreCardsToRender = !rendersFullOfficialSet && visibleCardCount < sortedCards.length;
+  const hasMoreAddResultsToRender = visibleAddSearchCount < addSearchResults.length;
+  const renderMoreCards = useCallback(() => {
+    setVisibleCardCount((current) => Math.min(sortedCards.length, current + gridWindow.pageSize));
+  }, [gridWindow.pageSize, sortedCards.length]);
+  const renderMoreAddResults = useCallback(() => {
+    setVisibleAddSearchCount((current) => Math.min(addSearchResults.length, current + addSearchWindow.pageSize));
+  }, [addSearchResults.length, addSearchWindow.pageSize]);
+  const scrollBinderToEnd = useCallback(() => {
+    setVisibleCardCount(sortedCards.length);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => binderListRef.current?.scrollToEnd({ animated: true }));
+    });
+  }, [sortedCards.length]);
+  const scrollAddCardsToEnd = useCallback(() => {
+    setVisibleAddSearchCount(addSearchResults.length);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => addCardListRef.current?.scrollToEnd({ animated: true }));
+    });
+  }, [addSearchResults.length]);
+  const showBinderEndButton = sortedCards.length > Math.max(18, numColumns * 8);
+  const showAddCardsEndButton = !addSearchLoading && addSearchResults.length > 12;
 
   useEffect(() => {
     if (!sortedCards.length) return;
@@ -990,14 +1217,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   }, [numColumns, sortedCards]);
 
   let ownedCount = 0;
-  let totalCount = 0;
-  for (const c of cards) {
+  let countedSlotTotal = 0;
+  for (const c of displayCards) {
     const savedVariants = [...ownedVariants.keys()]
       .filter((key) => key.startsWith(`${c.set_id}:${c.card_id}:`))
       .map((key) => key.slice(`${c.set_id}:${c.card_id}:`.length));
     const variants = masterSetEnabled ? getVariants(c.card, c.set_id) : ['card'];
     if (masterSetEnabled && variants.length > 1) {
-      totalCount += variants.length;
+      countedSlotTotal += variants.length;
       const variantManaged = variantManagedCards.has(getVariantCardKey(c.card_id, c.set_id));
       const defaultVariant = c.owned && !variantManaged ? getDefaultOwnedVariant(variants) : null;
       const ownedVariantCount = variants.filter((v) =>
@@ -1005,14 +1232,35 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       ).length;
       ownedCount += ownedVariantCount > 0 ? ownedVariantCount : !variantManaged && c.owned ? 1 : 0;
     } else {
-      totalCount += 1;
+      countedSlotTotal += 1;
       if (c.owned || savedVariants.length > 0) ownedCount += 1;
     }
   }
-  const progressPercent = totalCount ? Math.round((ownedCount / totalCount) * 100) : 0;
+  const knownOfficialTotal = binder?.type === 'official'
+    ? getKnownPokemonSetTotal(binder.source_set_id, binder.language) ?? 0
+    : 0;
+  const cardSetTotals = cards
+    .map((card) => Number(
+      card.card?.set?.printedTotal ??
+      card.card?.set?.total ??
+      card.card?.raw_data?.set?.printedTotal ??
+      card.card?.raw_data?.set?.total ??
+      0
+    ))
+    .filter((value) => Number.isFinite(value) && value > 0);
+  const officialCatalogueTotal = Math.max(knownOfficialTotal, ...cardSetTotals, 0);
+  const totalKnown = binder?.type !== 'official' || officialCatalogueTotal > 0;
+  const totalCount = totalKnown
+    ? binder?.type === 'official'
+      ? Math.max(officialCatalogueTotal, masterSetEnabled ? countedSlotTotal : 0)
+      : countedSlotTotal
+    : 0;
+  const progressPercent = totalKnown && totalCount
+    ? Math.min(100, Math.round((ownedCount / totalCount) * 100))
+    : 0;
 
   useEffect(() => {
-    if (!binderId || totalCount <= 0 || loading) return;
+    if (!binderId || !totalKnown || totalCount <= 0 || loading) return;
 
     const lastProgress = achievementProgressRef.current[binderId] ?? -1;
     if (progressPercent <= lastProgress && progressPercent < 100) return;
@@ -1039,10 +1287,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         console.log('Binder complete achievement event failed:', achievementError);
       });
     }
-  }, [binderId, loading, masterSetEnabled, progressPercent, totalCount]);
+  }, [binderId, loading, masterSetEnabled, progressPercent, totalCount, totalKnown]);
 
   const binderValue = useMemo(() => {
-    return cards.reduce((sum, card) => {
+    return displayCards.reduce((sum, card) => {
       const variantManaged = variantManagedCards.has(getVariantCardKey(card.card_id, card.set_id));
       let variants = masterSetEnabled
         ? getVariants(card.card, card.set_id).filter((variant) => {
@@ -1076,7 +1324,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       const base = getPreferredBinderCardPrice(card, null, binder?.edition);
       return sum + getEstimatedValue(base, card.condition || 'Near Mint');
     }, 0);
-  }, [binder?.edition, cards, masterSetEnabled, ownedVariants, variantManagedCards]);
+  }, [binder?.edition, displayCards, masterSetEnabled, ownedVariants, variantManagedCards]);
 
   const getDisplayedVariantQuantity = useCallback((card: BinderCardWithDetails, variant: string) => {
     const savedQuantity = getVariantQuantityFromMap(ownedVariants, card.card_id, card.set_id, variant);
@@ -1154,15 +1402,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       if (error && error.code !== 'PGRST204') throw error;
 
       setBinder((current) => current ? { ...current, master_set_enabled: value } : current);
-      if (value) {
-        setTimeout(() => setMasterSetIntroVisible(true), 80);
-      } else {
-        setMasterSetIntroVisible(false);
-      }
     } catch (error) {
       console.log('Toggle master set error:', error);
       setMasterSetEnabled((prev) => !prev);
-      setMasterSetIntroVisible(false);
       Alert.alert('Could not update binder', 'Please try again.');
     } finally {
       setUpdatingMasterSet(false);
@@ -1220,9 +1462,9 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
       if (currentRows.length >= 3) {
         Alert.alert(
-          type === 'favorite' ? 'Favourite limit reached' : 'Chase card limit reached',
+          type === 'favorite' ? 'Showcase limit reached' : 'Chase card limit reached',
           type === 'favorite'
-            ? 'You can only choose 3 favourite cards per set.'
+            ? 'You can only choose 3 showcase cards per set.'
             : 'You can only choose 3 chase cards per set.'
         );
         return;
@@ -1322,7 +1564,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     try {
   const language = normalizePokemonCardLanguage(item.language ?? binder?.language);
   const latestPrice = await updateBinderCardOwned(item.id, newOwned, {
-    cardName: item.card?.name ?? item.card_name ?? null,
+    cardName: getBinderCardDisplayName(item, item.card_id),
     cardNumber: item.card?.number ?? item.card_number ?? null,
     imageUrl: item.card?.images?.small ?? item.image_url ?? null,
     setName: item.card?.set?.name ?? item.set_name ?? null,
@@ -1404,7 +1646,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
     Alert.alert(
       'Remove from binder?',
-      `Remove ${item.card?.name ?? item.card_name ?? 'this card'} from this custom binder?`,
+      `Remove ${getBinderCardDisplayName(item, 'this card')} from this custom binder?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -1454,32 +1696,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   };
 
   const handleCardLongPress = (item: BinderCardWithDetails) => {
-    const title = item.card?.name ?? item.card_name ?? 'Card options';
-    const actions: {
-      text: string;
-      style?: 'default' | 'cancel' | 'destructive';
-      onPress?: () => void;
-    }[] = [
-      { text: 'Details', onPress: () => openCardDetail(item) },
-    ];
-
-    if (!isReadOnly) {
-      actions.push({
-        text: isShowcased(item, 'chase') ? 'Remove chase card' : 'Add to chase cards',
-        onPress: () => void toggleShowcase(item, 'chase'),
-      });
-
-      if (binder?.type === 'custom') {
-        actions.push({
-          text: 'Remove from binder',
-          style: 'destructive',
-          onPress: () => handleRemoveCustomBinderCard(item),
-        });
-      }
-    }
-
-    actions.push({ text: 'Cancel', style: 'cancel' });
-    Alert.alert(title, 'Quick actions', actions);
+    setQuickActionCard(item);
   };
 
   const handleSetVariantQuantity = useCallback(async (
@@ -1560,7 +1777,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           .eq('set_id', setId);
       }
 
-      const cardName = targetCard?.card?.name ?? targetCard?.card_name ?? cardId;
+      const cardName = getBinderCardDisplayName(targetCard, cardId);
       if (previousQuantity > nextQuantity) {
         await createActivityPost({
           title: nextQuantity <= 0 ? 'Removed from collection' : `Quantity reduced from ${previousQuantity} to ${nextQuantity}`,
@@ -1679,7 +1896,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     try {
       const language = normalizePokemonCardLanguage(item.language ?? binder?.language);
       await updateBinderCardQuantity(item.id, nextQuantity, {
-        cardName: item.card?.name ?? item.card_name ?? null,
+        cardName: getBinderCardDisplayName(item, item.card_id),
         cardNumber: item.card?.number ?? item.card_number ?? null,
         imageUrl: item.card?.images?.small ?? item.image_url ?? null,
         setName: item.card?.set?.name ?? item.set_name ?? null,
@@ -1765,28 +1982,83 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
     try {
       setAddSearchLoading(true);
-      const language = normalizePokemonCardLanguage(binder?.language);
+      const language = inferBinderLanguage(binder?.language, binder?.source_set_id);
+      const searchLanguage = binder?.type === 'official' ? language : 'all';
 
       const data = await searchLocalPokemonCards<any>(safeQuery, {
-        language,
+        language: searchLanguage,
         limit: 150,
-        select: 'id, name, language, set_id, image_small, image_large, rarity, raw_data',
+        select: 'id, name, language, number, set_id, image_small, image_large, rarity, raw_data',
       });
 
       if (requestId !== addSearchRequestRef.current) return;
 
-      const mapped = (data ?? []).map((card: any) => ({
+      const mapped = (data ?? []).map((card: any) => {
+        const raw = card.raw_data ?? {};
+        const normalizedLanguage = normalizePokemonCardLanguage(card.language ?? raw.language ?? language);
+        const providerCardId = raw.source_id ?? raw.provider_card_id ?? raw.id ?? card.id ?? null;
+        const collectorNumber = cleanPreviewText(card.number ?? raw.localId ?? raw.number);
+        const localName = getLocalCardName({
+          id: card.id,
+          sourceId: providerCardId,
+          setId: card.set_id ?? raw.set?.id ?? null,
+          collectorNumber,
+          language: normalizedLanguage,
+          region: raw.region ?? null,
+          localName: raw.local_name ?? (normalizedLanguage !== 'en' ? raw.name ?? card.name ?? null : null),
+          englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? null,
+          canonicalName: raw.canonical_name ?? null,
+          fallbackName: card.name ?? providerCardId,
+          raw,
+        });
+        const englishName = getEnglishCardDisplayName({
+          id: card.id,
+          sourceId: providerCardId,
+          setId: card.set_id ?? raw.set?.id ?? null,
+          collectorNumber,
+          language: normalizedLanguage,
+          region: raw.region ?? null,
+          localName,
+          englishDisplayName: raw.english_display_name ?? raw.englishDisplayName ?? null,
+          canonicalName: raw.canonical_name ?? null,
+          fallbackName: card.name ?? providerCardId,
+          raw,
+        });
+        const setDisplayName = getPreferredSetDisplayName({
+          id: card.set_id ?? raw.set?.id ?? null,
+          sourceId: raw.set?.tcgdex_id ?? raw.set?.source_id ?? raw.source_id ?? card.set_id ?? null,
+          setCode: raw.set?.set_code ?? raw.set?.tcgdex_id ?? raw.set_code ?? card.set_id ?? null,
+          language: normalizedLanguage,
+          region: raw.region ?? raw.set?.region ?? null,
+          localName: raw.set?.local_name ?? raw.set?.name ?? null,
+          englishDisplayName: raw.set?.english_display_name ?? raw.set?.englishDisplayName ?? null,
+          canonicalName: raw.set?.name ?? null,
+          fallbackName: card.set_id ?? null,
+          raw: raw.set ?? raw,
+        });
+        const localSetName = cleanPreviewText(raw.set?.local_name ?? (normalizedLanguage !== 'en' ? raw.set?.name : null));
+        const englishSetName = cleanPreviewText(raw.set?.english_display_name ?? raw.set?.englishDisplayName)
+          ?? (setDisplayName && !containsCjkText(setDisplayName) ? setDisplayName : null);
+
+        return {
           card_id: card.id,
           set_id: card.set_id ?? null,
-          language: normalizePokemonCardLanguage(card.language ?? language),
-          name: card.name,
-          set_name: card.raw_data?.set?.name ?? card.set_id,
+          language: normalizedLanguage,
+          name: cleanPreviewText(englishName ?? localName ?? card.name) ?? card.id,
+          local_name: localName,
+          english_name: englishName,
+          set_name: setDisplayName ?? englishSetName ?? localSetName ?? card.set_id,
+          local_set_name: localSetName,
+          english_set_name: englishSetName,
+          number: collectorNumber,
           image_url: card.image_small ?? card.image_large ?? null,
-          rarity: card.rarity ?? card.raw_data?.rarity ?? null,
-          card_type: card.raw_data?.supertype ?? null,
+          rarity: card.rarity ?? raw.rarity ?? null,
+          card_type: raw.supertype ?? null,
           value: getSearchCardValue(card),
           finish_keys: getSearchCardFinishKeys(card),
-        }));
+          raw_data: raw,
+        };
+      });
 
       setAddSearchResults(mapped.filter((card) => matchesAddCardFilters(card, addFilters)));
     } catch (error) {
@@ -1821,7 +2093,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         cardId: card.card_id,
         setId: derivedSetId,
         language,
-        cardName: card.name ?? null,
+        cardName: getPreviewCardDisplayName(card, card.card_id),
         imageUrl: card.image_url ?? null,
         setName: card.set_name ?? null,
         gradeCompany: binder?.card_mode === 'graded' ? addGradeCompany : null,
@@ -1840,7 +2112,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         setPendingAddIds({});
       }
       await load();
-      const message = `${card.name} added${binder?.card_mode === 'graded' ? ` as ${addGradeCompany} ${finalAddGrade}` : ' to binder'}.`;
+      const displayCardName = getPreviewCardDisplayName(card, card.name);
+      const message = `${displayCardName} added${binder?.card_mode === 'graded' ? ` as ${addGradeCompany} ${finalAddGrade}` : ' to binder'}.`;
       if (closeAfterAdd) {
         Alert.alert('Added', message);
       } else {
@@ -1876,7 +2149,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     cardId: card.card_id,
     setId: getPreviewSetId(card),
     language: card.language ?? binder?.language ?? 'en',
-    cardName: card.name ?? null,
+    cardName: getPreviewCardDisplayName(card, card.card_id),
     imageUrl: card.image_url ?? null,
     setName: card.set_name ?? null,
   }))
@@ -2073,7 +2346,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           textAlign: 'center',
           marginTop: 7,
         }}>
-          {item.card?.name ?? item.card_id}
+          {getBinderCardDisplayName(item, item.card_id)}
         </Text>
 
         {!isReadOnly && (
@@ -2191,7 +2464,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   const renderCard = ({ item }: { item: BinderCardWithDetails }) => {
     const imageUri = item.card?.images?.small ?? item.card?.images?.large ?? null;
     const imageEditionHint = getBinderEditionHint(binder?.edition);
-    const cardName = item.card?.name ?? item.card_id;
+    const cardName = getBinderCardDisplayName(item, item.card_id);
     const forTrade = isForTrade(item.card_id, item.set_id);
     const isGradedBinder = binder?.card_mode === 'graded';
 
@@ -2514,7 +2787,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       }
 
       const setName = (selectedCard.card?.set?.name ?? selectedCard.set_name ?? '').trim();
-      const cardName = (selectedCard.card?.name ?? selectedCard.card_name ?? '').trim();
+      const cardName = getBinderCardDisplayName(selectedCard, '').trim();
       const cardNumberRaw = (selectedCard.card?.number ?? selectedCard.card_number ?? '').trim();
 
       if (!setName || !cardName) {
@@ -2596,6 +2869,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StackrBackdrop />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>Loading binder...</Text>
@@ -2607,6 +2882,8 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
   if (!binder) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StackrBackdrop />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>
             Binder not found
@@ -2634,21 +2911,99 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
     fontWeight: '900' as const,
     marginBottom: 10,
   };
-  const missingCount = Math.max(0, totalCount - ownedCount);
+  const showsCompletion = binder.type === 'official';
+  const totalNeedsSync = showsCompletion && !totalKnown;
+  const missingCount = showsCompletion && totalKnown ? Math.max(0, totalCount - ownedCount) : 0;
   const duplicateCount = cards.reduce((sum, card) => sum + Math.max(0, getDisplayedOwnedQuantity(card) - 1), 0);
   const chaseCount = getShowcaseItems('chase').length;
+  const officialSetDisplayName = showsCompletion
+    ? binder.source_set_display_name
+      ?? getPreferredSetDisplayName({
+        id: binder.source_set_id ?? binder.cover_key ?? binder.name,
+        sourceId: binder.source_set_id ?? binder.cover_key ?? binder.name,
+        setCode: binder.source_set_id ?? binder.cover_key ?? binder.name,
+        language: binder.language,
+        localName: binder.source_set_local_name ?? binder.name,
+        englishDisplayName: binder.source_set_english_display_name ?? null,
+        fallbackName: binder.name,
+      })
+    : null;
+  const binderTitle = showsCompletion ? officialSetDisplayName ?? binder.name : binder.name;
   const binderModeLabel = binder.card_mode === 'graded' ? 'Graded binder' : masterSetEnabled ? 'Master set' : binder.type === 'official' ? 'Official set' : 'Custom binder';
   const customNameArt = binder.type === 'custom' ? getCustomBinderNameArt(customNameArtKey) : null;
-  const officialSetLogoUrl = binder.type === 'official'
-    ? getPokemonSetLogoUrl(binder.source_set_id ?? binder.cover_key)
+  const officialSetLogoSource = binder.type === 'official'
+    ? getJapaneseSetLogoSourceForSet({
+      id: binder.source_set_id ?? binder.cover_key,
+      language: binder.language,
+      name: officialSetDisplayName ?? binder.name,
+      localName: binder.source_set_local_name,
+      englishDisplayName: binder.source_set_english_display_name,
+    })
+    : null;
+  const officialSetLogoUrl = binder.type === 'official' && !officialSetLogoSource
+    ? binder.source_set_logo_url ?? binder.source_set_symbol_url ?? getPokemonSetLogoUrl(binder.source_set_id ?? binder.cover_key, binder.language)
     : undefined;
-  const completionLabel = `${ownedCount}/${totalCount || 0}`;
+  const officialSetArtworkUrl = binder.type === 'official'
+    ? officialSetLogoUrl
+    : undefined;
+  const ownedCardLabel = `${ownedCount} card${ownedCount === 1 ? '' : 's'} owned`;
+  const completionLabel = showsCompletion && totalKnown ? `${ownedCount}/${totalCount}` : ownedCardLabel;
+  const completionMeta = showsCompletion
+    ? totalKnown
+      ? `${binderModeLabel} - ${completionLabel} tracked slots`
+      : `${binderModeLabel} - total unknown, needs sync`
+    : `${binderModeLabel} - ${ownedCardLabel}`;
+  const heroCountLabel = showsCompletion
+    ? totalNeedsSync
+      ? 'Total unknown'
+      : `${missingCount} card${missingCount === 1 ? '' : 's'} left`
+    : ownedCardLabel;
+  const heroStatusLabel = showsCompletion
+    ? totalNeedsSync
+      ? 'Needs sync'
+      : `${progressPercent}% complete`
+    : binderModeLabel;
+  const heroHelperText = showsCompletion
+    ? totalNeedsSync
+      ? 'Sync catalogue totals to calculate completion.'
+      : missingCount > 0
+      ? `${missingCount} card${missingCount === 1 ? '' : 's'} to complete`
+      : 'Complete - this binder is fully tracked'
+    : 'No set target - keep adding cards to this binder.';
   const switchTrackColor = {
     false: theme.dark ? '#2A2E42' : '#E5E1F4',
     true: theme.colors.primary + '66',
   };
   const getSwitchThumbColor = (active: boolean) =>
     active ? theme.colors.primary : theme.dark ? '#CBD5E1' : '#FFFFFF';
+  const quickActionCardTitle = quickActionCard ? getBinderCardDisplayName(quickActionCard, 'Card options') : 'Card options';
+  const quickActionSheetActions: StackrQuickAction[] = quickActionCard ? [
+    {
+      label: 'Details',
+      subtitle: 'Open card details and market value.',
+      icon: 'information-circle-outline',
+      onPress: () => openCardDetail(quickActionCard),
+    },
+    ...(!isReadOnly ? [
+      {
+        label: isShowcased(quickActionCard, 'chase') ? 'Remove from Chase' : 'Add to Chase',
+        subtitle: isShowcased(quickActionCard, 'chase')
+          ? 'Take this card out of your chase list.'
+          : 'Keep this card in your chase list.',
+        imageIcon: stackrIcons.chase,
+        onPress: () => void toggleShowcase(quickActionCard, 'chase'),
+      },
+      ...(binder?.type === 'custom' ? [
+        {
+          label: 'Remove from binder',
+          subtitle: 'Remove this card from the custom binder.',
+          icon: 'trash-outline' as const,
+          destructive: true,
+          onPress: () => handleRemoveCustomBinderCard(quickActionCard),
+        },
+      ] : []),
+    ] : []),
+  ] : [];
 
   // ===============================
   // MAIN RENDER
@@ -2661,16 +3016,20 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           headerShown: false,
         }}
       />
+      <StackrBackdrop />
       <FlatList
-        data={sortedCards}
+        ref={binderListRef}
+        data={visibleCards}
         keyExtractor={(item) => item.id}
         renderItem={renderCard}
         key={numColumns}
         numColumns={numColumns}
         columnWrapperStyle={{ gap: 8, marginBottom: 8 }}
         {...stackrListPerformance.cardGrid(numColumns)}
+        onEndReached={hasMoreCardsToRender ? renderMoreCards : undefined}
+        onEndReachedThreshold={0.85}
         showsVerticalScrollIndicator={false}
-        style={{ flex: 1, backgroundColor: theme.colors.bg }}
+        style={{ flex: 1, backgroundColor: 'transparent' }}
         contentContainerStyle={{
           flexGrow: 1,
           paddingHorizontal: 16,
@@ -2678,29 +3037,29 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
         }}
         ListHeaderComponent={
           <View>
-            <View style={{ height: 44, justifyContent: 'center', marginBottom: 4 }}>
-              <StackrBackButton onPress={goBackToBinderLibrary} />
+            <View style={{ height: 32, justifyContent: 'center', marginBottom: 2 }}>
+              <StackrBackButton onPress={goBackToBinderLibrary} style={{ width: 34, height: 32 }} />
             </View>
 
         {/* Header */}
-        <View style={{ gap: 10, marginBottom: 12 }}>
+        <View style={{ gap: 8, marginBottom: 10 }}>
           <View style={{
             backgroundColor: theme.colors.card,
-            borderRadius: 20,
+            borderRadius: 18,
             borderWidth: 1,
             borderColor: theme.colors.border,
-            padding: 10,
+            padding: 8,
             overflow: 'hidden',
             shadowColor: '#6136F5',
-            shadowOpacity: 0.1,
-            shadowRadius: 16,
-            shadowOffset: { width: 0, height: 7 },
-            elevation: 4,
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 5 },
+            elevation: 3,
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <View style={{
-                width: 68,
-                minHeight: 78,
+                width: 62,
+                minHeight: 70,
                 borderRadius: 15,
                 backgroundColor: theme.colors.surface,
                 borderWidth: 1,
@@ -2711,18 +3070,21 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               }}>
                 <BinderArtwork
                   coverKey={binder.cover_key}
-                  sourceSetId={binder.source_set_id}
-                  setName={binder.name}
-                  fallbackLogoUrl={officialSetLogoUrl}
+                  sourceSetId={showsCompletion ? binder.source_set_id : null}
+                  sourceSetLanguage={showsCompletion ? binder.language : null}
+                  setName={showsCompletion ? binderTitle : null}
+                  fallbackLogoUrl={officialSetArtworkUrl}
+                  fallbackLogoSource={officialSetLogoSource}
                   fallbackArtSource={customNameArt?.source ?? null}
                   fallbackColor={binder.color}
-                  progress={progressPercent}
-                  width={66}
-                  stageHeight={72}
-                  artworkWidth={51}
-                  artworkHeight={57}
-                  progressWidth={45}
+                  progress={showsCompletion ? progressPercent : 0}
+                  width={60}
+                  stageHeight={66}
+                  artworkWidth={47}
+                  artworkHeight={53}
+                  progressWidth={42}
                   progressHeight={4}
+                  showProgressBar={showsCompletion}
                   showProgressText={false}
                   showFan
                 />
@@ -2735,39 +3097,40 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                   </View>
                 ) : null}
 
-                {officialSetLogoUrl && !setLogoFailed ? (
+                {(officialSetLogoSource || officialSetLogoUrl) && !setLogoFailed ? (
                   <StackrImage
-                    uri={officialSetLogoUrl}
+                    source={officialSetLogoSource}
+                    uri={officialSetLogoSource ? null : officialSetLogoUrl}
                     onError={() => setSetLogoFailed(true)}
                     contentFit="contain"
                     priority="high"
                     showFallbackIcon={false}
-                    style={{ width: '100%', height: 36, marginBottom: 2, alignSelf: 'flex-start', backgroundColor: 'transparent' }}
+                    style={{ width: '100%', height: 64, marginBottom: 1, alignSelf: 'flex-start', backgroundColor: 'transparent' }}
                   />
                 ) : customNameArt ? (
                   <Image
                     source={customNameArt.source}
                     resizeMode="contain"
-                    style={{ width: '100%', height: 36, marginBottom: 2, alignSelf: 'flex-start' }}
+                    style={{ width: '100%', height: 32, marginBottom: 1, alignSelf: 'flex-start' }}
                   />
                 ) : (
-                  <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 25, fontWeight: '900' }} numberOfLines={2}>
-                    {binder.name}
+                  <Text style={{ color: theme.colors.text, fontSize: 19, lineHeight: 23, fontWeight: '900' }} numberOfLines={2}>
+                    {binderTitle}
                   </Text>
                 )}
 
                 {customNameArt ? (
                   <Text style={{ color: theme.colors.text, fontSize: 13, lineHeight: 17, fontWeight: '900', marginTop: 1 }} numberOfLines={1}>
-                    {binder.name}
+                    {binderTitle}
                   </Text>
                 ) : null}
 
-                <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 14, fontWeight: '700', marginTop: 2 }} numberOfLines={1}>
-                  {binderModeLabel} - {completionLabel} tracked slots
+                <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '700', marginTop: 1 }} numberOfLines={1}>
+                  {completionMeta}
                 </Text>
 
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
-                  {masterSetEnabled && binder.card_mode !== 'graded' ? <BinderModePill type="master" /> : null}
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 }}>
+                  {binder.type === 'official' && masterSetEnabled && binder.card_mode !== 'graded' ? <BinderModePill type="master" /> : null}
                   {binder.edition ? (
                     <View style={{ borderRadius: 999, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: theme.colors.secondary + '18', borderWidth: 1, borderColor: theme.colors.secondary + '35' }}>
                       <Text style={{ color: theme.colors.text, fontSize: 10, fontWeight: '900' }}>
@@ -2780,7 +3143,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             </View>
 
             <View style={{
-              marginTop: 10,
+              marginTop: 8,
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
@@ -2789,7 +3152,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               paddingHorizontal: 4,
             }}>
               <Text style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }} numberOfLines={1}>
-                {missingCount} card{missingCount === 1 ? '' : 's'} left
+                {heroCountLabel}
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
               <Text style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }} numberOfLines={1}>
@@ -2797,32 +3160,38 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }}>|</Text>
               <Text style={{ color: theme.colors.primary, fontSize: 10.5, lineHeight: 13, fontWeight: '900' }} numberOfLines={1}>
-                {progressPercent}% complete
+                {heroStatusLabel}
               </Text>
             </View>
 
-            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 3, textAlign: 'center' }} numberOfLines={1}>
-              {missingCount > 0
-                ? `${missingCount} card${missingCount === 1 ? '' : 's'} to complete`
-                : 'Complete - this binder is fully tracked'}
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', marginTop: 2, textAlign: 'center' }} numberOfLines={1}>
+              {heroHelperText}
             </Text>
 
             {!isReadOnly ? (
-              <View style={{ gap: 8, marginTop: 10 }}>
+              <View style={{ gap: 7, marginTop: 8 }}>
                 {binder.card_mode === 'graded' ? (
-                  <View style={{ flexDirection: 'row', gap: 10, alignItems: 'stretch' }}>
+                  <View style={{ flexDirection: 'row', gap: 8, alignItems: 'stretch' }}>
                     <StackrActionButton
                       title="Scan to Binder"
                       imageIcon={stackrIcons.scanCard}
+                      variant="scan"
                       size="compact"
                       onPress={handleScanCard}
                       accessibilityLabel="Scan to Binder"
                       showArrow={false}
-                      style={{ flex: 1, minHeight: 54, borderRadius: 15 }}
-                      contentStyle={{ minHeight: 54, borderRadius: 15, paddingVertical: 8, paddingHorizontal: 10 }}
+                      style={{ flex: 1.12, minHeight: 48, borderRadius: 15 }}
+                      contentStyle={{ minHeight: 48, borderRadius: 15, paddingVertical: 7, paddingHorizontal: 10 }}
                     />
                     <BinderHeroCompactSwitch
                       label={isPublic ? 'Public' : 'Private'}
+                      icon={(
+                        <Ionicons
+                          name={isPublic ? 'eye-outline' : 'lock-closed-outline'}
+                          size={24}
+                          color={theme.colors.primary}
+                        />
+                      )}
                       active={isPublic}
                       disabled={updatingVisibility}
                       onValueChange={togglePublic}
@@ -2832,32 +3201,27 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                   </View>
                 ) : (
                   <>
-                    <View style={{ gap: 8 }}>
+                    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'stretch' }}>
                       <StackrActionButton
-                        title="Scan Card"
-                        subtitle="Single by default - choose Grid in camera"
+                        title="Scan to Binder"
                         imageIcon={stackrIcons.scanCard}
+                        variant="scan"
                         size="compact"
                         onPress={handleScanCard}
-                        accessibilityLabel="Scan Card to Binder"
+                        accessibilityLabel="Scan to Binder"
                         showArrow={false}
-                        style={{ minHeight: 46, borderRadius: 14 }}
-                        contentStyle={{ minHeight: 46, borderRadius: 14, paddingVertical: 7, paddingHorizontal: 10 }}
-                      />
-                    </View>
-
-                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'stretch' }}>
-                      <BinderHeroCompactSwitch
-                        label="Master set"
-                        active={masterSetEnabled}
-                        disabled={updatingMasterSet}
-                        onValueChange={toggleMasterSet}
-                        onInfoPress={() => setMasterSetIntroVisible(true)}
-                        trackColor={switchTrackColor}
-                        thumbColor={getSwitchThumbColor(masterSetEnabled)}
+                        style={{ flex: 1.12, minHeight: 48, borderRadius: 15 }}
+                        contentStyle={{ minHeight: 48, borderRadius: 15, paddingVertical: 7, paddingHorizontal: 10 }}
                       />
                       <BinderHeroCompactSwitch
                         label={isPublic ? 'Public' : 'Private'}
+                        icon={(
+                          <Ionicons
+                            name={isPublic ? 'eye-outline' : 'lock-closed-outline'}
+                            size={24}
+                            color={theme.colors.primary}
+                          />
+                        )}
                         active={isPublic}
                         disabled={updatingVisibility}
                         onValueChange={togglePublic}
@@ -2865,6 +3229,18 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         thumbColor={getSwitchThumbColor(isPublic)}
                       />
                     </View>
+
+                    {binder.type === 'official' ? (
+                      <BinderHeroCompactSwitch
+                        label="Master set"
+                        icon={<BinderModeIconBadge type="master" size={30} />}
+                        active={masterSetEnabled}
+                        disabled={updatingMasterSet}
+                        onValueChange={toggleMasterSet}
+                        trackColor={switchTrackColor}
+                        thumbColor={getSwitchThumbColor(masterSetEnabled)}
+                      />
+                    ) : null}
                   </>
                 )}
               </View>
@@ -2912,7 +3288,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                 }}
               >
                 <Text style={{ color: sortMode === 'missing' ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 12 }} numberOfLines={1}>
-                  Missing {missingCount}
+                  Missing {totalNeedsSync ? '--' : missingCount}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -3066,172 +3442,41 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
           </View>
         }
+        ListFooterComponent={hasMoreCardsToRender ? (
+          <View style={{ height: 24, justifyContent: 'center' }}>
+            <ActivityIndicator color={theme.colors.primary} size="small" />
+          </View>
+        ) : null}
+      />
+      <ScrollToEndButton
+        visible={showBinderEndButton}
+        onPress={scrollBinderToEnd}
+        bottom={insets.bottom + stackrTabContentPadding.standard - 38}
+        accessibilityLabel="Skip to end of binder"
       />
 
-      {/* MASTER SET INTRO MODAL */}
-      <Modal
-        visible={masterSetIntroVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setMasterSetIntroVisible(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: 'rgba(28,32,52,0.42)', alignItems: 'center', justifyContent: 'center', padding: 18 }}>
-          <BlurView intensity={28} tint="light" style={StyleSheet.absoluteFill} />
-          <View style={{
-            width: Math.min(width - 54, 354),
-            maxHeight: screenHeight - 96,
-            backgroundColor: '#FFFFFF',
-            borderRadius: 24,
-            paddingHorizontal: 18,
-            paddingTop: 16,
-            paddingBottom: 18,
-            alignItems: 'center',
-            shadowColor: '#000',
-            shadowOpacity: 0.18,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 12 },
-            elevation: 12,
-          }}>
-            <TouchableOpacity
-              onPress={() => setMasterSetIntroVisible(false)}
-              style={{
-                position: 'absolute',
-                right: 10,
-                top: 10,
-                width: 30,
-                height: 30,
-                borderRadius: 15,
-                backgroundColor: '#F0EEF8',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 2,
-                overflow: 'hidden',
-              }}
-            >
-              <Ionicons name="close" size={19} color="#0B1746" />
-            </TouchableOpacity>
-
-            <View style={{ alignItems: 'center', marginBottom: 2 }}>
-              <Ionicons name="sparkles" size={25} color="#FFAA4C" />
-            </View>
-
-            <Text style={{ color: '#061547', fontSize: 23, lineHeight: 27, fontWeight: '900', textAlign: 'center' }}>
-              Welcome Completionist
-            </Text>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5 }}>
-              <Ionicons name="sparkles" size={12} color="#4B22A2" />
-              <Text style={{ color: '#4B22A2', fontSize: 18, fontWeight: '900' }}>Track Variants</Text>
-              <Ionicons name="sparkles" size={12} color="#4B22A2" />
-            </View>
-
-            <Text style={{ color: '#59617F', fontSize: 13, lineHeight: 17, textAlign: 'center', marginTop: 6, maxWidth: 275 }}>
-              Tap the card by thirds to mark the version you own.
-            </Text>
-            <Text style={{ color: '#59617F', fontSize: 12, lineHeight: 16, textAlign: 'center', marginTop: 1, maxWidth: 285 }}>
-              Left = Base, Middle = Holo, Right = Reverse Holo.
-            </Text>
-
-            <View style={{
-              width: Math.min(width - 152, 178),
-              aspectRatio: stackrCardImageSizes.cardAspectRatio,
-              marginTop: 10,
-              borderRadius: 15,
-              padding: 5,
-              backgroundColor: '#FFFFFF',
-              borderWidth: 1,
-              borderColor: '#D8C9FF',
-              shadowColor: '#4B22A2',
-              shadowOpacity: 0.14,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 6 },
-              elevation: 5,
-            }}>
-              <LinearGradient
-                colors={['#DCD6FF', '#9189EF', '#C9B6FF', '#FFE6A8', '#B7F2FF']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={{ flex: 1, borderRadius: 11, overflow: 'hidden' }}
-              >
-                <View style={{ position: 'absolute', left: '33.33%', top: 0, bottom: 0, borderLeftWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.86)' }} />
-                <View style={{ position: 'absolute', left: '66.66%', top: 0, bottom: 0, borderLeftWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.86)' }} />
-                <View style={{ position: 'absolute', left: '30%', right: '30%', top: '35%', aspectRatio: 1, borderRadius: 999, borderWidth: 9, borderColor: 'rgba(94,78,180,0.72)' }} />
-                <View style={{ position: 'absolute', left: '18%', right: '18%', top: '47%', height: 3, backgroundColor: 'rgba(94,78,180,0.72)' }} />
-                <Ionicons name="sparkles" size={22} color="#FFFFFF" style={{ position: 'absolute', top: '12%', alignSelf: 'center' }} />
-                <View style={{ position: 'absolute', left: 9, right: 9, bottom: 13, flexDirection: 'row', justifyContent: 'space-between' }}>
-                  {['normal', 'holofoil', 'reverseHolofoil'].map((variant, index) => (
-                    <View key={variant} style={{ alignItems: 'center' }}>
-                      <View style={{
-                        width: 26,
-                        height: 26,
-                        borderRadius: 13,
-                        borderWidth: index === 2 ? 3 : 2,
-                        borderColor: index === 2 ? theme.colors.primary : '#FFFFFF',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: index === 2 ? theme.colors.primary + '24' : 'rgba(255,255,255,0.14)',
-                      }}>
-                        <Ionicons name="finger-print" size={16} color="#FFFFFF" />
-                      </View>
-                      <MasterVariantIcon variant={variant} size="tiny" active />
-                    </View>
-                  ))}
-                </View>
-              </LinearGradient>
-            </View>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
-              {['normal', 'holofoil', 'reverseHolofoil'].map((variant) => {
-                const copy = MASTER_VARIANT_COPY[getMasterVariantKind(variant)];
-                return (
-                  <View key={variant} style={{ alignItems: 'center', width: 72 }}>
-                    <MasterVariantIcon variant={variant} size="medium" active />
-                    <Text style={{ color: '#061547', fontSize: 11, fontWeight: '900', marginTop: 4, textAlign: 'center' }}>{copy.label}</Text>
-                    <Text style={{ color: '#68708D', fontSize: 9, fontWeight: '700', marginTop: 1, textAlign: 'center' }}>{copy.helper}</Text>
-                  </View>
-                );
-              })}
-            </View>
-
-            <TouchableOpacity
-              onPress={() => setMasterSetIntroVisible(false)}
-              style={{
-                marginTop: 14,
-                width: '100%',
-                backgroundColor: '#5D2DD3',
-                borderRadius: 10,
-                paddingVertical: 11,
-                alignItems: 'center',
-                shadowColor: '#5D2DD3',
-                shadowOpacity: 0.25,
-                shadowRadius: 10,
-                shadowOffset: { width: 0, height: 6 },
-                elevation: 4,
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <StackrButtonPattern tone="purple" />
-              <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>Got it</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <StackrQuickActionSheet
+        visible={Boolean(quickActionCard)}
+        title={quickActionCardTitle}
+        subtitle="Quick actions"
+        actions={quickActionSheetActions}
+        onClose={() => setQuickActionCard(null)}
+      />
 
       {/* ADD CARD MODAL */}
 {!isReadOnly && (
-  <Modal visible={showAddModal} animationType="slide">
+  <Modal visible={showAddModal} animationType="slide" presentationStyle="fullScreen">
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: theme.colors.bg }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={0}
     >
-    <SafeAreaView edges={['top', 'bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-      <View style={{ padding: 16, flex: 1 }}>
+    <SafeAreaView edges={['bottom', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <View style={{ paddingHorizontal: 16, paddingBottom: 16, paddingTop: Math.max(24, insets.top + 12), flex: 1 }}>
 
         {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 48, marginBottom: 14 }}>
+          <Text numberOfLines={1} style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900', flex: 1, paddingRight: 12 }}>
             Add Cards
           </Text>
           <TouchableOpacity
@@ -3262,6 +3507,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
             placeholder="Search by card name..."
             placeholderTextColor={theme.colors.textSoft}
             autoCorrect={false}
+            spellCheck={false}
             autoCapitalize="words"
             value={addSearch}
             onChangeText={setAddSearch}
@@ -3520,9 +3766,12 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
           <ActivityIndicator color={theme.colors.primary} />
         ) : (
           <FlatList
-            data={addSearchResults}
+            ref={addCardListRef}
+            data={visibleAddSearchResults}
             keyExtractor={(item) => `${getPreviewSetId(item)}-${item.card_id}-${item.language ?? 'en'}`}
             keyboardShouldPersistTaps="always"
+            onEndReached={hasMoreAddResultsToRender ? renderMoreAddResults : undefined}
+            onEndReachedThreshold={0.75}
             contentContainerStyle={{ paddingBottom: insets.bottom + 320 }}
             ListEmptyComponent={debouncedAddSearch.trim().length >= 2 ? (
               <View style={{ paddingVertical: 34, alignItems: 'center' }}>
@@ -3547,6 +3796,14 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
               const isPending = Boolean(pendingAddIds[item.card_id]);
               const isAdding = addingCardId === item.card_id;
               const isActive = alreadyInBinder || isPending || isAdding;
+              const displayName = getPreviewCardDisplayName(item, item.name);
+              const supportingName = getPreviewCardSupportingName(item, displayName);
+              const displaySetName = getPreviewSetDisplayName(item, derivedSetId);
+              const supportingSetName = getPreviewSetSupportingName(item, displaySetName);
+              const setLine = [
+                displaySetName,
+                item.number ? `#${item.number}` : null,
+              ].filter(Boolean).join(' - ');
               const openSearchResultDetail = () => {
                 setShowAddModal(false);
                 setAddFiltersVisible(false);
@@ -3602,34 +3859,52 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                     overflow: 'hidden',
                   }}
                 >
-                  {item.image_url ? (
-                    <StackrImage
-                      uri={item.image_url}
-                      style={{
-                        width: 50,
-                        height: 70,
-                        borderRadius: 6,
-                        backgroundColor: theme.colors.surface,
-                        opacity: isActive ? 1 : 0.48,
-                      }}
-                      contentFit="contain"
-                      priority="low"
-                      showFallbackIcon={false}
+                  <View
+                    style={{
+                      width: 50,
+                      height: 70,
+                      borderRadius: 6,
+                      overflow: 'hidden',
+                      backgroundColor: theme.colors.surface,
+                      opacity: isActive ? 1 : 0.48,
+                    }}
+                  >
+                    {item.image_url ? (
+                      <StackrImage
+                        uri={item.image_url}
+                        style={StyleSheet.absoluteFill}
+                        contentFit="contain"
+                        priority="low"
+                        showFallbackIcon={false}
+                      />
+                    ) : null}
+                    <RaritySymbol
+                      rarity={item.rarity}
+                      size={12}
+                      style={RARITY_SYMBOL_CARD_OVERLAY}
                     />
-                  ) : (
-                    <View style={{ width: 50, height: 70, borderRadius: 6, backgroundColor: theme.colors.surface }} />
-                  )}
+                  </View>
 
                   <View style={{ flex: 1, marginLeft: 12 }}>
                     <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900' }}>
-                      {item.name}
+                      {displayName}
                     </Text>
+                    {supportingName ? (
+                      <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2, fontWeight: '700' }}>
+                        {supportingName}
+                      </Text>
+                    ) : null}
                     <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12 }}>
-                      {item.set_name ?? derivedSetId}
+                      {setLine || derivedSetId}
                     </Text>
-                    {(item.rarity || item.value != null) ? (
+                    {supportingSetName ? (
+                      <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 1 }}>
+                        {supportingSetName}
+                      </Text>
+                    ) : null}
+                    {item.value != null ? (
                       <Text numberOfLines={1} style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '800', marginTop: 2 }}>
-                        {[item.rarity, item.value != null ? formatCurrency(item.value) : null].filter(Boolean).join(' | ')}
+                        {formatCurrency(item.value)}
                       </Text>
                     ) : null}
                   </View>
@@ -3663,11 +3938,23 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                       <Ionicons name="add" size={22} color={theme.colors.primary} />
                     )}
                   </View>
-                </TouchableOpacity>
+              </TouchableOpacity>
               );
             }}
+            ListFooterComponent={hasMoreAddResultsToRender ? (
+              <View style={{ height: 34, alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator color={theme.colors.primary} size="small" />
+              </View>
+            ) : null}
           />
         )}
+        <ScrollToEndButton
+          visible={showAddCardsEndButton}
+          onPress={scrollAddCardsToEnd}
+          bottom={insets.bottom + 118}
+          right={22}
+          accessibilityLabel="Skip to end of card results"
+        />
       </View>
     </SafeAreaView>
     </KeyboardAvoidingView>
@@ -3675,46 +3962,13 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 )}
 
       {!isReadOnly && (
-        <Modal
+        <StackrBottomSheet
           visible={addFiltersVisible}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setAddFiltersVisible(false)}
+          title="Search filters"
+          subtitle="Narrow results without changing your search."
+          onClose={() => setAddFiltersVisible(false)}
+          maxHeight="78%"
         >
-          <View style={{ flex: 1, backgroundColor: 'rgba(4,11,63,0.42)', justifyContent: 'center', padding: 18 }}>
-            <View style={{
-              backgroundColor: theme.colors.card,
-              borderRadius: 22,
-              padding: 16,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              ...cardShadow,
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <View>
-                  <Text style={{ color: theme.colors.text, fontSize: 19, fontWeight: '900' }}>Search filters</Text>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
-                    Narrow results without changing your search.
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => setAddFiltersVisible(false)}
-                  activeOpacity={0.72}
-                  accessibilityRole="button"
-                  accessibilityLabel="Close search filters"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 17,
-                    backgroundColor: theme.colors.surface,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Ionicons name="close" size={18} color={theme.colors.textSoft} />
-                </TouchableOpacity>
-              </View>
-
               <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900', marginBottom: 7 }}>SET</Text>
               <TextInput
                 value={addFilters.setQuery}
@@ -3799,9 +4053,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                   <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Apply</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          </View>
-        </Modal>
+        </StackrBottomSheet>
       )}
 
       {/* GRADED CARD PROMPT */}
@@ -4098,10 +4350,19 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                           </Text>
                         </View>
                       )}
+                      <RaritySymbol
+                        rarity={modalCard?.rarity ?? (selectedCard as any).rarity}
+                        size={18}
+                        style={{
+                          position: 'absolute',
+                          right: 14,
+                          bottom: 14,
+                        }}
+                      />
                     </View>
 
                     <StackrCardIdentity
-                      name={modalCard?.name ?? selectedCard.card_name ?? selectedCard.card_id}
+                      name={getBinderCardDisplayName(selectedCard, selectedCard.card_id)}
                       setName={modalCard?.set?.name ?? selectedCard.set_name ?? selectedCard.set_id}
                       number={modalCard?.number ?? selectedCard.card_number ?? null}
                       size="detail"
@@ -4171,12 +4432,6 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                           label="Card no."
                           value={modalCard?.number ?? selectedCard.card_number ?? 'Unknown'}
                         />
-                        {(modalCard?.rarity || (selectedCard as any).rarity) && (
-                          <DetailInfoPill
-                            label="Rarity"
-                            value={modalCard?.rarity ?? (selectedCard as any).rarity}
-                          />
-                        )}
                         {modalCard?.supertype && (
                           <DetailInfoPill
                             label="Type"
@@ -4204,10 +4459,10 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                       </View>
                     </View>
 
-                    {/* Market Value */}
+                    {/* Price sources */}
                     <View style={boxStyle}>
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <Text style={boxTitleStyle}>Market Value</Text>
+                        <Text style={boxTitleStyle}>Price Sources</Text>
                         {binder.card_mode !== 'graded' && (
                           <TouchableOpacity
                             onPress={() => selectedCard && fetchModalEbayPrice(selectedCard)}
@@ -4231,7 +4486,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                       </View>
 
                       <PokeTraceMarketInsights
-                        cardName={modalCard?.name ?? selectedCard.card_name ?? selectedCard.card_id}
+                        cardName={getBinderCardDisplayName(selectedCard, selectedCard.card_id)}
                         setName={modalCard?.set?.name ?? selectedCard.set_name ?? selectedCard.set_id}
                         number={modalCard?.number ?? selectedCard.card_number ?? null}
                         rawCondition={binder.card_mode === 'graded' ? null : selectedCard.condition || 'Near Mint'}
@@ -4242,11 +4497,11 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 
                       {binder.card_mode !== 'graded' && (
                         <>
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                            Stackr eBay Backup Lookup
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+                            Backup lookup - eBay sold (GBP)
                           </Text>
                           <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: -4, marginBottom: 8 }}>
-                            Separate live search, adjusted for {selectedCard.condition || 'Near Mint'}.
+                            Broader live search used when the primary sold-comps read needs support. Adjusted for {selectedCard.condition || 'Near Mint'}.
                           </Text>
 
                           {modalEbayLoading ? (
@@ -4266,7 +4521,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               <View style={{ flexDirection: 'row', gap: 8, marginBottom: 6 }}>
                                 <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
                                   <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Low</Text>
-                                  <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
+                                  <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.68}>
                                     {modalEbayPrice?.low != null
                                       ? formatCurrency(getEstimatedValue(modalEbayPrice.low, selectedCard.condition || 'Near Mint'))
                                       : '--'}
@@ -4274,7 +4529,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                                 </View>
                                 <View style={{ flex: 1, backgroundColor: theme.colors.primary + '18', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.primary }}>
                                   <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>Avg</Text>
-                                  <Text style={{ color: theme.colors.primary, fontWeight: '900', textAlign: 'center', fontSize: 15 }}>
+                                  <Text style={{ color: theme.colors.primary, fontWeight: '900', textAlign: 'center', fontSize: 15 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.62}>
                                     {modalEbayPrice?.average != null
                                       ? formatCurrency(getEstimatedValue(modalEbayPrice.average, selectedCard.condition || 'Near Mint'))
                                       : '--'}
@@ -4282,7 +4537,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                                 </View>
                                 <View style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
                                   <Text style={{ color: theme.colors.textSoft, fontSize: 11, textAlign: 'center', marginBottom: 4 }}>High</Text>
-                                  <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }}>
+                                  <Text style={{ color: theme.colors.text, fontWeight: '900', textAlign: 'center' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.68}>
                                     {modalEbayPrice?.high != null
                                       ? formatCurrency(getEstimatedValue(modalEbayPrice.high, selectedCard.condition || 'Near Mint'))
                                       : '--'}
@@ -4297,7 +4552,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               )}
                               {modalEbayPrice?.usedFallback && (modalEbayPrice?.count ?? 0) > 0 && (
                                 <Text style={{ color: '#F59E0B', fontSize: 11, marginTop: 2 }}>
-                                  Backup lookup used - results may be broader.
+                                  Backup lookup used - check against the live sold-comps read.
                                 </Text>
                               )}
                               {modalEbayPrice?.count === 0 && (
@@ -4314,16 +4569,16 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                         <>
                           <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
 
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
-                            Cached Daily Prices
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 14, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+                            Cached daily prices (fallback)
                           </Text>
                           <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: -4, marginBottom: 8 }}>
-                            Stored fallback values from marketplace feeds, adjusted for condition.
+                            Stored daily marketplace values. Use these when live sold data is thin or unavailable.
                           </Text>
 
-                          <Row label="eBay (cached)" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row label="Cached eBay" value={formatCurrency(getEstimatedValue(selectedCard?.ebay_price ?? 0, selectedCard.condition || 'Near Mint'))} />
                           <Row
-                            label="TCGPlayer"
+                            label="Cached TCGPlayer"
                             value={formatCurrency(
                               getEstimatedValue(
                                 getBinderTcgPrice(selectedCard?.card, binder?.edition) ??
@@ -4335,7 +4590,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
                               )
                             )}
                           />
-                          <Row label="CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
+                          <Row label="Cached CardMarket" value={formatCurrency(getEstimatedValue(getCardmarketPrice(selectedCard) ?? 0, selectedCard.condition || 'Near Mint'))} />
 
                           <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 8 }}>
                             Updated daily when price refresh runs
@@ -4383,6 +4638,7 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
 function BinderHeroCompactSwitch({
   label,
   helper,
+  icon,
   active,
   disabled,
   onValueChange,
@@ -4392,6 +4648,7 @@ function BinderHeroCompactSwitch({
 }: {
   label: string;
   helper?: string;
+  icon?: React.ReactNode;
   active: boolean;
   disabled?: boolean;
   onValueChange: (value: boolean) => void;
@@ -4403,6 +4660,7 @@ function BinderHeroCompactSwitch({
     <BinderHeroInfoCard
       title={label}
       helper={helper}
+      icon={icon}
       active={active}
       onInfoPress={onInfoPress}
       trailing={(
@@ -4440,9 +4698,9 @@ function BinderHeroMiniToggle({
       accessibilityState={{ checked: active, disabled: Boolean(disabled) }}
       hitSlop={6}
       style={{
-        width: 38,
-        height: 22,
-        borderRadius: 11,
+        width: 40,
+        height: 24,
+        borderRadius: 12,
         padding: 2,
         backgroundColor: trackColor,
         borderWidth: 1,
@@ -4453,9 +4711,9 @@ function BinderHeroMiniToggle({
     >
       <View
         style={{
-          width: 16,
-          height: 16,
-          borderRadius: 8,
+          width: 18,
+          height: 18,
+          borderRadius: 9,
           backgroundColor: active ? thumbColor : '#FFFFFF',
           alignSelf: active ? 'flex-end' : 'flex-start',
           shadowColor: '#1B2A4B',
@@ -4491,12 +4749,12 @@ function BinderHeroInfoCard({
   return (
     <View style={{
       flex: 1,
-      minHeight: 54,
+      minHeight: 48,
       borderRadius: 15,
       borderWidth: 1,
       borderColor: active ? theme.colors.primary + '32' : theme.colors.border,
       backgroundColor: active ? theme.colors.primary + '08' : theme.colors.surface,
-      paddingVertical: 8,
+      paddingVertical: 6,
       paddingHorizontal: 10,
       flexDirection: 'row',
       alignItems: 'center',
@@ -4505,7 +4763,7 @@ function BinderHeroInfoCard({
     }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, minWidth: 0, justifyContent: centered ? 'center' : 'flex-start' }}>
         {icon ? (
-          <View style={{ width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 30, height: 30, alignItems: 'center', justifyContent: 'center' }}>
             {icon}
           </View>
         ) : null}
@@ -4514,8 +4772,8 @@ function BinderHeroInfoCard({
             <Text
               style={{
                 color: theme.colors.text,
-                fontSize: 14,
-                lineHeight: 18,
+                fontSize: 13.5,
+                lineHeight: 17,
                 fontWeight: '900',
                 flexShrink: 1,
                 textAlign: centered ? 'center' : 'left',
@@ -4549,7 +4807,7 @@ function BinderHeroInfoCard({
         </View>
       </View>
       {trailing ? (
-        <View style={{ width: 38, minHeight: 28, alignItems: 'flex-end', justifyContent: 'center' }}>
+        <View style={{ width: 40, minHeight: 28, alignItems: 'flex-end', justifyContent: 'center' }}>
           {trailing}
         </View>
       ) : null}
@@ -4560,9 +4818,18 @@ function BinderHeroInfoCard({
 function Row({ label, value }: { label: string; value: string }) {
   const { theme } = useTheme();
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
-      <Text style={{ color: theme.colors.textSoft }}>{label}</Text>
-      <Text style={{ color: theme.colors.text, fontWeight: '900' }}>{value}</Text>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, paddingVertical: 6 }}>
+      <Text style={{ color: theme.colors.textSoft, flex: 1, minWidth: 0 }} numberOfLines={1}>
+        {label}
+      </Text>
+      <Text
+        style={{ color: theme.colors.text, fontWeight: '900', maxWidth: '46%', textAlign: 'right' }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.68}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
@@ -4635,6 +4902,10 @@ function MasterVariantIcon({
   const purple = '#4B22A2';
   const isEnergyReverse = variant === 'reverseHoloEnergy';
   const isPokeballReverse = variant === 'reverseHoloPokeball';
+  const isSpeckled = variant === 'speckledHolofoil';
+  const isLineHolo = variant === 'lineHolofoil';
+  const isMasterBall = variant === 'masterBallPatternHolofoil';
+  const isStamped = variant === 'stampedHolofoil';
   const isFirstEdition = variant === '1stEditionNormal' || variant === '1stEditionHolofoil';
   const isHolo = kind === 'holo';
   const isReverse = kind === 'reverse';
@@ -4672,6 +4943,112 @@ function MasterVariantIcon({
         }}>
           <View style={{ position: 'absolute', left: 0, right: 0, height: 2, backgroundColor: purple }} />
           <View style={{ width: 6, height: 6, borderRadius: 3, borderWidth: 2, borderColor: purple, backgroundColor: '#FFFFFF' }} />
+        </View>
+      </View>
+    );
+  }
+
+  if (isSpeckled) {
+    const speckles = [
+      { left: width * 0.25, top: height * 0.22 },
+      { left: width * 0.58, top: height * 0.18 },
+      { left: width * 0.42, top: height * 0.44 },
+      { left: width * 0.7, top: height * 0.62 },
+      { left: width * 0.22, top: height * 0.7 },
+    ];
+
+    return (
+      <LinearGradient
+        colors={['#FFF1A8', '#FFD7F7', '#D7F5FF', '#FFFFFF']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={baseStyle}
+      >
+        {speckles.map((speckle, index) => (
+          <View
+            key={`speckle-${index}`}
+            style={{
+              position: 'absolute',
+              left: speckle.left,
+              top: speckle.top,
+              width: Math.max(3, iconSize - 7),
+              height: Math.max(3, iconSize - 7),
+              borderRadius: 999,
+              backgroundColor: purple,
+              opacity: 0.78,
+            }}
+          />
+        ))}
+        <Ionicons name="sparkles" size={Math.max(8, iconSize - 1)} color={purple} />
+      </LinearGradient>
+    );
+  }
+
+  if (isLineHolo) {
+    return (
+      <LinearGradient
+        colors={['#DDF8F3', '#F4EDFF', '#FFF3B8']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={baseStyle}
+      >
+        {[0, 1, 2, 3].map((line) => (
+          <View
+            key={`line-${line}`}
+            style={{
+              position: 'absolute',
+              left: 4,
+              right: 4,
+              top: 6 + line * Math.max(4, iconSize - 5),
+              height: 1.5,
+              borderRadius: 999,
+              backgroundColor: purple,
+              opacity: 0.64,
+            }}
+          />
+        ))}
+      </LinearGradient>
+    );
+  }
+
+  if (isMasterBall) {
+    return (
+      <LinearGradient
+        colors={['#F1DEFF', '#FFFFFF', '#FFE6A8']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={baseStyle}
+      >
+        <View style={{
+          width: iconSize + 10,
+          height: iconSize + 10,
+          borderRadius: 999,
+          borderWidth: 2,
+          borderColor: purple,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(255,255,255,0.52)',
+        }}>
+          <Text style={{ color: purple, fontSize: Math.max(8, iconSize - 2), fontWeight: '900' }}>M</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  if (isStamped) {
+    return (
+      <View style={[baseStyle, { backgroundColor: '#FFF2F6', borderColor: '#FFBCD4' }]}>
+        <View style={{
+          width: iconSize + 9,
+          height: iconSize + 5,
+          borderRadius: 3,
+          borderWidth: 2,
+          borderColor: '#9A2753',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transform: [{ rotate: '-8deg' }],
+        }}>
+          <Ionicons name="pricetag" size={Math.max(8, iconSize - 2)} color="#9A2753" />
         </View>
       </View>
     );

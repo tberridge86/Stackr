@@ -17,7 +17,7 @@ import Svg, { Defs, LinearGradient as SvgLinearGradient, Path, Stop } from 'reac
 import { Text } from './Text';
 import { useTheme } from './theme-context';
 import { numericTextStyle, tabularNumberStyle, typeScale } from '../lib/typography';
-import type { MintyInsight, MintyInsightFeedback } from '../lib/mintyInsights';
+import type { MintyEvidenceSource, MintyInsight, MintyInsightFeedback } from '../lib/mintyInsights';
 
 type CurrencyCode = 'GBP' | 'USD' | 'EUR';
 type TrendRange = '7D' | '30D';
@@ -38,6 +38,7 @@ export type ValueTrackerCardProps = {
   isLoading?: boolean;
   error?: string | null;
   onPress?: () => void;
+  onMintyAction?: (insight: MintyInsight) => void;
   onMintyInsightFeedback?: (feedback: MintyInsightFeedback, insight: MintyInsight) => void;
   onMintySettingsPress?: () => void;
 };
@@ -78,6 +79,51 @@ const formatSignedPercent = (value: number) => {
   const safeValue = Number.isFinite(value) ? value : 0;
   const prefix = safeValue > 0 ? '+' : '';
   return `${prefix}${safeValue.toFixed(1)}%`;
+};
+
+const formatPlainPercentRange = (range: [number, number]) =>
+  `${formatSignedPercent(range[0])} to ${formatSignedPercent(range[1])}`;
+
+const stripConfidenceCopy = (value?: string | null) =>
+  String(value ?? '')
+    .replace(/\s*Confidence:\s*(Very High|High|Moderate|Medium|Low|Very Low)\.?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const getPrimaryActionLabel = (insight: MintyInsight) =>
+  insight.action_label
+    ?? insight.recommended_actions?.find((action) => action.primary)?.label
+    ?? insight.recommended_actions?.[0]?.label
+    ?? insight.recommendation_label
+    ?? 'Open recommendation';
+
+const formatMintyRefreshTime = (value?: string | null) => {
+  const timestamp = value ? new Date(value).getTime() : NaN;
+  if (!Number.isFinite(timestamp)) return 'Data refreshed: just now';
+  const diffMs = Date.now() - timestamp;
+  if (diffMs < 60 * 1000) return 'Data refreshed: just now';
+  if (diffMs < 60 * 60 * 1000) {
+    const minutes = Math.max(1, Math.round(diffMs / (60 * 1000)));
+    return `Data refreshed: ${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+  }
+  if (diffMs < 24 * 60 * 60 * 1000) {
+    const hours = Math.max(1, Math.round(diffMs / (60 * 60 * 1000)));
+    return `Data refreshed: ${hours} hour${hours === 1 ? '' : 's'} ago`;
+  }
+  return `Data refreshed: ${new Date(timestamp).toLocaleString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })}`;
+};
+
+const evidenceSourceLabel = (source?: MintyEvidenceSource) => {
+  if (source === 'market') return 'Market';
+  if (source === 'personal') return 'Personal';
+  if (source === 'behaviour') return 'Behaviour';
+  if (source === 'fallback') return 'Fallback';
+  return 'Collection';
 };
 
 const getFiniteTrend = (trendData?: number[]) =>
@@ -236,6 +282,7 @@ export function ValueTrackerCard({
   onPress,
   onEmptyAction,
   onRetry,
+  onMintyAction,
   onMintyInsightFeedback,
   onMintySettingsPress,
 }: ValueTrackerCardProps & ValueTrackerActionProps) {
@@ -254,7 +301,7 @@ export function ValueTrackerCard({
   const displayChange = Number.isFinite(absoluteChange ?? NaN) ? absoluteChange! : derivedAbsoluteChange;
   const displayPercent = Number.isFinite(percentageChange ?? NaN) ? percentageChange! : derivedPercent;
   const signalDirection = getChangeDirection(displayChange, displayPercent);
-  const signalWord = signalDirection > 0 ? 'lift' : signalDirection < 0 ? 'pressure' : 'steady movement';
+  const signalWord = signalDirection > 0 ? 'up or holding steady' : signalDirection < 0 ? 'down a little' : 'mostly steady';
   const changeIcon = signalDirection > 0 ? 'arrow-up' : signalDirection < 0 ? 'arrow-down' : 'remove';
   const changeColor = '#6938F5';
   const changeBackground = '#F7F3FF';
@@ -267,6 +314,7 @@ export function ValueTrackerCard({
   const marketRefresh = React.useRef(new Animated.Value(1)).current;
   const hasAnimatedMarketRefresh = React.useRef(false);
   const [mintyInsightOpen, setMintyInsightOpen] = React.useState(false);
+  const fallbackMintyGeneratedAt = React.useMemo(() => new Date().toISOString(), []);
   const marketRefreshKey = useMemo(
     () => [
       Math.round((Number.isFinite(totalValue) ? totalValue : 0) * 100),
@@ -288,10 +336,27 @@ export function ValueTrackerCard({
   const showTrendPanel = hasValue && !isLoading && !error;
   const fallbackInsight: MintyInsight = {
     id: 'collection-market-fallback',
-    title: 'Collection market read',
+    title: 'Collection check-in',
     body: ownedCount && ownedCount > 0
-      ? `Your tracked collection is showing ${signalWord}. I will prioritise owned cards, chase targets and binder gaps before broad market noise. Confidence: ${Math.abs(displayPercent) < 1 ? 'Low' : 'Medium'}.`
-      : `Start adding owned or wanted cards and I can make this market read specific to your collection goals. Confidence: Low.`,
+      ? `Your tracked collection is ${signalWord}. I will focus on the cards you own, the cards you want, and binder gaps before broader market noise.`
+      : 'Start adding owned or wanted cards and I can make this advice specific to your collection goals.',
+    action_label: ownedCount && ownedCount > 0 ? 'Review collection' : 'Discover cards',
+    explanation: ownedCount && ownedCount > 0
+      ? `Your tracked collection is ${signalWord}. I will focus on the cards you own, the cards you want, and binder gaps before broader market noise.`
+      : 'Start adding owned or wanted cards and I can make this advice specific to your collection goals.',
+    evidence: [
+      {
+        type: 'neutral',
+        label: ownedCount && ownedCount > 0 ? 'Collection signal' : 'Getting started',
+        evidence: ownedCount && ownedCount > 0
+          ? `${ownedCount} owned card${ownedCount === 1 ? '' : 's'} are available for Minty to compare.`
+          : 'No owned, watched, or chase cards are linked yet.',
+        source: ownedCount && ownedCount > 0 ? 'collection' : 'fallback',
+      },
+    ],
+    data_refreshed_at: fallbackMintyGeneratedAt,
+    insight_category: 'collection_discovery',
+    source_context: ownedCount && ownedCount > 0 ? 'collection' : 'fallback',
     confidence: Math.abs(displayPercent) < 1 ? 'Low' : 'Medium',
     confidence_score: Math.abs(displayPercent) < 1 ? 32 : 56,
     personalisation_reason: ownedCount && ownedCount > 0
@@ -317,26 +382,39 @@ export function ValueTrackerCard({
     },
   };
   const displayInsight = mintyInsight ?? fallbackInsight;
+  const displayExplanation = stripConfidenceCopy(displayInsight.explanation ?? displayInsight.body) || displayInsight.title;
+  const displayActionLabel = getPrimaryActionLabel(displayInsight);
+  const mintyRefreshLabel = formatMintyRefreshTime(displayInsight.data_refreshed_at ?? displayInsight.generated_at);
+  const evidenceSignals = displayInsight.evidence?.length
+    ? displayInsight.evidence
+    : [
+        ...(displayInsight.supporting_signals ?? []),
+        ...(displayInsight.opportunities ?? []),
+        ...(displayInsight.risks ?? []),
+      ].slice(0, 4).map((signal) => ({
+        ...signal,
+        source: 'market' as const,
+      }));
   const confidenceColor = displayInsight.confidence === 'High'
     ? '#0E9F6E'
     : displayInsight.confidence === 'Medium'
       ? '#A15C07'
       : '#7A3CFF';
-  const showInsightRow = hasValue && !isLoading && !error;
+  const showInsightRow = !isLoading && !error;
   const relatedSignals = [...displayInsight.related_cards, ...displayInsight.related_products].filter(Boolean);
   const mintySourceLabel = mintyInsightUpdating
     ? 'Updating'
     : displayInsight.is_api_backed
-      ? 'API-backed'
+      ? 'Fresh read'
       : mintyInsightError
-        ? 'Fallback'
+        ? 'Quick read'
         : null;
   const forecastLine = displayInsight.forecast
     ? [
-      displayInsight.forecast.horizonLabel ? `Horizon: ${displayInsight.forecast.horizonLabel}.` : null,
-      displayInsight.forecast.catalysts.length ? `Catalyst: ${displayInsight.forecast.catalysts[0]}.` : null,
+      displayInsight.forecast.horizonLabel ? `Timeframe: ${displayInsight.forecast.horizonLabel}.` : null,
+      displayInsight.forecast.catalysts.length ? `What could move it: ${displayInsight.forecast.catalysts[0]}.` : null,
       displayInsight.forecast.estimatedImpactPctRange
-        ? `Watch band ${displayInsight.forecast.estimatedImpactPctRange[0]}% to ${displayInsight.forecast.estimatedImpactPctRange[1]}%.`
+        ? `Rough guide: ${formatPlainPercentRange(displayInsight.forecast.estimatedImpactPctRange)}.`
         : null,
       displayInsight.forecast.caveat,
     ].filter(Boolean).join(' ')
@@ -557,8 +635,9 @@ export function ValueTrackerCard({
               setMintyInsightOpen(true);
             }}
             accessibilityRole="button"
-            accessibilityLabel={`Open full Minty insight. ${displayInsight.title}`}
-            style={[styles.vaultInsightRow, isCompactLayout && styles.vaultInsightRowCompact, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
+            accessibilityLabel={`Open Minty advice. ${displayInsight.title}`}
+            accessibilityHint="Opens the full Minty recommendation and supporting signals."
+            style={[styles.vaultInsightRow, isCompactLayout && styles.vaultInsightRowCompact, { backgroundColor: theme.colors.card, borderColor: `${theme.colors.primary}24` }]}
           >
             <View style={styles.vaultInsightIcon}>
               <Image source={MINTY_REV2_SOURCE} style={styles.vaultInsightMascot} resizeMode="contain" />
@@ -578,11 +657,13 @@ export function ValueTrackerCard({
               <Text style={[styles.vaultInsightHeadline, { color: theme.colors.text }]} numberOfLines={1}>
                 {displayInsight.title}
               </Text>
-              <Text style={[styles.vaultInsightCopy, { color: theme.colors.textSoft }]} numberOfLines={displayInsight.forecast ? 3 : 2}>
-                {displayInsight.body}
+              <Text style={[styles.vaultInsightCopy, { color: theme.colors.textSoft }]} numberOfLines={2}>
+                {displayExplanation}
               </Text>
               <View style={styles.vaultInsightReadRow}>
-                <Text style={[styles.vaultInsightReadText, { color: theme.colors.primary }]}>Read full message</Text>
+                <Text style={[styles.vaultInsightReadText, { color: theme.colors.primary }]} numberOfLines={1}>
+                  Action: {displayActionLabel}
+                </Text>
                 <Ionicons name="chevron-forward" size={13} color={theme.colors.primary} />
               </View>
             </View>
@@ -605,11 +686,6 @@ export function ValueTrackerCard({
                     <View style={[styles.vaultConfidencePill, { backgroundColor: `${confidenceColor}14`, borderColor: `${confidenceColor}44` }]}>
                       <Text style={[styles.vaultConfidenceText, { color: confidenceColor }]}>{displayInsight.confidence}</Text>
                     </View>
-                    {displayInsight.confidence_score != null ? (
-                      <Text style={[styles.vaultInsightLabel, { color: theme.colors.textSoft }]}>
-                        {displayInsight.confidence_score}% confidence
-                      </Text>
-                    ) : null}
                   </View>
                   <Text style={[styles.mintyModalTitle, { color: theme.colors.text }]}>{displayInsight.title}</Text>
                 </View>
@@ -625,37 +701,77 @@ export function ValueTrackerCard({
               </View>
 
               <Text style={[styles.mintyModalBody, { color: theme.colors.textSoft }]}>
-                {displayInsight.body}
+                {displayExplanation}
               </Text>
 
-              {displayInsight.recommendation_label ? (
-                <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Recommendation</Text>
-                  <Text style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
-                    {displayInsight.recommendation_label}
-                    {displayInsight.recommendation_score != null ? ` - Score ${displayInsight.recommendation_score}/100` : ''}
-                    {displayInsight.confidence_label ? ` - ${displayInsight.confidence_label} confidence` : ''}
-                  </Text>
-                </View>
-              ) : null}
+              <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Recommended action</Text>
+                <Text style={[styles.mintyActionCopy, { color: theme.colors.textSoft }]}>
+                  {displayActionLabel}
+                </Text>
+                <TouchableOpacity
+                  activeOpacity={0.84}
+                  onPress={() => {
+                    setMintyInsightOpen(false);
+                    onMintyAction?.(displayInsight);
+                  }}
+                  style={styles.mintyPrimaryAction}
+                  accessibilityRole="button"
+                  accessibilityLabel={displayActionLabel}
+                >
+                  <Text style={styles.mintyPrimaryActionText} numberOfLines={1}>{displayActionLabel}</Text>
+                  <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
 
-              {displayInsight.opportunities?.length ? (
+              <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Evidence</Text>
+                {evidenceSignals.length ? (
+                  evidenceSignals.slice(0, 4).map((item) => (
+                    <View key={`${item.label}:${item.evidence}`} style={styles.mintyEvidenceItem}>
+                      <View style={styles.mintyEvidenceLabelRow}>
+                        <Text style={[styles.mintyEvidenceLabel, { color: theme.colors.text }]} numberOfLines={1}>{item.label}</Text>
+                        <Text style={[styles.mintyEvidenceSource, { color: theme.colors.primary }]} numberOfLines={1}>
+                          {evidenceSourceLabel(item.source)}
+                        </Text>
+                      </View>
+                      <Text style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
+                        {item.evidence}
+                        {item.confidenceLabel ? ` Confidence: ${item.confidenceLabel}.` : ''}
+                      </Text>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
+                    Minty is using collection context only until more market signals are available.
+                  </Text>
+                )}
+              </View>
+
+              <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Confidence and freshness</Text>
+                <Text style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
+                  Confidence: {displayInsight.confidence}. {mintyRefreshLabel}.
+                </Text>
+              </View>
+
+              {!displayInsight.evidence?.length && displayInsight.opportunities?.length ? (
                 <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Opportunities</Text>
+                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>What looks good</Text>
                   {displayInsight.opportunities.slice(0, 3).map((item) => (
                     <Text key={`${item.label}:${item.evidence}`} style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
-                      {item.label}: {item.evidence} Signal confidence: {item.confidenceLabel}.
+                      {item.label}: {item.evidence} Confidence: {item.confidenceLabel}.
                     </Text>
                   ))}
                 </View>
               ) : null}
 
-              {displayInsight.risks?.length ? (
+              {!displayInsight.evidence?.length && displayInsight.risks?.length ? (
                 <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Risks</Text>
+                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>What to be careful about</Text>
                   {displayInsight.risks.slice(0, 3).map((item) => (
                     <Text key={`${item.label}:${item.evidence}`} style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
-                      {item.label}: {item.evidence} Signal confidence: {item.confidenceLabel}.
+                      {item.label}: {item.evidence} Confidence: {item.confidenceLabel}.
                     </Text>
                   ))}
                 </View>
@@ -663,13 +779,13 @@ export function ValueTrackerCard({
 
               {forecastLine ? (
                 <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Market watch</Text>
+                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>What could move it</Text>
                   <Text style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>{forecastLine}</Text>
                 </View>
               ) : null}
 
               <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Why Minty picked this</Text>
+                <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Why this matters</Text>
                 <Text style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
                   {displayInsight.why_minty_picked_this?.length
                     ? displayInsight.why_minty_picked_this.join(' ')
@@ -679,16 +795,16 @@ export function ValueTrackerCard({
 
               {displayInsight.price_outlook ? (
                 <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Price Outlook</Text>
+                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>What may happen next</Text>
                   <Text style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
-                    {displayInsight.price_outlook.label}. Outlook confidence: {displayInsight.price_outlook.confidenceLabel}.
+                    {displayInsight.price_outlook.label}. Confidence: {displayInsight.price_outlook.confidenceLabel}.
                   </Text>
                 </View>
               ) : null}
 
               {displayInsight.data_limitations?.length ? (
                 <View style={[styles.mintyModalInfoBox, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>Data limits</Text>
+                  <Text style={[styles.mintyModalSectionTitle, { color: theme.colors.text }]}>What Minty is less sure about</Text>
                   <Text style={[styles.mintyModalMeta, { color: theme.colors.textSoft }]}>
                     {displayInsight.data_limitations.join(' ')}
                   </Text>
@@ -929,21 +1045,26 @@ const styles = StyleSheet.create({
   },
   vaultInsightRow: {
     minHeight: 64,
-    marginTop: 12,
+    marginTop: 10,
     borderRadius: 18,
     borderWidth: 1,
-    padding: 16,
+    padding: 14,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 12,
+    gap: 10,
+    shadowColor: '#6136F5',
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 2,
   },
   vaultInsightRowCompact: {
-    padding: 14,
-    gap: 10,
+    padding: 12,
+    gap: 9,
   },
   vaultInsightIcon: {
-    width: 66,
-    height: 66,
+    width: 58,
+    height: 58,
     borderRadius: 24,
     backgroundColor: 'transparent',
     alignItems: 'center',
@@ -955,8 +1076,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   vaultInsightMascot: {
-    width: 80,
-    height: 80,
+    width: 72,
+    height: 72,
   },
   vaultInsightTitleRow: {
     flexDirection: 'row',
@@ -984,7 +1105,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     fontWeight: '600',
-    marginTop: 2,
+    marginTop: 1,
   },
   vaultInsightHeadline: {
     fontSize: 13,
@@ -996,7 +1117,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 4,
-    marginTop: 6,
+    marginTop: 5,
   },
   vaultInsightReadText: {
     fontSize: 11,
@@ -1008,13 +1129,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(28,32,52,0.42)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
+    padding: 14,
   },
   mintyModalCard: {
     width: '100%',
     maxWidth: 390,
-    maxHeight: '82%',
-    borderRadius: 24,
+    maxHeight: '86%',
+    borderRadius: 26,
     borderWidth: 1,
     overflow: 'hidden',
     shadowColor: '#6136F5',
@@ -1024,8 +1145,8 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   mintyModalContent: {
-    padding: 18,
-    paddingBottom: 20,
+    padding: 16,
+    paddingBottom: 18,
   },
   mintyModalHeader: {
     flexDirection: 'row',
@@ -1079,6 +1200,51 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
     fontWeight: '700',
+  },
+  mintyActionCopy: {
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: '900',
+    marginBottom: 10,
+  },
+  mintyPrimaryAction: {
+    minHeight: 44,
+    borderRadius: 999,
+    backgroundColor: '#6938F5',
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+  },
+  mintyPrimaryActionText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '900',
+    maxWidth: '86%',
+  },
+  mintyEvidenceItem: {
+    gap: 3,
+    marginTop: 8,
+  },
+  mintyEvidenceLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  mintyEvidenceLabel: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '900',
+  },
+  mintyEvidenceSource: {
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '900',
+    textTransform: 'uppercase',
   },
   mintyRelatedWrap: {
     flexDirection: 'row',

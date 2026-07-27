@@ -5,12 +5,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   BackHandler,
   Image,
+  type ImageSourcePropType,
+  InputAccessoryView,
   Keyboard,
   KeyboardAvoidingView,
   Modal,
@@ -39,22 +42,40 @@ import {
   PrimaryFooter,
   PrinterSelector,
   ProtectionTierReveal,
+  STACKR_LISTING_INPUT_ACCESSORY_ID,
   StackrTextInput,
   ToggleCard,
   ValueComparisonCard,
   VerificationStatusTimeline,
   XimilarAnalysisStatus,
 } from '../../components/listing/CreateListingFlowComponents';
+import {
+  GuidedListingCamera,
+  assessGuidedCaptureQuality,
+  type GuidedCaptureQuality,
+  type GuidedCaptureResult,
+} from '../../components/listing/GuidedListingCamera';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SLAB_GRADE_SHORTCUTS, SLAB_GRADING_COMPANIES, formatSlabCompanyLabel } from '../../components/SlabStickerLabel';
-import { StackrCardActionIcon, StackrPageTitle, StackrScreen } from '../../components/StackrScreen';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
+import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { StackrCardActionIcon, StackrScreen } from '../../components/StackrScreen';
+import { StackrImage } from '../../components/StackrImage';
 import { Text } from '../../components/Text';
 import { useTheme } from '../../components/theme-context';
 import { assertCanCommitQuantity, fetchUserCardAvailability } from '../../lib/cardOwnership';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import type { CapturedFrame, CaptureRect } from '../../lib/captureGeometry';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchEbayPrice } from '../../lib/ebay';
-import { listingCategoryIcons } from '../../lib/listingCategoryIcons';
+import { fetchCachedPokemonCardDetails } from '../../lib/marketSearchDataCache';
+import { fetchOwnedCardRows } from '../../lib/ownership';
+import {
+  searchForeignPokemonCards,
+  type ForeignPokemonCard,
+  type ForeignPokemonCardBrief,
+  type ForeignPokemonLanguageCode,
+} from '../../lib/foreignPokemon';
 import { CREATE_LISTING_DRAFT_KEY } from '../../lib/listingDrafts';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
 import {
@@ -71,21 +92,41 @@ import {
   formatCurrency,
   formatProtectionTier,
   getCategoryEvidenceRequirements,
-  getEvidenceRequirementsForTier,
   getListingProgressLabels,
   getListingProgressStages,
   getMissingListingRequirements,
   getRequiredCategoryEvidence,
-  getRequiredEvidenceForTier,
   getVerificationRequirements,
   type EvidenceSlotKey,
   type ListingFlowStage,
   type ListingProtectionTier,
   type MissingRequirement,
 } from '../../lib/listingFlow';
+import {
+  extractCertificationNumberFromText,
+  getCaptureRequirementProgress,
+  getCaptureRequirementsForListing,
+  getCompletedEvidenceKeys,
+  getRequirementById,
+  type CaptureRequirement,
+  type CaptureType,
+} from '../../lib/listingCaptureRequirements';
+import {
+  isLikelyDuplicateListingPhoto,
+  type ListingPhotoIssueSeverity,
+  type ListingPhotoQualityIssue,
+  type ListingPhotoSource,
+  type ListingPhotoValidationMetrics,
+} from '../../lib/listingPhotoValidation';
 import { getProductPriceWithFallback, searchMarketProducts, type MarketProduct, type ProductLookupType } from '../../lib/productSearch';
-import { getPokemonCardImageUrls } from '../../lib/pokemonTcg';
-import { fetchPokeTraceCardPrice } from '../../lib/pricing';
+import { getPokemonCardImageUrls, getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from '../../lib/pokemonTcg';
+import { fetchPokeTraceCardPrice, getPreferredMarketPrice } from '../../lib/pricing';
+import { buildScanRouteParamsForIntent } from '../../lib/scanIntent';
+import {
+  assessCardCenteringFromJpeg,
+  formatCardCenteringAssessment,
+  type CardCenteringAssessment,
+} from '../../lib/cardCenteringAssessment';
 import {
   SHIPPO_DELIVERY_METHODS,
   getShippoDeliveryMethod,
@@ -115,6 +156,7 @@ type FlowStep =
 type IdentificationMethod = 'scan' | 'search' | 'collection' | 'manual';
 type ListingMode = 'sell' | 'trade' | 'both';
 type ListingSubjectType = ListingCategoryKey;
+type CatalogueProductListingSubjectType = Extract<ListingSubjectType, ProductLookupType>;
 type PrinterState = 'idle' | 'searching' | 'unavailable' | 'printed';
 
 type SelectedCard = {
@@ -128,6 +170,9 @@ type SelectedCard = {
   image_large: string | null;
   language?: string | null;
   variant?: string | null;
+  ownedQuantity?: number;
+  estimatedValue?: number | null;
+  estimatedValueSource?: string | null;
   raw_data?: Record<string, any> | null;
 };
 
@@ -152,22 +197,63 @@ type PriceState = {
 
 type EvidencePhoto = {
   uri: string;
+  sourceUri?: string | null;
+  previewUri?: string | null;
   base64?: string | null;
+  width?: number;
+  height?: number;
+  crop?: CaptureRect | null;
+  captureFrame?: CapturedFrame | null;
+  requirementId?: string;
+  requirementLabel?: string;
+  captureType?: string;
+  evidenceKey?: EvidenceSlotKey;
+  captureSource?: ListingPhotoSource;
+  localStatus?: 'saved_locally' | 'uploading' | 'uploaded' | 'upload_failed';
+  barcodeData?: string | null;
+  barcodeType?: string | null;
+  ocrText?: string | null;
+  certificationCandidate?: string | null;
   quality: {
+    purpose?: string;
+    purposeLabel?: string;
     fullCardVisible: boolean;
     steady: boolean;
     lighting: boolean;
     singleCard: boolean;
+    glareOk?: boolean;
+    warning?: string | null;
+    issues?: ListingPhotoQualityIssue[];
+    highestPriorityIssue?: ListingPhotoQualityIssue | null;
+    severity?: ListingPhotoIssueSeverity;
+    requiresRetake?: boolean;
+    canOverride?: boolean;
+    overrideAccepted?: boolean;
+    overrideReason?: string | null;
+    imageFingerprint?: string | null;
+    metrics?: ListingPhotoValidationMetrics | null;
   };
 };
 
-type EvidencePhotoMap = Partial<Record<EvidenceSlotKey, EvidencePhoto>>;
+type EvidencePhotoMap = Partial<Record<string, EvidencePhoto>>;
+
+type SlabCertification = {
+  grader: string;
+  grade?: string;
+  certificationNumber: string;
+  captureMethod: 'qr' | 'barcode' | 'ocr' | 'manual';
+  confidence?: number;
+  labelImageId: string;
+  verifiedByUser: boolean;
+  capturedAt?: string;
+};
 
 type XimilarEstimate = {
   condition: string | null;
   confidence: 'High confidence' | 'Moderate confidence' | 'Limited confidence' | null;
   breakdown: { label: string; value: string }[];
   rawFinalScore?: number | null;
+  centeringAssessment?: CardCenteringAssessment | null;
 };
 
 type DraftState = {
@@ -199,6 +285,7 @@ type DraftState = {
   quantity: string;
   gradingCompany: string;
   grade: string;
+  slabCertification: SlabCertification | null;
   evidencePhotos: EvidencePhotoMap;
   ximilarEstimate: XimilarEstimate | null;
   ximilarStatus: 'idle' | 'processing' | 'complete' | 'failed';
@@ -219,16 +306,29 @@ type ListingMediaItem = {
   label: string;
   url: string;
   required: boolean;
+  metadata?: Record<string, any>;
 };
 
 const DRAFT_KEY = CREATE_LISTING_DRAFT_KEY;
 const AUTO_SAVE_DELAY_MS = 450;
 
 const LISTING_CATEGORIES = getListingCategories();
-const PRODUCT_TYPES: ListingSubjectType[] = LISTING_CATEGORIES.map((category) => category.key);
 const PRODUCT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
   LISTING_CATEGORIES.map((category) => [category.key, category.title])
 );
+
+const LISTING_LANGUAGE_OPTIONS: { key: ForeignPokemonLanguageCode; label: string; shortLabel: string }[] = [
+  { key: 'en', label: 'English', shortLabel: 'EN' },
+  { key: 'ja', label: 'Japanese', shortLabel: 'JP' },
+  { key: 'fr', label: 'French', shortLabel: 'FR' },
+  { key: 'de', label: 'German', shortLabel: 'DE' },
+  { key: 'es', label: 'Spanish', shortLabel: 'ES' },
+  { key: 'it', label: 'Italian', shortLabel: 'IT' },
+  { key: 'pt-br', label: 'Portuguese', shortLabel: 'PT' },
+  { key: 'zh-tw', label: 'Traditional Chinese', shortLabel: 'TW' },
+  { key: 'id', label: 'Indonesian', shortLabel: 'ID' },
+  { key: 'th', label: 'Thai', shortLabel: 'TH' },
+];
 
 const DEFAULT_MANUAL_IDENTITY: ManualIdentity = {
   cardName: '',
@@ -264,16 +364,28 @@ const PROTECTION_TIER_RANK: Record<ListingProtectionTier, number> = {
   gold: 3,
 };
 
-const PROTECTION_TIER_ICONS: Record<ListingProtectionTier, keyof typeof Ionicons.glyphMap> = {
-  bronze: 'shield-outline',
-  silver: 'shield-half-outline',
-  gold: 'shield-checkmark-outline',
+const PROTECTION_TIER_ARTWORK: Record<ListingProtectionTier, ImageSourcePropType> = {
+  bronze: require('../../assets/rev2/10-market-trade/protection-tiers/Bronze.png'),
+  silver: require('../../assets/rev2/10-market-trade/protection-tiers/silver.png'),
+  gold: require('../../assets/rev2/10-market-trade/protection-tiers/gold.png'),
 };
 
 const PROTECTION_TIER_CHOICE_COPY: Record<ListingProtectionTier, string> = {
   bronze: 'Fastest evidence flow for lower-value cards.',
   silver: 'AI-assisted condition evidence. Buyer or trader agreement is required when Silver is manually selected.',
   gold: 'Full Gold preparation and AGS verification status only after confirmation.',
+};
+
+const SUCCESS_TIER_ARTWORK: Record<ListingProtectionTier, ImageSourcePropType> = {
+  bronze: require('../../assets/rev2/10-market-trade/protection-tiers/Bronze.png'),
+  silver: require('../../assets/rev2/10-market-trade/protection-tiers/silver.png'),
+  gold: require('../../assets/rev2/10-market-trade/protection-tiers/gold.png'),
+};
+
+const SUCCESS_TIER_TONES: Record<ListingProtectionTier, string> = {
+  bronze: '#B7791F',
+  silver: '#64748B',
+  gold: '#D97706',
 };
 
 const SEALED_STATUS_OPTIONS = [
@@ -315,7 +427,7 @@ const parseCurrency = (value: string) => {
 };
 
 const isCardSubject = (type: ListingSubjectType) => isCardCatalogueCategory(type);
-const canUseProductCatalogue = (type: ListingSubjectType): type is ProductLookupType => {
+const canUseProductCatalogue = (type: ListingSubjectType): type is CatalogueProductListingSubjectType => {
   const category = getListingCategoryConfig(type);
   return category.catalogueLookup === 'sealed_product' && Boolean(category.catalogueProductType);
 };
@@ -345,14 +457,14 @@ const slugify = (value: string) =>
 
 const getCardImageUrl = (card: SelectedCard | null) => {
   if (!card) return null;
+  const storedImage = card.image_large ?? card.image_small ?? card.raw_data?.images?.large ?? card.raw_data?.images?.small ?? null;
+  const isForeignProviderCard = Boolean(card.raw_data?.external_ids?.tcgdex || card.raw_data?.tcgdex || String(card.id).includes(':'));
+  if (isForeignProviderCard && storedImage) return storedImage;
   const official = getPokemonCardImageUrls(card.id, card.set_id, card.number);
   return (
     official.large ??
     official.small ??
-    card.image_large ??
-    card.image_small ??
-    card.raw_data?.images?.large ??
-    card.raw_data?.images?.small ??
+    storedImage ??
     null
   );
 };
@@ -403,9 +515,189 @@ function mapCardRow(row: any): SelectedCard {
     rarity: row.rarity ?? row.raw_data?.rarity ?? null,
     image_small: row.image_small ?? row.raw_data?.images?.small ?? null,
     image_large: row.image_large ?? row.raw_data?.images?.large ?? null,
-    language: row.raw_data?.language ?? null,
+    language: row.language ?? row.raw_data?.language ?? null,
     variant: row.raw_data?.subtypes?.join(', ') ?? null,
+    ownedQuantity: row.ownedQuantity ?? row.owned_quantity ?? undefined,
+    estimatedValue: row.estimatedValue ?? null,
+    estimatedValueSource: row.estimatedValueSource ?? null,
     raw_data: row.raw_data ?? null,
+  };
+}
+
+function getTcgFallbackValue(raw: any): number | null {
+  const prices = raw?.tcgplayer?.prices;
+  if (!prices) return null;
+  for (const key of ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal']) {
+    const value = prices[key]?.market ?? prices[key]?.mid ?? prices[key]?.low;
+    if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;
+  }
+  for (const entry of Object.values(prices) as any[]) {
+    const value = entry?.market ?? entry?.mid ?? entry?.low;
+    if (typeof value === 'number') return Math.round(value * USD_TO_GBP * 100) / 100;
+  }
+  return null;
+}
+
+function getCardmarketFallbackValue(raw: any): number | null {
+  const prices = raw?.cardmarket?.prices;
+  const value = prices?.trendPrice ?? prices?.averageSellPrice ?? prices?.avg30 ?? prices?.avg7 ?? prices?.lowPrice;
+  return typeof value === 'number' ? Math.round(value * EUR_TO_GBP * 100) / 100 : null;
+}
+
+function getOwnedCardSearchText(card: SelectedCard) {
+  return [
+    card.name,
+    card.set_name,
+    card.set_id,
+    card.number,
+    card.rarity,
+    getPokemonCardLanguageLabel(card.language),
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function sortOwnedCardsByValue(cards: SelectedCard[]) {
+  return [...cards].sort((a, b) => {
+    const av = typeof a.estimatedValue === 'number' ? a.estimatedValue : -1;
+    const bv = typeof b.estimatedValue === 'number' ? b.estimatedValue : -1;
+    if (bv !== av) return bv - av;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function getEvidencePhotoUrl(photo?: EvidencePhoto | null) {
+  return photo?.previewUri ?? photo?.uri ?? null;
+}
+
+function getCapturePlaceholderCopy(requirement: CaptureRequirement, subjectLabel: string) {
+  const label = requirement.label.toLowerCase();
+  if (requirement.captureType === 'full_front') {
+    return {
+      title: 'Actual front photo',
+      body: 'Use the real card in hand. Catalogue art does not count as condition evidence.',
+    };
+  }
+  if (requirement.captureType === 'full_back') {
+    return {
+      title: 'Actual back photo',
+      body: 'Turn the exact card over and capture the whole back, flat and evenly lit.',
+    };
+  }
+  if (requirement.captureType.startsWith('surface_')) {
+    return {
+      title: `${requirement.label} evidence`,
+      body: 'Tilt the real card so scratches, dents, print lines and whitening can be reviewed.',
+    };
+  }
+  if (requirement.captureType.startsWith('slab')) {
+    return {
+      title: `${requirement.label} photo`,
+      body: 'Capture the exact slab, including the holder and label where requested.',
+    };
+  }
+  if (requirement.captureType.startsWith('packaging') || requirement.captureType === 'sealed_detail') {
+    return {
+      title: `${requirement.label} proof`,
+      body: 'Photograph the exact product being sold. Stock packaging images are only references.',
+    };
+  }
+  return {
+    title: `${subjectLabel.charAt(0).toUpperCase()}${subjectLabel.slice(1)} ${label}`,
+    body: 'Keep the real item visible, sharp and evenly lit for buyer review.',
+  };
+}
+
+function getCapturedPhotoResizeMode(captureType: CaptureType) {
+  if (captureType.startsWith('edge_') || captureType === 'slab_label' || captureType === 'slab_qr') return 'contain';
+  return 'cover';
+}
+
+async function fetchLatestMarketSnapshots(cardIds: string[]) {
+  const snapshots = new Map<string, any>();
+  const uniqueIds = [...new Set(cardIds.filter(Boolean))];
+  for (let index = 0; index < uniqueIds.length; index += 100) {
+    const chunk = uniqueIds.slice(index, index + 100);
+    const { data, error } = await supabase
+      .from('market_price_snapshots')
+      .select('card_id, ebay_average, tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
+      .in('card_id', chunk)
+      .order('snapshot_at', { ascending: false });
+
+    if (error) {
+      console.log('Owned listing price snapshot lookup failed:', error.message);
+      continue;
+    }
+
+    for (const row of data ?? []) {
+      if (row.card_id && !snapshots.has(row.card_id)) snapshots.set(row.card_id, row);
+    }
+
+    const missingCardIds = chunk.filter((cardId) => !snapshots.has(cardId));
+    if (missingCardIds.length) {
+      const { data: priceRows, error: priceError } = await supabase
+        .from('card_prices')
+        .select('entity_id, display_price, market, average, last_sold, low, retrieved_at, price_type, confidence, pricing_status')
+        .eq('entity_type', 'card')
+        .in('entity_id', missingCardIds)
+        .order('retrieved_at', { ascending: false });
+
+      if (priceError) {
+        console.log('Owned listing card_prices lookup failed:', priceError.message);
+      } else {
+        for (const row of priceRows ?? []) {
+          if (!row.entity_id || snapshots.has(row.entity_id)) continue;
+          const value = row.display_price ?? row.market ?? row.average ?? row.last_sold ?? row.low ?? null;
+          snapshots.set(row.entity_id, {
+            cardmarket_trend: value,
+            snapshot_at: row.retrieved_at ?? null,
+            price_type: row.price_type ?? null,
+            confidence: row.confidence ?? null,
+            pricing_status: row.pricing_status ?? null,
+          });
+        }
+      }
+    }
+  }
+  return snapshots;
+}
+
+function mapForeignCardRow(card: ForeignPokemonCardBrief | ForeignPokemonCard): SelectedCard {
+  const detailed = card as ForeignPokemonCard;
+  const set = detailed.set ?? null;
+  const pricing = detailed.pricing ?? null;
+  const imageSmall = card.imageSmall ?? card.image ?? (card.imageBase ? `${card.imageBase.replace(/\/$/, '')}/low.webp` : null);
+  const imageLarge = card.image ?? (card.imageBase ? `${card.imageBase.replace(/\/$/, '')}/high.webp` : imageSmall);
+  return {
+    id: card.id,
+    name: card.name,
+    number: card.number ?? card.localId ?? null,
+    set_id: set?.id ?? card.providerCardId?.split('-').slice(0, -1).join('-') ?? '',
+    set_name: set?.name ?? null,
+    rarity: detailed.rarity ?? null,
+    image_small: imageSmall ?? null,
+    image_large: imageLarge ?? null,
+    language: card.language,
+    variant: [
+      getPokemonCardLanguageLabel(card.language),
+      pricing?.preferredSource ? `Source: ${pricing.preferredSource}` : null,
+    ].filter(Boolean).join(' · '),
+    raw_data: {
+      ...(typeof detailed.raw === 'object' && detailed.raw ? detailed.raw as Record<string, any> : {}),
+      language: card.language,
+      region: card.region,
+      external_ids: {
+        tcgdex: card.providerCardId,
+      },
+      images: {
+        small: imageSmall ?? null,
+        large: imageLarge ?? null,
+      },
+      set,
+      pricing,
+      tcgdex: {
+        providerCardId: card.providerCardId,
+        localId: card.localId,
+      },
+    },
   };
 }
 
@@ -431,10 +723,85 @@ function getSlabConditionLabel(gradingCompany: string, grade: string) {
   return `${company} ${value}`;
 }
 
+function normalizeCertificationNumber(value?: string | null) {
+  return String(value ?? '').replace(/\D/g, '');
+}
+
+function getCertificationCaptureMethod(photo?: EvidencePhoto | null): SlabCertification['captureMethod'] {
+  if (!photo) return 'manual';
+  if (photo.barcodeData && String(photo.barcodeType ?? '').toLowerCase().includes('qr')) return 'qr';
+  if (photo.barcodeData) return 'barcode';
+  if (photo.ocrText || photo.certificationCandidate) return 'ocr';
+  return 'manual';
+}
+
+type CertificationDuplicateReview = {
+  inventoryMatches: number;
+  ownActiveListings: number;
+  otherActiveListings: number;
+  completedListings: number;
+  total: number;
+};
+
+function listingTextContainsCertification(row: any, normalizedCert: string) {
+  const haystack = normalizeCertificationNumber([
+    row?.listing_notes,
+    row?.notes,
+    JSON.stringify(row?.listing_media ?? []),
+  ].filter(Boolean).join(' '));
+  return normalizedCert.length >= 6 && haystack.includes(normalizedCert);
+}
+
+async function fetchCertificationDuplicateReview(
+  userId: string,
+  certificationNumber: string
+): Promise<CertificationDuplicateReview | null> {
+  const trimmed = certificationNumber.trim();
+  const normalizedCert = normalizeCertificationNumber(trimmed);
+  if (normalizedCert.length < 6) return null;
+
+  const certValues = Array.from(new Set([trimmed, normalizedCert].filter(Boolean)));
+
+  try {
+    const [inventoryResult, listingsResult] = await Promise.all([
+      supabase
+        .from('binder_cards')
+        .select('id, cert_number, binders!inner(user_id)')
+        .in('cert_number', certValues)
+        .eq('binders.user_id', userId)
+        .limit(20),
+      supabase
+        .from('user_card_flags')
+        .select('id, user_id, listing_status, listing_notes, notes, listing_media')
+        .eq('flag_type', 'trade')
+        .eq('pricing_mode', 'graded')
+        .or('listing_status.eq.active,listing_status.eq.sold,listing_status.is.null')
+        .limit(500),
+    ]);
+
+    if (inventoryResult.error) console.log('Certification inventory duplicate lookup failed:', inventoryResult.error.message);
+    if (listingsResult.error) console.log('Certification listing duplicate lookup failed:', listingsResult.error.message);
+
+    const matchingListings = (listingsResult.data ?? []).filter((row: any) => listingTextContainsCertification(row, normalizedCert));
+    const inventoryMatches = inventoryResult.error ? 0 : (inventoryResult.data ?? []).length;
+    const ownActiveListings = matchingListings.filter((row: any) => row.user_id === userId && (row.listing_status === 'active' || row.listing_status == null)).length;
+    const otherActiveListings = matchingListings.filter((row: any) => row.user_id !== userId && (row.listing_status === 'active' || row.listing_status == null)).length;
+    const completedListings = matchingListings.filter((row: any) => row.listing_status === 'sold').length;
+    const total = inventoryMatches + ownActiveListings + otherActiveListings + completedListings;
+
+    return total
+      ? { inventoryMatches, ownActiveListings, otherActiveListings, completedListings, total }
+      : null;
+  } catch (error) {
+    console.log('Certification duplicate lookup failed:', error);
+    return null;
+  }
+}
+
 export default function CreateListingScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ cardId?: string; setId?: string; type?: string; productName?: string }>();
+  const params = useLocalSearchParams<{ cardId?: string; setId?: string; type?: string; productName?: string; listingAction?: string; q?: string }>();
   const isFocused = useIsFocused();
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
@@ -450,6 +817,7 @@ export default function CreateListingScreen() {
   const [packagingCondition, setPackagingCondition] = useState('Excellent');
   const [slabCaseCondition, setSlabCaseCondition] = useState('Clean');
   const [certificationNumber, setCertificationNumber] = useState('');
+  const [slabCertification, setSlabCertification] = useState<SlabCertification | null>(null);
   const [conditionGuideVisible, setConditionGuideVisible] = useState(false);
   const [askingPrice, setAskingPrice] = useState('');
   const [tradeValue, setTradeValue] = useState('');
@@ -470,15 +838,17 @@ export default function CreateListingScreen() {
   const [grade, setGrade] = useState('10');
   const [prices, setPrices] = useState<PriceState>(DEFAULT_PRICES);
   const [searchQuery, setSearchQuery] = useState('');
+  const [collectionSearchQuery, setCollectionSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SelectedCard[]>([]);
   const [productResults, setProductResults] = useState<MarketProduct[]>([]);
+  const [listingLanguage, setListingLanguage] = useState<ForeignPokemonLanguageCode>('en');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [ownedCards, setOwnedCards] = useState<SelectedCard[]>([]);
   const [searching, setSearching] = useState(false);
   const [collectionLoading, setCollectionLoading] = useState(false);
-  const [scanReferencePhoto, setScanReferencePhoto] = useState<EvidencePhoto | null>(null);
   const [evidencePhotos, setEvidencePhotos] = useState<EvidencePhotoMap>({});
   const [activeEvidenceIndex, setActiveEvidenceIndex] = useState(0);
+  const [activeCaptureRequirement, setActiveCaptureRequirement] = useState<CaptureRequirement | null>(null);
   const [ximilarStatus, setXimilarStatus] = useState<'idle' | 'processing' | 'complete' | 'failed'>('idle');
   const [ximilarError, setXimilarError] = useState<string | null>(null);
   const [ximilarEstimate, setXimilarEstimate] = useState<XimilarEstimate | null>(null);
@@ -495,8 +865,12 @@ export default function CreateListingScreen() {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchRequestIdRef = useRef(0);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressNextAutoSaveRef = useRef(false);
+  const listingActionHandledRef = useRef<string | null>(null);
+  const photoCatalogueMatchRef = useRef<string | null>(null);
+  const photoCatalogueSuggestionRef = useRef(0);
   const routeHasPrefill = Boolean(params.cardId || params.productName);
   const listingSubjectType = resolveListingSubjectTypeForSelection({
     requested: storedListingSubjectType,
@@ -524,9 +898,9 @@ export default function CreateListingScreen() {
   const protectionTier = selectedProtectionTier && allowedProtectionTiers.includes(selectedProtectionTier)
     ? selectedProtectionTier
     : recommendedProtectionTier;
-  const evidenceTier: ListingProtectionTier = isGradedSlabListing ? 'bronze' : protectionTier;
-  const usesProtectionTier = !isGradedSlabListing;
-  const protectionTierIsManual = selectedProtectionTier != null && selectedProtectionTier !== recommendedProtectionTier;
+  const usesProtectionTier = listingSubjectType === 'raw_card';
+  const evidenceTier: ListingProtectionTier = usesProtectionTier ? protectionTier : 'bronze';
+  const protectionTierIsManual = usesProtectionTier && selectedProtectionTier != null && selectedProtectionTier !== recommendedProtectionTier;
   const protectionTierIsDowngraded = usesProtectionTier && PROTECTION_TIER_RANK[protectionTier] < PROTECTION_TIER_RANK[recommendedProtectionTier];
   const silverAgreementRequired = usesProtectionTier && protectionTier === 'silver' && protectionTierIsManual;
   const verificationRequirements = useMemo(() => getVerificationRequirements({
@@ -546,9 +920,7 @@ export default function CreateListingScreen() {
     && (verificationRequirements.requiresAGSLabel || verificationRequirements.requiresHumanReview);
   const silverAgreementDisclosure = verificationRequirements.requiresXimilar
     ? 'Silver uses AI-assisted condition evidence and seller photos. It does not include Gold AGS verification, so it is less secure for condition disputes than Gold. The listing will show that buyer or trader agreement is required before proceeding.'
-    : isSealedLikeCategory(listingSubjectType)
-      ? 'Silver was manually selected for this sealed item. Front and back photos remain the required seller evidence; seal and wrap photos are encouraged but not mandatory. Buyer or trader agreement is required before proceeding.'
-      : 'Silver was manually selected. Buyer or trader agreement is required before proceeding.';
+    : 'Silver was manually selected. Buyer or trader agreement is required before proceeding.';
   const protectionRevealCopy = useMemo(() => {
     if (listingSubjectType === 'raw_card') return null;
     if (listingSubjectType === 'graded_slab') {
@@ -587,8 +959,18 @@ export default function CreateListingScreen() {
   const progressLabels = useMemo(() => getListingProgressLabels(categoryProductFamily), [categoryProductFamily]);
   const evidenceRequirements = useMemo(() => getCategoryEvidenceRequirements(listingSubjectType, evidenceTier), [evidenceTier, listingSubjectType]);
   const requiredEvidence = useMemo(() => getRequiredCategoryEvidence(listingSubjectType, evidenceTier), [evidenceTier, listingSubjectType]);
-  const capturedEvidenceKeys = useMemo(() => Object.keys(evidencePhotos), [evidencePhotos]);
-  const currentEvidence = evidenceRequirements[Math.min(activeEvidenceIndex, evidenceRequirements.length - 1)] ?? evidenceRequirements[0];
+  const capturedPhotoIds = useMemo(() => Object.keys(evidencePhotos), [evidencePhotos]);
+  const captureRequirements = useMemo(() => getCaptureRequirementsForListing({
+    requirements: evidenceRequirements,
+    categoryKey: listingSubjectType,
+    productFamily: categoryProductFamily,
+    tier: evidenceTier,
+    grader: gradingCompany,
+    capturedPhotoIds,
+  }), [capturedPhotoIds, categoryProductFamily, evidenceRequirements, evidenceTier, gradingCompany, listingSubjectType]);
+  const captureProgress = useMemo(() => getCaptureRequirementProgress(captureRequirements), [captureRequirements]);
+  const capturedEvidenceKeys = useMemo(() => getCompletedEvidenceKeys(captureRequirements), [captureRequirements]);
+  const currentCaptureRequirement = captureRequirements[Math.min(activeEvidenceIndex, captureRequirements.length - 1)] ?? captureRequirements[0];
   const identityConfirmed = Boolean(selectedCard || selectedProduct || manualIdentity.cardName.trim());
   const identityPendingReview = Boolean(!selectedCard && !selectedProduct && manualIdentity.cardName.trim());
   const detailsComplete = Boolean(
@@ -666,22 +1048,80 @@ export default function CreateListingScreen() {
     if (conditionSelected) completed.push('condition');
     if (valueEntered) completed.push('value');
     if (usesProtectionTier && step !== 'category' && step !== 'entry' && step !== 'identify' && step !== 'confirm' && step !== 'manual' && valueEntered) completed.push('protection');
-    if (requiredEvidence.every((slot) => evidencePhotos[slot.key])) completed.push('evidence');
+    if (captureProgress.requiredDone) completed.push('evidence');
     if (verificationRequirements.requiresXimilar && aiComplete) completed.push('ai');
     if (goldReady && requiresGoldReview) completed.push('gold');
     if (detailsComplete) completed.push('details');
     if (sellerDeclarationAccepted) completed.push('review');
     return completed;
-  }, [aiComplete, conditionSelected, detailsComplete, evidencePhotos, goldReady, identityConfirmed, requiredEvidence, requiresGoldReview, sellerDeclarationAccepted, step, usesProtectionTier, valueEntered, verificationRequirements.requiresXimilar]);
+  }, [aiComplete, captureProgress.requiredDone, conditionSelected, detailsComplete, goldReady, identityConfirmed, requiresGoldReview, sellerDeclarationAccepted, step, usesProtectionTier, valueEntered, verificationRequirements.requiresXimilar]);
 
   const catalogueImageUrl = selectedProduct?.image_large_url ?? selectedProduct?.image_url ?? null;
   const cardTitle = selectedCard?.name ?? selectedProduct?.name ?? manualIdentity.cardName.trim() ?? '';
   const cardSubtitle = selectedCard
-    ? [selectedCard.set_name, selectedCard.number ? `#${selectedCard.number}` : null, selectedCard.rarity].filter(Boolean).join(' · ')
+    ? [selectedCard.set_name, selectedCard.number ? `#${selectedCard.number}` : null].filter(Boolean).join(' · ')
     : selectedProduct
       ? [selectedProduct.set_name, categoryConfig.title, selectedProduct.source ? `Source: ${selectedProduct.source}` : null].filter(Boolean).join(' · ')
       : [manualIdentity.setName.trim(), manualIdentity.cardNumber.trim() ? `#${manualIdentity.cardNumber.trim()}` : null, manualIdentity.variant.trim()].filter(Boolean).join(' · ');
   const cardImageUrl = getCardImageUrl(selectedCard) ?? catalogueImageUrl;
+  const sellerPreviewPhoto = evidencePhotos.front ?? evidencePhotos.packaging_front ?? evidencePhotos.slab_front ?? Object.values(evidencePhotos)[0] ?? null;
+  const sellerPreviewPhotoUrl = getEvidencePhotoUrl(sellerPreviewPhoto);
+  const slabLabelPhoto = evidencePhotos.slab_label ?? evidencePhotos.slab_cert ?? null;
+  const resolvedSlabCertification = useMemo<SlabCertification | null>(() => {
+    if (!isGradedSlabListing || !certificationNumber.trim()) return null;
+
+    const currentNumber = certificationNumber.trim();
+    const currentNormalised = normalizeCertificationNumber(currentNumber);
+    const storedNormalised = normalizeCertificationNumber(slabCertification?.certificationNumber);
+    const labelImageId = slabCertification?.labelImageId
+      ?? slabLabelPhoto?.requirementId
+      ?? slabLabelPhoto?.evidenceKey
+      ?? 'manual';
+
+    if (slabCertification && currentNormalised && currentNormalised === storedNormalised) {
+      return {
+        ...slabCertification,
+        grader: displayGradingCompany,
+        grade: grade.trim() || slabCertification.grade,
+        certificationNumber: currentNumber,
+        labelImageId,
+        verifiedByUser: true,
+      };
+    }
+
+    return {
+      grader: displayGradingCompany,
+      grade: grade.trim() || undefined,
+      certificationNumber: currentNumber,
+      captureMethod: 'manual',
+      confidence: 1,
+      labelImageId,
+      verifiedByUser: true,
+      capturedAt: new Date().toISOString(),
+    };
+  }, [certificationNumber, displayGradingCompany, grade, isGradedSlabListing, slabCertification, slabLabelPhoto?.evidenceKey, slabLabelPhoto?.requirementId]);
+  const handleCertificationNumberChange = useCallback((value: string) => {
+    setCertificationNumber(value);
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setSlabCertification(null);
+      return;
+    }
+
+    setSlabCertification((current) => ({
+      grader: displayGradingCompany,
+      grade: grade.trim() || undefined,
+      certificationNumber: trimmed,
+      captureMethod: 'manual',
+      confidence: 1,
+      labelImageId: current?.labelImageId ?? slabLabelPhoto?.requirementId ?? slabLabelPhoto?.evidenceKey ?? 'manual',
+      verifiedByUser: true,
+      capturedAt: new Date().toISOString(),
+    }));
+  }, [displayGradingCompany, grade, slabLabelPhoto?.evidenceKey, slabLabelPhoto?.requirementId]);
+  const slabCertificationDisplay = resolvedSlabCertification
+    ? `${resolvedSlabCertification.certificationNumber} (${resolvedSlabCertification.captureMethod.toUpperCase()})`
+    : certificationNumber || 'Seller-confirmed';
   const valueWarning = getValueWarning(prices.market, activeTransactionValue);
   const selectedDeliveryMethod = useMemo(
     () => getShippoDeliveryMethod(deliveryMethodId),
@@ -697,6 +1137,12 @@ export default function CreateListingScreen() {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (activeEvidenceIndex >= captureRequirements.length) {
+      setActiveEvidenceIndex(0);
+    }
+  }, [activeEvidenceIndex, captureRequirements.length]);
 
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
@@ -749,6 +1195,7 @@ export default function CreateListingScreen() {
         setPackagingCondition(draft.packagingCondition ?? 'Excellent');
         setSlabCaseCondition(draft.slabCaseCondition ?? 'Clean');
         setCertificationNumber(draft.certificationNumber ?? '');
+        setSlabCertification(draft.slabCertification ?? null);
         setAskingPrice(draft.askingPrice ?? '');
         setTradeValue(draft.tradeValue ?? '');
         setOffersAccepted(draft.offersAccepted ?? true);
@@ -818,6 +1265,7 @@ export default function CreateListingScreen() {
     quantity,
     gradingCompany: displayGradingCompany,
     grade,
+    slabCertification,
     evidencePhotos,
     ximilarEstimate,
     ximilarStatus,
@@ -862,6 +1310,7 @@ export default function CreateListingScreen() {
     sellerDeclarationAccepted,
     shippingMethod,
     silverLiabilityAccepted,
+    slabCertification,
     slabCaseCondition,
     step,
     trackingReference,
@@ -891,19 +1340,19 @@ export default function CreateListingScreen() {
 
   useEffect(() => {
     setSelectedProtectionTier((current) => (
-      current && !allowedProtectionTiers.includes(current) ? null : current
+      current && (!usesProtectionTier || !allowedProtectionTiers.includes(current)) ? null : current
     ));
-  }, [allowedProtectionTiers]);
+  }, [allowedProtectionTiers, usesProtectionTier]);
 
   useEffect(() => {
     if (!silverAgreementRequired) setSilverLiabilityAccepted(false);
   }, [silverAgreementRequired]);
 
   useEffect(() => {
-    if (isGradedSlabListing && (step === 'protection' || step === 'ai' || step === 'gold')) {
+    if (!usesProtectionTier && (step === 'protection' || step === 'ai' || step === 'gold')) {
       setStep('evidence');
     }
-  }, [isGradedSlabListing, step]);
+  }, [step, usesProtectionTier]);
 
   useEffect(() => {
     if (!selectedProduct) return;
@@ -915,6 +1364,7 @@ export default function CreateListingScreen() {
     setEvidencePhotos({});
     setActiveEvidenceIndex(0);
     setCertificationNumber('');
+    setSlabCertification(null);
     setSlabCaseCondition('Clean');
     setManualIdentity((current) => ({
       ...current,
@@ -953,17 +1403,13 @@ export default function CreateListingScreen() {
     let cancelled = false;
     const loadPrefilledCard = async () => {
       try {
-        const { data, error } = await supabase
-          .from('pokemon_cards')
-          .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-          .eq('id', cardId)
-          .maybeSingle();
-        if (error) throw error;
+        const data = (await fetchCachedPokemonCardDetails([cardId])).get(cardId);
         if (!data || cancelled) return;
 
         const card = mapCardRow(data);
         setSelectedCard(card);
         setSearchQuery(card.name);
+        setListingLanguage(normalizePokemonCardLanguage(card.language));
         setListingSubjectType(typeParam === 'graded_slab' ? 'graded_slab' : 'raw_card');
         setIdentificationMethod('search');
         setStep('confirm');
@@ -984,6 +1430,9 @@ export default function CreateListingScreen() {
     setPrices({ ...DEFAULT_PRICES, loading: true });
     try {
       const setName = card.set_name && card.set_name !== card.set_id ? card.set_name : '';
+      const foreignPreferredPrice = typeof card.raw_data?.pricing?.preferredGbp === 'number'
+        ? Number(card.raw_data.pricing.preferredGbp)
+        : null;
       const pokeTrace = await fetchPokeTraceCardPrice({
         identifier: card.name,
         setName,
@@ -1055,7 +1504,7 @@ export default function CreateListingScreen() {
         ?? (cardmarketPrices?.trendPrice != null ? Math.round(cardmarketPrices.trendPrice * EUR_TO_GBP * 100) / 100 : null);
       const market = subjectType === 'graded_slab'
         ? ebay ?? fallbackEbay ?? null
-        : ebay ?? fallbackEbay ?? tcg ?? cardmarket ?? null;
+        : ebay ?? fallbackEbay ?? foreignPreferredPrice ?? tcg ?? cardmarket ?? null;
 
       setPrices({
         market,
@@ -1099,6 +1548,24 @@ export default function CreateListingScreen() {
     }
   }, [fetchPrices, grade, displayGradingCompany, listingSubjectType, selectedCard]);
 
+  const clearListingSearchState = useCallback((options: { keepQuery?: boolean } = {}) => {
+    searchRequestIdRef.current += 1;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    if (!options.keepQuery) setSearchQuery('');
+    setCollectionSearchQuery('');
+    setSearchResults([]);
+    setProductResults([]);
+    setSearching(false);
+  }, []);
+
+  const openListingScanner = useCallback(() => {
+    const listingScanIntent = listingSubjectType === 'graded_slab' ? 'graded_slab' : 'raw_listing';
+    router.push({
+      pathname: '/scan',
+      params: buildScanRouteParamsForIntent(listingScanIntent, { flow: 'listing' }),
+    } as any);
+  }, [listingSubjectType]);
+
   const runSearch = useCallback(async (query: string) => {
     const trimmed = query.trim();
     if (!trimmed) {
@@ -1106,21 +1573,60 @@ export default function CreateListingScreen() {
       return;
     }
 
+    const requestId = ++photoCatalogueSuggestionRef.current;
     setSearching(true);
     try {
       const data = await searchLocalPokemonCards<any>(trimmed, {
+        language: 'all',
         limit: 60,
-        select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
+        select: 'id, name, language, number, rarity, image_small, image_large, set_id, raw_data',
       });
-      setSearchResults((data ?? []).map(mapCardRow));
+      if (requestId !== searchRequestIdRef.current) return;
+      let mappedResults = (data ?? []).map(mapCardRow);
+      if (!mappedResults.length) {
+        const language = normalizePokemonCardLanguage(listingLanguage);
+        const foreignCards = await searchForeignPokemonCards({
+          query: trimmed,
+          language,
+          limit: 60,
+          includeDetails: true,
+        }).catch((error) => {
+          console.log('Foreign card search failed:', error);
+          return [];
+        });
+        if (requestId !== photoCatalogueSuggestionRef.current) return;
+        mappedResults = foreignCards.map(mapForeignCardRow);
+      }
+      setSearchResults(mappedResults);
       setRecentSearches((previous) => [trimmed, ...previous.filter((item) => item !== trimmed)].slice(0, 6));
     } catch (error) {
       console.log('Listing search failed:', error);
+      if (requestId !== searchRequestIdRef.current) return;
       setSearchResults([]);
     } finally {
-      setSearching(false);
+      if (requestId === searchRequestIdRef.current) setSearching(false);
     }
-  }, []);
+  }, [listingLanguage]);
+
+  useEffect(() => {
+    const listingAction = typeof params.listingAction === 'string' ? params.listingAction : null;
+    if (!draftLoaded || listingAction !== 'manual') return;
+
+    const query = typeof params.q === 'string' ? params.q : '';
+    const typeParam = isListingSubjectType(params.type) ? params.type : 'raw_card';
+    const signature = `${listingAction}:${typeParam}:${query}`;
+    if (listingActionHandledRef.current === signature) return;
+    listingActionHandledRef.current = signature;
+
+    clearListingSearchState({ keepQuery: Boolean(query.trim()) });
+    setListingSubjectType(typeParam);
+    setIdentificationMethod('search');
+    setStep('identify');
+    if (query.trim()) {
+      setSearchQuery(query);
+      void runSearch(query);
+    }
+  }, [clearListingSearchState, draftLoaded, params.listingAction, params.q, params.type, runSearch]);
 
   const runProductSearch = useCallback(async (query: string, type: ListingSubjectType = listingSubjectType) => {
     const trimmed = query.trim();
@@ -1135,18 +1641,21 @@ export default function CreateListingScreen() {
       return;
     }
 
+    const requestId = ++searchRequestIdRef.current;
     setSearching(true);
     try {
-      const data = await searchMarketProducts(trimmed, lookupType, 24);
+      const data = await searchMarketProducts(trimmed, lookupType, 24, { language: listingLanguage });
+      if (requestId !== searchRequestIdRef.current) return;
       setProductResults(data);
       setRecentSearches((previous) => [trimmed, ...previous.filter((item) => item !== trimmed)].slice(0, 6));
     } catch (error) {
       console.log('Listing product search failed:', error);
+      if (requestId !== searchRequestIdRef.current) return;
       setProductResults([]);
     } finally {
-      setSearching(false);
+      if (requestId === searchRequestIdRef.current) setSearching(false);
     }
-  }, [listingSubjectType]);
+  }, [listingLanguage, listingSubjectType]);
 
   const handleSearchChange = (text: string) => {
     setSearchQuery(text);
@@ -1160,31 +1669,55 @@ export default function CreateListingScreen() {
   const loadOwnedCards = useCallback(async () => {
     setCollectionLoading(true);
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!user) {
-        setOwnedCards([]);
-        return;
-      }
-      const { data: ownershipRows, error: ownershipError } = await supabase
-        .from('user_card_variants')
-        .select('card_id, set_id, quantity')
-        .eq('user_id', user.id)
-        .limit(80);
-      if (ownershipError) throw ownershipError;
+      const ownershipRows = await fetchOwnedCardRows();
+      const ownershipByCard = new Map<string, { setId: string | null; quantity: number }>();
 
-      const ids = Array.from(new Set((ownershipRows ?? []).map((row: any) => row.card_id).filter(Boolean)));
+      ownershipRows.forEach((row) => {
+        if (!row.card_id) return;
+        const current = ownershipByCard.get(row.card_id) ?? { setId: row.set_id ?? null, quantity: 0 };
+        ownershipByCard.set(row.card_id, {
+          setId: current.setId ?? row.set_id ?? null,
+          quantity: current.quantity + Math.max(1, Number(row.quantity ?? 1) || 1),
+        });
+      });
+
+      const ids = Array.from(ownershipByCard.keys());
       if (!ids.length) {
         setOwnedCards([]);
         return;
       }
-      const { data: cards, error: cardError } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .in('id', ids)
-        .limit(80);
-      if (cardError) throw cardError;
-      setOwnedCards((cards ?? []).map(mapCardRow));
+
+      const [cardDetails, priceSnapshots] = await Promise.all([
+        fetchCachedPokemonCardDetails(ids),
+        fetchLatestMarketSnapshots(ids),
+      ]);
+
+      const nextCards = ids.map((cardId) => {
+        const ownership = ownershipByCard.get(cardId);
+        const row = cardDetails.get(cardId);
+        const snapshot = priceSnapshots.get(cardId);
+        const raw = row?.raw_data ?? {};
+        const foreignPreferredPrice = typeof raw?.pricing?.preferredGbp === 'number'
+          ? Number(raw.pricing.preferredGbp)
+          : null;
+        const preferred = getPreferredMarketPrice(snapshot, {
+          tcg: getTcgFallbackValue(raw),
+          cardmarket: getCardmarketFallbackValue(raw),
+        });
+        const estimatedValue = preferred.value ?? foreignPreferredPrice;
+
+        return mapCardRow({
+          ...(row ?? {}),
+          id: row?.id ?? cardId,
+          name: row?.name ?? cardId,
+          set_id: row?.set_id ?? ownership?.setId ?? '',
+          ownedQuantity: ownership?.quantity ?? 1,
+          estimatedValue,
+          estimatedValueSource: preferred.source ?? (foreignPreferredPrice != null ? 'provider' : null),
+        });
+      });
+
+      setOwnedCards(sortOwnedCardsByValue(nextCards));
     } catch (error) {
       console.log('Owned listing cards load failed:', error);
       setOwnedCards([]);
@@ -1193,10 +1726,21 @@ export default function CreateListingScreen() {
     }
   }, []);
 
+  const filteredOwnedCards = useMemo(() => {
+    const query = collectionSearchQuery.trim().toLowerCase();
+    if (!query) return ownedCards;
+    const terms = query.split(/\s+/).filter(Boolean);
+    return ownedCards.filter((card) => {
+      const text = getOwnedCardSearchText(card);
+      return terms.every((term) => text.includes(term));
+    });
+  }, [collectionSearchQuery, ownedCards]);
+
   const selectCard = async (card: SelectedCard) => {
     setSelectedCard(card);
     setSelectedProduct(null);
     setManualIdentity(DEFAULT_MANUAL_IDENTITY);
+    setListingLanguage(normalizePokemonCardLanguage(card.language));
     setListingSubjectType(listingSubjectType === 'graded_slab' ? 'graded_slab' : 'raw_card');
     setStep('confirm');
     await Haptics.selectionAsync();
@@ -1216,6 +1760,7 @@ export default function CreateListingScreen() {
       state: 'graded_slab',
     }));
     setListingSubjectType('graded_slab');
+    setListingLanguage(normalizePokemonCardLanguage(card.language));
     setSearchQuery(card.name);
     setSearchResults([]);
     setSellerCondition(getSlabConditionLabel(displayGradingCompany, grade));
@@ -1244,6 +1789,7 @@ export default function CreateListingScreen() {
     setEvidencePhotos({});
     setActiveEvidenceIndex(0);
     setCertificationNumber('');
+    setSlabCertification(null);
     setSlabCaseCondition('Clean');
     setManualIdentity((current) => ({
       ...current,
@@ -1266,12 +1812,15 @@ export default function CreateListingScreen() {
   };
 
   const selectSellingType = async (type: ListingSubjectType) => {
+    clearListingSearchState();
     setListingSubjectType(type);
     setSelectedCard(null);
     setSelectedProduct(null);
     setSelectedProtectionTier(null);
     setEvidencePhotos({});
     setActiveEvidenceIndex(0);
+    setCertificationNumber('');
+    setSlabCertification(null);
     setManualIdentity((current) => ({
       ...current,
       state: type,
@@ -1287,9 +1836,24 @@ export default function CreateListingScreen() {
   };
 
   const selectIdentificationMethod = (method: IdentificationMethod) => {
+    clearListingSearchState();
     setIdentificationMethod(method);
+    if (method === 'scan') {
+      openListingScanner();
+      return;
+    }
     if (method === 'collection') void loadOwnedCards();
     setStep(method === 'manual' ? 'manual' : 'identify');
+  };
+
+  const handleListingLanguageChange = (language: ForeignPokemonLanguageCode) => {
+    if (language === listingLanguage) return;
+    setListingLanguage(language);
+    clearListingSearchState();
+    setManualIdentity((current) => ({
+      ...current,
+      language: getPokemonCardLanguageLabel(language),
+    }));
   };
 
   const resetListingFlowToCategory = useCallback(() => {
@@ -1306,6 +1870,7 @@ export default function CreateListingScreen() {
     setPackagingCondition('Excellent');
     setSlabCaseCondition('Clean');
     setCertificationNumber('');
+    setSlabCertification(null);
     setAskingPrice('');
     setTradeValue('');
     setOffersAccepted(true);
@@ -1313,6 +1878,7 @@ export default function CreateListingScreen() {
     setWantedCards('');
     setDescription('');
     setKnownDefects('');
+    setCollectionSearchQuery('');
     setShippingMethod('Royal Mail tracked');
     setDeliveryMethodId('royal-mail-tracked-48');
     setPostageCost('3.49');
@@ -1358,7 +1924,7 @@ export default function CreateListingScreen() {
       Alert.alert('Listing saved as a draft', 'You can resume it from My Listings when you are ready.', [
         { text: 'OK', onPress: returnToMyListings },
       ]);
-    } catch (error) {
+    } catch {
       Alert.alert('Could not save draft', 'Please keep editing and try again.');
     }
   }, [buildDraftState, returnToMyListings]);
@@ -1436,44 +2002,414 @@ export default function CreateListingScreen() {
     if (next) setStep(next);
   };
 
-  const capturePhoto = async (slot: EvidenceSlotKey | 'scan_reference', fromCamera = true) => {
-    try {
-      const aspect: [number, number] = isSealedLikeCategory(listingSubjectType)
-        ? (listingSubjectType === 'booster_pack' || listingSubjectType === 'sleeved_booster_pack' ? [2, 3] : [1, 1])
-        : listingSubjectType === 'graded_slab'
-          ? [4, 5]
-          : [3, 4];
-      const options: ImagePicker.ImagePickerOptions = {
-        quality: 0.84,
-        allowsEditing: true,
-        aspect,
-        base64: true,
-      };
-      const result = fromCamera
-        ? await ImagePicker.launchCameraAsync(options)
-        : await ImagePicker.launchImageLibraryAsync(options);
+  const maybeConfirmSlabCertification = (photo: EvidencePhoto) => {
+    if (listingSubjectType !== 'graded_slab') return;
+    if (photo.evidenceKey !== 'slab_label' && photo.evidenceKey !== 'slab_cert') return;
 
-      if (result.canceled || !result.assets[0]) return;
-      const asset = result.assets[0];
-      const photo: EvidencePhoto = {
-        uri: asset.uri,
-        base64: asset.base64 ?? null,
-        quality: {
-          fullCardVisible: true,
-          steady: true,
-          lighting: true,
-          singleCard: true,
+    const candidate = photo.certificationCandidate
+      ?? extractCertificationNumberFromText(photo.barcodeData)
+      ?? extractCertificationNumberFromText(photo.ocrText);
+    if (!candidate || candidate === certificationNumber.trim()) return;
+
+    Alert.alert(
+      'Confirm certification number',
+      `Grader: ${displayGradingCompany}\nGrade: ${grade || 'Not set'}\nCertification number: ${candidate}`,
+      [
+        { text: 'Edit', onPress: () => setStep('condition') },
+        {
+          text: 'Confirm details',
+          onPress: () => {
+            setCertificationNumber(candidate);
+            setSlabCertification({
+              grader: displayGradingCompany,
+              grade: grade.trim() || undefined,
+              certificationNumber: candidate,
+              captureMethod: getCertificationCaptureMethod(photo),
+              confidence: photo.barcodeData ? 0.92 : photo.ocrText ? 0.74 : undefined,
+              labelImageId: photo.requirementId ?? photo.evidenceKey ?? 'slab_label',
+              verifiedByUser: true,
+              capturedAt: new Date().toISOString(),
+            });
+          },
         },
-      };
+      ]
+    );
+  };
 
-      if (slot === 'scan_reference') {
-        setScanReferencePhoto(photo);
-      } else {
-        setEvidencePhotos((current) => ({ ...current, [slot]: photo }));
-        const currentSlotIndex = evidenceRequirements.findIndex((item) => item.key === slot);
-        const nextMissing = evidenceRequirements.findIndex((item, index) => index > currentSlotIndex && !item.optional && !evidencePhotos[item.key]);
-        if (nextMissing >= 0) setActiveEvidenceIndex(nextMissing);
+  const getNextOpenCaptureRequirement = (completedRequirementId: string) => {
+    const currentSlotIndex = captureRequirements.findIndex((item) => item.id === completedRequirementId);
+    const nextRequired = captureRequirements.findIndex((item, index) => (
+      index > currentSlotIndex
+      && item.required
+      && item.id !== completedRequirementId
+      && !evidencePhotos[item.id]
+    ));
+    if (nextRequired >= 0) {
+      return { requirement: captureRequirements[nextRequired], index: nextRequired };
+    }
+
+    const firstMissingRequired = captureRequirements.findIndex((item) => item.required && item.id !== completedRequirementId && !evidencePhotos[item.id]);
+    if (firstMissingRequired >= 0) {
+      return { requirement: captureRequirements[firstMissingRequired], index: firstMissingRequired };
+    }
+
+    const nextMissing = captureRequirements.findIndex((item, index) => (
+      index > currentSlotIndex
+      && item.id !== completedRequirementId
+      && !evidencePhotos[item.id]
+    ));
+    if (nextMissing >= 0) {
+      return { requirement: captureRequirements[nextMissing], index: nextMissing };
+    }
+
+    const firstMissing = captureRequirements.findIndex((item) => item.id !== completedRequirementId && !evidencePhotos[item.id]);
+    if (firstMissing >= 0) {
+      return { requirement: captureRequirements[firstMissing], index: firstMissing };
+    }
+
+    return null;
+  };
+
+  const moveToNextCaptureRequirement = (completedRequirementId: string) => {
+    const nextOpen = getNextOpenCaptureRequirement(completedRequirementId);
+    if (nextOpen) {
+      setActiveEvidenceIndex(nextOpen.index);
+      return nextOpen.requirement;
+    }
+
+    const currentSlotIndex = captureRequirements.findIndex((item) => item.id === completedRequirementId);
+    if (currentSlotIndex >= 0) setActiveEvidenceIndex(currentSlotIndex);
+    return null;
+  };
+
+  const shouldReadPhotoText = (requirement: CaptureRequirement) => (
+    requirement.captureType === 'full_front'
+    || requirement.captureType === 'full_back'
+    || requirement.captureType === 'slab_label'
+    || requirement.captureType === 'slab_qr'
+  );
+
+  const readPhotoTextForRequirement = async (uri: string, requirement: CaptureRequirement) => {
+    if (!shouldReadPhotoText(requirement)) return { ocrText: null, candidate: null };
+    try {
+      const result = await TextRecognition.recognize(uri);
+      const ocrText = result?.text?.trim() ?? '';
+      return {
+        ocrText,
+        candidate: requirement.captureType === 'slab_label' || requirement.captureType === 'slab_qr'
+          ? extractCertificationNumberFromText(ocrText)
+          : null,
+      };
+    } catch {
+      return { ocrText: null, candidate: null };
+    }
+  };
+
+  const getQualityRetakeCopy = (quality: GuidedCaptureQuality) => (
+    quality.warning ?? quality.highestPriorityIssue?.message ?? 'Use a sharper, brighter image with the item inside the guide.'
+  );
+
+  const confirmPhotoQuality = (quality: GuidedCaptureQuality): Promise<GuidedCaptureQuality | null> => {
+    if (!quality.warning && !quality.requiresRetake) return Promise.resolve(quality);
+
+    if (quality.requiresRetake || !quality.canOverride) {
+      return new Promise((resolve) => {
+        Alert.alert(
+          'Retake needed',
+          getQualityRetakeCopy(quality),
+          [{ text: 'OK', onPress: () => resolve(null) }]
+        );
+      });
+    }
+
+    return new Promise((resolve) => {
+      Alert.alert(
+        'Photo warning',
+        `${getQualityRetakeCopy(quality)}\n\nYou can continue if the item is still clearly identifiable and the issue does not hide condition detail.`,
+        [
+          { text: 'Retake', style: 'cancel', onPress: () => resolve(null) },
+          {
+            text: 'Use photo',
+            onPress: () => resolve({
+              ...quality,
+              overrideAccepted: true,
+              overrideReason: quality.warning ?? quality.highestPriorityIssue?.code ?? 'manual-quality-override',
+            }),
+          },
+        ]
+      );
+    });
+  };
+
+  const assessPickerAssetQuality = async (
+    requirement: CaptureRequirement,
+    asset: ImagePicker.ImagePickerAsset,
+    source: ListingPhotoSource
+  ) => {
+    const text = await readPhotoTextForRequirement(asset.uri, requirement);
+    return {
+      ...text,
+      quality: assessGuidedCaptureQuality(asset.base64, requirement.captureType, {
+        purpose: requirement.photoPurpose,
+        tier: evidenceTier,
+        required: requirement.required,
+        source,
+        fileName: asset.fileName ?? null,
+        width: asset.width,
+        height: asset.height,
+        ocrText: text.ocrText,
+      }),
+    };
+  };
+
+  const addDuplicatePhotoIssue = (
+    quality: GuidedCaptureQuality,
+    duplicateLabel: string,
+    block: boolean
+  ): GuidedCaptureQuality => {
+    const issue: ListingPhotoQualityIssue = {
+      code: 'duplicate_photo',
+      severity: block ? 'block' : 'warning',
+      message: block
+        ? `Retake needed: this appears to be the same photograph already used for ${duplicateLabel}.`
+        : `This appears to be the same photograph already used for ${duplicateLabel}.`,
+      guidance: 'Use a different photograph for this requested angle.',
+      priority: 1,
+      canOverride: !block,
+    };
+    return {
+      ...quality,
+      issues: [issue, ...(quality.issues ?? [])],
+      highestPriorityIssue: issue,
+      severity: block ? 'block' : quality.severity === 'retake' || quality.severity === 'block' ? quality.severity : 'warning',
+      requiresRetake: block || quality.requiresRetake,
+      canOverride: !block && Boolean(quality.canOverride),
+      warning: issue.message,
+    };
+  };
+
+  const getCatalogueSearchTextFromPhoto = (photo: EvidencePhoto) => {
+    const ocrTerms = String(photo.ocrText ?? '')
+      .replace(/[^\p{L}\p{N}#/\\\-\s]/gu, ' ')
+      .split(/\s+/)
+      .map((term) => term.trim())
+      .filter((term) => term.length >= 2 && !/^(hp|psa|cgc|bgs|ace|tag|grade|near|mint)$/i.test(term))
+      .slice(0, 10)
+      .join(' ');
+    return [
+      manualIdentity.cardName.trim(),
+      manualIdentity.cardNumber.trim(),
+      ocrTerms,
+    ].filter(Boolean).join(' ').trim();
+  };
+
+  const maybeSuggestCardMatchFromPhoto = (photo: EvidencePhoto) => {
+    if (selectedCard || !isCardSubject(listingSubjectType)) return;
+    if (photo.captureType !== 'full_front' && photo.evidenceKey !== 'front') return;
+    const query = getCatalogueSearchTextFromPhoto(photo);
+    if (query.length < 3) return;
+
+    const signature = `${photo.requirementId ?? photo.evidenceKey ?? 'front'}:${photo.quality.imageFingerprint ?? query}`;
+    if (photoCatalogueMatchRef.current === signature) return;
+    photoCatalogueMatchRef.current = signature;
+    const requestId = ++searchRequestIdRef.current;
+
+    void (async () => {
+      try {
+        const data = await searchLocalPokemonCards<any>(query, {
+          language: 'all',
+          limit: 5,
+          select: 'id, name, language, number, rarity, image_small, image_large, set_id, raw_data',
+        });
+        let matches = (data ?? []).map(mapCardRow);
+        if (!matches.length) {
+          const foreignCards = await searchForeignPokemonCards({
+            query,
+            language: normalizePokemonCardLanguage(listingLanguage),
+            limit: 5,
+            includeDetails: true,
+          }).catch((error) => {
+            console.log('Photo foreign catalogue suggestion failed:', error);
+            return [];
+          });
+          matches = foreignCards.map(mapForeignCardRow);
+        }
+        if (requestId !== searchRequestIdRef.current) return;
+        if (!matches.length) return;
+        setIdentificationMethod('search');
+        setSearchQuery(query);
+        setSearchResults(matches);
+        Alert.alert(
+          'Catalogue matches found',
+          'Stackr found possible catalogue records from this card photo. Confirm the exact card so the listing appears on the card page and marketplace search.',
+          [
+            { text: 'Keep adding photos', style: 'cancel' },
+            { text: 'Review matches', onPress: () => setStep('identify') },
+          ]
+        );
+      } catch (error) {
+        console.log('Photo catalogue suggestion failed:', error);
       }
+    })();
+  };
+
+  const storeRequirementPhoto = (
+    requirement: CaptureRequirement,
+    result: GuidedCaptureResult | ImagePicker.ImagePickerAsset,
+    captureSource: ListingPhotoSource = 'guided_camera'
+  ) => {
+    const base64 = 'base64' in result ? result.base64 ?? null : null;
+    const guidedResult = result as GuidedCaptureResult;
+    const quality = 'quality' in result
+      ? guidedResult.quality
+      : assessGuidedCaptureQuality(base64, requirement.captureType, {
+        purpose: requirement.photoPurpose,
+        tier: evidenceTier,
+        required: requirement.required,
+        source: captureSource,
+        width: 'width' in result ? result.width : undefined,
+        height: 'height' in result ? result.height : undefined,
+      });
+    const duplicate = Object.values(evidencePhotos).find((existing) => (
+      existing?.requirementId !== requirement.id
+      && existing?.quality.imageFingerprint
+      && quality.imageFingerprint
+      && isLikelyDuplicateListingPhoto(existing.quality.imageFingerprint, quality.imageFingerprint)
+    ));
+    const qualityWithDuplicate = duplicate
+      ? addDuplicatePhotoIssue(quality, duplicate.requirementLabel ?? duplicate.requirementId ?? 'another angle', requirement.required)
+      : quality;
+
+    if (qualityWithDuplicate.requiresRetake || qualityWithDuplicate.severity === 'block') {
+      Alert.alert('Different photo needed', getQualityRetakeCopy(qualityWithDuplicate));
+      return false;
+    }
+
+    const photo: EvidencePhoto = {
+      uri: result.uri,
+      sourceUri: 'sourceUri' in result ? guidedResult.sourceUri ?? result.uri : result.uri,
+      previewUri: 'previewUri' in result ? guidedResult.previewUri ?? result.uri : result.uri,
+      width: 'width' in result ? result.width : undefined,
+      height: 'height' in result ? result.height : undefined,
+      base64,
+      crop: 'crop' in result ? guidedResult.crop ?? null : null,
+      captureFrame: 'captureFrame' in result ? guidedResult.captureFrame ?? null : null,
+      requirementId: requirement.id,
+      requirementLabel: requirement.label,
+      captureType: requirement.captureType,
+      evidenceKey: requirement.evidenceKey,
+      captureSource,
+      localStatus: 'saved_locally',
+      barcodeData: 'barcodeData' in result ? guidedResult.barcodeData ?? null : null,
+      barcodeType: 'barcodeType' in result ? guidedResult.barcodeType ?? null : null,
+      ocrText: 'ocrText' in result ? guidedResult.ocrText ?? null : null,
+      certificationCandidate: 'certificationCandidate' in result ? guidedResult.certificationCandidate ?? null : null,
+      quality: {
+        purpose: qualityWithDuplicate.purpose,
+        purposeLabel: qualityWithDuplicate.purposeLabel,
+        fullCardVisible: qualityWithDuplicate.fullCardVisible,
+        steady: qualityWithDuplicate.steady,
+        lighting: qualityWithDuplicate.lighting,
+        singleCard: qualityWithDuplicate.singleCard,
+        glareOk: qualityWithDuplicate.glareOk,
+        warning: qualityWithDuplicate.warning ?? null,
+        issues: qualityWithDuplicate.issues ?? [],
+        highestPriorityIssue: qualityWithDuplicate.highestPriorityIssue ?? null,
+        severity: qualityWithDuplicate.severity,
+        requiresRetake: qualityWithDuplicate.requiresRetake,
+        canOverride: qualityWithDuplicate.canOverride,
+        overrideAccepted: qualityWithDuplicate.overrideAccepted,
+        overrideReason: qualityWithDuplicate.overrideReason ?? null,
+        imageFingerprint: qualityWithDuplicate.imageFingerprint ?? null,
+        metrics: qualityWithDuplicate.metrics ?? null,
+      },
+    };
+
+    setEvidencePhotos((current) => ({ ...current, [requirement.id]: photo }));
+    maybeConfirmSlabCertification(photo);
+    maybeSuggestCardMatchFromPhoto(photo);
+    const nextRequirement = moveToNextCaptureRequirement(requirement.id);
+    if (activeCaptureRequirement?.id === requirement.id) {
+      setActiveCaptureRequirement(nextRequirement);
+    }
+    return true;
+  };
+
+  const findCaptureRequirement = (idOrSlot: string) => (
+    getRequirementById(captureRequirements, idOrSlot)
+    ?? captureRequirements.find((item) => item.evidenceKey === idOrSlot && !evidencePhotos[item.id])
+    ?? captureRequirements.find((item) => item.evidenceKey === idOrSlot)
+    ?? null
+  );
+
+  const captureRequirementWithSystemCamera = async (requirement: CaptureRequirement) => {
+    try {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Camera permission needed', 'Allow camera access to take listing photos.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.84,
+        allowsEditing: false,
+        base64: true,
+      });
+      if (result.canceled || !result.assets[0]) return;
+
+      const assessment = await assessPickerAssetQuality(requirement, result.assets[0], 'system_camera');
+      const resolvedQuality = await confirmPhotoQuality(assessment.quality);
+      if (!resolvedQuality) {
+        return;
+      }
+
+      const saved = storeRequirementPhoto(requirement, {
+        ...result.assets[0],
+        quality: resolvedQuality,
+        ocrText: assessment.ocrText,
+        certificationCandidate: assessment.candidate,
+      } as any, 'system_camera');
+      if (!saved) return;
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    } catch (error: any) {
+      Alert.alert('Photo not captured', error?.message ?? 'Try again with the full item visible and good lighting.');
+    }
+  };
+
+  const capturePhoto = async (slot: string, fromCamera = true) => {
+    try {
+      const requirement = findCaptureRequirement(slot);
+      if (!requirement) {
+        Alert.alert('Photo step unavailable', 'This photo is not needed for the current listing tier.');
+        return;
+      }
+
+      if (fromCamera) {
+        setActiveCaptureRequirement(requirement);
+        await Haptics.selectionAsync().catch(() => {});
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        quality: 0.84,
+        allowsEditing: false,
+        base64: true,
+      });
+      if (result.canceled || !result.assets[0]) return;
+
+      const assessment = await assessPickerAssetQuality(requirement, result.assets[0], 'library');
+      const resolvedQuality = await confirmPhotoQuality(assessment.quality);
+      if (!resolvedQuality) {
+        return;
+      }
+
+      const saved = storeRequirementPhoto(requirement, {
+        ...result.assets[0],
+        quality: resolvedQuality,
+        ocrText: assessment.ocrText,
+        certificationCandidate: assessment.candidate,
+      } as any, 'library');
+      if (!saved) return;
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error: any) {
       Alert.alert('Photo not captured', error?.message ?? 'Try again with the full card visible and good lighting.');
@@ -1519,7 +2455,7 @@ export default function CreateListingScreen() {
 
   const readPhotoBase64 = async (photo: EvidencePhoto) => {
     if (photo.base64) return photo.base64;
-    return FileSystem.readAsStringAsync(photo.uri, { encoding: 'base64' });
+    return FileSystem.readAsStringAsync(photo.sourceUri ?? photo.uri, { encoding: 'base64' });
   };
 
   const runXimilarAnalysis = async () => {
@@ -1527,6 +2463,7 @@ export default function CreateListingScreen() {
     const images = analysisSlots
       .map((slot) => evidencePhotos[slot])
       .filter(Boolean) as EvidencePhoto[];
+    const frontPhoto = evidencePhotos.front ?? evidencePhotos.surface_front ?? images[0] ?? null;
 
     if (images.length < 2) {
       Alert.alert('More images needed', 'Add at least front and back photographs before starting the AI-assisted condition check.');
@@ -1536,10 +2473,12 @@ export default function CreateListingScreen() {
     setXimilarStatus('processing');
     setXimilarError(null);
     try {
+      const frontBase64 = frontPhoto ? await readPhotoBase64(frontPhoto) : null;
+      const centeringAssessment = frontBase64 ? assessCardCenteringFromJpeg(frontBase64) : null;
       const payload: XimilarGradeImage[] = [];
       for (const [index, image] of images.entries()) {
         payload.push({
-          base64: await readPhotoBase64(image),
+          base64: image === frontPhoto && frontBase64 ? frontBase64 : await readPhotoBase64(image),
           side: index === 1 ? 'Back' : 'Front',
         });
       }
@@ -1552,8 +2491,9 @@ export default function CreateListingScreen() {
         condition: mapXimilarScoreToCondition(finalScore),
         confidence: finalScore != null && images.length >= 4 ? 'High confidence' : finalScore != null ? 'Moderate confidence' : 'Limited confidence',
         rawFinalScore: finalScore,
+        centeringAssessment,
         breakdown: [
-          { label: 'Centring', value: grades?.centering != null ? `Visible centring score ${grades.centering.toFixed(1)}` : 'No centring score returned.' },
+          { label: 'Visible centering', value: centeringAssessment ? formatCardCenteringAssessment(centeringAssessment) : grades?.centering != null ? `Provider centering score ${grades.centering.toFixed(1)}. Visual guidance only; not a professional grade.` : 'Visible centering guidance unavailable.' },
           { label: 'Corners', value: grades?.corners != null ? `Corners score ${grades.corners.toFixed(1)}` : 'Review the corner photographs manually.' },
           { label: 'Edges', value: grades?.edges != null ? `Edges score ${grades.edges.toFixed(1)}` : 'Review edge whitening manually.' },
           { label: 'Surface', value: grades?.surface != null ? `Surface score ${grades.surface.toFixed(1)}` : 'Surface estimate unavailable.' },
@@ -1587,10 +2527,10 @@ export default function CreateListingScreen() {
     setDescription(parts.join(' '));
   };
 
-  const uploadPhotos = async (userId: string): Promise<{ urls: string[]; bySlot: Partial<Record<EvidenceSlotKey, string>> }> => {
+  const uploadPhotos = async (userId: string): Promise<{ urls: string[]; bySlot: Partial<Record<string, string>> }> => {
     const urls: string[] = [];
-    const bySlot: Partial<Record<EvidenceSlotKey, string>> = {};
-    for (const [slot, photo] of Object.entries(evidencePhotos) as [EvidenceSlotKey, EvidencePhoto][]) {
+    const bySlot: Partial<Record<string, string>> = {};
+    for (const [photoId, photo] of Object.entries(evidencePhotos) as [string, EvidencePhoto][]) {
       const base64 = await readPhotoBase64(photo);
       const binaryString = atob(base64);
       const bytes = new Uint8Array(binaryString.length);
@@ -1598,7 +2538,8 @@ export default function CreateListingScreen() {
         bytes[index] = binaryString.charCodeAt(index);
       }
 
-      const path = `${userId}/${slot}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.jpg`;
+      const safePhotoId = slugify(photoId) || 'photo';
+      const path = `${userId}/${safePhotoId}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}.jpg`;
       const { data, error } = await supabase.storage
         .from('trade-listings')
         .upload(path, bytes, { contentType: 'image/jpeg', upsert: false });
@@ -1608,13 +2549,14 @@ export default function CreateListingScreen() {
         .from('trade-listings')
         .getPublicUrl(data.path);
       urls.push(publicData.publicUrl);
-      bySlot[slot] = publicData.publicUrl;
+      bySlot[photoId] = publicData.publicUrl;
+      if (photo.evidenceKey && !bySlot[photo.evidenceKey]) bySlot[photo.evidenceKey] = publicData.publicUrl;
     }
 
     return { urls, bySlot };
   };
 
-  const publishListing = async (skipDuplicateWarning = false) => {
+  const publishListing = async (skipDuplicateWarning = false, skipCertificationWarning = false) => {
     const missing = missingPublicationRequirements;
     if (missing.length) {
       Alert.alert('Listing not ready', missing[0].label);
@@ -1626,6 +2568,29 @@ export default function CreateListingScreen() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) throw new Error('You must be signed in to publish a listing.');
+
+      let certificationReviewWarning: string | null = null;
+      if (isGradedSlabListing && resolvedSlabCertification) {
+        const duplicateReview = await fetchCertificationDuplicateReview(user.id, resolvedSlabCertification.certificationNumber);
+        if (duplicateReview?.total) {
+          certificationReviewWarning = 'Certification number matched an existing StackR record and the seller continued after review warning.';
+          if (!skipCertificationWarning) {
+            setPublishing(false);
+            Alert.alert(
+              'Check certification number',
+              'This certification number may already be associated with another StackR item. Check the number before continuing.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Continue',
+                  onPress: () => void publishListing(skipDuplicateWarning, true),
+                },
+              ]
+            );
+            return;
+          }
+        }
+      }
 
       if (selectedCard) {
         const availability = await fetchUserCardAvailability({
@@ -1643,7 +2608,7 @@ export default function CreateListingScreen() {
               { text: 'Cancel', style: 'cancel' },
               {
                 text: 'Continue with another copy',
-                onPress: () => void publishListing(true),
+                onPress: () => void publishListing(true, skipCertificationWarning),
               },
             ]
           );
@@ -1683,14 +2648,63 @@ export default function CreateListingScreen() {
               required: false,
             }]
           : []),
-        ...evidenceRequirements
-          .filter((slot) => uploadResult.bySlot[slot.key])
-          .map((slot) => ({
+        ...captureRequirements
+          .filter((requirement) => uploadResult.bySlot[requirement.id])
+          .map((requirement) => ({
             role: 'seller' as const,
-            slot: slot.key,
-            label: slot.label,
-            url: uploadResult.bySlot[slot.key]!,
-            required: !slot.optional && slot.requiredFor.includes(evidenceTier),
+            slot: requirement.id,
+            label: requirement.label,
+            url: uploadResult.bySlot[requirement.id]!,
+            required: requirement.required,
+            metadata: {
+              evidenceKey: requirement.evidenceKey,
+              captureType: requirement.captureType,
+              photoPurpose: requirement.photoPurpose,
+              state: requirement.state,
+              groupLabel: requirement.groupLabel ?? null,
+              grader: requirement.grader ?? null,
+              slabProfile: requirement.slabProfile ?? null,
+              qualityWarning: evidencePhotos[requirement.id]?.quality.warning ?? null,
+              quality: {
+                purpose: evidencePhotos[requirement.id]?.quality.purpose ?? requirement.photoPurpose,
+                purposeLabel: evidencePhotos[requirement.id]?.quality.purposeLabel ?? null,
+                severity: evidencePhotos[requirement.id]?.quality.severity ?? null,
+                warning: evidencePhotos[requirement.id]?.quality.warning ?? null,
+                requiresRetake: evidencePhotos[requirement.id]?.quality.requiresRetake ?? false,
+                canOverride: evidencePhotos[requirement.id]?.quality.canOverride ?? false,
+                overrideAccepted: evidencePhotos[requirement.id]?.quality.overrideAccepted ?? false,
+                overrideReason: evidencePhotos[requirement.id]?.quality.overrideReason ?? null,
+                issues: evidencePhotos[requirement.id]?.quality.issues ?? [],
+                metrics: evidencePhotos[requirement.id]?.quality.metrics ?? null,
+                imageFingerprint: evidencePhotos[requirement.id]?.quality.imageFingerprint ?? null,
+                captureSource: evidencePhotos[requirement.id]?.captureSource ?? null,
+              },
+              visibleCenteringGuidance: requirement.evidenceKey === 'front'
+                ? ximilarEstimate?.centeringAssessment ?? null
+                : null,
+              certification: resolvedSlabCertification && (
+                requirement.id === resolvedSlabCertification.labelImageId
+                || (requirement.evidenceKey === 'slab_label' && resolvedSlabCertification.labelImageId === 'manual')
+                || (requirement.evidenceKey === 'slab_cert' && resolvedSlabCertification.captureMethod !== 'manual')
+              )
+                ? resolvedSlabCertification
+                : null,
+              captureFrame: evidencePhotos[requirement.id]?.captureFrame
+                ? {
+                    scanSessionId: evidencePhotos[requirement.id]?.captureFrame?.scanSessionId,
+                    capturedAt: evidencePhotos[requirement.id]?.captureFrame?.capturedAt,
+                    pixelWidth: evidencePhotos[requirement.id]?.captureFrame?.pixelWidth,
+                    pixelHeight: evidencePhotos[requirement.id]?.captureFrame?.pixelHeight,
+                    orientation: evidencePhotos[requirement.id]?.captureFrame?.orientation,
+                    rotationDegrees: evidencePhotos[requirement.id]?.captureFrame?.rotationDegrees,
+                    mirrored: evidencePhotos[requirement.id]?.captureFrame?.mirrored,
+                    previewDimensions: evidencePhotos[requirement.id]?.captureFrame?.previewDimensions,
+                    previewResizeMode: evidencePhotos[requirement.id]?.captureFrame?.previewResizeMode,
+                    detectedCardQuadrilateral: evidencePhotos[requirement.id]?.captureFrame?.detectedCardQuadrilateral,
+                  }
+                : null,
+              crop: evidencePhotos[requirement.id]?.crop ?? null,
+            },
           })),
       ];
       const listingImages = stockImageUrl
@@ -1704,12 +2718,13 @@ export default function CreateListingScreen() {
         selectedProduct,
       });
       const goldPending = usesProtectionTier && requiresGoldReview;
-      const reviewRequired = identityPendingReview || goldPending || protectionTierIsDowngraded || Boolean(valueWarning);
+      const reviewRequired = identityPendingReview || goldPending || protectionTierIsDowngraded || Boolean(valueWarning) || Boolean(certificationReviewWarning);
       const adminReasons = [
         identityPendingReview ? 'Card identity pending Stackr review' : null,
         goldPending ? 'Gold verification pending confirmation' : null,
         protectionTierIsDowngraded ? `Seller selected ${formatProtectionTier(protectionTier)} below Stackr recommendation ${formatProtectionTier(recommendedProtectionTier)}` : null,
         valueWarning ? valueWarning : null,
+        certificationReviewWarning,
       ].filter(Boolean).join(' · ');
 
       const listingPayload = {
@@ -1738,6 +2753,7 @@ export default function CreateListingScreen() {
             : null,
           selectedProduct ? 'Catalogue media attached as reference imagery. Seller photos show the actual item.' : null,
           resolvedListingSubjectType === 'graded_slab' ? `Certification number: ${certificationNumber || 'seller-confirmed, not provided'}. Slab case condition: ${slabCaseCondition}.` : null,
+          resolvedListingSubjectType === 'graded_slab' && resolvedSlabCertification ? `Certification capture: ${resolvedSlabCertification.captureMethod.toUpperCase()} confirmed by seller.` : null,
           isSealedLikeCategory(resolvedListingSubjectType) ? `Sealed status: ${sealedStatus}. Packaging condition: ${packagingCondition}.` : null,
           usesProtectionTier ? `Protection selected: ${formatProtectionTier(protectionTier)}. Stackr recommendation: ${formatProtectionTier(recommendedProtectionTier)}.` : null,
           silverAgreementRequired
@@ -1748,6 +2764,9 @@ export default function CreateListingScreen() {
             : null,
           usesProtectionTier && (protectionTier === 'silver' || protectionTier === 'gold')
             ? `Seller condition: ${declaredCondition}. Stackr AI estimate: ${ximilarEstimate?.condition ?? 'pending'}.`
+            : null,
+          ximilarEstimate?.centeringAssessment
+            ? `Visible centering guidance: ${ximilarEstimate.centeringAssessment.summary} ${ximilarEstimate.centeringAssessment.disclaimer}`
             : null,
           usesProtectionTier && protectionTier === 'gold'
             ? `Verification ID: ${verificationId}. Status: verification pending.`
@@ -1789,6 +2808,7 @@ export default function CreateListingScreen() {
     if (step === 'confirm') {
       return (
         <PrimaryFooter
+          compact={keyboardVisible}
           label="Yes, this is my card"
           onPress={() => setStep('condition')}
           secondaryLabel="Choose another match"
@@ -1809,6 +2829,7 @@ export default function CreateListingScreen() {
       }
       return (
         <PrimaryFooter
+          compact={keyboardVisible}
           label={listingSubjectType === 'graded_slab' ? 'Continue to case condition' : isCardSubject(listingSubjectType) ? 'Continue with pending review' : 'Continue with product details'}
           onPress={() => {
             if (!isCardSubject(listingSubjectType)) {
@@ -1836,7 +2857,7 @@ export default function CreateListingScreen() {
               ? 'Choose the item condition'
               : 'Choose a quick condition estimate',
       }];
-      return <PrimaryFooter label="Continue to value" onPress={() => {
+      return <PrimaryFooter compact={keyboardVisible} label="Continue to value" onPress={() => {
         if (listingSubjectType === 'graded_slab') setSellerCondition(slabConditionLabel);
         setStep('value');
       }} disabled={missing.length > 0} missing={missing} />;
@@ -1844,9 +2865,17 @@ export default function CreateListingScreen() {
 
     if (step === 'value') {
       const missing: MissingRequirement[] = valueEntered ? [] : [{ key: 'value', label: 'Add the listing or trade value to continue' }];
+      const nextLabel = usesProtectionTier
+        ? 'Reveal protection level'
+        : listingSubjectType === 'graded_slab'
+          ? 'Continue to slab photos'
+          : isSealedLikeCategory(listingSubjectType)
+            ? 'Continue to product photos'
+            : 'Continue to item photos';
       return (
         <PrimaryFooter
-          label={usesProtectionTier ? 'Reveal protection level' : 'Continue to slab photos'}
+          compact={keyboardVisible}
+          label={nextLabel}
           onPress={() => setStep(usesProtectionTier ? 'protection' : 'evidence')}
           disabled={missing.length > 0}
           missing={missing}
@@ -1860,11 +2889,11 @@ export default function CreateListingScreen() {
         : protectionTier === 'silver' && verificationRequirements.requiresXimilar
           ? 'Begin condition check'
           : 'Capture listing photos';
-      return <PrimaryFooter label={label} onPress={() => setStep('evidence')} />;
+      return <PrimaryFooter compact={keyboardVisible} label={label} onPress={() => setStep('evidence')} />;
     }
 
     if (step === 'evidence') {
-      const requiredDone = requiredEvidence.every((slot) => evidencePhotos[slot.key]);
+      const requiredDone = captureProgress.requiredDone;
       const nextLabel = verificationRequirements.requiresXimilar
         ? protectionTier === 'silver'
           ? 'Begin AI condition check'
@@ -1874,26 +2903,28 @@ export default function CreateListingScreen() {
           : 'Continue to listing details';
       return (
         <PrimaryFooter
-          label={requiredDone ? nextLabel : currentEvidence ? `Capture ${currentEvidence.label.toLowerCase()}` : 'Capture evidence'}
+          compact={keyboardVisible}
+          label={requiredDone ? nextLabel : currentCaptureRequirement ? `Capture ${currentCaptureRequirement.label.toLowerCase()}` : 'Capture evidence'}
           onPress={() => {
             if (requiredDone) {
               setStep(verificationRequirements.requiresXimilar ? 'ai' : requiresGoldReview ? 'gold' : 'details');
-            } else if (currentEvidence) {
-              void capturePhoto(currentEvidence.key, true);
+            } else if (currentCaptureRequirement) {
+              void capturePhoto(currentCaptureRequirement.id, true);
             }
           }}
-          secondaryLabel={currentEvidence && !requiredDone ? 'Upload' : undefined}
-          onSecondaryPress={currentEvidence && !requiredDone ? () => void capturePhoto(currentEvidence.key, false) : undefined}
+          secondaryLabel={currentCaptureRequirement && !requiredDone ? 'Upload' : undefined}
+          onSecondaryPress={currentCaptureRequirement && !requiredDone ? () => void capturePhoto(currentCaptureRequirement.id, false) : undefined}
         />
       );
     }
 
     if (step === 'ai') {
       if (ximilarStatus === 'complete') {
-        return <PrimaryFooter label={requiresGoldReview ? 'Prepare Gold verification' : 'Accept estimate'} onPress={() => setStep(requiresGoldReview ? 'gold' : 'details')} />;
+        return <PrimaryFooter compact={keyboardVisible} label={requiresGoldReview ? 'Prepare Gold verification' : 'Accept estimate'} onPress={() => setStep(requiresGoldReview ? 'gold' : 'details')} />;
       }
       return (
         <PrimaryFooter
+          compact={keyboardVisible}
           label={ximilarStatus === 'failed' ? 'Try condition check again' : 'Start AI condition check'}
           onPress={runXimilarAnalysis}
           loading={ximilarStatus === 'processing'}
@@ -1910,12 +2941,12 @@ export default function CreateListingScreen() {
           ? 'Create the verification record and confirm packaging steps'
           : 'Create the verification review record',
       }];
-      return <PrimaryFooter label="Continue to listing details" onPress={() => setStep('details')} disabled={missing.length > 0} missing={missing} />;
+      return <PrimaryFooter compact={keyboardVisible} label="Continue to listing details" onPress={() => setStep('details')} disabled={missing.length > 0} missing={missing} />;
     }
 
     if (step === 'details') {
       const missing: MissingRequirement[] = detailsComplete ? [] : [{ key: 'details', label: 'Complete quantity, delivery and dispatch details' }];
-      return <PrimaryFooter label="Review listing" onPress={() => setStep('review')} disabled={missing.length > 0} missing={missing} />;
+      return <PrimaryFooter compact={keyboardVisible} label="Review listing" onPress={() => setStep('review')} disabled={missing.length > 0} missing={missing} />;
     }
 
     if (step === 'review') {
@@ -1926,7 +2957,7 @@ export default function CreateListingScreen() {
         : protectionTier === 'silver'
           ? 'Publish Silver listing'
           : 'Publish listing';
-      return <PrimaryFooter label={label} onPress={() => void publishListing()} disabled={missingPublicationRequirements.length > 0} loading={publishing || uploading} missing={missingPublicationRequirements} />;
+      return <PrimaryFooter compact={keyboardVisible} label={label} onPress={() => void publishListing()} disabled={missingPublicationRequirements.length > 0} loading={publishing || uploading} missing={missingPublicationRequirements} />;
     }
 
     return null;
@@ -1992,7 +3023,7 @@ export default function CreateListingScreen() {
             {listingSubjectType === 'graded_slab'
               ? 'Choose the exact printed card first, then add the grader, grade and certification from the slab label.'
               : isCardSubject(listingSubjectType)
-                ? 'Let us identify your card and build a trusted listing.'
+                ? 'Identify your card and build a trusted listing.'
                 : canUseProductCatalogue(listingSubjectType)
                   ? 'Find the exact product so Stackr can attach approved catalogue imagery.'
                   : 'Add the item details and Stackr will flag it for catalogue review where needed.'}
@@ -2003,10 +3034,16 @@ export default function CreateListingScreen() {
       {listingSubjectType === 'graded_slab' ? (
         <>
           <CardIdentificationTile
+            title="Scan slab"
+            body="Capture the slab label and enclosed card, then confirm the exact printing."
+            source={stackrIcons.scanCard}
+            primary
+            onPress={() => selectIdentificationMethod('scan')}
+          />
+          <CardIdentificationTile
             title="Select card name"
             body="Search a Pokémon name, choose the exact printed card, and Stackr will fill the set."
             source={categoryIcon}
-            primary
             onPress={() => selectIdentificationMethod('manual')}
           />
           <CardIdentificationTile
@@ -2023,28 +3060,16 @@ export default function CreateListingScreen() {
         <>
           <CardIdentificationTile
             title="Scan card"
-            body="Use your camera to identify the card."
+            body="Use Stackr scanner, then select the matching card for this listing."
             source={stackrIcons.scanCard}
             primary
             onPress={() => selectIdentificationMethod('scan')}
           />
           <CardIdentificationTile
-            title="Search for card"
-            body="Search by Pokemon name, set, card number, rarity or expansion."
+            title="Add manually"
+            body="Search by Pokemon name, set, card number or rarity. If it is missing, create a pending record."
             source={stackrIcons.searchCard}
             onPress={() => selectIdentificationMethod('search')}
-          />
-          <CardIdentificationTile
-            title="Choose from my collection"
-            body="List an existing owned card without identifying it again."
-            source={stackrIcons.binders}
-            onPress={() => selectIdentificationMethod('collection')}
-          />
-          <CardIdentificationTile
-            title="Card not found"
-            body="Create a temporary card record for Stackr review."
-            icon="create-outline"
-            onPress={() => selectIdentificationMethod('manual')}
           />
         </>
       ) : (
@@ -2069,6 +3094,48 @@ export default function CreateListingScreen() {
     </View>
   );
 
+  const renderListingLanguageSelector = () => (
+    <View style={{ gap: 8 }}>
+      <FieldLabel label="Catalogue language" />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 8, paddingRight: 20 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {LISTING_LANGUAGE_OPTIONS.map((option) => {
+          const active = option.key === listingLanguage;
+          return (
+            <TouchableOpacity
+              key={option.key}
+              activeOpacity={0.82}
+              onPress={() => handleListingLanguageChange(option.key)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={`${option.label} catalogue`}
+              style={[
+                styles.recentChip,
+                {
+                  minHeight: 40,
+                  paddingHorizontal: 14,
+                  backgroundColor: active ? theme.colors.primary : theme.colors.surface,
+                  borderColor: active ? theme.colors.primary : theme.colors.border,
+                },
+              ]}
+            >
+              <Text style={{ color: active ? '#FFFFFF' : theme.colors.text, fontSize: 12, fontWeight: '900' }}>
+                {option.shortLabel}
+              </Text>
+              <Text style={{ color: active ? 'rgba(255,255,255,0.88)' : theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+
   const renderIdentify = () => {
     if (!isCardSubject(listingSubjectType)) {
       const supportsCatalogue = canUseProductCatalogue(listingSubjectType);
@@ -2084,6 +3151,7 @@ export default function CreateListingScreen() {
           </Text>
           {supportsCatalogue ? (
             <>
+              {renderListingLanguageSelector()}
               <StackrTextInput
                 value={searchQuery}
                 onChangeText={handleSearchChange}
@@ -2093,6 +3161,7 @@ export default function CreateListingScreen() {
               {searching ? <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 8 }} /> : null}
               {productResults.map((product) => {
                 const isSetFallback = product.source === 'set_catalog';
+                const productImageUrl = product.image_large_url ?? product.image_url;
                 const productMeta = [
                   product.set_name,
                   product.language,
@@ -2106,15 +3175,16 @@ export default function CreateListingScreen() {
                   activeOpacity={0.82}
                   style={[styles.searchResult, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
                 >
-                  {product.image_url ? (
-                    <Image source={{ uri: product.image_url }} style={styles.productResultImage} resizeMode="contain" />
-                  ) : (
-                    <View style={[styles.productResultImage, { backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }]}>
-                      <Ionicons name={isSetFallback ? 'albums-outline' : 'image-outline'} size={24} color={theme.colors.textSoft} />
-                    </View>
-                  )}
+                  <StackrImage
+                    uri={productImageUrl}
+                    fallbackSource={isSetFallback ? stackrIcons.setDiscovery : stackrIcons.marketplace}
+                    contentFit="contain"
+                    rounded={12}
+                    style={[styles.productResultImage, { backgroundColor: theme.colors.surface }]}
+                    showFallbackIcon={false}
+                  />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900' }} numberOfLines={2}>{product.name}</Text>
+                    <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>{product.name}</Text>
                     {isSetFallback ? (
                       <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, marginTop: 3 }} numberOfLines={2}>
                         {[...productMeta, 'Set match - add seller photos'].filter(Boolean).join(' · ')}
@@ -2130,7 +3200,7 @@ export default function CreateListingScreen() {
                 );
               })}
               {selectedProduct ? (
-                <InlineRequirementMessage message="Catalogue images added. Seller photos of your actual item are still required." />
+                <InlineRequirementMessage message={catalogueImageUrl ? 'Catalogue images added. Seller photos of your actual item are still required.' : 'Catalogue image unavailable. Seller photos of your actual item are still required.'} />
               ) : null}
               {searchQuery.trim() && !searching && !productResults.length ? (
                 <View style={{ gap: 10 }}>
@@ -2158,65 +3228,54 @@ export default function CreateListingScreen() {
     }
 
     if (identificationMethod === 'scan') {
+      const isSlabScan = listingSubjectType === 'graded_slab';
       return (
         <View style={styles.stepContent}>
-          <Text style={[styles.stepTitle, { color: theme.colors.text }]}>Scan card</Text>
-          <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>Place the full card inside the frame. If recognition is uncertain, choose a match manually.</Text>
-          <View style={[styles.scanGuide, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            {scanReferencePhoto ? (
-              <Image source={{ uri: scanReferencePhoto.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-            ) : (
-              <>
-                <View style={[styles.scanCardFrame, { borderColor: theme.colors.primary }]}>
-                  <View style={[styles.scanCorner, styles.scanCornerTopLeft, { borderColor: theme.colors.primary }]} />
-                  <View style={[styles.scanCorner, styles.scanCornerTopRight, { borderColor: theme.colors.primary }]} />
-                  <View style={[styles.scanCorner, styles.scanCornerBottomLeft, { borderColor: theme.colors.primary }]} />
-                  <View style={[styles.scanCorner, styles.scanCornerBottomRight, { borderColor: theme.colors.primary }]} />
-                </View>
-                <Text style={[styles.scanGuideText, { color: theme.colors.textSoft }]}>Place the full card inside the frame.</Text>
-              </>
-            )}
-          </View>
-          <View style={styles.dualActions}>
-            <TouchableOpacity onPress={() => void capturePhoto('scan_reference', true)} style={[styles.secondaryAction, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-              <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>{scanReferencePhoto ? 'Retake' : 'Capture'}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push({ pathname: '/scan', params: { mode: 'market' } } as any)} style={[styles.primaryAction, { backgroundColor: theme.colors.primary }]}>
-              <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }}>Open scanner</Text>
-            </TouchableOpacity>
-          </View>
-          <InlineRequirementMessage
-            message="Card recognition for listing uses the main Stackr scanner. If the scan is uncertain, continue with Search for card or Card not found here."
+          <Text style={[styles.stepTitle, { color: theme.colors.text }]}>
+            {isSlabScan ? 'Scan the slab' : 'Choose how to add the card'}
+          </Text>
+          <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>
+            {isSlabScan
+              ? 'Capture the full slab and label, then choose the enclosed card for this listing.'
+              : 'Scan the card or search for it manually. Once a scan finds matches, choose the exact card for this listing.'}
+          </Text>
+          <CardIdentificationTile
+            title={isSlabScan ? 'Open slab scanner' : 'Scan card'}
+            body={isSlabScan ? 'Use the slab scan path for label, grader and card identification.' : 'Open the camera scanner and select the matching card.'}
+            source={stackrIcons.scanCard}
+            primary
+            onPress={openListingScanner}
           />
           <CardIdentificationTile
-            title="Search for card instead"
-            body="Select the card from the Stackr database and continue without leaving the listing flow."
+            title="Add manually"
+            body="Search the catalogue, or create a pending card record if it is not there yet."
             source={stackrIcons.searchCard}
             onPress={() => setIdentificationMethod('search')}
-          />
-          <CardIdentificationTile
-            title="Card not found"
-            body="Continue with a pending identity review."
-            icon="create-outline"
-            onPress={() => setStep('manual')}
           />
         </View>
       );
     }
 
-    const list = identificationMethod === 'collection' ? ownedCards : searchResults;
+    const list = identificationMethod === 'collection' ? filteredOwnedCards : searchResults;
     return (
       <View style={styles.stepContent}>
         <Text style={[styles.stepTitle, { color: theme.colors.text }]}>{identificationMethod === 'collection' ? 'Choose from my collection' : 'Search for card'}</Text>
-        <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>Tap a result to use it in this listing. You will confirm the exact version before continuing.</Text>
+        <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>
+          {identificationMethod === 'collection'
+            ? 'Your owned cards are shown highest estimated value first. Search if you already know which card you want to list.'
+            : 'Tap a result to use it in this listing. You will confirm the exact version before continuing.'}
+        </Text>
 
         {identificationMethod !== 'collection' ? (
           <>
+            {renderListingLanguageSelector()}
             <StackrTextInput
               value={searchQuery}
               onChangeText={handleSearchChange}
               placeholder="Search Pokemon, set, number or rarity"
               autoCapitalize="words"
+              autoCorrect={false}
+              spellCheck={false}
             />
             {recentSearches.length ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
@@ -2229,11 +3288,30 @@ export default function CreateListingScreen() {
               </ScrollView>
             ) : null}
           </>
-        ) : null}
+        ) : (
+          <View style={{ gap: 8 }}>
+            <StackrTextInput
+              value={collectionSearchQuery}
+              onChangeText={setCollectionSearchQuery}
+              placeholder="Search your collection by card, set, number or rarity"
+              autoCapitalize="words"
+              autoCorrect={false}
+              spellCheck={false}
+            />
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '800' }}>
+              {collectionLoading
+                ? 'Loading your collection...'
+                : `${filteredOwnedCards.length} of ${ownedCards.length} owned card${ownedCards.length === 1 ? '' : 's'} - highest value first`}
+            </Text>
+          </View>
+        )}
 
         {searching || collectionLoading ? <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 8 }} /> : null}
         {identificationMethod === 'collection' && !collectionLoading && !ownedCards.length ? (
           <InlineRequirementMessage message="No owned cards were found for this account. You can search manually or create a temporary card record." tone="warning" />
+        ) : null}
+        {identificationMethod === 'collection' && !collectionLoading && ownedCards.length > 0 && !list.length ? (
+          <InlineRequirementMessage message="No owned cards match that search. Try the Pokemon name, set, number or rarity." tone="warning" />
         ) : null}
         {list.map((card) => (
           <TouchableOpacity
@@ -2242,17 +3320,34 @@ export default function CreateListingScreen() {
             activeOpacity={0.82}
             style={[styles.searchResult, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
           >
-            {card.image_small ? (
-              <Image source={{ uri: card.image_small }} style={styles.resultImage} resizeMode="contain" />
-            ) : (
-              <View style={[styles.resultImage, { backgroundColor: theme.colors.surface }]} />
-            )}
+            <View style={[styles.resultImage, styles.resultImageFrame, { backgroundColor: theme.colors.surface }]}>
+              {card.image_small ? (
+                <Image source={{ uri: card.image_small }} style={StyleSheet.absoluteFill} resizeMode="contain" />
+              ) : null}
+              <RaritySymbol
+                rarity={card.rarity}
+                size={12}
+                style={RARITY_SYMBOL_CARD_OVERLAY}
+              />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900' }} numberOfLines={1}>{card.name}</Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, marginTop: 3 }} numberOfLines={2}>
-                {[card.set_name, card.number ? `#${card.number}` : null, card.rarity].filter(Boolean).join(' · ')}
+                {[card.set_name, card.number ? `#${card.number}` : null, getPokemonCardLanguageLabel(card.language), card.ownedQuantity ? `Owned x${card.ownedQuantity}` : null].filter(Boolean).join(' · ')}
               </Text>
             </View>
+            {identificationMethod === 'collection' ? (
+              <View style={{ alignItems: 'flex-end', gap: 3, maxWidth: 82 }}>
+                <Text style={{ color: theme.colors.text, fontSize: 12.5, lineHeight: 16, fontWeight: '900' }} numberOfLines={1}>
+                  {formatCurrency(card.estimatedValue)}
+                </Text>
+                {card.estimatedValueSource ? (
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800', textTransform: 'uppercase' }} numberOfLines={1}>
+                    {card.estimatedValueSource}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
             <Ionicons name="chevron-forward" size={18} color={theme.colors.textSoft} />
           </TouchableOpacity>
         ))}
@@ -2281,7 +3376,7 @@ export default function CreateListingScreen() {
         setName={selectedCard?.set_name}
         number={selectedCard?.number}
         rarity={selectedCard?.rarity}
-        language={selectedCard?.language ?? 'English'}
+        language={getPokemonCardLanguageLabel(selectedCard?.language)}
         variant={selectedCard?.variant ?? (listingSubjectType === 'graded_slab' ? 'Graded' : 'Raw')}
         rawValue={prices.market}
         gradedValue={prices.graded}
@@ -2337,15 +3432,20 @@ export default function CreateListingScreen() {
               activeOpacity={0.82}
               style={[styles.searchResult, { backgroundColor: theme.colors.surface, borderColor: selectedCard?.id === card.id ? theme.colors.primary : theme.colors.border }]}
             >
-              {card.image_small ? (
-                <Image source={{ uri: card.image_small }} style={styles.resultImage} resizeMode="contain" />
-              ) : (
-                <View style={[styles.resultImage, { backgroundColor: theme.colors.card }]} />
-              )}
+              <View style={[styles.resultImage, styles.resultImageFrame, { backgroundColor: theme.colors.card }]}>
+                {card.image_small ? (
+                  <Image source={{ uri: card.image_small }} style={StyleSheet.absoluteFill} resizeMode="contain" />
+                ) : null}
+                <RaritySymbol
+                  rarity={card.rarity}
+                  size={12}
+                  style={RARITY_SYMBOL_CARD_OVERLAY}
+                />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900' }} numberOfLines={1}>{card.name}</Text>
                 <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, marginTop: 3 }} numberOfLines={2}>
-                  {[card.set_name, card.number ? `#${card.number}` : null, card.rarity].filter(Boolean).join(' · ')}
+                  {[card.set_name, card.number ? `#${card.number}` : null, getPokemonCardLanguageLabel(card.language)].filter(Boolean).join(' · ')}
                 </Text>
               </View>
               {selectedCard?.id === card.id ? (
@@ -2413,36 +3513,6 @@ export default function CreateListingScreen() {
       </Text>
       {isCardSubject(listingSubjectType) ? <InlineRequirementMessage message="Card identity pending review" tone="warning" /> : null}
       <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-        <FieldLabel label="Listing type" />
-        <View style={styles.productGrid}>
-          {PRODUCT_TYPES.map((type) => {
-            const active = manualIdentity.state === type || listingSubjectType === type;
-            const icon = listingCategoryIcons[type];
-            return (
-              <TouchableOpacity
-                key={type}
-                onPress={() => {
-                  setListingSubjectType(type);
-                  setManualIdentity((current) => ({ ...current, state: type }));
-                  if (type === 'graded_slab') setSellerCondition(getSlabConditionLabel(displayGradingCompany, grade));
-                  if (type === 'raw_card') setSellerCondition('');
-                }}
-                style={[styles.productTypeTile, { backgroundColor: active ? theme.colors.primary + '10' : theme.colors.surface, borderColor: active ? theme.colors.primary : theme.colors.border }]}
-              >
-                {icon ? (
-                  <StackrCardActionIcon
-                    source={icon}
-                    frameSize={stackrSellCategoryIconSizes.manualTileFrame}
-                    artworkSize={stackrSellCategoryIconSizes.manualTileArtwork}
-                  />
-                ) : (
-                  <Ionicons name="cube-outline" size={24} color={theme.colors.primary} />
-                )}
-              <Text style={{ color: theme.colors.text, fontSize: 10, lineHeight: 13, fontWeight: '900', textAlign: 'center' }}>{PRODUCT_TYPE_LABELS[type] ?? type}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
         <FieldLabel label={isCardSubject(listingSubjectType) ? 'Card name' : 'Product name'} required />
         <StackrTextInput
           value={manualIdentity.cardName}
@@ -2515,8 +3585,8 @@ export default function CreateListingScreen() {
         subtitle={cardSubtitle}
         condition={declaredCondition || 'Not selected'}
         tier={usesProtectionTier ? protectionTier : undefined}
-        trustLabel={!usesProtectionTier ? 'Grade' : undefined}
-        trustValue={!usesProtectionTier ? slabConditionLabel : undefined}
+        trustLabel={!usesProtectionTier ? (isGradedSlabListing ? 'Grade' : 'Evidence') : undefined}
+        trustValue={!usesProtectionTier ? (isGradedSlabListing ? slabConditionLabel : 'Seller photos') : undefined}
         value={activeTransactionValue}
       />
       {listingSubjectType === 'graded_slab' ? (
@@ -2525,11 +3595,11 @@ export default function CreateListingScreen() {
             <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900' }}>Slab label</Text>
             <ReviewRow label="Grader" value={displayGradingCompany} />
             <ReviewRow label="Grade" value={grade} />
-            <ReviewRow label="Certification" value={certificationNumber || 'Seller-confirmed'} />
+            <ReviewRow label="Certification" value={slabCertificationDisplay} />
           </View>
           <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
             <FieldLabel label="Certification number" required />
-            <StackrTextInput value={certificationNumber} onChangeText={setCertificationNumber} placeholder="As printed on the slab label" autoCapitalize="characters" />
+            <StackrTextInput value={certificationNumber} onChangeText={handleCertificationNumberChange} placeholder="As printed on the slab label" autoCapitalize="characters" />
             <FieldLabel label="Slab case condition" required />
             <View style={styles.optionWrap}>
               {SLAB_CASE_CONDITION_OPTIONS.map((option) => (
@@ -2612,7 +3682,11 @@ export default function CreateListingScreen() {
       <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>
         {isGradedSlabListing
           ? 'Stackr checks comparable sales using the selected card, grading company and grade.'
-          : 'Stackr uses the highest relevant value to assign the protection tier automatically.'}
+          : usesProtectionTier
+            ? 'Stackr uses the highest relevant value to assign the raw-card protection tier automatically.'
+            : isSealedLikeCategory(listingSubjectType)
+              ? 'Set the price or trade value. Sealed products are sold as seen with clear actual-item and seal photos.'
+              : 'Set the price or trade value. This item will be listed from seller photos and factual details.'}
       </Text>
       <View style={styles.modeGrid}>
         <ToggleCard active={listingMode === 'sell'} title="Sell" body="Set an asking price and optional offers." icon="pricetag-outline" onPress={() => setListingMode('sell')} />
@@ -2628,7 +3702,7 @@ export default function CreateListingScreen() {
       />
       {(listingMode === 'sell' || listingMode === 'both') ? (
         <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-          <FieldLabel label="Asking price" required />
+          <FieldLabel label="Your listing price" required />
           <StackrTextInput value={askingPrice} onChangeText={setAskingPrice} placeholder="0.00" keyboardType="decimal-pad" />
           <PressableChecklistItem label="Offers accepted" checked={offersAccepted} onPress={() => setOffersAccepted((value) => !value)} />
           {offersAccepted ? (
@@ -2689,8 +3763,9 @@ export default function CreateListingScreen() {
                 active={selected}
                 title={`${formatProtectionTier(tier)}${isRecommended ? ' (recommended)' : ''}`}
                 body={PROTECTION_TIER_CHOICE_COPY[tier]}
-                icon={PROTECTION_TIER_ICONS[tier]}
+                source={PROTECTION_TIER_ARTWORK[tier]}
                 onPress={() => selectProtectionTier(tier)}
+                compact
               />
             );
           })}
@@ -2702,12 +3777,46 @@ export default function CreateListingScreen() {
           message={silverAgreementDisclosure}
         />
       ) : null}
-      <InlineRequirementMessage message="Protection level based on the card and transaction value." />
     </View>
   );
 
   const renderEvidence = () => {
-    const captured = currentEvidence ? evidencePhotos[currentEvidence.key] : null;
+    const captured = currentCaptureRequirement ? evidencePhotos[currentCaptureRequirement.id] : null;
+    const currentCaptureIndex = currentCaptureRequirement
+      ? captureRequirements.findIndex((item) => item.id === currentCaptureRequirement.id)
+      : -1;
+    const nextCaptureRequirement = currentCaptureRequirement
+      ? captureRequirements.find((item, index) => (
+          index > currentCaptureIndex
+          && item.required
+          && !evidencePhotos[item.id]
+          && item.id !== currentCaptureRequirement.id
+        ))
+        ?? captureRequirements.find((item) => (
+          item.required
+          && !evidencePhotos[item.id]
+          && item.id !== currentCaptureRequirement.id
+        ))
+        ?? captureRequirements.find((item, index) => (
+          index > currentCaptureIndex
+          && !evidencePhotos[item.id]
+          && item.id !== currentCaptureRequirement.id
+        ))
+      : null;
+    const visibleCaptureQueue = [currentCaptureRequirement, nextCaptureRequirement]
+      .filter((item, index, array): item is CaptureRequirement => Boolean(item) && array.findIndex((candidate) => candidate?.id === item?.id) === index);
+    const subjectLabel = listingSubjectType === 'graded_slab'
+      ? 'slab'
+      : isSealedLikeCategory(listingSubjectType) || listingSubjectType === 'accessories' || listingSubjectType === 'other'
+        ? 'item'
+        : 'card';
+    const capturedPreviewUrl = getEvidencePhotoUrl(captured);
+    const placeholderCopy = currentCaptureRequirement
+      ? getCapturePlaceholderCopy(currentCaptureRequirement, subjectLabel)
+      : null;
+    const capturedResizeMode = currentCaptureRequirement
+      ? getCapturedPhotoResizeMode(currentCaptureRequirement.captureType)
+      : 'cover';
     return (
       <View style={styles.stepContent}>
         <Text style={[styles.stepTitle, { color: theme.colors.text }]}>
@@ -2716,57 +3825,142 @@ export default function CreateListingScreen() {
             : 'Capture evidence'}
         </Text>
         <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>
-          {isSealedLikeCategory(listingSubjectType)
-            ? 'Photograph the exact sealed item. Front and back are required; seal, wrap and crimp close-ups are optional but recommended.'
-            : listingSubjectType === 'graded_slab'
-              ? 'Photograph the exact slab, including the label and holder condition. The grader label remains the card grade.'
-              : 'Photograph the exact card the buyer will receive. Silver and Gold use guided evidence for condition review.'}
+          Capture the current view, then Stackr will move you to the next required photo.
         </Text>
-        <EvidenceChecklist
-          requirements={evidenceRequirements}
-          captured={capturedEvidenceKeys}
-          activeKey={currentEvidence?.key}
-          onSelect={(key) => {
-            const index = evidenceRequirements.findIndex((item) => item.key === key);
-            if (index >= 0) setActiveEvidenceIndex(index);
-          }}
-        />
-        {currentEvidence ? (
+        <View style={[styles.captureProgressPanel, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+          <View style={styles.captureProgressLine}>
+            <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>Required photographs</Text>
+            <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>
+              {captureProgress.requiredComplete} of {captureProgress.requiredTotal} complete
+            </Text>
+          </View>
+          <View style={styles.captureProgressLine}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>Optional photographs</Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800' }}>
+              {captureProgress.optionalComplete} of {captureProgress.optionalTotal} complete
+            </Text>
+          </View>
+          {currentCaptureRequirement ? (
+            <View style={styles.captureQueueLine}>
+              <Text style={[styles.captureQueueLabel, { color: theme.colors.textSoft }]}>
+                {currentCaptureRequirement.required ? 'Current required' : 'Current optional'}
+              </Text>
+              <Text style={[styles.captureQueueValue, { color: theme.colors.text }]} numberOfLines={1}>
+                {currentCaptureRequirement.label}
+              </Text>
+            </View>
+          ) : null}
+          {nextCaptureRequirement ? (
+            <View style={styles.captureQueueLine}>
+              <Text style={[styles.captureQueueLabel, { color: theme.colors.textSoft }]}>Next</Text>
+              <Text style={[styles.captureQueueValue, { color: theme.colors.primary }]} numberOfLines={1}>
+                {nextCaptureRequirement.label}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+        {visibleCaptureQueue.length > 0 ? (
+          <EvidenceChecklist
+            requirements={visibleCaptureQueue}
+            captured={capturedPhotoIds}
+            activeKey={currentCaptureRequirement?.id}
+            onSelect={(key) => {
+              const index = captureRequirements.findIndex((item) => item.id === key);
+              if (index >= 0) setActiveEvidenceIndex(index);
+            }}
+          />
+        ) : null}
+        {currentCaptureRequirement ? (
           <View style={[styles.captureCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-            <Text style={{ color: theme.colors.text, fontSize: 17, lineHeight: 22, fontWeight: '900' }}>{currentEvidence.label}</Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 4 }}>{currentEvidence.instruction}</Text>
-            <View style={[styles.capturePreview, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              {captured ? (
-                <Image source={{ uri: captured.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+            <View style={styles.captureCardHeader}>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ color: theme.colors.text, fontSize: 17, lineHeight: 22, fontWeight: '900' }}>{currentCaptureRequirement.label}</Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 4 }}>{currentCaptureRequirement.instruction}</Text>
+              </View>
+              <View style={[styles.requirementBadge, { backgroundColor: currentCaptureRequirement.required ? theme.colors.primary + '12' : theme.colors.surface, borderColor: currentCaptureRequirement.required ? theme.colors.primary + '35' : theme.colors.border }]}>
+                <Text style={{ color: currentCaptureRequirement.required ? theme.colors.primary : theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>
+                  {currentCaptureRequirement.required ? 'Required' : 'Optional'}
+                </Text>
+              </View>
+            </View>
+            {currentCaptureRequirement.reason ? <InlineRequirementMessage message={currentCaptureRequirement.reason} /> : null}
+            <TouchableOpacity
+              onPress={() => void capturePhoto(currentCaptureRequirement.id, true)}
+              activeOpacity={0.86}
+              accessibilityRole="button"
+              accessibilityLabel={`${captured ? 'Retake' : 'Capture'} ${currentCaptureRequirement.label.toLowerCase()} photo`}
+              style={[styles.capturePreview, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+            >
+              {capturedPreviewUrl ? (
+                <View style={styles.evidenceImageStage}>
+                  <Image source={{ uri: capturedPreviewUrl }} style={StyleSheet.absoluteFill} resizeMode={capturedResizeMode} />
+                  <View pointerEvents="none" style={styles.evidenceImageShade} />
+                  <View pointerEvents="none" style={[styles.evidenceCorner, styles.evidenceCornerTopLeft]} />
+                  <View pointerEvents="none" style={[styles.evidenceCorner, styles.evidenceCornerTopRight]} />
+                  <View pointerEvents="none" style={[styles.evidenceCorner, styles.evidenceCornerBottomLeft]} />
+                  <View pointerEvents="none" style={[styles.evidenceCorner, styles.evidenceCornerBottomRight]} />
+                  <View pointerEvents="none" style={styles.evidenceRetakePill}>
+                    <Ionicons name="refresh" size={15} color={theme.colors.primary} />
+                    <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>Retake photo</Text>
+                  </View>
+                </View>
               ) : (
                 <View style={styles.capturePlaceholder}>
-                  <Ionicons name="camera-outline" size={34} color={theme.colors.primary} />
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 8 }}>
-                    {isSealedLikeCategory(listingSubjectType)
-                      ? 'Product visible, sharp and evenly lit.'
-                      : listingSubjectType === 'graded_slab'
-                        ? 'Slab visible, sharp and evenly lit.'
-                        : 'Full card visible, sharp and evenly lit.'}
+                  <View style={[styles.evidenceTargetStage, { backgroundColor: theme.colors.primary + '08' }]}>
+                    <View style={[styles.evidenceGuideCard, { borderColor: theme.colors.primary + '88' }]}>
+                      <View style={[styles.evidenceGuideShine, { backgroundColor: theme.colors.primary + '10' }]} />
+                      <View style={[styles.evidenceGuideLine, { backgroundColor: theme.colors.primary + '70' }]} />
+                      <View style={[styles.evidenceGuideCorner, styles.evidenceGuideCornerTopLeft, { borderColor: theme.colors.primary }]} />
+                      <View style={[styles.evidenceGuideCorner, styles.evidenceGuideCornerTopRight, { borderColor: theme.colors.primary }]} />
+                      <View style={[styles.evidenceGuideCorner, styles.evidenceGuideCornerBottomLeft, { borderColor: theme.colors.primary }]} />
+                      <View style={[styles.evidenceGuideCorner, styles.evidenceGuideCornerBottomRight, { borderColor: theme.colors.primary }]} />
+                    </View>
+                  </View>
+                  <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900', marginTop: 14, textAlign: 'center' }}>
+                    {placeholderCopy?.title ?? 'Actual item photo'}
                   </Text>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '800', marginTop: 5, textAlign: 'center' }}>
+                    {placeholderCopy?.body ?? 'Use a real seller photo, not catalogue art.'}
+                  </Text>
+                  <View style={[styles.actualPhotoPill, { backgroundColor: theme.colors.primary + '10', borderColor: theme.colors.primary + '25' }]}>
+                    <Ionicons name="shield-checkmark-outline" size={14} color={theme.colors.primary} />
+                    <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>Actual seller photo only</Text>
+                  </View>
                 </View>
               )}
-            </View>
+            </TouchableOpacity>
             <ImageQualityIndicator
               checks={[
-                { label: 'Full card visible', ok: Boolean(captured?.quality.fullCardVisible) },
+                { label: captured?.quality.purposeLabel ? `${captured.quality.purposeLabel} captured` : currentCaptureRequirement.captureType.startsWith('slab') ? 'Slab area visible' : subjectLabel === 'item' ? 'Item area visible' : 'Card area visible', ok: Boolean(captured?.quality.fullCardVisible) },
+                { label: 'Single requested item', ok: Boolean(captured?.quality.singleCard) },
                 { label: 'Not excessively blurred', ok: Boolean(captured?.quality.steady) },
                 { label: 'Sufficient lighting', ok: Boolean(captured?.quality.lighting) },
-                { label: 'Appears to contain one card', ok: Boolean(captured?.quality.singleCard) },
+                { label: currentCaptureRequirement.captureType === 'slab_label' || currentCaptureRequirement.captureType === 'slab_qr' ? 'Label glare controlled' : 'No major glare', ok: captured ? captured.quality.glareOk !== false : false },
               ]}
             />
+            {captured?.quality.warning ? <InlineRequirementMessage message={captured.quality.warning} tone="warning" /> : null}
+            {captured?.quality.overrideAccepted ? <InlineRequirementMessage message="Accepted with seller quality override. The reason is saved with the listing evidence." tone="warning" /> : null}
+            {captured?.localStatus ? <InlineRequirementMessage message={captured.localStatus === 'saved_locally' ? 'Saved locally. It will upload when you publish.' : captured.localStatus} tone="success" /> : null}
             <View style={styles.dualActions}>
-              <TouchableOpacity onPress={() => void capturePhoto(currentEvidence.key, true)} style={[styles.primaryAction, { backgroundColor: theme.colors.primary }]}>
+              <TouchableOpacity onPress={() => void capturePhoto(currentCaptureRequirement.id, true)} style={[styles.primaryAction, { backgroundColor: theme.colors.primary }]}>
                 <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }}>{captured ? 'Retake' : 'Capture'}</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => void capturePhoto(currentEvidence.key, false)} style={[styles.secondaryAction, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+              <TouchableOpacity onPress={() => void capturePhoto(currentCaptureRequirement.id, false)} style={[styles.secondaryAction, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
                 <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>Upload</Text>
               </TouchableOpacity>
             </View>
+            {captured && !currentCaptureRequirement.required ? (
+              <TouchableOpacity
+                onPress={() => setEvidencePhotos((current) => {
+                  const next = { ...current };
+                  delete next[currentCaptureRequirement.id];
+                  return next;
+                })}
+                style={[styles.secondaryActionFull, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
+              >
+                <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '900' }}>Remove optional photo</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         ) : null}
       </View>
@@ -2786,6 +3980,9 @@ export default function CreateListingScreen() {
             breakdown={ximilarEstimate?.breakdown}
           />
           <InlineRequirementMessage message="The buyer-facing listing will distinguish seller-declared condition, Stackr AI estimate and photographs." />
+          {ximilarEstimate?.centeringAssessment ? (
+            <InlineRequirementMessage message={ximilarEstimate.centeringAssessment.disclaimer} />
+          ) : null}
           {listingSubjectType !== 'graded_slab' && sellerCondition && ximilarEstimate?.condition && !ximilarEstimate.condition.toLowerCase().includes(sellerCondition.toLowerCase()) ? (
             <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
               <FieldLabel label="Condition discrepancy note" />
@@ -2809,7 +4006,7 @@ export default function CreateListingScreen() {
     if (!verificationRequirements.requiresAGSLabel) {
       const checklist = [
         { label: 'Product confirmed', complete: identityConfirmed },
-        { label: 'Seller photos complete', complete: requiredEvidence.every((slot) => evidencePhotos[slot.key]) },
+        { label: 'Seller photos complete', complete: captureProgress.requiredDone },
         { label: listingSubjectType === 'graded_slab' ? 'Certification seller-confirmed' : 'Packaging evidence complete', complete: conditionSelected },
         { label: 'Verification review ID created', complete: Boolean(verificationId), current: !verificationId },
       ];
@@ -2835,7 +4032,7 @@ export default function CreateListingScreen() {
 
     const checklist = [
       { label: 'Card confirmed', complete: identityConfirmed },
-      { label: 'Listing photos complete', complete: requiredEvidence.every((slot) => evidencePhotos[slot.key]) },
+      { label: 'Listing photos complete', complete: captureProgress.requiredDone },
       { label: 'Ximilar condition estimate complete', complete: ximilarStatus === 'complete' },
       { label: 'Seller details confirmed', complete: detailsComplete || Boolean(quantity) },
       { label: 'Verification ID created', complete: Boolean(verificationId), current: !verificationId },
@@ -2930,18 +4127,34 @@ export default function CreateListingScreen() {
     </View>
   );
 
-  const renderReview = () => (
+  const renderReview = () => {
+    const reviewPhotoSlots: { key: EvidenceSlotKey; label: string }[] = isGradedSlabListing
+      ? [
+          { key: 'slab_front', label: 'Front' },
+          { key: 'slab_back', label: 'Back' },
+        ]
+      : isSealedLikeCategory(listingSubjectType)
+        ? [
+            { key: 'packaging_front', label: 'Front' },
+            { key: 'packaging_back', label: 'Back' },
+          ]
+        : [
+            { key: 'front', label: 'Front' },
+            { key: 'back', label: 'Back' },
+          ];
+
+    return (
     <View style={styles.stepContent}>
       <Text style={[styles.stepTitle, { color: theme.colors.text }]}>Review your listing</Text>
       <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>This preview shows the key information a buyer or trader will see.</Text>
       <MarketplaceListingPreview
-        imageUrl={cardImageUrl ?? evidencePhotos.front?.uri}
+        imageUrl={sellerPreviewPhotoUrl ?? cardImageUrl}
         title={cardTitle || manualIdentity.cardName}
         subtitle={cardSubtitle}
         condition={declaredCondition}
         tier={usesProtectionTier ? protectionTier : undefined}
-        trustLabel={!usesProtectionTier ? 'Grade' : undefined}
-        trustValue={!usesProtectionTier ? slabConditionLabel : undefined}
+        trustLabel={!usesProtectionTier ? (isGradedSlabListing ? 'Grade' : 'Evidence') : undefined}
+        trustValue={!usesProtectionTier ? (isGradedSlabListing ? slabConditionLabel : 'Seller photos') : undefined}
         value={tierDecision.calculationValue}
       />
       <ListingReviewSection title="Product" onEdit={() => setStep(selectedCard ? 'confirm' : selectedProduct ? 'identify' : 'manual')}>
@@ -2952,21 +4165,44 @@ export default function CreateListingScreen() {
         {identityPendingReview ? <InlineRequirementMessage message="Card identity pending Stackr review" tone="warning" /> : null}
       </ListingReviewSection>
       <ListingReviewSection title="Catalogue media" onEdit={() => setStep(selectedProduct ? 'identify' : 'manual')}>
-        <ReviewRow label="Reference image" value={catalogueImageUrl ? 'Catalogue image attached' : 'Catalogue image unavailable'} />
+        <ReviewRow label="Reference image" value={cardImageUrl ? 'Reference image attached' : 'Reference image unavailable'} />
         <ReviewRow label="Actual-item proof" value="Seller photos required separately" />
       </ListingReviewSection>
       <ListingReviewSection title="Seller photos" onEdit={() => setStep('evidence')}>
-        <ReviewRow label="Photos" value={`${capturedEvidenceKeys.length} attached`} />
-        <ReviewRow label="Required" value={`${requiredEvidence.length} required`} />
+        <View style={styles.sellerPhotoRow}>
+          {reviewPhotoSlots.map((slot) => {
+            const photoUrl = getEvidencePhotoUrl(evidencePhotos[slot.key]);
+            return (
+              <View key={slot.key} style={[styles.sellerPhotoTile, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+                {photoUrl ? (
+                  <Image source={{ uri: photoUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                ) : (
+                  <View style={styles.sellerPhotoEmpty}>
+                    <Ionicons name="camera-outline" size={22} color={theme.colors.primary} />
+                  </View>
+                )}
+                <View style={[styles.sellerPhotoBadge, { backgroundColor: photoUrl ? 'rgba(7,7,17,0.72)' : theme.colors.card }]}>
+                  <Text style={{ color: photoUrl ? '#FFFFFF' : theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>
+                    {slot.label}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+        <ReviewRow label="Photos" value={`${capturedPhotoIds.length} attached`} />
+        <ReviewRow label="Required" value={`${captureProgress.requiredComplete} of ${captureProgress.requiredTotal} complete`} />
+        <ReviewRow label="Optional" value={`${captureProgress.optionalComplete} of ${captureProgress.optionalTotal} complete`} />
       </ListingReviewSection>
       <ListingReviewSection title="Condition, grade or sealed status" onEdit={() => setStep('condition')}>
         <ReviewRow label={listingSubjectType === 'graded_slab' ? 'Grader grade' : isSealedLikeCategory(listingSubjectType) ? 'Sealed status' : 'Seller condition'} value={declaredCondition} />
-        {listingSubjectType === 'graded_slab' ? <ReviewRow label="Certification" value={certificationNumber || 'Seller-confirmed'} /> : null}
+        {listingSubjectType === 'graded_slab' ? <ReviewRow label="Certification" value={slabCertificationDisplay} /> : null}
         {ximilarEstimate?.condition ? <ReviewRow label="Stackr AI estimate" value={ximilarEstimate.condition} /> : null}
+        {ximilarEstimate?.centeringAssessment ? <ReviewRow label="Visible centering" value={ximilarEstimate.centeringAssessment.label} /> : null}
       </ListingReviewSection>
       <ListingReviewSection title="Price and trade" onEdit={() => setStep('value')}>
         <ReviewRow label="Mode" value={listingMode === 'both' ? 'Sell or trade' : listingMode === 'sell' ? 'Sell' : 'Trade'} />
-        {listingMode !== 'trade' ? <ReviewRow label="Asking price" value={formatCurrency(listingValueNumber)} /> : null}
+        {listingMode !== 'trade' ? <ReviewRow label="Your listing price" value={formatCurrency(listingValueNumber)} /> : null}
         {listingMode !== 'sell' ? <ReviewRow label="Trade value" value={formatCurrency(tradeValueNumber)} /> : null}
         {wantedCards.trim() ? <ReviewRow label="Wanted" value={wantedCards.trim()} /> : null}
       </ListingReviewSection>
@@ -2986,12 +4222,23 @@ export default function CreateListingScreen() {
           {silverAgreementRequired ? <ReviewRow label="Buyer agreement" value="Required for Silver" /> : null}
           {requiresGoldReview ? <ReviewRow label="Verification status" value="Gold verification pending" /> : null}
         </ListingReviewSection>
-      ) : (
+      ) : isGradedSlabListing ? (
         <ListingReviewSection title="Professional grade" onEdit={() => setStep('condition')}>
           <ReviewRow label="Grading company" value={displayGradingCompany} />
           <ReviewRow label="Grade" value={grade} />
-          <ReviewRow label="Certification" value={certificationNumber || 'Seller-confirmed'} />
+          <ReviewRow label="Certification" value={slabCertificationDisplay} />
           <ReviewRow label="Case condition" value={slabCaseCondition} />
+        </ListingReviewSection>
+      ) : isSealedLikeCategory(listingSubjectType) ? (
+        <ListingReviewSection title="Sold as seen evidence" onEdit={() => setStep('evidence')}>
+          <ReviewRow label="Basis" value="Seller photos and sealed-product disclosure" />
+          <ReviewRow label="Seal photos" value="Encouraged where visible" />
+          <ReviewRow label="Protection tier" value="Not applied to sealed products" />
+        </ListingReviewSection>
+      ) : (
+        <ListingReviewSection title="Item evidence" onEdit={() => setStep('evidence')}>
+          <ReviewRow label="Basis" value="Seller photos and item disclosure" />
+          <ReviewRow label="Protection tier" value="Not applied to this product type" />
         </ListingReviewSection>
       )}
       <ListingReviewSection title="Seller declaration">
@@ -3023,46 +4270,89 @@ export default function CreateListingScreen() {
         ) : null}
       </ListingReviewSection>
     </View>
-  );
+    );
+  };
 
-  const renderSuccess = () => (
-    <View style={[styles.successContent, { backgroundColor: theme.colors.bg }]}>
-      <View style={[styles.successShield, { backgroundColor: theme.colors.primary + '12', borderColor: theme.colors.primary + '35' }]}>
-        <Ionicons name="shield-checkmark-outline" size={52} color={theme.colors.primary} />
+  const renderSuccess = () => {
+    const successTier = evidenceTier;
+    const tierTone = SUCCESS_TIER_TONES[successTier];
+    const successTitle = usesProtectionTier && requiresGoldReview
+      ? 'Gold verification created'
+      : usesProtectionTier && protectionTier === 'silver'
+        ? 'Silver listing published'
+        : 'Listing published';
+    const successBody = usesProtectionTier && requiresGoldReview
+      ? 'Your listing is saved and the Gold verification path is ready. Print the label and send the card to AGS to continue.'
+      : usesProtectionTier && protectionTier === 'silver'
+        ? verificationRequirements.requiresXimilar
+          ? 'Your condition evidence and AI estimate are attached, so buyers can review the Silver requirements with confidence.'
+          : 'Your Silver evidence is attached and ready for buyers or traders to review.'
+        : 'Your listing evidence is attached, polished, and ready for buyers to review in The Market.';
+    const successStatus = requiresGoldReview ? 'Verification pending' : 'Live in Market';
+    const successProtectionLabel = usesProtectionTier ? 'Tier' : 'Evidence';
+    const successProtection = usesProtectionTier ? formatProtectionTier(protectionTier) : 'Seller photos';
+    const successMode = listingMode === 'both' ? 'Sell or trade' : listingMode === 'trade' ? 'Trade listing' : 'Sell listing';
+    const successValue = listingMode === 'trade' ? formatCurrency(tradeValueNumber) : formatCurrency(listingValueNumber);
+    const successItemName = cardTitle || categoryConfig.title;
+
+    return (
+      <View style={[styles.successContent, { backgroundColor: theme.colors.bg }]}>
+        <ScrollView
+          style={styles.successScroll}
+          contentContainerStyle={[
+            styles.successScrollContent,
+            { paddingBottom: Math.max(insets.bottom, 20) + 24 },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[styles.successCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+            <View style={styles.successArtworkStage}>
+              <View style={[styles.successArtworkGlow, { backgroundColor: `${tierTone}18` }]} />
+              <Image source={SUCCESS_TIER_ARTWORK[successTier]} style={styles.successArtwork} resizeMode="contain" />
+              <View style={[styles.successReadyBadge, { backgroundColor: theme.colors.primary, borderColor: theme.colors.card }]}>
+                <Ionicons name="checkmark" size={22} color="#FFFFFF" />
+              </View>
+            </View>
+
+            <Text variant="micro" style={[styles.successEyebrow, { color: tierTone }]}>LISTING COMPLETE</Text>
+            <Text variant="sectionTitle" style={[styles.successTitle, { color: theme.colors.text }]}>{successTitle}</Text>
+            <Text variant="body" style={[styles.successBody, { color: theme.colors.textSoft }]}>{successBody}</Text>
+
+            <View style={styles.successSummary}>
+              <View style={[styles.successSummaryRow, { borderColor: theme.colors.border }]}>
+                <Text variant="caption" style={[styles.successSummaryLabel, { color: theme.colors.textSoft }]}>Item</Text>
+                <Text variant="cardTitle" style={[styles.successSummaryValue, { color: theme.colors.text }]} numberOfLines={2}>{successItemName}</Text>
+              </View>
+              <View style={[styles.successSummaryRow, { borderColor: theme.colors.border }]}>
+                <Text variant="caption" style={[styles.successSummaryLabel, { color: theme.colors.textSoft }]}>Status</Text>
+                <Text variant="cardTitle" style={[styles.successSummaryValue, { color: theme.colors.text }]}>{successStatus}</Text>
+              </View>
+              <View style={[styles.successSummaryRow, { borderColor: theme.colors.border }]}>
+                <Text variant="caption" style={[styles.successSummaryLabel, { color: theme.colors.textSoft }]}>{successProtectionLabel}</Text>
+                <Text variant="cardTitle" style={[styles.successSummaryValue, { color: tierTone }]}>{successProtection}</Text>
+              </View>
+              <View style={[styles.successSummaryRow, { borderColor: theme.colors.border }]}>
+                <Text variant="caption" style={[styles.successSummaryLabel, { color: theme.colors.textSoft }]}>{successMode}</Text>
+                <Text variant="cardTitle" style={[styles.successSummaryValue, { color: theme.colors.text }]}>{successValue}</Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.successActions}>
+            <TouchableOpacity onPress={() => router.replace('/(tabs)/market' as any)} style={[styles.primaryActionFull, styles.successActionButton, { backgroundColor: theme.colors.primary }]}>
+              <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>Return to The Market</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={resetListingFlowToCategory}
+              style={[styles.secondaryActionFull, styles.successActionButton, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
+            >
+              <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900' }}>Create another listing</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </View>
-      <StackrPageTitle
-        title={usesProtectionTier && requiresGoldReview ? 'Gold verification created' : usesProtectionTier && protectionTier === 'silver' ? 'Silver listing published' : 'Listing published'}
-        accentText={requiresGoldReview ? 'created' : 'published'}
-        style={{ textAlign: 'center' }}
-      />
-      <Text style={[styles.successBody, { color: theme.colors.textSoft }]}>
-        {usesProtectionTier && requiresGoldReview
-          ? 'Print the label and send the card to AGS to continue verification.'
-          : usesProtectionTier && protectionTier === 'silver'
-            ? verificationRequirements.requiresXimilar
-              ? 'Your condition evidence and AI estimate are now attached.'
-              : 'Your listing evidence is attached and ready for buyers to review.'
-            : 'Your listing evidence is attached and ready for buyers to review.'}
-      </Text>
-      <TouchableOpacity onPress={() => router.replace('/(tabs)/market' as any)} style={[styles.primaryActionFull, { backgroundColor: theme.colors.primary }]}>
-        <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>Return to The Market</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => {
-          setStep('category');
-          setSelectedCard(null);
-          setManualIdentity(DEFAULT_MANUAL_IDENTITY);
-          setEvidencePhotos({});
-          setSellerDeclarationAccepted(false);
-          setAiDeclarationAccepted(false);
-          setGoldDeclarationAccepted(false);
-        }}
-        style={[styles.secondaryActionFull, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
-      >
-        <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900' }}>Create another listing</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  };
 
   const renderStep = () => {
     if (step === 'category') return renderCategory();
@@ -3121,6 +4411,10 @@ export default function CreateListingScreen() {
   }
 
   const headerRight = <DraftSavedIndicator visible={draftSaved} />;
+  const hasPrimaryFooter = !(step === 'category' || step === 'entry' || step === 'identify' || step === 'success');
+  const scrollBottomPadding = keyboardVisible
+    ? hasPrimaryFooter ? 22 : 18
+    : hasPrimaryFooter ? 112 : 18;
 
   if (step === 'success') {
     return (
@@ -3132,6 +4426,7 @@ export default function CreateListingScreen() {
 
   return (
     <StackrScreen variant="form" contentStyle={{ paddingHorizontal: 0 }}>
+      <StackrBackdrop />
       <ListingFlowHeader
         stages={progressStages}
         activeStage={flowStepToStage(step)}
@@ -3141,23 +4436,85 @@ export default function CreateListingScreen() {
         stageLabels={progressLabels}
         rightAccessory={headerRight}
       />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'height' : undefined}
+        keyboardVerticalOffset={0}
+        style={styles.keyboardShell}
+      >
         <ScrollView
+          automaticallyAdjustKeyboardInsets={false}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           contentContainerStyle={[
             styles.scrollContent,
-            {
-              paddingBottom: keyboardVisible || step === 'category' || step === 'entry' || step === 'identify'
-                ? 34
-                : 132,
-            },
+            { paddingBottom: scrollBottomPadding },
           ]}
         >
           {renderStep()}
         </ScrollView>
-        {isFocused && !keyboardVisible ? footer() : null}
+        {isFocused ? footer() : null}
       </KeyboardAvoidingView>
+
+      {Platform.OS === 'ios' ? (
+        <InputAccessoryView nativeID={STACKR_LISTING_INPUT_ACCESSORY_ID}>
+          <View
+            style={[
+              styles.keyboardAccessory,
+              {
+                backgroundColor: theme.colors.bg,
+                borderTopColor: theme.colors.border,
+              },
+            ]}
+          >
+            <TouchableOpacity
+              onPress={Keyboard.dismiss}
+              accessibilityRole="button"
+              accessibilityLabel="Dismiss keyboard"
+              activeOpacity={0.82}
+              style={[
+                styles.keyboardAccessoryButton,
+                {
+                  backgroundColor: theme.colors.card,
+                  borderColor: theme.colors.border,
+                },
+              ]}
+            >
+              <Ionicons name="chevron-down" size={17} color={theme.colors.primary} />
+              <Text style={{ color: theme.colors.primary, fontSize: 13, lineHeight: 17, fontWeight: '900' }}>
+                Done
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </InputAccessoryView>
+      ) : null}
+
+      <GuidedListingCamera
+        visible={Boolean(activeCaptureRequirement)}
+        requirement={activeCaptureRequirement}
+        requirements={captureRequirements}
+        capturedRequirementIds={Object.keys(evidencePhotos)}
+        previewUri={activeCaptureRequirement
+          ? evidencePhotos[activeCaptureRequirement.id]?.previewUri ?? evidencePhotos[activeCaptureRequirement.id]?.uri
+          : null}
+        validationTier={evidenceTier}
+        onCaptured={(result) => {
+          if (activeCaptureRequirement) storeRequirementPhoto(activeCaptureRequirement, result);
+        }}
+        onSelectRequirement={(requirement) => {
+          const index = captureRequirements.findIndex((item) => item.id === requirement.id);
+          if (index >= 0) setActiveEvidenceIndex(index);
+          setActiveCaptureRequirement(requirement);
+        }}
+        onUseSystemCamera={() => {
+          const requirement = activeCaptureRequirement;
+          if (!requirement) return;
+          setActiveCaptureRequirement(null);
+          setTimeout(() => {
+            void captureRequirementWithSystemCamera(requirement);
+          }, 260);
+        }}
+        onClose={() => setActiveCaptureRequirement(null)}
+      />
 
       <Modal visible={conditionGuideVisible} transparent animationType="slide" onRequestClose={() => setConditionGuideVisible(false)}>
         <View style={styles.modalRoot}>
@@ -3279,9 +4636,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  keyboardShell: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
+  },
+  keyboardAccessory: {
+    minHeight: 46,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  keyboardAccessoryButton: {
+    minHeight: 34,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   stepContent: {
     gap: 14,
@@ -3423,6 +4800,11 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 8,
   },
+  resultImageFrame: {
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   productResultImage: {
     width: 70,
     height: 70,
@@ -3459,12 +4841,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  productGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
   sellingTypeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -3498,16 +4874,6 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     fontWeight: '700',
     textAlign: 'center',
-  },
-  productTypeTile: {
-    width: '31%',
-    minHeight: 86,
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
   },
   twoColumn: {
     flexDirection: 'row',
@@ -3575,11 +4941,58 @@ const styles = StyleSheet.create({
   modeGrid: {
     gap: 10,
   },
+  captureProgressPanel: {
+    borderWidth: 1,
+    borderRadius: 18,
+    padding: 12,
+    gap: 8,
+  },
+  captureProgressLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  captureQueueLine: {
+    minHeight: 34,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    backgroundColor: 'rgba(105,56,245,0.08)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  captureQueueLabel: {
+    width: 92,
+    fontSize: 10.5,
+    lineHeight: 13,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  captureQueueValue: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 12.5,
+    lineHeight: 16,
+    fontWeight: '900',
+  },
   captureCard: {
     borderWidth: 1,
     borderRadius: 22,
     padding: 14,
     gap: 12,
+  },
+  captureCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  requirementBadge: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
   },
   capturePreview: {
     minHeight: 330,
@@ -3592,6 +5005,161 @@ const styles = StyleSheet.create({
   capturePlaceholder: {
     alignItems: 'center',
     paddingHorizontal: 24,
+  },
+  evidenceImageStage: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#070711',
+  },
+  evidenceImageShade: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(7,7,17,0.08)',
+  },
+  evidenceCorner: {
+    position: 'absolute',
+    width: 34,
+    height: 34,
+    borderColor: '#FFFFFF',
+    borderWidth: 4,
+  },
+  evidenceCornerTopLeft: {
+    top: 22,
+    left: 22,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 8,
+  },
+  evidenceCornerTopRight: {
+    top: 22,
+    right: 22,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 8,
+  },
+  evidenceCornerBottomLeft: {
+    bottom: 22,
+    left: 22,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 8,
+  },
+  evidenceCornerBottomRight: {
+    bottom: 22,
+    right: 22,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 8,
+  },
+  evidenceRetakePill: {
+    position: 'absolute',
+    bottom: 18,
+    alignSelf: 'center',
+    minHeight: 34,
+    borderRadius: 999,
+    paddingHorizontal: 13,
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  evidenceTargetStage: {
+    width: '78%',
+    maxWidth: 230,
+    aspectRatio: 0.716,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  evidenceGuideCard: {
+    width: '82%',
+    height: '82%',
+    borderRadius: 20,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  evidenceGuideShine: {
+    position: 'absolute',
+    top: '10%',
+    width: '82%',
+    height: '38%',
+    borderRadius: 16,
+  },
+  evidenceGuideLine: {
+    width: '74%',
+    height: 1.5,
+    borderRadius: 999,
+    opacity: 0.7,
+  },
+  evidenceGuideCorner: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    borderWidth: 4,
+  },
+  evidenceGuideCornerTopLeft: {
+    top: -2,
+    left: -2,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 15,
+  },
+  evidenceGuideCornerTopRight: {
+    top: -2,
+    right: -2,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 15,
+  },
+  evidenceGuideCornerBottomLeft: {
+    bottom: -2,
+    left: -2,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 15,
+  },
+  evidenceGuideCornerBottomRight: {
+    bottom: -2,
+    right: -2,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 15,
+  },
+  actualPhotoPill: {
+    marginTop: 12,
+    minHeight: 30,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  sellerPhotoRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 6,
+  },
+  sellerPhotoTile: {
+    flex: 1,
+    height: 126,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sellerPhotoEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sellerPhotoBadge: {
+    position: 'absolute',
+    left: 8,
+    bottom: 8,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
   },
   descriptionHeader: {
     flexDirection: 'row',
@@ -3615,25 +5183,108 @@ const styles = StyleSheet.create({
   },
   successContent: {
     flex: 1,
+  },
+  successScroll: {
+    flex: 1,
+  },
+  successScrollContent: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
-    gap: 16,
+    paddingHorizontal: 20,
+    paddingTop: 28,
+    gap: 18,
   },
-  successShield: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+  successCard: {
+    width: '100%',
+    maxWidth: 430,
+    borderRadius: 26,
     borderWidth: 1,
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 20,
+    gap: 12,
+    shadowColor: '#1B2A4B',
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 4,
+  },
+  successArtworkStage: {
+    width: 150,
+    height: 136,
+    alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 2,
+  },
+  successArtworkGlow: {
+    position: 'absolute',
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+  },
+  successArtwork: {
+    width: 118,
+    height: 118,
+  },
+  successReadyBadge: {
+    position: 'absolute',
+    right: 14,
+    bottom: 12,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    borderWidth: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successEyebrow: {
+    fontWeight: '900',
+    textAlign: 'center',
+  },
+  successTitle: {
+    textAlign: 'center',
+    maxWidth: 330,
   },
   successBody: {
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 21,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 8,
+    maxWidth: 340,
+  },
+  successSummary: {
+    width: '100%',
+    gap: 0,
+    marginTop: 8,
+  },
+  successSummaryRow: {
+    minHeight: 56,
+    borderTopWidth: 1,
+    paddingVertical: 11,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 14,
+  },
+  successSummaryLabel: {
+    minWidth: 92,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  successSummaryValue: {
+    flex: 1,
+    textAlign: 'right',
+    fontWeight: '900',
+  },
+  successActions: {
+    width: '100%',
+    maxWidth: 430,
+    gap: 10,
+  },
+  successActionButton: {
+    width: '100%',
   },
   modalRoot: {
     flex: 1,

@@ -1,0 +1,10 @@
+{
+  "title": "Embedding distance distributions",
+  "status": "blocked",
+  "reason": "No winning baseline was selected because training and retrieval evaluation were blocked before image pixels could be loaded.",
+  "distributions": {
+    "positivePairs": [],
+    "negativePairs": [],
+    "hardNegativePairs": []
+  }
+}

@@ -1,4 +1,5 @@
-import { getPokemonSetLogoUrl } from './pokemonTcg';
+import { getPokemonSetLogoUrl, getPokemonSetVisualUrl } from './pokemonTcg';
+import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 
 type SetDisplayInput = {
   setId?: string | null;
@@ -6,6 +7,8 @@ type SetDisplayInput = {
   set?: {
     id?: string | null;
     name?: string | null;
+    localName?: string | null;
+    englishDisplayName?: string | null;
     images?: {
       logo?: string | null;
       symbol?: string | null;
@@ -26,6 +29,19 @@ export function isTechnicalSetLabel(value?: string | null) {
 
 export function getDisplaySetName(input: SetDisplayInput, fallback = 'Pokemon TCG') {
   const setId = clean(input.setId ?? input.set?.id ?? input.rawData?.set?.id);
+  const preferred = getPreferredSetDisplayName({
+    id: setId,
+    sourceId: input.rawData?.set?.tcgdex_id ?? input.rawData?.set?.source_id ?? input.rawData?.source_id ?? setId,
+    setCode: input.rawData?.set?.set_code ?? input.rawData?.set?.tcgdex_id ?? input.rawData?.set_code ?? setId,
+    language: input.rawData?.language ?? input.rawData?.set?.language ?? null,
+    region: input.rawData?.region ?? input.rawData?.set?.region ?? null,
+    localName: input.rawData?.set?.local_name ?? input.set?.localName ?? input.rawData?.set?.name ?? null,
+    englishDisplayName: input.rawData?.set?.english_display_name ?? input.set?.englishDisplayName ?? null,
+    canonicalName: input.setName ?? input.set?.name ?? input.rawData?.set?.name ?? null,
+    raw: input.rawData?.set ?? input.rawData,
+  });
+  if (preferred && !isTechnicalSetLabel(preferred)) return preferred;
+
   const candidates = [
     input.setName,
     input.set?.name,
@@ -48,8 +64,11 @@ export function getDisplaySetName(input: SetDisplayInput, fallback = 'Pokemon TC
 export function getDisplaySetLogoUrl(input: SetDisplayInput) {
   const setId = input.setId ?? input.set?.id ?? input.rawData?.set?.id ?? null;
   return (
-    input.set?.images?.logo ??
+    getPokemonSetVisualUrl(input.set, input.rawData?.language ?? input.rawData?.set?.language ?? null) ??
     input.rawData?.set?.images?.logo ??
+    input.rawData?.set?.images?.symbol ??
+    input.rawData?.set?.images?.cover ??
+    input.rawData?.set?.cover_image_url ??
     getPokemonSetLogoUrl(setId) ??
     null
   );

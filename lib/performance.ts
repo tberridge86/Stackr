@@ -53,3 +53,22 @@ export const stackrListPerformance = {
     };
   },
 } as const;
+
+export function getIncrementalListWindow(
+  columns: number,
+  options?: {
+    initialRows?: number;
+    pageRows?: number;
+    minInitial?: number;
+    minPage?: number;
+  }
+) {
+  const safeColumns = Math.max(1, Math.floor(columns) || 1);
+  const initialRows = options?.initialRows ?? 10;
+  const pageRows = options?.pageRows ?? 6;
+
+  return {
+    initialCount: Math.max(options?.minInitial ?? 24, safeColumns * initialRows),
+    pageSize: Math.max(options?.minPage ?? 18, safeColumns * pageRows),
+  };
+}

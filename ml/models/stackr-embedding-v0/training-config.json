@@ -1,0 +1,32 @@
+{
+  "configVersion": "stackr-embedding-training-config-v1.0.0",
+  "modelVersion": "stackr-embedding-v0.0.0-blocked",
+  "randomSeed": 12012,
+  "deterministic": true,
+  "input": {
+    "width": 224,
+    "height": 320,
+    "preservesFullCardRatio": true,
+    "colorSpace": "rgb"
+  },
+  "embedding": {
+    "dimensions": 128,
+    "l2Normalised": true
+  },
+  "backbone": {
+    "name": "MobileNetV3 Small",
+    "pretrainedWeights": "none",
+    "provenanceStatus": "not_reviewed_for_external_weights"
+  },
+  "optimisation": {
+    "maxEpochs": 80,
+    "batchSize": 64,
+    "learningRate": 0.0003,
+    "weightDecay": 0.00004
+  },
+  "baselinesCompared": [
+    "supervised_contrastive_mobilenetv3_small",
+    "multi_similarity_mobilenetv3_small",
+    "non_neural_perceptual_hash_local_features"
+  ]
+}

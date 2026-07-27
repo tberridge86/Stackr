@@ -24,6 +24,33 @@ export type MintyRecommendedRoute =
 
 export type MintyPrivacyLevel = 'personalised' | 'general';
 
+export type MintyInsightCategory =
+  | 'good_time_to_buy'
+  | 'good_time_to_wait'
+  | 'consider_selling'
+  | 'price_unusually_high'
+  | 'price_unusually_low'
+  | 'booster_packs_better_value'
+  | 'sealed_product_demand_increasing'
+  | 'chase_card_in_price_range'
+  | 'binder_close_to_completion'
+  | 'missing_card_available'
+  | 'watched_card_new_listings'
+  | 'owned_card_moving_sharply'
+  | 'frequently_searched_item_falling'
+  | 'collection_discovery';
+
+export type MintyEvidenceSource = 'market' | 'personal' | 'collection' | 'behaviour' | 'fallback';
+
+export type MintyInsightEvidenceSignal = {
+  type: 'positive' | 'negative' | 'neutral';
+  label: string;
+  evidence: string;
+  confidenceScore?: number;
+  confidenceLabel?: string;
+  source?: MintyEvidenceSource;
+};
+
 export type MintyInsightFeedback =
   | 'useful'
   | 'not_relevant'
@@ -65,6 +92,12 @@ export type MintyInsight = {
   id: string;
   title: string;
   body: string;
+  action_label?: string;
+  explanation?: string;
+  evidence?: MintyInsightEvidenceSignal[];
+  data_refreshed_at?: string | null;
+  insight_category?: MintyInsightCategory;
+  source_context?: MintyEvidenceSource;
   forecast?: MintyForecast;
   confidence: MintyConfidence;
   confidence_score: number;
@@ -223,6 +256,7 @@ export type MintyHomeInsightInput = {
   percentageChange: number;
   changePeriodLabel: string;
   trendData?: number[];
+  dataRefreshedAt?: string | null;
   ownedCount: number;
   activeBinder?: InsightBinder | null;
   duplicateSummary?: InsightDuplicateSummary | null;
@@ -230,8 +264,21 @@ export type MintyHomeInsightInput = {
   wantedCards?: InsightCard[];
   recentViews?: InsightCard[];
   recentSearches?: InsightCard[];
+  viewedProducts?: InsightCard[];
   priceAlerts?: InsightCard[];
   missingCards?: InsightCard[];
+  previousPurchases?: InsightCard[];
+  previousListings?: InsightCard[];
+  offersAndWatchlistCount?: number;
+  listingVolumeChange?: number | null;
+  recentSalesCount?: number | null;
+  priceVolatility?: number | null;
+  productInteractionCounts?: {
+    booster?: number;
+    slab?: number;
+    rawCard?: number;
+    sealed?: number;
+  };
   recentActivity?: InsightActivity[];
   marketplaceMatchCount?: number;
   upcomingReleases?: InsightUpcomingRelease[];
@@ -284,6 +331,125 @@ const getConfidence = (score: number): MintyConfidence => {
   if (score >= 76) return 'High';
   if (score >= 46) return 'Medium';
   return 'Low';
+};
+
+const stripConfidenceCopy = (value?: string | null) =>
+  String(value ?? '')
+    .replace(/\s*Confidence:\s*(Very High|High|Moderate|Medium|Low|Very Low)\.?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+export const getMintyRecommendedActionLabel = (
+  route: MintyRecommendedRoute,
+  insight?: Pick<MintyInsight, 'recommended_actions' | 'recommendation_label'>
+) => {
+  const primaryAction = insight?.recommended_actions?.find((action) => action.primary)?.label
+    ?? insight?.recommended_actions?.[0]?.label;
+  if (primaryAction) return primaryAction;
+
+  switch (route) {
+    case 'watch_single_price':
+      return 'View price history';
+    case 'watch_sealed_entry':
+      return 'Explore sealed products';
+    case 'trade_duplicates':
+      return 'Build a trade';
+    case 'complete_with_singles':
+      return 'Find missing cards';
+    case 'set_price_alert':
+      return 'Set price alert';
+    case 'protect_high_value_card':
+      return 'Review collection';
+    default:
+      return insight?.recommendation_label ?? 'Keep watching';
+  }
+};
+
+export const getMintyInsightCategory = (
+  insight: Pick<
+    MintyInsight,
+    'tags' | 'recommendation' | 'recommended_route' | 'related_user_goal' | 'insight_category'
+  >
+): MintyInsightCategory => {
+  if (insight.insight_category) return insight.insight_category;
+  const tags = insight.tags ?? [];
+  const recommendation = insight.recommendation;
+
+  if (tags.includes('marketplace-match') && tags.includes('completion')) return 'missing_card_available';
+  if (tags.includes('watched-listing')) return 'watched_card_new_listings';
+  if (tags.includes('completion') || insight.recommended_route === 'complete_with_singles') return 'binder_close_to_completion';
+  if (tags.includes('duplicates') || recommendation === 'sell' || recommendation === 'consider_selling') return 'consider_selling';
+  if (tags.includes('reprint-risk') || tags.includes('low-confidence') || tags.includes('watch')) return 'good_time_to_wait';
+  if (tags.includes('market-dip') && tags.includes('chase')) return 'chase_card_in_price_range';
+  if (tags.includes('market-dip')) return 'frequently_searched_item_falling';
+  if (tags.includes('upcoming-release') || tags.includes('sealed')) return 'sealed_product_demand_increasing';
+  if (tags.includes('owned') && tags.includes('market-watch')) return 'owned_card_moving_sharply';
+  if (recommendation === 'strong_buy' || recommendation === 'buy') return 'good_time_to_buy';
+  if (recommendation === 'avoid') return 'price_unusually_high';
+  if (insight.related_user_goal === 'chasing_specific_card') return 'watched_card_new_listings';
+  return 'collection_discovery';
+};
+
+const normaliseEvidenceSignal = (
+  item: Partial<MintyInsightEvidenceSignal> | undefined,
+  source: MintyEvidenceSource
+): MintyInsightEvidenceSignal | null => {
+  const label = String(item?.label ?? '').trim();
+  const evidence = String(item?.evidence ?? '').trim();
+  if (!label || !evidence) return null;
+  return {
+    type: item?.type ?? 'neutral',
+    label,
+    evidence,
+    confidenceScore: item?.confidenceScore,
+    confidenceLabel: item?.confidenceLabel,
+    source: item?.source ?? source,
+  };
+};
+
+const buildDefaultEvidence = (
+  insight: Omit<MintyInsight, 'confidence' | 'confidence_score' | 'user_feedback_options' | 'evidence'> & {
+    evidence?: MintyInsightEvidenceSignal[];
+  }
+): MintyInsightEvidenceSignal[] => {
+  const explicitEvidence = (insight.evidence ?? [])
+    .map((item) => normaliseEvidenceSignal(item, item.source ?? 'market'))
+    .filter(Boolean) as MintyInsightEvidenceSignal[];
+  if (explicitEvidence.length) return explicitEvidence.slice(0, 4);
+
+  const marketEvidence = [
+    ...(insight.supporting_signals ?? []),
+    ...(insight.opportunities ?? []),
+    ...(insight.risks ?? []),
+  ]
+    .map((item) => normaliseEvidenceSignal(item, 'market'))
+    .filter(Boolean) as MintyInsightEvidenceSignal[];
+  if (marketEvidence.length) return marketEvidence.slice(0, 4);
+
+  const source: MintyEvidenceSource = insight.privacy_level === 'personalised' ? 'personal' : 'collection';
+  const personalEvidence = normaliseEvidenceSignal({
+    type: 'neutral',
+    label: insight.privacy_level === 'personalised' ? 'Personal signal' : 'Collection signal',
+    evidence: insight.personalisation_reason,
+  }, source);
+  const relatedCardEvidence = insight.related_cards?.[0]
+    ? normaliseEvidenceSignal({
+        type: 'neutral',
+        label: 'Relevant card',
+        evidence: insight.related_cards[0],
+      }, source)
+    : null;
+  const relatedProductEvidence = insight.related_products?.[0]
+    ? normaliseEvidenceSignal({
+        type: 'neutral',
+        label: 'Relevant product or set',
+        evidence: insight.related_products[0],
+      }, source)
+    : null;
+
+  return [personalEvidence, relatedCardEvidence, relatedProductEvidence]
+    .filter(Boolean)
+    .slice(0, 4) as MintyInsightEvidenceSignal[];
 };
 
 const topicWeight = (tags: string[], feedback: MintyFeedbackProfile) =>
@@ -431,7 +597,7 @@ const DEFAULT_MINTY_MARKET_CATALYSTS: InsightUpcomingRelease[] = [
     source: 'Annual competitive event season',
   },
   {
-    name: 'Holiday sealed demand window',
+    name: 'Holiday sealed buying window',
     releaseDate: '2026-11-15',
     relatedCharacters: ANNIVERSARY_POKEMON,
     relatedSets: ['Elite Trainer Box', 'Booster Box', 'Collection Box', 'sealed'],
@@ -480,34 +646,34 @@ const getDaysUntilRelease = (releaseDate?: string | null) => {
 const releaseSignalCopy = (signal?: InsightUpcomingRelease['signal']) => {
   switch (signal) {
     case 'anniversary':
-      return 'anniversary attention can lift nostalgia cards, while reprints can pressure easy-to-replace copies';
+      return 'anniversary buzz can help older popular cards, but reprints can make newer copies easier to find';
     case 'game_release':
-      return 'game-release attention can pull demand toward featured Pokemon and their older chase cards';
+      return 'new game attention often sends collectors back to featured Pokemon and older chase cards';
     case 'movie_release':
-      return 'movie attention can lift character demand, but the effect usually needs sold volume to confirm';
+      return 'movie attention can make a character more popular, but I would wait for real sales to confirm it';
     case 'mega_evolution':
-      return 'Mega Evolution and Kalos attention can lift XY-era interest before sold prices fully catch up';
+      return 'Mega Evolution and Kalos attention can make XY-era cards more searched before prices fully move';
     case 'worlds':
-      return 'event attention can lift promos and competitive characters, but spikes can fade quickly';
+      return 'event attention can help promos and competitive staples, but quick spikes can fade';
     case 'seasonal':
-      return 'seasonal demand can support sealed products, especially when supply is already thin';
+      return 'seasonal buying can support sealed products, especially when there are not many listed';
     case 'rotation':
-      return 'rotation or format news can move playable cards faster than collector-only cards';
+      return 'format news can move playable cards faster than collector-only cards';
     case 'reprint_risk':
-      return 'new supply or reprint details could change the cleaner buying route';
+      return 'new supply or reprint details could make it smarter to wait';
     case 'sealed_release':
-      return 'sealed demand may move before single-card prices settle';
+      return 'sealed products can move before single-card prices settle';
     case 'product_release':
-      return 'early product attention can be noisy before sold volume confirms it';
+      return 'early product hype can be noisy until a few real sales confirm it';
     case 'attention':
-      return 'new attention can lift interest, but I would wait for sold volume to confirm it';
+      return 'new attention can lift interest, but I would wait for real sales to confirm it';
     default:
-      return 'new attention can move demand, but I would treat it as a watch signal first';
+      return 'new attention can move prices, but I would treat it as a reason to keep watching first';
   }
 };
 
 const formatForecastPercentRange = (range?: [number, number]) => {
-  if (!range) return 'watch-only';
+  if (!range) return 'no clear range yet';
   const [low, high] = range;
   const format = (value: number) => `${value > 0 ? '+' : ''}${Math.round(value)}%`;
   return `${format(low)} to ${format(high)}`;
@@ -562,25 +728,25 @@ const buildForecast = ({
     estimatedValueRange,
     catalysts: [catalyst.name],
     basis,
-    caveat: 'Forecast ranges are Minty watch bands, not guaranteed prices. Confirm with sold comps before buying or selling.',
+    caveat: 'These ranges are a guide, not a promise. Check recent sold prices before buying or selling.',
   };
 };
 
 const getForecastDirectionVerb = (direction: MintyForecastDirection) => {
   switch (direction) {
     case 'up':
-      return 'upside watch';
+      return 'prices may climb';
     case 'down':
-      return 'downside risk';
+      return 'prices may dip';
     case 'volatile':
-      return 'volatility watch';
+      return 'prices may move around';
     default:
-      return 'watch signal';
+      return 'worth watching';
   }
 };
 
 const getForecastHorizon = (daysUntil: number | null) => {
-  if (daysUntil == null) return 'next catalyst window';
+  if (daysUntil == null) return 'next event window';
   if (daysUntil < -30) return 'post-release window';
   if (daysUntil < 0) return 'early post-release window';
   if (daysUntil <= 14) return 'next two weeks';
@@ -714,18 +880,22 @@ export function buildCollectorPreferenceProfile(
 ): CollectorPreferenceProfile {
   const chaseCards = settings.useChaseList ? input.chaseCards ?? [] : [];
   const wantedCards = settings.useChaseList ? input.wantedCards ?? [] : [];
-  const recentViews = settings.useViewingHistory ? input.recentViews ?? [] : [];
+  const recentViews = settings.useViewingHistory ? [...(input.recentViews ?? []), ...(input.viewedProducts ?? [])] : [];
   const recentSearches = settings.useViewingHistory ? input.recentSearches ?? [] : [];
   const priceAlerts = settings.usePriceAlerts ? input.priceAlerts ?? [] : [];
+  const previousPurchases = settings.usePurchaseHistory ? input.previousPurchases ?? [] : [];
+  const previousListings = settings.useTradeHistory ? input.previousListings ?? [] : [];
   const activeBinder = input.activeBinder ?? null;
   const duplicateSummary = settings.useTradeHistory ? input.duplicateSummary ?? null : null;
   const missingCards = input.missingCards ?? [];
   const activities = settings.usePurchaseHistory ? input.recentActivity ?? [] : [];
   const topOwned = activeBinder?.topValueCards ?? [];
   const interestCards = [...chaseCards, ...wantedCards, ...priceAlerts, ...recentViews, ...recentSearches];
-  const allCards = [...interestCards, ...missingCards, ...(duplicateSummary?.items ?? []), ...topOwned];
-  const purchaseValues = activities
-    .map((activity) => Math.abs(Number(activity.valueChange ?? 0)))
+  const allCards = [...interestCards, ...missingCards, ...(duplicateSummary?.items ?? []), ...topOwned, ...previousPurchases, ...previousListings];
+  const purchaseValues = [
+    ...activities.map((activity) => Math.abs(Number(activity.valueChange ?? 0))),
+    ...previousPurchases.map((card) => Math.abs(Number(card.estimatedValue ?? 0))),
+  ]
     .filter((value) => value > 0);
 
   const favouritePokemon = shortList(
@@ -739,9 +909,13 @@ export function buildCollectorPreferenceProfile(
   const completionGoals = activeBinder && activeBinder.total > 0 && activeBinder.missing > 0
     ? [`${activeBinder.name} completion`]
     : [];
-  const productTypes = preferredCardTypes.some((type) => /graded|slab/i.test(type))
-    ? ['singles', 'graded']
-    : ['singles'];
+  const productTypes = shortList([
+    'singles',
+    preferredCardTypes.some((type) => /graded|slab/i.test(type)) || (input.productInteractionCounts?.slab ?? 0) > 0 ? 'graded' : '',
+    (input.productInteractionCounts?.sealed ?? 0) > 0 ? 'sealed' : '',
+    (input.productInteractionCounts?.booster ?? 0) > 0 ? 'booster' : '',
+    (input.productInteractionCounts?.rawCard ?? 0) > 0 ? 'raw cards' : '',
+  ].filter(Boolean));
 
   const inferredIntents: CollectorIntent[] = [];
   if (chaseCards.length || wantedCards.length || priceAlerts.length) inferredIntents.push('chasing_specific_card');
@@ -749,6 +923,7 @@ export function buildCollectorPreferenceProfile(
   if (duplicateSummary && duplicateSummary.count > 0 && (chaseCards.length || wantedCards.length || priceAlerts.length)) inferredIntents.push('trading_up');
   if (input.absoluteChange < 0 || input.percentageChange < -1) inferredIntents.push('buying_dip');
   if (preferredCardTypes.some((type) => /graded|slab/i.test(type))) inferredIntents.push('slab_collector');
+  if ((input.productInteractionCounts?.sealed ?? 0) > 0 || (input.productInteractionCounts?.booster ?? 0) > 0) inferredIntents.push('sealed_collector');
   inferredIntents.push('raw_single_collector');
 
   for (const [topic, count] of Object.entries(feedback.showLessTopics)) {
@@ -779,8 +954,21 @@ export function buildCollectorPreferenceProfile(
 
 const makeInsight = (insight: Omit<MintyInsight, 'confidence' | 'confidence_score' | 'user_feedback_options'>): MintyInsight => {
   const confidenceScore = clampScore(insight.scoring.confidence_score);
-  return {
+  const explanation = stripConfidenceCopy(insight.explanation ?? insight.body) || insight.title;
+  const actionLabel = insight.action_label ?? getMintyRecommendedActionLabel(insight.recommended_route, insight);
+  const sourceContext = insight.source_context ?? (insight.privacy_level === 'personalised' ? 'personal' : 'collection');
+  const baseInsight = {
     ...insight,
+    body: explanation,
+    explanation,
+    action_label: actionLabel,
+    insight_category: getMintyInsightCategory(insight),
+    source_context: sourceContext,
+    data_refreshed_at: insight.data_refreshed_at ?? insight.generated_at ?? null,
+  };
+  return {
+    ...baseInsight,
+    evidence: buildDefaultEvidence(baseInsight),
     confidence: getConfidence(confidenceScore),
     confidence_score: confidenceScore,
     user_feedback_options: DEFAULT_FEEDBACK_OPTIONS,
@@ -802,13 +990,15 @@ function buildCandidateInsights(
   const topOwned = activeBinder?.topValueCards?.[0] ?? null;
   const missingCard = input.missingCards?.[0] ?? null;
   const dataThin = (input.trendData ?? []).filter((value) => Number.isFinite(value)).length < 3;
+  const marketplaceMatchCount = input.marketplaceMatchCount ?? 0;
+  const refreshedAt = input.dataRefreshedAt ?? new Date().toISOString();
   const candidates: MintyInsight[] = [];
 
   if (chaseCard && input.percentageChange < -1) {
     candidates.push(makeInsight({
       id: `chase-dip:${chaseCard.cardId ?? chaseName}:${input.changePeriodLabel}`,
-      title: 'Chase price window',
-      body: `${chaseName} is on your radar, and your broader collection signal is softer ${input.changePeriodLabel.toLowerCase()}. If you want to pull it, sealed may be worth watching; if the single is the target, I would watch the card price before buying sealed. Confidence: ${getConfidence(trendConfidence)}.`,
+      title: 'Possible better buy window',
+      body: `${chaseName} is on your list, and your tracked collection has dipped ${input.changePeriodLabel.toLowerCase()}. If you want this exact card, I would watch the single-card price before buying sealed packs to chase it. Confidence: ${getConfidence(trendConfidence)}.`,
       personalisation_reason: `Relevant because ${chaseName} is in your chase or watch list.`,
       related_user_goal: 'chasing_specific_card',
       related_cards: [chaseName],
@@ -834,8 +1024,8 @@ function buildCandidateInsights(
     const characterName = getCharacterName(chaseName) || chaseName;
     candidates.push(makeInsight({
       id: `chase-cluster:${chaseCard.cardId ?? chaseName}:${input.changePeriodLabel}`,
-      title: 'Chase relevance check',
-      body: `Your interests are clustering around ${characterName} and ${chaseSet}. ${chaseName} still looks like a watch item, but I would use alerts until the signal is stronger. Confidence: ${dataThin ? 'Low' : getConfidence(trendConfidence)}.`,
+      title: 'Keep this on your watch list',
+      body: `You have been circling ${characterName} and ${chaseSet}. ${chaseName} is still worth watching, but I would set an alert and wait for a clearer price move before buying. Confidence: ${dataThin ? 'Low' : getConfidence(trendConfidence)}.`,
       personalisation_reason: `Relevant because ${chaseName} is in your chase or watch list.`,
       related_user_goal: 'chasing_specific_card',
       related_cards: [chaseName],
@@ -864,7 +1054,7 @@ function buildCandidateInsights(
       : 'extra duplicate copies';
     candidates.push(makeInsight({
       id: `trade-up:${chaseCard.cardId ?? chaseName}:${duplicateSummary.count}`,
-      title: 'Trade-up route',
+      title: 'Use duplicates to fund this',
       body: `You have ${valuePhrase} and ${chaseName} on your chase list. Those extras could help fund the chase without touching your main binder. Confidence: Medium.`,
       personalisation_reason: `Connects your duplicate pool to ${chaseName}.`,
       related_user_goal: 'trading_up',
@@ -887,12 +1077,82 @@ function buildCandidateInsights(
     }));
   }
 
+  if (missingCard && activeBinder && activeBinder.missing > 0 && marketplaceMatchCount > 0) {
+    const missingName = getInsightCardName(missingCard);
+    candidates.push(makeInsight({
+      id: `missing-marketplace:${missingCard.cardId ?? missingName}:${marketplaceMatchCount}`,
+      title: 'A missing binder card has appeared',
+      body: `${missingName} is missing from ${activeBinder.name}, and StackR has found matching marketplace activity. Check the listing before filling the gap so you can compare condition and recent sold prices.`,
+      personalisation_reason: `Relevant because ${missingName} is missing from your ${activeBinder.name} binder.`,
+      related_user_goal: 'completing_set',
+      related_cards: [missingName],
+      related_products: [`${activeBinder.name} singles`],
+      recommended_route: 'complete_with_singles',
+      privacy_level: 'personalised',
+      tags: ['binder', 'completion', 'marketplace-match', 'single'],
+      evidence: [
+        {
+          type: 'positive',
+          label: 'Binder gap',
+          evidence: `${activeBinder.name} still has ${activeBinder.missing} missing card${activeBinder.missing === 1 ? '' : 's'}.`,
+          source: 'collection',
+        },
+        {
+          type: 'positive',
+          label: 'Marketplace activity',
+          evidence: `${marketplaceMatchCount} matching marketplace signal${marketplaceMatchCount === 1 ? '' : 's'} found for cards you want.`,
+          source: 'market',
+        },
+      ],
+      scoring: {
+        relevance_to_owned_cards: 90,
+        relevance_to_chase_list: chaseCard ? 42 : 12,
+        relevance_to_recent_views: settings.useViewingHistory ? 18 : 0,
+        relevance_to_purchase_history: settings.usePurchaseHistory ? 14 : 0,
+        market_movement_strength: Math.max(36, movementStrength),
+        confidence_score: dataThin ? 44 : Math.max(58, trendConfidence),
+        potential_user_value: 88,
+        freshness: 84,
+        actionability: 94,
+      },
+    }));
+  }
+
+  const searchedCard = settings.useViewingHistory ? input.recentSearches?.[0] ?? input.recentViews?.[0] ?? input.viewedProducts?.[0] : undefined;
+  if (searchedCard && input.percentageChange < -1) {
+    const searchedName = getInsightCardName(searchedCard);
+    const searchedSet = getInsightSetName(searchedCard);
+    candidates.push(makeInsight({
+      id: `searched-falling:${searchedCard.cardId ?? searchedName}:${input.changePeriodLabel}`,
+      title: 'A watched card is getting cheaper',
+      body: `${searchedName} from ${searchedSet} matches your recent activity, and tracked prices are softer ${input.changePeriodLabel.toLowerCase()}. I would compare recent sold prices before buying rather than chasing sealed product.`,
+      personalisation_reason: `Relevant because ${searchedName} appears in your recent searches or views.`,
+      related_user_goal: 'buying_dip',
+      related_cards: [searchedName],
+      related_products: [`${searchedSet} singles`],
+      recommended_route: dataThin ? 'set_price_alert' : 'watch_single_price',
+      privacy_level: settings.personalisedInsights ? 'personalised' : 'general',
+      tags: ['watched-listing', 'market-dip', 'single', 'recent-search'],
+      scoring: {
+        relevance_to_owned_cards: activeBinder ? 38 : 12,
+        relevance_to_chase_list: chaseCard ? 42 : 16,
+        relevance_to_recent_views: 86,
+        relevance_to_purchase_history: settings.usePurchaseHistory ? 18 : 0,
+        market_movement_strength: movementStrength,
+        confidence_score: dataThin ? 34 : Math.max(50, trendConfidence),
+        potential_user_value: 78,
+        freshness: 82,
+        actionability: 82,
+      },
+    }));
+  }
+
   if (activeBinder && activeBinder.missing > 0 && activeBinder.completionPercent >= 60) {
     const missingName = getInsightCardName(missingCard);
-    const route = input.percentageChange < -1 ? 'This may be a better completion window' : 'Singles may still be the cleanest route';
+    const route = input.percentageChange < -1 ? 'This could be a better time to fill gaps' : 'Buying singles still looks like the simplest route';
     candidates.push(makeInsight({
       id: `binder-completion:${activeBinder.name}:${activeBinder.missing}`,
-      title: 'Binder completion read',
+      title: 'Smart next binder move',
       body: `You are ${activeBinder.missing} card${activeBinder.missing === 1 ? '' : 's'} away from ${activeBinder.name}. ${route}, especially around ${missingName}. Confidence: ${dataThin ? 'Low' : 'Medium'}.`,
       personalisation_reason: `Based on your ${activeBinder.name} binder progress.`,
       related_user_goal: 'completing_set',
@@ -934,15 +1194,15 @@ function buildCandidateInsights(
       card: forecastCard,
       fallbackValue: input.totalValue > 0 && input.ownedCount > 0 ? input.totalValue / input.ownedCount : null,
       basis: [
-        `${release.name} catalyst`,
+        `${release.name} event`,
         `${matchedInterest} relevance`,
-        dataThin ? 'thin current sold-data signal' : `${input.changePeriodLabel} collection movement`,
+        dataThin ? 'limited recent sale data' : `${input.changePeriodLabel} collection movement`,
       ],
       horizonLabel: getForecastHorizon(upcomingRelease.daysUntil),
     });
     const percentBand = formatForecastPercentRange(forecast.estimatedImpactPctRange);
     const valueBand = formatForecastCurrencyRange(forecast.estimatedValueRange);
-    const valuePhrase = valueBand ? ` Minty watch band: ${valueBand}.` : '';
+    const valuePhrase = valueBand ? ` Rough value guide: ${valueBand}.` : '';
     const releaseConfidence = clampScore(
       38 +
         Math.min(upcomingRelease.score, 70) * 0.45 +
@@ -954,11 +1214,11 @@ function buildCandidateInsights(
     candidates.push(makeInsight({
       id: `upcoming-release:${normaliseLookupText(release.name)}:${matchedInterest}`,
       title: release.signal === 'anniversary'
-        ? '30th anniversary watch'
+        ? '30th anniversary check'
         : release.signal === 'mega_evolution'
-          ? 'XY and Mega watch'
-          : 'Upcoming catalyst watch',
-      body: `${release.name} is ${timing} and overlaps with ${matchedInterest}. ${getForecastDirectionVerb(forecastDirection)}: ${percentBand}. ${releaseSignalCopy(release.signal)}.${valuePhrase} Confirm with sold comps before acting. Confidence: ${getConfidence(releaseConfidence)}.`,
+          ? 'XY and Mega check'
+          : 'Upcoming event check',
+      body: `${release.name} is ${timing} and connects with ${matchedInterest}. ${getForecastDirectionVerb(forecastDirection)}: ${percentBand}. ${releaseSignalCopy(release.signal)}.${valuePhrase} Check recent sold prices before acting. Confidence: ${getConfidence(releaseConfidence)}.`,
       forecast,
       personalisation_reason: `Relevant because ${matchedInterest} appears in your collection, chase list or binder goals.`,
       related_user_goal: profile.active_chases.length ? 'chasing_specific_card' : 'watching_market',
@@ -993,17 +1253,17 @@ function buildCandidateInsights(
         fallbackValue: input.totalValue > 0 && input.ownedCount > 0 ? input.totalValue / input.ownedCount : null,
         basis: [
           'anniversary reprint risk',
-          `${matchedInterest} nostalgia demand`,
-          'modern reprints can add supply',
+          `${matchedInterest} nostalgia interest`,
+          'modern reprints can make copies easier to find',
         ],
         horizonLabel: getForecastHorizon(upcomingRelease.daysUntil),
       });
       candidates.push(makeInsight({
         id: `reprint-risk:${normaliseLookupText(release.name)}:${matchedInterest}`,
-        title: 'Reprint risk check',
-        body: `${matchedInterest} has anniversary attention, but reprints can split the market. Scarce originals and strong grades may hold better; easy-to-replace modern copies can soften. Watch band: ${formatForecastPercentRange(riskForecast.estimatedImpactPctRange)}. Confidence: ${getConfidence(riskConfidence)}.`,
+        title: 'Reprint caution',
+        body: `${matchedInterest} has anniversary attention, but reprints can make newer copies easier to find. Older, scarce, or well-graded copies may hold up better. Rough guide range: ${formatForecastPercentRange(riskForecast.estimatedImpactPctRange)}. Confidence: ${getConfidence(riskConfidence)}.`,
         forecast: riskForecast,
-        personalisation_reason: `Relevant because ${matchedInterest} connects to the anniversary catalyst.`,
+        personalisation_reason: `Relevant because ${matchedInterest} connects to the anniversary event.`,
         related_user_goal: 'watching_market',
         related_cards: shortList([matchedInterest, ...profile.high_interest_cards], 3),
         related_products: [release.name],
@@ -1030,8 +1290,8 @@ function buildCandidateInsights(
     const ownedConfidence = dataThin ? 36 : Math.max(50, trendConfidence);
     candidates.push(makeInsight({
       id: `owned-hold:${topOwned.cardId ?? ownedName}:${input.changePeriodLabel}`,
-      title: 'High-value hold check',
-      body: `${ownedName} is one of your stronger owned cards. I would track nearby listings for context, but I would not suggest moving your only copy from the main collection. Confidence: ${getConfidence(ownedConfidence)}.`,
+      title: 'Keep this one close',
+      body: `${ownedName} is one of your stronger owned cards. I would compare nearby listings for context, but I would not move your only copy unless you already planned to sell or trade it. Confidence: ${getConfidence(ownedConfidence)}.`,
       personalisation_reason: `Linked to a high-value card already in your binder.`,
       related_user_goal: 'protecting_collection',
       related_cards: [ownedName],
@@ -1057,8 +1317,8 @@ function buildCandidateInsights(
     const relatedCard = chaseCard ? chaseName : topOwned ? getInsightCardName(topOwned) : getInsightCardName(missingCard);
     candidates.push(makeInsight({
       id: `thin-data:${relatedCard}:${input.changePeriodLabel}`,
-      title: 'Low-confidence signal',
-      body: `${relatedCard} looks relevant to your collection activity, but market data is thin right now. I would set an alert or watch another refresh before acting. Confidence: Low.`,
+      title: 'Wait for more proof',
+      body: `${relatedCard} matches your collection activity, but there are not enough recent prices yet. I would set an alert and wait for another refresh before acting. Confidence: Low.`,
       personalisation_reason: `Relevant to ${profile.inferred_intents[0]?.replace(/_/g, ' ') ?? 'your collection activity'}.`,
       related_user_goal: chaseCard ? 'chasing_specific_card' : activeBinder ? 'completing_set' : 'watching_market',
       related_cards: relatedCard ? [relatedCard] : [],
@@ -1082,10 +1342,10 @@ function buildCandidateInsights(
 
   candidates.push(makeInsight({
     id: `collection-market:${input.changePeriodLabel}:${input.ownedCount}`,
-    title: 'Collection market read',
+    title: 'Collection check-in',
     body: input.ownedCount > 0
-      ? `Your tracked collection is ${input.absoluteChange >= 0 ? 'holding firmer' : 'softer'} ${input.changePeriodLabel.toLowerCase()}. I will prioritise owned cards, chase targets and binder gaps before showing broader market noise. Confidence: ${getConfidence(trendConfidence)}.`
-      : `Start adding owned or wanted cards and I can make this market read specific to your collection goals. Confidence: Low.`,
+      ? `Your tracked collection is ${input.absoluteChange >= 0 ? 'up or holding steady' : 'down a little'} ${input.changePeriodLabel.toLowerCase()}. I will focus on the cards you own, the cards you want, and binder gaps before broader market noise. Confidence: ${getConfidence(trendConfidence)}.`
+      : `Start adding owned or wanted cards and I can make this advice specific to your collection goals. Confidence: Low.`,
     personalisation_reason: input.ownedCount > 0
       ? `Based on ${input.ownedCount} owned card${input.ownedCount === 1 ? '' : 's'} and current value movement.`
       : 'No collection behaviour has been linked yet.',
@@ -1108,7 +1368,11 @@ function buildCandidateInsights(
     },
   }));
 
-  return candidates;
+  return candidates.map((insight) => ({
+    ...insight,
+    generated_at: insight.generated_at ?? refreshedAt,
+    data_refreshed_at: insight.data_refreshed_at ?? refreshedAt,
+  }));
 }
 
 export function buildMintyHomeInsight(
@@ -1153,6 +1417,7 @@ export function buildMintyHomeInsight(
         (input.percentageChange < -1 && insight.tags.includes('duplicates') ? 10 : 0) +
         (!input.chaseCards?.length && insight.tags.includes('protect') ? 16 : 0) +
         (input.percentageChange < -1 && insight.tags.includes('completion') ? 24 : 0) +
+        ((input.activeBinder?.missing ?? 0) > 0 && (input.activeBinder?.completionPercent ?? 0) >= 80 && insight.tags.includes('completion') ? 34 : 0) +
         (hasCatalystSignals && insight.tags.includes('upcoming-release') ? 18 : 0) +
         (hasCatalystSignals && insight.tags.includes('anniversary') ? 16 : 0) +
         (hasCatalystSignals && insight.tags.includes('mega_evolution') ? 14 : 0) +

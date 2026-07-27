@@ -4,19 +4,16 @@ import {
   ActivityIndicator,
   Image,
   type ImageSourcePropType,
-  Modal,
-  Pressable,
-  ScrollView,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { Text } from '../Text';
 import { StackrImage } from '../StackrImage';
-import { StackrCardActionIcon, StackrPageTitle } from '../StackrScreen';
+import { StackrCardActionIcon } from '../StackrScreen';
+import { StackrBottomSheet } from '../StackrModalSystem';
 import { StackrProfileAvatar } from '../StackrProfileAvatar';
 import { useTheme } from '../theme-context';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { marketIcons, type MarketIconName } from '../../lib/marketIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
@@ -48,6 +45,8 @@ export type MarketListingCardData = {
   variant?: string | null;
   imageUri?: string | null;
   fullImageUri?: string | null;
+  imageBadgeLabel?: string | null;
+  imageIsCatalogue?: boolean;
   condition?: string | null;
   gradeCompany?: string | null;
   grade?: string | null;
@@ -64,7 +63,7 @@ export type MarketListingCardData = {
   sellerUserId?: string | null;
   transactionCount?: number | null;
   verified?: boolean;
-  protectionTier: MarketProtectionTier;
+  protectionTier?: MarketProtectionTier | null;
   protectionAgreementRequired?: boolean;
   variantType: MarketListingVariant;
   saved?: boolean;
@@ -127,11 +126,18 @@ export function MarketHeader({
 }) {
   const { theme } = useTheme();
   return (
-    <View style={{ gap: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+    <View style={{ gap: 9 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <StackrPageTitle title="The Market" accentText="Market" />
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 2 }}>
+          <Text
+            style={{ color: theme.colors.text, fontSize: 31, lineHeight: 36, fontWeight: '900' }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.86}
+          >
+            The Ma<Text style={{ color: theme.colors.primary, fontSize: 31, lineHeight: 36, fontWeight: '900' }}>rket</Text>
+          </Text>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, lineHeight: 16, fontWeight: '800', marginTop: -1 }}>
             Buy, trade and discover cards from collectors.
           </Text>
         </View>
@@ -142,9 +148,9 @@ export function MarketHeader({
           accessibilityRole="button"
           accessibilityLabel="Open profile"
           style={{
-            width: 44,
-            height: 44,
-            borderRadius: 22,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: theme.colors.card,
             borderWidth: 1,
             borderColor: theme.colors.border,
@@ -155,7 +161,7 @@ export function MarketHeader({
           <StackrProfileAvatar
             avatarUrl={profileAvatarUrl}
             avatarPreset={profileAvatarPreset}
-            size={38}
+            size={34}
             borderWidth={1}
             accessibilityLabel="Open profile"
           />
@@ -192,7 +198,13 @@ export function MarketShortcutRow({
 }) {
   return (
     <View style={{ flexDirection: 'row', gap: 8, width: '100%' }}>
-      <MarketQuickLink imageIcon={stackrIcons.favorite} label="Favorites" count={savedCount} onPress={onSaved} />
+      <MarketQuickLink
+        imageIcon={stackrIcons.favorite}
+        label="Favorited"
+        accessibilityLabel="Favorited listings"
+        count={savedCount}
+        onPress={onSaved}
+      />
       <MarketQuickLink icon={marketIcons.offer} label="Offers" count={incomingOfferCount} onPress={onOffers} />
       <MarketQuickLink icon={marketIcons.sell} label="My Listings" count={myListingCount} onPress={onMyListings} />
     </View>
@@ -203,12 +215,14 @@ function MarketQuickLink({
   icon,
   imageIcon,
   label,
+  accessibilityLabel,
   count,
   onPress,
 }: {
   icon?: MarketIconName;
   imageIcon?: ImageSourcePropType;
   label: string;
+  accessibilityLabel?: string;
   count?: number;
   onPress: () => void;
 }) {
@@ -219,13 +233,13 @@ function MarketQuickLink({
       onPress={onPress}
       activeOpacity={0.82}
       accessibilityRole="button"
-      accessibilityLabel={count && count > 0 ? `${label}, ${count}` : label}
+      accessibilityLabel={count && count > 0 ? `${accessibilityLabel ?? label}, ${count}` : accessibilityLabel ?? label}
       style={{
         flex: 1,
         minWidth: 0,
-        minHeight: 40,
-        paddingHorizontal: 9,
-        borderRadius: 13,
+        minHeight: 38,
+        paddingHorizontal: 8,
+        borderRadius: 12,
         backgroundColor: 'rgba(255,255,255,0.72)',
         borderWidth: 1,
         borderColor: theme.colors.border,
@@ -239,14 +253,14 @@ function MarketQuickLink({
         <Image
           source={imageIcon}
           resizeMode="contain"
-          style={{ width: 20, height: 20, flexShrink: 0 }}
+          style={{ width: 18, height: 18, flexShrink: 0 }}
           accessibilityIgnoresInvertColors
         />
       ) : icon ? (
-        <Ionicons name={icon} size={16} color={theme.colors.primary} style={{ flexShrink: 0 }} />
+        <Ionicons name={icon} size={15} color={theme.colors.primary} style={{ flexShrink: 0 }} />
       ) : null}
       <Text
-        style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12, flexShrink: 1, minWidth: 0 }}
+        style={{ color: theme.colors.text, fontWeight: '900', fontSize: 11.6, flexShrink: 1, minWidth: 0 }}
         numberOfLines={1}
         adjustsFontSizeToFit
         minimumFontScale={0.78}
@@ -257,8 +271,8 @@ function MarketQuickLink({
         <View
           style={{
             minWidth: badgeLabel.length > 2 ? 28 : 20,
-            height: 20,
-            borderRadius: 10,
+            height: 18,
+            borderRadius: 9,
             paddingHorizontal: badgeLabel.length > 2 ? 6 : 0,
             backgroundColor: theme.colors.primary,
             alignItems: 'center',
@@ -270,7 +284,7 @@ function MarketQuickLink({
             style={{
               color: '#FFFFFF',
               fontSize: 10,
-              lineHeight: 20,
+              lineHeight: 18,
               fontWeight: '900',
               textAlign: 'center',
               includeFontPadding: false,
@@ -380,9 +394,10 @@ export function MarketSearch({
         <TextInput
           value={value}
           onChangeText={onChangeText}
-          placeholder="Search cards, sets or sellers"
+          placeholder="Search cards, products, sets or sellers"
           placeholderTextColor={theme.colors.textSoft}
           autoCorrect={false}
+          spellCheck={false}
           autoCapitalize="words"
           returnKeyType="search"
           accessibilityLabel="Search The Market"
@@ -421,31 +436,43 @@ export function MarketFilterChip({
   active,
   icon,
   imageIcon,
+  disabled,
   onPress,
 }: {
   label: string;
   active?: boolean;
   icon?: MarketIconName;
   imageIcon?: ImageSourcePropType;
+  disabled?: boolean;
   onPress: () => void;
 }) {
   const { theme } = useTheme();
   return (
     <TouchableOpacity
       onPress={onPress}
+      disabled={disabled}
       activeOpacity={0.82}
       accessibilityRole="button"
-      accessibilityState={{ selected: Boolean(active) }}
+      accessibilityState={{ selected: Boolean(active), disabled: Boolean(disabled) }}
       style={{
-        minHeight: 36,
-        paddingHorizontal: 11,
+        minHeight: 34,
+        paddingHorizontal: 10,
         borderRadius: 11,
-        backgroundColor: active ? theme.colors.primary + '12' : 'rgba(255,255,255,0.78)',
+        backgroundColor: disabled
+          ? theme.colors.surface
+          : active
+            ? theme.colors.primary + '12'
+            : 'rgba(255,255,255,0.78)',
         borderWidth: 1,
-        borderColor: active ? theme.colors.primary + '55' : 'rgba(232,225,255,0.78)',
+        borderColor: disabled
+          ? theme.colors.border
+          : active
+            ? theme.colors.primary + '55'
+            : 'rgba(232,225,255,0.78)',
         flexDirection: 'row',
         alignItems: 'center',
         gap: 5,
+        opacity: disabled ? 0.64 : 1,
       }}
     >
       {imageIcon ? (
@@ -459,7 +486,14 @@ export function MarketFilterChip({
       ) : null}
       <Text
         numberOfLines={1}
-        style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, lineHeight: 15, fontWeight: '900' }}
+        adjustsFontSizeToFit
+        minimumFontScale={0.78}
+        style={{
+          color: disabled ? theme.colors.textSoft : active ? theme.colors.primary : theme.colors.text,
+          fontSize: 11.8,
+          lineHeight: 15,
+          fontWeight: '900',
+        }}
       >
         {label}
       </Text>
@@ -470,6 +504,7 @@ export function MarketFilterChip({
 export function MarketFilterSheet({
   visible,
   title = 'Filters',
+  subtitle: subtitleOverride,
   activeFilterCount,
   children,
   onClose,
@@ -477,58 +512,27 @@ export function MarketFilterSheet({
 }: {
   visible: boolean;
   title?: string;
+  subtitle?: string;
   activeFilterCount?: number;
   children: React.ReactNode;
   onClose: () => void;
   onClear: () => void;
 }) {
-  const { theme } = useTheme();
-  const insets = useSafeAreaInsets();
+  const subtitle = subtitleOverride ?? (activeFilterCount && activeFilterCount > 0
+    ? `${activeFilterCount} active`
+    : 'Refine and narrow Market results.');
+
   return (
-    <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
-      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-        <Pressable style={{ flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.25)' }} onPress={onClose} />
-        <View
-          style={{
-            backgroundColor: theme.colors.card,
-            borderTopLeftRadius: 22,
-            borderTopRightRadius: 22,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            padding: 16,
-            paddingBottom: insets.bottom + 16,
-            maxHeight: '76%',
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-            <View>
-              <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>{title}</Text>
-              {activeFilterCount && activeFilterCount > 0 ? (
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
-                  {activeFilterCount} active
-                </Text>
-              ) : null}
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-              <TouchableOpacity onPress={onClear} accessibilityRole="button" accessibilityLabel="Clear all filters">
-                <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>Clear all</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={onClose}
-                accessibilityRole="button"
-                accessibilityLabel="Close filters"
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              >
-                <Ionicons name="close" size={22} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-          </View>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 14, paddingBottom: 8 }}>
-            {children}
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
+    <StackrBottomSheet
+      visible={visible}
+      title={title}
+      subtitle={subtitle}
+      onClose={onClose}
+      onClear={onClear}
+      maxHeight="76%"
+    >
+      {children}
+    </StackrBottomSheet>
   );
 }
 
@@ -584,13 +588,11 @@ function getListingTransaction(item: MarketListingCardData, variant: ReturnType<
   };
 }
 
-function getBuyerTotalCopy(item: MarketListingCardData) {
-  const total = money(item.buyerTotal);
-  if (total) {
-    return `${item.buyerTotalIsEstimate ? 'From ' : ''}${total} including shipping and protection`;
-  }
-  if (item.buyerTotalUnavailable) return 'Total calculated at checkout';
-  return 'Total calculated at checkout';
+function getCompactTransactionPrimary(primary: string) {
+  if (primary === 'Offers invited') return 'Offers only';
+  if (primary === 'Open to trade') return 'Trade';
+  if (primary === 'Make purchase offer') return 'Offer';
+  return primary;
 }
 
 function getLanguageLabel(language?: string | null) {
@@ -601,7 +603,61 @@ function getLanguageLabel(language?: string | null) {
 }
 
 function getListingIdentityLine(item: MarketListingCardData) {
-  return [item.setName, item.cardNumber ? `#${item.cardNumber}` : null].filter(Boolean).join(' · ') || 'Collector listing';
+  return [item.setName, item.cardNumber ? `#${item.cardNumber}` : null].filter(Boolean).join(' - ') || 'Collector listing';
+}
+
+function getListingConditionLine(item: MarketListingCardData) {
+  if (item.gradeCompany || item.grade) {
+    return [item.gradeCompany, item.grade ? `Grade ${item.grade}` : null].filter(Boolean).join(' ');
+  }
+  return item.condition ?? item.variant ?? null;
+}
+
+function ListingMetaPill({
+  icon,
+  imageIcon,
+  label,
+}: {
+  icon?: MarketIconName;
+  imageIcon?: ImageSourcePropType;
+  label: string;
+}) {
+  const { theme } = useTheme();
+  return (
+    <View
+      style={{
+        minHeight: 24,
+        maxWidth: '100%',
+        borderRadius: 999,
+        paddingHorizontal: 7,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        backgroundColor: theme.colors.surface,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+      }}
+    >
+      {imageIcon ? (
+        <Image
+          source={imageIcon}
+          resizeMode="contain"
+          style={{ width: 14, height: 14, flexShrink: 0 }}
+          accessibilityIgnoresInvertColors
+        />
+      ) : icon ? (
+        <Ionicons name={icon} size={13} color={theme.colors.primary} style={{ flexShrink: 0 }} />
+      ) : null}
+      <Text
+        style={{ color: theme.colors.text, fontSize: 10.5, lineHeight: 13, fontWeight: '900', flexShrink: 1, minWidth: 0 }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.78}
+      >
+        {label}
+      </Text>
+    </View>
+  );
 }
 
 export function MarketListingCard({
@@ -610,19 +666,25 @@ export function MarketListingCard({
   onSave,
   onMore,
   onSellerPress: _onSellerPress,
+  compact = false,
 }: {
   item: MarketListingCardData;
   onPress: () => void;
   onSave?: () => void;
   onMore?: () => void;
   onSellerPress?: () => void;
+  compact?: boolean;
 }) {
   const { theme } = useTheme();
   const variant = getVariantCopy(item.variantType);
   const transaction = getListingTransaction(item, variant);
   const identityLine = getListingIdentityLine(item);
-  const buyerTotalCopy = getBuyerTotalCopy(item);
   const languageLabel = getLanguageLabel(item.language);
+  const conditionLine = getListingConditionLine(item);
+  const detailsLine = [identityLine, languageLabel].filter(Boolean).join(' - ');
+  const sellerLabel = item.isMine ? 'Your listing' : item.sellerName ?? 'Collector listing';
+  const compactPrimary = getCompactTransactionPrimary(transaction.primary);
+  const trustLabel = item.verified && !item.isMine ? 'Verified seller' : sellerLabel;
 
   return (
     <TouchableOpacity
@@ -633,34 +695,36 @@ export function MarketListingCard({
       style={{
         flex: 1,
         backgroundColor: 'rgba(255,255,255,0.9)',
-        borderRadius: 15,
+        borderRadius: 12,
         borderWidth: 1,
         borderColor: theme.colors.border,
-        padding: 8,
+        padding: compact ? 7 : 8,
         shadowColor: '#1B2A4B',
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 4 },
-        elevation: 2,
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 3 },
+        elevation: 1,
       }}
     >
       <View>
         <StackrImage
           uri={item.imageUri}
           fullUri={item.fullImageUri}
+          fallbackSource={stackrIcons.marketplace}
           contentFit="contain"
           rounded={12}
           style={{
             width: '100%',
             aspectRatio: 0.72,
-            borderRadius: 12,
+            borderRadius: compact ? 11 : 12,
             borderWidth: 1,
             borderColor: theme.colors.border,
             backgroundColor: theme.colors.surface,
           }}
+          showFallbackIcon={false}
           accessibilityLabel={`${item.title} artwork`}
         />
-        {item.inDemand ? (
+        {item.imageBadgeLabel ? (
           <View
             pointerEvents="none"
             style={{
@@ -672,22 +736,26 @@ export function MarketListingCard({
               paddingHorizontal: 8,
               backgroundColor: 'rgba(255,255,255,0.92)',
               borderWidth: 1,
-              borderColor: theme.colors.primary + '35',
+              borderColor: item.imageIsCatalogue ? theme.colors.secondary + '45' : theme.colors.primary + '35',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Text style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '900' }}>In Demand</Text>
+            <Text style={{ color: item.imageIsCatalogue ? theme.colors.secondary : theme.colors.primary, fontSize: 9.5, fontWeight: '900' }}>
+              {item.imageBadgeLabel}
+            </Text>
           </View>
         ) : null}
-        <View style={{ position: 'absolute', top: 4, right: 4 }}>
-          <FavoriteButton saved={Boolean(item.saved)} onPress={onSave} floating />
-        </View>
+        {!item.isMine && onSave ? (
+          <View style={{ position: 'absolute', top: 4, right: 4 }}>
+            <FavoriteButton saved={Boolean(item.saved)} onPress={onSave} floating />
+          </View>
+        ) : null}
       </View>
 
-      <View style={{ gap: 4, paddingTop: 9, minHeight: 132 }}>
+      <View style={{ gap: compact ? 4 : 5, paddingTop: compact ? 8 : 9, minHeight: compact ? 112 : 132 }}>
         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'flex-start' }}>
-          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontSize: 13.5, lineHeight: 17, fontWeight: '900' }} numberOfLines={2}>
+          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.text, fontSize: compact ? 13 : 13.5, lineHeight: compact ? 16 : 17, fontWeight: '900' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>
             {item.title}
           </Text>
           {onMore ? (
@@ -703,27 +771,33 @@ export function MarketListingCard({
           ) : null}
         </View>
         <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 15, fontWeight: '700' }} numberOfLines={1}>
-          {identityLine}
+          {detailsLine}
         </Text>
-        {languageLabel ? (
-          <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }} numberOfLines={1}>
-            {languageLabel}
-          </Text>
-        ) : null}
-        <Text style={{ color: theme.colors.text, fontSize: 17, lineHeight: 21, fontWeight: '900', marginTop: 3 }} numberOfLines={1}>
-          {transaction.primary}
-        </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
-          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.primary, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }} numberOfLines={2}>
-            {buyerTotalCopy}
-          </Text>
-          <ProtectionBadge tier={item.protectionTier} compact iconOnly />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: compact ? 1 : 2 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text
+              style={{ color: theme.colors.text, fontSize: compact ? 16 : 17, lineHeight: compact ? 19 : 21, fontWeight: '900' }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+            >
+              {compact ? compactPrimary : transaction.primary}
+            </Text>
+            {conditionLine ? (
+              <Text style={{ color: theme.colors.textSoft, fontSize: compact ? 10.2 : 10.6, lineHeight: 14, fontWeight: '800' }} numberOfLines={1}>
+                {conditionLine}
+              </Text>
+            ) : null}
+          </View>
+          <ListingMetaPill icon={variant.icon} label={transaction.badge} />
         </View>
-        {item.isMine ? (
-          <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '800' }} numberOfLines={1}>
-            Your listing
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: compact ? 2 : 1, minHeight: 17 }}>
+          <Text style={{ flex: 1, minWidth: 0, color: theme.colors.textSoft, fontSize: compact ? 10.2 : 10.7, lineHeight: 14, fontWeight: '900' }} numberOfLines={1}>
+            {trustLabel}
           </Text>
-        ) : null}
+          {item.verified && !item.isMine ? <Ionicons name={marketIcons.verified} size={13} color={theme.colors.primary} /> : null}
+          {item.inDemand ? <Ionicons name="flame-outline" size={13} color={theme.colors.secondary} /> : null}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -744,13 +818,13 @@ function FavoriteButton({
       onPress={onPress}
       disabled={!onPress}
       accessibilityRole="button"
-      accessibilityLabel={saved ? 'Remove from Favorites' : 'Add to Favorites'}
+      accessibilityLabel={saved ? 'Remove from favorited listings' : 'Add to favorited listings'}
       accessibilityState={{ selected: saved }}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       activeOpacity={0.78}
       style={{
-        width: 44,
-        height: 44,
+        width: floating ? 40 : 44,
+        height: floating ? 40 : 44,
         marginTop: floating ? 0 : -9,
         marginRight: floating ? 0 : -10,
         alignItems: 'center',
@@ -772,7 +846,11 @@ function FavoriteButton({
         <Image
           source={stackrIcons.favorite}
           resizeMode="contain"
-          style={{ width: 17, height: 17, opacity: saved ? 0.94 : 0.46 }}
+          style={{
+            width: 18,
+            height: 18,
+            opacity: saved ? 1 : 0.72,
+          }}
           accessibilityIgnoresInvertColors
         />
       </View>
@@ -943,13 +1021,28 @@ export function MarketValueSummary({
         padding: 12,
       }}
     >
-      <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>Estimated market value</Text>
+      <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>Estimated value</Text>
+      {typeof price === 'number' ? (
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 7 }}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '800', flex: 1 }} numberOfLines={1}>
+            User listing price
+          </Text>
+          <Text
+            style={{ color: theme.colors.text, fontSize: 13, lineHeight: 17, fontWeight: '900', maxWidth: '48%', textAlign: 'right' }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.68}
+          >
+            {money(price) ?? '--'}
+          </Text>
+        </View>
+      ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 8, marginTop: 7 }}>
-        <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 26, fontWeight: '900' }}>
+        <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 26, fontWeight: '900', flex: 1, minWidth: 0 }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.58}>
           {money(estimatedValue) ?? '--'}
         </Text>
         {difference != null ? (
-          <Text style={{ color: difference <= 0 ? '#047857' : '#B45309', fontSize: 12, fontWeight: '900' }}>
+          <Text style={{ color: difference <= 0 ? '#047857' : '#B45309', fontSize: 12, fontWeight: '900', flexShrink: 0 }} numberOfLines={1}>
             {difference <= 0 ? 'Below estimate' : 'Above estimate'}
           </Text>
         ) : null}

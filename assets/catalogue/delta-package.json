@@ -1,0 +1,9 @@
+{
+  "packVersion": "stackr-card-identity-catalogue-v0.0.0-blocked",
+  "status": "blocked",
+  "fromPackVersion": null,
+  "files": [],
+  "atomicInstallInstructions": [
+    "Delta updates are blocked until at least one approved complete pack exists."
+  ]
+}

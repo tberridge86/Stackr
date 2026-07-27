@@ -10,10 +10,12 @@ import {
 } from 'react-native';
 import { Text } from '../../../components/Text';
 import { StackrBackButton } from '../../../components/StackrBackButton';
+import { StackrBackdrop } from '../../../components/StackrBackdrop';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { AVATAR_PRESETS } from '../../../lib/avatars';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../../components/RaritySymbol';
 import { supabase } from '../../../lib/supabase';
 import {
   sendFriendRequest,
@@ -22,6 +24,7 @@ import {
   getFriendStatus,
 } from '../../../lib/friends';
 import { stackrTabContentPadding } from '../../../lib/stackrSizing';
+import { stackrIcons } from '../../../lib/stackrIcons';
 
 // ===============================
 // TYPES
@@ -169,7 +172,7 @@ export default function PublicCollectorProfileScreen() {
 
         supabase
           .from('binder_card_showcases')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', binderId),
 
         supabase
@@ -200,7 +203,7 @@ export default function PublicCollectorProfileScreen() {
         const binderIds = nextBinders.map((b) => b.id);
         const { count } = await supabase
           .from('binder_cards')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .in('binder_id', binderIds)
           .eq('owned', true);
         setOwnedCount(count ?? 0);
@@ -232,7 +235,7 @@ export default function PublicCollectorProfileScreen() {
         }
       }
 
-      // Load card previews (posts + favorite + chase)
+      // Load card previews (posts + featured + chase)
       const profileData = profileResult.data as Profile | null;
       const postCardIds = nextPosts
         .map((p) => p.card_id)
@@ -396,13 +399,20 @@ export default function PublicCollectorProfileScreen() {
             borderWidth: 1,
             borderColor: theme.colors.border,
           }}>
-            {card.image_small || card.image_large ? (
-              <Image
-                source={{ uri: card.image_small ?? card.image_large ?? '' }}
-                style={{ width: 74, height: 104, marginRight: 12 }}
-                resizeMode="contain"
+            <View style={{ width: 74, height: 104, marginRight: 12, borderRadius: 10, overflow: 'hidden', backgroundColor: theme.colors.surface }}>
+              {card.image_small || card.image_large ? (
+                <Image
+                  source={{ uri: card.image_small ?? card.image_large ?? '' }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="contain"
+                />
+              ) : null}
+              <RaritySymbol
+                rarity={card.raw_data?.rarity ?? null}
+                size={13}
+                style={RARITY_SYMBOL_CARD_OVERLAY}
               />
-            ) : null}
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
                 {card.name}
@@ -410,11 +420,6 @@ export default function PublicCollectorProfileScreen() {
               <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 12 }}>
                 {card.raw_data?.set?.name ?? card.set_id}
               </Text>
-              {card.raw_data?.rarity && (
-                <Text style={{ color: '#FFD166', marginTop: 3, fontSize: 12, fontWeight: '900' }}>
-                  {card.raw_data.rarity}
-                </Text>
-              )}
             </View>
           </View>
         )}
@@ -429,6 +434,7 @@ export default function PublicCollectorProfileScreen() {
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <StackrBackdrop />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator color={theme.colors.primary} size="large" />
           <Text style={{ color: theme.colors.textSoft, marginTop: 12 }}>
@@ -442,6 +448,7 @@ export default function PublicCollectorProfileScreen() {
   if (!profile) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+        <StackrBackdrop />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18, marginBottom: 12 }}>
             Collector not found
@@ -463,52 +470,53 @@ export default function PublicCollectorProfileScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
+      <StackrBackdrop />
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
         renderItem={renderPost}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 16, paddingBottom: stackrTabContentPadding.standard }}
+        contentContainerStyle={{ padding: 14, paddingBottom: stackrTabContentPadding.standard }}
         ListHeaderComponent={
           <View>
             {/* Back button */}
-            <View style={{ marginBottom: 16 }}>
+            <View style={{ marginBottom: 10 }}>
               <StackrBackButton onPress={() => router.back()} />
             </View>
 
             {/* Profile header */}
             <View style={{
-              backgroundColor: theme.colors.card,
-              borderRadius: 22,
-              padding: 18,
+              backgroundColor: 'rgba(255,255,255,0.86)',
+              borderRadius: 20,
+              padding: 14,
               alignItems: 'center',
               borderWidth: 1,
               borderColor: theme.colors.border,
-              marginBottom: 16,
+              marginBottom: 14,
             }}>
               {/* Avatar */}
               <View style={{
-                width: 92,
-                height: 92,
-                borderRadius: 26,
+                width: 76,
+                height: 76,
+                borderRadius: 24,
                 backgroundColor: theme.colors.primary,
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
-                marginBottom: 12,
+                marginBottom: 9,
               }}>
                 {avatar?.image ? (
-                  <Image source={avatar.image} style={{ width: 92, height: 92 }} />
+                  <Image source={avatar.image} style={{ width: 76, height: 76 }} />
                 ) : (
-                  <Ionicons name="person" size={34} color="#fff" />
+                  <Ionicons name="person" size={30} color="#fff" />
                 )}
               </View>
 
-              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
+              <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 26, fontWeight: '900' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78}>
                 {profile.collector_name ?? 'Collector'}
               </Text>
 
-              <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontWeight: '700' }}>
+              <Text style={{ color: theme.colors.textSoft, marginTop: 3, fontSize: 12.5, lineHeight: 16, fontWeight: '700' }}>
                 {profile.pokemon_type
                   ? `${profile.pokemon_type.charAt(0).toUpperCase()}${profile.pokemon_type.slice(1)} Trainer`
                   : 'Collector Profile'}
@@ -516,7 +524,7 @@ export default function PublicCollectorProfileScreen() {
 
               {/* Trader rating */}
               <View style={{
-                marginTop: 8,
+                marginTop: 7,
                 backgroundColor: theme.colors.surface,
                 borderRadius: 999,
                 paddingHorizontal: 12,
@@ -532,25 +540,25 @@ export default function PublicCollectorProfileScreen() {
               </View>
 
               {/* Stats */}
-              <View style={{ flexDirection: 'row', gap: 10, marginTop: 16, width: '100%' }}>
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, width: '100%' }}>
                 {[
                   { label: 'Cards', value: ownedCount },
                   { label: 'Binders', value: binders.length },
-                  { label: 'Showcase', value: showcaseCount },
+                  { label: 'Featured', value: showcaseCount },
                 ].map(({ label, value }) => (
                   <View key={label} style={{
                     flex: 1,
                     backgroundColor: theme.colors.bg,
-                    borderRadius: 16,
-                    padding: 12,
+                    borderRadius: 14,
+                    padding: 10,
                     alignItems: 'center',
                     borderWidth: 1,
                     borderColor: theme.colors.border,
                   }}>
-                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18 }}>
+                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
                       {value}
                     </Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 3, fontWeight: '800' }}>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, marginTop: 2, fontWeight: '800' }}>
                       {label}
                     </Text>
                   </View>
@@ -559,7 +567,7 @@ export default function PublicCollectorProfileScreen() {
 
               {/* Action buttons — only show if not own profile */}
               {!isOwnProfile && (
-                <View style={{ flexDirection: 'row', gap: 8, marginTop: 14, width: '100%' }}>
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, width: '100%' }}>
                   {/* Friend button */}
                   <TouchableOpacity
                     onPress={handleFriendAction}
@@ -567,7 +575,7 @@ export default function PublicCollectorProfileScreen() {
                     style={[{
                       flex: 1,
                       borderRadius: 14,
-                      paddingVertical: 12,
+                      paddingVertical: 11,
                       alignItems: 'center',
                       opacity: friendActionBusy ? 0.6 : 1,
                     }, friendButtonStyle()]}
@@ -586,24 +594,28 @@ export default function PublicCollectorProfileScreen() {
                     style={{
                       flex: 1,
                       borderRadius: 14,
-                      paddingVertical: 12,
+                      paddingVertical: 11,
                       alignItems: 'center',
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      gap: 6,
                       backgroundColor: theme.colors.secondary,
                     }}
                   >
+                    <Image source={stackrIcons.trade} style={{ width: 18, height: 18 }} resizeMode="contain" />
                     <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
-                      🤝 Trade
+                      Trade
                     </Text>
                   </TouchableOpacity>
                 </View>
               )}
             </View>
 
-            {/* Favorite + Chase cards */}
+            {/* Featured + Chase cards */}
             {(favoriteCard || chaseCard) && (
               <View style={{ marginBottom: 16 }}>
                 <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', marginBottom: 10 }}>
-                  Showcase Cards
+                  Featured Cards
                 </Text>
 
                 <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -612,17 +624,20 @@ export default function PublicCollectorProfileScreen() {
                       flex: 1,
                       backgroundColor: theme.colors.card,
                       borderRadius: 16,
-                      padding: 10,
+                      padding: 9,
                       alignItems: 'center',
                       borderWidth: 1,
                       borderColor: theme.colors.secondary,
                     }}>
-                      <Text style={{ color: theme.colors.secondary, fontSize: 11, fontWeight: '900', marginBottom: 6 }}>
-                        ⭐ FAVOURITE
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                        <Image source={stackrIcons.scanCard} style={{ width: 14, height: 14 }} resizeMode="contain" />
+                        <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
+                          FEATURED
+                        </Text>
+                      </View>
                       <Image
                         source={{ uri: favoriteCard.image_small ?? favoriteCard.image_large ?? '' }}
-                        style={{ width: 80, height: 112, borderRadius: 6 }}
+                        style={{ width: 74, height: 104, borderRadius: 6 }}
                         resizeMode="contain"
                       />
                       <Text
@@ -639,17 +654,20 @@ export default function PublicCollectorProfileScreen() {
                       flex: 1,
                       backgroundColor: theme.colors.card,
                       borderRadius: 16,
-                      padding: 10,
+                      padding: 9,
                       alignItems: 'center',
                       borderWidth: 1,
-                      borderColor: '#FF8FA3',
+                      borderColor: `${theme.colors.primary}55`,
                     }}>
-                      <Text style={{ color: '#FF8FA3', fontSize: 11, fontWeight: '900', marginBottom: 6 }}>
-                        🎯 CHASE
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 6 }}>
+                        <Image source={stackrIcons.chase} style={{ width: 14, height: 14 }} resizeMode="contain" />
+                        <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
+                          CHASE
+                        </Text>
+                      </View>
                       <Image
                         source={{ uri: chaseCard.image_small ?? chaseCard.image_large ?? '' }}
-                        style={{ width: 80, height: 112, borderRadius: 6 }}
+                        style={{ width: 74, height: 104, borderRadius: 6 }}
                         resizeMode="contain"
                       />
                       <Text

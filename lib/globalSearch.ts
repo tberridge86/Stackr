@@ -1,6 +1,8 @@
 import { searchLocalPokemonCards } from './cardSearch';
+import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 import { supabase } from './supabase';
+import { getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from './pokemonTcg';
 
 export { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 
@@ -58,9 +60,14 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
         limit,
         select: 'id, name, language, set_id, image_small, image_large, raw_data, number',
       }),
-    ]).then(([englishCards, japaneseCards]) => {
+      searchLocalPokemonCards<any>(primaryQuery, {
+        language: 'zh-tw',
+        limit,
+        select: 'id, name, language, set_id, image_small, image_large, raw_data, number',
+      }),
+    ]).then(([englishCards, japaneseCards, chineseCards]) => {
       const seen = new Set<string>();
-      return [...englishCards, ...japaneseCards].filter((card) => {
+      return [...englishCards, ...japaneseCards, ...chineseCards].filter((card) => {
         if (!card?.id || seen.has(card.id)) return false;
         seen.add(card.id);
         return true;
@@ -68,7 +75,7 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
     }),
     supabase
       .from('pokemon_sets')
-      .select('id, name, series, printed_total, total, images')
+      .select('id, name, series, printed_total, total, symbol_url, logo_url, raw_data')
       .or(`name.ilike.%${primaryQuery}%,id.ilike.%${primaryQuery}%`)
       .limit(limit),
     supabase
@@ -95,8 +102,19 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
       category: 'cards',
       title: card.name,
       subtitle: joinSubtitle([
-        card.language === 'ja' ? 'Japanese' : null,
-        card.raw_data?.set?.name ?? card.set_id,
+        normalizePokemonCardLanguage(card.language) !== 'en' ? getPokemonCardLanguageLabel(card.language) : null,
+        getPreferredSetDisplayName({
+          id: card.set_id ?? card.raw_data?.set?.id ?? null,
+          sourceId: card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set?.source_id ?? card.raw_data?.source_id ?? card.set_id ?? null,
+          setCode: card.raw_data?.set?.set_code ?? card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set_code ?? card.set_id ?? null,
+          language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
+          region: card.region ?? card.raw_data?.region ?? card.raw_data?.set?.region ?? null,
+          localName: card.raw_data?.set?.local_name ?? card.raw_data?.set?.name ?? null,
+          englishDisplayName: card.raw_data?.set?.english_display_name ?? card.raw_data?.set?.englishDisplayName ?? null,
+          canonicalName: card.raw_data?.set?.name ?? null,
+          fallbackName: card.set_id ?? null,
+          raw: card.raw_data?.set ?? card.raw_data,
+        }),
         card.number ? `#${card.number}` : null,
       ]),
       imageUrl: card.image_small ?? card.image_large ?? null,
@@ -111,7 +129,7 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
       category: 'sets',
       title: set.name,
       subtitle: joinSubtitle([set.series, set.printed_total ?? set.total ? `${set.printed_total ?? set.total} cards` : null]),
-      imageUrl: set.images?.logo ?? null,
+      imageUrl: set.logo_url ?? set.symbol_url ?? set.raw_data?.cover_image_url ?? set.raw_data?.images?.cover ?? null,
       route: `/set/${set.id}`,
       raw: set,
     }));

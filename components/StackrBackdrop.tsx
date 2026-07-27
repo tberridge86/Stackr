@@ -3,6 +3,7 @@ import { Image, ImageSourcePropType, ImageStyle, StyleProp, StyleSheet, View } f
 import { useTheme } from './theme-context';
 
 const backdropSource = require('../assets/rev2/01-brand/backdrops/BACKDROP.png');
+const PAGE_BACKDROP_BLEED = 96;
 
 export function StackrBackdrop({
   opacity,
@@ -16,7 +17,16 @@ export function StackrBackdrop({
   const { isDark } = useTheme();
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View
+      pointerEvents="none"
+      style={[
+        StyleSheet.absoluteFill,
+        {
+          top: -PAGE_BACKDROP_BLEED,
+          bottom: -PAGE_BACKDROP_BLEED,
+        },
+      ]}
+    >
       <Image
         source={source}
         resizeMode="cover"

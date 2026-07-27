@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "stackr-card-identity-catalogue-v1.0.0",
+  "packVersion": "stackr-card-identity-catalogue-v0.0.0-blocked",
+  "status": "blocked",
+  "generatedAt": "2026-07-26T00:00:00.000Z",
+  "deterministic": true,
+  "modelVersion": "stackr-card-identity-onnx-v0.0.0-blocked",
+  "requiredInstalledModelVersion": "stackr-card-identity-onnx-v0.0.0-blocked",
+  "approvedForInstall": false,
+  "installRejectionReason": "No approved model embeddings are present; install must be rejected safely.",
+  "dataset": {
+    "datasetVersion": "stackr-pilot-recognition-dataset-v1.0.0",
+    "datasetManifestSha256": "30088194d480c2b037db56329514c75e67a296b8889beda9e073b5d4c7c937ce",
+    "expectedPilotSourceImageCount": 52,
+    "reconstructedPilotSourceImageCount": 52
+  },
+  "embeddings": {
+    "dimensions": 128,
+    "storage": "fp16",
+    "tensorNormalisation": "l2",
+    "count": 0,
+    "missingCount": 52,
+    "bytesPerEmbedding": 256,
+    "memoryMappable": true,
+    "int8Comparison": {
+      "status": "blocked",
+      "reason": "INT8 storage cannot be compared until FP16 reference embeddings exist.",
+      "retrievalAccuracy": null,
+      "hardNegativeAccuracy": null,
+      "exactVariantAccuracy": null
+    }
+  },
+  "canonicalCards": {
+    "count": 52,
+    "everyActivePilotCardDocumented": true,
+    "missingReasonCounts": {
+      "no_approved_embedding_model": 52
+    }
+  },
+  "files": {
+    "sqlite": {
+      "path": "assets/catalogue/card-catalogue.sqlite",
+      "sha256": "922999764ea332850c2633f715b83b8609a4e0e7cfdc33bba16647179b1a00d5",
+      "bytes": 45056
+    },
+    "embeddings": {
+      "path": "assets/catalogue/card-embeddings.bin",
+      "sha256": "478c1a620cec82698ede2f0c394d9f80bc5c0c64525ef6f89fab7c88e2aa9901",
+      "bytes": 64,
+      "headerBytes": 64
+    }
+  },
+  "packages": {
+    "complete": {
+      "status": "blocked",
+      "files": [
+        "assets/catalogue/card-catalogue.sqlite",
+        "assets/catalogue/card-embeddings.bin",
+        "assets/catalogue/catalogue-manifest.json"
+      ],
+      "atomicInstallInstructions": [
+        "Download files to a temporary catalogue directory.",
+        "Verify catalogue-manifest.json checksum entries before opening SQLite.",
+        "Verify requiredInstalledModelVersion matches the installed card identity model version.",
+        "Move the complete directory into place with a single filesystem rename only after all checks pass.",
+        "Reject blocked packs and keep the previously installed approved pack."
+      ]
+    },
+    "delta": {
+      "status": "blocked",
+      "fromPackVersion": null,
+      "files": [],
+      "atomicInstallInstructions": [
+        "Delta updates are blocked until at least one approved complete pack exists."
+      ]
+    }
+  },
+  "validationCommands": [
+    "verify-catalogue",
+    "verify-embedding-count",
+    "verify-model-compatibility",
+    "verify-checksums",
+    "inspect-card-neighbours"
+  ]
+}

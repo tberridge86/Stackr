@@ -467,9 +467,12 @@ export function getListingProgressStages(tier: ListingProtectionTier, productFam
   if (productFamily === 'graded_slab') {
     return ['card', 'condition', 'value', 'evidence', 'details', 'review'];
   }
+  if (productFamily !== 'raw_card') {
+    return ['card', 'condition', 'value', 'evidence', 'details', 'review'];
+  }
   const stages: ListingFlowStage[] = ['card', 'condition', 'value', 'protection', 'evidence'];
-  if (productFamily === 'raw_card' && (tier === 'silver' || tier === 'gold')) stages.push('ai');
-  if (tier === 'gold' && !productFamily.startsWith('sealed_')) stages.push('gold');
+  if (tier === 'silver' || tier === 'gold') stages.push('ai');
+  if (tier === 'gold') stages.push('gold');
   stages.push('details', 'review');
   return stages;
 }

@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-07-26T21:20:15.264Z",
+  "engineVersion": "stackr-card-identity-flat-search-v1.0.0",
+  "implementation": {
+    "android": "modules/stackr-card-vision/android/src/main/java/com/stackr/cardvision/StackrCardIdentitySearchEngine.kt",
+    "ios": "modules/stackr-card-vision/ios/StackrCardIdentitySearchEngine.swift",
+    "bridge": "lib/stackrCardVision.ts",
+    "searchType": "exact_native_flat_search",
+    "approximateIndexAdded": false
+  },
+  "target": {
+    "referenceDevice": "agreed reference Android device",
+    "p95SearchMsFor100kEmbeddings": 75,
+    "targetIsAClaimedResult": false
+  },
+  "currentEnvironment": {
+    "nativeBenchmarkAvailable": false,
+    "reason": "Native Expo module benchmarks require an installed development build on the reference Android device.",
+    "performanceMeasuredOnRealDevice": false
+  },
+  "catalogue": {
+    "status": "blocked",
+    "packVersion": "stackr-card-identity-catalogue-v0.0.0-blocked",
+    "modelVersion": "stackr-card-identity-onnx-v0.0.0-blocked",
+    "embeddingCount": 0,
+    "missingCount": 52,
+    "approvedForInstall": false,
+    "installRejectionReason": "No approved model embeddings are present; install must be rejected safely."
+  },
+  "targets": [
+    {
+      "label": "pilot catalogue",
+      "embeddingCount": 0,
+      "status": "blocked_no_embeddings",
+      "loadTimeMs": null,
+      "memoryBytes": null,
+      "p50SearchMs": null,
+      "p95SearchMs": null,
+      "maxSearchMs": null,
+      "topKCorrect": null,
+      "message": "The current catalogue pack is blocked and contains zero approved reference embeddings."
+    },
+    {
+      "label": "25,000 embeddings",
+      "embeddingCount": 25000,
+      "status": "native_unavailable",
+      "loadTimeMs": null,
+      "memoryBytes": null,
+      "p50SearchMs": null,
+      "p95SearchMs": null,
+      "maxSearchMs": null,
+      "topKCorrect": null,
+      "message": "Native Expo module benchmarks require an installed development build on the reference Android device."
+    },
+    {
+      "label": "50,000 embeddings",
+      "embeddingCount": 50000,
+      "status": "native_unavailable",
+      "loadTimeMs": null,
+      "memoryBytes": null,
+      "p50SearchMs": null,
+      "p95SearchMs": null,
+      "maxSearchMs": null,
+      "topKCorrect": null,
+      "message": "Native Expo module benchmarks require an installed development build on the reference Android device."
+    },
+    {
+      "label": "100,000 embeddings",
+      "embeddingCount": 100000,
+      "status": "native_unavailable",
+      "loadTimeMs": null,
+      "memoryBytes": null,
+      "p50SearchMs": null,
+      "p95SearchMs": null,
+      "maxSearchMs": null,
+      "topKCorrect": null,
+      "message": "Native Expo module benchmarks require an installed development build on the reference Android device."
+    }
+  ],
+  "correctness": {
+    "pythonReferenceCommand": "npm run test:card-identity-search",
+    "nativeTopKParityMeasured": false,
+    "reason": "Native module cannot be invoked from this desktop Node shell."
+  }
+}

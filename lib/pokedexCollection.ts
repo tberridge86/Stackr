@@ -2,6 +2,7 @@ import { searchLocalPokemonCards } from './cardSearch';
 import { USD_TO_GBP } from './config';
 import { getPreferredMarketPrice, getPriceFromPokemonCard } from './pricing';
 import { supabase } from './supabase';
+import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 
 export type PokedexCard = {
   id: string;
@@ -96,6 +97,18 @@ const buildPokedexImageUrls = (card: any) => {
 
 const mapCardRow = (card: any): PokedexCard => {
   const imageUrls = buildPokedexImageUrls(card);
+  const setName = getPreferredSetDisplayName({
+    id: card.set_id ?? card.raw_data?.set?.id ?? null,
+    sourceId: card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set?.source_id ?? card.raw_data?.source_id ?? card.set_id ?? null,
+    setCode: card.raw_data?.set?.set_code ?? card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set_code ?? card.set_id ?? null,
+    language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
+    region: card.region ?? card.raw_data?.region ?? card.raw_data?.set?.region ?? null,
+    localName: card.raw_data?.set?.local_name ?? card.raw_data?.set?.name ?? null,
+    englishDisplayName: card.raw_data?.set?.english_display_name ?? card.raw_data?.set?.englishDisplayName ?? null,
+    canonicalName: card.raw_data?.set?.name ?? card.set_name ?? null,
+    fallbackName: card.set_name ?? card.set_id ?? null,
+    raw: card.raw_data?.set ?? card.raw_data,
+  });
 
   return {
     id: card.id,
@@ -103,7 +116,7 @@ const mapCardRow = (card: any): PokedexCard => {
     number: card.number ?? null,
     rarity: card.rarity ?? card.raw_data?.rarity ?? null,
     set_id: card.set_id ?? card.raw_data?.set?.id ?? null,
-    set_name: card.raw_data?.set?.name ?? card.set_name ?? null,
+    set_name: setName,
     image_small: imageUrls[1] ?? imageUrls[0] ?? null,
     image_large: imageUrls[0] ?? null,
     image_urls: imageUrls,

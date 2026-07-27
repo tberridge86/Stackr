@@ -12,7 +12,7 @@ import { typeScale } from '../lib/typography';
 
 export type BinderModeBadgeType = 'master' | 'graded';
 
-const BADGE_SOURCES: Record<BinderModeBadgeType, ImageSourcePropType> = {
+export const BINDER_MODE_BADGE_SOURCES: Record<BinderModeBadgeType, ImageSourcePropType> = {
   master: require('../assets/rev2/09-grading-master-set/mode-icons/master-set-cutout.png') as ImageSourcePropType,
   graded: require('../assets/rev2/09-grading-master-set/mode-icons/graded-cutout.png') as ImageSourcePropType,
 };
@@ -33,7 +33,7 @@ export function BinderModeIconBadge({
 }) {
   return (
     <View style={[styles.iconShell, { width: size, height: size, borderRadius: size / 2 }, style]}>
-      <Image source={BADGE_SOURCES[type]} resizeMode="contain" style={styles.iconImage} />
+      <Image source={BINDER_MODE_BADGE_SOURCES[type]} resizeMode="contain" style={styles.iconImage} />
     </View>
   );
 }

@@ -16,6 +16,7 @@ import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
+import { StackrCenterModal } from '../components/StackrModalSystem';
 import {
   fetchMyTradeOffers,
   updateTradeOfferStatus,
@@ -23,6 +24,10 @@ import {
 } from '../lib/tradeOffers';
 
 type SegmentKey = 'received' | 'sent' | 'history';
+type OfferListConfirmAction = {
+  type: 'accept' | 'decline' | 'withdraw';
+  offerId: string;
+};
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'Pending',
@@ -60,12 +65,40 @@ const cardShadow = {
   elevation: 3,
 };
 
+function getOfferListConfirmCopy(action: OfferListConfirmAction | null) {
+  if (!action) return null;
+  if (action.type === 'accept') {
+    return {
+      title: 'Accept offer?',
+      body: 'This starts the trade flow and records both sides of the deal.',
+      actionLabel: 'Accept Offer',
+      destructive: false,
+    };
+  }
+  if (action.type === 'decline') {
+    return {
+      title: 'Decline offer?',
+      body: 'The other collector will be told this offer was declined.',
+      actionLabel: 'Decline',
+      destructive: true,
+    };
+  }
+  return {
+    title: 'Withdraw offer?',
+    body: 'This cancels your pending offer before the other collector accepts it.',
+    actionLabel: 'Withdraw',
+    destructive: true,
+  };
+}
+
 export default function OffersScreen() {
   const [offers, setOffers] = useState<TradeOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState('');
   const [segment, setSegment] = useState<SegmentKey>('received');
   const [cardPreviews, setCardPreviews] = useState<Record<string, any>>({});
+  const [confirmAction, setConfirmAction] = useState<OfferListConfirmAction | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
 
   // ===============================
   // LOAD
@@ -139,57 +172,44 @@ export default function OffersScreen() {
   // ACTIONS
   // ===============================
 
-  const handleAccept = async (offerId: string) => {
+  const handleAccept = (offerId: string) => {
+    setConfirmAction({ type: 'accept', offerId });
+  };
+
+  const handleDecline = (offerId: string) => {
+    setConfirmAction({ type: 'decline', offerId });
+  };
+
+  const handleWithdraw = (offerId: string) => {
+    setConfirmAction({ type: 'withdraw', offerId });
+  };
+
+  const runConfirmedAction = async () => {
+    if (!confirmAction) return;
+    const action = confirmAction;
+
     try {
-      await updateTradeOfferStatus(offerId, 'accepted', 'Offer accepted.');
+      setConfirmBusy(true);
+      if (action.type === 'accept') {
+        await updateTradeOfferStatus(action.offerId, 'accepted', 'Offer accepted.');
+      } else if (action.type === 'decline') {
+        await updateTradeOfferStatus(action.offerId, 'declined', 'Offer declined.');
+      } else {
+        await updateTradeOfferStatus(action.offerId, 'cancelled', 'Offer withdrawn.');
+      }
+      setConfirmAction(null);
       await load();
     } catch (error: any) {
-      Alert.alert('Error', error?.message ?? 'Could not accept offer.');
+      const fallback =
+        action.type === 'accept'
+          ? 'Could not accept offer.'
+          : action.type === 'decline'
+          ? 'Could not decline offer.'
+          : 'Could not withdraw offer.';
+      Alert.alert('Error', error?.message ?? fallback);
+    } finally {
+      setConfirmBusy(false);
     }
-  };
-
-  const handleDecline = async (offerId: string) => {
-    Alert.alert(
-      'Decline offer',
-      'Are you sure you want to decline this offer?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Decline',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await updateTradeOfferStatus(offerId, 'declined', 'Offer declined.');
-              await load();
-            } catch (error: any) {
-              Alert.alert('Error', error?.message ?? 'Could not decline offer.');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleWithdraw = async (offerId: string) => {
-    Alert.alert(
-      'Withdraw offer',
-      'Are you sure you want to withdraw this offer?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Withdraw',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await updateTradeOfferStatus(offerId, 'cancelled', 'Offer withdrawn.');
-              await load();
-            } catch (error: any) {
-              Alert.alert('Error', error?.message ?? 'Could not withdraw offer.');
-            }
-          },
-        },
-      ]
-    );
   };
 
   // ===============================
@@ -483,6 +503,8 @@ export default function OffersScreen() {
     );
   };
 
+  const confirmCopy = getOfferListConfirmCopy(confirmAction);
+
   // ===============================
   // RENDER
   // ===============================
@@ -596,6 +618,85 @@ export default function OffersScreen() {
           />
         )}
       </View>
+
+      <StackrCenterModal
+        visible={Boolean(confirmCopy)}
+        onClose={() => !confirmBusy && setConfirmAction(null)}
+        dismissible={!confirmBusy}
+        contentStyle={{ padding: 20 }}
+      >
+        {confirmCopy ? (
+          <View style={{ gap: 14 }}>
+            <View
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 18,
+                alignSelf: 'center',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: confirmCopy.destructive ? '#FEE2E2' : theme.colors.primary + '12',
+                borderWidth: 1,
+                borderColor: confirmCopy.destructive ? '#FCA5A5' : theme.colors.primary + '28',
+              }}
+            >
+              <Text style={{ color: confirmCopy.destructive ? '#991B1B' : theme.colors.primary, fontSize: 22, fontWeight: '900' }}>
+                {confirmCopy.destructive ? '!' : 'OK'}
+              </Text>
+            </View>
+            <View style={{ gap: 6 }}>
+              <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 26, fontWeight: '900', textAlign: 'center' }}>
+                {confirmCopy.title}
+              </Text>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 14, lineHeight: 20, fontWeight: '700', textAlign: 'center' }}>
+                {confirmCopy.body}
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 10, marginTop: 2 }}>
+              <TouchableOpacity
+                disabled={confirmBusy}
+                onPress={() => setConfirmAction(null)}
+                activeOpacity={0.82}
+                style={{
+                  flex: 1,
+                  borderRadius: 14,
+                  minHeight: 48,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.surface,
+                }}
+              >
+                <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                disabled={confirmBusy}
+                onPress={runConfirmedAction}
+                activeOpacity={0.82}
+                style={{
+                  flex: 1,
+                  borderRadius: 14,
+                  minHeight: 48,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: confirmCopy.destructive ? '#DC2626' : theme.colors.primary,
+                }}
+              >
+                {confirmBusy ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>
+                    {confirmCopy.actionLabel}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : null}
+      </StackrCenterModal>
     </SafeAreaView>
   );
 }

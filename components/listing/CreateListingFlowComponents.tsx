@@ -2,12 +2,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
+  Keyboard,
   Image,
   type ImageSourcePropType,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   TextInput,
+  type TextInputProps,
   TouchableOpacity,
   View,
   type StyleProp,
@@ -16,7 +18,9 @@ import {
 import { Text } from '../Text';
 import { useTheme } from '../theme-context';
 import { StackrBackButton } from '../StackrBackButton';
-import { StackrCardActionIcon, StackrPageTitle } from '../StackrScreen';
+import { StackrButtonPattern } from '../StackrEmboss';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../RaritySymbol';
+import { StackrCardActionIcon } from '../StackrScreen';
 import { stackrIcons } from '../../lib/stackrIcons';
 import {
   PROTECTION_COPY,
@@ -30,6 +34,8 @@ import {
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
+export const STACKR_LISTING_INPUT_ACCESSORY_ID = 'stackr-listing-keyboard-accessory';
+
 const STAGE_LABELS: Record<ListingFlowStage, string> = {
   card: 'Card',
   condition: 'Condition',
@@ -42,9 +48,15 @@ const STAGE_LABELS: Record<ListingFlowStage, string> = {
   review: 'Review',
 };
 
+const PROTECTION_TIER_ICON_SOURCE: Record<ListingProtectionTier, ImageSourcePropType> = {
+  bronze: require('../../assets/rev2/10-market-trade/protection-tiers/Bronze.png'),
+  silver: require('../../assets/rev2/10-market-trade/protection-tiers/silver.png'),
+  gold: require('../../assets/rev2/10-market-trade/protection-tiers/gold.png'),
+};
+
 export function ListingFlowHeader({
   title = 'Create Listing',
-  subtitle = 'Let us identify your card and build a trusted listing.',
+  subtitle = 'Identify your card and build a trusted listing.',
   stages,
   activeStage,
   completedStages,
@@ -64,14 +76,38 @@ export function ListingFlowHeader({
   rightAccessory?: React.ReactNode;
 }) {
   const { theme } = useTheme();
+  const titleParts = title.trim().split(/\s+/);
+  const titleAccent = titleParts.length > 1 ? titleParts.pop() : '';
+  const titlePrefix = titleParts.join(' ');
 
   return (
-    <View style={[styles.headerShell, { borderColor: theme.colors.border, backgroundColor: theme.colors.bg }]}>
+    <View style={styles.headerShell}>
       <View style={styles.headerTopRow}>
         <StackrBackButton onPress={onBack} />
         <View style={styles.headerCopy}>
-          <StackrPageTitle title={title} accentText="listing" />
-          <Text style={[styles.headerSubtitle, { color: theme.colors.textSoft }]}>{subtitle}</Text>
+          <Text
+            accessibilityRole="header"
+            accessibilityLabel={title}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.88}
+            style={[styles.headerTitle, { color: theme.colors.text }]}
+          >
+            {titlePrefix || title}
+            {titleAccent ? (
+              <Text style={[styles.headerTitle, { color: theme.colors.primary }]}>
+                {` ${titleAccent}`}
+              </Text>
+            ) : null}
+          </Text>
+          <Text
+            style={[styles.headerSubtitle, { color: theme.colors.textSoft }]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.84}
+          >
+            {subtitle}
+          </Text>
         </View>
         {rightAccessory ? <View style={styles.headerRight}>{rightAccessory}</View> : null}
       </View>
@@ -104,44 +140,74 @@ export function ListingProgressStepper({
   const completedSet = new Set(completedStages);
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.progressRow}>
+    <View style={styles.progressTrack}>
       {stages.map((stage, index) => {
         const completed = completedSet.has(stage);
         const active = stage === activeStage;
         const future = index > activeIndex && !completed;
         const pressable = completed && onStagePress;
+        const previousCompleted = index > 0 && completedSet.has(stages[index - 1]);
+        const nextUnlocked = completed;
+        const label = stageLabels?.[stage] ?? STAGE_LABELS[stage];
+        const stateLabel = completed ? 'complete' : active ? 'current' : 'not started';
         return (
-          <TouchableOpacity
-            key={stage}
-            onPress={pressable ? () => onStagePress?.(stage) : undefined}
-            disabled={!pressable}
-            activeOpacity={0.78}
-            accessibilityRole="button"
-            accessibilityState={{ selected: active, disabled: !pressable }}
-            style={[
-              styles.progressChip,
-              {
-                backgroundColor: active ? theme.colors.primary : completed ? theme.colors.primary + '12' : theme.colors.surface,
-                borderColor: active || completed ? theme.colors.primary : theme.colors.border,
-                opacity: future ? 0.72 : 1,
-              },
-            ]}
-          >
-            {completed && !active ? <Ionicons name="checkmark" size={13} color={theme.colors.primary} /> : null}
-            <Text
+          <View key={stage} style={styles.progressStep}>
+            {index === 0 ? (
+              <View style={styles.progressConnectorSpacer} />
+            ) : (
+              <View
+                style={[
+                  styles.progressConnector,
+                  { backgroundColor: previousCompleted ? theme.colors.primary : theme.colors.border },
+                ]}
+              />
+            )}
+            <TouchableOpacity
+              onPress={pressable ? () => onStagePress?.(stage) : undefined}
+              disabled={!pressable}
+              activeOpacity={0.78}
+              accessibilityRole="button"
+              accessibilityLabel={`Stage ${index + 1}, ${label}, ${stateLabel}`}
+              accessibilityState={{ selected: active, disabled: !pressable }}
               style={{
-                color: active ? '#FFFFFF' : completed ? theme.colors.primary : theme.colors.textSoft,
-                fontSize: 11,
-                lineHeight: 14,
-                fontWeight: '900',
+                opacity: future ? 0.66 : 1,
               }}
             >
-              {stageLabels?.[stage] ?? STAGE_LABELS[stage]}
-            </Text>
-          </TouchableOpacity>
+              <View
+                style={[
+                  styles.progressCircle,
+                  {
+                    backgroundColor: active || completed ? theme.colors.primary : theme.colors.bg,
+                    borderColor: active || completed ? theme.colors.primary : theme.colors.border,
+                  },
+                  active ? { shadowColor: theme.colors.primary } : null,
+                ]}
+              >
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.progressCircleText,
+                    { color: active || completed ? '#FFFFFF' : theme.colors.textSoft },
+                  ]}
+                >
+                  {index + 1}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            {index === stages.length - 1 ? (
+              <View style={styles.progressConnectorSpacer} />
+            ) : (
+              <View
+                style={[
+                  styles.progressConnector,
+                  { backgroundColor: nextUnlocked ? theme.colors.primary : theme.colors.border },
+                ]}
+              />
+            )}
+          </View>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -248,24 +314,29 @@ export function CardMatchConfirmation({
   const { theme } = useTheme();
   return (
     <View style={[styles.matchCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }, theme.shadows.card]}>
-      {imageUrl ? (
-        <Image source={{ uri: imageUrl }} style={styles.matchImage} resizeMode="contain" />
-      ) : (
-        <View style={[styles.matchImageFallback, { backgroundColor: theme.colors.surface }]}>
+      <View style={[styles.matchImage, styles.matchImageFrame, { backgroundColor: theme.colors.surface }]}>
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} style={StyleSheet.absoluteFill} resizeMode="contain" />
+        ) : (
           <StackrCardActionIcon source={stackrIcons.searchCard} frameSize={72} artworkSize={58} />
-        </View>
-      )}
+        )}
+        <RaritySymbol
+          rarity={rarity}
+          size={14}
+          style={RARITY_SYMBOL_CARD_OVERLAY}
+        />
+      </View>
       <View style={styles.matchCopy}>
         <Text style={[styles.matchTitle, { color: theme.colors.text }]} numberOfLines={2}>{name}</Text>
         <Text style={[styles.matchMeta, { color: theme.colors.textSoft }]} numberOfLines={2}>
-          {[setName, number ? `#${number}` : null, rarity].filter(Boolean).join(' · ')}
+          {[setName, number ? `#${number}` : null].filter(Boolean).join(' · ')}
         </Text>
         <Text style={[styles.matchMeta, { color: theme.colors.textSoft }]} numberOfLines={1}>
           {[language ?? 'English', variant ?? 'Standard'].filter(Boolean).join(' · ')}
         </Text>
         <View style={styles.valuePills}>
-          <InfoPill label="Raw estimate" value={formatCurrency(rawValue)} />
-          {gradedValue != null ? <InfoPill label="Graded" value={formatCurrency(gradedValue)} /> : null}
+          <InfoPill label="Estimated value" value={formatCurrency(rawValue)} />
+          {gradedValue != null ? <InfoPill label="Estimated slab value" value={formatCurrency(gradedValue)} /> : null}
         </View>
       </View>
     </View>
@@ -371,15 +442,17 @@ export function ValueComparisonCard({
     <View style={[styles.valueCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
       <View style={styles.valueCardHeader}>
         <Ionicons name="analytics-outline" size={18} color={theme.colors.primary} />
-        <Text style={[styles.valueCardTitle, { color: theme.colors.text }]}>Stackr market estimate</Text>
+        <Text style={[styles.valueCardTitle, { color: theme.colors.text }]}>Estimated value</Text>
       </View>
-      <Text style={[styles.valueEstimate, { color: theme.colors.text }]}>{formatCurrency(estimate)}</Text>
+      <Text style={[styles.valueEstimate, { color: theme.colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.58}>
+        {formatCurrency(estimate)}
+      </Text>
       <Text style={[styles.valueSupport, { color: theme.colors.textSoft }]}>
-        Based on recent available market data. Condition and demand may affect the final value.
+        StackR guide price from available market data. Your listing price is set separately.
       </Text>
       <View style={styles.valueRows}>
-        {mode !== 'trade' ? <InfoPill label="Asking price" value={formatCurrency(listingValue)} /> : null}
-        {mode !== 'sell' ? <InfoPill label="Trade value" value={formatCurrency(tradeValue)} /> : null}
+        {mode !== 'trade' ? <InfoPill label="Your listing price" value={formatCurrency(listingValue)} /> : null}
+        {mode !== 'sell' ? <InfoPill label="Your trade value" value={formatCurrency(tradeValue)} /> : null}
       </View>
       {warning ? (
         <View style={[styles.inlineWarning, { backgroundColor: '#FEF3C7', borderColor: '#F59E0B' }]}>
@@ -415,7 +488,7 @@ export function ProtectionTierReveal({
     <View style={[styles.protectionReveal, theme.shadows.elevated]}>
       <LinearGradient colors={gradient as any} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
       <View style={[styles.protectionShield, { borderColor: copy.accent, backgroundColor: isGold ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.72)' }]}>
-        <Ionicons name="shield-checkmark-outline" size={36} color={isGold ? '#FACC15' : copy.accent} />
+        <Image source={PROTECTION_TIER_ICON_SOURCE[tier]} style={styles.protectionTierIcon} resizeMode="contain" />
       </View>
       <Text style={[styles.protectionTitle, { color: textColor }]}>{copy.revealTitle}</Text>
       <Text style={[styles.protectionMessage, { color: isGold ? 'rgba(255,255,255,0.84)' : theme.colors.textSoft }]}>{message ?? copy.message}</Text>
@@ -449,7 +522,13 @@ export function EvidenceChecklist({
   activeKey,
   onSelect,
 }: {
-  requirements: EvidenceRequirement[];
+  requirements: (Pick<EvidenceRequirement, 'label'> & {
+    key?: string;
+    id?: string;
+    optional?: boolean;
+    required?: boolean;
+    groupLabel?: string;
+  })[];
   captured: string[];
   activeKey?: string;
   onSelect?: (key: string) => void;
@@ -459,12 +538,14 @@ export function EvidenceChecklist({
   return (
     <View style={styles.evidenceChecklist}>
       {requirements.map((requirement) => {
-        const done = capturedSet.has(requirement.key);
-        const active = activeKey === requirement.key;
+        const requirementKey = requirement.id ?? requirement.key ?? requirement.label;
+        const done = capturedSet.has(requirementKey);
+        const active = activeKey === requirementKey;
+        const required = requirement.required ?? !requirement.optional;
         return (
           <TouchableOpacity
-            key={requirement.key}
-            onPress={onSelect ? () => onSelect(requirement.key) : undefined}
+            key={requirementKey}
+            onPress={onSelect ? () => onSelect(requirementKey) : undefined}
             disabled={!onSelect}
             activeOpacity={0.78}
             style={[
@@ -476,11 +557,13 @@ export function EvidenceChecklist({
             ]}
           >
             <View style={[styles.evidenceStatus, { backgroundColor: done ? '#16A34A' : theme.colors.surface, borderColor: done ? '#16A34A' : theme.colors.border }]}>
-              {done ? <Ionicons name="checkmark" size={13} color="#FFFFFF" /> : <Ionicons name={requirement.optional ? 'add' : 'camera-outline'} size={13} color={theme.colors.textSoft} />}
+              {done ? <Ionicons name="checkmark" size={13} color="#FFFFFF" /> : <Ionicons name={required ? 'camera-outline' : 'add'} size={13} color={theme.colors.textSoft} />}
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.evidenceTitle, { color: theme.colors.text }]}>{requirement.label}</Text>
-              <Text style={[styles.evidenceInstruction, { color: theme.colors.textSoft }]}>{requirement.optional ? 'Optional' : 'Required'}</Text>
+              <Text style={[styles.evidenceInstruction, { color: theme.colors.textSoft }]}>
+                {requirement.groupLabel ? `${requirement.groupLabel} - ` : ''}{required ? 'Required' : 'Optional'}
+              </Text>
             </View>
           </TouchableOpacity>
         );
@@ -767,6 +850,7 @@ export function PrimaryFooter({
   missing,
   secondaryLabel,
   onSecondaryPress,
+  compact = false,
 }: {
   label: string;
   onPress: () => void;
@@ -775,15 +859,16 @@ export function PrimaryFooter({
   missing?: MissingRequirement[];
   secondaryLabel?: string;
   onSecondaryPress?: () => void;
+  compact?: boolean;
 }) {
   const { theme } = useTheme();
   const firstMissing = missing?.[0]?.label;
   return (
-    <View style={[styles.footer, { backgroundColor: theme.colors.bg, borderColor: theme.colors.border }]}>
-      {firstMissing ? <InlineRequirementMessage message={firstMissing} tone="warning" /> : null}
+    <View style={[styles.footer, compact ? styles.footerCompact : null, { backgroundColor: theme.colors.bg, borderColor: theme.colors.border }]}>
+      {!compact && firstMissing ? <InlineRequirementMessage message={firstMissing} tone="warning" /> : null}
       <View style={{ flexDirection: 'row', gap: 10 }}>
         {secondaryLabel && onSecondaryPress ? (
-          <TouchableOpacity onPress={onSecondaryPress} activeOpacity={0.82} style={[styles.footerSecondary, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+          <TouchableOpacity onPress={onSecondaryPress} activeOpacity={0.82} style={[styles.footerSecondary, compact ? styles.footerButtonCompact : null, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
             <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900' }}>{secondaryLabel}</Text>
           </TouchableOpacity>
         ) : null}
@@ -791,7 +876,7 @@ export function PrimaryFooter({
           onPress={onPress}
           disabled={disabled || loading}
           activeOpacity={0.86}
-          style={[styles.footerPrimary, { opacity: disabled ? 0.58 : 1 }]}
+          style={[styles.footerPrimary, compact ? styles.footerButtonCompact : null, { opacity: disabled ? 0.58 : 1 }]}
         >
           <LinearGradient
             colors={theme.gradients.actionPrimary as any}
@@ -799,6 +884,8 @@ export function PrimaryFooter({
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFill}
           />
+          <StackrButtonPattern tone="purple" compact />
+          <View pointerEvents="none" style={styles.footerPrimaryHighlight} />
           <Text style={{ color: '#FFFFFF', fontSize: 15, lineHeight: 19, fontWeight: '900' }}>
             {loading ? 'Working...' : label}
           </Text>
@@ -824,15 +911,31 @@ export function StackrTextInput({
   multiline,
   keyboardType,
   autoCapitalize,
+  autoCorrect,
+  spellCheck,
+  inputAccessoryViewID,
+  returnKeyType,
+  onSubmitEditing,
+  blurOnSubmit,
 }: {
   value: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
   multiline?: boolean;
-  keyboardType?: 'default' | 'decimal-pad' | 'numeric';
-  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  keyboardType?: TextInputProps['keyboardType'];
+  autoCapitalize?: TextInputProps['autoCapitalize'];
+  autoCorrect?: boolean;
+  spellCheck?: boolean;
+  inputAccessoryViewID?: TextInputProps['inputAccessoryViewID'];
+  returnKeyType?: TextInputProps['returnKeyType'];
+  onSubmitEditing?: TextInputProps['onSubmitEditing'];
+  blurOnSubmit?: TextInputProps['blurOnSubmit'];
 }) {
   const { theme } = useTheme();
+  const resolvedAccessoryViewID = inputAccessoryViewID ?? (
+    Platform.OS === 'ios' ? STACKR_LISTING_INPUT_ACCESSORY_ID : undefined
+  );
+
   return (
     <TextInput
       value={value}
@@ -842,6 +945,12 @@ export function StackrTextInput({
       multiline={multiline}
       keyboardType={keyboardType}
       autoCapitalize={autoCapitalize}
+      autoCorrect={autoCorrect}
+      spellCheck={spellCheck}
+      inputAccessoryViewID={resolvedAccessoryViewID}
+      returnKeyType={returnKeyType ?? (multiline ? 'default' : 'done')}
+      onSubmitEditing={onSubmitEditing ?? Keyboard.dismiss}
+      blurOnSubmit={blurOnSubmit ?? !multiline}
       style={[
         styles.input,
         {
@@ -861,7 +970,14 @@ function InfoPill({ label, value }: { label: string; value: string }) {
   return (
     <View style={[styles.infoPill, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
       <Text style={{ color: theme.colors.textSoft, fontSize: 10, lineHeight: 13, fontWeight: '800' }}>{label}</Text>
-      <Text style={{ color: theme.colors.text, fontSize: 12, lineHeight: 16, fontWeight: '900' }}>{value}</Text>
+      <Text
+        style={{ color: theme.colors.text, fontSize: 12, lineHeight: 16, fontWeight: '900' }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.68}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
@@ -871,13 +987,17 @@ export function ToggleCard({
   title,
   body,
   icon,
+  source,
   onPress,
+  compact = false,
 }: {
   active: boolean;
   title: string;
   body: string;
-  icon: IconName;
+  icon?: IconName;
+  source?: ImageSourcePropType;
   onPress: () => void;
+  compact?: boolean;
 }) {
   const { theme } = useTheme();
   return (
@@ -888,18 +1008,58 @@ export function ToggleCard({
       accessibilityState={{ selected: active }}
       style={[
         styles.toggleCard,
+        compact ? styles.toggleCardCompact : null,
         {
           backgroundColor: active ? theme.colors.primary + '10' : theme.colors.card,
           borderColor: active ? theme.colors.primary : theme.colors.border,
         },
       ]}
     >
-      <View style={[styles.toggleIcon, { backgroundColor: active ? theme.colors.primary : theme.colors.surface }]}>
-        <Ionicons name={icon} size={19} color={active ? '#FFFFFF' : theme.colors.primary} />
+      <View
+        style={[
+          source ? styles.toggleArtworkFrame : styles.toggleIcon,
+          compact && source ? styles.toggleArtworkFrameCompact : null,
+          compact && !source ? styles.toggleIconCompact : null,
+          {
+            backgroundColor: source ? 'transparent' : active ? theme.colors.primary : theme.colors.surface,
+            borderColor: source ? (active ? theme.colors.primary + '28' : theme.colors.border) : 'transparent',
+          },
+        ]}
+      >
+        {source ? (
+          <Image
+            source={source}
+            style={[styles.toggleArtworkImage, compact ? styles.toggleArtworkImageCompact : null]}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
+        ) : icon ? (
+          <Ionicons name={icon} size={19} color={active ? '#FFFFFF' : theme.colors.primary} />
+        ) : null}
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900' }}>{title}</Text>
-        <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, marginTop: 2 }}>{body}</Text>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text
+          numberOfLines={compact ? 1 : 2}
+          style={{
+            color: theme.colors.text,
+            fontSize: compact ? 13.5 : 14,
+            lineHeight: compact ? 17 : 18,
+            fontWeight: '900',
+          }}
+        >
+          {title}
+        </Text>
+        <Text
+          numberOfLines={compact ? 2 : 3}
+          style={{
+            color: theme.colors.textSoft,
+            fontSize: compact ? 11.5 : 12,
+            lineHeight: compact ? 15 : 16,
+            marginTop: 2,
+          }}
+        >
+          {body}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -933,47 +1093,75 @@ export function PressableChecklistItem({
 const styles = StyleSheet.create({
   headerShell: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 4,
     paddingBottom: 10,
-    borderBottomWidth: 1,
   },
   headerTopRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
+    alignItems: 'center',
+    gap: 8,
   },
   headerCopy: {
     flex: 1,
     minWidth: 0,
   },
+  headerTitle: {
+    fontSize: 25,
+    lineHeight: 29,
+    fontWeight: '900',
+    letterSpacing: 0,
+  },
   headerRight: {
     alignItems: 'flex-end',
   },
   headerSubtitle: {
-    marginTop: 2,
+    marginTop: 0,
     fontSize: 12,
-    lineHeight: 17,
+    lineHeight: 15,
     fontWeight: '700',
   },
-  progressRow: {
-    gap: 7,
-    paddingTop: 10,
-    paddingRight: 12,
-  },
-  progressChip: {
-    minHeight: 30,
-    borderRadius: 999,
-    paddingHorizontal: 11,
-    borderWidth: 1,
+  progressTrack: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    paddingTop: 12,
+    paddingHorizontal: 1,
+  },
+  progressStep: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  progressConnector: {
+    flex: 1,
+    height: 2,
+    borderRadius: 999,
+  },
+  progressConnectorSpacer: {
+    flex: 1,
+    height: 2,
+  },
+  progressCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOpacity: 0.18,
+    shadowRadius: 7,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  progressCircleText: {
+    fontSize: 12,
+    lineHeight: 15,
+    fontWeight: '900',
   },
   draftIndicator: {
-    minHeight: 30,
+    minHeight: 27,
     borderRadius: 999,
     borderWidth: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
@@ -1020,6 +1208,11 @@ const styles = StyleSheet.create({
     width: 92,
     height: 128,
     borderRadius: 12,
+  },
+  matchImageFrame: {
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   matchImageFallback: {
     width: 92,
@@ -1146,6 +1339,10 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  protectionTierIcon: {
+    width: 56,
+    height: 56,
   },
   protectionTitle: {
     fontSize: 25,
@@ -1445,6 +1642,11 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     gap: 8,
   },
+  footerCompact: {
+    paddingTop: 5,
+    paddingBottom: 5,
+    gap: 0,
+  },
   footerPrimary: {
     flex: 1,
     minHeight: 52,
@@ -1452,6 +1654,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.32)',
+    shadowColor: '#6136F5',
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
+  },
+  footerPrimaryHighlight: {
+    position: 'absolute',
+    top: 1,
+    left: 1,
+    right: 1,
+    height: 1,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.30)',
+  },
+  footerButtonCompact: {
+    minHeight: 42,
+    borderRadius: 14,
   },
   footerSecondary: {
     minHeight: 52,
@@ -1484,12 +1706,50 @@ const styles = StyleSheet.create({
     gap: 11,
     alignItems: 'center',
   },
+  toggleCardCompact: {
+    minHeight: 74,
+    borderRadius: 16,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+    gap: 10,
+  },
   toggleIcon: {
     width: 40,
     height: 40,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  toggleIconCompact: {
+    width: 36,
+    height: 36,
+    borderRadius: 13,
+  },
+  toggleIconImage: {
+    width: 31,
+    height: 31,
+  },
+  toggleArtworkFrame: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+  toggleArtworkFrameCompact: {
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+  },
+  toggleArtworkImage: {
+    width: 68,
+    height: 68,
+  },
+  toggleArtworkImageCompact: {
+    width: 48,
+    height: 48,
   },
   checklistPressable: {
     minHeight: 44,

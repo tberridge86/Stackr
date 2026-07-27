@@ -13,11 +13,13 @@ import { Text } from '../../components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { fetchAllSets, getPokemonSetLogoUrl, normalizePokemonCardLanguage, type PokemonSet } from '../../lib/pokemonTcg';
+import { fetchAllSets, getPokemonSetLogoUrl, getPokemonSetVisualUrl, normalizePokemonCardLanguage, type PokemonSet } from '../../lib/pokemonTcg';
+import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { StackrBackdrop, StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrPageTitle } from '../../components/StackrScreen';
 import { supabase } from '../../lib/supabase';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
+import { useTheme } from '../../components/theme-context';
 
 // ===============================
 // CONSTANTS
@@ -70,6 +72,98 @@ function groupSetsBySeries(sets: PokemonSet[]): { series: string; sets: PokemonS
         .filter((s) => !SERIES_ORDER.includes(s))
         .map((s) => ({ series: s, sets: map[s] }))
     );
+}
+
+type DiscoverSetLanguage = 'en' | 'ja' | 'zh-tw';
+type DiscoverLanguageFilter = 'all' | DiscoverSetLanguage;
+
+const LANGUAGE_FILTERS: { key: DiscoverLanguageFilter; label: string; flag: string }[] = [
+  { key: 'all', label: 'All', flag: '◎' },
+  { key: 'en', label: 'English', flag: '🇬🇧🇺🇸' },
+  { key: 'ja', label: 'Japanese', flag: '🇯🇵' },
+  { key: 'zh-tw', label: 'Chinese', flag: '🇨🇳' },
+];
+
+function getSeriesKey(language: DiscoverSetLanguage, series: string) {
+  return `${language}:${series}`;
+}
+
+function getLanguageHeaderCopy(language: Exclude<DiscoverSetLanguage, 'en'>) {
+  if (language === 'zh-tw') {
+    return {
+      badge: 'TC',
+      title: 'Chinese Sets',
+      subtitle: 'Expand for official Traditional Chinese binders',
+      seriesPrefix: 'Chinese',
+    };
+  }
+
+  return {
+    badge: 'JP',
+    title: 'Japanese Sets',
+    subtitle: 'Expand for official Japanese binders',
+    seriesPrefix: 'Japan',
+  };
+}
+
+function normalizeSetSearchText(value?: string | null) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/pok\u00e9mon/g, 'pokemon')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function getEditDistanceWithin(left: string, right: string, maxDistance: number) {
+  if (Math.abs(left.length - right.length) > maxDistance) return maxDistance + 1;
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  const current = Array(right.length + 1).fill(0);
+
+  for (let i = 1; i <= left.length; i += 1) {
+    current[0] = i;
+    let rowMin = current[0];
+    for (let j = 1; j <= right.length; j += 1) {
+      const cost = left[i - 1] === right[j - 1] ? 0 : 1;
+      current[j] = Math.min(previous[j] + 1, current[j - 1] + 1, previous[j - 1] + cost);
+      rowMin = Math.min(rowMin, current[j]);
+    }
+    if (rowMin > maxDistance) return maxDistance + 1;
+    for (let j = 0; j <= right.length; j += 1) previous[j] = current[j];
+  }
+
+  return previous[right.length];
+}
+
+function getSetSearchText(set: PokemonSet) {
+  return normalizeSetSearchText([
+    set.name,
+    set.localName,
+    set.englishDisplayName,
+    set.series,
+    set.id,
+    set.externalIds?.setCode,
+    set.externalIds?.tcgdex,
+    set.externalIds?.pokedata,
+  ].filter(Boolean).join(' '));
+}
+
+function matchesSetSearch(set: PokemonSet, query: string) {
+  if (!query) return true;
+  const search = normalizeSetSearchText(query);
+  const haystack = getSetSearchText(set);
+  if (haystack.includes(search)) return true;
+
+  const haystackTokens = haystack.split(' ').filter(Boolean);
+  return search.split(' ').filter(Boolean).every((token) => (
+    haystackTokens.some((candidate) => (
+      candidate.includes(token)
+      || token.includes(candidate)
+      || (token.length >= 5 && getEditDistanceWithin(token, candidate, 2) <= 2)
+    ))
+  ));
 }
 
 type ExistingBinderSummary = {
@@ -126,12 +220,23 @@ function SetCard({
   existingBinder?: ExistingBinderSummary;
 }) {
   const [logoFailed, setLogoFailed] = useState(false);
-  const logoUrl = item.images?.logo ?? getPokemonSetLogoUrl(item.id);
+  const { theme } = useTheme();
+  const logoSource = getJapaneseSetLogoSourceForSet({
+    id: item.id,
+    language: item.language,
+    setCode: item.externalIds?.setCode,
+    sourceId: item.externalIds?.tcgdex ?? item.externalIds?.pokedata,
+    name: item.name,
+    localName: item.localName,
+    englishDisplayName: item.englishDisplayName,
+    externalIds: item.externalIds,
+  });
+  const logoUrl = logoSource ? null : (getPokemonSetVisualUrl(item) ?? getPokemonSetLogoUrl(item.id, item.language));
   const hasExistingBinder = Boolean(existingBinder);
 
   return (
     <TouchableOpacity
-      onPress={() => router.push(`/set/${item.id}`)}
+      onPress={() => router.push({ pathname: '/set/[id]', params: { id: item.id } })}
       style={{
         backgroundColor: theme.colors.card,
         borderRadius: 16,
@@ -155,9 +260,15 @@ function SetCard({
         backgroundColor: 'transparent',
         borderRadius: 0,
       }}>
-        {!logoFailed ? (
+        {logoSource ? (
           <Image
-            source={{ uri: logoUrl ?? '' }}
+            source={logoSource}
+            style={{ width: 84, height: 40 }}
+            resizeMode="contain"
+          />
+        ) : logoUrl && !logoFailed ? (
+          <Image
+            source={{ uri: logoUrl }}
             style={{ width: 84, height: 40 }}
             resizeMode="contain"
             onError={() => setLogoFailed(true)}
@@ -173,7 +284,7 @@ function SetCard({
           {item.name}
         </Text>
         <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>
-          {item.total} cards · {item.releaseDate ?? ''}
+          {item.language === 'zh-tw' ? 'Chinese · ' : item.language === 'ja' ? 'Japan · ' : ''}{item.total} cards · {item.releaseDate ?? ''}
         </Text>
       </View>
 
@@ -237,14 +348,20 @@ function SetCard({
 // ===============================
 
 export default function ExploreScreen() {
-  const [sets, setSets] = useState<PokemonSet[]>([]);
+  const { theme } = useTheme();
+  const [englishSets, setEnglishSets] = useState<PokemonSet[]>([]);
+  const [japaneseSets, setJapaneseSets] = useState<PokemonSet[]>([]);
+  const [chineseSets, setChineseSets] = useState<PokemonSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [languageFilter, setLanguageFilter] = useState<DiscoverLanguageFilter>('all');
   const [existingBindersBySet, setExistingBindersBySet] = useState<Record<string, ExistingBinderSummary>>({});
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(
-    new Set(['Scarlet & Violet', 'Sword & Shield'])
+    new Set([getSeriesKey('en', 'Scarlet & Violet'), getSeriesKey('en', 'Sword & Shield')])
   );
+  const [japaneseSetsExpanded, setJapaneseSetsExpanded] = useState(false);
+  const [chineseSetsExpanded, setChineseSetsExpanded] = useState(false);
 
   // ===============================
   // LOAD
@@ -255,11 +372,15 @@ export default function ExploreScreen() {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
 
-      const [data, existingBinders] = await Promise.all([
-        fetchAllSets(),
+      const [englishData, japaneseData, chineseData, existingBinders] = await Promise.all([
+        fetchAllSets({ language: 'en' }),
+        fetchAllSets({ language: 'ja' }),
+        fetchAllSets({ language: 'zh-tw' }),
         fetchExistingSetBinders(),
       ]);
-      setSets(data);
+      setEnglishSets(englishData);
+      setJapaneseSets(japaneseData);
+      setChineseSets(chineseData);
       setExistingBindersBySet(existingBinders);
     } catch (error) {
       console.log('Failed to load sets', error);
@@ -279,42 +400,104 @@ export default function ExploreScreen() {
   // SEARCH + GROUP
   // ===============================
 
-  const filteredSets = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return sets;
-    return sets.filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.series?.toLowerCase().includes(q) ||
-        s.id.toLowerCase().includes(q)
-    );
-  }, [sets, search]);
+  const searchedEnglishSets = useMemo(() => {
+    const q = search.trim();
+    return englishSets.filter((set) => matchesSetSearch(set, q));
+  }, [englishSets, search]);
+
+  const searchedJapaneseSets = useMemo(() => {
+    const q = search.trim();
+    return japaneseSets.filter((set) => matchesSetSearch(set, q));
+  }, [japaneseSets, search]);
+
+  const searchedChineseSets = useMemo(() => {
+    const q = search.trim();
+    return chineseSets.filter((set) => matchesSetSearch(set, q));
+  }, [chineseSets, search]);
+
+  const filteredEnglishSets = useMemo(
+    () => languageFilter === 'all' || languageFilter === 'en' ? searchedEnglishSets : [],
+    [languageFilter, searchedEnglishSets]
+  );
+
+  const filteredJapaneseSets = useMemo(
+    () => languageFilter === 'all' || languageFilter === 'ja' ? searchedJapaneseSets : [],
+    [languageFilter, searchedJapaneseSets]
+  );
+
+  const filteredChineseSets = useMemo(
+    () => languageFilter === 'all' || languageFilter === 'zh-tw' ? searchedChineseSets : [],
+    [languageFilter, searchedChineseSets]
+  );
+
+  const filteredSets = useMemo(
+    () => [...filteredEnglishSets, ...filteredJapaneseSets, ...filteredChineseSets],
+    [filteredEnglishSets, filteredJapaneseSets, filteredChineseSets]
+  );
 
   const isSearching = search.trim().length > 0;
 
-  const groupedSeries = useMemo(
-    () => groupSetsBySeries(filteredSets),
-    [filteredSets]
+  const groupedEnglishSeries = useMemo(
+    () => groupSetsBySeries(filteredEnglishSets),
+    [filteredEnglishSets]
   );
 
-  const toggleSeries = (series: string) => {
+  const groupedJapaneseSeries = useMemo(
+    () => groupSetsBySeries(filteredJapaneseSets),
+    [filteredJapaneseSets]
+  );
+
+  const groupedChineseSeries = useMemo(
+    () => groupSetsBySeries(filteredChineseSets),
+    [filteredChineseSets]
+  );
+
+  const toggleSeries = (language: DiscoverSetLanguage, series: string) => {
+    const key = getSeriesKey(language, series);
     setExpandedSeries((prev) => {
       const next = new Set(prev);
-      if (next.has(series)) {
-        next.delete(series);
+      if (next.has(key)) {
+        next.delete(key);
       } else {
-        next.add(series);
+        next.add(key);
       }
       return next;
     });
   };
 
   const expandAll = () => {
-    setExpandedSeries(new Set(groupedSeries.map((g) => g.series)));
+    setJapaneseSetsExpanded(true);
+    setChineseSetsExpanded(true);
+    setExpandedSeries(new Set([
+      ...groupedEnglishSeries.map((g) => getSeriesKey('en', g.series)),
+      ...groupedJapaneseSeries.map((g) => getSeriesKey('ja', g.series)),
+      ...groupedChineseSeries.map((g) => getSeriesKey('zh-tw', g.series)),
+    ]));
   };
 
   const collapseAll = () => {
+    setJapaneseSetsExpanded(false);
+    setChineseSetsExpanded(false);
     setExpandedSeries(new Set());
+  };
+
+  const selectLanguageFilter = (nextFilter: DiscoverLanguageFilter) => {
+    setLanguageFilter(nextFilter);
+    if (nextFilter === 'all') return;
+
+    if (nextFilter === 'ja') setJapaneseSetsExpanded(true);
+    if (nextFilter === 'zh-tw') setChineseSetsExpanded(true);
+
+    const groups = nextFilter === 'en'
+      ? groupedEnglishSeries
+      : nextFilter === 'ja'
+        ? groupedJapaneseSeries
+        : groupedChineseSeries;
+    setExpandedSeries((prev) => {
+      const next = new Set(prev);
+      groups.forEach((group) => next.add(getSeriesKey(nextFilter, group.series)));
+      return next;
+    });
   };
 
   // ===============================
@@ -322,7 +505,8 @@ export default function ExploreScreen() {
   // ===============================
 
   type ListItem =
-    | { type: 'header'; series: string; count: number }
+    | { type: 'languageHeader'; language: 'ja' | 'zh-tw'; count: number; expanded: boolean }
+    | { type: 'header'; language: DiscoverSetLanguage; series: string; count: number }
     | { type: 'set'; set: PokemonSet; series: string };
 
   const flatData = useMemo((): ListItem[] => {
@@ -337,17 +521,59 @@ export default function ExploreScreen() {
 
     const items: ListItem[] = [];
 
-    for (const group of groupedSeries) {
-      items.push({ type: 'header', series: group.series, count: group.sets.length });
-      if (expandedSeries.has(group.series)) {
-        for (const set of group.sets) {
-          items.push({ type: 'set', set, series: group.series });
+    if (languageFilter === 'all' || languageFilter === 'en') {
+      for (const group of groupedEnglishSeries) {
+        items.push({ type: 'header', language: 'en', series: group.series, count: group.sets.length });
+        if (expandedSeries.has(getSeriesKey('en', group.series))) {
+          for (const set of group.sets) {
+            items.push({ type: 'set', set, series: group.series });
+          }
+        }
+      }
+    }
+
+    if (languageFilter === 'all') {
+      items.push({
+        type: 'languageHeader',
+        language: 'ja',
+        count: filteredJapaneseSets.length,
+        expanded: japaneseSetsExpanded,
+      });
+    }
+
+    if (languageFilter === 'ja' || (languageFilter === 'all' && japaneseSetsExpanded)) {
+      for (const group of groupedJapaneseSeries) {
+        items.push({ type: 'header', language: 'ja', series: group.series, count: group.sets.length });
+        if (expandedSeries.has(getSeriesKey('ja', group.series))) {
+          for (const set of group.sets) {
+            items.push({ type: 'set', set, series: group.series });
+          }
+        }
+      }
+    }
+
+    if (languageFilter === 'all') {
+      items.push({
+        type: 'languageHeader',
+        language: 'zh-tw',
+        count: filteredChineseSets.length,
+        expanded: chineseSetsExpanded,
+      });
+    }
+
+    if (languageFilter === 'zh-tw' || (languageFilter === 'all' && chineseSetsExpanded)) {
+      for (const group of groupedChineseSeries) {
+        items.push({ type: 'header', language: 'zh-tw', series: group.series, count: group.sets.length });
+        if (expandedSeries.has(getSeriesKey('zh-tw', group.series))) {
+          for (const set of group.sets) {
+            items.push({ type: 'set', set, series: group.series });
+          }
         }
       }
     }
 
     return items;
-  }, [groupedSeries, expandedSeries, isSearching, filteredSets]);
+  }, [groupedEnglishSeries, groupedJapaneseSeries, groupedChineseSeries, expandedSeries, isSearching, filteredSets, filteredJapaneseSets.length, filteredChineseSets.length, japaneseSetsExpanded, chineseSetsExpanded, languageFilter]);
 
   if (loading) {
     return (
@@ -373,7 +599,7 @@ export default function ExploreScreen() {
         {/* Header */}
         <StackrPageTitle title="Discover Sets" accentText="Sets" style={{ marginBottom: 4 }} />
         <Text style={{ color: theme.colors.textSoft, fontSize: 14, marginBottom: 14 }}>
-          Browse all Pokémon TCG sets · {sets.length} sets available
+          Filter English, Japanese or Chinese sets · {englishSets.length + japaneseSets.length + chineseSets.length} sets available
         </Text>
 
         {/* Search */}
@@ -403,6 +629,51 @@ export default function ExploreScreen() {
               <Ionicons name="close-circle" size={18} color={theme.colors.textSoft} />
             </TouchableOpacity>
           )}
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: 7, marginTop: 10 }}>
+          {LANGUAGE_FILTERS.map((option) => {
+            const active = languageFilter === option.key;
+            const count = option.key === 'all'
+              ? searchedEnglishSets.length + searchedJapaneseSets.length + searchedChineseSets.length
+              : option.key === 'en'
+                ? searchedEnglishSets.length
+                : option.key === 'ja'
+                  ? searchedJapaneseSets.length
+                  : searchedChineseSets.length;
+
+            return (
+              <TouchableOpacity
+                key={option.key}
+                onPress={() => {
+                  selectLanguageFilter(option.key);
+                }}
+                activeOpacity={0.78}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={`Show ${option.label} sets`}
+                style={{
+                  flex: option.key === 'all' ? 0.74 : 1,
+                  minHeight: 34,
+                  borderRadius: 999,
+                  borderWidth: 1,
+                  borderColor: active ? theme.colors.primary : theme.colors.border,
+                  backgroundColor: active ? theme.colors.primary + '14' : theme.colors.card,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingHorizontal: 8,
+                  paddingVertical: 6,
+                }}
+              >
+                <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontSize: 12, lineHeight: 15, fontWeight: '900' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                  {option.flag} {option.label}
+                </Text>
+                <Text numeric style={{ color: theme.colors.textSoft, fontSize: 9.5, lineHeight: 12, fontWeight: '800', marginTop: 1 }}>
+                  {count}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Expand / collapse all — only when not searching */}
@@ -450,7 +721,11 @@ export default function ExploreScreen() {
         <FlatList
           data={flatData}
           keyExtractor={(item) =>
-            item.type === 'header' ? `header-${item.series}` : `set-${item.set.id}`
+            item.type === 'languageHeader'
+              ? `language-${item.language}`
+              : item.type === 'header'
+                ? `header-${item.language}-${item.series}`
+                : `set-${item.set.language ?? 'en'}-${item.set.id}`
           }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: stackrTabContentPadding.standard }}
@@ -462,16 +737,77 @@ export default function ExploreScreen() {
             />
           }
           renderItem={({ item }) => {
-            if (item.type === 'header') {
-              const expanded = expandedSeries.has(item.series);
+            if (item.type === 'languageHeader') {
+              const copy = getLanguageHeaderCopy(item.language);
               return (
                 <TouchableOpacity
-                  onPress={() => toggleSeries(item.series)}
+                  onPress={() => {
+                    if (item.language === 'zh-tw') {
+                      setChineseSetsExpanded((current) => !current);
+                    } else {
+                      setJapaneseSetsExpanded((current) => !current);
+                    }
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingVertical: 13,
+                    paddingHorizontal: 12,
+                    marginTop: 6,
+                    marginBottom: 8,
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: theme.colors.primary + '28',
+                    backgroundColor: theme.colors.primary + '0D',
+                  }}
+                  activeOpacity={0.76}
+                >
+                  <View style={{
+                    width: 34,
+                    height: 24,
+                    borderRadius: 999,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#FFFFFF',
+                    borderWidth: 1,
+                    borderColor: theme.colors.primary + '30',
+                    marginRight: 10,
+                  }}>
+                    <Text style={{ color: theme.colors.primary, fontSize: 11, fontWeight: '900' }}>
+                      {copy.badge}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
+                      {copy.title}
+                    </Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>
+                      {copy.subtitle}
+                    </Text>
+                  </View>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginRight: 8 }}>
+                    {item.count} sets
+                  </Text>
+                  <Ionicons
+                    name={item.expanded ? 'chevron-up' : 'chevron-down'}
+                    size={18}
+                    color={theme.colors.textSoft}
+                  />
+                </TouchableOpacity>
+              );
+            }
+
+            if (item.type === 'header') {
+              const expanded = expandedSeries.has(getSeriesKey(item.language, item.series));
+              const copy = item.language === 'en' ? null : getLanguageHeaderCopy(item.language);
+              return (
+                <TouchableOpacity
+                  onPress={() => toggleSeries(item.language, item.series)}
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     paddingVertical: 12,
-                    paddingHorizontal: 4,
+                    paddingHorizontal: item.language !== 'en' ? 10 : 4,
                     marginBottom: 4,
                     borderBottomWidth: 1,
                     borderBottomColor: theme.colors.border,
@@ -479,7 +815,7 @@ export default function ExploreScreen() {
                   activeOpacity={0.7}
                 >
                   <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, flex: 1 }}>
-                    {item.series}
+                    {copy ? `${copy.seriesPrefix} · ${item.series}` : item.series}
                   </Text>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginRight: 8 }}>
                     {item.count} sets

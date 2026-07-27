@@ -12,9 +12,13 @@ const BACKEND_ROOT = path.resolve(__dirname, '..');
 const PACK_ROOT = process.env.SCANNER_PACK_ROOT || path.join(BACKEND_ROOT, 'data/scanner-packs');
 const DEFAULT_PACK_ID = process.env.SCANNER_PACK_ID || 'en-clip-base-v1';
 const CLIP_MODEL = process.env.CLIP_MODEL || 'Xenova/clip-vit-base-patch32';
-const ACCEPT_SIMILARITY = Number(process.env.RARE_CANDY_SCAN_ACCEPT_SIMILARITY || 0.62);
-const ACCEPT_MARGIN = Number(process.env.RARE_CANDY_SCAN_ACCEPT_MARGIN || 0.015);
-const MAX_CANDIDATES = Number(process.env.RARE_CANDY_SCAN_MAX_CANDIDATES || 8);
+const ACCEPT_SIMILARITY = Number(process.env.RARE_CANDY_SCAN_ACCEPT_SIMILARITY || 0.72);
+const ACCEPT_MARGIN = Number(process.env.RARE_CANDY_SCAN_ACCEPT_MARGIN || 0.035);
+const MIN_VISUAL_SIMILARITY = Number(process.env.RARE_CANDY_SCAN_MIN_VISUAL_SIMILARITY || 0.72);
+const ACCEPT_FINAL_SCORE = Number(process.env.RARE_CANDY_SCAN_ACCEPT_FINAL_SCORE || 0.82);
+const RESPONSE_MIN_FINAL_SCORE = Number(process.env.RARE_CANDY_SCAN_RESPONSE_MIN_FINAL_SCORE || 0.76);
+const MAX_CANDIDATES = Number(process.env.RARE_CANDY_SCAN_MAX_CANDIDATES || 20);
+const RESPONSE_CANDIDATE_LIMIT = Number(process.env.RARE_CANDY_SCAN_RESPONSE_CANDIDATES || 3);
 
 let packPromise = null;
 let extractorPromise = null;
@@ -146,6 +150,48 @@ function getCardEvidence(card, hints) {
   return { nameMatch, setMatch, totalMatch, numberExact, numberSuffix };
 }
 
+function clamp01(value) {
+  return Math.max(0, Math.min(1, Number(value) || 0));
+}
+
+function normalizeVisualScore(similarity) {
+  return clamp01((Number(similarity) - 0.48) / 0.27);
+}
+
+function calculateCandidateScore(similarity, evidence, card, hints) {
+  const visualEmbedding = normalizeVisualScore(similarity);
+  const artworkSimilarity = visualEmbedding;
+  const layoutSimilarity = visualEmbedding >= normalizeVisualScore(MIN_VISUAL_SIMILARITY)
+    ? 0.82
+    : visualEmbedding * 0.75;
+  const setMatch = evidence.setMatch || evidence.totalMatch ? 1 : 0;
+  const languageHint = String(hints.language || '').trim().toLowerCase();
+  const cardLanguage = String(card?.language || hints.packLanguage || '').trim().toLowerCase();
+  const languageMatch = languageHint ? (cardLanguage === languageHint ? 1 : 0) : 0.5;
+  const collectorNumberMatch = evidence.numberExact ? 1 : evidence.numberSuffix ? 0.55 : 0;
+  const metadataMatch = evidence.nameMatch ? 1 : 0;
+  const finalScore = (
+    visualEmbedding * 0.45
+    + artworkSimilarity * 0.2
+    + layoutSimilarity * 0.1
+    + setMatch * 0.1
+    + languageMatch * 0.05
+    + collectorNumberMatch * 0.05
+    + metadataMatch * 0.05
+  );
+
+  return {
+    visualEmbedding: Number(visualEmbedding.toFixed(4)),
+    artworkSimilarity: Number(artworkSimilarity.toFixed(4)),
+    layoutSimilarity: Number(layoutSimilarity.toFixed(4)),
+    setMatch,
+    languageMatch,
+    collectorNumberMatch,
+    metadataMatch,
+    finalScore: Number(clamp01(finalScore).toFixed(4)),
+  };
+}
+
 function scorePack(queryEmbedding, pack, hints = {}) {
   const scores = [];
   const allowedSetId = String(hints.setId || '').trim();
@@ -161,37 +207,34 @@ function scorePack(queryEmbedding, pack, hints = {}) {
     }
 
     const evidence = getCardEvidence(card, hints);
-    let adjustedScore = score;
     const reasons = [];
 
-    if (evidence.setMatch) {
-      adjustedScore += 0.08;
-      reasons.push('set');
-    }
-    if (evidence.totalMatch) {
-      adjustedScore += 0.08;
-      reasons.push('total');
-    }
-    if (evidence.numberExact) {
-      adjustedScore += 0.12;
-      reasons.push('number');
-    }
-    if (evidence.numberSuffix && !evidence.numberExact) {
-      adjustedScore += 0.1;
-      reasons.push('number-suffix');
-    }
-    if (evidence.nameMatch) {
-      adjustedScore += 0.18;
-      reasons.push('name');
-    } else if (hints.nameHint) {
-      adjustedScore -= 0.08;
-      reasons.push('name-missing');
-    }
+    if (score >= MIN_VISUAL_SIMILARITY) reasons.push('visual');
+    else reasons.push('low-visual');
+    if (evidence.setMatch) reasons.push('set');
+    if (evidence.totalMatch) reasons.push('total');
+    if (evidence.numberExact) reasons.push('number');
+    if (evidence.numberSuffix && !evidence.numberExact) reasons.push('number-suffix');
+    if (evidence.nameMatch) reasons.push('name');
+    else if (hints.nameHint) reasons.push('name-missing');
 
-    scores.push({ card, similarity: score, adjustedScore, evidence, reasons });
+    const weightedScore = calculateCandidateScore(score, evidence, card, {
+      ...hints,
+      packLanguage: pack.manifest.language,
+    });
+
+    scores.push({
+      card,
+      similarity: score,
+      finalScore: weightedScore.finalScore,
+      score: weightedScore,
+      evidence,
+      reasons,
+      rejected: score < MIN_VISUAL_SIMILARITY ? 'visual-below-minimum' : null,
+    });
   }
 
-  scores.sort((a, b) => b.adjustedScore - a.adjustedScore);
+  scores.sort((a, b) => b.finalScore - a.finalScore || b.similarity - a.similarity);
   return {
     candidates: scores.slice(0, Math.max(1, MAX_CANDIDATES)),
     nameMatchCount: scores.filter((item) => item.evidence.nameMatch).length,
@@ -230,68 +273,64 @@ router.post('/identify', async (req, res) => {
     const best = scored[0] ?? null;
     const second = scored[1] ?? null;
     const similarity = best ? Number(best.similarity.toFixed(4)) : null;
-    const margin = best && second ? Number((best.adjustedScore - second.adjustedScore).toFixed(4)) : best ? 1 : 0;
-    const hasOcrSupport = Boolean(
-      best?.evidence?.nameMatch
-      && (
-        best.evidence.setMatch
-        || best.evidence.totalMatch
-        || best.evidence.numberExact
-        || best.evidence.numberSuffix
-        || scoredResult.nameMatchCount === 1
-      )
-    );
-    const hasEvidenceHint = Boolean(setId || nameHint || printedNumber);
+    const margin = best && second ? Number((best.finalScore - second.finalScore).toFixed(4)) : best ? 1 : 0;
+    const finalScore = best?.score?.finalScore ?? 0;
     const visualAccepted = Boolean(
-      hasEvidenceHint
-      && best
-      && best.reasons.length > 0
+      best
       && best.similarity >= ACCEPT_SIMILARITY
       && margin >= ACCEPT_MARGIN
+      && finalScore >= ACCEPT_FINAL_SCORE
     );
-    const nameOnlyAccepted = Boolean(
-      best?.evidence?.nameMatch
-      && scoredResult.nameMatchCount > 1
-      && scoredResult.nameMatchCount <= 20
-      && best.similarity >= 0.58
-      && margin >= 0.05
-    );
-    const ocrAccepted = Boolean(
-      best
-      && (hasOcrSupport || nameOnlyAccepted)
-      && best.similarity >= 0.55
-      && margin >= 0.02
-    );
-    const accepted = visualAccepted || ocrAccepted;
+    const accepted = visualAccepted;
+    const status = accepted
+      ? 'matched'
+      : best && best.similarity >= MIN_VISUAL_SIMILARITY
+        ? 'confirmation_required'
+        : 'no_strong_visual_match';
+    const responseCandidates = scored
+      .filter((item) => item.similarity >= MIN_VISUAL_SIMILARITY && item.finalScore >= RESPONSE_MIN_FINAL_SCORE)
+      .slice(0, Math.max(1, RESPONSE_CANDIDATE_LIMIT));
 
     console.log('[rare-candy-scan] result', {
       card: best?.card?.name,
       set: best?.card?.setName,
       similarity,
       margin,
-      adjustedScore: best ? Number(best.adjustedScore.toFixed(4)) : null,
+      finalScore: best?.score?.finalScore ?? null,
       reasons: best?.reasons,
       nameMatchCount: scoredResult.nameMatchCount,
       accepted,
-      candidates: scored.length,
+      candidates: responseCandidates.length,
       totalMs: Date.now() - startedAt,
     });
 
     return res.json({
       provider: 'rare-candy-style',
+      status,
       match: accepted ? toScannedCard(best.card) : null,
       topMatch: best ? toScannedCard(best.card) : null,
-      candidates: scored.map((item) => ({
+      candidates: responseCandidates.map((item) => ({
         ...toScannedCard(item.card),
         similarity: Number(item.similarity.toFixed(4)),
-        adjustedScore: Number(item.adjustedScore.toFixed(4)),
+        finalScore: item.score.finalScore,
+        score: item.score,
         reasons: item.reasons,
+        rejectionReason: item.rejected,
       })),
       similarity,
       margin,
-      confidence: accepted ? Math.min(99, Math.round(similarity * 100)) : Math.max(0, Math.round((similarity ?? 0) * 100)),
+      confidence: Math.max(0, Math.min(99, Math.round(finalScore * 100))),
       accepted,
-      needsConfirmation: !accepted,
+      needsConfirmation: status === 'confirmation_required',
+      signals: best ? {
+        visualSimilarity: Number(best.similarity.toFixed(4)),
+        finalScore,
+        setMatch: Boolean(best.evidence.setMatch || best.evidence.totalMatch),
+        languageMatch: best.score.languageMatch,
+        collectorNumberMatch: best.score.collectorNumberMatch,
+        metadataMatch: best.score.metadataMatch,
+        rejectionReason: best.rejected,
+      } : null,
       totalMs: Date.now() - startedAt,
     });
   } catch (error) {

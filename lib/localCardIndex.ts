@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { supabase } from './supabase';
 
-const STORAGE_KEY = 'stackr:local-card-index:v1';
-const BUILT_AT_KEY = 'stackr:local-card-index-built-at:v1';
-const CHUNK_COUNT_KEY = 'stackr:local-card-index-chunks:v1';
-const CHUNK_KEY_PREFIX = 'stackr:local-card-index-chunk:v1:';
+const STORAGE_KEY = 'stackr:local-card-index:v2';
+const BUILT_AT_KEY = 'stackr:local-card-index-built-at:v2';
+const CHUNK_COUNT_KEY = 'stackr:local-card-index-chunks:v2';
+const CHUNK_KEY_PREFIX = 'stackr:local-card-index-chunk:v2:';
 const PAGE_SIZE = 1000;
 const STORAGE_CHUNK_SIZE = 500;
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -14,12 +15,17 @@ export type LocalScanCard = {
   name: string;
   language: string;
   number: string;
+  number_denominator: number | null;
   set_id: string;
   set_name: string;
   set_code: string;
   set_printed_total: number | null;
+  release_year: number | null;
+  release_date: string | null;
   image_small: string;
+  image_hash?: string | null;
   rarity: string;
+  variant?: string | null;
 };
 
 export type LocalPrintedNumberSignal = {
@@ -50,18 +56,57 @@ function getPrintedTotal(rawData: any) {
   return Number.isFinite(total) ? total : null;
 }
 
+function getReleaseDate(rawData: any) {
+  const releaseDate = rawData?.set?.releaseDate ?? rawData?.set?.release_date ?? null;
+  return typeof releaseDate === 'string' && releaseDate.trim() ? releaseDate.trim() : null;
+}
+
+function getReleaseYear(rawData: any) {
+  const releaseDate = getReleaseDate(rawData);
+  const match = releaseDate?.match(/\b(19\d{2}|20\d{2})\b/);
+  return match ? Number(match[1]) : null;
+}
+
+function getCardNumberDenominator(rawData: any) {
+  const printedTotal = getPrintedTotal(rawData);
+  return printedTotal && printedTotal > 0 ? printedTotal : null;
+}
+
+function getCardVariant(rawData: any, rarity?: string | null) {
+  const subtypes = Array.isArray(rawData?.subtypes) ? rawData.subtypes.join(' ') : '';
+  return [rarity, subtypes].filter(Boolean).join(' ').trim() || null;
+}
+
 function toScanCard(row: any): LocalScanCard {
+  const rarity = row.rarity ?? row.raw_data?.rarity ?? '';
+  const setName = getPreferredSetDisplayName({
+    id: row.set_id ?? row.raw_data?.set?.id ?? null,
+    sourceId: row.raw_data?.set?.tcgdex_id ?? row.raw_data?.set?.source_id ?? row.raw_data?.source_id ?? row.set_id ?? null,
+    setCode: row.raw_data?.set?.set_code ?? row.raw_data?.set?.tcgdex_id ?? row.raw_data?.set_code ?? row.set_id ?? null,
+    language: row.language ?? row.raw_data?.language ?? row.raw_data?.set?.language ?? null,
+    region: row.region ?? row.raw_data?.region ?? row.raw_data?.set?.region ?? null,
+    localName: row.raw_data?.set?.local_name ?? row.raw_data?.set?.name ?? null,
+    englishDisplayName: row.raw_data?.set?.english_display_name ?? row.raw_data?.set?.englishDisplayName ?? null,
+    canonicalName: row.raw_data?.set?.name ?? null,
+    fallbackName: row.set_id ?? null,
+    raw: row.raw_data?.set ?? row.raw_data,
+  });
   return {
     id: row.id,
     name: row.name,
     language: row.language ?? row.raw_data?.language ?? 'en',
     number: row.number ?? '',
+    number_denominator: getCardNumberDenominator(row.raw_data),
     set_id: row.set_id,
-    set_name: row.raw_data?.set?.name ?? row.set_id,
+    set_name: setName,
     set_code: row.raw_data?.set?.ptcgoCode ?? row.raw_data?.set?.id ?? row.set_id ?? '',
     set_printed_total: getPrintedTotal(row.raw_data),
+    release_year: getReleaseYear(row.raw_data),
+    release_date: getReleaseDate(row.raw_data),
     image_small: row.image_small ?? '',
-    rarity: row.rarity ?? '',
+    image_hash: row.raw_data?.imageHash ?? row.raw_data?.phash ?? null,
+    rarity,
+    variant: getCardVariant(row.raw_data, rarity),
   };
 }
 

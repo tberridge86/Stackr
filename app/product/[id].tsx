@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,8 +14,9 @@ import {
   productLookupLabel,
   type MarketProduct,
 } from '../../lib/productSearch';
-import { fetchAllSets, getPokemonSetLogoUrl } from '../../lib/pokemonTcg';
+import { fetchAllSets, getPokemonSetLogoUrl, getPokemonSetVisualUrl, type PokemonSet } from '../../lib/pokemonTcg';
 import { normaliseSearchText } from '../../lib/searchNormalisation';
+import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { supabase } from '../../lib/supabase';
 
@@ -30,7 +31,7 @@ const SAVED_PRODUCTS_KEY = '@stackr:search:saved-products';
 
 const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
-    ? `£${value.toFixed(2)}`
+    ? `\u00A3${value.toFixed(2)}`
     : 'Unavailable';
 
 async function readSavedProducts() {
@@ -76,6 +77,7 @@ export default function ProductDetailScreen() {
   const [product, setProduct] = useState<MarketProduct | null>(null);
   const [summary, setSummary] = useState<ListingSummary>({ total: 0, purchase: 0, trade: 0, lowest: null });
   const [relatedSetId, setRelatedSetId] = useState<string | null>(null);
+  const [relatedSet, setRelatedSet] = useState<PokemonSet | null>(null);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +104,8 @@ export default function ProductDetailScreen() {
 
         if (!loadedProduct) {
           setProduct(null);
+          setRelatedSet(null);
+          setRelatedSetId(null);
           setError('This sealed product could not be found.');
           setSaved(savedProducts.includes(productId));
           return;
@@ -121,6 +125,7 @@ export default function ProductDetailScreen() {
         const productSetName = normaliseSearchText(loadedProduct.set_name);
         const matchedSet = sets.find((set) => normaliseSearchText(set.name) === productSetName) ?? null;
         setRelatedSetId(matchedSet?.id ?? null);
+        setRelatedSet(matchedSet);
       } catch (loadError) {
         if (active) setError(loadError instanceof Error ? loadError.message : 'Product details could not be loaded.');
       } finally {
@@ -148,6 +153,8 @@ export default function ProductDetailScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.safe}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StackrBackdrop />
         <View style={styles.centered}>
           <ActivityIndicator color={theme.colors.primary} />
           <Text style={styles.loadingText}>Loading product...</Text>
@@ -159,6 +166,8 @@ export default function ProductDetailScreen() {
   if (!product || error) {
     return (
       <SafeAreaView style={styles.safe}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StackrBackdrop />
         <View style={styles.centered}>
           <Ionicons name="cube-outline" size={34} color={theme.colors.textSoft} />
           <Text style={styles.errorTitle}>Product unavailable</Text>
@@ -173,22 +182,23 @@ export default function ProductDetailScreen() {
 
   const estimatedValue = product.latest_price?.average ?? product.latest_price?.tcgMarket ?? null;
   const rangeAvailable = product.latest_price?.low != null || product.latest_price?.high != null;
-  const setLogoUri = relatedSetId ? getPokemonSetLogoUrl(relatedSetId) : null;
+  const setLogoUri = getPokemonSetVisualUrl(relatedSet)
+    ?? (relatedSetId ? getPokemonSetLogoUrl(relatedSetId, relatedSet?.language) : null);
 
   return (
     <SafeAreaView style={styles.safe} edges={['left', 'right']}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <StackrBackdrop />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: insets.top + 10,
+            paddingTop: insets.top + 6,
             paddingBottom: insets.bottom + stackrTabContentPadding.standard,
           },
         ]}
       >
-        <StackrBackdrop />
-
         <View style={styles.headerRow}>
           <StackrBackButton onPress={() => router.back()} style={{ width: 42, height: 42 }} />
           <Text style={styles.headerTitle}>Sealed Product</Text>
@@ -200,14 +210,16 @@ export default function ProductDetailScreen() {
         <View style={styles.imagePanel}>
           <StackrImage
             uri={product.image_large_url ?? product.image_url}
+            fallbackSource={stackrIcons.marketplace}
             contentFit="contain"
             rounded={18}
             style={styles.productImage}
+            showFallbackIcon={false}
           />
         </View>
 
         <View style={styles.identityBlock}>
-          <Text style={styles.productTitle}>{product.name}</Text>
+          <Text style={styles.productTitle} numberOfLines={3} adjustsFontSizeToFit minimumFontScale={0.74}>{product.name}</Text>
           <View style={styles.setRow}>
             {setLogoUri ? (
               <StackrImage
@@ -218,14 +230,14 @@ export default function ProductDetailScreen() {
                 style={styles.setLogo}
               />
             ) : null}
-            <Text style={styles.productSubtitle} numberOfLines={1}>
-              {[product.set_name, productLookupLabel(product.product_type)].filter(Boolean).join(' · ')}
+            <Text style={styles.productSubtitle} numberOfLines={2}>
+              {[product.set_name, productLookupLabel(product.product_type)].filter(Boolean).join(' - ')}
             </Text>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Value</Text>
+          <Text style={styles.sectionTitle}>Market Guide</Text>
           <View style={styles.valueGrid}>
             <Metric label="Estimated value" value={money(estimatedValue)} />
             <Metric label="Lowest listing" value={summary.lowest == null ? 'No active price' : money(summary.lowest)} />
@@ -292,9 +304,18 @@ export default function ProductDetailScreen() {
 function Metric({ label, value }: { label: string; value: string }) {
   const { theme } = useTheme();
   return (
-    <View style={{ flex: 1, borderRadius: 15, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.card, padding: 13 }}>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>{label}</Text>
-      <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 24, fontWeight: '900', marginTop: 4 }}>{value}</Text>
+    <View style={{ flex: 1, minWidth: 0, borderRadius: 15, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.card, padding: 13 }}>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }} numberOfLines={1}>
+        {label}
+      </Text>
+      <Text
+        style={{ color: theme.colors.text, fontSize: 18, lineHeight: 24, fontWeight: '900', marginTop: 4 }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.72}
+      >
+        {value}
+      </Text>
     </View>
   );
 }
@@ -304,6 +325,7 @@ function makeStyles(theme: any) {
     safe: {
       flex: 1,
       backgroundColor: theme.colors.bg,
+      overflow: 'hidden',
     },
     content: {
       paddingHorizontal: 16,
@@ -315,7 +337,7 @@ function makeStyles(theme: any) {
       justifyContent: 'center',
       padding: 24,
       gap: 10,
-      backgroundColor: theme.colors.bg,
+      backgroundColor: 'transparent',
     },
     loadingText: {
       color: theme.colors.textSoft,

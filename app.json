@@ -12,9 +12,16 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/rev2/01-brand/app/splash.png",
+          "image": "./assets/rev2/01-brand/app/splash-ultra-hd.png",
           "resizeMode": "cover",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Stackr needs camera access so you can scan your Pokemon cards.",
+          "recordAudioAndroid": false
         }
       ],
       [

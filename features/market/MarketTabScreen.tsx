@@ -47,6 +47,8 @@ import { useProfile } from '../../components/profile-context';
 import { useTheme } from '../../components/theme-context';
 import { useTrade } from '../../components/trade-context';
 import { PRICE_API_URL } from '../../lib/config';
+import { searchLocalPokemonCards } from '../../lib/cardSearch';
+import { fetchCachedPokemonCardDetails } from '../../lib/marketSearchDataCache';
 import { getCachedCardsForSet, getCachedCardSync } from '../../lib/pokemonTcgCache';
 import { correctPokemonNameQuery } from '../../lib/pokemonNameAutocorrect';
 import { listingCategoryIcons, type ListingCategoryType } from '../../lib/listingCategoryIcons';
@@ -65,12 +67,15 @@ import { getPokemonSetLogoUrl } from '../../lib/pokemonTcg';
 import { supabase } from '../../lib/supabase';
 import { TRADE_STATUS_LABELS, normaliseTradeStatus } from '../../lib/transactionStates';
 import { fetchMyTradeOffers, TradeOffer } from '../../lib/tradeOffers';
-import { stackrListPerformance } from '../../lib/performance';
+import { getIncrementalListWindow, stackrListPerformance } from '../../lib/performance';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 
 type PrimaryFilter = 'all' | ListingCategoryKey;
-type SortKey = 'recommended' | 'recent' | 'priceAsc' | 'priceDesc' | 'bestValue' | 'relevant' | 'chase';
+type SortKey = 'recommended' | 'recent' | 'priceAsc' | 'priceDesc' | 'bestValue' | 'relevant' | 'chase' | 'rarity' | 'set' | 'gradeDesc' | 'type';
+type MarketLanguageFilter = 'en' | 'ja' | 'zh-tw';
 type Workspace = 'discover' | 'myListings';
+type MarketLayoutMode = 'browse' | 'compact';
+type AvailabilityFilter = 'available' | 'reserved' | 'sold';
 type SellerFilter = { userId: string; name?: string | null } | null;
 type ParsedMarketQuery = {
   raw: string;
@@ -86,6 +91,11 @@ type SearchSuggestion = {
   subtitle?: string | null;
   imageUri?: string | null;
   setLogoUrl?: string | null;
+  listingCount?: number;
+  sourceLabel?: string | null;
+  primaryActionLabel?: string;
+  secondaryActionLabel?: string;
+  onSecondaryPress?: () => void;
   onPress: () => void;
 };
 
@@ -124,10 +134,53 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'bestValue', label: 'Best value' },
   { key: 'relevant', label: 'Most relevant' },
   { key: 'chase', label: 'Closest chase match' },
+  { key: 'rarity', label: 'Rarity' },
+  { key: 'set', label: 'Set A-Z' },
+  { key: 'gradeDesc', label: 'Grade high to low' },
+  { key: 'type', label: 'Product/type' },
+];
+
+const MARKET_GRADER_FILTERS = ['PSA', 'BGS', 'CGC', 'TAG', 'ACE'];
+const MARKET_GRADE_FILTERS = ['10', '9.5', '9', '8', '7 or lower'];
+const MARKET_AVAILABILITY_FILTERS: { key: AvailabilityFilter; label: string }[] = [
+  { key: 'available', label: 'Available' },
+  { key: 'reserved', label: 'Reserved' },
+  { key: 'sold', label: 'Sold' },
+];
+const MARKET_FALLBACK_RARITIES = ['Common', 'Uncommon', 'Rare', 'Double Rare', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Secret Rare', 'Promo'];
+const MARKET_LANGUAGE_FILTERS: { key: MarketLanguageFilter; label: string }[] = [
+  { key: 'en', label: 'English' },
+  { key: 'ja', label: 'Japanese' },
+  { key: 'zh-tw', label: 'Traditional Chinese' },
+];
+const MARKET_LISTING_TYPE_FILTERS: { key: MarketListingVariant; label: string; modes: MarketMode[]; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { key: 'buy', label: 'Buy now', modes: ['buy'], icon: 'pricetag-outline' },
+  { key: 'openToOffers', label: 'Offers', modes: ['buy', 'trade'], icon: 'chatbubbles-outline' },
+  { key: 'trade', label: 'Trade only', modes: ['trade'], icon: 'swap-horizontal-outline' },
+  { key: 'tradePlusCash', label: 'Trade + cash', modes: ['trade'], icon: 'git-compare-outline' },
+];
+const MARKET_PROTECTION_FILTERS: { key: MarketProtectionTier; label: string; imageIcon: ImageSourcePropType }[] = [
+  { key: 'Bronze', label: 'Bronze', imageIcon: stackrIcons.protectionBronze },
+  { key: 'Silver', label: 'Silver', imageIcon: stackrIcons.protectionSilver },
+  { key: 'Gold', label: 'Gold', imageIcon: stackrIcons.protectionGold },
+];
+const RARITY_ORDER = [
+  'common',
+  'uncommon',
+  'rare',
+  'double rare',
+  'triple rare',
+  'ultra rare',
+  'illustration rare',
+  'special illustration rare',
+  'secret rare',
+  'hyper rare',
+  'promo',
 ];
 
 const PHOTO_LABELS = ['Seller front', 'Seller back', 'Surface', 'Edges', 'Holo detail', 'Additional photo'];
-const MARKET_BACKDROP = require('../../assets/rev2/01-brand/app/backdrop.png');
+const MARKET_CARD_MIN_WIDTH = 142;
+const MARKET_CARD_THREE_COLUMN_MIN_WIDTH = 152;
 
 const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
@@ -182,18 +235,64 @@ function hasSellerPhotos(listing: MarketplaceListing) {
   return (listing.listing_images ?? []).some(Boolean);
 }
 
-function getListingImage(listing: MarketplaceListing, card?: CardDetail | null, large = false) {
-  if (isProductListing(listing)) {
-    return listing.listing_images?.[0] ?? listing.official_image_url ?? null;
-  }
+function getSellerPhotoUris(listing: MarketplaceListing) {
+  const photos: string[] = [];
+  const media = Array.isArray(listing.listing_media) ? listing.listing_media : [];
+
+  media.forEach((item: any) => {
+    if (!item?.url || item.role === 'stock' || item.slot === 'stock') return;
+    photos.push(item.url);
+  });
+  if (listing.seller_front_image_url) photos.push(listing.seller_front_image_url);
+  if (listing.seller_back_image_url) photos.push(listing.seller_back_image_url);
+  (listing.listing_images ?? []).forEach((uri) => {
+    if (uri) photos.push(uri);
+  });
+
+  return [...new Set(photos)];
+}
+
+function getCatalogueImage(listing: MarketplaceListing, card?: CardDetail | null, large = false) {
   return (
     listing.official_image_url
     ?? (large ? card?.images?.large : card?.images?.small)
     ?? card?.images?.large
     ?? card?.images?.small
-    ?? listing.listing_images?.[0]
     ?? null
   );
+}
+
+function getListingImageStrategy(listing: MarketplaceListing, card?: CardDetail | null, large = false) {
+  const categoryType = getListingCategoryType(listing);
+  const sellerPhotos = getSellerPhotoUris(listing);
+  const catalogueImage = getCatalogueImage(listing, card, large);
+  const sellerLead = sellerPhotos[0] ?? null;
+
+  if (categoryType === 'graded_slab') {
+    return {
+      uri: sellerLead ?? catalogueImage,
+      label: sellerLead ? 'Slab photo' : 'Catalogue image',
+      isCatalogue: !sellerLead,
+    };
+  }
+
+  if (categoryType === 'raw_card') {
+    return {
+      uri: sellerLead ?? catalogueImage,
+      label: sellerLead ? 'Seller photo' : 'Catalogue image',
+      isCatalogue: !sellerLead,
+    };
+  }
+
+  return {
+    uri: catalogueImage ?? sellerLead,
+    label: catalogueImage ? 'Catalogue image' : 'Seller photo',
+    isCatalogue: Boolean(catalogueImage),
+  };
+}
+
+function getListingImage(listing: MarketplaceListing, card?: CardDetail | null, large = false) {
+  return getListingImageStrategy(listing, card, large).uri;
 }
 
 function addGalleryItem(items: GalleryItem[], uri: string | null | undefined, label: string) {
@@ -203,7 +302,19 @@ function addGalleryItem(items: GalleryItem[], uri: string | null | undefined, la
 
 function buildListingGallery(listing: MarketplaceListing, card?: CardDetail | null) {
   const items: GalleryItem[] = [];
-  addGalleryItem(items, getListingImage(listing, card, true), isProductListing(listing) ? 'Listing photo' : 'Official card image');
+  const categoryType = getListingCategoryType(listing);
+  const catalogueImage = getCatalogueImage(listing, card, true);
+  const sellerPhotos = getSellerPhotoUris(listing);
+
+  if (categoryType === 'raw_card' || categoryType === 'graded_slab') {
+    sellerPhotos.forEach((uri, index) => {
+      addGalleryItem(items, uri, categoryType === 'graded_slab' && index === 0 ? 'Seller slab photo' : PHOTO_LABELS[index] ?? `Seller photo ${index + 1}`);
+    });
+    addGalleryItem(items, catalogueImage, 'Catalogue reference');
+    return items;
+  }
+
+  addGalleryItem(items, catalogueImage, 'Catalogue image');
 
   const media = Array.isArray(listing.listing_media) ? listing.listing_media : [];
   if (media.length) {
@@ -232,7 +343,9 @@ function getListingVariant(listing: MarketplaceListing): MarketListingVariant {
   return 'buy';
 }
 
-function getProtectionTier(listing: MarketplaceListing): MarketProtectionTier {
+function getProtectionTier(listing: MarketplaceListing): MarketProtectionTier | null {
+  if (getListingCategoryType(listing) !== 'raw_card') return null;
+
   const selectedTier = getSelectedProtectionTierFromNotes(listing);
   if (selectedTier) return selectedTier;
 
@@ -259,6 +372,7 @@ function getSelectedProtectionTierFromNotes(listing: MarketplaceListing): Market
 }
 
 function requiresSilverAgreement(listing: MarketplaceListing) {
+  if (getListingCategoryType(listing) !== 'raw_card') return false;
   const notes = listing.listing_notes ?? listing.notes ?? '';
   return /Silver agreement required/i.test(notes);
 }
@@ -279,6 +393,48 @@ function normalise(value: string | null | undefined) {
     .replace(/[^a-z0-9#\u3040-\u30ff\u3400-\u9fff]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+function normaliseLanguageCode(value: string | null | undefined) {
+  const normalised = normalise(value);
+  if (normalised === 'ja' || normalised === 'jp' || normalised === 'japanese') return 'ja';
+  if (normalised === 'zh tw' || normalised === 'zh' || normalised === 'zhtw' || normalised === 'chinese' || normalised === 'traditional chinese' || normalised === 'tc' || normalised === 'tw' || normalised === 'taiwan') return 'zh-tw';
+  if (normalised === 'en' || normalised === 'english') return 'en';
+  return normalised;
+}
+
+function parseGradeValue(value: string | number | null | undefined) {
+  const match = String(value ?? '').match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : 0;
+}
+
+function gradeMatchesFilter(value: string | number | null | undefined, filter: string) {
+  const grade = parseGradeValue(value);
+  if (filter === '7 or lower') return grade > 0 && grade <= 7;
+  return normalise(value == null ? null : String(value)) === normalise(filter);
+}
+
+function getRarityRank(rarity: string | null | undefined) {
+  const value = normalise(rarity);
+  const index = RARITY_ORDER.findIndex((item) => value.includes(item));
+  return index === -1 ? 999 : index;
+}
+
+function compareRarityHighToLow(a: string | null | undefined, b: string | null | undefined) {
+  const ar = getRarityRank(a);
+  const br = getRarityRank(b);
+  if (ar === 999 && br === 999) return 0;
+  if (ar === 999) return 1;
+  if (br === 999) return -1;
+  return br - ar;
+}
+
+function getListingSetLabel(listing: MarketplaceListing, card?: CardDetail | null) {
+  return card?.set?.name ?? card?.set?.id ?? listing.set_id ?? '';
+}
+
+function getListingMarketValue(listing: MarketplaceListing) {
+  return listing.market_estimate ?? listing.prices?.preferred_value ?? null;
 }
 
 function stripLeadingZeroes(value: string | null | undefined) {
@@ -427,6 +583,13 @@ function getRecentLabel(value?: string | null) {
   return date.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 }
 
+function isRecentlyAdded(value?: string | null) {
+  if (!value) return false;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+  return Date.now() - date.getTime() <= 7 * 24 * 60 * 60 * 1000;
+}
+
 export default function TheMarketTab() {
   const { theme } = useTheme();
   const { width } = useWindowDimensions();
@@ -456,13 +619,26 @@ export default function TheMarketTab() {
   const [search, setSearch] = useState(params.q ? String(params.q) : '');
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [catalogueCardSuggestions, setCatalogueCardSuggestions] = useState<SearchSuggestion[]>([]);
   const [primaryFilter, setPrimaryFilter] = useState<PrimaryFilter>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>('recommended');
+  const [layoutMode, setLayoutMode] = useState<MarketLayoutMode>('browse');
+  const [selectedListingTypes, setSelectedListingTypes] = useState<MarketListingVariant[]>([]);
+  const [selectedProtectionTiers, setSelectedProtectionTiers] = useState<MarketProtectionTier[]>([]);
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [selectedRarities, setSelectedRarities] = useState<string[]>([]);
+  const [selectedSetFilter, setSelectedSetFilter] = useState<string | null>(null);
+  const [selectedGraders, setSelectedGraders] = useState<string[]>([]);
+  const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
+  const [selectedLanguages, setSelectedLanguages] = useState<MarketLanguageFilter[]>([]);
+  const [selectedAvailability, setSelectedAvailability] = useState<AvailabilityFilter[]>([]);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [photosOnly, setPhotosOnly] = useState(false);
+  const [sealedOnly, setSealedOnly] = useState(false);
+  const [recentlyAddedOnly, setRecentlyAddedOnly] = useState(false);
   const [offers, setOffers] = useState<TradeOffer[]>([]);
   const [currentUserId, setCurrentUserId] = useState('');
   const [cardDetails, setCardDetails] = useState<Record<string, CardDetail>>({});
@@ -481,21 +657,60 @@ export default function TheMarketTab() {
 
   const incomingOfferCount = offers.filter((offer) => offer.receiver_id === currentUserId && offer.status === 'pending').length;
   const marketColumnGap = 10;
-  const marketColumnCount = width >= 370 ? 2 : 1;
-  const marketCardWidth = marketColumnCount === 2 ? (width - 32 - marketColumnGap) / 2 : undefined;
+  const marketAvailableWidth = Math.max(0, width - 32);
+  const canUseThreeColumns = marketAvailableWidth >= (MARKET_CARD_THREE_COLUMN_MIN_WIDTH * 3) + (marketColumnGap * 2);
+  const canUseTwoColumns = marketAvailableWidth >= (MARKET_CARD_MIN_WIDTH * 2) + marketColumnGap;
+  const marketColumnCount = layoutMode === 'compact' && canUseThreeColumns
+    ? 3
+    : canUseTwoColumns
+      ? 2
+      : 1;
+  const marketCardWidth = marketColumnCount > 1
+    ? (marketAvailableWidth - marketColumnGap * (marketColumnCount - 1)) / marketColumnCount
+    : undefined;
+  const favoriteListingIds = useMemo(() => {
+    const myListingIds = new Set(myListings.map((listing) => listing.id));
+    return savedListingIds.filter((id) => !myListingIds.has(id));
+  }, [myListings, savedListingIds]);
+  const marketWindow = useMemo(
+    () => getIncrementalListWindow(marketColumnCount, {
+      initialRows: 6,
+      pageRows: 5,
+      minInitial: marketColumnCount === 1 ? 8 : 12,
+      minPage: marketColumnCount === 1 ? 8 : 10,
+    }),
+    [marketColumnCount]
+  );
+  const [visibleListingCount, setVisibleListingCount] = useState(marketWindow.initialCount);
   const activeFilterCount =
     Number(primaryFilter !== 'all')
-    + Number(sortBy !== 'recommended')
+    + selectedListingTypes.length
+    + selectedProtectionTiers.length
     + selectedConditions.length
+    + selectedRarities.length
+    + Number(Boolean(selectedSetFilter))
+    + selectedGraders.length
+    + selectedGrades.length
+    + selectedLanguages.length
+    + selectedAvailability.length
     + Number(Boolean(minPrice.trim()))
     + Number(Boolean(maxPrice.trim()))
-    + Number(photosOnly);
+    + Number(photosOnly)
+    + Number(sealedOnly)
+    + Number(recentlyAddedOnly)
+    + Number(Boolean(sellerFilter));
 
   useEffect(() => {
     if (params.mode === 'trade' || params.mode === 'buy') setMode(params.mode);
     if (params.segment === 'myListings') setWorkspace('myListings');
     if (params.q != null) setSearch(String(params.q));
   }, [params.mode, params.q, params.segment]);
+
+  useEffect(() => {
+    setSelectedListingTypes((current) => (
+      current.filter((selected) => MARKET_LISTING_TYPE_FILTERS.some((filter) => filter.key === selected && filter.modes.includes(mode)))
+    ));
+  }, [mode]);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 240);
@@ -520,6 +735,47 @@ export default function TheMarketTab() {
       active = false;
     };
   }, [debouncedSearch]);
+
+  useEffect(() => {
+    let active = true;
+    const query = debouncedSearch.trim();
+
+    if (query.length < 2) {
+      setCatalogueCardSuggestions([]);
+      return;
+    }
+
+    searchLocalPokemonCards<any>(query, {
+      language: selectedLanguages.length === 1 ? selectedLanguages[0] : 'all',
+      limit: 4,
+      select: 'id, name, language, set_id, number, rarity, image_small, image_large, raw_data',
+    }).then((cards) => {
+      if (!active) return;
+      setCatalogueCardSuggestions((cards ?? []).map((card: any) => {
+        const setId = card.set_id ?? card.raw_data?.set?.id ?? null;
+        const setName = card.raw_data?.set?.name ?? setId;
+        return {
+          key: `catalogue-card:${card.id}`,
+          label: card.name ?? card.id,
+          subtitle: [card.number ? `#${card.number}` : null, setName].filter(Boolean).join(' - '),
+          imageUri: card.image_small ?? card.image_large ?? card.raw_data?.images?.small ?? null,
+          setLogoUrl: setId ? getPokemonSetLogoUrl(setId) : null,
+          sourceLabel: 'Catalogue card',
+          primaryActionLabel: 'View card',
+          secondaryActionLabel: 'Shop listings',
+          onSecondaryPress: () => setSearch([card.name ?? card.id, card.number].filter(Boolean).join(' ')),
+          onPress: () => router.push({ pathname: '/card/[id]', params: { id: card.id, setId: setId ?? undefined } } as any),
+        };
+      }));
+    }).catch((error) => {
+      console.log('Market catalogue card suggestions failed', error);
+      if (active) setCatalogueCardSuggestions([]);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [debouncedSearch, selectedLanguages]);
 
   const loadOffers = useCallback(async () => {
     try {
@@ -601,11 +857,7 @@ export default function TheMarketTab() {
       if (cacheMisses.length) {
         try {
           const missingCardIds = [...new Set(cacheMisses.map((listing) => listing.card_id).filter(Boolean))];
-          const { data } = await supabase
-            .from('pokemon_cards')
-            .select('id, name, language, number, rarity, set_id, image_small, image_large, raw_data')
-            .in('id', missingCardIds);
-          const dbCards = new Map((data ?? []).map((card: any) => [card.id, card]));
+          const dbCards = await fetchCachedPokemonCardDetails(missingCardIds);
 
           for (let index = unresolvedListings.length - 1; index >= 0; index -= 1) {
             const listing = unresolvedListings[index];
@@ -685,6 +937,57 @@ export default function TheMarketTab() {
     };
   }, [sourceListings]);
 
+  const toggleStringFilter = useCallback(<T extends string,>(
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    value: T
+  ) => {
+    setter((current) => (
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+    ));
+  }, []);
+
+  const toggleLanguageFilter = useCallback((value: MarketLanguageFilter) => {
+    setSelectedLanguages((current) => (
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
+    ));
+  }, []);
+
+  const availableMarketSets = useMemo(() => {
+    const map = new Map<string, { key: string; label: string }>();
+    sourceListings.forEach((listing) => {
+      const card = cardDetails[listing.id];
+      const key = card?.set?.id ?? listing.set_id ?? card?.set?.name ?? '';
+      const label = card?.set?.name ?? listing.set_id ?? '';
+      if (!key || !label) return;
+      const normalised = normalise(key);
+      if (!map.has(normalised)) map.set(normalised, { key, label });
+    });
+    return [...map.values()].sort((a, b) => a.label.localeCompare(b.label)).slice(0, 18);
+  }, [cardDetails, sourceListings]);
+
+  const availableMarketRarities = useMemo(() => {
+    const map = new Map<string, string>();
+    MARKET_FALLBACK_RARITIES.forEach((rarity) => map.set(normalise(rarity), rarity));
+    Object.values(cardDetails).forEach((card) => {
+      if (!card.rarity) return;
+      const key = normalise(card.rarity);
+      if (key && !map.has(key)) map.set(key, card.rarity);
+    });
+    return [...map.values()].sort((a, b) => getRarityRank(a) - getRarityRank(b) || a.localeCompare(b));
+  }, [cardDetails]);
+
+  const availableMarketGraders = useMemo(() => {
+    const map = new Map<string, string>();
+    MARKET_GRADER_FILTERS.forEach((grader) => map.set(normalise(grader), grader));
+    sourceListings.forEach((listing) => {
+      if (!listing.grade_company) return;
+      const label = formatSlabCompanyLabel(listing.grade_company);
+      const key = normalise(label);
+      if (key && !map.has(key)) map.set(key, label);
+    });
+    return [...map.values()];
+  }, [sourceListings]);
+
   const displayListings = useMemo(() => {
     const query = parseMarketQuery(debouncedSearch);
     const min = Number(minPrice);
@@ -702,8 +1005,33 @@ export default function TheMarketTab() {
       if (mode === 'buy' && !(variant === 'buy' || variant === 'openToOffers')) return false;
       if (mode === 'trade' && variant === 'sold') return false;
 
+      if (selectedListingTypes.length && !selectedListingTypes.includes(variant)) return false;
       if (primaryFilter !== 'all' && getListingCategoryType(listing) !== primaryFilter) return false;
+      if (sealedOnly && !isSealedListing(listing, card)) return false;
+      if (recentlyAddedOnly && !isRecentlyAdded(listing.created_at)) return false;
+      if (selectedAvailability.length) {
+        const availability: AvailabilityFilter = variant === 'sold'
+          ? 'sold'
+          : variant === 'reserved' || variant === 'unavailable'
+            ? 'reserved'
+            : 'available';
+        if (!selectedAvailability.includes(availability)) return false;
+      }
+      if (selectedProtectionTiers.length) {
+        const protectionTier = getProtectionTier(listing);
+        if (!protectionTier || !selectedProtectionTiers.includes(protectionTier)) return false;
+      }
       if (selectedConditions.length && (!listing.condition || !selectedConditions.includes(listing.condition))) return false;
+      if (selectedRarities.length && !selectedRarities.some((rarity) => normalise(rarity) === normalise(card?.rarity))) return false;
+      if (selectedSetFilter) {
+        const selectedSet = normalise(selectedSetFilter);
+        const listingSet = normalise(card?.set?.id ?? listing.set_id);
+        const listingSetName = normalise(card?.set?.name);
+        if (listingSet !== selectedSet && listingSetName !== selectedSet) return false;
+      }
+      if (selectedGraders.length && !selectedGraders.some((grader) => normalise(grader) === normalise(formatSlabCompanyLabel(listing.grade_company ?? '')))) return false;
+      if (selectedGrades.length && !selectedGrades.some((grade) => gradeMatchesFilter(listing.grade, grade))) return false;
+      if (selectedLanguages.length && !selectedLanguages.includes(normaliseLanguageCode(card?.language) as MarketLanguageFilter)) return false;
       if (photosOnly && !hasSellerPhotos(listing)) return false;
       if (Number.isFinite(min) && minPrice.trim() && (listing.asking_price ?? 0) < min) return false;
       if (Number.isFinite(max) && maxPrice.trim() && (listing.asking_price ?? 0) > max) return false;
@@ -712,33 +1040,83 @@ export default function TheMarketTab() {
     });
 
     data = [...data].sort((a, b) => {
-      if (query.normalised && b.searchScore !== a.searchScore) return b.searchScore - a.searchScore;
+      const aCard = cardDetails[a.listing.id];
+      const bCard = cardDetails[b.listing.id];
+      if ((sortBy === 'recommended' || sortBy === 'relevant') && query.normalised && b.searchScore !== a.searchScore) return b.searchScore - a.searchScore;
       if (sortBy === 'priceAsc') return (a.listing.asking_price ?? Number.MAX_SAFE_INTEGER) - (b.listing.asking_price ?? Number.MAX_SAFE_INTEGER);
       if (sortBy === 'priceDesc') return (b.listing.asking_price ?? 0) - (a.listing.asking_price ?? 0);
       if (sortBy === 'bestValue') {
-        const av = (a.listing.market_estimate ?? a.listing.prices?.preferred_value ?? 0) - (a.listing.asking_price ?? 0);
-        const bv = (b.listing.market_estimate ?? b.listing.prices?.preferred_value ?? 0) - (b.listing.asking_price ?? 0);
+        const av = (getListingMarketValue(a.listing) ?? 0) - (a.listing.asking_price ?? 0);
+        const bv = (getListingMarketValue(b.listing) ?? 0) - (b.listing.asking_price ?? 0);
         return bv - av;
       }
+      if (sortBy === 'chase') return (getListingMarketValue(b.listing) ?? 0) - (getListingMarketValue(a.listing) ?? 0);
+      if (sortBy === 'rarity') return compareRarityHighToLow(aCard?.rarity, bCard?.rarity) || (aCard?.name ?? a.listing.product_name ?? '').localeCompare(bCard?.name ?? b.listing.product_name ?? '');
+      if (sortBy === 'set') return getListingSetLabel(a.listing, aCard).localeCompare(getListingSetLabel(b.listing, bCard)) || (aCard?.number ?? '').localeCompare(bCard?.number ?? '');
+      if (sortBy === 'gradeDesc') return parseGradeValue(b.listing.grade) - parseGradeValue(a.listing.grade);
+      if (sortBy === 'type') return getListingCategoryLabel(a.listing).localeCompare(getListingCategoryLabel(b.listing));
       return new Date(b.listing.created_at ?? 0).getTime() - new Date(a.listing.created_at ?? 0).getTime();
     });
 
     return data.map((item) => item.listing);
-  }, [blockedSellerIds, cardDetails, debouncedSearch, hiddenListingIds, maxPrice, minPrice, mode, photosOnly, primaryFilter, selectedConditions, sortBy, sourceListings]);
+  }, [blockedSellerIds, cardDetails, debouncedSearch, hiddenListingIds, maxPrice, minPrice, mode, photosOnly, primaryFilter, recentlyAddedOnly, sealedOnly, selectedAvailability, selectedConditions, selectedGrades, selectedGraders, selectedLanguages, selectedListingTypes, selectedProtectionTiers, selectedRarities, selectedSetFilter, sortBy, sourceListings]);
+
+  useEffect(() => {
+    setVisibleListingCount(Math.min(displayListings.length, marketWindow.initialCount));
+  }, [
+    activeFilterCount,
+    debouncedSearch,
+    displayListings.length,
+    marketWindow.initialCount,
+    mode,
+    sellerFilter?.userId,
+    workspace,
+  ]);
+
+  const visibleDisplayListings = useMemo(
+    () => displayListings.slice(0, visibleListingCount),
+    [displayListings, visibleListingCount]
+  );
+  const hasMoreDisplayListings = visibleListingCount < displayListings.length;
+  const renderMoreDisplayListings = useCallback(() => {
+    setVisibleListingCount((current) => Math.min(displayListings.length, current + marketWindow.pageSize));
+  }, [displayListings.length, marketWindow.pageSize]);
 
   const searchSuggestions = useMemo(() => {
     const query = parseMarketQuery(debouncedSearch);
     if (!query.normalised) return {
       cards: [] as SearchSuggestion[],
+      products: [] as SearchSuggestion[],
       sets: [] as SearchSuggestion[],
       sellers: [] as SearchSuggestion[],
     };
 
+    const searchableListings = sourceListings.filter((listing) => !hiddenListingIds.includes(listing.id) && !blockedSellerIds.includes(listing.user_id));
     const cards = new Map<string, SearchSuggestion>();
+    const products = new Map<string, SearchSuggestion>();
     const sets = new Map<string, SearchSuggestion>();
     const sellers = new Map<string, SearchSuggestion>();
+    const liveCardListingCounts = new Map<string, number>();
+    const productListingCounts = new Map<string, number>();
+    const setListingCounts = new Map<string, number>();
+    const sellerListingCounts = new Map<string, number>();
+    const countCopy = (count: number) => `${count} listing${count === 1 ? '' : 's'}`;
 
-    sourceListings.forEach((listing) => {
+    searchableListings.forEach((listing) => {
+      const card = cardDetails[listing.id];
+      const setId = card?.set?.id ?? listing.set_id ?? null;
+      if (setId) setListingCounts.set(setId, (setListingCounts.get(setId) ?? 0) + 1);
+      if (listing.user_id) sellerListingCounts.set(listing.user_id, (sellerListingCounts.get(listing.user_id) ?? 0) + 1);
+      if (isProductListing(listing)) {
+        const title = listing.product_name ?? 'Sealed product';
+        const productKey = normalise(`${title} ${listing.product_type ?? ''}`) || listing.id;
+        productListingCounts.set(productKey, (productListingCounts.get(productKey) ?? 0) + 1);
+      } else if (listing.card_id) {
+        liveCardListingCounts.set(listing.card_id, (liveCardListingCounts.get(listing.card_id) ?? 0) + 1);
+      }
+    });
+
+    searchableListings.forEach((listing) => {
       const card = cardDetails[listing.id];
       const score = scoreListingSearch(listing, card, query);
       if (score <= 0) return;
@@ -747,34 +1125,63 @@ export default function TheMarketTab() {
       const imageUri = getListingImage(listing, card);
       const setId = card?.set?.id ?? listing.set_id ?? null;
       const setLogoUrl = setId ? getPokemonSetLogoUrl(setId) : null;
+      const productKey = normalise(`${title} ${listing.product_type ?? ''}`) || listing.id;
+
+      if (isProductListing(listing) && !products.has(productKey)) {
+        const listingCount = productListingCounts.get(productKey) ?? 1;
+        products.set(productKey, {
+          key: `product:${productKey}`,
+          label: title,
+          subtitle: [titleCaseProductType(listing.product_type), countCopy(listingCount)].filter(Boolean).join(' - '),
+          imageUri,
+          listingCount,
+          sourceLabel: 'Live product',
+          primaryActionLabel: 'Shop listings',
+          onPress: () => setSearch(title),
+        });
+      }
 
       if (!cards.has(listing.card_id) && !isProductListing(listing)) {
+        const listingCount = liveCardListingCounts.get(listing.card_id) ?? 1;
         cards.set(listing.card_id, {
           key: `card:${listing.card_id}`,
           label: title,
-          subtitle: [card?.number ? `#${card.number}` : null, card?.set?.name ?? listing.set_id].filter(Boolean).join(' • '),
+          subtitle: [card?.number ? `#${card.number}` : null, card?.set?.name ?? listing.set_id, countCopy(listingCount)].filter(Boolean).join(' - '),
           imageUri,
           setLogoUrl,
+          listingCount,
+          sourceLabel: 'Live listings',
+          primaryActionLabel: 'Shop listings',
+          secondaryActionLabel: 'View card',
+          onSecondaryPress: () => router.push({ pathname: '/card/[id]', params: { id: listing.card_id, setId: listing.set_id ?? setId ?? undefined } } as any),
           onPress: () => setSearch([title, card?.number].filter(Boolean).join(' ')),
         });
       }
 
       if (setId && !sets.has(setId)) {
+        const listingCount = setListingCounts.get(setId) ?? 1;
         sets.set(setId, {
           key: `set:${setId}`,
           label: card?.set?.name ?? listing.set_id ?? 'Set',
-          subtitle: `${displayListings.filter((item) => item.set_id === listing.set_id).length || 1} listing${displayListings.filter((item) => item.set_id === listing.set_id).length === 1 ? '' : 's'}`,
+          subtitle: [setId, countCopy(listingCount)].filter(Boolean).join(' - '),
           setLogoUrl,
+          listingCount,
+          sourceLabel: 'Set code',
+          primaryActionLabel: 'Shop listings',
           onPress: () => setSearch(card?.set?.name ?? listing.set_id ?? ''),
         });
       }
 
       if (listing.user_id && !sellers.has(listing.user_id) && meta.seller) {
+        const listingCount = sellerListingCounts.get(listing.user_id) ?? 1;
         sellers.set(listing.user_id, {
           key: `seller:${listing.user_id}`,
           label: meta.seller,
-          subtitle: 'Seller profile',
+          subtitle: countCopy(listingCount),
           imageUri: listing.profiles?.avatar_url ?? null,
+          listingCount,
+          sourceLabel: 'Seller',
+          primaryActionLabel: 'View listings',
           onPress: () => {
             setSellerFilter({ userId: listing.user_id, name: meta.seller });
             setWorkspace('discover');
@@ -783,17 +1190,33 @@ export default function TheMarketTab() {
       }
     });
 
+    catalogueCardSuggestions.forEach((item) => {
+      const cardId = item.key.replace(/^catalogue-card:/, '');
+      const listingCount = liveCardListingCounts.get(cardId) ?? 0;
+      if (!cards.has(cardId)) {
+        cards.set(cardId, {
+          ...item,
+          subtitle: [item.subtitle, countCopy(listingCount)].filter(Boolean).join(' - '),
+          listingCount,
+          secondaryActionLabel: listingCount > 0 ? item.secondaryActionLabel : undefined,
+          onSecondaryPress: listingCount > 0 ? item.onSecondaryPress : undefined,
+        });
+      }
+    });
+
     return {
       cards: [...cards.values()].slice(0, 4),
+      products: [...products.values()].slice(0, 3),
       sets: [...sets.values()].slice(0, 3),
       sellers: [...sellers.values()].slice(0, 3),
     };
-  }, [cardDetails, debouncedSearch, displayListings, sourceListings]);
+  }, [blockedSellerIds, cardDetails, catalogueCardSuggestions, debouncedSearch, hiddenListingIds, sourceListings]);
 
   const mapListingCard = useCallback((listing: MarketplaceListing): MarketListingCardData => {
     const card = cardDetails[listing.id];
     const product = isProductListing(listing);
-    const image = getListingImage(listing, card);
+    const imageStrategy = getListingImageStrategy(listing, card);
+    const fullImageStrategy = getListingImageStrategy(listing, card, true);
     const title = product ? listing.product_name ?? 'Sealed product' : card?.name ?? listing.product_name ?? listing.card_id;
     const setName = product
       ? listing.product_type?.replace(/_/g, ' ')
@@ -809,8 +1232,10 @@ export default function TheMarketTab() {
       cardNumber: card?.number ?? null,
       language: card?.language ?? null,
       variant: card?.rarity ?? null,
-      imageUri: image,
-      fullImageUri: getListingImage(listing, card, true),
+      imageUri: imageStrategy.uri,
+      fullImageUri: fullImageStrategy.uri,
+      imageBadgeLabel: imageStrategy.label,
+      imageIsCatalogue: imageStrategy.isCatalogue,
       condition: listing.condition,
       gradeCompany: listing.grade_company,
       grade: listing.grade,
@@ -826,7 +1251,7 @@ export default function TheMarketTab() {
       protectionTier: getProtectionTier(listing),
       protectionAgreementRequired: requiresSilverAgreement(listing),
       variantType: variant,
-      saved: savedListingIds.includes(listing.id),
+      saved: favoriteListingIds.includes(listing.id),
       favoriteCount,
       inDemand: favoriteCount >= 21,
       isMine: listing.user_id === currentUserId,
@@ -834,7 +1259,7 @@ export default function TheMarketTab() {
       categoryLabel: getListingCategoryLabel(listing),
       categoryImageIcon: listingCategoryIcons[categoryType],
     };
-  }, [cardDetails, currentUserId, profile?.collector_name, savedListingIds]);
+  }, [cardDetails, currentUserId, favoriteListingIds, profile?.collector_name]);
 
   const openListing = useCallback(async (listing: MarketplaceListing) => {
     setSelectedListing(listing);
@@ -842,11 +1267,7 @@ export default function TheMarketTab() {
     if (cardDetails[listing.id] || isProductListing(listing) || !listing.card_id) return;
     try {
       setDetailLoading(true);
-      const { data } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, language, number, rarity, set_id, image_small, image_large, raw_data')
-        .eq('id', listing.card_id)
-        .maybeSingle();
+      const data = (await fetchCachedPokemonCardDetails([listing.card_id])).get(listing.card_id);
       if (data) {
         const detail = {
           id: data.id,
@@ -891,7 +1312,9 @@ export default function TheMarketTab() {
     setDetailCard(null);
   };
 
-  const handleToggleSaved = async (listingId: string) => {
+  const handleToggleSaved = async (listing: MarketplaceListing) => {
+    if (listing.user_id === currentUserId) return;
+    const listingId = listing.id;
     if (favoriteBusyIds.includes(listingId)) return;
     const previous = savedListingIds;
     const next = previous.includes(listingId)
@@ -903,7 +1326,7 @@ export default function TheMarketTab() {
       setSavedListingIds(await toggleSavedMarketListing(listingId));
     } catch (error) {
       setSavedListingIds(previous);
-      Alert.alert('Could not update Favorites', error instanceof Error ? error.message : 'Please try again.');
+      Alert.alert('Could not update favorites', error instanceof Error ? error.message : 'Please try again.');
     } finally {
       setFavoriteBusyIds((current) => current.filter((id) => id !== listingId));
     }
@@ -1021,11 +1444,21 @@ export default function TheMarketTab() {
 
   const clearFilters = () => {
     setPrimaryFilter('all');
-    setSortBy('recommended');
+    setSelectedListingTypes([]);
+    setSelectedProtectionTiers([]);
     setSelectedConditions([]);
+    setSelectedRarities([]);
+    setSelectedSetFilter(null);
+    setSelectedGraders([]);
+    setSelectedGrades([]);
+    setSelectedLanguages([]);
+    setSelectedAvailability([]);
     setMinPrice('');
     setMaxPrice('');
     setPhotosOnly(false);
+    setSealedOnly(false);
+    setRecentlyAddedOnly(false);
+    setSellerFilter(null);
   };
 
   const resumeListingDraft = () => {
@@ -1057,6 +1490,57 @@ export default function TheMarketTab() {
     : workspace === 'myListings'
       ? `${myListings.length} live listing${myListings.length === 1 ? '' : 's'}${draftCount ? ` - ${draftCount} draft to resume` : ''}`
       : `${displayListings.length} listing${displayListings.length === 1 ? '' : 's'}`;
+
+  const activeFilterChips = useMemo(() => {
+    const chips: { key: string; label: string; onRemove: () => void }[] = [];
+    const categoryLabel = MARKET_CATEGORY_FILTERS.find((filter) => filter.key === primaryFilter)?.label;
+    if (primaryFilter !== 'all') chips.push({ key: 'category', label: categoryLabel ?? 'Category', onRemove: () => setPrimaryFilter('all') });
+    selectedListingTypes.forEach((value) => {
+      const label = MARKET_LISTING_TYPE_FILTERS.find((filter) => filter.key === value)?.label ?? value;
+      chips.push({ key: `type:${value}`, label, onRemove: () => setSelectedListingTypes((current) => current.filter((item) => item !== value)) });
+    });
+    selectedProtectionTiers.forEach((value) => chips.push({ key: `protection:${value}`, label: value, onRemove: () => setSelectedProtectionTiers((current) => current.filter((item) => item !== value)) }));
+    selectedConditions.forEach((value) => chips.push({ key: `condition:${value}`, label: value, onRemove: () => setSelectedConditions((current) => current.filter((item) => item !== value)) }));
+    selectedRarities.forEach((value) => chips.push({ key: `rarity:${value}`, label: value, onRemove: () => setSelectedRarities((current) => current.filter((item) => item !== value)) }));
+    if (selectedSetFilter) {
+      const label = availableMarketSets.find((set) => normalise(set.key) === normalise(selectedSetFilter))?.label ?? selectedSetFilter;
+      chips.push({ key: 'set', label, onRemove: () => setSelectedSetFilter(null) });
+    }
+    selectedGraders.forEach((value) => chips.push({ key: `grader:${value}`, label: value, onRemove: () => setSelectedGraders((current) => current.filter((item) => item !== value)) }));
+    selectedGrades.forEach((value) => chips.push({ key: `grade:${value}`, label: `Grade ${value}`, onRemove: () => setSelectedGrades((current) => current.filter((item) => item !== value)) }));
+    selectedLanguages.forEach((value) => {
+      const label = MARKET_LANGUAGE_FILTERS.find((filter) => filter.key === value)?.label ?? value;
+      chips.push({ key: `language:${value}`, label, onRemove: () => setSelectedLanguages((current) => current.filter((item) => item !== value)) });
+    });
+    selectedAvailability.forEach((value) => {
+      const label = MARKET_AVAILABILITY_FILTERS.find((filter) => filter.key === value)?.label ?? value;
+      chips.push({ key: `availability:${value}`, label, onRemove: () => setSelectedAvailability((current) => current.filter((item) => item !== value)) });
+    });
+    if (minPrice.trim() || maxPrice.trim()) chips.push({ key: 'price', label: `${minPrice.trim() ? `£${minPrice.trim()}` : '£0'}-${maxPrice.trim() ? `£${maxPrice.trim()}` : 'Any'}`, onRemove: () => { setMinPrice(''); setMaxPrice(''); } });
+    if (photosOnly) chips.push({ key: 'photos', label: 'Seller photos', onRemove: () => setPhotosOnly(false) });
+    if (sealedOnly) chips.push({ key: 'sealed', label: 'Sealed', onRemove: () => setSealedOnly(false) });
+    if (recentlyAddedOnly) chips.push({ key: 'recent', label: 'Recently added', onRemove: () => setRecentlyAddedOnly(false) });
+    if (sellerFilter) chips.push({ key: 'seller', label: sellerFilter.name ?? 'Seller', onRemove: () => setSellerFilter(null) });
+    return chips;
+  }, [
+    availableMarketSets,
+    maxPrice,
+    minPrice,
+    photosOnly,
+    primaryFilter,
+    recentlyAddedOnly,
+    sealedOnly,
+    selectedAvailability,
+    selectedConditions,
+    selectedGrades,
+    selectedGraders,
+    selectedLanguages,
+    selectedListingTypes,
+    selectedProtectionTiers,
+    selectedRarities,
+    selectedSetFilter,
+    sellerFilter,
+  ]);
 
   const renderListingDraftCard = () => {
     if (workspace !== 'myListings' || !listingDraft) return null;
@@ -1153,7 +1637,7 @@ export default function TheMarketTab() {
     <View style={{ gap: 10, paddingTop: 6, paddingBottom: 10 }}>
       <MarketHeader
         incomingOfferCount={incomingOfferCount}
-        savedCount={savedListingIds.length}
+        savedCount={favoriteListingIds.length}
         myListingCount={myListings.length + draftCount}
         profileAvatarUrl={profile?.avatar_url ?? null}
         profileAvatarPreset={profile?.avatar_preset ?? null}
@@ -1178,6 +1662,7 @@ export default function TheMarketTab() {
       <MarketSearchSuggestions
         visible={Boolean(debouncedSearch.trim())}
         cards={searchSuggestions.cards}
+        products={searchSuggestions.products}
         sets={searchSuggestions.sets}
         sellers={searchSuggestions.sellers}
       />
@@ -1186,25 +1671,6 @@ export default function TheMarketTab() {
         setMode(next);
         setWorkspace('discover');
       }} />
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingLeft: 1, paddingRight: 40 }}>
-        {MARKET_CATEGORY_FILTERS.map((filter) => (
-          <MarketFilterChip
-            key={filter.key}
-            label={filter.label}
-            icon={filter.icon}
-            imageIcon={filter.imageIcon}
-            active={primaryFilter === filter.key}
-            onPress={() => setPrimaryFilter(filter.key)}
-          />
-        ))}
-        <MarketFilterChip
-          label={activeFilterCount > 0 ? `More (${activeFilterCount})` : 'More'}
-          icon={marketIcons.filter}
-          active={activeFilterCount > 0}
-          onPress={() => setFiltersOpen(true)}
-        />
-      </ScrollView>
 
       <View
         style={{
@@ -1225,28 +1691,6 @@ export default function TheMarketTab() {
             </Text>
           ) : null}
         </View>
-        <TouchableOpacity
-          onPress={() => setFiltersOpen(true)}
-          activeOpacity={0.82}
-          accessibilityRole="button"
-          accessibilityLabel={`Sort listings, currently ${currentSortLabel}`}
-          style={{
-            minHeight: 34,
-            borderRadius: 11,
-            paddingHorizontal: 10,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            backgroundColor: 'rgba(255,255,255,0.72)',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 5,
-          }}
-        >
-          <Text style={{ color: theme.colors.text, fontSize: 12, fontWeight: '900' }}>
-            Sort: {currentSortLabel}
-          </Text>
-          <Ionicons name="chevron-down" size={14} color={theme.colors.primary} />
-        </TouchableOpacity>
         {workspace === 'myListings' || sellerFilter ? (
           <TouchableOpacity
             onPress={() => {
@@ -1261,6 +1705,155 @@ export default function TheMarketTab() {
           </TouchableOpacity>
         ) : null}
       </View>
+
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          flexWrap: 'wrap',
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => setFiltersOpen(true)}
+          activeOpacity={0.82}
+          accessibilityRole="button"
+          accessibilityLabel={activeFilterCount > 0 ? `Filter listings, ${activeFilterCount} active` : 'Filter listings'}
+          style={{
+            minHeight: 38,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: activeFilterCount > 0 ? theme.colors.primary + '66' : theme.colors.border,
+            backgroundColor: activeFilterCount > 0 ? theme.colors.primary + '10' : 'rgba(255,255,255,0.76)',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 7,
+            paddingHorizontal: 11,
+          }}
+        >
+          <Ionicons name={marketIcons.filter} size={17} color={activeFilterCount > 0 ? theme.colors.primary : theme.colors.text} />
+          <Text style={{ color: activeFilterCount > 0 ? theme.colors.primary : theme.colors.text, fontSize: 12.2, lineHeight: 15, fontWeight: '900' }}>
+            Filter
+          </Text>
+          {activeFilterCount > 0 ? (
+            <View
+              pointerEvents="none"
+              style={{
+                minWidth: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: theme.colors.primary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 5,
+              }}
+            >
+              <Text style={{ color: '#FFFFFF', fontSize: 9.5, lineHeight: 12, fontWeight: '900' }}>
+                {activeFilterCount > 9 ? '9+' : activeFilterCount}
+              </Text>
+            </View>
+          ) : null}
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setSortOpen(true)}
+          activeOpacity={0.82}
+          accessibilityRole="button"
+          accessibilityLabel={`Sort listings, currently ${currentSortLabel}`}
+          style={{
+            flexGrow: 1,
+            minHeight: 38,
+            borderRadius: 12,
+            paddingHorizontal: 11,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            backgroundColor: 'rgba(255,255,255,0.76)',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 5,
+          }}
+        >
+          <Text style={{ color: theme.colors.text, fontSize: 12.2, fontWeight: '900' }} numberOfLines={1}>
+            Sort: {currentSortLabel}
+          </Text>
+          <Ionicons name="chevron-down" size={14} color={theme.colors.primary} />
+        </TouchableOpacity>
+        {canUseThreeColumns ? (
+          <TouchableOpacity
+            onPress={() => setLayoutMode((value) => (value === 'compact' ? 'browse' : 'compact'))}
+            activeOpacity={0.82}
+            accessibilityRole="button"
+            accessibilityLabel={layoutMode === 'compact' ? 'Use browse layout' : 'Use compact discovery layout'}
+            style={{
+              minHeight: 38,
+              borderRadius: 12,
+              paddingHorizontal: 10,
+              borderWidth: 1,
+              borderColor: layoutMode === 'compact' ? theme.colors.primary + '66' : theme.colors.border,
+              backgroundColor: layoutMode === 'compact' ? theme.colors.primary + '10' : 'rgba(255,255,255,0.76)',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
+            <Ionicons name="grid-outline" size={16} color={layoutMode === 'compact' ? theme.colors.primary : theme.colors.text} />
+            <Text style={{ color: layoutMode === 'compact' ? theme.colors.primary : theme.colors.text, fontSize: 12.2, fontWeight: '900' }}>
+              {layoutMode === 'compact' ? 'Compact' : 'Browse'}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
+
+      {activeFilterChips.length ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 7, paddingLeft: 1, paddingRight: 12 }}>
+          {activeFilterChips.map((chip) => (
+            <TouchableOpacity
+              key={chip.key}
+              onPress={chip.onRemove}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={`Remove ${chip.label} filter`}
+              style={{
+                minHeight: 30,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: theme.colors.primary + '30',
+                backgroundColor: theme.colors.primary + '0F',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+                paddingHorizontal: 9,
+              }}
+            >
+              <Text style={{ color: theme.colors.primary, fontSize: 11.2, lineHeight: 14, fontWeight: '900' }} numberOfLines={1}>
+                {chip.label}
+              </Text>
+              <Ionicons name="close" size={13} color={theme.colors.primary} />
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity
+            onPress={clearFilters}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Clear all Market filters"
+            style={{
+              minHeight: 30,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              backgroundColor: 'rgba(255,255,255,0.78)',
+              justifyContent: 'center',
+              paddingHorizontal: 10,
+            }}
+          >
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11.2, lineHeight: 14, fontWeight: '900' }}>
+              Clear all
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      ) : null}
 
       {workspace === 'myListings' ? (
         <>
@@ -1303,8 +1896,9 @@ export default function TheMarketTab() {
       <View style={{ width: marketCardWidth, flex: marketColumnCount === 1 ? 1 : 0, marginBottom: 12 }}>
         <MarketListingCard
           item={card}
+          compact={marketColumnCount > 1}
           onPress={() => openListing(item)}
-          onSave={() => handleToggleSaved(item.id)}
+          onSave={item.user_id === currentUserId ? undefined : () => handleToggleSaved(item)}
           onSellerPress={() => {
             if (item.user_id) router.push({ pathname: '/user/[id]', params: { id: item.user_id } });
           }}
@@ -1328,7 +1922,7 @@ export default function TheMarketTab() {
   return (
     <StackrScreen variant="tab">
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: theme.spacing.sm }}>
-        <StackrBackdrop source={MARKET_BACKDROP} />
+        <StackrBackdrop />
         {tradeLoading && displayListings.length === 0 ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -1342,7 +1936,7 @@ export default function TheMarketTab() {
         ) : (
           <FlatList
             key={`market-columns-${marketColumnCount}`}
-            data={displayListings}
+            data={visibleDisplayListings}
             numColumns={marketColumnCount}
             columnWrapperStyle={marketColumnCount > 1 ? { gap: marketColumnGap } : undefined}
             keyExtractor={(item) => item.id}
@@ -1380,10 +1974,17 @@ export default function TheMarketTab() {
             }
             refreshControl={<RefreshControl refreshing={tradeLoading} onRefresh={refreshTrade} tintColor={theme.colors.primary} />}
             showsVerticalScrollIndicator={false}
+            onEndReached={hasMoreDisplayListings ? renderMoreDisplayListings : undefined}
+            onEndReachedThreshold={0.8}
             onScroll={handleMarketScroll}
             scrollEventThrottle={16}
             contentContainerStyle={{ paddingBottom: stackrTabContentPadding.floatingAction, flexGrow: displayListings.length === 0 ? 1 : 0 }}
             {...stackrListPerformance.marketListings}
+            ListFooterComponent={hasMoreDisplayListings ? (
+              <View style={{ height: 34, alignItems: 'center', justifyContent: 'center' }}>
+                <ActivityIndicator color={theme.colors.primary} size="small" />
+              </View>
+            ) : null}
           />
         )}
       </View>
@@ -1450,91 +2051,145 @@ export default function TheMarketTab() {
       </TouchableOpacity>
 
       <MarketFilterSheet
+        visible={sortOpen}
+        title="Sort listings"
+        subtitle="Choose how Market listings are ordered."
+        activeFilterCount={sortBy !== 'recommended' ? 1 : 0}
+        onClose={() => setSortOpen(false)}
+        onClear={() => setSortBy('recommended')}
+      >
+        <FilterGroup title="Sort by">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {SORT_OPTIONS.map((option) => {
+              const active = sortBy === option.key;
+              const disabled = mode === 'buy' && option.key === 'chase';
+              return (
+                <TouchableOpacity
+                  key={option.key}
+                  onPress={() => {
+                    if (disabled) return;
+                    setSortBy(option.key);
+                    setSortOpen(false);
+                  }}
+                  disabled={disabled}
+                  activeOpacity={0.82}
+                  style={{
+                    minHeight: 38,
+                    flexBasis: width >= 390 ? '31.5%' : '48%',
+                    flexGrow: 1,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: active ? theme.colors.primary : disabled ? theme.colors.border : theme.colors.primary + '18',
+                    borderStyle: disabled ? 'dashed' : 'solid',
+                    backgroundColor: active
+                      ? theme.colors.primary + '12'
+                      : disabled
+                        ? theme.colors.surface
+                        : 'rgba(255,255,255,0.72)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: 9,
+                    paddingVertical: 7,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    {active ? <Ionicons name="checkmark-circle" size={14} color={theme.colors.primary} /> : null}
+                    {disabled ? <Ionicons name="lock-closed-outline" size={13} color={theme.colors.textSoft} /> : null}
+                    <Text
+                      numberOfLines={1}
+                      adjustsFontSizeToFit
+                      minimumFontScale={0.78}
+                      style={{
+                        color: active ? theme.colors.primary : disabled ? theme.colors.textSoft : theme.colors.text,
+                        fontSize: 11.7,
+                        lineHeight: 15,
+                        fontWeight: '900',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {option.label}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </FilterGroup>
+      </MarketFilterSheet>
+
+      <MarketFilterSheet
         visible={filtersOpen}
         activeFilterCount={activeFilterCount}
         onClose={() => setFiltersOpen(false)}
         onClear={clearFilters}
       >
-        <FilterGroup title="Sort">
-          {SORT_OPTIONS.map((option) => {
-            const disabled = mode === 'buy' && option.key === 'chase';
-            return (
-              <TouchableOpacity
-                key={option.key}
-                onPress={() => !disabled && setSortBy(option.key)}
-                disabled={disabled}
-                style={{
-                  minHeight: 38,
-                  borderRadius: 11,
-                  borderWidth: 1,
-                  borderColor: sortBy === option.key ? theme.colors.primary : theme.colors.border,
-                  backgroundColor: sortBy === option.key ? theme.colors.primary + '12' : theme.colors.surface,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: disabled ? 0.45 : 1,
-                  paddingHorizontal: 10,
-                }}
-              >
-                <Text style={{ color: sortBy === option.key ? theme.colors.primary : theme.colors.text, fontSize: 12, fontWeight: '900' }}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+        <FilterGroup title="Category">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {MARKET_CATEGORY_FILTERS.map((filter) => (
+              <MarketFilterChip
+                key={filter.key}
+                label={filter.label}
+                icon={filter.icon}
+                imageIcon={filter.imageIcon}
+                active={primaryFilter === filter.key}
+                onPress={() => setPrimaryFilter(filter.key)}
+              />
+            ))}
+          </View>
         </FilterGroup>
 
-        <FilterGroup title={mode === 'buy' ? 'Buy filters' : 'Trade filters'}>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TextInput
-              value={minPrice}
-              onChangeText={setMinPrice}
-              keyboardType="decimal-pad"
-              placeholder="Min price"
-              placeholderTextColor={theme.colors.textSoft}
-              style={{
-                flex: 1,
-                minHeight: 42,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                backgroundColor: theme.colors.surface,
-                color: theme.colors.text,
-                paddingHorizontal: 12,
-                fontWeight: '800',
-              }}
+        <FilterGroup title="Set">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <MarketFilterChip
+              label="Any set"
+              active={!selectedSetFilter}
+              onPress={() => setSelectedSetFilter(null)}
             />
-            <TextInput
-              value={maxPrice}
-              onChangeText={setMaxPrice}
-              keyboardType="decimal-pad"
-              placeholder="Max price"
-              placeholderTextColor={theme.colors.textSoft}
-              style={{
-                flex: 1,
-                minHeight: 42,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: theme.colors.border,
-                backgroundColor: theme.colors.surface,
-                color: theme.colors.text,
-                paddingHorizontal: 12,
-                fontWeight: '800',
-              }}
-            />
+            {availableMarketSets.map((set) => (
+              <MarketFilterChip
+                key={set.key}
+                label={set.label}
+                active={normalise(selectedSetFilter) === normalise(set.key)}
+                onPress={() => setSelectedSetFilter(set.key)}
+              />
+            ))}
           </View>
-          <TouchableOpacity
-            onPress={() => setPhotosOnly((value) => !value)}
-            style={{ minHeight: 38, flexDirection: 'row', alignItems: 'center', gap: 10 }}
-          >
-            <Ionicons
-              name={photosOnly ? 'checkbox' : 'square-outline'}
-              size={22}
-              color={photosOnly ? theme.colors.primary : theme.colors.textSoft}
-            />
-            <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>
-              Seller photos only
-            </Text>
-          </TouchableOpacity>
+        </FilterGroup>
+
+        <FilterGroup title="Language">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {MARKET_LANGUAGE_FILTERS.map((language) => {
+              const active = selectedLanguages.includes(language.key);
+              return (
+                <MarketFilterChip
+                  key={language.key}
+                  label={language.label}
+                  active={active}
+                  onPress={() => toggleLanguageFilter(language.key)}
+                />
+              );
+            })}
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Card">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {search.trim() ? (
+              <MarketFilterChip
+                label={search.trim()}
+                icon="search-outline"
+                active
+                onPress={() => setSearch('')}
+              />
+            ) : (
+              <MarketFilterChip
+                label="Use marketplace search"
+                icon="search-outline"
+                disabled
+                onPress={() => {}}
+              />
+            )}
+          </View>
         </FilterGroup>
 
         <FilterGroup title="Condition">
@@ -1549,6 +2204,245 @@ export default function TheMarketTab() {
                   onPress={() => setSelectedConditions((current) => (
                     active ? current.filter((item) => item !== condition) : [...current, condition]
                   ))}
+                />
+              );
+            })}
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Grader">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {availableMarketGraders.map((grader) => {
+              const active = selectedGraders.includes(grader);
+              return (
+                <MarketFilterChip
+                  key={grader}
+                  label={grader}
+                  active={active}
+                  onPress={() => toggleStringFilter(setSelectedGraders, grader)}
+                />
+              );
+            })}
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Grade">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {MARKET_GRADE_FILTERS.map((grade) => {
+              const active = selectedGrades.includes(grade);
+              return (
+                <MarketFilterChip
+                  key={grade}
+                  label={grade}
+                  active={active}
+                  onPress={() => toggleStringFilter(setSelectedGrades, grade)}
+                />
+              );
+            })}
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Price">
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View
+              style={{
+                flex: 1,
+                minHeight: 40,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.primary + '18',
+                backgroundColor: 'rgba(255,255,255,0.72)',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 7,
+                paddingHorizontal: 11,
+              }}
+            >
+              <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>{'\u00A3'}</Text>
+              <TextInput
+                value={minPrice}
+                onChangeText={setMinPrice}
+                keyboardType="decimal-pad"
+                placeholder="Min"
+                placeholderTextColor={theme.colors.textSoft}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  color: theme.colors.text,
+                  paddingVertical: 9,
+                  fontSize: 12,
+                  lineHeight: 15,
+                  fontWeight: '900',
+                }}
+              />
+            </View>
+            <View
+              style={{
+                flex: 1,
+                minHeight: 40,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: theme.colors.primary + '18',
+                backgroundColor: 'rgba(255,255,255,0.72)',
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 7,
+                paddingHorizontal: 11,
+              }}
+            >
+              <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>{'\u00A3'}</Text>
+              <TextInput
+                value={maxPrice}
+                onChangeText={setMaxPrice}
+                keyboardType="decimal-pad"
+                placeholder="Max"
+                placeholderTextColor={theme.colors.textSoft}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  color: theme.colors.text,
+                  paddingVertical: 9,
+                  fontSize: 12,
+                  lineHeight: 15,
+                  fontWeight: '900',
+                }}
+              />
+            </View>
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Seller location">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <MarketFilterChip
+              label="Location data pending"
+              icon="location-outline"
+              disabled
+              onPress={() => {}}
+            />
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Delivery method">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <MarketFilterChip
+              label="Delivery data pending"
+              icon="cube-outline"
+              disabled
+              onPress={() => {}}
+            />
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Listing type">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {MARKET_LISTING_TYPE_FILTERS.map((filter) => {
+              const active = selectedListingTypes.includes(filter.key);
+              const disabled = !filter.modes.includes(mode);
+              return (
+                <MarketFilterChip
+                  key={filter.key}
+                  label={filter.label}
+                  icon={disabled ? 'lock-closed-outline' : filter.icon}
+                  active={active}
+                  disabled={disabled}
+                  onPress={() => !disabled && toggleStringFilter(setSelectedListingTypes, filter.key)}
+                />
+              );
+            })}
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Sealed status">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <MarketFilterChip
+              label="Any status"
+              active={!sealedOnly}
+              onPress={() => setSealedOnly(false)}
+            />
+            <MarketFilterChip
+              label="Sealed products"
+              icon="cube-outline"
+              active={sealedOnly}
+              onPress={() => setSealedOnly((value) => !value)}
+            />
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Rarity">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {availableMarketRarities.map((rarity) => {
+              const active = selectedRarities.includes(rarity);
+              return (
+                <MarketFilterChip
+                  key={rarity}
+                  label={rarity}
+                  active={active}
+                  onPress={() => toggleStringFilter(setSelectedRarities, rarity)}
+                />
+              );
+            })}
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Availability">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <MarketFilterChip
+              label="Any availability"
+              active={!selectedAvailability.length}
+              onPress={() => setSelectedAvailability([])}
+            />
+            {MARKET_AVAILABILITY_FILTERS.map((filter) => {
+              const active = selectedAvailability.includes(filter.key);
+              return (
+                <MarketFilterChip
+                  key={filter.key}
+                  label={filter.label}
+                  active={active}
+                  onPress={() => toggleStringFilter(setSelectedAvailability, filter.key)}
+                />
+              );
+            })}
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Recently added">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <MarketFilterChip
+              label="Any time"
+              active={!recentlyAddedOnly}
+              onPress={() => setRecentlyAddedOnly(false)}
+            />
+            <MarketFilterChip
+              label="Last 7 days"
+              icon="time-outline"
+              active={recentlyAddedOnly}
+              onPress={() => setRecentlyAddedOnly((value) => !value)}
+            />
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Photo evidence">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <MarketFilterChip
+              label="Seller photos only"
+              icon={photosOnly ? 'checkbox' : 'square-outline'}
+              active={photosOnly}
+              onPress={() => setPhotosOnly((value) => !value)}
+            />
+          </View>
+        </FilterGroup>
+
+        <FilterGroup title="Protection">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {MARKET_PROTECTION_FILTERS.map((tier) => {
+              const active = selectedProtectionTiers.includes(tier.key);
+              return (
+                <MarketFilterChip
+                  key={tier.key}
+                  label={tier.label}
+                  imageIcon={tier.imageIcon}
+                  active={active}
+                  onPress={() => toggleStringFilter(setSelectedProtectionTiers, tier.key)}
                 />
               );
             })}
@@ -1572,10 +2466,10 @@ export default function TheMarketTab() {
         listing={selectedListing}
         card={detailCard ?? (selectedListing ? cardDetails[selectedListing.id] : null)}
         loading={detailLoading}
-        saved={selectedListing ? savedListingIds.includes(selectedListing.id) : false}
+        saved={selectedListing ? favoriteListingIds.includes(selectedListing.id) : false}
         currentUserId={currentUserId}
         onClose={closeDetail}
-        onSave={() => selectedListing && handleToggleSaved(selectedListing.id)}
+        onSave={selectedListing && selectedListing.user_id !== currentUserId ? () => handleToggleSaved(selectedListing) : undefined}
         onOffer={() => selectedListing && openOfferBuilder(selectedListing)}
         onBuyNow={handleBuyNow}
         onArchive={() => selectedListing && handleArchive(selectedListing)}
@@ -1587,21 +2481,28 @@ export default function TheMarketTab() {
 function MarketSearchSuggestions({
   visible,
   cards,
+  products,
   sets,
   sellers,
 }: {
   visible: boolean;
   cards: SearchSuggestion[];
+  products: SearchSuggestion[];
   sets: SearchSuggestion[];
   sellers: SearchSuggestion[];
 }) {
   const { theme } = useTheme();
   if (!visible) return null;
-  const hasSuggestions = cards.length || sets.length || sellers.length;
+  const hasSuggestions = cards.length || products.length || sets.length || sellers.length;
   if (!hasSuggestions) return null;
 
   const renderGroup = (title: string, items: SearchSuggestion[]) => {
     if (!items.length) return null;
+    const fallbackIcon: keyof typeof Ionicons.glyphMap = title === 'Sellers'
+      ? 'person-outline'
+      : title === 'Products'
+        ? 'cube-outline'
+        : 'albums-outline';
     return (
       <View style={{ gap: 7 }}>
         <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 14, fontWeight: '900', textTransform: 'uppercase' }}>
@@ -1649,7 +2550,7 @@ function MarketSearchSuggestions({
                   justifyContent: 'center',
                 }}
               >
-                <Ionicons name={title === 'Sellers' ? 'person-outline' : 'albums-outline'} size={17} color={theme.colors.primary} />
+                <Ionicons name={fallbackIcon} size={17} color={theme.colors.primary} />
               </View>
             )}
             <View style={{ flex: 1, minWidth: 0 }}>
@@ -1661,8 +2562,59 @@ function MarketSearchSuggestions({
                   {item.subtitle}
                 </Text>
               ) : null}
+              {item.sourceLabel ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 }}>
+                  <View
+                    style={{
+                      minHeight: 18,
+                      borderRadius: 999,
+                      borderWidth: 1,
+                      borderColor: theme.colors.primary + '24',
+                      backgroundColor: theme.colors.primary + '0F',
+                      justifyContent: 'center',
+                      paddingHorizontal: 7,
+                    }}
+                  >
+                    <Text style={{ color: theme.colors.primary, fontSize: 9.5, lineHeight: 12, fontWeight: '900' }} numberOfLines={1}>
+                      {item.sourceLabel}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
             </View>
-            {item.setLogoUrl && item.imageUri ? (
+            {item.primaryActionLabel || item.secondaryActionLabel ? (
+              <View style={{ alignItems: 'flex-end', gap: 5, maxWidth: 88 }}>
+                {item.primaryActionLabel ? (
+                  <Text style={{ color: theme.colors.primary, fontSize: 10.4, lineHeight: 13, fontWeight: '900', textAlign: 'right' }} numberOfLines={1}>
+                    {item.primaryActionLabel}
+                  </Text>
+                ) : null}
+                {item.secondaryActionLabel && item.onSecondaryPress ? (
+                  <TouchableOpacity
+                    onPress={(event) => {
+                      event.stopPropagation();
+                      item.onSecondaryPress?.();
+                    }}
+                    activeOpacity={0.78}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${item.secondaryActionLabel} for ${item.label}`}
+                    style={{
+                      minHeight: 24,
+                      borderRadius: 999,
+                      borderWidth: 1,
+                      borderColor: theme.colors.border,
+                      backgroundColor: theme.colors.surface,
+                      justifyContent: 'center',
+                      paddingHorizontal: 7,
+                    }}
+                  >
+                    <Text style={{ color: theme.colors.text, fontSize: 9.8, lineHeight: 12, fontWeight: '900' }} numberOfLines={1}>
+                      {item.secondaryActionLabel}
+                    </Text>
+                  </TouchableOpacity>
+                ) : null}
+              </View>
+            ) : item.setLogoUrl && item.imageUri ? (
               <Image source={{ uri: item.setLogoUrl }} resizeMode="contain" style={{ width: 36, height: 20 }} />
             ) : null}
           </TouchableOpacity>
@@ -1682,7 +2634,8 @@ function MarketSearchSuggestions({
         gap: 11,
       }}
     >
-      {renderGroup('Cards', cards)}
+      {renderGroup('Cards and catalogue', cards)}
+      {renderGroup('Products', products)}
       {renderGroup('Sets', sets)}
       {renderGroup('Sellers', sellers)}
     </View>
@@ -1834,7 +2787,7 @@ function ListingDetailModal({
   saved?: boolean;
   currentUserId: string;
   onClose: () => void;
-  onSave: () => void;
+  onSave?: () => void;
   onOffer: () => void;
   onBuyNow: () => void;
   onArchive: () => void;
@@ -1922,30 +2875,32 @@ function ListingDetailModal({
                 Listing detail
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={onSave}
-              accessibilityRole="button"
-              accessibilityLabel={saved ? 'Remove from Favorites' : 'Add to Favorites'}
-              accessibilityState={{ selected: saved }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: 15,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: saved ? `${theme.colors.primary}14` : theme.colors.surface,
-                borderWidth: 1,
-                borderColor: saved ? `${theme.colors.primary}55` : theme.colors.border,
-              }}
-            >
-              <Image
-                source={stackrIcons.favorite}
-                resizeMode="contain"
-                style={{ width: 23, height: 23, opacity: saved ? 1 : 0.58 }}
-                accessibilityIgnoresInvertColors
-              />
-            </TouchableOpacity>
+            {!isMine && onSave ? (
+              <TouchableOpacity
+                onPress={onSave}
+                accessibilityRole="button"
+                accessibilityLabel={saved ? 'Remove from favorited listings' : 'Add to favorited listings'}
+                accessibilityState={{ selected: saved }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 15,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: saved ? `${theme.colors.primary}14` : theme.colors.surface,
+                  borderWidth: 1,
+                  borderColor: saved ? `${theme.colors.primary}55` : theme.colors.border,
+                }}
+              >
+                <Image
+                  source={stackrIcons.favorite}
+                  resizeMode="contain"
+                  style={{ width: 24, height: 24, opacity: saved ? 1 : 0.72 }}
+                  accessibilityIgnoresInvertColors
+                />
+              </TouchableOpacity>
+            ) : null}
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16, paddingBottom: 22 + insets.bottom }}>
@@ -2016,7 +2971,7 @@ function ListingDetailModal({
                   {title}
                 </Text>
                 <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 4 }}>
-                  {[setName, card?.number ? `#${card.number}` : null, card?.rarity].filter(Boolean).join(' · ') || 'Collector listing'}
+                  {[setName, card?.number ? `#${card.number}` : null].filter(Boolean).join(' · ') || 'Collector listing'}
                 </Text>
               </View>
 
@@ -2062,23 +3017,64 @@ function ListingDetailModal({
                 onPress={() => listing.user_id && router.push({ pathname: '/user/[id]', params: { id: listing.user_id } })}
               />
 
-              <ProtectionDetail tier={tier} />
+              {tier ? (
+                <ProtectionDetail tier={tier} />
+              ) : (
+                <View
+                  style={{
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                    backgroundColor: theme.colors.surface,
+                    padding: 12,
+                    gap: 7,
+                  }}
+                >
+                  <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>
+                    {categoryType === 'graded_slab' ? 'Professional grade' : isSealedListing(listing, card) ? 'Sold as seen' : 'Seller evidence'}
+                  </Text>
+                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700' }}>
+                    {categoryType === 'graded_slab'
+                      ? 'The grader label is the condition source. Check the slab photos, certification label and case notes before making an offer.'
+                      : isSealedListing(listing, card)
+                        ? 'Sealed products do not use Bronze, Silver or Gold protection tiers. Check actual-item photos, packaging notes and any seal or wrap close-ups before buying.'
+                        : 'This item is listed from seller photos and factual item details, without a raw-card protection tier.'}
+                  </Text>
+                </View>
+              )}
 
               {requiresSilverAgreement(listing) ? (
                 <View
                   style={{
                     borderRadius: 14,
                     borderWidth: 1,
-                    borderColor: '#F59E0B',
-                    backgroundColor: '#FEF3C7',
+                    borderColor: `${theme.colors.primary}28`,
+                    backgroundColor: theme.colors.surface,
                     padding: 12,
-                    gap: 5,
+                    flexDirection: 'row',
+                    gap: 10,
                   }}
                 >
-                  <Text style={{ color: '#92400E', fontSize: 13, fontWeight: '900' }}>Silver agreement required</Text>
-                  <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, fontWeight: '700' }}>
-                    This listing uses Silver Protection by agreement. Silver relies on AI-assisted condition evidence and photos, not Gold AGS verification, so both parties must agree before proceeding.
-                  </Text>
+                  <View
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 12,
+                      backgroundColor: `${theme.colors.primary}10`,
+                      borderWidth: 1,
+                      borderColor: `${theme.colors.primary}20`,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Image source={stackrIcons.protectionSilver} resizeMode="contain" style={{ width: 22, height: 22 }} accessibilityIgnoresInvertColors />
+                  </View>
+                  <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+                    <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>Silver protection agreement</Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700' }}>
+                      This listing uses Silver Protection by agreement. It relies on AI-assisted condition evidence and photos, so both collectors must confirm before proceeding.
+                    </Text>
+                  </View>
                 </View>
               ) : null}
 
@@ -2107,9 +3103,21 @@ function ListingDetailModal({
               </View>
 
               {PRICE_API_URL ? null : (
-                <View style={{ borderRadius: 14, borderWidth: 1, borderColor: '#F59E0B55', backgroundColor: '#FFFBEB', padding: 12 }}>
-                  <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, fontWeight: '800' }}>
-                    Live pricing is not configured in this build. Stored estimates may be stale.
+                <View
+                  style={{
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: `${theme.colors.primary}22`,
+                    backgroundColor: theme.colors.surface,
+                    padding: 12,
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    gap: 9,
+                  }}
+                >
+                  <Ionicons name="information-circle-outline" size={18} color={theme.colors.primary} style={{ marginTop: 1 }} />
+                  <Text style={{ flex: 1, minWidth: 0, color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '800' }}>
+                    Stored market estimates are shown while live pricing is unavailable.
                   </Text>
                 </View>
               )}

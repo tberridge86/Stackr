@@ -6,8 +6,9 @@ import path from 'node:path';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const MODEL = process.env.SCANNER_PACK_MODEL || 'Xenova/clip-vit-base-patch32';
-const PACK_ID = process.env.SCANNER_PACK_ID || 'en-clip-base-v1';
-const OUT_DIR = process.env.SCANNER_PACK_OUT_DIR || 'backend/data/scanner-packs/en-clip-base-v1';
+const PACK_LANGUAGE = process.env.SCANNER_PACK_LANGUAGE || 'en';
+const PACK_ID = process.env.SCANNER_PACK_ID || `${PACK_LANGUAGE}-clip-base-v1`;
+const OUT_DIR = process.env.SCANNER_PACK_OUT_DIR || `backend/data/scanner-packs/${PACK_ID}`;
 const PAGE_SIZE = 250;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -19,6 +20,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 type CardRow = {
   id: string;
   name: string;
+  language: string | null;
   number: string | null;
   rarity: string | null;
   set_id: string | null;
@@ -41,6 +43,13 @@ function normalizeVector(values: number[]) {
   for (const value of values) norm += value * value;
   norm = Math.sqrt(norm) || 1;
   return values.map((value) => value / norm);
+}
+
+function matchesPackLanguage(cardLanguage?: string | null) {
+  const language = String(cardLanguage ?? 'unknown');
+  if (PACK_LANGUAGE === 'all') return true;
+  if (PACK_LANGUAGE === 'zh') return language === 'zh' || language === 'zh-Hans' || language === 'zh-Hant';
+  return language === PACK_LANGUAGE;
 }
 
 function quantizeUnitVector(values: number[]) {
@@ -75,7 +84,7 @@ async function fetchCards(ids: string[]) {
     const batch = ids.slice(index, index + PAGE_SIZE);
     const { data, error } = await supabase
       .from('pokemon_cards')
-      .select('id, name, number, rarity, set_id, image_small, raw_data')
+      .select('id, name, language, number, rarity, set_id, image_small, raw_data')
       .in('id', batch);
 
     if (error) throw error;
@@ -95,7 +104,11 @@ async function main() {
   const cardMap = await fetchCards(embeddings.map((row) => row.card_id));
   const rows = embeddings
     .map((embeddingRow) => ({ embeddingRow, card: cardMap.get(embeddingRow.card_id) }))
-    .filter((row): row is { embeddingRow: EmbeddingRow; card: CardRow } => Boolean(row.card));
+    .filter((row): row is { embeddingRow: EmbeddingRow; card: CardRow } => Boolean(row.card))
+    .filter((row) => matchesPackLanguage(row.card.language));
+  if (rows.length === 0) {
+    throw new Error(`No embedded cards found for scanner pack language ${PACK_LANGUAGE}`);
+  }
 
   const firstEmbedding = rows[0].embeddingRow.embedding;
   if (!Array.isArray(firstEmbedding) || firstEmbedding.length === 0) {
@@ -116,6 +129,7 @@ async function main() {
     return {
       id: row.card.id,
       name: row.card.name,
+      language: row.card.language ?? PACK_LANGUAGE,
       setId: row.card.set_id,
       setName: row.card.raw_data?.set?.name ?? row.card.set_id,
       number: row.card.number ?? '',
@@ -127,7 +141,7 @@ async function main() {
 
   const manifest = {
     id: PACK_ID,
-    language: 'en',
+    language: PACK_LANGUAGE,
     model: MODEL,
     quantization: 'int8-normalized',
     dimensions,

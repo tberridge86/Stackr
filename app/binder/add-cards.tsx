@@ -19,6 +19,7 @@ import { addCardsToBinder, fetchBinderById } from '../../lib/binders';
 import { searchPokemonCards, type PokemonSearchCard } from '../../lib/pokemonTcgSearch';
 import { normalizePokemonCardLanguage, type PokemonCardLanguage } from '../../lib/pokemonTcg';
 import { getDisplaySetName } from '../../lib/setDisplay';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 
 // ===============================
 // CONSTANTS
@@ -37,6 +38,42 @@ const cardShadow = {
   elevation: 3,
 };
 
+const cleanCardText = (value: unknown) => {
+  const text = String(value ?? '').trim();
+  return text.length ? text : null;
+};
+
+const containsCjkText = (value: unknown) => /[\u3040-\u30ff\u3400-\u9fff]/.test(String(value ?? ''));
+
+const getCardPrimaryName = (item: PokemonSearchCard) =>
+  cleanCardText(item.englishName)
+  ?? (!containsCjkText(item.name) ? cleanCardText(item.name) : null)
+  ?? cleanCardText(item.name)
+  ?? 'Unknown card';
+
+const getCardSupportingName = (item: PokemonSearchCard, primaryName: string) => {
+  const englishName = cleanCardText(item.englishName);
+  const localName = cleanCardText(item.localName);
+  if (containsCjkText(primaryName) && englishName && englishName !== primaryName) return englishName;
+  if (localName && localName !== primaryName && containsCjkText(localName)) return localName;
+  return null;
+};
+
+const getSetPrimaryName = (item: PokemonSearchCard, fallbackName: string | null) =>
+  cleanCardText(item.set?.englishName)
+  ?? (!containsCjkText(fallbackName) ? cleanCardText(fallbackName) : null)
+  ?? cleanCardText(fallbackName)
+  ?? cleanCardText(item.set?.id)
+  ?? 'Unknown set';
+
+const getSetSupportingName = (item: PokemonSearchCard, primaryName: string) => {
+  const englishName = cleanCardText(item.set?.englishName);
+  const localName = cleanCardText(item.set?.localName);
+  if (containsCjkText(primaryName) && englishName && englishName !== primaryName) return englishName;
+  if (localName && localName !== primaryName && containsCjkText(localName)) return localName;
+  return null;
+};
+
 // ===============================
 // MAIN COMPONENT
 // ===============================
@@ -52,6 +89,7 @@ export default function AddCardsToBinderScreen() {
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
   const [binderLanguage, setBinderLanguage] = useState<PokemonCardLanguage>('en');
+  const [binderType, setBinderType] = useState<'official' | 'custom'>('custom');
 
   // Persists selections across searches
   const [selectedCards, setSelectedCards] = useState<
@@ -69,10 +107,16 @@ export default function AddCardsToBinderScreen() {
 
     fetchBinderById(binderId)
       .then((binder) => {
-        if (!cancelled) setBinderLanguage(normalizePokemonCardLanguage(binder?.language));
+        if (!cancelled) {
+          setBinderLanguage(normalizePokemonCardLanguage(binder?.language));
+          setBinderType(binder?.type === 'official' ? 'official' : 'custom');
+        }
       })
       .catch(() => {
-        if (!cancelled) setBinderLanguage('en');
+        if (!cancelled) {
+          setBinderLanguage('en');
+          setBinderType('custom');
+        }
       });
 
     return () => {
@@ -113,14 +157,16 @@ export default function AddCardsToBinderScreen() {
 
     try {
       setSearching(true);
-      const data = await searchPokemonCards(searchTerm, { language: binderLanguage });
+      const data = await searchPokemonCards(searchTerm, {
+        language: binderType === 'official' ? binderLanguage : 'all',
+      });
       setResults(data);
     } catch (error: any) {
       Alert.alert('Search error', error?.message ?? 'Could not search cards.');
     } finally {
       setSearching(false);
     }
-  }, [binderLanguage, query]);
+  }, [binderLanguage, binderType, query]);
 
   // Debounced search on type
   const handleQueryChange = useCallback((text: string) => {
@@ -215,6 +261,14 @@ export default function AddCardsToBinderScreen() {
       set: item.set,
       rawData: (item as any).raw_data,
     });
+    const displayName = getCardPrimaryName(item);
+    const supportingName = getCardSupportingName(item, displayName);
+    const displaySetName = getSetPrimaryName(item, setName);
+    const supportingSetName = getSetSupportingName(item, displaySetName);
+    const setLine = [
+      displaySetName,
+      item.number ? `#${item.number}` : null,
+    ].filter(Boolean).join(' - ');
 
     return (
       <TouchableOpacity
@@ -225,7 +279,7 @@ export default function AddCardsToBinderScreen() {
         })}
         delayLongPress={320}
         accessibilityRole="button"
-        accessibilityLabel={`${item.name ?? 'Card'}. Tap to select for binder. Hold for details.`}
+        accessibilityLabel={`${displayName}. Tap to select for binder. Hold for details.`}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -242,37 +296,50 @@ export default function AddCardsToBinderScreen() {
         activeOpacity={0.8}
       >
         {/* Card image */}
-        {item.images?.small ? (
-          <Image
-            source={{ uri: item.images.small }}
-            style={{ width: 52, height: 72, borderRadius: 8, marginRight: 12 }}
-            resizeMode="contain"
-          />
-        ) : (
-          <View style={{
-            width: 52, height: 72,
-            borderRadius: 8, marginRight: 12,
-            backgroundColor: theme.colors.surface,
-            alignItems: 'center', justifyContent: 'center',
-          }}>
+        <View style={{
+          width: 52,
+          height: 72,
+          borderRadius: 8,
+          marginRight: 12,
+          overflow: 'hidden',
+          backgroundColor: theme.colors.surface,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          {item.images?.small ? (
+            <Image
+              source={{ uri: item.images.small }}
+              style={{ width: '100%', height: '100%', borderRadius: 8 }}
+              resizeMode="contain"
+            />
+          ) : (
             <Text style={{ color: theme.colors.textSoft, fontSize: 10 }}>No image</Text>
-          </View>
-        )}
+          )}
+          <RaritySymbol
+            rarity={item.rarity}
+            size={12}
+            style={RARITY_SYMBOL_CARD_OVERLAY}
+          />
+        </View>
 
         {/* Card info */}
         <View style={{ flex: 1 }}>
           <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>
-            {item.name ?? 'Unknown card'}
+            {displayName}
           </Text>
-          <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 13 }} numberOfLines={1}>
-            {setName}
-            {item.number ? ` • #${item.number}` : ''}
-          </Text>
-          {!!item.rarity && (
-            <Text style={{ color: '#FFD166', marginTop: 4, fontSize: 12, fontWeight: '700' }}>
-              {item.rarity}
+          {supportingName ? (
+            <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 12, fontWeight: '700' }} numberOfLines={1}>
+              {supportingName}
             </Text>
-          )}
+          ) : null}
+          <Text style={{ color: theme.colors.textSoft, marginTop: 4, fontSize: 13 }} numberOfLines={1}>
+            {setLine}
+          </Text>
+          {supportingSetName ? (
+            <Text style={{ color: theme.colors.textSoft, marginTop: 1, fontSize: 11 }} numberOfLines={1}>
+              {supportingSetName}
+            </Text>
+          ) : null}
         </View>
 
         {/* Checkbox */}
@@ -307,8 +374,8 @@ export default function AddCardsToBinderScreen() {
   // ===============================
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top', 'bottom', 'left', 'right']}>
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['bottom', 'left', 'right']}>
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: Math.max(20, insets.top + 12) }}>
 
         {/* Header */}
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>

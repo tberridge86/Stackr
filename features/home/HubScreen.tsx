@@ -107,6 +107,7 @@ type HomeBinderCardGroup = {
 
 type HomeCollectionCacheSnapshot = {
   cachedAt: number;
+  mintyDataRefreshedAt?: string | null;
   chartRange: ChartRange;
   chartData: number[];
   collectionTotal: number;
@@ -150,7 +151,7 @@ const HUB_TIP_ITEMS = [
   {
     icon: 'grid-outline' as const,
     title: 'Quick actions',
-    body: 'Scan a card, check values, and build fair prices quickly.',
+    body: 'Search cards, check values, and build fair prices quickly.',
   },
 ];
 
@@ -339,6 +340,36 @@ const smoothTrendValues = (values: number[], range: ChartRange) => {
   });
 };
 
+const buildMintyRefreshSignature = ({
+  chartRange,
+  total,
+  change,
+  percent,
+  ownedCount,
+  activeBinder,
+  duplicateCount,
+  missingCards,
+}: {
+  chartRange: ChartRange;
+  total: number;
+  change: number;
+  percent: number;
+  ownedCount: number;
+  activeBinder?: HomeBinderSummary | null;
+  duplicateCount: number;
+  missingCards: HomeCardPreview[];
+}) => [
+  chartRange,
+  total.toFixed(2),
+  change.toFixed(2),
+  percent.toFixed(2),
+  ownedCount,
+  activeBinder?.id ?? 'no-binder',
+  activeBinder?.missing ?? 0,
+  duplicateCount,
+  missingCards.slice(0, 4).map((card) => `${card.cardId}:${card.setId ?? ''}`).join(','),
+].join('|');
+
 const getOwnedQuantity = (card: BinderCardRecord) =>
   card.owned ? Math.max(1, Number(card.owned_quantity ?? 1)) : 0;
 
@@ -397,6 +428,10 @@ const buildBinderSummaries = (groups: HomeBinderCardGroup[], customNameArtKeys: 
       name: binder.name,
       type: binder.type ?? null,
       sourceSetId: binder.source_set_id ?? null,
+      sourceSetLanguage: binder.language ?? null,
+      sourceSetLogoUrl: binder.source_set_logo_url ?? null,
+      sourceSetSymbolUrl: binder.source_set_symbol_url ?? null,
+      sourceSetCoverUrl: binder.source_set_cover_url ?? null,
       customNameArtKey: binder.type === 'custom' ? customNameArtKeys[binder.id] ?? null : null,
       cardMode: binder.card_mode ?? null,
       masterSetEnabled: cards.some((card) => card.__masterSetEnabled),
@@ -489,7 +524,7 @@ const activityIconForType = (type?: string | null): keyof typeof Ionicons.glyphM
   if (normalized.includes('trade')) return 'swap-horizontal-outline';
   if (normalized.includes('sale') || normalized.includes('sold')) return 'receipt-outline';
   if (normalized.includes('binder_add') || normalized.includes('add') || normalized.includes('increased')) return 'add-circle-outline';
-  if (normalized.includes('wishlist') || normalized.includes('favorite') || normalized.includes('favourite')) return 'heart-outline';
+  if (normalized.includes('wishlist') || normalized.includes('favorite') || normalized.includes('favourite')) return 'sparkles-outline';
   return 'sparkles-outline';
 };
 
@@ -671,6 +706,7 @@ export default function HubScreen() {
   const [apiMintyInsight, setApiMintyInsight] = useState<MintyInsight | null>(null);
   const [mintyInsightRefreshing, setMintyInsightRefreshing] = useState(false);
   const [mintyInsightError, setMintyInsightError] = useState<string | null>(null);
+  const [mintyDataRefreshedAt, setMintyDataRefreshedAt] = useState<string | null>(null);
   // Stats
   const [ownedCardCount, setOwnedCardCount] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -685,6 +721,7 @@ export default function HubScreen() {
   const hasLoadedCollectionValueRef = useRef(false);
   const cachedHomeSnapshotAppliedRef = useRef(false);
   const previousChartRangeRef = useRef<ChartRange>(chartRange);
+  const mintyMarketSignatureRef = useRef<string | null>(null);
 
   // ===============================
   // SUBMIT BUG REPORT
@@ -803,6 +840,12 @@ export default function HubScreen() {
     setMintyInsightRefreshing(false);
   }, []);
 
+  const refreshMintyForMarketSignature = useCallback((signature: string) => {
+    if (!signature || mintyMarketSignatureRef.current === signature) return;
+    mintyMarketSignatureRef.current = signature;
+    void loadApiMintyInsight(true);
+  }, [loadApiMintyInsight]);
+
   const resetMintyPreferences = useCallback(() => {
     setMintyPersonalisation(DEFAULT_MINTY_PERSONALISATION_SETTINGS);
     setMintyFeedback(DEFAULT_MINTY_FEEDBACK_PROFILE);
@@ -826,7 +869,7 @@ export default function HubScreen() {
 
       const [notificationsResult] = await Promise.all([
         user
-          ? supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false)
+          ? supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false)
           : Promise.resolve({ count: 0 }),
       ]);
 
@@ -941,6 +984,10 @@ export default function HubScreen() {
       setActiveBinder(snapshot.activeBinder ?? null);
       setDuplicateSummary(snapshot.duplicateSummary ?? EMPTY_DUPLICATE_SUMMARY);
       setMissingCards(Array.isArray(snapshot.missingCards) ? snapshot.missingCards : []);
+      setMintyDataRefreshedAt(
+        snapshot.mintyDataRefreshedAt
+          ?? (typeof snapshot.cachedAt === 'number' ? new Date(snapshot.cachedAt).toISOString() : null)
+      );
       if (snapshot.chartRange === chartRange && Array.isArray(snapshot.chartData)) {
         setChartData(snapshot.chartData);
       }
@@ -1113,7 +1160,7 @@ export default function HubScreen() {
         }
       }
 
-      const sharedSummary = await getCollectionSummary({ forceRefresh: true }).catch((error) => {
+      const sharedSummary = await getCollectionSummary({ forceRefresh: true, staleWhileRefresh: true }).catch((error) => {
         console.log('Home shared collection summary failed:', error?.message ?? error);
         return null;
       });
@@ -1134,12 +1181,15 @@ export default function HubScreen() {
       if (!ownedUnits.length) {
         const fallbackTotal = sharedSummary?.collectionValue ?? 0;
         const fallbackChartData = buildFallbackTrend(fallbackTotal, chartRange, 0);
+        const refreshedAt = new Date().toISOString();
         setCollectionTotal(fallbackTotal);
         setCollectionChangeAmount(0);
         setCollectionChangePercent(0);
         setChartData(fallbackChartData);
+        setMintyDataRefreshedAt(refreshedAt);
         setCollectionValueError(null);
         saveHomeCollectionCache({
+          mintyDataRefreshedAt: refreshedAt,
           chartRange,
           chartData: fallbackChartData,
           collectionTotal: fallbackTotal,
@@ -1150,6 +1200,16 @@ export default function HubScreen() {
           duplicateSummary: nextDuplicateSummary,
           missingCards: nextMissingCards,
         });
+        refreshMintyForMarketSignature(buildMintyRefreshSignature({
+          chartRange,
+          total: fallbackTotal,
+          change: 0,
+          percent: 0,
+          ownedCount: sharedOwnedCount,
+          activeBinder: nextActiveBinder,
+          duplicateCount: nextDuplicateSummary.count,
+          missingCards: nextMissingCards,
+        }));
         return;
       }
 
@@ -1292,13 +1352,16 @@ export default function HubScreen() {
       console.log('Hub price chart debug:', debugText);
 
       const displayTotalLatest = sharedSummary?.collectionValue ?? totalLatest;
+      const refreshedAt = new Date().toISOString();
 
       setCollectionTotal(displayTotalLatest);
       setCollectionChangeAmount(change);
       setCollectionChangePercent(percent);
       setChartData(displayChartValues);
+      setMintyDataRefreshedAt(refreshedAt);
       setCollectionValueError(null);
       saveHomeCollectionCache({
+        mintyDataRefreshedAt: refreshedAt,
         chartRange,
         chartData: displayChartValues,
         collectionTotal: displayTotalLatest,
@@ -1309,6 +1372,16 @@ export default function HubScreen() {
         duplicateSummary: nextDuplicateSummary,
         missingCards: nextMissingCards,
       });
+      refreshMintyForMarketSignature(buildMintyRefreshSignature({
+        chartRange,
+        total: displayTotalLatest,
+        change,
+        percent,
+        ownedCount: sharedOwnedCount,
+        activeBinder: nextActiveBinder,
+        duplicateCount: nextDuplicateSummary.count,
+        missingCards: nextMissingCards,
+      }));
 
       // Keep daily movement in the hero and Value History; do not duplicate it in activity.
       const shouldPostValueActivity = valuePostKeyRef.current === '__post_value_activity__';
@@ -1355,7 +1428,7 @@ export default function HubScreen() {
       hasLoadedCollectionValueRef.current = true;
       setCollectionValueLoading(false);
     }
-  }, [applyCachedHomeCollection, chartRange, saveHomeCollectionCache]);
+  }, [applyCachedHomeCollection, chartRange, refreshMintyForMarketSignature, saveHomeCollectionCache]);
 
   const loadCollectionValueRef = useRef(loadCollectionValue);
 
@@ -1698,6 +1771,7 @@ export default function HubScreen() {
     percentageChange: collectionChangePercent,
     changePeriodLabel: chartRange,
     trendData: chartData,
+    dataRefreshedAt: mintyDataRefreshedAt,
     ownedCount: ownedCardCount,
     activeBinder,
     duplicateSummary,
@@ -1715,6 +1789,7 @@ export default function HubScreen() {
     collectionTotal,
     duplicateSummary,
     marketplaceMatches.length,
+    mintyDataRefreshedAt,
     mintyFeedback,
     mintyPersonalisation,
     missingCards,
@@ -1722,6 +1797,28 @@ export default function HubScreen() {
     recentActivity,
   ]);
   const mintyInsight = apiMintyInsight ?? localMintyInsight;
+
+  const openMintyAction = useCallback((insight: MintyInsight) => {
+    switch (insight.recommended_route) {
+      case 'complete_with_singles':
+        router.push('/binder');
+        return;
+      case 'trade_duplicates':
+        router.push({ pathname: '/(tabs)/market', params: { mode: 'trade' } } as any);
+        return;
+      case 'watch_sealed_entry':
+        router.push('/(tabs)/market' as any);
+        return;
+      case 'set_price_alert':
+        router.push('/(tabs)/search' as any);
+        return;
+      case 'watch_single_price':
+      case 'protect_high_value_card':
+      case 'hold_and_watch':
+      default:
+        router.push('/value-history');
+    }
+  }, []);
 
   const openActivityItem = useCallback((item: HomeActivityItem) => {
     if (item.id === 'scan-empty') {
@@ -1890,7 +1987,7 @@ export default function HubScreen() {
                 adjustsFontSizeToFit
                 minimumFontScale={0.82}
               >
-                {'Collect.\nTrade.\nProtect'}
+                {'Collect.\nTrade.\nProtect.'}
               </Text>
           </View>
 
@@ -1952,7 +2049,7 @@ export default function HubScreen() {
         </View>
 
         {/* VALUE TRACKER */}
-        <View style={{ marginBottom: 16 }}>
+        <View style={{ marginBottom: 12 }}>
           <ValueTrackerCard
             totalValue={collectionTotal}
             currency="GBP"
@@ -1971,6 +2068,7 @@ export default function HubScreen() {
             onPress={() => router.push('/value-history')}
             onRetry={loadCollectionValue}
             onEmptyAction={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
+            onMintyAction={openMintyAction}
             onMintyInsightFeedback={handleMintyInsightFeedback}
             onMintySettingsPress={() => setMintySettingsOpen(true)}
           />
@@ -1979,8 +2077,8 @@ export default function HubScreen() {
         <HomeActionsRow
           ownedCount={ownedCardCount}
           listingCount={recentListings.length}
-          onScan={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
           onBinders={() => router.push('/binder')}
+          onScan={() => router.push('/scan')}
           onSearch={() => router.push('/(tabs)/search' as any)}
           onBuildTrade={() => router.push({ pathname: '/(tabs)/market', params: { mode: 'trade' } } as any)}
           onCommunity={() => router.push('/(tabs)/community' as any)}
@@ -2004,7 +2102,6 @@ export default function HubScreen() {
           onDuplicates={() => router.push('/duplicates' as any)}
           onChase={() => openChaseSheet()}
           onMarketMovers={() => router.push('/value-history')}
-          onScan={() => router.push({ pathname: '/scan', params: { mode: 'market' } })}
         />
 
         <RecentActivitySection
@@ -2054,7 +2151,7 @@ export default function HubScreen() {
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 24, fontWeight: '900' }}>Minty personalisation</Text>
                 <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 4 }}>
-                  Control which collection signals Minty can use. Feedback changes what Minty shows next.
+                  Choose what Minty can look at. Your feedback helps shape the next advice.
                 </Text>
               </View>
               <TouchableOpacity
@@ -2067,19 +2164,19 @@ export default function HubScreen() {
             </View>
 
             <View style={{ borderRadius: 18, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface, paddingHorizontal: 14, marginTop: 8 }}>
-              {renderMintySettingRow('personalisedInsights', 'Personalised insights', 'Use your collection goals to rank Minty insights.')}
+              {renderMintySettingRow('personalisedInsights', 'Personalised advice', 'Use your collection goals to pick the most useful Minty tips.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('usePurchaseHistory', 'Use purchase history', 'Learn typical spend and raw, sealed or graded preference.')}
+              {renderMintySettingRow('usePurchaseHistory', 'Use purchase history', 'Learn your usual budget and the card types you prefer.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('useChaseList', 'Use chase list', 'Connect market signals to wanted cards and watchlist cards.')}
+              {renderMintySettingRow('useChaseList', 'Use chase list', 'Connect advice to cards you are hunting.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('useViewingHistory', 'Use viewing history', 'Allow repeated views and searches to influence relevance.')}
+              {renderMintySettingRow('useViewingHistory', 'Use viewing history', 'Notice cards and searches you keep coming back to.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('useTradeHistory', 'Use trade history', 'Let duplicates and trade activity shape trade-up suggestions.')}
+              {renderMintySettingRow('useTradeHistory', 'Use trade history', 'Suggest ways to use duplicates for better cards.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('usePriceAlerts', 'Use price alerts', 'Prioritise watch points that suit your alert behaviour.')}
+              {renderMintySettingRow('usePriceAlerts', 'Use price alerts', 'Prioritise cards you already want price help with.')}
               <View style={{ height: 1, backgroundColor: theme.colors.border }} />
-              {renderMintySettingRow('useMarketCatalysts', 'Use market catalysts', 'Factor in upcoming sets, events, game news and anniversary windows.')}
+              {renderMintySettingRow('useMarketCatalysts', 'Use events and releases', 'Consider upcoming sets, events, game news, and anniversary dates.')}
             </View>
 
             <TouchableOpacity

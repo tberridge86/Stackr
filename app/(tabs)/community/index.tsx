@@ -24,7 +24,8 @@ import { supabase } from '../../../lib/supabase';
 import { getMyFriends } from '../../../lib/friends';
 import { useProfile } from '../../../components/profile-context';
 import { StackrBackdrop, StackrHeroBackdrop } from '../../../components/StackrBackdrop';
-import { StackrCardActionIcon, StackrPageTitle } from '../../../components/StackrScreen';
+import { StackrCardActionIcon } from '../../../components/StackrScreen';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../../components/RaritySymbol';
 import { stackrIcons } from '../../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../../lib/stackrSizing';
 
@@ -86,6 +87,7 @@ type BinderOption = {
   is_public?: boolean | null;
   cover_key?: string | null;
   source_set_id?: string | null;
+  language?: string | null;
 };
 
 type FlexPickerMode = 'binder' | 'chase' | 'trade' | 'slab' | null;
@@ -208,7 +210,7 @@ const COMMUNITY_CHANNELS: Record<Exclude<SocialTab, 'Local' | 'News'>, Community
   Flex: [
     { key: 'all', label: 'All flexes', shortLabel: 'All', icon: 'sparkles-outline', prompt: 'Post a card, binder, slab or milestone you want collectors to react to.' },
     { key: 'binder_flex', label: 'Binder Flex', icon: 'albums-outline', prompt: 'Show a binder page, master set push or completion progress.', postType: 'binder_showcase' },
-    { key: 'chase_flex', label: 'Chase Cards', icon: 'flame-outline', prompt: 'Show the chase, the pull, or the card you finally landed.', postType: 'card_showcase' },
+    { key: 'chase_flex', label: 'Chase Cards', icon: 'sparkles-outline', prompt: 'Show the chase, the pull, or the card you finally landed.', postType: 'card_showcase' },
     { key: 'slab_flex', label: 'Slabs', icon: 'id-card-outline', prompt: 'Share a slab return, grade result or label win.', postType: 'slab_flex' },
     { key: 'milestone', label: 'Milestones', icon: 'trophy-outline', prompt: 'Celebrate a completed set, grail pickup, value milestone or trade win.', postType: 'milestone' },
   ],
@@ -240,7 +242,7 @@ const DISCUSSION_STARTERS: Record<CommunityChannelKey, string[]> = {
   social: ['What are you collecting next?', 'What are you sorting today?', 'Any binder plans?'],
   question: ['Anyone know the variant?', 'Would you grade this?', 'What would you check first?'],
   flex: ['Rate the pickup', 'Keep or move?', 'What page does this belong on?'],
-  binder_flex: ['Favourite page?', 'What is missing?', 'Master set or normal set?'],
+  binder_flex: ['Showcase page?', 'What is missing?', 'Master set or normal set?'],
   chase_flex: ['Worth the chase?', 'Hold or trade up?', 'What would you pair with it?'],
   slab_flex: ['Grade match your expectation?', 'Crack, cross or hold?', 'Label choice working?'],
   milestone: ['Next goal?', 'Best card in the run?', 'How long did it take?'],
@@ -517,7 +519,7 @@ export default function CommunityScreen() {
       if (binderIds.length) {
         const { data: binderData } = await supabase
           .from('binders')
-          .select('id, name, type, is_public, cover_key, source_set_id')
+          .select('id, name, type, is_public, cover_key, source_set_id, language')
           .in('id', binderIds);
 
         setBindersById(Object.fromEntries((binderData ?? []).map((binder) => [binder.id, binder as BinderOption])));
@@ -542,7 +544,7 @@ export default function CommunityScreen() {
 
       const { data: binderData, error: binderError } = await supabase
         .from('binders')
-        .select('id, name, type, is_public, cover_key, source_set_id')
+        .select('id, name, type, is_public, cover_key, source_set_id, language')
         .eq('user_id', user.id);
 
       if (binderError) throw binderError;
@@ -1102,6 +1104,7 @@ export default function CommunityScreen() {
         <BinderArtwork
           coverKey={binder.cover_key}
           sourceSetId={binder.type === 'official' ? binder.source_set_id : null}
+          sourceSetLanguage={binder.type === 'official' ? binder.language : null}
           setName={binder.type === 'official' ? binder.name : null}
           fallbackColor={theme.colors.primary}
           width={compact ? frameWidth : 70}
@@ -1134,14 +1137,10 @@ export default function CommunityScreen() {
         ? 'Sharing a binder flex. What should I chase next?'
         : channel.prompt;
     const cardTagLabel = postTab === 'Trades'
-      ? 'Trade discussion'
-      : card?.raw_data?.rarity === 'Rare Holo'
-        ? 'Holo pull'
-        : card?.raw_data?.rarity === 'Ultra Rare'
-          ? 'Ultra Rare'
-          : card?.raw_data?.rarity === 'Secret Rare'
-            ? 'Secret Rare'
-            : 'From collection';
+      ? 'Trade card'
+      : card?.raw_data?.rarity
+        ? String(card.raw_data.rarity)
+        : 'Collection card';
 
     return (
   <View style={styles.postCard}>
@@ -1165,9 +1164,9 @@ export default function CommunityScreen() {
         </View>
       </View>
 
-      <View style={[styles.channelPill, postTab === 'Trades' && styles.channelPillTrade]}>
-        <Ionicons name={channel.icon} size={13} color={postTab === 'Trades' ? '#A15C07' : theme.colors.primary} />
-        <Text style={[styles.channelPillText, postTab === 'Trades' && styles.channelPillTextTrade]} numberOfLines={1}>
+      <View style={styles.channelPill}>
+        <View style={styles.channelPillMark} />
+        <Text style={styles.channelPillText} numberOfLines={1}>
           {channel.shortLabel ?? channel.label}
         </Text>
       </View>
@@ -1184,51 +1183,38 @@ export default function CommunityScreen() {
  
         <Text style={styles.body}>{item.body || fallbackBody}</Text>
 
-        {false && item.post_type === 'card_showcase' && (
-  <Text style={styles.body}>
-    {item.body || 'Just added this to my collection 👀'}
-  </Text>
-)}
-
-{false && item.post_type === 'general' && item.body && (
-  <Text style={styles.body}>{item.body}</Text>
-)}
-
-{false && item.post_type === 'binder_showcase' && (
-  <Text style={styles.body}>{item.body || 'Sharing a binder flex'}</Text>
-)}
-
         {card && (
           <View style={styles.attachedCard}>
-            {card.image_small || card.image_large ? (
-              <Image
-                source={{ uri: card.image_small ?? card.image_large ?? '' }}
-                style={styles.attachedCardImage}
-                resizeMode="contain"
+            <View style={styles.attachedCardImageFrame}>
+              {card.image_small || card.image_large ? (
+                <Image
+                  source={{ uri: card.image_small ?? card.image_large ?? '' }}
+                  style={styles.attachedCardImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <View style={styles.emptyCardImage}>
+                  <Text style={styles.emptyCardText}>No image</Text>
+                </View>
+              )}
+              <RaritySymbol
+                rarity={card.raw_data?.rarity ?? null}
+                size={13}
+                style={RARITY_SYMBOL_CARD_OVERLAY}
               />
-            ) : (
-              <View style={styles.emptyCardImage}>
-                <Text style={styles.emptyCardText}>No image</Text>
-              </View>
-            )}
+            </View>
 
-            <View style={{ flex: 1 }}>
+            <View style={styles.attachedCardCopy}>
               <Text style={styles.cardName}>{card.name}</Text>
               <Text style={styles.cardSet}>
-  {card.raw_data?.set?.name ?? card.set_id}
-</Text>
+                {card.raw_data?.set?.name ?? card.set_id}
+              </Text>
 
-{card.raw_data?.rarity && (
-  <Text style={styles.cardRarity}>{card.raw_data.rarity}</Text>
-)}
-
-<Text style={styles.cardTag}>{cardTagLabel}</Text>
-<Text style={[styles.cardTag, { display: 'none' }]}>
-  {card.raw_data?.rarity === 'Rare Holo' && '✨ Holo Pull'}
-  {card.raw_data?.rarity === 'Ultra Rare' && '🔥 Ultra Rare'}
-  {card.raw_data?.rarity === 'Secret Rare' && '👑 Secret Rare'}
-  {!card.raw_data?.rarity && 'From collection'}
-</Text>
+              <View style={styles.cardAttributeRow}>
+                <View style={[styles.cardAttributePill, styles.cardAttributePillPrimary]}>
+                  <Text style={[styles.cardAttributeText, styles.cardAttributeTextPrimary]}>{cardTagLabel}</Text>
+                </View>
+              </View>
             </View>
           </View>
         )}
@@ -1249,7 +1235,7 @@ export default function CommunityScreen() {
         <View style={styles.discussionPromptRow}>
           {starters.map((starter) => (
             <View key={starter} style={styles.discussionPromptChip}>
-              <Text style={styles.discussionPromptText}>{starter}</Text>
+              <Text numberOfLines={1} style={styles.discussionPromptText}>{starter}</Text>
             </View>
           ))}
         </View>
@@ -1510,8 +1496,8 @@ export default function CommunityScreen() {
         <View style={styles.hero}>
           <View style={styles.brandRow}>
             <View style={styles.heroTitleBlock}>
-              <StackrPageTitle title="Community" accentText="ity" />
-              <Text style={styles.subheading}>
+              <Text style={styles.heroTitle}>Community</Text>
+              <Text style={styles.subheading} numberOfLines={2}>
                 {activeSocialTab === 'Social'
                   ? 'Collector posts, questions and daily chat.'
                   : activeSocialTab === 'Flex'
@@ -1525,10 +1511,10 @@ export default function CommunityScreen() {
             </View>
             <View style={styles.heroActions}>
               <Pressable onPress={openCollectorDirectory} style={styles.heroIconButton}>
-                <StackrCardActionIcon source={stackrIcons.searchCard} frameSize={34} artworkSize={28} />
+                <StackrCardActionIcon source={stackrIcons.searchCard} frameSize={30} artworkSize={24} />
               </Pressable>
               <Pressable onPress={() => router.push('/notifications')} style={styles.heroIconButton}>
-                <Image source={stackrIcons.notifications} style={{ width: 30, height: 30 }} resizeMode="contain" />
+                <Image source={stackrIcons.notifications} style={{ width: 26, height: 26 }} resizeMode="contain" />
                 <View style={styles.notificationDot} />
               </Pressable>
             </View>
@@ -1647,7 +1633,7 @@ export default function CommunityScreen() {
               <StackrHeroBackdrop opacity={0.20} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.localHeroTitle}>Find your local card scene</Text>
-                <Text style={styles.localHeroCopy}>
+                <Text numberOfLines={2} style={styles.localHeroCopy}>
                   Type a postcode or town, then search OpenStreetMap for game shops, hobby shops and nearby collector spaces.
                 </Text>
               </View>
@@ -1843,8 +1829,8 @@ export default function CommunityScreen() {
                       onPress={() => handleChannelPress(item)}
                       style={[styles.flexCard, active && styles.flexCardActive]}
                     >
-                      <Ionicons name={item.icon} size={19} color={active ? theme.colors.primary : theme.colors.textSoft} />
-                      <Text style={styles.flexCardText}>{item.label}</Text>
+                      <Ionicons name={item.icon} size={17} color={active ? theme.colors.primary : theme.colors.textSoft} />
+                      <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.86} style={styles.flexCardText}>{item.label}</Text>
                     </Pressable>
                     );
                   })}
@@ -1856,7 +1842,7 @@ export default function CommunityScreen() {
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={styles.channelIntroTitle}>{activePostChannel.label}</Text>
-                    <Text style={styles.channelIntroCopy}>{activePostChannel.prompt}</Text>
+                    <Text numberOfLines={1} style={styles.channelIntroCopy}>{activePostChannel.prompt}</Text>
                   </View>
                 </View>
 
@@ -2356,20 +2342,20 @@ function shortDateTime(dateString: string | null) {
 function makeStyles(theme: any) {
   return StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' },
-  container: { flex: 1, paddingHorizontal: 14, paddingTop: 6 },
+  container: { flex: 1, paddingHorizontal: 14, paddingTop: 0 },
 
   hero: {
     position: 'relative',
-    paddingBottom: 6,
+    paddingBottom: 2,
     overflow: 'visible',
   },
 
   brandRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    marginBottom: 2,
+    marginBottom: 0,
   },
 
   heroTitleBlock: {
@@ -2384,12 +2370,12 @@ function makeStyles(theme: any) {
   },
 
   heroIconButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255,255,255,0.78)',
+    width: 38,
+    height: 38,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.66)',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary + '18',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2425,27 +2411,36 @@ function makeStyles(theme: any) {
     letterSpacing: 0,
   },
 
+  heroTitle: {
+    color: theme.colors.text,
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: '900',
+    letterSpacing: 0,
+  },
+
   subheading: {
     color: theme.colors.textSoft,
-    fontSize: 13,
+    fontSize: 12,
+    lineHeight: 15,
     fontWeight: '700',
-    marginTop: 2,
+    marginTop: 0,
   },
 
   socialTabs: {
-    gap: 24,
-    paddingTop: 14,
+    gap: 18,
+    paddingTop: 7,
     paddingRight: 24,
   },
 
   socialTab: {
-    paddingBottom: 10,
+    paddingBottom: 7,
     alignItems: 'center',
   },
 
   socialTabText: {
     color: theme.colors.textSoft,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
   },
 
@@ -2456,16 +2451,16 @@ function makeStyles(theme: any) {
   socialTabUnderline: {
     position: 'absolute',
     bottom: 0,
-    width: '120%',
+    width: '112%',
     height: 3,
     borderRadius: 999,
     backgroundColor: theme.colors.primary,
   },
 
   flexCardRow: {
-    gap: 8,
-    paddingTop: 2,
-    paddingBottom: 10,
+    gap: 6,
+    paddingTop: 0,
+    paddingBottom: 7,
   },
 
   categoryStrip: {
@@ -2557,55 +2552,57 @@ function makeStyles(theme: any) {
   },
 
   flexCard: {
-    width: 118,
-    minHeight: 58,
-    borderRadius: 14,
-    backgroundColor: theme.colors.card,
+    width: 104,
+    minHeight: 40,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.70)',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary + '14',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    gap: 8,
-    paddingHorizontal: 11,
-    paddingVertical: 9,
+    gap: 6,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
     shadowColor: '#1E1450',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1,
   },
 
   flexCardActive: {
     borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.primary + '10',
   },
 
   flexCardText: {
     color: theme.colors.text,
     fontWeight: '900',
     textAlign: 'left',
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 0,
-    lineHeight: 13,
+    lineHeight: 12,
     flex: 1,
   },
 
   channelIntroCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    borderRadius: 18,
+    gap: 8,
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.card,
-    padding: 12,
-    marginBottom: 10,
+    borderColor: theme.colors.primary + '16',
+    backgroundColor: 'rgba(255,255,255,0.70)',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 7,
   },
 
   channelIntroIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 11,
     backgroundColor: theme.colors.primary + '12',
     alignItems: 'center',
     justifyContent: 'center',
@@ -2614,15 +2611,15 @@ function makeStyles(theme: any) {
   channelIntroTitle: {
     color: theme.colors.text,
     fontWeight: '900',
-    fontSize: 16,
+    fontSize: 13,
   },
 
   channelIntroCopy: {
     color: theme.colors.textSoft,
     fontWeight: '700',
-    fontSize: 12,
-    lineHeight: 17,
-    marginTop: 3,
+    fontSize: 10.5,
+    lineHeight: 14,
+    marginTop: 1,
   },
 
   homeSummaryGrid: {
@@ -2944,32 +2941,32 @@ function makeStyles(theme: any) {
   localHeroPanel: {
     position: 'relative',
     flexDirection: 'row',
-    gap: 10,
-    backgroundColor: theme.colors.card,
-    borderRadius: 18,
+    gap: 9,
+    backgroundColor: 'rgba(255,255,255,0.78)',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: 12,
-    marginBottom: 10,
+    borderColor: theme.colors.primary + '16',
+    padding: 10,
+    marginBottom: 9,
     overflow: 'hidden',
   },
 
   localHeroTitle: {
     color: theme.colors.text,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '900',
   },
 
   localHeroCopy: {
     color: theme.colors.textSoft,
-    fontSize: 11,
-    lineHeight: 15,
-    marginTop: 4,
+    fontSize: 10.5,
+    lineHeight: 14,
+    marginTop: 3,
   },
 
   mapMockLarge: {
-    width: 96,
-    minHeight: 106,
+    width: 82,
+    minHeight: 88,
     borderRadius: 15,
     backgroundColor: theme.colors.primary + '12',
     alignItems: 'center',
@@ -3012,7 +3009,7 @@ function makeStyles(theme: any) {
     width: 7,
     height: 7,
     borderRadius: 999,
-    backgroundColor: '#F59E0B',
+    backgroundColor: theme.colors.primary + '55',
     top: 22,
     right: 18,
   },
@@ -3472,9 +3469,9 @@ function makeStyles(theme: any) {
 
   modeRow: {
     flexDirection: 'row',
-    gap: 14,
-    marginTop: 10,
-    marginBottom: 12,
+    gap: 12,
+    marginTop: 7,
+    marginBottom: 9,
   },
 
   tab: {
@@ -3664,12 +3661,17 @@ function makeStyles(theme: any) {
   },
 
   postCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 18,
-    padding: 12,
+    backgroundColor: 'rgba(255,255,255,0.86)',
+    borderRadius: 20,
+    padding: 13,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary + '14',
+    shadowColor: '#1E1450',
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
   },
 
   postTopRow: {
@@ -3678,9 +3680,9 @@ function makeStyles(theme: any) {
   },
 
   avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 13,
+    width: 40,
+    height: 40,
+    borderRadius: 14,
     backgroundColor: theme.colors.primary,
     marginRight: 10,
     overflow: 'hidden',
@@ -3689,8 +3691,8 @@ function makeStyles(theme: any) {
   },
 
   avatarImage: {
-    width: 42,
-    height: 42,
+    width: 40,
+    height: 40,
   },
 
   name: {
@@ -3718,22 +3720,24 @@ function makeStyles(theme: any) {
   },
 
   channelPill: {
-    minHeight: 30,
-    maxWidth: 126,
+    minHeight: 28,
+    maxWidth: 122,
     borderRadius: 999,
     backgroundColor: theme.colors.primary + '10',
     borderWidth: 1,
-    borderColor: theme.colors.primary + '24',
+    borderColor: theme.colors.primary + '18',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 9,
+    gap: 6,
+    paddingHorizontal: 10,
     marginLeft: 8,
   },
 
-  channelPillTrade: {
-    backgroundColor: '#FFF7E6',
-    borderColor: '#F4C777',
+  channelPillMark: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.primary,
   },
 
   channelPillText: {
@@ -3743,39 +3747,55 @@ function makeStyles(theme: any) {
     flexShrink: 1,
   },
 
-  channelPillTextTrade: {
-    color: '#A15C07',
-  },
-
   body: {
     color: theme.colors.text,
-    marginTop: 12,
-    lineHeight: 20,
-    fontWeight: '600',
+    marginTop: 11,
+    lineHeight: 19,
+    fontWeight: '800',
   },
 
   attachedCard: {
     flexDirection: 'row',
     marginTop: 12,
-    backgroundColor: theme.colors.bg,
-    borderRadius: 16,
+    backgroundColor: 'rgba(248,245,255,0.78)',
+    borderRadius: 18,
     padding: 10,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary + '16',
+    gap: 12,
+    overflow: 'hidden',
+  },
+
+  attachedCardImageFrame: {
+    width: 82,
+    height: 108,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '10',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
 
   attachedCardImage: {
-    width: 74,
-    height: 104,
-    marginRight: 12,
+    width: 68,
+    height: 96,
+  },
+
+  attachedCardCopy: {
+    flex: 1,
+    minWidth: 0,
+    alignSelf: 'center',
   },
 
   emptyCardImage: {
-    width: 74,
-    height: 104,
-    marginRight: 12,
+    width: 68,
+    height: 96,
     backgroundColor: theme.colors.surface,
-    borderRadius: 8,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   binderShareIcon: {
@@ -3804,12 +3824,15 @@ function makeStyles(theme: any) {
     color: theme.colors.text,
     fontWeight: '900',
     fontSize: 16,
+    lineHeight: 19,
   },
 
   cardSet: {
     color: theme.colors.textSoft,
     marginTop: 4,
     fontSize: 12,
+    lineHeight: 15,
+    fontWeight: '800',
   },
 
   cardTag: {
@@ -3819,25 +3842,59 @@ function makeStyles(theme: any) {
     fontWeight: '900',
   },
 
+  cardAttributeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 7,
+    marginTop: 10,
+  },
+
+  cardAttributePill: {
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: theme.colors.primary + '14',
+  },
+
+  cardAttributePillPrimary: {
+    backgroundColor: theme.colors.primary + '10',
+    borderColor: theme.colors.primary + '1F',
+  },
+
+  cardAttributeText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    lineHeight: 13,
+    fontWeight: '900',
+  },
+
+  cardAttributeTextPrimary: {
+    color: theme.colors.primary,
+  },
+
   discussionPromptRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 10,
+    gap: 6,
+    marginTop: 9,
   },
 
   discussionPromptChip: {
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
     backgroundColor: theme.colors.primary + '0D',
     borderWidth: 1,
     borderColor: theme.colors.primary + '18',
+    maxWidth: '100%',
   },
 
   discussionPromptText: {
     color: theme.colors.primary,
-    fontSize: 11,
+    fontSize: 10.5,
+    lineHeight: 13,
     fontWeight: '900',
   },
 
@@ -3949,13 +4006,6 @@ function makeStyles(theme: any) {
     color: theme.colors.text,
     fontWeight: '900',
   },
-
-cardRarity: {
-  color: '#FFD166',
-  fontSize: 12,
-  marginTop: 2,
-  fontWeight: '900',
-},
 
   emptyState: {
     alignItems: 'center',

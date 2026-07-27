@@ -25,7 +25,6 @@ export function StackrCardIdentity({
   name,
   setName,
   number,
-  rarity,
   edition,
   size = 'detail',
   titleNumberOfLines = 2,
@@ -39,7 +38,6 @@ export function StackrCardIdentity({
     setName,
     number ? `#${number}` : null,
     edition,
-    rarity,
   ].filter(Boolean).join(' \u00B7 ');
 
   return (

@@ -26,15 +26,22 @@ export const ROUTES = {
 } as const;
 
 export const LEGACY_ROUTE_REDIRECTS = {
+  '/--': '/' as Href,
   '/binder-legacy': ROUTES.collection,
   '/binder': ROUTES.collection,
   '/collection': ROUTES.collection,
+  '/community': ROUTES.community,
+  '/search': ROUTES.search,
   '/marketplace': ROUTES.market,
   '/market-place': ROUTES.market,
   '/trade': ROUTES.market,
+  '/trade/[userId]': ROUTES.market,
+  '/(tabs)/trade': ROUTES.market,
   '/camera': ROUTES.scan,
   '/scan/camera': ROUTES.scan,
   '/listing': ROUTES.listingNew,
+  '/listing/camera': ROUTES.listingNew,
+  '/listing/[id]': ROUTES.market,
   '/list': ROUTES.listingNew,
   '/callback': '/(auth)/callback' as Href,
   '/auth/callback': '/(auth)/callback' as Href,

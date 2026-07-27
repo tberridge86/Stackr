@@ -21,7 +21,9 @@ import { StackrImage } from './StackrImage';
 import { StackrActionButton } from './StackrActionButton';
 import { StackrButtonPattern } from './StackrEmboss';
 import { StackrCardActionIcon } from './StackrScreen';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from './RaritySymbol';
 import { stackrIcons } from '../lib/stackrIcons';
+import { getJapaneseSetLogoSourceForSet } from '../lib/japaneseSetLogos';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { numericTextStyle, stackrFonts, tabularNumberStyle, typeScale } from '../lib/typography';
 import { getCustomBinderNameArt } from '../lib/customBinderNameArt';
@@ -35,6 +37,10 @@ export type HomeBinderSummary = {
   name: string;
   type?: 'official' | 'custom' | null;
   sourceSetId?: string | null;
+  sourceSetLanguage?: string | null;
+  sourceSetLogoUrl?: string | null;
+  sourceSetSymbolUrl?: string | null;
+  sourceSetCoverUrl?: string | null;
   customNameArtKey?: string | null;
   cardMode?: 'raw' | 'graded' | null;
   masterSetEnabled?: boolean;
@@ -198,11 +204,11 @@ const formatRelativeTime = (value: string) => {
   return new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 };
 
-const activityVisuals: Record<HomeActivityType, { icon: IconName; color: string; label: string }> = {
+const activityVisuals: Record<HomeActivityType, { icon: IconName; color: string; label: string; imageIcon?: ImageSourcePropType }> = {
   added: { icon: 'add', color: '#10B981', label: 'Added' },
   removed: { icon: 'remove', color: REMOVED_ACTIVITY_COLOR, label: 'Removed' },
   duplicate: { icon: 'copy', color: '#6F45FF', label: 'Duplicate' },
-  favorite: { icon: 'heart', color: '#E85D8A', label: 'Favourite' },
+  favorite: { icon: 'sparkles', color: HOME_HERO_PRIMARY, label: 'Chase', imageIcon: stackrIcons.chase },
   trade: { icon: 'swap-horizontal', color: '#2563EB', label: 'Trade' },
   value: { icon: 'trending-up', color: HOME_HERO_PRIMARY, label: 'Value' },
   generic: { icon: 'sparkles', color: '#6F45FF', label: 'Activity' },
@@ -404,20 +410,20 @@ export function HomeActionTile({
 }
 
 export function HomeActionsRow({
-  onScan,
   onBinders,
   onTrade,
   onValueHistory,
+  onScan,
   onSearch,
   onBuildTrade,
   onCommunity,
 }: {
   ownedCount: number;
   listingCount?: number;
-  onScan: () => void;
   onBinders: () => void;
   onTrade?: () => void;
   onValueHistory?: () => void;
+  onScan?: () => void;
   onSearch?: () => void;
   onBuildTrade?: () => void;
   onCommunity?: () => void;
@@ -425,14 +431,34 @@ export function HomeActionsRow({
   const { theme } = useTheme();
   return (
     <View style={styles.actionsStack}>
-      <StackrActionButton
-        imageIcon={stackrIcons.scanCard}
-        title="Scan Card"
-        subtitle="Add or identify"
-        size="hero"
-        onPress={onScan}
-        accessibilityLabel="Scan Card. Add or identify."
-      />
+      <TouchableOpacity
+        onPress={onScan ?? onValueHistory ?? onBinders}
+        activeOpacity={0.86}
+        accessibilityRole="button"
+        accessibilityLabel="Scan Card. Add or identify a card."
+        style={styles.homeScanBarShell}
+      >
+        <LinearGradient
+          colors={theme.gradients.actionPrimary}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.homeScanBar}
+        >
+          <StackrButtonPattern tone="purple" compact />
+          <View style={styles.homeScanIconFrame}>
+            <StackrCardActionIcon
+              source={stackrIcons.scanCard}
+              frameSize={52}
+              artworkSize={40}
+            />
+          </View>
+          <View style={styles.homeScanCopy}>
+            <Text style={styles.homeScanTitle} numberOfLines={1}>Scan Card</Text>
+            <Text style={styles.homeScanSubtitle} numberOfLines={1}>Add or identify</Text>
+          </View>
+          <Ionicons name="arrow-forward" size={22} color="#FFFFFF" />
+        </LinearGradient>
+      </TouchableOpacity>
       <View style={styles.secondaryActionsRow}>
         <HomeActionTile
           icon="search-outline"
@@ -504,12 +530,44 @@ export function ContinueBinderCard({
   const { theme } = useTheme();
   const hasBinder = Boolean(!isLoading && !error && binder);
   const [setLogoFailed, setSetLogoFailed] = React.useState(false);
-  const setLogoUrl = binder?.type === 'official' ? getPokemonSetLogoUrl(binder.sourceSetId) : undefined;
+  const setLogoSource = binder?.type === 'official'
+    ? getJapaneseSetLogoSourceForSet({
+      id: binder.sourceSetId,
+      language: binder.sourceSetLanguage,
+      name: binder.name,
+      englishDisplayName: binder.name,
+    })
+    : null;
+  const setLogoUrl = binder?.type === 'official' && !setLogoSource
+    ? binder.sourceSetLogoUrl
+      ?? binder.sourceSetSymbolUrl
+      ?? getPokemonSetLogoUrl(binder.sourceSetId, binder.sourceSetLanguage)
+    : undefined;
   const customNameArt = binder?.type === 'custom' ? getCustomBinderNameArt(binder.customNameArtKey) : null;
+  const showsCompletion = binder?.type === 'official';
   const topValueCards = binder?.topValueCards ?? [];
   const binderDisplayName = binder?.name?.trim().toLowerCase() === 'all my owned hits'
     ? 'Owned Hits'
     : binder?.name ?? '';
+  const ownedLabel = binder
+    ? `${binder.owned} card${binder.owned === 1 ? '' : 's'} owned`
+    : '';
+  const binderModeLabel = binder?.cardMode === 'graded' ? 'Graded binder' : 'Custom binder';
+  const binderMetaLabel = binder
+    ? showsCompletion
+      ? `${binder.completionPercent}% complete | ${binder.owned} / ${binder.total} owned`
+      : `${ownedLabel} | ${binderModeLabel}`
+    : '';
+  const compactCountLabel = binder
+    ? showsCompletion
+      ? `${binder.missing} card${binder.missing === 1 ? '' : 's'} left`
+      : ownedLabel
+    : '';
+  const compactStatusLabel = binder
+    ? showsCompletion
+      ? `${binder.completionPercent}% complete`
+      : binderModeLabel
+    : '';
   const rankedCards = [
     { rank: '2ND', card: topValueCards[1], featured: false },
     { rank: 'TOP', card: topValueCards[0], featured: true },
@@ -518,7 +576,7 @@ export function ContinueBinderCard({
 
   React.useEffect(() => {
     setSetLogoFailed(false);
-  }, [binder?.sourceSetId]);
+  }, [binder?.sourceSetId, binder?.sourceSetLanguage, setLogoSource, setLogoUrl]);
 
   return (
     <View style={styles.continueBinderSection}>
@@ -555,7 +613,7 @@ export function ContinueBinderCard({
               <View style={styles.continueTitleBlock}>
                 <Text style={[styles.binderName, { color: theme.colors.text }]} numberOfLines={1}>{binderDisplayName}</Text>
                 <Text style={[styles.binderMeta, { color: theme.colors.textSoft }]}>
-                  {binder.completionPercent}% complete | {binder.owned} / {binder.total} owned
+                  {binderMetaLabel}
                 </Text>
               </View>
             </View>
@@ -571,10 +629,12 @@ export function ContinueBinderCard({
                 <BinderArtwork
                   coverKey={binder.coverKey}
                   sourceSetId={binder.type === 'official' ? binder.sourceSetId : null}
+                  sourceSetLanguage={binder.type === 'official' ? binder.sourceSetLanguage : null}
                   setName={binder.type === 'official' ? binder.name : null}
                   fallbackLogoUrl={setLogoUrl}
+                  fallbackLogoSource={setLogoSource}
                   fallbackArtSource={customNameArt?.source ?? null}
-                  progress={binder.completionPercent}
+                  progress={showsCompletion ? binder.completionPercent : 0}
                   width={138}
                   stageHeight={142}
                   plateWidth={112}
@@ -583,24 +643,41 @@ export function ContinueBinderCard({
                   artworkHeight={124}
                   progressWidth={96}
                   progressHeight={4}
+                  showProgressBar={showsCompletion}
                   showProgressText={false}
                 />
-                <View style={styles.continueProgressDock}>
-                  <LinearGradient
-                    colors={[HOME_HERO_LIFT, HOME_HERO_MID, HOME_HERO_PRIMARY]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.continueProgressBadge}
-                  >
-                    <StackrButtonPattern tone="purple" compact />
-                    <Text numeric style={styles.continueProgressBadgeText}>{binder.completionPercent}%</Text>
-                  </LinearGradient>
+                <View style={[styles.continueProgressDock, customNameArt && styles.continueProgressDockCentered]}>
+                  {showsCompletion ? (
+                    <LinearGradient
+                      colors={[HOME_HERO_LIFT, HOME_HERO_MID, HOME_HERO_PRIMARY]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.continueProgressBadge}
+                    >
+                      <StackrButtonPattern tone="purple" compact />
+                      <Text numeric style={styles.continueProgressBadgeText}>{binder.completionPercent}%</Text>
+                    </LinearGradient>
+                  ) : null}
                   {customNameArt ? (
                     <Image
                       source={customNameArt.source}
-                      style={styles.continueProgressCustomNameArt as ImageStyle}
+                      style={[
+                        styles.continueProgressCustomNameArt,
+                        styles.continueProgressCustomNameArtCentered,
+                      ] as ImageStyle}
                       resizeMode="contain"
                       accessibilityLabel={`${binderDisplayName} custom binder title art`}
+                    />
+                  ) : setLogoSource && !setLogoFailed ? (
+                    <StackrImage
+                      source={setLogoSource}
+                      style={styles.continueProgressSetLogo}
+                      contentFit="contain"
+                      accessibilityLabel={`${binderDisplayName} official set logo`}
+                      onError={() => setSetLogoFailed(true)}
+                      priority="low"
+                      showFallbackIcon={false}
+                      placeholderColor="transparent"
                     />
                   ) : setLogoUrl && !setLogoFailed ? (
                     <StackrImage
@@ -676,7 +753,7 @@ export function ContinueBinderCard({
 
             <View style={styles.continueCompactStatRow}>
               <Text style={[styles.continueCompactStatText, { color: theme.colors.text }]} numberOfLines={1}>
-                {binder.missing} card{binder.missing === 1 ? '' : 's'} left
+                {compactCountLabel}
               </Text>
               <Text style={[styles.continueStatDivider, { color: theme.colors.textSoft }]}>|</Text>
               <Text style={[styles.continueCompactStatText, { color: theme.colors.text }]} numberOfLines={1}>
@@ -684,10 +761,10 @@ export function ContinueBinderCard({
               </Text>
               <Text style={[styles.continueStatDivider, { color: theme.colors.textSoft }]}>|</Text>
               <Text style={[styles.continueCompactStatText, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
-                {binder.completionPercent}% complete
+                {compactStatusLabel}
               </Text>
             </View>
-            {binder.missing > 0 ? (
+            {showsCompletion && binder.missing > 0 ? (
               <Text style={[styles.continueHelperLine, { color: theme.colors.textSoft }]} numberOfLines={1}>
                 Almost there - {binder.missing} card{binder.missing === 1 ? '' : 's'} to complete this binder
               </Text>
@@ -735,7 +812,8 @@ export function ContinueBinderCard({
 
 function DuplicateResultCard({ item }: { item: HomeDuplicateItem }) {
   const { theme } = useTheme();
-  const setLogoUrl = item.setId ? getPokemonSetLogoUrl(item.setId) : undefined;
+  const setLogoSource = item.setId ? getJapaneseSetLogoSourceForSet({ id: item.setId }) : null;
+  const setLogoUrl = item.setId && !setLogoSource ? getPokemonSetLogoUrl(item.setId) : undefined;
   const reveal = React.useRef(new Animated.Value(0)).current;
   const translateY = reveal.interpolate({
     inputRange: [0, 1],
@@ -780,7 +858,15 @@ function DuplicateResultCard({ item }: { item: HomeDuplicateItem }) {
         </View>
         <View style={styles.duplicateRailCopy}>
           <Text style={[styles.rowTitle, styles.duplicateRailTitle, { color: theme.colors.text }]} numberOfLines={2}>{item.name}</Text>
-          {setLogoUrl ? (
+          {setLogoSource ? (
+            <StackrImage
+              source={setLogoSource}
+              style={styles.duplicateSetLogo}
+              contentFit="contain"
+              priority="low"
+              showFallbackIcon={false}
+            />
+          ) : setLogoUrl ? (
             <StackrImage
               uri={setLogoUrl}
               style={styles.duplicateSetLogo}
@@ -1022,7 +1108,6 @@ export function HomeOpportunitiesSection({
   onDuplicates,
   onChase,
   onMarketMovers,
-  onScan,
 }: {
   duplicateSummary: HomeDuplicateSummary;
   chaseCount: number;
@@ -1032,7 +1117,6 @@ export function HomeOpportunitiesSection({
   onDuplicates: () => void;
   onChase: () => void;
   onMarketMovers: () => void;
-  onScan: () => void;
 }) {
   const { theme } = useTheme();
   const rows = [
@@ -1105,9 +1189,7 @@ export function HomeOpportunitiesSection({
           <EmptyMessage
             icon="albums-outline"
             title="No opportunities yet"
-            subtitle="Scan more cards to surface trades, chase cards, and market changes."
-            actionLabel="Scan Card"
-            onAction={onScan}
+            subtitle="Add cards to binders or track chase cards to surface trades and market changes."
           />
         )}
       </View>
@@ -1170,26 +1252,33 @@ export function ChaseOrMissingSection({
                   { borderColor: theme.colors.border, backgroundColor: isChase ? '#F1ECFF' : theme.colors.surface },
                 ]}
               >
-                {item.imageUrl ? (
-                  <StackrImage
-                    uri={item.imageUrl}
-                    style={isChase ? styles.chasePreviewImage : styles.previewImage}
-                    contentFit="contain"
-                    priority="low"
-                    showFallbackIcon={false}
+                <View style={[isChase ? styles.chasePreviewImage : styles.previewImage, styles.previewImageFrame, { backgroundColor: theme.colors.surface }]}>
+                  {item.imageUrl ? (
+                    <StackrImage
+                      uri={item.imageUrl}
+                      style={StyleSheet.absoluteFill}
+                      contentFit="contain"
+                      priority="low"
+                      showFallbackIcon={false}
+                    />
+                  ) : (
+                    <View style={[StyleSheet.absoluteFill, styles.previewPlaceholder]}>
+                      <Ionicons name="albums-outline" size={25} color={HOME_HERO_PRIMARY} />
+                    </View>
+                  )}
+                  <RaritySymbol
+                    rarity={item.rarity}
+                    size={isChase ? 15 : 13}
+                    style={RARITY_SYMBOL_CARD_OVERLAY}
                   />
-                ) : (
-                  <View style={[isChase ? styles.chasePreviewImage : styles.previewImage, styles.previewPlaceholder]}>
-                    <Ionicons name="albums-outline" size={25} color={HOME_HERO_PRIMARY} />
-                  </View>
-                )}
+                </View>
                 <View style={isChase ? styles.chasePreviewCopy : styles.previewCopy}>
                   <Text style={[isChase ? styles.chasePreviewTitle : styles.previewTitle, { color: theme.colors.text }]} numberOfLines={isChase ? 1 : 2}>{item.name}</Text>
                   <Text style={[isChase ? styles.chasePreviewSub : styles.previewSub, { color: theme.colors.textSoft }]} numberOfLines={1}>
                     {isChase ? item.setName : item.number ? `#${item.number}` : item.setName}
                   </Text>
                   <Text style={[isChase ? styles.chasePreviewAction : styles.previewValue, { color: HOME_HERO_PRIMARY }]} numberOfLines={1}>
-                    {isChase ? item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'Value pending' : item.estimatedValue != null ? formatMoney(item.estimatedValue) : item.rarity ?? 'View'}
+                    {isChase ? item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'Value pending' : item.estimatedValue != null ? formatMoney(item.estimatedValue) : 'View'}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -1247,7 +1336,8 @@ export function ChaseCardsSheet({
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const selectedCard = items.find((item) => item.cardId === selectedCardId) ?? items[0] ?? null;
-  const selectedSetLogoUrl = selectedCard?.setId ? getPokemonSetLogoUrl(selectedCard.setId) : null;
+  const selectedSetLogoSource = selectedCard?.setId ? getJapaneseSetLogoSourceForSet({ id: selectedCard.setId }) : null;
+  const selectedSetLogoUrl = selectedCard?.setId && !selectedSetLogoSource ? getPokemonSetLogoUrl(selectedCard.setId) : null;
   const cardWidth = Math.min(Math.max(width * 0.76, 244), 330);
   const sheetHeight = Math.min(height * 0.9, height - insets.top - 18);
   const estimatedValues = items
@@ -1355,7 +1445,8 @@ export function ChaseCardsSheet({
               >
                 {items.map((item) => {
                   const selected = item.cardId === selectedCard?.cardId;
-                  const setLogoUrl = item.setId ? getPokemonSetLogoUrl(item.setId) : null;
+                  const setLogoSource = item.setId ? getJapaneseSetLogoSourceForSet({ id: item.setId }) : null;
+                  const setLogoUrl = item.setId && !setLogoSource ? getPokemonSetLogoUrl(item.setId) : null;
                   return (
                     <TouchableOpacity
                       key={`${item.cardId}:${item.setId ?? 'set'}`}
@@ -1389,7 +1480,16 @@ export function ChaseCardsSheet({
                       <View style={styles.chaseCarouselCopy}>
                         <Text style={[styles.chaseCarouselTitle, { color: theme.colors.text }]} numberOfLines={2}>{item.name}</Text>
                         <View style={styles.chaseCarouselSetRow}>
-                          {setLogoUrl ? (
+                          {setLogoSource ? (
+                            <StackrImage
+                              source={setLogoSource}
+                              style={styles.chaseCarouselSetLogo}
+                              contentFit="contain"
+                              priority="low"
+                              showFallbackIcon={false}
+                              placeholderColor="transparent"
+                            />
+                          ) : setLogoUrl ? (
                             <StackrImage
                               uri={setLogoUrl}
                               style={styles.chaseCarouselSetLogo}
@@ -1419,7 +1519,16 @@ export function ChaseCardsSheet({
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={[styles.chaseDetailTitle, { color: theme.colors.text }]} numberOfLines={2}>{selectedCard.name}</Text>
                       <View style={styles.chaseDetailSetRow}>
-                        {selectedSetLogoUrl ? (
+                        {selectedSetLogoSource ? (
+                          <StackrImage
+                            source={selectedSetLogoSource}
+                            style={styles.chaseDetailSetLogo}
+                            contentFit="contain"
+                            priority="low"
+                            showFallbackIcon={false}
+                            placeholderColor="transparent"
+                          />
+                        ) : selectedSetLogoUrl ? (
                           <StackrImage
                             uri={selectedSetLogoUrl}
                             style={styles.chaseDetailSetLogo}
@@ -1453,15 +1562,15 @@ export function ChaseCardsSheet({
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={[styles.chaseInsightTitle, { color: theme.colors.text }]}>
-                      {listingsLoading ? 'Checking The Market' : listingsError ? 'The Market check failed' : listings.length ? 'Minty Insight' : 'No listings found'}
+                      {listingsLoading ? 'Checking listings' : listingsError ? 'Could not check listings' : listings.length ? 'Minty found matches' : 'No match right now'}
                     </Text>
                     <Text style={[styles.chaseInsightCopy, { color: theme.colors.textSoft }]}>
                       {listingsLoading
                         ? 'Looking for listings that match this chase card.'
                         : listingsError
-                          ? 'Try again, or browse The Market manually.'
+                          ? 'Try again, or browse The Market yourself.'
                           : listings.length
-                            ? 'I found listings for this chase card.'
+                            ? 'Compare condition and price before deciding.'
                             : 'This chase card is not listed in The Market right now.'}
                     </Text>
                   </View>
@@ -1470,7 +1579,7 @@ export function ChaseCardsSheet({
                 {listingsLoading ? (
                   <View style={styles.chaseInsightLoadingRow}>
                     <ActivityIndicator color={HOME_HERO_PRIMARY} />
-                    <Text style={[styles.chaseInsightCopy, { color: theme.colors.textSoft }]}>Checking active listings</Text>
+                    <Text style={[styles.chaseInsightCopy, { color: theme.colors.textSoft }]}>Checking current listings</Text>
                   </View>
                 ) : listingsError ? (
                   <View style={styles.chaseInsightActions}>
@@ -1497,7 +1606,7 @@ export function ChaseCardsSheet({
                             {renderListingCopy(listing)}
                           </Text>
                           <Text style={[styles.chaseListingMeta, { color: theme.colors.textSoft }]} numberOfLines={1}>
-                            {[listing.condition, listing.tradeOnly ? 'Trade' : 'Buy'].filter(Boolean).join(' · ')}
+                            {[listing.condition, listing.tradeOnly ? 'Trade' : 'Buy'].filter(Boolean).join(' - ')}
                           </Text>
                         </View>
                         <Text style={[styles.chaseListingActionText, { color: HOME_HERO_PRIMARY }]}>View</Text>
@@ -1590,11 +1699,19 @@ export function RecentActivitySection({
                       />
                     ) : (
                       <View style={styles.activityImageFallback}>
-                        <Ionicons name={item.icon ?? visual.icon} size={17} color={visual.color} />
+                        {visual.imageIcon ? (
+                          <Image source={visual.imageIcon} style={styles.activityFallbackImage as ImageStyle} resizeMode="contain" />
+                        ) : (
+                          <Ionicons name={item.icon ?? visual.icon} size={17} color={visual.color} />
+                        )}
                       </View>
                     )}
                     <View style={[styles.activityBadge, { backgroundColor: visual.color }]}>
-                      <Ionicons name={visual.icon} size={10} color="#FFFFFF" />
+                      {visual.imageIcon ? (
+                        <Image source={visual.imageIcon} style={styles.activityBadgeImage as ImageStyle} resizeMode="contain" />
+                      ) : (
+                        <Ionicons name={visual.icon} size={10} color="#FFFFFF" />
+                      )}
                     </View>
                   </View>
                   <View style={{ flex: 1, minWidth: 0 }}>
@@ -1638,13 +1755,6 @@ export function RecentActivitySection({
             icon="time-outline"
             title="No activity yet"
             subtitle="Your scans, trades and binder updates will appear here."
-            actionLabel="Scan a Card"
-            onAction={() => onItemPress({
-              id: 'scan-empty',
-              title: 'Scan a Card',
-              createdAt: new Date().toISOString(),
-              icon: 'scan-outline',
-            })}
           />
         )}
       </View>
@@ -1826,13 +1936,52 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   actionsStack: {
-    gap: 12,
+    gap: 10,
     marginTop: 0,
-    marginBottom: 24,
+    marginBottom: 16,
+  },
+  homeScanBarShell: {
+    borderRadius: HOME_TOKENS.radius.xl,
+    overflow: 'hidden',
+    ...cardShadow,
+  },
+  homeScanBar: {
+    minHeight: 74,
+    borderRadius: HOME_TOKENS.radius.xl,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  homeScanIconFrame: {
+    width: 54,
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  homeScanCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  homeScanTitle: {
+    ...typeScale.cardTitle,
+    color: '#FFFFFF',
+    fontSize: 22,
+    lineHeight: 27,
+    fontWeight: '900',
+  },
+  homeScanSubtitle: {
+    ...typeScale.caption,
+    color: 'rgba(255,255,255,0.78)',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '700',
   },
   secondaryActionsRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   actionTile: {
     flex: 1,
@@ -1852,9 +2001,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   actionTileSecondary: {
-    minHeight: 64,
+    minHeight: 58,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 9,
   },
   actionIcon: {
     width: HOME_TOKENS.icons.container,
@@ -1938,11 +2087,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   communityUtility: {
-    minHeight: HOME_TOKENS.touch.comfortable,
+    minHeight: HOME_TOKENS.touch.min,
     borderRadius: HOME_TOKENS.radius.md,
     borderWidth: 1,
     paddingHorizontal: 13,
-    paddingVertical: 10,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -2219,6 +2368,12 @@ const styles = StyleSheet.create({
     marginTop: -8,
     marginLeft: 21,
   },
+  continueProgressDockCentered: {
+    alignSelf: 'center',
+    justifyContent: 'center',
+    width: 138,
+    marginLeft: 0,
+  },
   continueProgressBadge: {
     minWidth: 42,
     height: 20,
@@ -2246,6 +2401,9 @@ const styles = StyleSheet.create({
     width: 112,
     height: 20,
     marginLeft: -24,
+  },
+  continueProgressCustomNameArtCentered: {
+    marginLeft: 0,
   },
   continueProgressSetLogo: {
     width: 112,
@@ -2310,7 +2468,7 @@ const styles = StyleSheet.create({
   grailCrownRank: {
     position: 'absolute',
     top: -16,
-    left: 2,
+    left: 1,
     width: 54,
     height: 41,
     opacity: 0.82,
@@ -3007,6 +3165,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
   },
+  previewImageFrame: {
+    overflow: 'hidden',
+  },
   chaseHeaderStage: {
     position: 'relative',
     overflow: 'visible',
@@ -3449,6 +3610,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.72)',
   },
+  activityFallbackImage: {
+    width: 23,
+    height: 23,
+  },
   activityBadge: {
     position: 'absolute',
     right: -3,
@@ -3460,6 +3625,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#FFFFFF',
+  },
+  activityBadgeImage: {
+    width: 13,
+    height: 13,
   },
   activityTitleRow: {
     flexDirection: 'row',

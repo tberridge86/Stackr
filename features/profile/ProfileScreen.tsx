@@ -47,6 +47,7 @@ import {
 import { ROUTES } from '../../lib/routes';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
+import { stackrQueryClient, stackrQueryKeys, stackrQueryTiming } from '../../lib/stackrQuery';
 import { supabase } from '../../lib/supabase';
 
 const IDENTITY_ONBOARDING_KEY = 'stackr:identity-onboarding:v2';
@@ -58,7 +59,7 @@ const HERO_ICONS = {
   cards: stackrIcons.scanCard,
   chase: stackrIcons.chase,
   edit: stackrIcons.profile,
-  favorite: stackrIcons.favorite,
+  favorite: stackrIcons.scanCard,
   market: stackrIcons.marketplace,
   notifications: stackrIcons.notifications,
   profile: stackrIcons.profile,
@@ -83,6 +84,11 @@ type ProfileStats = {
   sellerDrafts: number;
   sellerSales: number | null;
   sellerInventory: number | null;
+};
+
+type ProfileStatsSnapshot = {
+  stats: ProfileStats;
+  unreadCount: number;
 };
 
 type IdentityStep = 'team' | 'identity' | 'character' | 'preview';
@@ -426,25 +432,25 @@ function StatChip({
       style={{
         flex: 1,
         minWidth: 0,
-        minHeight: 118,
-        borderRadius: 22,
+        minHeight: 96,
+        borderRadius: 18,
         backgroundColor: 'rgba(255,255,255,0.72)',
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.74)',
-        paddingHorizontal: 9,
-        paddingVertical: 11,
-        gap: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 9,
+        gap: 4,
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <View style={{ width: 62, height: 54, alignItems: 'center', justifyContent: 'center' }}>
-        <HeroIcon icon={icon} size={icon === 'rawCard' ? 52 : 47} label="" />
+      <View style={{ width: 48, height: 42, alignItems: 'center', justifyContent: 'center' }}>
+        <HeroIcon icon={icon} size={icon === 'rawCard' ? 42 : 38} label="" />
       </View>
-      <Text style={{ color: '#07145F', fontSize: 19, lineHeight: 23, fontWeight: '900', textAlign: 'center' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+      <Text style={{ color: '#07145F', fontSize: 17, lineHeight: 21, fontWeight: '900', textAlign: 'center' }} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
         {value}
       </Text>
-      <Text style={{ color: '#615B94', fontSize: 11.5, lineHeight: 15, fontWeight: '800', textAlign: 'center' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.82}>
+      <Text style={{ color: '#615B94', fontSize: 10.5, lineHeight: 13, fontWeight: '800', textAlign: 'center' }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>
         {label}
       </Text>
     </View>
@@ -521,12 +527,12 @@ function ShowcaseCabinet({
       accessibilityLabel={`${title}. ${card?.name ?? subtitle}`}
       style={{
         width: '48%',
-        minHeight: 282,
-        borderRadius: 24,
+        minHeight: 250,
+        borderRadius: 20,
         backgroundColor: 'rgba(255,255,255,0.86)',
         borderWidth: 1,
         borderColor: '#E8E1FF',
-        padding: 12,
+        padding: 10,
         overflow: 'hidden',
         shadowColor: '#6136F5',
         shadowOpacity: 0.13,
@@ -538,8 +544,8 @@ function ShowcaseCabinet({
       <StackrHeroBackdrop opacity={0.08} />
       <View
         style={{
-          height: 166,
-          borderRadius: 20,
+          height: 142,
+          borderRadius: 17,
           backgroundColor: '#F7F3FF',
           borderWidth: 1,
           borderColor: '#EEE7FF',
@@ -554,15 +560,15 @@ function ShowcaseCabinet({
           <View style={{ alignItems: 'center', gap: 8, paddingHorizontal: 14 }}>
             <View
               style={{
-                width: 88,
-                height: 82,
+                width: 76,
+                height: 70,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
               accessibilityElementsHidden
               importantForAccessibility="no-hide-descendants"
             >
-              <HeroIcon icon={icon} size={icon === 'slab' ? 74 : 66} label="" />
+              <HeroIcon icon={icon} size={icon === 'slab' ? 64 : 56} label="" />
             </View>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '800', textAlign: 'center' }}>
               {subtitle}
@@ -570,13 +576,13 @@ function ShowcaseCabinet({
           </View>
         )}
       </View>
-      <Text style={{ color: theme.colors.primary, fontSize: 11, lineHeight: 14, fontWeight: '900', marginTop: 10, textTransform: 'uppercase' }}>
+      <Text style={{ color: theme.colors.primary, fontSize: 10.5, lineHeight: 13, fontWeight: '900', marginTop: 9, textTransform: 'uppercase' }}>
         {title}
       </Text>
-      <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900', marginTop: 4 }} numberOfLines={2}>
+      <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900', marginTop: 4 }} numberOfLines={2}>
         {card?.name ?? 'Choose display card'}
       </Text>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 16, fontWeight: '700', marginTop: 4 }} numberOfLines={2}>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700', marginTop: 3 }} numberOfLines={2}>
         {card ? [setName, cardNumber].filter(Boolean).join(' · ') : subtitle}
       </Text>
       {value != null ? (
@@ -585,7 +591,7 @@ function ShowcaseCabinet({
         </Text>
       ) : null}
       <View style={{ marginTop: 'auto', paddingTop: 10 }}>
-        <Text style={{ color: theme.colors.primary, fontSize: 11.5, lineHeight: 14, fontWeight: '900' }}>
+        <Text style={{ color: theme.colors.primary, fontSize: 11, lineHeight: 14, fontWeight: '900' }}>
           {card ? 'Edit' : 'Choose card'}
         </Text>
       </View>
@@ -608,9 +614,9 @@ function AchievementBadge({
     <View
       style={{
         width: '48%',
-        minHeight: 152,
-        borderRadius: 22,
-        padding: 13,
+        minHeight: 148,
+        borderRadius: 20,
+        padding: 12,
         backgroundColor: complete ? '#FFFFFF' : 'rgba(255,255,255,0.62)',
         borderWidth: 1,
         borderColor: complete ? tierColour : '#E8E1FF',
@@ -625,17 +631,17 @@ function AchievementBadge({
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
         <View
           style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            borderWidth: 4,
+            width: 46,
+            height: 46,
+            borderRadius: 23,
+            borderWidth: 3,
             borderColor: complete ? tierColour : '#DCD5F4',
             backgroundColor: complete ? `${tierColour}18` : '#F7F3FF',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <HeroIcon icon={getAchievementIcon(achievement)} size={30} label="" />
+          <HeroIcon icon={getAchievementIcon(achievement)} size={28} label="" />
         </View>
         <Text style={{ color: tierColour, fontSize: 10.5, lineHeight: 13, fontWeight: '900', textTransform: 'uppercase' }}>
           {achievement.tier}
@@ -651,7 +657,7 @@ function AchievementBadge({
         <Text style={{ color: complete ? tierColour : theme.colors.textSoft, fontSize: 11, lineHeight: 14, fontWeight: '900' }}>
           {complete ? 'Unlocked' : 'Locked'}
         </Text>
-        <Text style={{ color: '#B7791F', fontSize: 11, lineHeight: 14, fontWeight: '900' }}>
+        <Text style={{ color: complete ? tierColour : theme.colors.textSoft, fontSize: 11, lineHeight: 14, fontWeight: '900', textTransform: 'capitalize' }}>
           {achievement.tier}
         </Text>
       </View>
@@ -1362,39 +1368,41 @@ export default function ProfileScreen() {
     }
   }, [profile]);
 
-  const loadStats = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  const applyProfileStatsSnapshot = useCallback((snapshot: ProfileStatsSnapshot) => {
+    setStats(snapshot.stats);
+    setUnreadCount(snapshot.unreadCount);
+  }, []);
 
-      const [
-        collectionSummary,
-        tradesResult,
-        notificationsResult,
-        listingsResult,
-        inventoryResult,
-        salesResult,
-        draftSummary,
-      ] = await Promise.all([
-        getCollectionSummary({ forceRefresh: true }),
-        supabase.from('trade_offers').select('status').or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`),
-        supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('user_id', user.id).eq('read', false),
-        supabase.from('user_card_flags').select('id, listing_price, listing_status', { count: 'exact' }).eq('user_id', user.id),
-        supabase.from('seller_inventory_items').select('quantity').eq('user_id', user.id),
-        supabase.from('seller_sale_transactions').select('sold_price').eq('user_id', user.id),
-        readCreateListingDraftSummary().catch(() => null),
-      ]);
+  const fetchProfileStatsSnapshot = useCallback(async (userId: string): Promise<ProfileStatsSnapshot> => {
+    const [
+      collectionSummary,
+      tradesResult,
+      notificationsResult,
+      listingsResult,
+      inventoryResult,
+      salesResult,
+      draftSummary,
+    ] = await Promise.all([
+      getCollectionSummary({ forceRefresh: true, staleWhileRefresh: true }),
+      supabase.from('trade_offers').select('status').or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
+      supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('read', false),
+      supabase.from('user_card_flags').select('id, listing_status', { count: 'exact' }).eq('user_id', userId),
+      supabase.from('seller_inventory_items').select('quantity').eq('user_id', userId),
+      supabase.from('seller_sale_transactions').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      readCreateListingDraftSummary().catch(() => null),
+    ]);
 
-      const completedTrades = (tradesResult.data ?? []).filter((trade: any) => trade.status === 'completed').length;
-      const activeListings = listingsResult.error
-        ? null
-        : (listingsResult.data ?? []).filter((row: any) => row.listing_status == null || row.listing_status === 'active').length;
-      const inventoryQuantity = inventoryResult.error
-        ? null
-        : (inventoryResult.data ?? []).reduce((sum: number, row: any) => sum + Number(row.quantity ?? 0), 0);
-      const sales = salesResult.error ? null : salesResult.data?.length ?? 0;
+    const completedTrades = (tradesResult.data ?? []).filter((trade: any) => trade.status === 'completed').length;
+    const activeListings = listingsResult.error
+      ? null
+      : (listingsResult.data ?? []).filter((row: any) => row.listing_status == null || row.listing_status === 'active').length;
+    const inventoryQuantity = inventoryResult.error
+      ? null
+      : (inventoryResult.data ?? []).reduce((sum: number, row: any) => sum + Number(row.quantity ?? 0), 0);
+    const sales = salesResult.error ? null : salesResult.count ?? 0;
 
-      setStats({
+    return {
+      stats: {
         binderCount: collectionSummary.binderCount,
         ownedCount: collectionSummary.totalCardsOwned,
         completedSets: collectionSummary.completedSets,
@@ -1404,12 +1412,34 @@ export default function ProfileScreen() {
         sellerDrafts: draftSummary ? 1 : 0,
         sellerSales: sales,
         sellerInventory: inventoryQuantity,
+      },
+      unreadCount: notificationsResult.count ?? 0,
+    };
+  }, []);
+
+  const loadStats = useCallback(async (forceRefresh = false) => {
+    const shouldForceRefresh = forceRefresh === true;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const queryKey = stackrQueryKeys.profileStats(user.id);
+
+      if (!shouldForceRefresh) {
+        const cached = stackrQueryClient.getQueryData<ProfileStatsSnapshot>(queryKey);
+        if (cached) applyProfileStatsSnapshot(cached);
+      }
+
+      const snapshot = await stackrQueryClient.fetchQuery({
+        queryKey,
+        queryFn: () => fetchProfileStatsSnapshot(user.id),
+        staleTime: shouldForceRefresh ? 0 : stackrQueryTiming.profileStatsStaleMs,
       });
-      setUnreadCount(notificationsResult.count ?? 0);
+      applyProfileStatsSnapshot(snapshot);
     } catch (error) {
       console.log('Failed to load profile stats', error);
     }
-  }, []);
+  }, [applyProfileStatsSnapshot, fetchProfileStatsSnapshot]);
 
   useFocusEffect(
     useCallback(() => {
@@ -1422,7 +1452,7 @@ export default function ProfileScreen() {
   const handleRefresh = useCallback(async () => {
     try {
       setRefreshing(true);
-      await Promise.all([refreshProfile(), refreshAchievements(), loadStats(), loadShowcaseCards()]);
+      await Promise.all([refreshProfile(), refreshAchievements(), loadStats(true), loadShowcaseCards()]);
     } finally {
       setRefreshing(false);
     }
@@ -1502,7 +1532,7 @@ export default function ProfileScreen() {
     ];
 
     actions.push({ text: 'Cancel', style: 'cancel' });
-    Alert.alert(card.name ?? 'Showcase card', 'Choose what you want to do with this showcase slot.', actions);
+    Alert.alert(card.name ?? 'Featured card', 'Choose what you want to do with this profile slot.', actions);
   }, [openShowcaseSearch, profile, refreshProfile]);
 
   if (loading) {
@@ -1567,7 +1597,7 @@ export default function ProfileScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: stackrTabContentPadding.standard }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={theme.colors.primary} />}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
           <StackrPageTitle title="Profile" accentText="file" />
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <IconButton icon="notifications" label="Open notifications" badge={unreadCount} onPress={() => router.push(ROUTES.notifications as any)} />
@@ -1580,8 +1610,8 @@ export default function ProfileScreen() {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
-            borderRadius: 32,
-            padding: 16,
+            borderRadius: 28,
+            padding: 13,
             borderWidth: 1,
             borderColor: profileTeam.accent,
             overflow: 'hidden',
@@ -1590,13 +1620,13 @@ export default function ProfileScreen() {
             shadowRadius: 24,
             shadowOffset: { width: 0, height: 14 },
             elevation: 5,
-            marginBottom: 20,
+            marginBottom: 18,
           }}
         >
           <StackrHeroBackdrop opacity={0.12} />
           <View style={{ alignItems: 'center' }}>
             <ProfileAvatarFrame
-              size={150}
+              size={118}
               avatarUrl={profile.avatar_url}
               stackrAvatar={stackrAvatar}
               initials={initials}
@@ -1610,11 +1640,11 @@ export default function ProfileScreen() {
               accessibilityRole="button"
               accessibilityLabel="Edit identity"
               style={{
-                minHeight: 34,
+                minHeight: 32,
                 borderRadius: 999,
                 backgroundColor: theme.colors.primary,
-                paddingHorizontal: 13,
-                marginTop: 10,
+                paddingHorizontal: 12,
+                marginTop: 8,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1627,21 +1657,21 @@ export default function ProfileScreen() {
               </Text>
             </TouchableOpacity>
 
-            <Text style={{ color: theme.colors.text, fontSize: 28, lineHeight: 34, fontWeight: '900', textAlign: 'center', marginTop: 12 }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>
+            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 29, fontWeight: '900', textAlign: 'center', marginTop: 9 }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.78}>
               {collectorName}
             </Text>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 14, lineHeight: 19, fontWeight: '800', marginTop: 2, textAlign: 'center' }} numberOfLines={1}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, lineHeight: 16, fontWeight: '800', marginTop: 1, textAlign: 'center' }} numberOfLines={1}>
               Level {progression.level} Collector
             </Text>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 10, maxWidth: '100%' }}>
-              <TeamCrest team={profileTeam} active size={72} />
-              <Text style={{ color: profileTeam.color, fontSize: 13, lineHeight: 17, fontWeight: '900', textTransform: 'uppercase', textAlign: 'left', flexShrink: 1 }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.82}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, maxWidth: '100%' }}>
+              <TeamCrest team={profileTeam} active size={58} />
+              <Text style={{ color: profileTeam.color, fontSize: 12, lineHeight: 15, fontWeight: '900', textTransform: 'uppercase', textAlign: 'left', flexShrink: 1 }} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.82}>
                 Team {profileTeam.label}
               </Text>
             </View>
 
-            <View style={{ marginTop: 16, width: '100%' }}>
+            <View style={{ marginTop: 12, width: '100%' }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
                 <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900' }}>
                   Level {progression.level}
@@ -1651,25 +1681,25 @@ export default function ProfileScreen() {
                 </Text>
               </View>
               <ProgressBar progress={progression.progress} colour={theme.colors.primary} />
-              <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '800', marginTop: 6, textAlign: 'center' }}>
+              <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 15, fontWeight: '800', marginTop: 5, textAlign: 'center' }}>
                 {compactNumber(Math.max(0, progression.needed - progression.current))} XP to Level {progression.level + 1}
               </Text>
             </View>
           </View>
 
-          <View style={{ flexDirection: 'row', gap: 10, marginTop: 18 }}>
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 13 }}>
             <StatChip icon="valuePounds" label="Collection Value" value={money(stats.collectionValue)} />
             <StatChip icon="rawCard" label="Cards" value={stats.ownedCount} />
             <StatChip icon="achievements" label="Completed Sets" value={stats.completedSets} />
           </View>
         </LinearGradient>
-        <View style={{ marginBottom: 26 }}>
+        <View style={{ marginBottom: 24 }}>
           <SectionHeader title="Your Showcase" subtitle="Choose the cards that define your collection." />
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-            <ShowcaseCabinet title="Favourite Card" subtitle="Show the card that represents your collection." card={favoriteCard} icon="favorite" onPress={() => handleShowcasePress('favorite', favoriteCard)} />
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+            <ShowcaseCabinet title="Featured Card" subtitle="Show the card that represents your collection." card={favoriteCard} icon="favorite" onPress={() => handleShowcasePress('favorite', favoriteCard)} />
             <ShowcaseCabinet title="Chase Card" subtitle="Choose the card you are currently hunting." card={chaseCard} icon="chase" onPress={() => handleShowcasePress('chase', chaseCard)} />
             <ShowcaseCabinet title="Grail" subtitle="Add the card you are proudest to chase." card={grailCard} icon="achievements" onPress={() => handleShowcasePress('grail', grailCard)} />
-            <ShowcaseCabinet title="Favourite Slab" subtitle="Showcase a graded card from your vault." card={slabCard} icon="slab" onPress={() => handleShowcasePress('slab', slabCard)} />
+            <ShowcaseCabinet title="Featured Slab" subtitle="Showcase a graded card from your vault." card={slabCard} icon="slab" onPress={() => handleShowcasePress('slab', slabCard)} />
           </View>
         </View>
 

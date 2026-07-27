@@ -12,6 +12,8 @@ expo-env.d.ts
 
 # Native
 .kotlin/
+google-services.json
+stackr-release.keystore
 *.orig.*
 *.jks
 *.p8
@@ -46,9 +48,11 @@ tmp/
 .tmp/
 .tmp_video_frames/
 .expo-start*.log
+.expo-start*.err
 expo-qr.png
 expo-go-qr.png
 expo-go-tunnel-qr.png
+tmp-*.png
 
 # local editor/tool state
 .claude/

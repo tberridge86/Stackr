@@ -7,28 +7,35 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  TextInput,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 import { Text } from '../../components/Text';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
-import { router, useLocalSearchParams } from 'expo-router';
+import PricingV2Summary from '../../components/PricingV2Summary';
+import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { StackrBackButton } from '../../components/StackrBackButton';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTrade } from '../../components/trade-context';
-import { useProfile } from '../../components/profile-context';
 import { deleteMarketplaceListing } from '../../lib/marketplace';
-import { createActivityPost } from '../../lib/activity';
+import { stackrIcons } from '../../lib/stackrIcons';
 import {
   getCachedCardSync,
   getCachedCardsForSet,
   getCachedSets,
 } from '../../lib/pokemonTcgCache';
-import { getPokemonSetLogoUrl } from '../../lib/pokemonTcg';
+import { fetchCardById } from '../../lib/pokemonTcg';
+import { getDisplaySetLogoUrl } from '../../lib/setDisplay';
+import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { fetchEbayPrice } from '../../lib/ebay';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchPokeTraceCardPrice, fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 import { supabase } from '../../lib/supabase';
+import { stackrTabContentPadding } from '../../lib/stackrSizing';
 
 type PokemonCard = {
   id: string;
@@ -42,6 +49,14 @@ type PokemonCard = {
     id?: string;
     name?: string;
     series?: string;
+    localName?: string | null;
+    englishDisplayName?: string | null;
+    images?: {
+      logo?: string | null;
+      symbol?: string | null;
+      cover?: string | null;
+      artwork?: string | null;
+    } | null;
   };
   number?: string;
   language?: string | null;
@@ -100,11 +115,12 @@ type LatestSnapshotPrice = {
   cardmarket_trend?: number | null;
 };
 
-const CONDITIONS = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Played'];
-
 export default function CardDetailScreen() {
   const { theme } = useTheme();
   const styles = React.useMemo(() => makeStyles(theme), [theme]);
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const heroImageHeight = Math.min(430, Math.max(342, (width - 64) * 1.25));
   const params = useLocalSearchParams<{ id?: string; setId?: string; editionHint?: string }>();
   const cardId = typeof params.id === 'string' ? params.id : '';
   const paramSetId = typeof params.setId === 'string' ? params.setId : '';
@@ -121,24 +137,16 @@ export default function CardDetailScreen() {
           : null;
 
   const {
-    isForTrade,
     isWanted,
-    toggleTradeCard,
     toggleWishlistCard,
-    getMeta,
-    updateTradeMeta,
     myListings,
     marketplaceListings,
     refreshTrade,
   } = useTrade();
 
-  const { setFavoriteCard, setChaseCard, profile } = useProfile();
-
   const [card, setCard] = useState<PokemonCard | null>(null);
   const [loading, setLoading] = useState(true);
   const [listingBusy, setListingBusy] = useState(false);
-  const [favoriteBusy, setFavoriteBusy] = useState(false);
-  const [chaseBusy, setChaseBusy] = useState(false);
 
   // eBay price state
   const [ebayPrice, setEbayPrice] = useState<EbayPriceResult | null>(null);
@@ -190,32 +198,7 @@ export default function CardDetailScreen() {
         }
 
         if (!found && cardId) {
-          const { data: dbCard, error: dbCardError } = await supabase
-            .from('pokemon_cards')
-            .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-            .eq('id', cardId)
-            .maybeSingle();
-
-          if (dbCardError) {
-            console.log('Card detail database fallback failed:', dbCardError.message);
-          }
-
-          if (dbCard) {
-            const raw = (dbCard as any).raw_data ?? {};
-            found = {
-              ...raw,
-              id: (dbCard as any).id,
-              name: (dbCard as any).name ?? raw.name,
-              number: (dbCard as any).number ?? raw.number,
-              rarity: (dbCard as any).rarity ?? raw.rarity,
-              images: {
-                small: (dbCard as any).image_small ?? raw.images?.small,
-                large: (dbCard as any).image_large ?? raw.images?.large,
-              },
-              set: raw.set ?? { id: (dbCard as any).set_id },
-              raw_data: raw,
-            };
-          }
+          found = await fetchCardById(cardId);
         }
 
         if (mounted) {
@@ -452,10 +435,6 @@ export default function CardDetailScreen() {
   // MEMOS
   // ===============================
 
-  const tradeMeta = useMemo(() => {
-    return card ? getMeta(card.id) : {};
-  }, [card, getMeta]);
-
   const existingActiveListing = useMemo(() => {
     if (!card) return null;
     return myListings.find(
@@ -464,7 +443,21 @@ export default function CardDetailScreen() {
   }, [card, myListings]);
 
   const resolvedSetId = card?.set?.id ?? paramSetId ?? '';
-  const setLogoUrl = resolvedSetId ? getPokemonSetLogoUrl(resolvedSetId) : null;
+  const setLogoSource = getJapaneseSetLogoSourceForSet({
+    id: resolvedSetId,
+    language: card?.language ?? card?.raw_data?.language ?? card?.raw_data?.set?.language ?? null,
+    setCode: card?.raw_data?.set?.set_code ?? card?.raw_data?.set?.setCode ?? null,
+    sourceId: card?.raw_data?.set?.tcgdex_id ?? card?.raw_data?.set?.source_id ?? null,
+    name: card?.set?.name ?? card?.raw_data?.set?.display_name ?? null,
+    localName: card?.raw_data?.set?.local_name ?? null,
+    englishDisplayName: card?.raw_data?.set?.english_display_name ?? card?.raw_data?.set?.englishDisplayName ?? null,
+    externalIds: card?.raw_data?.set?.external_ids ?? null,
+  });
+  const setLogoUrl = setLogoSource ? null : getDisplaySetLogoUrl({
+    setId: resolvedSetId,
+    set: card?.set ?? null,
+    rawData: card?.raw_data,
+  });
 
   const cardMarketListings = useMemo(() => {
     if (!card) return [];
@@ -560,88 +553,11 @@ export default function CardDetailScreen() {
 
   const estimatedCardValue = ebayPrice?.average ?? resolvedTcgPrices?.market ?? cardmarketPrice ?? null;
 
-  const isFavorite =
-    !!card &&
-    profile?.favorite_card_id === card.id &&
-    profile?.favorite_set_id === (card.set?.id ?? paramSetId);
-
-  const isChase =
-    !!card &&
-    profile?.chase_card_id === card.id &&
-    profile?.chase_set_id === (card.set?.id ?? paramSetId);
-
   // ===============================
   // HANDLERS
   // ===============================
 
-  const handleSetCondition = (condition: string) => {
-    if (!card) return;
-    updateTradeMeta(card.id, { condition });
-  };
-
-  const handleSetNotes = (notes: string) => {
-    if (!card) return;
-    updateTradeMeta(card.id, { notes });
-  };
-
-  const handleSetValue = (value: string) => {
-    if (!card) return;
-    updateTradeMeta(card.id, { value });
-  };
-
-  const handleQuickValue = (value: number | null) => {
-    if (!card || value == null) return;
-    updateTradeMeta(card.id, { value: String(value) });
-  };
-
-  const handleSetFavorite = async () => {
-    try {
-      if (!card) return;
-      const setId = card.set?.id ?? paramSetId;
-      if (!setId) {
-        Alert.alert('Error', 'Set information is missing for this card.');
-        return;
-      }
-      setFavoriteBusy(true);
-      await setFavoriteCard(card.id, setId);
-      if (!isFavorite) {
-        createActivityPost({
-          type: 'favorite_card',
-          title: `Favourited: ${card.name ?? 'Card'}`,
-          subtitle: card.set?.name ?? 'Favourite card',
-          cardId: card.id,
-          setId,
-        }).catch((err) => {
-          console.log('Failed to create favourite activity post', err);
-        });
-      }
-      Alert.alert('Favourite updated', `${card.name ?? 'Card'} is now your favourite card.`);
-    } catch {
-      Alert.alert('Error', 'Could not update favourite card.');
-    } finally {
-      setFavoriteBusy(false);
-    }
-  };
-
-  const handleSetChase = async () => {
-    try {
-      if (!card) return;
-      const setId = card.set?.id ?? paramSetId;
-      if (!setId) {
-        Alert.alert('Error', 'Set information is missing for this card.');
-        return;
-      }
-      setChaseBusy(true);
-      await setChaseCard(card.id, setId);
-      Alert.alert('Chase updated', `${card.name ?? 'Card'} is now your chase card.`);
-    } catch {
-      Alert.alert('Error', 'Could not update chase card.');
-    } finally {
-      setChaseBusy(false);
-    }
-  };
-
-const handleListOnMarket = async () => {
+  const handleListOnMarket = async () => {
     if (!card) {
       Alert.alert('Error', 'Card data not loaded yet.');
       return;
@@ -697,23 +613,30 @@ const handleListOnMarket = async () => {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text style={styles.loadingText}>Loading card...</Text>
+      <View style={styles.screen}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StackrBackdrop />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <Text style={styles.loadingText}>Loading card...</Text>
+        </View>
       </View>
     );
   }
 
   if (!card) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorTitle}>Card not found</Text>
-        <Text style={styles.errorText}>This card could not be loaded from cache.</Text>
+      <View style={styles.screen}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StackrBackdrop />
+        <View style={styles.centered}>
+          <Text style={styles.errorTitle}>Card not found</Text>
+          <Text style={styles.errorText}>This card could not be loaded from cache.</Text>
+        </View>
       </View>
     );
   }
 
-  const isTradeMarked = isForTrade(card.id);
   const isWishlisted = isWanted(card.id);
   const hasEbayValues = ebayPrice?.low != null || ebayPrice?.average != null || ebayPrice?.high != null;
   const hasTcgValues = resolvedTcgPrices?.low != null || resolvedTcgPrices?.mid != null || resolvedTcgPrices?.market != null;
@@ -723,25 +646,50 @@ const handleListOnMarket = async () => {
   // ===============================
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <StackrBackdrop />
+
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[
+          styles.content,
+          {
+            paddingTop: insets.top + 8,
+            paddingBottom: insets.bottom + stackrTabContentPadding.standard,
+          },
+        ]}
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
+      >
+      <View style={styles.headerRow}>
+        <StackrBackButton onPress={() => router.back()} />
+      </View>
 
       {/* Card Image */}
       <View style={styles.heroCard}>
-        {card.images?.large || card.images?.small ? (
-          <EditionAwareCardImage
-            uri={card.images?.large || card.images?.small}
-            cardId={card.id}
-            rawData={card.raw_data}
-            editionHint={editionHint}
-            sourceSize="large"
-            style={styles.cardImage}
-            resizeMode="contain"
+        <View style={[styles.heroImageFrame, { height: heroImageHeight }]}>
+          {card.images?.large || card.images?.small ? (
+            <EditionAwareCardImage
+              uri={card.images?.large || card.images?.small}
+              cardId={card.id}
+              rawData={card.raw_data}
+              editionHint={editionHint}
+              sourceSize="large"
+              style={styles.cardImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={styles.imageFallback}>
+              <Text style={styles.imageFallbackText}>No image</Text>
+            </View>
+          )}
+          <RaritySymbol
+            rarity={card.rarity}
+            size={18}
+            style={RARITY_SYMBOL_CARD_OVERLAY}
           />
-        ) : (
-          <View style={styles.imageFallback}>
-            <Text style={styles.imageFallbackText}>No image</Text>
-          </View>
-        )}
+        </View>
       </View>
 
       <StackrCardIdentity
@@ -760,7 +708,11 @@ const handleListOnMarket = async () => {
           accessibilityRole="button"
           accessibilityLabel={`Open set ${card.set?.name ?? resolvedSetId}`}
         >
-          {setLogoUrl ? <Image source={{ uri: setLogoUrl }} style={styles.setLogoImage} resizeMode="contain" /> : null}
+          {setLogoSource ? (
+            <Image source={setLogoSource} style={styles.setLogoImage} resizeMode="contain" />
+          ) : setLogoUrl ? (
+            <Image source={{ uri: setLogoUrl }} style={styles.setLogoImage} resizeMode="contain" />
+          ) : null}
           <Text style={styles.setLinkText} numberOfLines={1}>
             View {card.set?.name ?? 'set'}
           </Text>
@@ -769,7 +721,6 @@ const handleListOnMarket = async () => {
 
       <View style={styles.metaRow}>
         {!!editionLabel && <Text style={styles.metaChip}>{editionLabel}</Text>}
-        {!!card.rarity && <Text style={styles.metaChip}>{card.rarity}</Text>}
         {!!card.supertype && <Text style={styles.metaChip}>{card.supertype}</Text>}
         {!!card.hp && <Text style={styles.metaChip}>HP {card.hp}</Text>}
       </View>
@@ -786,25 +737,31 @@ const handleListOnMarket = async () => {
             style={styles.refreshButton}
           >
             <Text style={styles.refreshButtonText}>
-              {ebayLoading ? 'Fetching...' : '↻ Refresh'}
+              {ebayLoading ? 'Fetching...' : 'Refresh'}
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.infoCard}>
+          <PricingV2Summary
+            cardId={card.id}
+            language={card.language ?? (card as any).raw_data?.language ?? null}
+            edition={editionHint}
+            productType="raw_card"
+          />
 
-          {/* eBay Live Prices */}
-          <Text style={styles.priceSourceLabel}>eBay sold comps · live GBP</Text>
+          {/* eBay market lookup */}
+          <Text style={styles.priceSourceLabel}>eBay market lookup (GBP)</Text>
 
           {ebayLoading ? (
             <View style={styles.ebayLoadingRow}>
               <ActivityIndicator size="small" color={theme.colors.primary} />
-              <Text style={styles.ebayLoadingText}>Fetching live eBay prices...</Text>
+              <Text style={styles.ebayLoadingText}>Fetching eBay market prices...</Text>
             </View>
           ) : ebayError ? (
             <View style={styles.ebayErrorRow}>
               <Text style={styles.ebayErrorText}>
-                Could not fetch live eBay comps.{' '}
+                Could not fetch eBay market prices.{' '}
               </Text>
               <TouchableOpacity onPress={() => fetchEbay(card)}>
                 <Text style={styles.ebayRetryText}>Retry</Text>
@@ -812,7 +769,7 @@ const handleListOnMarket = async () => {
             </View>
           ) : !hasEbayValues ? (
             <View style={styles.pricingEmptyState}>
-              <Text style={styles.pricingEmptyTitle}>No eBay sold prices yet</Text>
+              <Text style={styles.pricingEmptyTitle}>No eBay market price yet</Text>
               <Text style={styles.pricingEmptyCopy}>
                 Refresh market data or use the other pricing sources as a guide.
               </Text>
@@ -820,50 +777,38 @@ const handleListOnMarket = async () => {
           ) : (
             <>
               <View style={styles.marketButtonsRow}>
-                <TouchableOpacity
-                  onPress={() => handleQuickValue(ebayPrice?.low ?? null)}
-                  style={styles.marketButton}
-                  disabled={ebayPrice?.low == null}
-                >
+                <View style={styles.marketButton}>
                   <Text style={styles.marketButtonLabel}>Low</Text>
-                  <Text style={styles.marketButtonValue}>
-                    {ebayPrice?.low != null ? `£${ebayPrice.low.toFixed(2)}` : '--'}
+                  <Text style={styles.marketButtonValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                    {ebayPrice?.low != null ? `\u00A3${ebayPrice.low.toFixed(2)}` : '--'}
                   </Text>
-                </TouchableOpacity>
+                </View>
 
-                <TouchableOpacity
-                  onPress={() => handleQuickValue(ebayPrice?.average ?? null)}
-                  style={[styles.marketButton, styles.marketButtonHighlight]}
-                  disabled={ebayPrice?.average == null}
-                >
+                <View style={[styles.marketButton, styles.marketButtonHighlight]}>
                   <Text style={styles.marketButtonLabel}>Average</Text>
-                  <Text style={[styles.marketButtonValue, styles.marketButtonValueHighlight]}>
-                    {ebayPrice?.average != null ? `£${ebayPrice.average.toFixed(2)}` : '--'}
+                  <Text style={[styles.marketButtonValue, styles.marketButtonValueHighlight]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                    {ebayPrice?.average != null ? `\u00A3${ebayPrice.average.toFixed(2)}` : '--'}
                   </Text>
-                </TouchableOpacity>
+                </View>
 
-                <TouchableOpacity
-                  onPress={() => handleQuickValue(ebayPrice?.high ?? null)}
-                  style={styles.marketButton}
-                  disabled={ebayPrice?.high == null}
-                >
+                <View style={styles.marketButton}>
                   <Text style={styles.marketButtonLabel}>High</Text>
-                  <Text style={styles.marketButtonValue}>
-                    {ebayPrice?.high != null ? `£${ebayPrice.high.toFixed(2)}` : '--'}
+                  <Text style={styles.marketButtonValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                    {ebayPrice?.high != null ? `\u00A3${ebayPrice.high.toFixed(2)}` : '--'}
                   </Text>
-                </TouchableOpacity>
+                </View>
               </View>
 
               {/* Sample count + fallback notice */}
               <View style={styles.ebayMetaRow}>
                 {ebayPrice?.count != null && ebayPrice.count > 0 && (
                   <Text style={styles.ebayMetaText}>
-                    Based on {ebayPrice.count} listing{ebayPrice.count !== 1 ? 's' : ''}
+                    Based on {ebayPrice.count} matched listing{ebayPrice.count !== 1 ? 's' : ''}
                   </Text>
                 )}
                 {ebayPrice?.usedFallback && (
                   <Text style={styles.ebayFallbackText}>
-                    Backup lookup used - results may be broader.
+                    Backup lookup used - check against verified sold evidence where available.
                   </Text>
                 )}
                 {ebayPrice?.count === 0 && (
@@ -877,7 +822,7 @@ const handleListOnMarket = async () => {
           <View style={styles.divider} />
 
           {/* TCGPlayer — GBP */}
-          <Text style={styles.priceSourceLabel}>TCGPlayer · cached GBP</Text>
+          <Text style={styles.priceSourceLabel}>Cached daily price - TCGPlayer (GBP)</Text>
 
           {!hasTcgValues ? (
             <View style={styles.pricingEmptyState}>
@@ -890,22 +835,22 @@ const handleListOnMarket = async () => {
             <View style={styles.marketButtonsRow}>
               <View style={styles.marketButton}>
                 <Text style={styles.marketButtonLabel}>Low</Text>
-                <Text style={styles.marketButtonValue}>
-                  {resolvedTcgPrices?.low != null ? `£${resolvedTcgPrices.low.toFixed(2)}` : '--'}
+                <Text style={styles.marketButtonValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                  {resolvedTcgPrices?.low != null ? `\u00A3${resolvedTcgPrices.low.toFixed(2)}` : '--'}
                 </Text>
               </View>
 
               <View style={styles.marketButton}>
                 <Text style={styles.marketButtonLabel}>Mid</Text>
-                <Text style={styles.marketButtonValue}>
-                  {resolvedTcgPrices?.mid != null ? `£${resolvedTcgPrices.mid.toFixed(2)}` : '--'}
+                <Text style={styles.marketButtonValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                  {resolvedTcgPrices?.mid != null ? `\u00A3${resolvedTcgPrices.mid.toFixed(2)}` : '--'}
                 </Text>
               </View>
 
               <View style={styles.marketButton}>
                 <Text style={styles.marketButtonLabel}>Market</Text>
-                <Text style={styles.marketButtonValue}>
-                  {resolvedTcgPrices?.market != null ? `£${resolvedTcgPrices.market.toFixed(2)}` : '--'}
+                <Text style={styles.marketButtonValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                  {resolvedTcgPrices?.market != null ? `\u00A3${resolvedTcgPrices.market.toFixed(2)}` : '--'}
                 </Text>
               </View>
             </View>
@@ -915,7 +860,7 @@ const handleListOnMarket = async () => {
           <View style={styles.divider} />
 
           {/* CardMarket — GBP */}
-          <Text style={styles.priceSourceLabel}>CardMarket · cached GBP</Text>
+          <Text style={styles.priceSourceLabel}>Cached daily price - CardMarket (GBP)</Text>
 
           {cardmarketPrice == null ? (
             <View style={styles.pricingEmptyState}>
@@ -928,15 +873,15 @@ const handleListOnMarket = async () => {
             <View style={styles.marketButtonsRow}>
               <View style={[styles.marketButton, { flex: 0, paddingHorizontal: 20 }]}>
                 <Text style={styles.marketButtonLabel}>Trend</Text>
-                <Text style={styles.marketButtonValue}>
-                  £{cardmarketPrice.toFixed(2)}
+                <Text style={styles.marketButtonValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                  {'\u00A3'}{cardmarketPrice.toFixed(2)}
                 </Text>
               </View>
             </View>
           )}
 
           <Text style={styles.marketHint}>
-            Tap an eBay sold value to auto-fill your asking price.
+            Verified sold comps are the strongest signal. Cached sources and active listings are fallback guide prices.
           </Text>
         </View>
       </View>
@@ -961,15 +906,15 @@ const handleListOnMarket = async () => {
         <View style={styles.infoCard}>
           <View style={styles.marketSummaryGrid}>
             <View style={styles.marketSummaryItem}>
-              <Text style={styles.marketSummaryLabel}>Lowest purchase</Text>
-              <Text style={styles.marketSummaryValue}>
-                {lowestPurchasePrice != null ? `£${lowestPurchasePrice.toFixed(2)}` : 'No active price'}
+              <Text style={styles.marketSummaryLabel}>Lowest active listing</Text>
+              <Text style={styles.marketSummaryValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+                {lowestPurchasePrice != null ? `\u00A3${lowestPurchasePrice.toFixed(2)}` : 'No active price'}
               </Text>
             </View>
             <View style={styles.marketSummaryItem}>
-              <Text style={styles.marketSummaryLabel}>Estimated value</Text>
-              <Text style={styles.marketSummaryValue}>
-                {estimatedCardValue != null ? `£${estimatedCardValue.toFixed(2)}` : 'Price pending'}
+              <Text style={styles.marketSummaryLabel}>Estimated card value</Text>
+              <Text style={styles.marketSummaryValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+                {estimatedCardValue != null ? `\u00A3${estimatedCardValue.toFixed(2)}` : 'Price pending'}
               </Text>
             </View>
           </View>
@@ -982,7 +927,7 @@ const handleListOnMarket = async () => {
             </Text>
           </View>
           <Text style={styles.marketHint}>
-            Prices are estimates from available sources. View The Market for condition, grade, seller, protection and delivery details.
+            Estimated value is a guide price. Active listings are user-set prices and can differ by condition, grade, protection and delivery.
           </Text>
           <View style={styles.marketActionsRow}>
             <TouchableOpacity
@@ -1001,101 +946,22 @@ const handleListOnMarket = async () => {
         </View>
       </View>
 
-      {/* Trade Actions */}
-      <View style={styles.actions}>
+      {/* Chase */}
+      <View style={styles.chasePanel}>
         <TouchableOpacity
-          style={[styles.actionButton, isTradeMarked && styles.actionButtonActive]}
-          onPress={() => toggleTradeCard(card.id)}
-        >
-          <Text style={styles.actionButtonText}>
-            {isTradeMarked ? 'Remove from Trade' : 'Mark for Trade'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionButton, isWishlisted && styles.actionButtonActiveAlt]}
           onPress={() => toggleWishlistCard(card.id)}
-        >
-          <Text style={styles.actionButtonText}>
-            {isWishlisted ? 'Remove Wanted' : 'Mark Wanted'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Favourite / Chase */}
-      <View style={styles.showcaseRow}>
-        <TouchableOpacity
-          onPress={handleSetFavorite}
-          disabled={favoriteBusy}
           style={[
             styles.showcaseButton,
-            styles.favoriteButton,
-            isFavorite && styles.favoriteButtonActive,
+            isWishlisted ? styles.chaseButtonActive : styles.chaseButton,
           ]}
         >
-          <Text style={styles.showcaseButtonText}>
-            {favoriteBusy ? 'Saving...' : isFavorite ? '⭐ Favourite Card' : '⭐ Set as Favourite'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={handleSetChase}
-          disabled={chaseBusy}
-          style={[
-            styles.showcaseButton,
-            styles.chaseButton,
-            isChase && styles.chaseButtonActive,
-          ]}
-        >
-          <Text style={styles.showcaseButtonText}>
-            {chaseBusy ? 'Saving...' : isChase ? '🎯 Chase Card' : '🎯 Set as Chase'}
+          <Image source={stackrIcons.chase} style={styles.chaseButtonIcon} resizeMode="contain" />
+          <Text style={[styles.showcaseButtonText, isWishlisted && styles.chaseButtonActiveText]}>
+            {isWishlisted ? 'Remove from Chase' : 'Add to Chase'}
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Trade Setup */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Trade Setup</Text>
-        <View style={styles.infoCard}>
-          <Text style={styles.label}>Condition</Text>
-          <View style={styles.chipWrap}>
-            {CONDITIONS.map((condition) => {
-              const active = tradeMeta?.condition === condition;
-              return (
-                <TouchableOpacity
-                  key={condition}
-                  onPress={() => handleSetCondition(condition)}
-                  style={[styles.choiceChip, active && styles.choiceChipActive]}
-                >
-                  <Text style={styles.choiceChipText}>{condition}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          <Text style={styles.label}>Asking value (£)</Text>
-          <TextInput
-            value={tradeMeta?.value ?? ''}
-            onChangeText={handleSetValue}
-            keyboardType="numeric"
-            placeholder="Enter asking value"
-            placeholderTextColor="#777"
-            style={styles.input}
-          />
-
-          <Text style={styles.label}>Notes</Text>
-          <TextInput
-            value={tradeMeta?.notes ?? ''}
-            onChangeText={handleSetNotes}
-            placeholder="Add notes about condition, extras, wants..."
-            placeholderTextColor="#777"
-            multiline
-            style={[styles.input, styles.notesInput]}
-          />
-        </View>
-      </View>
-
-{/* The Market Button(s) */}
+      {/* The Market Button(s) */}
       {existingActiveListing ? (
         <View style={styles.marketplaceButtonsRow}>
           <TouchableOpacity
@@ -1104,7 +970,7 @@ const handleListOnMarket = async () => {
             disabled={listingBusy}
           >
             <Text style={styles.deleteButtonText}>
-              {listingBusy ? 'Removing...' : '🗑️ Remove Listing'}
+              {listingBusy ? 'Removing...' : 'Remove Listing'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1236,23 +1102,36 @@ const handleListOnMarket = async () => {
           </View>
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+
+    </View>
   );
 }
 
 function makeStyles(theme: any) {
   return StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
     backgroundColor: theme.colors.bg,
+    overflow: 'hidden',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   content: {
     padding: 16,
-    paddingBottom: 48,
+    gap: 0,
+  },
+  headerRow: {
+    minHeight: 36,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    marginBottom: 8,
   },
   centered: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -1276,19 +1155,25 @@ function makeStyles(theme: any) {
   heroCard: {
     backgroundColor: theme.colors.card,
     borderRadius: 20,
-    padding: 16,
-    marginBottom: 16,
+    padding: 12,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: theme.colors.border,
     alignItems: 'center',
   },
+  heroImageFrame: {
+    width: '100%',
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: theme.colors.surface,
+  },
   cardImage: {
     width: '100%',
-    height: 420,
+    height: '100%',
   },
   imageFallback: {
     width: '100%',
-    height: 320,
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: theme.colors.surface,
@@ -1340,18 +1225,19 @@ function makeStyles(theme: any) {
   },
   section: {
     marginBottom: 16,
+    gap: 8,
   },
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 0,
   },
   sectionTitle: {
     color: theme.colors.text,
     fontSize: 18,
     fontWeight: '800',
-    marginBottom: 10,
+    marginBottom: 0,
   },
   refreshButton: {
     backgroundColor: theme.colors.surface,
@@ -1375,7 +1261,8 @@ function makeStyles(theme: any) {
   },
   priceSourceLabel: {
     color: theme.colors.textSoft,
-    fontSize: 11,
+    fontSize: 10.5,
+    lineHeight: 14,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
@@ -1443,109 +1330,46 @@ function makeStyles(theme: any) {
     backgroundColor: theme.colors.border,
     marginVertical: 14,
   },
-  actions: {
-    flexDirection: 'row',
-    marginBottom: 12,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: theme.colors.card,
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  actionButtonActive: {
-    backgroundColor: '#DCFCE7',
-    borderColor: '#86EFAC',
-  },
-  actionButtonActiveAlt: {
-    backgroundColor: '#F0ECFF',
-    borderColor: theme.colors.primary,
-  },
-  actionButtonText: {
-    color: theme.colors.text,
-    textAlign: 'center',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  showcaseRow: {
-    flexDirection: 'row',
+  chasePanel: {
     marginBottom: 18,
   },
   showcaseButton: {
-    flex: 1,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 12,
-  },
-  favoriteButton: {
-    backgroundColor: theme.colors.secondary,
-    marginRight: 8,
-  },
-  favoriteButtonActive: {
-    backgroundColor: theme.colors.secondary,
+    minHeight: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 10,
   },
   chaseButton: {
     backgroundColor: theme.colors.primary,
-    marginLeft: 8,
+    shadowColor: theme.colors.primary,
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   chaseButtonActive: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#F0ECFF',
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  chaseButtonIcon: {
+    width: 24,
+    height: 24,
   },
   showcaseButtonText: {
     color: '#FFFFFF',
     textAlign: 'center',
     fontWeight: '800',
-    fontSize: 13,
-  },
-  label: {
-    color: theme.colors.text,
     fontSize: 14,
-    marginBottom: 8,
-    fontWeight: '700',
   },
-  chipWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 14,
+  chaseButtonActiveText: {
+    color: theme.colors.primary,
   },
-  choiceChip: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  choiceChipActive: {
-    backgroundColor: '#F0ECFF',
-    borderColor: theme.colors.primary,
-  },
-  choiceChipText: {
-    color: theme.colors.text,
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  input: {
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 12,
-    color: theme.colors.text,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    marginBottom: 14,
-  },
-  notesInput: {
-    minHeight: 90,
-    textAlignVertical: 'top',
-  },
-marketplaceButton: {
+  marketplaceButton: {
     backgroundColor: theme.colors.primary,
     borderRadius: 14,
     paddingVertical: 14,
@@ -1589,12 +1413,13 @@ marketplaceButton: {
   },
   marketButton: {
     flex: 1,
+    minWidth: 0,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 7,
   },
   marketButtonHighlight: {
     backgroundColor: theme.colors.primary + '18',
@@ -1609,11 +1434,14 @@ marketplaceButton: {
   marketButtonValue: {
     color: theme.colors.text,
     textAlign: 'center',
-    fontWeight: '700',
+    fontSize: 13.5,
+    lineHeight: 17,
+    fontWeight: '900',
+    includeFontPadding: false,
   },
   marketButtonValueHighlight: {
     color: theme.colors.primary,
-    fontSize: 15,
+    fontSize: 14,
   },
   marketHint: {
     color: theme.colors.textSoft,
@@ -1639,6 +1467,7 @@ marketplaceButton: {
   },
   marketSummaryItem: {
     flex: 1,
+    minWidth: 0,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -1652,10 +1481,11 @@ marketplaceButton: {
   },
   marketSummaryValue: {
     color: theme.colors.text,
-    fontSize: 16,
-    lineHeight: 21,
+    fontSize: 15,
+    lineHeight: 19,
     fontWeight: '900',
     marginTop: 4,
+    includeFontPadding: false,
   },
   marketCountsRow: {
     flexDirection: 'row',

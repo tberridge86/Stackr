@@ -1,5879 +1,4527 @@
-import { useTheme } from '../../components/theme-context';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Buffer } from 'buffer';
+import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Haptics from 'expo-haptics';
+import * as ImageManipulator from 'expo-image-manipulator';
+import { Stack, router, useLocalSearchParams, usePathname } from 'expo-router';
+import { decode as decodeJpeg } from 'jpeg-js';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Svg, { Polygon } from 'react-native-svg';
 import {
-  View,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
+  AppState,
   Image,
-  FlatList,
+  Pressable,
   ScrollView,
-  Vibration,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
   useWindowDimensions,
-  Share,
 } from 'react-native';
-import { Text } from '../../components/Text';
-import { StackrBackButton } from '../../components/StackrBackButton';
-import EditionAwareCardImage from '../../components/EditionAwareCardImage';
-import {
-  EmptyStateCard,
-  HeroActionPanel,
-  PremiumCard,
-  ScanModeCard,
-  StatPill,
-  TrustBadge,
-} from '../../components/PremiumUI';
-import { SafeAreaView , useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { useIsFocused } from '@react-navigation/native';
-import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
-import { fetchBinders, BinderRecord } from '../../lib/binders';
-import { ensureOwnedCardQuantity } from '../../lib/ownership';
-import { scanStore } from '../../lib/scanStore';
-import * as ImageManipulator from 'expo-image-manipulator';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
-import { PRICE_API_URL } from '../../lib/config';
-import { recordAchievementEvent } from '../../lib/achievements';
-import { Buffer } from 'buffer';
-import { decode as decodeJpeg } from 'jpeg-js';
+import { Text } from '../../components/Text';
+import { useTheme } from '../../components/theme-context';
+import { identifyCardsDetailed, type IdentifiedCard, type ScanIdentifyDiagnostics } from '../../lib/recognition/orchestrator';
+import { getRecognitionFeatureFlags } from '../../lib/recognition/featureFlags';
+import { warmLocalOnDeviceV1 } from '../../lib/recognition/localOnDeviceInference';
 import {
-  lookupLocalCardsByPrintedNumber,
-  lookupLocalCardsByPrintedTotal,
-  lookupLocalCardsByLooseNameText,
-  lookupLocalCardsByNameText,
-  lookupLocalCardsBySet,
-  lookupLocalCardByNameTotalAndNumberHint,
-  resolveLocalCardByFusion,
-  resolveLocalCardsByName,
-  warmLocalCardIndex,
-  type LocalScanCard,
-} from '../../lib/localCardIndex';
+  getLocalQuickScanGuidance,
+  mapScannerCaptureStateToLocalQuickScanState,
+  normaliseLocalQuickScanReason,
+  shouldShowLocalQuickScanOfflineIndicator,
+} from '../../lib/localQuickScanExperience';
+import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import {
-  embedImageOnDevice,
-  isOnDeviceVisualAvailable,
-  rerankWithOnDeviceVisual,
-} from '../../lib/onDeviceVisualMatcher';
+  captureRectToManipulatorCrop,
+  createCapturedFrame,
+  expandCropRect,
+  getCropFromPreviewRect,
+  type CapturedFrame,
+  type CaptureRect,
+} from '../../lib/captureGeometry';
 import {
-  scannerPackCardToLocalCard,
-  searchScannerPack,
-  syncScannerPack,
-} from '../../lib/scannerPack';
-import type { NormalisedScanResponse, ScanCandidate, ScanEditionHint, ScanErrorResponse, ScanErrorStage } from '../../types/scan';
+  CARD_LOCALISATION_ENABLED,
+  CARD_LOCALISATION_SAFETY_MARGIN,
+  CARD_LOCALISATION_SAMPLE_FPS,
+  CAPTURE_GEOMETRY_V2_ENABLED,
+  SCAN_AUTO_CAPTURE_V2_ENABLED,
+  SCAN_BINDER_PAGE_REMOTE_CONCURRENCY,
+  SCAN_BINDER_PAGE_V2_ENABLED,
+  SCAN_LOCAL_OCR_MATCHER_ENABLED,
+  SCAN_QUALITY_DEVICE_PROFILE,
+  SCAN_QUALITY_DIAGNOSTICS_ENABLED,
+  SCAN_QUALITY_ENABLED,
+} from '../../lib/config';
+import {
+  getCardLocalisationGuidance,
+  localiseCardFromJpegBase64,
+  perspectiveCorrectCardJpegBase64,
+  smoothCardLocalisation,
+  type CardLocalisationResult,
+} from '../../lib/cardLocalisation';
+import {
+  evaluateScanQuality,
+  type ScanQualityResult,
+} from '../../lib/scanQuality';
+import {
+  fetchActiveScannerThresholdSet,
+  getAutoCaptureThresholds,
+  getDefaultScannerThresholdSet,
+  getScanQualityCalibration,
+  type ScannerThresholdSet,
+} from '../../lib/scannerCalibration';
+import {
+  extractLocalOcrSignals,
+  matchLocalOcrCandidates,
+  type LocalOcrCandidateMatch,
+  type LocalOcrMatchResult,
+  type LocalOcrRegionRole,
+  type LocalOcrRegionText,
+} from '../../lib/localOcrCardMatcher';
+import {
+  evaluateStableAutoCapture,
+  transitionScannerCaptureState,
+  type ScannerCaptureState,
+} from '../../lib/scanAutoCaptureState';
+import { saveScanAttemptDiagnostics } from '../../lib/scanDiagnostics';
+import { logScanLearningEvent } from '../../lib/scanLearning';
+import {
+  SCANNER_RECOGNITION_PIPELINE_VERSION,
+  rankScannerCandidates,
+  validateScannerFrame,
+} from '../../lib/scannerRecognitionPipeline';
+import { getScannerClientContext } from '../../lib/scannerClientContext';
+import {
+  buildScannerAnalyticsMetadata,
+  classifyScannerErrorCategory,
+  getMatchSource,
+  getRemoteEndpointUsed,
+  getRemoteRequestMs,
+  getScannerFeatureFlags,
+  type ScannerTimingMetrics,
+} from '../../lib/scannerAnalytics';
+import {
+  BINDER_PAGE_LAYOUTS,
+  BINDER_PAGE_LAYOUT_STORAGE_KEY,
+  DEFAULT_BINDER_PAGE_LAYOUT,
+  assessBinderPocketImage,
+  createBinderPageGridCells,
+  getBinderPocketStatusFromCandidates,
+  markDuplicatePocketCandidates,
+  normalizeBinderPageLayout,
+  runWithConcurrency,
+  type BinderPageLayout,
+  type BinderPagePocketResult,
+  type BinderPocketCandidate,
+} from '../../lib/binderPageScan';
+import { saveBinderPageScanSession, updateBinderPageScanSession } from '../../lib/binderPageScanStore';
+import {
+  getScanIntentConfig,
+  isBinderScanIntent,
+  isListingScanIntent,
+  resolveScanIntent,
+} from '../../lib/scanIntent';
+import { scanStore } from '../../lib/scanStore';
+import { supabase } from '../../lib/supabase';
 
-const SCANNING_MESSAGES = [
-  'Reading card...',
-  'Identifying Pokémon...',
-  'Checking set number...',
-  'Looking up in database...',
-  'Almost there...',
-  'Matching card...',
-];
-
-const FAST_SCAN_PROFILE = { width: 720, compress: 0.5 };
-const ACCURACY_SCAN_PROFILE = { width: 960, compress: 0.72 };
-const MARKET_XIMILAR_SCAN_PROFILE = { width: 1400, compress: 0.9 };
-const BINDER_PAGE_SCAN_PROFILE = { width: 1500, compress: 0.88 };
-const BINDER_PAGE_CARD_PROFILE = { width: 760, compress: 0.72 };
-const USE_SNAPSHOT_CAPTURE = true;
-const REQUEST_TIMEOUT_MS = 5000;
-const MANUAL_SCAN_HARD_TIMEOUT_MS = 30000;
-const CARD_LOOKUP_TIMEOUT_MS = 3500;
-const LOCAL_AI_TIMEOUT_MS = 2500;
-const LOCAL_AI_VISUAL_TIMEOUT_MS = 3500;
-const RARE_CANDY_STYLE_TIMEOUT_MS = 3500;
-const USE_RARE_CANDY_STYLE_SCAN = process.env.EXPO_PUBLIC_RARE_CANDY_STYLE_SCAN !== 'false';
-const AUTO_SCAN_SOFT_BUDGET_MS = 4500;
-const AUTO_SCAN_HARD_BUDGET_MS = 6500;
-const GENERAL_FINGERPRINT_CONFIDENCE_THRESHOLD = 78;
-const SET_FINGERPRINT_CONFIDENCE_THRESHOLD = 60;
-const SCAN_PROVIDER = process.env.EXPO_PUBLIC_SCAN_PROVIDER ?? 'local-ai';
 const CARD_ASPECT_RATIO = 0.716;
-const BINDER_PAGE_ASPECT_RATIO = CARD_ASPECT_RATIO;
-const BINDER_PAGE_FRAME_MARGIN_RATIO = 0.06;
-const GRID_SCAN_OPTIONS = ['auto', '2', '3', '4', '5'] as const;
-const DEFAULT_AUTO_GRID_SIZE = 3;
-const CARD_CROP_WIDTH_RATIO = 0.96;
-const CARD_CROP_HEIGHT_RATIO = 0.98;
-const NUMBER_OCR_WIDTH = 1600;
-const PRIMARY_NUMBER_OCR_REGIONS = [
-  { name: 'number-fast-lower-half', x: 0, y: 0.52, width: 1, height: 0.44 },
+const MAX_RESULT_CARDS = 3;
+const FRAME_CHECK_WIDTH = 180;
+const LOCALISATION_FRAME_CHECK_WIDTH = 320;
+const LOCALISATION_OUTPUT_WIDTH = 720;
+const AUTO_FRAME_CHECK_INTERVAL_MS = 1350;
+const DEFAULT_SCANNER_THRESHOLD_SET = getDefaultScannerThresholdSet();
+const OPTIMUM_SCAN_FRAME_WIDTH_RATIO = 0.44;
+const OPTIMUM_SCAN_FRAME_MAX_WIDTH = 210;
+const OPTIMUM_SCAN_FRAME_MIN_WIDTH = 156;
+const LOCAL_QUICK_SCAN_FRAME_WIDTH_RATIO = 0.72;
+const LOCAL_QUICK_SCAN_FRAME_MAX_WIDTH = 322;
+const LOCAL_QUICK_SCAN_FRAME_MIN_WIDTH = 204;
+const BINDER_PAGE_FRAME_WIDTH_RATIO = 0.84;
+const BINDER_PAGE_FRAME_MAX_WIDTH = 360;
+const BINDER_PAGE_OUTPUT_WIDTH = 1500;
+const BINDER_PAGE_POCKET_OUTPUT_WIDTH = 520;
+const SCAN_CROP_PADDING_RATIO = 0.12;
+const OCR_REGION_SPECS: TargetedOcrRegionSpec[] = [
+  { role: 'name', x: 0.035, y: 0.018, width: 0.72, height: 0.13, resizeWidth: 760 },
+  { role: 'hp', x: 0.66, y: 0.018, width: 0.31, height: 0.12, resizeWidth: 420 },
+  { role: 'collector-number', x: 0.015, y: 0.84, width: 0.46, height: 0.14, resizeWidth: 620 },
+  { role: 'set-code', x: 0.015, y: 0.76, width: 0.5, height: 0.2, resizeWidth: 660 },
+  { role: 'copyright', x: 0.36, y: 0.84, width: 0.62, height: 0.14, resizeWidth: 760 },
 ];
-const SECONDARY_NUMBER_OCR_REGIONS = [
-  { name: 'number-fast-bottom-right', x: 0.5, y: 0.78, width: 0.48, height: 0.16 },
-  { name: 'number-fast-bottom-left', x: 0, y: 0.78, width: 0.5, height: 0.16 },
-  { name: 'number-micro-left', x: 0, y: 0.79, width: 0.42, height: 0.14 },
-  { name: 'number-strip', x: 0.46, y: 0.68, width: 0.52, height: 0.24 },
-];
-const FAST_NUMBER_OCR_REGIONS = [
-  ...PRIMARY_NUMBER_OCR_REGIONS,
-  ...SECONDARY_NUMBER_OCR_REGIONS,
-];
-const FALLBACK_NUMBER_OCR_REGIONS = [
-  { name: 'bottom-right', x: 0.42, y: 0.64, width: 0.56, height: 0.32 },
-  { name: 'bottom-left', x: 0, y: 0.64, width: 0.58, height: 0.32 },
-  { name: 'bottom-band', x: 0, y: 0.64, width: 1, height: 0.32 },
-];
-const TOTAL_HINT_OCR_REGIONS = [
-  { name: 'total-hint-micro-left', x: 0, y: 0.84, width: 0.34, height: 0.09 },
-  { name: 'total-hint-low-left', x: 0, y: 0.81, width: 0.48, height: 0.14 },
-  { name: 'total-hint-card-number-line', x: 0, y: 0.88, width: 0.46, height: 0.08 },
-  { name: 'total-hint-card-number-tight', x: 0.03, y: 0.895, width: 0.36, height: 0.065 },
-  { name: 'total-hint-bottom-left', x: 0, y: 0.78, width: 0.58, height: 0.18 },
-  { name: 'total-hint-bottom-band', x: 0, y: 0.78, width: 1, height: 0.18 },
-];
-const NAME_OCR_REGIONS = [
-  { name: 'top-name', x: 0, y: 0, width: 1, height: 0.28 },
-  { name: 'title-left', x: 0.02, y: 0.04, width: 0.76, height: 0.18 },
-  { name: 'title-band', x: 0, y: 0.02, width: 1, height: 0.18 },
-];
-const FIRST_EDITION_CAPABLE_SET_IDS = new Set([
-  'base1',
-  'base2',
-  'base3',
-  'base5',
-  'gym1',
-  'gym2',
-  'neo1',
-  'neo2',
-  'neo3',
-  'neo4',
-]);
-const FIRST_EDITION_STAMP_REGIONS: OcrRegion[] = [
-  { name: 'stamp-left-art-lower', x: 0.07, y: 0.39, width: 0.17, height: 0.1 },
-  { name: 'stamp-left-between-art-text', x: 0.07, y: 0.45, width: 0.17, height: 0.1 },
-  { name: 'stamp-left-text-top', x: 0.07, y: 0.51, width: 0.17, height: 0.1 },
-];
-const FIRST_EDITION_STRONG_CONFIDENCE = 0.92;
-const SHOW_SCAN_DEBUG =
-  __DEV__ ||
-  process.env.EXPO_PUBLIC_SHOW_SCAN_DEBUG === 'true' ||
-  process.env.EXPO_PUBLIC_APP_ENV === 'beta';
 
-function logScanStage(stage: string, payload: Record<string, unknown> = {}) {
-  console.log(`[scan:${stage}]`, payload);
+function getLocalisationSampleIntervalMs() {
+  const fps = Number.isFinite(CARD_LOCALISATION_SAMPLE_FPS)
+    ? Math.max(1, Math.min(8, CARD_LOCALISATION_SAMPLE_FPS))
+    : 4;
+  return Math.max(160, Math.round(1000 / fps));
 }
 
-function stageMessage(stage?: ScanErrorStage) {
-  switch (stage) {
-    case 'image':
-      return 'The camera image could not be captured or encoded. Try again with the card flat in frame.';
-    case 'upload':
-      return 'The scan request could not be sent. Check your connection and try again.';
-    case 'ximilar':
-      return 'The card recognition service did not complete the scan.';
-    case 'normalisation':
-      return 'The recognition service responded, but no usable card candidate was found.';
-    case 'card_lookup':
-      return 'The card was recognised, but extra card details could not be loaded.';
-    case 'render':
-      return 'The scan result could not be displayed.';
-    case 'backend':
-    default:
-      return 'The scan service hit an unexpected problem. Please retry the scan.';
-  }
-}
+type DiagnosticLogPayload = Record<string, unknown>;
 
-function isLikelyImageCaptureError(message?: string | null) {
-  return /camera|capture|image|photo|snapshot|manipulat|base64|file path|takephoto|takesnapshot|permission|denied|uri|codec|decode|width|height/i
-    .test(String(message ?? ''));
-}
+type ScanMode = 'auto' | 'manual';
 
-function makeScanError(
-  stage: ScanErrorStage,
-  code: string,
-  message: string,
-  details?: string,
-  httpStatus?: number,
-  stack?: string
-): ScanErrorState {
-  return {
-    ok: false,
-    provider: 'ximilar',
-    stage,
-    code,
-    message,
-    details,
-    httpStatus,
-    debugDetails: details,
-    stack,
+type CapturedPhoto = {
+  uri: string;
+  width?: number;
+  height?: number;
+};
+
+type RecognitionImage = {
+  uri: string;
+  width?: number;
+  height?: number;
+  base64?: string | null;
+  role: string;
+  localisation?: CardLocalisationResult | null;
+};
+
+type TargetedOcrRegionSpec = {
+  role: LocalOcrRegionRole;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  resizeWidth: number;
+};
+
+type TargetedOcrResult = {
+  sourceRole: string;
+  regions: LocalOcrRegionText[];
+  text: string;
+};
+
+type BinderPagePocketImage = {
+  cell: {
+    index: number;
+    row: number;
+    column: number;
+    crop: CaptureRect;
   };
-}
+  uri: string;
+  width?: number;
+  height?: number;
+  base64?: string | null;
+};
 
-// ===============================
-// TYPES
-// ===============================
+type FrameAssessment = {
+  ready: boolean;
+  message: string;
+  reason: string;
+  score: number;
+  brightness: number;
+  contrast: number;
+  edgeDensity: number;
+  glareRatio: number;
+};
 
-type ScannedCard = {
+type ScanRouteParams = {
+  intent?: string | string[];
+  mode?: string | string[];
+  flow?: string | string[];
+  type?: string | string[];
+  reason?: string | string[];
+  scanMode?: string | string[];
+  q?: string | string[];
+  binderId?: string | string[];
+  layout?: string | string[];
+  parentSessionId?: string | string[];
+  replacePocketIndex?: string | string[];
+};
+
+type ScanResultCard = {
   id: string;
   name: string;
   number: string;
   set_id: string;
   set_name: string;
   set_printed_total?: number | null;
+  series: string;
+  rarity: string;
   image_small: string;
   image_large?: string | null;
   raw_data?: any;
-  rarity: string;
-  editionHint?: ScanEditionHint | null;
-  editionSource?: ScanCandidate['editionSource'];
-  scanSlot?: number;
-  scanCropUri?: string | null;
+  language?: string | null;
+  release_date: string;
+  scan_provider?: string | null;
+  scan_confidence?: number | null;
+  scan_visual_similarity?: number | null;
+  scan_final_score?: number | null;
 };
 
-type GridScanSize = typeof GRID_SCAN_OPTIONS[number];
-type GridScanSlotStatus = 'Confirmed' | 'Check Match' | 'Not Identified' | 'Empty';
-type GridScanSlot = {
-  slot: number;
-  row: number;
-  col: number;
-  gridSize: number;
-  cropUri: string;
-  card: ScannedCard | null;
-  status: GridScanSlotStatus;
-  included: boolean;
-};
+function logCameraDiagnostic(event: string, payload: DiagnosticLogPayload = {}) {
+  console.log('[scan-camera]', event, payload);
+}
 
-type ScanEditionDetection = {
-  hint: ScanEditionHint | null;
-  confidence: number;
-  reason: string;
-  metrics?: Record<string, unknown>;
-};
+function getParamValue(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
 
-function toScannedCard(card: LocalScanCard): ScannedCard {
+function getMountErrorMessage(error: unknown) {
+  if (!error) return 'Unknown native mount error';
+  if (typeof error === 'string') return error;
+  if (error instanceof Error) return error.message;
+
+  const maybeError = error as {
+    message?: unknown;
+    code?: unknown;
+    nativeEvent?: {
+      message?: unknown;
+      code?: unknown;
+    };
+  };
+  const nativeMessage = maybeError.nativeEvent?.message;
+  const message = maybeError.message;
+  const nativeCode = maybeError.nativeEvent?.code;
+  const code = maybeError.code;
+
+  return [
+    typeof nativeCode === 'string' ? nativeCode : typeof code === 'string' ? code : null,
+    typeof nativeMessage === 'string' ? nativeMessage : typeof message === 'string' ? message : null,
+  ].filter(Boolean).join(': ') || JSON.stringify(error);
+}
+
+function compactNumber(value?: string | null) {
+  return String(value ?? '').trim().replace(/^0+(?=\d)/, '');
+}
+
+function stripBase64ImagePrefix(base64: string) {
+  return String(base64 ?? '').trim().replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
+}
+
+function estimateBase64Bytes(base64?: string | null) {
+  const cleanBase64 = stripBase64ImagePrefix(base64 ?? '');
+  return cleanBase64 ? Math.round(cleanBase64.length * 0.75) : null;
+}
+
+function buildFrameAssessment(overrides: Partial<FrameAssessment>): FrameAssessment {
+  return {
+    ready: false,
+    message: 'Centre one card. Keep other cards in the dim area.',
+    reason: 'waiting',
+    score: 0,
+    brightness: 0,
+    contrast: 0,
+    edgeDensity: 0,
+    glareRatio: 0,
+    ...overrides,
+  };
+}
+
+function getLuma(data: Uint8Array, width: number, x: number, y: number) {
+  const index = (y * width + x) * 4;
+  return data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114;
+}
+
+function assessFrameImage(base64?: string | null): FrameAssessment {
+  const cleanBase64 = stripBase64ImagePrefix(base64 ?? '');
+  if (!cleanBase64) {
+    return buildFrameAssessment({
+      message: 'Centre one card. Keep other cards in the dim area.',
+      reason: 'empty-image',
+    });
+  }
+
+  try {
+    const image = decodeJpeg(Buffer.from(cleanBase64, 'base64'), { useTArray: true });
+    const { width, height, data } = image;
+    if (!width || !height || !data?.length) {
+      return buildFrameAssessment({
+        message: 'Centre one card. Keep other cards in the dim area.',
+        reason: 'unreadable-image',
+      });
+    }
+
+    const step = Math.max(1, Math.floor(Math.min(width, height) / 90));
+    let count = 0;
+    let sum = 0;
+    let sumSq = 0;
+    let glarePixels = 0;
+    let darkPixels = 0;
+    let edgePixels = 0;
+
+    for (let y = step; y < height - step; y += step) {
+      for (let x = step; x < width - step; x += step) {
+        const luma = getLuma(data, width, x, y);
+        const right = getLuma(data, width, x + step, y);
+        const down = getLuma(data, width, x, y + step);
+        const gradient = Math.abs(luma - right) + Math.abs(luma - down);
+
+        count += 1;
+        sum += luma;
+        sumSq += luma * luma;
+        if (luma > 238) glarePixels += 1;
+        if (luma < 36) darkPixels += 1;
+        if (gradient > 54) edgePixels += 1;
+      }
+    }
+
+    const brightness = count ? sum / count : 0;
+    const variance = count ? Math.max(0, sumSq / count - brightness * brightness) : 0;
+    const contrast = Math.sqrt(variance);
+    const edgeDensity = count ? edgePixels / count : 0;
+    const glareRatio = count ? glarePixels / count : 0;
+    const darkRatio = count ? darkPixels / count : 0;
+    const detailScore = Math.min(1, edgeDensity / 0.09);
+    const contrastScore = Math.min(1, contrast / 44);
+    const lightPenalty = brightness < 62 ? 0.24 : brightness > 226 ? 0.18 : 0;
+    const glarePenalty = glareRatio > 0.2 ? 0.18 : 0;
+    const score = Math.max(0, Math.min(1, detailScore * 0.58 + contrastScore * 0.42 - lightPenalty - glarePenalty));
+
+    if (brightness < 48 || darkRatio > 0.46) {
+      return buildFrameAssessment({
+        message: 'Too dark. Add light or turn on the torch.',
+        reason: 'too-dark',
+        score,
+        brightness,
+        contrast,
+        edgeDensity,
+        glareRatio,
+      });
+    }
+
+    if (glareRatio > 0.28 || (brightness > 224 && contrast < 35)) {
+      return buildFrameAssessment({
+        message: 'Glare detected. Tilt the card slightly.',
+        reason: 'glare',
+        score,
+        brightness,
+        contrast,
+        edgeDensity,
+        glareRatio,
+      });
+    }
+
+    if (contrast < 16 || edgeDensity < 0.026) {
+      return buildFrameAssessment({
+        message: 'Centre one card. Keep other cards in the dim area.',
+        reason: 'no-card-detail',
+        score,
+        brightness,
+        contrast,
+        edgeDensity,
+        glareRatio,
+      });
+    }
+
+    if (edgeDensity > 0.32 && contrast > 82 && glareRatio < 0.12) {
+      return buildFrameAssessment({
+        message: 'Move back until every card edge sits inside the window.',
+        reason: 'too-close',
+        score,
+        brightness,
+        contrast,
+        edgeDensity,
+        glareRatio,
+      });
+    }
+
+    if (edgeDensity < 0.046 || score < 0.56) {
+      return buildFrameAssessment({
+        message: 'Move closer until the card matches the purple window.',
+        reason: 'too-far',
+        score,
+        brightness,
+        contrast,
+        edgeDensity,
+        glareRatio,
+      });
+    }
+
+    return buildFrameAssessment({
+      ready: true,
+      message: 'Card found. Hold steady...',
+      reason: 'ready',
+      score,
+      brightness,
+      contrast,
+      edgeDensity,
+      glareRatio,
+    });
+  } catch {
+    return buildFrameAssessment({
+      message: 'Centre one card. Keep other cards in the dim area.',
+      reason: 'decode-failed',
+    });
+  }
+}
+
+function getIdentifiedName(card?: IdentifiedCard | null) {
+  const raw = card?.raw as any;
+  return card?.name
+    ?? raw?.name
+    ?? raw?.card?.name
+    ?? raw?.cards?.[0]?.name
+    ?? raw?.matches?.[0]?.name
+    ?? null;
+}
+
+function getIdentifiedNumber(card?: IdentifiedCard | null) {
+  const raw = card?.raw as any;
+  return card?.number
+    ?? raw?.number
+    ?? raw?.card?.number
+    ?? raw?.cards?.[0]?.number
+    ?? raw?.matches?.[0]?.number
+    ?? null;
+}
+
+function getIdentifiedSetName(card?: IdentifiedCard | null) {
+  const raw = card?.raw as any;
+  return card?.set_name
+    ?? raw?.set_name
+    ?? raw?.setName
+    ?? raw?.set
+    ?? raw?.card?.set_name
+    ?? raw?.card?.setName
+    ?? raw?.card?.set?.name
+    ?? raw?.cards?.[0]?.set?.name
+    ?? raw?.matches?.[0]?.set?.name
+    ?? null;
+}
+
+function getIdentifiedSetId(card?: IdentifiedCard | null) {
+  const raw = card?.raw as any;
+  return card?.set_id
+    ?? raw?.set_id
+    ?? raw?.setId
+    ?? raw?.card?.set_id
+    ?? raw?.card?.setId
+    ?? raw?.card?.set?.id
+    ?? raw?.cards?.[0]?.set?.id
+    ?? raw?.matches?.[0]?.set?.id
+    ?? null;
+}
+
+function buildIdentifySearchQuery(card?: IdentifiedCard | null) {
+  const name = getIdentifiedName(card);
+  const setName = getIdentifiedSetName(card);
+  const number = getIdentifiedNumber(card);
+  return [name, setName, number ? `#${number}` : null].filter(Boolean).join(' ').trim();
+}
+
+function buildOcrSearchQuery(text?: string | null) {
+  if (!text) return '';
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length >= 2 && !/^(hp|basic|stage|weakness|resistance|retreat)$/i.test(line))
+    .slice(0, 8)
+    .join(' ')
+    .slice(0, 220);
+}
+
+function toResultCard(row: any): ScanResultCard {
+  const raw = row.raw_data ?? {};
+  const set = raw.set ?? row.set ?? {};
+  const images = raw.images ?? {};
+
+  return {
+    id: String(row.id),
+    name: String(row.name ?? raw.name ?? 'Unknown card'),
+    number: String(row.number ?? raw.number ?? ''),
+    set_id: String(row.set_id ?? set.id ?? ''),
+    set_name: String(row.set_name ?? set.name ?? row.set_id ?? 'Unknown set'),
+    set_printed_total: set.printedTotal ?? set.total ?? row.set_printed_total ?? null,
+    series: String(row.series ?? set.series ?? ''),
+    rarity: String(row.rarity ?? raw.rarity ?? ''),
+    image_small: String(row.image_small ?? images.small ?? row.image_large ?? images.large ?? ''),
+    image_large: row.image_large ?? images.large ?? row.image_small ?? images.small ?? null,
+    raw_data: {
+      images,
+      set,
+      rarity: raw.rarity,
+      subtypes: raw.subtypes,
+      tcgplayer: raw.tcgplayer,
+    },
+    language: row.language ?? raw.language ?? null,
+    release_date: String(row.release_date ?? set.releaseDate ?? set.release_date ?? ''),
+  };
+}
+
+function readScore(value: unknown) {
+  const score = Number(value);
+  if (!Number.isFinite(score)) return null;
+  return score > 1 ? score / 100 : score;
+}
+
+function getScanSignals(card?: IdentifiedCard | null) {
+  const raw = card?.raw as any;
+  const visualSimilarity = readScore(
+    raw?.similarity
+    ?? raw?.visualSimilarity
+    ?? raw?.signals?.visualSimilarity
+    ?? raw?.score?.visualEmbedding
+    ?? raw?.score?.artworkSimilarity
+  );
+  const finalScore = readScore(
+    raw?.finalScore
+    ?? raw?.signals?.finalScore
+    ?? raw?.score?.finalScore
+  );
+  const confidence = readScore(card?.confidence ?? raw?.confidence ?? raw?.score?.finalScore);
+
+  return {
+    scan_provider: card?.provider ?? null,
+    scan_confidence: confidence != null ? Math.round(confidence * 100) : null,
+    scan_visual_similarity: visualSimilarity,
+    scan_final_score: finalScore,
+  };
+}
+
+function localOcrCandidateToIdentifiedCard(candidate: LocalOcrCandidateMatch): IdentifiedCard {
+  const card = candidate.card;
   return {
     id: card.id,
     name: card.name,
     number: card.number,
     set_id: card.set_id,
     set_name: card.set_name,
-    set_printed_total: card.set_printed_total,
     image_small: card.image_small,
+    image_large: card.image_small,
     rarity: card.rarity,
+    confidence: candidate.confidence,
+    provider: 'local-ocr',
+    raw: {
+      localOcr: true,
+      reasons: candidate.reasons,
+      score: candidate.score,
+      scoreBreakdown: candidate.scoreBreakdown,
+      ambiguousVariant: candidate.ambiguousVariant,
+      visualSimilarity: candidate.visualSimilarity ?? null,
+      finalScore: candidate.confidence,
+      set: {
+        id: card.set_id,
+        name: card.set_name,
+        printedTotal: card.set_printed_total,
+        releaseDate: card.release_date,
+      },
+    },
   };
 }
 
-function localCardToScanCandidate(card: LocalScanCard): ScanCandidate {
-  const resolvedCard = toScannedCard(card);
+function getIdentifiedCandidateKey(card: IdentifiedCard) {
+  return [
+    card.id,
+    card.name?.toLowerCase(),
+    card.set_id?.toLowerCase(),
+    card.number?.toLowerCase(),
+  ].filter(Boolean).join('|');
+}
+
+function rankIdentifiedCardsWithPipeline(
+  identified: IdentifiedCard[],
+  ocrSignals?: LocalOcrMatchResult['signals'] | null
+) {
+  if (identified.length <= 1) return identified;
+
+  const ranked = rankScannerCandidates({
+    ocrSignals: ocrSignals ?? null,
+    candidates: identified.map((card) => {
+      const raw = card.raw as any;
+      return {
+        id: card.id ?? null,
+        name: card.name ?? null,
+        setId: card.set_id ?? null,
+        setName: card.set_name ?? null,
+        collectorNumber: card.number ?? null,
+        language: raw?.language ?? raw?.card?.language ?? ocrSignals?.language ?? null,
+        provider: card.provider ?? null,
+        confidence: card.confidence ?? null,
+        reasons: Array.isArray(raw?.reasons) ? raw.reasons.map(String) : null,
+        evidence: {
+          providerScore: card.confidence ?? null,
+          artworkEmbedding: readScore(
+            raw?.similarity
+            ?? raw?.visualSimilarity
+            ?? raw?.signals?.visualSimilarity
+            ?? raw?.score?.visualEmbedding
+            ?? raw?.score?.artworkSimilarity
+          ),
+        },
+      };
+    }),
+  });
+  const rankByKey = new Map(ranked.map((candidate, index) => [
+    [
+      candidate.id,
+      candidate.name?.toLowerCase(),
+      candidate.setId?.toLowerCase(),
+      candidate.collectorNumber?.toLowerCase(),
+    ].filter(Boolean).join('|'),
+    { index, candidate },
+  ]));
+
+  return [...identified]
+    .sort((a, b) => (
+      (rankByKey.get(getIdentifiedCandidateKey(a))?.index ?? 999)
+      - (rankByKey.get(getIdentifiedCandidateKey(b))?.index ?? 999)
+    ))
+    .map((card) => {
+      const rankedCandidate = rankByKey.get(getIdentifiedCandidateKey(card))?.candidate;
+      if (!rankedCandidate) return card;
+      return {
+        ...card,
+        raw: {
+          ...((card.raw as any) ?? {}),
+          scannerPipelineRank: {
+            version: SCANNER_RECOGNITION_PIPELINE_VERSION,
+            score: rankedCandidate.score,
+            confidence: rankedCandidate.confidence,
+            reasons: rankedCandidate.rankReasons,
+            evidence: rankedCandidate.evidenceBreakdown,
+          },
+        },
+      };
+    });
+}
+
+function buildLocalOcrDiagnostics(
+  result: LocalOcrMatchResult | null,
+  imageCount: number
+): ScanIdentifyDiagnostics | null {
+  if (!result) return null;
+  const top = result.bestMatch;
   return {
+    totalMs: result.durationMs,
+    imageCount,
+    candidateCount: result.candidates.length,
+    providers: [{
+      provider: 'local-ocr',
+      stage: 'targeted_ocr_catalogue_match',
+      ok: result.status !== 'disabled' && result.status !== 'no-text',
+      durationMs: result.durationMs,
+      decision: result.status,
+      candidateCount: result.candidates.length,
+      accepted: result.status === 'strong',
+      topCandidate: top ? {
+        provider: 'local-ocr',
+        id: top.card.id,
+        name: top.card.name,
+        number: top.card.number,
+        set_id: top.card.set_id,
+        set_name: top.card.set_name,
+        confidence: top.confidence,
+        visualSimilarity: top.visualSimilarity ?? null,
+        finalScore: top.confidence,
+        accepted: result.status === 'strong',
+        rejectionReason: result.status === 'strong' ? null : result.status,
+        reasons: top.reasons,
+      } : null,
+      candidates: result.candidates.slice(0, 8).map((candidate) => ({
+        provider: 'local-ocr',
+        id: candidate.card.id,
+        name: candidate.card.name,
+        number: candidate.card.number,
+        set_id: candidate.card.set_id,
+        set_name: candidate.card.set_name,
+        confidence: candidate.confidence,
+        visualSimilarity: candidate.visualSimilarity ?? null,
+        finalScore: candidate.confidence,
+        accepted: result.status === 'strong' && candidate.card.id === top?.card.id,
+        rejectionReason: candidate.ambiguousVariant ? 'ambiguous-variant' : null,
+        reasons: candidate.reasons,
+      })),
+      signals: {
+        language: result.signals.language,
+        printedNumber: result.signals.printedNumber,
+        setCode: result.signals.setCode,
+        releaseYear: result.signals.releaseYear,
+        hp: result.signals.hp,
+        notes: result.notes,
+      },
+    }],
+    notes: [
+      `local-ocr:${result.status}`,
+      ...result.notes,
+    ],
+  };
+}
+
+function attachScanSignals(card: ScanResultCard, identified: IdentifiedCard[]): ScanResultCard {
+  const source = identified.find((item) => item.id && item.id === card.id)
+    ?? identified.find((item) => {
+      const nameMatch = item.name && item.name.toLowerCase() === card.name.toLowerCase();
+      const numberMatch = item.number && compactNumber(item.number) === compactNumber(card.number);
+      return Boolean(nameMatch && numberMatch);
+    })
+    ?? null;
+
+  if (!source) return card;
+  return {
+    ...card,
+    ...getScanSignals(source),
+  };
+}
+
+function buildLearningCandidates(cards: (IdentifiedCard | ScanResultCard)[]) {
+  return cards.map((card) => {
+    const identified = card as IdentifiedCard;
+    const result = card as ScanResultCard;
+    const signals = 'provider' in card ? getScanSignals(identified) : {
+      scan_provider: result.scan_provider ?? null,
+      scan_confidence: result.scan_confidence ?? null,
+      scan_visual_similarity: result.scan_visual_similarity ?? null,
+      scan_final_score: result.scan_final_score ?? null,
+    };
+
+    return {
+      id: card.id ?? null,
+      name: card.name ?? null,
+      set_id: ('set_id' in card ? card.set_id : identified.set_id) ?? null,
+      set_name: ('set_name' in card ? card.set_name : identified.set_name) ?? null,
+      number: card.number ?? null,
+      provider: signals.scan_provider ?? null,
+      confidence: signals.scan_confidence ?? null,
+      visualSimilarity: signals.scan_visual_similarity ?? null,
+      finalScore: signals.scan_final_score ?? null,
+    };
+  });
+}
+
+function compactFrameMetrics(assessment?: FrameAssessment | null) {
+  return assessment ? {
+    ready: assessment.ready,
+    reason: assessment.reason,
+    score: Number(assessment.score.toFixed(3)),
+    brightness: Number(assessment.brightness.toFixed(1)),
+    contrast: Number(assessment.contrast.toFixed(1)),
+    edgeDensity: Number(assessment.edgeDensity.toFixed(3)),
+    glareRatio: Number(assessment.glareRatio.toFixed(3)),
+  } : {};
+}
+
+function compactScanQualityDiagnostics(quality?: ScanQualityResult | null) {
+  if (!quality) return null;
+  return {
+    passed: quality.passed,
+    instruction: quality.instruction,
+    focusScore: quality.focusScore,
+    glareScore: quality.glareScore,
+    exposureScore: quality.exposureScore,
+    framingScore: quality.framingScore,
+    stabilityScore: quality.stabilityScore,
+    obstructionScore: quality.obstructionScore,
+    perspectiveScore: quality.perspectiveScore,
+    sleeveReflectionScore: quality.sleeveReflectionScore,
+    failures: quality.failures.map((failure) => ({
+      code: failure.code,
+      instruction: failure.instruction,
+      score: failure.score,
+      mandatory: failure.mandatory,
+    })),
+    metrics: quality.metrics,
+  };
+}
+
+function frameAssessmentFromScanQuality(quality: ScanQualityResult): FrameAssessment {
+  const score = Math.min(
+    quality.focusScore,
+    quality.glareScore,
+    quality.exposureScore,
+    quality.framingScore,
+    quality.stabilityScore,
+    quality.obstructionScore,
+    quality.perspectiveScore,
+    quality.sleeveReflectionScore
+  );
+  const failure = quality.failures[0] ?? null;
+
+  return buildFrameAssessment({
+    ready: quality.passed,
+    message: quality.instructionText,
+    reason: String(failure?.code ?? (quality.passed ? 'ready' : quality.instruction ?? 'quality-failed')),
+    score: quality.passed ? 1 : score,
+    brightness: quality.metrics.brightness,
+    contrast: quality.metrics.contrast,
+    edgeDensity: quality.metrics.edgeDensity,
+    glareRatio: quality.metrics.glareRatio,
+  });
+}
+
+function compactLocalisationDiagnostics(localisation?: CardLocalisationResult | null) {
+  if (!localisation) return null;
+  return {
+    status: localisation.status,
+    score: localisation.confidence.score,
+    reasons: localisation.confidence.reasons,
+    frameCoverage: localisation.confidence.frameCoverage,
+    aspectRatio: localisation.confidence.aspectRatio,
+    edgeCompleteness: localisation.confidence.edgeCompleteness,
+    cornersDetected: localisation.confidence.cornersDetected,
+    cornerSource: localisation.confidence.cornerSource,
+    requiresManualAdjustment: localisation.requiresManualAdjustment,
+    crop: localisation.crop ?? null,
+    transformMatrix: localisation.transformMatrix ?? null,
+  };
+}
+
+function getLocalisationTone(localisation?: CardLocalisationResult | null) {
+  if (!localisation) return null;
+  if (localisation.status === 'confident') return '#22C55E';
+  if (localisation.status === 'uncertain') return '#FBBF24';
+  return '#A78BFA';
+}
+
+function localisationQuadToFramePolygon(
+  localisation: CardLocalisationResult | null | undefined,
+  frame: { top: number; left: number; width: number; height: number }
+) {
+  if (!localisation?.quadrilateral || !localisation.imageSize.width || !localisation.imageSize.height) return '';
+  const map = (point: { x: number; y: number }) => {
+    const x = frame.left + (point.x / localisation.imageSize.width) * frame.width;
+    const y = frame.top + (point.y / localisation.imageSize.height) * frame.height;
+    return `${Number(x.toFixed(1))},${Number(y.toFixed(1))}`;
+  };
+  return [
+    map(localisation.quadrilateral.topLeft),
+    map(localisation.quadrilateral.topRight),
+    map(localisation.quadrilateral.bottomRight),
+    map(localisation.quadrilateral.bottomLeft),
+  ].join(' ');
+}
+
+function getGuidanceIcon(reason?: string | null, ready?: boolean, capturing?: boolean) {
+  if (capturing) return 'sync-outline';
+  if (ready) return 'checkmark-circle-outline';
+  if (reason === 'too-dark' || reason === 'improve-lighting') return 'moon-outline';
+  if (reason === 'glare' || reason === 'reduce-glare' || reason === 'overexposed' || reason === 'sleeve-reflection') return 'sunny-outline';
+  if (reason === 'too-close') return 'contract-outline';
+  if (reason === 'too-far' || reason === 'move-closer') return 'expand-outline';
+  if (reason === 'hold-steady') return 'hand-left-outline';
+  if (reason === 'tap-to-focus') return 'radio-button-on-outline';
+  return 'scan-outline';
+}
+
+function getGuidanceLabelForState(state: ScannerCaptureState, scanMode: ScanMode) {
+  switch (state) {
+    case 'INITIALISING':
+      return 'Warming up';
+    case 'CARD_FOUND':
+      return 'Card found';
+    case 'QUALITY_CHECK':
+      return 'Quality check';
+    case 'HOLD_STEADY':
+      return 'Hold steady';
+    case 'CAPTURING':
+      return 'Capturing';
+    case 'CAPTURED':
+      return 'Captured';
+    case 'IDENTIFYING':
+      return 'Identifying';
+    case 'CONFIRMING':
+      return 'Confirm match';
+    case 'ERROR':
+      return 'Try again';
+    case 'SEARCHING':
+    default:
+      return scanMode === 'auto' ? 'Auto scan' : 'Manual capture';
+  }
+}
+
+function buildResultCandidateDiagnostics(cards: ScanResultCard[]) {
+  return cards.slice(0, MAX_RESULT_CARDS).map((card) => ({
     id: card.id,
     name: card.name,
     number: card.number,
-    setName: card.set_name,
-    setCode: card.set_id,
-    imageSmall: card.image_small,
-    imageLarge: null,
-    imageSource: 'scrydex',
-    source: 'ximilar',
-    resolvedCard,
-  };
+    set_id: card.set_id,
+    set_name: card.set_name,
+    provider: card.scan_provider ?? null,
+    confidence: card.scan_confidence ?? null,
+    visualSimilarity: card.scan_visual_similarity ?? null,
+    finalScore: card.scan_final_score ?? null,
+  }));
 }
 
-function pokemonRowToScannedCard(card: any, editionHint?: ScanEditionHint | null, editionSource?: ScanCandidate['editionSource']): ScannedCard {
-  const setPrintedTotal = Number(card?.raw_data?.set?.printedTotal ?? card?.raw_data?.set?.total ?? NaN);
+function sortBestMatches(rows: any[], identified?: IdentifiedCard | null) {
+  const identifiedNumber = compactNumber(getIdentifiedNumber(identified));
+  const identifiedSetId = String(getIdentifiedSetId(identified) ?? '');
 
+  return [...rows].sort((a, b) => {
+    const aExactSet = identifiedSetId && a.set_id === identifiedSetId ? 1 : 0;
+    const bExactSet = identifiedSetId && b.set_id === identifiedSetId ? 1 : 0;
+    if (aExactSet !== bExactSet) return bExactSet - aExactSet;
+
+    const aExactNumber = identifiedNumber && compactNumber(a.number) === identifiedNumber ? 1 : 0;
+    const bExactNumber = identifiedNumber && compactNumber(b.number) === identifiedNumber ? 1 : 0;
+    if (aExactNumber !== bExactNumber) return bExactNumber - aExactNumber;
+
+    return 0;
+  });
+}
+
+function identifiedToSearchFallback(card: IdentifiedCard): any | null {
+  if (!card.id || !card.name) return null;
   return {
     id: card.id,
     name: card.name,
     number: card.number ?? '',
-    set_id: card.set_id,
-    set_name: card.raw_data?.set?.name ?? card.set_id,
-    set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
-    image_small: card.image_small ?? card.raw_data?.images?.small ?? '',
-    image_large: card.image_large ?? card.raw_data?.images?.large ?? null,
-    raw_data: card.raw_data ?? null,
-    rarity: card.rarity ?? card.raw_data?.rarity ?? '',
-    editionHint: editionHint ?? null,
-    editionSource: editionHint ? editionSource : undefined,
+    rarity: card.rarity ?? '',
+    set_id: card.set_id ?? '',
+    set_name: card.set_name ?? '',
+    image_small: card.image_small ?? card.image_large ?? '',
+    image_large: card.image_large ?? card.image_small ?? null,
+    raw_data: {
+      images: {
+        small: card.image_small ?? null,
+        large: card.image_large ?? null,
+      },
+      set: {
+        id: card.set_id ?? '',
+        name: card.set_name ?? '',
+      },
+      rarity: card.rarity ?? null,
+    },
   };
 }
 
-const SCAN_EDITION_LABELS: Record<ScanEditionHint, string> = {
-  '1st_edition': '1st Edition',
-  unlimited: 'Unlimited',
-  shadowless: 'Shadowless',
-};
-
-function normalizeScanEditionHint(value?: string | null): ScanEditionHint | null {
-  if (!value) return null;
-  const normalised = value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-  const joined = normalised.replace(/\s+/g, '');
-
-  if (!normalised) return null;
-  if (normalised === 'shadowless' || /\bshadowless\b/.test(normalised)) return 'shadowless';
-  if (
-    normalised === '1st edition'
-    || normalised === '1st ed'
-    || normalised === 'first edition'
-    || /\b1st\s*(edition|ed)\b/.test(normalised)
-    || /\bfirst\s*(edition|ed)\b/.test(normalised)
-    || joined.includes('1stedition')
-    || joined.includes('firstedition')
-  ) {
-    return '1st_edition';
-  }
-  if (normalised === 'unlimited' || /\bunlimited\b/.test(normalised)) return 'unlimited';
-
-  return null;
+function getOcrSourceImage(images: RecognitionImage[]) {
+  return images.find((image) => image.role === 'localised-card-crop')
+    ?? images.find((image) => image.role === 'target-crop')
+    ?? images[0]
+    ?? null;
 }
 
-function detectEditionHintFromScanFields(value: any): ScanEditionHint | null {
-  const text = [
-    value?.editionHint,
-    value?.edition,
-    value?.printing,
-    value?.variant,
-    value?.name,
-    value?.full_name,
-    value?.card_name,
-    value?.setName,
-    value?.set_name,
-    value?.set,
-    value?.rarity,
-  ]
-    .filter(Boolean)
-    .map(String)
-    .join(' ');
+function getOcrRegionCrop(image: RecognitionImage, spec: TargetedOcrRegionSpec) {
+  const width = Number(image.width);
+  const height = Number(image.height);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
 
-  return normalizeScanEditionHint(text);
-}
-
-function getEffectiveScanEditionHint(parsed: any, binderEdition?: string | null): {
-  hint: ScanEditionHint | null;
-  source: ScanCandidate['editionSource'];
-} {
-  const explicitHint = normalizeScanEditionHint(parsed?.editionHint);
-  if (explicitHint && parsed?.editionSource === 'image_ocr') {
-    return { hint: explicitHint, source: 'image_ocr' };
-  }
-
-  const binderHint = normalizeScanEditionHint(binderEdition);
-  if (binderHint) return { hint: binderHint, source: 'binder' };
-
-  if (explicitHint) {
-    return { hint: explicitHint, source: parsed?.editionSource ?? 'ximilar' };
-  }
-
-  const detectedHint = detectEditionHintFromScanFields(parsed);
-  return {
-    hint: detectedHint,
-    source: detectedHint ? 'ximilar' : null,
-  };
-}
-
-function withCandidateEditionHint(candidate: ScanCandidate, binderEdition?: string | null): ScanCandidate {
-  const { hint, source } = getEffectiveScanEditionHint(candidate, binderEdition);
-  if (!hint) return candidate;
-  return {
-    ...candidate,
-    editionHint: hint,
-    editionSource: source,
-  };
-}
-
-function withScannedCardEditionHint(
-  card: ScannedCard,
-  hint?: ScanEditionHint | null,
-  source?: ScanCandidate['editionSource']
-): ScannedCard {
-  if (!hint) return card;
-  return {
-    ...card,
-    editionHint: hint,
-    editionSource: source ?? card.editionSource ?? 'resolver',
-  };
-}
-
-function stripScanEditionFromSetName(setName?: string | null) {
-  if (!setName) return setName ?? null;
-  const cleaned = String(setName)
-    .replace(/\b(1st|first)\s*(edition|ed)\b/gi, '')
-    .replace(/\bunlimited\b/gi, '')
-    .replace(/\bshadowless\b/gi, '')
-    .replace(/[()[\]{}]/g, ' ')
-    .replace(/\s*[-:/]\s*$/g, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-  return cleaned || setName;
-}
-
-function detectEditionHintFromCard(card: ScannedCard): ScanEditionHint | null {
-  return detectEditionHintFromScanFields({
-    id: card.id,
-    set_id: card.set_id,
-    set_name: card.set_name,
-    rarity: card.rarity,
-  });
-}
-
-function scoreCardForEditionHint(card: ScannedCard, editionHint?: ScanEditionHint | null) {
-  if (!editionHint) return 0;
-
-  const cardHint = detectEditionHintFromCard(card);
-  if (cardHint === editionHint) return 5;
-  if (!cardHint && editionHint === 'unlimited') return 3;
-  if (!cardHint) return 1;
-  if (editionHint === 'unlimited' && (cardHint === '1st_edition' || cardHint === 'shadowless')) return -4;
-  if (editionHint === '1st_edition' && cardHint === 'unlimited') return -4;
-  return -1;
-}
-
-function pickCardForEditionHint(cards: ScannedCard[], editionHint?: ScanEditionHint | null) {
-  if (!cards.length) return null;
-  if (!editionHint) return cards[0];
-
-  return [...cards].sort((a, b) => scoreCardForEditionHint(b, editionHint) - scoreCardForEditionHint(a, editionHint))[0];
-}
-
-function formatScanEditionHint(hint?: ScanEditionHint | null) {
-  return hint ? SCAN_EDITION_LABELS[hint] : null;
-}
-
-function formatScanCardSubtitle(setName?: string | null, number?: string | null, editionHint?: ScanEditionHint | null) {
-  const parts = [
-    setName,
-    number ? `#${number}` : null,
-    formatScanEditionHint(editionHint),
-  ].filter(Boolean);
-  return parts.join(' - ');
-}
-
-// Retained for edition-specific scan confidence checks as the scan pipeline evolves.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function isFirstEditionCapableScanTarget(value: any, fallbackSetId?: string | null) {
-  const setId = String(
-    fallbackSetId
-    ?? value?.set_id
-    ?? value?.setCode
-    ?? value?.set_code
-    ?? value?.set?.id
-    ?? ''
-  ).toLowerCase();
-
-  if (setId && FIRST_EDITION_CAPABLE_SET_IDS.has(setId)) return true;
-  if (setId === 'base4' || setId === 'base6') return false;
-
-  const setName = String(
-    value?.set_name
-    ?? value?.setName
-    ?? value?.set?.name
-    ?? ''
-  ).toLowerCase();
-
-  if (!setName) return false;
-  if (/\bbase\s*set\s*2\b/.test(setName) || /\blegendary\s+collection\b/.test(setName)) return false;
-
-  return (
-    /\bbase\b/.test(setName)
-    || /\bjungle\b/.test(setName)
-    || /\bfossil\b/.test(setName)
-    || /\bteam\s+rocket\b/.test(setName)
-    || /\bgym\s+(heroes|challenge)\b/.test(setName)
-    || /\bneo\s+(genesis|discovery|revelation|destiny)\b/.test(setName)
-  );
-}
-
-type CaptureResult = {
-  base64: string;
-  uri: string;
-  width: number;
-  height: number;
-  originalUri: string;
-  originalWidth: number;
-  originalHeight: number;
-  crop: ImageCropRect | null;
-  sourceLabel: 'frame-crop' | 'full-frame';
-};
-
-type PrintedNumber = {
-  number: number;
-  total: number;
-  ocrText?: string;
-  region?: string;
-  ocrMs?: number;
-  repairedFrom?: string;
-};
-
-type OcrRegion = {
-  name: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotate?: number;
-};
-
-type ScanStep = 'select_binder' | 'scanning' | 'review';
-type ScanMode = 'manual' | 'auto' | 'page';
-type CameraMode = 'single' | 'grid';
-
-type PendingConfirmation = {
-  card?: ScannedCard | null;
-  candidates?: ScanCandidate[];
-  base64: string;
-  isMarket: boolean;
-  editionChoiceRequired?: boolean;
-};
-
-type ScanErrorState = ScanErrorResponse & {
-  debugDetails?: string;
-  stack?: string;
-};
-
-type ImageCropRect = {
-  originX: number;
-  originY: number;
-  width: number;
-  height: number;
-};
-
-type PreviewCropFrame = {
-  previewWidth: number;
-  previewHeight: number;
-  frameX: number;
-  frameY: number;
-  frameWidth: number;
-  frameHeight: number;
-  marginRatio?: number;
-};
-
-function clampImageCrop(crop: ImageCropRect, imageWidth: number, imageHeight: number) {
-  const originX = Math.max(0, Math.min(imageWidth - 1, Math.floor(crop.originX)));
-  const originY = Math.max(0, Math.min(imageHeight - 1, Math.floor(crop.originY)));
-  const maxWidth = Math.max(1, imageWidth - originX);
-  const maxHeight = Math.max(1, imageHeight - originY);
-
+  const originX = Math.max(0, Math.round(width * spec.x));
+  const originY = Math.max(0, Math.round(height * spec.y));
+  const cropWidth = Math.max(1, Math.min(width - originX, Math.round(width * spec.width)));
+  const cropHeight = Math.max(1, Math.min(height - originY, Math.round(height * spec.height)));
   return {
     originX,
     originY,
-    width: Math.max(1, Math.min(maxWidth, Math.floor(crop.width))),
-    height: Math.max(1, Math.min(maxHeight, Math.floor(crop.height))),
-  };
-}
-
-function getCenteredCardCrop(photoWidth?: number, photoHeight?: number, frame?: PreviewCropFrame | null) {
-  if (!photoWidth || !photoHeight) return null;
-
-  if (frame?.previewWidth && frame?.previewHeight && frame.frameWidth && frame.frameHeight) {
-    const sensorAspect = photoWidth / photoHeight;
-    const previewAspect = frame.previewWidth / frame.previewHeight;
-    let visiblePhotoWidth = photoWidth;
-    let visiblePhotoHeight = photoHeight;
-    let hiddenX = 0;
-    let hiddenY = 0;
-
-    if (sensorAspect > previewAspect) {
-      visiblePhotoWidth = photoHeight * previewAspect;
-      hiddenX = (photoWidth - visiblePhotoWidth) / 2;
-    } else {
-      visiblePhotoHeight = photoWidth / previewAspect;
-      hiddenY = (photoHeight - visiblePhotoHeight) / 2;
-    }
-
-    const scaleX = visiblePhotoWidth / frame.previewWidth;
-    const scaleY = visiblePhotoHeight / frame.previewHeight;
-    const rawWidth = frame.frameWidth * scaleX;
-    const rawHeight = frame.frameHeight * scaleY;
-    const marginRatio = frame.marginRatio ?? 0;
-    const width = Math.min(photoWidth, rawWidth * (1 + marginRatio));
-    const height = Math.min(photoHeight, rawHeight * (1 + marginRatio));
-    const marginX = (width - rawWidth) / 2;
-    const marginY = (height - rawHeight) / 2;
-
-    return clampImageCrop({
-      originX: hiddenX + frame.frameX * scaleX - marginX,
-      originY: hiddenY + frame.frameY * scaleY - marginY,
-      width,
-      height,
-    }, photoWidth, photoHeight);
-  }
-
-  let cropWidth = photoWidth * CARD_CROP_WIDTH_RATIO;
-  let cropHeight = cropWidth / CARD_ASPECT_RATIO;
-  const maxCropHeight = photoHeight * CARD_CROP_HEIGHT_RATIO;
-
-  if (cropHeight > maxCropHeight) {
-    cropHeight = maxCropHeight;
-    cropWidth = cropHeight * CARD_ASPECT_RATIO;
-  }
-
-  return clampImageCrop({
-    originX: (photoWidth - cropWidth) / 2,
-    originY: (photoHeight - cropHeight) / 2,
     width: cropWidth,
     height: cropHeight,
-  }, photoWidth, photoHeight);
+  };
 }
 
-function getGridScanSize(value: GridScanSize) {
-  return value === 'auto' ? DEFAULT_AUTO_GRID_SIZE : Number(value);
+function combineOcrRegions(regions: LocalOcrRegionText[]) {
+  return Array.from(new Set(
+    regions
+      .flatMap((region) => region.text.split(/\r?\n/))
+      .map((line) => line.trim())
+      .filter(Boolean)
+  )).join('\n');
 }
 
-function getGridScanLabel(value: GridScanSize) {
-  return value === 'auto' ? 'Auto' : `${value} x ${value}`;
+function buildLocalOcrSearchQuery(result?: LocalOcrMatchResult | null) {
+  if (!result) return '';
+  const signals = result.signals;
+  const printed = signals.printedNumber
+    ? `${signals.printedNumber.normalisedNumber}${signals.printedNumber.normalisedDenominator ? `/${signals.printedNumber.normalisedDenominator}` : ''}`
+    : '';
+  return [
+    signals.nameText,
+    signals.setCode,
+    printed,
+    signals.releaseYear ? String(signals.releaseYear) : '',
+  ].filter(Boolean).join(' ').trim().slice(0, 220);
 }
 
-function getGridScanDescription(value: GridScanSize) {
-  const size = getGridScanSize(value);
-  return value === 'auto'
-    ? `Auto starts at ${size} x ${size} - ${size * size} positions`
-    : `${size * size} positions`;
-}
-
-function getBinderPageSlotCrop(pageWidth: number, pageHeight: number, slotIndex: number, gridSize: number) {
-  const row = Math.floor(slotIndex / gridSize);
-  const col = slotIndex % gridSize;
-  const cellWidth = pageWidth / gridSize;
-  const cellHeight = pageHeight / gridSize;
-  let slotWidth = cellWidth * 0.92;
-  let slotHeight = slotWidth / CARD_ASPECT_RATIO;
-
-  if (slotHeight > cellHeight * 0.92) {
-    slotHeight = cellHeight * 0.92;
-    slotWidth = slotHeight * CARD_ASPECT_RATIO;
+function mergeIdentifiedCards(primary: IdentifiedCard[], secondary: IdentifiedCard[]) {
+  const seen = new Set<string>();
+  const merged: IdentifiedCard[] = [];
+  for (const card of [...primary, ...secondary]) {
+    const key = card.id
+      ? `id:${card.id}`
+      : [card.name, card.set_id, card.set_name, card.number].filter(Boolean).join('|').toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(card);
   }
-
-  return clampImageCrop({
-    originX: col * cellWidth + (cellWidth - slotWidth) / 2,
-    originY: row * cellHeight + (cellHeight - slotHeight) / 2,
-    width: slotWidth,
-    height: slotHeight,
-  }, pageWidth, pageHeight);
+  return merged;
 }
 
-function parsePrintedNumber(text?: string | null): PrintedNumber | null {
-  if (!text) return null;
-  const normalised = text
-    .replace(/[Oo]/g, '0')
-    .replace(/[Il|]/g, '1')
-    .replace(/[Ss]/g, '5');
-  const match = normalised.match(/\b(\d{1,3})\s*[\/／]\s*(\d{2,3})\b/);
-  if (!match) return null;
-
-  const number = Number(match[1]);
-  const total = Number(match[2]);
-  if (!Number.isFinite(number) || !Number.isFinite(total)) return null;
-  return { number, total, ocrText: text ?? undefined };
-}
-
-function hasThreeDigitCollectorEvidence(text?: string | null) {
-  if (!text) return false;
-  const normalised = text
-    .replace(/[Oo]/g, '0')
-    .replace(/[Il|]/g, '1')
-    .replace(/[Ss]/g, '5');
-  return /(?:^|[^0-9])\d{3}\s*(?:\/|\uFF0F|\u2044|\u2215)\s*\d{2,3}(?=\D|$)/.test(normalised);
-}
-
-function hasThreeDigitTotalEvidence(text?: string | null) {
-  if (!text) return false;
-  const normalised = text
-    .replace(/[Oo]/g, '0')
-    .replace(/[Il|]/g, '1')
-    .replace(/[Ss]/g, '5');
-  return /(?:\/|\uFF0F|\u2044|\u2215)\s*0\d{2}(?=\D|$)/.test(normalised);
-}
-
-function repairSuspiciousPrintedNumber(printedNumber: PrintedNumber) {
-  if (printedNumber.number > 300 && printedNumber.total >= 10) {
-    const rawNumber = String(printedNumber.number);
-    const trimmedNumber = Number(rawNumber.slice(1));
-
-    if (
-      Number.isFinite(trimmedNumber)
-      && trimmedNumber > 0
-      && trimmedNumber <= printedNumber.total + 30
-    ) {
-      return {
-        ...printedNumber,
-        number: trimmedNumber,
-        repairedFrom: `${printedNumber.number}/${printedNumber.total}`,
-      };
-    }
-  }
-
-  if (
-    printedNumber.total < 10
-    && printedNumber.ocrText
-    && hasThreeDigitTotalEvidence(printedNumber.ocrText)
-  ) {
-    return {
-      ...printedNumber,
-      total: Number(`0${printedNumber.total}`),
-      region: printedNumber.region,
-    };
-  }
-
-  return printedNumber;
-}
-
-function isSuspiciousPrintedNumber(printedNumber?: PrintedNumber | null) {
-  if (!printedNumber) return false;
-
-  if (printedNumber.number < 1 || printedNumber.total < 1) {
-    return true;
-  }
-
-  if (printedNumber.number > 300) {
-    return true;
-  }
-
-  if (printedNumber.total >= 10 && printedNumber.number > printedNumber.total + 150) {
-    return true;
-  }
-
-  if (printedNumber.total < 10 && !hasThreeDigitTotalEvidence(printedNumber.ocrText)) {
-    return true;
-  }
-
-  if (
-    printedNumber.total < 10
-    && printedNumber.number > printedNumber.total
-    && isBroadNumberRegion(printedNumber.region)
-  ) {
-    return true;
-  }
-
-  return false;
-}
-
-function inferPrintedTotalFromText(text?: string | null) {
-  if (!text) return null;
-  const normalised = text
-    .replace(/[Oo]/g, '0')
-    .replace(/[Il|]/g, '1')
-    .replace(/[Ss]/g, '5');
-  const matches = [...normalised.matchAll(/(?:\/|\uFF0F|\u2044|\u2215)\s*0?(\d{2,3})(?=\D|$)/g)];
-  const totals = matches
-    .map((match) => Number(match[1]))
-    .filter((value) => Number.isFinite(value) && value > 0);
-  return totals[0] ?? null;
-}
-
-function parsePrintedNumberSignalFromText(text?: string | null): PrintedNumber | null {
-  const parsed = parsePrintedNumberFromOcr(text) ?? parsePrintedNumber(text);
-  return parsed ? repairSuspiciousPrintedNumber(parsed) : null;
-}
-
-function isBroadNumberRegion(region?: string) {
-  return region === 'bottom-band'
-    || region === 'bottom-left'
-    || region === 'number-fast-lower-half'
-    || region === 'lower-half'
-    || region === 'full-card';
-}
-
-function normalizeCardName(value?: string | null) {
-  return String(value ?? '').trim().toLowerCase();
-}
-
-function getNumericCollectorNumber(value?: string | null) {
-  const match = String(value ?? '').match(/\d+/);
-  if (!match) return null;
-  const parsed = Number(match[0]);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function getScannedCardPrintedTotal(card?: ScannedCard | null) {
-  if (!card) return null;
-  if (typeof card.set_printed_total === 'number' && Number.isFinite(card.set_printed_total) && card.set_printed_total > 0) {
-    return card.set_printed_total;
-  }
-
-  const rawTotal = card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total;
-  const parsed = Number(rawTotal);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function isReliablePrintedNumberForValidation(printedNumber?: PrintedNumber | null) {
-  return Boolean(printedNumber && !isSuspiciousPrintedNumber(printedNumber));
-}
-
-function doesScannedCardMatchPrintedNumber(card: ScannedCard | null | undefined, printedNumber?: PrintedNumber | null) {
-  if (!isReliablePrintedNumberForValidation(printedNumber)) return true;
-  if (!card || !printedNumber) return false;
-
-  const cardNumber = getNumericCollectorNumber(card.number);
-  if (cardNumber == null || cardNumber !== printedNumber.number) return false;
-
-  const setPrintedTotal = getScannedCardPrintedTotal(card);
-  if (setPrintedTotal != null && printedNumber.total >= 10 && setPrintedTotal !== printedNumber.total) {
-    return false;
-  }
-
-  return true;
-}
-
-function removePrintedNumberMismatches(candidates: ScanCandidate[], printedNumber?: PrintedNumber | null) {
-  if (!isReliablePrintedNumberForValidation(printedNumber)) return candidates;
-
-  return candidates.map((candidate) => {
-    const resolvedCard = candidate.resolvedCard as ScannedCard | null | undefined;
-    if (!resolvedCard || doesScannedCardMatchPrintedNumber(resolvedCard, printedNumber)) return candidate;
-    return { ...candidate, resolvedCard: null };
-  });
-}
-
-function findPrintedNumberAlignedMatch(candidates: ScanCandidate[], printedNumber?: PrintedNumber | null) {
-  return (candidates.find((candidate) => {
-    const resolvedCard = candidate.resolvedCard as ScannedCard | null | undefined;
-    return Boolean(resolvedCard && doesScannedCardMatchPrintedNumber(resolvedCard, printedNumber));
-  })?.resolvedCard as ScannedCard | null | undefined) ?? null;
-}
-
-function parsePrintedNumberFromOcr(text?: string | null): PrintedNumber | null {
-  if (!text) return null;
-  const normalised = text
-    .replace(/[Oo]/g, '0')
-    .replace(/[Il|]/g, '1')
-    .replace(/[Ss]/g, '5');
-  const matches = [...normalised.matchAll(/(?:^|[^0-9])(\d{1,3})\s*(?:\/|\uFF0F|\u2044|\u2215)\s*(\d{2,3})(?=\D|$)/g)];
-  const match = matches
-    .sort((a, b) => {
-      const aNumberLength = a[1].length;
-      const bNumberLength = b[1].length;
-      if (aNumberLength !== bNumberLength) return bNumberLength - aNumberLength;
-      return b[0].length - a[0].length;
-    })[0];
-  if (!match) return null;
-
-  const number = Number(match[1]);
-  const total = Number(match[2]);
-  if (!Number.isFinite(number) || !Number.isFinite(total)) return null;
-  return { number, total, ocrText: text ?? undefined };
-}
-
-function hasLongerNumberHint(printedNumber?: PrintedNumber | null) {
-  if (!printedNumber?.ocrText || printedNumber.number >= 100) return false;
-  if (printedNumber.total && printedNumber.number > printedNumber.total) return false;
-  if (isBroadNumberRegion(printedNumber.region)) return true;
-  const total = String(printedNumber.total).padStart(2, '0');
-  const escapedTotal = total.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const pattern = new RegExp(`(?:^|[^0-9])\\d{3}\\s*(?:\\/|\\uFF0F|\\u2044|\\u2215)\\s*0*${escapedTotal}(?=\\D|$)`);
-  return pattern.test(printedNumber.ocrText);
-}
-
-function shouldTryNameTotalFallback(
-  printedNumber?: PrintedNumber | null,
-  localIndexResult?: { candidates?: LocalScanCard[] | null; needsVisualRerank?: boolean } | null,
-  localResult?: { needsVisualRerank?: boolean; match?: ScannedCard | null } | null
-): printedNumber is PrintedNumber {
-  if (!printedNumber || localResult?.match) return false;
-  return Boolean(
-    localResult?.needsVisualRerank
-    || !localIndexResult
-    || localIndexResult?.needsVisualRerank
-    || localIndexResult?.candidates?.length === 0
-    || isBroadNumberRegion(printedNumber.region)
-  );
-}
-
-function shouldUsePrintedTotalVisualPool(
-  printedNumber?: PrintedNumber | null,
-  localIndexResult?: { candidates?: LocalScanCard[] | null; needsVisualRerank?: boolean } | null
-) {
-  if (!printedNumber?.total) return false;
-  return Boolean(
-    isBroadNumberRegion(printedNumber.region)
-    || hasLongerNumberHint(printedNumber)
-    || localIndexResult?.candidates?.length === 0
-  );
-}
-
-function isLowConfidenceShortNumber(printedNumber?: PrintedNumber | null) {
-  return Boolean(
-    printedNumber
-    && printedNumber.number < 10
-    && printedNumber.total >= 50
-    && isBroadNumberRegion(printedNumber.region)
-  );
-}
-
-function hasSecretSuffixRisk(
-  printedNumber?: PrintedNumber | null,
-  candidates?: LocalScanCard[] | null,
-  totalCandidates?: LocalScanCard[] | null
-) {
-  if (
-    !printedNumber
-    || printedNumber.number >= 100
-    || printedNumber.number > printedNumber.total
-    || !isBroadNumberRegion(printedNumber.region)
-  ) {
-    return false;
-  }
-
-  const read = String(printedNumber.number);
-  const exactCandidateIds = new Set((candidates ?? []).map((card) => card.id));
-  return Boolean(totalCandidates?.some((card) => {
-    const cardNumber = Number.parseInt(card.number, 10);
-    return Number.isFinite(cardNumber)
-      && cardNumber > printedNumber.total
-      && String(cardNumber).endsWith(read)
-      && !exactCandidateIds.has(card.id);
-  }));
-}
-
-function getOcrRegionCrop(
-  width: number,
-  height: number,
-  region: OcrRegion
-) {
-  return clampImageCrop({
-    originX: width * region.x,
-    originY: height * region.y,
-    width: width * region.width,
-    height: height * region.height,
-  }, width, height);
-}
-
-async function readOcrRegionText(
-  uri: string,
-  width: number,
-  height: number,
-  region: OcrRegion,
-  options?: { resizeWidth?: number }
-) {
-  const crop = getOcrRegionCrop(width, height, region);
-  const manipulated = await ImageManipulator.manipulateAsync(
-    uri,
-    [{ crop }, { resize: { width: options?.resizeWidth ?? 1000 } }],
-    { compress: 0.92, format: ImageManipulator.SaveFormat.JPEG }
-  );
-  const result = await TextRecognition.recognize(manipulated.uri);
-  return result?.text ?? '';
-}
-
-function getPixelRegionStats(
-  decoded: { width: number; height: number; data: Uint8Array | Buffer },
-  region: OcrRegion
-) {
-  const startX = Math.max(0, Math.round(decoded.width * region.x));
-  const startY = Math.max(0, Math.round(decoded.height * region.y));
-  const regionWidth = Math.max(1, Math.min(decoded.width - startX, Math.round(decoded.width * region.width)));
-  const regionHeight = Math.max(1, Math.min(decoded.height - startY, Math.round(decoded.height * region.height)));
-  const rowInk = new Array(regionHeight).fill(0);
-  const columnInk = new Array(regionWidth).fill(0);
-  const darkMask = new Uint8Array(regionWidth * regionHeight);
-  let dark = 0;
-  let veryDark = 0;
-  let ink = 0;
-  let total = 0;
-
-  for (let y = 0; y < regionHeight; y += 1) {
-    for (let x = 0; x < regionWidth; x += 1) {
-      const index = ((startY + y) * decoded.width + startX + x) * 4;
-      const r = decoded.data[index];
-      const g = decoded.data[index + 1];
-      const b = decoded.data[index + 2];
-      const luma = (0.299 * r) + (0.587 * g) + (0.114 * b);
-      total += 1;
-
-      if (luma < 110) {
-        ink += 1;
-        rowInk[y] += 1;
-        columnInk[x] += 1;
-      }
-      if (luma < 82) {
-        dark += 1;
-        darkMask[(y * regionWidth) + x] = 1;
-      }
-      if (luma < 55) veryDark += 1;
-    }
-  }
-
-  const rowsWithInk = rowInk.filter((count) => count / regionWidth > 0.035).length;
-  const columnsWithInk = columnInk.filter((count) => count / regionHeight > 0.035).length;
-  const visited = new Uint8Array(darkMask.length);
-  const components: {
-    area: number;
-    width: number;
-    height: number;
-    density: number;
-    aspect: number;
-    score: number;
-  }[] = [];
-
-  for (let i = 0; i < darkMask.length; i += 1) {
-    if (!darkMask[i] || visited[i]) continue;
-
-    const stack = [i];
-    visited[i] = 1;
-    let area = 0;
-    let minX = regionWidth;
-    let maxX = 0;
-    let minY = regionHeight;
-    let maxY = 0;
-
-    while (stack.length) {
-      const current = stack.pop()!;
-      const x = current % regionWidth;
-      const y = Math.floor(current / regionWidth);
-      area += 1;
-      minX = Math.min(minX, x);
-      maxX = Math.max(maxX, x);
-      minY = Math.min(minY, y);
-      maxY = Math.max(maxY, y);
-
-      const neighbours = [
-        x > 0 ? current - 1 : -1,
-        x < regionWidth - 1 ? current + 1 : -1,
-        y > 0 ? current - regionWidth : -1,
-        y < regionHeight - 1 ? current + regionWidth : -1,
-      ];
-
-      for (const next of neighbours) {
-        if (next < 0 || visited[next] || !darkMask[next]) continue;
-        visited[next] = 1;
-        stack.push(next);
-      }
-    }
-
-    const componentWidth = maxX - minX + 1;
-    const componentHeight = maxY - minY + 1;
-    if (area < 8 || componentWidth < 3 || componentHeight < 3) continue;
-
-    const density = area / (componentWidth * componentHeight);
-    const aspect = componentWidth / componentHeight;
-    const widthRatio = componentWidth / regionWidth;
-    const heightRatio = componentHeight / regionHeight;
-    const stampLikeShape =
-      aspect >= 0.45
-      && aspect <= 2.2
-      && widthRatio >= 0.12
-      && widthRatio <= 0.58
-      && heightRatio >= 0.18
-      && heightRatio <= 0.78
-      && density >= 0.12
-      && density <= 0.75;
-
-    components.push({
-      area,
-      width: componentWidth,
-      height: componentHeight,
-      density,
-      aspect,
-      score: stampLikeShape ? (area / (regionWidth * regionHeight)) + (density * 0.08) + (Math.min(widthRatio, heightRatio) * 0.12) : 0,
-    });
-  }
-
-  const compactStampComponent = components.sort((a, b) => b.score - a.score)[0] ?? null;
-
+function mergeIdentifyDiagnostics(
+  localDiagnostics: ScanIdentifyDiagnostics | null,
+  remoteDiagnostics: ScanIdentifyDiagnostics | null,
+  imageCount: number
+): ScanIdentifyDiagnostics | null {
+  if (!localDiagnostics) return remoteDiagnostics;
+  if (!remoteDiagnostics) return localDiagnostics;
   return {
-    name: region.name,
-    darkRatio: total ? dark / total : 0,
-    veryDarkRatio: total ? veryDark / total : 0,
-    inkRatio: total ? ink / total : 0,
-    inkRowsRatio: rowsWithInk / regionHeight,
-    inkColumnsRatio: columnsWithInk / regionWidth,
-    compactStampComponent,
+    totalMs: localDiagnostics.totalMs + remoteDiagnostics.totalMs,
+    imageCount,
+    candidateCount: localDiagnostics.candidateCount + remoteDiagnostics.candidateCount,
+    providers: [
+      ...localDiagnostics.providers,
+      ...remoteDiagnostics.providers,
+    ],
+    notes: [
+      ...(localDiagnostics.notes ?? []),
+      ...(remoteDiagnostics.notes ?? []),
+    ],
   };
 }
 
-function detectFirstEditionStampByPixels(base64Image: string): ScanEditionDetection {
-  try {
-    const decoded = decodeJpeg(Buffer.from(base64Image, 'base64'), { useTArray: true });
-    const metrics = FIRST_EDITION_STAMP_REGIONS.map((region) => getPixelRegionStats(decoded, region));
-    const scored = metrics
-      .map((metric) => ({
-        ...metric,
-        score:
-          (metric.darkRatio * 1.2)
-          + (metric.veryDarkRatio * 1.5)
-          + (metric.inkRowsRatio * 0.05)
-          + (metric.inkColumnsRatio * 0.05)
-          + ((metric.compactStampComponent?.score ?? 0) * 1.8),
-      }))
-      .sort((a, b) => b.score - a.score);
-    const best = scored[0];
-    const compactScore = best?.compactStampComponent?.score ?? 0;
-    const hasStrongStampShape = Boolean(
-      best
-      && compactScore > 0.11
-      && best.darkRatio > 0.075
-      && best.veryDarkRatio > 0.032
-      && best.inkRowsRatio > 0.22
-      && best.inkRowsRatio < 0.74
-      && best.inkColumnsRatio > 0.22
-      && best.inkColumnsRatio < 0.78
-    );
-
-    if (hasStrongStampShape) {
-      return {
-        hint: '1st_edition',
-        confidence: Math.min(0.97, 0.9 + (compactScore * 0.4) + (best.veryDarkRatio * 0.8)),
-        reason: `dark stamp mark detected in ${best.name}`,
-        metrics: { best, regions: scored },
-      };
-    }
-
-    return {
-      hint: 'unlimited',
-      confidence: best?.veryDarkRatio && best.veryDarkRatio > 0.04 ? 0.62 : 0.74,
-      reason: 'no strong 1st Edition stamp mark detected in expected area',
-      metrics: { best, regions: scored },
-    };
-  } catch (error) {
-    return {
-      hint: null,
-      confidence: 0,
-      reason: error instanceof Error ? error.message : String(error),
-    };
-  }
-}
-
-async function detectFirstEditionStampByOcr(
-  uri: string,
-  width: number,
-  height: number
-): Promise<ScanEditionDetection | null> {
-  const chunks: string[] = [];
-
-  for (const region of FIRST_EDITION_STAMP_REGIONS) {
-    try {
-      const text = await readOcrRegionText(uri, width, height, region, { resizeWidth: 1400 });
-      if (text.trim()) chunks.push(text);
-    } catch (error) {
-      console.log('Edition stamp OCR region failed:', {
-        region: region.name,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
-
-  const ocrText = chunks.join('\n').replace(/\s+/g, ' ').trim();
-  const normalized = ocrText.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-  const joined = normalized.replace(/\s+/g, '');
-
-  if (
-    /\b(1st|first)\s*(edition|ed)\b/.test(normalized)
-    || /\bedition\b/.test(normalized)
-    || joined.includes('1stedition')
-    || joined.includes('firstedition')
-  ) {
-    return {
-      hint: '1st_edition',
-      confidence: 0.94,
-      reason: '1st Edition stamp text detected',
-      metrics: { ocrText },
-    };
-  }
-
-  return ocrText
-    ? {
-        hint: null,
-        confidence: 0,
-        reason: 'edition OCR text did not contain stamp wording',
-        metrics: { ocrText },
-      }
-    : null;
-}
-
-// Retained for visual edition reads when card-image OCR is re-enabled.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function readVisualEditionHintFromCardImage(
-  uri: string,
-  width: number,
-  height: number,
-  base64Image: string
-): Promise<ScanEditionDetection> {
-  const pixelResult = detectFirstEditionStampByPixels(base64Image);
-  if (pixelResult.hint === '1st_edition' && pixelResult.confidence >= FIRST_EDITION_STRONG_CONFIDENCE) {
-    return pixelResult;
-  }
-  if (pixelResult.hint === 'unlimited') {
-    return pixelResult;
-  }
-
-  const ocrResult = await detectFirstEditionStampByOcr(uri, width, height);
-  if (ocrResult?.hint === '1st_edition') return ocrResult;
-
-  if (pixelResult.hint === '1st_edition') {
-    return {
-      hint: 'unlimited',
-      confidence: 0.58,
-      reason: `possible 1st Edition mark was below confidence threshold (${pixelResult.confidence.toFixed(2)})`,
-      metrics: pixelResult.metrics,
-    };
-  }
-
-  if (pixelResult.hint) return pixelResult;
-
-  return ocrResult ?? {
-    ...pixelResult,
-    hint: 'unlimited',
-    confidence: 0.58,
-    reason: 'no readable 1st Edition stamp evidence was found',
-  };
-}
-
-async function readNameTextFromCardImage(
-  uri: string,
-  width: number,
-  height: number,
-  options?: { regions?: OcrRegion[]; resizeWidth?: number }
+function buildLegacyPhotoCrop(
+  frame: { top: number; left: number; width: number; height: number },
+  viewport: { width: number; height: number },
+  photo: { width?: number; height?: number },
+  paddingRatio = SCAN_CROP_PADDING_RATIO
 ) {
-  const chunks: string[] = [];
-
-  for (const region of options?.regions ?? NAME_OCR_REGIONS) {
-    const regionStartedAt = Date.now();
-    const text = await readOcrRegionText(uri, width, height, region, {
-      resizeWidth: options?.resizeWidth ?? 1000,
-    });
-    const ocrMs = Date.now() - regionStartedAt;
-    if (text.trim()) {
-      console.log('Name OCR text:', {
-        region: region.name,
-        ocrMs,
-        preview: text.replace(/\s+/g, ' ').trim().slice(0, 80),
-      });
-      chunks.push(text);
-    } else {
-      console.log('Name OCR empty:', {
-        region: region.name,
-        ocrMs,
-      });
-    }
-  }
-
-  return chunks.join('\n').trim();
-}
-
-async function readTotalHintTextFromCardImage(uri: string, width: number, height: number) {
-  const chunks: string[] = [];
-
-  for (const region of TOTAL_HINT_OCR_REGIONS) {
-    const regionStartedAt = Date.now();
-    const text = await readOcrRegionText(uri, width, height, region, { resizeWidth: 1800 });
-    const ocrMs = Date.now() - regionStartedAt;
-    if (text.trim()) {
-      console.log('Total hint OCR text:', {
-        region: region.name,
-        ocrMs,
-        preview: text.replace(/\s+/g, ' ').trim().slice(0, 80),
-      });
-      chunks.push(text);
-    }
-  }
-
-  return chunks.join('\n').trim();
-}
-
-async function readPrintedNumberFromRegion(uri: string, width: number, height: number, region: OcrRegion) {
-  const startedAt = Date.now();
-  const crop = getOcrRegionCrop(width, height, region);
-  const actions: ImageManipulator.Action[] = [
-    { crop },
-    ...(region.rotate ? [{ rotate: region.rotate }] : []),
-    { resize: { width: NUMBER_OCR_WIDTH } },
-  ];
-  const manipulated = await ImageManipulator.manipulateAsync(
-    uri,
-    actions,
-    { compress: 0.95, format: ImageManipulator.SaveFormat.JPEG }
-  );
-  const result = await TextRecognition.recognize(manipulated.uri);
-  const printedNumber = parsePrintedNumberFromOcr(result?.text);
-  if (printedNumber) {
-    printedNumber.ocrText = result?.text ?? undefined;
-    printedNumber.region = region.name;
-    printedNumber.ocrMs = Date.now() - startedAt;
-  }
-  return printedNumber;
-}
-
-async function readPrintedNumberFromRegions(
-  uri: string,
-  width: number,
-  height: number,
-  regions: OcrRegion[]
-) {
-  for (const region of regions) {
-    const rawPrintedNumber = await readPrintedNumberFromRegion(uri, width, height, region);
-    const printedNumber = rawPrintedNumber ? repairSuspiciousPrintedNumber(rawPrintedNumber) : null;
-    if (
-      printedNumber
-      && printedNumber.number < 100
-      && printedNumber.number <= printedNumber.total
-      && isBroadNumberRegion(region.name)
-      && hasThreeDigitCollectorEvidence(printedNumber.ocrText)
-    ) {
-      console.log('Printed number OCR ignored broad truncated match:', {
-        region: region.name,
-        number: `${printedNumber.number}/${printedNumber.total}`,
-        ocrMs: printedNumber.ocrMs,
-      });
-      continue;
-    }
-
-    if (printedNumber) {
-      if (isSuspiciousPrintedNumber(printedNumber)) {
-        console.log('Printed number OCR ignored suspicious match:', {
-          region: region.name,
-          number: `${printedNumber.number}/${printedNumber.total}`,
-          ocrMs: printedNumber.ocrMs,
-        });
-        continue;
-      }
-
-      if (
-        printedNumber.number < 10
-        && printedNumber.total < 10
-        && isBroadNumberRegion(region.name)
-      ) {
-        console.log('Printed number OCR ignored tiny broad match:', {
-          region: region.name,
-          number: `${printedNumber.number}/${printedNumber.total}`,
-          ocrMs: printedNumber.ocrMs,
-        });
-        continue;
-      }
-
-      console.log('Printed number OCR matched:', {
-        region: region.name,
-        number: `${printedNumber.number}/${printedNumber.total}`,
-        ocrMs: printedNumber.ocrMs,
-        repairedFrom: printedNumber.repairedFrom,
-      });
-      return printedNumber;
-    }
-  }
-
-  return null;
-}
-
-function logPrintedNumberOcrMiss(regions: OcrRegion[]) {
-  console.log('Printed number OCR missed regions:', {
-    regions: regions.map((region) => region.name),
-  });
-}
-
-async function readPrintedNumberFromCardImage(
-  uri: string,
-  width?: number,
-  height?: number,
-  options?: {
-    includeFastRegions?: boolean;
-    includeFallbackRegions?: boolean;
-    includeFullCard?: boolean;
-    fastRegions?: OcrRegion[];
-    fallbackRegions?: OcrRegion[];
-  }
-) {
-  try {
-    if (width && height) {
-      if (options?.includeFastRegions !== false) {
-        const fastRegions = options?.fastRegions ?? FAST_NUMBER_OCR_REGIONS;
-        const fastRead = await readPrintedNumberFromRegions(uri, width, height, fastRegions);
-        if (fastRead) return fastRead;
-        logPrintedNumberOcrMiss(fastRegions);
-      }
-
-      if (options?.includeFallbackRegions !== false) {
-        const fallbackRegions = options?.fallbackRegions ?? FALLBACK_NUMBER_OCR_REGIONS;
-        const fallbackRead = await readPrintedNumberFromRegions(uri, width, height, fallbackRegions);
-        if (fallbackRead) return fallbackRead;
-        logPrintedNumberOcrMiss(fallbackRegions);
-      }
-    }
-
-    if (options?.includeFullCard === false) return null;
-
-    const startedAt = Date.now();
-    const result = await TextRecognition.recognize(uri);
-    const rawPrintedNumber = parsePrintedNumberFromOcr(result?.text) ?? parsePrintedNumber(result?.text);
-    const printedNumber = rawPrintedNumber ? repairSuspiciousPrintedNumber(rawPrintedNumber) : null;
-    if (printedNumber) {
-      printedNumber.ocrMs = Date.now() - startedAt;
-      if (isSuspiciousPrintedNumber(printedNumber)) {
-        console.log('Printed number OCR ignored suspicious match:', {
-          region: 'full-card',
-          number: `${printedNumber.number}/${printedNumber.total}`,
-          ocrMs: printedNumber.ocrMs,
-        });
-        return null;
-      }
-
-      printedNumber.region = 'full-card';
-      console.log('Printed number OCR matched:', {
-        region: 'full-card',
-        number: `${printedNumber.number}/${printedNumber.total}`,
-        ocrMs: printedNumber.ocrMs,
-        repairedFrom: printedNumber.repairedFrom,
-      });
-    }
-    return printedNumber;
-  } catch (error) {
-    console.log('Card number OCR failed:', error);
+  const photoWidth = Number(photo.width);
+  const photoHeight = Number(photo.height);
+  if (!Number.isFinite(photoWidth) || !Number.isFinite(photoHeight) || photoWidth <= 0 || photoHeight <= 0) {
     return null;
   }
+
+  const scale = Math.max(viewport.width / photoWidth, viewport.height / photoHeight);
+  const displayedWidth = photoWidth * scale;
+  const displayedHeight = photoHeight * scale;
+  const offsetX = Math.max(0, (displayedWidth - viewport.width) / 2);
+  const offsetY = Math.max(0, (displayedHeight - viewport.height) / 2);
+
+  const originX = (frame.left + offsetX) / scale;
+  const originY = (frame.top + offsetY) / scale;
+  const cropWidth = frame.width / scale;
+  const cropHeight = frame.height / scale;
+  const padding = Math.min(cropWidth, cropHeight) * paddingRatio;
+
+  const paddedX = Math.max(0, originX - padding);
+  const paddedY = Math.max(0, originY - padding);
+  const paddedRight = Math.min(photoWidth, originX + cropWidth + padding);
+  const paddedBottom = Math.min(photoHeight, originY + cropHeight + padding);
+
+  const width = Math.max(1, paddedRight - paddedX);
+  const height = Math.max(1, paddedBottom - paddedY);
+
+  return {
+    originX: Math.round(paddedX),
+    originY: Math.round(paddedY),
+    width: Math.round(width),
+    height: Math.round(height),
+  };
 }
 
-// ===============================
-// MAIN COMPONENT
-// ===============================
+function expandPhotoCrop(
+  crop: { originX: number; originY: number; width: number; height: number } | null,
+  photo: { width?: number; height?: number },
+  expansionRatio: number
+) {
+  if (!crop) return null;
+  const photoWidth = Number(photo.width);
+  const photoHeight = Number(photo.height);
+  if (!Number.isFinite(photoWidth) || !Number.isFinite(photoHeight) || photoWidth <= 0 || photoHeight <= 0) {
+    return crop;
+  }
+
+  const expansion = Math.min(crop.width, crop.height) * expansionRatio;
+  const originX = Math.max(0, crop.originX - expansion);
+  const originY = Math.max(0, crop.originY - expansion);
+  const right = Math.min(photoWidth, crop.originX + crop.width + expansion);
+  const bottom = Math.min(photoHeight, crop.originY + crop.height + expansion);
+
+  return {
+    originX: Math.round(originX),
+    originY: Math.round(originY),
+    width: Math.max(1, Math.round(right - originX)),
+    height: Math.max(1, Math.round(bottom - originY)),
+  };
+}
 
 export default function ScanScreen() {
   const { theme } = useTheme();
-  const isFocused = useIsFocused();
-  const { hasPermission, requestPermission } = useCameraPermission();
-  const device = useCameraDevice('back');
-  const camera = useRef<Camera>(null);
+  const pathname = usePathname();
+  const params = useLocalSearchParams<ScanRouteParams>();
   const insets = useSafeAreaInsets();
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const routeInstanceId = useRef(`scan-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+  const scannerMountedAt = useRef(Date.now());
+  const cameraInitialisationMsRef = useRef<number | null>(null);
+  const firstCardDetectionMsRef = useRef<number | null>(null);
+  const stableCaptureStartedAtRef = useRef<number | null>(null);
+  const cameraRef = useRef<CameraView>(null);
+  const renderCount = useRef(0);
+  const autoCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoReadyFrames = useRef(0);
+  const autoCheckBusy = useRef(false);
+  const lastAutoCaptureAt = useRef(0);
+  const frameAssessmentRef = useRef<FrameAssessment | null>(null);
+  const localisationRef = useRef<CardLocalisationResult | null>(null);
+  const scanQualityRef = useRef<ScanQualityResult | null>(null);
+  const scannerStateRef = useRef<ScannerCaptureState>('INITIALISING');
+  const appStateRef = useRef(AppState.currentState);
+  const captureInFlightRef = useRef(false);
+  const navigatingAwayRef = useRef(false);
+  renderCount.current += 1;
 
-  const params = useLocalSearchParams<{
-    mode?: string;
-    binderId?: string;
-    flow?: string;
-    reason?: string;
-    session?: string;
-    scanMode?: string;
-    pageMode?: string;
-  }>();
-  const isInventoryMode = params.mode === 'inventory';
-  const isMarketMode = params.mode === 'market' || isInventoryMode;
-  const sellerFlow = params.flow === 'stock_out' ? 'stock_out' : 'stock_in';
-  const sellerReason = typeof params.reason === 'string'
-    ? params.reason
-    : sellerFlow === 'stock_out'
-      ? 'Customer purchase'
-      : 'Purchased stock';
-  const sellerModeLabel = sellerFlow === 'stock_out' ? 'Stock Out' : 'Stock In';
-  const sellerQueueLabel = sellerFlow === 'stock_out' ? 'Out cart' : 'Intake batch';
-  const isSellerStockOut = isInventoryMode && sellerFlow === 'stock_out';
-
-  const [torch, setTorch] = useState(false);
-  const [step, setStep] = useState<ScanStep>('scanning');
-  const [scanMode, setScanMode] = useState<ScanMode>(isInventoryMode ? 'auto' : 'manual');
-  const [cameraMode, setCameraMode] = useState<CameraMode>('single');
-  const [gridScanSize, setGridScanSize] = useState<GridScanSize>('auto');
-  const [binders, setBinders] = useState<BinderRecord[]>([]);
-  const [selectedBinder, setSelectedBinder] = useState<BinderRecord | null>(null);
-  const [loadingBinders, setLoadingBinders] = useState(true);
-  const [scannedCards, setScannedCards] = useState<ScannedCard[]>([]);
-  const [scanning, setScanning] = useState(false);
-  const [lastScanned, setLastScanned] = useState<string | null>(null);
-  const [processingOcr, setProcessingOcr] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [facing, setFacing] = useState<CameraType>('back');
   const [cameraReady, setCameraReady] = useState(false);
-  const [cameraError, setCameraError] = useState<string | null>(null);
-  const [autoScanActive, setAutoScanActive] = useState(false);
-  const [scanningMessage, setScanningMessage] = useState('Reading card...');
-  const [pendingConfirmation, setPendingConfirmation] = useState<PendingConfirmation | null>(null);
-  const [scanError, setScanError] = useState<ScanErrorState | null>(null);
-  const [frozenFrameUri, setFrozenFrameUri] = useState<string | null>(null);
-  const [pageScanProgress, setPageScanProgress] = useState<{ current: number; total: number } | null>(null);
-  const [gridScanSlots, setGridScanSlots] = useState<GridScanSlot[]>([]);
-  const activeGridSize = getGridScanSize(gridScanSize);
-  const activeGridSlotCount = activeGridSize * activeGridSize;
-
-  const scannerLayout = useMemo(() => {
-    const safeWidth = Math.max(1, screenWidth - insets.left - insets.right);
-    const safeHeight = Math.max(1, screenHeight - insets.top - insets.bottom);
-    const compact = safeHeight < 760 || safeWidth < 360;
-    const headerReserve = compact ? 68 : 76;
-    const isPageMode = cameraMode === 'grid' && !isInventoryMode;
-    const modeReserve = !isInventoryMode ? (cameraMode === 'grid' ? 124 : 58) : 0;
-    const hasScannedPreview = scannedCards.length > 0;
-    const bottomReserve = hasScannedPreview
-      ? compact ? 168 : 184
-      : compact ? 118 : 132;
-    const feedbackReserve = lastScanned ? 52 : 0;
-    const topPadding = Math.max(6, Math.min(compact ? 18 : 30, Math.round(safeHeight * 0.035)));
-    const baseAvailableHeight = Math.max(
-      160,
-      safeHeight - headerReserve - modeReserve - bottomReserve - feedbackReserve - topPadding - 12
-    );
-    const horizontalGutter = isPageMode ? (safeWidth < 360 ? 18 : 28) : safeWidth < 360 ? 36 : 64;
-    const maxFrameWidth = Math.max(160, Math.min(isPageMode ? safeWidth - horizontalGutter : compact ? 292 : 320, safeWidth - horizontalGutter));
-    const frameAspectRatio = isPageMode ? BINDER_PAGE_ASPECT_RATIO : CARD_ASPECT_RATIO;
-    const widthBeforeTips = Math.max(160, Math.min(maxFrameWidth, baseAvailableHeight * frameAspectRatio));
-    const showTips = safeHeight >= 680 && widthBeforeTips >= 232;
-    const tipReserve = showTips ? 54 : 0;
-    const availableHeight = Math.max(160, baseAvailableHeight - tipReserve);
-    const frameWidth = Math.round(Math.max(160, Math.min(maxFrameWidth, availableHeight * frameAspectRatio)));
-    const frameHeight = Math.round(frameWidth / frameAspectRatio);
-    const shutterSize = compact ? 72 : 80;
-
-    return {
-      frameWidth,
-      frameHeight,
-      shutterSize,
-      shutterInnerSize: compact ? 54 : 60,
-      compact,
-      frameTopPadding: topPadding,
-      showTips,
-    };
-  }, [
-    insets.bottom,
-    insets.left,
-    insets.right,
-    insets.top,
-    isMarketMode,
-    lastScanned,
-    scannedCards.length,
-    cameraMode,
-    isInventoryMode,
-    screenHeight,
-    screenWidth,
-  ]);
-
-  const isCompactScanner = scannerLayout.compact;
-  const scannerFrameWidth = scannerLayout.frameWidth;
-  const scannerFrameHeight = scannerLayout.frameHeight;
-  const shutterSize = scannerLayout.shutterSize;
-  const shutterInnerSize = scannerLayout.shutterInnerSize;
-
-  const scanCooldownRef = useRef(false);
-  const autoScanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const scannedCardIdsRef = useRef<Set<string>>(new Set());
-  const scanningMessageRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const lastFrameSigRef = useRef<string | null>(null);
-  const lastFrameTsRef = useRef<number>(0);
-  const handleCaptureRef = useRef<((isAuto?: boolean) => Promise<void>) | null>(null);
-  const pendingRenderLoggedRef = useRef(false);
-  const lastScanDebugRef = useRef<number>(0);
-  const scannerFrameRef = useRef<View>(null);
-  const scannerFrameRectRef = useRef<PreviewCropFrame | null>(null);
-  const cameraPermissionRequestedRef = useRef(false);
-  const cameraIsActive = isFocused && step === 'scanning' && !cameraError;
-
-  const updateScannerFrameRect = useCallback(() => {
-    requestAnimationFrame(() => {
-      scannerFrameRef.current?.measureInWindow((x, y, width, height) => {
-        if (!width || !height) return;
-        scannerFrameRectRef.current = {
-          previewWidth: screenWidth,
-          previewHeight: screenHeight,
-          frameX: x,
-          frameY: y,
-          frameWidth: width,
-          frameHeight: height,
-          marginRatio: cameraMode === 'grid' ? BINDER_PAGE_FRAME_MARGIN_RATIO : 0.18,
-        };
-      });
-    });
-  }, [cameraMode, screenHeight, screenWidth]);
+  const [mountError, setMountError] = useState<string | null>(null);
+  const [permissionRequesting, setPermissionRequesting] = useState(false);
+  const [scannerState, setScannerStateValue] = useState<ScannerCaptureState>('INITIALISING');
+  const [acceptedPreviewUri, setAcceptedPreviewUri] = useState<string | null>(null);
+  const [appActive, setAppActive] = useState(AppState.currentState === 'active');
+  const [torchEnabled, setTorchEnabled] = useState(false);
+  const returnReason = getParamValue(params.reason);
+  const requestedScanMode = getParamValue(params.scanMode);
+  const returnedFromRejectedMatches = returnReason === 'none_correct';
+  const initialScanMode: ScanMode = requestedScanMode === 'manual' || returnedFromRejectedMatches ? 'manual' : 'auto';
+  const initialQuery = getParamValue(params.q) ?? '';
+  const [scanMode, setScanMode] = useState<ScanMode>(initialScanMode);
+  const [binderPageLayout, setBinderPageLayout] = useState<BinderPageLayout>(DEFAULT_BINDER_PAGE_LAYOUT);
+  const [binderPageProgress, setBinderPageProgress] = useState<{ processed: number; total: number } | null>(null);
+  const [scanMessage, setScanMessage] = useState(
+    returnedFromRejectedMatches
+      ? 'No worries. Centre the right card and scan again.'
+      : initialScanMode === 'manual'
+        ? 'Manual mode. Centre one card in the window, then tap scan.'
+        : 'Centre one card. Keep other cards in the dim area.'
+  );
+  const [frameAssessment, setFrameAssessment] = useState<FrameAssessment | null>(null);
+  const [localisationResult, setLocalisationResult] = useState<CardLocalisationResult | null>(null);
+  const [scanQualityResult, setScanQualityResult] = useState<ScanQualityResult | null>(null);
+  const [lastQuery, setLastQuery] = useState(initialQuery);
+  const [inlineManualSearchOpen, setInlineManualSearchOpen] = useState(false);
+  const [inlineManualSearchQuery, setInlineManualSearchQuery] = useState(initialQuery);
+  const [inlineManualSearchResults, setInlineManualSearchResults] = useState<ScanResultCard[]>([]);
+  const [inlineManualSearchLoading, setInlineManualSearchLoading] = useState(false);
+  const [scannerThresholdSet, setScannerThresholdSet] = useState<ScannerThresholdSet>(DEFAULT_SCANNER_THRESHOLD_SET);
+  const scannerClientContext = useMemo(() => getScannerClientContext(), []);
+  const scannerFeatureFlags = useMemo(() => getScannerFeatureFlags(), []);
+  const recognitionFeatureFlags = useMemo(() => getRecognitionFeatureFlags(), []);
+  const inlineManualSearchRequestRef = useRef(0);
+  const autoCaptureThresholds = useMemo(() => getAutoCaptureThresholds(scannerThresholdSet), [scannerThresholdSet]);
+  const autoCaptureReadyFrames = useMemo(
+    () => Math.max(1, Math.round(autoCaptureThresholds.requiredStableFrames)),
+    [autoCaptureThresholds.requiredStableFrames]
+  );
+  const autoScanCooldownMs = autoCaptureThresholds.duplicateCooldownMs;
+  const scanQualityCalibration = useMemo(
+    () => getScanQualityCalibration(scannerThresholdSet, SCAN_QUALITY_DEVICE_PROFILE),
+    [scannerThresholdSet]
+  );
 
   useEffect(() => {
-    updateScannerFrameRect();
-  }, [scannerLayout.frameHeight, scannerLayout.frameWidth, updateScannerFrameRect]);
-
-  const selectCameraMode = useCallback((mode: CameraMode) => {
-    setCameraMode(mode);
-    setAutoScanActive(false);
-    setFrozenFrameUri(null);
-    if (mode === 'grid') {
-      setScanMode('page');
-      setGridScanSize((current) => current ?? 'auto');
-    } else {
-      setScanMode('manual');
-    }
-  }, []);
-
-  // ===============================
-  // LOAD BINDERS
-  // ===============================
-
-  useEffect(() => {
-    fetchBinders().then((data) => {
-      setBinders(data);
-      setLoadingBinders(false);
-    });
-    warmLocalCardIndex();
-    syncScannerPack()
-      .then((manifest) => {
-        console.log('Scanner pack ready:', {
-          id: manifest.id,
-          cards: manifest.cardCount,
-          dimensions: manifest.dimensions,
-          generatedAt: manifest.generatedAt,
-        });
-      })
-      .catch((error) => {
-        console.log('Scanner pack sync failed:', error);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (isMarketMode || !params.binderId || selectedBinder) return;
-    const binder = binders.find((item) => item.id === params.binderId);
-    if (!binder) return;
-    setSelectedBinder(binder);
-    setStep('scanning');
-  }, [binders, isMarketMode, params.binderId, selectedBinder]);
-
-  useEffect(() => {
-    if (!pendingConfirmation) {
-      pendingRenderLoggedRef.current = false;
+    if (!recognitionFeatureFlags.localRecognitionEnabled && !recognitionFeatureFlags.localRecognitionShadowMode) {
       return;
     }
-    if (!pendingRenderLoggedRef.current) {
-      logScanStage('CANDIDATES_RENDER_STARTED', {
-        candidates: pendingConfirmation.candidates?.length ?? (pendingConfirmation.card ? 1 : 0),
-        names: pendingConfirmation.candidates?.map((candidate) => candidate.name).slice(0, 5)
-          ?? (pendingConfirmation.card ? [pendingConfirmation.card.name] : []),
+
+    let cancelled = false;
+    void warmLocalOnDeviceV1().then((result) => {
+      if (cancelled || result.status === 'ready') return;
+      logCameraDiagnostic('local recognition warmup skipped', {
+        status: result.status,
+        code: result.error.code,
+        modelVersion: result.modelVersion,
+        catalogueVersion: result.catalogueVersion,
       });
-      pendingRenderLoggedRef.current = true;
-    }
-
-    const timer = setTimeout(() => {
-      logScanStage('CANDIDATES_RENDER_COMPLETE', {
-        candidates: pendingConfirmation.candidates?.length ?? (pendingConfirmation.card ? 1 : 0),
-      });
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, [pendingConfirmation]);
-
-  // ===============================
-  // PERMISSION
-  // ===============================
-
-  useEffect(() => {
-  const checkPermission = async () => {
-    if (!hasPermission && !cameraPermissionRequestedRef.current) {
-      cameraPermissionRequestedRef.current = true;
-      await requestPermission();
-    }
-  };
-
-  checkPermission();
-}, [hasPermission, requestPermission]);
-  // ===============================
-  // CLEANUP ON UNMOUNT
-  // ===============================
-
-  useEffect(() => {
-    if (isFocused) return;
-    setAutoScanActive(false);
-    setCameraReady(false);
-    setProcessingOcr(false);
-    setPageScanProgress(null);
-    scanCooldownRef.current = false;
-    setFrozenFrameUri(null);
-    if (autoScanIntervalRef.current) {
-      clearInterval(autoScanIntervalRef.current);
-      autoScanIntervalRef.current = null;
-    }
-  }, [isFocused]);
-
-  useEffect(() => {
-    if (!isInventoryMode) return;
-    if (!cameraIsActive || !cameraReady || pendingConfirmation || scanError || processingOcr) return;
-    setScanMode('auto');
-    setAutoScanActive(true);
-  }, [cameraIsActive, cameraReady, isInventoryMode, pendingConfirmation, processingOcr, scanError]);
-
-  useEffect(() => {
-    return () => {
-      if (autoScanIntervalRef.current) clearInterval(autoScanIntervalRef.current);
-      if (scanningMessageRef.current) clearInterval(scanningMessageRef.current);
-    };
-  }, []);
-
-  // ===============================
-  // AUTO SCAN INTERVAL
-  // ===============================
-
-  useEffect(() => {
-    if (autoScanIntervalRef.current) {
-      clearInterval(autoScanIntervalRef.current);
-      autoScanIntervalRef.current = null;
-    }
-
-    if (cameraIsActive && scanMode === 'auto' && autoScanActive) {
-      autoScanIntervalRef.current = setInterval(() => {
-        // TODO seller scanner: replace timed captures with frame-processor card detection when the native scanner pipeline is available.
-        if (!scanCooldownRef.current) void handleCaptureRef.current?.(!isInventoryMode);
-      }, 950);
-    }
-
-    return () => {
-      if (autoScanIntervalRef.current) clearInterval(autoScanIntervalRef.current);
-    };
-  }, [cameraIsActive, scanMode, autoScanActive, isInventoryMode]);
-
-  // ===============================
-  // SCANNING MESSAGES
-  // ===============================
-
-  const startScanningMessages = useCallback(() => {
-    if (scanningMessageRef.current) {
-      clearInterval(scanningMessageRef.current);
-      scanningMessageRef.current = null;
-    }
-    let i = 0;
-    setScanningMessage(SCANNING_MESSAGES[0]);
-    scanningMessageRef.current = setInterval(() => {
-      i = (i + 1) % SCANNING_MESSAGES.length;
-      setScanningMessage(SCANNING_MESSAGES[i]);
-    }, 2000);
-  }, []);
-
-  const stopScanningMessages = useCallback(() => {
-    if (scanningMessageRef.current) {
-      clearInterval(scanningMessageRef.current);
-      scanningMessageRef.current = null;
-    }
-    setScanningMessage('Reading card...');
-  }, []);
-
-  // ===============================
-  // RESET STATE
-  // ===============================
-
-  const resetScanState = useCallback((delay = 2000) => {
-    stopScanningMessages();
-    setTimeout(() => {
-      scanCooldownRef.current = false;
-      setLastScanned(null);
-      setProcessingOcr(false);
-      setPageScanProgress(null);
-      setScanError(null);
-      setFrozenFrameUri(null);
-    }, delay);
-  }, [stopScanningMessages]);
-
-  const closeScanner = useCallback(() => {
-    setAutoScanActive(false);
-    setTorch(false);
-    setProcessingOcr(false);
-    setScanning(false);
-    setPageScanProgress(null);
-    setPendingConfirmation(null);
-    setScanError(null);
-    setFrozenFrameUri(null);
-    scanCooldownRef.current = false;
-    if (autoScanIntervalRef.current) {
-      clearInterval(autoScanIntervalRef.current);
-      autoScanIntervalRef.current = null;
-    }
-    if (scanningMessageRef.current) {
-      clearInterval(scanningMessageRef.current);
-      scanningMessageRef.current = null;
-    }
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(tabs)');
-    }
-  }, []);
-
-  // ===============================
-  // TOGGLE AUTO SCAN
-  // ===============================
-
-  const toggleAutoScan = useCallback(() => {
-    setAutoScanActive((prev) => {
-      const next = !prev;
-      if (!next && autoScanIntervalRef.current) {
-        clearInterval(autoScanIntervalRef.current);
-        autoScanIntervalRef.current = null;
+    }).catch((error) => {
+      if (!cancelled) {
+        logCameraDiagnostic('local recognition warmup failed', {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [recognitionFeatureFlags.localRecognitionEnabled, recognitionFeatureFlags.localRecognitionShadowMode]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchActiveScannerThresholdSet().then((thresholdSet) => {
+      if (!cancelled) setScannerThresholdSet(thresholdSet);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const setScannerState = useCallback((event: Parameters<typeof transitionScannerCaptureState>[1]) => {
+    setScannerStateValue((current) => {
+      const next = transitionScannerCaptureState(current, event);
+      scannerStateRef.current = next;
       return next;
     });
   }, []);
 
-  // ===============================
-  // FINGERPRINT SCAN
-  // ===============================
-
-  const fingerprintScan = useCallback(async (
-    base64Image: string,
-    setId?: string | null,
-    expectedPrintedTotal?: number | null,
-    minConfidence = GENERAL_FINGERPRINT_CONFIDENCE_THRESHOLD
-  ): Promise<ScannedCard | null> => {
-    try {
-      const response = await fetch(`${PRICE_API_URL}/api/scan/fingerprint`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64Image, setId }),
-      });
-      if (!response.ok) return null;
-      const data = await response.json();
-      const match = data.match;
-
-      if (!match || match.confidence < minConfidence) {
-        if (match?.confidence != null) {
-          console.log('Fingerprint match below threshold:', {
-            confidence: match.confidence,
-            minConfidence,
-            setId,
-            card: match.card_name,
-          });
-        }
-        return null;
-      }
-      if (setId && match.set_id !== setId) return null;
-
-      const { supabase } = await import('../../lib/supabase');
-      const { data: card } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .eq('id', match.card_id)
-        .single();
-      if (!card) return null;
-
-      const setPrintedTotal = Number(card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? NaN);
-      if (
-        expectedPrintedTotal &&
-        Number.isFinite(setPrintedTotal) &&
-        setPrintedTotal !== expectedPrintedTotal
-      ) {
-        return null;
-      }
-
-      return {
-        id: card.id,
-        name: card.name,
-        number: card.number ?? '',
-        set_id: card.set_id,
-        set_name: card.raw_data?.set?.name ?? card.set_id,
-        set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
-        image_small: card.image_small ?? '',
-        image_large: card.image_large ?? card.raw_data?.images?.large ?? null,
-        raw_data: card.raw_data ?? null,
-        rarity: card.rarity ?? '',
-      };
-    } catch {
-      return null;
-    }
+  const setScannerStateDirect = useCallback((next: ScannerCaptureState) => {
+    scannerStateRef.current = next;
+    setScannerStateValue(next);
   }, []);
 
-  const logScanDebug = useCallback((message: string, data?: Record<string, unknown>) => {
-    const now = Date.now();
-    if (now - lastScanDebugRef.current < 1200) return;
-    lastScanDebugRef.current = now;
-    console.log(`Scan debug: ${message}`, data ?? {});
+  const applyFrameAssessment = useCallback((assessment: FrameAssessment | null) => {
+    frameAssessmentRef.current = assessment;
+    setFrameAssessment(assessment);
   }, []);
 
-  const resolveCardInExpectedSet = useCallback(async (
-    card: ScannedCard,
-    setId?: string | null,
-    printedNumber?: PrintedNumber | null
-  ): Promise<ScannedCard> => {
-    if (!setId || card.set_id === setId) return card;
-
-    try {
-      const { supabase } = await import('../../lib/supabase');
-      const { data } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .eq('set_id', setId)
-        .ilike('name', card.name)
-        .limit(20);
-      const candidates = data ?? [];
-      const exactNameCandidates = candidates.filter((item) => normalizeCardName(item.name) === normalizeCardName(card.name));
-      const candidate = exactNameCandidates.find((item) => (
-        printedNumber?.number != null && String(parseInt(item.number ?? '', 10)) === String(printedNumber.number)
-      ))
-        ?? exactNameCandidates[0]
-        ?? candidates[0];
-      if (!candidate) return card;
-
-      const setPrintedTotal = Number(candidate.raw_data?.set?.printedTotal ?? candidate.raw_data?.set?.total ?? NaN);
-      return {
-        id: candidate.id,
-        name: candidate.name,
-        number: candidate.number ?? '',
-        set_id: candidate.set_id,
-        set_name: candidate.raw_data?.set?.name ?? candidate.set_id,
-        set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
-        image_small: candidate.image_small ?? '',
-        image_large: candidate.image_large ?? candidate.raw_data?.images?.large ?? null,
-        raw_data: candidate.raw_data ?? null,
-        rarity: candidate.rarity ?? '',
-        editionHint: card.editionHint,
-        editionSource: card.editionSource,
-      };
-    } catch (error) {
-      console.log('Expected set card resolve failed:', error);
-      return card;
-    }
+  const applyLocalisationResult = useCallback((localisation: CardLocalisationResult | null) => {
+    localisationRef.current = localisation;
+    setLocalisationResult(localisation);
   }, []);
 
-  const lookupCardBySetNumber = useCallback(async (
-    setId?: string | null,
-    printedNumber?: PrintedNumber | null
-  ): Promise<ScannedCard | null> => {
-    if (!setId || !printedNumber?.number) return null;
-
-    try {
-      const { supabase } = await import('../../lib/supabase');
-      const { data } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .eq('set_id', setId)
-        .eq('number', String(printedNumber.number))
-        .limit(1);
-
-      const card = data?.[0];
-      if (!card) return null;
-
-      const setPrintedTotal = Number(card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? NaN);
-      if (
-        printedNumber.total &&
-        Number.isFinite(setPrintedTotal) &&
-        setPrintedTotal !== printedNumber.total
-      ) {
-        return null;
-      }
-
-      return {
-        id: card.id,
-        name: card.name,
-        number: card.number ?? '',
-        set_id: card.set_id,
-        set_name: card.raw_data?.set?.name ?? card.set_id,
-        set_printed_total: Number.isFinite(setPrintedTotal) ? setPrintedTotal : null,
-        image_small: card.image_small ?? '',
-        image_large: card.image_large ?? card.raw_data?.images?.large ?? null,
-        raw_data: card.raw_data ?? null,
-        rarity: card.rarity ?? '',
-      };
-    } catch (error) {
-      console.log('Set number lookup failed:', error);
-      return null;
-    }
+  const applyScanQualityResult = useCallback((quality: ScanQualityResult | null) => {
+    scanQualityRef.current = quality;
+    setScanQualityResult(quality);
   }, []);
 
-  // ===============================
-  // CORE CAPTURE — fingerprint-first, CardSight fallback
-  // ===============================
-
-  const fetchJsonWithTimeout = useCallback(async (
-    url: string,
-    body: Record<string, unknown>,
-    timeoutMs: number
-  ): Promise<any | null> => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-      const raw = await response.text();
-      let data: any = null;
-      try {
-        data = raw ? JSON.parse(raw) : null;
-      } catch {
-        console.log('Page scan returned non-JSON response:', {
-          url,
-          status: response.status,
-          preview: raw.slice(0, 180),
-        });
-        return null;
-      }
-
-      if (!response.ok && !data?.match && !data?.candidates?.length) {
-        console.log('Page scan request failed:', {
-          url,
-          status: response.status,
-          error: data?.error ?? data?.message,
-        });
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.log('Page scan request failed:', {
-        url,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return null;
-    } finally {
-      clearTimeout(timeout);
-    }
-  }, []);
-
-  const lookupPageScanCandidate = useCallback(async (
-    candidate: ScanCandidate,
-    printedNumber?: PrintedNumber | null,
-    setId?: string | null
-  ): Promise<ScannedCard | null> => {
-    const resolvedCard = candidate.resolvedCard as ScannedCard | null | undefined;
-    if (resolvedCard?.id) return resolvedCard;
-
-    const candidateName = String(candidate.name ?? '').trim();
-    const genericName = candidateName.toLowerCase();
-    if (!candidateName || genericName === 'card' || genericName === 'tcg card' || genericName === 'trading card') {
-      return null;
-    }
-
-    const { hint: editionHint, source: editionSource } = getEffectiveScanEditionHint(candidate, selectedBinder?.edition);
-    const numberClean = printedNumber?.number != null
-      ? String(printedNumber.number)
-      : candidate.number
-        ? String(candidate.number).split('/')[0].trim().replace(/^0+/, '')
-        : null;
-    const setTotalClean = printedNumber?.total != null ? String(printedNumber.total) : null;
-    const searchParams = new URLSearchParams({ name: candidateName });
-    if (numberClean) searchParams.append('number', numberClean);
-    if (setTotalClean) searchParams.append('setTotal', setTotalClean);
-    if (setId) {
-      searchParams.append('setId', setId);
-      searchParams.append('strictSet', '1');
-    } else {
-      const lookupSetName = stripScanEditionFromSetName(candidate.setName);
-      if (lookupSetName) searchParams.append('setName', lookupSetName);
-      if (candidate.setCode) searchParams.append('setId', String(candidate.setCode));
-    }
-    if (editionHint) searchParams.append('editionHint', editionHint);
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), CARD_LOOKUP_TIMEOUT_MS);
-    try {
-      const response = await fetch(`${PRICE_API_URL}/api/search/tcg?${searchParams.toString()}`, {
-        signal: controller.signal,
-      });
-      if (!response.ok) return null;
-      const data = await response.json();
-      let cards = (data.cards ?? []) as ScannedCard[];
-      if (!cards.length) return null;
-      if (setId) cards = cards.filter((card) => card.set_id === setId);
-      if (!cards.length) return null;
-
-      const parsedTotal = setTotalClean ? Number(setTotalClean) : null;
-      const totalMatches = parsedTotal
-        ? cards.filter((card) => card.set_printed_total === parsedTotal)
-        : [];
-      const numberMatches = numberClean
-        ? (totalMatches.length ? totalMatches : cards).filter((card) => String(parseInt(card.number, 10)) === numberClean)
-        : [];
-      const card =
-        pickCardForEditionHint(numberMatches, editionHint)
-        ?? pickCardForEditionHint(totalMatches, editionHint)
-        ?? pickCardForEditionHint(cards, editionHint)
-        ?? cards[0];
-
-      return withScannedCardEditionHint(card, editionHint, editionSource);
-    } catch (error) {
-      console.log('Page scan candidate lookup failed:', {
-        name: candidateName,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return null;
-    } finally {
-      clearTimeout(timeout);
-    }
-  }, [selectedBinder?.edition]);
-
-  const identifyBinderPageCard = useCallback(async (
-    input: { base64: string; uri: string; width: number; height: number; slot: number }
-  ): Promise<ScannedCard | null> => {
-    const expectedSetId = selectedBinder?.source_set_id ?? null;
-    let printedNumber = await readPrintedNumberFromCardImage(input.uri, input.width, input.height, {
-      includeFastRegions: true,
-      includeFallbackRegions: true,
-      includeFullCard: false,
-    });
-    let nameText: string | null = null;
-    const getNameText = async () => {
-      if (nameText !== null) return nameText;
-      nameText = await readNameTextFromCardImage(input.uri, input.width, input.height, {
-        regions: NAME_OCR_REGIONS,
-        resizeWidth: 900,
-      });
-      return nameText;
-    };
-
-    let match = await lookupCardBySetNumber(expectedSetId, printedNumber);
-
-    if (!match && printedNumber) {
-      const localResult = await fetchJsonWithTimeout(
-        `${PRICE_API_URL}/api/local-ai/identify`,
-        {
-          printedNumber,
-          setId: expectedSetId ?? '',
-          base64Image: input.base64,
-          ocrText: printedNumber.ocrText ?? '',
-        },
-        LOCAL_AI_VISUAL_TIMEOUT_MS + 1200
-      );
-      match = localResult?.match ?? (localResult?.candidates?.length === 1 ? localResult.candidates[0] : null);
-    }
-
-    if (!match) {
-      const rareCandyNameHint = await getNameText();
-      const rareCandyResult = await fetchJsonWithTimeout(
-        `${PRICE_API_URL}/api/rare-candy-scan/identify`,
-        {
-          base64Image: input.base64,
-          setId: expectedSetId ?? '',
-          nameHint: rareCandyNameHint,
-          printedNumber: printedNumber
-            ? { number: printedNumber.number, total: printedNumber.total }
-            : null,
-        },
-        RARE_CANDY_STYLE_TIMEOUT_MS + 1500
-      );
-      match = rareCandyResult?.match ?? null;
-    }
-
-    if (!match) {
-      match = await fingerprintScan(
-        input.base64,
-        expectedSetId,
-        expectedSetId ? null : printedNumber?.total,
-        expectedSetId ? SET_FINGERPRINT_CONFIDENCE_THRESHOLD : GENERAL_FINGERPRINT_CONFIDENCE_THRESHOLD
-      );
-    }
-
-    if (!match) {
-      const ximilarResult = await fetchJsonWithTimeout(
-        `${PRICE_API_URL}/api/scan/tcg`,
-        { base64Image: input.base64, magicAi: true },
-        9000
-      ) as NormalisedScanResponse | null;
-      if (ximilarResult?.ok && Array.isArray(ximilarResult.candidates)) {
-        for (const candidate of ximilarResult.candidates.slice(0, 5)) {
-          const resolved = await lookupPageScanCandidate(candidate, printedNumber, expectedSetId);
-          if (resolved) {
-            match = resolved;
-            break;
-          }
-        }
-      }
-    }
-
-    if (!match && !printedNumber) {
-      const text = await getNameText();
-      const numberFromText = parsePrintedNumberSignalFromText(text);
-      if (numberFromText) {
-        printedNumber = numberFromText;
-        match = await lookupCardBySetNumber(expectedSetId, printedNumber);
-      }
-    }
-
-    if (!match) {
-      console.log('Page scan slot missed:', {
-        slot: input.slot,
-        printedNumber: printedNumber ? `${printedNumber.number}/${printedNumber.total}` : null,
-      });
-      return null;
-    }
-
-    match = await resolveCardInExpectedSet(match, expectedSetId, printedNumber);
-    const binderEditionHint = normalizeScanEditionHint(selectedBinder?.edition);
-    return withScannedCardEditionHint(
-      match,
-      binderEditionHint ?? match.editionHint ?? null,
-      binderEditionHint ? 'binder' : match.editionSource
-    );
-  }, [
-    fetchJsonWithTimeout,
-    fingerprintScan,
-    lookupCardBySetNumber,
-    lookupPageScanCandidate,
-    resolveCardInExpectedSet,
-    selectedBinder?.edition,
-    selectedBinder?.source_set_id,
-  ]);
-
-  const handleCapture = useCallback(async (isAuto = false) => {
-    if (!camera.current) {
-      if (isAuto) logScanDebug('camera-not-ready');
-      return;
-    }
-    if (!cameraReady) {
-      if (isAuto) logScanDebug('camera-session-not-ready');
-      return;
-    }
-    if (scanCooldownRef.current || processingOcr) {
-      if (isAuto) {
-        logScanDebug('capture-blocked', {
-          cooldown: scanCooldownRef.current,
-          processingOcr,
-        });
-      }
-      return;
-    }
-
-    const now = Date.now();
-    if (isAuto && now - lastFrameTsRef.current < 700) {
-      logScanDebug('frame-throttled', {
-        sinceLastFrameMs: now - lastFrameTsRef.current,
-      });
-      return;
-    }
-
-    setProcessingOcr(true);
-    setScanError(null);
-    setFrozenFrameUri(null);
-    scanCooldownRef.current = true;
-    startScanningMessages();
-    if (isAuto) logScanDebug('capture-started');
-
-    const encodeCapturedFrame = async (
-      capturedUri: string,
-      originalWidth: number,
-      originalHeight: number,
-      profile: { width: number; compress: number },
-      crop: ImageCropRect | null,
-      sourceLabel: CaptureResult['sourceLabel']
-    ): Promise<CaptureResult> => {
-      const actions: ImageManipulator.Action[] = [
-        ...(crop ? [{ crop }] : []),
-        { resize: { width: profile.width } },
-      ];
-      const manipulated = await ImageManipulator.manipulateAsync(
-        capturedUri,
-        actions,
-        { compress: profile.compress, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-      );
-      logScanStage('IMAGE_ENCODED', {
-        sourceLabel,
-        width: manipulated.width,
-        height: manipulated.height,
-        bytesApprox: Math.round((manipulated.base64?.length ?? 0) * 0.75),
-        hasBase64: Boolean(manipulated.base64),
-        crop: crop
-          ? {
-              originX: crop.originX,
-              originY: crop.originY,
-              width: crop.width,
-              height: crop.height,
-              originalWidth,
-              originalHeight,
-            }
-          : null,
-      });
-
-      return {
-        base64: manipulated.base64 ?? '',
-        uri: manipulated.uri,
-        width: manipulated.width,
-        height: manipulated.height,
-        originalUri: capturedUri,
-        originalWidth,
-        originalHeight,
-        crop,
-        sourceLabel,
-      };
-    };
-
-    const captureCardImage = async (profile: { width: number; compress: number }): Promise<CaptureResult> => {
-      const captureStartedAt = Date.now();
-      let photo;
-      let source: 'snapshot' | 'photo' = 'photo';
-      try {
-        if (USE_SNAPSHOT_CAPTURE && isAuto && profile.width <= FAST_SCAN_PROFILE.width) {
-          source = 'snapshot';
-          photo = await camera.current!.takeSnapshot({ quality: 85 });
-        } else {
-          photo = await camera.current!.takePhoto({ flash: 'off', enableShutterSound: false });
-        }
-      } catch (error) {
-        if (source === 'snapshot') {
-          source = 'photo';
-          photo = await camera.current!.takePhoto({ flash: 'off', enableShutterSound: false });
-        } else {
-          throw error;
-        }
-      }
-      const photoDoneAt = Date.now();
-      const capturedUri = photo.path
-        ? photo.path.startsWith('file://')
-          ? photo.path
-          : `file://${photo.path}`
-        : null;
-      if (!capturedUri) {
-        throw new Error('Camera returned a photo without a file path.');
-      }
-      if (capturedUri) {
-        setFrozenFrameUri(capturedUri);
-      }
-      logScanStage('IMAGE_CAPTURED', {
-        source,
-        width: photo.width,
-        height: photo.height,
-        path: photo.path ? '[file]' : null,
-      });
-      const crop = getCenteredCardCrop(photo.width, photo.height, scannerFrameRectRef.current);
-      const encoded = await encodeCapturedFrame(capturedUri, photo.width, photo.height, profile, crop, 'frame-crop');
-      console.log('Capture timing:', {
-        source,
-        profile,
-        takePhotoMs: photoDoneAt - captureStartedAt,
-        manipulateMs: Date.now() - photoDoneAt,
-        totalMs: Date.now() - captureStartedAt,
-      });
-      return encoded;
-    };
-
-    const identifyWithCardSight = async (base64Image: string) => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-      try {
-        const response = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base64Image }),
-          signal: controller.signal,
-        });
-        return await response.json();
-      } finally {
-        clearTimeout(timeout);
-      }
-    };
-
-    const identifyWithGibl = async (base64Image: string) => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-      try {
-        const response = await fetch(`${PRICE_API_URL}/api/gibl/identify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base64Image }),
-          signal: controller.signal,
-        });
-        return await response.json();
-      } finally {
-        clearTimeout(timeout);
-      }
-    };
-
-    const identifyWithXimilarTcg = async (base64Image: string, magicAi = false): Promise<NormalisedScanResponse> => {
-      if (!PRICE_API_URL) {
-        return {
-          ok: false,
-          provider: 'ximilar',
-          stage: 'backend',
-          code: 'SCAN_API_URL_MISSING',
-          message: 'The Ximilar scan service is not configured.',
-          details: 'Missing EXPO_PUBLIC_PRICE_API_URL. Restart Expo after adding it to .env.local.',
-        };
-      }
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), magicAi ? 7500 : 5500);
-      const startedAt = Date.now();
-      logScanStage('API_REQUEST_STARTED', {
-        provider: 'ximilar',
-        magicAi,
-        bytesApprox: Math.round(base64Image.length * 0.75),
-      });
-      try {
-        const response = await fetch(`${PRICE_API_URL}/api/scan/tcg`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base64Image, magicAi }),
-          signal: controller.signal,
-        });
-        const responseBody = await response.text();
-        let data: NormalisedScanResponse | any = null;
-        try {
-          data = responseBody ? JSON.parse(responseBody) : null;
-        } catch (parseError) {
-          data = makeScanError(
-            'backend',
-            'XIMILAR_INVALID_RESPONSE',
-            'The scan service returned an unreadable response.',
-            responseBody.slice(0, 2000),
-            response.status,
-            parseError instanceof Error ? parseError.stack : undefined
-          );
-        }
-        logScanStage('API_RESPONSE_RECEIVED', {
-          status: response.status,
-          magicAi,
-          totalMs: Date.now() - startedAt,
-          ok: response.ok,
-          responseOk: data?.ok,
-          candidates: data?.candidates?.length,
-          code: data?.code,
-          stage: data?.stage,
-          body: SHOW_SCAN_DEBUG ? responseBody.slice(0, 2000) : undefined,
-        });
-
-        if (!response.ok || data?.ok === false) {
-          return {
-            ok: false,
-            provider: 'ximilar',
-            stage: data?.stage ?? 'backend',
-            code: data?.code ?? 'SCAN_API_REQUEST_FAILED',
-            message: data?.message ?? 'The scan request failed.',
-            details: data?.details ?? responseBody.slice(0, 2000),
-            httpStatus: data?.httpStatus ?? response.status,
-          };
-        }
-
-        if (data?.ok === true && Array.isArray(data.candidates)) {
-          return data as NormalisedScanResponse;
-        }
-
-        return makeScanError(
-          'normalisation',
-          'XIMILAR_INVALID_RESPONSE',
-          'The scan service response did not include any candidates.',
-          responseBody.slice(0, 2000),
-          response.status
-        );
-      } catch (error) {
-        const isAbort = error instanceof Error && error.name === 'AbortError';
-        const scanError = makeScanError(
-          'upload',
-          'SCAN_API_REQUEST_FAILED',
-          isAbort ? 'The scan request timed out.' : 'The scan request could not be sent.',
-          error instanceof Error ? error.message : String(error),
-          undefined,
-          error instanceof Error ? error.stack : undefined
-        );
-        logScanStage('API_RESPONSE_RECEIVED', {
-          magicAi,
-          totalMs: Date.now() - startedAt,
-          ok: false,
-          code: scanError.code,
-          error: scanError.details,
-          stack: SHOW_SCAN_DEBUG ? scanError.stack : undefined,
-        });
-        return scanError;
-      } finally {
-        clearTimeout(timeout);
-      }
-    };
-
-    const isGenericXimilarCardName = (name?: string | null) => {
-      const normalized = String(name ?? '').trim().toLowerCase();
-      return !normalized || normalized === 'card' || normalized === 'tcg card' || normalized === 'trading card';
-    };
-
-    const identifyWithRareCandyStyle = async (
-      base64Image?: string | null,
-      setId?: string | null,
-      nameHint?: string | null,
-      printedNumberHint?: PrintedNumber | null
-    ) => {
-      if (!USE_RARE_CANDY_STYLE_SCAN || !base64Image) return null;
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), RARE_CANDY_STYLE_TIMEOUT_MS);
-      let response: Response;
-
-      try {
-        response = await fetch(`${PRICE_API_URL}/api/rare-candy-scan/identify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            base64Image,
-            setId,
-            nameHint,
-            printedNumber: printedNumberHint
-              ? { number: printedNumberHint.number, total: printedNumberHint.total }
-              : null,
-          }),
-          signal: controller.signal,
-        });
-      } catch (error) {
-        console.log('Rare Candy style scan failed or timed out:', {
-          timeoutMs: RARE_CANDY_STYLE_TIMEOUT_MS,
-          error: error instanceof Error ? error.message : String(error),
-        });
-        return null;
-      } finally {
-        clearTimeout(timeout);
-      }
-
-      const raw = await response.text();
-      let data: any = null;
-      try {
-        data = raw ? JSON.parse(raw) : null;
-      } catch {
-        console.log('Rare Candy style scan returned non-JSON response:', {
-          status: response.status,
-          preview: raw.slice(0, 180),
-        });
-        return null;
-      }
-
-      console.log('Rare Candy style scan result:', {
-        status: response.status,
-        card: data?.match?.name,
-        topMatch: data?.topMatch?.name,
-        set: data?.match?.set_name ?? data?.topMatch?.set_name,
-        similarity: data?.similarity,
-        margin: data?.margin,
-        confidence: data?.confidence,
-        accepted: data?.accepted,
-        reasons: data?.candidates?.[0]?.reasons,
-        totalMs: data?.totalMs,
-      });
-
-      if (!response.ok || !data?.match) return null;
-      return {
-        match: data.match as ScannedCard,
-        candidates: data.candidates ?? [],
-        needsVisualRerank: false,
-        resolvedBy: 'rare-candy-style',
-      };
-    };
-
-    const identifyWithLocalAi = async (
-      printedNumber?: PrintedNumber | null,
-      setId?: string | null,
-      base64Image?: string | null,
-      nameHint?: string | null
-    ) => {
-      if (!printedNumber) return null;
-
-      const controller = new AbortController();
-      const timeoutMs = base64Image ? LOCAL_AI_VISUAL_TIMEOUT_MS : LOCAL_AI_TIMEOUT_MS;
-      const timeout = setTimeout(() => controller.abort(), timeoutMs);
-      let response: Response;
-
-      try {
-        response = await fetch(`${PRICE_API_URL}/api/local-ai/identify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ printedNumber, setId, base64Image, nameHint }),
-          signal: controller.signal,
-        });
-      } catch (error) {
-        console.log('Local AI request failed or timed out:', {
-          timeoutMs,
-          visual: Boolean(base64Image),
-          error: error instanceof Error ? error.message : String(error),
-        });
-        return null;
-      } finally {
-        clearTimeout(timeout);
-      }
-
-      const raw = await response.text();
-      let data: any = null;
-      try {
-        data = raw ? JSON.parse(raw) : null;
-      } catch {
-        console.log('Local AI returned non-JSON response:', {
-          status: response.status,
-          preview: raw.slice(0, 180),
-        });
-        return null;
-      }
-
-      if (!response.ok) {
-        console.log('Local AI scan result:', {
-          error: data?.error,
-          status: response.status,
-          printedNumber,
-          stages: data?.stages,
-        });
-        return null;
-      }
-
-      console.log('Local AI scan result:', {
-        card: data?.match?.name,
-        number: data?.match?.number,
-        set: data?.match?.set_name,
-        confidence: data?.confidence,
-        stages: data?.stages,
-        candidates: data?.candidates?.length,
-        candidateNames: data?.candidates?.map((card: ScannedCard) => `${card.name} (${card.set_name})`).slice(0, 5),
-        needsVisualRerank: data?.needsVisualRerank,
-        clipSimilarity: data?.clipSimilarity,
-        resolvedBy: data?.resolvedBy,
-      });
-
-      return data;
-    };
-
-    const identifyWithLocalIndex = async (
-      printedNumber?: PrintedNumber | null,
-      setId?: string | null,
-      ocrText?: string | null
-    ) => {
-      const candidates = await lookupLocalCardsByPrintedNumber(printedNumber, setId);
-      if (!candidates) return null;
-
-      if (candidates.length === 1) {
-        const totalCandidates = printedNumber?.total
-          ? await lookupLocalCardsByPrintedTotal(printedNumber.total, setId)
-          : null;
-        if (
-          !ocrText
-          && hasSecretSuffixRisk(printedNumber, candidates, totalCandidates)
-        ) {
-          const riskyCandidates = totalCandidates
-            ?.filter((card) => {
-              const cardNumber = Number.parseInt(card.number, 10);
-              return Number.isFinite(cardNumber)
-                && printedNumber
-                && cardNumber > printedNumber.total
-                && String(cardNumber).endsWith(String(printedNumber.number));
-            })
-            .slice(0, 5)
-            .map((card) => `${card.name} (${card.set_name}) #${card.number}`);
-          console.log('Local index unique match needs name due to suffix risk:', {
-            read: `${printedNumber?.number}/${printedNumber?.total}`,
-            candidate: `${candidates[0].name} (${candidates[0].set_name})`,
-            riskyCandidates,
-          });
-          return { match: null, candidates, needsVisualRerank: true, resolvedBy: 'local-number-needs-name' };
-        }
-
-        if ((hasLongerNumberHint(printedNumber) || isLowConfidenceShortNumber(printedNumber)) && !ocrText) {
-          console.log('Local index unique match ignored due to longer OCR number hint:', {
-            read: `${printedNumber?.number}/${printedNumber?.total}`,
-            candidate: `${candidates[0].name} (${candidates[0].set_name})`,
-          });
-          return { match: null, candidates, needsVisualRerank: true, resolvedBy: null };
-        }
-
-        if (
-          ocrText
-          && printedNumber?.number != null
-          && printedNumber.number < 100
-          && isBroadNumberRegion(printedNumber.region)
-          && !resolveLocalCardsByName(candidates, ocrText)
-        ) {
-          console.log('Local index unique match ignored due to name mismatch:', {
-            read: `${printedNumber?.number}/${printedNumber?.total}`,
-            candidate: `${candidates[0].name} (${candidates[0].set_name})`,
-          });
-          return { match: null, candidates, needsVisualRerank: true, resolvedBy: null };
-        }
-
-        const match = toScannedCard(candidates[0]);
-        console.log('Local index scan result:', {
-          card: match.name,
-          number: match.number,
-          set: match.set_name,
-          candidates: 1,
-          resolvedBy: 'local-number',
-        });
-        return { match, candidates, needsVisualRerank: false, resolvedBy: 'local-number' };
-      }
-
-      const nameMatch = resolveLocalCardsByName(candidates, ocrText);
-      if (nameMatch) {
-        const match = toScannedCard(nameMatch);
-        console.log('Local index scan result:', {
-          card: match.name,
-          number: match.number,
-          set: match.set_name,
-          candidates: candidates.length,
-          resolvedBy: 'local-name',
-        });
-        return { match, candidates, needsVisualRerank: false, resolvedBy: 'local-name' };
-      }
-
-      console.log('Local index scan result:', {
-        candidates: candidates.length,
-        candidateNames: candidates.slice(0, 5).map((card) => `${card.name} (${card.set_name})`),
-        needsVisualRerank: candidates.length > 1,
-      });
-
-      return { match: null, candidates, needsVisualRerank: candidates.length > 1, resolvedBy: null };
-    };
-
-    const identifyWithOnDeviceVisual = async (
-      base64Image?: string | null,
-      candidates?: LocalScanCard[] | null
-    ) => {
-      if (!candidates?.length) return null;
-      if (!isOnDeviceVisualAvailable()) return null;
-
-      const startedAt = Date.now();
-      const visualResult = await rerankWithOnDeviceVisual(base64Image, candidates);
-      if (visualResult.status !== 'disabled') {
-        console.log('On-device visual scan result:', {
-          status: visualResult.status,
-          reason: visualResult.reason,
-          card: visualResult.match?.name,
-          set: visualResult.match?.set_name,
-          similarity: visualResult.similarity,
-          candidates: candidates?.length ?? 0,
-          totalMs: Date.now() - startedAt,
-        });
-      }
-
-      if (!visualResult.match) return null;
-      return {
-        match: toScannedCard(visualResult.match),
-        candidates,
-        needsVisualRerank: false,
-        resolvedBy: 'on-device-visual',
-      };
-    };
-
-    const identifyWithScannerPackVisual = async (
-      base64Image?: string | null,
-      candidates?: LocalScanCard[] | null
-    ) => {
-      if (!isOnDeviceVisualAvailable()) return null;
-
-      const startedAt = Date.now();
-      const embedded = await embedImageOnDevice(base64Image);
-      if (embedded.status !== 'ready') {
-        if (embedded.status !== 'disabled') {
-          console.log('Scanner pack visual search unavailable:', {
-            status: embedded.status,
-            reason: embedded.reason,
-          });
-        }
-        return null;
-      }
-
-      const results = await searchScannerPack(embedded.embedding, {
-        limit: 5,
-        candidateIds: candidates?.map((candidate) => candidate.id),
-      });
-      const searchDoneAt = Date.now();
-
-      const best = results[0];
-      const second = results[1];
-      const margin = best && second ? best.similarity - second.similarity : 1;
-
-      console.log('Scanner pack visual search result:', {
-        card: best?.card.name,
-        number: best?.card.number,
-        set: best?.card.setName,
-        similarity: best ? Number(best.similarity.toFixed(4)) : null,
-        margin: Number(margin.toFixed(4)),
-        candidates: candidates?.length ?? 'all',
-        searchMs: searchDoneAt - startedAt,
-        totalMs: Date.now() - startedAt,
-        top: results.slice(0, 3).map((result) => ({
-          card: result.card.name,
-          number: result.card.number,
-          set: result.card.setName,
-          similarity: Number(result.similarity.toFixed(4)),
-        })),
-      });
-
-      if (!best || best.similarity < 0.7 || margin < 0.02) return null;
-
-      return {
-        match: toScannedCard(scannerPackCardToLocalCard(best.card)),
-        candidates: results.map((result) => scannerPackCardToLocalCard(result.card)),
-        needsVisualRerank: false,
-        resolvedBy: 'scanner-pack-visual',
-      };
-    };
-
-    const identifyWithLocalFusion = async (
-      printedNumber?: PrintedNumber | null,
-      setId?: string | null,
-      nameText?: string | null,
-      totalHintText?: string | null
-    ) => {
-      const fusionResult = await resolveLocalCardByFusion({
-        printedNumber,
-        nameText,
-        totalHintText,
-        setId,
-      });
-
-      if (!fusionResult) return null;
-
-      console.log('Local fusion scan result:', {
-        card: fusionResult.match?.name,
-        number: fusionResult.match?.number,
-        set: fusionResult.match?.set_name,
-        confidence: fusionResult.confidence,
-        candidates: fusionResult.candidates.length,
-        resolvedBy: fusionResult.resolvedBy,
-        reason: fusionResult.reason,
-      });
-
-      return {
-        match: fusionResult.match ? toScannedCard(fusionResult.match) : null,
-        candidates: fusionResult.candidates,
-        needsVisualRerank: !fusionResult.match && fusionResult.candidates.length > 1,
-        resolvedBy: fusionResult.resolvedBy,
-      };
-    };
-
-    const lookupParsedCard = async (
-      parsed: any,
-      fallbackPrintedNumber?: PrintedNumber | null,
-      setId?: string | null
-    ): Promise<ScannedCard | null> => {
-      const parsedForLookup = parsed;
-      if (!parsedForLookup || parsedForLookup.error || !parsedForLookup.name) return null;
-      if (parsedForLookup.provider === 'ximilar' && isGenericXimilarCardName(parsedForLookup.name)) return null;
-
-      const numberClean = fallbackPrintedNumber?.number != null
-        ? String(fallbackPrintedNumber.number)
-        : setId
-          ? null
-          : parsedForLookup.number
-            ? String(parsedForLookup.number).split('/')[0].trim().replace(/^0+/, '')
-            : null;
-      const setTotalClean = fallbackPrintedNumber?.total != null
-        ? String(fallbackPrintedNumber.total)
-        : setId
-          ? null
-          : parsedForLookup.printedTotal
-            ? String(parsedForLookup.printedTotal)
-            : null;
-      const { hint: editionHint, source: editionSource } = getEffectiveScanEditionHint(parsedForLookup, selectedBinder?.edition);
-      const lookupSetName = stripScanEditionFromSetName(parsedForLookup.setName);
-
-      if (
-        fallbackPrintedNumber
-        && fallbackPrintedNumber.number < 100
-        && isBroadNumberRegion(fallbackPrintedNumber.region)
-      ) {
-        return null;
-      }
-
-      const searchParams = new URLSearchParams({ name: parsedForLookup.name });
-      if (numberClean) searchParams.append('number', numberClean);
-      if (setTotalClean) searchParams.append('setTotal', setTotalClean);
-      if (!setId && lookupSetName) searchParams.append('setName', String(lookupSetName));
-      if (!setId && parsedForLookup.setCode) searchParams.append('setId', String(parsedForLookup.setCode));
-      if (editionHint) searchParams.append('editionHint', editionHint);
-      if (setId) {
-        searchParams.append('setId', setId);
-        searchParams.append('strictSet', '1');
-      }
-
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), CARD_LOOKUP_TIMEOUT_MS);
-      let searchRes: Response;
-      try {
-        searchRes = await fetch(`${PRICE_API_URL}/api/search/tcg?${searchParams.toString()}`, {
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timeout);
-      }
-      const searchData = await searchRes.json();
-      const cards = (searchData.cards ?? []) as ScannedCard[];
-
-      if (cards.length === 0) return null;
-
-      let card = pickCardForEditionHint(cards, editionHint) ?? cards[0];
-      const parsedTotal = setTotalClean ? Number(setTotalClean) : null;
-      if (parsedTotal) {
-        const totalMatches = cards.filter((c) => c.set_printed_total === parsedTotal);
-        if (totalMatches.length > 0) card = pickCardForEditionHint(totalMatches, editionHint) ?? totalMatches[0];
-      }
-      if (numberClean) {
-        const numberMatches = cards.filter((c) =>
-          String(parseInt(c.number, 10)) === numberClean
-          && (!parsedTotal || c.set_printed_total === parsedTotal)
-        );
-        if (numberMatches.length === 1) {
-          card = numberMatches[0];
-        } else if (numberMatches.length > 1) {
-          if (setId) {
-            const setMatches = numberMatches.filter((c) => c.set_id === setId);
-            card =
-              pickCardForEditionHint(setMatches, editionHint)
-              ?? numberMatches.find((c) => c.set_id === setId)
-              ?? pickCardForEditionHint(numberMatches, editionHint)
-              ?? numberMatches[0];
-          } else {
-            card = pickCardForEditionHint(numberMatches, editionHint) ?? numberMatches[0];
-          }
-        }
-      }
-
-      return withScannedCardEditionHint(card, editionHint, editionSource);
-    };
-
-    const lookupXimilarCandidateLocally = async (candidate: ScanCandidate): Promise<ScannedCard | null> => {
-      if (!candidate.name || isGenericXimilarCardName(candidate.name)) return null;
-
-      try {
-        const { supabase } = await import('../../lib/supabase');
-        const { hint: editionHint, source: editionSource } = getEffectiveScanEditionHint(candidate, selectedBinder?.edition);
-        const candidateNumber = candidate.number ? String(candidate.number).split('/')[0].trim().replace(/^0+/, '') : null;
-        const candidateSetName = stripScanEditionFromSetName(candidate.setName);
-        const normaliseLookupText = (value?: string | null) =>
-          String(value ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '');
-
-        let query = supabase
-          .from('pokemon_cards')
-          .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-          .ilike('name', `%${candidate.name}%`)
-          .limit(80);
-
-        if (candidateNumber) query = query.eq('number', candidateNumber);
-
-        const { data, error } = await query;
-        if (error) throw error;
-
-        let rows = data ?? [];
-        if (rows.length === 0 && candidateNumber) {
-          const { data: looseRows, error: looseError } = await supabase
-            .from('pokemon_cards')
-            .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-            .eq('number', candidateNumber)
-            .limit(120);
-          if (looseError) throw looseError;
-          rows = looseRows ?? [];
-        }
-
-        if (!rows.length) return null;
-
-        const normalizedCandidateName = normalizeCardName(candidate.name);
-        const normalizedSetName = normaliseLookupText(candidateSetName);
-        const normalizedSetCode = normaliseLookupText(candidate.setCode);
-
-        const numberMatches = candidateNumber
-          ? rows.filter((row) => String(parseInt(row.number ?? '', 10)) === candidateNumber || String(row.number ?? '') === candidateNumber)
-          : rows;
-        const nameMatches = numberMatches.filter((row) => {
-          const rowName = normalizeCardName(row.name);
-          return rowName === normalizedCandidateName || rowName.includes(normalizedCandidateName) || normalizedCandidateName.includes(rowName);
-        });
-        const candidates = nameMatches.length ? nameMatches : numberMatches;
-
-        const setMatches = candidates.filter((row) => {
-          const rowSetName = normaliseLookupText(row.raw_data?.set?.name);
-          const rowSetId = normaliseLookupText(row.set_id);
-          const rowPtcgoCode = normaliseLookupText(row.raw_data?.set?.ptcgoCode);
-
-          return Boolean(
-            (normalizedSetName && (rowSetName === normalizedSetName || rowSetName.includes(normalizedSetName) || normalizedSetName.includes(rowSetName)))
-            || (normalizedSetCode && (rowSetId === normalizedSetCode || rowPtcgoCode === normalizedSetCode))
-          );
-        });
-
-        const row = setMatches[0] ?? candidates[0] ?? null;
-        if (!row) return null;
-
-        return pokemonRowToScannedCard(row, editionHint, editionSource);
-      } catch (error) {
-        console.log('Fast local Ximilar resolve failed:', {
-          name: candidate.name,
-          code: 'LOCAL_CARD_LOOKUP_FAILED',
-          error: error instanceof Error ? error.message : String(error),
-          stack: SHOW_SCAN_DEBUG && error instanceof Error ? error.stack : undefined,
-        });
-        return null;
-      }
-    };
-
-    const resolveXimilarCandidates = async (
-      candidates: ScanCandidate[],
-      fallbackPrintedNumber?: PrintedNumber | null,
-      setId?: string | null
-    ): Promise<ScanCandidate[]> => {
-      const resolveCandidate = async (candidate: ScanCandidate): Promise<ScanCandidate> => {
-        const candidateWithEdition = withCandidateEditionHint(candidate, selectedBinder?.edition);
-        logScanStage('POKEMON_API_LOOKUP_STARTED', {
-          name: candidateWithEdition.name,
-          number: candidateWithEdition.number,
-          setName: candidateWithEdition.setName,
-          setCode: candidateWithEdition.setCode,
-          editionHint: candidateWithEdition.editionHint,
-          editionSource: candidateWithEdition.editionSource,
-        });
-
-        try {
-          const localCard = await lookupXimilarCandidateLocally(candidateWithEdition);
-          const card = localCard ?? await lookupParsedCard(candidateWithEdition, fallbackPrintedNumber, setId);
-          logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
-            name: candidateWithEdition.name,
-            resolved: Boolean(card),
-            cardId: card?.id,
-            cardName: card?.name,
-            editionHint: card?.editionHint ?? candidateWithEdition.editionHint,
-            source: localCard ? 'supabase' : 'backend',
-          });
-          return { ...candidateWithEdition, resolvedCard: card };
-        } catch (lookupError) {
-          logScanStage('POKEMON_API_LOOKUP_COMPLETE', {
-            name: candidateWithEdition.name,
-            resolved: false,
-            code: 'CARD_LOOKUP_FAILED',
-            error: lookupError instanceof Error ? lookupError.message : String(lookupError),
-            stack: SHOW_SCAN_DEBUG && lookupError instanceof Error ? lookupError.stack : undefined,
-          });
-          return { ...candidateWithEdition, resolvedCard: null };
-        }
-      };
-
-      return Promise.all(candidates.slice(0, 5).map(resolveCandidate));
-    };
-
-    let scanTimedOut = false;
-    const hardTimeout = !isAuto
-      ? setTimeout(() => {
-          scanTimedOut = true;
-          const timeoutError = makeScanError(
-            'upload',
-            'SCAN_TIMEOUT',
-            'The scan took too long to complete.',
-            `No scan result after ${MANUAL_SCAN_HARD_TIMEOUT_MS}ms.`
-          );
-          logScanStage('API_RESPONSE_RECEIVED', {
-            ok: false,
-            code: timeoutError.code,
-            stage: timeoutError.stage,
-            details: timeoutError.details,
-          });
-          setScanError(timeoutError);
-          stopScanningMessages();
-          scanCooldownRef.current = false;
-          setProcessingOcr(false);
-          setFrozenFrameUri(null);
-        }, MANUAL_SCAN_HARD_TIMEOUT_MS)
-      : null;
-
-    const throwIfScanTimedOut = () => {
-      if (!scanTimedOut) return;
-      const error = new Error(`Scan exceeded ${MANUAL_SCAN_HARD_TIMEOUT_MS}ms.`);
-      error.name = 'AbortError';
-      throw error;
-    };
-
-    let recoveryBase64 = '';
-    let recoveryXimilarCandidates: ScanCandidate[] | null = null;
-    let recoveryMatch: ScannedCard | null = null;
-
-    try {
-      // Step 1: capture at fast profile
-      const scanWallStartedAt = Date.now();
-      const expectedSetId = selectedBinder?.source_set_id ?? null;
-      const initialScanProfile =
-        !isAuto && isMarketMode && !expectedSetId
-          ? MARKET_XIMILAR_SCAN_PROFILE
-          : isAuto
-            ? FAST_SCAN_PROFILE
-            : ACCURACY_SCAN_PROFILE;
-      const capture = await captureCardImage(initialScanProfile);
-      throwIfScanTimedOut();
-      const base64 = capture.base64;
-      if (!base64) {
-        const imageError = makeScanError(
-          'image',
-          'SCAN_IMAGE_READ_FAILED',
-          'The camera image did not include readable image data.',
-          'ImageManipulator returned an empty base64 payload.'
-        );
-        logScanStage('API_RESPONSE_RECEIVED', {
-          ok: false,
-          code: imageError.code,
-          stage: imageError.stage,
-          details: imageError.details,
-        });
-        if (!isAuto) setScanError(imageError);
-        stopScanningMessages();
-        scanCooldownRef.current = false;
-        setProcessingOcr(false);
-        if (isAuto) setFrozenFrameUri(null);
-        return;
-      }
-      let bestBase64 = base64;
-      recoveryBase64 = bestBase64;
-      let bestUri = capture.uri;
-      let bestWidth = capture.width;
-      let bestHeight = capture.height;
-      let ximilarBase64 = bestBase64;
-      let ximilarSourceLabel: CaptureResult['sourceLabel'] = capture.sourceLabel;
-      const scanStartedAt = Date.now();
-      const captureDoneAt = Date.now();
-      const elapsedScanMs = () => Date.now() - scanStartedAt;
-      const hasFastScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_SOFT_BUDGET_MS;
-      const hasHardScanBudget = (reserveMs = 0) => !isAuto || elapsedScanMs() + reserveMs < AUTO_SCAN_HARD_BUDGET_MS;
-      const shouldDeferInitialNumberOcr = isMarketMode && !isAuto && !expectedSetId;
-      const shouldUseXimilarProvider = !isAuto && !expectedSetId && (isMarketMode || selectedBinder);
-      let printedNumber: PrintedNumber | null = null;
-      let triedFallbackNumberRegions = false;
-      let numberOcrDoneAt = captureDoneAt;
-      let attemptedInitialNumberOcr = false;
-      const readInitialPrintedNumber = async () => {
-        if (attemptedInitialNumberOcr) return printedNumber;
-        attemptedInitialNumberOcr = true;
-        printedNumber = await readPrintedNumberFromCardImage(bestUri, bestWidth, bestHeight, {
-          fastRegions: PRIMARY_NUMBER_OCR_REGIONS,
-          includeFallbackRegions: false,
-          includeFullCard: false,
-        });
-        numberOcrDoneAt = Date.now();
-        return printedNumber;
-      };
-
-      if (!shouldDeferInitialNumberOcr) {
-        await readInitialPrintedNumber();
-        throwIfScanTimedOut();
-      }
-      let cachedNameText: string | null = null;
-      let cachedTotalHintText: string | null = null;
-      let cachedNameCandidates: LocalScanCard[] | null | undefined;
-      const getNameText = async (uri: string, width: number, height: number) => {
-        if (cachedNameText !== null) return cachedNameText;
-        cachedNameText = await readNameTextFromCardImage(uri, width, height, {
-          regions: isAuto ? [NAME_OCR_REGIONS[0]] : NAME_OCR_REGIONS,
-          resizeWidth: isAuto ? 760 : 1000,
-        });
-        return cachedNameText;
-      };
-      const getTotalHintText = async (uri: string, width: number, height: number) => {
-        if (cachedTotalHintText !== null) return cachedTotalHintText;
-        cachedTotalHintText = await readTotalHintTextFromCardImage(uri, width, height);
-        return cachedTotalHintText;
-      };
-      const getLocalNameCandidates = async () => {
-        const nameText = await getNameText(bestUri, bestWidth, bestHeight);
-        if (cachedNameCandidates === undefined) {
-          cachedNameCandidates = nameText
-            ? await lookupLocalCardsByLooseNameText(nameText, expectedSetId, { limit: 12 })
-            : null;
-        }
-        return {
-          nameText,
-          candidates: cachedNameCandidates ?? [],
-        };
-      };
-      const prepareFullFrameForXimilar = async () => {
-        if (!shouldUseXimilarProvider || !capture.crop) return;
-
-        const fullFrameCapture = await encodeCapturedFrame(
-          capture.originalUri,
-          capture.originalWidth,
-          capture.originalHeight,
-          initialScanProfile,
-          null,
-          'full-frame'
-        );
-        if (!fullFrameCapture.base64) return;
-
-        ximilarBase64 = fullFrameCapture.base64;
-        ximilarSourceLabel = fullFrameCapture.sourceLabel;
-      };
-      const switchToFullFrameCapture = async (reason: string) => {
-        if (!capture.crop) return false;
-
-        logScanStage('FULL_FRAME_RETRY_STARTED', {
-          reason,
-          crop: {
-            originX: capture.crop.originX,
-            originY: capture.crop.originY,
-            width: capture.crop.width,
-            height: capture.crop.height,
-            originalWidth: capture.originalWidth,
-            originalHeight: capture.originalHeight,
-          },
-        });
-
-        const fullFrameCapture = await encodeCapturedFrame(
-          capture.originalUri,
-          capture.originalWidth,
-          capture.originalHeight,
-          initialScanProfile,
-          null,
-          'full-frame'
-        );
-        if (!fullFrameCapture.base64) return false;
-
-        bestBase64 = fullFrameCapture.base64;
-        recoveryBase64 = bestBase64;
-        bestUri = fullFrameCapture.uri;
-        bestWidth = fullFrameCapture.width;
-        bestHeight = fullFrameCapture.height;
-        attemptedInitialNumberOcr = Boolean(printedNumber);
-        cachedNameText = null;
-        cachedTotalHintText = null;
-        cachedNameCandidates = undefined;
-        numberOcrDoneAt = Date.now();
-        return true;
-      };
-      let match: ScannedCard | null = null;
-      let ximilarCandidatesForConfirmation: ScanCandidate[] | null = null;
-      let ximilarError: ScanErrorState | null = null;
-      let ximilarResultRejectedByOcr = false;
-      let ximilarResultRejectedByNameOcr = false;
-
-      const applyNameOcrGuardToXimilarResults = async (source: string) => {
-        const currentCandidates = ximilarCandidatesForConfirmation ?? [];
-        const currentResolvedCards = currentCandidates
-          .map((candidate) => candidate.resolvedCard as ScannedCard | null | undefined)
-          .filter(Boolean) as ScannedCard[];
-
-        if (!match && currentResolvedCards.length === 0) return false;
-
-        const { nameText, candidates: localNameCards } = await getLocalNameCandidates();
-        throwIfScanTimedOut();
-
-        if (!nameText || localNameCards.length === 0) return false;
-
-        const localNameIds = new Set(localNameCards.map((card) => card.id));
-        const matchDisagreesWithTitle = Boolean(match && !localNameIds.has(match.id));
-        const resolvedCandidateDisagreesWithTitle = currentResolvedCards.some((card) => !localNameIds.has(card.id));
-
-        if (!matchDisagreesWithTitle && !resolvedCandidateDisagreesWithTitle) return false;
-
-        const localCandidates = localNameCards.slice(0, 5).map(localCardToScanCandidate);
-        const validatedLocalCandidates = removePrintedNumberMismatches(localCandidates, printedNumber);
-        const validatedLocalMatch = isReliablePrintedNumberForValidation(printedNumber)
-          ? findPrintedNumberAlignedMatch(validatedLocalCandidates, printedNumber)
-          : null;
-        const singleLocalMatch = validatedLocalCandidates.length === 1
-          ? validatedLocalCandidates[0].resolvedCard as ScannedCard | null
-          : null;
-
-        logScanStage('XIMILAR_RESULT_REJECTED_BY_NAME_OCR', {
-          source,
-          nameText: nameText.slice(0, 180),
-          rejectedMatch: match
-            ? {
-                id: match.id,
-                name: match.name,
-                set: match.set_name,
-                number: match.number,
-              }
-            : null,
-          rejectedCandidates: currentResolvedCards.map((card) => ({
-            id: card.id,
-            name: card.name,
-            set: card.set_name,
-            number: card.number,
-          })).slice(0, 5),
-          replacementCandidates: localNameCards.map((card) => ({
-            id: card.id,
-            name: card.name,
-            set: card.set_name,
-            number: card.number,
-          })).slice(0, 5),
-        });
-
-        ximilarResultRejectedByNameOcr = true;
-        ximilarCandidatesForConfirmation = validatedLocalCandidates;
-        match = validatedLocalMatch ?? singleLocalMatch ?? null;
-        recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-        recoveryMatch = match;
-        return true;
-      };
-
-      await prepareFullFrameForXimilar();
-      throwIfScanTimedOut();
-
-      if (shouldUseXimilarProvider) {
-        console.log('[market-scan] primary provider: ximilar', {
-          sourceLabel: ximilarSourceLabel,
-          magicAi: true,
-        });
-        const ximilarResponse = await identifyWithXimilarTcg(ximilarBase64, true);
-        throwIfScanTimedOut();
-        if (!ximilarResponse.ok) {
-          ximilarError = { ...ximilarResponse, debugDetails: ximilarResponse.details };
-          setScanError(ximilarError);
-        } else {
-          ximilarError = null;
-          setScanError(null);
-          let primaryCandidates = await resolveXimilarCandidates(
-            ximilarResponse.candidates.slice(0, 1),
-            shouldDeferInitialNumberOcr ? null : printedNumber,
-            null
-          );
-          throwIfScanTimedOut();
-          match = findPrintedNumberAlignedMatch(primaryCandidates, printedNumber);
-          ximilarCandidatesForConfirmation = primaryCandidates;
-          recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-          recoveryMatch = match;
-
-          if (match && shouldDeferInitialNumberOcr) {
-            const ocrPrintedNumber = await readInitialPrintedNumber();
-            throwIfScanTimedOut();
-            const validatedPrimaryCandidates = removePrintedNumberMismatches(primaryCandidates, ocrPrintedNumber);
-            const validatedMatch = findPrintedNumberAlignedMatch(validatedPrimaryCandidates, ocrPrintedNumber);
-
-            if (!validatedMatch && ocrPrintedNumber) {
-              ximilarResultRejectedByOcr = true;
-              logScanStage('XIMILAR_RESULT_REJECTED_BY_OCR', {
-                printedNumber: `${ocrPrintedNumber.number}/${ocrPrintedNumber.total}`,
-                numberRegion: ocrPrintedNumber.region,
-                candidate: match.name,
-                candidateNumber: match.number,
-                candidateSet: match.set_name,
-                candidateTotal: getScannedCardPrintedTotal(match),
-              });
-            }
-
-            primaryCandidates = validatedPrimaryCandidates;
-            match = validatedMatch;
-            ximilarCandidatesForConfirmation = primaryCandidates;
-            recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-            recoveryMatch = match;
-          }
-
-          if (!match && ximilarResponse.candidates.length > 1) {
-            const fallbackCandidates = await resolveXimilarCandidates(
-              ximilarResponse.candidates.slice(1),
-              printedNumber,
-              null
-            );
-            throwIfScanTimedOut();
-            ximilarCandidatesForConfirmation = removePrintedNumberMismatches(
-              [...primaryCandidates, ...fallbackCandidates],
-              printedNumber
-            );
-            match = findPrintedNumberAlignedMatch(ximilarCandidatesForConfirmation, printedNumber);
-            recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-            recoveryMatch = match;
-          }
-
-          if (match && shouldDeferInitialNumberOcr && !printedNumber) {
-            const ocrPrintedNumber = await readInitialPrintedNumber();
-            throwIfScanTimedOut();
-            ximilarCandidatesForConfirmation = removePrintedNumberMismatches(
-              ximilarCandidatesForConfirmation,
-              ocrPrintedNumber
-            );
-            const validatedMatch = findPrintedNumberAlignedMatch(ximilarCandidatesForConfirmation, ocrPrintedNumber);
-
-            if (!validatedMatch && ocrPrintedNumber) {
-              ximilarResultRejectedByOcr = true;
-              logScanStage('XIMILAR_RESULT_REJECTED_BY_OCR', {
-                printedNumber: `${ocrPrintedNumber.number}/${ocrPrintedNumber.total}`,
-                numberRegion: ocrPrintedNumber.region,
-                candidate: match.name,
-                candidateNumber: match.number,
-                candidateSet: match.set_name,
-                candidateTotal: getScannedCardPrintedTotal(match),
-              });
-            }
-
-            match = validatedMatch;
-            recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-            recoveryMatch = match;
-          }
-        }
-        console.log('[market-scan] local resolve after Ximilar', {
-          provider: 'ximilar',
-          candidates: ximilarCandidatesForConfirmation?.map((candidate) => ({
-            name: candidate.name,
-            setName: candidate.setName,
-            setCode: candidate.setCode,
-            number: candidate.number,
-            resolved: Boolean(candidate.resolvedCard),
-          })).slice(0, 5) ?? null,
-          resolved: match ? {
-            id: match.id,
-            name: match.name,
-            set: match.set_name,
-            number: match.number,
-          } : null,
-        });
-        await applyNameOcrGuardToXimilarResults('ximilar-crop');
-
-        if (
-          !match
-          && shouldDeferInitialNumberOcr
-          && capture.crop
-          && (ximilarResultRejectedByOcr || ximilarResultRejectedByNameOcr || Boolean(ximilarCandidatesForConfirmation?.length))
-        ) {
-          const switchedToFullFrame = await switchToFullFrameCapture(
-            ximilarResultRejectedByOcr
-              ? 'ocr-rejected-crop-result'
-              : ximilarResultRejectedByNameOcr
-                ? 'name-ocr-rejected-crop-result'
-                : 'unresolved-crop-candidates'
-          );
-          throwIfScanTimedOut();
-
-          if (switchedToFullFrame) {
-            const fullFrameXimilarResponse = await identifyWithXimilarTcg(bestBase64, false);
-            throwIfScanTimedOut();
-
-            if (fullFrameXimilarResponse.ok) {
-              const fullFramePrintedNumber = await readInitialPrintedNumber();
-              throwIfScanTimedOut();
-              const fullFrameCandidates = await resolveXimilarCandidates(
-                fullFrameXimilarResponse.candidates,
-                fullFramePrintedNumber,
-                null
-              );
-              throwIfScanTimedOut();
-
-              ximilarCandidatesForConfirmation = removePrintedNumberMismatches(
-                fullFrameCandidates,
-                fullFramePrintedNumber
-              );
-              match = findPrintedNumberAlignedMatch(ximilarCandidatesForConfirmation, fullFramePrintedNumber);
-              recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-              recoveryMatch = match;
-
-              console.log('[market-scan] local resolve after full-frame Ximilar retry', {
-                printedNumber: fullFramePrintedNumber ? `${fullFramePrintedNumber.number}/${fullFramePrintedNumber.total}` : null,
-                candidates: ximilarCandidatesForConfirmation.map((candidate) => ({
-                  name: candidate.name,
-                  setName: candidate.setName,
-                  setCode: candidate.setCode,
-                  number: candidate.number,
-                  resolved: Boolean(candidate.resolvedCard),
-                })).slice(0, 5),
-                resolved: match ? {
-                  id: match.id,
-                  name: match.name,
-                  set: match.set_name,
-                  number: match.number,
-                } : null,
-              });
-              await applyNameOcrGuardToXimilarResults('ximilar-full-frame');
-            }
-          }
-        }
-
-        if (!match && !ximilarCandidatesForConfirmation?.length) {
-          console.log('[market-scan] retrying Ximilar with framed crop + Magic AI');
-          const ximilarMagicResponse = await identifyWithXimilarTcg(bestBase64, true);
-          throwIfScanTimedOut();
-          if (!ximilarMagicResponse.ok) {
-            ximilarError = { ...ximilarMagicResponse, debugDetails: ximilarMagicResponse.details };
-            setScanError(ximilarError);
-          } else {
-            ximilarError = null;
-            setScanError(null);
-            let primaryCandidates = await resolveXimilarCandidates(
-              ximilarMagicResponse.candidates.slice(0, 1),
-              printedNumber,
-              null
-            );
-            throwIfScanTimedOut();
-            match = findPrintedNumberAlignedMatch(primaryCandidates, printedNumber);
-            ximilarCandidatesForConfirmation = primaryCandidates;
-            recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-            recoveryMatch = match;
-
-            if (!match && ximilarMagicResponse.candidates.length > 1) {
-              const fallbackCandidates = await resolveXimilarCandidates(
-                ximilarMagicResponse.candidates.slice(1),
-                printedNumber,
-                null
-              );
-              throwIfScanTimedOut();
-              ximilarCandidatesForConfirmation = removePrintedNumberMismatches(
-                [...primaryCandidates, ...fallbackCandidates],
-                printedNumber
-              );
-              match = findPrintedNumberAlignedMatch(ximilarCandidatesForConfirmation, printedNumber);
-              recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-              recoveryMatch = match;
-            }
-
-            if (match && shouldDeferInitialNumberOcr && !printedNumber) {
-              const ocrPrintedNumber = await readInitialPrintedNumber();
-              throwIfScanTimedOut();
-              const validatedCandidates = removePrintedNumberMismatches(
-                ximilarCandidatesForConfirmation,
-                ocrPrintedNumber
-              );
-              const validatedMatch = findPrintedNumberAlignedMatch(validatedCandidates, ocrPrintedNumber);
-
-              if (!validatedMatch && ocrPrintedNumber) {
-                ximilarResultRejectedByOcr = true;
-                logScanStage('XIMILAR_RESULT_REJECTED_BY_OCR', {
-                  source: 'magic-ai',
-                  printedNumber: `${ocrPrintedNumber.number}/${ocrPrintedNumber.total}`,
-                  numberRegion: ocrPrintedNumber.region,
-                  candidate: match.name,
-                  candidateNumber: match.number,
-                  candidateSet: match.set_name,
-                  candidateTotal: getScannedCardPrintedTotal(match),
-                });
-              }
-
-              primaryCandidates = validatedCandidates.slice(0, primaryCandidates.length);
-              match = validatedMatch;
-              ximilarCandidatesForConfirmation = validatedCandidates;
-              recoveryXimilarCandidates = ximilarCandidatesForConfirmation;
-              recoveryMatch = match;
-            }
-          }
-          console.log('[market-scan] local resolve after Magic AI', {
-            candidates: ximilarCandidatesForConfirmation?.map((candidate) => ({
-              name: candidate.name,
-              setName: candidate.setName,
-              setCode: candidate.setCode,
-              number: candidate.number,
-              resolved: Boolean(candidate.resolvedCard),
-            })).slice(0, 5) ?? null,
-            resolved: match ? {
-              id: match.id,
-              name: match.name,
-              set: match.set_name,
-              number: match.number,
-            } : null,
-          });
-          await applyNameOcrGuardToXimilarResults('magic-ai');
-        }
-
-        if (!match && !ximilarCandidatesForConfirmation?.length && ximilarError) {
-          stopScanningMessages();
-          scanCooldownRef.current = false;
-          setProcessingOcr(false);
-          return;
-        }
-      }
-
-      if (!match && shouldDeferInitialNumberOcr) {
-        await readInitialPrintedNumber();
-        throwIfScanTimedOut();
-      }
-
-      // Duplicate frame check
-      const sig = `${base64.slice(0, 48)}:${base64.length}`;
-      if (isAuto && sig === lastFrameSigRef.current && now - lastFrameTsRef.current < 2200) {
-        setLastScanned('Hold steady — same frame');
-        logScanDebug('duplicate-frame', {
-          sinceLastFrameMs: now - lastFrameTsRef.current,
-        });
-        resetScanState(500);
-        return;
-      }
-      lastFrameSigRef.current = sig;
-      lastFrameTsRef.current = now;
-
-      const useLocalAi = SCAN_PROVIDER === 'local-ai' || SCAN_PROVIDER === 'hybrid';
-      const useGibl = SCAN_PROVIDER === 'gibl-only' || SCAN_PROVIDER === 'hybrid';
-      const useLegacy = SCAN_PROVIDER === 'legacy' || SCAN_PROVIDER === 'hybrid';
-      const allowRemoteResolvers = false;
-
-      if (!printedNumber && useLocalAi && expectedSetId && hasHardScanBudget(1800)) {
-        triedFallbackNumberRegions = true;
-        const fallbackPrintedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
-          includeFastRegions: false,
-          fallbackRegions: SECONDARY_NUMBER_OCR_REGIONS,
-          includeFullCard: false,
-        });
-
-        if (fallbackPrintedNumber) {
-          printedNumber = fallbackPrintedNumber;
-        }
-      }
-
-      if (isAuto && useLocalAi && !printedNumber && !expectedSetId) {
-        console.log('Scan timing:', {
-          captureMs: captureDoneAt - scanStartedAt,
-          numberOcrMs: Date.now() - captureDoneAt,
-          skipped: 'auto-no-number',
-          totalMs: Date.now() - scanStartedAt,
-        });
-        stopScanningMessages();
-        scanCooldownRef.current = false;
-        setProcessingOcr(false);
-        setFrozenFrameUri(null);
-        return;
-      }
-
-      // Step 2: official binders can resolve instantly from the printed card number.
-      if (!match) {
-        match = await lookupCardBySetNumber(expectedSetId, printedNumber);
-      }
-
-      // Step 3: local OCR resolver. This is the exact-match layer of the YOLO + CLIP + OCR pipeline.
-      if (!match && useLocalAi && printedNumber) {
-        let localResult = await identifyWithLocalFusion(printedNumber, expectedSetId);
-        if (
-          !localResult?.match
-          && hasFastScanBudget(1400)
-          && (
-            !printedNumber
-            || isBroadNumberRegion(printedNumber.region)
-            || hasLongerNumberHint(printedNumber)
-            || isLowConfidenceShortNumber(printedNumber)
-            || localResult?.needsVisualRerank
+  const permissionStatus = permission?.status ?? 'loading';
+  const permissionGranted = Boolean(permission?.granted);
+  const shouldRenderCamera = permissionGranted;
+  const captureBusy = scannerState === 'CAPTURING'
+    || scannerState === 'CAPTURED'
+    || scannerState === 'IDENTIFYING'
+    || scannerState === 'CONFIRMING';
+  const binderId = getParamValue(params.binderId) ?? null;
+  const parentBinderPageSessionId = getParamValue(params.parentSessionId) ?? null;
+  const replaceBinderPocketIndex = Number(getParamValue(params.replacePocketIndex));
+  const shouldReplaceBinderPocket = Boolean(parentBinderPageSessionId)
+    && Number.isInteger(replaceBinderPocketIndex)
+    && replaceBinderPocketIndex >= 0;
+  const flow = getParamValue(params.flow);
+  const scanIntent = useMemo(() => resolveScanIntent({
+    intent: params.intent,
+    mode: params.mode,
+    flow: params.flow,
+    type: params.type,
+    binderId: params.binderId,
+  }), [params.binderId, params.flow, params.intent, params.mode, params.type]);
+  const scanIntentConfig = getScanIntentConfig(scanIntent);
+  const mode = getParamValue(params.mode) ?? scanIntentConfig.legacyMode;
+  const isListingFlow = isListingScanIntent(scanIntent) || mode === 'listing' || flow === 'listing';
+  const isBinderPageScan = isBinderScanIntent(scanIntent);
+  const isInventoryFlow = !isListingFlow && (mode === 'inventory' || Boolean(flow));
+  const localQuickScanExperienceEnabled = recognitionFeatureFlags.localRecognitionEnabled && !isBinderPageScan;
+  const inlineManualSearchEnabled = localQuickScanExperienceEnabled && !isInventoryFlow;
+
+  const frame = useMemo(() => {
+    const topControls = insets.top + (isBinderPageScan ? 138 : 110);
+    const bottomControls = insets.bottom + (isBinderPageScan ? 218 : 174);
+    const availableHeight = Math.max(240, height - topControls - bottomControls);
+    const availableWidth = Math.max(220, width - 56);
+    const targetFrameWidth = isBinderPageScan && binderPageLayout > 1
+      ? Math.min(width * BINDER_PAGE_FRAME_WIDTH_RATIO, BINDER_PAGE_FRAME_MAX_WIDTH)
+      : Math.max(
+          localQuickScanExperienceEnabled ? LOCAL_QUICK_SCAN_FRAME_MIN_WIDTH : OPTIMUM_SCAN_FRAME_MIN_WIDTH,
+          Math.min(
+            width * (localQuickScanExperienceEnabled ? LOCAL_QUICK_SCAN_FRAME_WIDTH_RATIO : OPTIMUM_SCAN_FRAME_WIDTH_RATIO),
+            localQuickScanExperienceEnabled ? LOCAL_QUICK_SCAN_FRAME_MAX_WIDTH : OPTIMUM_SCAN_FRAME_MAX_WIDTH
           )
-        ) {
-          const nameText = await getNameText(bestUri, bestWidth, bestHeight);
-          localResult = await identifyWithLocalFusion(
-            printedNumber,
-            expectedSetId,
-            nameText
-          );
-        }
-
-        let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-        const totalCandidates = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
-          ? await lookupLocalCardsByPrintedTotal(printedNumber?.total, expectedSetId)
-          : null;
-        const visualCandidates = totalCandidates?.length
-          ? totalCandidates
-          : localIndexResult?.candidates?.length
-          ? localIndexResult.candidates
-          : null;
-        const onDeviceVisualResult = localIndexResult?.match || !hasFastScanBudget(900)
-          ? null
-          : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
-        const localIndexNeedsNameEvidence = localIndexResult?.resolvedBy === 'local-number-needs-name';
-        localResult = localIndexResult?.match
-          ? localIndexResult
-          : localResult?.match && !localIndexNeedsNameEvidence
-          ? localResult
-          : onDeviceVisualResult?.match
-            ? onDeviceVisualResult
-            : localIndexResult?.needsVisualRerank
-              ? localIndexResult
-              : allowRemoteResolvers && hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
-                ? await identifyWithLocalAi(printedNumber, expectedSetId)
-                : localResult;
-        const firstLocalDoneAt = Date.now();
-        if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult)) {
-          const nameText = await getNameText(bestUri, bestWidth, bestHeight);
-          const nameOcrDoneAt = Date.now();
-          if (nameText) {
-            printedNumber = {
-              ...printedNumber,
-              ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
-            };
-            const nameTotalMatch = await lookupLocalCardByNameTotalAndNumberHint(
-              printedNumber.total,
-              printedNumber.ocrText,
-              printedNumber,
-              expectedSetId
-            );
-            if (nameTotalMatch) {
-              localResult = {
-                match: toScannedCard(nameTotalMatch),
-                candidates: [nameTotalMatch],
-                needsVisualRerank: false,
-                resolvedBy: 'local-name-total',
-              };
-            }
-            if (!localResult?.match) {
-              localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-              const totalCandidatesAfterName = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
-                ? await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId)
-                : null;
-              const visualCandidatesAfterName = totalCandidatesAfterName?.length
-                ? totalCandidatesAfterName
-                : localIndexResult?.candidates?.length
-                ? localIndexResult.candidates
-                : null;
-              const onDeviceVisualResultAfterName = localIndexResult?.match || !hasFastScanBudget(900)
-                ? null
-                : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
-              localResult = localIndexResult?.match
-                ? localIndexResult
-                : onDeviceVisualResultAfterName?.match
-                  ? onDeviceVisualResultAfterName
-                  : allowRemoteResolvers && hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
-                    ? await identifyWithLocalAi(printedNumber, expectedSetId)
-                    : localResult;
-            }
-            if (!localResult?.match && localResult?.needsVisualRerank && allowRemoteResolvers && hasHardScanBudget(LOCAL_AI_VISUAL_TIMEOUT_MS)) {
-              localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
-            }
-            console.log('Scan timing:', {
-              captureMs: captureDoneAt - scanStartedAt,
-              numberOcrMs: numberOcrDoneAt - captureDoneAt,
-              numberRegion: printedNumber.region,
-              numberRegionOcrMs: printedNumber.ocrMs,
-              firstResolveMs: firstLocalDoneAt - numberOcrDoneAt,
-              nameOcrMs: nameOcrDoneAt - firstLocalDoneAt,
-              secondResolveMs: Date.now() - nameOcrDoneAt,
-              totalMs: Date.now() - scanStartedAt,
-            });
-          } else {
-            console.log('Scan timing:', {
-              captureMs: captureDoneAt - scanStartedAt,
-              numberOcrMs: numberOcrDoneAt - captureDoneAt,
-              numberRegion: printedNumber.region,
-              numberRegionOcrMs: printedNumber.ocrMs,
-              firstResolveMs: firstLocalDoneAt - numberOcrDoneAt,
-              nameOcrMs: nameOcrDoneAt - firstLocalDoneAt,
-              totalMs: Date.now() - scanStartedAt,
-            });
-          }
-        } else {
-          const timingPrintedNumber = printedNumber as PrintedNumber | null;
-          console.log('Scan timing:', {
-            captureMs: captureDoneAt - scanStartedAt,
-            numberOcrMs: numberOcrDoneAt - captureDoneAt,
-            numberRegion: timingPrintedNumber?.region,
-            numberRegionOcrMs: timingPrintedNumber?.ocrMs,
-            firstResolveMs: firstLocalDoneAt - numberOcrDoneAt,
-            totalMs: Date.now() - scanStartedAt,
-          });
-        }
-        match = localResult?.match ?? null;
-      }
-
-      if (!match && useLocalAi && printedNumber && hasHardScanBudget(1300)) {
-        const fallbackPrintedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
-          includeFastRegions: false,
-        });
-        if (
-          fallbackPrintedNumber
-          && (
-            fallbackPrintedNumber.number !== printedNumber.number
-            || fallbackPrintedNumber.total !== printedNumber.total
-            || fallbackPrintedNumber.region !== printedNumber.region
-          )
-        ) {
-          printedNumber = fallbackPrintedNumber;
-          let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-          const totalCandidates = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
-            ? await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId)
-            : null;
-          const visualCandidates = totalCandidates?.length
-            ? totalCandidates
-            : localIndexResult?.candidates?.length
-            ? localIndexResult.candidates
-            : null;
-          const onDeviceVisualResult = localIndexResult?.match || !hasFastScanBudget(900)
-            ? null
-            : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
-          let localResult = localIndexResult?.match
-            ? localIndexResult
-            : onDeviceVisualResult?.match
-              ? onDeviceVisualResult
-              : localIndexResult?.needsVisualRerank
-                ? localIndexResult
-                : allowRemoteResolvers && hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
-                  ? await identifyWithLocalAi(printedNumber, expectedSetId)
-                  : localIndexResult;
-        if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult) && hasHardScanBudget(1200)) {
-          const nameText = await getNameText(bestUri, bestWidth, bestHeight);
-          if (nameText) {
-              printedNumber = {
-                ...printedNumber,
-                ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
-              };
-              if (
-                printedNumber.number < 100
-                && isBroadNumberRegion(printedNumber.region)
-              ) {
-                const nameTotalMatch = await lookupLocalCardByNameTotalAndNumberHint(
-                  printedNumber.total,
-                  printedNumber.ocrText,
-                  printedNumber,
-                  expectedSetId
-                );
-                if (nameTotalMatch) {
-                  localResult = {
-                    match: toScannedCard(nameTotalMatch),
-                    candidates: [nameTotalMatch],
-                    needsVisualRerank: false,
-                    resolvedBy: 'local-name-total',
-                  };
-                }
-              }
-              if (!localResult?.match) {
-                localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-                const totalCandidatesAfterName = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
-                  ? await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId)
-                  : null;
-                const visualCandidatesAfterName = totalCandidatesAfterName?.length
-                  ? totalCandidatesAfterName
-                  : localIndexResult?.candidates?.length
-                  ? localIndexResult.candidates
-                  : null;
-                const onDeviceVisualResultAfterName = localIndexResult?.match || !hasFastScanBudget(900)
-                  ? null
-                  : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
-                localResult = localIndexResult?.match
-                  ? localIndexResult
-                  : onDeviceVisualResultAfterName?.match
-                    ? onDeviceVisualResultAfterName
-                    : allowRemoteResolvers && hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
-                      ? await identifyWithLocalAi(printedNumber, expectedSetId)
-                      : localResult;
-              }
-            }
-          }
-          match = localResult?.match ?? null;
-          console.log('Scan timing:', {
-            captureMs: captureDoneAt - scanStartedAt,
-            numberOcrMs: numberOcrDoneAt - captureDoneAt,
-            numberRegion: printedNumber.region,
-            numberRegionOcrMs: printedNumber.ocrMs,
-            nameOcrMs: Date.now() - numberOcrDoneAt,
-            totalMs: Date.now() - scanStartedAt,
-          });
-        }
-      }
-
-      if (!match && useLocalAi && !printedNumber && !triedFallbackNumberRegions && expectedSetId && hasHardScanBudget(1300)) {
-        triedFallbackNumberRegions = true;
-        const fallbackPrintedNumber = await readPrintedNumberFromCardImage(bestUri, capture.width, capture.height, {
-          includeFastRegions: false,
-          includeFullCard: false,
-        });
-
-        if (fallbackPrintedNumber) {
-          printedNumber = fallbackPrintedNumber;
-          let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-          let localResult = localIndexResult?.match
-            ? localIndexResult
-            : localIndexResult?.needsVisualRerank
-              ? localIndexResult
-              : await identifyWithLocalFusion(printedNumber, expectedSetId);
-
-          if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult) && hasHardScanBudget(1200)) {
-            const nameText = await getNameText(bestUri, bestWidth, bestHeight);
-            if (nameText) {
-              printedNumber = {
-                ...printedNumber,
-                ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
-              };
-              localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-              localResult = localIndexResult?.match
-                ? localIndexResult
-                : await identifyWithLocalFusion(printedNumber, expectedSetId, nameText);
-            }
-          }
-
-          match = localResult?.match ?? null;
-        }
-      }
-
-      if (!match && useLocalAi && !printedNumber && hasHardScanBudget(1600)) {
-        const nameText = await getNameText(bestUri, bestWidth, bestHeight);
-        let totalHintText = '';
-        let totalHintPrintedNumber: PrintedNumber | null = null;
-        let inferredTotal: number | null = null;
-        let totalNameCandidates: LocalScanCard[] | null = null;
-        let fusionResult = await identifyWithLocalFusion(null, expectedSetId, nameText);
-        const nameCandidates = await lookupLocalCardsByNameText(nameText, expectedSetId);
-        if (!fusionResult?.match && hasHardScanBudget(900)) {
-          totalHintText = await getTotalHintText(bestUri, bestWidth, bestHeight);
-          const combinedNameAndTotalText = `${nameText}\n${totalHintText}`.trim();
-          totalHintPrintedNumber = parsePrintedNumberSignalFromText(totalHintText);
-          inferredTotal = inferPrintedTotalFromText(combinedNameAndTotalText);
-          totalNameCandidates = inferredTotal && nameCandidates?.length
-            ? nameCandidates.filter((candidate) => candidate.set_printed_total === inferredTotal)
-            : null;
-          fusionResult = await identifyWithLocalFusion(totalHintPrintedNumber, expectedSetId, nameText, totalHintText);
-        }
-        const setCandidates = totalNameCandidates?.length
-          ? totalNameCandidates
-          : nameCandidates?.length
-          ? nameCandidates
-          : await lookupLocalCardsBySet(expectedSetId);
-
-        console.log('No-number scan fallback:', {
-          hasNameText: Boolean(nameText),
-          totalHintNumber: totalHintPrintedNumber
-            ? `${totalHintPrintedNumber.number}/${totalHintPrintedNumber.total}`
-            : null,
-          inferredTotal,
-          nameCandidates: nameCandidates?.length ?? 0,
-          totalNameCandidates: totalNameCandidates?.length ?? 0,
-          setCandidates: setCandidates?.length ?? 0,
-          expectedSetId,
-        });
-
-        if (fusionResult?.match) {
-          match = fusionResult.match;
-        } else if (totalNameCandidates?.length === 1 || nameCandidates?.length === 1) {
-          const selected = totalNameCandidates?.length === 1 ? totalNameCandidates[0] : nameCandidates![0];
-          match = toScannedCard(selected);
-          console.log('Local index scan result:', {
-            card: match.name,
-            number: match.number,
-            set: match.set_name,
-            candidates: 1,
-            resolvedBy: totalNameCandidates?.length === 1 ? 'local-name-total-no-number' : 'local-name-no-number',
-          });
-        } else {
-          const rareCandyWithName = hasHardScanBudget(1200)
-            ? await identifyWithRareCandyStyle(bestBase64, expectedSetId, nameText, totalHintPrintedNumber)
-            : null;
-          const visualResult = rareCandyWithName?.match
-            ? rareCandyWithName
-            : hasHardScanBudget(1600)
-            ? await identifyWithScannerPackVisual(bestBase64, setCandidates)
-            : null;
-          match = visualResult?.match ?? null;
-        }
-      }
-
-      if (!match && useLocalAi && !printedNumber && !isAuto) {
-        const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
-        bestBase64 = hqCapture.base64;
-        bestUri = hqCapture.uri;
-        bestWidth = hqCapture.width;
-        bestHeight = hqCapture.height;
-        printedNumber = await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
-        let localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId);
-        const totalCandidates = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
-          ? await lookupLocalCardsByPrintedTotal(printedNumber?.total, expectedSetId)
-          : null;
-        const visualCandidates = totalCandidates?.length
-          ? totalCandidates
-          : localIndexResult?.candidates?.length
-          ? localIndexResult.candidates
-          : null;
-        const onDeviceVisualResult = localIndexResult?.match || !hasFastScanBudget(900)
-          ? null
-          : await identifyWithOnDeviceVisual(bestBase64, visualCandidates);
-        let localResult = localIndexResult?.match
-          ? localIndexResult
-          : onDeviceVisualResult?.match
-            ? onDeviceVisualResult
-            : localIndexResult?.needsVisualRerank
-              ? localIndexResult
-              : allowRemoteResolvers && hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
-                ? await identifyWithLocalAi(printedNumber, expectedSetId)
-                : localIndexResult;
-        if (shouldTryNameTotalFallback(printedNumber, localIndexResult, localResult) && hasHardScanBudget(1200)) {
-          const nameText = await readNameTextFromCardImage(bestUri, hqCapture.width, hqCapture.height);
-          if (nameText) {
-            printedNumber = {
-              ...printedNumber,
-              ocrText: `${printedNumber.ocrText ?? ''}\n${nameText}`.trim(),
-            };
-            if (
-              printedNumber.number < 100
-              && isBroadNumberRegion(printedNumber.region)
-            ) {
-              const nameTotalMatch = await lookupLocalCardByNameTotalAndNumberHint(
-                printedNumber.total,
-                printedNumber.ocrText,
-                printedNumber,
-                expectedSetId
-              );
-              if (nameTotalMatch) {
-                localResult = {
-                  match: toScannedCard(nameTotalMatch),
-                  candidates: [nameTotalMatch],
-                  needsVisualRerank: false,
-                  resolvedBy: 'local-name-total',
-                };
-              }
-            }
-            if (!localResult?.match) {
-              localIndexResult = await identifyWithLocalIndex(printedNumber, expectedSetId, printedNumber.ocrText);
-              const totalCandidatesAfterName = shouldUsePrintedTotalVisualPool(printedNumber, localIndexResult)
-                ? await lookupLocalCardsByPrintedTotal(printedNumber.total, expectedSetId)
-                : null;
-              const visualCandidatesAfterName = totalCandidatesAfterName?.length
-                ? totalCandidatesAfterName
-                : localIndexResult?.candidates?.length
-                ? localIndexResult.candidates
-                : null;
-              const onDeviceVisualResultAfterName = localIndexResult?.match || !hasFastScanBudget(900)
-                ? null
-                : await identifyWithOnDeviceVisual(bestBase64, visualCandidatesAfterName);
-              localResult = localIndexResult?.match
-                ? localIndexResult
-                : onDeviceVisualResultAfterName?.match
-                  ? onDeviceVisualResultAfterName
-                  : allowRemoteResolvers && hasHardScanBudget(LOCAL_AI_TIMEOUT_MS)
-                    ? await identifyWithLocalAi(printedNumber, expectedSetId)
-                    : localResult;
-            }
-            if (!localResult?.match && localResult?.needsVisualRerank && allowRemoteResolvers && hasHardScanBudget(LOCAL_AI_VISUAL_TIMEOUT_MS)) {
-              localResult = await identifyWithLocalAi(printedNumber, expectedSetId, bestBase64);
-            }
-          }
-        }
-        match = localResult?.match ?? null;
-      }
-
-      // Step 4: test GiblTCG as an external image-recognition provider.
-      if (!match && useGibl && allowRemoteResolvers && hasHardScanBudget(3500)) {
-        const parsed = await identifyWithGibl(bestBase64);
-        console.log('Gibl scan result:', {
-          name: parsed?.name,
-          number: parsed?.number,
-          printedTotal: parsed?.printedTotal,
-          confidence: parsed?.confidence,
-          error: parsed?.error,
-          status: parsed?.status,
-          attempt: parsed?.attempt,
-          details: parsed?.details,
-          raw: parsed?.raw,
-        });
-        match = await lookupParsedCard(parsed, printedNumber, expectedSetId);
-      }
-
-      // Step 5: try fingerprint match (fast, no AI cost). In official binders the set is already locked,
-      // so OCR should not be allowed to hard-reject the fingerprint result.
-      if (!match && useLegacy) {
-        match = await fingerprintScan(
-          base64,
-          expectedSetId,
-          expectedSetId ? null : printedNumber?.total,
-          expectedSetId ? SET_FINGERPRINT_CONFIDENCE_THRESHOLD : GENERAL_FINGERPRINT_CONFIDENCE_THRESHOLD
         );
-      }
+    const frameWidth = Math.min(availableWidth, availableHeight * CARD_ASPECT_RATIO, targetFrameWidth);
+    const frameHeight = frameWidth / CARD_ASPECT_RATIO;
+    const top = topControls + Math.max(0, (availableHeight - frameHeight) / 2);
+    const left = (width - frameWidth) / 2;
+    return {
+      top,
+      left,
+      width: frameWidth,
+      height: frameHeight,
+    };
+  }, [binderPageLayout, height, insets.bottom, insets.top, isBinderPageScan, localQuickScanExperienceEnabled, width]);
 
-      // Step 6: official binders get one sharper set-locked retry before any broader matching.
-      if (!match && expectedSetId && useLegacy && !isAuto) {
-        const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
-        bestBase64 = hqCapture.base64;
-        bestUri = hqCapture.uri;
-        bestWidth = hqCapture.width;
-        bestHeight = hqCapture.height;
-        const hqPrintedNumber = printedNumber ?? await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
-        match = await lookupCardBySetNumber(expectedSetId, hqPrintedNumber);
-        if (!match) {
-          match = await fingerprintScan(
-            hqCapture.base64,
-            expectedSetId,
-            null,
-            SET_FINGERPRINT_CONFIDENCE_THRESHOLD
-          );
-        }
-      }
+  const frameTone = frameAssessment?.ready
+    ? '#22C55E'
+    : frameAssessment
+      ? '#FBBF24'
+      : theme.colors.primary;
+  const localisationTone = getLocalisationTone(localisationResult);
+  const guideLocked = scannerState === 'HOLD_STEADY' || scannerState === 'CAPTURING' || scannerState === 'CAPTURED';
+  const activeFrameTone = guideLocked ? theme.colors.primary : localisationTone ?? frameTone;
+  const localisationPolygon = useMemo(
+    () => localisationQuadToFramePolygon(localisationResult, frame),
+    [frame, localisationResult]
+  );
+  const binderGridLines = useMemo(() => (
+    isBinderPageScan && binderPageLayout > 1
+      ? Array.from({ length: binderPageLayout - 1 }, (_, index) => (index + 1) / binderPageLayout)
+      : []
+  ), [binderPageLayout, isBinderPageScan]);
+  const guidanceReason = frameAssessment?.reason ?? null;
+  const guidanceReady = Boolean(frameAssessment?.ready);
+  const guidanceTone = captureBusy
+    ? '#A78BFA'
+    : guidanceReady
+      ? '#22C55E'
+      : guidanceReason === 'too-dark'
+        || guidanceReason === 'glare'
+        || guidanceReason === 'too-close'
+        || guidanceReason === 'improve-lighting'
+        || guidanceReason === 'reduce-glare'
+        || guidanceReason === 'overexposed'
+        || guidanceReason === 'sleeve-reflection'
+        ? '#F59E0B'
+        : '#A78BFA';
+  const guidanceLabel = getGuidanceLabelForState(scannerState, scanMode);
+  const guidanceIcon = getGuidanceIcon(guidanceReason, guidanceReady, captureBusy);
+  const localQuickScanState = useMemo(() => mapScannerCaptureStateToLocalQuickScanState({
+    scannerState,
+    cameraReady,
+    guidanceReady,
+    guidanceReason,
+  }), [cameraReady, guidanceReady, guidanceReason, scannerState]);
+  const localQuickScanGuidance = useMemo(() => getLocalQuickScanGuidance({
+    state: localQuickScanState,
+    reasonCode: normaliseLocalQuickScanReason(guidanceReason),
+    userMessage: scanMessage,
+    showOfflineIndicator: shouldShowLocalQuickScanOfflineIndicator({
+      featureFlags: recognitionFeatureFlags,
+      networkAvailable: null,
+    }),
+  }), [guidanceReason, localQuickScanState, recognitionFeatureFlags, scanMessage]);
+  const localQuickScanToneColor = localQuickScanGuidance.tone === 'success' || localQuickScanGuidance.tone === 'ready'
+    ? '#22C55E'
+    : localQuickScanGuidance.tone === 'attention'
+      ? '#F59E0B'
+      : localQuickScanGuidance.tone === 'error'
+        ? '#EF4444'
+        : localQuickScanGuidance.tone === 'busy'
+          ? '#A78BFA'
+          : theme.colors.primary;
+  const activeGuidanceTone = localQuickScanExperienceEnabled ? localQuickScanToneColor : guidanceTone;
+  const activeGuidanceLabel = localQuickScanExperienceEnabled ? localQuickScanGuidance.title : guidanceLabel;
+  const activeGuidanceMessage = localQuickScanExperienceEnabled ? localQuickScanGuidance.message : scanMessage;
+  const activeGuidanceIcon = localQuickScanExperienceEnabled ? localQuickScanGuidance.icon : guidanceIcon;
+  const activeGuidanceAccessibilityLabel = localQuickScanExperienceEnabled
+    ? localQuickScanGuidance.accessibilityLabel
+    : `${guidanceLabel}. ${scanMessage}`;
+  const activeStatusText = inlineManualSearchOpen
+    ? 'Manual search'
+    : localQuickScanExperienceEnabled
+    ? localQuickScanGuidance.showOfflineIndicator
+      ? 'Offline scan'
+      : localQuickScanGuidance.title
+    : captureBusy
+      ? binderPageProgress
+        ? `Page ${binderPageProgress.processed}/${binderPageProgress.total}`
+        : scannerState === 'IDENTIFYING' ? 'Identifying' : 'Scanning'
+      : cameraReady
+        ? isBinderPageScan ? `${binderPageLayout}x${binderPageLayout} page` : scanMode === 'auto' ? 'Auto scan' : 'Manual capture'
+        : permissionGranted ? 'Warming up' : 'Camera needed';
 
-      // Step 7: fall back to CardSight if fingerprint didn't reach threshold
-      if (!match) {
-        if (expectedSetId) {
-          if (!isAuto) {
-            const ximilarFallbackResponse = await identifyWithXimilarTcg(bestBase64, false);
-            if (ximilarFallbackResponse.ok) {
-              ximilarCandidatesForConfirmation = await resolveXimilarCandidates(
-                ximilarFallbackResponse.candidates,
-                printedNumber,
-                expectedSetId
-              );
-              match = (ximilarCandidatesForConfirmation.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null) ?? null;
-              if (!match && ximilarCandidatesForConfirmation.length) {
-                stopScanningMessages();
-                setProcessingOcr(false);
-                setPendingConfirmation({
-                  candidates: ximilarCandidatesForConfirmation,
-                  base64: bestBase64,
-                  isMarket: isMarketMode,
-                });
-                return;
-              }
-            } else {
-              setScanError({ ...ximilarFallbackResponse, debugDetails: ximilarFallbackResponse.details });
-              stopScanningMessages();
-              scanCooldownRef.current = false;
-              setProcessingOcr(false);
-              return;
-            }
-          }
-
-          if (!match) {
-            if (!isAuto) {
-              Alert.alert(
-                'Could not read card',
-                'Try again with the card flat and the bottom number clearly visible.'
-              );
-            }
-            stopScanningMessages();
-            scanCooldownRef.current = false;
-            setProcessingOcr(false);
-            return;
-          }
-        }
-
-        if (!match && (!useLegacy || isAuto)) {
-          if (!isAuto) {
-            Alert.alert(
-              'Could not read card',
-              printedNumber
-                ? 'The card number was read, but there are multiple matching cards and the visual reranker is unavailable right now.'
-                : 'Could not read the printed card number confidently. Try again with the bottom number clearly visible.'
-            );
-          }
-          stopScanningMessages();
-          scanCooldownRef.current = false;
-          setProcessingOcr(false);
-          return;
-        }
-
-        let parsed: any = null;
-
-        parsed = await identifyWithCardSight(bestBase64);
-
-        // If general-market fast profile failed, retry with accuracy profile.
-        if (!expectedSetId && !match && (parsed?.error || !parsed?.name)) {
-          const hqCapture = await captureCardImage(ACCURACY_SCAN_PROFILE);
-          const base64Hq = hqCapture.base64;
-          bestBase64 = base64Hq;
-          recoveryBase64 = bestBase64;
-          bestUri = hqCapture.uri;
-          bestWidth = hqCapture.width;
-          bestHeight = hqCapture.height;
-          const hqPrintedNumber = printedNumber ?? await readPrintedNumberFromCardImage(bestUri, hqCapture.width, hqCapture.height);
-          match = await fingerprintScan(base64Hq, expectedSetId, hqPrintedNumber?.total);
-          if (!match) parsed = await identifyWithCardSight(base64Hq);
-        }
-
-        // If CardSight identified a name, look it up in the TCG database
-        if (!match) {
-          match = await lookupParsedCard(parsed, printedNumber, expectedSetId);
-        }
-      }
-
-      // Step 4: handle result
-      if (!match && ximilarCandidatesForConfirmation?.length) {
-        throwIfScanTimedOut();
-        stopScanningMessages();
-        setProcessingOcr(false);
-        setPendingConfirmation({
-          candidates: ximilarCandidatesForConfirmation,
-          base64: bestBase64,
-          isMarket: isMarketMode,
-        });
-        return;
-      }
-
-      if (!match) {
-        if (!isAuto) {
-          Alert.alert(
-            'Could not read card',
-            'Make sure the card is clearly visible and well lit.',
-            [{ text: 'Try again' }]
-          );
-        }
-        stopScanningMessages();
-        scanCooldownRef.current = false;
-        setProcessingOcr(false);
-        setFrozenFrameUri(null);
-        return;
-      }
-
-      match = await resolveCardInExpectedSet(match, expectedSetId, printedNumber);
-      const binderEditionHint = normalizeScanEditionHint(selectedBinder?.edition);
-      match = withScannedCardEditionHint(
-        match,
-        binderEditionHint ?? match.editionHint ?? null,
-        binderEditionHint ? 'binder' : match.editionSource
-      );
-      recoveryMatch = match;
-      console.log('Scan completed:', {
-        card: match.name,
-        number: match.number,
-        set: match.set_name,
-        editionHint: match.editionHint,
-        printedNumber: printedNumber ? `${printedNumber.number}/${printedNumber.total}` : null,
-        numberRegion: printedNumber?.region,
-        numberRegionOcrMs: printedNumber?.ocrMs,
-        totalMs: Date.now() - scanStartedAt,
-        wallMs: Date.now() - scanWallStartedAt,
-        mode: isAuto ? 'auto' : 'manual',
-      });
-
-      if (scannedCardIdsRef.current.has(match.id)) {
-        if (isAuto) {
-          setLastScanned('Already scanned — swipe to next card');
-          resetScanState(900);
-        } else {
-          setLastScanned(`${match.name} already in list`);
-          Vibration.vibrate(100);
-          resetScanState(1400);
-        }
-        return;
-      }
-
-      // Auto mode: add directly without confirmation
-      if (isAuto) {
-        scannedCardIdsRef.current.add(match.id);
-        setScannedCards((prev) => [...prev, match!]);
-        setLastScanned(`✅ ${match.name} #${match.number} added!`);
-        recordAchievementEvent('card_scanned', {
-          cardId: match.id,
-          setId: match.set_id,
-          mode: 'auto',
-        }).catch((achievementError) => {
-          console.log('Scan achievement check failed:', achievementError);
-        });
-        Vibration.vibrate([0, 90, 40, 90]);
-        setTimeout(() => setLastScanned('👉 Next card!'), 500);
-        resetScanState(900);
-        return;
-      }
-
-      // Manual + market: show confirmation overlay
-      throwIfScanTimedOut();
-      stopScanningMessages();
-      setProcessingOcr(false);
-      setPendingConfirmation({
-        card: match,
-        candidates: ximilarCandidatesForConfirmation ?? undefined,
-        base64: bestBase64,
-        isMarket: isMarketMode,
-        editionChoiceRequired: false,
-      });
-
-    } catch (error: any) {
-      const isAbort = error?.name === 'AbortError';
-      const errorMessage = error?.message ?? String(error);
-      const isImageError = isLikelyImageCaptureError(errorMessage);
-
-      if (!isAbort && recoveryXimilarCandidates?.length) {
-        logScanStage('CANDIDATES_RENDER_STARTED', {
-          recoveredFrom: 'SCAN_RESULT_RENDER_FAILED',
-          error: errorMessage,
-          candidates: recoveryXimilarCandidates.length,
-        });
-        stopScanningMessages();
-        setScanError(null);
-        setProcessingOcr(false);
-        setPendingConfirmation({
-          card: recoveryMatch ?? undefined,
-          candidates: recoveryXimilarCandidates,
-          base64: recoveryBase64,
-          isMarket: isMarketMode,
-          editionChoiceRequired: false,
-        });
-        return;
-      }
-
-      const nextError = makeScanError(
-        isAbort ? 'upload' : isImageError ? 'image' : 'render',
-        isAbort ? 'SCAN_API_REQUEST_FAILED' : isImageError ? 'SCAN_IMAGE_READ_FAILED' : 'SCAN_RESULT_RENDER_FAILED',
-        isAbort ? 'Scan timed out. Try again with better lighting.' : 'Something went wrong while completing the scan.',
-        errorMessage,
-        undefined,
-        error?.stack
-      );
-      logScanStage('API_RESPONSE_RECEIVED', {
-        ok: false,
-        code: nextError.code,
-        stage: nextError.stage,
-        message: nextError.message,
-        details: nextError.details,
-        stack: SHOW_SCAN_DEBUG ? nextError.stack : undefined,
-      });
-      if (!isAuto && !scanTimedOut) setScanError(nextError);
-      stopScanningMessages();
-      scanCooldownRef.current = false;
-      setProcessingOcr(false);
-      setLastScanned(null);
-      if (isAuto) setFrozenFrameUri(null);
-    } finally {
-      if (hardTimeout) clearTimeout(hardTimeout);
-    }
-  }, [cameraReady, fingerprintScan, isMarketMode, logScanDebug, lookupCardBySetNumber, processingOcr, resetScanState, resolveCardInExpectedSet, selectedBinder, startScanningMessages, stopScanningMessages]);
+  const routeParams = useMemo(() => {
+    const entries = Object.entries(params ?? {}).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? value.join(',') : value,
+    ]);
+    return Object.fromEntries(entries);
+  }, [params]);
 
   useEffect(() => {
-    handleCaptureRef.current = handleCapture;
-  }, [handleCapture]);
+    const currentRouteInstanceId = routeInstanceId.current;
+    logCameraDiagnostic('route mounted', {
+      routeInstanceId: currentRouteInstanceId,
+      pathname,
+      params: routeParams,
+    });
 
-  const handleBinderPageCapture = useCallback(async () => {
-    if (!camera.current || !cameraReady || scanCooldownRef.current || processingOcr) {
+    return () => {
+      logCameraDiagnostic('route unmounted', {
+        routeInstanceId: currentRouteInstanceId,
+        pathname,
+      });
+    };
+  }, [pathname, routeParams]);
+
+  useEffect(() => {
+    if (!isBinderPageScan) return;
+    const routeLayout = getParamValue(params.layout);
+    if (routeLayout) {
+      const normalizedLayout = normalizeBinderPageLayout(routeLayout);
+      setBinderPageLayout(normalizedLayout);
+      AsyncStorage.setItem(BINDER_PAGE_LAYOUT_STORAGE_KEY, String(normalizedLayout)).catch((error) => {
+        logCameraDiagnostic('binder page route layout save failed', {
+          routeInstanceId: routeInstanceId.current,
+          layout: normalizedLayout,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
       return;
     }
 
-    setAutoScanActive(false);
-    setProcessingOcr(true);
-    setPageScanProgress({ current: 0, total: activeGridSlotCount });
-    setGridScanSlots([]);
-    setScannedCards([]);
-    scannedCardIdsRef.current.clear();
-    setScanError(null);
-    setLastScanned(null);
-    setFrozenFrameUri(null);
-    scanCooldownRef.current = true;
-    startScanningMessages();
+    let cancelled = false;
+    AsyncStorage.getItem(BINDER_PAGE_LAYOUT_STORAGE_KEY)
+      .then((value) => {
+        if (!cancelled && value) setBinderPageLayout(normalizeBinderPageLayout(value));
+      })
+      .catch((error) => {
+        logCameraDiagnostic('binder page layout load failed', {
+          routeInstanceId: routeInstanceId.current,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isBinderPageScan, params.layout]);
+
+  const setRememberedBinderPageLayout = useCallback((layout: BinderPageLayout) => {
+    setBinderPageLayout(layout);
+    AsyncStorage.setItem(BINDER_PAGE_LAYOUT_STORAGE_KEY, String(layout)).catch((error) => {
+      logCameraDiagnostic('binder page layout save failed', {
+        routeInstanceId: routeInstanceId.current,
+        layout,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+  }, []);
+
+  useEffect(() => () => {
+    if (autoCheckTimer.current) {
+      clearTimeout(autoCheckTimer.current);
+      autoCheckTimer.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!permission) return;
+
+    logCameraDiagnostic('permission loaded', {
+      routeInstanceId: routeInstanceId.current,
+      status: permission.status,
+      granted: permission.granted,
+      canAskAgain: permission.canAskAgain,
+      expires: permission.expires,
+    });
+  }, [permission]);
+
+  useEffect(() => {
+    if (!shouldRenderCamera) return;
+
+    logCameraDiagnostic('CameraView rendered', {
+      routeInstanceId: routeInstanceId.current,
+      facing,
+      renderCount: renderCount.current,
+    });
+  }, [facing, shouldRenderCamera]);
+
+  const handleRequestPermission = useCallback(async () => {
+    setPermissionRequesting(true);
+    setMountError(null);
+    setCameraReady(false);
 
     try {
-      const photo = await camera.current.takePhoto({ flash: 'off', enableShutterSound: false });
-      const capturedUri = photo.path
-        ? photo.path.startsWith('file://')
-          ? photo.path
-          : `file://${photo.path}`
-        : null;
+      const result = await requestPermission();
+      logCameraDiagnostic('permission requested', {
+        routeInstanceId: routeInstanceId.current,
+        status: result.status,
+        granted: result.granted,
+        canAskAgain: result.canAskAgain,
+        expires: result.expires,
+      });
+    } finally {
+      setPermissionRequesting(false);
+    }
+  }, [requestPermission]);
 
-      if (!capturedUri) {
-        throw new Error('Camera returned a photo without a file path.');
+  const handleCameraReady = useCallback(() => {
+    setCameraReady(true);
+    setMountError(null);
+    if (cameraInitialisationMsRef.current == null) {
+      cameraInitialisationMsRef.current = Date.now() - scannerMountedAt.current;
+    }
+    setScannerState({ type: 'camera_ready' });
+    logCameraDiagnostic('camera ready', {
+      routeInstanceId: routeInstanceId.current,
+      facing,
+      cameraInitialisationMs: cameraInitialisationMsRef.current,
+    });
+  }, [facing, setScannerState]);
+
+  const handleMountError = useCallback((error: unknown) => {
+    const message = getMountErrorMessage(error);
+    setCameraReady(false);
+    setMountError(message);
+    setScannerState({ type: 'error' });
+    setScanMessage('Camera preview hit a native error. Try reopening the scanner.');
+    logCameraDiagnostic('mount error', {
+      routeInstanceId: routeInstanceId.current,
+      facing,
+      error: message,
+      rawError: error,
+    });
+  }, [facing, setScannerState]);
+
+  const switchCamera = useCallback(() => {
+    setCameraReady(false);
+    setMountError(null);
+    setAcceptedPreviewUri(null);
+    setScannerState({ type: 'camera_paused' });
+    setTorchEnabled(false);
+    setFacing((current) => current === 'back' ? 'front' : 'back');
+  }, [setScannerState]);
+
+  const runOcrFallback = useCallback(async (imageUri: string) => {
+    try {
+      const result = await TextRecognition.recognize(imageUri);
+      const text = result?.text?.trim() ?? '';
+      if (text) {
+        logCameraDiagnostic('ocr fallback text found', {
+          routeInstanceId: routeInstanceId.current,
+          preview: text.slice(0, 160),
+        });
       }
+      return text;
+    } catch (error) {
+      logCameraDiagnostic('ocr fallback unavailable', {
+        routeInstanceId: routeInstanceId.current,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return '';
+    }
+  }, []);
 
-      setFrozenFrameUri(capturedUri);
-      const pageFrame = scannerFrameRectRef.current
-        ? { ...scannerFrameRectRef.current, marginRatio: BINDER_PAGE_FRAME_MARGIN_RATIO }
-        : null;
-      const pageCrop = getCenteredCardCrop(photo.width, photo.height, pageFrame);
-      const pageProfile = activeGridSize >= 4
-        ? { width: 2000, compress: 0.9 }
-        : BINDER_PAGE_SCAN_PROFILE;
-      const pageActions: ImageManipulator.Action[] = [
-        ...(pageCrop ? [{ crop: pageCrop }] : []),
-        { resize: { width: pageProfile.width } },
-      ];
-      const pageImage = await ImageManipulator.manipulateAsync(
-        capturedUri,
-        pageActions,
-        { compress: pageProfile.compress, format: ImageManipulator.SaveFormat.JPEG }
-      );
-      const pageMatches: ScannedCard[] = [];
-      const seenIds = new Set(scannedCardIdsRef.current);
+  const runTargetedCardOcr = useCallback(async (image: RecognitionImage | null): Promise<TargetedOcrResult> => {
+    if (!image) return { sourceRole: 'none', regions: [], text: '' };
 
-      for (let slot = 0; slot < activeGridSlotCount; slot += 1) {
-        setPageScanProgress({ current: slot + 1, total: activeGridSlotCount });
-        const slotCrop = getBinderPageSlotCrop(pageImage.width, pageImage.height, slot, activeGridSize);
-        const slotImage = await ImageManipulator.manipulateAsync(
-          pageImage.uri,
+    const regions = await Promise.all(OCR_REGION_SPECS.map(async (spec) => {
+      try {
+        const crop = getOcrRegionCrop(image, spec);
+        if (!crop) return { role: spec.role, text: '' };
+
+        const cropped = await ImageManipulator.manipulateAsync(
+          image.uri,
           [
-            { crop: slotCrop },
-            { resize: { width: BINDER_PAGE_CARD_PROFILE.width } },
+            { crop },
+            { resize: { width: spec.resizeWidth } },
           ],
           {
-            compress: BINDER_PAGE_CARD_PROFILE.compress,
+            compress: 0.86,
             format: ImageManipulator.SaveFormat.JPEG,
-            base64: true,
+            base64: false,
           }
         );
-
-        const row = Math.floor(slot / activeGridSize);
-        const col = slot % activeGridSize;
-
-        if (!slotImage.base64) {
-          const emptySlot: GridScanSlot = {
-            slot: slot + 1,
-            row,
-            col,
-            gridSize: activeGridSize,
-            cropUri: slotImage.uri,
-            card: null,
-            status: 'Empty',
-            included: false,
-          };
-          setGridScanSlots((prev) => [...prev, emptySlot]);
-          continue;
-        }
-
-        const match = await identifyBinderPageCard({
-          base64: slotImage.base64,
-          uri: slotImage.uri,
-          width: slotImage.width,
-          height: slotImage.height,
-          slot: slot + 1,
+        const text = await runOcrFallback(cropped.uri);
+        return { role: spec.role, text };
+      } catch (error) {
+        logCameraDiagnostic('targeted ocr region failed', {
+          routeInstanceId: routeInstanceId.current,
+          role: spec.role,
+          error: error instanceof Error ? error.message : String(error),
         });
+        return { role: spec.role, text: '' };
+      }
+    }));
 
-        const cardWithSlot = match
-          ? { ...match, scanSlot: slot + 1, scanCropUri: slotImage.uri }
-          : null;
-        const isDuplicateInBatch = Boolean(cardWithSlot && seenIds.has(cardWithSlot.id));
-        const slotResult: GridScanSlot = {
-          slot: slot + 1,
-          row,
-          col,
-          gridSize: activeGridSize,
-          cropUri: slotImage.uri,
-          card: cardWithSlot,
-          status: cardWithSlot ? (isDuplicateInBatch ? 'Check Match' : 'Confirmed') : 'Not Identified',
-          included: Boolean(cardWithSlot && !isDuplicateInBatch),
-        };
-        setGridScanSlots((prev) => [...prev, slotResult]);
+    const usefulRegions = regions.filter((region) => region.text.trim());
+    const text = combineOcrRegions(usefulRegions);
+    const signals = extractLocalOcrSignals(usefulRegions);
+    logCameraDiagnostic('targeted ocr complete', {
+      routeInstanceId: routeInstanceId.current,
+      sourceRole: image.role,
+      regionCount: usefulRegions.length,
+      language: signals.language,
+      printedNumber: signals.printedNumber,
+      setCode: signals.setCode,
+      preview: text.slice(0, 180),
+    });
 
-        if (!cardWithSlot || isDuplicateInBatch) continue;
-        seenIds.add(cardWithSlot.id);
-        pageMatches.push(cardWithSlot);
+    return {
+      sourceRole: image.role,
+      regions: usefulRegions,
+      text,
+    };
+  }, [runOcrFallback]);
+
+  const resolveMatches = useCallback(async (identified: IdentifiedCard[], ocrText: string) => {
+    const primary = identified[0] ?? null;
+    const identifiedRank = new Map(
+      identified
+        .map((card, index) => [card.id, index] as const)
+        .filter(([id]) => Boolean(id?.trim()))
+    );
+    const queries = [
+      ...identified.map(buildIdentifySearchQuery),
+      ...identified.map((card) => getIdentifiedName(card) ?? ''),
+    ]
+      .map((query) => query.trim())
+      .filter((query, index, all) => query.length >= 2 && all.indexOf(query) === index);
+
+    const rowsById = new Map<string, any>();
+    const identifiedIds = identified
+      .map((card) => card.id)
+      .filter((id): id is string => Boolean(id?.trim()));
+
+    if (identifiedIds.length) {
+      try {
+        const { data, error } = await supabase
+          .from('pokemon_cards')
+          .select('id, name, language, number, rarity, set_id, image_small, image_large, raw_data')
+          .in('id', [...new Set(identifiedIds)].slice(0, MAX_RESULT_CARDS));
+        if (error) throw error;
+        for (const row of data ?? []) {
+          if (row?.id) rowsById.set(row.id, row);
+        }
+      } catch (error) {
+        logCameraDiagnostic('identified id lookup failed', {
+          routeInstanceId: routeInstanceId.current,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    if (rowsById.size > 0 && identifiedRank.size > 0) {
+      return [...rowsById.values()]
+        .sort((a, b) => (identifiedRank.get(a.id) ?? 999) - (identifiedRank.get(b.id) ?? 999))
+        .slice(0, MAX_RESULT_CARDS)
+        .map(toResultCard)
+        .map((card) => attachScanSignals(card, identified));
+    }
+
+    for (const query of queries) {
+      const rows = await searchLocalPokemonCards<any>(query, {
+        language: 'all',
+        limit: MAX_RESULT_CARDS,
+        select: 'id, name, language, number, rarity, set_id, image_small, image_large, raw_data',
+      });
+      for (const row of rows ?? []) {
+        if (row?.id) rowsById.set(row.id, row);
+      }
+      if (rowsById.size >= MAX_RESULT_CARDS) break;
+    }
+
+    if (rowsById.size === 0) {
+      for (const card of identified) {
+        const fallback = identifiedToSearchFallback(card);
+        if (fallback?.id) rowsById.set(fallback.id, fallback);
+      }
+    }
+
+    if (rowsById.size === 0 && ocrText && identified.length === 0) {
+      const ocrQuery = buildOcrSearchQuery(ocrText);
+      if (ocrQuery) {
+        try {
+          const rows = await searchLocalPokemonCards<any>(ocrQuery, {
+            language: 'all',
+            limit: MAX_RESULT_CARDS,
+            select: 'id, name, language, number, rarity, set_id, image_small, image_large, raw_data',
+          });
+          for (const row of rows ?? []) {
+            if (row?.id) rowsById.set(row.id, row);
+          }
+        } catch (error) {
+          logCameraDiagnostic('ocr-only lookup failed', {
+            routeInstanceId: routeInstanceId.current,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
 
-      pageMatches.forEach((card) => scannedCardIdsRef.current.add(card.id));
-      setScannedCards(pageMatches);
-      setLastScanned(`${pageMatches.length} of ${activeGridSlotCount} grid positions identified`);
-      Vibration.vibrate([0, 80, 40, 80]);
-      setStep('review');
-      Alert.alert(
-        pageMatches.length ? 'Grid scan complete' : 'Grid scan needs review',
-        pageMatches.length
-          ? `Found ${pageMatches.length} of ${activeGridSlotCount} card${pageMatches.length === 1 ? '' : 's'}. Review the grid before importing.`
-          : 'No confident matches were found, but the grid positions are ready to review, retake, or mark empty.'
-      );
-    } catch (error: any) {
-      console.log('Binder page scan failed:', error);
-      setScanError(makeScanError(
-        isLikelyImageCaptureError(error?.message) ? 'image' : 'render',
-        'BINDER_PAGE_SCAN_FAILED',
-        'The binder page scan could not be completed.',
-        error?.message ?? String(error),
-        undefined,
-        error?.stack
-      ));
-    } finally {
-      stopScanningMessages();
-      setProcessingOcr(false);
-      setPageScanProgress(null);
-      scanCooldownRef.current = false;
-      setFrozenFrameUri(null);
+      logCameraDiagnostic('ocr-only lookup attempted', {
+        routeInstanceId: routeInstanceId.current,
+        matchedRows: rowsById.size,
+        preview: ocrQuery.slice(0, 120),
+      });
     }
+
+    return sortBestMatches([...rowsById.values()], primary)
+      .slice(0, MAX_RESULT_CARDS)
+      .map(toResultCard)
+      .map((card) => attachScanSignals(card, identified));
+  }, []);
+
+  const stopAutoScanner = useCallback(() => {
+    autoReadyFrames.current = 0;
+    autoCheckBusy.current = false;
+    if (autoCheckTimer.current) {
+      clearTimeout(autoCheckTimer.current);
+      autoCheckTimer.current = null;
+    }
+  }, []);
+
+  const buildScannerLifecycleAnalytics = useCallback((options: {
+    matchSource?: 'local' | 'remote' | 'hybrid' | 'manual' | 'none' | 'unknown';
+    rescan?: boolean;
+    cancellation?: boolean;
+    duplicatePrevention?: boolean;
+    errorCategory?: string | null;
+  } = {}) => {
+    return buildScannerAnalyticsMetadata({
+      timings: {
+        camera_initialisation_ms: cameraInitialisationMsRef.current,
+        first_card_detection_ms: firstCardDetectionMsRef.current,
+        quality_gate_ms: null,
+        stable_capture_ms: null,
+        photo_capture_ms: null,
+        perspective_crop_ms: null,
+        ocr_ms: null,
+        local_candidate_match_ms: null,
+        remote_request_ms: null,
+        database_save_ms: null,
+        total_scan_ms: Date.now() - scannerMountedAt.current,
+      },
+      scanIntent,
+      scanMode,
+      language: null,
+      matchSource: options.matchSource ?? 'none',
+      confidence: null,
+      alternatives: 0,
+      qualityFailureReasons: scanQualityRef.current?.failures?.map((failure) => String(failure.code)) ?? [],
+      manualCorrection: false,
+      rescan: options.rescan ?? false,
+      cancellation: options.cancellation ?? false,
+      duplicatePrevention: options.duplicatePrevention ?? false,
+      remoteEndpoint: null,
+      errorCategory: options.errorCategory ?? null,
+      client: scannerClientContext,
+      featureFlags: scannerFeatureFlags,
+    });
+  }, [scanIntent, scanMode, scannerClientContext, scannerFeatureFlags]);
+
+  const logScannerLifecycleEvent = useCallback((
+    eventType: 'manual_search' | 'rescan' | 'cancellation' | 'duplicate_prevented',
+    outcome: string,
+    routeContext: Record<string, unknown> = {}
+  ) => {
+    void logScanLearningEvent({
+      scanSessionId: routeInstanceId.current,
+      eventType,
+      scanMode,
+      routeContext: {
+        mode,
+        intent: scanIntent,
+        flow,
+        binderId,
+        pathname,
+        ...routeContext,
+        analytics: buildScannerLifecycleAnalytics({
+          matchSource: eventType === 'manual_search' ? 'manual' : 'none',
+          rescan: eventType === 'rescan',
+          cancellation: eventType === 'cancellation',
+          duplicatePrevention: eventType === 'duplicate_prevented',
+        }),
+      },
+      frameMetrics: compactFrameMetrics(frameAssessmentRef.current),
+      outcome,
+    });
+  }, [binderId, buildScannerLifecycleAnalytics, flow, mode, pathname, scanIntent, scanMode]);
+
+  useEffect(() => {
+    if (!isBinderPageScan) return;
+    stopAutoScanner();
+    setScanMode('manual');
+    if (captureBusy) return;
+    setScanMessage(binderPageLayout === 1
+      ? 'Centre one pocket card, then capture.'
+      : `Line up the ${binderPageLayout}x${binderPageLayout} pocket area inside the guide.`
+    );
+    setScannerState({ type: 'search' });
+  }, [binderPageLayout, captureBusy, isBinderPageScan, setScannerState, stopAutoScanner]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      const wasActive = appStateRef.current === 'active';
+      const isActive = nextState === 'active';
+      appStateRef.current = nextState;
+      setAppActive(isActive);
+
+      if (wasActive && !isActive) {
+        stopAutoScanner();
+        setScannerState({ type: 'camera_paused' });
+        logCameraDiagnostic('app backgrounded; scanner paused', {
+          routeInstanceId: routeInstanceId.current,
+          nextState,
+        });
+        return;
+      }
+
+      if (!wasActive && isActive && permissionGranted && cameraReady && !mountError && !navigatingAwayRef.current) {
+        setScannerState({ type: 'search' });
+        setScanMessage(scanMode === 'auto'
+          ? 'Centre one card. Keep other cards in the dim area.'
+          : 'Manual mode. Centre one card in the window, then tap scan.'
+        );
+      }
+    });
+
+    return () => subscription.remove();
+  }, [cameraReady, mountError, permissionGranted, scanMode, setScannerState, stopAutoScanner]);
+
+  const closeScanner = useCallback(() => {
+    logScannerLifecycleEvent('cancellation', 'closed_scanner', { source: 'close-button' });
+    navigatingAwayRef.current = true;
+    stopAutoScanner();
+    scanStore.clear();
+
+    if (binderId) {
+      router.replace({
+        pathname: '/binder/[id]',
+        params: { id: binderId },
+      } as any);
+      return;
+    }
+
+    if (isListingFlow) {
+      router.replace('/listing/new' as any);
+      return;
+    }
+
+    if (isInventoryFlow) {
+      router.replace('/(tabs)/inventory' as any);
+      return;
+    }
+
+    if (mode === 'binder') {
+      router.replace('/(tabs)/binder' as any);
+      return;
+    }
+
+    router.replace('/(tabs)' as any);
+  }, [binderId, isInventoryFlow, isListingFlow, logScannerLifecycleEvent, mode, stopAutoScanner]);
+
+  const runInlineManualSearch = useCallback(async (query: string) => {
+    const trimmed = query.trim();
+    const requestId = inlineManualSearchRequestRef.current + 1;
+    inlineManualSearchRequestRef.current = requestId;
+
+    if (trimmed.length < 2) {
+      setInlineManualSearchResults([]);
+      setInlineManualSearchLoading(false);
+      return;
+    }
+
+    setInlineManualSearchLoading(true);
+    try {
+      const rows = await searchLocalPokemonCards<any>(trimmed, {
+        language: 'all',
+        limit: MAX_RESULT_CARDS,
+        select: 'id, name, language, number, rarity, set_id, image_small, image_large, raw_data',
+      });
+      if (inlineManualSearchRequestRef.current !== requestId) return;
+      setInlineManualSearchResults((rows ?? []).slice(0, MAX_RESULT_CARDS).map(toResultCard));
+    } catch (error) {
+      if (inlineManualSearchRequestRef.current !== requestId) return;
+      setInlineManualSearchResults([]);
+      logCameraDiagnostic('inline manual search failed', {
+        routeInstanceId: routeInstanceId.current,
+        query: trimmed.slice(0, 80),
+        error: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      if (inlineManualSearchRequestRef.current === requestId) {
+        setInlineManualSearchLoading(false);
+      }
+    }
+  }, []);
+
+  const closeInlineManualSearch = useCallback(() => {
+    setInlineManualSearchOpen(false);
+    setInlineManualSearchResults([]);
+    setInlineManualSearchLoading(false);
+    inlineManualSearchRequestRef.current += 1;
+    if (scanMode === 'auto' && cameraReady && permissionGranted && !captureBusy && !mountError) {
+      setScannerState({ type: 'search' });
+    }
+  }, [cameraReady, captureBusy, mountError, permissionGranted, scanMode, setScannerState]);
+
+  const handleInlineManualSearchSelect = useCallback((card: ScanResultCard) => {
+    setLastQuery(`${card.name} ${card.set_name} ${card.number}`.trim());
+    navigatingAwayRef.current = true;
+    stopAutoScanner();
+    router.replace({
+      pathname: '/scan/result',
+      params: {
+        cardsJson: JSON.stringify([card]),
+        scanSessionId: routeInstanceId.current,
+        mode,
+        intent: scanIntent,
+        ...(flow ? { flow } : {}),
+        ...(binderId ? { binderId } : {}),
+        type: scanIntentConfig.itemType,
+        q: `${card.name} ${card.set_name} ${card.number}`.trim(),
+      },
+    });
+  }, [binderId, flow, mode, scanIntent, scanIntentConfig.itemType, stopAutoScanner]);
+
+  useEffect(() => {
+    if (!inlineManualSearchOpen) return;
+    const timer = setTimeout(() => {
+      void runInlineManualSearch(inlineManualSearchQuery);
+    }, 220);
+    return () => clearTimeout(timer);
+  }, [inlineManualSearchOpen, inlineManualSearchQuery, runInlineManualSearch]);
+
+  const openManualSearch = useCallback(() => {
+    logScannerLifecycleEvent('manual_search', 'manual_search_opened', { source: 'scanner' });
+    if (inlineManualSearchEnabled) {
+      stopAutoScanner();
+      setInlineManualSearchOpen(true);
+      setInlineManualSearchQuery(lastQuery);
+      setScannerState({ type: 'search' });
+      return;
+    }
+
+    navigatingAwayRef.current = true;
+    stopAutoScanner();
+    if (isListingFlow) {
+      router.replace({
+        pathname: '/listing/new',
+        params: {
+          listingAction: 'manual',
+          type: scanIntentConfig.itemType,
+          ...(lastQuery ? { q: lastQuery } : {}),
+        },
+      } as any);
+      return;
+    }
+
+    router.replace({
+      pathname: '/(tabs)/search',
+      params: lastQuery ? { q: lastQuery } : undefined,
+    } as any);
   }, [
-    activeGridSize,
-    activeGridSlotCount,
-    cameraReady,
-    identifyBinderPageCard,
-    processingOcr,
-    startScanningMessages,
-    stopScanningMessages,
+    inlineManualSearchEnabled,
+    isListingFlow,
+    lastQuery,
+    logScannerLifecycleEvent,
+    scanIntentConfig.itemType,
+    setScannerState,
+    stopAutoScanner,
   ]);
 
-  // ===============================
-  // TRAINING DATA + CONFIRMATION
-  // ===============================
+  const createScanCapturedFrame = useCallback((photo: CapturedPhoto): CapturedFrame | null => {
+    if (!CAPTURE_GEOMETRY_V2_ENABLED) return null;
 
-  const saveTrainingData = useCallback(async (cardId: string, base64: string) => {
     try {
-      const { supabase } = await import('../../lib/supabase');
-      await supabase.from('scan_training_data').insert({ card_id: cardId, image_base64: base64 });
-    } catch (err) {
-      console.log('Training data save failed:', err);
-    }
-  }, []);
+      const capturedFrame = createCapturedFrame({
+        originalUri: photo.uri,
+        pixelWidth: photo.width,
+        pixelHeight: photo.height,
+        orientation: width >= height ? 'landscapeLeft' : 'portrait',
+        rotationDegrees: 0,
+        mirrored: facing === 'front',
+        previewWidth: width,
+        previewHeight: height,
+        previewResizeMode: 'cover',
+        safeAreaInsets: insets,
+        detectedCardPreviewRect: {
+          x: frame.left,
+          y: frame.top,
+          width: frame.width,
+          height: frame.height,
+        },
+        scanSessionId: routeInstanceId.current,
+      });
 
-  const confirmPendingCard = useCallback(async (cardOverride?: ScannedCard | null) => {
-    if (!pendingConfirmation) return;
-    const { base64, isMarket } = pendingConfirmation;
-    const card = cardOverride
-      ?? pendingConfirmation.card
-      ?? (pendingConfirmation.candidates?.find((candidate) => candidate.resolvedCard)?.resolvedCard as ScannedCard | null | undefined);
-    if (!card) {
-      setScanError(makeScanError(
-        'card_lookup',
-        'CARD_LOOKUP_FAILED',
-        'This candidate could not be matched to a card in the database yet.',
-        JSON.stringify(pendingConfirmation.candidates ?? []).slice(0, 2000)
-      ));
-      return;
-    }
-    setPendingConfirmation(null);
-    scanCooldownRef.current = false;
-    saveTrainingData(card.id, base64);
-    recordAchievementEvent('card_scanned', {
-      cardId: card.id,
-      setId: card.set_id,
-      mode: isMarket ? 'market' : isInventoryMode ? 'inventory' : 'binder',
-    }).catch((achievementError) => {
-      console.log('Scan achievement check failed:', achievementError);
-    });
+      logCameraDiagnostic('captured frame created', {
+        routeInstanceId: routeInstanceId.current,
+        scanSessionId: capturedFrame.scanSessionId,
+        photo: { width: capturedFrame.pixelWidth, height: capturedFrame.pixelHeight },
+        preview: capturedFrame.previewDimensions,
+        resizeMode: capturedFrame.previewResizeMode,
+        mirrored: capturedFrame.mirrored,
+        cardQuad: capturedFrame.detectedCardQuadrilateral,
+      });
 
-    if (isInventoryMode) {
-      try {
-        // TODO seller scanner: keep camera warm and update the in-camera batch/cart once seller inventory queues are lifted into this route.
-        await scanStore.triggerCallback(base64, card);
-        setAutoScanActive(false);
-        setFrozenFrameUri(null);
-        router.back();
-      } catch (error: any) {
-        console.log('Scan callback failed', {
-          message: error?.message ?? String(error),
-          stack: SHOW_SCAN_DEBUG ? error?.stack : undefined,
-        });
-        setScanError(makeScanError(
-          'render',
-          'SCAN_CALLBACK_FAILED',
-          'The scan completed, but the result could not be handed back to the previous screen.',
-          error?.message ?? String(error),
-          undefined,
-          error?.stack
-        ));
-      }
-      return;
-    }
-
-    if (isMarket) {
-      setAutoScanActive(false);
-      setFrozenFrameUri(null);
-      router.replace({ pathname: '/scan/result', params: { cardsJson: JSON.stringify([card]) } });
-      return;
-    }
-
-    scannedCardIdsRef.current.add(card.id);
-    setScannedCards((prev) => [...prev, card]);
-    setLastScanned(`✅ ${card.name} #${card.number} added!`);
-    setFrozenFrameUri(null);
-    Vibration.vibrate([0, 90, 40, 90]);
-  }, [isInventoryMode, pendingConfirmation, saveTrainingData]);
-
-  const handleConfirm = useCallback(() => {
-    confirmPendingCard();
-  }, [confirmPendingCard]);
-
-  const handleSelectEditionChoice = useCallback((editionHint: ScanEditionHint) => {
-    if (!pendingConfirmation?.card) return;
-
-    const card = withScannedCardEditionHint(pendingConfirmation.card, editionHint, 'resolver');
-    const candidates = pendingConfirmation.candidates?.map((candidate) => {
-      const resolvedCard = candidate.resolvedCard as ScannedCard | null | undefined;
-      if (resolvedCard?.id !== card.id) return candidate;
-      return {
-        ...candidate,
-        editionHint,
-        editionSource: 'resolver' as const,
-        resolvedCard: card,
-      };
-    });
-
-    setPendingConfirmation((current) => current ? {
-      ...current,
-      card,
-      candidates,
-      editionChoiceRequired: false,
-    } : current);
-
-    confirmPendingCard(card);
-  }, [confirmPendingCard, pendingConfirmation]);
-
-  const handleReject = useCallback(() => {
-    setPendingConfirmation(null);
-    scanCooldownRef.current = false;
-    setFrozenFrameUri(null);
-    setPageScanProgress(null);
-    setLastScanned(null);
-  }, []);
-
-  const handleSearchManually = useCallback(() => {
-    setPendingConfirmation(null);
-    setScanError(null);
-    setAutoScanActive(false);
-    setFrozenFrameUri(null);
-    setPageScanProgress(null);
-    scanCooldownRef.current = false;
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(tabs)/market' as any);
-    }
-  }, []);
-
-  const shareDebugDetails = useCallback(async (details: string) => {
-    try {
-      await Share.share({ message: details });
+      return capturedFrame;
     } catch (error) {
-      console.log('Copy/share debug details failed:', error);
+      logCameraDiagnostic('captured frame creation failed', {
+        routeInstanceId: routeInstanceId.current,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
     }
-  }, []);
+  }, [facing, frame.height, frame.left, frame.top, frame.width, height, insets, width]);
 
-  const cardsReadyForImport = gridScanSlots.length
-    ? gridScanSlots
-        .filter((slot) => slot.included && slot.card)
-        .map((slot) => slot.card as ScannedCard)
-    : scannedCards;
+  const getPhotoCropFromGeometry = useCallback((
+    photo: CapturedPhoto,
+    capturedFrame: CapturedFrame | null | undefined,
+    paddingRatio = SCAN_CROP_PADDING_RATIO
+  ) => {
+    if (CAPTURE_GEOMETRY_V2_ENABLED && capturedFrame) {
+      const geometryCrop = getCropFromPreviewRect(capturedFrame, {
+        x: frame.left,
+        y: frame.top,
+        width: frame.width,
+        height: frame.height,
+      }, paddingRatio);
+      return geometryCrop ? captureRectToManipulatorCrop(geometryCrop) : null;
+    }
 
-  const handleGridSlotPress = useCallback((slot: GridScanSlot) => {
-    const removeSlotCard = () => {
-      if (slot.card?.id) {
-        scannedCardIdsRef.current.delete(slot.card.id);
-        setScannedCards((prev) => prev.filter((card) => card.id !== slot.card?.id));
+    return buildLegacyPhotoCrop(frame, { width, height }, photo, paddingRatio);
+  }, [frame, height, width]);
+
+  const prepareLocalisedRecognitionImage = useCallback(async (
+    photo: CapturedPhoto,
+    capturedFrame?: CapturedFrame | null
+  ): Promise<RecognitionImage | null> => {
+    if (!CARD_LOCALISATION_ENABLED || !capturedFrame) return null;
+
+    try {
+      const photoCrop = getPhotoCropFromGeometry(photo, capturedFrame, CARD_LOCALISATION_SAFETY_MARGIN);
+      const actions: any[] = [];
+      if (photoCrop) actions.push({ crop: photoCrop });
+      actions.push({ resize: { width: 900 } });
+
+      const workingImage = await ImageManipulator.manipulateAsync(photo.uri, actions, {
+        compress: 0.82,
+        format: ImageManipulator.SaveFormat.JPEG,
+        base64: true,
+      });
+      if (!workingImage.base64) return null;
+
+      const localisation = localiseCardFromJpegBase64(workingImage.base64, {
+        expectedAspectRatio: CARD_ASPECT_RATIO,
+        guideRect: {
+          x: 0,
+          y: 0,
+          width: workingImage.width ?? 1,
+          height: workingImage.height ?? 1,
+        },
+        minFrameCoverage: 0.055,
+        maxFrameCoverage: 0.94,
+        safetyMarginRatio: CARD_LOCALISATION_SAFETY_MARGIN,
+      });
+
+      logCameraDiagnostic('capture localisation', {
+        routeInstanceId: routeInstanceId.current,
+        localisation: compactLocalisationDiagnostics(localisation),
+      });
+
+      if (localisation.status !== 'confident' || !localisation.quadrilateral) {
+        return null;
       }
+
+      const corrected = perspectiveCorrectCardJpegBase64(workingImage.base64, localisation.quadrilateral, {
+        expectedAspectRatio: CARD_ASPECT_RATIO,
+        outputWidth: LOCALISATION_OUTPUT_WIDTH,
+        safetyMarginRatio: CARD_LOCALISATION_SAFETY_MARGIN,
+        quality: 84,
+      });
+      const cacheRoot = FileSystem.cacheDirectory;
+      if (!cacheRoot) return null;
+      const safeSessionId = routeInstanceId.current.replace(/[^a-zA-Z0-9_-]/g, '-');
+      const uri = `${cacheRoot}stackr-localised-${safeSessionId}-${Date.now()}.jpg`;
+      await FileSystem.writeAsStringAsync(uri, corrected.base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      return {
+        uri,
+        width: corrected.width,
+        height: corrected.height,
+        base64: corrected.base64,
+        role: 'localised-card-crop',
+        localisation: {
+          ...localisation,
+          quadrilateral: corrected.quadrilateral,
+          transformMatrix: corrected.transformMatrix,
+        },
+      };
+    } catch (error) {
+      logCameraDiagnostic('capture localisation failed', {
+        routeInstanceId: routeInstanceId.current,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return null;
+    }
+  }, [getPhotoCropFromGeometry]);
+
+  const preparePhotosForRecognition = useCallback(async (
+    photo: CapturedPhoto,
+    capturedFrame?: CapturedFrame | null
+  ): Promise<RecognitionImage[]> => {
+    const photoCrop = getPhotoCropFromGeometry(photo, capturedFrame);
+    const wideCrop = CAPTURE_GEOMETRY_V2_ENABLED && capturedFrame && photoCrop
+      ? (() => {
+          const expanded = expandCropRect(
+            { x: photoCrop.originX, y: photoCrop.originY, width: photoCrop.width, height: photoCrop.height },
+            { width: Number(photo.width) || 1, height: Number(photo.height) || 1 },
+            0.72
+          );
+          return expanded ? captureRectToManipulatorCrop(expanded) : null;
+        })()
+      : expandPhotoCrop(photoCrop, photo, 0.72);
+    const specs: { role: string; actions: any[]; compress: number }[] = [];
+
+    if (photoCrop) {
+      specs.push({
+        role: 'target-crop',
+        actions: [{ crop: photoCrop }, { resize: { width: 960 } }],
+        compress: 0.76,
+      });
+    }
+
+    if (wideCrop) {
+      specs.push({
+        role: 'wide-safety-crop',
+        actions: [{ crop: wideCrop }, { resize: { width: 1040 } }],
+        compress: 0.72,
+      });
+    }
+
+    specs.push({
+      role: 'full-frame',
+      actions: [{ resize: { width: 1180 } }],
+      compress: 0.68,
+    });
+
+    const prepared: RecognitionImage[] = [];
+    const localisedImage = await prepareLocalisedRecognitionImage(photo, capturedFrame);
+    if (localisedImage) prepared.push(localisedImage);
+
+    for (const spec of specs) {
+      try {
+        const manipulated = await ImageManipulator.manipulateAsync(photo.uri, spec.actions, {
+          compress: spec.compress,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        });
+        prepared.push({ ...manipulated, role: spec.role });
+      } catch (error) {
+        logCameraDiagnostic('recognition image variant failed', {
+          routeInstanceId: routeInstanceId.current,
+          role: spec.role,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    if (!prepared.length) {
+      const fallback = await ImageManipulator.manipulateAsync(
+        photo.uri,
+        [{ resize: { width: 960 } }],
+        {
+          compress: 0.68,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        }
+      );
+      prepared.push({ ...fallback, role: 'fallback-full-frame' });
+    }
+
+    logCameraDiagnostic('photos prepared for recognition', {
+      routeInstanceId: routeInstanceId.current,
+      scanSessionId: capturedFrame?.scanSessionId ?? routeInstanceId.current,
+      geometryV2: CAPTURE_GEOMETRY_V2_ENABLED && Boolean(capturedFrame),
+      original: { width: photo.width, height: photo.height },
+      targetCrop: photoCrop,
+      wideCrop,
+      variants: prepared.map((item) => ({
+        role: item.role,
+        width: item.width,
+        height: item.height,
+        bytesApprox: estimateBase64Bytes(item.base64),
+      })),
+    });
+
+    return prepared;
+  }, [getPhotoCropFromGeometry, prepareLocalisedRecognitionImage]);
+
+  const preparePhotoForFrameCheck = useCallback(async (
+    photo: CapturedPhoto,
+    capturedFrame?: CapturedFrame | null,
+    options: { paddingRatio?: number; width?: number; compress?: number } = {}
+  ) => {
+    const photoCrop = getPhotoCropFromGeometry(photo, capturedFrame, options.paddingRatio ?? SCAN_CROP_PADDING_RATIO);
+    const actions: any[] = [];
+    if (photoCrop) actions.push({ crop: photoCrop });
+    actions.push({ resize: { width: options.width ?? FRAME_CHECK_WIDTH } });
+
+    return ImageManipulator.manipulateAsync(photo.uri, actions, {
+      compress: options.compress ?? 0.42,
+      format: ImageManipulator.SaveFormat.JPEG,
+      base64: true,
+    });
+  }, [getPhotoCropFromGeometry]);
+
+  const evaluateCapturedPhotoQuality = useCallback(async (
+    photo: CapturedPhoto,
+    capturedFrame?: CapturedFrame | null
+  ) => {
+    if (!SCAN_QUALITY_ENABLED) {
+      applyScanQualityResult(null);
+      return {
+        quality: null as ScanQualityResult | null,
+        localisation: localisationRef.current,
+      };
+    }
+
+    const previousLocalisation = localisationRef.current;
+    const preview = await preparePhotoForFrameCheck(photo, capturedFrame, {
+      paddingRatio: 0,
+      width: LOCALISATION_FRAME_CHECK_WIDTH,
+      compress: 0.5,
+    });
+    const localisation = CARD_LOCALISATION_ENABLED && preview.base64
+      ? localiseCardFromJpegBase64(preview.base64, {
+          expectedAspectRatio: CARD_ASPECT_RATIO,
+          guideRect: { x: 0, y: 0, width: preview.width ?? 1, height: preview.height ?? 1 },
+          minFrameCoverage: 0.08,
+          maxFrameCoverage: 0.82,
+          safetyMarginRatio: CARD_LOCALISATION_SAFETY_MARGIN,
+        })
+      : null;
+    const quality = evaluateScanQuality(preview.base64 ?? '', {
+      localisation,
+      previousLocalisation,
+      calibration: scanQualityCalibration,
+    });
+    const assessment = frameAssessmentFromScanQuality(quality);
+
+    applyLocalisationResult(localisation);
+    applyScanQualityResult(quality);
+    applyFrameAssessment(assessment);
+
+    logCameraDiagnostic('capture quality assessment', {
+      routeInstanceId: routeInstanceId.current,
+      passed: quality.passed,
+      instruction: quality.instruction,
+      failures: quality.failures.map((failure) => failure.code),
+      scores: {
+        focus: quality.focusScore,
+        glare: quality.glareScore,
+        exposure: quality.exposureScore,
+        framing: quality.framingScore,
+        stability: quality.stabilityScore,
+        obstruction: quality.obstructionScore,
+        perspective: quality.perspectiveScore,
+      },
+      localisation: compactLocalisationDiagnostics(localisation),
+    });
+
+    return {
+      quality,
+      localisation,
+    };
+  }, [applyFrameAssessment, applyLocalisationResult, applyScanQualityResult, preparePhotoForFrameCheck, scanQualityCalibration]);
+
+  const toBinderPocketCandidate = useCallback((card: ScanResultCard): BinderPocketCandidate => ({
+    id: card.id,
+    name: card.name,
+    number: card.number,
+    set_id: card.set_id,
+    set_name: card.set_name,
+    image_small: card.image_small,
+    image_large: card.image_large,
+    confidence: card.scan_confidence ?? (
+      card.scan_final_score != null
+        ? Math.round(card.scan_final_score * 100)
+        : null
+    ),
+  }), []);
+
+  const prepareBinderPagePocketImages = useCallback(async (
+    photo: CapturedPhoto,
+    capturedFrame?: CapturedFrame | null
+  ): Promise<{ pageUri: string | null; pockets: BinderPagePocketImage[] }> => {
+    const photoCrop = getPhotoCropFromGeometry(photo, capturedFrame, 0.018);
+    const pageActions: any[] = [];
+    if (photoCrop) pageActions.push({ crop: photoCrop });
+    pageActions.push({ resize: { width: BINDER_PAGE_OUTPUT_WIDTH } });
+
+    const pageImage = await ImageManipulator.manipulateAsync(photo.uri, pageActions, {
+      compress: 0.82,
+      format: ImageManipulator.SaveFormat.JPEG,
+      base64: false,
+    });
+
+    const cells = createBinderPageGridCells(binderPageLayout, {
+      width: pageImage.width ?? BINDER_PAGE_OUTPUT_WIDTH,
+      height: pageImage.height ?? Math.round(BINDER_PAGE_OUTPUT_WIDTH / CARD_ASPECT_RATIO),
+    });
+
+    const pockets = await Promise.all(cells.map(async (cell): Promise<BinderPagePocketImage> => {
+      const crop = await ImageManipulator.manipulateAsync(
+        pageImage.uri,
+        [
+          { crop: captureRectToManipulatorCrop(cell.crop) },
+          { resize: { width: BINDER_PAGE_POCKET_OUTPUT_WIDTH } },
+        ],
+        {
+          compress: 0.76,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true,
+        }
+      );
+
+      return {
+        cell,
+        uri: crop.uri,
+        width: crop.width,
+        height: crop.height,
+        base64: crop.base64,
+      };
+    }));
+
+    logCameraDiagnostic('binder page pocket crops prepared', {
+      routeInstanceId: routeInstanceId.current,
+      layout: binderPageLayout,
+      page: { width: pageImage.width, height: pageImage.height },
+      pocketCount: pockets.length,
+    });
+
+    return { pageUri: pageImage.uri, pockets };
+  }, [binderPageLayout, getPhotoCropFromGeometry]);
+
+  const identifyBinderPagePocket = useCallback(async (
+    pocket: BinderPagePocketImage,
+    useRemoteFallback: boolean
+  ): Promise<BinderPagePocketResult> => {
+    const quality = assessBinderPocketImage(pocket.base64);
+    const baseResult: BinderPagePocketResult = {
+      index: pocket.cell.index,
+      row: pocket.cell.row,
+      column: pocket.cell.column,
+      status: quality.status === 'usable' ? 'unresolved' : quality.status,
+      cropUri: pocket.uri,
+      candidates: [],
+      selectedCandidateIndex: 0,
+      quality,
+      source: quality.status === 'usable' ? 'none' : 'quality',
+      notes: [quality.reason],
     };
 
-    Alert.alert(
-      `Position ${slot.slot}`,
-      slot.card
-        ? `${slot.card.name}\n${formatScanCardSubtitle(slot.card.set_name, slot.card.number, slot.card.editionHint)}`
-        : slot.status === 'Empty'
-          ? 'This position is marked empty.'
-          : 'No confident card match was found for this crop.',
-      [
-        ...(slot.card
-          ? [{
-              text: slot.included ? 'Exclude from import' : 'Include in import',
-              onPress: () => {
-                setGridScanSlots((prev) => prev.map((current) =>
-                  current.slot === slot.slot
-                    ? {
-                        ...current,
-                        included: !slot.included,
-                        status: !slot.included ? 'Confirmed' : 'Check Match',
-                      }
-                    : current
-                ));
-                if (slot.included) removeSlotCard();
-                if (!slot.included && slot.card) {
-                  scannedCardIdsRef.current.add(slot.card.id);
-                  setScannedCards((prev) => prev.some((card) => card.id === slot.card?.id) ? prev : [...prev, slot.card as ScannedCard]);
-                }
+    if (quality.status !== 'usable' || !pocket.base64) return baseResult;
+
+    const recognitionImage: RecognitionImage = {
+      uri: pocket.uri,
+      width: pocket.width,
+      height: pocket.height,
+      base64: pocket.base64,
+      role: 'binder-pocket-crop',
+    };
+
+    const targetedOcr = await runTargetedCardOcr(recognitionImage);
+    let localOcrMatch: LocalOcrMatchResult | null = null;
+    let localIdentified: IdentifiedCard[] = [];
+
+    if (SCAN_LOCAL_OCR_MATCHER_ENABLED && targetedOcr.regions.length > 0) {
+      localOcrMatch = await matchLocalOcrCandidates(targetedOcr.regions, {
+        maxCandidates: MAX_RESULT_CARDS,
+        scanImageBase64: pocket.base64,
+        strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
+      });
+      localIdentified = localOcrMatch.candidates
+        .slice(0, MAX_RESULT_CARDS)
+        .map(localOcrCandidateToIdentifiedCard);
+
+      if (localOcrMatch.status === 'strong' && localIdentified.length) {
+        const cards = await resolveMatches(localIdentified, targetedOcr.text);
+        const candidates = cards.map(toBinderPocketCandidate);
+        return {
+          ...baseResult,
+          status: getBinderPocketStatusFromCandidates(quality, candidates),
+          candidates,
+          source: 'local',
+          notes: [
+            ...baseResult.notes,
+            `local-ocr:${localOcrMatch.status}`,
+            ...localOcrMatch.notes,
+          ],
+        };
+      }
+    }
+
+    if (!useRemoteFallback) {
+      const candidates = localIdentified.length
+        ? (await resolveMatches(localIdentified, targetedOcr.text)).map(toBinderPocketCandidate)
+        : [];
+      return {
+        ...baseResult,
+        status: getBinderPocketStatusFromCandidates(quality, candidates),
+        candidates,
+        source: candidates.length ? 'local' : 'none',
+        notes: [
+          ...baseResult.notes,
+          localOcrMatch ? `local-ocr:${localOcrMatch.status}` : 'local-ocr:no-text',
+        ],
+      };
+    }
+
+    try {
+      const detailed = await identifyCardsDetailed([pocket.base64], binderId ?? undefined, {
+        ocrText: targetedOcr.text,
+        language: localOcrMatch?.signals.language === 'unknown' ? null : localOcrMatch?.signals.language,
+        printedNumber: localOcrMatch?.signals.printedNumber?.number && localOcrMatch.signals.printedNumber.denominator
+          ? {
+              number: localOcrMatch.signals.printedNumber.number,
+              total: localOcrMatch.signals.printedNumber.denominator,
+            }
+          : null,
+        localConfidence: localOcrMatch?.confidence ?? null,
+        localStatus: localOcrMatch?.status ?? null,
+        ambiguousVariants: Boolean(localOcrMatch?.status === 'ambiguous'),
+        scanSessionId: `${routeInstanceId.current}:pocket-${pocket.cell.index}`,
+        itemType: 'raw_card',
+      });
+      const cards = await resolveMatches(detailed.cards, targetedOcr.text);
+      const candidates = cards.map(toBinderPocketCandidate);
+      return {
+        ...baseResult,
+        status: getBinderPocketStatusFromCandidates(quality, candidates),
+        candidates,
+        source: 'remote',
+        notes: [
+          ...baseResult.notes,
+          localOcrMatch ? `local-ocr:${localOcrMatch.status}` : 'local-ocr:no-text',
+          `remote:${detailed.diagnostics.candidateCount}`,
+        ],
+      };
+    } catch (error) {
+      return {
+        ...baseResult,
+        status: 'unresolved',
+        source: 'remote',
+        notes: [
+          ...baseResult.notes,
+          error instanceof Error ? error.message : String(error),
+        ],
+      };
+    }
+  }, [
+    binderId,
+    resolveMatches,
+    runTargetedCardOcr,
+    scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
+    toBinderPocketCandidate,
+  ]);
+
+  const processBinderPageCapture = useCallback(async (
+    photo: CapturedPhoto,
+    capturedFrame?: CapturedFrame | null,
+    captureMs?: number | null,
+    attemptStartedAt?: number | null
+  ) => {
+    const startedAt = Date.now();
+    const analyticsStartedAt = attemptStartedAt ?? startedAt;
+    let perspectiveCropMs: number | null = null;
+    let localCandidateMatchMs: number | null = null;
+    let remoteRequestMs: number | null = null;
+    setBinderPageProgress(null);
+    setScannerState({ type: 'identify_start' });
+    setScanMessage(`Splitting ${binderPageLayout}x${binderPageLayout} binder page...`);
+
+    const cropStartedAt = Date.now();
+    const { pageUri, pockets } = await prepareBinderPagePocketImages(photo, capturedFrame);
+    perspectiveCropMs = Date.now() - cropStartedAt;
+    const initialResults = pockets.map((pocket): BinderPagePocketResult => {
+      const quality = assessBinderPocketImage(pocket.base64);
+      return {
+        index: pocket.cell.index,
+        row: pocket.cell.row,
+        column: pocket.cell.column,
+        status: quality.status === 'usable' ? 'unresolved' : quality.status,
+        cropUri: pocket.uri,
+        candidates: [],
+        selectedCandidateIndex: 0,
+        quality,
+        source: quality.status === 'usable' ? 'none' : 'quality',
+        notes: [quality.reason],
+      };
+    });
+    const workable = pockets.filter((pocket, index) => initialResults[index]?.status === 'unresolved');
+    const localResults: BinderPagePocketResult[] = [];
+    let processed = 0;
+    setBinderPageProgress({ processed, total: pockets.length });
+    setScanMessage(`Checking ${workable.length} occupied pocket${workable.length === 1 ? '' : 's'} locally...`);
+
+    const localByIndex = new Map<number, BinderPagePocketResult>();
+    const localStartedAt = Date.now();
+    for (const pocket of workable) {
+      const result = await identifyBinderPagePocket(pocket, false);
+      localByIndex.set(pocket.cell.index, result);
+      localResults.push(result);
+      processed += 1;
+      setBinderPageProgress({ processed, total: pockets.length });
+      setScanMessage(`Binder page ${processed}/${pockets.length} pockets checked...`);
+    }
+    localCandidateMatchMs = Date.now() - localStartedAt;
+
+    const unresolved = workable.filter((pocket) => {
+      const result = localByIndex.get(pocket.cell.index);
+      return !result?.candidates.length || result.status === 'unresolved' || result.status === 'possible_match';
+    });
+
+    if (unresolved.length) {
+      setScanMessage(`Matching ${unresolved.length} uncertain pocket${unresolved.length === 1 ? '' : 's'}...`);
+    }
+
+    const remoteStartedAt = Date.now();
+    const remoteResults = await runWithConcurrency(
+      unresolved,
+      Math.max(1, Math.min(4, Math.floor(SCAN_BINDER_PAGE_REMOTE_CONCURRENCY) || 2)),
+      async (pocket) => {
+        const result = await identifyBinderPagePocket(pocket, true);
+        processed += 1;
+        setBinderPageProgress({ processed: Math.min(pockets.length, processed), total: pockets.length });
+        return result;
+      }
+    );
+    remoteRequestMs = unresolved.length ? Date.now() - remoteStartedAt : null;
+
+    const remoteByIndex = new Map(remoteResults.map((result) => [result.index, result]));
+    const merged = initialResults.map((initial) => {
+      const remote = remoteByIndex.get(initial.index);
+      if (remote?.candidates.length || remote?.status !== 'unresolved') return remote ?? initial;
+      const local = localByIndex.get(initial.index);
+      return local ?? initial;
+    });
+    const finalPockets = markDuplicatePocketCandidates(merged);
+    const duplicatePrevention = finalPockets.some((pocket) => pocket.status === 'duplicate_candidate');
+    const bestConfidence = finalPockets
+      .flatMap((pocket) => pocket.candidates)
+      .map((candidate) => Number(candidate.confidence))
+      .filter((confidence) => Number.isFinite(confidence))
+      .sort((a, b) => b - a)[0] ?? null;
+    const pocketStatuses = finalPockets.reduce<Record<string, number>>((acc, pocket) => {
+      acc[pocket.status] = (acc[pocket.status] ?? 0) + 1;
+      return acc;
+    }, {});
+    const qualityFailureReasons = Array.from(new Set(finalPockets
+      .map((pocket) => pocket.quality?.status)
+      .filter((status) => Boolean(status && status !== 'usable'))
+      .map(String)));
+    const hasRemote = finalPockets.some((pocket) => pocket.source === 'remote');
+    const hasLocal = finalPockets.some((pocket) => pocket.source === 'local');
+    const binderPageAnalytics = buildScannerAnalyticsMetadata({
+      timings: {
+        camera_initialisation_ms: cameraInitialisationMsRef.current,
+        first_card_detection_ms: firstCardDetectionMsRef.current,
+        quality_gate_ms: null,
+        stable_capture_ms: null,
+        photo_capture_ms: captureMs ?? null,
+        perspective_crop_ms: perspectiveCropMs,
+        ocr_ms: null,
+        local_candidate_match_ms: localCandidateMatchMs,
+        remote_request_ms: remoteRequestMs,
+        database_save_ms: null,
+        total_scan_ms: Date.now() - analyticsStartedAt,
+      },
+      scanIntent,
+      scanMode,
+      language: null,
+      matchSource: hasRemote && hasLocal ? 'hybrid' : hasRemote ? 'remote' : hasLocal ? 'local' : 'none',
+      confidence: bestConfidence,
+      alternatives: finalPockets.reduce((sum, pocket) => sum + pocket.candidates.length, 0),
+      qualityFailureReasons,
+      manualCorrection: false,
+      rescan: shouldReplaceBinderPocket,
+      cancellation: false,
+      duplicatePrevention,
+      remoteEndpoint: hasRemote ? 'tcg_id' : null,
+      errorCategory: null,
+      client: scannerClientContext,
+      featureFlags: scannerFeatureFlags,
+    });
+
+    if (shouldReplaceBinderPocket && parentBinderPageSessionId) {
+      const replacement = finalPockets[0];
+      if (replacement) {
+        const updatedParent = updateBinderPageScanSession(parentBinderPageSessionId, (stored) => {
+          const nextPockets = stored.pockets.map((pocket) => {
+            const cleanedStatus = pocket.status === 'duplicate_candidate'
+              ? getBinderPocketStatusFromCandidates(pocket.quality, pocket.candidates)
+              : pocket.status;
+            const cleanedNotes = pocket.notes.filter((note) => note !== 'same-card-already-seen-on-page');
+            if (pocket.index !== replaceBinderPocketIndex) {
+              return { ...pocket, status: cleanedStatus, notes: cleanedNotes };
+            }
+
+            return {
+              ...replacement,
+              index: pocket.index,
+              row: pocket.row,
+              column: pocket.column,
+              notes: [...replacement.notes, 'rescanned-pocket'],
+            };
+          });
+
+          return {
+            ...stored,
+            binderId: binderId ?? stored.binderId,
+            pageUri: stored.pageUri ?? pageUri,
+            processingMs: stored.processingMs + (Date.now() - startedAt),
+            pockets: markDuplicatePocketCandidates(nextPockets),
+          };
+        });
+
+        if (updatedParent) {
+          await logScanLearningEvent({
+            scanSessionId: parentBinderPageSessionId,
+            eventType: 'attempt',
+            scanMode,
+            routeContext: {
+              mode,
+              intent: scanIntent,
+              flow,
+              binderId,
+              source: 'binder-page-pocket-rescan',
+              layout: 1,
+              replacePocketIndex: replaceBinderPocketIndex,
+              replacementStatus: replacement.status,
+              analytics: {
+                ...binderPageAnalytics,
+                rescan: true,
               },
-            }]
-          : []),
+            },
+            candidates: replacement.candidates.slice(0, 1).map((candidate) => ({
+              id: candidate.id,
+              name: candidate.name,
+              set_id: candidate.set_id ?? null,
+              set_name: candidate.set_name ?? null,
+              number: candidate.number ?? null,
+              provider: replacement.source,
+              confidence: candidate.confidence ?? null,
+              visualSimilarity: null,
+              finalScore: null,
+            })),
+            outcome: replacement.candidates.length ? 'candidates_returned' : 'no_match',
+          });
+          setScannerState({ type: 'confirm' });
+          navigatingAwayRef.current = true;
+          stopAutoScanner();
+          router.replace({
+            pathname: '/scan/binder-page-result',
+            params: {
+              scanSessionId: parentBinderPageSessionId,
+              layout: updatedParent.layout,
+              ...(updatedParent.binderId ? { binderId: updatedParent.binderId } : {}),
+            },
+          } as any);
+          return;
+        }
+      }
+    }
+
+    saveBinderPageScanSession({
+      scanSessionId: routeInstanceId.current,
+      binderId,
+      layout: binderPageLayout,
+      capturedAt: new Date().toISOString(),
+      originalUri: photo.uri,
+      pageUri,
+      processingMs: Date.now() - startedAt,
+      pockets: finalPockets,
+    });
+
+    await logScanLearningEvent({
+      scanSessionId: routeInstanceId.current,
+      eventType: 'attempt',
+      scanMode,
+      routeContext: {
+        mode,
+        intent: scanIntent,
+        flow,
+        binderId,
+        source: 'binder-page',
+        layout: binderPageLayout,
+        pocketCount: finalPockets.length,
+        statuses: pocketStatuses,
+        analytics: binderPageAnalytics,
+      },
+      candidates: finalPockets.flatMap((pocket) => pocket.candidates.slice(0, 1).map((candidate) => ({
+        id: candidate.id,
+        name: candidate.name,
+        set_id: candidate.set_id ?? null,
+        set_name: candidate.set_name ?? null,
+        number: candidate.number ?? null,
+        provider: pocket.source,
+        confidence: candidate.confidence ?? null,
+        visualSimilarity: null,
+        finalScore: null,
+      }))),
+      outcome: finalPockets.some((pocket) => pocket.candidates.length) ? 'candidates_returned' : 'no_match',
+    });
+
+    setScannerState({ type: 'confirm' });
+    navigatingAwayRef.current = true;
+    stopAutoScanner();
+    router.replace({
+      pathname: '/scan/binder-page-result',
+      params: {
+        scanSessionId: routeInstanceId.current,
+        layout: binderPageLayout,
+        ...(binderId ? { binderId } : {}),
+      },
+    } as any);
+  }, [
+    binderId,
+    binderPageLayout,
+    flow,
+    identifyBinderPagePocket,
+    mode,
+    parentBinderPageSessionId,
+    prepareBinderPagePocketImages,
+    replaceBinderPocketIndex,
+    scanIntent,
+    scanMode,
+    scannerClientContext,
+    scannerFeatureFlags,
+    setScannerState,
+    shouldReplaceBinderPocket,
+    stopAutoScanner,
+  ]);
+
+  const handleCapture = useCallback(async (source: 'manual' | 'auto' = 'manual', capturedPhoto?: CapturedPhoto) => {
+    if (!cameraReady || navigatingAwayRef.current) return;
+    if (captureInFlightRef.current) {
+      logScannerLifecycleEvent('duplicate_prevented', 'duplicate_capture_blocked', { source });
+      return;
+    }
+
+    const camera = cameraRef.current;
+    if (!camera) {
+      setScanMessage('Camera is not ready yet.');
+      return;
+    }
+
+    captureInFlightRef.current = true;
+    setScannerState({ type: 'capture_start' });
+    setAcceptedPreviewUri(null);
+    setScanMessage('Capturing card...');
+    setMountError(null);
+
+    const attemptStartedAt = Date.now();
+    const timings: Record<string, number | null> = {
+      captureMs: null,
+      qualityMs: null,
+      recognitionImageMs: null,
+      identifyMs: null,
+      ocrMs: null,
+      localOcrMatchMs: null,
+      resolveMatchesMs: null,
+      learningLogMs: null,
+      totalMs: null,
+    };
+    let diagnosticsSaved = false;
+    let photoForDiagnostics: CapturedPhoto | null = null;
+    let captureFrameForDiagnostics: CapturedFrame | null = null;
+    let recognitionImageForDiagnostics: RecognitionImage | null = null;
+    let qualityForDiagnostics: ScanQualityResult | null = null;
+    let identifyDiagnostics: ScanIdentifyDiagnostics | null = null;
+    let cardsForDiagnostics: ScanResultCard[] = [];
+    let localOcrMatchForAnalytics: LocalOcrMatchResult | null = null;
+
+    const buildAttemptAnalytics = (
+      outcome: string,
+      options: {
+        candidateCount?: number | null;
+        confidence?: number | null;
+        language?: string | null;
+        errorCategory?: string | null;
+        quality?: ScanQualityResult | null;
+        diagnostics?: ScanIdentifyDiagnostics | null;
+        manualCorrection?: boolean;
+        rescan?: boolean;
+        duplicatePrevention?: boolean;
+      } = {}
+    ) => {
+      const diagnostics = options.diagnostics ?? identifyDiagnostics;
+      const quality = options.quality ?? qualityForDiagnostics ?? scanQualityRef.current;
+      const timingMetrics: ScannerTimingMetrics = {
+        camera_initialisation_ms: cameraInitialisationMsRef.current,
+        first_card_detection_ms: firstCardDetectionMsRef.current,
+        quality_gate_ms: timings.qualityMs,
+        stable_capture_ms: source === 'auto' && stableCaptureStartedAtRef.current != null
+          ? Date.now() - stableCaptureStartedAtRef.current
+          : null,
+        photo_capture_ms: timings.captureMs,
+        perspective_crop_ms: timings.recognitionImageMs,
+        ocr_ms: timings.ocrMs,
+        local_candidate_match_ms: timings.localOcrMatchMs,
+        remote_request_ms: getRemoteRequestMs(diagnostics),
+        database_save_ms: null,
+        total_scan_ms: Date.now() - attemptStartedAt,
+      };
+
+      return buildScannerAnalyticsMetadata({
+        timings: timingMetrics,
+        scanIntent,
+        scanMode,
+        language: options.language
+          ?? localOcrMatchForAnalytics?.signals.language
+          ?? (cardsForDiagnostics[0] as any)?.language
+          ?? null,
+        matchSource: getMatchSource({
+          localStatus: localOcrMatchForAnalytics?.status,
+          diagnostics,
+          candidateCount: options.candidateCount,
+        }),
+        confidence: options.confidence
+          ?? cardsForDiagnostics[0]?.scan_confidence
+          ?? localOcrMatchForAnalytics?.confidence
+          ?? null,
+        alternatives: options.candidateCount ?? cardsForDiagnostics.length,
+        qualityFailureReasons: quality?.failures?.map((failure) => String(failure.code)) ?? [],
+        manualCorrection: options.manualCorrection ?? false,
+        rescan: options.rescan ?? Boolean(returnReason),
+        cancellation: false,
+        duplicatePrevention: options.duplicatePrevention ?? false,
+        remoteEndpoint: getRemoteEndpointUsed(diagnostics),
+        errorCategory: options.errorCategory ?? null,
+        thresholdVersion: scannerThresholdSet.version,
+        client: scannerClientContext,
+        featureFlags: scannerFeatureFlags,
+      });
+    };
+
+    const saveDiagnostics = (
+      outcome: 'candidates_returned' | 'no_match' | 'inventory_callback' | 'failed' | 'quality_rejected',
+      notes: string[] = []
+    ) => {
+      if (diagnosticsSaved) return;
+      diagnosticsSaved = true;
+      timings.totalMs = Date.now() - attemptStartedAt;
+      const diagnosticCrop = photoForDiagnostics
+        ? getPhotoCropFromGeometry(photoForDiagnostics, captureFrameForDiagnostics)
+        : null;
+      saveScanAttemptDiagnostics({
+        scanSessionId: routeInstanceId.current,
+        createdAt: new Date().toISOString(),
+        source,
+        mode,
+        intent: scanIntent,
+        flow: flow ?? null,
+        binderId,
+        pathname,
+        outcome,
+        timings,
+        image: {
+          originalWidth: photoForDiagnostics?.width ?? null,
+          originalHeight: photoForDiagnostics?.height ?? null,
+          crop: diagnosticCrop,
+          captureFrame: captureFrameForDiagnostics
+            ? {
+                scanSessionId: captureFrameForDiagnostics.scanSessionId,
+                capturedAt: captureFrameForDiagnostics.capturedAt,
+                originalUri: captureFrameForDiagnostics.originalUri,
+                pixelWidth: captureFrameForDiagnostics.pixelWidth,
+                pixelHeight: captureFrameForDiagnostics.pixelHeight,
+                orientation: captureFrameForDiagnostics.orientation,
+                rotationDegrees: captureFrameForDiagnostics.rotationDegrees,
+                mirrored: captureFrameForDiagnostics.mirrored,
+                previewDimensions: captureFrameForDiagnostics.previewDimensions,
+                previewResizeMode: captureFrameForDiagnostics.previewResizeMode,
+                detectedCardQuadrilateral: captureFrameForDiagnostics.detectedCardQuadrilateral,
+              }
+            : null,
+          localisation: compactLocalisationDiagnostics(recognitionImageForDiagnostics?.localisation ?? localisationRef.current),
+          quality: compactScanQualityDiagnostics(qualityForDiagnostics ?? scanQualityRef.current),
+          recognitionWidth: recognitionImageForDiagnostics?.width ?? null,
+          recognitionHeight: recognitionImageForDiagnostics?.height ?? null,
+          recognitionBytesApprox: estimateBase64Bytes(recognitionImageForDiagnostics?.base64),
+        },
+        frameMetrics: compactFrameMetrics(frameAssessmentRef.current),
+        providers: identifyDiagnostics?.providers ?? [],
+        candidates: buildResultCandidateDiagnostics(cardsForDiagnostics),
+        shadowMode: identifyDiagnostics?.shadowMode ?? null,
+        notes: [
+          ...(identifyDiagnostics?.notes ?? []),
+          ...notes,
+        ],
+      });
+    };
+
+    try {
+      if (source === 'manual') {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      }
+      const captureStartedAt = Date.now();
+      const photo = capturedPhoto ?? await camera.takePictureAsync({
+        quality: 0.7,
+        base64: false,
+        exif: false,
+      });
+      timings.captureMs = capturedPhoto ? 0 : Date.now() - captureStartedAt;
+      photoForDiagnostics = photo;
+      const capturedFrame = createScanCapturedFrame(photo);
+      captureFrameForDiagnostics = capturedFrame;
+
+      if (isBinderPageScan && SCAN_BINDER_PAGE_V2_ENABLED) {
+        await processBinderPageCapture(photo, capturedFrame, timings.captureMs, attemptStartedAt);
+        return;
+      }
+
+      setScanMessage('Checking image quality...');
+      setScannerState({ type: 'quality_check' });
+      const qualityStartedAt = Date.now();
+      const { quality, localisation } = await evaluateCapturedPhotoQuality(photo, capturedFrame);
+      timings.qualityMs = Date.now() - qualityStartedAt;
+      qualityForDiagnostics = quality;
+      const frameValidation = validateScannerFrame({ quality, localisation });
+
+      if (SCAN_QUALITY_ENABLED && quality && (!quality.passed || !frameValidation.canContinue)) {
+        const isNoTradingCard = frameValidation.rejectionReason === 'no_trading_card';
+        const message = frameValidation.message ?? quality.instructionText;
+        setScanMessage(message);
+        saveDiagnostics('quality_rejected', [
+          `pipeline:${SCANNER_RECOGNITION_PIPELINE_VERSION}`,
+          `frame-validation:${frameValidation.rejectionReason ?? 'quality'}`,
+          ...frameValidation.evidence,
+          ...quality.failures.map((failure) => `${failure.code}:${failure.score}`),
+        ]);
+        await logScanLearningEvent({
+          scanSessionId: routeInstanceId.current,
+          eventType: 'attempt',
+          scanMode,
+          routeContext: {
+            mode,
+            intent: scanIntent,
+            flow,
+            binderId,
+            source,
+            pathname,
+            recognitionPipeline: {
+              version: SCANNER_RECOGNITION_PIPELINE_VERSION,
+              frameValidation,
+            },
+            analytics: buildAttemptAnalytics('quality_rejected', {
+              candidateCount: 0,
+              quality,
+              errorCategory: frameValidation.rejectionReason ?? 'quality_gate',
+            }),
+          },
+          frameMetrics: compactFrameMetrics(frameAssessmentRef.current),
+          outcome: 'quality_rejected',
+          notes: [
+            `frame-validation:${frameValidation.rejectionReason ?? 'quality'}`,
+            ...frameValidation.evidence,
+            ...quality.failures.map((failure) => `${failure.code}:${failure.score}`),
+          ].join(', '),
+        });
+        setScannerState({ type: 'search' });
+        Alert.alert(
+          isNoTradingCard ? 'No trading card detected' : 'Scan needs a clearer photo',
+          message,
+          [
+            {
+              text: 'Try again',
+              style: 'cancel',
+              onPress: () => logScannerLifecycleEvent('rescan', 'retry_requested', { source: 'quality-alert' }),
+            },
+            { text: isListingFlow ? 'Add manually' : 'Search manually', onPress: openManualSearch },
+          ]
+        );
+        return;
+      }
+
+      setScanMessage('Preparing scan...');
+      const recognitionImageStartedAt = Date.now();
+      const recognitionImages = await preparePhotosForRecognition(photo, capturedFrame);
+      timings.recognitionImageMs = Date.now() - recognitionImageStartedAt;
+      recognitionImageForDiagnostics = recognitionImages[0] ?? null;
+      const resultRectifiedImage = recognitionImages.find((image) => image.role === 'localised-card-crop')
+        ?? recognitionImages.find((image) => image.role === 'target-crop')
+        ?? recognitionImages[0]
+        ?? null;
+      setAcceptedPreviewUri(resultRectifiedImage?.uri ?? photo.uri);
+      setScannerState({ type: 'captured' });
+
+      const base64Images = recognitionImages
+        .map((image) => image.base64 ?? '')
+        .filter((base64) => base64.trim().length > 0);
+      if (!base64Images.length) throw new Error('Camera did not return image data.');
+
+      setScannerState({ type: 'identify_start' });
+      const ocrStartedAt = Date.now();
+      setScanMessage('Reading card text...');
+      const ocrSourceImage = getOcrSourceImage(recognitionImages);
+      const targetedOcr = await runTargetedCardOcr(ocrSourceImage);
+      timings.ocrMs = Date.now() - ocrStartedAt;
+      const ocrText = targetedOcr.text;
+
+      let localOcrMatch: LocalOcrMatchResult | null = null;
+      let localOcrDiagnostics: ScanIdentifyDiagnostics | null = null;
+      let localIdentified: IdentifiedCard[] = [];
+      if (SCAN_LOCAL_OCR_MATCHER_ENABLED && targetedOcr.regions.length > 0) {
+        const localStartedAt = Date.now();
+        setScanMessage('Checking local catalogue...');
+        localOcrMatch = await matchLocalOcrCandidates(targetedOcr.regions, {
+          maxCandidates: MAX_RESULT_CARDS,
+          scanImageBase64: ocrSourceImage?.base64 ?? base64Images[0] ?? null,
+          strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
+        });
+        localOcrMatchForAnalytics = localOcrMatch;
+        timings.localOcrMatchMs = Date.now() - localStartedAt;
+        localOcrDiagnostics = buildLocalOcrDiagnostics(localOcrMatch, recognitionImages.length);
+        localIdentified = localOcrMatch.candidates
+          .slice(0, MAX_RESULT_CARDS)
+          .map(localOcrCandidateToIdentifiedCard);
+
+        logCameraDiagnostic('local ocr match complete', {
+          routeInstanceId: routeInstanceId.current,
+          status: localOcrMatch.status,
+          confidence: localOcrMatch.confidence,
+          best: localOcrMatch.bestMatch?.card.name ?? null,
+          reasons: localOcrMatch.bestMatch?.reasons ?? [],
+          candidates: localOcrMatch.candidates.length,
+        });
+      }
+
+      let identified: IdentifiedCard[] = [];
+      if (localOcrMatch?.status === 'strong' && localIdentified.length) {
+        identified = localIdentified;
+        timings.identifyMs = 0;
+        identifyDiagnostics = localOcrDiagnostics;
+        setScanMessage('Local match found.');
+      } else {
+        const identifyStartedAt = Date.now();
+        let remoteDiagnostics: ScanIdentifyDiagnostics | null = null;
+        try {
+          setScanMessage('Matching artwork...');
+          const localPrintedNumber = localOcrMatch?.signals.printedNumber;
+          const detailedResult = await identifyCardsDetailed(base64Images, binderId ?? undefined, {
+            ocrText,
+            language: localOcrMatch?.signals.language === 'unknown' ? null : localOcrMatch?.signals.language,
+            printedNumber: localPrintedNumber?.number && localPrintedNumber.denominator
+              ? { number: localPrintedNumber.number, total: localPrintedNumber.denominator }
+              : null,
+            setId: localOcrMatch?.bestMatch?.card.set_id ?? null,
+            localConfidence: localOcrMatch?.confidence ?? null,
+            localStatus: localOcrMatch?.status ?? null,
+            ambiguousVariants: Boolean(
+              localOcrMatch?.status === 'ambiguous'
+              || localOcrMatch?.candidates.some((candidate) => candidate.ambiguousVariant)
+            ),
+            scanSessionId: routeInstanceId.current,
+            itemType: scanIntentConfig.itemType,
+            isSlab: scanIntent === 'graded_slab',
+          });
+          timings.identifyMs = Date.now() - identifyStartedAt;
+          identified = detailedResult.cards;
+          remoteDiagnostics = detailedResult.diagnostics;
+        } catch (error) {
+          timings.identifyMs = Date.now() - identifyStartedAt;
+          logCameraDiagnostic('remote identify failed', {
+            routeInstanceId: routeInstanceId.current,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+
+        const useAmbiguousLocalCandidates = !isInventoryFlow && localIdentified.length > 0;
+        identified = mergeIdentifiedCards(
+          identified,
+          useAmbiguousLocalCandidates ? localIdentified : []
+        ).slice(0, MAX_RESULT_CARDS);
+        identified = rankIdentifiedCardsWithPipeline(identified, localOcrMatch?.signals ?? null).slice(0, MAX_RESULT_CARDS);
+        identifyDiagnostics = mergeIdentifyDiagnostics(localOcrDiagnostics, remoteDiagnostics, recognitionImages.length);
+      }
+
+      const identifiedQuery = buildIdentifySearchQuery(identified[0]);
+      if (identifiedQuery) setLastQuery(identifiedQuery);
+
+      const localOcrQuery = buildLocalOcrSearchQuery(localOcrMatch);
+      const ocrQuery = localOcrQuery || buildOcrSearchQuery(ocrText);
+      if (!identifiedQuery && ocrQuery) setLastQuery(ocrQuery);
+      const resultQuery = identifiedQuery || ocrQuery || lastQuery;
+
+      const resolveStartedAt = Date.now();
+      const cards = await resolveMatches(identified, ocrText);
+      timings.resolveMatchesMs = Date.now() - resolveStartedAt;
+      cardsForDiagnostics = cards;
+      const learningStartedAt = Date.now();
+      await logScanLearningEvent({
+        scanSessionId: routeInstanceId.current,
+        eventType: 'attempt',
+        scanMode,
+        routeContext: {
+          mode,
+          intent: scanIntent,
+          flow,
+          binderId,
+          source,
+          pathname,
+          recognitionPipeline: {
+            version: SCANNER_RECOGNITION_PIPELINE_VERSION,
+            stages: [
+              'quality_validation',
+              'image_correction',
+              'candidate_retrieval',
+              'candidate_ranking',
+              'confirmation',
+            ],
+            frameValidation: {
+              canContinue: true,
+              rejectionReason: null,
+            },
+          },
+          localOcr: localOcrMatch ? {
+            status: localOcrMatch.status,
+            confidence: localOcrMatch.confidence,
+            language: localOcrMatch.signals.language,
+            printedNumber: localOcrMatch.signals.printedNumber,
+            setCode: localOcrMatch.signals.setCode,
+            best: localOcrMatch.bestMatch ? {
+              id: localOcrMatch.bestMatch.card.id,
+              name: localOcrMatch.bestMatch.card.name,
+              set_id: localOcrMatch.bestMatch.card.set_id,
+              number: localOcrMatch.bestMatch.card.number,
+              reasons: localOcrMatch.bestMatch.reasons,
+              ambiguousVariant: localOcrMatch.bestMatch.ambiguousVariant,
+            } : null,
+          } : null,
+          recognitionDiagnostics: identifyDiagnostics ? {
+            totalMs: identifyDiagnostics.totalMs,
+            providers: identifyDiagnostics.providers.map((provider) => ({
+              provider: provider.provider,
+              stage: provider.stage,
+              ok: provider.ok,
+              durationMs: provider.durationMs,
+              decision: provider.decision,
+              candidateCount: provider.candidateCount,
+              accepted: provider.accepted ?? false,
+              topCandidate: provider.topCandidate?.name ?? null,
+              topVisualSimilarity: provider.topCandidate?.visualSimilarity ?? null,
+              topFinalScore: provider.topCandidate?.finalScore ?? null,
+              error: provider.error ?? null,
+            })),
+            shadowMode: identifyDiagnostics.shadowMode ? {
+              category: identifyDiagnostics.shadowMode.agreement.disagreementCategory,
+              localOutcome: identifyDiagnostics.shadowMode.local.outcome,
+              visibleOutcome: identifyDiagnostics.shadowMode.visible.outcome,
+              localTopCandidates: identifyDiagnostics.shadowMode.local.topCandidates.slice(0, 3),
+              visibleTopCandidate: identifyDiagnostics.shadowMode.visible.topCandidates[0] ?? null,
+              timings: {
+                localTotalMs: identifyDiagnostics.shadowMode.local.timings.totalMs,
+                visibleTotalMs: identifyDiagnostics.shadowMode.visible.timings.totalMs,
+              },
+            } : null,
+          } : null,
+          analytics: buildAttemptAnalytics(cards.length ? 'candidates_returned' : 'no_match', {
+            candidateCount: cards.length || identified.length,
+            confidence: cards[0]?.scan_confidence ?? localOcrMatch?.confidence ?? null,
+            language: localOcrMatch?.signals.language ?? cards[0]?.language ?? null,
+            diagnostics: identifyDiagnostics,
+          }),
+        },
+        frameMetrics: compactFrameMetrics(frameAssessmentRef.current),
+        ocrPreview: ocrText,
+        candidates: buildLearningCandidates(cards.length ? cards : identified),
+        outcome: cards.length ? 'candidates_returned' : 'no_match',
+      });
+      timings.learningLogMs = Date.now() - learningStartedAt;
+      const resolvedCard = cards[0] ?? identified[0] ?? null;
+
+      if (isInventoryFlow) {
+        saveDiagnostics('inventory_callback');
+        await scanStore.triggerCallback(base64Images[0] ?? '', resolvedCard);
+        navigatingAwayRef.current = true;
+        stopAutoScanner();
+        router.back();
+        return;
+      }
+
+      if (!cards.length) {
+        saveDiagnostics('no_match');
+        setScannerState({ type: 'error' });
+        setScanMessage('I could not identify this one. Try again or search manually.');
+        Alert.alert(
+          'Could not identify card',
+          'Try another scan in brighter light, or search manually.',
+          [
+            {
+              text: 'Try again',
+              style: 'cancel',
+              onPress: () => {
+                logScannerLifecycleEvent('rescan', 'retry_requested', { source: 'no-match-alert' });
+                setAcceptedPreviewUri(null);
+                setScannerState({ type: 'search' });
+              },
+            },
+            { text: isListingFlow ? 'Add manually' : 'Search manually', onPress: openManualSearch },
+          ]
+        );
+        return;
+      }
+
+      setScanMessage(cards.length === 1 ? 'Card found.' : `${cards.length} possible matches found.`);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      saveDiagnostics('candidates_returned');
+      setScannerState({ type: 'confirm' });
+      navigatingAwayRef.current = true;
+      stopAutoScanner();
+      router.replace({
+        pathname: '/scan/result',
+        params: {
+          cardsJson: JSON.stringify(cards),
+          scanSessionId: routeInstanceId.current,
+          mode,
+          intent: scanIntent,
+          ...(resultQuery ? { q: resultQuery } : {}),
+          ...(flow ? { flow } : {}),
+          ...(binderId ? { binderId } : {}),
+          type: scanIntentConfig.itemType,
+          ...(resultRectifiedImage?.uri ? { rectifiedImageUri: resultRectifiedImage.uri } : {}),
+          ...(resultRectifiedImage?.width ? { rectifiedImageWidth: String(resultRectifiedImage.width) } : {}),
+          ...(resultRectifiedImage?.height ? { rectifiedImageHeight: String(resultRectifiedImage.height) } : {}),
+        },
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Something went wrong while scanning.';
+      setScanMessage('Scan failed. Try again or search manually.');
+      saveDiagnostics('failed', [message]);
+      const errorCategory = classifyScannerErrorCategory(error);
+      await logScanLearningEvent({
+        scanSessionId: routeInstanceId.current,
+        eventType: 'attempt',
+        scanMode,
+        routeContext: {
+          mode,
+          intent: scanIntent,
+          flow,
+          binderId,
+          source,
+          pathname,
+          analytics: buildAttemptAnalytics('failed', {
+            candidateCount: cardsForDiagnostics.length,
+            errorCategory,
+            diagnostics: identifyDiagnostics,
+          }),
+        },
+        frameMetrics: compactFrameMetrics(frameAssessmentRef.current),
+        candidates: buildLearningCandidates(cardsForDiagnostics),
+        outcome: 'failed',
+        notes: message,
+      });
+      setScannerState({ type: 'error' });
+      logCameraDiagnostic('capture failed', {
+        routeInstanceId: routeInstanceId.current,
+        error: message,
+        errorCategory,
+      });
+      Alert.alert('Scan failed', message, [
         {
-          text: 'Mark empty',
+          text: 'Try again',
+          style: 'cancel',
           onPress: () => {
-            removeSlotCard();
-            setGridScanSlots((prev) => prev.map((current) =>
-              current.slot === slot.slot
-                ? { ...current, card: null, status: 'Empty', included: false }
-                : current
-            ));
+            logScannerLifecycleEvent('rescan', 'retry_requested', { source: 'error-alert' });
+            setAcceptedPreviewUri(null);
+            setScannerState({ type: 'search' });
           },
         },
-        {
-          text: 'Retake single card',
-          onPress: () => {
-            selectCameraMode('single');
-            setStep('scanning');
-            setLastScanned(`Retake position ${slot.slot}`);
-          },
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
-  }, [selectCameraMode]);
+        { text: isListingFlow ? 'Add manually' : 'Search manually', onPress: openManualSearch },
+      ]);
+    } finally {
+      captureInFlightRef.current = false;
+      if (source === 'auto') lastAutoCaptureAt.current = Date.now();
+    }
+  }, [
+    binderId,
+    cameraReady,
+    createScanCapturedFrame,
+    evaluateCapturedPhotoQuality,
+    getPhotoCropFromGeometry,
+    isBinderPageScan,
+    isInventoryFlow,
+    isListingFlow,
+    logScannerLifecycleEvent,
+    mode,
+    openManualSearch,
+    pathname,
+    processBinderPageCapture,
+    preparePhotosForRecognition,
+    resolveMatches,
+    returnReason,
+    runTargetedCardOcr,
+    scanIntent,
+    scanIntentConfig.itemType,
+    scanMode,
+    scannerClientContext,
+    scannerFeatureFlags,
+    scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
+    scannerThresholdSet.version,
+    setScannerState,
+    stopAutoScanner,
+    flow,
+    lastQuery,
+  ]);
 
-  // ===============================
-  // SELECT BINDER STEP
-  // ===============================
+  const setScanModePreference = useCallback((next: ScanMode) => {
+    stopAutoScanner();
+    applyFrameAssessment(null);
+    applyLocalisationResult(null);
+    applyScanQualityResult(null);
+    setAcceptedPreviewUri(null);
+    setScannerState({ type: 'search' });
+    setScanMode((current) => {
+      if (current === next) return current;
+      setScanMessage(next === 'auto'
+        ? 'Centre one card. Keep other cards in the dim area.'
+        : 'Manual mode. Centre one card in the window, then tap scan.'
+      );
+      return next;
+    });
+  }, [applyFrameAssessment, applyLocalisationResult, applyScanQualityResult, setScannerState, stopAutoScanner]);
 
- if (step === 'select_binder' && !isMarketMode) {
-  return (
-    <SafeAreaView
-      edges={['bottom']}
-      style={{ flex: 1, backgroundColor: theme.colors.bg }}
-    >
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
+  const runAutoFrameCheck = useCallback(async () => {
+    if (
+      scanMode !== 'auto'
+      || !permissionGranted
+      || !cameraReady
+      || !appActive
+      || captureBusy
+      || captureInFlightRef.current
+      || navigatingAwayRef.current
+      || mountError
+      || inlineManualSearchOpen
+      || autoCheckBusy.current
+    ) {
+      return;
+    }
 
-      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 43 }}>
-        <FlatList
-          data={loadingBinders ? [] : binders}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 132 }}
-          ListHeaderComponent={
-            <View style={{ gap: 16, marginBottom: 14 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <StackrBackButton onPress={() => router.back()} />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900' }}>
-                    Stackr scanner
-                  </Text>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 1 }}>
-                    Choose a destination before opening the camera.
-                  </Text>
-                </View>
-              </View>
+    const now = Date.now();
+    if (now - lastAutoCaptureAt.current < autoScanCooldownMs) return;
 
-              <HeroActionPanel
-                title="Scan Cards"
-                subtitle="Capture Pokemon cards, confirm the match, and send each result straight into the right Stackr workflow."
-                icon="scan-outline"
-                primaryLabel={selectedBinder ? 'Start Binder Scan' : 'Choose Binder'}
-                onPrimaryPress={() => {
-                  if (!selectedBinder) {
-                    Alert.alert('Select a binder', 'Please select which binder to scan into.');
-                    return;
-                  }
-                  setStep('scanning');
-                }}
-                secondaryLabel="Manual Search"
-                onSecondaryPress={handleSearchManually}
-              >
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  <StatPill label="Binders" value={String(binders.length)} icon="albums-outline" />
-                  <StatPill label="Destination" value={selectedBinder ? selectedBinder.name : 'Not set'} icon="navigate-outline" tone={selectedBinder ? 'green' : 'gold'} />
-                </View>
-              </HeroActionPanel>
+    const camera = cameraRef.current;
+    if (!camera) return;
 
-              <View>
-                <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900', marginBottom: 9 }}>
-                  Scan modes
-                </Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-                  <ScanModeCard
-                    title="Add to Collection"
-                    body="Identify cards and check values before saving."
-                    icon="sparkles-outline"
-                    onPress={() => router.replace({ pathname: '/scan', params: { mode: 'market' } })}
-                    tone="green"
-                  />
-                  <ScanModeCard
-                    title="Add to Binder"
-                    body="Add cards directly into the binder you choose below."
-                    icon="albums-outline"
-                    selected
-                    onPress={() => {}}
-                  />
-                  <ScanModeCard
-                    title="Seller Stock In"
-                    body="Scan purchased or received stock into an intake batch."
-                    icon="archive-outline"
-                    onPress={() => router.replace({ pathname: '/scan', params: { mode: 'inventory', flow: 'stock_in' } })}
-                    tone="neutral"
-                  />
-                  <ScanModeCard
-                    title="Seller Stock Out"
-                    body="Scan sold, shipped or removed stock into an out cart."
-                    icon="exit-outline"
-                    onPress={() => router.replace({ pathname: '/scan', params: { mode: 'inventory', flow: 'stock_out' } })}
-                    tone="gold"
-                  />
-                  <ScanModeCard
-                    title="Create Listing"
-                    body="Open listing creation with scan and photo requirements."
-                    icon="pricetag-outline"
-                    onPress={() => router.push('/listing/new' as any)}
-                    tone="green"
-                  />
-                  <ScanModeCard
-                    title="Build Trade or Offer"
-                    body="Open trade tools for cards being offered."
-                    icon="swap-horizontal-outline"
-                    onPress={() => router.push({ pathname: '/(tabs)/market', params: { mode: 'trade' } } as any)}
-                    tone="gold"
-                  />
-                </View>
-              </View>
+    autoCheckBusy.current = true;
+    try {
+      const photo = await camera.takePictureAsync({
+        quality: 0.46,
+        base64: false,
+        exif: false,
+      });
+      const capturedFrame = createScanCapturedFrame(photo);
+      const preview = await preparePhotoForFrameCheck(photo, capturedFrame, CARD_LOCALISATION_ENABLED
+        ? { paddingRatio: 0, width: LOCALISATION_FRAME_CHECK_WIDTH, compress: 0.48 }
+        : undefined
+      );
+      const previousLocalisation = localisationRef.current;
+      const rawLocalisation = CARD_LOCALISATION_ENABLED && preview.base64
+        ? localiseCardFromJpegBase64(preview.base64, {
+            expectedAspectRatio: CARD_ASPECT_RATIO,
+            guideRect: { x: 0, y: 0, width: preview.width ?? 1, height: preview.height ?? 1 },
+            minFrameCoverage: 0.08,
+            maxFrameCoverage: 0.82,
+            safetyMarginRatio: CARD_LOCALISATION_SAFETY_MARGIN,
+          })
+        : null;
+      const localisation = CARD_LOCALISATION_ENABLED && rawLocalisation
+        ? smoothCardLocalisation(
+            previousLocalisation,
+            rawLocalisation
+          )
+        : null;
+      applyLocalisationResult(localisation);
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '900' }}>
-                    Choose binder
-                  </Text>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
-                    Scans will queue here before you save the batch.
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  onPress={() => router.push('/binder/new?returnTo=scan')}
-                  style={{ backgroundColor: theme.colors.surface, borderRadius: 12, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 9 }}
-                >
-                  <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12 }}>New Binder</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          }
-          ListEmptyComponent={
-            loadingBinders ? (
-              <PremiumCard style={{ alignItems: 'center', paddingVertical: 24 }}>
-                <ActivityIndicator color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.textSoft, marginTop: 10, fontWeight: '700' }}>
-                  Loading binders...
-                </Text>
-              </PremiumCard>
-            ) : (
-              <EmptyStateCard
-                icon="albums-outline"
-                title="No binders yet"
-                body="Create a binder first, then scan cards straight into it."
-                actionLabel="Create Binder"
-                onAction={() => router.push('/binder/new?returnTo=scan')}
-              />
-            )
-          }
-          renderItem={({ item }) => {
-            const selected = selectedBinder?.id === item.id;
+      const quality = SCAN_QUALITY_ENABLED
+        ? evaluateScanQuality(preview.base64 ?? '', {
+            localisation,
+            previousLocalisation,
+            calibration: scanQualityCalibration,
+          })
+        : null;
+      applyScanQualityResult(quality);
 
-            return (
-              <TouchableOpacity onPress={() => setSelectedBinder(item)} activeOpacity={0.84}>
-                <PremiumCard selected={selected} style={{ marginBottom: 10, padding: 12 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                    <View
-                      style={{
-                        width: 50,
-                        height: 58,
-                        borderRadius: 12,
-                        backgroundColor: item.color || theme.colors.primary,
-                        borderWidth: 2,
-                        borderColor: '#FFFFFF',
-                        ...{
-                          shadowColor: '#1B2A4B',
-                          shadowOpacity: 0.1,
-                          shadowRadius: 8,
-                          shadowOffset: { width: 0, height: 4 },
-                          elevation: 3,
-                        },
-                      }}
-                    />
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                        <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>
-                          {item.name}
-                        </Text>
-                        <TrustBadge
-                          label={item.type === 'official' ? 'Official' : 'Custom'}
-                          icon={item.type === 'official' ? 'ribbon-outline' : 'folder-outline'}
-                          tone={item.type === 'official' ? 'gold' : 'purple'}
-                        />
-                      </View>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 5, fontWeight: '700' }}>
-                        {selected ? 'Ready for binder scan' : 'Tap to use as scan destination'}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 15,
-                        backgroundColor: selected ? theme.colors.primary : theme.colors.surface,
-                        borderWidth: 1,
-                        borderColor: selected ? theme.colors.primary : theme.colors.border,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{ color: selected ? '#FFFFFF' : theme.colors.textSoft, fontSize: 14, fontWeight: '900' }}>
-                        {selected ? '✓' : '>'}
-                      </Text>
-                    </View>
-                  </View>
-                </PremiumCard>
-              </TouchableOpacity>
-            );
-          }}
-        />
+      const assessment = quality
+        ? frameAssessmentFromScanQuality(quality)
+        : assessFrameImage(preview.base64 ?? '');
+      applyFrameAssessment(assessment);
 
-        <View style={{ position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 16 }}>
-          <TouchableOpacity
-            onPress={() => {
-              if (!selectedBinder) {
-                Alert.alert('Select a binder', 'Please select which binder to scan into.');
-                return;
-              }
+      logCameraDiagnostic('auto frame assessment', {
+        routeInstanceId: routeInstanceId.current,
+        state: scannerStateRef.current,
+        ready: assessment.ready,
+        reason: assessment.reason,
+        score: Number(assessment.score.toFixed(3)),
+        brightness: Number(assessment.brightness.toFixed(1)),
+        contrast: Number(assessment.contrast.toFixed(1)),
+        edgeDensity: Number(assessment.edgeDensity.toFixed(3)),
+        glareRatio: Number(assessment.glareRatio.toFixed(3)),
+        quality: compactScanQualityDiagnostics(quality),
+        localisation: compactLocalisationDiagnostics(localisation),
+      });
 
-              setStep('scanning');
-            }}
-            disabled={!selectedBinder}
-            style={{
-              backgroundColor: selectedBinder ? theme.colors.primary : theme.colors.textSoft,
-              borderRadius: 16,
-              paddingVertical: 16,
-              alignItems: 'center',
-              opacity: selectedBinder ? 1 : 0.78,
-              shadowColor: theme.colors.primary,
-              shadowOpacity: selectedBinder ? 0.24 : 0,
-              shadowRadius: 14,
-              shadowOffset: { width: 0, height: 8 },
-              elevation: selectedBinder ? 5 : 0,
-            }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
-              {selectedBinder ? `Scan into "${selectedBinder.name}"` : 'Select a binder first'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
-  );
-}
+      const detectedCard = Boolean(
+        localisation?.status === 'confident'
+        || localisation?.status === 'uncertain'
+        || assessment.ready
+      );
+      if (detectedCard && firstCardDetectionMsRef.current == null) {
+        firstCardDetectionMsRef.current = Date.now() - scannerMountedAt.current;
+      }
 
-  // ===============================
-  // REVIEW STEP
-  // ===============================
+      if (SCAN_AUTO_CAPTURE_V2_ENABLED) {
+        const hasValidQuadrilateral = Boolean(localisation?.status === 'confident' && localisation.quadrilateral);
+        const qualityPassed = assessment.ready
+          && (!SCAN_QUALITY_ENABLED || Boolean(quality?.passed))
+          && (!CARD_LOCALISATION_ENABLED || hasValidQuadrilateral);
+        const decision = evaluateStableAutoCapture({
+          mode: scanMode,
+          state: scannerStateRef.current,
+          hasValidQuadrilateral,
+          qualityPassed,
+          currentStableFrames: autoReadyFrames.current,
+          requiredStableFrames: autoCaptureReadyFrames,
+          captureInProgress: captureInFlightRef.current || captureBusy,
+          nowMs: now,
+          lastCaptureAtMs: lastAutoCaptureAt.current,
+          cooldownMs: autoScanCooldownMs,
+        });
 
-  if (step === 'review') {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 16 }}>
-          <FlatList
-            key={gridScanSlots.length ? `grid-${activeGridSize}` : 'single-list'}
-            data={gridScanSlots.length ? gridScanSlots : scannedCards}
-            keyExtractor={(item: ScannedCard | GridScanSlot) => gridScanSlots.length ? `slot-${(item as GridScanSlot).slot}` : (item as ScannedCard).id}
-            numColumns={gridScanSlots.length ? activeGridSize : 1}
-            columnWrapperStyle={gridScanSlots.length ? { gap: 8, marginBottom: 8 } : undefined}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: insets.bottom + 286, flexGrow: scannedCards.length === 0 && gridScanSlots.length === 0 ? 1 : 0 }}
-            ListHeaderComponent={
-              <View style={{ gap: 16, marginBottom: 14 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <StackrBackButton onPress={() => setStep('scanning')} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900' }}>
-                      Review Cards
-                    </Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
-                      {gridScanSlots.length
-                        ? 'Review each grid position before importing confirmed cards.'
-                        : 'Confirm the batch before importing it.'}
-                    </Text>
-                  </View>
-                </View>
+        autoReadyFrames.current = decision.stableFrames;
+        setScannerStateDirect(decision.nextState);
 
-                <HeroActionPanel
-                  title={gridScanSlots.length ? 'Grid Scan Review' : 'Scan Batch'}
-                  subtitle={gridScanSlots.length
-                    ? 'Positions keep the same layout as your photo. Tap a slot to exclude it, mark it empty, or retake that card.'
-                    : 'Each confirmed card stays queued here until you add the batch or remove a mismatch.'}
-                  icon="checkmark-done-outline"
-                >
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                    <StatPill label="Confirmed" value={String(cardsReadyForImport.length)} icon="layers-outline" tone="green" />
-                    {gridScanSlots.length ? <StatPill label="Grid" value={`${activeGridSize} x ${activeGridSize}`} icon="grid-outline" tone="purple" /> : null}
-                    <StatPill label="Destination" value={selectedBinder?.name ?? 'Collection'} icon="albums-outline" />
-                  </View>
-                </HeroActionPanel>
+        if (decision.reason === 'quality') {
+          stableCaptureStartedAtRef.current = null;
+          setScanMessage(assessment.message);
+          return;
+        }
 
-                <View style={{ backgroundColor: theme.colors.card, borderRadius: 18, borderWidth: 1, borderColor: theme.colors.border, padding: 12 }}>
-                  <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900', marginBottom: 9 }}>
-                    Import destination
-                  </Text>
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 10 }}>
-                    <TouchableOpacity
-                      onPress={() => setSelectedBinder(null)}
-                      style={{
-                        minHeight: 40,
-                        paddingHorizontal: 12,
-                        borderRadius: 999,
-                        borderWidth: 1,
-                        borderColor: !selectedBinder ? theme.colors.primary : theme.colors.border,
-                        backgroundColor: !selectedBinder ? theme.colors.primary : theme.colors.surface,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{ color: !selectedBinder ? '#FFFFFF' : theme.colors.text, fontSize: 12, fontWeight: '900' }} numberOfLines={1}>
-                        Collection
-                      </Text>
-                    </TouchableOpacity>
-                    {binders.map((binder) => {
-                      const selected = selectedBinder?.id === binder.id;
-                      return (
-                        <TouchableOpacity
-                          key={binder.id}
-                          onPress={() => setSelectedBinder(binder)}
-                          style={{
-                            minHeight: 40,
-                            paddingHorizontal: 12,
-                            borderRadius: 999,
-                            borderWidth: 1,
-                            borderColor: selected ? theme.colors.primary : theme.colors.border,
-                            backgroundColor: selected ? theme.colors.primary : theme.colors.surface,
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Text style={{ color: selected ? '#FFFFFF' : theme.colors.text, fontSize: 12, fontWeight: '900' }} numberOfLines={1}>
-                            {binder.name}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                    <TouchableOpacity
-                      onPress={() => router.push('/binder/new?returnTo=scan-review')}
-                      style={{ minHeight: 40, paddingHorizontal: 12, borderRadius: 999, borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center' }}
-                    >
-                      <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '900' }}>New binder</Text>
-                    </TouchableOpacity>
-                  </ScrollView>
-                </View>
-              </View>
-            }
-            ListEmptyComponent={
-              <View style={{ flex: 1, justifyContent: 'center' }}>
-                <EmptyStateCard
-                  icon="scan-outline"
-                  title="No cards scanned yet"
-                  body="Return to the camera and scan a card flat in frame. Results will appear here for confirmation."
-                  actionLabel="Back to Scanner"
-                  onAction={() => setStep('scanning')}
-                />
-              </View>
-            }
-            renderItem={({ item }) => {
-              if (gridScanSlots.length) {
-                const slot = item as GridScanSlot;
-                const tone = slot.status === 'Confirmed'
-                  ? '#10B981'
-                  : slot.status === 'Check Match'
-                    ? '#F59E0B'
-                    : slot.status === 'Empty'
-                      ? theme.colors.textSoft
-                      : '#EF4444';
-                return (
-                  <TouchableOpacity
-                    onPress={() => handleGridSlotPress(slot)}
-                    activeOpacity={0.86}
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      backgroundColor: theme.colors.card,
-                      borderRadius: 14,
-                      borderWidth: 1,
-                      borderColor: slot.included ? theme.colors.primary : theme.colors.border,
-                      padding: 6,
-                    }}
-                  >
-                    <View style={{ aspectRatio: CARD_ASPECT_RATIO, borderRadius: 10, overflow: 'hidden', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
-                      {slot.cropUri ? (
-                        <Image source={{ uri: slot.cropUri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
-                      ) : null}
-                    </View>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 9, fontWeight: '900', marginTop: 5 }}>
-                      Position {slot.slot}
-                    </Text>
-                    <Text style={{ color: theme.colors.text, fontSize: 10, fontWeight: '900', marginTop: 2 }} numberOfLines={2}>
-                      {slot.card?.name ?? slot.status}
-                    </Text>
-                    <Text style={{ color: tone, fontSize: 9, fontWeight: '900', marginTop: 3 }} numberOfLines={1}>
-                      {slot.included ? slot.status : slot.status === 'Confirmed' ? 'Excluded' : slot.status}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              }
+        if (decision.reason === 'searching') {
+          stableCaptureStartedAtRef.current = null;
+          setScanMessage('Centre one card. Keep other cards in the dim area.');
+          return;
+        }
 
-              const itemCard = item as ScannedCard;
-              return (
-              <PremiumCard style={{ marginBottom: 10, padding: 10 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={{ width: 58, height: 80, borderRadius: 10, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
-                    {itemCard.image_small ? (
-                      <EditionAwareCardImage
-                        uri={itemCard.image_small}
-                        cardId={itemCard.id}
-                        rawData={itemCard.raw_data}
-                        editionHint={itemCard.editionHint}
-                        sourceSize="small"
-                        style={{ width: '100%', height: '100%' }}
-                        resizeMode="contain"
-                      />
-                    ) : null}
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15, flexShrink: 1 }} numberOfLines={1}>
-                        {itemCard.name}
-                      </Text>
-                      <TrustBadge label="Matched" icon="checkmark-circle-outline" tone="green" />
-                    </View>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 4, fontWeight: '700' }}>
-                      {formatScanCardSubtitle(itemCard.set_name, itemCard.number, itemCard.editionHint)}
-                    </Text>
-                    {itemCard.rarity ? (
-                      <Text style={{ color: '#B7791F', fontSize: 11, marginTop: 3, fontWeight: '900' }}>
-                        {itemCard.rarity}
-                      </Text>
-                    ) : null}
-                  </View>
-                  <TouchableOpacity
-                    onPress={() => {
-                      scannedCardIdsRef.current.delete(itemCard.id);
-                      setScannedCards((prev) => prev.filter((c) => c.id !== itemCard.id));
-                    }}
-                    style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: '#FEE2E2', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FCA5A5' }}
-                  >
-                    <Text style={{ color: '#991B1B', fontWeight: '900', fontSize: 16 }}>x</Text>
-                  </TouchableOpacity>
-                </View>
-              </PremiumCard>
-              );
-            }}
-          />
+        if (decision.reason === 'hold-steady') {
+          if (stableCaptureStartedAtRef.current == null) stableCaptureStartedAtRef.current = Date.now();
+          setScanMessage('Hold steady.');
+          return;
+        }
 
-          {(cardsReadyForImport.length > 0 || gridScanSlots.length > 0) && (
-            <View style={{ position: 'absolute', left: 16, right: 16, bottom: insets.bottom + 16, gap: 9 }}>
-              <View style={{ flexDirection: 'row', gap: 9 }}>
-                <TouchableOpacity
-                  onPress={() => setStep('scanning')}
-                  style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 14, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
-                >
-                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>Scan More</Text>
-                </TouchableOpacity>
+        if (!decision.shouldCapture) {
+          return;
+        }
 
-                <TouchableOpacity
-                  onPress={() => router.push('/binder/new?returnTo=scan-review')}
-                  style={{ flex: 1, backgroundColor: theme.colors.secondary, borderRadius: 14, paddingVertical: 12, alignItems: 'center' }}
-                >
-                  <Text style={{ color: theme.colors.text, fontWeight: '900' }}>New Binder</Text>
-                </TouchableOpacity>
-              </View>
+        if (stableCaptureStartedAtRef.current == null) stableCaptureStartedAtRef.current = Date.now();
+        setScanMessage('Hold steady.');
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        setScanMessage('Card locked. Scanning...');
+        await handleCapture('auto');
+        return;
+      }
 
-              <TouchableOpacity
-                onPress={() => {
-                  if (!cardsReadyForImport.length && !gridScanSlots.length) return;
-                  Alert.alert(
-                    'Discard scanned cards?',
-                    'Remove all scanned cards from this batch review.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      {
-                        text: 'Discard All',
-                        style: 'destructive',
-                        onPress: () => {
-                          scannedCardIdsRef.current.clear();
-                          setScannedCards([]);
-                          setGridScanSlots([]);
-                          setStep('scanning');
-                        },
-                      },
-                    ]
-                  );
-                }}
-                style={{ backgroundColor: '#F8FAFC', borderRadius: 14, paddingVertical: 12, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
-              >
-                <Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>Discard Batch</Text>
-              </TouchableOpacity>
+      if (!assessment.ready) {
+        autoReadyFrames.current = 0;
+        setScanMessage(assessment.message);
+        return;
+      }
 
-              <TouchableOpacity
-                onPress={async () => {
-                  if (!cardsReadyForImport.length) {
-                    Alert.alert('No confirmed cards', 'Confirm at least one grid position before importing.');
-                    return;
-                  }
-                  try {
-                    setScanning(true);
-                    const { supabase } = await import('../../lib/supabase');
-                    await Promise.all(cardsReadyForImport.map((card) =>
-                      ensureOwnedCardQuantity(
-                        { cardId: card.id, setId: card.set_id },
-                        { increaseBy: 1 }
-                      )
-                    ));
+      if (!SCAN_QUALITY_ENABLED && CARD_LOCALISATION_ENABLED && localisation?.status !== 'confident') {
+        autoReadyFrames.current = 0;
+        setScanMessage(getCardLocalisationGuidance(localisation));
+        return;
+      }
 
-                    if (selectedBinder) {
-                      const rows = cardsReadyForImport.map((card) => ({
-                        binder_id: selectedBinder.id,
-                        card_id: card.id,
-                        set_id: card.set_id,
-                        owned: true,
-                        notes: '',
-                        card_name: card.name,
-                        card_number: card.number,
-                        image_url: card.image_small,
-                        set_name: card.set_name,
-                      }));
-                      const { error } = await supabase.from('binder_cards').upsert(rows, { onConflict: 'binder_id,card_id', ignoreDuplicates: false });
-                      if (error) throw error;
-                    }
+      autoReadyFrames.current += 1;
+      const requiredReadyFrames = assessment.score >= autoCaptureThresholds.highConfidenceSingleFrameScore
+        ? 1
+        : autoCaptureReadyFrames;
+      if (autoReadyFrames.current < requiredReadyFrames) {
+        setScanMessage('Good position. Hold steady...');
+        return;
+      }
 
-                    const destinationLabel = selectedBinder ? `"${selectedBinder.name}"` : 'your collection';
-                    Alert.alert(
-                      'All added',
-                      `${cardsReadyForImport.length} card${cardsReadyForImport.length !== 1 ? 's' : ''} added to ${destinationLabel}.`,
-                      selectedBinder
-                        ? [
-                            { text: 'Go to binder', onPress: () => router.replace({ pathname: '/binder/[id]', params: { id: selectedBinder.id } }) },
-                            { text: 'Scan more', onPress: () => { setScannedCards([]); setGridScanSlots([]); scannedCardIdsRef.current.clear(); setStep('scanning'); } },
-                          ]
-                        : [
-                            { text: 'OK' },
-                            { text: 'Scan more', onPress: () => { setScannedCards([]); setGridScanSlots([]); scannedCardIdsRef.current.clear(); setStep('scanning'); } },
-                          ]
-                    );
-                  } catch (error: any) {
-                    Alert.alert('Error', error?.message ?? 'Could not add cards.');
-                  } finally {
-                    setScanning(false);
-                  }
-                }}
-                disabled={scanning || !cardsReadyForImport.length}
-                style={{ backgroundColor: theme.colors.primary, borderRadius: 15, paddingVertical: 16, alignItems: 'center', opacity: scanning || !cardsReadyForImport.length ? 0.6 : 1, shadowColor: theme.colors.primary, shadowOpacity: 0.24, shadowRadius: 14, shadowOffset: { width: 0, height: 8 }, elevation: 5 }}
-              >
-                {scanning ? <ActivityIndicator color="#FFFFFF" /> : (
-                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>
-                    Add Confirmed Cards
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </SafeAreaView>
-    );
-  }
+      autoReadyFrames.current = 0;
+      setScanMessage('Card locked. Scanning...');
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      await handleCapture('auto', photo);
+    } catch (error) {
+      autoReadyFrames.current = 0;
+      applyLocalisationResult(null);
+      applyScanQualityResult(null);
+      applyFrameAssessment(buildFrameAssessment({
+        message: 'Centre one card. Keep other cards in the dim area.',
+        reason: 'frame-check-failed',
+      }));
+      setScanMessage('Centre one card. Keep other cards in the dim area.');
+      logCameraDiagnostic('auto frame check failed', {
+        routeInstanceId: routeInstanceId.current,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      autoCheckBusy.current = false;
+    }
+  }, [
+    cameraReady,
+    appActive,
+    autoCaptureReadyFrames,
+    autoCaptureThresholds.highConfidenceSingleFrameScore,
+    autoScanCooldownMs,
+    captureBusy,
+    applyFrameAssessment,
+    applyLocalisationResult,
+    applyScanQualityResult,
+    createScanCapturedFrame,
+    handleCapture,
+    inlineManualSearchOpen,
+    mountError,
+    permissionGranted,
+    preparePhotoForFrameCheck,
+    scanMode,
+    scanQualityCalibration,
+    setScannerStateDirect,
+  ]);
 
-  // ===============================
-  // PERMISSION / NO DEVICE
-  // ===============================
+  useEffect(() => {
+    if (autoCheckTimer.current) {
+      clearTimeout(autoCheckTimer.current);
+      autoCheckTimer.current = null;
+    }
 
-  if (!hasPermission && isInventoryMode) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 12 }}>Camera access needed</Text>
-          <Text style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginBottom: 24, lineHeight: 21 }}>
-            Stackr uses your camera to recognise cards for seller inventory scanning.
-          </Text>
-          <TouchableOpacity onPress={requestPermission} style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, marginBottom: 12, minHeight: 50, justifyContent: 'center' }}>
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Allow camera access</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSearchManually} style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>Search manually</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    autoReadyFrames.current = 0;
 
-  if (!hasPermission) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 12 }}>Camera access needed</Text>
-          <Text style={{ color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginBottom: 24 }}>Stackr needs camera access to scan your Pokémon cards.</Text>
-          <TouchableOpacity onPress={requestPermission} style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, marginBottom: 12 }}>
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Allow Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    if (scanMode !== 'auto') {
+      if (!captureBusy) {
+        setScanMessage(returnedFromRejectedMatches
+          ? 'No worries. Centre the right card and scan again.'
+          : 'Manual mode. Centre one card in the window, then tap scan.'
+        );
+        if (appActive && cameraReady && permissionGranted && !mountError) setScannerState({ type: 'search' });
+      }
+      return;
+    }
 
-  if (!device && isInventoryMode) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 12 }}>Camera unavailable</Text>
-          <Text style={{ color: 'rgba(255,255,255,0.72)', textAlign: 'center', lineHeight: 21, marginBottom: 24 }}>
-            Try again, or search for the card manually.
-          </Text>
-          <TouchableOpacity onPress={handleSearchManually} style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, minHeight: 50, justifyContent: 'center' }}>
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Search manually</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    if (!appActive) return;
 
-  if (!device) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 16 }}>No camera found</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    if (!permissionGranted) return;
 
-  if (cameraError && isInventoryMode) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 12 }}>
-            Camera unavailable
-          </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.72)', textAlign: 'center', lineHeight: 21, marginBottom: 24 }}>
-            Try again, or search for the card manually.
-          </Text>
-          <TouchableOpacity
-            onPress={() => setCameraError(null)}
-            style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, marginBottom: 12, minHeight: 50, justifyContent: 'center' }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Try again</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleSearchManually} style={{ minHeight: 44, justifyContent: 'center' }}>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>Search manually</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    if (!cameraReady) {
+      setScanMessage('Camera warming up...');
+      setScannerState({ type: 'camera_paused' });
+      return;
+    }
 
-  if (cameraError) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#000' }}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 12 }}>
-            Camera unavailable
-          </Text>
-          <Text style={{ color: 'rgba(255,255,255,0.72)', textAlign: 'center', lineHeight: 21, marginBottom: 24 }}>
-            {cameraError}
-          </Text>
-          <TouchableOpacity
-            onPress={() => setCameraError(null)}
-            style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, marginBottom: 12 }}
-          >
-            <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Try Again</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontWeight: '700' }}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
+    if (captureBusy || mountError) return;
 
-  const sellerScannerInstruction = isInventoryMode
-    ? pendingConfirmation
-      ? 'Review match.'
-      : processingOcr
-        ? 'Reading card.'
-        : autoScanActive
-          ? 'Place card inside frame.'
-          : 'Starting scanner.'
-    : null;
-  const scannerFrameColor = isInventoryMode
-    ? pendingConfirmation
-      ? '#F59E0B'
-      : processingOcr
-        ? theme.colors.primary
-        : autoScanActive
-          ? '#10B981'
-          : 'rgba(255,255,255,0.62)'
-    : autoScanActive
-      ? '#10B981'
-      : processingOcr
-      ? theme.colors.primary
-      : 'rgba(255,255,255,0.5)';
-  const reviewTitle = isInventoryMode
-    ? 'Review match'
-    : pendingConfirmation?.editionChoiceRequired
-      ? 'Card found - choose the edition'
-      : 'Is this the right card?';
-  const rejectLabel = isInventoryMode ? 'Cancel' : 'Wrong';
-  const confirmLabel = isInventoryMode ? (isSellerStockOut ? 'Add to out cart' : 'Add to batch') : 'Correct';
+    let cancelled = false;
+    const sampleIntervalMs = CARD_LOCALISATION_ENABLED
+      ? getLocalisationSampleIntervalMs()
+      : AUTO_FRAME_CHECK_INTERVAL_MS;
+    const schedule = (delay = 650) => {
+      autoCheckTimer.current = setTimeout(async () => {
+        if (cancelled || navigatingAwayRef.current) return;
+        await runAutoFrameCheck();
+        if (!cancelled && !navigatingAwayRef.current) schedule(sampleIntervalMs);
+      }, delay);
+    };
 
-  // ===============================
-  // SCANNING STEP
-  // ===============================
+    setScanMessage('Centre one card. Keep other cards in the dim area.');
+    setScannerState({ type: 'search' });
+    schedule();
+
+    return () => {
+      cancelled = true;
+      if (autoCheckTimer.current) {
+        clearTimeout(autoCheckTimer.current);
+        autoCheckTimer.current = null;
+      }
+    };
+  }, [
+    appActive,
+    cameraReady,
+    captureBusy,
+    mountError,
+    permissionGranted,
+    returnedFromRejectedMatches,
+    runAutoFrameCheck,
+    scanMode,
+    setScannerState,
+  ]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
+    <View style={styles.root}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Camera
-        ref={camera}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-        device={device}
-        isActive={cameraIsActive}
-        photo={true}
-        torch={torch ? 'on' : 'off'}
-        onInitialized={() => {
-          setCameraReady(true);
-          setCameraError(null);
-        }}
-        onError={(error) => {
-          const message = String(error?.message ?? '');
-          const code = String(error?.code ?? '');
-          setCameraReady(false);
-          setAutoScanActive(false);
-          setProcessingOcr(false);
-          scanCooldownRef.current = false;
-          setCameraError(
-            code.includes('camera-is-restricted') || message.toLowerCase().includes('restricted')
-              ? 'Camera access is restricted by the operating system. Check device privacy settings, parental controls, work profile/device policy, or try a physical device if you are using an emulator.'
-              : message || 'The camera could not be started. Check permissions and try again.'
-          );
-        }}
-      />
 
-      {frozenFrameUri && step === 'scanning' && (
-        <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-          <Image
-            source={{ uri: frozenFrameUri }}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
+      {shouldRenderCamera ? (
+        <CameraView
+          key={facing}
+          ref={cameraRef}
+          style={StyleSheet.absoluteFill}
+          facing={facing}
+          active={appActive && shouldRenderCamera && !navigatingAwayRef.current}
+          enableTorch={torchEnabled && facing === 'back'}
+          animateShutter={false}
+          onCameraReady={handleCameraReady}
+          onMountError={handleMountError}
+        />
+      ) : null}
+
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <View style={[styles.mask, { top: 0, left: 0, right: 0, height: frame.top }]} />
+        <View style={[styles.mask, { top: frame.top + frame.height, left: 0, right: 0, bottom: 0 }]} />
+        <View style={[styles.mask, { top: frame.top, left: 0, width: frame.left, height: frame.height }]} />
+        <View style={[styles.mask, { top: frame.top, right: 0, width: frame.left, height: frame.height }]} />
+        <View
+          style={[
+            styles.cardFrame,
+            guideLocked && styles.cardFrameLocked,
+            {
+              top: frame.top,
+              left: frame.left,
+              width: frame.width,
+              height: frame.height,
+              borderColor: activeFrameTone,
+            },
+          ]}
+        />
+        {localisationPolygon ? (
+          <Svg pointerEvents="none" style={StyleSheet.absoluteFill}>
+            <Polygon
+              points={localisationPolygon}
+              fill={localisationResult?.status === 'confident' ? 'rgba(34,197,94,0.1)' : 'rgba(251,191,36,0.08)'}
+              stroke={activeFrameTone}
+              strokeWidth={2}
+              strokeLinejoin="round"
+            />
+          </Svg>
+        ) : null}
+        {binderGridLines.map((ratio) => (
+          <View
+            key={`binder-v-${ratio}`}
+            style={[
+              styles.binderGridLine,
+              {
+                top: frame.top,
+                left: frame.left + frame.width * ratio,
+                height: frame.height,
+                width: 1,
+              },
+            ]}
           />
-        </View>
-      )}
+        ))}
+        {binderGridLines.map((ratio) => (
+          <View
+            key={`binder-h-${ratio}`}
+            style={[
+              styles.binderGridLine,
+              {
+                top: frame.top + frame.height * ratio,
+                left: frame.left,
+                width: frame.width,
+                height: 1,
+              },
+            ]}
+          />
+        ))}
+        <View style={[styles.corner, styles.cornerTopLeft, { top: frame.top - 1, left: frame.left - 1, borderColor: activeFrameTone }]} />
+        <View style={[styles.corner, styles.cornerTopRight, { top: frame.top - 1, left: frame.left + frame.width - 29, borderColor: activeFrameTone }]} />
+        <View style={[styles.corner, styles.cornerBottomLeft, { top: frame.top + frame.height - 29, left: frame.left - 1, borderColor: activeFrameTone }]} />
+        <View style={[styles.corner, styles.cornerBottomRight, { top: frame.top + frame.height - 29, left: frame.left + frame.width - 29, borderColor: activeFrameTone }]} />
+      </View>
 
-      <SafeAreaView style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-
-        {/* Header */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16 }}>
+      <SafeAreaView pointerEvents="box-none" style={styles.overlay}>
+        <View style={styles.topBar}>
           <TouchableOpacity
             onPress={closeScanner}
-            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}
+            style={styles.iconButton}
+            hitSlop={12}
+            accessibilityRole="button"
+            accessibilityLabel="Close scanner"
           >
-            <Text style={{ color: '#FFFFFF', fontSize: 22, lineHeight: 24 }}>✕</Text>
+            <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
           </TouchableOpacity>
 
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>
-              {isInventoryMode ? 'Inventory Scanner' : isMarketMode ? 'Market Scan' : cameraMode === 'grid' ? 'Grid Scan' : 'Card Scan'}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, marginTop: 2 }}>
-              {isInventoryMode
-                ? `${sellerModeLabel} · ${sellerReason}`
-                : isMarketMode
-                ? 'Scan card to view market value'
-                : cameraMode === 'grid'
-                ? `${getGridScanLabel(gridScanSize)} grid scan`
-                : `${scannedCards.length} card${scannedCards.length !== 1 ? 's' : ''} scanned`}
+          <View style={styles.statusPill}>
+            <View style={[styles.readyDot, { backgroundColor: cameraReady ? '#22C55E' : '#FBBF24' }]} />
+            <Text style={styles.statusText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>
+              {activeStatusText}
             </Text>
           </View>
 
-          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+          <View style={styles.topActions}>
             <TouchableOpacity
-              onPress={() => setTorch((prev) => !prev)}
-              style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: torch ? '#F59E0B' : 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', borderWidth: torch ? 2 : 0, borderColor: '#F59E0B' }}
+              onPress={() => setTorchEnabled((current) => !current)}
+              disabled={!permissionGranted || facing !== 'back'}
+              style={[styles.iconButton, (!permissionGranted || facing !== 'back') && styles.disabledButton]}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Toggle torch"
             >
-              <Text style={{ fontSize: 18 }}>🔦</Text>
+              <Ionicons name={torchEnabled ? 'flash' : 'flash-outline'} size={22} color="#FFFFFF" />
             </TouchableOpacity>
-
-            {scannedCards.length > 0 && (
-              <TouchableOpacity
-                onPress={() => { setAutoScanActive(false); setFrozenFrameUri(null); setStep('review'); }}
-                style={{ backgroundColor: theme.colors.primary, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 }}
-              >
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 12 }}>Review ({scannedCards.length})</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              onPress={switchCamera}
+              disabled={!permissionGranted}
+              style={[styles.iconButton, !permissionGranted && styles.disabledButton]}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Switch camera"
+            >
+              <Ionicons name="camera-reverse-outline" size={23} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Scan mode toggle */}
-        {isInventoryMode && (
-          <View style={{ alignItems: 'center', marginTop: -4, marginBottom: 8 }}>
-            <View style={{ minHeight: 36, paddingHorizontal: 14, borderRadius: 999, backgroundColor: sellerFlow === 'stock_out' ? 'rgba(249,115,22,0.18)' : 'rgba(105,56,245,0.20)', borderWidth: 1, borderColor: sellerFlow === 'stock_out' ? 'rgba(251,146,60,0.48)' : 'rgba(167,139,250,0.50)', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Ionicons name={sellerFlow === 'stock_out' ? 'cart-outline' : 'archive-outline'} size={17} color="#FFFFFF" />
-              <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }}>{sellerModeLabel}</Text>
-              <Text style={{ color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '700' }}>{sellerReason}</Text>
+        <View
+          style={[styles.instructionWrap, { top: Math.max(insets.top + 86, frame.top - 64) }]}
+          accessibilityRole="text"
+          accessibilityLabel={activeGuidanceAccessibilityLabel}
+        >
+          <View style={styles.instructionPill}>
+            <View style={[styles.guidanceIcon, { backgroundColor: `${activeGuidanceTone}24` }]}>
+              <Ionicons name={activeGuidanceIcon as any} size={18} color={activeGuidanceTone} />
             </View>
-          </View>
-        )}
-
-        {!isInventoryMode && (
-          <View style={{ alignItems: 'center', marginTop: 8 }}>
-            <View style={{ flexDirection: 'row', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 999, padding: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' }}>
-              <TouchableOpacity
-                onPress={() => selectCameraMode('single')}
-                style={{ paddingHorizontal: isCompactScanner ? 20 : 26, paddingVertical: 8, borderRadius: 999, backgroundColor: cameraMode === 'single' ? '#FFFFFF' : 'transparent' }}
-              >
-                <Text style={{ color: cameraMode === 'single' ? '#000000' : 'rgba(255,255,255,0.7)', fontWeight: '900', fontSize: 13 }}>Single</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => selectCameraMode('grid')}
-                style={{ paddingHorizontal: isCompactScanner ? 20 : 26, paddingVertical: 8, borderRadius: 999, backgroundColor: cameraMode === 'grid' ? theme.colors.primary : 'transparent' }}
-              >
-                <Text style={{ color: cameraMode === 'grid' ? '#FFFFFF' : 'rgba(255,255,255,0.7)', fontWeight: '900', fontSize: 13 }}>Grid</Text>
-              </TouchableOpacity>
-            </View>
-
-            {scanMode === 'auto' && cameraMode === 'single' && (
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, marginTop: 6, textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 }}>
-                {autoScanActive ? '🔴 Scanning every 2s — hold card in frame' : 'Tap Start to begin auto scanning'}
+            <View style={styles.guidanceCopy}>
+              <Text style={styles.guidanceLabel} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                {activeGuidanceLabel}
               </Text>
-            )}
+              <Text style={styles.instructionText} maxFontSizeMultiplier={1.35}>
+                {activeGuidanceMessage}
+              </Text>
+            </View>
           </View>
-        )}
+        </View>
 
-        {!isInventoryMode && cameraMode === 'grid' && (
-          <View style={{ alignItems: 'center', marginTop: 6 }}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 7, paddingHorizontal: 20, paddingBottom: 6 }}
+        {SCAN_QUALITY_DIAGNOSTICS_ENABLED && scanQualityResult ? (
+          <View pointerEvents="none" style={[styles.qualityDiagnostics, { top: frame.top + frame.height + 10 }]}>
+            <Text style={styles.qualityDiagnosticsText}>
+              {`Q ${scanQualityResult.passed ? 'pass' : 'fail'} | F ${scanQualityResult.focusScore} G ${scanQualityResult.glareScore} L ${scanQualityResult.exposureScore}`}
+            </Text>
+            <Text style={styles.qualityDiagnosticsText}>
+              {`Frame ${scanQualityResult.framingScore} Stable ${scanQualityResult.stabilityScore} Obstruct ${scanQualityResult.obstructionScore}`}
+            </Text>
+            <Text style={styles.qualityDiagnosticsText}>
+              {`Geo ${scanQualityResult.metrics.cardCoverage} ${scanQualityResult.metrics.cornersVisible ? 'corners' : 'no-corners'} | ${scanQualityResult.failures.map((failure) => failure.code).join(', ') || 'ready'}`}
+            </Text>
+          </View>
+        ) : null}
+
+        {acceptedPreviewUri && (scannerState === 'CAPTURED' || scannerState === 'IDENTIFYING' || scannerState === 'CONFIRMING') ? (
+          <View pointerEvents="none" style={styles.acceptedPreviewWrap}>
+            <Text style={styles.acceptedPreviewLabel}>
+              {scannerState === 'IDENTIFYING' ? 'Identifying this card' : 'Captured crop'}
+            </Text>
+            <Image source={{ uri: acceptedPreviewUri }} style={styles.acceptedPreviewImage} resizeMode="contain" />
+          </View>
+        ) : null}
+
+        {!permissionGranted ? (
+          <View style={styles.permissionCard}>
+            <Ionicons name="camera-outline" size={30} color={theme.colors.primary} />
+            <Text style={styles.permissionTitle}>Camera access needed</Text>
+            <Text style={styles.permissionBody}>
+              Stackr needs camera permission to scan cards.
+            </Text>
+            <Pressable
+              onPress={handleRequestPermission}
+              disabled={permissionRequesting}
+              style={[styles.permissionButton, permissionRequesting && styles.disabledButton]}
+              accessibilityRole="button"
+              accessibilityLabel="Enable camera access"
             >
-              {GRID_SCAN_OPTIONS.map((option) => {
-                const active = gridScanSize === option;
-                return (
-                  <TouchableOpacity
-                    key={option}
-                    onPress={() => setGridScanSize(option)}
-                    style={{
-                      minHeight: 34,
-                      paddingHorizontal: 12,
-                      borderRadius: 999,
-                      backgroundColor: active ? '#FFFFFF' : 'rgba(0,0,0,0.48)',
-                      borderWidth: 1,
-                      borderColor: active ? '#FFFFFF' : 'rgba(255,255,255,0.2)',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{ color: active ? theme.colors.primary : 'rgba(255,255,255,0.78)', fontSize: 11, fontWeight: '900' }}>
-                      {getGridScanLabel(option)}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 }}>
-              {getGridScanDescription(gridScanSize)}
-            </Text>
+              <Text style={styles.permissionButtonText}>
+                {permissionRequesting ? 'Requesting...' : 'Enable camera'}
+              </Text>
+            </Pressable>
+            <Text style={styles.permissionStatus}>Status: {permissionStatus}</Text>
           </View>
-        )}
+        ) : null}
 
-        {!isInventoryMode && cameraMode === 'grid' && (
-          <View style={{ alignItems: 'center', marginTop: 6 }}>
-            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11, textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 6 }}>
-              Fit the whole page inside the grid. Empty pockets are fine.
-            </Text>
+        {mountError ? (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorTitle}>Camera issue</Text>
+            <Text style={styles.errorBody}>{mountError}</Text>
           </View>
-        )}
+        ) : null}
 
-        {/* Frame guide */}
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start', paddingTop: scannerLayout.frameTopPadding }}>
-          <View
-            ref={scannerFrameRef}
-            onLayout={updateScannerFrameRect}
-            style={{
-            width: scannerFrameWidth, height: scannerFrameHeight,
-            borderRadius: isInventoryMode ? 22 : 16,
-            borderWidth: 2,
-            borderColor: scannerFrameColor,
-          }}>
-            <View style={{ position: 'absolute', top: -2, left: -2, width: 28, height: 28, borderTopWidth: 4, borderLeftWidth: 4, borderColor: scannerFrameColor, borderRadius: 4 }} />
-            <View style={{ position: 'absolute', top: -2, right: -2, width: 28, height: 28, borderTopWidth: 4, borderRightWidth: 4, borderColor: scannerFrameColor, borderRadius: 4 }} />
-            <View style={{ position: 'absolute', bottom: -2, left: -2, width: 28, height: 28, borderBottomWidth: 4, borderLeftWidth: 4, borderColor: scannerFrameColor, borderRadius: 4 }} />
-            <View style={{ position: 'absolute', bottom: -2, right: -2, width: 28, height: 28, borderBottomWidth: 4, borderRightWidth: 4, borderColor: scannerFrameColor, borderRadius: 4 }} />
-
-            {cameraMode === 'grid' && !isInventoryMode && (
-              <>
-                {Array.from({ length: Math.max(0, activeGridSize - 1) }, (_, index) => index + 1).map((index) => (
-                  <View
-                    key={`page-v-${index}`}
-                    pointerEvents="none"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      bottom: 0,
-                      left: `${(index / activeGridSize) * 100}%`,
-                      width: 1,
-                      backgroundColor: 'rgba(255,255,255,0.56)',
-                    }}
-                  />
-                ))}
-                {Array.from({ length: Math.max(0, activeGridSize - 1) }, (_, index) => index + 1).map((index) => (
-                  <View
-                    key={`page-h-${index}`}
-                    pointerEvents="none"
-                    style={{
-                      position: 'absolute',
-                      left: 0,
-                      right: 0,
-                      top: `${(index / activeGridSize) * 100}%`,
-                      height: 1,
-                      backgroundColor: 'rgba(255,255,255,0.56)',
-                    }}
-                  />
-                ))}
-              </>
-            )}
-
-            {sellerScannerInstruction && !processingOcr && (
-              <View style={{ position: 'absolute', left: 18, right: 18, bottom: 18, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.58)', paddingHorizontal: 12, paddingVertical: 9, alignItems: 'center' }}>
-                <Text style={{ color: '#FFFFFF', fontSize: 15, lineHeight: 20, fontWeight: '900', textAlign: 'center' }}>{sellerScannerInstruction}</Text>
-              </View>
-            )}
-
-            {processingOcr && (
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <ActivityIndicator color={theme.colors.primary} size="large" />
-                <Text style={{ color: '#FFFFFF', fontWeight: '700', marginTop: 12, backgroundColor: 'rgba(0,0,0,0.5)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
-                  {cameraMode === 'grid' && pageScanProgress
-                    ? `Reading slot ${pageScanProgress.current} of ${pageScanProgress.total}`
-                    : isInventoryMode ? 'Reading card.' : scanningMessage}
+        {inlineManualSearchOpen ? (
+          <View style={[styles.inlineManualSearchPanel, { bottom: Math.max(148, insets.bottom + 128) }]}>
+            <View style={styles.inlineManualSearchHeader}>
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={styles.inlineManualSearchTitle}>Manual search</Text>
+                <Text style={styles.inlineManualSearchSubtitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>
+                  Search without restarting the camera.
                 </Text>
               </View>
-            )}
-          </View>
-
-          {lastScanned && !isInventoryMode && (
-            <View style={{ marginTop: 18, backgroundColor: lastScanned.startsWith('✅') || lastScanned.startsWith('👉') ? 'rgba(16,185,129,0.9)' : 'rgba(245,158,11,0.9)', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 }}>
-              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 14, textAlign: 'center' }}>{lastScanned}</Text>
+              <TouchableOpacity
+                onPress={closeInlineManualSearch}
+                style={styles.inlineManualSearchClose}
+                accessibilityRole="button"
+                accessibilityLabel="Close manual search"
+              >
+                <Ionicons name="close" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
             </View>
-          )}
-
-          {scannerLayout.showTips && (
-          <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 28, width: '100%', maxWidth: scannerFrameWidth + 72, marginTop: 18 }}>
-            {(cameraMode === 'grid'
-              ? ['Full page visible', 'Corners aligned', 'Reduce glare']
-              : ['Good lighting', 'Card flat', 'Name + number visible']
-            ).map((tip) => (
-              <View key={tip} style={{ flex: 1, minHeight: 34, backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, paddingVertical: 7, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}>
-                <Text style={{ color: 'rgba(255,255,255,0.84)', fontSize: 10, fontWeight: '800', textAlign: 'center', lineHeight: 12 }}>{tip}</Text>
-              </View>
-            ))}
-          </View>
-          )}
-        </View>
-
-        {/* Confirmation overlay */}
-        {pendingConfirmation?.card && isInventoryMode && (
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-            <Text style={{ color: 'rgba(255,255,255,0.68)', fontSize: 13, marginBottom: 16, fontWeight: '800' }}>
-              {reviewTitle}
-            </Text>
-            {pendingConfirmation.card?.image_small ? (
-              <EditionAwareCardImage
-                uri={pendingConfirmation.card.image_large ?? pendingConfirmation.card.image_small}
-                cardId={pendingConfirmation.card.id}
-                rawData={pendingConfirmation.card.raw_data}
-                editionHint={pendingConfirmation.card.editionHint ?? pendingConfirmation.candidates?.[0]?.editionHint}
-                sourceSize="large"
-                style={{ width: 160, height: 224, borderRadius: 10, marginBottom: 16 }}
-                resizeMode="contain"
+            <View style={styles.inlineManualSearchInputWrap}>
+              <Ionicons name="search-outline" size={18} color="#DDD6FE" />
+              <TextInput
+                value={inlineManualSearchQuery}
+                onChangeText={setInlineManualSearchQuery}
+                placeholder="Card name, set, or number"
+                placeholderTextColor="rgba(221,214,254,0.58)"
+                autoCapitalize="words"
+                autoCorrect={false}
+                style={styles.inlineManualSearchInput}
+                accessibilityLabel="Manual card search"
+                returnKeyType="search"
+                onSubmitEditing={() => runInlineManualSearch(inlineManualSearchQuery)}
               />
-            ) : null}
-            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>
-              {pendingConfirmation.card?.name ?? pendingConfirmation.candidates?.[0]?.name ?? 'Unknown card'}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.64)', fontSize: 13, marginBottom: 8, textAlign: 'center' }}>
-              {formatScanCardSubtitle(
-                pendingConfirmation.card.set_name,
-                pendingConfirmation.card.number,
-                pendingConfirmation.card.editionHint ?? pendingConfirmation.candidates?.[0]?.editionHint
-              )}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.72)', fontSize: 13, marginBottom: 24, textAlign: 'center' }}>
-              {isSellerStockOut ? 'Add this match to the out cart before completing the transaction.' : 'Add this match to the intake batch before committing inventory.'}
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 12, width: '100%', maxWidth: 360 }}>
-              <TouchableOpacity onPress={handleReject} style={{ flex: 1, minHeight: 50, backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' }}>
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>{rejectLabel}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleConfirm} style={{ flex: 1, minHeight: 50, backgroundColor: '#10B981', borderRadius: 14, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>{confirmLabel}</Text>
-              </TouchableOpacity>
+              {inlineManualSearchLoading ? <ActivityIndicator size="small" color="#DDD6FE" /> : null}
             </View>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              style={styles.inlineManualSearchResults}
+              contentContainerStyle={{ gap: 8 }}
+            >
+              {inlineManualSearchResults.map((card) => (
+                <TouchableOpacity
+                  key={card.id}
+                  onPress={() => handleInlineManualSearchSelect(card)}
+                  style={styles.inlineManualSearchResult}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Choose ${card.name}, ${card.set_name}, number ${card.number}`}
+                >
+                  {card.image_small ? (
+                    <Image source={{ uri: card.image_small }} style={styles.inlineManualSearchThumb} resizeMode="contain" />
+                  ) : (
+                    <View style={styles.inlineManualSearchThumb} />
+                  )}
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text style={styles.inlineManualSearchResultTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                      {card.name}
+                    </Text>
+                    <Text style={styles.inlineManualSearchResultMeta} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
+                      {card.set_name} - No. {card.number || 'unknown'}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#DDD6FE" />
+                </TouchableOpacity>
+              ))}
+              {!inlineManualSearchLoading && inlineManualSearchQuery.trim().length >= 2 && inlineManualSearchResults.length === 0 ? (
+                <Text style={styles.inlineManualSearchEmpty}>
+                  No local matches yet.
+                </Text>
+              ) : null}
+            </ScrollView>
           </View>
-        )}
+        ) : null}
 
-        {pendingConfirmation?.card && !isInventoryMode && (
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>
-              {reviewTitle}
-            </Text>
-            {pendingConfirmation.card?.image_small ? (
-              <EditionAwareCardImage
-                uri={pendingConfirmation.card.image_large ?? pendingConfirmation.card.image_small}
-                cardId={pendingConfirmation.card.id}
-                rawData={pendingConfirmation.card.raw_data}
-                editionHint={pendingConfirmation.card.editionHint ?? pendingConfirmation.candidates?.[0]?.editionHint}
-                sourceSize="large"
-                style={{ width: 160, height: 224, borderRadius: 10, marginBottom: 16 }}
-                resizeMode="contain"
-              />
-            ) : null}
-            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>
-              {pendingConfirmation.card?.name ?? pendingConfirmation.candidates?.[0]?.name ?? 'Unknown card'}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 32 }}>
-              {formatScanCardSubtitle(
-                pendingConfirmation.card.set_name,
-                pendingConfirmation.card.number,
-                pendingConfirmation.card.editionHint ?? pendingConfirmation.candidates?.[0]?.editionHint
-              )}
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 16 }}>
-              <TouchableOpacity onPress={handleReject} style={{ flex: 1, backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>✕ Wrong</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleConfirm} style={{ flex: 1, backgroundColor: '#10B981', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>✓ Correct</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {pendingConfirmation && !pendingConfirmation.card && (
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 16 }}>{isInventoryMode ? 'Review match' : 'Is this the right card?'}</Text>
-            <Text style={{ color: '#FFFFFF', fontSize: 18, fontWeight: '900', textAlign: 'center', marginBottom: 4 }}>
-              {pendingConfirmation.candidates?.[0]?.name ?? 'Unknown card'}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 10, textAlign: 'center' }}>
-              {formatScanCardSubtitle(
-                pendingConfirmation.candidates?.[0]?.setName ?? 'Set unknown',
-                pendingConfirmation.candidates?.[0]?.number,
-                pendingConfirmation.candidates?.[0]?.editionHint
-              )}
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.72)', fontSize: 13, marginBottom: 20, textAlign: 'center', maxWidth: 280 }}>
-              Details unavailable - search manually or confirm later.
-            </Text>
-            {(pendingConfirmation.candidates?.length ?? 0) > 1 && (
-              <View style={{ width: '100%', maxWidth: 360, gap: 8, marginBottom: 20 }}>
-                {pendingConfirmation.candidates?.slice(0, 4).map((candidate, index) => {
-                  const candidateCard = candidate.resolvedCard as ScannedCard | null | undefined;
+        <View style={[styles.bottomPanel, { paddingBottom: Math.max(18, insets.bottom + 10) }]}>
+          {isBinderPageScan ? (
+            <View style={styles.layoutSelector}>
+              <Text style={styles.layoutSelectorLabel}>Binder page layout</Text>
+              <View style={styles.layoutChipRow}>
+                {BINDER_PAGE_LAYOUTS.map((layout) => {
+                  const active = binderPageLayout === layout;
                   return (
                     <TouchableOpacity
-                      key={`${candidate.name}-${candidate.number ?? index}-${candidate.setCode ?? candidate.setName ?? 'unknown'}`}
-                      onPress={() => {
-                        if (candidateCard) {
-                          setPendingConfirmation((current) => current ? { ...current, card: candidateCard } : current);
-                        }
-                      }}
-                      style={{
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        borderColor: candidateCard ? 'rgba(16,185,129,0.65)' : 'rgba(255,255,255,0.18)',
-                        backgroundColor: candidateCard ? 'rgba(16,185,129,0.14)' : 'rgba(255,255,255,0.08)',
-                        paddingHorizontal: 12,
-                        paddingVertical: 10,
-                      }}
+                      key={layout}
+                      onPress={() => setRememberedBinderPageLayout(layout)}
+                      activeOpacity={0.82}
+                      style={[styles.layoutChip, active && styles.layoutChipActive]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
+                      accessibilityLabel={`${layout} by ${layout} binder page layout`}
                     >
-                      <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }} numberOfLines={1}>
-                        {candidateCard?.name ?? candidate.name}
-                      </Text>
-                      <Text style={{ color: 'rgba(255,255,255,0.62)', fontSize: 11, fontWeight: '700', marginTop: 2 }} numberOfLines={1}>
-                        {candidateCard
-                          ? formatScanCardSubtitle(candidateCard.set_name, candidateCard.number, candidateCard.editionHint ?? candidate.editionHint)
-                          : formatScanCardSubtitle(candidate.setName ?? 'Details unavailable', candidate.number, candidate.editionHint)}
+                      <Text style={[styles.layoutChipText, active && styles.layoutChipTextActive]}>
+                        {layout}x{layout}
                       </Text>
                     </TouchableOpacity>
                   );
                 })}
               </View>
-            )}
-            {pendingConfirmation.editionChoiceRequired ? (
-              <View style={{ width: '100%', maxWidth: 340, gap: 12 }}>
-                <View style={{ flexDirection: 'row', gap: 12 }}>
-                  <TouchableOpacity onPress={() => handleSelectEditionChoice('unlimited')} style={{ flex: 1, backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}>
-                    <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Unlimited</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleSelectEditionChoice('1st_edition')} style={{ flex: 1, backgroundColor: '#4B22A2', borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}>
-                    <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>1st Edition</Text>
-                  </TouchableOpacity>
-                </View>
-                <TouchableOpacity onPress={handleReject} style={{ backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
-                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>{isInventoryMode ? 'Cancel' : 'Wrong card'}</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-            <View style={{ flexDirection: 'row', gap: 16 }}>
-              <TouchableOpacity onPress={handleReject} style={{ flex: 1, backgroundColor: '#EF4444', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>{rejectLabel}</Text>
-              </TouchableOpacity>
-              {pendingConfirmation.candidates?.some((candidate) => candidate.resolvedCard) ? (
-                <TouchableOpacity onPress={handleConfirm} style={{ flex: 1, backgroundColor: '#10B981', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
-                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>{confirmLabel}</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity onPress={handleSearchManually} style={{ flex: 1, backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
-                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Search</Text>
-                </TouchableOpacity>
-              )}
             </View>
-            )}
-          </View>
-        )}
+          ) : null}
 
-        {scanError && (
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.92)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-            <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '900', textAlign: 'center', marginBottom: 10 }}>Scan couldn&apos;t be completed</Text>
-            <Text style={{ color: 'rgba(255,255,255,0.76)', fontSize: 14, lineHeight: 20, textAlign: 'center', maxWidth: 330, marginBottom: 12 }}>
-              {stageMessage(scanError.stage)}
-            </Text>
-            {(SHOW_SCAN_DEBUG || scanError.code) && (
-              <Text style={{ color: 'rgba(255,255,255,0.64)', fontSize: 12, fontWeight: '800', textAlign: 'center', marginBottom: 20 }}>
-                Error code: {scanError.code}
-              </Text>
-            )}
-            <View style={{ width: '100%', maxWidth: 330, gap: 10 }}>
+          {!isBinderPageScan ? (
+            <View style={styles.modeToggle}>
               <TouchableOpacity
-                onPress={() => {
-                  setScanError(null);
-                  setFrozenFrameUri(null);
-                  scanCooldownRef.current = false;
-                  setProcessingOcr(false);
-                }}
-                style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}
+                onPress={() => setScanModePreference('auto')}
+                activeOpacity={0.82}
+                style={[styles.modeSegment, scanMode === 'auto' && styles.modeSegmentActive]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: scanMode === 'auto' }}
+                accessibilityLabel="Use auto scan"
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Retry Scan</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSearchManually} style={{ backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 14, paddingVertical: 15, alignItems: 'center' }}>
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 16 }}>Search Manually</Text>
-              </TouchableOpacity>
-              {(SHOW_SCAN_DEBUG || scanError.details || scanError.stack) && (
-                <TouchableOpacity
-                  onPress={() => shareDebugDetails(JSON.stringify(scanError, null, 2))}
-                  style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', borderRadius: 14, paddingVertical: 13, alignItems: 'center' }}
+                <Ionicons name="sparkles-outline" size={17} color={scanMode === 'auto' ? '#FFFFFF' : '#DDD6FE'} />
+                <Text
+                  style={[styles.modeSegmentText, scanMode === 'auto' && styles.modeSegmentTextActive]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.78}
                 >
-                  <Text style={{ color: 'rgba(255,255,255,0.86)', fontWeight: '900', fontSize: 14 }}>Copy Debug Details</Text>
-                </TouchableOpacity>
-              )}
+                  Auto scan
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setScanModePreference('manual')}
+                activeOpacity={0.82}
+                style={[styles.modeSegment, scanMode === 'manual' && styles.modeSegmentActive]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: scanMode === 'manual' }}
+                accessibilityLabel="Use manual capture"
+              >
+                <Ionicons name="hand-left-outline" size={17} color={scanMode === 'manual' ? '#FFFFFF' : '#DDD6FE'} />
+                <Text
+                  style={[styles.modeSegmentText, scanMode === 'manual' && styles.modeSegmentTextActive]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.72}
+                >
+                  Manual capture
+                </Text>
+              </TouchableOpacity>
             </View>
-          </View>
-        )}
+          ) : null}
 
-        {/* Bottom controls */}
-        <View style={{ alignItems: 'center', paddingBottom: Math.max(12, insets.bottom * 0.25), gap: isCompactScanner ? 16 : 18 }}>
-          {isInventoryMode && (
-            <View style={{ width: '100%', paddingHorizontal: 16, paddingBottom: Math.max(8, insets.bottom * 0.35) }}>
-              <View style={{ borderRadius: 20, backgroundColor: 'rgba(5,10,26,0.76)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', padding: 14, gap: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={{ color: '#FFFFFF', fontSize: 16, lineHeight: 21, fontWeight: '900' }}>{sellerQueueLabel}</Text>
-                    <Text style={{ color: 'rgba(255,255,255,0.68)', fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 2 }}>
-                      {isSellerStockOut
-                        ? 'Cards wait here before stock changes.'
-                        : 'Scans enter a reviewable intake batch.'}
-                    </Text>
-                  </View>
-                  <View style={{ borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7, backgroundColor: processingOcr ? 'rgba(105,56,245,0.38)' : autoScanActive ? 'rgba(16,185,129,0.32)' : 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)' }}>
-                    <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '900' }}>
-                      {processingOcr ? 'Reading' : autoScanActive ? 'Auto-detecting' : 'Ready'}
-                    </Text>
-                  </View>
-                </View>
-
-                {lastScanned && (
-                  <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 18, fontWeight: '800' }} numberOfLines={2}>{lastScanned}</Text>
-                )}
-
-                <View style={{ flexDirection: 'row', gap: 10 }}>
-                  <TouchableOpacity
-                    onPress={handleSearchManually}
-                    style={{ flex: 1, minHeight: 44, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)', backgroundColor: 'rgba(255,255,255,0.10)', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }}>Search manually</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleCapture(false)}
-                    disabled={processingOcr || !cameraReady}
-                    style={{ flex: 1, minHeight: 44, borderRadius: 14, backgroundColor: processingOcr || !cameraReady ? 'rgba(255,255,255,0.20)' : theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '900' }}>{processingOcr ? 'Reading' : 'Scan now'}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          )}
-
-          {!isInventoryMode && scannedCards.length > 0 && (
+          <View style={styles.bottomControls}>
             <TouchableOpacity
-              onPress={() => { setAutoScanActive(false); setFrozenFrameUri(null); setStep('review'); }}
-              style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 6, alignItems: 'center' }}
+              onPress={openManualSearch}
+              style={styles.secondaryAction}
+              activeOpacity={0.82}
+              accessibilityRole="button"
+              accessibilityLabel={isListingFlow ? 'Add manually' : 'Search manually without scanning'}
+              accessibilityHint={localQuickScanExperienceEnabled ? 'Keeps the scan context so you can choose a card manually.' : undefined}
             >
-              {scannedCards.slice(-5).map((card) => (
-                <EditionAwareCardImage
-                  key={card.id}
-                  uri={card.image_small}
-                  cardId={card.id}
-                  rawData={card.raw_data}
-                  editionHint={card.editionHint}
-                  sourceSize="small"
-                  style={{ width: 36, height: 50, borderRadius: 4, borderWidth: 1, borderColor: 'rgba(255,255,255,0.5)' }}
-                  resizeMode="cover"
-                />
-              ))}
-              {scannedCards.length > 5 && (
-                <View style={{ width: 36, height: 50, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' }}>
-                  <Text style={{ color: '#FFFFFF', fontSize: 10, fontWeight: '900' }}>+{scannedCards.length - 5}</Text>
-                </View>
+              <Ionicons name="search-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.secondaryActionText} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.76}>
+                {isListingFlow ? 'Add manually' : 'Manual search'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => handleCapture('manual')}
+              disabled={!cameraReady || captureBusy || !permissionGranted}
+              activeOpacity={0.82}
+              style={[
+                styles.captureButton,
+                (!cameraReady || captureBusy || !permissionGranted) && styles.captureDisabled,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Capture card"
+              accessibilityHint="Takes a full-resolution photo of the centred card."
+            >
+              {captureBusy ? (
+                <ActivityIndicator color={theme.colors.primary} />
+              ) : (
+                <View style={[styles.captureInner, { backgroundColor: theme.colors.primary }]} />
               )}
             </TouchableOpacity>
-          )}
 
-          {!isInventoryMode && scanMode === 'manual' && (
-            <>
-              <TouchableOpacity
-                onPress={() => handleCapture(false)}
-                disabled={processingOcr || !cameraReady}
-                style={{ width: shutterSize, height: shutterSize, borderRadius: shutterSize / 2, backgroundColor: processingOcr || !cameraReady ? 'rgba(255,255,255,0.4)' : '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)' }}
-              >
-                {processingOcr ? (
-                  <ActivityIndicator color={theme.colors.primary} size="large" />
-                ) : (
-                  <View style={{ width: shutterInnerSize, height: shutterInnerSize, borderRadius: shutterInnerSize / 2, backgroundColor: theme.colors.primary }} />
-                )}
-              </TouchableOpacity>
-              <Text style={{ color: 'rgba(255,255,255,0.74)', fontSize: 13, fontWeight: '700' }}>
-                {cameraReady ? 'Tap to scan card' : 'Starting camera...'}
+            <View style={styles.modeNote}>
+              <Text style={styles.modeNoteTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>
+                {isBinderPageScan ? 'Page' : scanMode === 'auto' ? 'Hover' : 'Tap'}
               </Text>
-            </>
-          )}
-
-          {!isInventoryMode && cameraMode === 'grid' && (
-            <>
-              <TouchableOpacity
-                onPress={handleBinderPageCapture}
-                disabled={processingOcr || !cameraReady}
-                style={{ width: shutterSize, height: shutterSize, borderRadius: shutterSize / 2, backgroundColor: processingOcr || !cameraReady ? 'rgba(255,255,255,0.4)' : '#FFFFFF', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)' }}
-              >
-                {processingOcr ? (
-                  <ActivityIndicator color={theme.colors.primary} size="large" />
-                ) : (
-                  <Ionicons name="grid-outline" size={32} color={theme.colors.primary} />
-                )}
-              </TouchableOpacity>
-              <Text style={{ color: 'rgba(255,255,255,0.74)', fontSize: 13, fontWeight: '700' }}>
-                {cameraReady ? `Tap to scan ${activeGridSlotCount}-card grid` : 'Starting camera...'}
+              <Text style={styles.modeNoteText} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.72}>
+                {isBinderPageScan
+                  ? 'Each pocket is checked separately'
+                  : scanMode === 'auto' ? 'Scans the centred card' : 'Capture the centred card'}
               </Text>
-            </>
-          )}
-
-          {!isInventoryMode && scanMode === 'auto' && (
-            <>
-              <TouchableOpacity
-                onPress={toggleAutoScan}
-                disabled={!cameraReady}
-                style={{ width: shutterSize, height: shutterSize, borderRadius: shutterSize / 2, backgroundColor: !cameraReady ? 'rgba(255,255,255,0.4)' : autoScanActive ? '#EF4444' : '#10B981', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: 'rgba(255,255,255,0.3)' }}
-              >
-                <Text style={{ fontSize: 28 }}>{autoScanActive ? '⏹' : '▶'}</Text>
-              </TouchableOpacity>
-              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>
-                {autoScanActive ? 'Tap to stop · hold card in frame' : 'Tap to start auto scan'}
-              </Text>
-            </>
-          )}
+            </View>
+          </View>
         </View>
       </SafeAreaView>
     </View>
   );
 }
 
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#000000',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'space-between',
+  },
+  mask: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0,0,0,0.72)',
+  },
+  cardFrame: {
+    position: 'absolute',
+    borderWidth: 2,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.055)',
+  },
+  cardFrameLocked: {
+    borderWidth: 3,
+    backgroundColor: 'rgba(124,58,237,0.1)',
+    shadowColor: '#7C3AED',
+    shadowOpacity: 0.65,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+  },
+  binderGridLine: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255,255,255,0.46)',
+  },
+  corner: {
+    position: 'absolute',
+    width: 30,
+    height: 30,
+    borderColor: '#FFFFFF',
+  },
+  cornerTopLeft: {
+    borderTopWidth: 4,
+    borderLeftWidth: 4,
+    borderTopLeftRadius: 10,
+  },
+  cornerTopRight: {
+    borderTopWidth: 4,
+    borderRightWidth: 4,
+    borderTopRightRadius: 10,
+  },
+  cornerBottomLeft: {
+    borderBottomWidth: 4,
+    borderLeftWidth: 4,
+    borderBottomLeftRadius: 10,
+  },
+  cornerBottomRight: {
+    borderBottomWidth: 4,
+    borderRightWidth: 4,
+    borderBottomRightRadius: 10,
+  },
+  topBar: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  topActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: 'rgba(0,0,0,0.48)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusPill: {
+    minHeight: 42,
+    flex: 1,
+    maxWidth: 190,
+    borderRadius: 21,
+    backgroundColor: 'rgba(0,0,0,0.48)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  readyDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  statusText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '900',
+  },
+  instructionWrap: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    alignItems: 'center',
+  },
+  instructionPill: {
+    maxWidth: 360,
+    minHeight: 54,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    backgroundColor: 'rgba(0,0,0,0.58)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  guidanceIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guidanceCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  guidanceLabel: {
+    color: '#DDD6FE',
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  instructionText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '800',
+    marginTop: 1,
+  },
+  qualityDiagnostics: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0,0,0,0.62)',
+    borderWidth: 1,
+    borderColor: 'rgba(167,139,250,0.36)',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  qualityDiagnosticsText: {
+    color: '#DDD6FE',
+    fontSize: 9,
+    lineHeight: 12,
+    fontWeight: '800',
+  },
+  acceptedPreviewWrap: {
+    position: 'absolute',
+    left: 18,
+    right: 18,
+    bottom: 170,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.72)',
+    borderWidth: 1,
+    borderColor: 'rgba(167,139,250,0.42)',
+    padding: 10,
+    alignItems: 'center',
+  },
+  acceptedPreviewLabel: {
+    color: '#DDD6FE',
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    marginBottom: 8,
+  },
+  acceptedPreviewImage: {
+    width: 112,
+    height: 156,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  permissionCard: {
+    marginHorizontal: 20,
+    marginTop: 126,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.96)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+    padding: 18,
+    alignItems: 'center',
+  },
+  permissionTitle: {
+    color: '#061A4A',
+    fontSize: 20,
+    lineHeight: 25,
+    fontWeight: '900',
+    marginTop: 10,
+  },
+  permissionBody: {
+    color: '#6F6792',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  permissionButton: {
+    marginTop: 14,
+    minHeight: 48,
+    borderRadius: 16,
+    backgroundColor: '#6D28D9',
+    paddingHorizontal: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  permissionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '900',
+  },
+  permissionStatus: {
+    color: '#8177A6',
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '800',
+    marginTop: 10,
+  },
+  errorCard: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 156,
+    borderRadius: 18,
+    backgroundColor: 'rgba(127,29,29,0.86)',
+    borderWidth: 1,
+    borderColor: 'rgba(252,165,165,0.45)',
+    padding: 14,
+  },
+  errorTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '900',
+  },
+  errorBody: {
+    color: 'rgba(255,255,255,0.82)',
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  inlineManualSearchPanel: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    maxHeight: 318,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.82)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    padding: 12,
+    gap: 10,
+  },
+  inlineManualSearchHeader: {
+    minHeight: 36,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  inlineManualSearchTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '900',
+  },
+  inlineManualSearchSubtitle: {
+    color: '#DDD6FE',
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '800',
+    marginTop: 1,
+  },
+  inlineManualSearchClose: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inlineManualSearchInputWrap: {
+    minHeight: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  inlineManualSearchInput: {
+    flex: 1,
+    minWidth: 0,
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '800',
+    paddingVertical: 9,
+  },
+  inlineManualSearchResults: {
+    maxHeight: 190,
+  },
+  inlineManualSearchResult: {
+    minHeight: 58,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  inlineManualSearchThumb: {
+    width: 32,
+    height: 44,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  inlineManualSearchResultTitle: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '900',
+  },
+  inlineManualSearchResultMeta: {
+    color: '#DDD6FE',
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '800',
+    marginTop: 2,
+  },
+  inlineManualSearchEmpty: {
+    color: '#DDD6FE',
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '800',
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+  bottomPanel: {
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderTopWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    gap: 12,
+  },
+  layoutSelector: {
+    gap: 8,
+  },
+  layoutSelectorLabel: {
+    color: '#DDD6FE',
+    fontSize: 10,
+    lineHeight: 13,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    textAlign: 'center',
+  },
+  layoutChipRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  layoutChip: {
+    flex: 1,
+    minHeight: 36,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  layoutChipActive: {
+    backgroundColor: 'rgba(124,58,237,0.9)',
+    borderColor: 'rgba(255,255,255,0.24)',
+  },
+  layoutChipText: {
+    color: '#DDD6FE',
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '900',
+  },
+  layoutChipTextActive: {
+    color: '#FFFFFF',
+  },
+  modeToggle: {
+    minHeight: 44,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    padding: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  modeSegment: {
+    flex: 1,
+    minHeight: 36,
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  modeSegmentActive: {
+    backgroundColor: 'rgba(124,58,237,0.86)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+  },
+  modeSegmentText: {
+    color: '#DDD6FE',
+    fontSize: 12,
+    lineHeight: 15,
+    fontWeight: '900',
+  },
+  modeSegmentTextActive: {
+    color: '#FFFFFF',
+  },
+  bottomControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  captureButton: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 4,
+    borderColor: 'rgba(255,255,255,0.46)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#7C3AED',
+    shadowOpacity: 0.5,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8,
+  },
+  captureDisabled: {
+    opacity: 0.58,
+  },
+  captureInner: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+  },
+  secondaryAction: {
+    width: 104,
+    minHeight: 50,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  secondaryActionText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '900',
+  },
+  modeNote: {
+    width: 104,
+    minHeight: 50,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  modeNoteTitle: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    lineHeight: 15,
+    fontWeight: '900',
+  },
+  modeNoteText: {
+    color: '#DDD6FE',
+    fontSize: 9.5,
+    lineHeight: 12,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  disabledButton: {
+    opacity: 0.54,
+  },
+});

@@ -42,17 +42,17 @@ const anniversaryInsight = buildMintyHomeInsight(
 );
 
 assert(
-  anniversaryInsight.title === '30th anniversary watch' || anniversaryInsight.tags.includes('anniversary'),
+  anniversaryInsight.title === '30th anniversary check' || anniversaryInsight.tags.includes('anniversary'),
   `Expected anniversary catalyst, received ${anniversaryInsight.title}`
 );
 assert(anniversaryInsight.forecast, 'Anniversary insight should include a forecast object.');
 assert(
-  anniversaryInsight.forecast?.caveat.includes('not guaranteed prices'),
+  anniversaryInsight.forecast?.caveat.includes('not a promise'),
   'Forecast caveat must make uncertainty explicit.'
 );
 assert(
-  anniversaryInsight.body.includes('sold comps'),
-  'Insight copy must tell collectors to confirm with sold comps.'
+  anniversaryInsight.body.includes('recent sold prices'),
+  'Insight copy must tell collectors to confirm with recent sold prices.'
 );
 
 const xyInsight = buildMintyHomeInsight(
@@ -72,7 +72,7 @@ const xyInsight = buildMintyHomeInsight(
 );
 
 assert(
-  xyInsight.title === 'XY and Mega watch' || xyInsight.tags.includes('mega_evolution'),
+  xyInsight.title === 'XY and Mega check' || xyInsight.tags.includes('mega_evolution'),
   `Expected XY/Mega catalyst, received ${xyInsight.title}`
 );
 assert(xyInsight.forecast?.estimatedImpactPctRange, 'XY insight should include an estimated watch band.');

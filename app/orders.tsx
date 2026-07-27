@@ -14,7 +14,7 @@ export default function MarketOrdersScreen() {
   const { theme } = useTheme();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top', 'left', 'right']}>
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
         <StackrBackdrop />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}>

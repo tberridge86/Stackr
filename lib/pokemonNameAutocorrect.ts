@@ -70,6 +70,10 @@ const CARD_DECORATOR_TERMS = new Set([
   'break', 'lv', 'prime', 'radiant', 'rocket', 'spec', 'union',
 ]);
 
+const KEYBOARD_AUTOCORRECT_ALIASES: Record<string, string> = {
+  darker: 'Darkrai',
+};
+
 let candidatePromise: Promise<Candidate[]> | null = null;
 
 const normalise = (value: string | null | undefined) =>
@@ -208,6 +212,13 @@ function findBestCandidate(value: string, candidates: Candidate[], options: { ph
   const search = normalise(value);
   const searchCompact = compact(search);
   if (!search || IGNORE_TERMS.has(search) || search.length < 3) return null;
+
+  const aliasedPokemonName = KEYBOARD_AUTOCORRECT_ALIASES[search];
+  if (aliasedPokemonName) {
+    const aliasedKey = normalise(aliasedPokemonName);
+    const aliasedCandidate = candidates.find((candidate) => candidate.key === aliasedKey);
+    if (aliasedCandidate) return aliasedCandidate;
+  }
 
   let best: { candidate: Candidate; score: number; distance: number } | null = null;
 

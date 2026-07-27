@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useFocusEffect } from 'expo-router';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Modal,
   Pressable,
@@ -31,6 +32,7 @@ import {
   type BinderRecord,
 } from '../lib/binders';
 import { USD_TO_GBP } from '../lib/config';
+import { getIncrementalListWindow } from '../lib/performance';
 import { getDisplaySetName } from '../lib/setDisplay';
 import { stackrCardImageSizes, stackrTabContentPadding } from '../lib/stackrSizing';
 import { numericTextStyle } from '../lib/typography';
@@ -584,6 +586,17 @@ export default function DuplicatesScreen() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<DuplicateListItem | null>(null);
+  const isGrid = viewMode === 'grid';
+  const duplicateWindow = useMemo(
+    () => getIncrementalListWindow(isGrid ? 2 : 1, {
+      initialRows: isGrid ? 7 : 12,
+      pageRows: isGrid ? 5 : 10,
+      minInitial: isGrid ? 14 : 12,
+      minPage: isGrid ? 10 : 10,
+    }),
+    [isGrid]
+  );
+  const [visibleItemCount, setVisibleItemCount] = useState(duplicateWindow.initialCount);
 
   const summary = useMemo(() => ({
     duplicateCopies: items.reduce((sum, item) => sum + item.duplicateCopies, 0),
@@ -592,7 +605,7 @@ export default function DuplicatesScreen() {
     hasValue: items.some((item) => item.valuePerCard != null),
   }), [items]);
 
-  const visibleItems = useMemo(() => {
+  const filteredItems = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     const filtered = query
       ? items.filter((item) =>
@@ -610,7 +623,18 @@ export default function DuplicatesScreen() {
 
   const sortLabel = SORT_OPTIONS.find((option) => option.key === sortKey)?.label ?? 'Sort';
   const tileWidth = Math.floor((width - 36 - 12) / 2);
-  const isGrid = viewMode === 'grid';
+  useEffect(() => {
+    setVisibleItemCount(Math.min(filteredItems.length, duplicateWindow.initialCount));
+  }, [duplicateWindow.initialCount, filteredItems.length, searchQuery, sortKey, viewMode]);
+
+  const visibleItems = useMemo(
+    () => filteredItems.slice(0, visibleItemCount),
+    [filteredItems, visibleItemCount]
+  );
+  const hasMoreDuplicateItems = visibleItemCount < filteredItems.length;
+  const renderMoreDuplicateItems = useCallback(() => {
+    setVisibleItemCount((current) => Math.min(filteredItems.length, current + duplicateWindow.pageSize));
+  }, [duplicateWindow.pageSize, filteredItems.length]);
 
   const loadDuplicates = useCallback(async (isRefresh = false) => {
     try {
@@ -776,6 +800,8 @@ export default function DuplicatesScreen() {
             updateCellsBatchingPeriod={50}
             windowSize={7}
             removeClippedSubviews
+            onEndReached={hasMoreDuplicateItems ? renderMoreDuplicateItems : undefined}
+            onEndReachedThreshold={0.8}
             contentContainerStyle={[
               visibleItems.length ? (isGrid ? styles.gridListContent : styles.listContent) : styles.emptyContent,
               { paddingBottom: insets.bottom + stackrTabContentPadding.standard },
@@ -815,6 +841,11 @@ export default function DuplicatesScreen() {
                 />
               )
             )}
+            ListFooterComponent={hasMoreDuplicateItems ? (
+              <View style={styles.batchFooter}>
+                <ActivityIndicator color={theme.colors.primary} size="small" />
+              </View>
+            ) : null}
           />
         </>
       )}
@@ -1176,6 +1207,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 18,
+  },
+  batchFooter: {
+    height: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modalOverlay: {
     flex: 1,
