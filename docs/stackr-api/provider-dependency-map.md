@@ -1,63 +1,68 @@
 # Stackr Provider Dependency Map
 
 Audit date: 2026-07-27
-Values and credentials are intentionally omitted.
+Values and credentials are intentionally omitted. This document lists providers, call surfaces and target classifications only.
 
 ## Classification Key
 
 - Retain: keep as part of the target system.
 - Wrap behind Stackr API: remove direct app dependency and mediate through versioned API/service code.
-- Use as temporary fallback: keep during benchmark and migration, but do not make primary long term.
-- Replace: phase out when Stackr-owned catalogue/recognition/pricing is ready.
+- Use as temporary fallback: keep during benchmark/migration, but do not make primary long term.
+- Replace: phase out when Stackr-owned catalogue/recognition/pricing is ready or when rights are not approved.
 - Remove: delete or disable if not needed or unsafe.
 
 ## Dependency Table
 
 | Dependency | Current direct use | Current locations | Classification | Stage 2 action |
 | --- | --- | --- | --- | --- |
-| Supabase Auth | Mobile auth/session provider. | `lib/supabase.tsx`, auth screens, auth context. | Retain | Keep initially. Forward bearer tokens to API. |
-| Supabase Postgres | Direct mobile reads/writes to 50+ app tables plus backend service access. | `app`, `components`, `features`, `lib`, `backend`, `scripts`. | Wrap behind Stackr API | Start with read-only catalogue/pricing facade. Do not migrate all writes at once. |
-| Supabase Storage | App storage buckets and private feedback/scan-lab buckets. | `lib/storage.ts`, listing flow, feedback/scan-lab backend routes. | Wrap behind Stackr API | Use signed or API-mediated upload flows. Keep private buckets private. |
-| Supabase Edge Function `minty-insight` | Direct mobile invoke. | `lib/mintyInsightService.ts`, `supabase/functions/minty-insight`. | Wrap behind Stackr API | Route through gateway or backend service. |
-| Supabase Edge Function `stackr-card-recognition` | Ximilar-backed recognition fallback. | `lib/ximilarRecognition.ts`, `supabase/functions/stackr-card-recognition`. | Use as temporary fallback | Keep while benchmark is incomplete. Move behind recognition service. |
-| Railway backend | Current API base for pricing, scanner, provider proxy, payments and shipping. | `PRICE_API_URL`, `EXPO_PUBLIC_PRICE_API_URL`, `backend/server.js`. | Wrap behind Stackr API | Evolve or front with `api.stackr.app`; version routes. |
-| Ximilar | TCG ID, OCR ID, slab ID/grade, detect/analyze fallback. | Supabase Edge Function, backend direct routes, `lib/cardSight.ts`. | Use as temporary fallback | Keep fallback only. Track usage, cost, success/failure and endpoint choice. |
-| CardSightAI/cardsightai | Visual recognition fallback/proxy. | `lib/cardSight.ts`, `backend/routes/cardsight.js`, package deps. | Use as temporary fallback | Keep until Stackr benchmark passes; route through recognition service. |
-| Rare Candy style local visual pack | Backend visual pack matching. | `backend/routes/rareCandyScan.js`, `lib/cardSight.ts`. | Retain behind private recognition service | Keep as Stackr-controlled local candidate source, but not as public API surface. |
-| Backend local AI/CLIP OCR resolver | OCR/catalogue resolver and CLIP search. | `backend/routes/localAiScan.js`, `lib/cardSight.ts`. | Retain behind private recognition service | Harden and version through recognition service. |
-| TCGdex | Multilingual catalogue, images and pricing payloads. | `backend/lib/tcgdex.js`, `backend/lib/tcgdexCatalogue.js`, sync/verify scripts. | Retain as ingestion source | Move all use into provider adapters and catalogue ingestion queues. |
-| TCGCSV | Market products, product pricing and history. | `scripts/*tcgcsv*`, pricing workflow. | Retain as ingestion source | Keep in queue worker with attribution and source freshness checks. |
-| Pokemon TCG API | English card/set API and direct app pricing/card fallback. | `lib/pokemonTcg.ts`, `lib/cardSearch.ts`, `lib/pokedexCollection.ts`, `app/scan/result.tsx`, `app/card/[id].tsx`, backend search route. | Wrap behind Stackr API | Remove direct mobile calls; preserve only as licensed/attributed adapter where allowed. |
-| Pokemon TCG image CDN | Card imagery from provider payloads. | Pokemon TCG helpers and cached raw data. | Wrap behind Stackr API | Cache only when licence permits; expose via CDN with rights status. |
-| eBay Browse API | Active listing pricing and OAuth/rate-limit checks. | `backend/server.js`, `backend/lib/pricingV2/adapters/ebayActive.js`, `app/prices`, `lib/ebay.ts`. | Wrap behind pricing service | Keep server-only. Label active listings as asking-price indication. |
-| Authorised eBay sold provider | Optional sold transaction source. | `backend/lib/pricingV2/adapters/ebaySold.js`. | Retain if authorised | Use only with authorised endpoint/token. Do not scrape sold pages. |
-| SerpApi-style sold/search provider | Legacy pricing fallback. | `backend/server.js`, pricing helpers. | Replace or wrap | Prefer authorised APIs and verified/manual comps. |
-| Cardmarket data from provider payloads | Market estimates in TCGdex/Pokemon payloads. | `backend/lib/tcgdexCatalogue.js`, legacy pricing. | Wrap behind pricing service | Store attribution and retrieval timestamps. |
-| TCGPlayer data from provider payloads | Variant prices in Pokemon/TCGdex payloads. | `app/scan/result.tsx`, `backend/lib/tcgdexCatalogue.js`. | Wrap behind pricing service | Remove direct scan-result provider fetch. |
-| PokeData | Japanese/Chinese set/card fallback. | `lib/pokemonTcg.ts`, deep-dive scripts. | Wrap behind provider adapter | Verify licence/coverage before production ingestion. |
-| PokeWallet | Japanese/foreign set enrichment. | `backend/lib/tcgdexCatalogue.js`. | Wrap behind provider adapter | Retain only if rights/rate-limit conditions are documented. |
-| Scrydex | Edition image/provider enrichment. | Backend edition image route. | Wrap behind provider adapter | Keep server-only and attribute source. |
-| Pokemon Price Tracker | Legacy pricing endpoint. | `backend/server.js`, `lib/pricing.ts`. | Replace or wrap | Prefer Pricing V2; keep only if authorised and attributed. |
-| PokeTrace | Card price/cache integration. | `backend/server.js`, `lib/pricing.ts`, `poketrace_api_cache`. | Wrap behind pricing service | Retain only if API terms permit. |
-| GIBL/GIBLTCG | Recognition/TCG provider route. | `backend/routes/gibl.js`, `backend/server.js`. | Use as temporary fallback or remove | Decide after benchmark. Keep server-only if retained. |
-| CardMatrix | Grading quality provider. | `backend/server.js`, `lib/ximilar.ts`. | Wrap behind API | Keep server-only. |
-| Stripe | Payments and marketplace cash terms. | Backend Stripe route, mobile Stripe provider. | Retain | Keep server-only secret key; expose only publishable key to client. |
-| Shippo | Shipping labels/rates. | `backend/routes/shippo.js`, `lib/shippo.ts`. | Retain behind API | Keep token server-only; gate label purchases. |
-| Discord | Webhooks/bot notifications. | Backend Discord routes, trade/community flows. | Wrap behind API | Keep webhooks/tokens server-only. |
-| OpenAI | Minty insight narrative. | Supabase function/backend env references. | Wrap behind API | Keep keys server-only and log prompt/data boundaries. |
-| Anthropic API | Legacy scan identify fallback in backend. | `backend/server.js`. | Replace or temporary fallback | Do not use as primary recognition. Gate or remove debug path. |
-| Expo push API | Push notification send endpoint. | `backend/server.js`, trade context. | Retain | Keep through notification service with request IDs. |
-| Nominatim/Overpass/OpenStreetMap | Community location search. | Community tab. | Wrap or retain with rate limits | Add user agent/rate-limit compliance and API boundary if used at scale. |
+| Supabase Auth | Mobile auth/session provider. | `lib/supabase.tsx`, auth screens, auth/profile contexts. | Retain | Keep initially. Forward user bearer token to Stackr API where needed. |
+| Supabase Postgres | Direct mobile reads/writes to catalogue, collection, market, social, trade and scanner tables. Backend also uses privileged server client. | `app`, `components`, `features`, `lib`, `backend`, `scripts`. | Wrap behind Stackr API | Start with read-only catalogue/search/pricing. Do not move user-write flows until parity is proven. |
+| Supabase Storage | Public scan/profile/listing buckets plus local migrations for private feedback/training buckets. | `lib/storage.ts`, listing flow, scan lab/feedback backend routes, migrations. | Wrap behind Stackr API | Use API-mediated or signed upload flows. Make private feedback/training buckets production-ready before use. |
+| Supabase Edge Function `minty-insight` | Direct mobile function invoke exists locally; live deployment was not listed. | `lib/mintyInsightService.ts`, `supabase/functions/minty-insight`. | Wrap behind Stackr API | Route through gateway/backend so eBay/OpenAI keys remain server-only. |
+| Supabase Edge Function `stackr-card-recognition` | Ximilar-backed fallback function invoked by app, but not listed as live deployed function. | `lib/ximilarRecognition.ts`, `supabase/functions/stackr-card-recognition`. | Use as temporary fallback | Reconcile deployment drift. Put behind private recognition service. |
+| Supabase Edge Function `scan-card` | Live Edge Function using Anthropic; source was not found in local `supabase/functions`. | Live Supabase function list. | Replace or use as temporary fallback | Bring source under version control or disable after migration. Do not treat as canonical recognition. |
+| Railway backend | Current API base for pricing, scanner, provider proxy, payments, shipping and admin routes. | `EXPO_PUBLIC_PRICE_API_URL`, `PRICE_API_URL`, `backend/server.js`. | Wrap behind Stackr API | Evolve behind `api.stackr.app` and versioned routes. Keep `/backend` service as implementation if desired. |
+| Ximilar | TCG ID, OCR ID, slab ID/grade, detect/analyze recognition fallback. | Supabase function, `backend/server.js`, `lib/cardSight.ts`, `lib/ximilarRecognition.ts`. | Use as temporary fallback | Keep until Stackr benchmark passes. Log fallback usage, cost, status and accuracy. |
+| CardSightAI/cardsightai | Visual recognition fallback/proxy. | Root and backend package deps, `lib/cardSight.ts`, `backend/routes/cardsight.js`. | Use as temporary fallback | Keep behind recognition service until benchmark proves replacement. |
+| Rare Candy style local visual pack | Backend visual pack matching and local candidate source. | `backend/routes/rareCandyScan.js`, `lib/cardSight.ts`. | Retain behind private recognition service | Keep as Stackr-controlled candidate path; expose only through gateway. |
+| Local AI / CLIP / Hugging Face transformer flow | OCR/catalogue resolver and local visual search. | `backend/routes/localAiScan.js`, `lib/onDeviceVisualMatcher.ts`, backend deps. | Retain behind private recognition service | Harden, benchmark and version. Do not expose model internals directly to app. |
+| TCGdex | Multilingual catalogue, images and provider pricing payloads. | `backend/lib/tcgdex.js`, `backend/lib/tcgdexCatalogue.js`, `backend/lib/japaneseCatalogue.js`, scripts. | Wrap behind Stackr API | Move all use into provider adapters/ingestion queues with provenance and rate limits. |
+| TCGCSV | Market products, product pricing and historical product sync. | `scripts/*tcgcsv*`, `lib/pricing.ts`, `lib/productSearch.ts`, price-refresh workflow. | Wrap behind Stackr API | Keep in ingestion/price workers with attribution and freshness tracking. |
+| Pokemon TCG API | English card/set API, images and direct fallback search. | `lib/pokemonTcg.ts`, `lib/cardSearch.ts`, scan result/card detail/binder/search routes, backend search. | Wrap behind Stackr API | Remove direct mobile calls. Keep as provider adapter only where terms permit. |
+| Pokemon TCG image CDN | Card, logo and symbol images from provider IDs. | `lib/pokemonTcg.ts`, cached provider payloads. | Wrap behind Stackr API | Cache/expose through CDN only when licence status allows. |
+| PokeData | Foreign-language set/card fallback exploration. | `lib/pokemonTcg.ts`, scripts. | Replace unless licence approved | Do not import production data until rights, attribution and rate limits are documented. |
+| PokeWallet | Japanese/foreign set enrichment. | `backend/server.js`, `backend/lib/tcgdexCatalogue.js`. | Wrap behind provider adapter | Keep server-only if rights and rate limits are approved. |
+| ScryDex | Edition image/provider enrichment. | `components/EditionAwareCardImage.tsx`, `lib/editionImages.ts`, backend edition-image route. | Wrap behind Stackr API | Avoid direct client dependency for catalogue assets; attribute and cache where allowed. |
+| Pokemon Price Tracker | Legacy pricing endpoint. | `backend/server.js`, `lib/pricing.ts`. | Replace or wrap | Prefer Pricing V2 and authorised/attributed price observations. |
+| PokeTrace | Card price/cache integration. | `backend/server.js`, `lib/pricing.ts`, `components/PokeTraceMarketInsights.tsx`, cache table. | Wrap behind pricing service | Keep server/API-mediated; record source category and freshness. |
+| eBay Browse API | Active listing pricing, OAuth token and rate-limit checks. | `backend/server.js`, `backend/lib/pricingV2/adapters/ebayActive.js`, `lib/ebay.ts`. | Wrap behind pricing service | Keep credentials server-only. Label active listings as asking-price evidence. |
+| Authorised eBay sold source | Optional sold transaction source. | `backend/lib/pricingV2/adapters/ebaySold.js`. | Retain if authorised | Use only with authorised endpoint/token. Store evidence and provenance. |
+| SerpApi-style eBay search | Legacy sold/search fallback. | `backend/server.js`, pricing helpers. | Replace or temporary fallback | Prefer authorised APIs/manual verified comps. Do not scrape or bypass controls. |
+| Cardmarket data embedded in provider payloads | Market estimates via provider raw data. | TCGdex/Pokemon payload handling, legacy price fields. | Wrap behind pricing service | Store provider and retrieval attribution; do not expose raw payloads publicly. |
+| TCGPlayer data embedded in provider payloads | Variant/market prices from provider payloads. | `app/scan/result.tsx`, `backend/lib/tcgdexCatalogue.js`, price fields. | Wrap behind pricing service | Remove direct scan-result/provider dependency. |
+| GIBL/GIBLTCG | Recognition/TCG provider route. | `backend/routes/gibl.js`, `backend/server.js`. | Use as temporary fallback or remove | Keep server-only if retained. Decide after benchmark and source review. |
+| CardMatrix | Grading-quality provider. | `backend/server.js`, grade flow. | Wrap behind API | Keep server-only. Do not mix with card identity recognition. |
+| Anthropic API | Live `scan-card` function and backend scan-identify route. | Live Supabase function, `backend/server.js`. | Replace or temporary fallback | Bring source under version control if retained. Do not use as primary canonical recognition. |
+| OpenAI | Minty insight narrative generation. | `supabase/functions/minty-insight`, backend env references. | Retain behind API | Keep key server-only; log data/prompt boundaries. |
+| Stripe | Payments and marketplace cash terms. | `components/StripeAppProvider*`, `backend/routes/stripe.js`. | Retain | Publishable key may be client-visible; secret key stays server-only. |
+| RevenueCat | Subscription/customer purchase SDK. | Root dependency `react-native-purchases`. | Retain | Keep client SDK; do not mix purchase entitlement with catalogue authorization. |
+| Shippo | Shipping labels/rates. | `backend/routes/shippo.js`, `lib/shippo.ts`, `lib/shippoDelivery.ts`. | Retain behind API | Keep token server-only and gate label purchase actions. |
+| Discord | Webhooks/bot notifications for trades, reviews, feedback and news. | Backend routes, trade context, scripts. | Wrap behind API | Keep webhook/token server-only; avoid direct mobile webhook exposure. |
+| Expo push API | Push notification send endpoint. | Backend notification/trade code. | Retain | Keep as notification service with request IDs and retry tracking. |
+| Nominatim/Overpass/OpenStreetMap | Community location search and local discovery. | Community screens/helpers. | Wrap or retain with rate limits | Add rate-limit/user-agent compliance before scaling. |
 | PokeAPI | Pokedex metadata. | `app/(tabs)/pokedex.tsx`, `app/pokemon/[id].tsx`. | Wrap behind Stackr API | Cache and attribute if retained. |
+| GitHub-hosted PokeAPI sprites | Pokedex sprite image URLs. | `app/(tabs)/pokedex.tsx`. | Replace or wrap/cache | Avoid direct mobile dependency for production app assets. |
+| Google News RSS | Community/news sync source. | `scripts/sync-community-news.ts`. | Retain as ops ingestion if approved | Keep in worker/script; record source and retrieval time. |
 
-## Direct Mobile Provider Calls To Remove First
+## Direct Mobile Dependencies To Remove First
 
-Highest priority direct mobile calls:
+Priority removals:
 
-- Direct Supabase table calls for catalogue/search/price data.
-- Direct Pokemon TCG API calls in scan result, card detail and binder price fallbacks.
-- Direct Railway provider routes for eBay, recognition feedback, scan lab, shadow mode and pricing.
-- Direct Supabase Edge Function invocation for Ximilar recognition.
+1. Direct Supabase reads for catalogue/search/pricing projections.
+2. Direct Pokemon TCG API/image calls in scan result, card detail, binder/search and fallback flows.
+3. Direct mobile invocation of provider-backed Supabase Edge Functions.
+4. Direct mobile calls to Railway provider routes where a typed Stackr API route should exist.
+5. Direct external Pokedex/sprite fetches if they remain part of production app UX.
 
 ## Provider Rules For Future Ingestion
 
@@ -71,5 +76,6 @@ Every provider adapter must store:
 - Licence or rights status.
 - Raw payload or raw payload hash.
 - Transformation/mapping version.
+- Import run ID and conflict status.
 
 Adapters must not bypass robots.txt, authentication, anti-bot controls, rate limits, paywalls or source licence restrictions.
