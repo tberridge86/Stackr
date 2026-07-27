@@ -17,6 +17,14 @@ Scope: additive local/repository migration only. No production Supabase migratio
 | `raw_payload` | Private raw provider JSON; only in private schemas. |
 | `internal_notes` | Private operational/review notes; excluded from public projections. |
 
+## Data API Exposure Contract
+
+Only the `api` schema should be added to Supabase's exposed schemas for the public mobile catalogue surface in this stage. The `api.catalogue_*` views are the public-safe projection layer and intentionally omit raw payloads, provider secrets, licensing-review fields and internal notes.
+
+The `ingest`, `market`, `ml` and `audit` schemas must remain unexposed in Supabase Data API settings. Their tables are also restricted to `service_role` as defense in depth.
+
+The `catalog` schema contains canonical base tables. This migration grants read privileges needed by security-invoker projections, but the Stage 2 client contract is to query the `api` views rather than direct base tables. If a later stage chooses to expose `catalog` directly, it must first review column-level exposure and remove any fields that are not public-safe.
+
 ## `catalog` Schema
 
 Canonical public-safe catalogue data. Readable by `anon` and `authenticated` where active/not deprecated. Writable by catalogue admins and service role only.
@@ -527,3 +535,20 @@ Read model for mobile delta sync from `catalog.catalogue_change_log`.
 - shared-artwork variants remain separate;
 - public API projections exclude raw/private fields;
 - no vector columns are added.
+
+## Rollback Procedure
+
+No production migration was applied in Stage 2. To roll back the repository change, revert the commit that added `20260727212256_canonical_stackr_catalogue_database.sql`, this data dictionary, the ER document and the `test:catalogue-schema` script entry.
+
+For an isolated validation database where the migration has been applied but no catalogue data has been imported, the database rollback is:
+
+```sql
+drop schema if exists api cascade;
+drop schema if exists audit cascade;
+drop schema if exists ml cascade;
+drop schema if exists market cascade;
+drop schema if exists ingest cascade;
+drop schema if exists catalog cascade;
+```
+
+Do not drop `pgcrypto` or `pg_trgm` in rollback unless the environment owner confirms no existing object outside this migration depends on those shared extensions. If catalogue data has been imported, export the affected schemas first so provenance and raw source records are not lost.

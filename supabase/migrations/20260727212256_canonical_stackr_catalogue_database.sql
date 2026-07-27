@@ -1249,3 +1249,13 @@ comment on table ingest.raw_source_records is
 
 comment on table ingest.data_conflicts is
   'Private review queue for conflicting external IDs, name/variant conflicts and identity collisions.';
+
+-- Rollback for an isolated validation database before catalogue import:
+--   drop schema if exists api cascade;
+--   drop schema if exists audit cascade;
+--   drop schema if exists ml cascade;
+--   drop schema if exists market cascade;
+--   drop schema if exists ingest cascade;
+--   drop schema if exists catalog cascade;
+-- Do not drop shared extensions such as pgcrypto or pg_trgm unless the
+-- environment owner confirms no other object depends on them.
