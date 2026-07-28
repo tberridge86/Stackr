@@ -94,8 +94,14 @@ export type NormalisedRecord = {
   recordType: ProviderRecordType;
   gameCode: string;
   languageCode: string;
+  seriesCode?: string | null;
+  seriesNativeName?: string | null;
+  seriesEnglishDisplayName?: string | null;
   setCode?: string | null;
   providerSetId?: string | null;
+  setReleaseDate?: string | null;
+  setPrintedTotal?: number | null;
+  setTotal?: number | null;
   collectorNumber?: string | null;
   collectorNumberPrefix?: string | null;
   collectorNumberSort?: number | null;

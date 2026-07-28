@@ -68,6 +68,10 @@ function assertMigrationStructure() {
   }
 
   expectSql(/create extension if not exists pg_trgm with schema extensions;/, 'missing pg_trgm extension');
+  expectSql(
+    /finish_group in \([^)]*'promo'[^)]*\)/,
+    'promo finish seed must satisfy the finish_group constraint',
+  );
   expectSql(/using gin\(.*gin_trgm_ops\)/s, 'missing trigram index');
   expectSql(/using gin\(to_tsvector\('simple'/, 'missing full-text-search index');
   expectSql(/with \(security_invoker = true\)/, 'public API views should be security invoker');

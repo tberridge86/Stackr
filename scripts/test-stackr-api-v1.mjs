@@ -338,6 +338,12 @@ await withServer(async (baseUrl) => {
 });
 
 const openApi = await readFile(new URL('../docs/stackr-api/openapi.v1.yaml', import.meta.url), 'utf8');
+const apiServiceSource = await readFile(new URL('../backend/lib/stackrApiV1.js', import.meta.url), 'utf8');
+assert.match(
+  apiServiceSource,
+  /select\('change_sequence,changed_at'\)/,
+  'catalogue manifest ETags must use stable catalogue state rather than the request clock',
+);
 for (const path of [
   '/health',
   '/ready',

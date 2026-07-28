@@ -138,7 +138,9 @@ function canonicalRunKey(adapter: SourceAdapter, options: ImportOptions) {
 function recordKindsForCommand(adapter: SourceAdapter, options: ImportOptions) {
   const command = options.command ?? 'run_source';
   if (command === 'rebuild_record') return [adapter.fetchCards(options), adapter.fetchVariants(options), adapter.fetchAssets(options)];
-  if (command === 'run_set') return [adapter.fetchCards(options), adapter.fetchVariants(options), adapter.fetchAssets(options)];
+  if (command === 'run_set') {
+    return [adapter.fetchSets(options), adapter.fetchCards(options), adapter.fetchVariants(options), adapter.fetchAssets(options)];
+  }
   return [adapter.fetchSets(options), adapter.fetchCards(options), adapter.fetchVariants(options), adapter.fetchAssets(options)];
 }
 
@@ -279,6 +281,7 @@ async function retainRawRecord(
   const query = table(db, 'ingest', 'raw_source_records')
     .select('id')
     .eq('source_id', sourceId)
+    .eq('import_run_id', importRunId)
     .eq('record_type', record.recordType)
     .eq('external_id', record.providerRecordId);
   const { data: existing, error: lookupError } = languageCode
@@ -336,6 +339,29 @@ async function auditDecision(
     reason: input.reason,
     proposed_payload: input.proposed ?? {},
     existing_payload: input.existing ?? {},
+  });
+  if (error) throw error;
+}
+
+async function recordCatalogueChange(
+  db: SupabaseClientLike,
+  input: {
+    entityTable: 'sets' | 'card_variants';
+    entityId: string;
+    entityKey: string;
+    changeType: 'insert' | 'update';
+    summary: Record<string, unknown>;
+  },
+) {
+  const { error } = await table(db, 'catalog', 'catalogue_change_log').insert({
+    catalogue_version_id: null,
+    entity_schema: 'catalog',
+    entity_table: input.entityTable,
+    entity_id: input.entityId,
+    entity_key: input.entityKey,
+    change_type: input.changeType,
+    mobile_syncable: true,
+    public_change_summary: input.summary,
   });
   if (error) throw error;
 }
@@ -468,6 +494,47 @@ async function findSetId(db: SupabaseClientLike, sourceId: string, normalised: N
   return { status: 'missing' as const, reason: 'set_not_found' };
 }
 
+function seriesCode(value: string) {
+  return normaliseName(value).replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+async function ensureSeries(db: SupabaseClientLike, normalised: NormalisedRecord) {
+  const nativeName = cleanText(normalised.seriesNativeName ?? normalised.seriesEnglishDisplayName);
+  if (!nativeName) return { status: 'missing' as const, seriesId: null };
+
+  const code = cleanText(normalised.seriesCode) ?? seriesCode(nativeName);
+  if (!code) return { status: 'missing' as const, seriesId: null };
+
+  const lookup = await table(db, 'catalog', 'series')
+    .select('id')
+    .eq('game_code', normalised.gameCode)
+    .eq('language_code', normalised.languageCode)
+    .eq('series_code', code)
+    .is('deprecated_at', null)
+    .limit(2);
+  if (lookup.error) throw lookup.error;
+  const rows = lookup.data ?? [];
+  if (rows.length > 1) return { status: 'conflict' as const, reason: 'multiple_series_code_matches', seriesId: null };
+
+  const row = {
+    game_code: normalised.gameCode,
+    language_code: normalised.languageCode,
+    series_code: code,
+    native_name: nativeName,
+    english_display_name: normalised.seriesEnglishDisplayName ?? nativeName,
+    source_updated_at: normalised.sourceUpdatedAt ?? null,
+  };
+  if (rows[0]?.id) {
+    const update = await table(db, 'catalog', 'series').update(row).eq('id', rows[0].id);
+    if (update.error) throw update.error;
+    return { status: 'matched' as const, seriesId: rows[0].id as string };
+  }
+
+  const insert = await table(db, 'catalog', 'series').insert(row).select('id').maybeSingle();
+  if (insert.error) throw insert.error;
+  return { status: 'inserted' as const, seriesId: insert.data.id as string };
+}
+
 async function upsertSet(
   db: SupabaseClientLike,
   sourceId: string,
@@ -503,13 +570,31 @@ async function upsertSet(
     return { status: 'conflicted' as const };
   }
 
+  const series = await ensureSeries(db, normalised);
+  if (series.status === 'conflict') {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'schema_conflict',
+      proposed: normalised.raw,
+      existing: { reason: series.reason },
+      notes: 'Ambiguous series match; not guessing a canonical series.',
+    });
+    return { status: 'conflicted' as const };
+  }
+
   const row = {
     game_code: normalised.gameCode,
     language_code: normalised.languageCode,
+    series_id: series.seriesId,
     set_code: normalised.setCode ?? normalised.providerSetId ?? null,
     provider_set_code: normalised.providerSetId ?? normalised.setCode ?? null,
     native_name: nativeName,
     english_display_name: normalised.englishDisplayName,
+    release_date: normalised.setReleaseDate ?? null,
+    printed_total: normalised.setPrintedTotal ?? null,
+    total: normalised.setTotal ?? null,
     source_updated_at: normalised.sourceUpdatedAt ?? null,
   };
 
@@ -528,6 +613,18 @@ async function upsertSet(
       confidence: normalised.sourceConfidence,
       reason: 'set_external_or_exact_code_match',
       proposed: row,
+    });
+    await recordCatalogueChange(db, {
+      entityTable: 'sets',
+      entityId: match.setId,
+      entityKey: `${normalised.gameCode}:${normalised.languageCode}:${match.setId}`,
+      changeType: 'update',
+      summary: {
+        setId: match.setId,
+        gameCode: normalised.gameCode,
+        languageCode: normalised.languageCode,
+        setCode: row.set_code,
+      },
     });
     return { status: 'updated' as const, setId: match.setId };
   }
@@ -556,6 +653,18 @@ async function upsertSet(
     confidence: normalised.sourceConfidence,
     reason: 'new_set_from_provider_record',
     proposed: row,
+  });
+  await recordCatalogueChange(db, {
+    entityTable: 'sets',
+    entityId: data.id,
+    entityKey: `${normalised.gameCode}:${normalised.languageCode}:${data.id}`,
+    changeType: 'insert',
+    summary: {
+      setId: data.id,
+      gameCode: normalised.gameCode,
+      languageCode: normalised.languageCode,
+      setCode: row.set_code,
+    },
   });
   return { status: 'inserted' as const, setId: data.id as string };
 }
@@ -851,6 +960,20 @@ async function upsertCardVariant(
       reason: externalVariantId ? 'external_id_match' : 'canonical_identity_match',
       proposed: { printingPatch, variantPatch },
     });
+    await recordCatalogueChange(db, {
+      entityTable: 'card_variants',
+      entityId: variant.id,
+      entityKey: canonicalKey,
+      changeType: 'update',
+      summary: {
+        variantId: variant.id,
+        canonicalKey,
+        setId: setMatch.setId,
+        languageCode: normalised.languageCode,
+        collectorNumber: normalised.collectorNumber,
+        variantCode: normalised.variantCode ?? 'normal',
+      },
+    });
     return { status: 'updated' as const, variantId: variant.id as string };
   }
 
@@ -948,6 +1071,20 @@ async function upsertCardVariant(
     confidence: normalised.sourceConfidence,
     reason: 'new_card_variant_from_safe_provider_record',
     proposed: normalised.raw,
+  });
+  await recordCatalogueChange(db, {
+    entityTable: 'card_variants',
+    entityId: variant.id,
+    entityKey: canonicalKey,
+    changeType: 'insert',
+    summary: {
+      variantId: variant.id,
+      canonicalKey,
+      setId: setMatch.setId,
+      languageCode: normalised.languageCode,
+      collectorNumber: normalised.collectorNumber,
+      variantCode: normalised.variantCode ?? 'normal',
+    },
   });
   return { status: 'inserted' as const, variantId: variant.id as string };
 }

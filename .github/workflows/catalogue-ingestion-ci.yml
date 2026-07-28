@@ -1,0 +1,54 @@
+name: Catalogue Ingestion CI
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/catalogue-ingestion-ci.yml'
+      - 'backend/lib/stackrApiV1.js'
+      - 'docs/stackr-api/**'
+      - 'scripts/catalogue-ingest.ts'
+      - 'scripts/catalogue-ingestion/**'
+      - 'scripts/test-canonical-catalogue-schema.ts'
+      - 'scripts/test-catalogue-ingestion.ts'
+      - 'scripts/test-stackr-api-v1.mjs'
+      - 'supabase/manual/**'
+      - 'supabase/migrations/**'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Test canonical catalogue migration
+        run: npm run test:catalogue-schema
+
+      - name: Test catalogue ingestion
+        run: npm run test:catalogue-ingestion
+
+      - name: Test Stackr API v1
+        run: npm run test:stackr-api-v1

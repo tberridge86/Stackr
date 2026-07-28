@@ -1,4 +1,5 @@
 import { ManualCsvSourceAdapter, ManualJsonSourceAdapter } from './manualAdapters';
+import { PokemonTcgSourceAdapter } from './pokemonTcgAdapter';
 import { TcgdexSourceAdapter } from './tcgdexAdapter';
 import type { SourceAdapter } from './sourceAdapter';
 
@@ -7,6 +8,7 @@ type AdapterOptions = {
   file?: string;
   language?: string;
   licenceStatus?: 'approved' | 'under_review' | 'restricted' | 'denied' | 'unknown';
+  apiKey?: string;
 };
 
 export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
@@ -31,7 +33,13 @@ export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
       licenceStatus: options.licenceStatus ?? 'under_review',
     });
   }
+  if (source === 'pokemon-tcg-api' || source === 'pokemon_tcg_api') {
+    return new PokemonTcgSourceAdapter({
+      apiKey: options.apiKey,
+      licenceStatus: options.licenceStatus ?? 'under_review',
+    });
+  }
   throw new Error(`Unsupported source adapter: ${options.source}`);
 }
 
-export const supportedSourceAdapters = ['manual-csv', 'manual-json', 'tcgdex'];
+export const supportedSourceAdapters = ['manual-csv', 'manual-json', 'tcgdex', 'pokemon-tcg-api'];
