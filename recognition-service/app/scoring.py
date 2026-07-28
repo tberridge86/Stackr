@@ -1,0 +1,185 @@
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+from .normalization import collector_matches, normalize_text, text_similarity
+from .schemas import CaptureQualityMetrics
+
+
+@dataclass(frozen=True)
+class ScoringConfig:
+    schema_version: str
+    version: str
+    status: str
+    weights: dict[str, float]
+    thresholds: dict[str, float]
+    overfetch: dict[str, int]
+    calibration: dict[str, Any]
+
+    @property
+    def calibration_ready(self) -> bool:
+        return bool(self.calibration.get("ready"))
+
+
+def load_scoring_config(path: Path) -> ScoringConfig:
+    payload = json.loads(path.read_text(encoding="utf8"))
+    weights = {str(key): float(value) for key, value in payload["weights"].items()}
+    total = sum(weights.values())
+    if not 0.99 <= total <= 1.01:
+        raise ValueError(f"scoring weights must sum to 1; got {total}")
+    return ScoringConfig(
+        schema_version=str(payload["schemaVersion"]),
+        version=str(payload["version"]),
+        status=str(payload["status"]),
+        weights=weights,
+        thresholds={str(key): float(value) for key, value in payload["thresholds"].items()},
+        overfetch={str(key): int(value) for key, value in payload["overfetch"].items()},
+        calibration=dict(payload.get("calibration") or {}),
+    )
+
+
+@dataclass
+class CandidateRecord:
+    canonical_card_id: str | None
+    variant_id: str | None
+    set_id: str | None
+    set_code: str | None
+    collector_number: str | None
+    language_code: str | None
+    variant_code: str | None
+    card_name: str | None
+    image_similarity: float | None = None
+    perceptual_hash_similarity: float | None = None
+    rarity_variant_hint: str | None = None
+    source: str = "unknown"
+    reasons: list[str] | None = None
+
+
+@dataclass
+class ScoredCandidate:
+    record: CandidateRecord
+    rank: int
+    overall: float
+    image: float
+    ocr: float
+    set_number: float
+    card_name: float
+    language: float
+    rarity_variant: float
+    perceptual_hash: float
+    reasons: list[str]
+    uncertainty_flags: list[str]
+
+
+def clamp01(value: float | None, fallback: float = 0.0) -> float:
+    if value is None:
+        return fallback
+    return max(0.0, min(1.0, float(value)))
+
+
+def language_score(candidate: str | None, hint: str | None) -> float:
+    if not candidate or not hint or hint == "unknown":
+        return 0.5
+    if candidate == hint:
+        return 1.0
+    if hint == "zh" and candidate in {"zh-Hans", "zh-Hant", "zh"}:
+        return 1.0
+    return 0.0
+
+
+def score_candidate(
+    candidate: CandidateRecord,
+    config: ScoringConfig,
+    *,
+    collector_hint: str | None,
+    set_code_hint: str | None,
+    card_name_hint: str | None,
+    ocr_text: str | None,
+    language_hint: str | None,
+    capture_quality: CaptureQualityMetrics,
+) -> ScoredCandidate:
+    image = clamp01(candidate.image_similarity, fallback=0.0)
+    collector = 1.0 if collector_matches(candidate.collector_number, collector_hint) else 0.0
+    set_code = 1.0 if normalize_text(candidate.set_code) and normalize_text(candidate.set_code) == normalize_text(set_code_hint) else 0.0
+    set_number = max(collector, (collector + set_code) / 2 if collector or set_code else 0.0)
+    name_hint = card_name_hint or ocr_text
+    name = text_similarity(candidate.card_name, name_hint)
+    language = language_score(candidate.language_code, language_hint)
+    rarity_variant = 0.5
+    phash = clamp01(candidate.perceptual_hash_similarity, fallback=0.5)
+    ocr = max(set_number, name, language * 0.6)
+
+    weights = config.weights
+    overall = (
+        image * weights["image"]
+        + collector * weights["collectorNumber"]
+        + set_code * weights["setCode"]
+        + name * weights["cardName"]
+        + language * weights["language"]
+        + rarity_variant * weights["rarityVariant"]
+        + phash * weights["perceptualHash"]
+    )
+
+    reasons = list(candidate.reasons or [])
+    if image > 0:
+        reasons.append("image_similarity")
+    if collector:
+        reasons.append("collector_number_agreement")
+    if set_code:
+        reasons.append("set_code_agreement")
+    if name >= 0.8:
+        reasons.append("card_name_agreement")
+    if language >= 1:
+        reasons.append("language_agreement")
+
+    uncertainty_flags: list[str] = []
+    if candidate.image_similarity is None:
+        uncertainty_flags.append("image_similarity_missing")
+    if collector_hint and not collector:
+        uncertainty_flags.append("collector_number_conflict")
+    if set_code_hint and not set_code:
+        uncertainty_flags.append("set_code_conflict")
+    if language == 0:
+        uncertainty_flags.append("language_conflict")
+    if not config.calibration_ready:
+        uncertainty_flags.append("confidence_not_calibrated")
+
+    return ScoredCandidate(
+        record=candidate,
+        rank=0,
+        overall=clamp01(overall),
+        image=image,
+        ocr=clamp01(ocr),
+        set_number=clamp01(set_number),
+        card_name=clamp01(name),
+        language=clamp01(language),
+        rarity_variant=clamp01(rarity_variant),
+        perceptual_hash=phash,
+        reasons=sorted(set(reasons)),
+        uncertainty_flags=sorted(set(uncertainty_flags)),
+    )
+
+
+def choose_match_status(candidates: list[ScoredCandidate], config: ScoringConfig) -> tuple[str, list[str], str, bool]:
+    if not candidates:
+        return "no_match", ["no_candidates"], "manual_entry", False
+    best = candidates[0]
+    second = candidates[1] if len(candidates) > 1 else None
+    reasons: list[str] = []
+    auto_threshold = config.thresholds["autoConfirm"]
+    probable_threshold = config.thresholds["probable"]
+    margin_threshold = config.thresholds["ambiguousMargin"]
+    margin = best.overall - second.overall if second else best.overall
+
+    if second and margin < margin_threshold:
+        return "ambiguous", ["top_candidates_too_close"], "confirm_candidate", False
+    if best.overall >= auto_threshold and not best.uncertainty_flags and config.calibration_ready:
+        return "exact", ["above_auto_confirm_threshold"], "auto_confirm_allowed", True
+    if best.overall >= probable_threshold:
+        if not config.calibration_ready:
+            reasons.append("confidence_not_calibrated")
+        return "probable", reasons or ["above_probable_threshold"], "confirm_candidate", False
+    return "no_match", ["below_probable_threshold"], "rescan", False
