@@ -1,0 +1,27 @@
+{
+  "commandVersion": "stackr-embedding-index-command-v1.0.0",
+  "status": "blocked",
+  "generatedAt": "2026-07-28T15:19:29.107Z",
+  "scope": {
+    "scopeType": "full",
+    "scopeValue": null
+  },
+  "modelId": null,
+  "indexVersion": null,
+  "jobKey": "719a504adff73190a0acebf8eed58a4334136c76e3482e3d430c636698dd680b",
+  "shouldActivate": false,
+  "blockedReasons": [
+    "no_selected_model",
+    "no_selected_embedding_dimension",
+    "benchmark_not_complete"
+  ],
+  "steps": [
+    "Load selected model registry entry and verify checksum, licence, preprocessing and embedding dimensions.",
+    "Enumerate authorised catalogue reference assets for the requested scope.",
+    "Skip already completed embeddings whose source image checksum and preprocessing checksum match.",
+    "Generate missing embeddings into the inactive dimension-specific vector table.",
+    "Build or refresh the HNSW index for that inactive index version.",
+    "Run completeness and nearest-neighbour health checks with over-fetch before metadata reranking.",
+    "Activate only through ml.activate_embedding_index_version after validation passes."
+  ]
+}
