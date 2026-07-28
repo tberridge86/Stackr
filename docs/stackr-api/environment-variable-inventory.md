@@ -75,6 +75,9 @@ Server-only unless explicitly public in code or deployment config.
 | `RAILWAY_PUBLIC_DOMAIN` | Backend public URL detection |
 | `STACKR_ADMIN_API_KEY` | Admin route protection |
 | `STACKR_API_PUBLIC_URL` | Public Stackr API URL |
+| `STACKR_ASSET_BASE_URL` | Versioned catalogue API asset URL generation |
+| `STACKR_MIN_APP_SCHEMA_VERSION` | Versioned catalogue manifest compatibility floor |
+| `STACKR_MODEL_INDEX_VERSION` | Versioned catalogue manifest model/index version |
 | `SUPABASE_ANON_KEY` | Backend Supabase public client where needed |
 | `SUPABASE_PROJECT_REF` | Supabase project reference |
 | `SUPABASE_SECRET_KEY` | Backend privileged Supabase key |

@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import express from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
@@ -20,6 +21,7 @@ import scanLabRoutes from './routes/scanLab.js';
 import scannerPackRoutes from './routes/scannerPacks.js';
 import shippoRoutes from './routes/shippo.js';
 import stripeRoutes from './routes/stripe.js';
+import createV1Router from './routes/v1.js';
 import {
   fetchTcgdexCardDetail,
   fetchTcgdexCardPrice,
@@ -62,6 +64,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '25mb' }));
+app.use('/v1', compression({ threshold: 1024 }), createV1Router());
 app.use('/api/assets', assetRoutes);
 app.use('/api/admin/assets', adminAssetsRouter);
 app.use('/api/cardsight', cardsightRoutes);

@@ -1,0 +1,477 @@
+openapi: 3.1.0
+info:
+  title: Stackr Catalogue API
+  version: 1.0.0
+  summary: Stable public API for catalogue, delta sync and search.
+servers:
+  - url: https://api.stackr.app/v1
+    description: Production edge gateway
+  - url: http://localhost:3001/v1
+    description: Local backend
+tags:
+  - name: System
+  - name: Catalogue
+  - name: Search
+paths:
+  /health:
+    get:
+      tags: [System]
+      operationId: getHealth
+      responses:
+        "200":
+          description: API process is alive.
+          headers:
+            X-Request-Id:
+              $ref: "#/components/headers/RequestId"
+            X-Stackr-Api-Version:
+              $ref: "#/components/headers/ApiVersion"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /ready:
+    get:
+      tags: [System]
+      operationId: getReady
+      responses:
+        "200":
+          description: API dependencies are reachable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadyResponse"
+        "503":
+          $ref: "#/components/responses/Error"
+  /catalog/manifest:
+    get:
+      tags: [Catalogue]
+      operationId: getCatalogManifest
+      parameters:
+        - $ref: "#/components/parameters/IfNoneMatch"
+      responses:
+        "200":
+          description: Current catalogue sync manifest.
+          headers:
+            ETag:
+              $ref: "#/components/headers/ETag"
+            Cache-Control:
+              $ref: "#/components/headers/CacheControl"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManifestResponse"
+        "304":
+          description: Manifest has not changed.
+  /catalog/delta:
+    get:
+      tags: [Catalogue]
+      operationId: getCatalogDelta
+      parameters:
+        - name: since
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+          description: Last applied catalogue change sequence.
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/IfNoneMatch"
+      responses:
+        "200":
+          description: Cursor-paginated catalogue inserts, updates and deprecations.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeltaResponse"
+        "304":
+          description: Delta page has not changed.
+        "400":
+          $ref: "#/components/responses/Error"
+  /languages:
+    get:
+      tags: [Catalogue]
+      operationId: listLanguages
+      parameters:
+        - $ref: "#/components/parameters/IfNoneMatch"
+      responses:
+        "200":
+          description: Supported catalogue languages.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LanguagesResponse"
+  /series:
+    get:
+      tags: [Catalogue]
+      operationId: listSeries
+      parameters:
+        - $ref: "#/components/parameters/Language"
+        - name: game
+          in: query
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Cursor-paginated catalogue series.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeriesResponse"
+  /sets:
+    get:
+      tags: [Catalogue]
+      operationId: listSets
+      parameters:
+        - $ref: "#/components/parameters/Language"
+        - name: game
+          in: query
+          schema:
+            type: string
+        - name: seriesId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: setCode
+          in: query
+          schema:
+            type: string
+        - name: region
+          in: query
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Cursor-paginated catalogue sets.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetsResponse"
+  /sets/{setId}:
+    get:
+      tags: [Catalogue]
+      operationId: getSet
+      parameters:
+        - $ref: "#/components/parameters/SetId"
+      responses:
+        "200":
+          description: A canonical set.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetResponse"
+        "404":
+          $ref: "#/components/responses/Error"
+  /sets/{setId}/cards:
+    get:
+      tags: [Catalogue]
+      operationId: listSetCards
+      parameters:
+        - $ref: "#/components/parameters/SetId"
+        - $ref: "#/components/parameters/Language"
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Cursor-paginated cards in a canonical set.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardsResponse"
+  /cards/{cardId}:
+    get:
+      tags: [Catalogue]
+      operationId: getCard
+      parameters:
+        - $ref: "#/components/parameters/CardId"
+      responses:
+        "200":
+          description: A canonical card printing with variants.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardResponse"
+        "404":
+          $ref: "#/components/responses/Error"
+  /cards/{cardId}/variants:
+    get:
+      tags: [Catalogue]
+      operationId: listCardVariants
+      parameters:
+        - $ref: "#/components/parameters/CardId"
+      responses:
+        "200":
+          description: Variants for a canonical card printing.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardVariantsResponse"
+  /search:
+    get:
+      tags: [Search]
+      operationId: searchCatalog
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 160
+        - $ref: "#/components/parameters/Language"
+        - name: setId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Search results with explicit match reasons.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+        "400":
+          $ref: "#/components/responses/Error"
+components:
+  headers:
+    RequestId:
+      schema:
+        type: string
+    ApiVersion:
+      schema:
+        type: string
+        const: "1"
+    ETag:
+      schema:
+        type: string
+    CacheControl:
+      schema:
+        type: string
+  parameters:
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      schema:
+        type: string
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      description: Opaque cursor returned by the previous page.
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+    Language:
+      name: language
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/LanguageCode"
+    SetId:
+      name: setId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CardId:
+      name: cardId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    Error:
+      description: Structured API error envelope.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+  schemas:
+    LanguageCode:
+      type: string
+      enum: [en, ja, zh-Hans, zh-Hant, ko]
+    EnvelopeMeta:
+      type: object
+      required: [requestId, apiVersion, generatedAt]
+      properties:
+        requestId:
+          type: string
+        apiVersion:
+          type: string
+          const: "1"
+        generatedAt:
+          type: string
+          format: date-time
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Pagination:
+      type: object
+      required: [limit, nextCursor]
+      properties:
+        limit:
+          type: integer
+        nextCursor:
+          type: [string, "null"]
+    HealthResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [status, service, apiVersion, generatedAt]
+              properties:
+                status:
+                  type: string
+                  const: ok
+                service:
+                  type: string
+                apiVersion:
+                  type: string
+                generatedAt:
+                  type: string
+                  format: date-time
+    ReadyResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    ManifestResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required:
+                - currentCatalogueVersion
+                - minCompatibleAppSchemaVersion
+                - latestChangeSequence
+                - availableLanguageShards
+                - assetBaseUrl
+                - modelIndexVersion
+                - generatedAt
+                - etag
+              properties:
+                currentCatalogueVersion:
+                  type: string
+                catalogueVersionId:
+                  type: [string, "null"]
+                  format: uuid
+                minCompatibleAppSchemaVersion:
+                  type: string
+                latestChangeSequence:
+                  type: integer
+                availableLanguageShards:
+                  type: array
+                  items:
+                    type: object
+                assetBaseUrl:
+                  type: [string, "null"]
+                modelIndexVersion:
+                  type: [string, "null"]
+                generatedAt:
+                  type: string
+                  format: date-time
+                etag:
+                  type: string
+    DeltaResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    LanguagesResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    SeriesResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    SetsResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    SetResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    CardsResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    CardResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    CardVariantsResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    SearchResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [query, normalizedQuery, results]
+              properties:
+                query:
+                  type: string
+                normalizedQuery:
+                  type: string
+                results:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/SearchResult"
+    SearchResult:
+      type: object
+      required: [type, reason]
+      properties:
+        type:
+          type: string
+          enum: [card, set]
+        reason:
+          type: string
+          enum:
+            - exact_canonical_id
+            - exact_external_id
+            - exact_set_code_collector_number
+            - exact_collector_number
+            - exact_collector_number_in_set
+            - exact_name_in_set
+            - exact_name
+            - exact_alias
+            - exact_translated_name
+            - fuzzy_name
+    Envelope:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: object
+        meta:
+          $ref: "#/components/schemas/EnvelopeMeta"
+    ErrorEnvelope:
+      type: object
+      required: [error, meta]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            requestId:
+              type: string
+            details: {}
+        meta:
+          type: object
