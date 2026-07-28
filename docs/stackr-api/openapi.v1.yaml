@@ -12,6 +12,7 @@ tags:
   - name: System
   - name: Catalogue
   - name: Search
+  - name: Market
 paths:
   /health:
     get:
@@ -210,6 +211,83 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CardVariantsResponse"
+  /cards/{variantId}/price:
+    get:
+      tags: [Market]
+      operationId: getCardVariantPrice
+      parameters:
+        - $ref: "#/components/parameters/VariantId"
+        - $ref: "#/components/parameters/ProductType"
+        - $ref: "#/components/parameters/Currency"
+        - $ref: "#/components/parameters/Condition"
+        - $ref: "#/components/parameters/Grader"
+        - $ref: "#/components/parameters/Grade"
+      responses:
+        "200":
+          description: Latest provider-neutral price estimate for one exact variant/product identity.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CardPriceResponse"
+        "400":
+          $ref: "#/components/responses/Error"
+  /cards/{variantId}/price-history:
+    get:
+      tags: [Market]
+      operationId: getCardVariantPriceHistory
+      parameters:
+        - $ref: "#/components/parameters/VariantId"
+        - $ref: "#/components/parameters/ProductType"
+        - $ref: "#/components/parameters/Currency"
+        - $ref: "#/components/parameters/Condition"
+        - $ref: "#/components/parameters/Grader"
+        - $ref: "#/components/parameters/Grade"
+        - name: observationType
+          in: query
+          schema:
+            type: string
+            enum: [sold_observation, active_listing]
+        - $ref: "#/components/parameters/Cursor"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Public-safe pricing evidence history with active and sold rows explicitly labelled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceHistoryResponse"
+        "400":
+          $ref: "#/components/responses/Error"
+  /market/movers:
+    get:
+      tags: [Market]
+      operationId: listMarketMovers
+      parameters:
+        - $ref: "#/components/parameters/ProductType"
+        - $ref: "#/components/parameters/Currency"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Market identities with recent estimate movement.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketMoversResponse"
+  /market/opportunities:
+    get:
+      tags: [Market]
+      operationId: listMarketOpportunities
+      parameters:
+        - $ref: "#/components/parameters/ProductType"
+        - $ref: "#/components/parameters/Currency"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Active listings below exact-variant estimates. These are not sold comps.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarketOpportunitiesResponse"
   /search:
     get:
       tags: [Search]
@@ -295,6 +373,45 @@ components:
       schema:
         type: string
         format: uuid
+    VariantId:
+      name: variantId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ProductType:
+      name: productType
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/MarketProductType"
+    Currency:
+      name: currency
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: "^[A-Z]{3}$"
+        default: GBP
+    Condition:
+      name: condition
+      in: query
+      required: false
+      schema:
+        type: string
+    Grader:
+      name: grader
+      in: query
+      required: false
+      schema:
+        type: string
+    Grade:
+      name: grade
+      in: query
+      required: false
+      schema:
+        type: string
   responses:
     Error:
       description: Structured API error envelope.
@@ -306,6 +423,12 @@ components:
     LanguageCode:
       type: string
       enum: [en, ja, zh-Hans, zh-Hant, ko]
+    MarketProductType:
+      type: string
+      enum: [raw_card, graded_card, sealed_product]
+    MarketEvidenceStatus:
+      type: string
+      enum: [recent_sold_value, thin_sold_value, market_estimate, asking_price_indication, unavailable]
     EnvelopeMeta:
       type: object
       required: [requestId, apiVersion, generatedAt]
@@ -411,6 +534,52 @@ components:
       allOf:
         - $ref: "#/components/schemas/Envelope"
     CardVariantsResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    CardPriceResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [variantId, productType, currency, status, estimates, sample, confidence]
+              properties:
+                variantId:
+                  type: string
+                  format: uuid
+                productType:
+                  $ref: "#/components/schemas/MarketProductType"
+                currency:
+                  type: string
+                status:
+                  $ref: "#/components/schemas/MarketEvidenceStatus"
+                priceType:
+                  $ref: "#/components/schemas/MarketEvidenceStatus"
+                estimates:
+                  type: object
+                  properties:
+                    low:
+                      type: [number, "null"]
+                    central:
+                      type: [number, "null"]
+                    high:
+                      type: [number, "null"]
+                sample:
+                  type: object
+                confidence:
+                  type: object
+                fallbackEstimate:
+                  type: [object, "null"]
+                unavailableReason:
+                  type: [string, "null"]
+    PriceHistoryResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    MarketMoversResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+    MarketOpportunitiesResponse:
       allOf:
         - $ref: "#/components/schemas/Envelope"
     SearchResponse:

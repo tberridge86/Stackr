@@ -11,6 +11,10 @@ import {
   STACKR_API_V1,
   createCatalogueV1Service,
 } from '../lib/stackrApiV1.js';
+import {
+  MARKET_CACHE_CONTROL,
+  createMarketPricingService,
+} from '../lib/marketPricing/service.js';
 
 let supabaseAdmin = null;
 
@@ -27,6 +31,12 @@ function getSupabaseAdmin() {
 
 function defaultService() {
   return createCatalogueV1Service({
+    supabase: getSupabaseAdmin(),
+  });
+}
+
+function defaultPricingService() {
+  return createMarketPricingService({
     supabase: getSupabaseAdmin(),
   });
 }
@@ -117,6 +127,7 @@ function asyncRoute(handler) {
 export function createV1Router(options = {}) {
   const router = express.Router();
   const getService = options.getService ?? (() => options.service ?? defaultService());
+  const getPricingService = options.getPricingService ?? (() => options.pricingService ?? defaultPricingService());
 
   router.use((req, res, next) => {
     req.stackrRequestId = requestIdFrom(req);
@@ -190,6 +201,36 @@ export function createV1Router(options = {}) {
 
   router.get('/cards/:cardId/variants', asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().cardVariants(req.params.cardId));
+  }));
+
+  router.get('/cards/:variantId/price', asyncRoute(async (req, res) => {
+    sendEnvelope(req, res, await getPricingService().price(req.params.variantId, req.query), {
+      cacheControl: MARKET_CACHE_CONTROL,
+    });
+  }));
+
+  router.get('/cards/:variantId/price-history', asyncRoute(async (req, res) => {
+    const history = await getPricingService().priceHistory(req.params.variantId, req.query);
+    sendEnvelope(req, res, { variantId: history.variantId, observations: history.observations }, {
+      cacheControl: MARKET_CACHE_CONTROL,
+      pagination: history.pagination,
+    });
+  }));
+
+  router.get('/market/movers', asyncRoute(async (req, res) => {
+    const movers = await getPricingService().marketMovers(req.query);
+    sendEnvelope(req, res, { movers: movers.movers }, {
+      cacheControl: MARKET_CACHE_CONTROL,
+      pagination: movers.pagination,
+    });
+  }));
+
+  router.get('/market/opportunities', asyncRoute(async (req, res) => {
+    const opportunities = await getPricingService().marketOpportunities(req.query);
+    sendEnvelope(req, res, { opportunities: opportunities.opportunities }, {
+      cacheControl: MARKET_CACHE_CONTROL,
+      pagination: opportunities.pagination,
+    });
   }));
 
   router.get('/search', asyncRoute(async (req, res) => {
