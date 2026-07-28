@@ -66,6 +66,8 @@
     "verify-model-compatibility": "tsx scripts/verify-card-identity-catalogue.ts verify-model-compatibility",
     "verify-checksums": "tsx scripts/verify-card-identity-catalogue.ts verify-checksums",
     "inspect-card-neighbours": "tsx scripts/verify-card-identity-catalogue.ts inspect-card-neighbours",
+    "asset:migrate-existing": "node scripts/asset-migrate-existing.mjs",
+    "test:asset-pipeline": "node scripts/test-asset-pipeline.mjs",
     "test:card-identity-search": "tsx scripts/test-card-identity-search.ts",
     "benchmark:card-identity-search": "tsx scripts/benchmark-card-identity-native-search.ts",
     "test:local-on-device-inference": "tsx scripts/test-local-on-device-inference.ts",

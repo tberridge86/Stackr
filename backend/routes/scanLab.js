@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto';
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
+import { validatePrivateScanUpload } from '../lib/assetPipeline.js';
 
 const router = express.Router();
 const STORAGE_BUCKET = process.env.SCAN_LAB_STORAGE_BUCKET || 'scan-lab-training';
@@ -255,9 +256,15 @@ router.put(
         fail(res, 415, 'Scan Lab file uploads must use an approved image content type.');
         return;
       }
+      const validation = validatePrivateScanUpload(req.body, contentType, { maxBytes: 40 * 1024 * 1024 });
+      if (!validation.ok) {
+        fail(res, 400, 'Scan Lab image failed validation.', validation.reasons);
+        return;
+      }
       const extension = contentExtension(contentType);
-      const storagePath = `${auth.user.id}/${capture.id}/${role}.${extension}`;
-      const checksum = createHash('sha256').update(req.body).digest('hex');
+      const userSegment = createHash('sha256').update(auth.user.id).digest('hex').slice(0, 24);
+      const storagePath = `private/u/${userSegment}/${capture.id}/${role}.${extension}`;
+      const checksum = validation.sha256;
 
       const { error: uploadError } = await auth.supabase.storage
         .from(STORAGE_BUCKET)
@@ -298,6 +305,9 @@ router.put(
           checksumSha256: checksum,
           storagePath,
           byteLength: req.body.length,
+          mimeType: contentType,
+          width: validation.width,
+          height: validation.height,
         },
       });
 

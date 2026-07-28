@@ -152,6 +152,7 @@ These must remain backend, CI or Edge Function only.
 | `STACKR_RECOGNITION_MAX_TOTAL_BYTES` | Edge recognition guard |
 | `STACKR_RECOGNITION_MIN_DIMENSION` | Edge recognition guard |
 | `STACKR_SCAN_LAB_UPLOADS_ENABLED` | Scan lab backend flag |
+| `STACKR_SCAN_UPLOAD_MAX_BYTES` | Stage 4 private scan signed-upload guard |
 | `STACKR_XIMILAR_CACHE_MIN_CONFIDENCE` | Ximilar cache threshold |
 | `STACKR_XIMILAR_RATE_LIMIT_HOUR` | Ximilar rate limit |
 | `STACKR_XIMILAR_RATE_LIMIT_MINUTE` | Ximilar rate limit |

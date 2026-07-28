@@ -8,6 +8,7 @@ import FormData from 'form-data';
 import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
 import Jimp from 'jimp';
+import assetRoutes, { adminAssetsRouter } from './routes/assets.js';
 import cardsightRoutes from './routes/cardsight.js';
 import catalogueIngestionRoutes from './routes/catalogueIngestion.js';
 import giblRoutes from './routes/gibl.js';
@@ -61,6 +62,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json({ limit: '25mb' }));
+app.use('/api/assets', assetRoutes);
+app.use('/api/admin/assets', adminAssetsRouter);
 app.use('/api/cardsight', cardsightRoutes);
 app.use('/api/admin/catalogue-ingestion', catalogueIngestionRoutes);
 app.use('/api/gibl', giblRoutes);

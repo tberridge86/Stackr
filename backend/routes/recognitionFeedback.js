@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto';
 import express from 'express';
 import { createClient } from '@supabase/supabase-js';
+import { validatePrivateScanUpload } from '../lib/assetPipeline.js';
 
 const router = express.Router();
 const STORAGE_BUCKET = process.env.RECOGNITION_FEEDBACK_STORAGE_BUCKET || 'recognition-feedback';
@@ -292,10 +293,21 @@ router.put(
         return;
       }
 
-      const contentType = req.headers['content-type'] || 'application/octet-stream';
+      const validation = validatePrivateScanUpload(
+        req.body,
+        req.headers['content-type'] || 'application/octet-stream',
+        { maxBytes: 20 * 1024 * 1024 },
+      );
+      if (!validation.ok) {
+        fail(res, 400, 'Rectified image failed validation.', validation.reasons);
+        return;
+      }
+
+      const contentType = validation.mimeType;
       const extension = contentExtension(contentType);
-      const storagePath = `${auth.user.id}/${feedback.id}/rectified-card.${extension}`;
-      const checksum = createHash('sha256').update(req.body).digest('hex');
+      const userSegment = createHash('sha256').update(auth.user.id).digest('hex').slice(0, 24);
+      const storagePath = `private/u/${userSegment}/${feedback.id}/rectified-card.${extension}`;
+      const checksum = validation.sha256;
 
       const { error: uploadError } = await auth.supabase.storage
         .from(STORAGE_BUCKET)
@@ -328,6 +340,9 @@ router.put(
           storagePath,
           checksumSha256: checksum,
           byteLength: req.body.length,
+          mimeType: contentType,
+          width: validation.width,
+          height: validation.height,
         },
       });
 

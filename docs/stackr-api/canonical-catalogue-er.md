@@ -1,7 +1,11 @@
 # Canonical Catalogue Entity Relationship
 
-Audit/stage date: 2026-07-27
-Migration: `supabase/migrations/20260727212256_canonical_stackr_catalogue_database.sql`
+Audit/stage date: 2026-07-28
+Migrations:
+
+- `supabase/migrations/20260727212256_canonical_stackr_catalogue_database.sql`
+- `supabase/migrations/20260728060617_stackr_asset_repository_delivery_pipeline.sql`
+
 Scope: additive local/repository migration only. No production Supabase migration was pushed.
 
 ## Schema Boundaries
@@ -48,6 +52,7 @@ erDiagram
   CATALOG_SETS ||--o{ CATALOG_ASSETS : assets
   CATALOG_CARD_PRINTINGS ||--o{ CATALOG_ASSETS : assets
   CATALOG_CARD_VARIANTS ||--o{ CATALOG_ASSETS : assets
+  CATALOG_ASSETS ||--o{ ML_MODEL_ASSETS : private_model_files
   CATALOG_SETS ||--o{ CATALOG_SEALED_PRODUCTS : includes
   CATALOG_SEALED_PRODUCTS ||--o{ CATALOG_SEALED_PRODUCT_VARIANTS : has
   CATALOG_VARIANT_TAXONOMY ||--o{ CATALOG_SEALED_PRODUCT_VARIANTS : classifies
@@ -83,6 +88,8 @@ erDiagram
   CATALOG_CARD_VARIANTS ||--o{ ML_RECOGNITION_FEEDBACK_ITEMS : labels
   CATALOG_CARD_VARIANTS ||--o{ ML_BENCHMARK_CASES : benchmarks
   CATALOG_CATALOGUE_VERSIONS ||--o{ ML_RECOGNITION_FEEDBACK_ITEMS : references
+  CATALOG_ASSETS ||--o{ ML_MODEL_ASSETS : model_files
+  ML_SCAN_UPLOAD_ASSETS }o--|| AUTH_USERS : owner_private
 ```
 
 `market.market_identities` separates `raw_card`, `graded_card` and `sealed_product`. These identities are not combined.
@@ -97,6 +104,7 @@ erDiagram
   API_CATALOGUE_SETS }o--|| CATALOG_SETS : projects
   API_CATALOGUE_CARD_NAMES }o--|| CATALOG_CARD_NAMES : projects
   API_CATALOGUE_DELTA_CHANGES }o--|| CATALOG_CATALOGUE_CHANGE_LOG : projects
+  API_ASSET_MANIFEST }o--|| CATALOG_ASSETS : projects
 ```
 
 The `api` views are `security_invoker` views and expose only safe fields. They intentionally exclude:

@@ -236,19 +236,70 @@ Indexes:
 
 ### `catalog.assets`
 
-Public-safe asset metadata.
+Asset metadata for catalogue images, set logos, sealed product images, external references and Stage 4 delivery records.
 
 Key columns:
 
+- `asset_id`: stable public asset identifier.
 - `asset_type`: card image, set symbol, set logo, series logo, sealed product image or other.
+- `asset_visibility`: `public_catalogue`, `private_scan_temp`, `private_training_feedback` or `private_model`.
 - `set_id`, `printing_id`, `variant_id`: at least one asset target is required.
 - `source_id`: optional FK to `ingest.sources`.
-- `url` or `storage_path`: at least one location is required.
-- `mime_type`, `width`, `height`, `sha256`: file metadata.
+- `storage_provider`: `supabase_storage`, `s3_compatible`, `local_dev`, `external_reference` or `unavailable`.
+- `storage_bucket`, `storage_key`, `storage_path`: internal object location where Stackr is permitted to store the file.
+- `url`, `original_source_url`, `original_source_identifier`: original source location and source-specific identifier.
+- `source_attribution`, `attribution_text`: public attribution text.
+- `mime_type`, `width`, `height`, `byte_size`, `sha256`, `content_sha256`: file metadata.
+- `perceptual_hash`: duplicate-artwork detection hash.
+- `derivative_list`: pre-generated derivative metadata for card-grid, search-result and detail-page sizes.
+- `cache_control`: delivery cache header for content-addressed assets.
+- `archival_storage_key`: archival original path where retention is permitted.
 - `rights_status`: approved, under review, restricted, denied or unknown.
+- `permission_status`: Stage 4 mirroring/delivery permission status.
 - `publicly_servable`: only approved/public assets should be exposed.
-- `attribution_text`: public attribution text.
+- `externally_referenced`, `unavailable_reason`: records that may be displayed as metadata but not mirrored.
+- `last_verified_at`: last source/storage verification timestamp.
+- `retention_status`, `retention_until`, `deleted_at`, `deletion_reason`: retention and deletion controls.
 - `licensing_review_notes`: private review notes, excluded from API views.
+
+Public reads must use `api.asset_manifest`, not raw private review fields.
+
+### `ml.model_assets`
+
+Private model files and recognition indexes.
+
+Key columns:
+
+- `model_key`, `model_version`: logical model identity.
+- `asset_id`: optional link back to `catalog.assets`.
+- `storage_bucket`, `storage_key`: private object location.
+- `content_sha256`, `mime_type`, `byte_size`: file integrity and delivery metadata.
+- `permission_status`: model-file permission state.
+- `approved_for_install`: explicit mobile/runtime install gate.
+
+Rows are service-role only and are not exposed through the public Supabase Data API.
+
+### `ml.scan_upload_assets`
+
+Private validated scan, feedback and training-upload asset records.
+
+Key columns:
+
+- `asset_id`: stable private asset identifier.
+- `asset_type`: user scan, recognition feedback, Scan Lab capture or training capture.
+- `asset_visibility`: private temporary scan or private training/feedback capture.
+- `created_by`: owning user, retained in the private table only.
+- `storage_provider`, `storage_bucket`, `storage_key`: private object location.
+- `original_source`, `source_attribution`: upload/source context without public user-identifying paths.
+- `permission_status`: temporary upload, user consented, consent withdrawn, delete requested or unknown.
+- `content_sha256`, `perceptual_hash`: exact and likely-duplicate detection.
+- `mime_type`, `width`, `height`, `byte_size`: validated image metadata.
+- `derivative_list`: future private derivatives, empty by default.
+- `last_verified_at`: last validation timestamp.
+- `retention_status`, `retention_until`, `deleted_at`, `deletion_reason`: retention and deletion controls.
+- `upload_context`: request metadata such as route version and request ID.
+
+Rows are service-role only and are not exposed through the public Supabase Data API.
 
 ### `catalog.sealed_products`
 
