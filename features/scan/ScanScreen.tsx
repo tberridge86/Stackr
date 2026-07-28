@@ -128,6 +128,12 @@ import {
 } from '../../lib/scanIntent';
 import { scanStore } from '../../lib/scanStore';
 import { supabase } from '../../lib/supabase';
+import { stackrApiClient } from '../../lib/stackrApiV1';
+import {
+  getPersistentStackrCatalogueCache,
+  stackrCachedCardToIdentifiedCard,
+  syncStackrCatalogueInBackground,
+} from '../../lib/stackrCatalogueCache';
 
 const CARD_ASPECT_RATIO = 0.716;
 const MAX_RESULT_CARDS = 3;
@@ -1204,7 +1210,11 @@ export default function ScanScreen() {
   );
 
   useEffect(() => {
-    if (!recognitionFeatureFlags.localRecognitionEnabled && !recognitionFeatureFlags.localRecognitionShadowMode) {
+    if (
+      !recognitionFeatureFlags.localRecognitionEnabled
+      && !recognitionFeatureFlags.localRecognitionShadowMode
+      && !recognitionFeatureFlags.onDeviceEmbeddingEnabled
+    ) {
       return;
     }
 
@@ -1228,7 +1238,33 @@ export default function ScanScreen() {
     return () => {
       cancelled = true;
     };
-  }, [recognitionFeatureFlags.localRecognitionEnabled, recognitionFeatureFlags.localRecognitionShadowMode]);
+  }, [
+    recognitionFeatureFlags.localRecognitionEnabled,
+    recognitionFeatureFlags.localRecognitionShadowMode,
+    recognitionFeatureFlags.onDeviceEmbeddingEnabled,
+  ]);
+
+  useEffect(() => {
+    if (!recognitionFeatureFlags.stackrApiEnabled) return;
+
+    let cancelled = false;
+    void syncStackrCatalogueInBackground({ client: stackrApiClient }).then((result) => {
+      if (cancelled || result.status !== 'sync_failed') return;
+      logCameraDiagnostic('stackr catalogue background sync failed', {
+        error: result.error,
+      });
+    }).catch((error) => {
+      if (!cancelled) {
+        logCameraDiagnostic('stackr catalogue background sync failed', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [recognitionFeatureFlags.stackrApiEnabled]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2304,6 +2340,35 @@ export default function ScanScreen() {
     ),
   }), []);
 
+  const lookupStackrCachedIdentities = useCallback(async (
+    localOcrMatch?: LocalOcrMatchResult | null
+  ): Promise<IdentifiedCard[]> => {
+    if (!recognitionFeatureFlags.stackrApiEnabled || !localOcrMatch?.signals.printedNumber) {
+      return [];
+    }
+
+    try {
+      const cache = await getPersistentStackrCatalogueCache();
+      if (!cache) return [];
+      const printedNumber = localOcrMatch.signals.printedNumber.normalisedNumber
+        || String(localOcrMatch.signals.printedNumber.number);
+      const matches = await cache.findExactIdentities({
+        game: 'pokemon',
+        languageCode: localOcrMatch.signals.language === 'unknown' ? null : localOcrMatch.signals.language,
+        setCode: localOcrMatch.signals.setCode,
+        collectorNumber: printedNumber,
+        limit: MAX_RESULT_CARDS,
+      });
+      return matches.map(stackrCachedCardToIdentifiedCard) as IdentifiedCard[];
+    } catch (error) {
+      logCameraDiagnostic('stackr local catalogue lookup failed', {
+        routeInstanceId: routeInstanceId.current,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
+    }
+  }, [recognitionFeatureFlags.stackrApiEnabled]);
+
   const prepareBinderPagePocketImages = useCallback(async (
     photo: CapturedPhoto,
     capturedFrame?: CapturedFrame | null
@@ -2398,6 +2463,10 @@ export default function ScanScreen() {
       localIdentified = localOcrMatch.candidates
         .slice(0, MAX_RESULT_CARDS)
         .map(localOcrCandidateToIdentifiedCard);
+      localIdentified = mergeIdentifiedCards(
+        await lookupStackrCachedIdentities(localOcrMatch),
+        localIdentified
+      ).slice(0, MAX_RESULT_CARDS);
 
       if (localOcrMatch.status === 'strong' && localIdentified.length) {
         const cards = await resolveMatches(localIdentified, targetedOcr.text);
@@ -2447,6 +2516,7 @@ export default function ScanScreen() {
         ambiguousVariants: Boolean(localOcrMatch?.status === 'ambiguous'),
         scanSessionId: `${routeInstanceId.current}:pocket-${pocket.cell.index}`,
         itemType: 'raw_card',
+        rectifiedImageUri: pocket.uri,
       });
       const cards = await resolveMatches(detailed.cards, targetedOcr.text);
       const candidates = cards.map(toBinderPocketCandidate);
@@ -2475,6 +2545,7 @@ export default function ScanScreen() {
   }, [
     binderId,
     resolveMatches,
+    lookupStackrCachedIdentities,
     runTargetedCardOcr,
     scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
     toBinderPocketCandidate,
@@ -2783,6 +2854,7 @@ export default function ScanScreen() {
       identifyMs: null,
       ocrMs: null,
       localOcrMatchMs: null,
+      localCatalogueLookupMs: null,
       resolveMatchesMs: null,
       learningLogMs: null,
       totalMs: null,
@@ -2822,7 +2894,7 @@ export default function ScanScreen() {
         photo_capture_ms: timings.captureMs,
         perspective_crop_ms: timings.recognitionImageMs,
         ocr_ms: timings.ocrMs,
-        local_candidate_match_ms: timings.localOcrMatchMs,
+        local_candidate_match_ms: (timings.localOcrMatchMs ?? 0) + (timings.localCatalogueLookupMs ?? 0) || null,
         remote_request_ms: getRemoteRequestMs(diagnostics),
         database_save_ms: null,
         total_scan_ms: Date.now() - attemptStartedAt,
@@ -3041,6 +3113,10 @@ export default function ScanScreen() {
         localIdentified = localOcrMatch.candidates
           .slice(0, MAX_RESULT_CARDS)
           .map(localOcrCandidateToIdentifiedCard);
+        const cachedLookupStartedAt = Date.now();
+        const cachedIdentified = await lookupStackrCachedIdentities(localOcrMatch);
+        timings.localCatalogueLookupMs = Date.now() - cachedLookupStartedAt;
+        localIdentified = mergeIdentifiedCards(cachedIdentified, localIdentified).slice(0, MAX_RESULT_CARDS);
 
         logCameraDiagnostic('local ocr match complete', {
           routeInstanceId: routeInstanceId.current,
@@ -3049,6 +3125,7 @@ export default function ScanScreen() {
           best: localOcrMatch.bestMatch?.card.name ?? null,
           reasons: localOcrMatch.bestMatch?.reasons ?? [],
           candidates: localOcrMatch.candidates.length,
+          cachedCandidates: cachedIdentified.length,
         });
       }
 
@@ -3080,6 +3157,7 @@ export default function ScanScreen() {
             scanSessionId: routeInstanceId.current,
             itemType: scanIntentConfig.itemType,
             isSlab: scanIntent === 'graded_slab',
+            rectifiedImageUri: resultRectifiedImage?.uri ?? ocrSourceImage?.uri ?? null,
           });
           timings.identifyMs = Date.now() - identifyStartedAt;
           identified = detailedResult.cards;
@@ -3308,6 +3386,7 @@ export default function ScanScreen() {
     isBinderPageScan,
     isInventoryFlow,
     isListingFlow,
+    lookupStackrCachedIdentities,
     logScannerLifecycleEvent,
     mode,
     openManualSearch,

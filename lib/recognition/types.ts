@@ -1,6 +1,6 @@
 export const RECOGNITION_ARCHITECTURE_VERSION = 'stackr-recognition-architecture-v1';
 
-export type RecognitionEngineId = 'existing_legacy_engine' | 'local_on_device_v1';
+export type RecognitionEngineId = 'existing_legacy_engine' | 'local_on_device_v1' | 'stackr_api_v1';
 
 export type RecognitionOutcome = 'accepted' | 'review_required' | 'rescan_required';
 
@@ -173,8 +173,8 @@ export type ModelManifest = {
   name: string;
   version: string;
   createdAt: string;
-  runtime: 'legacy_backend' | 'on_device' | 'not_ready';
-  input: 'rectified_card_jpeg' | 'resized_scan_images' | 'none';
+  runtime: 'legacy_backend' | 'on_device' | 'stackr_api' | 'not_ready';
+  input: 'rectified_card_jpeg' | 'resized_scan_images' | 'embedding_and_ocr' | 'none';
   weightsSource?: string | null;
   license?: string | null;
 };

@@ -1,4 +1,4 @@
-import { PRICE_API_URL } from './config';
+import { PRICE_API_URL, STACKR_API_URL } from './config';
 
 export type StackrApiLanguageCode = 'en' | 'ja' | 'zh-Hans' | 'zh-Hant' | 'ko';
 
@@ -179,6 +179,160 @@ export type StackrSearchResult = {
 
 type FetchLike = typeof fetch;
 
+export type StackrRecognitionLanguageCode = StackrApiLanguageCode | 'unknown';
+
+export type StackrRecognitionScriptCode =
+  | 'latin'
+  | 'japanese'
+  | 'korean'
+  | 'chinese_simplified'
+  | 'chinese_traditional'
+  | 'unknown';
+
+export type StackrCaptureQualityMetrics = {
+  score: number | null;
+  focusScore: number | null;
+  glareScore: number | null;
+  exposureScore: number | null;
+  framingScore: number | null;
+  stabilityScore: number | null;
+  cardCoverage: number | null;
+  failureReasons: string[];
+};
+
+export type StackrRecognitionClientContext = {
+  appVersion?: string | null;
+  platform?: 'ios' | 'android' | 'server' | 'unknown';
+  deviceClass?: string | null;
+  requestId?: string | null;
+};
+
+export type StackrRecognitionConsent = {
+  retainImage?: boolean;
+  useForTraining?: boolean;
+  imageUploadConsent?: boolean;
+  consentVersion?: string | null;
+};
+
+export type StackrRecognitionImageCorners = {
+  topLeft: [number, number];
+  topRight: [number, number];
+  bottomRight: [number, number];
+  bottomLeft: [number, number];
+  coordinateSpace: 'normalized' | 'pixels';
+};
+
+export type StackrRecognitionIdentifyRequest = {
+  modelVersion: string;
+  embedding?: number[] | null;
+  ocrText?: string | null;
+  possibleCollectorNumber?: string | null;
+  possibleSetCode?: string | null;
+  possibleCardName?: string | null;
+  detectedLanguage?: StackrRecognitionLanguageCode;
+  detectedScript?: StackrRecognitionScriptCode;
+  captureQuality: StackrCaptureQualityMetrics;
+  privateImageKey?: string | null;
+  imageMimeType?: string | null;
+  corners?: StackrRecognitionImageCorners | null;
+  consent?: StackrRecognitionConsent;
+  client?: StackrRecognitionClientContext;
+};
+
+export type StackrRecognitionComponentScores = {
+  image: number;
+  ocr: number;
+  setNumber: number;
+  cardName: number;
+  language: number;
+  rarityVariant: number;
+  perceptualHash: number;
+};
+
+export type StackrRecognitionCandidate = {
+  rank: number;
+  canonicalCardId: string | null;
+  variantId: string | null;
+  setId: string | null;
+  setCode: string | null;
+  collectorNumber: string | null;
+  languageCode: string | null;
+  variantCode: string | null;
+  cardName: string | null;
+  overallConfidence: number;
+  imageScore: number;
+  ocrScore: number;
+  setAndNumberScore: number;
+  componentScores: StackrRecognitionComponentScores;
+  reasons: string[];
+  uncertaintyFlags: string[];
+};
+
+export type StackrRecognitionIdentifyResponse = {
+  scanId: string;
+  matchStatus: 'exact' | 'probable' | 'ambiguous' | 'no_match' | 'rejected';
+  topCandidates: StackrRecognitionCandidate[];
+  canonicalCardId: string | null;
+  variantId: string | null;
+  overallConfidence: number;
+  imageScore: number;
+  ocrScore: number;
+  setAndNumberScore: number;
+  modelVersion: string;
+  indexVersion: string | null;
+  scoringConfigVersion: string;
+  reasons: string[];
+  uncertaintyFlags: string[];
+  requestedNextAction:
+    | 'auto_confirm_allowed'
+    | 'confirm_candidate'
+    | 'rescan'
+    | 'upload_fallback_image'
+    | 'manual_entry'
+    | 'none';
+  autoAddAllowed: boolean;
+};
+
+export type StackrRecognitionEmbedRequest = {
+  modelVersion: string;
+  privateImageKey: string;
+  imageMimeType?: string | null;
+  corners?: StackrRecognitionImageCorners | null;
+  consent?: StackrRecognitionConsent;
+  client?: StackrRecognitionClientContext;
+};
+
+export type StackrRecognitionEmbedResponse = {
+  scanId: string;
+  modelVersion: string;
+  embedding: number[];
+  embeddingDimensions: number;
+  imageSha256: string;
+  preprocessingVersion: string;
+};
+
+export type StackrRecognitionFeedbackRequest = {
+  scanId: string;
+  feedbackAction:
+    | 'confirm_result'
+    | 'choose_candidate'
+    | 'manual_correction'
+    | 'variant_correction'
+    | 'missing_card'
+    | 'bad_scan';
+  selectedVariantId?: string | null;
+  correctedVariantId?: string | null;
+  notes?: string | null;
+  consent?: StackrRecognitionConsent;
+  client?: StackrRecognitionClientContext;
+};
+
+export type StackrRecognitionFeedbackResponse = {
+  ok: boolean;
+  scanId: string;
+  feedbackStatus: 'recorded' | 'queued' | 'disabled';
+};
+
 export class StackrApiV1Error extends Error {
   status: number;
   code: string;
@@ -218,13 +372,31 @@ async function parseError(response: Response): Promise<StackrApiErrorEnvelope | 
   }
 }
 
-export class StackrApiV1Client {
+function valueContainsImagePayload(value: unknown): boolean {
+  if (typeof value === 'string') {
+    return /^data:image\//i.test(value) || value.length > 5000 && /^[A-Za-z0-9+/=\s]+$/.test(value);
+  }
+  if (!value || typeof value !== 'object') return false;
+  if (Array.isArray(value)) return value.some(valueContainsImagePayload);
+  return Object.entries(value).some(([key, nested]) => {
+    const lowerKey = key.toLowerCase();
+    return lowerKey.includes('base64') || lowerKey.includes('imagebytes') || valueContainsImagePayload(nested);
+  });
+}
+
+function assertNoImagePayload(value: unknown) {
+  if (valueContainsImagePayload(value)) {
+    throw new Error('Stackr recognition requests must use embeddings or private image keys, not base64 image payloads.');
+  }
+}
+
+export class StackrApiClient {
   private readonly baseUrl: string;
   private readonly fetchImpl: FetchLike;
   private readonly headers: Record<string, string>;
 
   constructor(options: StackrApiV1ClientOptions = {}) {
-    this.baseUrl = options.baseUrl ?? `${PRICE_API_URL}/v1`;
+    this.baseUrl = options.baseUrl ?? `${STACKR_API_URL || PRICE_API_URL}/v1`;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.headers = {
       'X-Stackr-Api-Version': '1',
@@ -264,6 +436,18 @@ export class StackrApiV1Client {
     }
 
     return await response.json() as StackrApiEnvelope<T>;
+  }
+
+  private post<T>(path: string, body: Record<string, unknown>, init: RequestInit = {}) {
+    return this.request<T>(path, undefined, {
+      ...init,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init.headers as Record<string, string> | undefined),
+      },
+      body: JSON.stringify(body),
+    });
   }
 
   health() {
@@ -323,6 +507,24 @@ export class StackrApiV1Client {
   search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }) {
     return this.request<{ query: string; normalizedQuery: string; results: StackrSearchResult[] }>('/search', query);
   }
+
+  recognitionIdentify(payload: StackrRecognitionIdentifyRequest) {
+    assertNoImagePayload(payload);
+    return this.post<StackrRecognitionIdentifyResponse>('/recognition/identify', payload as Record<string, unknown>);
+  }
+
+  recognitionEmbed(payload: StackrRecognitionEmbedRequest) {
+    assertNoImagePayload(payload);
+    return this.post<StackrRecognitionEmbedResponse>('/recognition/embed', payload as Record<string, unknown>);
+  }
+
+  recognitionFeedback(payload: StackrRecognitionFeedbackRequest) {
+    assertNoImagePayload(payload);
+    return this.post<StackrRecognitionFeedbackResponse>('/recognition/feedback', payload as Record<string, unknown>);
+  }
 }
 
-export const stackrApiV1 = new StackrApiV1Client();
+export class StackrApiV1Client extends StackrApiClient {}
+
+export const stackrApiClient = new StackrApiClient();
+export const stackrApiV1 = stackrApiClient;

@@ -16,6 +16,7 @@ export type RecognitionOrchestratorOptions = {
   engines?: {
     legacy?: RecognitionEngine;
     local?: RecognitionEngine;
+    stackrApi?: RecognitionEngine;
   };
   engineTimeoutMs?: number;
 };
@@ -51,7 +52,11 @@ function hasValidRecognitionResult(value: unknown): value is RecognitionResult {
   if (!isRecord(value)) return false;
   if (!FINAL_OUTCOMES.includes(value.outcome as RecognitionOutcome)) return false;
   if (!Array.isArray(value.candidates)) return false;
-  if (value.engineId !== 'existing_legacy_engine' && value.engineId !== 'local_on_device_v1') return false;
+  if (
+    value.engineId !== 'existing_legacy_engine'
+    && value.engineId !== 'local_on_device_v1'
+    && value.engineId !== 'stackr_api_v1'
+  ) return false;
   if (value.outcome === 'accepted' && value.candidates.length < 1) return false;
   if (!isRecord(value.diagnostics)) return false;
   return true;
@@ -242,6 +247,37 @@ function attachShadowModeSnapshot(
   };
 }
 
+function mergeVisibleCandidates(
+  primary: RecognitionResult,
+  secondary: RecognitionResult | null
+): RecognitionResult {
+  if (!secondary?.candidates.length) return primary;
+  const seen = new Set<string>();
+  const candidates = [...primary.candidates, ...secondary.candidates].filter((candidate) => {
+    const key = [
+      candidate.identity.id,
+      candidate.identity.setId,
+      candidate.identity.number,
+      candidate.identity.language,
+    ].filter(Boolean).join('|').toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return {
+    ...primary,
+    candidates,
+    acceptedCandidate: primary.outcome === 'accepted' ? candidates[0] ?? null : null,
+    diagnostics: {
+      ...primary.diagnostics,
+      notes: [
+        ...(primary.diagnostics.notes ?? []),
+        ...(secondary.candidates.length ? [`merged-local-candidates:${secondary.candidates.length}`] : []),
+      ],
+    },
+  };
+}
+
 function engineStartEvent(request: RecognitionRequest, engine: RecognitionEngine) {
   return buildRecognitionEvent({
     anonymousScanId: request.anonymousScanId,
@@ -290,6 +326,7 @@ export async function recognizeCard(
   const timeoutMs = options.engineTimeoutMs ?? DEFAULT_ENGINE_TIMEOUT_MS;
   const startedAt = Date.now();
   let shadowSource: ShadowRunSnapshotSource | null = null;
+  let localVisibleReview: RecognitionResult | null = null;
   const events = [
     buildRecognitionEvent({
       anonymousScanId: request.anonymousScanId,
@@ -301,12 +338,18 @@ export async function recognizeCard(
     }),
   ];
 
-  if (flags.localRecognitionEnabled) {
+  if (flags.localRecognitionEnabled || flags.onDeviceEmbeddingEnabled) {
     events.push(engineStartEvent(request, localEngine));
     const localRun = await runEngineWithTimeout(localEngine, request, timeoutMs);
     if (localRun.ok) {
-      if (localRun.result.outcome !== 'rescan_required') {
+      if (localRun.result.outcome === 'accepted') {
         return attachOrchestratorEvents(localRun.result, localEngine, events, Date.now() - startedAt);
+      }
+      if (localRun.result.outcome === 'review_required') {
+        localVisibleReview = localRun.result;
+        if (!flags.stackrApiEnabled || !flags.stackrRecognitionPrimary) {
+          return attachOrchestratorEvents(localRun.result, localEngine, events, Date.now() - startedAt);
+        }
       }
       events.push(buildRecognitionEvent({
         anonymousScanId: request.anonymousScanId,
@@ -340,6 +383,49 @@ export async function recognizeCard(
     }));
   }
 
+  if (flags.stackrApiEnabled && flags.stackrRecognitionPrimary) {
+    const stackrApiEngine = options.engines?.stackrApi
+      ?? (await import('./engines/stackrApiV1')).stackrApiV1RecognitionEngine;
+    events.push(engineStartEvent(request, stackrApiEngine));
+    const stackrRun = await runEngineWithTimeout(stackrApiEngine, request, timeoutMs);
+    if (stackrRun.ok) {
+      events.push(buildRecognitionEvent({
+        anonymousScanId: request.anonymousScanId,
+        stage: 'engine_completed',
+        durationMs: stackrRun.durationMs,
+        resultState: stackrRun.result.outcome,
+        engineId: stackrApiEngine.id,
+        modelManifest: stackrApiEngine.modelManifest,
+        catalogueManifest: stackrApiEngine.catalogueManifest,
+        candidates: stackrRun.result.candidates,
+        quality: request.quality,
+        errorCode: stackrRun.result.error?.code ?? null,
+      }));
+      if (stackrRun.result.outcome !== 'rescan_required') {
+        return attachShadowModeSnapshot(
+          attachOrchestratorEvents(
+            mergeVisibleCandidates(stackrRun.result, localVisibleReview),
+            stackrApiEngine,
+            events,
+            Date.now() - startedAt
+          ),
+          request,
+          shadowSource
+        );
+      }
+    } else {
+      events.push(engineFailureEvent(request, stackrApiEngine, stackrRun));
+    }
+
+    if (localVisibleReview?.candidates.length) {
+      return attachShadowModeSnapshot(
+        attachOrchestratorEvents(localVisibleReview, localEngine, events, Date.now() - startedAt),
+        request,
+        shadowSource
+      );
+    }
+  }
+
   if (flags.localRecognitionShadowMode) {
     events.push(engineStartEvent(request, localEngine));
     const shadowRun = await runEngineWithTimeout(localEngine, request, Math.min(timeoutMs, 1000));
@@ -369,7 +455,8 @@ export async function recognizeCard(
     }
   }
 
-  if (!flags.legacyCloudFallbackEnabled || !legacyEngine) {
+  const legacyFallbackEnabled = flags.legacyCloudFallbackEnabled && flags.ximilarEmergencyFallback;
+  if (!legacyFallbackEnabled || !legacyEngine) {
     return attachShadowModeSnapshot(buildFailureResult(
       request,
       events,

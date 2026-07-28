@@ -7,6 +7,7 @@ import {
   SCAN_QUALITY_ENABLED,
   SCAN_XIMILAR_FALLBACK_ENABLED,
 } from './config';
+import { getRecognitionFeatureFlags } from './recognition/featureFlags';
 import type { ScanIdentifyDiagnostics } from './cardSight';
 import { SCANNER_CALIBRATION_VERSION } from './scannerCalibration';
 import type { ScannerClientContext } from './scannerClientContext';
@@ -22,6 +23,12 @@ export type ScannerFeatureFlags = {
   localOcrMatcher: boolean;
   ximilarFallback: boolean;
   binderPageV2: boolean;
+  stackrApiEnabled: boolean;
+  onDeviceEmbeddingEnabled: boolean;
+  stackrRecognitionPrimary: boolean;
+  imageFallbackEnabled: boolean;
+  ximilarEmergencyFallback: boolean;
+  scanFeedbackEnabled: boolean;
 };
 
 export type ScannerTimingMetrics = {
@@ -145,6 +152,7 @@ function getRemoteProviderRows(row: ScannerAnalyticsEventRow) {
 }
 
 export function getScannerFeatureFlags(): ScannerFeatureFlags {
+  const recognitionFlags = getRecognitionFeatureFlags();
   return {
     captureGeometryV2: CAPTURE_GEOMETRY_V2_ENABLED,
     cardLocalisation: CARD_LOCALISATION_ENABLED,
@@ -153,6 +161,12 @@ export function getScannerFeatureFlags(): ScannerFeatureFlags {
     localOcrMatcher: SCAN_LOCAL_OCR_MATCHER_ENABLED,
     ximilarFallback: SCAN_XIMILAR_FALLBACK_ENABLED,
     binderPageV2: SCAN_BINDER_PAGE_V2_ENABLED,
+    stackrApiEnabled: recognitionFlags.stackrApiEnabled,
+    onDeviceEmbeddingEnabled: recognitionFlags.onDeviceEmbeddingEnabled,
+    stackrRecognitionPrimary: recognitionFlags.stackrRecognitionPrimary,
+    imageFallbackEnabled: recognitionFlags.imageFallbackEnabled,
+    ximilarEmergencyFallback: recognitionFlags.ximilarEmergencyFallback,
+    scanFeedbackEnabled: recognitionFlags.scanFeedbackEnabled,
   };
 }
 
@@ -163,6 +177,9 @@ export function getScannerFeatureVariant(flags: ScannerFeatureFlags = getScanner
     || flags.autoCaptureV2
     || flags.localOcrMatcher
     || flags.binderPageV2
+    || flags.stackrApiEnabled
+    || flags.onDeviceEmbeddingEnabled
+    || flags.stackrRecognitionPrimary
     ? 'rev2' as const
     : 'legacy' as const;
 }

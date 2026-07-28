@@ -18,6 +18,13 @@ Variables prefixed with `EXPO_PUBLIC_` can be bundled into the mobile/web client
 | `EXPO_PUBLIC_LEGACY_CLOUD_FALLBACK_ENABLED` | Recognition fallback |
 | `EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED` | Local recognition feature flag |
 | `EXPO_PUBLIC_LOCAL_RECOGNITION_SHADOW_MODE` | Local recognition shadow mode |
+| `EXPO_PUBLIC_STACKR_API_ENABLED` | Stackr API client/scanner feature flag |
+| `EXPO_PUBLIC_STACKR_API_URL` | Public Stackr API base URL |
+| `EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED` | On-device embedding feature flag |
+| `EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY` | Stackr API recognition primary-path flag |
+| `EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED` | Private uploaded-image fallback feature flag |
+| `EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK` | Ximilar emergency fallback flag |
+| `EXPO_PUBLIC_SCAN_FEEDBACK_ENABLED` | Scanner feedback submission flag |
 | `EXPO_PUBLIC_ON_DEVICE_VISUAL` | On-device visual matching |
 | `EXPO_PUBLIC_ON_DEVICE_VISUAL_MODEL_PATH` | On-device visual model path |
 | `EXPO_PUBLIC_PRICE_API_URL` | Current Railway/backend API base |

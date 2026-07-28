@@ -12,6 +12,7 @@ import {
   recognitionResultToLegacyIdentifyResult,
 } from './engines/legacyEngine';
 import { localOnDeviceV1Engine } from './engines/localOnDeviceV1';
+import { stackrApiV1RecognitionEngine } from './engines/stackrApiV1';
 import {
   type RecognitionEngine,
   type RecognitionRequest,
@@ -34,6 +35,7 @@ export type RecognitionOrchestratorOptions = {
   engines?: {
     legacy?: RecognitionEngine;
     local?: RecognitionEngine;
+    stackrApi?: RecognitionEngine;
   };
   engineTimeoutMs?: number;
 };
@@ -41,7 +43,10 @@ export type RecognitionOrchestratorOptions = {
 function shouldUseDirectLegacyRoute(flags: RecognitionFeatureFlags) {
   return !flags.localRecognitionEnabled
     && !flags.localRecognitionShadowMode
+    && !flags.stackrApiEnabled
+    && !flags.stackrRecognitionPrimary
     && flags.legacyCloudFallbackEnabled
+    && flags.ximilarEmergencyFallback
     && !flags.scannerDiagnosticsEnabled;
 }
 
@@ -53,6 +58,7 @@ export async function recognizeCard(
     ...options,
     engines: {
       local: options.engines?.local ?? localOnDeviceV1Engine,
+      stackrApi: options.engines?.stackrApi ?? stackrApiV1RecognitionEngine,
       legacy: options.engines?.legacy ?? existingLegacyEngine,
     },
   });
