@@ -2,7 +2,7 @@
 
 Date: 2026-07-29
 
-Status: code prepared and locally verified; production remains unchanged and NO-GO.
+Status: credential containment verified live; database and gateway rollout remain NO-GO.
 
 ## Fixes prepared
 
@@ -13,7 +13,17 @@ Status: code prepared and locally verified; production remains unchanged and NO-
 | Cross-user market rows | The permissive authenticated policy is removed; reads are limited to public rows or the row owner. | Migration not applied. |
 | Public scan bucket | `card-scans` becomes private, is limited to 5 MiB JPEG/PNG/WebP objects, and uses authenticated user-prefixed paths. Existing root-level objects remain owner-readable through stored ownership. | Migration not applied. |
 | Railway gateway origin bypass | Gateway-owned backend routes fail closed by default in production when origin authentication is not configured. | Code not deployed; Railway variables must be configured first. |
-| Secrets in new commits or bundles | CI scans the working tree, pull-request commit range, and exported app bundle without printing secret values. | Local checks pass. Historical repository scan still fails. |
+| Secrets in new commits or bundles | CI scans the working tree, pull-request commit range, and exported app bundle without printing secret values. | Current-tree, exported-bundle, and rewritten ordinary-ref history scans pass. GitHub Support purge of pull-request references remains pending. |
+
+## Verified live credential cutover
+
+On 2026-07-29, the Railway backend was moved from the exposed legacy Supabase `service_role` JWT to a modern backend-only secret API key under the existing server variable name. The replacement deployment returned HTTP 200 from `/health` and completed a Supabase-backed card lookup with a database match.
+
+The EAS inventory covered 15 production store builds. Every inspected production build used the modern publishable Supabase key rather than the legacy `anon` JWT. The current development, preview, staging, and production EAS profiles also use the publishable key.
+
+After the Railway and GitHub Actions consumers were updated, the legacy JWT-based API keys were disabled. Supabase key metadata then reported the legacy key disabled and the publishable key enabled, while a repeat Railway database lookup still returned HTTP 200 with a database match. The same repeat probe received HTTP 500 from the external Pokemon provider; provider health is tracked separately and did not affect the successful Supabase lookup.
+
+No database migration, RLS change, storage-policy change, gateway deployment, or mobile publication was performed as part of this credential cutover.
 
 ## Safe rollout order
 
