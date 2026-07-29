@@ -12,6 +12,7 @@ on:
       - 'scripts/test-catalogue-ingestion.ts'
       - 'scripts/test-catalogue-release-controls.ts'
       - 'scripts/test-production-migration-reconciliation.mjs'
+      - 'scripts/test-production-readiness.mjs'
       - 'scripts/migration-reconciliation/**'
       - 'scripts/test-stackr-api-v1.mjs'
       - 'supabase/manual/**'
@@ -58,6 +59,9 @@ jobs:
 
       - name: Test production migration reconciliation
         run: npm run test:migration-reconciliation
+
+      - name: Test production readiness evidence
+        run: npm run test:production-readiness
 
       - name: Test Stackr API v1
         run: npm run test:stackr-api-v1

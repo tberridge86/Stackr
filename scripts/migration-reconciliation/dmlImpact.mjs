@@ -1,0 +1,136 @@
+export const dmlReviews = new Map([
+  ['20260518150000', {
+    scope: 'migration_time',
+    targets: 'public.market_products',
+    status: 'reviewed',
+    impact: 'Upserts 16 seed identities. Fourteen are existing final identities; two obsolete sealed-product identities are inserted temporarily and removed by 20260519102000.',
+  }],
+  ['20260519102000', {
+    scope: 'migration_time',
+    targets: 'public.market_products',
+    status: 'reviewed',
+    impact: 'Upserts 14 expansion identities and deletes two obsolete identities. All 28 final identities already exist; 17 final rows differ in at least one seeded field. Net final row-count change is zero.',
+  }],
+  ['20260527123000', {
+    scope: 'function_body_only',
+    targets: 'public.profiles',
+    status: 'reviewed_function_definition',
+    impact: 'No migration-time row change. INSERT and UPDATE statements execute only for future auth.users insert events.',
+  }],
+  ['20260528114500', {
+    scope: 'migration_time_and_runtime_definition',
+    targets: 'public.achievement_coin_rewards; public.user_coin_ledger; public.cosmetic_catalog; public.user_cosmetics',
+    status: 'reviewed_policy_confirmation_required',
+    impact: 'Creates 15 reward rows and four cosmetic rows. Existing achievements would add 68 ledger rows. Later reward migrations seed 38 more rewards but do not retroactively backfill the 26 matching existing achievements.',
+  }],
+  ['20260605214500', {
+    scope: 'migration_time',
+    targets: 'public.user_card_variants',
+    status: 'reviewed',
+    impact: 'Production has 615 rows, zero duplicate identity groups, and zero excess rows to delete. The surviving-row quantity UPDATE is value-preserving for the observed data.',
+  }],
+  ['20260621170000', {
+    scope: 'migration_time',
+    targets: 'public.achievement_coin_rewards',
+    status: 'reviewed_policy_confirmation_required',
+    impact: 'Seeds 36 coded reward rows after the historical ledger backfill. Twenty-six existing achievements match this and the following reward seed, but receive no retroactive ledger entry.',
+  }],
+  ['20260628120000', {
+    scope: 'migration_time',
+    targets: 'public.achievement_coin_rewards',
+    status: 'reviewed_policy_confirmation_required',
+    impact: 'Seeds two additional coded reward rows after the historical ledger backfill. Included in the 26 existing achievements requiring an explicit retroactive-award policy decision.',
+  }],
+  ['20260701195000', {
+    scope: 'migration_time',
+    targets: 'public.user_card_flags',
+    status: 'reviewed',
+    impact: 'Production has 23 rows and 16 trade rows. No invalid or null listing statuses exist; post-ADD defaults make both backfill UPDATE statements affect zero rows. Existing listing_images is jsonb rather than the migration declaration text[].',
+  }],
+  ['20260702120000', {
+    scope: 'migration_time',
+    targets: 'public.user_card_variants; public.binder_cards',
+    status: 'reviewed_policy_confirmation_required',
+    impact: 'Would insert 981 owned-card identity rows, match 295 existing identities, increase zero existing quantities, and link 1,288 owned binder rows across 1,276 grouped identities.',
+  }],
+  ['20260717143000', {
+    scope: 'migration_time',
+    targets: 'public.provider_records; public.provider_mappings',
+    status: 'reviewed',
+    impact: 'All 5,411 provider records already have non-empty language values. All 5,220 mappings already contain the fields tested by the canonical backfill, so both UPDATE statements affect zero rows.',
+  }],
+  ['20260721090000', {
+    scope: 'migration_time',
+    targets: 'public.scanner_threshold_sets',
+    status: 'reviewed',
+    impact: 'Target table is absent before replay. Inserts one draft, internal-only threshold set; it does not activate production scanner thresholds.',
+  }],
+  ['20260726103000', {
+    scope: 'function_body_only',
+    targets: 'public.scanner_feedback_review_queue; public.scanner_confusion_pairs',
+    status: 'reviewed_function_definition',
+    impact: 'No migration-time row change. DML runs only for future scan_learning_events trigger events.',
+  }],
+  ['20260726210000', {
+    scope: 'migration_time',
+    targets: 'public.pricing_sources',
+    status: 'reviewed',
+    impact: 'All four source IDs exist and match every field changed by the seed. The upsert is value-preserving for the observed production rows.',
+  }],
+  ['20260726223000', {
+    scope: 'migration_time',
+    targets: 'storage.buckets',
+    status: 'reviewed',
+    impact: 'Inserts the missing private scan-lab-training bucket. No storage objects are copied or made public.',
+  }],
+  ['20260726234500', {
+    scope: 'migration_time',
+    targets: 'storage.buckets',
+    status: 'reviewed',
+    impact: 'Inserts the missing private recognition-feedback bucket. No storage objects are copied or made public.',
+  }],
+  ['20260727212256', {
+    scope: 'migration_time',
+    targets: 'catalog.games; catalog.languages; ingest.sources; catalog.finishes; catalog.variant_taxonomy; catalog.rarities',
+    status: 'reviewed',
+    impact: 'Canonical schemas are absent. Seeds one game, five languages, five sources, ten finishes, twelve variants, and eight rarities into newly created tables.',
+  }],
+  ['20260727213835', {
+    scope: 'migration_time',
+    targets: 'ingest.raw_source_records',
+    status: 'reviewed',
+    impact: 'The ingest schema is absent before replay, so the raw-record compatibility UPDATE affects zero pre-existing rows.',
+  }],
+  ['20260728060617', {
+    scope: 'migration_time',
+    targets: 'catalog.assets; storage.buckets',
+    status: 'reviewed',
+    impact: 'The catalog schema is absent, so the asset backfill affects zero pre-existing rows. Inserts four missing buckets: one public catalogue bucket and three private buckets.',
+  }],
+  ['20260728064400', {
+    scope: 'migration_time_and_runtime_definition',
+    targets: 'ml.embedding_models; ml.embedding_index_versions; ml.embedding_activation_events',
+    status: 'reviewed',
+    impact: 'The ml schema is absent. Seeds five non-active model registry rows. Activation UPDATE/INSERT statements are function-body only and cannot run during migration replay.',
+  }],
+  ['20260728171416', {
+    scope: 'migration_time',
+    targets: 'market.currencies; market.conditions; market.graders; market.grades; market.source_providers; market.price_estimate_versions',
+    status: 'reviewed',
+    impact: 'The private market schema is absent. Seeds six currencies, eleven conditions, five graders, twelve grades, four providers, and one inactive estimate version.',
+  }],
+  ['20260728213516', {
+    scope: 'migration_time',
+    targets: 'catalog.rarities',
+    status: 'reviewed',
+    impact: 'Adds two Pokemon rarity taxonomy rows to the newly created canonical rarity table; no legacy public catalogue rows are changed.',
+  }],
+  ['20260729055009', {
+    scope: 'function_body_only',
+    targets: 'catalog.catalogue_change_log; catalog.catalogue_versions; audit.catalogue_release_events',
+    status: 'reviewed_function_definition',
+    impact: 'No migration-time row change. Activation and forward-only rollback DML is defined in service-role-only functions and is not invoked by the migration.',
+  }],
+]);
+
+export const dmlReviewVersions = new Set(dmlReviews.keys());

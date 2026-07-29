@@ -2,6 +2,8 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { dmlReviews } from './dmlImpact.mjs';
+
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, '..', '..');
 const migrationsDirectory = join(repositoryRoot, 'supabase', 'migrations');
@@ -77,11 +79,11 @@ function targetObjects(sql) {
   return [...objects].sort();
 }
 
-function hasDataMutation(sql) {
+export function hasDataMutation(sql) {
   const withoutComments = sql
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*--.*$/gm, '');
-  return /\b(?:insert\s+into|update\s+[a-z_]|delete\s+from)\b/i.test(withoutComments);
+  return /\binsert\s+into\b|\bdelete\s+from\b|\bupdate\s+(?:only\s+)?(?:[a-z_][a-z0-9_]*\.)?[a-z_][a-z0-9_]*(?:\s+(?:as\s+)?(?!set\b)[a-z_][a-z0-9_]*)?\s+set\b/i.test(withoutComments);
 }
 
 export function buildRows() {
@@ -93,10 +95,15 @@ export function buildRows() {
     const { version, name } = migrationParts(fileName);
     const sql = readFileSync(join(migrationsDirectory, fileName), 'utf8');
     const objects = targetObjects(sql);
+    const hasDml = hasDataMutation(sql);
+    const dmlReview = dmlReviews.get(version);
+    if (hasDml !== Boolean(dmlReview)) {
+      throw new Error(`DML review coverage mismatch for ${fileName}`);
+    }
     const classification = notPresentVersions.has(version)
       ? 'not_present'
       : 'partially_present';
-    const mutationWarning = hasDataMutation(sql)
+    const mutationWarning = hasDml
       ? ' Contains DML; the schema-only rehearsal does not prove live-row effects.'
       : '';
     const defaultNote = classification === 'not_present'
@@ -116,6 +123,10 @@ export function buildRows() {
         : 'Production object inventory overlaps; exact production baseline was cloned before ordered replay.',
       data_compatibility_notes: `${compatibilityNotes.get(version) ?? defaultNote}${mutationWarning}`,
       rehearsal_result: 'passed_on_production_schema_baseline',
+      dml_scope: dmlReview?.scope ?? 'none',
+      dml_targets: dmlReview?.targets ?? 'none',
+      dml_review_status: dmlReview?.status ?? 'not_applicable',
+      production_data_impact: dmlReview?.impact ?? 'No INSERT, UPDATE, or DELETE statement detected.',
       approved_action: classification === 'not_present'
         ? 'Apply normally in order after backup, dry run, data review, and explicit approval.'
         : 'Replay idempotently in order; do not mark applied or repair history merely because objects overlap.',
@@ -134,6 +145,10 @@ const columns = [
   'fingerprint_evidence',
   'data_compatibility_notes',
   'rehearsal_result',
+  'dml_scope',
+  'dml_targets',
+  'dml_review_status',
+  'production_data_impact',
   'approved_action',
   'reviewer',
   'evidence_timestamp',
