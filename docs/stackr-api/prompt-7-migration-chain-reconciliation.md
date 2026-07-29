@@ -131,7 +131,9 @@ Post-edit verification:
 - Node audit gate: passed with zero critical findings. Existing findings are
   root 21 high/17 moderate/1 low, backend 6 high/4 moderate, gateway zero;
 - Python dependency audit: no known vulnerabilities;
-- recognition Docker build: not run because Docker is unavailable locally.
+- recognition Docker build: not run locally because Docker is unavailable;
+- GitHub CI: all nine jobs passed, including the Linux recognition-container
+  image build and health check.
 
 Read-only live advisors, before any migration application:
 
@@ -170,7 +172,6 @@ version or make private scan storage public as a rollback technique.
 
 ## Exact Next Step
 
-Open a draft pull request against `chore/api-gateway-v1` and let GitHub run the
-Linux/Docker jobs. Then execute all 75 migrations against a fresh disposable
-database and record the SQL-level result. Do not merge or run a non-dry-run
+Execute all 75 migrations against a fresh disposable database and record the
+SQL-level result. Do not merge the draft pull request or run a non-dry-run
 production database push.
