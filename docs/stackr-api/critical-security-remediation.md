@@ -2,7 +2,7 @@
 
 Date: 2026-07-29
 
-Status: credential containment verified live; database and gateway rollout remain NO-GO.
+Status: credential containment verified live; critical database controls rehearsed in staging; production rollout remains NO-GO.
 
 ## Fixes prepared
 
@@ -24,6 +24,27 @@ The EAS inventory covered 15 production store builds. Every inspected production
 After the Railway and GitHub Actions consumers were updated, the legacy JWT-based API keys were disabled. Supabase key metadata then reported the legacy key disabled and the publishable key enabled, while a repeat Railway database lookup still returned HTTP 200 with a database match. The same repeat probe received HTTP 500 from the external Pokemon provider; provider health is tracked separately and did not affect the successful Supabase lookup.
 
 No database migration, RLS change, storage-policy change, gateway deployment, or mobile publication was performed as part of this credential cutover.
+
+## Staging database rehearsal
+
+On 2026-07-29, the critical database controls were rehearsed in the separate `Stackr me5 staging` project (`lmwfhvexfcoyeuoyrlco`) using two synthetic `.invalid` profiles, three synthetic market rows, and an empty synthetic `card-scans` bucket. No production or customer data was copied into staging.
+
+The forward rehearsal applied the synthetic fixture, `critical_security_containment`, and `finalize_profile_privacy_cutover`. The assertions verified:
+
+- the public profile directory contained both display-only rows and no email, push-token, role, or payment columns;
+- the anonymous role received `permission denied` when selecting the private `profiles` table;
+- each authenticated test identity saw one private profile row and zero rows belonging to the other identity;
+- anonymous market access returned only the public row, while each authenticated identity saw the public row plus its own row and none belonging to the other identity;
+- `card-scans` was private, limited to 5 MiB JPEG/PNG/WebP uploads, and protected by authenticated owner-path read, upload, and delete policies;
+- the public scan-read policy was absent.
+
+The emergency rollback scripts were then applied in reverse order. Supabase's supported Storage API was required to delete the empty test bucket because current platform protections reject direct deletion from storage system tables. Final cleanup confirmed that every synthetic table, function, row, policy surface, and bucket was removed. Supabase security advisors reported zero findings after cleanup.
+
+The staging catalogue schema still has 127 pre-existing performance-advisor items: 69 unindexed foreign keys, one table without a primary key, 41 unused-index notices, and 16 multiple-permissive-policy warnings. These are a prioritised performance backlog and were not introduced by the rehearsal.
+
+The free-plan environment can keep only one non-production project active and spent several minutes switching between two paused rehearsal projects. `prompt5-migration-rehearsal` was returned to `INACTIVE`; `Stackr me5 staging` completed the authoritative rehearsal. This environment is suitable for manual verification but is not dependable enough for unattended CI until the redundant rehearsal project is removed or staging is moved to a plan with stable availability.
+
+Production Supabase was not modified.
 
 ## Safe rollout order
 
