@@ -102,12 +102,14 @@ jobs:
             if to_regclass('catalog.card_variants') is null
               or to_regclass('ingest.raw_source_records') is null
               or to_regclass('api.catalogue_cards') is null
-              or to_regclass('audit.catalogue_release_events') is null then
+              or to_regclass('audit.catalogue_events') is null
+              or to_regclass('audit.release_activation_events') is null then
               raise exception 'required canonical or release-control relation is missing';
             end if;
 
             if exists (select 1 from catalog.catalogue_versions)
-              or exists (select 1 from audit.catalogue_release_events) then
+              or exists (select 1 from audit.catalogue_events)
+              or exists (select 1 from audit.release_activation_events) then
               raise exception 'migration rehearsal activated or released a catalogue version';
             end if;
           end
