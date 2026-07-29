@@ -40,6 +40,8 @@ The forward rehearsal applied the synthetic fixture, `critical_security_containm
 
 The emergency rollback scripts were then applied in reverse order. Supabase's supported Storage API was required to delete the empty test bucket because current platform protections reject direct deletion from storage system tables. Final cleanup confirmed that every synthetic table, function, row, policy surface, and bucket was removed. Supabase security advisors reported zero findings after cleanup.
 
+The staging project's legacy JWT-based API keys were disabled after cleanup. Supabase key metadata confirmed the legacy publishable key was disabled while the modern publishable key remained enabled.
+
 The staging catalogue schema still has 127 pre-existing performance-advisor items: 69 unindexed foreign keys, one table without a primary key, 41 unused-index notices, and 16 multiple-permissive-policy warnings. These are a prioritised performance backlog and were not introduced by the rehearsal.
 
 The free-plan environment can keep only one non-production project active and spent several minutes switching between two paused rehearsal projects. `prompt5-migration-rehearsal` was returned to `INACTIVE`; `Stackr me5 staging` completed the authoritative rehearsal. This environment is suitable for manual verification but is not dependable enough for unattended CI until the redundant rehearsal project is removed or staging is moved to a plan with stable availability.
