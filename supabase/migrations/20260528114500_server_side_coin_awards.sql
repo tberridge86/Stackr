@@ -214,6 +214,16 @@ $$;
 revoke insert on table public.user_coin_ledger from authenticated;
 revoke insert on table public.user_cosmetics from authenticated;
 
+alter table public.achievement_coin_rewards enable row level security;
+
+drop policy if exists "Authenticated users can read achievement coin rewards"
+  on public.achievement_coin_rewards;
+create policy "Authenticated users can read achievement coin rewards"
+  on public.achievement_coin_rewards
+  for select
+  to authenticated
+  using (true);
+
 grant select on table public.achievement_coin_rewards to authenticated;
 grant select on table public.cosmetic_catalog to authenticated;
 grant execute on function public.purchase_cosmetic(text) to authenticated;
