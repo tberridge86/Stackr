@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Prove the exact release on isolated staging resources before production. Staging must have its own Railway environment/services, Cloudflare Worker environment, Supabase database or branch, URLs, and EAS channel.
+Prove the exact release on isolated staging resources before production. Staging must have its own Railway environment/services, Cloudflare Worker environment, Supabase project, URLs, and EAS channel. The approved Supabase staging ref is `lmwfhvexfcoyeuoyrlco`; never substitute the production ref `oakdbbzdqwurpjnoqhmu`.
 
 ## One-Time Setup
 
@@ -13,6 +13,9 @@ Prove the exact release on isolated staging resources before production. Staging
 5. Configure EAS `preview` environment values and keep only `EXPO_PUBLIC_*` public values in the update bundle.
 6. Leave `STACKR_MIGRATION_BASELINE_APPROVED=false` until a local reset from migration zero passes against the correct baseline.
 7. Leave `STACKR_MODEL_INDEX_RELEASE_APPROVED=false` until Stage 6 has approved and checksum-verified the model and inactive index.
+8. Leave `STACKR_STORAGE_BACKUP_APPROVED=false` until the bucket inventory, retention policy, backup/export mechanism, and an isolated restore have been verified.
+
+The same four facts must be `true` in `deploy/release-manifest.json`. GitHub variables cannot override false manifest gates.
 
 Required Cloudflare secret commands:
 
@@ -35,7 +38,7 @@ npm run deploy:preflight
 npm run deploy:verify-model
 ```
 
-Review the reported warnings. A blocked model report is expected today and means the deployment must stop before gateway activation.
+Review the reported warnings. The release manifest currently blocks migration, model, index, and storage gates, so a release-mode preflight must fail today. That failure is expected and prevents any provider mutation.
 
 ## Dispatch
 
@@ -51,7 +54,9 @@ gh workflow run deploy-staging.yml `
   -f publish_mobile_update=false
 ```
 
-The workflow must complete the physical-backup check, logical backup verification, migration dry run, both Railway deployments, private readiness, gateway activation, and public smoke tests. Logical dumps are deleted even on failure.
+Once all gates are evidence-backed, the workflow must complete the physical-backup check, logical backup verification, migration dry run, both Railway deployments, private readiness, gateway activation, and public smoke tests. Logical dumps are deleted even on failure.
+
+Before dispatch, confirm the `staging` GitHub environment contains every secret and variable listed in `deploy/README.md`. The presently unverified account-side items are the Railway recognition service and service IDs, Railway resource/usage limits, Cloudflare credentials/domain, provider URLs, Supabase database URL/access token, Expo token, and a restorable object-storage plan. Do not create placeholders for any of them.
 
 ## Migration Trial
 

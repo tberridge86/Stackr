@@ -20,10 +20,66 @@ for (const filePath of [
   'app.json',
 ]) JSON.parse(readFileSync(filePath, 'utf8'));
 
+const releaseManifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
+const appConfig = JSON.parse(readFileSync('app.json', 'utf8'));
+assert.equal(
+  releaseManifest.components.mobile.easProjectId,
+  appConfig.expo.extra.eas.projectId,
+  'release manifest and Expo app must use the same project ID',
+);
+assert.equal(
+  appConfig.expo.updates.url,
+  `https://u.expo.dev/${releaseManifest.components.mobile.easProjectId}`,
+  'Expo update URL must match the release project ID',
+);
+assert.notEqual(
+  releaseManifest.components.database.projectRef,
+  releaseManifest.components.database.stagingProjectRef,
+  'staging and production Supabase refs must be isolated',
+);
+
 const preflight = run('scripts/deploy/preflight.mjs');
 assert.equal(preflight.status, 0, preflight.stderr || preflight.stdout);
 const releasePreflight = run('scripts/deploy/preflight.mjs', ['--release']);
 assert.notEqual(releasePreflight.status, 0, 'release preflight must fail closed without approvals and credentials');
+const completeStagingEnvironment = {
+  STACKR_DEPLOYMENT_ENVIRONMENT: 'staging',
+  STACKR_MIGRATION_BASELINE_APPROVED: 'true',
+  STACKR_MODEL_INDEX_RELEASE_APPROVED: 'true',
+  STACKR_STORAGE_BACKUP_APPROVED: 'true',
+  SUPABASE_ACCESS_TOKEN: 'test-only',
+  SUPABASE_DB_URL: 'postgresql://test-only',
+  SUPABASE_PROJECT_REF: releaseManifest.components.database.stagingProjectRef,
+  RAILWAY_TOKEN: 'test-only',
+  RAILWAY_PROJECT_ID: 'test-only',
+  RAILWAY_ENVIRONMENT_ID: 'test-only',
+  RAILWAY_BACKEND_SERVICE_ID: 'test-only',
+  RAILWAY_RECOGNITION_SERVICE_ID: 'test-only',
+  CLOUDFLARE_API_TOKEN: 'test-only',
+  CLOUDFLARE_ACCOUNT_ID: 'test-only',
+  STACKR_BACKEND_URL: 'https://backend.invalid',
+  STACKR_RECOGNITION_URL: 'https://recognition.invalid',
+  STACKR_GATEWAY_URL: 'https://gateway.invalid',
+  EXPO_TOKEN: 'test-only',
+};
+const credentialledReleasePreflight = run(
+  'scripts/deploy/preflight.mjs',
+  ['--release'],
+  completeStagingEnvironment,
+);
+assert.notEqual(
+  credentialledReleasePreflight.status,
+  0,
+  'protected variables must not override false authoritative release gates',
+);
+assert.match(credentialledReleasePreflight.stdout, /release_gate_not_ready:migrationHistoryAligned/);
+assert.match(credentialledReleasePreflight.stdout, /release_gate_not_ready:storageBackupVerified/);
+assert.doesNotMatch(credentialledReleasePreflight.stdout, /release_approval_missing/);
+const crossedProjectPreflight = run('scripts/deploy/preflight.mjs', ['--release'], {
+  ...completeStagingEnvironment,
+  SUPABASE_PROJECT_REF: releaseManifest.components.database.projectRef,
+});
+assert.match(crossedProjectPreflight.stdout, /supabase_project_ref_mismatch:staging/);
 
 const modelReport = run('scripts/deploy/verify-model-release.mjs');
 assert.equal(modelReport.status, 0, modelReport.stderr || modelReport.stdout);
@@ -55,11 +111,20 @@ for (const workflowName of readdirSync('.github/workflows').filter((name) => nam
 }
 assert.match(stagingWorkflow, /backups list/);
 assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --dry-run/);
+assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
+assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
+assert.match(productionWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: production/);
+assert.match(productionWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
+assert.match(productionWorkflow, /update:revert-update-rollout/);
+assert.doesNotMatch(productionWorkflow, /update:rollback/);
 assert.match(rollbackWorkflow, /release-database\.mjs index rollback/);
-assert.match(rollbackWorkflow, /update:rollback/);
+assert.match(rollbackWorkflow, /update:revert-update-rollout/);
+assert.match(rollbackWorkflow, /update:republish/);
+assert.match(rollbackWorkflow, /destination-channel/);
+assert.doesNotMatch(rollbackWorkflow, /update:rollback/);
 assert.match(ingestionWorkflow, /STACKR_CATALOGUE_INGESTION_AUTOMATION_APPROVED/);
 assert.match(ingestionWorkflow, /--setId="\$STACKR_INGEST_SET"/);
 assert.match(ingestionWorkflow, /resume-import[\s\S]+--runKey="\$STACKR_INGEST_ID"/);

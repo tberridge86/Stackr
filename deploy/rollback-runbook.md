@@ -71,16 +71,27 @@ The database function atomically reactivates the requested validated index and i
 
 ## Mobile Feature Flags And EAS Update
 
-Rollback the latest update group on its branch/runtime:
+If a percentage rollout is still in progress, choose `mobile-rollout` and revert that rollout group:
 
 ```powershell
-npx eas-cli@21.4.0 update:rollback '<latest-update-group-id>' `
+npx eas-cli@21.4.0 update:revert-update-rollout `
+  --group '<rollout-update-group-id>' `
+  --message '<incident-id>' `
+  --non-interactive
+```
+
+To restore a previously published known-good group, choose `mobile-update` and republish it to the affected channel:
+
+```powershell
+npx eas-cli@21.4.0 update:republish `
+  --group '<known-good-update-group-id>' `
+  --destination-channel production `
   --platform all `
   --message '<incident-id>' `
   --non-interactive
 ```
 
-Because scanner flags are bundled via EAS environment variables, republishing the previous update restores the previous remote configuration. Store no service credentials in those values.
+Use `--destination-channel staging` for staging. Because scanner flags are bundled via EAS environment variables, the known-good group must contain the intended previous configuration. Store no service credentials in those values.
 
 ## Database Migration
 

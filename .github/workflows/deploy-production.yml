@@ -75,11 +75,13 @@ jobs:
     timeout-minutes: 150
     environment: production
     env:
+      STACKR_DEPLOYMENT_ENVIRONMENT: production
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
       STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
       STACKR_MODEL_INDEX_RELEASE_APPROVED: ${{ vars.STACKR_MODEL_INDEX_RELEASE_APPROVED }}
+      STACKR_STORAGE_BACKUP_APPROVED: ${{ vars.STACKR_STORAGE_BACKUP_APPROVED }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
       RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
@@ -256,8 +258,9 @@ jobs:
         if: failure() && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true'
         continue-on-error: true
         run: >-
-          npx --yes eas-cli@21.4.0 update:rollback "$STACKR_EAS_UPDATE_GROUP_ID"
-          --platform all --message "Automatic rollback for GitHub run $GITHUB_RUN_ID"
+          npx --yes eas-cli@21.4.0 update:revert-update-rollout
+          --group "$STACKR_EAS_UPDATE_GROUP_ID"
+          --message "Automatic rollback for GitHub run $GITHUB_RUN_ID"
           --non-interactive
 
       - name: Roll back gateway after a failed canary

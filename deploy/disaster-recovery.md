@@ -75,6 +75,8 @@ npx @railway/cli@5.30.1 up recognition-service --path-as-root --ci `
 
 Recreate runtime variables from the password manager/provider settings, never from logs or source. Keep the gateway on the known-good backend until readiness checks pass.
 
+Railway CPU, memory, replica, and usage limits must be recreated from the release evidence because they are provider-side settings. The repository does not currently contain verified exports of those settings, so Railway disaster recovery remains incomplete until a staging replacement drill records them.
+
 ## Cloudflare Loss
 
 Deploy the last known-good Git commit/tag using `gateway/wrangler.jsonc`, restore secrets interactively, and activate the version only after its preview/staging smoke test succeeds. DNS and custom-domain recovery requires Cloudflare account access and is not automated in this repository.

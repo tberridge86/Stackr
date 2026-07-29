@@ -27,11 +27,12 @@
     "database": {
       "path": "supabase",
       "projectRef": "oakdbbzdqwurpjnoqhmu",
+      "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
       "exposedSchemas": ["public", "api", "graphql_public"],
       "privateSchemas": ["catalog", "ingest", "market", "ml", "audit"]
     },
     "mobile": {
-      "easProjectId": "22048198-a309-41d2-a2bf-aa354c76be3",
+      "easProjectId": "22048198-a309-41d2-a2bf-aa354c76be3a",
       "stagingChannel": "staging",
       "productionChannel": "production"
     }
