@@ -100,7 +100,7 @@ export function buildRows() {
       ? ' Contains DML; the schema-only rehearsal does not prove live-row effects.'
       : '';
     const defaultNote = classification === 'not_present'
-      ? 'No tracked migration or matching target schema was found in production. The migration passed in the ordered rehearsal.'
+      ? 'No tracked migration was found, and the target schema or intended change is absent from production. The migration passed in the ordered rehearsal.'
       : 'Production overlaps one or more legacy targets, but has no migration ledger entry. Similar names were not treated as proof of application.';
 
     return {
@@ -112,7 +112,7 @@ export function buildRows() {
         ? objects.join('; ')
         : 'functions, indexes, policies, grants, or seed rows named by the migration',
       fingerprint_evidence: classification === 'not_present'
-        ? 'Target absent from the read-only production inventory; ordered clone replay passed.'
+        ? 'Target schema or intended change absent from the read-only production inventory; ordered clone replay passed.'
         : 'Production object inventory overlaps; exact production baseline was cloned before ordered replay.',
       data_compatibility_notes: `${compatibilityNotes.get(version) ?? defaultNote}${mutationWarning}`,
       rehearsal_result: 'passed_on_production_schema_baseline',
