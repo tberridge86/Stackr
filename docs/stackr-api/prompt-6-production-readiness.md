@@ -88,7 +88,7 @@ https://supabase.com/docs/guides/platform/backups.
 - `npm run test:production-readiness`: passed.
 - `npm run test:stackr-api-v1`: passed.
 - General production build: not run because the repository has no `build` script.
-- GitHub CI: pending until the draft pull request is opened.
+- GitHub Catalogue Ingestion CI run `30470646509`: passed in 1 minute 33 seconds on draft PR 11.
 
 A final read-only production snapshot at `2026-07-29 16:23:31 UTC` matched the
 starting counts, still showed zero tracked migrations, zero canonical schemas,
