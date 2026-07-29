@@ -4,7 +4,6 @@ import {
   getLocalCardName,
   getPreferredSetDisplayName,
 } from './pokemonDisplayNames';
-import { correctPokemonNameQuery } from './pokemonNameAutocorrect';
 import { normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
 
 const cleanText = (value: unknown) => {
@@ -126,19 +125,5 @@ export async function searchPokemonCards(
     });
   }
 
-  const corrected = await correctPokemonNameQuery(trimmed, { allowIndex: false });
-  if (language !== 'en' && language !== 'all') return [];
-
-  const fallbackQuery = corrected.changed ? corrected.correctedQuery : trimmed;
-  const encoded = encodeURIComponent(`name:"*${fallbackQuery}*"`);
-  const url = `https://api.pokemontcg.io/v2/cards?q=${encoded}&pageSize=60`;
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error('Failed to search cards.');
-  }
-
-  const json = await response.json();
-  return json?.data ?? [];
+  return [];
 }

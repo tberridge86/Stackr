@@ -22,6 +22,7 @@ import {
   updateTradeOfferStatus,
   TradeOffer,
 } from '../lib/tradeOffers';
+import { fetchStackrCardRows } from '../lib/stackrDomainAdapter';
 
 type SegmentKey = 'received' | 'sent' | 'history';
 type OfferListConfirmAction = {
@@ -122,14 +123,16 @@ export default function OffersScreen() {
       ));
 
       if (allCardIds.length > 0) {
-        const { data: previews } = await supabase
-          .from('card_previews')
-          .select('card_id, name, image_url, set_name')
-          .in('card_id', allCardIds);
+        const previews = await fetchStackrCardRows(allCardIds);
 
         const map: Record<string, any> = {};
-        (previews ?? []).forEach((p: any) => {
-          map[p.card_id] = p;
+        previews.forEach((card: any) => {
+          map[card.id] = {
+            card_id: card.id,
+            name: card.name,
+            image_url: card.image_small ?? card.image_large ?? null,
+            set_name: card.set_name ?? card.set_id ?? null,
+          };
         });
 
         setCardPreviews(map);

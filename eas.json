@@ -7,6 +7,8 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "environment": "development",
+      "channel": "development",
       "env": {
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
         "APP_VARIANT": "development",
@@ -16,6 +18,8 @@
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
+      "channel": "preview",
       "android": {
         "buildType": "apk"
       },
@@ -25,8 +29,21 @@
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
       }
     },
+    "staging": {
+      "distribution": "internal",
+      "environment": "preview",
+      "channel": "staging",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_VARIANT": "staging"
+      }
+    },
     "production": {
       "autoIncrement": true,
+      "environment": "production",
+      "channel": "production",
       "env": {
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
         "EXPO_PUBLIC_SCAN_PROVIDER": "local-ai",

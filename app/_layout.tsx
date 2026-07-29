@@ -398,6 +398,7 @@ function AppNavigation() {
                   <Stack.Screen name="settings" options={{ title: '' }} />
                   <Stack.Screen name="admin/japanese-catalogue" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/scanner-analytics" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="admin/quality-observability" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/scan-lab" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/recognition-feedback" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/social-content" options={{ headerShown: false, title: '' }} />

@@ -13,6 +13,8 @@ Stage 7 adds a private FastAPI service for Stackr card recognition. It is design
 
 `/metrics` is private. Set `STACKR_RECOGNITION_METRICS_TOKEN` and send it as `X-Stackr-Metrics-Key`.
 
+The three `/v1/recognition/*` routes require a short-lived HMAC signature from the Stackr gateway by default. The signature binds the body hash, method, path, verified user ID, device ID, timestamp and nonce. Direct mobile calls and replayed signatures are rejected.
+
 ## Paths
 
 Fast path:
@@ -49,8 +51,12 @@ Important variables:
 - `STACKR_RECOGNITION_CATALOGUE_API_URL`
 - `STACKR_RECOGNITION_METRICS_TOKEN`
 - `STACKR_RECOGNITION_REQUIRE_ACTIVE_INDEX`
+- `STACKR_RECOGNITION_GATEWAY_AUTH_MODE`
+- `STACKR_RECOGNITION_GATEWAY_SERVICE_ID`
+- `STACKR_RECOGNITION_GATEWAY_SERVICE_SECRET`
+- `STACKR_RECOGNITION_GATEWAY_SIGNATURE_MAX_AGE_SECONDS`
 
-Do not expose database URLs, service-role keys or metrics tokens in the Expo app.
+Do not expose database URLs, service-role keys, gateway service secrets or metrics tokens in the Expo app.
 
 ## Scoring
 
@@ -104,6 +110,7 @@ docker run --rm -p 8080:8080 \
   -e STACKR_RECOGNITION_MODEL_VERSION=... \
   -e STACKR_RECOGNITION_MODEL_PATH=/models/model.onnx \
   -e STACKR_RECOGNITION_ACTIVE_INDEX_VERSION=... \
+  -e STACKR_RECOGNITION_GATEWAY_SERVICE_SECRET=... \
   -e STACKR_RECOGNITION_METRICS_TOKEN=... \
   stackr-recognition-service
 ```

@@ -27,9 +27,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { fetchBinders } from '../../lib/binders';
-import { fetchEbayPrice } from '../../lib/ebay';
-import { getPriceFromPokemonCard } from '../../lib/pricing';
-import { EUR_TO_GBP, USD_TO_GBP } from '../../lib/config';
+import { fetchStackrPrice } from '../../lib/stackrDomainAdapter';
 import { getScanAttemptDiagnostics } from '../../lib/scanDiagnostics';
 import { logScanLearningEvent } from '../../lib/scanLearning';
 import { getScannerClientContext } from '../../lib/scannerClientContext';
@@ -290,7 +288,7 @@ function pickDefaultVariantKey(options: TcgPriceVariant[], editionHint?: TCGCard
 
 function formatTcgGbp(priceUsd?: number | null) {
   if (priceUsd == null || Number.isNaN(priceUsd)) return '--';
-  return `£${(priceUsd * USD_TO_GBP).toFixed(2)}`;
+  return `£${priceUsd.toFixed(2)}`;
 }
 
 type BinderOption = {
@@ -664,124 +662,45 @@ export default function ScanResultScreen() {
     const run = async () => {
       try {
         setEbayLoading(true);
-        setEbayPrice(null);
-
-        const result = await fetchEbayPrice({
-          cardId: selectedCard.id,
-          name: selectedCard.name,
-          setName: selectedCard.set_name,
-          number: selectedCard.number,
-          setTotal: selectedCard.set_printed_total,
-          rarity: [
-            selectedCard.rarity,
-            selectedTcgVariant?.label,
-            selectedTcgVariant?.editionHint === '1st_edition' ? '1st edition' : null,
-          ].filter(Boolean).join(' '),
-        });
-        console.log('eBay result:', result);
-
-        setEbayPrice({
-          low: result.low ?? null,
-          average: result.average ?? null,
-          high: result.high ?? null,
-        });
-      } catch (err) {
-        console.log('eBay fetch error:', err);
-        setEbayPrice(null);
-      } finally {
-        setEbayLoading(false);
-      }
-
-      try {
         setTcgLoading(true);
+        setEbayPrice(null);
         setTcgPrice(null);
         setTcgPriceSource(null);
 
-        const { data: cachedCard } = await supabase
-          .from('pokemon_cards')
-          .select('raw_data')
-          .eq('id', selectedCard.id)
-          .maybeSingle();
+        const result = await fetchStackrPrice(selectedCard.id, {
+          productType: 'raw_card',
+          currency: 'GBP',
+        });
+        if (!result) return;
+        const { price, resolved } = result;
+        setEbayPrice({
+          low: price.estimates.low,
+          average: price.estimates.central,
+          high: price.estimates.high,
+        });
+        setTcgPrice(price.estimates.central);
+        setTcgPriceSource(`Stackr market - ${price.status.replace(/_/g, ' ')}`);
 
-        const cachedRaw = cachedCard?.raw_data ?? selectedCard.raw_data;
-
-        const response = await fetch(`https://api.pokemontcg.io/v2/cards/${selectedCard.id}`);
-        const json = await response.json();
-        const card = json?.data;
-        const variants = buildTcgVariantOptions(cachedRaw).length
-          ? buildTcgVariantOptions(cachedRaw)
-          : buildTcgVariantOptions(card);
+        const variants = resolved.card.variants.map((variant) => ({
+          key: variant.variantCode,
+          label: variant.variantLabel ?? variant.variantCode,
+          priceUsd: price.estimates.central ?? 0,
+          editionHint: getEditionHintForVariantKey(variant.variantCode),
+        }));
         setTcgVariants(variants);
 
         const nextVariantKey = selectedVariantKey && variants.some((variant) => variant.key === selectedVariantKey)
           ? selectedVariantKey
-          : pickDefaultVariantKey(variants, selectedCard.editionHint);
+          : resolved.card.variants.find((variant) => variant.variantId === resolved.variantId)?.variantCode
+            ?? pickDefaultVariantKey(variants, selectedCard.editionHint);
         if (nextVariantKey !== selectedVariantKey) setSelectedVariantKey(nextVariantKey);
-
-        const selectedVariant = variants.find((variant) => variant.key === nextVariantKey);
-        if (selectedVariant) {
-          setTcgPrice(Number((selectedVariant.priceUsd * USD_TO_GBP).toFixed(2)));
-          setTcgPriceSource(`${selectedVariant.label} TCGPlayer`);
-          console.log('Scan result TCG variant price selected:', {
-            cardId: selectedCard.id,
-            variant: selectedVariant.key,
-            priceUsd: selectedVariant.priceUsd,
-          });
-          return;
-        }
-
-        const cachedTcgUsd = getPriceFromPokemonCard(cachedRaw, selectedCard.editionHint);
-        const price = cachedTcgUsd ?? getPriceFromPokemonCard(card, selectedCard.editionHint);
-
-        if (price != null) {
-          setTcgPrice(Number((price * USD_TO_GBP).toFixed(2)));
-          setTcgPriceSource(selectedCard.editionHint ? `${getEditionLabel(selectedCard)} TCGPlayer` : 'TCGPlayer');
-          console.log('Scan result TCG price selected:', {
-            cardId: selectedCard.id,
-            editionHint: selectedCard.editionHint,
-            source: 'pokemon-tcg-api',
-            priceUsd: price,
-          });
-          return;
-        }
-
-        if (selectedCard.editionHint) {
-          console.log('Scan result TCG price skipped generic snapshot for edition-specific scan:', {
-            cardId: selectedCard.id,
-            editionHint: selectedCard.editionHint,
-            priceKeys: Object.keys(cachedRaw?.tcgplayer?.prices ?? card?.tcgplayer?.prices ?? {}),
-          });
-          setTcgPrice(null);
-          return;
-        }
-
-        const { data: snapshot } = await supabase
-          .from('market_price_snapshots')
-          .select('tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
-          .eq('card_id', selectedCard.id)
-          .order('snapshot_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (snapshot?.tcg_mid != null || snapshot?.tcg_low != null) {
-          setTcgPrice(Number(snapshot.tcg_mid ?? snapshot.tcg_low));
-          setTcgPriceSource('Daily snapshot');
-          return;
-        }
-
-        const cardmarketEur =
-          cachedRaw?.cardmarket?.prices?.trendPrice ??
-          cachedRaw?.cardmarket?.prices?.averageSellPrice ??
-          cachedRaw?.cardmarket?.prices?.avg30;
-        if (typeof cardmarketEur === 'number') {
-          setTcgPrice(Number((cardmarketEur * EUR_TO_GBP).toFixed(2)));
-          setTcgPriceSource('Cardmarket fallback');
-          return;
-        }
-      } catch {
+      } catch (error) {
+        console.log('Stackr market lookup failed:', error);
+        setEbayPrice(null);
         setTcgPrice(null);
         setTcgPriceSource(null);
       } finally {
+        setEbayLoading(false);
         setTcgLoading(false);
       }
     };
@@ -1535,7 +1454,7 @@ export default function ScanResultScreen() {
               </View>
             </PremiumCard>
 
-            {/* eBay price */}
+            {/* Provider-neutral Stackr market range */}
             <View style={{
               backgroundColor: theme.colors.card,
               borderRadius: 18, padding: 16,
@@ -1543,10 +1462,10 @@ export default function ScanResultScreen() {
               marginBottom: 14,
             }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 20, fontWeight: '900', marginBottom: 3 }}>
-                Live sold comps
+                Market range
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 12 }}>
-                eBay sold - GBP
+                STACKR MARKET - GBP
               </Text>
 
               {ebayLoading ? (
@@ -1579,12 +1498,12 @@ export default function ScanResultScreen() {
                 </View>
               ) : (
                 <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-                  No eBay price available
+                  Market evidence is not yet available
                 </Text>
               )}
             </View>
 
-            {/* TCG price */}
+            {/* Provider-neutral Stackr central estimate */}
             <View style={{
               backgroundColor: theme.colors.card,
               borderRadius: 18, padding: 16,
@@ -1592,10 +1511,10 @@ export default function ScanResultScreen() {
               marginBottom: 14,
             }}>
               <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 20, fontWeight: '900', marginBottom: 3 }}>
-                Cached daily price
+                Central estimate
               </Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 12 }}>
-                TCGPlayer - GBP{getEditionLabel(selectedCard) ? ` - ${getEditionLabel(selectedCard)}` : ''}
+                STACKR MARKET - GBP{getEditionLabel(selectedCard) ? ` - ${getEditionLabel(selectedCard)}` : ''}
               </Text>
 
               {tcgVariants.length > 1 && (
@@ -1636,7 +1555,7 @@ export default function ScanResultScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <ActivityIndicator size="small" color={theme.colors.primary} />
                   <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-                    Fetching TCG prices...
+                    Fetching market evidence...
                   </Text>
                 </View>
               ) : tcgPrice ? (
@@ -1652,7 +1571,7 @@ export default function ScanResultScreen() {
                 </View>
               ) : (
                 <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>
-                  No TCG price available
+                  Market evidence is not yet available
                 </Text>
               )}
             </View>

@@ -9,6 +9,7 @@ from uuid import UUID
 
 from .schemas import ConsentState
 from .settings import Settings
+from .tracing import trace_span
 
 
 def hash_storage_key(key: str | None) -> str | None:
@@ -121,9 +122,10 @@ class PostgresDiagnosticSink(DiagnosticSink):
             values ({placeholders})
             on conflict (scan_id) do update set {updates}, updated_at = now()
         """
-        with psycopg.connect(self.settings.database_url_secret) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, row)
+        with trace_span("supabase-postgres", "record_recognition_diagnostic"):
+            with psycopg.connect(self.settings.database_url_secret) as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(sql, row)
 
     async def record_feedback(self, scan_id: UUID, action: str, payload: dict[str, Any]) -> None:
         import psycopg
@@ -134,12 +136,13 @@ class PostgresDiagnosticSink(DiagnosticSink):
             )
             values (%(request_id)s, 'service_role', 'recognition.feedback', %(payload)s)
         """
-        with psycopg.connect(self.settings.database_url_secret) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(sql, {
-                    "request_id": str(scan_id),
-                    "payload": json.dumps({"scanId": str(scan_id), "action": action, **payload}),
-                })
+        with trace_span("supabase-postgres", "record_recognition_feedback"):
+            with psycopg.connect(self.settings.database_url_secret) as connection:
+                with connection.cursor() as cursor:
+                    cursor.execute(sql, {
+                        "request_id": str(scan_id),
+                        "payload": json.dumps({"scanId": str(scan_id), "action": action, **payload}),
+                    })
 
 
 def _image_retention_status(consent: dict[str, Any]) -> str:

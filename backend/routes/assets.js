@@ -34,7 +34,7 @@ function getSupabaseAdmin() {
 function getAuthToken(req) {
   const header = String(req.headers.authorization || '').trim();
   if (header.toLowerCase().startsWith('bearer ')) return header.slice(7).trim();
-  return String(req.headers['x-stackr-admin-key'] || req.query.adminKey || '').trim();
+  return String(req.headers['x-stackr-admin-key'] || '').trim();
 }
 
 function bearerToken(req) {

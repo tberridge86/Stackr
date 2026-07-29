@@ -1,9 +1,8 @@
-import {
-  identifyCardsDetailed as identifyCardsWithLegacyEngineDirect,
-  type IdentifiedCard,
-  type IdentifyCardsDetailedResult,
-  type ScanIdentifyDiagnostics,
-  type ScanIdentifyHints,
+import type {
+  IdentifiedCard,
+  IdentifyCardsDetailedResult,
+  ScanIdentifyDiagnostics,
+  ScanIdentifyHints,
 } from '../cardSight';
 import { getRecognitionFeatureFlags, type RecognitionFeatureFlags } from './featureFlags';
 import {
@@ -40,16 +39,6 @@ export type RecognitionOrchestratorOptions = {
   engineTimeoutMs?: number;
 };
 
-function shouldUseDirectLegacyRoute(flags: RecognitionFeatureFlags) {
-  return !flags.localRecognitionEnabled
-    && !flags.localRecognitionShadowMode
-    && !flags.stackrApiEnabled
-    && !flags.stackrRecognitionPrimary
-    && flags.legacyCloudFallbackEnabled
-    && flags.ximilarEmergencyFallback
-    && !flags.scannerDiagnosticsEnabled;
-}
-
 export async function recognizeCard(
   request: RecognitionRequest,
   options: RecognitionOrchestratorOptions = {}
@@ -70,10 +59,6 @@ export async function identifyCardsDetailed(
   hints?: ScanIdentifyHints
 ): Promise<IdentifyCardsDetailedResult> {
   const flags = getRecognitionFeatureFlags();
-  if (shouldUseDirectLegacyRoute(flags)) {
-    return identifyCardsWithLegacyEngineDirect(images, binderId, hints);
-  }
-
   const request = buildLegacyRecognitionRequest(images, binderId, hints);
   const result = await recognizeCard(request, { featureFlags: flags });
   return recognitionResultToLegacyIdentifyResult(result);

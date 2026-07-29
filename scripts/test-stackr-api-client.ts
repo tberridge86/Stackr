@@ -123,9 +123,43 @@ function recognitionIdentifyRejectsImagePayloads() {
   }, /private image keys/);
 }
 
+async function shadowComparisonUsesAuthenticatedV1Contract() {
+  const calls: Array<{ url: string; init: RequestInit }> = [];
+  const client = new StackrApiClient({
+    baseUrl: 'https://api.stackr.test/v1',
+    getAccessToken: async () => 'user-token',
+    getDeviceId: async () => 'device:test:00000001',
+    createIdempotencyKey: () => 'shadow:test:000000000001',
+    fetchImpl: (async (url, init) => {
+      calls.push({ url: String(url), init: init ?? {} });
+      return new Response(JSON.stringify({
+        data: { ok: true, itemId: 'item-1', disagreementCategory: 'both_correct' },
+        meta: { requestId: 'request-shadow', apiVersion: '1', generatedAt: '2026-07-28T00:00:00.000Z' },
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }) as typeof fetch,
+  });
+  const result = await client.submitRecognitionShadowComparison({
+    schemaVersion: 'stackr-shadow-mode-pilot-v1.0.0',
+    localRecordId: 'local-1',
+    anonymousScanId: 'scan-1',
+    rawImageRecorded: false,
+    shadowSnapshot: { rawImageRecorded: false },
+  });
+  assert.equal(result.data.itemId, 'item-1');
+  assert.equal(calls[0].url, 'https://api.stackr.test/v1/recognition/shadow-comparisons');
+  assert.equal((calls[0].init.headers as Record<string, string>).Authorization, 'Bearer user-token');
+  assert.equal((calls[0].init.headers as Record<string, string>)['Idempotency-Key'], 'shadow:test:000000000001');
+
+  assert.throws(() => client.submitRecognitionShadowComparison({
+    rawImageRecorded: false,
+    base64Image: 'data:image/jpeg;base64,abc',
+  }), /private image keys/);
+}
+
 async function run() {
   await recognitionIdentifyUsesV1Contract();
   recognitionIdentifyRejectsImagePayloads();
+  await shadowComparisonUsesAuthenticatedV1Contract();
   console.log('stackr api client checks passed');
 }
 

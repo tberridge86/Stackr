@@ -74,6 +74,11 @@ class EmbeddingModel:
             error=self._error,
         )
 
+    def close(self) -> None:
+        self._session = None
+        self._input_name = None
+        self._loaded = False
+
     def embed(self, image: Image.Image) -> list[float]:
         if not self._loaded:
             raise ModelUnavailable(self._error or "model_not_loaded")

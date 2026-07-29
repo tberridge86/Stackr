@@ -10,7 +10,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, PlainTextResponse
-from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 
 from .diagnostics import build_diagnostic_sink
 from .model import EmbeddingModel
@@ -27,8 +27,10 @@ from .schemas import (
     ReadyResponse,
 )
 from .scoring import load_scoring_config
+from .service_auth import GatewayServiceAuthenticator, ServiceAuthenticationError
 from .settings import Settings, get_settings
 from .storage import build_storage_client
+from .tracing import bind_request_trace, reset_trace, traceparent
 
 logger = logging.getLogger("stackr.recognition")
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -42,6 +44,26 @@ REQUEST_LATENCY = Histogram(
     "stackr_recognition_request_duration_seconds",
     "Stackr recognition service request duration",
     ["method", "path"],
+)
+OUTCOME_COUNTER = Counter(
+    "stackr_recognition_outcomes_total",
+    "Recognition outcomes by path and match status",
+    ["path_kind", "match_status"],
+)
+AUTO_CONFIRM_COUNTER = Counter(
+    "stackr_recognition_auto_confirm_total",
+    "Recognition responses by whether automatic confirmation was allowed",
+    ["allowed"],
+)
+IMAGE_FALLBACK_COUNTER = Counter(
+    "stackr_recognition_image_fallback_total",
+    "Recognition identify requests that required a private fallback image",
+    ["used"],
+)
+ACTIVE_MODEL_INDEX = Gauge(
+    "stackr_recognition_active_model_index",
+    "Active recognition model and index version",
+    ["model_version", "index_version"],
 )
 
 
@@ -88,6 +110,11 @@ def create_app(
     model: EmbeddingModel | None = None,
 ) -> FastAPI:
     service_settings = settings or get_settings()
+    gateway_authenticator = GatewayServiceAuthenticator(service_settings)
+    ACTIVE_MODEL_INDEX.labels(
+        service_settings.model_version,
+        service_settings.active_index_version or "unselected",
+    ).set(1)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -99,7 +126,21 @@ def create_app(
             diagnostics=diagnostics,
             model=model,
         )
-        yield
+        logger.info(json.dumps({
+            "event": "recognition_service_started",
+            "service_version": service_settings.service_version,
+            "model_version": service_settings.model_version,
+            "index_version": service_settings.active_index_version,
+            "concurrency_hint": service_settings.concurrency_hint,
+        }))
+        try:
+            yield
+        finally:
+            app.state.pipeline.model.close()
+            logger.info(json.dumps({
+                "event": "recognition_service_stopped",
+                "service_version": service_settings.service_version,
+            }))
 
     app = FastAPI(
         title="Stackr Private Recognition Service",
@@ -113,6 +154,7 @@ def create_app(
     @app.middleware("http")
     async def request_context(request: Request, call_next):
         request_id = request.headers.get("x-request-id") or str(uuid4())
+        trace, trace_token = bind_request_trace(request.headers.get("traceparent"))
         request.state.request_id = request_id
         started = time.perf_counter()
         body_guard_paths = {
@@ -120,26 +162,42 @@ def create_app(
             "/v1/recognition/embed",
             "/v1/recognition/feedback",
         }
-        if request.url.path in body_guard_paths and request.headers.get("content-type", "").startswith("application/json"):
+        if request.url.path in body_guard_paths:
             body = await request.body()
-            lowered = body.lower()
+            try:
+                actor = gateway_authenticator.verify(request.headers, request.method, request.url.path, body)
+            except ServiceAuthenticationError as exc:
+                response = JSONResponse(
+                    status_code=exc.status_code,
+                    content=error_envelope(exc.code, exc.message, request_id),
+                    headers={"X-Request-Id": request_id, "Cache-Control": "no-store", "Traceparent": traceparent() or "", "X-Trace-Id": trace.trace_id},
+                )
+                reset_trace(trace_token)
+                return response
+
+            lowered = body.lower() if request.headers.get("content-type", "").startswith("application/json") else b""
             if b"base64" in lowered or b"data:image" in lowered or b"imagebytes" in lowered:
-                return JSONResponse(
+                response = JSONResponse(
                     status_code=413,
                     content=error_envelope("image_payload_not_allowed", "Use a private uploaded-image key instead of image bytes in JSON.", request_id),
-                    headers={"X-Request-Id": request_id},
+                    headers={"X-Request-Id": request_id, "Traceparent": traceparent() or "", "X-Trace-Id": trace.trace_id},
                 )
+                reset_trace(trace_token)
+                return response
 
             async def receive():
                 return {"type": "http.request", "body": body, "more_body": False}
 
             request = Request(request.scope, receive)
             request.state.request_id = request_id
+            request.state.gateway_actor = actor
         response = await call_next(request)
         elapsed = time.perf_counter() - started
         REQUEST_COUNTER.labels(request.method, request.url.path, str(response.status_code)).inc()
         REQUEST_LATENCY.labels(request.method, request.url.path).observe(elapsed)
         response.headers["X-Request-Id"] = request_id
+        response.headers["Traceparent"] = traceparent() or ""
+        response.headers["X-Trace-Id"] = trace.trace_id
         logger.info(json.dumps({
             "event": "recognition_request",
             "request_id": request_id,
@@ -147,7 +205,10 @@ def create_app(
             "path": request.url.path,
             "status": response.status_code,
             "duration_ms": round(elapsed * 1000),
+            "trace_id": trace.trace_id,
+            "span_id": trace.span_id,
         }))
+        reset_trace(trace_token)
         return response
 
     @app.exception_handler(RequestValidationError)
@@ -205,7 +266,12 @@ def create_app(
 
     @app.post("/v1/recognition/identify", response_model=IdentifyResponse)
     async def identify(payload: IdentifyRequest, request: Request, pipeline: RecognitionPipeline = Depends(pipeline)):
-        return await pipeline.identify(payload, request.state.request_id)
+        result = await pipeline.identify(payload, request.state.request_id)
+        path_kind = "fallback" if payload.privateImageKey else "fast"
+        OUTCOME_COUNTER.labels(path_kind, result.matchStatus).inc()
+        AUTO_CONFIRM_COUNTER.labels("true" if result.autoAddAllowed else "false").inc()
+        IMAGE_FALLBACK_COUNTER.labels("true" if payload.privateImageKey else "false").inc()
+        return result
 
     @app.post("/v1/recognition/embed", response_model=EmbedResponse)
     async def embed(payload: EmbedRequest, pipeline: RecognitionPipeline = Depends(pipeline)):

@@ -1,6 +1,8 @@
 import { supabase } from './supabase';
 import { getLocalCardIndex } from './localCardIndex';
+import { findCuratedPokemonSearchRows } from './curatedPokemonCatalogue';
 import { correctPokemonNameQuery } from './pokemonNameAutocorrect';
+import { searchStackrCards } from './stackrDomainAdapter';
 import {
   getEnglishCardDisplayName,
   getLocalCardName,
@@ -392,6 +394,7 @@ function scoreCard(row: SearchRow, parsed: ParsedSearch) {
     row.raw_data?.local_name,
     row.raw_data?.english_display_name,
     row.raw_data?.canonical_name,
+    ...(Array.isArray(row.raw_data?.aliases) ? row.raw_data.aliases : []),
   ].filter(Boolean).join(' '));
   const providerText = normalise([
     row.id,
@@ -874,112 +877,23 @@ export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(
 ): Promise<T[]> {
   const trimmed = input.trim();
   if (trimmed.length < 2) return [];
-
-  if (isAllLanguageSearch(options.language)) {
-    const limit = options.limit ?? 80;
-    const [englishRows, japaneseRows, chineseRows] = await Promise.all([
-      searchLocalPokemonCards<T>(trimmed, { ...options, language: 'en', limit }),
-      searchLocalPokemonCards<T>(trimmed, { ...options, language: 'ja', limit }),
-      searchLocalPokemonCards<T>(trimmed, { ...options, language: 'zh-tw', limit }),
-    ]);
-    const englishDexMatches = !containsJapaneseText(trimmed)
-      ? await fetchJapaneseCatalogueRowsByDexIds(getDexIdsFromRows(englishRows), limit).catch(() => [])
-      : [];
-    const enrichedJapaneseRows = englishDexMatches.length
-      ? mergeLanguageResults(englishDexMatches as T[], japaneseRows, limit)
-      : japaneseRows;
-    const foreignRows = mergeLanguageResults(enrichedJapaneseRows, chineseRows, limit);
-    return containsJapaneseText(trimmed)
-      ? mergeLanguageResults(foreignRows, englishRows, limit)
-      : mergeLanguageResults(englishRows, foreignRows, limit);
-  }
-
-  const language = normalizePokemonCardLanguage(options.language);
-  const parsed = await parseCardSearch(
-    trimmed,
-    language,
-    options.skipSetDetection,
-    options.enableShortSetDetection,
-    options.skipNameCorrection
-  );
   const limit = options.limit ?? 80;
-  const dbSearchTerms = getDbSearchTerms(parsed, trimmed);
-  const select = options.select ?? 'id, name, language, number, rarity, image_small, image_large, set_id, raw_data';
-
-  let query = supabase
-    .from('pokemon_cards')
-    .select(select)
-    .eq('language', language)
-    .limit(Math.max(limit, 160));
-
-  if (dbSearchTerms.length) {
-    query = query.or(dbSearchTerms.map((term) => `name.ilike.%${term}%`).join(','));
-  }
-
-  if (parsed.matchedSetIds.length > 0) query = query.in('set_id', parsed.matchedSetIds);
-
-  const { data, error } = await query;
-  if (error) throw error;
-
-  const candidateMap = new Map<string, T>();
-  for (const row of (data ?? []) as unknown as T[]) {
-    if (row?.id) candidateMap.set(row.id, row);
-  }
-
-  if (parsed.cardNumberHints.length) {
-    const numberConditions = parsed.cardNumberHints
-      .flatMap((hint) => [hint, stripLeadingZeroes(hint), hint.padStart(3, '0')])
-      .filter(Boolean)
-      .map((hint) => `number.eq.${hint}`);
-    const { data: numberRows, error: numberError } = await supabase
-      .from('pokemon_cards')
-      .select(select)
-      .eq('language', language)
-      .or([...new Set(numberConditions)].join(','))
-      .limit(Math.max(limit * 3, 120));
-
-    if (numberError) throw numberError;
-    for (const row of (numberRows ?? []) as unknown as T[]) {
-      if (row?.id) candidateMap.set(row.id, row);
-    }
-  }
-
-  const catalogueRows = await fetchCatalogueSearchRows(parsed, language, limit, trimmed);
-  for (const row of catalogueRows as unknown as T[]) {
-    if (row?.id) candidateMap.set(row.id, row);
-  }
-
-  if (!options.skipApiBackedSearch) {
-    const apiBackedRows = await fetchApiBackedSearchRows(parsed, language, limit);
-    for (const row of apiBackedRows as unknown as T[]) {
-      if (row?.id && !candidateMap.has(row.id)) candidateMap.set(row.id, row);
-    }
-  }
-
-  const strongDbRows = Array.from(candidateMap.values()).filter((row) => hasUsefulMatch(row, parsed));
-
-  if (!options.skipIndexFallback && strongDbRows.length === 0) {
-    const candidateIds = await getIndexCandidateIds(parsed, limit);
-    const missingIds = candidateIds.filter((id) => !candidateMap.has(id)).slice(0, Math.max(limit * 3, 120));
-
-    if (missingIds.length) {
-      const { data: indexedRows, error: indexedError } = await supabase
-        .from('pokemon_cards')
-        .select(select)
-        .eq('language', language)
-        .in('id', missingIds);
-
-      if (indexedError) throw indexedError;
-      for (const row of (indexedRows ?? []) as unknown as T[]) {
-        if (row?.id) candidateMap.set(row.id, row);
-      }
-    }
-  }
-
-  return Array.from(candidateMap.values())
-    .map((row) => ({ row, score: scoreCard(row, parsed) }))
-    .filter((item) => item.score >= getMinimumScore(parsed))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((item) => item.row);
+  const cards = await searchStackrCards(trimmed, {
+    language: isAllLanguageSearch(options.language) ? null : options.language,
+    limit,
+  });
+  return cards.map((card) => ({
+    id: card.id,
+    name: card.name,
+    language: card.language,
+    region: card.region,
+    number: card.number,
+    rarity: card.rarity ?? null,
+    image_small: card.images.small ?? null,
+    image_large: card.images.large ?? null,
+    set_id: card.set.id,
+    set_name: card.set.name,
+    external_ids: card.externalIds,
+    raw_data: card.raw_data,
+  })) as unknown as T[];
 }

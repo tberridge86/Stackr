@@ -1,5 +1,4 @@
-import { SHADOW_MODE_PILOT_API_URL } from './config';
-import { supabase } from './supabase';
+import { stackrApiClient } from './stackrApiV1';
 import {
   createShadowModePilotRecord,
   getShadowModeSnapshotFromDiagnostics,
@@ -8,23 +7,6 @@ import {
   type ShadowModePilotUserOutcome,
 } from './recognitionShadowModePilotCore';
 import type { ScanAttemptDiagnostics } from './scanDiagnostics';
-
-async function authHeader() {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) throw error;
-  const token = data.session?.access_token;
-  if (!token) throw new Error('Sign in is required before uploading shadow-mode pilot evidence.');
-  return `Bearer ${token}`;
-}
-
-async function parseJsonResponse(response: Response) {
-  const text = await response.text();
-  const payload = text ? JSON.parse(text) : {};
-  if (!response.ok) {
-    throw new Error(payload?.error ?? `Shadow-mode pilot request failed with HTTP ${response.status}`);
-  }
-  return payload;
-}
 
 export function buildShadowModePilotRecordFromDiagnostics(input: {
   diagnostics: ScanAttemptDiagnostics | null;
@@ -71,16 +53,10 @@ export async function submitShadowModePilotRecord(
     throw new Error('Shadow-mode pilot records must not include raw images.');
   }
 
-  const authorization = await authHeader();
-  const response = await fetch(`${SHADOW_MODE_PILOT_API_URL}/items`, {
-    method: 'POST',
-    headers: {
-      Authorization: authorization,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ record }),
-  });
-  const payload = await parseJsonResponse(response);
+  const envelope = await stackrApiClient.submitRecognitionShadowComparison(
+    record as unknown as Record<string, unknown>
+  );
+  const payload = envelope.data;
   return {
     ok: true,
     itemId: String(payload.itemId ?? ''),

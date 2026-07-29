@@ -15,6 +15,7 @@ import {
   MARKET_CACHE_CONTROL,
   createMarketPricingService,
 } from '../lib/marketPricing/service.js';
+import { createTracedFetch } from '../lib/traceContext.js';
 
 let supabaseAdmin = null;
 
@@ -25,7 +26,7 @@ function getSupabaseAdmin() {
   if (!url || !key) {
     throw new Error('Supabase service credentials are not configured on the backend.');
   }
-  supabaseAdmin = createClient(url, key);
+  supabaseAdmin = createClient(url, key, { global: { fetch: createTracedFetch() } });
   return supabaseAdmin;
 }
 
@@ -52,6 +53,8 @@ function logRequest(req, res, startedAt) {
     path: req.originalUrl,
     status: res.statusCode,
     duration_ms: Math.round(durationMs),
+    trace_id: req.stackrTrace?.traceId ?? null,
+    span_id: req.stackrTrace?.spanId ?? null,
   }));
 }
 
@@ -201,6 +204,14 @@ export function createV1Router(options = {}) {
 
   router.get('/cards/:cardId/variants', asyncRoute(async (req, res) => {
     sendEnvelope(req, res, await getService().cardVariants(req.params.cardId));
+  }));
+
+  router.get('/assets/manifest', asyncRoute(async (req, res) => {
+    const manifest = await getService().assetManifest(req.query);
+    sendEnvelope(req, res, { assets: manifest.assets }, {
+      pagination: manifest.pagination,
+      cacheControl: 'public, max-age=300, stale-while-revalidate=600',
+    });
   }));
 
   router.get('/cards/:variantId/price', asyncRoute(async (req, res) => {

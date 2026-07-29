@@ -1166,7 +1166,7 @@ values
   ('reverse_holo', 'Reverse Holo', 'foil', 30, 'Reverse holographic finish.'),
   ('first_edition', 'First Edition', 'edition', 40, 'First edition print marker.'),
   ('unlimited', 'Unlimited', 'edition', 50, 'Unlimited edition print.'),
-  ('promo', 'Promo', 'promo', 60, 'Promotional release.'),
+  ('promo', 'Promo', 'other', 60, 'Promotional release.'),
   ('stamped', 'Stamped', 'stamp', 70, 'Stamped promotional or event variant.'),
   ('poke_ball', 'Poke Ball', 'parallel', 80, 'Poke Ball patterned parallel finish.'),
   ('master_ball', 'Master Ball', 'parallel', 90, 'Master Ball patterned parallel finish.'),

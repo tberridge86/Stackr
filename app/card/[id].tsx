@@ -31,10 +31,7 @@ import {
 import { fetchCardById } from '../../lib/pokemonTcg';
 import { getDisplaySetLogoUrl } from '../../lib/setDisplay';
 import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
-import { fetchEbayPrice } from '../../lib/ebay';
-import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
-import { fetchPokeTraceCardPrice, fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
-import { supabase } from '../../lib/supabase';
+import { fetchPokeTraceCardPrice } from '../../lib/pricing';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 
 type PokemonCard = {
@@ -95,12 +92,6 @@ type PokemonCard = {
   };
 };
 
-type TcgFallbackPrice = {
-  low: number | null;
-  mid: number | null;
-  market: number | null;
-};
-
 type EbayPriceResult = {
   low: number | null;
   average: number | null;
@@ -148,13 +139,11 @@ export default function CardDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [listingBusy, setListingBusy] = useState(false);
 
-  // eBay price state
+  // Provider-neutral Stackr market state. Legacy names are retained locally to avoid UI churn.
   const [ebayPrice, setEbayPrice] = useState<EbayPriceResult | null>(null);
   const [ebayLoading, setEbayLoading] = useState(false);
   const [ebayError, setEbayError] = useState(false);
 
-  // TCGCSV fallback state (used when pokemontcg tcgplayer block is missing)
-  const [tcgFallbackPrice, setTcgFallbackPrice] = useState<TcgFallbackPrice | null>(null);
   const [latestSnapshotPrice, setLatestSnapshotPrice] = useState<LatestSnapshotPrice | null>(null);
 
   // ===============================
@@ -224,7 +213,7 @@ export default function CardDetailScreen() {
   }, [cardId, paramSetId]);
 
   // ===============================
-  // FETCH EBAY PRICE
+  // FETCH STACKR MARKET PRICE
   // ===============================
 
   const fetchEbay = useCallback(async (cardData: PokemonCard) => {
@@ -233,203 +222,44 @@ export default function CardDetailScreen() {
       setEbayError(false);
 
       const pokeTrace = await fetchPokeTraceCardPrice({
-        identifier: cardData.name ?? cardData.id,
+        identifier: cardData.id,
         setName: cardData.set?.name ?? null,
         number: cardData.number ?? null,
         language: cardData.language ?? (cardData as any).raw_data?.language ?? null,
         market: 'US',
       });
 
-      if (pokeTrace?.ebay_average != null) {
+      if (pokeTrace?.stackr_central != null) {
         setEbayPrice({
-          low: pokeTrace.ebay_low,
-          average: pokeTrace.ebay_average,
-          high: pokeTrace.ebay_high,
+          low: pokeTrace.stackr_low ?? null,
+          average: pokeTrace.stackr_central,
+          high: pokeTrace.stackr_high ?? null,
           count: pokeTrace.ebay_count,
           usedFallback: false,
         });
+        setLatestSnapshotPrice({
+          tcg_low: pokeTrace.stackr_low,
+          tcg_mid: pokeTrace.stackr_central,
+          cardmarket_trend: null,
+        });
         return;
       }
-
-      const result = await fetchEbayPrice({
-        cardId: cardData.id,
-        name: cardData.name ?? '',
-        setName: cardData.set?.name ?? '',
-        number: cardData.number ?? '',
-        setTotal: (cardData.set as any)?.printedTotal ?? (cardData.set as any)?.total ?? null,
-        rarity: cardData.rarity ?? '',
-        language: cardData.language ?? (cardData as any).raw_data?.language ?? null,
-      });
-
-      setEbayPrice({
-        low: result.low ?? null,
-        average: result.average ?? null,
-        high: result.high ?? null,
-        count: result.count ?? 0,
-        usedFallback: result.usedFallback ?? false,
-      });
+      setEbayPrice(null);
+      setLatestSnapshotPrice(null);
     } catch (err) {
-      console.error('eBay price fetch failed:', err);
+      console.error('Stackr market price fetch failed:', err);
       setEbayError(true);
     } finally {
       setEbayLoading(false);
     }
   }, []);
 
-  // Auto-fetch eBay price once card is loaded
+  // Auto-fetch the provider-neutral Stackr estimate once the card is loaded.
   useEffect(() => {
     if (card) {
       fetchEbay(card);
     }
   }, [card, fetchEbay]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const loadLatestSnapshot = async () => {
-      if (!card?.id) {
-        setLatestSnapshotPrice(null);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('market_price_snapshots')
-        .select('tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
-        .eq('card_id', card.id)
-        .order('snapshot_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (!mounted) return;
-      setLatestSnapshotPrice(error ? null : data ?? null);
-    };
-
-    loadLatestSnapshot();
-
-    return () => {
-      mounted = false;
-    };
-  }, [card?.id]);
-
-  // Fetch TCG/Cardmarket prices directly if missing from cache
-  const remotePriceCardId = card && !card.tcgplayer && !card.cardmarket ? card.id : null;
-  useEffect(() => {
-    if (!remotePriceCardId) return;
-    fetch(`https://api.pokemontcg.io/v2/cards/${remotePriceCardId}`)
-      .then(r => r.json())
-      .then(json => {
-        const d = json?.data;
-        if (d) {
-          setCard(prev => prev ? {
-            ...prev,
-            tcgplayer: d.tcgplayer ?? prev.tcgplayer,
-            cardmarket: d.cardmarket ?? prev.cardmarket,
-          } : prev);
-        }
-      })
-      .catch(() => {});
-  }, [remotePriceCardId]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const hasPokemonTcgPrices = (() => {
-      const prices = card?.tcgplayer?.prices;
-      return prices && Object.keys(prices).length > 0;
-    })();
-
-    const loadTcgFallback = async () => {
-      const setName = card?.set?.name?.trim();
-      if (!setName || !card?.name) {
-        setTcgFallbackPrice(null);
-        return;
-      }
-
-      if (hasPokemonTcgPrices) {
-        setTcgFallbackPrice(null);
-        return;
-      }
-
-      try {
-        const rows = await fetchTcgcsvUiCardPricesForSet(setName);
-        if (!mounted) return;
-
-        const normalizeNumber = (value: string) =>
-          value
-            .trim()
-            .replace(/^#/, '')
-            .replace(/\s+/g, '')
-            .toLowerCase();
-
-        const cardNumberRaw = (card.number ?? '').trim();
-        const cardNumberNormalized = normalizeNumber(cardNumberRaw);
-        const cardName = (card.name ?? '').trim().toLowerCase();
-
-        const normalizeName = (value: string) =>
-          value
-            .toLowerCase()
-            .replace(/\bex\b/g, ' ex ')
-            .replace(/[^a-z0-9]+/g, ' ')
-            .trim();
-
-        const cardNameNormalized = normalizeName(cardName);
-
-        const parseCollectorNumber = (value: string): string => {
-          const normalized = normalizeNumber(value);
-          if (!normalized) return '';
-          const left = normalized.split('/')[0] ?? normalized;
-          return left.replace(/^0+/, '') || '0';
-        };
-
-        const cardCollector = parseCollectorNumber(cardNumberRaw);
-
-        let matched =
-          rows.find((row) => normalizeNumber(row.number ?? '') === cardNumberNormalized) ??
-          rows.find((row) => parseCollectorNumber(row.number ?? '') === cardCollector && cardCollector !== '') ??
-          rows.find((row) => normalizeName(row.name).includes(cardNameNormalized) && cardNameNormalized.length > 2) ??
-          rows.find((row) => row.name.trim().toLowerCase() === cardName) ??
-          null;
-
-        if (!matched) {
-          setTcgFallbackPrice(null);
-          return;
-        }
-
-        const values = matched.variants.flatMap((v) => [
-          v.lowPrice,
-          v.midPrice,
-          v.marketPrice,
-        ]).filter((v): v is number => typeof v === 'number');
-
-        const lowUsd = values.length ? Math.min(...values) : null;
-        const midValues = matched.variants
-          .map((v) => v.midPrice)
-          .filter((v): v is number => typeof v === 'number');
-        const marketValues = matched.variants
-          .map((v) => v.marketPrice)
-          .filter((v): v is number => typeof v === 'number');
-
-        const avg = (arr: number[]) =>
-          arr.length ? arr.reduce((sum, n) => sum + n, 0) / arr.length : null;
-        const toGbp = (v: number | null) =>
-          typeof v === 'number' ? Math.round(v * USD_TO_GBP * 100) / 100 : null;
-
-        setTcgFallbackPrice({
-          low: toGbp(lowUsd),
-          mid: toGbp(avg(midValues)),
-          market: toGbp(avg(marketValues)),
-        });
-      } catch {
-        if (mounted) setTcgFallbackPrice(null);
-      }
-    };
-
-    loadTcgFallback();
-
-    return () => {
-      mounted = false;
-    };
-  }, [card?.id, card?.name, card?.number, card?.set?.name, card?.tcgplayer?.prices]);
 
   // ===============================
   // MEMOS
@@ -487,49 +317,6 @@ export default function CardDetailScreen() {
 
 
   // TCGPlayer prices — converted from USD to GBP
-  const tcgPrices = useMemo(() => {
-    if (!card) return null;
-    const prices = card.tcgplayer?.prices;
-    if (!prices) return null;
-
-    const preferred = editionHint === '1st_edition'
-      ? ['1stEditionHolofoil', '1stEditionNormal']
-      : editionHint === 'unlimited'
-        ? ['unlimitedHolofoil', 'unlimited', 'holofoil', 'reverseHolofoil', 'normal']
-        : [
-            'holofoil',
-            'reverseHolofoil',
-            'normal',
-            'unlimitedHolofoil',
-            'unlimited',
-            '1stEditionHolofoil',
-            '1stEditionNormal',
-          ];
-
-    let entry: any = null;
-
-    for (const key of preferred) {
-      if (prices[key]) {
-        entry = prices[key];
-        break;
-      }
-    }
-
-    if (!entry && !editionHint) {
-      entry = Object.values(prices)[0] ?? null;
-    }
-
-    if (!entry) return null;
-
-    const toGBP = (v: any) => typeof v === 'number' ? Math.round(v * USD_TO_GBP * 100) / 100 : null;
-
-    return {
-      low: toGBP(entry.low),
-      mid: toGBP(entry.mid),
-      market: toGBP(entry.market),
-    };
-  }, [card, editionHint]);
-
   const snapshotTcgPrices = !editionHint && (latestSnapshotPrice?.tcg_mid != null || latestSnapshotPrice?.tcg_low != null)
     ? {
         low: latestSnapshotPrice.tcg_low ?? null,
@@ -538,18 +325,10 @@ export default function CardDetailScreen() {
       }
     : null;
 
-  const resolvedTcgPrices = snapshotTcgPrices ?? tcgPrices ?? (editionHint ? null : tcgFallbackPrice);
+  const resolvedTcgPrices = snapshotTcgPrices;
 
   // CardMarket prices — converted from EUR to GBP
-  const cardmarketPrice = useMemo(() => {
-    if (!card) return null;
-    if (latestSnapshotPrice?.cardmarket_trend != null) return latestSnapshotPrice.cardmarket_trend;
-
-    const prices = card.cardmarket?.prices;
-    if (!prices) return null;
-    const eur = prices.trendPrice ?? prices.averageSellPrice ?? prices.avg30;
-    return typeof eur === 'number' ? Math.round(eur * EUR_TO_GBP * 100) / 100 : null;
-  }, [card, latestSnapshotPrice]);
+  const cardmarketPrice = latestSnapshotPrice?.cardmarket_trend ?? null;
 
   const estimatedCardValue = ebayPrice?.average ?? resolvedTcgPrices?.market ?? cardmarketPrice ?? null;
 
@@ -751,17 +530,17 @@ export default function CardDetailScreen() {
           />
 
           {/* eBay market lookup */}
-          <Text style={styles.priceSourceLabel}>eBay market lookup (GBP)</Text>
+          <Text style={styles.priceSourceLabel}>Stackr market range (GBP)</Text>
 
           {ebayLoading ? (
             <View style={styles.ebayLoadingRow}>
               <ActivityIndicator size="small" color={theme.colors.primary} />
-              <Text style={styles.ebayLoadingText}>Fetching eBay market prices...</Text>
+              <Text style={styles.ebayLoadingText}>Fetching Stackr market evidence...</Text>
             </View>
           ) : ebayError ? (
             <View style={styles.ebayErrorRow}>
               <Text style={styles.ebayErrorText}>
-                Could not fetch eBay market prices.{' '}
+                Could not fetch Stackr market evidence.{' '}
               </Text>
               <TouchableOpacity onPress={() => fetchEbay(card)}>
                 <Text style={styles.ebayRetryText}>Retry</Text>
@@ -769,7 +548,7 @@ export default function CardDetailScreen() {
             </View>
           ) : !hasEbayValues ? (
             <View style={styles.pricingEmptyState}>
-              <Text style={styles.pricingEmptyTitle}>No eBay market price yet</Text>
+              <Text style={styles.pricingEmptyTitle}>No supported market estimate yet</Text>
               <Text style={styles.pricingEmptyCopy}>
                 Refresh market data or use the other pricing sources as a guide.
               </Text>
@@ -803,7 +582,7 @@ export default function CardDetailScreen() {
               <View style={styles.ebayMetaRow}>
                 {ebayPrice?.count != null && ebayPrice.count > 0 && (
                   <Text style={styles.ebayMetaText}>
-                    Based on {ebayPrice.count} matched listing{ebayPrice.count !== 1 ? 's' : ''}
+                    Based on {ebayPrice.count} matched sold observation{ebayPrice.count !== 1 ? 's' : ''}
                   </Text>
                 )}
                 {ebayPrice?.usedFallback && (
@@ -812,7 +591,7 @@ export default function CardDetailScreen() {
                   </Text>
                 )}
                 {ebayPrice?.count === 0 && (
-                  <Text style={styles.ebayMetaText}>No listings found on eBay</Text>
+                  <Text style={styles.ebayMetaText}>No sold observations available</Text>
                 )}
               </View>
             </>
@@ -822,11 +601,11 @@ export default function CardDetailScreen() {
           <View style={styles.divider} />
 
           {/* TCGPlayer — GBP */}
-          <Text style={styles.priceSourceLabel}>Cached daily price - TCGPlayer (GBP)</Text>
+          <Text style={styles.priceSourceLabel}>Stackr canonical estimate (GBP)</Text>
 
           {!hasTcgValues ? (
             <View style={styles.pricingEmptyState}>
-              <Text style={styles.pricingEmptyTitle}>No TCGPlayer price yet</Text>
+              <Text style={styles.pricingEmptyTitle}>No canonical estimate yet</Text>
               <Text style={styles.pricingEmptyCopy}>
                 We will show low, mid and market values when this card has a usable price.
               </Text>
@@ -860,13 +639,13 @@ export default function CardDetailScreen() {
           <View style={styles.divider} />
 
           {/* CardMarket — GBP */}
-          <Text style={styles.priceSourceLabel}>Cached daily price - CardMarket (GBP)</Text>
+          <Text style={styles.priceSourceLabel}>Source-specific trend (GBP)</Text>
 
           {cardmarketPrice == null ? (
             <View style={styles.pricingEmptyState}>
-              <Text style={styles.pricingEmptyTitle}>No CardMarket trend yet</Text>
+              <Text style={styles.pricingEmptyTitle}>No separate source trend</Text>
               <Text style={styles.pricingEmptyCopy}>
-                Trend pricing will appear here once the source has enough data.
+                A separate trend appears only when the API has attributable evidence.
               </Text>
             </View>
           ) : (

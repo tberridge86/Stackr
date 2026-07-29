@@ -29,8 +29,8 @@ import {
   TradeOfferCard,
   TradeCashTerms,
 } from '../../lib/tradeOffers';
-import { BETA_TRADE_DEMO_MODE, PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
-import { getPriceFromPokemonCard } from '../../lib/pricing';
+import { BETA_TRADE_DEMO_MODE, PRICE_API_URL } from '../../lib/config';
+import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { StackrCenterModal } from '../../components/StackrModalSystem';
 
@@ -276,7 +276,7 @@ export default function OfferDetailScreen() {
 
         if (isNew === '1' && offerData.receiver_id) {
           const { data: receiverProfile } = await supabase
-            .from('profiles')
+            .from('profile_public_directory')
             .select('collector_name')
             .eq('id', offerData.receiver_id)
             .maybeSingle();
@@ -289,51 +289,22 @@ export default function OfferDetailScreen() {
         ));
 
         if (allCardIds.length > 0) {
-          const { data: previews } = await supabase
-            .from('card_previews')
-            .select('card_id, name, image_url, set_name')
-            .in('card_id', allCardIds);
-
+          const [cards, prices] = await Promise.all([
+            fetchStackrCardRows(allCardIds),
+            fetchStackrPriceSnapshots(allCardIds),
+          ]);
           const previewMap: Record<string, CardPreview> = {};
-          (previews ?? []).forEach((p: any) => {
-            previewMap[p.card_id] = p;
-          });
-
-          // Fall back to pokemon_cards for any not in card_previews
-          const missingIds = allCardIds.filter((id) => !previewMap[id]);
-          if (missingIds.length > 0) {
-            const { data: pokemonCards } = await supabase
-              .from('pokemon_cards')
-              .select('id, name, image_small, raw_data')
-              .in('id', missingIds);
-
-            (pokemonCards ?? []).forEach((pc: any) => {
-              previewMap[pc.id] = {
-                card_id: pc.id,
-                name: pc.name ?? null,
-                image_url: pc.image_small ?? null,
-                set_name: pc.raw_data?.set?.name ?? null,
-                estimated_value: getPriceFromPokemonCard(pc.raw_data) != null
-                  ? Number(getPriceFromPokemonCard(pc.raw_data)) * USD_TO_GBP
-                  : null,
-              };
-            });
+          for (const legacyId of allCardIds) {
+            const card = cards.get(legacyId) as any;
+            if (!card) continue;
+            previewMap[legacyId] = {
+              card_id: legacyId,
+              name: card.name ?? null,
+              image_url: card.image_small ?? card.image_large ?? null,
+              set_name: card.set_name ?? card.raw_data?.set?.name ?? null,
+              estimated_value: prices.get(legacyId)?.market_central ?? null,
+            };
           }
-
-          const { data: priceCards } = await supabase
-            .from('pokemon_cards')
-            .select('id, raw_data')
-            .in('id', allCardIds);
-
-          (priceCards ?? []).forEach((pc: any) => {
-            const usdPrice = getPriceFromPokemonCard(pc.raw_data);
-            if (usdPrice != null && previewMap[pc.id]) {
-              previewMap[pc.id] = {
-                ...previewMap[pc.id],
-                estimated_value: Number(usdPrice) * USD_TO_GBP,
-              };
-            }
-          });
 
           setCardPreviews(previewMap);
         }

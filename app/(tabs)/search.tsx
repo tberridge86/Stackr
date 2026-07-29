@@ -450,25 +450,6 @@ async function searchSetsQuick(primary: string, terms: string[]) {
   const safePrimary = primary.trim();
   if (safePrimary.length < 2) return [];
 
-  const { data, error } = await supabase
-    .from('pokemon_sets')
-    .select('id, name, series, printed_total, total, release_date, symbol_url, logo_url, language, region, external_ids, raw_data')
-    .or(`name.ilike.%${safePrimary}%,id.ilike.%${safePrimary}%,series.ilike.%${safePrimary}%`)
-    .limit(24);
-
-  if (error) throw error;
-
-  const quickResults = (data ?? [])
-    .map((row: any) => {
-      const set = mapSetRow(row);
-      return { set, score: rankSet(set, terms) };
-    })
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 12)
-    .map((entry) => entry.set);
-  if (quickResults.length) return quickResults;
-
   const mappedSets = await fetchAllSets({ language: 'all' }).catch(() => []);
   return mappedSets
     .map((set) => ({ set, score: rankSet(set, terms) }))
@@ -744,7 +725,7 @@ export default function GlobalSearchScreen() {
       ? searchMarketProducts(trimmed, catalogueProductTypeFilter, catalogueProductTypeFilter || productTypeMatchesIntent(trimmed) ? 24 : 10)
       : Promise.resolve([]);
     const profilesPromise: Promise<any> = Promise.resolve(supabase
-      .from('profiles')
+      .from('profile_public_directory')
       .select('id, collector_name, avatar_url')
       .ilike('collector_name', `%${primary}%`)
       .limit(8));

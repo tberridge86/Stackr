@@ -198,8 +198,16 @@ function assertS3Compatibility() {
 }
 
 function assertRoutesAndMigrationCommand() {
-  assert.match(server, /app\.use\('\/api\/assets', assetRoutes\)/, 'server must mount public asset routes');
-  assert.match(server, /app\.use\('\/api\/admin\/assets', adminAssetsRouter\)/, 'server must mount admin asset routes');
+  assert.match(
+    server,
+    /app\.use\('\/api\/assets',\s*(?:gatewayOriginAuth,\s*)?assetRoutes\)/,
+    'server must mount public asset routes, optionally behind the gateway origin guard',
+  );
+  assert.match(
+    server,
+    /app\.use\('\/api\/admin\/assets',\s*gatewayOriginAuth,\s*adminAssetsRouter\)/,
+    'server must protect and mount admin asset routes',
+  );
   assert.match(assetRoute, /\/manifest/, 'route must expose a public manifest endpoint');
   assert.match(assetRoute, /\/scans\/presigned-upload/, 'route must expose private scan presigned uploads');
   assert.match(assetRoute, /\/scans\/upload/, 'route must expose authenticated scan uploads');

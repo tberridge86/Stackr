@@ -8,7 +8,9 @@ export type ForeignPokemonLanguageCode =
   | 'pt-br'
   | 'de'
   | 'ja'
+  | 'zh-cn'
   | 'zh-tw'
+  | 'ko'
   | 'id'
   | 'th';
 

@@ -1,4 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRICE_API_URL, STACKR_API_URL } from './config';
+import { supabase } from './supabase';
 
 export type StackrApiLanguageCode = 'en' | 'ja' | 'zh-Hans' | 'zh-Hant' | 'ko';
 
@@ -133,6 +135,31 @@ export type StackrCard = {
   };
   defaultVariantId: string;
   variants: StackrCardVariant[];
+  updatedAt: string | null;
+};
+
+export type StackrCatalogueAsset = {
+  assetId: string;
+  assetType: string;
+  game: string | null;
+  setId: string | null;
+  cardId: string | null;
+  variantId: string | null;
+  deliveryPath: string | null;
+  deliveryUrl: string | null;
+  sourceAttribution: string | null;
+  permissionStatus: string;
+  contentSha256: string | null;
+  perceptualHash: string | null;
+  mimeType: string | null;
+  width: number | null;
+  height: number | null;
+  byteSize: number | null;
+  derivatives: Array<Record<string, unknown>>;
+  cacheControl: string | null;
+  externallyReferenced: boolean;
+  unavailableReason: string | null;
+  lastVerifiedAt: string | null;
   updatedAt: string | null;
 };
 
@@ -287,6 +314,39 @@ export type StackrMarketOpportunity = {
     label: string;
   };
   reason: 'active_listing_below_exact_variant_estimate';
+};
+
+export type StackrObservabilityStatus = 'healthy' | 'degraded' | 'critical' | 'unavailable';
+
+export type StackrObservabilitySnapshot = {
+  dashboardKey: string;
+  status: StackrObservabilityStatus;
+  summary: Record<string, unknown>;
+  evidenceCount: number;
+  limitations: string[];
+  windowStart?: string | null;
+  windowEnd?: string | null;
+  sourceUpdatedAt?: string | null;
+  generatedAt: string | null;
+  expiresAt: string | null;
+};
+
+export type StackrQualityReleaseGate = {
+  gate_key: string;
+  target_operator: 'lte' | 'gte' | 'eq' | 'zero';
+  target_value: number | null;
+  actual_value: number | null;
+  unit: string;
+  status: 'pass' | 'fail' | 'insufficient_data' | 'not_applicable';
+  evidence_count: number;
+  reason: string;
+};
+
+export type StackrObservabilityDashboard = {
+  generatedAt: string;
+  dashboards: StackrObservabilitySnapshot[];
+  latestQualityRun: Record<string, unknown> | null;
+  releaseGates: StackrQualityReleaseGate[];
 };
 
 type FetchLike = typeof fetch;
@@ -465,7 +525,43 @@ export type StackrApiV1ClientOptions = {
   baseUrl?: string;
   fetchImpl?: FetchLike;
   headers?: Record<string, string>;
+  getAccessToken?: () => Promise<string | null>;
+  getDeviceId?: () => Promise<string>;
+  createIdempotencyKey?: () => string;
 };
+
+const STACKR_DEVICE_ID_STORAGE_KEY = 'stackr.gateway.device-id.v1';
+let defaultDeviceIdPromise: Promise<string> | null = null;
+
+function randomRequestKey(prefix: string) {
+  const randomUuid = globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}:${randomUuid}`;
+}
+
+async function defaultAccessToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
+}
+
+async function defaultDeviceId() {
+  if (!defaultDeviceIdPromise) {
+    defaultDeviceIdPromise = (async () => {
+      const existing = await AsyncStorage.getItem(STACKR_DEVICE_ID_STORAGE_KEY);
+      if (existing) return existing;
+      const created = randomRequestKey('device');
+      await AsyncStorage.setItem(STACKR_DEVICE_ID_STORAGE_KEY, created);
+      return created;
+    })();
+  }
+  try {
+    return await defaultDeviceIdPromise;
+  } catch (error) {
+    defaultDeviceIdPromise = null;
+    throw error;
+  }
+}
 
 function buildUrl(baseUrl: string, path: string, query?: Record<string, string | number | boolean | null | undefined>) {
   const url = new URL(`${baseUrl.replace(/\/$/, '')}${path}`);
@@ -506,6 +602,9 @@ export class StackrApiClient {
   private readonly baseUrl: string;
   private readonly fetchImpl: FetchLike;
   private readonly headers: Record<string, string>;
+  private readonly getAccessToken: () => Promise<string | null>;
+  private readonly getDeviceId: () => Promise<string>;
+  private readonly createIdempotencyKey: () => string;
 
   constructor(options: StackrApiV1ClientOptions = {}) {
     this.baseUrl = options.baseUrl ?? `${STACKR_API_URL || PRICE_API_URL}/v1`;
@@ -514,6 +613,9 @@ export class StackrApiClient {
       'X-Stackr-Api-Version': '1',
       ...(options.headers ?? {}),
     };
+    this.getAccessToken = options.getAccessToken ?? defaultAccessToken;
+    this.getDeviceId = options.getDeviceId ?? defaultDeviceId;
+    this.createIdempotencyKey = options.createIdempotencyKey ?? (() => randomRequestKey('mutation'));
   }
 
   private async request<T>(
@@ -521,10 +623,12 @@ export class StackrApiClient {
     query?: Record<string, string | number | boolean | null | undefined>,
     init: RequestInit = {},
   ): Promise<StackrApiEnvelope<T>> {
+    const deviceId = await this.getDeviceId();
     const response = await this.fetchImpl(buildUrl(this.baseUrl, path, query), {
       ...init,
       headers: {
         ...this.headers,
+        'X-Stackr-Device-Id': deviceId,
         ...(init.headers as Record<string, string> | undefined),
       },
     });
@@ -557,6 +661,72 @@ export class StackrApiClient {
       headers: {
         'Content-Type': 'application/json',
         ...(init.headers as Record<string, string> | undefined),
+      },
+      body: JSON.stringify(body),
+    });
+  }
+
+  private async authenticatedPost<T>(path: string, body: Record<string, unknown>, init: RequestInit = {}) {
+    const accessToken = await this.getAccessToken();
+    if (!accessToken) {
+      throw new StackrApiV1Error(401, {
+        error: {
+          code: 'authentication_required',
+          message: 'Sign in is required for this Stackr API request.',
+          requestId: '',
+        },
+        meta: {
+          apiVersion: '1',
+          generatedAt: new Date().toISOString(),
+        },
+      });
+    }
+    return this.post<T>(path, body, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Idempotency-Key': this.createIdempotencyKey(),
+        ...(init.headers as Record<string, string> | undefined),
+      },
+    });
+  }
+
+  private async authenticatedGet<T>(
+    path: string,
+    query?: Record<string, string | number | boolean | null | undefined>,
+  ) {
+    const accessToken = await this.getAccessToken();
+    if (!accessToken) {
+      throw new StackrApiV1Error(401, {
+        error: {
+          code: 'authentication_required',
+          message: 'Sign in is required for this Stackr API request.',
+          requestId: '',
+        },
+        meta: { apiVersion: '1', generatedAt: new Date().toISOString() },
+      });
+    }
+    return this.request<T>(path, query, { headers: { Authorization: `Bearer ${accessToken}` } });
+  }
+
+  private async authenticatedPatch<T>(path: string, body: Record<string, unknown>) {
+    const accessToken = await this.getAccessToken();
+    if (!accessToken) {
+      throw new StackrApiV1Error(401, {
+        error: {
+          code: 'authentication_required',
+          message: 'Sign in is required for this Stackr API request.',
+          requestId: '',
+        },
+        meta: { apiVersion: '1', generatedAt: new Date().toISOString() },
+      });
+    }
+    return this.request<T>(path, undefined, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': this.createIdempotencyKey(),
       },
       body: JSON.stringify(body),
     });
@@ -616,6 +786,16 @@ export class StackrApiClient {
     return this.request<{ cardId: string; variants: StackrCardVariant[] }>(`/cards/${encodeURIComponent(cardId)}/variants`);
   }
 
+  assetManifest(query: {
+    assetType?: string;
+    setId?: string;
+    printingId?: string;
+    variantId?: string;
+    limit?: number;
+  } = {}) {
+    return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query);
+  }
+
   cardPrice(variantId: string, query: {
     productType?: StackrMarketProductType;
     currency?: string;
@@ -656,17 +836,57 @@ export class StackrApiClient {
 
   recognitionIdentify(payload: StackrRecognitionIdentifyRequest) {
     assertNoImagePayload(payload);
-    return this.post<StackrRecognitionIdentifyResponse>('/recognition/identify', payload as Record<string, unknown>);
+    return this.authenticatedPost<StackrRecognitionIdentifyResponse>('/recognition/identify', payload as Record<string, unknown>);
   }
 
   recognitionEmbed(payload: StackrRecognitionEmbedRequest) {
     assertNoImagePayload(payload);
-    return this.post<StackrRecognitionEmbedResponse>('/recognition/embed', payload as Record<string, unknown>);
+    return this.authenticatedPost<StackrRecognitionEmbedResponse>('/recognition/embed', payload as Record<string, unknown>);
   }
 
   recognitionFeedback(payload: StackrRecognitionFeedbackRequest) {
     assertNoImagePayload(payload);
-    return this.post<StackrRecognitionFeedbackResponse>('/recognition/feedback', payload as Record<string, unknown>);
+    return this.authenticatedPost<StackrRecognitionFeedbackResponse>('/recognition/feedback', payload as Record<string, unknown>);
+  }
+
+  submitRecognitionShadowComparison(record: Record<string, unknown>) {
+    assertNoImagePayload(record);
+    return this.authenticatedPost<{
+      ok: true;
+      itemId: string;
+      disagreementCategory: string;
+    }>('/recognition/shadow-comparisons', { record });
+  }
+
+  adminRecognitionShadowComparisons<T extends object = Record<string, unknown>>(query: {
+    status?: 'pending_review' | 'reviewed' | 'ignored' | 'all';
+    category?: string;
+    limit?: number;
+  } = {}) {
+    return this.authenticatedGet<{
+      ok: true;
+      items: T[];
+      summary: Record<string, unknown>;
+    }>('/admin/recognition-shadow-comparisons', query);
+  }
+
+  reviewRecognitionShadowComparison(itemId: string, payload: {
+    reviewStatus: 'pending_review' | 'reviewed' | 'ignored';
+    disagreementCategory?: string;
+    reviewerNotes?: string;
+  }) {
+    return this.authenticatedPatch<{ ok: true; item: Record<string, unknown> }>(
+      `/admin/recognition-shadow-comparisons/${encodeURIComponent(itemId)}`,
+      payload,
+    );
+  }
+
+  adminObservabilityDashboard() {
+    return this.authenticatedGet<StackrObservabilityDashboard>('/admin/observability/dashboard');
+  }
+
+  refreshAdminObservabilityDashboard(windowHours = 24) {
+    return this.authenticatedPost<StackrObservabilityDashboard>('/admin/observability/refresh', { windowHours });
   }
 }
 

@@ -47,6 +47,7 @@ def settings(tmp_path: Path | None = None) -> Settings:
         allow_deterministic_test_model=True,
         require_active_index=True,
         metrics_token="metrics-secret",
+        gateway_auth_mode="disabled",
         local_storage_root=tmp_path,
         diagnostics_enabled=True,
     )
@@ -117,6 +118,10 @@ def test_health_ready_and_metrics_are_private(tmp_path):
         metrics = client.get("/metrics", headers={"x-stackr-metrics-key": "metrics-secret"})
         assert metrics.status_code == 200
         assert "stackr_recognition_requests_total" in metrics.text
+        assert "stackr_recognition_outcomes_total" in metrics.text
+        assert "stackr_recognition_auto_confirm_total" in metrics.text
+        assert "stackr_recognition_image_fallback_total" in metrics.text
+        assert "stackr_recognition_active_model_index" in metrics.text
 
 
 def test_fast_path_identify_returns_component_scores_and_no_auto_add(tmp_path):
@@ -137,6 +142,21 @@ def test_fast_path_identify_returns_component_scores_and_no_auto_add(tmp_path):
     assert len(diagnostics.records) == 1
     assert diagnostics.records[0].image_storage_key_hash is None
     assert diagnostics.records[0].ocr_summary["hasText"] is True
+
+
+def test_trace_context_continues_without_recording_request_payload(tmp_path):
+    client, _, _ = make_client(tmp_path)
+    incoming = "00-11111111111111111111111111111111-2222222222222222-01"
+    with client:
+        response = client.post(
+            "/v1/recognition/identify",
+            json=identify_payload(),
+            headers={"traceparent": incoming},
+        )
+    assert response.status_code == 200
+    assert response.headers["x-trace-id"] == "11111111111111111111111111111111"
+    assert response.headers["traceparent"].startswith("00-11111111111111111111111111111111-")
+    assert response.headers["traceparent"] != incoming
 
 
 def test_json_image_payloads_are_rejected(tmp_path):

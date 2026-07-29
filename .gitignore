@@ -45,6 +45,7 @@ app-example
 
 # local/generated artifacts
 tmp/
+outputs/
 .tmp/
 .tmp_video_frames/
 __pycache__/

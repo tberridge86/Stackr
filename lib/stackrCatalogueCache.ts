@@ -7,6 +7,11 @@ import type {
   StackrDeltaChange,
   StackrSet,
 } from './stackrApiV1';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  activateLegacyCatalogueCacheMigration,
+  prepareLegacyCatalogueCacheMigration,
+} from './stackrLegacyCacheMigration';
 
 declare const require: ((id: string) => any) | undefined;
 
@@ -130,6 +135,7 @@ export type StackrCatalogueStore = {
   enqueueOfflineScan(scan: StackrQueuedOfflineScan): Promise<void>;
   listOfflineScans(): Promise<StackrQueuedOfflineScan[]>;
   snapshot?(): StackrCatalogueStoreSnapshot;
+  restore?(snapshot: StackrCatalogueStoreSnapshot): Promise<void> | void;
 };
 
 function stableStringify(value: unknown): string {
@@ -297,6 +303,9 @@ export function createInMemoryStackrCatalogueStore(
     snapshot() {
       return cloneSnapshot(state);
     },
+    restore(snapshot) {
+      state = cloneSnapshot(snapshot);
+    },
   };
 }
 
@@ -357,31 +366,49 @@ export async function createExpoSqliteStackrCatalogueStore(): Promise<StackrCata
       pendingScans: parsed.get('pendingScans') ?? [],
     };
   };
-  const writeKey = async (key: keyof StackrCatalogueStoreSnapshot, value: unknown) => {
-    await execAsync(
-      'insert or replace into stackr_cache (key, payload) values (?, ?)',
-      [key, JSON.stringify(value)]
-    );
-  };
-
   const memory = createInMemoryStackrCatalogueStore(await readSnapshot());
   const persist = async () => {
     const snapshot = memory.snapshot?.();
     if (!snapshot) return;
-    await writeKey('manifest', snapshot.manifest);
-    await writeKey('sets', snapshot.sets);
-    await writeKey('cards', snapshot.cards);
-    await writeKey('variants', snapshot.variants);
-    await writeKey('aliases', snapshot.aliases);
-    await writeKey('externalIds', snapshot.externalIds);
-    await writeKey('pendingScans', snapshot.pendingScans);
+    const entries = Object.entries(snapshot) as [keyof StackrCatalogueStoreSnapshot, unknown][];
+    if (db.withExclusiveTransactionAsync) {
+      await db.withExclusiveTransactionAsync(async (transaction: any) => {
+        for (const [key, value] of entries) {
+          await transaction.runAsync(
+            'insert or replace into stackr_cache (key, payload) values (?, ?)',
+            [key, JSON.stringify(value)]
+          );
+        }
+      });
+      return;
+    }
+
+    await execAsync('begin immediate transaction');
+    try {
+      for (const [key, value] of entries) {
+        await execAsync(
+          'insert or replace into stackr_cache (key, payload) values (?, ?)',
+          [key, JSON.stringify(value)]
+        );
+      }
+      await execAsync('commit');
+    } catch (error) {
+      await execAsync('rollback').catch(() => undefined);
+      throw error;
+    }
   };
 
   return {
     ...memory,
     async transaction(work) {
+      const before = memory.snapshot?.();
       const result = await memory.transaction(work);
-      await persist();
+      try {
+        await persist();
+      } catch (error) {
+        if (before) await memory.restore?.(before);
+        throw error;
+      }
       return result;
     },
   };
@@ -500,6 +527,15 @@ export async function syncStackrCatalogueInBackground(input: {
 
   const current = await cache.getManifest();
   try {
+    const legacyMigrationOperationId = current
+      ? `catalogue:${current.currentCatalogueVersion}`
+      : null;
+    if (legacyMigrationOperationId) {
+      await prepareLegacyCatalogueCacheMigration({
+        storage: AsyncStorage,
+        operationId: legacyMigrationOperationId,
+      });
+    }
     const manifestEnvelope = await input.client.catalogManifest(current?.etag ?? undefined);
     const manifest = manifestEnvelope.data;
     if (!current) {
@@ -514,6 +550,14 @@ export async function syncStackrCatalogueInBackground(input: {
       limit: 500,
     });
     await cache.applyDelta(deltaEnvelope.data.changes);
+    if (legacyMigrationOperationId) {
+      const active = await cache.getManifest();
+      await activateLegacyCatalogueCacheMigration({
+        storage: AsyncStorage,
+        operationId: legacyMigrationOperationId,
+        activeCatalogueVersion: active?.currentCatalogueVersion ?? null,
+      });
+    }
     return {
       status: 'delta_applied' as const,
       latestChangeSequence: deltaEnvelope.data.changes.at(-1)?.sequence ?? current.latestChangeSequence,

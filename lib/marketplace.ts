@@ -1,8 +1,7 @@
 import { supabase } from './supabase';
-import { USD_TO_GBP, EUR_TO_GBP } from './config';
-import { getPreferredMarketPrice } from './pricing';
 import { MARKETPLACE_STATUS_LABELS, normaliseMarketplaceStatus, type MarketplaceLifecycleStatus } from './transactionStates';
 import { getCachedOrFetch, invalidateRequestCache } from './requestCache';
+import { fetchStackrPriceSnapshots } from './stackrDomainAdapter';
 
 const API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 const ACTIVE_LISTING_STATUS_FILTER = 'listing_status.eq.active,listing_status.is.null';
@@ -40,7 +39,7 @@ export type MarketplaceListingPrices = {
   tcg_low: number | null;
   ebay_average: number | null;
   cardmarket_trend: number | null;
-  preferred_source?: 'ebay' | 'tcg' | 'cardmarket' | null;
+  preferred_source?: 'stackr' | 'ebay' | 'tcg' | 'cardmarket' | null;
   preferred_value?: number | null;
 };
 
@@ -138,7 +137,7 @@ async function attachProfiles(
   if (uniqueUserIds.length === 0) return listings;
 
   const { data: profiles, error } = await supabase
-    .from('profiles')
+    .from('profile_public_directory')
     .select('id, collector_name, avatar_url, avatar_preset, pokemon_type, background_key')
     .in('id', uniqueUserIds);
 
@@ -170,74 +169,18 @@ async function attachPrices(listings: MarketplaceListing[]): Promise<Marketplace
 
   if (uniqueCardIds.length === 0) return listings;
 
-  const { data: snapshotData, error: snapshotError } = await supabase
-    .from('market_price_snapshots')
-    .select('card_id, ebay_average, ebay_low, ebay_high, tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
-    .in('card_id', uniqueCardIds)
-    .order('snapshot_at', { ascending: false });
-
-  if (snapshotError) {
-    console.log('Latest snapshot fetch error:', snapshotError);
-  }
-
-  const latestSnapshotByCardId = new Map<string, any>();
-  for (const row of snapshotData ?? []) {
-    if (!latestSnapshotByCardId.has(row.card_id)) latestSnapshotByCardId.set(row.card_id, row);
-  }
-
-  // Fetch card data as a fallback when snapshots are missing.
-  const { data: cardData, error } = await supabase
-    .from('pokemon_cards')
-    .select('id, raw_data')
-    .in('id', uniqueCardIds);
-
-  if (error) {
-    console.log('Card data fetch error:', error);
-    return listings;
-  }
-
-  // Build price map from card raw_data
-  const cardPriceMap: Record<string, any> = {};
-
-  for (const card of cardData ?? []) {
-    const raw = card.raw_data || {};
-    const tcg = raw.tcgplayer?.prices || {};
-    const cm = raw.cardmarket?.prices || {};
-    const snapshot = latestSnapshotByCardId.get(card.id);
-
-    // Get best TCGPlayer price (prefer holofoil, then any)
-    let tcgMid: number | null = null;
-    const preferred = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal'];
-    for (const key of preferred) {
-      if (tcg[key]?.mid != null) {
-        tcgMid = (tcg[key].mid * USD_TO_GBP);
-        break;
-      }
-    }
-    if (tcgMid === null) {
-      for (const entry of Object.values(tcg) as any[]) {
-        if (entry?.mid) {
-          tcgMid = (entry.mid * USD_TO_GBP);
-          break;
-        }
-      }
-    }
-
-    // Get Cardmarket prices (convert EUR to GBP)
-    const cardmarketTrend = cm.trendPrice != null ? (cm.trendPrice * EUR_TO_GBP) : null;
-
-    const preferredMarketPrice = getPreferredMarketPrice(snapshot, {
-      tcg: tcgMid,
-      cardmarket: cardmarketTrend,
-    });
-
-    cardPriceMap[card.id] = {
-      tcg_mid: snapshot?.tcg_mid ?? tcgMid,
-      tcg_low: snapshot?.tcg_low ?? null,
-      ebay_average: snapshot?.ebay_average ?? null,
-      cardmarket_trend: snapshot?.cardmarket_trend ?? cardmarketTrend,
-      preferred_source: preferredMarketPrice.source,
-      preferred_value: preferredMarketPrice.value,
+  const snapshots = await fetchStackrPriceSnapshots(uniqueCardIds);
+  const cardPriceMap: Record<string, MarketplaceListingPrices> = {};
+  for (const cardId of uniqueCardIds) {
+    const snapshot = snapshots.get(cardId);
+    if (!snapshot) continue;
+    cardPriceMap[cardId] = {
+      tcg_mid: snapshot.market_central,
+      tcg_low: snapshot.market_low,
+      ebay_average: null,
+      cardmarket_trend: null,
+      preferred_source: 'stackr',
+      preferred_value: snapshot.market_central,
     };
   }
 

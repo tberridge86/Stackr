@@ -100,7 +100,7 @@ export async function getPendingFriendRequests() {
   if (requesterIds.length === 0) return [];
 
   const { data: profiles, error: profileError } = await supabase
-    .from('profiles')
+    .from('profile_public_directory')
     .select('id, collector_name, avatar_url, avatar_preset')
     .in('id', requesterIds);
 
@@ -143,7 +143,7 @@ export async function getMyFriends() {
   if (otherUserIds.length === 0) return [];
 
   const { data: profiles, error: profileError } = await supabase
-    .from('profiles')
+    .from('profile_public_directory')
     .select('id, collector_name, avatar_url, avatar_preset')
     .in('id', otherUserIds);
 

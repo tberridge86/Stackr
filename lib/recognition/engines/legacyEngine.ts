@@ -1,9 +1,8 @@
-import {
-  identifyCardsDetailed as identifyCardsWithLegacyEngine,
-  type IdentifiedCard,
-  type IdentifyCardsDetailedResult,
-  type ScanIdentifyDiagnostics,
-  type ScanIdentifyHints,
+import type {
+  IdentifiedCard,
+  IdentifyCardsDetailedResult,
+  ScanIdentifyDiagnostics,
+  ScanIdentifyHints,
 } from '../../cardSight';
 import { clampConfidence, createAnonymousScanId, createScannerDiagnostics } from '../events';
 import {
@@ -176,17 +175,10 @@ export const existingLegacyEngine: RecognitionEngine = {
   catalogueManifest: EXISTING_LEGACY_CATALOGUE_MANIFEST,
   async recognize(request: RecognitionRequest): Promise<RecognitionResult> {
     const startedAt = Date.now();
-    const images = request.legacyContext?.images ?? request.cards
-      .map((card) => card.base64)
-      .filter((base64): base64 is string => Boolean(base64));
-    const hints = request.legacyContext?.hints as ScanIdentifyHints | undefined;
-    const legacyResult = await identifyCardsWithLegacyEngine(images, request.binderId ?? undefined, hints);
-    const candidates = legacyResult.cards.map(identifiedCardToRecognitionCandidate);
-
     return {
-      outcome: candidates.length ? 'review_required' : 'rescan_required',
+      outcome: 'rescan_required',
       engineId: 'existing_legacy_engine',
-      candidates,
+      candidates: [],
       acceptedCandidate: null,
       diagnostics: createScannerDiagnostics({
         anonymousScanId: request.anonymousScanId,
@@ -196,12 +188,14 @@ export const existingLegacyEngine: RecognitionEngine = {
         engineId: 'existing_legacy_engine',
         modelManifest: EXISTING_LEGACY_MODEL_MANIFEST,
         catalogueManifest: EXISTING_LEGACY_CATALOGUE_MANIFEST,
-        notes: legacyResult.diagnostics.notes ?? [],
-        legacyDiagnostics: legacyResult.diagnostics,
+        notes: [
+          'Legacy recognition is quarantined from the mobile bundle.',
+          'An emergency provider fallback must run server-side from a consented private image key.',
+        ],
       }),
-      error: candidates.length ? null : {
-        code: 'NO_LEGACY_MATCH',
-        message: 'The existing recognition route did not return a card candidate.',
+      error: {
+        code: 'LEGACY_SERVER_FALLBACK_REQUIRED',
+        message: 'Legacy recognition is available only through a protected Stackr server fallback.',
         retriable: true,
       },
     };

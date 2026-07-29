@@ -6,6 +6,7 @@ import { recordAchievementEvent } from './achievements';
 import { getCachedOrFetch, invalidateRequestCache } from './requestCache';
 import { bumpCollectionSummaryVersion } from './collectionSummaryInvalidation';
 import { getPreferredSetDisplayName } from './pokemonDisplayNames';
+import { fetchStackrPriceSnapshots, fetchStackrSetRows } from './stackrDomainAdapter';
 
 export type BinderType = 'official' | 'custom';
 export type BinderCardMode = 'raw' | 'graded';
@@ -249,92 +250,16 @@ export async function fetchLatestSnapshotPrices(
   const request = (async () => {
     const fetchedByCardId = new Map<string, BinderSnapshotPriceFields>();
 
-    const { data, error } = await supabase
-      .from('market_price_snapshots')
-      .select('card_id, ebay_average, tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
-      .in('card_id', idsNeedingQuery)
-      .eq('language', normalizedLanguage)
-      .order('snapshot_at', { ascending: false });
-
-    if (error) {
-      console.log('Latest binder snapshot prices failed:', error.message);
-      return fetchedByCardId;
-    }
-
-    for (const row of data ?? []) {
-      if (fetchedByCardId.has(row.card_id)) continue;
-
-      fetchedByCardId.set(row.card_id, {
-        ebay_price: row.ebay_average ?? null,
-        tcg_price: row.tcg_mid ?? row.tcg_low ?? null,
-        cardmarket_price: row.cardmarket_trend ?? null,
-        last_price_update: row.snapshot_at ?? null,
+    const snapshots = await fetchStackrPriceSnapshots(idsNeedingQuery, { language: normalizedLanguage });
+    for (const cardId of idsNeedingQuery) {
+      const snapshot = snapshots.get(cardId);
+      if (!snapshot) continue;
+      fetchedByCardId.set(cardId, {
+        ebay_price: null,
+        tcg_price: snapshot.market_central,
+        cardmarket_price: null,
+        last_price_update: snapshot.snapshot_at,
       });
-    }
-
-    const missingCardIds = idsNeedingQuery.filter((cardId) => {
-      const existing = fetchedByCardId.get(cardId);
-      return !existing || existing.tcg_price == null || existing.cardmarket_price == null;
-    });
-
-    if (missingCardIds.length) {
-      const { data: priceRows, error: priceError } = await supabase
-        .from('card_prices')
-        .select('entity_id, display_price, market, average, last_sold, low, retrieved_at, price_type, confidence, pricing_status')
-        .eq('entity_type', 'card')
-        .eq('language', normalizedLanguage)
-        .in('entity_id', missingCardIds)
-        .order('retrieved_at', { ascending: false });
-
-      if (priceError) {
-        console.log('Fallback binder card_prices failed:', priceError.message);
-      } else {
-        for (const row of priceRows ?? []) {
-          if (!row.entity_id || fetchedByCardId.has(row.entity_id)) continue;
-          const value = row.display_price ?? row.market ?? row.average ?? row.last_sold ?? row.low ?? null;
-          if (value == null) continue;
-
-          fetchedByCardId.set(row.entity_id, {
-            ebay_price: null,
-            tcg_price: null,
-            cardmarket_price: value,
-            last_price_update: row.retrieved_at ?? null,
-          });
-        }
-      }
-    }
-
-    const cardIdsStillMissing = idsNeedingQuery.filter((cardId) => {
-      const existing = fetchedByCardId.get(cardId);
-      return !existing || existing.tcg_price == null || existing.cardmarket_price == null;
-    });
-
-    if (cardIdsStillMissing.length) {
-      const { data: cards, error: cardError } = await supabase
-        .from('pokemon_cards')
-        .select('id, raw_data')
-        .in('id', cardIdsStillMissing)
-        .eq('language', normalizedLanguage);
-
-      if (cardError) {
-        console.log('Fallback binder card prices failed:', cardError.message);
-      } else {
-        for (const card of cards ?? []) {
-          const raw = card.raw_data ?? {};
-          const tcgPrice = getPriceFromPokemonCard(raw);
-          const cardmarketPrice = getCardmarketPriceFromPokemonCard(raw);
-
-          const existing = fetchedByCardId.get(card.id);
-          if (!existing && tcgPrice == null && cardmarketPrice == null) continue;
-
-          fetchedByCardId.set(card.id, {
-            ebay_price: existing?.ebay_price ?? null,
-            tcg_price: existing?.tcg_price ?? tcgPrice,
-            cardmarket_price: existing?.cardmarket_price ?? cardmarketPrice,
-            last_price_update: existing?.last_price_update ?? null,
-          });
-        }
-      }
     }
 
     const expiresAt = Date.now() + LATEST_SNAPSHOT_PRICE_CACHE_TTL_MS;
@@ -493,59 +418,24 @@ async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<Bind
 
   if (!sourceSetIds.length) return binders;
 
-  const [legacyResult, canonicalResult, coverResult] = await Promise.all([
-    supabase
-      .from('pokemon_sets')
-      .select('id, name, language, region, logo_url, symbol_url, external_ids, raw_data')
-      .in('id', sourceSetIds),
-    supabase
-      .from('tcg_sets')
-      .select('id, source_id, set_code, canonical_name, local_name, english_display_name, language, region, logo_url, symbol_url, raw_payload')
-      .in('id', sourceSetIds),
-    supabase
-      .from('tcg_set_cover_images')
-      .select('set_id, cover_image_url')
-      .in('set_id', sourceSetIds),
-  ]);
-
-  if (legacyResult.error && canonicalResult.error) {
-    console.log('Binder set branding lookup failed:', legacyResult.error.message);
-    return binders;
-  }
-  if (legacyResult.error) console.log('Binder legacy set branding lookup failed:', legacyResult.error.message);
-  if (canonicalResult.error) console.log('Binder canonical set branding lookup failed:', canonicalResult.error.message);
-  if (coverResult.error) console.log('Binder set cover lookup skipped:', coverResult.error.message);
-
-  const brandingById = new Map<string, any>();
-  const coverById = new Map<string, string>();
-  for (const set of legacyResult.data ?? []) {
-    const language = inferBinderLanguage((set as any).language, (set as any).id);
-    brandingById.set(getSetIdentityKey((set as any).id, language), set);
-  }
-  for (const set of canonicalResult.data ?? []) {
-    const language = inferBinderLanguage((set as any).language, (set as any).id);
-    brandingById.set(getSetIdentityKey((set as any).id, language), set);
-    if ((set as any).source_id) brandingById.set(getSetIdentityKey((set as any).source_id, language), set);
-  }
-  if (!coverResult.error) {
-    for (const row of coverResult.data ?? []) {
-      const setId = String((row as any).set_id ?? '').trim();
-      const coverUrl = String((row as any).cover_image_url ?? '').trim();
-      if (setId && coverUrl) coverById.set(getSetIdentityKey(setId), coverUrl);
-    }
-  }
+  const brandingByReference = await fetchStackrSetRows(sourceSetIds);
 
   return binders.map((binder) => {
     const language = inferBinderLanguage(binder.language, binder.source_set_id);
-    const set = binder.source_set_id ? brandingById.get(getSetIdentityKey(binder.source_set_id, language)) : null;
-    const raw = set?.raw_payload ?? set?.raw_data ?? {};
-    const coverUrl = binder.source_set_id ? coverById.get(getSetIdentityKey(binder.source_set_id, language)) : null;
-    const rawCoverUrl = getRawSetCoverImageUrl(raw);
-    const names = getBinderSetDisplayNames(binder, set, language);
+    const set = binder.source_set_id
+      ? getSetLookupCandidates(binder.source_set_id)
+        .map((reference) => brandingByReference.get(reference))
+        .find(Boolean) ?? null
+      : null;
+    const names = {
+      displayName: set?.name ?? binder.name,
+      localName: set?.localName ?? null,
+      englishDisplayName: set?.englishDisplayName ?? null,
+    };
     if (!set) {
       return {
         ...binder,
-        source_set_cover_url: resolveBackendAssetUrl(coverUrl) ?? coverUrl ?? binder.source_set_cover_url ?? null,
+        source_set_cover_url: binder.source_set_cover_url ?? null,
         source_set_display_name: names.displayName,
         source_set_local_name: names.localName,
         source_set_english_display_name: names.englishDisplayName,
@@ -555,9 +445,9 @@ async function attachSetBrandingToBinders(binders: BinderRecord[]): Promise<Bind
 
     return {
       ...binder,
-      source_set_logo_url: resolveBackendAssetUrl(set.logo_url) ?? cleanUrl(set.logo_url) ?? getRawProviderSetLogo(raw) ?? binder.source_set_logo_url ?? null,
-      source_set_symbol_url: resolveBackendAssetUrl(set.symbol_url) ?? cleanUrl(set.symbol_url) ?? binder.source_set_symbol_url ?? null,
-      source_set_cover_url: resolveBackendAssetUrl(coverUrl) ?? coverUrl ?? rawCoverUrl ?? binder.source_set_cover_url ?? null,
+      source_set_logo_url: set.images.logo ?? binder.source_set_logo_url ?? null,
+      source_set_symbol_url: set.images.symbol ?? binder.source_set_symbol_url ?? null,
+      source_set_cover_url: set.images.cover ?? set.images.artwork ?? binder.source_set_cover_url ?? null,
       source_set_display_name: names.displayName,
       source_set_local_name: names.localName,
       source_set_english_display_name: names.englishDisplayName,
@@ -1068,6 +958,10 @@ async function backfillCardPriceHistory(
   cardNumber: string,
   language: PokemonCardLanguage | string | null = 'en'
 ): Promise<void> {
+  // Stage 14 quarantine: never fabricate historical observations from a current price.
+  // This legacy body is retained only for rollback review until provider retirement gates pass.
+  return;
+  /* c8 ignore start */
   const normalizedLanguage = normalizePokemonCardLanguage(language);
   try {
     const { count } = await supabase
@@ -1095,6 +989,7 @@ async function backfillCardPriceHistory(
       console.log(`⚠️ No TCG price for backfill: ${cardName}`);
       return;
     }
+    if (tcgPrice == null) return;
 
     const today = new Date();
     const rows = [];
@@ -1104,7 +999,7 @@ async function backfillCardPriceHistory(
       date.setDate(date.getDate() - i);
 
       const variance = 1 + (Math.random() * 0.1 - 0.05);
-      const price = Number((tcgPrice * variance).toFixed(2));
+      const price = Number((Number(tcgPrice) * variance).toFixed(2));
 
       rows.push({
         card_id: cardId,
@@ -1134,6 +1029,7 @@ async function backfillCardPriceHistory(
   } catch (err) {
     console.log('Backfill error:', err);
   }
+  /* c8 ignore stop */
 }
 
 // ===============================
@@ -1208,17 +1104,6 @@ export async function updateBinderCardOwned(
         setId: virtual.setId,
       }).catch((achievementError) => {
         console.log('Card achievement check failed:', achievementError);
-      });
-
-      backfillCardPriceHistory(
-        virtual.cardId,
-        virtual.setId,
-        cardMeta?.cardName ?? virtual.cardId,
-        cardMeta?.setName ?? '',
-        cardMeta?.cardNumber ?? '',
-        language,
-      ).catch((err) => {
-        console.log('Backfill failed silently', err);
       });
 
       invalidateBinderCaches(virtual.binderId);

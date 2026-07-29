@@ -32,6 +32,8 @@ import { stackrIcons } from '../lib/stackrIcons';
 import { stackrTabContentPadding } from '../lib/stackrSizing';
 import { supabase } from '../lib/supabase';
 import { tabularNumberStyle, typeScale } from '../lib/typography';
+import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../lib/stackrDomainAdapter';
+import { stackrApiClient } from '../lib/stackrApiV1';
 
 type RangeKey = '7D' | '30D' | '6M' | '12M';
 type MoverDisplayMode = 'money' | 'percent';
@@ -267,78 +269,28 @@ async function fetchPreviews(cardIds: string[]) {
   const previews = new Map<string, CardPreview>();
   if (!ids.length) return previews;
 
-  const [previewResult, cardResult] = await Promise.all([
-    supabase
-      .from('card_previews')
-      .select('card_id, name, image_url, set_name')
-      .in('card_id', ids),
-    supabase
-      .from('pokemon_cards')
-      .select('id, name, image_small, image_large, set_id, raw_data')
-      .in('id', ids),
-  ]);
-
-  const cardsById = new Map<string, any>();
-  if (!cardResult.error) {
-    for (const card of cardResult.data ?? []) {
-      cardsById.set(card.id, card);
-    }
-  } else {
-    console.log('Mover pokemon card fallback unavailable:', cardResult.error.message);
-  }
-
-  if (!previewResult.error) {
-    for (const row of previewResult.data ?? []) {
-      const card = cardsById.get(row.card_id);
-      previews.set(row.card_id, {
-        name: row.name ?? card?.name ?? card?.raw_data?.name ?? row.card_id,
-        setId: card?.set_id ?? card?.raw_data?.set?.id ?? null,
-        setName: getPreferredSetDisplayName({
-          id: card?.set_id ?? card?.raw_data?.set?.id ?? null,
-          sourceId: card?.raw_data?.set?.tcgdex_id ?? card?.raw_data?.set?.source_id ?? card?.set_id ?? null,
-          setCode: card?.raw_data?.set?.set_code ?? card?.raw_data?.set?.tcgdex_id ?? card?.set_id ?? null,
-          language: card?.language ?? card?.raw_data?.language ?? card?.raw_data?.set?.language ?? null,
-          region: card?.region ?? card?.raw_data?.region ?? card?.raw_data?.set?.region ?? null,
-          localName: card?.raw_data?.set?.local_name ?? card?.raw_data?.set?.name ?? null,
-          englishDisplayName: card?.raw_data?.set?.english_display_name ?? card?.raw_data?.set?.englishDisplayName ?? null,
-          canonicalName: card?.raw_data?.set?.name ?? row.set_name ?? null,
-          fallbackName: row.set_name ?? card?.set_id ?? null,
-          raw: card?.raw_data?.set ?? card?.raw_data,
-        }),
-        imageUrl:
-          row.image_url ??
-          card?.image_small ??
-          card?.image_large ??
-          card?.raw_data?.images?.small ??
-          card?.raw_data?.images?.large ??
-          null,
-      });
-    }
-  } else {
-    console.log('Mover card previews unavailable:', previewResult.error.message);
-  }
-
-  const missing = ids.filter((id) => !previews.has(id));
-  for (const id of missing) {
+  const cardsById = await fetchStackrCardRows(ids);
+  for (const id of ids) {
     const card = cardsById.get(id);
     if (!card) continue;
+    const raw = card.raw_data as any;
 
-    previews.set(card.id, {
-      name: card.name ?? card.raw_data?.name ?? card.id,
-      setId: card.set_id ?? card.raw_data?.set?.id ?? null,
+    previews.set(id, {
+      name: card.name ?? raw?.name ?? id,
+      setId: card.set_id ?? raw?.set?.id ?? null,
       setName: getPreferredSetDisplayName({
-        id: card.set_id ?? card.raw_data?.set?.id ?? null,
-        sourceId: card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set?.source_id ?? card.set_id ?? null,
-        setCode: card.raw_data?.set?.set_code ?? card.raw_data?.set?.tcgdex_id ?? card.set_id ?? null,
-        language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
-        region: card.region ?? card.raw_data?.region ?? card.raw_data?.set?.region ?? null,
-        localName: card.raw_data?.set?.local_name ?? card.raw_data?.set?.name ?? null,
-        englishDisplayName: card.raw_data?.set?.english_display_name ?? card.raw_data?.set?.englishDisplayName ?? null,
-        canonicalName: card.raw_data?.set?.name ?? null,
+        id: card.set_id ?? raw?.set?.id ?? null,
+        sourceId: raw?.set?.tcgdex_id ?? raw?.set?.source_id ?? card.set_id ?? null,
+        setCode: raw?.set?.set_code ?? raw?.set?.tcgdex_id ?? card.set_id ?? null,
+        language: card.language ?? raw?.language ?? raw?.set?.language ?? null,
+        region: card.region ?? raw?.region ?? raw?.set?.region ?? null,
+        localName: raw?.set?.local_name ?? raw?.set?.name ?? null,
+        englishDisplayName: raw?.set?.english_display_name ?? raw?.set?.englishDisplayName ?? null,
+        canonicalName: raw?.set?.name ?? null,
         fallbackName: card.set_id ?? null,
-        raw: card.raw_data?.set ?? card.raw_data,
+        raw: raw?.set ?? raw,
       }),
-      imageUrl: card.image_small ?? card.image_large ?? card.raw_data?.images?.small ?? card.raw_data?.images?.large ?? null,
+      imageUrl: card.image_small ?? card.image_large ?? raw?.images?.small ?? raw?.images?.large ?? null,
     });
   }
 
@@ -369,43 +321,35 @@ async function executeMarketSnapshotRowsQuery({
   ascending?: boolean;
   limit?: number;
 }): Promise<any[]> {
-  const runQuery = async (includeTcgdex: boolean) => {
-    let query = supabase
-      .from('market_price_snapshots')
-      .select(includeTcgdex ? PRICE_COLUMNS_TCGDEX : PRICE_COLUMNS_LEGACY)
-      .is('user_id', null)
-      .or(includeTcgdex ? PRICE_FILTER_TCGDEX : PRICE_FILTER_LEGACY)
-      .gte('snapshot_at', since)
-      .order('snapshot_at', { ascending })
-      .limit(limit);
-
-    if (cardIds?.length) {
-      query = query.in('card_id', cardIds);
-    }
-
-    if (before) {
-      query = query.lt('snapshot_at', before);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return (data ?? []) as any[];
+  const lowerBound = Date.parse(since);
+  const upperBound = before ? Date.parse(before) : Number.POSITIVE_INFINITY;
+  const withinWindow = (value?: string | null) => {
+    const timestamp = value ? Date.parse(value) : NaN;
+    return Number.isFinite(timestamp) && timestamp >= lowerBound && timestamp < upperBound;
   };
 
-  if (tcgdexSnapshotColumnSupported === false) {
-    return runQuery(false);
+  if (cardIds?.length) {
+    const snapshots = await fetchStackrPriceSnapshots(cardIds);
+    return cardIds.flatMap((cardId) => {
+      const snapshot = snapshots.get(cardId);
+      if (!snapshot?.snapshot_at || !withinWindow(snapshot.snapshot_at)) return [];
+      return [{ card_id: cardId, tcg_mid: snapshot.market_central, snapshot_at: snapshot.snapshot_at }];
+    }).slice(0, limit);
   }
 
-  try {
-    const rows = await runQuery(true);
-    tcgdexSnapshotColumnSupported = true;
-    return rows;
-  } catch (error) {
-    if (!isMissingTcgdexSnapshotColumn(error)) throw error;
-    tcgdexSnapshotColumnSupported = false;
-    console.log('Value History falling back to legacy market snapshot columns:', (error as any)?.message ?? error);
-    return runQuery(false);
-  }
+  const response = await stackrApiClient.marketMovers({ productType: 'raw_card', currency: 'GBP', limit: Math.min(limit, 100) });
+  const rows = response.data.movers.flatMap((mover) => {
+    const cardId = mover.variantId;
+    if (!cardId) return [];
+    const points = [
+      { card_id: cardId, tcg_mid: mover.currentEstimate, snapshot_at: mover.calculatedAt },
+      { card_id: cardId, tcg_mid: mover.previousEstimate, snapshot_at: mover.previousCalculatedAt },
+    ];
+    return points.filter((point) => point.tcg_mid != null && withinWindow(point.snapshot_at));
+  });
+  return rows.sort((a, b) => ascending
+    ? String(a.snapshot_at).localeCompare(String(b.snapshot_at))
+    : String(b.snapshot_at).localeCompare(String(a.snapshot_at))).slice(0, limit);
 }
 
 async function fetchMarketSnapshotRows({

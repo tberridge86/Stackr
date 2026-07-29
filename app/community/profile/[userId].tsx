@@ -25,6 +25,7 @@ import {
 } from '../../../lib/friends';
 import { stackrTabContentPadding } from '../../../lib/stackrSizing';
 import { stackrIcons } from '../../../lib/stackrIcons';
+import { fetchStackrCardRows } from '../../../lib/stackrDomainAdapter';
 
 // ===============================
 // TYPES
@@ -158,7 +159,7 @@ export default function PublicCollectorProfileScreen() {
         friendResult,
       ] = await Promise.all([
         supabase
-          .from('profiles')
+          .from('profile_public_directory')
           .select('id, collector_name, avatar_preset, pokemon_type, favorite_card_id, favorite_set_id, chase_card_id, chase_set_id')
           .eq('id', binderId)
           .maybeSingle(),
@@ -249,14 +250,11 @@ export default function PublicCollectorProfileScreen() {
       const allCardIds = Array.from(new Set([...postCardIds, ...specialCardIds]));
 
       if (allCardIds.length > 0) {
-        const { data: cardData } = await supabase
-          .from('pokemon_cards')
-          .select('id, name, set_id, image_small, image_large, raw_data')
-          .in('id', allCardIds);
-
-        const cardMap = Object.fromEntries(
-          (cardData ?? []).map((c) => [c.id, c])
-        );
+        const rows = await fetchStackrCardRows(allCardIds);
+        const cardMap = Object.fromEntries(allCardIds.flatMap((id) => {
+          const card = rows.get(id);
+          return card ? [[id, card]] : [];
+        }));
         setCards(cardMap);
 
         if (profileData?.favorite_card_id) {

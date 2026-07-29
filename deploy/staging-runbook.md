@@ -1,0 +1,94 @@
+# Staging Runbook
+
+## Purpose
+
+Prove the exact release on isolated staging resources before production. Staging must have its own Railway environment/services, Cloudflare Worker environment, Supabase database or branch, URLs, and EAS channel.
+
+## One-Time Setup
+
+1. Create the protected GitHub environment `staging`.
+2. Add the secrets and variables listed in `deploy/README.md` with staging values.
+3. Configure Railway runtime variables for the backend and recognition service. Keep Supabase secret/service-role keys and `STACKR_GATEWAY_ORIGIN_KEY` server-only.
+4. Configure Cloudflare secrets with `wrangler secret put --env staging`; do not commit values.
+5. Configure EAS `preview` environment values and keep only `EXPO_PUBLIC_*` public values in the update bundle.
+6. Leave `STACKR_MIGRATION_BASELINE_APPROVED=false` until a local reset from migration zero passes against the correct baseline.
+7. Leave `STACKR_MODEL_INDEX_RELEASE_APPROVED=false` until Stage 6 has approved and checksum-verified the model and inactive index.
+
+Required Cloudflare secret commands:
+
+```powershell
+Set-Location gateway
+npx wrangler secret put BACKEND_ORIGIN_KEY --env staging
+npx wrangler secret put BACKEND_ADMIN_KEY --env staging
+npx wrangler secret put RECOGNITION_SERVICE_SECRET --env staging
+```
+
+## Preflight
+
+Run from a clean checkout of the release commit:
+
+```powershell
+npm ci
+npm ci --prefix backend
+npm ci --prefix gateway
+npm run deploy:preflight
+npm run deploy:verify-model
+```
+
+Review the reported warnings. A blocked model report is expected today and means the deployment must stop before gateway activation.
+
+## Dispatch
+
+From GitHub Actions, choose **Deploy Stackr Staging**, type `DEPLOY STAGING`, and initially leave both optional toggles off.
+
+Equivalent GitHub CLI command:
+
+```powershell
+gh workflow run deploy-staging.yml `
+  --ref main `
+  -f confirmation='DEPLOY STAGING' `
+  -f apply_migrations=false `
+  -f publish_mobile_update=false
+```
+
+The workflow must complete the physical-backup check, logical backup verification, migration dry run, both Railway deployments, private readiness, gateway activation, and public smoke tests. Logical dumps are deleted even on failure.
+
+## Migration Trial
+
+Only after the remote migration history is reconciled and staging has a verified rollback point, rerun with:
+
+```powershell
+gh workflow run deploy-staging.yml `
+  --ref main `
+  -f confirmation='DEPLOY STAGING' `
+  -f apply_migrations=true `
+  -f publish_mobile_update=false
+```
+
+Verify:
+
+```text
+/health returns 200 from the backend
+/ready returns 200 from recognition
+/v1/health returns 200 through the gateway
+/v1/ready returns 200 through the gateway
+/v1/catalog/manifest returns 200 and an ETag
+request IDs are returned unchanged
+private recognition metrics remain inaccessible without service credentials
+```
+
+## Mobile Trial
+
+Publish to the `staging` EAS channel only after API smoke tests pass. Test a real development build on iOS and Android for authentication, catalogue bootstrap, exact offline recognition, ambiguous recognition, image fallback, and Ximilar emergency fallback disabled/enabled by the intended flags.
+
+There is no automated real-device mobile end-to-end suite in the repository. That is a release blocker for claiming step 9 of the requested production sequence is automated.
+
+## Exit Criteria
+
+- All CI jobs green on the exact commit.
+- Staging migrations reset and pgTAP tests pass from migration zero.
+- Catalogue and index versions are complete but inactive before activation.
+- Model checksum, licence, preprocessing and ONNX compatibility are verified.
+- Service and public smoke tests pass.
+- Mobile real-device checks are recorded with app/runtime versions.
+- Rollback workflow is exercised against staging and returns to a known-good version.

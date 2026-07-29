@@ -46,6 +46,10 @@ class Settings(BaseSettings):
 
     metrics_token: SecretStr | None = None
     metrics_public_mode: Literal["disabled", "token"] = "token"
+    gateway_auth_mode: Literal["disabled", "required"] = "required"
+    gateway_service_id: str = "stackr-public-gateway"
+    gateway_service_secret: SecretStr | None = None
+    gateway_signature_max_age_seconds: int = Field(default=90, ge=15, le=300)
     diagnostics_enabled: bool = True
     diagnostic_retention_hours: int = Field(default=72, ge=1, le=24 * 90)
 
@@ -54,6 +58,10 @@ class Settings(BaseSettings):
     @property
     def metrics_secret(self) -> str | None:
         return self.metrics_token.get_secret_value() if self.metrics_token else None
+
+    @property
+    def gateway_service_secret_value(self) -> str | None:
+        return self.gateway_service_secret.get_secret_value() if self.gateway_service_secret else None
 
     @property
     def service_role_secret(self) -> str | None:

@@ -69,6 +69,7 @@ import {
   recordMintyInsightFeedback,
 } from '../../lib/mintyInsightService';
 import { getCustomBinderNameArtKeyForBinder } from '../../lib/customBinderNameArt';
+import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 
 // ===============================
 // TYPES
@@ -573,30 +574,16 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
   if (!cardIds.length) return items;
 
   try {
-    const [previewResult, officialCardResult] = await Promise.all([
-      supabase
-        .from('card_previews')
-        .select('card_id, name, image_url, set_name')
-        .in('card_id', cardIds),
-      supabase
-        .from('pokemon_cards')
-        .select('id, name, number, image_small, image_large, set_id, raw_data')
-        .in('id', cardIds),
-    ]);
-
-    if (previewResult.error) {
-      console.log('Home activity card previews failed', previewResult.error.message);
-    }
-    if (officialCardResult.error) {
-      console.log('Home activity official card lookup failed', officialCardResult.error.message);
-    }
+    const officialCards = await fetchStackrCardRows(cardIds);
 
     const activityImageByCardId = new Map<string, string>();
     const cardNameByCardId = new Map<string, string>();
 
-    for (const card of officialCardResult.data ?? []) {
-      const rawImages = card.raw_data?.images ?? null;
-      const officialImages = getPokemonCardImageUrls(card.id, card.set_id, card.number);
+    for (const cardId of cardIds) {
+      const card = officialCards.get(cardId);
+      if (!card) continue;
+      const rawImages = (card.raw_data as any)?.images ?? null;
+      const officialImages = getPokemonCardImageUrls(cardId, card.set_id, card.number);
       const imageUrl =
         officialImages.small ??
         officialImages.large ??
@@ -606,17 +593,8 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
         rawImages?.large ??
         null;
 
-      if (imageUrl) activityImageByCardId.set(card.id, imageUrl);
-      if (card.name) cardNameByCardId.set(card.id, card.name);
-    }
-
-    for (const preview of previewResult.data ?? []) {
-      if (preview.image_url && !activityImageByCardId.has(preview.card_id)) {
-        activityImageByCardId.set(preview.card_id, preview.image_url);
-      }
-      if (preview.name && !cardNameByCardId.has(preview.card_id)) {
-        cardNameByCardId.set(preview.card_id, preview.name);
-      }
+      if (imageUrl) activityImageByCardId.set(cardId, imageUrl);
+      if (card.name) cardNameByCardId.set(cardId, card.name);
     }
 
     return items.map((item) => {
@@ -899,12 +877,16 @@ export default function HubScreen() {
 
         if (flagData?.length) {
           const cardIds = [...new Set(flagData.map((f) => f.card_id))];
-          const { data: previews } = await supabase
-            .from('card_previews')
-            .select('card_id, name, image_url, set_name')
-            .in('card_id', cardIds);
+          const previews = await fetchStackrCardRows(cardIds);
           const previewMap: Record<string, any> = {};
-          (previews ?? []).forEach((p: any) => { previewMap[p.card_id] = p; });
+          previews.forEach((card: any) => {
+            previewMap[card.id] = {
+              card_id: card.id,
+              name: card.name,
+              image_url: card.image_small ?? card.image_large ?? null,
+              set_name: card.set_name ?? card.set_id ?? null,
+            };
+          });
           setRecentListings(flagData.map((flag) => ({ ...flag, preview: previewMap[flag.card_id] ?? null })));
         } else {
           setRecentListings([]);
@@ -938,12 +920,16 @@ export default function HubScreen() {
 
           if (strictMatches.length) {
             const cardIds = [...new Set(strictMatches.map((listing) => listing.card_id))];
-            const { data: previews } = await supabase
-              .from('card_previews')
-              .select('card_id, name, image_url, set_name')
-              .in('card_id', cardIds);
+            const previews = await fetchStackrCardRows(cardIds);
             const previewMap: Record<string, any> = {};
-            (previews ?? []).forEach((p: any) => { previewMap[p.card_id] = p; });
+            previews.forEach((card: any) => {
+              previewMap[card.id] = {
+                card_id: card.id,
+                name: card.name,
+                image_url: card.image_small ?? card.image_large ?? null,
+                set_name: card.set_name ?? card.set_id ?? null,
+              };
+            });
             setMarketplaceMatches(strictMatches.slice(0, 4).map((listing) => ({
               ...listing,
               preview: previewMap[listing.card_id] ?? null,
@@ -1216,20 +1202,13 @@ export default function HubScreen() {
       const snapshotColumns = 'user_id, card_id, tcg_mid, tcg_low, snapshot_at';
       let data: any[] = [];
       if (snapshotCardIds.length) {
-        const globalSnapshotsResult = await supabase
-          .from('market_price_snapshots')
-          .select(snapshotColumns)
-          .in('card_id', snapshotCardIds)
-          .is('user_id', null)
-          .or('tcg_mid.not.is.null,tcg_low.not.is.null')
-          .order('snapshot_at', { ascending: false })
-          .limit(1000);
-
-        if (globalSnapshotsResult.error) {
-          throw globalSnapshotsResult.error;
-        }
-
-        data = globalSnapshotsResult.data ?? [];
+        const snapshots = await fetchStackrPriceSnapshots(snapshotCardIds);
+        data = snapshotCardIds.flatMap((cardId) => {
+          const snapshot = snapshots.get(cardId);
+          return snapshot?.snapshot_at
+            ? [{ card_id: cardId, tcg_mid: snapshot.market_central, tcg_low: snapshot.market_low, snapshot_at: snapshot.snapshot_at }]
+            : [];
+        });
       }
 
       const snapshotByCardDay = new Map<string, any>();
@@ -1489,47 +1468,18 @@ export default function HubScreen() {
       }
 
       const cardIds = [...new Set(mergedRows.map((row) => row.card_id))];
-      const [previewResult, officialCardResult] = await Promise.all([
-        supabase
-          .from('card_previews')
-          .select('card_id, name, image_url, set_name')
-          .in('card_id', cardIds),
-        supabase
-          .from('pokemon_cards')
-          .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-          .in('id', cardIds),
+      const [officialCardMap, priceMap] = await Promise.all([
+        fetchStackrCardRows(cardIds),
+        fetchStackrPriceSnapshots(cardIds),
       ]);
 
-      const previews = previewResult.data ?? [];
-      const previewsError = previewResult.error;
-      const officialCards = officialCardResult.data ?? [];
-      const officialCardsError = officialCardResult.error;
-
-      if (previewsError) {
-        console.log('Home chase previews failed', previewsError.message);
-      }
-      if (officialCardsError) {
-        console.log('Home chase official card lookup failed', officialCardsError.message);
-      }
-
-      const previewMap: Record<string, any> = {};
-      (previews ?? []).forEach((preview: any) => {
-        previewMap[preview.card_id] = preview;
-      });
-      const officialCardMap: Record<string, any> = {};
-      officialCards.forEach((card: any) => {
-        officialCardMap[card.id] = card;
-      });
-
       setChaseCards(mergedRows.map((row) => {
-        const preview = previewMap[row.card_id] ?? null;
-        const officialCard = officialCardMap[row.card_id] ?? null;
-        const fallbackTcgPrice = getOwnedCardCurrentTcgGbp(officialCard);
-        const estimated = row.market_estimate ?? row.asking_price ?? fallbackTcgPrice ?? null;
+        const officialCard = officialCardMap.get(row.card_id) ?? null;
+        const estimated = row.market_estimate ?? row.asking_price ?? priceMap.get(row.card_id)?.market_central ?? null;
         const cardNumber = officialCard?.number ?? null;
         const setId = officialCard?.set_id ?? row.set_id ?? null;
         const officialImages = getPokemonCardImageUrls(row.card_id, setId, cardNumber);
-        const rawImages = officialCard?.raw_data?.images ?? null;
+        const rawImages = (officialCard?.raw_data as any)?.images ?? null;
         const officialImage =
           officialImages.small ??
           officialImages.large ??
@@ -1541,11 +1491,11 @@ export default function HubScreen() {
         return {
           cardId: row.card_id,
           setId,
-          name: officialCard?.name ?? preview?.name ?? row.card_id,
-          setName: officialCard?.raw_data?.set?.name ?? preview?.set_name ?? row.set_id ?? 'Wanted card',
+          name: officialCard?.name ?? row.card_id,
+          setName: (officialCard?.raw_data as any)?.set?.name ?? row.set_id ?? 'Wanted card',
           number: cardNumber,
           rarity: officialCard?.rarity ?? null,
-          imageUrl: officialImage ?? preview?.image_url ?? null,
+          imageUrl: officialImage ?? null,
           estimatedValue: typeof estimated === 'number' ? estimated : estimated == null ? null : Number(estimated),
         };
       }));
@@ -1593,7 +1543,7 @@ export default function HubScreen() {
       const sellerIds = [...new Set(rows.map((row: any) => row.user_id).filter(Boolean))];
       const { data: profiles, error: profileError } = sellerIds.length
         ? await supabase
-          .from('profiles')
+          .from('profile_public_directory')
           .select('id, collector_name')
           .in('id', sellerIds)
         : { data: [], error: null };

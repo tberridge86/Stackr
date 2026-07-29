@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "stackr-quality-evaluation-v1.0.0",
+  "datasetKey": "stackr-gold-test-set-draft",
+  "status": "draft",
+  "generatedAt": "2026-07-28T00:00:00.000Z",
+  "evidencePolicy": {
+    "policyVersion": "unapproved-template-v1",
+    "approved": false,
+    "approvedBy": null,
+    "minimumMetricDenominators": {}
+  },
+  "cases": [],
+  "limitations": [
+    "Template only: no physical cards, images, capture sessions, or results have been recorded.",
+    "Release claims remain blocked until a locked, independently reviewed evidence policy defines minimum denominators."
+  ]
+}

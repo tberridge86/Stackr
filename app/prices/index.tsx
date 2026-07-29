@@ -35,6 +35,7 @@ import type { ProductLookupType, ProductPriceResult } from '../../lib/productSea
 import { listingCategoryIcons } from '../../lib/listingCategoryIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
+import { fetchStackrCardRows, fetchStackrPrice, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 
 
 // ===============================
@@ -364,33 +365,12 @@ export default function MarketScreen() {
 
   const loadWatchlistPrices = useCallback(async (cardIds: string[]) => {
     if (!cardIds.length) { setWatchlistPriceMap({}); return; }
-
-    const { data, error } = await supabase
-      .from('market_price_snapshots')
-      .select('card_id, tcg_mid, tcg_low, snapshot_at')
-      .is('user_id', null)
-      .or('tcg_mid.not.is.null,tcg_low.not.is.null')
-      .in('card_id', cardIds)
-      .order('snapshot_at', { ascending: false });
-
-    if (error) { console.log('Watchlist price snapshot error:', error); return; }
-
-    const grouped: Record<string, any[]> = {};
-    for (const row of data ?? []) {
-      if (!grouped[row.card_id]) grouped[row.card_id] = [];
-      if (grouped[row.card_id].length < 2) grouped[row.card_id].push(row);
-    }
+    const snapshots = await fetchStackrPriceSnapshots(cardIds);
 
     const nextMap: Record<string, WatchlistPriceState> = {};
     for (const cardId of cardIds) {
-      const snapshots = grouped[cardId] ?? [];
-      const latest = snapshots[0];
-      const previous = snapshots[1];
-      const latestPrice = latest?.tcg_mid ?? latest?.tcg_low ?? null;
-      const previousPrice = previous?.tcg_mid ?? previous?.tcg_low ?? null;
-      const change = latestPrice != null && previousPrice != null ? latestPrice - previousPrice : null;
-      const percentChange = change != null && previousPrice != null && previousPrice !== 0 ? (change / previousPrice) * 100 : null;
-      nextMap[cardId] = { latestPrice, previousPrice, change, percentChange, hasHistory: snapshots.length > 1 };
+      const latestPrice = snapshots.get(cardId)?.market_central ?? null;
+      nextMap[cardId] = { latestPrice, previousPrice: null, change: null, percentChange: null, hasHistory: false };
     }
 
     setWatchlistPriceMap(nextMap);
@@ -403,45 +383,22 @@ export default function MarketScreen() {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('market_price_snapshots')
-      .select('card_id, ebay_average, ebay_low, ebay_high, ebay_count, tcg_mid, tcg_low, snapshot_at')
-      .is('user_id', null)
-      .in('card_id', cardIds)
-      .or('tcg_mid.not.is.null,tcg_low.not.is.null')
-      .order('snapshot_at', { ascending: false });
-
-    if (error) {
-      console.log('Search price snapshot error:', error);
-      setSearchPriceMap({});
-      return;
-    }
-
-    const grouped: Record<string, any[]> = {};
-    for (const row of data ?? []) {
-      if (!grouped[row.card_id]) grouped[row.card_id] = [];
-      if (grouped[row.card_id].length < 2) grouped[row.card_id].push(row);
-    }
+    const snapshots = await fetchStackrPriceSnapshots(cardIds);
 
     const nextMap: Record<string, SearchPriceState> = {};
     for (const cardId of cardIds) {
-      const snapshots = grouped[cardId] ?? [];
-      const latest = snapshots[0];
-      const previous = snapshots[1];
-      const latestTcg = latest?.tcg_mid == null && latest?.tcg_low == null ? null : Number(latest.tcg_mid ?? latest.tcg_low);
-      const previousTcg = previous?.tcg_mid == null && previous?.tcg_low == null ? null : Number(previous.tcg_mid ?? previous.tcg_low);
-      const change = latestTcg != null && previousTcg != null ? latestTcg - previousTcg : null;
-      const percentChange = change != null && previousTcg != null && previousTcg !== 0 ? (change / previousTcg) * 100 : null;
+      const latest = snapshots.get(cardId);
+      const latestTcg = latest?.market_central ?? null;
 
       nextMap[cardId] = {
-        ebayAverage: latest?.ebay_average == null ? null : Number(latest.ebay_average),
-        ebayLow: latest?.ebay_low == null ? null : Number(latest.ebay_low),
-        ebayHigh: latest?.ebay_high == null ? null : Number(latest.ebay_high),
-        ebayCount: latest?.ebay_count == null ? null : Number(latest.ebay_count),
+        ebayAverage: latest?.market_central ?? null,
+        ebayLow: latest?.market_low ?? null,
+        ebayHigh: latest?.market_high ?? null,
+        ebayCount: latest?.sample_count ?? null,
         tcgLatest: latestTcg,
-        tcgPrevious: previousTcg,
-        tcgChange: change,
-        tcgPercentChange: percentChange,
+        tcgPrevious: null,
+        tcgChange: null,
+        tcgPercentChange: null,
         snapshotAt: latest?.snapshot_at ?? null,
       };
     }
@@ -450,56 +407,23 @@ export default function MarketScreen() {
   }, []);
 
   const fetchLiveEbayForCard = useCallback(async (card: PokemonCard): Promise<EbayDetailData> => {
-    if (!PRICE_API_URL) return null;
     if (lookupType === 'graded_slab') return null;
-
-    const rawSetName = card.set?.name ?? '';
-    const setName = (rawSetName && rawSetName !== card.set?.id) ? rawSetName : '';
-
-    const params = new URLSearchParams({
-      name: card.name ?? '',
-      setName,
-      number: card.number ?? '',
-      rarity: card.rarity ?? '',
-      cardId: card.id ?? '',
-      productType: 'card',
-      pricingMode: 'raw',
-    });
-
-    params.set('condition', rawCondition);
-
-    const printedTotal = card.set?.printedTotal ?? card.set?.total;
-    if (printedTotal != null) params.set('setTotal', String(printedTotal));
-
-    const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
-    if (!response.ok) throw new Error('Failed to fetch eBay price');
-
-    const data = await response.json();
-    if (__DEV__) {
-      console.log('[market:eBay:card]', {
-        cardId: card.id,
-        pricingMode: 'raw',
-        condition: rawCondition,
-        query: data.query,
-        count: data.count,
-        average: data.average,
-        source: data.soldDataSource,
-        usedCachedPrice: data.usedCachedPrice,
-      });
-    }
+    const result = await fetchStackrPrice(card.id, { productType: 'raw_card', currency: 'GBP', condition: rawCondition });
+    if (!result) return null;
+    const data = result.price;
     return {
-      low: data.low ?? null,
-      average: data.average ?? null,
-      high: data.high ?? null,
-      count: data.count ?? null,
-      query: data.query ?? null,
-      soldDataSource: data.soldDataSource ?? null,
+      low: data.estimates.low,
+      average: data.estimates.central,
+      high: data.estimates.high,
+      count: data.sample.total,
+      query: card.id,
+      soldDataSource: 'stackr-api',
     };
   }, [lookupType, rawCondition]);
 
   const loadLiveEbayForSearchResults = useCallback(async (cards: PokemonCard[]) => {
     const visibleCards = cards.slice(0, 12);
-    if (!visibleCards.length || !PRICE_API_URL) {
+    if (!visibleCards.length) {
       setSearchEbayMap({});
       return;
     }
@@ -539,13 +463,11 @@ export default function MarketScreen() {
       if (!rows.length) { setWatchlistCards([]); setWatchlistPriceMap({}); return; }
 
       const cardIds = rows.map((r) => r.card_id);
-      const { data: cardData } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .in('id', cardIds);
-
-      const cards: PokemonCard[] = (cardData ?? []).map(mapCard);
-      const cardMap = Object.fromEntries(cards.map((c) => [c.id, c]));
+      const cardRows = await fetchStackrCardRows(cardIds);
+      const cardMap = Object.fromEntries(cardIds.flatMap((id) => {
+        const row = cardRows.get(id);
+        return row ? [[id, mapCard(row)]] : [];
+      }));
       const ordered = cardIds.map((id) => cardMap[id]).filter(Boolean) as PokemonCard[];
 
       setWatchlistCards(ordered);
@@ -574,7 +496,8 @@ export default function MarketScreen() {
     const cards = smartResults.map(mapCard);
     setSearchResults(cards);
     await loadSearchResultPrices(cards.map((card) => card.id));
-    if (smartResults.length < 0) {
+    // Legacy direct-table fallback is unreachable and retained only until rollback gates pass.
+    if (false) {
     const words = trimmed.split(/\s+/).filter(Boolean);
     let cardTerm = trimmed;
     let matchedSetIds: string[] = [];
@@ -723,6 +646,23 @@ export default function MarketScreen() {
         return;
       }
 
+      const stackrResult = await fetchStackrPrice(card.id, {
+        productType: 'raw_card',
+        currency: 'GBP',
+        condition: rawCondition,
+      });
+      if (!stackrResult) { setDetailEbayData(null); return; }
+      setDetailEbayData({
+        low: stackrResult.price.estimates.low,
+        average: stackrResult.price.estimates.central,
+        high: stackrResult.price.estimates.high,
+        count: stackrResult.price.sample.total,
+        query: card.id,
+        soldDataSource: 'stackr-api',
+      });
+      return;
+
+      /* Legacy provider fallback retained unreachable until rollback gates pass. */
       if (!PRICE_API_URL) { setDetailEbayData(null); return; }
 
       // set.name falls back to set_id (e.g. "base1") when raw_data is absent —

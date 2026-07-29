@@ -67,7 +67,6 @@ import { assertCanCommitQuantity, fetchUserCardAvailability } from '../../lib/ca
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import type { CapturedFrame, CaptureRect } from '../../lib/captureGeometry';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
-import { fetchEbayPrice } from '../../lib/ebay';
 import { fetchCachedPokemonCardDetails } from '../../lib/marketSearchDataCache';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import {
@@ -136,6 +135,7 @@ import {
 import { stackrIcons } from '../../lib/stackrIcons';
 import { supabase } from '../../lib/supabase';
 import { gradeCardWithXimilar, type XimilarGradeImage } from '../../lib/ximilar';
+import { fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 
 type FlowStep =
   | 'category'
@@ -614,48 +614,19 @@ function getCapturedPhotoResizeMode(captureType: CaptureType) {
 async function fetchLatestMarketSnapshots(cardIds: string[]) {
   const snapshots = new Map<string, any>();
   const uniqueIds = [...new Set(cardIds.filter(Boolean))];
-  for (let index = 0; index < uniqueIds.length; index += 100) {
-    const chunk = uniqueIds.slice(index, index + 100);
-    const { data, error } = await supabase
-      .from('market_price_snapshots')
-      .select('card_id, ebay_average, tcg_mid, tcg_low, cardmarket_trend, snapshot_at')
-      .in('card_id', chunk)
-      .order('snapshot_at', { ascending: false });
-
-    if (error) {
-      console.log('Owned listing price snapshot lookup failed:', error.message);
-      continue;
-    }
-
-    for (const row of data ?? []) {
-      if (row.card_id && !snapshots.has(row.card_id)) snapshots.set(row.card_id, row);
-    }
-
-    const missingCardIds = chunk.filter((cardId) => !snapshots.has(cardId));
-    if (missingCardIds.length) {
-      const { data: priceRows, error: priceError } = await supabase
-        .from('card_prices')
-        .select('entity_id, display_price, market, average, last_sold, low, retrieved_at, price_type, confidence, pricing_status')
-        .eq('entity_type', 'card')
-        .in('entity_id', missingCardIds)
-        .order('retrieved_at', { ascending: false });
-
-      if (priceError) {
-        console.log('Owned listing card_prices lookup failed:', priceError.message);
-      } else {
-        for (const row of priceRows ?? []) {
-          if (!row.entity_id || snapshots.has(row.entity_id)) continue;
-          const value = row.display_price ?? row.market ?? row.average ?? row.last_sold ?? row.low ?? null;
-          snapshots.set(row.entity_id, {
-            cardmarket_trend: value,
-            snapshot_at: row.retrieved_at ?? null,
-            price_type: row.price_type ?? null,
-            confidence: row.confidence ?? null,
-            pricing_status: row.pricing_status ?? null,
-          });
-        }
-      }
-    }
+  const stackrSnapshots = await fetchStackrPriceSnapshots(uniqueIds);
+  for (const cardId of uniqueIds) {
+    const row = stackrSnapshots.get(cardId);
+    if (!row) continue;
+    snapshots.set(cardId, {
+      card_id: cardId,
+      ebay_average: null,
+      tcg_mid: row.market_central,
+      tcg_low: row.market_low,
+      cardmarket_trend: null,
+      snapshot_at: row.snapshot_at,
+      stackr_market: row,
+    });
   }
   return snapshots;
 }
@@ -1430,11 +1401,8 @@ export default function CreateListingScreen() {
     setPrices({ ...DEFAULT_PRICES, loading: true });
     try {
       const setName = card.set_name && card.set_name !== card.set_id ? card.set_name : '';
-      const foreignPreferredPrice = typeof card.raw_data?.pricing?.preferredGbp === 'number'
-        ? Number(card.raw_data.pricing.preferredGbp)
-        : null;
       const pokeTrace = await fetchPokeTraceCardPrice({
-        identifier: card.name,
+        identifier: card.id,
         setName,
         number: card.number ?? null,
         language: card.language ?? null,
@@ -1443,74 +1411,21 @@ export default function CreateListingScreen() {
         grade: grade.trim() || '10',
       });
 
-      const ebay = subjectType === 'graded_slab'
-        ? pokeTrace?.graded_average ?? null
-        : pokeTrace?.ebay_average ?? null;
-      const ebayLow = subjectType === 'graded_slab'
-        ? pokeTrace?.graded_low ?? null
-        : pokeTrace?.ebay_low ?? null;
-      const ebayHigh = subjectType === 'graded_slab'
-        ? pokeTrace?.graded_high ?? null
-        : pokeTrace?.ebay_high ?? null;
-
-      let fallbackEbay: number | null = null;
-      let fallbackEbayLow: number | null = null;
-      let fallbackEbayHigh: number | null = null;
-      if (subjectType === 'graded_slab' && ebay == null) {
-        const fallback = await fetchEbayPrice({
-          cardId: card.id,
-          name: card.name,
-          setName,
-          number: card.number ?? '',
-          setTotal: card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? null,
-          rarity: card.rarity ?? '',
-          pricingMode: 'graded',
-          gradingCompany: displayGradingCompany,
-          grade: grade.trim() || '10',
-        }).catch(() => null);
-        fallbackEbay = fallback?.average ?? null;
-        fallbackEbayLow = fallback?.low ?? null;
-        fallbackEbayHigh = fallback?.high ?? null;
-      }
-
-      if (subjectType === 'raw_card' && ebay == null) {
-        const fallback = await fetchEbayPrice({
-          cardId: card.id,
-          name: card.name,
-          setName,
-          number: card.number ?? '',
-          setTotal: card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total ?? null,
-          rarity: card.rarity ?? '',
-        }).catch(() => null);
-        fallbackEbay = fallback?.average ?? null;
-        fallbackEbayLow = fallback?.low ?? null;
-        fallbackEbayHigh = fallback?.high ?? null;
-      }
-
-      const tcgPrices = card.raw_data?.tcgplayer?.prices;
-      let tcg: number | null = pokeTrace?.tcg_mid ?? pokeTrace?.tcg_low ?? null;
-      if (tcgPrices) {
-        for (const key of ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal']) {
-          const val = tcgPrices[key]?.market ?? tcgPrices[key]?.mid;
-          if (tcg == null && typeof val === 'number') {
-            tcg = Math.round(val * USD_TO_GBP * 100) / 100;
-            break;
-          }
-        }
-      }
-
-      const cardmarketPrices = card.raw_data?.cardmarket?.prices;
-      const cardmarket = pokeTrace?.cardmarket_trend
-        ?? (cardmarketPrices?.trendPrice != null ? Math.round(cardmarketPrices.trendPrice * EUR_TO_GBP * 100) / 100 : null);
       const market = subjectType === 'graded_slab'
-        ? ebay ?? fallbackEbay ?? null
-        : ebay ?? fallbackEbay ?? foreignPreferredPrice ?? tcg ?? cardmarket ?? null;
+        ? pokeTrace?.graded_average ?? null
+        : pokeTrace?.stackr_central ?? null;
+      const low = subjectType === 'graded_slab'
+        ? pokeTrace?.graded_low ?? null
+        : pokeTrace?.stackr_low ?? null;
+      const high = subjectType === 'graded_slab'
+        ? pokeTrace?.graded_high ?? null
+        : pokeTrace?.stackr_high ?? null;
 
       setPrices({
         market,
-        low: ebayLow ?? fallbackEbayLow ?? null,
-        high: ebayHigh ?? fallbackEbayHigh ?? null,
-        graded: pokeTrace?.graded_average ?? fallbackEbay ?? null,
+        low,
+        high,
+        graded: pokeTrace?.graded_average ?? null,
         loading: false,
         unavailable: market == null,
       });

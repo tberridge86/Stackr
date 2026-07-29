@@ -8,6 +8,7 @@ import httpx
 from .normalization import collector_matches, normalize_text
 from .scoring import CandidateRecord
 from .settings import Settings
+from .tracing import trace_span, traceparent
 
 
 class RepositoryError(RuntimeError):
@@ -75,9 +76,13 @@ class StackrApiRepository(CandidateRepository):
         if not self.settings.catalogue_api_url:
             return {"ok": False, "reason": "catalogue_api_url_not_configured"}
         try:
-            async with httpx.AsyncClient(timeout=self.settings.catalogue_timeout_seconds) as client:
-                response = await client.get(f"{self.settings.catalogue_api_url.rstrip('/')}/v1/ready")
-            return {"ok": response.status_code < 500, "status": response.status_code}
+            with trace_span("stackr-recognition", "catalogue_ready"):
+                async with httpx.AsyncClient(timeout=self.settings.catalogue_timeout_seconds) as client:
+                    response = await client.get(
+                        f"{self.settings.catalogue_api_url.rstrip('/')}/v1/ready",
+                        headers={"traceparent": traceparent() or ""},
+                    )
+            return {"ok": 200 <= response.status_code < 300, "status": response.status_code}
         except httpx.HTTPError as exc:
             return {"ok": False, "reason": exc.__class__.__name__}
 
@@ -118,12 +123,16 @@ class StackrApiRepository(CandidateRepository):
         headers = {}
         if self.settings.catalogue_api_secret:
             headers["Authorization"] = f"Bearer {self.settings.catalogue_api_secret}"
-        async with httpx.AsyncClient(timeout=self.settings.catalogue_timeout_seconds) as client:
-            response = await client.get(
-                f"{self.settings.catalogue_api_url.rstrip('/')}/v1/search",
-                params=params,
-                headers=headers,
-            )
+        with trace_span("stackr-recognition", "catalogue_search"):
+            active_traceparent = traceparent()
+            if active_traceparent:
+                headers["traceparent"] = active_traceparent
+            async with httpx.AsyncClient(timeout=self.settings.catalogue_timeout_seconds) as client:
+                response = await client.get(
+                    f"{self.settings.catalogue_api_url.rstrip('/')}/v1/search",
+                    params=params,
+                    headers=headers,
+                )
         if response.status_code >= 400:
             raise RepositoryError(f"catalogue search failed:{response.status_code}")
         payload = response.json()

@@ -62,7 +62,7 @@ import {
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { useTrade } from '../../components/trade-context';
 import { supabase } from '../../lib/supabase';
-import { fetchEbayPrice } from '../../lib/ebay';
+import { fetchStackrPrice } from '../../lib/stackrDomainAdapter';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchTcgcsvUiCardPricesForSet } from '../../lib/pricing';
 import {
@@ -905,37 +905,32 @@ const activeAddFilterCount = getAddFilterCount(addFilters);
       const setName = card.card?.set?.name ?? card.set_name ?? '';
       const number = card.card?.number ?? card.card_number ?? '';
       const cardId = card.card?.id ?? card.card_id ?? '';
-      const baseRarity = card.card?.rarity ?? '';
       const language = normalizePokemonCardLanguage(card.language ?? binder?.language);
       const isGraded = binder?.card_mode === 'graded';
       if (isGraded) {
         setModalEbayLoading(false);
         return;
       }
-      const rarity = binder?.edition === '1st_edition'
-        ? `${baseRarity} 1st edition`.trim()
-        : baseRarity;
-
-      const result = await fetchEbayPrice({
-        cardId,
-        name,
-        setName,
-        number,
-        setTotal: card.card?.set?.printedTotal ?? card.card?.set?.total ?? null,
-        rarity,
+      const result = await fetchStackrPrice(cardId || `${setName} ${number}` || name, {
         language,
-        pricingMode: 'raw',
+        productType: isGraded ? 'graded_card' : 'raw_card',
+        currency: 'GBP',
         condition: isGraded ? null : card.condition || 'Near Mint',
-        gradingCompany: isGraded ? card.grade_company ?? 'PSA' : null,
+        grader: isGraded ? card.grade_company ?? 'PSA' : null,
         grade: isGraded ? card.grade ?? '10' : null,
       });
 
+      if (!result) {
+        setModalEbayError(true);
+        return;
+      }
+
       setModalEbayPrice({
-        low: result.low ?? null,
-        average: result.average ?? null,
-        high: result.high ?? null,
-        count: result.count ?? 0,
-        usedFallback: result.usedFallback ?? false,
+        low: result.price.estimates.low,
+        average: result.price.estimates.central,
+        high: result.price.estimates.high,
+        count: result.price.sample.total,
+        usedFallback: result.price.fallbackEstimate != null,
       });
     } catch (err) {
       console.warn('Modal eBay price unavailable:', err instanceof Error ? err.message : err);

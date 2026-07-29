@@ -15,11 +15,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { createTradeOffer } from '../../lib/tradeOffers';
 import { getCachedCardSync } from '../../lib/pokemonTcgCache';
-import { getPreferredMarketPrice, getPriceFromPokemonCard } from '../../lib/pricing';
-import { BETA_TRADE_DEMO_MODE, PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { BETA_TRADE_DEMO_MODE, PRICE_API_URL } from '../../lib/config';
 import { fetchUserCardAvailability } from '../../lib/cardOwnership';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import { stackrBrand } from '../../lib/stackrBrand';
+import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 
 // ===============================
 // CONSTANTS
@@ -200,27 +200,10 @@ async function fetchCardRowsByIds<T>(
   return results.flat();
 }
 
-function getRawTcgPriceGbp(rawData: any): number | null {
-  const usdPrice = getPriceFromPokemonCard(rawData);
-  return typeof usdPrice === 'number' ? usdPrice * USD_TO_GBP : null;
-}
-
-async function fetchEstimatedPrice(cardIdValue: string, rawData?: any) {
-  const fallbackTcg = getRawTcgPriceGbp(rawData);
-
-  const { data, error } = await supabase
-    .from('market_price_snapshots')
-    .select('ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
-    .eq('card_id', cardIdValue)
-    .order('snapshot_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.log('Trade price lookup failed:', error.message);
-  }
-
-  return getPreferredMarketPrice(data ?? null, { tcg: fallbackTcg });
+async function fetchEstimatedPrice(cardIdValue: string) {
+  const snapshots = await fetchStackrPriceSnapshots([cardIdValue]);
+  const snapshot = snapshots.get(cardIdValue);
+  return { value: snapshot?.market_central ?? null, source: snapshot ? 'stackr-api' : null };
 }
 
 async function sendPushNotification(
@@ -414,7 +397,7 @@ export default function NewOfferScreen() {
 
       const [target, receiverProfile, ownCards] = await Promise.all([
         buildTargetCard(listing.card_id, listing.set_id ?? null, listing),
-        supabase.from('profiles').select('collector_name').eq('id', listing.user_id).maybeSingle(),
+        supabase.from('profile_public_directory').select('collector_name').eq('id', listing.user_id).maybeSingle(),
         fetchMyTradeCards(user.id),
       ]);
 
@@ -479,15 +462,12 @@ export default function NewOfferScreen() {
       ? (getCachedCardSync(setIdValue, cardIdValue) as any)
       : null;
 
-    const { data: cardRow } = await supabase
-      .from('pokemon_cards')
-      .select('id, name, set_id, number, image_small, image_large, raw_data')
-      .eq('id', cardIdValue)
-      .maybeSingle();
+    const cardRows = await fetchStackrCardRows([cardIdValue]);
+    const cardRow = cardRows.get(cardIdValue) ?? null;
 
     if (cardRow || cached) {
       const rawData = (cardRow as any)?.raw_data ?? cached;
-      const price = await fetchEstimatedPrice(cardIdValue, rawData);
+      const price = await fetchEstimatedPrice(cardIdValue);
 
       return {
         id: cardIdValue,
@@ -507,18 +487,12 @@ export default function NewOfferScreen() {
       };
     }
 
-    const { data } = await supabase
-      .from('card_previews')
-      .select('card_id, name, image_url')
-      .eq('card_id', cardIdValue)
-      .maybeSingle();
-
     return {
       id: cardIdValue,
       card_id: cardIdValue,
       set_id: setIdValue ?? null,
-      name: data?.name ?? cardIdValue,
-      image_url: data?.image_url ?? null,
+      name: cardIdValue,
+      image_url: null,
       set_name: null,
       number: null,
       estimated_value: listing?.market_estimate ?? listing?.asking_price ?? null,
@@ -682,68 +656,40 @@ export default function NewOfferScreen() {
       }
     }));
 
-    const [cardRows, previews, snapshots] = await Promise.all([
-      fetchCardRowsByIds<any>(cardIds, (batch) =>
-        supabase
-          .from('pokemon_cards')
-          .select('id, name, set_id, number, image_small, image_large, raw_data')
-          .in('id', batch)
-      ),
-      fetchCardRowsByIds<any>(cardIds, (batch) =>
-        supabase
-          .from('card_previews')
-          .select('card_id, name, image_url')
-          .in('card_id', batch)
-      ),
-      fetchCardRowsByIds<any>(cardIds, (batch) =>
-        supabase
-          .from('market_price_snapshots')
-          .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
-          .in('card_id', batch)
-          .order('snapshot_at', { ascending: false })
-      ).catch((error: any) => {
+    const [cardRowsById, snapshotsById] = await Promise.all([
+      fetchStackrCardRows(cardIds),
+      fetchStackrPriceSnapshots(cardIds).catch((error: any) => {
         console.log('Trade snapshot lookup failed:', error?.message ?? error);
-        return [];
+        return new Map();
       }),
     ]);
 
-    const previewMap = new Map(
-      previews.map((preview: any) => [preview.card_id, preview])
-    );
-    const cardRowMap = new Map(
-      cardRows.map((card: any) => [card.id, card])
-    );
-    const snapshotMap = new Map<string, any>();
-    for (const snapshot of snapshots) {
-      if (!snapshotMap.has((snapshot as any).card_id)) {
-        snapshotMap.set((snapshot as any).card_id, snapshot);
-      }
-    }
+    const cardRowMap = cardRowsById;
 
     const options: TradeCardOption[] = [];
 
     for (const owned of ownedCards) {
       const availableQuantity = availableQuantityByKey.get(tradeOwnershipKey(owned)) ?? owned.quantity;
       if (availableQuantity <= 0) continue;
-      const preview = previewMap.get(owned.card_id) as any;
       const row = cardRowMap.get(owned.card_id) as any;
       const cached = owned.set_id
         ? (getCachedCardSync(owned.set_id, owned.card_id) as any)
         : null;
       const rawData = row?.raw_data ?? cached;
-      const price = getPreferredMarketPrice(snapshotMap.get(owned.card_id), {
-        tcg: owned.fallback_price ?? getRawTcgPriceGbp(rawData),
-      });
+      const priceSnapshot = snapshotsById.get(owned.card_id);
+      const price = {
+        value: priceSnapshot?.market_central ?? owned.fallback_price ?? null,
+        source: priceSnapshot ? 'stackr-api' : owned.fallback_price != null ? 'owned' : null,
+      };
 
       options.push({
         id: tradeOwnershipKey(owned),
         card_id: owned.card_id,
         set_id: owned.set_id ?? row?.set_id ?? cached?.set?.id ?? null,
-        name: row?.name ?? preview?.name ?? cached?.name ?? owned.name ?? owned.card_id,
+        name: row?.name ?? cached?.name ?? owned.name ?? owned.card_id,
         image_url:
           row?.image_small ??
           row?.image_large ??
-          preview?.image_url ??
           cached?.images?.small ??
           cached?.images?.large ??
           owned.image_url ??

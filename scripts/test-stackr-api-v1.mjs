@@ -355,6 +355,15 @@ for (const path of [
   '/market/movers',
   '/market/opportunities',
   '/search',
+  '/assets/manifest',
+  '/assets/scans/presigned-upload',
+  '/assets/scans/upload',
+  '/recognition/identify',
+  '/recognition/embed',
+  '/recognition/feedback',
+  '/admin/catalogue/cache/activate',
+  '/admin/catalogue-ingestion/{command}',
+  '/admin/assets/migrate-existing',
 ]) {
   assert.match(openApi, new RegExp(`^  ${path.replace(/[{}]/g, '\\$&')}:`, 'm'));
 }
@@ -381,8 +390,14 @@ for (const method of [
   'marketMovers',
   'marketOpportunities',
   'search',
+  'recognitionIdentify',
+  'recognitionEmbed',
+  'recognitionFeedback',
 ]) {
   assert.match(client, new RegExp(`\\b${method}\\(`));
 }
+assert.match(client, /'X-Stackr-Device-Id': deviceId/);
+assert.match(client, /Authorization: `Bearer \$\{accessToken\}`/);
+assert.doesNotMatch(client, /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RECOGNITION_SERVICE_SECRET|BACKEND_ORIGIN_KEY/);
 
 console.log('Stackr API v1 integration tests passed.');

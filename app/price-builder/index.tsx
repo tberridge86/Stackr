@@ -16,7 +16,6 @@ import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { StackrCardPlaceholder } from '../../components/StackrCardPlaceholder';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../../lib/supabase';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import {
   PRODUCT_LOOKUP_OPTIONS,
@@ -31,7 +30,7 @@ import type { ProductLookupType } from '../../lib/productSearch';
 // TYPES
 // ===============================
 
-import { PRICE_API_URL } from '../../lib/config';
+import { fetchStackrPrice } from '../../lib/stackrDomainAdapter';
 
 type Condition =
   | 'Mint'
@@ -156,37 +155,16 @@ const getCardmarketPrice = (raw: any): number | null => {
   return val != null ? Number(val) : null;
 };
 
-const fetchEbayPrice = async (card: CardRow): Promise<number | null> => {
-  if (card.is_product) return card.raw_data?.productPrice?.average ?? null;
-
-  const { data } = await supabase
-    .from('market_price_snapshots')
-    .select('ebay_average')
-    .eq('card_id', card.id)
-    .order('snapshot_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (data?.ebay_average != null) return Number(data.ebay_average);
-  if (!PRICE_API_URL) return null;
-
-  try {
-    const params = new URLSearchParams({
-      cardId: card.id,
-      name: card.name ?? '',
-      setName: card.raw_data?.set?.name ?? '',
-      number: card.raw_data?.number ?? '',
-    });
-    const printedTotal = card.raw_data?.set?.printedTotal ?? card.raw_data?.set?.total;
-    if (printedTotal != null) params.set('setTotal', String(printedTotal));
-    const res = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
-    if (!res.ok) return null;
-    const json = await res.json();
-    const avg = json?.average ?? json?.ebay_average ?? json?.avg ?? null;
-    return avg != null ? Number(avg) : null;
-  } catch {
-    return null;
+const fetchStackrPriceRange = async (card: CardRow) => {
+  if (card.is_product) {
+    return {
+      low: card.raw_data?.productPrice?.low ?? null,
+      central: card.raw_data?.productPrice?.average ?? null,
+      high: card.raw_data?.productPrice?.high ?? null,
+    };
   }
+  const result = await fetchStackrPrice(card.id, { productType: 'raw_card', currency: 'GBP' });
+  return result?.price.estimates ?? { low: null, central: null, high: null };
 };
 
 const productToBuilderRow = (product: Awaited<ReturnType<typeof searchMarketProducts>>[number]): CardRow => ({
@@ -316,9 +294,9 @@ export default function PriceBuilderScreen() {
       card,
       condition: card.is_product ? 'Sealed' : 'Near Mint',
       quantity: 1,
-      tcgPrice: card.is_product ? null : getTcgPrice(card.raw_data),
-      ebayPrice: card.is_product ? card.raw_data?.productPrice?.average ?? null : null,
-      cardmarketPrice: card.is_product ? null : getCardmarketPrice(card.raw_data),
+      tcgPrice: card.is_product ? card.raw_data?.productPrice?.average ?? null : null,
+      ebayPrice: card.is_product ? card.raw_data?.productPrice?.low ?? null : null,
+      cardmarketPrice: card.is_product ? card.raw_data?.productPrice?.high ?? null : null,
       ebayLoading: !card.is_product,
     }));
 
@@ -329,11 +307,17 @@ export default function PriceBuilderScreen() {
 
     for (const newItem of newItems) {
       if (newItem.card.is_product) continue;
-      fetchEbayPrice(newItem.card).then((ebayPrice) => {
+      fetchStackrPriceRange(newItem.card).then((price) => {
         setItems((prev) =>
           prev.map((item) =>
             item.localId === newItem.localId
-              ? { ...item, ebayPrice, ebayLoading: false }
+              ? {
+                  ...item,
+                  tcgPrice: price.central,
+                  ebayPrice: price.low,
+                  cardmarketPrice: price.high,
+                  ebayLoading: false,
+                }
               : item
           )
         );
@@ -644,7 +628,7 @@ export default function PriceBuilderScreen() {
         items={[
           { icon: 'search-outline', title: 'Add cards', body: 'Search cards, select them, then add them to the builder.' },
           { icon: 'options-outline', title: 'Condition matters', body: 'Set condition and quantity to adjust estimated value.' },
-          { icon: 'calculator-outline', title: 'Compare totals', body: 'Use eBay, TCG, and Cardmarket totals as a guide.' },
+          { icon: 'calculator-outline', title: 'Compare totals', body: 'Use the Stackr low, central and high estimates as a guide.' },
         ]}
       />
 
@@ -995,9 +979,9 @@ export default function PriceBuilderScreen() {
           </View>
 
           {[
-            { label: 'TCG average', value: totals.tcg },
-            { label: 'eBay sold recent', value: totals.ebay },
-            { label: 'Cardmarket low-mid', value: totals.cardmarket },
+            { label: 'Stackr central', value: totals.tcg },
+            { label: 'Stackr low', value: totals.ebay },
+            { label: 'Stackr high', value: totals.cardmarket },
           ].map(({ label, value }) => (
             <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, marginTop: 8 }}>
               <Text style={{ color: theme.colors.textSoft, fontWeight: '800', flex: 1, minWidth: 0, fontSize: 12.5 }} numberOfLines={1}>

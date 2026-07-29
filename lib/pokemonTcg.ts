@@ -8,7 +8,20 @@ import {
   getLocalSetName,
   getPreferredSetDisplayName,
 } from './pokemonDisplayNames';
+import {
+  getCuratedPokemonCardById,
+  getCuratedPokemonCardsForSet,
+  getCuratedPokemonSets,
+} from './curatedPokemonCatalogue';
 import { supabase } from './supabase';
+import {
+  fetchStackrCard,
+  fetchStackrCardsForSet,
+  fetchStackrSets,
+  searchStackrCards,
+  type StackrLegacyCard,
+  type StackrLegacySet,
+} from './stackrDomainAdapter';
 
 export type PokemonSet = {
   id: string;
@@ -38,7 +51,9 @@ export type PokemonCardLanguage =
   | 'pt-br'
   | 'de'
   | 'ja'
+  | 'zh-cn'
   | 'zh-tw'
+  | 'ko'
   | 'id'
   | 'th';
 
@@ -113,6 +128,30 @@ const pokemonTcgApiSearchInflight = new Map<string, Promise<PokemonCard[]>>();
 let pokeDataSetsCache: { expiresAt: number; value: any[] } | null = null;
 let pokeDataSetsInflight: Promise<any[]> | null = null;
 const prefetchedSetLogoUrls = new Set<string>();
+const approvedSetAssets = new Map<string, PokemonSet['images']>();
+const approvedCardAssets = new Map<string, PokemonCard['images']>();
+
+function rememberApprovedSetAssets(set: PokemonSet) {
+  const key = getSetIdentityKey(set.id, set.language);
+  approvedSetAssets.set(key, set.images ?? {});
+  approvedSetAssets.set(normalizeSetId(set.id), set.images ?? {});
+}
+
+function rememberApprovedCardAssets(card: PokemonCard) {
+  approvedCardAssets.set(card.id, card.images ?? {});
+}
+
+function fromStackrSet(set: StackrLegacySet): PokemonSet {
+  const mapped = set as PokemonSet;
+  rememberApprovedSetAssets(mapped);
+  return mapped;
+}
+
+function fromStackrCard(card: StackrLegacyCard): PokemonCard {
+  const mapped = card as PokemonCard;
+  rememberApprovedCardAssets(mapped);
+  return mapped;
+}
 
 const SET_ID_ALIASES: Record<string, string> = {
   'destined rivals': 'sv10',
@@ -395,6 +434,10 @@ export function normalizePokemonCardLanguage(language?: string | null): PokemonC
     jpn: 'ja',
     japanese: 'ja',
     japan: 'ja',
+    'zh-cn': 'zh-cn',
+    'zh-hans': 'zh-cn',
+    simplified: 'zh-cn',
+    'simplified-chinese': 'zh-cn',
     zh: 'zh-tw',
     zhtw: 'zh-tw',
     'zh_tw': 'zh-tw',
@@ -404,11 +447,14 @@ export function normalizePokemonCardLanguage(language?: string | null): PokemonC
     'cn-traditional': 'zh-tw',
     tw: 'zh-tw',
     taiwan: 'zh-tw',
+    ko: 'ko',
+    kr: 'ko',
+    korean: 'ko',
     indonesian: 'id',
     thai: 'th',
   };
   const aliased = aliases[cleaned] ?? cleaned;
-  const supported: readonly PokemonCardLanguage[] = ['en', 'fr', 'es', 'it', 'pt-br', 'de', 'ja', 'zh-tw', 'id', 'th'];
+  const supported: readonly PokemonCardLanguage[] = ['en', 'fr', 'es', 'it', 'pt-br', 'de', 'ja', 'zh-cn', 'zh-tw', 'ko', 'id', 'th'];
   return supported.includes(aliased as PokemonCardLanguage) ? aliased as PokemonCardLanguage : 'en';
 }
 
@@ -422,7 +468,9 @@ export function getPokemonCardLanguageLabel(language?: string | null) {
     'pt-br': 'Portuguese',
     de: 'German',
     ja: 'Japanese',
+    'zh-cn': 'Simplified Chinese',
     'zh-tw': 'Traditional Chinese',
+    ko: 'Korean',
     id: 'Indonesian',
     th: 'Thai',
   };
@@ -911,23 +959,16 @@ function shouldUseScrydexImages(setId?: string | null) {
 
 export function getPokemonSetLogoUrl(setId?: string | null, language?: string | null): string | undefined {
   if (!setId) return undefined;
-  if (isJapaneseSetLookup(setId, language)) return undefined;
-  const normalized = normalizeSetId(setId);
-  const url = shouldUseScrydexImages(setId)
-    ? `${SCRYDEX_IMAGE_BASE_URL}/${encodeURIComponent(normalized)}-logo/logo`
-    : `${POKEMON_TCG_IMAGE_BASE_URL}/${encodeURIComponent(normalized)}/logo.png`;
+  const url = approvedSetAssets.get(getSetIdentityKey(setId, language))?.logo
+    ?? approvedSetAssets.get(normalizeSetId(setId))?.logo;
   prefetchPokemonSetLogoUrl(url);
   return url;
 }
 
 export function getPokemonSetSymbolUrl(setId?: string | null, language?: string | null): string | undefined {
   if (!setId) return undefined;
-  if (isJapaneseSetLookup(setId, language)) return undefined;
-  const normalized = normalizeSetId(setId);
-  if (shouldUseScrydexImages(setId)) {
-    return `${SCRYDEX_IMAGE_BASE_URL}/${encodeURIComponent(normalized)}-symbol/symbol`;
-  }
-  return `${POKEMON_TCG_IMAGE_BASE_URL}/${encodeURIComponent(normalized)}/symbol.png`;
+  return approvedSetAssets.get(getSetIdentityKey(setId, language))?.symbol
+    ?? approvedSetAssets.get(normalizeSetId(setId))?.symbol;
 }
 
 export function getPokemonSetArtworkUrl(setId?: string | null): string | undefined {
@@ -993,28 +1034,9 @@ export function getPokemonSetBranding(setId?: string | null) {
 }
 
 export function getPokemonCardImageUrls(cardId: string, fallbackSetId?: string | null, fallbackNumber?: string | null) {
-  const setId = normalizeSetId(fallbackSetId || cardId.split('-')[0]);
-  const idPrefix = `${setId}-`;
-  const idNumber = cardId.startsWith(idPrefix) ? cardId.slice(idPrefix.length) : null;
-  const rawNumber = idNumber || fallbackNumber || '';
-  const imageNumber = /^\d+$/.test(rawNumber) ? String(Number(rawNumber)) : rawNumber;
-
-  if (!setId || !imageNumber) {
-    return { small: undefined, large: undefined };
-  }
-
-  if (shouldUseScrydexImages(setId)) {
-    const imageId = `${setId}-${imageNumber}`;
-    return {
-      small: `${SCRYDEX_IMAGE_BASE_URL}/${encodeURIComponent(imageId)}/small`,
-      large: `${SCRYDEX_IMAGE_BASE_URL}/${encodeURIComponent(imageId)}/large`,
-    };
-  }
-
-  return {
-    small: `${POKEMON_TCG_IMAGE_BASE_URL}/${setId}/${imageNumber}.png`,
-    large: `${POKEMON_TCG_IMAGE_BASE_URL}/${setId}/${imageNumber}_hires.png`,
-  };
+  void fallbackSetId;
+  void fallbackNumber;
+  return approvedCardAssets.get(cardId) ?? { small: undefined, large: undefined };
 }
 
 function prefetchPokemonSetLogoUrl(url?: string | null) {
@@ -1730,29 +1752,7 @@ export async function fetchPokemonTcgApiCardsByQuery(
   if (inflight) return inflight;
 
   const request = (async () => {
-    const cards: PokemonCard[] = [];
-    let page = 1;
-
-    while (cards.length < limit && page < 12) {
-      const pageSize = Math.min(250, limit - cards.length);
-      const params = new URLSearchParams({
-        q: safeQuery,
-        page: String(page),
-        pageSize: String(pageSize),
-      });
-      const response = await fetch(`${POKEMON_TCG_API_BASE_URL}/cards?${params.toString()}`);
-      const json = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(json?.error?.message ?? json?.message ?? `Pokemon TCG search API failed: ${response.status}`);
-      }
-
-      const pageCards = (json?.data ?? []).map(mapPokemonTcgApiCard);
-      cards.push(...pageCards);
-
-      if (pageCards.length < pageSize) break;
-      page += 1;
-    }
+    const cards = (await searchStackrCards(safeQuery, { limit })).map(fromStackrCard);
 
     pokemonTcgApiSearchCache.set(cacheKey, {
       expiresAt: Date.now() + POKEMON_TCG_API_SEARCH_CACHE_TTL_MS,
@@ -1783,81 +1783,12 @@ export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<P
   }
 
   const request = (async () => {
-    const enrichedCatalogueSets = await fetchEnrichedCatalogueSets(language).catch((error) => {
-      console.log('StackR enriched catalogue sets fallback:', error instanceof Error ? error.message : String(error));
-      return null;
-    });
-    const pokemonTcgEnglishSets = language === 'en' || language === 'all'
-      ? await fetchPokemonTcgApiSets().catch((error) => {
-          console.log('Pokemon TCG English set fallback skipped:', error instanceof Error ? error.message : String(error));
-          return null;
-        })
-      : null;
-    const pokeDataJapaneseSets = language === 'ja' || language === 'all'
-      ? await fetchPokeDataJapaneseSets().catch((error) => {
-          console.log('PokeData Japanese set fallback skipped:', error instanceof Error ? error.message : String(error));
-          return null;
-        })
-      : null;
-    const pokeDataChineseSets = language === 'zh-tw' || language === 'all'
-      ? await fetchPokeDataChineseSets().catch((error) => {
-          console.log('PokeData Chinese set fallback skipped:', error instanceof Error ? error.message : String(error));
-          return null;
-        })
-      : null;
-
-    let legacyQuery = supabase
-      .from('pokemon_sets')
-      .select(
-        'id, name, series, printed_total, total, release_date, symbol_url, logo_url, language, region, external_ids, raw_data'
-      )
-      .order('release_date', { ascending: false });
-    let canonicalQuery = supabase
-      .from('tcg_sets')
-      .select('id, canonical_name, local_name, english_display_name, set_code, printed_total, actual_total, release_date, symbol_url, logo_url, language, region, source_id, raw_payload')
-      .order('release_date', { ascending: false });
-
-    if (language !== 'all') {
-      legacyQuery = legacyQuery.eq('language', language);
-      canonicalQuery = canonicalQuery.eq('language', language);
-    }
-
-    const [legacyResult, canonicalResult] = await Promise.all([legacyQuery, canonicalQuery]);
-
-    const primarySets = [
-      ...(enrichedCatalogueSets ?? []),
-      ...(pokemonTcgEnglishSets ?? []),
-      ...(pokeDataJapaneseSets ?? []),
-      ...(pokeDataChineseSets ?? []),
-    ];
-
-    if (legacyResult.error && canonicalResult.error && !primarySets.length) {
-      throw new Error(legacyResult.error.message);
-    }
-    if (legacyResult.error) console.log('Pokemon set lookup failed:', legacyResult.error.message);
-    if (canonicalResult.error) console.log('Canonical TCG set lookup failed:', canonicalResult.error.message);
-
-    const mergedSets = mergePokemonSets(
-      primarySets,
-      [
-        ...(legacyResult.data ?? []).map(mapPokemonSetDbRow),
-        ...(canonicalResult.data ?? []).map(mapCanonicalSetDbRow),
-      ],
-      language
-    );
-    const sets = await attachSetCoverImages(mergedSets).catch((error) => {
-      console.log('Set cover enrichment skipped:', error instanceof Error ? error.message : String(error));
-      return mergedSets;
-    });
-
+    const sets = (await fetchStackrSets(language === 'all' ? null : language)).map(fromStackrSet);
     prefetchPokemonSetLogos(sets.map((set) => set.id), language === 'all' ? undefined : language);
-    const isThinEnglishFallback = language === 'en' && sets.length <= KNOWN_SET_OVERRIDES.length;
-    if (!isThinEnglishFallback) {
-      allSetsCache.set(cacheKey, {
-        expiresAt: Date.now() + POKEMON_SET_CACHE_TTL_MS,
-        value: sets,
-      });
-    }
+    allSetsCache.set(cacheKey, {
+      expiresAt: Date.now() + POKEMON_SET_CACHE_TTL_MS,
+      value: sets,
+    });
     return sets;
   })();
 
@@ -1872,7 +1803,6 @@ export async function fetchAllSets(options: FetchAllSetsOptions = {}): Promise<P
 export async function fetchCardsForSet(setId: string, options: FetchCardsForSetOptions = {}): Promise<PokemonCard[]> {
   const language = inferPokemonSetLanguage(setId, options.language);
   const setIdCandidates = getSetIdLookupCandidates(setId, language);
-  const normalizedSetId = setIdCandidates[0] ?? normalizeSetId(setId);
   const cacheKey = `${language}:${setIdCandidates.join('|')}`;
   const cached = cardsForSetCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
@@ -1885,60 +1815,7 @@ export async function fetchCardsForSet(setId: string, options: FetchCardsForSetO
   }
 
   const request = (async () => {
-    const enrichedCards = await fetchEnrichedCardsForSet(setId, language).catch((error) => {
-      console.log('StackR enriched catalogue fallback:', error);
-      return null;
-    });
-    let cards: PokemonCard[] = enrichedCards ?? [];
-
-    if (!cards.length) {
-      const { data, error } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, language, region, external_ids, number, rarity, image_small, image_large, set_id, raw_data')
-        .in('set_id', setIdCandidates)
-        .eq('language', language)
-        .order('number', { ascending: true });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      cards = (data ?? []).map(mapPokemonCardDbRow);
-
-      if (!cards.length) {
-        const { data: canonicalData, error: canonicalError } = await supabase
-          .from('tcg_cards')
-          .select('id,set_id,canonical_name,local_name,english_display_name,collector_number,rarity,image_small_url,image_large_url,language,region,source_id,provider_card_id,raw_payload')
-          .in('set_id', setIdCandidates)
-          .eq('language', language)
-          .order('collector_number', { ascending: true });
-
-        if (canonicalError) {
-          console.log('Canonical set card fallback failed:', canonicalError.message);
-        } else {
-          cards = (canonicalData ?? []).map(mapCanonicalCardDbRow);
-        }
-      }
-    }
-
-    if (!cards.length && language === 'en' && normalizedSetId === 'me5') {
-      cards = await fetchPokemonTcgApiCardsForSet(normalizedSetId).catch((error) => {
-        console.log('Pokemon TCG card fallback failed:', error);
-        return [];
-      });
-    }
-
-    if (language === 'ja' || language === 'zh-tw') {
-      const pokeDataCards = await fetchPokeDataCardsForSet(setId, language).catch((error) => {
-        console.log('PokeData card fallback failed:', error instanceof Error ? error.message : String(error));
-        return null;
-      });
-      if (pokeDataCards?.length) {
-        cards = (!cards.length || isPokeDataSetId(setId))
-          ? pokeDataCards
-          : mergePokemonCards(cards, pokeDataCards);
-      }
-    }
+    const cards = (await fetchStackrCardsForSet(setId, language)).map(fromStackrCard);
 
     cardsForSetCache.set(cacheKey, {
       expiresAt: Date.now() + POKEMON_SET_CARDS_CACHE_TTL_MS,
@@ -2174,39 +2051,6 @@ export async function fetchCardById(
   cardId: string,
   options: { language?: PokemonCardLanguage | string | null } = {}
 ): Promise<PokemonCard | null> {
-  let query = supabase
-    .from('pokemon_cards')
-    .select('id, name, language, region, external_ids, number, rarity, image_small, image_large, set_id, raw_data')
-    .eq('id', cardId);
-
-  if (options.language) {
-    query = query.eq('language', normalizePokemonCardLanguage(options.language));
-  }
-
-  const { data, error } = await query.maybeSingle();
-
-  if (error) {
-    console.log('Failed to fetch card by ID:', error.message);
-    return null;
-  }
-
-  if (data) return mapPokemonCardDbRow(data);
-
-  let canonicalQuery = supabase
-    .from('tcg_cards')
-    .select('id,set_id,canonical_name,local_name,english_display_name,collector_number,rarity,image_small_url,image_large_url,language,region,source_id,provider_card_id,raw_payload')
-    .eq('id', cardId);
-
-  if (options.language) {
-    canonicalQuery = canonicalQuery.eq('language', normalizePokemonCardLanguage(options.language));
-  }
-
-  const { data: canonicalData, error: canonicalError } = await canonicalQuery.maybeSingle();
-
-  if (canonicalError) {
-    console.log('Failed to fetch canonical card by ID:', canonicalError.message);
-    return null;
-  }
-
-  return canonicalData ? mapCanonicalCardDbRow(canonicalData) : null;
+  const card = await fetchStackrCard(cardId, { language: options.language });
+  return card ? fromStackrCard(card) : null;
 }

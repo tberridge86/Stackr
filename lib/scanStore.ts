@@ -1,4 +1,4 @@
-import { identifyCards, type IdentifiedCard } from './cardSight';
+import { identifyCards, type IdentifiedCard } from './recognition/orchestrator';
 
 type ScanCallback = (base64: string, resolvedCard?: any) => void | Promise<void>;
 let _callback: ScanCallback | null = null;

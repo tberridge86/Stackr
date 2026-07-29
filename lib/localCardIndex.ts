@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getPreferredSetDisplayName } from './pokemonDisplayNames';
-import { supabase } from './supabase';
+import { fetchAllSets, fetchCardsForSet } from './pokemonTcg';
 
 const STORAGE_KEY = 'stackr:local-card-index:v2';
 const BUILT_AT_KEY = 'stackr:local-card-index-built-at:v2';
@@ -227,20 +227,24 @@ function buildIndex(cards: LocalScanCard[]): LocalIndexPayload {
 
 async function fetchAllScanCards() {
   const cards: LocalScanCard[] = [];
-  let from = 0;
-
-  while (true) {
-    const { data, error } = await supabase
-      .from('pokemon_cards')
-      .select('id, name, language, number, rarity, image_small, set_id, raw_data')
-      .range(from, from + PAGE_SIZE - 1);
-
-    if (error) throw error;
-
-    const rows = data ?? [];
-    cards.push(...rows.map(toScanCard));
-    if (rows.length < PAGE_SIZE) break;
-    from += PAGE_SIZE;
+  const sets = await fetchAllSets({ language: 'all' });
+  const concurrency = 4;
+  for (let index = 0; index < sets.length; index += concurrency) {
+    const batch = sets.slice(index, index + concurrency);
+    const batches = await Promise.all(batch.map(async (set) => {
+      const rows = await fetchCardsForSet(set.id, { language: set.language });
+      return rows.map((row) => toScanCard({
+        id: row.id,
+        name: row.name,
+        language: row.language,
+        number: row.number,
+        rarity: row.rarity,
+        image_small: row.images?.small,
+        set_id: row.set?.id ?? set.id,
+        raw_data: row.raw_data,
+      }));
+    }));
+    cards.push(...batches.flat());
   }
 
   return cards;

@@ -129,6 +129,7 @@ import {
 import { scanStore } from '../../lib/scanStore';
 import { supabase } from '../../lib/supabase';
 import { stackrApiClient } from '../../lib/stackrApiV1';
+import { fetchStackrCardRows } from '../../lib/stackrDomainAdapter';
 import {
   getPersistentStackrCatalogueCache,
   stackrCachedCardToIdentifiedCard,
@@ -142,12 +143,12 @@ const LOCALISATION_FRAME_CHECK_WIDTH = 320;
 const LOCALISATION_OUTPUT_WIDTH = 720;
 const AUTO_FRAME_CHECK_INTERVAL_MS = 1350;
 const DEFAULT_SCANNER_THRESHOLD_SET = getDefaultScannerThresholdSet();
-const OPTIMUM_SCAN_FRAME_WIDTH_RATIO = 0.44;
-const OPTIMUM_SCAN_FRAME_MAX_WIDTH = 210;
-const OPTIMUM_SCAN_FRAME_MIN_WIDTH = 156;
-const LOCAL_QUICK_SCAN_FRAME_WIDTH_RATIO = 0.72;
-const LOCAL_QUICK_SCAN_FRAME_MAX_WIDTH = 322;
-const LOCAL_QUICK_SCAN_FRAME_MIN_WIDTH = 204;
+const SCAN_FRAME_SIDE_INSET = 28;
+const SCAN_FRAME_SIDE_INSET_COMPACT = 22;
+const OPTIMUM_SCAN_FRAME_WIDTH_RATIO = 0.78;
+const OPTIMUM_SCAN_FRAME_MIN_WIDTH = 238;
+const LOCAL_QUICK_SCAN_FRAME_WIDTH_RATIO = 0.86;
+const LOCAL_QUICK_SCAN_FRAME_MIN_WIDTH = 264;
 const BINDER_PAGE_FRAME_WIDTH_RATIO = 0.84;
 const BINDER_PAGE_FRAME_MAX_WIDTH = 360;
 const BINDER_PAGE_OUTPUT_WIDTH = 1500;
@@ -1337,15 +1338,13 @@ export default function ScanScreen() {
     const topControls = insets.top + (isBinderPageScan ? 138 : 110);
     const bottomControls = insets.bottom + (isBinderPageScan ? 218 : 174);
     const availableHeight = Math.max(240, height - topControls - bottomControls);
-    const availableWidth = Math.max(220, width - 56);
+    const sideInset = width < 380 ? SCAN_FRAME_SIDE_INSET_COMPACT : SCAN_FRAME_SIDE_INSET;
+    const availableWidth = Math.max(220, width - sideInset * 2);
     const targetFrameWidth = isBinderPageScan && binderPageLayout > 1
       ? Math.min(width * BINDER_PAGE_FRAME_WIDTH_RATIO, BINDER_PAGE_FRAME_MAX_WIDTH)
       : Math.max(
           localQuickScanExperienceEnabled ? LOCAL_QUICK_SCAN_FRAME_MIN_WIDTH : OPTIMUM_SCAN_FRAME_MIN_WIDTH,
-          Math.min(
-            width * (localQuickScanExperienceEnabled ? LOCAL_QUICK_SCAN_FRAME_WIDTH_RATIO : OPTIMUM_SCAN_FRAME_WIDTH_RATIO),
-            localQuickScanExperienceEnabled ? LOCAL_QUICK_SCAN_FRAME_MAX_WIDTH : OPTIMUM_SCAN_FRAME_MAX_WIDTH
-          )
+          width * (localQuickScanExperienceEnabled ? LOCAL_QUICK_SCAN_FRAME_WIDTH_RATIO : OPTIMUM_SCAN_FRAME_WIDTH_RATIO)
         );
     const frameWidth = Math.min(availableWidth, availableHeight * CARD_ASPECT_RATIO, targetFrameWidth);
     const frameHeight = frameWidth / CARD_ASPECT_RATIO;
@@ -1683,13 +1682,11 @@ export default function ScanScreen() {
 
     if (identifiedIds.length) {
       try {
-        const { data, error } = await supabase
-          .from('pokemon_cards')
-          .select('id, name, language, number, rarity, set_id, image_small, image_large, raw_data')
-          .in('id', [...new Set(identifiedIds)].slice(0, MAX_RESULT_CARDS));
-        if (error) throw error;
-        for (const row of data ?? []) {
-          if (row?.id) rowsById.set(row.id, row);
+        const references = [...new Set(identifiedIds)].slice(0, MAX_RESULT_CARDS);
+        const rows = await fetchStackrCardRows(references);
+        for (const reference of references) {
+          const row = rows.get(reference);
+          if (row?.id) rowsById.set(reference, row);
         }
       } catch (error) {
         logCameraDiagnostic('identified id lookup failed', {
@@ -3716,7 +3713,18 @@ export default function ScanScreen() {
         <View style={[styles.mask, { top: 0, left: 0, right: 0, height: frame.top }]} />
         <View style={[styles.mask, { top: frame.top + frame.height, left: 0, right: 0, bottom: 0 }]} />
         <View style={[styles.mask, { top: frame.top, left: 0, width: frame.left, height: frame.height }]} />
-        <View style={[styles.mask, { top: frame.top, right: 0, width: frame.left, height: frame.height }]} />
+        <View style={[styles.mask, { top: frame.top, right: 0, width: Math.max(0, width - frame.left - frame.width), height: frame.height }]} />
+        <View
+          style={[
+            styles.frameHalo,
+            {
+              top: frame.top - 8,
+              left: frame.left - 8,
+              width: frame.width + 16,
+              height: frame.height + 16,
+            },
+          ]}
+        />
         <View
           style={[
             styles.cardFrame,
@@ -4093,7 +4101,13 @@ const styles = StyleSheet.create({
   },
   mask: {
     position: 'absolute',
-    backgroundColor: 'rgba(0,0,0,0.72)',
+    backgroundColor: 'rgba(18,10,46,0.74)',
+  },
+  frameHalo: {
+    position: 'absolute',
+    borderWidth: 8,
+    borderRadius: 26,
+    borderColor: 'rgba(105,56,245,0.2)',
   },
   cardFrame: {
     position: 'absolute',

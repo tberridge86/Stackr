@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const config = readFileSync('supabase/config.toml', 'utf8');
+const seed = readFileSync('supabase/seed.sql', 'utf8');
+const migration = readFileSync('supabase/migrations/20260728203300_stackr_release_activation_controls.sql', 'utf8');
+const rollback = readFileSync('supabase/manual/rollback_20260728203300_stackr_release_activation_controls.sql', 'utf8');
+
+assert.match(config, /schemas = \["public", "api", "graphql_public"\]/);
+assert.doesNotMatch(config, /schemas\s*=\s*\[[^\]]*"(?:ingest|ml|audit|market|catalog)"/);
+assert.match(config, /major_version = 17/);
+assert.match(config, /sql_paths = \["\.\/seed\.sql"\]/);
+
+for (const code of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'ko']) assert.match(seed, new RegExp(`'${code}'`));
+for (const code of ['normal', 'holo', 'reverse_holo', 'first_edition', 'unlimited', 'promo', 'stamped', 'poke_ball', 'master_ball']) {
+  assert.match(seed, new RegExp(`'${code}'`));
+}
+assert.doesNotMatch(seed, /auth\.users|profiles|binder_cards|price_observations|raw_source_records/i);
+
+for (const signature of [
+  'catalog.activate_catalogue_version',
+  'catalog.rollback_catalogue_version',
+  'ml.rollback_embedding_index_version',
+  'audit.release_activation_events',
+]) assert.match(migration, new RegExp(signature.replace('.', '\\.')));
+assert.match(migration, /grant execute on function catalog\.activate_catalogue_version[^;]+to service_role/s);
+assert.match(migration, /revoke all on function ml\.rollback_embedding_index_version[^;]+from public, anon, authenticated/s);
+assert.match(rollback, /drop function if exists catalog\.activate_catalogue_version/);
+assert.match(rollback, /drop table if exists audit\.release_activation_events/);
+
+console.log('Stage 13 database deployment contract tests passed.');

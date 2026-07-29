@@ -1,5 +1,11 @@
 import { EUR_TO_GBP, PRICE_API_URL, USD_TO_GBP } from './config';
 import { normalizeGradeKey, normalizeGraderKey } from './graderRegistry';
+import {
+  fetchStackrCardsForSet,
+  fetchStackrPrice,
+  resolveStackrSetId,
+} from './stackrDomainAdapter';
+import { stackrApiClient } from './stackrApiV1';
 
 const TCGCSV_BASE_URL = 'https://tcgcsv.com';
 
@@ -71,7 +77,7 @@ type PokeTraceCard = {
 };
 
 export type PokeTraceCardPriceResult = {
-  source: 'poketrace';
+  source: 'poketrace' | 'stackr-api';
   providerCardId: string | null;
   name: string | null;
   setName: string | null;
@@ -93,6 +99,11 @@ export type PokeTraceCardPriceResult = {
   gradedOptions: string[];
   conditionOptions: string[];
   raw: PokeTraceCard;
+  stackr_low?: number | null;
+  stackr_central?: number | null;
+  stackr_high?: number | null;
+  evidenceStatus?: string | null;
+  sourceBreakdown?: Array<Record<string, unknown>>;
 };
 
 export type PokeTraceCardPriceInput = {
@@ -397,7 +408,7 @@ export function normalizePokeTraceCardPrice(
 export async function fetchPokeTraceCardPrice(
   input: PokeTraceCardPriceInput
 ): Promise<PokeTraceCardPriceResult | null> {
-  if (!PRICE_API_URL || !input.identifier?.trim()) return null;
+  if (!input.identifier?.trim()) return null;
   const cacheKey = getPokeTracePriceCacheKey(input);
   const cached = pokeTracePriceCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) return cached.value;
@@ -406,34 +417,66 @@ export async function fetchPokeTraceCardPrice(
   if (inflight) return inflight;
 
   const request = (async () => {
-    const params = new URLSearchParams({
-      identifier: input.identifier.trim(),
-      market: input.market ?? 'US',
-    });
-    if (input.tcgPlayerId != null && String(input.tcgPlayerId).trim()) {
-      params.set('tcgPlayerId', String(input.tcgPlayerId).trim());
-    }
-    if (input.setName?.trim()) params.set('setName', input.setName.trim());
-    if (input.number?.trim()) params.set('number', input.number.trim());
-    if (input.language?.trim()) params.set('language', input.language.trim());
-
-    const response = await fetch(`${PRICE_API_URL}/api/poketrace/card?${params.toString()}`);
-    if (!response.ok) {
-      const ttl = getPokeTraceFailureTtl(response.status);
-      const message = response.status === 429
-        ? 'PokeTrace rate limit reached; cooling down price requests briefly.'
-        : `PokeTrace fetch unavailable: ${response.status}`;
-      warnPokeTraceOnce(`price:${response.status}`, message);
-      pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + ttl, value: null });
+    const setId = input.setName?.trim()
+      ? await resolveStackrSetId(input.setName, input.language).catch(() => null)
+      : null;
+    const reference = input.tcgPlayerId != null && String(input.tcgPlayerId).trim()
+      ? String(input.tcgPlayerId).trim()
+      : input.number?.trim() && input.setName?.trim()
+        ? `${input.setName.trim()} ${input.number.trim()}`
+        : input.identifier.trim();
+    const result = await fetchStackrPrice(reference, {
+      language: input.language,
+      setId,
+      productType: input.gradingCompany || input.grade ? 'graded_card' : 'raw_card',
+      currency: 'GBP',
+      grader: input.gradingCompany,
+      grade: input.grade ?? input.gradeLabel,
+    }).catch(() => null);
+    if (!result) {
+      pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_ERROR_CACHE_TTL_MS, value: null });
       return null;
     }
-
-    const json = await response.json();
-    const value = normalizePokeTraceCardPrice(json?.card, {
-      gradingCompany: input.gradingCompany,
-      grade: input.grade,
-      gradeLabel: input.gradeLabel,
-    });
+    const price = result.price;
+    const card = result.resolved.card;
+    const value: PokeTraceCardPriceResult = {
+      source: 'stackr-api',
+      providerCardId: result.resolved.variantId,
+      name: card.names.englishDisplay ?? card.names.native,
+      setName: card.set.englishDisplayName ?? card.set.nativeName ?? card.set.setCode,
+      number: card.collectorNumber.value,
+      market: input.market ?? null,
+      currency: price.currency,
+      tcg_low: null,
+      tcg_mid: null,
+      ebay_low: null,
+      ebay_average: null,
+      ebay_high: null,
+      ebay_count: price.sample.sold,
+      cardmarket_trend: null,
+      graded_average: price.productType === 'graded_card' ? price.estimates.central : null,
+      graded_low: price.productType === 'graded_card' ? price.estimates.low : null,
+      graded_high: price.productType === 'graded_card' ? price.estimates.high : null,
+      graded_count: price.productType === 'graded_card' ? price.sample.total : 0,
+      graded_tier: input.gradingCompany || input.grade
+        ? buildPokeTraceGradedTier(input.gradingCompany, input.grade, input.gradeLabel)
+        : null,
+      gradedOptions: [],
+      conditionOptions: input.gradingCompany || input.grade ? [] : ['NEAR_MINT'],
+      stackr_low: price.estimates.low,
+      stackr_central: price.estimates.central,
+      stackr_high: price.estimates.high,
+      evidenceStatus: price.status,
+      sourceBreakdown: price.sourceBreakdown,
+      raw: {
+        id: result.resolved.variantId,
+        name: card.names.englishDisplay ?? card.names.native,
+        cardNumber: card.collectorNumber.value,
+        set: { name: card.set.englishDisplayName ?? card.set.nativeName ?? card.set.setId },
+        currency: price.currency,
+        totalSaleCount: price.sample.sold,
+      },
+    };
     pokeTracePriceCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_PRICE_CACHE_TTL_MS, value });
     return value;
   })();
@@ -451,7 +494,7 @@ export async function fetchPokeTracePriceHistory(
   tier: string,
   period: PokeTraceHistoryPeriod = '30d'
 ): Promise<PokeTraceHistoryPoint[]> {
-  if (!PRICE_API_URL || !providerCardId || !tier) return [];
+  if (!providerCardId || !tier) return [];
   const cacheKey = JSON.stringify({ providerCardId, tier, period });
   const cached = pokeTraceHistoryCache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) return cached.value;
@@ -460,45 +503,29 @@ export async function fetchPokeTracePriceHistory(
   if (inflight) return inflight;
 
   const request = (async () => {
-    const params = new URLSearchParams({
-      period,
-      limit: period === '7d' ? '14' : period === '30d' ? '45' : period === '90d' ? '100' : '365',
-    });
-
-    const response = await fetch(
-      `${PRICE_API_URL}/api/poketrace/card/${encodeURIComponent(providerCardId)}/prices/${encodeURIComponent(tier)}/history?${params.toString()}`
-    );
-    if (!response.ok) {
-      const ttl = getPokeTraceFailureTtl(response.status);
-      const message = response.status === 429
-        ? 'PokeTrace rate limit reached; cooling down history requests briefly.'
-        : `PokeTrace history unavailable: ${response.status}`;
-      warnPokeTraceOnce(`history:${response.status}`, message);
-      pokeTraceHistoryCache.set(cacheKey, { expiresAt: Date.now() + ttl, value: [] });
-      return [];
-    }
-
-    const json = await response.json();
-    const rows = Array.isArray(json?.data) ? json.data : [];
-    const value = rows
-      .map((row: any): PokeTraceHistoryPoint | null => {
-        const currency = typeof row?.currency === 'string' ? row.currency.toUpperCase() : 'USD';
-        const pointValue = row?.median7d ?? row?.median30d ?? row?.avg7d ?? row?.avg30d ?? row?.avg;
-        const date = typeof row?.date === 'string' ? row.date : null;
-        const source = typeof row?.source === 'string' ? row.source : 'unknown';
-        if (!date) return null;
+    const limit = period === '7d' ? 14 : period === '30d' ? 45 : period === '90d' ? 100 : 365;
+    const response = await stackrApiClient.cardPriceHistory(providerCardId, { limit });
+    const cutoffDays = period === '7d' ? 7 : period === '30d' ? 30 : period === '90d' ? 90 : period === '1y' ? 365 : null;
+    const cutoff = cutoffDays == null ? null : Date.now() - cutoffDays * 24 * 60 * 60 * 1000;
+    const value = response.data.observations
+      .filter((row) => {
+        const date = row.soldAt ?? row.observedAt;
+        return !cutoff || !date || Date.parse(date) >= cutoff;
+      })
+      .map((row): PokeTraceHistoryPoint => {
+        const amount = row.observedPrice == null ? null : row.observedPrice + (row.shippingPrice ?? 0);
         return {
-          date,
-          source,
-          avg: convertPokeTracePrice(row?.avg, currency),
-          low: convertPokeTracePrice(row?.low, currency),
-          high: convertPokeTracePrice(row?.high, currency),
-          value: convertPokeTracePrice(pointValue, currency),
-          saleCount: toNumberOrNull(row?.saleCount),
+          date: row.soldAt ?? row.observedAt ?? '',
+          source: row.providerCode,
+          avg: amount,
+          low: amount,
+          high: amount,
+          value: amount,
+          saleCount: 1,
         };
       })
-      .filter((row: PokeTraceHistoryPoint | null): row is PokeTraceHistoryPoint => Boolean(row))
-      .sort((a: PokeTraceHistoryPoint, b: PokeTraceHistoryPoint) => a.date.localeCompare(b.date));
+      .filter((row) => Boolean(row.date))
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     pokeTraceHistoryCache.set(cacheKey, { expiresAt: Date.now() + POKETRACE_HISTORY_CACHE_TTL_MS, value });
     return value;
@@ -554,39 +581,14 @@ export const getPriceFromPokemonCard = (card: any, edition?: string | null): num
 };
 
 export const fetchLivePricesForCardIds = async (cardIds: string[]) => {
-  const chunks: string[][] = [];
-
-  for (let i = 0; i < cardIds.length; i += 20) {
-    chunks.push(cardIds.slice(i, i + 20));
-  }
-
   const priceMap: Record<string, number> = {};
-
-  for (const chunk of chunks) {
-    for (const id of chunk) {
-      const [setId, number] = id.split('-');
-
-      const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(
-        `set.id:${setId} number:${number}`
-      )}`;
-      const response = await fetch(url);
-      const json = await response.json();
-
-      const card = json?.data?.[0];
-
-      if (!card) {
-        console.log(`❌ Not found in API: ${id}`);
-        continue;
-      }
-
-      const price = getPriceFromPokemonCard(card);
-
-      if (typeof price === 'number') {
-        priceMap[id] = price;
-      }
-    }
+  const results = await Promise.all(cardIds.map(async (id) => ({
+    id,
+    result: await fetchStackrPrice(id, { currency: 'GBP' }).catch(() => null),
+  })));
+  for (const { id, result } of results) {
+    if (result?.price.estimates.central != null) priceMap[id] = result.price.estimates.central;
   }
-
   return priceMap;
 };
 
@@ -615,25 +617,34 @@ export const fetchCardsBySetNameWithPriceAvailability = async (
   cardName?: string,
   pageSize = 40
 ): Promise<TcgCardPriceAvailability[]> => {
-  const filters = [`set.name:"${setName}"`];
-  if (cardName?.trim()) {
-    filters.push(`name:"*${cardName.trim()}*"`);
+  const cards = (await fetchStackrCardsForSet(setName))
+    .filter((card) => !cardName?.trim() || card.name.toLowerCase().includes(cardName.trim().toLowerCase()))
+    .slice(0, Math.max(1, Math.min(100, pageSize)));
+  const rows: TcgCardPriceAvailability[] = [];
+  const concurrency = 6;
+  for (let index = 0; index < cards.length; index += concurrency) {
+    const batch = cards.slice(index, index + concurrency);
+    const priced = await Promise.all(batch.map(async (card) => {
+      const result = await fetchStackrPrice(card.id, { currency: 'GBP' }).catch(() => null);
+      if (!result) return null;
+      return {
+        id: card.id,
+        name: card.name,
+        number: card.number,
+        setName: card.set.name,
+        variants: [{
+          variant: result.resolved.card.variants.find((variant) => variant.variantId === result.resolved.variantId)?.variantCode ?? 'default',
+          market: result.price.estimates.central,
+          mid: result.price.estimates.central,
+          low: result.price.estimates.low,
+        }],
+      } satisfies TcgCardPriceAvailability;
+    }));
+    for (const row of priced) {
+      if (row) rows.push(row);
+    }
   }
-
-  const query = filters.join(' ');
-  const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(
-    query
-  )}&pageSize=${pageSize}`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Failed to fetch cards for set "${setName}": ${response.status} ${text}`);
-  }
-
-  const json = await response.json();
-  const cards = Array.isArray(json?.data) ? json.data : [];
-  return cards.map(summarizeCardPriceAvailability);
+  return rows;
 };
 
 async function fetchTcgcsvJson<T>(url: string): Promise<T> {
@@ -678,6 +689,15 @@ async function fetchTcgcsvJson<T>(url: string): Promise<T> {
 
 function normalizeForCompare(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function stableCompatibilityId(value: string) {
+  let hash = 2166136261;
+  for (const character of value) {
+    hash ^= character.charCodeAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 function getExtendedDataValue(product: TcgcsvProduct, key: string): string | null {
@@ -760,17 +780,14 @@ function isUiDisplayableMarketProduct(product: TcgcsvProduct): boolean {
 export async function fetchTcgcsvPokemonGroupByName(
   setName: string
 ): Promise<TcgcsvGroup | null> {
-  const url = `${TCGCSV_BASE_URL}/tcgplayer/3/groups`;
-  const json = await fetchTcgcsvJson<{ results?: TcgcsvGroup[] }>(url);
-  const groups = Array.isArray(json.results) ? json.results : [];
-
-  const target = normalizeForCompare(setName);
-  const exact = groups.find((group) => normalizeForCompare(group.name) === target);
-  if (exact) return exact;
-
-  return (
-    groups.find((group) => normalizeForCompare(group.name).includes(target)) ?? null
-  );
+  const setId = await resolveStackrSetId(setName).catch(() => null);
+  if (!setId) return null;
+  return {
+    groupId: stableCompatibilityId(setId),
+    name: setName,
+    abbreviation: setId,
+    categoryId: 3,
+  };
 }
 
 export async function fetchTcgcsvUiCardPricesForSet(
@@ -788,48 +805,27 @@ export async function fetchTcgcsvUiCardPricesForSet(
   }
 
   const request = (async () => {
-  const group = await fetchTcgcsvPokemonGroupByName(setName);
-  if (!group) return [];
-
-  const [productsJson, pricesJson] = await Promise.all([
-    fetchTcgcsvJson<{ results?: TcgcsvProduct[] }>(
-      `${TCGCSV_BASE_URL}/tcgplayer/3/${group.groupId}/products`
-    ),
-    fetchTcgcsvJson<{ results?: TcgcsvPrice[] }>(
-      `${TCGCSV_BASE_URL}/tcgplayer/3/${group.groupId}/prices`
-    ),
-  ]);
-
-  const products = (productsJson.results ?? []).filter(isUiDisplayableSingleCard);
-  const prices = pricesJson.results ?? [];
-
-  const priceByProductId = new Map<number, TcgcsvCardVariantPrice[]>();
-  for (const price of prices) {
-    if (!priceByProductId.has(price.productId)) {
-      priceByProductId.set(price.productId, []);
-    }
-
-    priceByProductId.get(price.productId)!.push({
-      subTypeName: price.subTypeName,
-      marketPrice: typeof price.marketPrice === 'number' ? price.marketPrice : null,
-      lowPrice: typeof price.lowPrice === 'number' ? price.lowPrice : null,
-      midPrice: typeof price.midPrice === 'number' ? price.midPrice : null,
+    const [cards, prices] = await Promise.all([
+      fetchStackrCardsForSet(setName),
+      fetchCardsBySetNameWithPriceAvailability(setName, undefined, 100),
+    ]);
+    const pricesByCard = new Map(prices.map((price) => [price.id, price]));
+    const rows: TcgcsvUiCardPriceRow[] = cards.flatMap((card) => {
+      const price = pricesByCard.get(card.id);
+      if (!price?.variants.length) return [];
+      return [{
+        productId: stableCompatibilityId(card.id),
+        name: card.name,
+        imageUrl: card.images.small ?? card.images.large ?? null,
+        number: card.number,
+        variants: price.variants.map((variant) => ({
+          subTypeName: variant.variant,
+          marketPrice: variant.market,
+          lowPrice: variant.low,
+          midPrice: variant.mid,
+        })),
+      }];
     });
-  }
-
-  const rows: TcgcsvUiCardPriceRow[] = [];
-  for (const product of products) {
-    const variants = priceByProductId.get(product.productId) ?? [];
-    if (!variants.length) continue;
-
-    rows.push({
-      productId: product.productId,
-      name: product.name,
-      imageUrl: typeof product.imageUrl === 'string' && product.imageUrl.trim() ? product.imageUrl.trim() : null,
-      number: getExtendedDataValue(product, 'Number'),
-      variants,
-    });
-  }
 
     tcgcsvUiCardPriceCache.set(cacheKey, {
       expiresAt: Date.now() + TCGCSV_UI_PRICE_CACHE_TTL_MS,
@@ -861,45 +857,10 @@ export async function fetchTcgcsvUiProductPricesForSet(
   }
 
   const request = (async () => {
-  const group = await fetchTcgcsvPokemonGroupByName(setName);
-  if (!group) return [];
-
-  const [productsJson, pricesJson] = await Promise.all([
-    fetchTcgcsvJson<{ results?: TcgcsvProduct[] }>(
-      `${TCGCSV_BASE_URL}/tcgplayer/3/${group.groupId}/products`
-    ),
-    fetchTcgcsvJson<{ results?: TcgcsvPrice[] }>(
-      `${TCGCSV_BASE_URL}/tcgplayer/3/${group.groupId}/prices`
-    ),
-  ]);
-
-  const products = (productsJson.results ?? []).filter(isUiDisplayableMarketProduct);
-  const prices = pricesJson.results ?? [];
-
-  const priceByProductId = new Map<number, TcgcsvCardVariantPrice[]>();
-  for (const price of prices) {
-    if (!priceByProductId.has(price.productId)) {
-      priceByProductId.set(price.productId, []);
-    }
-
-    priceByProductId.get(price.productId)!.push({
-      subTypeName: price.subTypeName,
-      marketPrice: typeof price.marketPrice === 'number' ? price.marketPrice : null,
-      lowPrice: typeof price.lowPrice === 'number' ? price.lowPrice : null,
-      midPrice: typeof price.midPrice === 'number' ? price.midPrice : null,
-    });
-  }
-
-    const rows = products
-    .map((product) => ({
-      productId: product.productId,
-      name: product.name,
-      imageUrl: typeof product.imageUrl === 'string' && product.imageUrl.trim() ? product.imageUrl.trim() : null,
-      groupId: group.groupId,
-      groupName: group.name,
-      variants: priceByProductId.get(product.productId) ?? [],
-    }))
-    .filter((product) => product.variants.length > 0);
+    // Sealed-product search is deliberately unavailable until the v1 canonical
+    // API exposes sealed identities. Returning no result is safer than using a
+    // card or provider ID as a guessed sealed-product identity.
+    const rows: TcgcsvUiProductPriceRow[] = [];
 
     tcgcsvUiProductPriceCache.set(cacheKey, {
       expiresAt: Date.now() + TCGCSV_UI_PRICE_CACHE_TTL_MS,
@@ -942,20 +903,32 @@ type PptCard = {
 };
 
 export async function fetchPptCardWithPsaGrades(identifier: string, setName?: string): Promise<PptCard | null> {
-  if (!PRICE_API_URL) return null;
-
-  const params = new URLSearchParams({ identifier });
-  if (/^\d+$/.test(identifier)) {
-    params.set('tcgPlayerId', identifier);
-  }
-  if (setName) params.set('setName', setName);
-
-  const res = await fetch(`${PRICE_API_URL}/api/pokemon-price-tracker/card?${params.toString()}`);
-  if (!res.ok) {
-    console.warn(`PPT PSA fetch failed: ${res.status}`);
-    return null;
-  }
-  const json = await res.json();
-  const card = json?.card ?? json?.data?.[0];
-  return card ?? null;
+  const setId = setName ? await resolveStackrSetId(setName).catch(() => null) : null;
+  const reference = setId && !/^\d+$/.test(identifier) ? identifier : identifier;
+  const result = await fetchStackrPrice(reference, {
+    setId,
+    productType: 'graded_card',
+    currency: 'GBP',
+    grader: 'PSA',
+  }).catch(() => null);
+  if (!result) return null;
+  const estimate = result.price.estimates;
+  const grade = {
+    avg: estimate.central ?? undefined,
+    minPrice: estimate.low ?? undefined,
+    maxPrice: estimate.high ?? undefined,
+    count: result.price.sample.total,
+  };
+  return {
+    id: result.resolved.variantId,
+    name: result.resolved.card.names.englishDisplay ?? result.resolved.card.names.native,
+    setName: result.resolved.card.set.englishDisplayName ?? result.resolved.card.set.nativeName ?? undefined,
+    number: result.resolved.card.collectorNumber.value,
+    ebay: {
+      psa8: grade,
+      psa9: grade,
+      psa10: grade,
+      salesByGrade: { PSA: grade },
+    },
+  };
 }

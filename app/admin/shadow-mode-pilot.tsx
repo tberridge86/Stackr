@@ -15,8 +15,7 @@ import { StackrBackButton } from '../../components/StackrBackButton';
 import { Text } from '../../components/Text';
 import { useProfile } from '../../components/profile-context';
 import { useTheme } from '../../components/theme-context';
-import { SHADOW_MODE_PILOT_API_URL } from '../../lib/config';
-import { supabase } from '../../lib/supabase';
+import { stackrApiClient } from '../../lib/stackrApiV1';
 
 type ShadowCandidate = {
   rank: number;
@@ -168,29 +167,16 @@ export default function ShadowModePilotDashboard() {
   }, [items]);
   const compact = width < 760;
 
-  async function authHeader() {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) throw error;
-    const token = data.session?.access_token;
-    if (!token) throw new Error('Sign in is required.');
-    return `Bearer ${token}`;
-  }
-
   const loadItems = useCallback(async () => {
     if (!isAdmin) return;
     try {
       setLoading(true);
-      const authorization = await authHeader();
-      const params = new URLSearchParams({
+      const envelope = await stackrApiClient.adminRecognitionShadowComparisons<ShadowModeRow>({
         status,
-        limit: '80',
+        limit: 80,
+        ...(category !== 'all' ? { category } : {}),
       });
-      if (category !== 'all') params.set('category', category);
-      const response = await fetch(`${SHADOW_MODE_PILOT_API_URL}/disagreements?${params.toString()}`, {
-        headers: { Authorization: authorization },
-      });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error ?? 'Could not load shadow-mode pilot records.');
+      const payload = envelope.data;
       setItems(payload.items ?? []);
       setSelectedId((current) => current ?? payload.items?.[0]?.id ?? null);
     } catch (error: any) {
@@ -218,21 +204,11 @@ export default function ShadowModePilotDashboard() {
     if (!selectedItem) return;
     try {
       setSaving(true);
-      const authorization = await authHeader();
-      const response = await fetch(`${SHADOW_MODE_PILOT_API_URL}/disagreements/${encodeURIComponent(selectedItem.id)}`, {
-        method: 'PATCH',
-        headers: {
-          Authorization: authorization,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          reviewStatus,
-          disagreementCategory: reviewCategory,
-          reviewerNotes: notes,
-        }),
+      await stackrApiClient.reviewRecognitionShadowComparison(selectedItem.id, {
+        reviewStatus,
+        disagreementCategory: reviewCategory,
+        reviewerNotes: notes,
       });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload?.error ?? 'Could not save review.');
       setItems((current) => current.filter((item) => item.id !== selectedItem.id));
       setSelectedId(null);
     } catch (error: any) {

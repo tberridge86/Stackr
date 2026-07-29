@@ -1,0 +1,57 @@
+# Critical Security Remediation
+
+Date: 2026-07-29
+
+Status: code prepared and locally verified; production remains unchanged and NO-GO.
+
+## Fixes prepared
+
+| Finding | Prepared control | Production state |
+| --- | --- | --- |
+| Public private-profile fields | `profile_public_directory` contains display-only fields and is kept in sync by a trigger. Public app reads now use it. | Expand migration not applied. Legacy `profiles` public-read policy remains until the app cutover. |
+| User role escalation | Final cutover revokes broad profile writes and grants authenticated writes only to approved columns. Update RLS has `USING` and `WITH CHECK`. | Cutover script not applied. |
+| Cross-user market rows | The permissive authenticated policy is removed; reads are limited to public rows or the row owner. | Migration not applied. |
+| Public scan bucket | `card-scans` becomes private, is limited to 5 MiB JPEG/PNG/WebP objects, and uses authenticated user-prefixed paths. Existing root-level objects remain owner-readable through stored ownership. | Migration not applied. |
+| Railway gateway origin bypass | Gateway-owned backend routes fail closed by default in production when origin authentication is not configured. | Code not deployed; Railway variables must be configured first. |
+| Secrets in new commits or bundles | CI scans the working tree, pull-request commit range, and exported app bundle without printing secret values. | Local checks pass. Historical repository scan still fails. |
+
+## Safe rollout order
+
+1. Rotate every exposed credential before relying on Git history cleanup. Treat the Supabase legacy service-role JWT as active until it is revoked.
+2. Configure the same strong origin key in Cloudflare `BACKEND_ORIGIN_KEY` and Railway `STACKR_GATEWAY_ORIGIN_KEY`. Set Railway `STACKR_GATEWAY_ORIGIN_AUTH_MODE=required` before deploying the backend change.
+3. Back up Supabase and verify the backup can be listed and read.
+4. Dry-run and apply `20260729055239_critical_security_containment.sql` in staging. This expands the profile model and contains market and scan access without removing the legacy profile-read policy.
+5. Verify profile-directory row count equals profile row count, profile updates sync, public scan URLs fail, owner-signed scan URLs work, and user-specific market rows cannot be read by another account.
+6. Deploy the app build that reads public display data from `profile_public_directory`. Complete community, friends, offers, marketplace, search, profile editing, push-token, and admin-role UAT.
+7. Apply `finalize_profile_privacy_cutover.sql` only after telemetry confirms the updated app is active for the supported release cohort. Convert it to a timestamped migration at approval time so production history remains authoritative.
+8. Re-run Supabase security advisors, API contract tests, staging smoke tests, and the red-team reproductions.
+
+## Credential incident actions
+
+Rotate or revoke these credential classes in their provider dashboards; never paste values into an issue, pull request, or chat:
+
+- Supabase legacy service-role/JWT signing material, then migrate clients to publishable keys and servers to secret keys.
+- Ximilar and CardSight credentials.
+- eBay OAuth client secret and any derived refresh tokens.
+- Pokemon TCG and other catalogue/pricing provider keys found by the incident inventory.
+- Stripe live secret and webhook signing secret; inspect Stripe logs for unexpected use.
+- Railway, Cloudflare, GitHub, and Expo deployment credentials if the history review shows they were committed.
+
+After rotation, rewrite the private Git repository history using a reviewed sensitive-data inventory and a disposable mirror clone. Coordinate the force push, invalidate old clones, and require every contributor to reclone. Do not use history rewriting as a substitute for rotation.
+
+Acceptance criteria:
+
+- The old Supabase service-role credential returns an authentication failure.
+- Full-history secret scanning passes on every rewritten root history.
+- Current-tree and exported-bundle secret scanning pass.
+- Provider access logs have been reviewed from the earliest known exposure date.
+- GitHub branch protection requires the security and bundle checks.
+
+## Rollback
+
+- Phase-one database rollback: `supabase/manual/rollback_20260729055239_critical_security_containment.sql`.
+- Profile cutover rollback: `supabase/manual/rollback_finalize_profile_privacy_cutover.sql`.
+- Backend rollback: restore the prior Railway deployment. Do not disable origin authentication as a routine workaround.
+- Mobile rollback: restore the previous EAS update only while the legacy profile policy is still present.
+
+The database rollback files intentionally restore unsafe historical access and are emergency-only. A forward fix is preferred.

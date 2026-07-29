@@ -5,12 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "daily-market-snapshot": "tsx ../scripts/daily-market-snapshot.ts",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "daily-market-snapshot": "tsx ../scripts/daily-market-snapshot.ts"
   },
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",
@@ -19,13 +18,10 @@
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
-    "expo": "~54.0.33",
-    "express": "^4.21.2",
-    "form-data": "^4.0.5",
+    "express": "4.22.2",
+    "form-data": "4.0.6",
     "jimp": "^0.22.12",
     "node-fetch": "^3.3.2",
-    "react": "19.1.0",
-    "react-native": "0.81.5",
     "sharp": "^0.34.5",
     "stripe": "^17.7.0"
   },

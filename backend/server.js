@@ -17,11 +17,14 @@ import localAiScanRoutes from './routes/localAiScan.js';
 import rareCandyScanRoutes from './routes/rareCandyScan.js';
 import recognitionFeedbackRoutes from './routes/recognitionFeedback.js';
 import recognitionShadowModeRoutes from './routes/recognitionShadowMode.js';
+import observabilityRoutes from './routes/observability.js';
 import scanLabRoutes from './routes/scanLab.js';
 import scannerPackRoutes from './routes/scannerPacks.js';
 import shippoRoutes from './routes/shippo.js';
 import stripeRoutes from './routes/stripe.js';
 import createV1Router from './routes/v1.js';
+import { createGatewayOriginAuth } from './lib/gatewayOriginAuth.js';
+import { createTracedFetch, traceMiddleware } from './lib/traceContext.js';
 import {
   fetchTcgdexCardDetail,
   fetchTcgdexCardPrice,
@@ -59,16 +62,43 @@ import {
 } from './lib/tcgdexCatalogue.js';
 import { getCachedPricingResponse } from './lib/pricingV2/engine.js';
 import { Buffer } from 'node:buffer';
+import { randomUUID } from 'node:crypto';
 
 const app = express();
+const gatewayOriginAuth = createGatewayOriginAuth();
+const allowedOrigins = new Set(
+  String(
+    process.env.ALLOWED_ORIGINS
+      ?? (process.env.NODE_ENV === 'production'
+        ? 'https://stackr.app,https://www.stackr.app'
+        : 'http://localhost:8081,http://localhost:19006'),
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+);
 
-app.use(cors());
-app.use(express.json({ limit: '25mb' }));
-app.use('/v1', compression({ threshold: 1024 }), createV1Router());
-app.use('/api/assets', assetRoutes);
-app.use('/api/admin/assets', adminAssetsRouter);
+app.disable('x-powered-by');
+app.use(traceMiddleware());
+app.use((req, res, next) => {
+  const supplied = String(req.headers['x-request-id'] ?? '').trim();
+  const requestId = /^[A-Za-z0-9._:-]{1,120}$/.test(supplied) ? supplied : randomUUID();
+  req.stackrRequestId = requestId;
+  res.setHeader('X-Request-Id', requestId);
+  next();
+});
+app.use(cors({
+  origin(origin, callback) {
+    callback(null, !origin || allowedOrigins.has(origin));
+  },
+}));
+app.use(express.json({ limit: '8mb' }));
+app.use('/v1', gatewayOriginAuth, compression({ threshold: 1024 }), createV1Router());
+app.use('/api/assets', gatewayOriginAuth, assetRoutes);
+app.use('/api/admin/assets', gatewayOriginAuth, adminAssetsRouter);
 app.use('/api/cardsight', cardsightRoutes);
-app.use('/api/admin/catalogue-ingestion', catalogueIngestionRoutes);
+app.use('/api/admin/catalogue-ingestion', gatewayOriginAuth, catalogueIngestionRoutes);
+app.use('/api/admin/observability', gatewayOriginAuth, observabilityRoutes);
 app.use('/api/gibl', giblRoutes);
 app.use('/api/local-ai', localAiScanRoutes);
 app.use('/api/rare-candy-scan', rareCandyScanRoutes);
@@ -119,7 +149,8 @@ const EBAY_OAUTH_SCOPES = (
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY,
+  { global: { fetch: createTracedFetch() } },
 );
 
 function getErrorMessage(error) {
@@ -155,7 +186,7 @@ app.get('/api/pricing/:cardId', async (req, res) => {
 function getAuthToken(req) {
   const header = String(req.headers.authorization || '').trim();
   if (header.toLowerCase().startsWith('bearer ')) return header.slice(7).trim();
-  return String(req.headers['x-stackr-admin-key'] || req.query.adminKey || '').trim();
+  return String(req.headers['x-stackr-admin-key'] || '').trim();
 }
 
 function requireAdminAccess(req, res) {
@@ -1803,7 +1834,7 @@ async function fetchEbaySummary(query, options = {}) {
 // ROUTES
 // ===============================
 
-app.get('/debug-serpapi', async (req, res) => {
+app.get('/debug-serpapi', gatewayOriginAuth, async (req, res) => {
   const query = String(req.query.q || 'Charizard base set').trim();
   if (!SERPAPI_API_KEY) return res.status(500).json({ error: 'Missing SERPAPI_API_KEY' });
 
@@ -1828,7 +1859,7 @@ app.get('/', (req, res) => {
   res.send('Stackr API is running');
 });
 
-app.get('/debug-env', (req, res) => {
+app.get('/debug-env', gatewayOriginAuth, (req, res) => {
   res.json({
     ok: true,
     hasEbayClientId: Boolean(EBAY_CLIENT_ID),
@@ -2002,7 +2033,7 @@ app.get('/api/pokewallet/sets/:setCode', async (req, res) => {
   }
 });
 
-app.get('/ebay-rate-limits', async (_req, res) => {
+app.get('/ebay-rate-limits', gatewayOriginAuth, async (_req, res) => {
   try {
     const token = await getToken();
     const response = await fetch('https://api.ebay.com/developer/analytics/v1_beta/rate_limit/', {
@@ -2031,7 +2062,7 @@ app.get('/ebay-rate-limits', async (_req, res) => {
   }
 });
 
-app.get('/test-ebay-token', async (req, res) => {
+app.get('/test-ebay-token', gatewayOriginAuth, async (req, res) => {
   try {
     const token = await getToken();
     return res.json({ ok: true, tokenPreview: `${token.slice(0, 10)}...` });
@@ -2832,7 +2863,7 @@ app.get('/api/price/ebay', async (req, res) => {
 // DEBUG: PRICE FILTER INSPECTOR
 // ===============================
 
-app.get('/price/debug', async (req, res) => {
+app.get('/price/debug', gatewayOriginAuth, async (req, res) => {
   try {
     const name = String(req.query.name || '').trim();
     const setName = String(req.query.set || '').trim();
@@ -3576,7 +3607,7 @@ function scoreFingerprintCandidate(reference, queryHashes) {
   };
 }
 
-app.post('/api/fingerprints/reload', (_req, res) => {
+app.post('/api/fingerprints/reload', gatewayOriginAuth, (_req, res) => {
   _fpCache = null;
   _fpCacheAt = 0;
   _fpCacheLoading = null;
@@ -4764,7 +4795,7 @@ app.get('/api/pokemon-price-tracker/card', async (req, res) => {
   }
 });
 
-app.get('/debug-ximilar', async (req, res) => {
+app.get('/debug-ximilar', gatewayOriginAuth, async (req, res) => {
   try {
     if (!XIMILAR_API_TOKEN) return res.status(500).json({ ok: false, error: 'Missing token' });
 
@@ -5015,7 +5046,7 @@ app.post('/api/notify/price-alert', async (req, res) => {
 // SYNC SET
 // ===============================
 
-app.get('/api/sync/set', async (req, res) => {
+app.get('/api/sync/set', gatewayOriginAuth, async (req, res) => {
   try {
     const setId = String(req.query.setId || req.body.setId || '').trim();
     if (!setId) return res.status(400).json({ error: 'Missing setId' });

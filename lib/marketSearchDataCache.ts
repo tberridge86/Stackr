@@ -1,4 +1,6 @@
 import { supabase } from './supabase';
+import { getCuratedPokemonCardDbRow } from './curatedPokemonCatalogue';
+import { fetchStackrCardRows } from './stackrDomainAdapter';
 import {
   getEnglishCardDisplayName,
   getLocalCardName,
@@ -57,6 +59,22 @@ const emptyListingStats = (): ListingStats => ({ count: 0, lowest: null });
 
 function uniqueValues(values: (string | null | undefined)[]) {
   return [...new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value)))];
+}
+
+function mapCuratedCardDetail(cardId: string): PokemonCardDetailRow | null {
+  const row = getCuratedPokemonCardDbRow(cardId);
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    language: row.language,
+    number: row.number,
+    rarity: row.rarity,
+    set_id: row.set_id,
+    image_small: row.image_small,
+    image_large: row.image_large,
+    raw_data: row.raw_data,
+  };
 }
 
 function chunkValues<T>(values: T[], chunkSize: number) {
@@ -165,6 +183,16 @@ export async function fetchCachedPokemonCardDetails(cardIds: string[]) {
   const missingIds: string[] = [];
 
   for (const cardId of uniqueValues(cardIds)) {
+    const curated = mapCuratedCardDetail(cardId);
+    if (curated) {
+      result.set(cardId, curated);
+      cardDetailCache.set(cardId, {
+        value: curated,
+        expiresAt: now + CARD_DETAIL_CACHE_TTL_MS,
+      });
+      continue;
+    }
+
     const cached = getFreshValue(cardDetailCache, cardId, now);
     if (cached === undefined) {
       missingIds.push(cardId);
@@ -178,45 +206,20 @@ export async function fetchCachedPokemonCardDetails(cardIds: string[]) {
   for (const chunk of chunkValues(missingIds, SUPABASE_IN_CHUNK_SIZE)) {
     const batchKey = getBatchKey('pokemon-card-details', chunk);
     const request = cardDetailInflight.get(batchKey) ?? (async () => {
-      const { data, error } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, language, number, rarity, set_id, image_small, image_large, raw_data')
-        .in('id', chunk);
-
-      if (error) throw error;
-
+      const stackrRows = await fetchStackrCardRows(chunk);
       const rows = new Map<string, PokemonCardDetailRow>();
       const foundIds = new Set<string>();
 
-      for (const row of (data ?? []) as PokemonCardDetailRow[]) {
-        if (!row.id) continue;
-        foundIds.add(row.id);
-        rows.set(row.id, row);
-        cardDetailCache.set(row.id, {
-          value: row,
+      for (const legacyId of chunk) {
+        const row = stackrRows.get(legacyId);
+        if (!row?.id) continue;
+        const mapped: PokemonCardDetailRow = row;
+        foundIds.add(legacyId);
+        rows.set(legacyId, mapped);
+        cardDetailCache.set(legacyId, {
+          value: mapped,
           expiresAt: Date.now() + CARD_DETAIL_CACHE_TTL_MS,
         });
-      }
-
-      const unresolvedIds = chunk.filter((cardId) => !foundIds.has(cardId));
-      if (unresolvedIds.length) {
-        const { data: canonicalData, error: canonicalError } = await supabase
-          .from('tcg_cards')
-          .select('id, canonical_name, local_name, english_display_name, language, collector_number, rarity, set_id, image_small_url, image_large_url, raw_payload')
-          .in('id', unresolvedIds);
-
-        if (canonicalError) throw canonicalError;
-
-        for (const row of (canonicalData ?? []) as CanonicalCardDetailRow[]) {
-          if (!row.id) continue;
-          const mapped = mapCanonicalCardDetail(row);
-          foundIds.add(row.id);
-          rows.set(row.id, mapped);
-          cardDetailCache.set(row.id, {
-            value: mapped,
-            expiresAt: Date.now() + CARD_DETAIL_CACHE_TTL_MS,
-          });
-        }
       }
 
       for (const cardId of chunk) {

@@ -3,6 +3,7 @@ import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 import { supabase } from './supabase';
 import { getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from './pokemonTcg';
+import { fetchStackrSets } from './stackrDomainAdapter';
 
 export { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 
@@ -73,18 +74,20 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
         return true;
       }).slice(0, limit);
     }),
-    supabase
-      .from('pokemon_sets')
-      .select('id, name, series, printed_total, total, symbol_url, logo_url, raw_data')
-      .or(`name.ilike.%${primaryQuery}%,id.ilike.%${primaryQuery}%`)
-      .limit(limit),
+    fetchStackrSets().then((sets) => sets.filter((set) => {
+      const haystack = [set.id, set.name, set.series, set.localName, set.externalIds.setCode]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(primaryQuery.toLowerCase());
+    }).slice(0, limit)),
     supabase
       .from('binders')
       .select('id, name, type, source_set_id, cover_key')
       .ilike('name', `%${primaryQuery}%`)
       .limit(limit),
     supabase
-      .from('profiles')
+      .from('profile_public_directory')
       .select('id, collector_name, avatar_url, avatar_preset')
       .ilike('collector_name', `%${primaryQuery}%`)
       .limit(limit),
@@ -123,13 +126,13 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
     }));
   }
 
-  if (setsResult.status === 'fulfilled' && !setsResult.value.error) {
-    groups.sets = (setsResult.value.data ?? []).map((set: any) => ({
+  if (setsResult.status === 'fulfilled') {
+    groups.sets = setsResult.value.map((set) => ({
       id: set.id,
       category: 'sets',
       title: set.name,
-      subtitle: joinSubtitle([set.series, set.printed_total ?? set.total ? `${set.printed_total ?? set.total} cards` : null]),
-      imageUrl: set.logo_url ?? set.symbol_url ?? set.raw_data?.cover_image_url ?? set.raw_data?.images?.cover ?? null,
+      subtitle: joinSubtitle([set.series, set.printedTotal ?? set.total ? `${set.printedTotal ?? set.total} cards` : null]),
+      imageUrl: set.images.logo ?? set.images.symbol ?? set.images.cover ?? null,
       route: `/set/${set.id}`,
       raw: set,
     }));

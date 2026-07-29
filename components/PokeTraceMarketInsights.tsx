@@ -66,6 +66,15 @@ const getRawTier = (price: PokeTraceCardPriceResult | null, rawCondition?: strin
 const getChartValue = (point: PokeTraceHistoryPoint) => point.value ?? point.avg;
 
 const getRawPrimaryPrice = (price: PokeTraceCardPriceResult | null) => {
+  if (price?.source === 'stackr-api') {
+    return {
+      label: 'Stackr market estimate',
+      value: price.stackr_central ?? null,
+      low: price.stackr_low ?? null,
+      high: price.stackr_high ?? null,
+      count: price.ebay_count ?? 0,
+    };
+  }
   if (price?.ebay_average != null || price?.ebay_low != null || price?.ebay_high != null) {
     return {
       label: 'eBay market comps',
@@ -282,10 +291,10 @@ export default function PokeTraceMarketInsights({
     const rows = [
       {
         key: 'ebay',
-        label: isGradedMode ? `${displayGradingCompany} ${grade}` : 'eBay market',
-        value: isGradedMode ? price?.graded_average ?? null : price?.ebay_average ?? null,
-        low: isGradedMode ? price?.graded_low ?? null : price?.ebay_low ?? null,
-        high: isGradedMode ? price?.graded_high ?? null : price?.ebay_high ?? null,
+        label: isGradedMode ? `${displayGradingCompany} ${grade}` : price?.source === 'stackr-api' ? 'Stackr market' : 'eBay market',
+        value: isGradedMode ? price?.graded_average ?? null : price?.source === 'stackr-api' ? price.stackr_central ?? null : price?.ebay_average ?? null,
+        low: isGradedMode ? price?.graded_low ?? null : price?.source === 'stackr-api' ? price.stackr_low ?? null : price?.ebay_low ?? null,
+        high: isGradedMode ? price?.graded_high ?? null : price?.source === 'stackr-api' ? price.stackr_high ?? null : price?.ebay_high ?? null,
         count: isGradedMode ? price?.graded_count ?? 0 : price?.ebay_count ?? 0,
         color: SOURCE_COPY.ebay.color,
       },

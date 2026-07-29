@@ -8,7 +8,7 @@ const ignoredProjectDirs = ['.cache', '.metro-cache', '.tmp', 'tmp', 'dist', 'we
 );
 const existingBlockList = config.resolver.blockList;
 
-config.resolver.assetExts.push('onnx', 'ort', 'bin', 'jfif');
+config.resolver.assetExts.push('onnx', 'ort', 'bin', 'jfif', 'wasm');
 config.resolver.blockList = Array.isArray(existingBlockList)
   ? [...existingBlockList, ...ignoredProjectDirs]
   : [existingBlockList, ...ignoredProjectDirs].filter(Boolean);

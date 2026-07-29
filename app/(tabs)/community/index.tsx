@@ -28,6 +28,7 @@ import { StackrCardActionIcon } from '../../../components/StackrScreen';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../../components/RaritySymbol';
 import { stackrIcons } from '../../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../../lib/stackrSizing';
+import { fetchStackrCardRows } from '../../../lib/stackrDomainAdapter';
 
 type FeedMode = 'global' | 'friends';
 type SocialTab = 'Social' | 'Flex' | 'Trades' | 'Local' | 'News';
@@ -488,7 +489,7 @@ export default function CommunityScreen() {
 
       if (userIds.length) {
         const { data: profileData } = await supabase
-          .from('profiles')
+          .from('profile_public_directory')
           .select('id, collector_name, avatar_preset')
           .in('id', userIds);
 
@@ -502,14 +503,11 @@ export default function CommunityScreen() {
       }
 
       if (cardIds.length) {
-        const { data: cardData } = await supabase
-          .from('pokemon_cards')
-          .select('id, name, set_id, image_small, image_large, raw_data')
-          .in('id', cardIds);
-
-        const cardMap = Object.fromEntries(
-          (cardData ?? []).map((card) => [card.id, card])
-        );
+        const rows = await fetchStackrCardRows(cardIds);
+        const cardMap = Object.fromEntries(cardIds.flatMap((id) => {
+          const card = rows.get(id);
+          return card ? [[id, card]] : [];
+        }));
 
         setCards(cardMap);
       } else {
@@ -606,16 +604,11 @@ export default function CommunityScreen() {
         if (!cardIds.length) {
           setOwnedCards([]);
         } else {
-          const { data: cardData, error: cardError } = await supabase
-            .from('pokemon_cards')
-            .select('id, name, set_id, image_small, image_large, raw_data')
-            .in('id', cardIds);
-
-          if (cardError) throw cardError;
-
-          const cardMap = Object.fromEntries(
-            (cardData ?? []).map((card) => [card.id, card])
-          );
+          const rows = await fetchStackrCardRows(cardIds);
+          const cardMap = Object.fromEntries(cardIds.flatMap((id) => {
+            const card = rows.get(id);
+            return card ? [[id, card]] : [];
+          }));
 
           const options = flexRows.map((row) => ({
             binder_id: row.binder_id,
@@ -643,14 +636,11 @@ export default function CommunityScreen() {
       if (!chaseCardIds.length) {
         setChaseCards([]);
       } else {
-        const { data: chaseCardData, error: chaseCardError } = await supabase
-          .from('pokemon_cards')
-          .select('id, name, set_id, image_small, image_large, raw_data')
-          .in('id', chaseCardIds);
-
-        if (chaseCardError) throw chaseCardError;
-
-        const chaseCardMap = Object.fromEntries((chaseCardData ?? []).map((card) => [card.id, card]));
+        const rows = await fetchStackrCardRows(chaseCardIds);
+        const chaseCardMap = Object.fromEntries(chaseCardIds.flatMap((id) => {
+          const card = rows.get(id);
+          return card ? [[id, card]] : [];
+        }));
         setChaseCards((watchRows ?? []).map((row) => ({
           binder_id: null,
           binder_name: 'Chase card',
@@ -691,7 +681,7 @@ export default function CommunityScreen() {
 
       const currentUserId = myProfile?.id;
       let query = supabase
-        .from('profiles')
+        .from('profile_public_directory')
         .select('id, collector_name, avatar_preset')
         .order('collector_name', { ascending: true, nullsFirst: false })
         .limit(250);

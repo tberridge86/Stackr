@@ -1,0 +1,82 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "stackr-api-gateway-local",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-28",
+  "workers_dev": true,
+  "minify": true,
+  "placement": {
+    "mode": "smart"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "GATEWAY_STATE",
+        "class_name": "GatewayState"
+      }
+    ]
+  },
+  "exports": {
+    "GatewayState": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  },
+  "vars": {
+    "ENVIRONMENT": "development",
+    "API_VERSION": "1",
+    "ALLOWED_ORIGINS": "http://localhost:8081,http://localhost:19006",
+    "STACKR_OBSERVABILITY_EVENTS_ENABLED": "false"
+  },
+  "env": {
+    "staging": {
+      "name": "stackr-api-gateway-staging",
+      "workers_dev": true,
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "API_VERSION": "1",
+        "ALLOWED_ORIGINS": "https://staging.stackr.app",
+        "STACKR_OBSERVABILITY_EVENTS_ENABLED": "true"
+      },
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "GATEWAY_STATE",
+            "class_name": "GatewayState"
+          }
+        ]
+      }
+    },
+    "production": {
+      "name": "stackr-api-gateway",
+      "workers_dev": false,
+      "routes": [
+        {
+          "pattern": "api.stackr.app",
+          "custom_domain": true
+        }
+      ],
+      "vars": {
+        "ENVIRONMENT": "production",
+        "API_VERSION": "1",
+        "ALLOWED_ORIGINS": "https://stackr.app,https://www.stackr.app",
+        "STACKR_OBSERVABILITY_EVENTS_ENABLED": "true"
+      },
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "GATEWAY_STATE",
+            "class_name": "GatewayState"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -23,6 +23,8 @@ import { deleteTemporaryCardRectificationScan } from '../../lib/cardRectificatio
 import type { CardFrameAnalyserCorners } from '../../lib/cardVisionFrameAnalyser';
 
 const CARD_ASPECT_RATIO = 0.716;
+const COMPACT_SIDE_INSET = 22;
+const REGULAR_SIDE_INSET = 28;
 
 export default function CardCameraScreen() {
   const { theme } = useTheme();
@@ -37,12 +39,12 @@ export default function CardCameraScreen() {
   const scanAreaTop = insets.top + topControlsHeight;
   const scanAreaBottom = screenHeight - insets.bottom - bottomControlsHeight;
   const availableFrameHeight = Math.max(180, scanAreaBottom - scanAreaTop);
-  const horizontalGutter = safeWidth < 360 ? 36 : 56;
-  const maxFrameWidth = Math.max(160, Math.min(isCompact ? 292 : 320, safeWidth - horizontalGutter));
-  const CARD_WIDTH = Math.round(Math.max(160, Math.min(maxFrameWidth, availableFrameHeight * CARD_ASPECT_RATIO)));
+  const guideSideInset = safeWidth < 360 ? COMPACT_SIDE_INSET : REGULAR_SIDE_INSET;
+  const maxFrameWidth = Math.max(1, safeWidth - guideSideInset * 2);
+  const CARD_WIDTH = Math.round(Math.max(1, Math.min(maxFrameWidth, availableFrameHeight * CARD_ASPECT_RATIO)));
   const CARD_HEIGHT = Math.round(CARD_WIDTH / CARD_ASPECT_RATIO);
   const overlayTop = scanAreaTop + Math.max(0, (availableFrameHeight - CARD_HEIGHT) / 2);
-  const overlayLeft = (screenWidth - CARD_WIDTH) / 2;
+  const overlayLeft = insets.left + (safeWidth - CARD_WIDTH) / 2;
   const topButtonOffset = insets.top + 16;
   const { camera, device, torch, toggleTorch, takePhoto, focusAtPoint, isContinuous, setIsContinuous } = useScanCamera(true, true, {
     cropToCard: true,
@@ -153,6 +155,8 @@ export default function CardCameraScreen() {
   const frameBorderColor = liveAnalyser.guidance.code === 'ready'
     ? '#22C55E'
     : guidanceColor;
+  const scannerMaskColor = 'rgba(18, 10, 46, 0.72)';
+  const scannerMaskAccentColor = 'rgba(105, 56, 245, 0.18)';
 
   if (!device) {
     return (
@@ -187,12 +191,23 @@ export default function CardCameraScreen() {
         zIndex: 10,
       }} />
 
-      {/* Overlay Mask + Frame (Unchanged - Perfect!) */}
+      {/* Overlay mask and recognition guide */}
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: overlayTop, backgroundColor: 'rgba(0,0,0,0.65)' }} />
-        <View style={{ position: 'absolute', top: overlayTop + CARD_HEIGHT, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.65)' }} />
-        <View style={{ position: 'absolute', top: overlayTop, left: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
-        <View style={{ position: 'absolute', top: overlayTop, right: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: 'rgba(0,0,0,0.65)' }} />
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: overlayTop, backgroundColor: scannerMaskColor }} />
+        <View style={{ position: 'absolute', top: overlayTop + CARD_HEIGHT, left: 0, right: 0, bottom: 0, backgroundColor: scannerMaskColor }} />
+        <View style={{ position: 'absolute', top: overlayTop, left: 0, width: overlayLeft, height: CARD_HEIGHT, backgroundColor: scannerMaskColor }} />
+        <View style={{ position: 'absolute', top: overlayTop, right: 0, width: Math.max(0, screenWidth - overlayLeft - CARD_WIDTH), height: CARD_HEIGHT, backgroundColor: scannerMaskColor }} />
+
+        <View style={{
+          position: 'absolute',
+          top: overlayTop - 7,
+          left: overlayLeft - 7,
+          width: CARD_WIDTH + 14,
+          height: CARD_HEIGHT + 14,
+          borderWidth: 7,
+          borderColor: scannerMaskAccentColor,
+          borderRadius: 22,
+        }} />
 
         <View style={{
           position: 'absolute',

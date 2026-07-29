@@ -6,13 +6,16 @@ info:
 servers:
   - url: https://api.stackr.app/v1
     description: Production edge gateway
-  - url: http://localhost:3001/v1
-    description: Local backend
+  - url: http://localhost:8787/v1
+    description: Local Cloudflare Worker
 tags:
   - name: System
   - name: Catalogue
   - name: Search
   - name: Market
+  - name: Assets
+  - name: Recognition
+  - name: Admin
 paths:
   /health:
     get:
@@ -316,7 +319,497 @@ paths:
                 $ref: "#/components/schemas/SearchResponse"
         "400":
           $ref: "#/components/responses/Error"
+  /assets/manifest:
+    get:
+      tags: [Assets]
+      operationId: getAssetManifest
+      parameters:
+        - name: assetType
+          in: query
+          schema: { type: string }
+        - name: setId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: printingId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: variantId
+          in: query
+          schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Approved public catalogue asset manifest.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+  /assets/scans/presigned-upload:
+    post:
+      tags: [Assets]
+      operationId: createPrivateScanUpload
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [mimeType, byteSize]
+              properties:
+                uploadId:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+                mimeType:
+                  type: string
+                  enum: [image/jpeg, image/png, image/webp, image/heic]
+                byteSize:
+                  type: integer
+                  minimum: 1
+                  maximum: 10485760
+                expiresInSeconds:
+                  type: integer
+                  minimum: 60
+                  maximum: 3600
+      responses:
+        "200":
+          description: Short-lived private upload details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "401":
+          $ref: "#/components/responses/Error"
+        "429":
+          $ref: "#/components/responses/Error"
+  /assets/scans/upload:
+    post:
+      tags: [Assets]
+      operationId: uploadPrivateScan
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/webp:
+            schema:
+              type: string
+              format: binary
+          image/heic:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: Validated private scan asset record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "413":
+          $ref: "#/components/responses/Error"
+        "415":
+          $ref: "#/components/responses/Error"
+  /recognition/identify:
+    post:
+      tags: [Recognition]
+      operationId: identifyCard
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecognitionIdentifyRequest"
+      responses:
+        "200":
+          description: Recognition result with independently visible component scores.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "401":
+          $ref: "#/components/responses/Error"
+        "429":
+          $ref: "#/components/responses/Error"
+  /recognition/embed:
+    post:
+      tags: [Recognition]
+      operationId: embedPrivateScan
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [modelVersion, privateImageKey]
+              properties:
+                modelVersion:
+                  type: string
+                privateImageKey:
+                  type: string
+                imageMimeType:
+                  type: [string, "null"]
+                corners:
+                  type: [object, "null"]
+                consent:
+                  type: object
+                client:
+                  type: object
+      responses:
+        "200":
+          description: Server fallback embedding response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "429":
+          $ref: "#/components/responses/Error"
+  /recognition/feedback:
+    post:
+      tags: [Recognition]
+      operationId: submitRecognitionFeedback
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecognitionFeedbackRequest"
+      responses:
+        "200":
+          description: Feedback receipt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+  /recognition/shadow-comparisons:
+    post:
+      tags: [Recognition]
+      operationId: submitRecognitionShadowComparison
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecognitionShadowComparisonRequest"
+      responses:
+        "200":
+          description: De-identified shadow comparison receipt. Raw images and image URIs are forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "403":
+          $ref: "#/components/responses/Error"
+  /admin/recognition-shadow-comparisons:
+    get:
+      tags: [Admin]
+      operationId: listRecognitionShadowComparisons
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending_review, reviewed, ignored, all]
+        - name: category
+          in: query
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Private shadow-comparison review queue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "403":
+          $ref: "#/components/responses/Error"
+  /admin/recognition-shadow-comparisons/{itemId}:
+    patch:
+      tags: [Admin]
+      operationId: reviewRecognitionShadowComparison
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecognitionShadowReviewRequest"
+      responses:
+        "200":
+          description: Updated private review record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "403":
+          $ref: "#/components/responses/Error"
+  /admin/catalogue/cache/activate:
+    post:
+      tags: [Admin]
+      operationId: activateCatalogueCacheVersion
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [catalogueVersion]
+              properties:
+                catalogueVersion:
+                  type: string
+      responses:
+        "200":
+          description: Cache namespace activation result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "403":
+          $ref: "#/components/responses/Error"
+  /admin/catalogue-ingestion/{command}:
+    post:
+      tags: [Admin]
+      operationId: runCatalogueIngestionCommand
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - name: command
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [run-source, run-language, run-set, resume-import, rebuild-record]
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CatalogueIngestionCommand"
+      responses:
+        "200":
+          description: Catalogue ingestion command accepted by the durable queue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "403":
+          $ref: "#/components/responses/Error"
+  /admin/catalogue-ingestion/conflicts:
+    get:
+      tags: [Admin]
+      operationId: listCatalogueIngestionConflicts
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - name: sourceId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: conflictType
+          in: query
+          schema: { type: string }
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Quarantined catalogue conflicts.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+  /admin/catalogue-ingestion/quality-report:
+    get:
+      tags: [Admin]
+      operationId: getCatalogueQualityReport
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - name: language
+          in: query
+          schema: { $ref: "#/components/schemas/LanguageCode" }
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Catalogue quality report.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+  /admin/assets/migrate-existing:
+    post:
+      tags: [Admin]
+      operationId: migrateExistingAssets
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssetMigrationCommand"
+      responses:
+        "200":
+          description: Existing asset migration accepted by the asset-processing queue.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
+        "403":
+          $ref: "#/components/responses/Error"
+  /admin/observability/dashboard:
+    get:
+      tags: [Admin]
+      operationId: getProtectedObservabilityDashboard
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+      responses:
+        "200":
+          description: Latest protected health, quality, coverage, pricing, cost, provider and model snapshots.
+          headers:
+            Traceparent:
+              $ref: "#/components/headers/Traceparent"
+            X-Trace-Id:
+              $ref: "#/components/headers/TraceId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservabilityDashboardResponse"
+        "403":
+          $ref: "#/components/responses/Error"
+  /admin/observability/refresh:
+    post:
+      tags: [Admin]
+      operationId: refreshProtectedObservabilityDashboard
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                windowHours:
+                  type: integer
+                  minimum: 1
+                  maximum: 720
+                  default: 24
+      responses:
+        "200":
+          description: Refreshed protected dashboard snapshots.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObservabilityDashboardResponse"
+  /admin/observability/evaluations:
+    post:
+      tags: [Admin]
+      operationId: storeQualityEvaluation
+      x-stackr-internal: true
+      security:
+        - SupabaseBearer: []
+      parameters:
+        - $ref: "#/components/parameters/DeviceId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QualityEvaluationSubmission"
+      responses:
+        "201":
+          description: Aggregate quality report stored without scan pixels, OCR text or user identifiers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelope"
 components:
+  securitySchemes:
+    SupabaseBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Short-lived Supabase user access token. Service-role keys are forbidden.
   headers:
     RequestId:
       schema:
@@ -331,6 +824,14 @@ components:
     CacheControl:
       schema:
         type: string
+    Traceparent:
+      schema:
+        type: string
+        pattern: "^00-[a-f0-9]{32}-[a-f0-9]{16}-[a-f0-9]{2}$"
+    TraceId:
+      schema:
+        type: string
+        pattern: "^[a-f0-9]{32}$"
   parameters:
     IfNoneMatch:
       name: If-None-Match
@@ -338,6 +839,22 @@ components:
       required: false
       schema:
         type: string
+    DeviceId:
+      name: X-Stackr-Device-Id
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 128
     Cursor:
       name: cursor
       in: query
@@ -420,6 +937,191 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorEnvelope"
   schemas:
+    QualityEvaluationSubmission:
+      type: object
+      additionalProperties: false
+      required: [runKey, manifestSha256, environment, report]
+      properties:
+        runKey:
+          type: string
+        manifestSha256:
+          type: string
+          pattern: "^[a-f0-9]{64}$"
+        environment:
+          type: string
+          enum: [development, test, staging, production]
+        sourceCommitSha:
+          type: [string, "null"]
+        report:
+          type: object
+          description: Aggregate stackr-quality-evaluation-v1.0.0 report. Raw scan fields are forbidden.
+    ObservabilityDashboardResponse:
+      allOf:
+        - $ref: "#/components/schemas/Envelope"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [generatedAt, dashboards, releaseGates]
+              properties:
+                generatedAt:
+                  type: string
+                  format: date-time
+                dashboards:
+                  type: array
+                  minItems: 9
+                  maxItems: 9
+                  items:
+                    type: object
+                    required: [dashboardKey, status, summary, evidenceCount, limitations]
+                    properties:
+                      dashboardKey:
+                        type: string
+                      status:
+                        type: string
+                        enum: [healthy, degraded, critical, unavailable]
+                      summary:
+                        type: object
+                      evidenceCount:
+                        type: integer
+                        minimum: 0
+                      limitations:
+                        type: array
+                        items: { type: string }
+                latestQualityRun:
+                  type: [object, "null"]
+                releaseGates:
+                  type: array
+                  items:
+                    type: object
+    CatalogueIngestionCommand:
+      type: object
+      additionalProperties: false
+      properties:
+        source: { type: string }
+        language: { $ref: "#/components/schemas/LanguageCode" }
+        setId: { type: string, format: uuid }
+        providerRecordId: { type: string }
+        runKey: { type: string }
+        dryRun: { type: boolean }
+        priority: { type: integer, minimum: 0, maximum: 100 }
+        runAfter: { type: string, format: date-time }
+        idempotencyKey: { type: string }
+        requestId: { type: string }
+    AssetMigrationCommand:
+      type: object
+      additionalProperties: false
+      properties:
+        assetType: { type: string }
+        setId: { type: string, format: uuid }
+        printingId: { type: string, format: uuid }
+        variantId: { type: string, format: uuid }
+        since: { type: string, format: date-time }
+        limit: { type: integer, minimum: 1, maximum: 1000 }
+        dryRun: { type: boolean }
+        priority: { type: integer, minimum: 0, maximum: 100 }
+        runAfter: { type: string, format: date-time }
+        idempotencyKey: { type: string }
+        requestId: { type: string }
+    RecognitionIdentifyRequest:
+      type: object
+      additionalProperties: false
+      required: [modelVersion, captureQuality]
+      anyOf:
+        - required: [embedding]
+        - required: [privateImageKey]
+      properties:
+        modelVersion:
+          type: string
+        embedding:
+          type: [array, "null"]
+          maxItems: 4096
+          items:
+            type: number
+        ocrText:
+          type: [string, "null"]
+          maxLength: 2000
+        possibleCollectorNumber:
+          type: [string, "null"]
+        possibleSetCode:
+          type: [string, "null"]
+        possibleCardName:
+          type: [string, "null"]
+        detectedLanguage:
+          type: [string, "null"]
+        detectedScript:
+          type: [string, "null"]
+        captureQuality:
+          type: object
+        privateImageKey:
+          type: [string, "null"]
+        imageMimeType:
+          type: [string, "null"]
+        corners:
+          type: [object, "null"]
+        consent:
+          type: object
+        client:
+          type: object
+    RecognitionFeedbackRequest:
+      type: object
+      additionalProperties: false
+      required: [scanId, feedbackAction]
+      properties:
+        scanId:
+          type: string
+          format: uuid
+        feedbackAction:
+          type: string
+          enum: [confirm_result, choose_candidate, manual_correction, variant_correction, missing_card, bad_scan]
+        selectedVariantId:
+          type: [string, "null"]
+          format: uuid
+        correctedVariantId:
+          type: [string, "null"]
+          format: uuid
+        notes:
+          type: [string, "null"]
+          maxLength: 1000
+        consent:
+          type: object
+        client:
+          type: object
+    RecognitionShadowComparisonRequest:
+      type: object
+      additionalProperties: false
+      required: [record]
+      properties:
+        record:
+          type: object
+          required: [schemaVersion, localRecordId, anonymousScanId, rawImageRecorded, shadowSnapshot]
+          description: De-identified UAT comparison. Image bytes, image URIs and storage keys are forbidden.
+          properties:
+            schemaVersion:
+              type: string
+            localRecordId:
+              type: string
+            anonymousScanId:
+              type: string
+            rawImageRecorded:
+              type: boolean
+              const: false
+            shadowSnapshot:
+              type: object
+    RecognitionShadowReviewRequest:
+      type: object
+      additionalProperties: false
+      required: [reviewStatus]
+      properties:
+        reviewStatus:
+          type: string
+          enum: [pending_review, reviewed, ignored]
+        disagreementCategory:
+          type: string
+          maxLength: 128
+        reviewerNotes:
+          type: string
+          maxLength: 2000
     LanguageCode:
       type: string
       enum: [en, ja, zh-Hans, zh-Hant, ko]

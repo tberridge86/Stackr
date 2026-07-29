@@ -58,6 +58,7 @@ import {
   searchMarketProducts,
 } from '../../lib/productSearch';
 import type { ProductLookupType } from '../../lib/productSearch';
+import { fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -1276,13 +1277,18 @@ export default function InventoryScreen() {
       const ids = (data ?? []).map((row: any) => row.id);
       const snapshotMap = new Map<string, any>();
       if (ids.length) {
-        const { data: snapshots } = await supabase
-          .from('market_price_snapshots')
-          .select('card_id,tcg_mid,ebay_average,cardmarket_trend,snapshot_date')
-          .in('card_id', ids)
-          .order('snapshot_date', { ascending: false });
-        for (const snap of snapshots ?? []) {
-          if (!snapshotMap.has(snap.card_id)) snapshotMap.set(snap.card_id, snap);
+        const snapshots = await fetchStackrPriceSnapshots(ids);
+        for (const id of ids) {
+          const snap = snapshots.get(id);
+          if (!snap) continue;
+          snapshotMap.set(id, {
+            card_id: id,
+            tcg_mid: snap.market_central,
+            ebay_average: null,
+            cardmarket_trend: null,
+            snapshot_date: snap.snapshot_date,
+            stackr_market: snap,
+          });
         }
       }
 
@@ -1637,12 +1643,9 @@ export default function InventoryScreen() {
   }, [items, pendingStockOut, persist, recordMovement, syncBinderScanOut]);
 
   const identifyScannedCard = useCallback(async (base64Image: string) => {
-    const response = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ base64Image }),
-    });
-    return response.json().catch(() => null);
+    const { identifyCardsDetailed } = await import('../../lib/recognition/orchestrator');
+    const result = await identifyCardsDetailed([base64Image]);
+    return (result.cards[0] ?? null) as any;
   }, []);
 
   const findStockOutCandidates = useCallback((parsed: any) => {
