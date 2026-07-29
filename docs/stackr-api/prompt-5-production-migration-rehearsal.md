@@ -69,7 +69,7 @@ production tracks none of them:
 - `npm run test:migration-reconciliation`: passed.
 - `npm run test:stackr-api-v1`: passed.
 - Repository build: not run because no `build` script exists.
-- GitHub CI: pending branch push.
+- GitHub Catalogue Ingestion CI run 7: passed on the Prompt 5 pull request.
 
 ## Results
 
