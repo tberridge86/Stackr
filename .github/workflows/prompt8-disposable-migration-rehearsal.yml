@@ -1,0 +1,126 @@
+name: Prompt 8 Disposable Migration Rehearsal
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/prompt8-disposable-migration-rehearsal.yml
+      - supabase/migrations/**
+      - supabase/rehearsal/**
+
+permissions:
+  contents: read
+
+jobs:
+  production-baseline-and-75-migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+
+      - name: Verify schema-only baseline and migration count
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline=supabase/rehearsal/production-public-schema.sql
+          test "$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l)" -eq 75
+          test "$(grep -c '^CREATE TABLE ' "$baseline")" -eq 79
+          test "$(grep -c '^CREATE VIEW ' "$baseline")" -eq 6
+          test "$(grep -c '^CREATE FUNCTION ' "$baseline")" -eq 10
+          if grep -Eq '^(COPY|INSERT INTO)[[:space:]]' "$baseline"; then
+            echo 'Schema baseline unexpectedly contains table data.' >&2
+            exit 1
+          fi
+
+      - name: Start empty local Supabase
+        shell: bash
+        run: |
+          set -euo pipefail
+          mv supabase/migrations "$RUNNER_TEMP/stackr-migrations"
+          mkdir supabase/migrations
+          npx supabase@2.110.0 start \
+            --exclude studio,imgproxy,mailpit,edge-runtime,logflare,vector
+          rmdir supabase/migrations
+          mv "$RUNNER_TEMP/stackr-migrations" supabase/migrations
+
+      - name: Load schema-only production baseline
+        shell: bash
+        env:
+          PGURL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: |
+          set -euo pipefail
+          psql "$PGURL" --set ON_ERROR_STOP=1 <<'SQL'
+          create extension if not exists pg_trgm with schema extensions;
+          create extension if not exists vector with schema extensions;
+          SQL
+          psql "$PGURL" \
+            --set ON_ERROR_STOP=1 \
+            --file supabase/rehearsal/production-public-schema.sql
+
+      - name: Apply exactly 75 repository migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx supabase@2.110.0 migration up --local --include-all 2>&1 | tee "$RUNNER_TEMP/migration-up.log"
+
+      - name: Validate migration ledger and resulting schema
+        shell: bash
+        env:
+          PGURL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: |
+          set -euo pipefail
+          psql "$PGURL" --set ON_ERROR_STOP=1 <<'SQL'
+          do $$
+          declare
+            migration_count integer;
+            missing_schemas text[];
+          begin
+            select count(*) into migration_count
+            from supabase_migrations.schema_migrations
+            where version ~ '^[0-9]{14}$';
+
+            if migration_count <> 75 then
+              raise exception 'expected 75 repository migrations, found %', migration_count;
+            end if;
+
+            select array_agg(required.schema_name order by required.schema_name)
+              into missing_schemas
+            from unnest(array['catalog', 'ingest', 'market', 'ml', 'api', 'audit'])
+              as required(schema_name)
+            where to_regnamespace(required.schema_name) is null;
+
+            if missing_schemas is not null then
+              raise exception 'missing required schemas: %', missing_schemas;
+            end if;
+
+            if to_regclass('catalog.card_variants') is null
+              or to_regclass('ingest.raw_source_records') is null
+              or to_regclass('api.catalogue_cards') is null
+              or to_regclass('audit.catalogue_release_events') is null then
+              raise exception 'required canonical or release-control relation is missing';
+            end if;
+
+            if exists (select 1 from catalog.catalogue_versions)
+              or exists (select 1 from audit.catalogue_release_events) then
+              raise exception 'migration rehearsal activated or released a catalogue version';
+            end if;
+          end
+          $$;
+
+          select version, name
+          from supabase_migrations.schema_migrations
+          where version ~ '^[0-9]{14}$'
+          order by version;
+          SQL
+
+      - name: Run database tests
+        shell: bash
+        run: npx supabase@2.110.0 test db --local supabase/tests
+
+      - name: Stop disposable Supabase
+        if: always()
+        shell: bash
+        run: npx supabase@2.110.0 stop --no-backup
