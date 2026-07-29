@@ -46,6 +46,7 @@ Supported sources:
 Examples:
   npm run catalogue:ingest -- run-source --source=manual-csv --file=data/catalogue.csv
   npm run catalogue:ingest -- run-set --source=tcgdex --language=ja --setId=sv2a
+  npm run catalogue:ingest -- run-set --source=pokemon-tcg-api --language=en --setId=me5
   npm run catalogue:quality-report -- --language=ja
 `);
 }
@@ -100,13 +101,14 @@ async function main() {
   }
 
   const source = arg('source');
-  if (!source) throw new Error('Missing --source. Use --source=manual-csv, --source=manual-json or --source=tcgdex.');
+  if (!source) throw new Error(`Missing --source. Supported sources: ${supportedSourceAdapters.join(', ')}.`);
 
   const adapter = createSourceAdapter({
     source,
     file: arg('file') || undefined,
     language: arg('language') || undefined,
     licenceStatus: arg('licenceStatus') as 'approved' | 'under_review' | 'restricted' | 'denied' | 'unknown' || undefined,
+    apiKey: process.env.POKEMON_TCG_API_KEY,
   });
   const runner = new CatalogueIngestionRunner(db, adapter);
   const result = await runner.run({

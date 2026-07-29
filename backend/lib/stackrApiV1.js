@@ -712,7 +712,7 @@ export function createCatalogueV1Service(options) {
           .limit(1)
           .maybeSingle()),
         queryMaybeOne(table(supabase, 'api', 'catalogue_delta_changes')
-          .select('change_sequence')
+          .select('change_sequence,changed_at')
           .order('change_sequence', { ascending: false })
           .limit(1)
           .maybeSingle()),
@@ -738,7 +738,7 @@ export function createCatalogueV1Service(options) {
         })),
         assetBaseUrl: assetBaseUrl || null,
         modelIndexVersion,
-        generatedAt: new Date().toISOString(),
+        generatedAt: version?.updated_at ?? latest?.changed_at ?? new Date(0).toISOString(),
       };
       return { ...body, etag: etagFor(body) };
     },

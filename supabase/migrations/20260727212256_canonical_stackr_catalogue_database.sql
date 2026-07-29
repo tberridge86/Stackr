@@ -167,7 +167,7 @@ create table if not exists catalog.finishes (
   code text not null unique,
   english_label text not null,
   finish_group text not null default 'standard'
-    check (finish_group in ('standard', 'foil', 'parallel', 'edition', 'stamp', 'regional', 'other')),
+    check (finish_group in ('standard', 'foil', 'parallel', 'edition', 'promo', 'stamp', 'regional', 'other')),
   description text,
   sort_order integer not null default 100,
   source_updated_at timestamptz,
