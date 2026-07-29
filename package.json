@@ -83,6 +83,7 @@
     "test:variant-resolver": "tsx scripts/test-variant-resolver.ts",
     "test:catalogue-schema": "tsx scripts/test-canonical-catalogue-schema.ts",
     "test:catalogue-ingestion": "tsx scripts/test-catalogue-ingestion.ts",
+    "test:catalogue-release-controls": "tsx scripts/test-catalogue-release-controls.ts",
     "export:scan-lab-manifest": "tsx scripts/export-scan-lab-training-manifest.ts",
     "test:scan-lab-core": "tsx scripts/test-scan-lab-core.ts",
     "test:scan-lab-backend": "node scripts/test-scan-lab-backend-route.mjs",
