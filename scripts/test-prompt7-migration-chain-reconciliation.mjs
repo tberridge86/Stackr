@@ -61,6 +61,9 @@ assert.match(ingestion, /raw_source_records_history_idx/i);
 assert.match(ingestion, /'ultra_rare'/i);
 assert.match(ingestion, /'mega_hyper_rare'/i);
 
+const curatedPromos = read('supabase/migrations/20260728110000_curated_corocoro_mew_promos.sql');
+assert.match(curatedPromos, /alter table if exists public\.pokemon_sets[\s\S]*add column if not exists raw_data jsonb/i);
+
 const release = read('supabase/migrations/20260728203300_stackr_release_activation_controls.sql');
 assert.match(release, /create unique index if not exists catalogue_versions_single_active_idx/i);
 assert.match(release, /catalog\.catalogue_activation_readiness\(\s*p_catalogue_version_id uuid/i);
