@@ -11,6 +11,8 @@ on:
       - 'scripts/test-canonical-catalogue-schema.ts'
       - 'scripts/test-catalogue-ingestion.ts'
       - 'scripts/test-catalogue-release-controls.ts'
+      - 'scripts/test-production-migration-reconciliation.mjs'
+      - 'scripts/migration-reconciliation/**'
       - 'scripts/test-stackr-api-v1.mjs'
       - 'supabase/manual/**'
       - 'supabase/migrations/**'
@@ -53,6 +55,9 @@ jobs:
 
       - name: Test catalogue release controls
         run: npm run test:catalogue-release-controls
+
+      - name: Test production migration reconciliation
+        run: npm run test:migration-reconciliation
 
       - name: Test Stackr API v1
         run: npm run test:stackr-api-v1

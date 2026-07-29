@@ -1,110 +1,135 @@
 # Production migration reconciliation
 
-## Purpose
+## Scope
 
-This runbook establishes whether the existing production database can safely
-adopt the repository migration chain. It does not authorise catalogue data
-imports, catalogue activation, or migration-history repair.
+Prompt 5 reconciles the local migration chain with the production schema and
+rehearses it on an isolated, schema-only production baseline. It does not write
+production data, repair production migration history, deploy Railway, import
+me5, or activate a catalogue version.
 
 Production project: `oakdbbzdqwurpjnoqhmu`
 
-Validated staging project: `lmwfhvexfcoyeuoyrlco`
+Validated me5 staging project: `lmwfhvexfcoyeuoyrlco`
 
-## Current evidence
+Temporary rehearsal project: `isfybjkwvcuqpqtmkujo`
 
-- The repository contains 71 timestamped SQL migrations through
-  `20260729055009_catalogue_production_release_controls.sql`.
-- The production Supabase migration API reports zero tracked migrations.
+Evidence date: `2026-07-29`
+
+## Production state
+
+- Supabase reports zero production migration-history rows.
+- Production has 97 inventoried `public` objects: 79 tables, six views, ten
+  functions, and two sequences.
 - Production has no `catalog`, `ingest`, `market`, `ml`, `api`, or `audit`
-  relations.
-- Production contains legacy `public` catalogue tables and views that overlap
-  with early repository migrations.
-- The four production views currently reported as security-definer are
-  `catalogue_health`, `japanese_catalogue_health`, `tcg_card_printings`, and
-  `tcg_set_cover_images`.
-- Staging tracks seven catalogue-specific migrations. Two staging proxy
-  migrations are intentionally absent from the production migration chain.
+  schema.
+- `public.binders.id` is `uuid`; production contains 43 binder rows.
+- `public.inventory_movements` is absent.
+- `public.price_alerts` contains zero rows and lacks the Minty `active` column.
+- `public.pokemon_cards` contains 20,359 rows.
+- Production remained read-only throughout this work.
 
-An empty migration history is not proof that all repository migrations are
-unapplied. Existing production objects show that at least part of the legacy
-schema was created outside the tracked migration mechanism.
+An empty ledger is not evidence that the legacy schema is absent. The migration
+matrix therefore uses only `partially_present` or `not_present`; no row is
+claimed as `fingerprint_match` without a complete pre-migration fingerprint.
 
-## Non-negotiable gate
+## Migration matrix
 
-Do not run `supabase migration repair`, `supabase db push`, or an individual
-production migration until every older migration has been classified as one
-of:
+The authoritative 72-row matrix is
+`docs/stackr-api/production-migration-matrix.csv`.
 
-1. `fingerprint_match`: all relevant objects and behaviour match the migration;
-2. `partially_present`: an explicit compatibility migration is required;
-3. `not_present`: the migration must run normally;
-4. `superseded`: a reviewed replacement migration covers it without losing
-   data or permissions.
+| Classification | Rows | Meaning |
+| --- | ---: | --- |
+| `partially_present` | 50 | Production overlaps the migration, but no ledger row proves it was applied in full. |
+| `not_present` | 22 | The migration's target schema or primary objects are absent from production. |
+| `fingerprint_match` | 0 | Deliberately unused because full before-state equality was not established per migration. |
+| `superseded` | 0 | No migration is skipped or replaced. |
 
-Migration timestamps must never be marked applied solely because similarly
-named tables exist.
+Every local migration must be replayed in order. Do not use migration-history
+repair merely because a similarly named production object exists.
 
-## Read-only evidence commands
+## Rehearsal method
 
-Run from the repository root after linking the Supabase CLI to production:
+1. The me5 staging project was paused with the user's approval so a free
+   temporary project could be created without increasing recurring cost.
+2. A schema-only baseline was generated from PostgreSQL catalogue metadata.
+   No customer rows, authentication users, object contents, or secrets were
+   copied.
+3. The baseline recreated all 97 production objects. Relation signatures and
+   all ten function definitions matched the production source before replay;
+   ACL differences were ordering-only.
+4. The migration chain was replayed in timestamp order. Large migrations were
+   sent in parser-safe statement chunks because the database tool has a request
+   size and wait window. Chunk boundaries never split comments, strings, quoted
+   identifiers, or dollar-quoted function bodies.
+5. Expected schemas, compatibility repairs, release controls, and migration
+   records were checked after replay.
 
-```powershell
-npx supabase@latest migration list --linked
+The 72 source migrations produced 99 rehearsal apply records because large SQL
+files were split for transport. That does not change production migration
+versions or SQL ordering.
 
-npx supabase@latest db dump `
-  --linked `
-  --schema public `
-  --file outputs/production-public-schema-before-catalogue.sql
+## Reconciliation fixes
 
-npx supabase@latest db push `
-  --linked `
-  --dry-run `
-  --include-all
-```
+### Binder foreign key
 
-Run `supabase/manual/production_migration_baseline_audit.sql` in the SQL editor
-and retain its output with the release evidence. The script is read-only.
+`20260627120000_inventory_movements_and_binder_schema_repair.sql` initially
+failed because it declared `inventory_movements.binder_id` as `text` while the
+live `binders.id` is `uuid`. The column now uses `uuid`.
 
-The dry run is expected to report a large migration set while production
-history is empty. That output is evidence, not approval to remove `--dry-run`.
+### Legacy price alerts
 
-## Required reconciliation artefact
+`20260715143000_minty_insight_platform.sql` encountered an existing legacy
+`price_alerts` table without the Minty fields. It now adds every required field
+with guarded `ADD COLUMN IF NOT EXISTS` statements before indexes are created.
 
-Create a reviewed CSV or Markdown table with one row for every migration and
-these columns:
+### Final preflight
 
-- migration version;
-- migration name;
-- classification;
-- compared production objects;
-- definition, constraint, policy, trigger, and grant fingerprints;
-- data compatibility notes;
-- approved action;
-- reviewer;
-- evidence timestamp.
+`20260729064011_legacy_production_migration_preflight.sql` repeats those two
+checks for environments where an older migration may already be marked
+applied. It fails closed on an incompatible binder type and marks only objects
+it creates. The paired manual rollback removes only marker-owned, unused
+objects and refuses destructive rollback after writes.
 
-For data migrations, compare stable business keys and counts without exporting
-customer data. For functions and views, compare normalised definitions. For
-tables, compare columns, types, defaults, constraints, indexes, RLS state,
-policies, triggers, and grants.
+### Reward-table RLS
 
-## Safe release sequence
+The clean-chain security advisor found one error: RLS was disabled on
+`achievement_coin_rewards`. The historical migration now enables RLS and gives
+authenticated users the intended explicit read policy. Revalidation returned
+zero security errors.
 
-1. Take a production backup and record its recovery point.
-2. Complete the 71-row migration reconciliation artefact.
-3. Rehearse the approved baseline plus pending migrations on a production-like
-   clone, not the current me5 staging database.
-4. Run all repository migration, ingestion, API, and security checks on that
-   clone.
-5. Review the dry-run output and schema diff.
-6. Obtain explicit production approval for any history writes.
-7. Apply migrations in one controlled release window.
-8. Run Supabase security advisors and catalogue API smoke tests.
-9. Prepare a draft catalogue version, run the readiness function, and activate
-   only after data and licensing gates pass.
+## Rehearsal results
+
+- All 72 migrations reached the end of the ordered schema rehearsal.
+- All six canonical schemas exist after replay.
+- `inventory_movements.binder_id` is `uuid`.
+- `price_alerts.active` is `boolean`.
+- Canonical catalogue, raw-ingest provenance, release-event, recognition, and
+  market objects exist.
+- Catalogue versions and release events remain empty; nothing was activated.
+- The embedding-index tool timed out after its final chunk committed. The
+  migration ledger and expected objects confirmed the commit before execution
+  continued, so the chunk was not replayed.
+- Security advisor after the RLS correction: zero errors, 35 warnings, 12
+  informational findings.
+- Performance advisor: 326 warnings and 383 informational findings, dominated
+  by legacy unindexed foreign keys, RLS init-plan suggestions, unused indexes,
+  and overlapping permissive policies.
+
+The remaining advisor findings are recorded as inherited or follow-up work;
+they are not reported as passing. Remediation reference:
+https://supabase.com/docs/guides/database/database-linter
+
+## Limitation
+
+This was a schema-only production baseline. It proves DDL compatibility with
+the observed production schema, but it cannot prove the effects of seed,
+backfill, update, or delete statements against live customer rows. Those rows
+are marked in the matrix and require backup, dry-run review, and a controlled
+release decision.
 
 ## Decision
 
-Production migration execution remains **NO-GO**. The repository now contains
-the controls needed after reconciliation, but production history and the local
-migration chain are not yet aligned.
+Migration reconciliation is complete enough for pull-request review.
+Production execution remains **NO-GO** until the data-impact review, provider
+licensing decision, production backup, final CLI dry run, and explicit release
+approval are complete.

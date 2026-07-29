@@ -84,6 +84,7 @@
     "test:catalogue-schema": "tsx scripts/test-canonical-catalogue-schema.ts",
     "test:catalogue-ingestion": "tsx scripts/test-catalogue-ingestion.ts",
     "test:catalogue-release-controls": "tsx scripts/test-catalogue-release-controls.ts",
+    "test:migration-reconciliation": "node scripts/test-production-migration-reconciliation.mjs",
     "export:scan-lab-manifest": "tsx scripts/export-scan-lab-training-manifest.ts",
     "test:scan-lab-core": "tsx scripts/test-scan-lab-core.ts",
     "test:scan-lab-backend": "node scripts/test-scan-lab-backend-route.mjs",
