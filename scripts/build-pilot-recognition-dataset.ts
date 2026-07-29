@@ -5,7 +5,8 @@ import path from 'node:path';
 const DATASET_VERSION = 'stackr-pilot-recognition-dataset-v1.0.0';
 const GENERATED_AT = '2026-07-26T00:00:00.000Z';
 const SCANNER_PACK_MANIFEST = 'backend/data/scanner-packs/en-clip-base-v1/manifest.json';
-const PROVIDER_PROBES = 'tmp/foreign-card-audit/provider-image-probes.json';
+const PROVIDER_PROBES = process.env.STACKR_PROVIDER_PROBES_PATH
+  ?? 'tmp/foreign-card-audit/provider-image-probes.json';
 const SCAN_LAB_REVIEWED_MANIFEST = process.env.STACKR_PILOT_SCAN_LAB_MANIFEST
   ?? 'ml/data_manifests/scan-lab-reviewed-training-manifest.json';
 const OUT_MANIFEST = process.env.STACKR_PILOT_OUT_MANIFEST

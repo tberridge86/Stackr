@@ -179,6 +179,7 @@ try {
     env: {
       ...process.env,
       STACKR_PILOT_SCAN_LAB_MANIFEST: scanLabManifestPath,
+      STACKR_PROVIDER_PROBES_PATH: 'scripts/fixtures/provider-image-probes.empty.json',
       STACKR_PILOT_OUT_MANIFEST: tempDataset,
       STACKR_PILOT_OUT_HARD_NEGATIVES: tempHardNegatives,
       STACKR_PILOT_OUT_REPORT: tempReport,

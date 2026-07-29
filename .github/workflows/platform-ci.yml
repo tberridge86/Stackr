@@ -63,6 +63,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm ci --prefix gateway
       - run: npm run check:api-contract
       - run: npm run test:stackr-api-v1
       - run: npm test --prefix gateway
