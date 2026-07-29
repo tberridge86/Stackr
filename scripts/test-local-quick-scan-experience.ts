@@ -22,6 +22,12 @@ const baseFlags = {
   legacyCloudFallbackEnabled: false,
   scannerDiagnosticsEnabled: true,
   recognitionFeedbackEnabled: true,
+  stackrApiEnabled: false,
+  onDeviceEmbeddingEnabled: false,
+  stackrRecognitionPrimary: false,
+  imageFallbackEnabled: false,
+  ximilarEmergencyFallback: false,
+  scanFeedbackEnabled: true,
 };
 
 function candidate(id: string, patch: Partial<RecognitionCandidate['identity']> = {}): RecognitionCandidate {

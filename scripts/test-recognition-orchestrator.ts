@@ -17,6 +17,12 @@ const allDisabledFlags: RecognitionFeatureFlags = {
   legacyCloudFallbackEnabled: false,
   scannerDiagnosticsEnabled: true,
   recognitionFeedbackEnabled: true,
+  stackrApiEnabled: false,
+  onDeviceEmbeddingEnabled: false,
+  stackrRecognitionPrimary: false,
+  imageFallbackEnabled: false,
+  ximilarEmergencyFallback: false,
+  scanFeedbackEnabled: true,
 };
 
 const localOnlyFlags: RecognitionFeatureFlags = {
@@ -27,6 +33,7 @@ const localOnlyFlags: RecognitionFeatureFlags = {
 const localWithLegacyFallbackFlags: RecognitionFeatureFlags = {
   ...localOnlyFlags,
   legacyCloudFallbackEnabled: true,
+  ximilarEmergencyFallback: true,
 };
 
 const manifest: ModelManifest = {

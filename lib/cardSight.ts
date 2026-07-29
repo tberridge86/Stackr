@@ -81,6 +81,8 @@ export type ScanIdentifyHints = {
   detectMultiple?: boolean | null;
   remoteConditionAnalysis?: boolean | null;
   requestedXimilarEndpoint?: XimilarRecognitionEndpoint | null;
+  rectifiedImageUri?: string | null;
+  privateImageKey?: string | null;
 };
 
 const MAX_VISUAL_CANDIDATES = 3;

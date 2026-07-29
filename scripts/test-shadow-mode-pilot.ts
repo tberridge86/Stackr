@@ -45,6 +45,12 @@ const shadowFlags: RecognitionFeatureFlags = {
   legacyCloudFallbackEnabled: true,
   scannerDiagnosticsEnabled: true,
   recognitionFeedbackEnabled: true,
+  stackrApiEnabled: false,
+  onDeviceEmbeddingEnabled: false,
+  stackrRecognitionPrimary: false,
+  imageFallbackEnabled: false,
+  ximilarEmergencyFallback: true,
+  scanFeedbackEnabled: true,
 };
 
 type CandidatePatch = Omit<Partial<RecognitionCandidate>, 'identity' | 'evidence'> & {

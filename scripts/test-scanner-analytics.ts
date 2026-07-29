@@ -23,6 +23,12 @@ const legacyFlags = {
   localOcrMatcher: false,
   ximilarFallback: false,
   binderPageV2: false,
+  stackrApiEnabled: false,
+  onDeviceEmbeddingEnabled: false,
+  stackrRecognitionPrimary: false,
+  imageFallbackEnabled: false,
+  ximilarEmergencyFallback: false,
+  scanFeedbackEnabled: true,
 };
 
 const rev2Flags = {

@@ -5,6 +5,11 @@ export const PRICE_API_URL = (
   ?? process.env.EXPO_PUBLIC_PRICE_API_URL
   ?? DEFAULT_PRICE_API_URL
 ).replace(/\/$/, '');
+export const STACKR_API_URL = (
+  process.env.EXPO_PUBLIC_STACKR_API_URL
+  ?? process.env.STACKR_API_URL
+  ?? PRICE_API_URL
+).replace(/\/$/, '');
 export const BETA_TRADE_DEMO_MODE = process.env.EXPO_PUBLIC_BETA_TRADE_DEMO_MODE !== 'false';
 export const CAPTURE_GEOMETRY_V2_ENABLED = process.env.EXPO_PUBLIC_CAPTURE_GEOMETRY_V2 !== 'false';
 export const CARD_LOCALISATION_ENABLED = process.env.EXPO_PUBLIC_CARD_LOCALISATION !== 'false';

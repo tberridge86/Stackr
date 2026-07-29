@@ -118,6 +118,7 @@ export function buildLegacyRecognitionRequest(
     cards: images.map((base64, index) => ({
       id: `${anonymousScanId}:image-${index}`,
       base64,
+      uri: index === 0 ? hints?.rectifiedImageUri ?? null : null,
       sourceRole: index === 0 ? 'primary' : 'alternate',
     })),
     binderId: binderId ?? null,
