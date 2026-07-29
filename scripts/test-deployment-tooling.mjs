@@ -56,9 +56,13 @@ for (const workflowName of readdirSync('.github/workflows').filter((name) => nam
 assert.match(stagingWorkflow, /backups list/);
 assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --dry-run/);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
+assert.match(productionWorkflow, /rollback_catalogue_version_id/);
+assert.match(productionWorkflow, /--id="\$ROLLBACK_CATALOGUE_VERSION_ID"/);
+assert.doesNotMatch(productionWorkflow, /PREVIOUS_CATALOGUE_VERSION_ID/);
 assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
 assert.match(rollbackWorkflow, /release-database\.mjs index rollback/);
+assert.match(rollbackWorkflow, /catalogue requires a validated draft compensating version UUID/);
 assert.match(rollbackWorkflow, /update:rollback/);
 assert.match(ingestionWorkflow, /STACKR_CATALOGUE_INGESTION_AUTOMATION_APPROVED/);
 assert.match(ingestionWorkflow, /--setId="\$STACKR_INGEST_SET"/);

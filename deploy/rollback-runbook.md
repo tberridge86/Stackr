@@ -47,11 +47,15 @@ Railway reuses the selected deployment image and configuration. Confirm runtime 
 $env:SUPABASE_DB_URL = '<set locally; do not paste into chat>'
 $env:STACKR_RELEASE_REQUEST_ID = '<incident-id>'
 node scripts/deploy/release-database.mjs catalogue rollback `
-  --id='<known-good-catalogue-version-uuid>' `
+  --id='<validated-draft-compensating-catalogue-version-uuid>' `
   --reason='<reason>'
 Remove-Item Env:SUPABASE_DB_URL
 Remove-Item Env:STACKR_RELEASE_REQUEST_ID
 ```
+
+Catalogue rollback is forward-only. The UUID must identify a new draft version
+whose compensating mobile changes start after the active failed version. Never
+pass an old deprecated or rolled-back catalogue version.
 
 This changes the active version; it does not delete catalogue history.
 

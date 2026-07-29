@@ -15,7 +15,7 @@ on:
         type: choice
         options: [gateway, catalogue-api, recognition, catalogue, embedding-index, mobile-update]
       target_id:
-        description: Version tag, deployment ID, database UUID, or EAS update group ID
+        description: Target ID; catalogue requires a validated draft compensating version UUID
         required: true
         type: string
       confirmation:

@@ -186,6 +186,21 @@ create table if not exists public.price_alerts (
   updated_at timestamptz not null default now()
 );
 
+-- price_alerts predates Minty on the live project. CREATE TABLE IF NOT EXISTS
+-- does not add the newer columns to that legacy table, so reconcile them
+-- explicitly before creating Minty's indexes and policies.
+alter table public.price_alerts
+  add column if not exists stackr_card_id text references public.pokemon_cards(id) on delete cascade,
+  add column if not exists product_key text,
+  add column if not exists language text not null default 'en',
+  add column if not exists raw_or_graded text not null default 'raw'
+    check (raw_or_graded in ('raw', 'graded', 'sealed')),
+  add column if not exists grader text,
+  add column if not exists grade text,
+  add column if not exists target_price_gbp numeric,
+  add column if not exists active boolean not null default true,
+  add column if not exists updated_at timestamptz not null default now();
+
 create index if not exists provider_mappings_stackr_card_idx
   on public.provider_mappings(stackr_card_id, language);
 

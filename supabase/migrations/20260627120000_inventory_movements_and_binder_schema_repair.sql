@@ -15,7 +15,7 @@ create table if not exists public.inventory_movements (
   product_name text null,
   quantity integer not null default 1 check (quantity > 0),
   reason text not null,
-  binder_id text null references public.binders(id) on delete set null,
+  binder_id uuid null references public.binders(id) on delete set null,
   binder_name text null,
   collection_id text null,
   value_at_time numeric null,
