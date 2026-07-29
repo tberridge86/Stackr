@@ -1,0 +1,1 @@
+"""Stackr private recognition service."""

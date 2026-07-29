@@ -149,11 +149,26 @@ These must remain backend, CI or Edge Function only.
 | `SCANNER_PACK_MODEL` | Scanner pack generation |
 | `SCANNER_PACK_OUT_DIR` | Scanner pack generation |
 | `SCANNER_PACK_ROOT` | Scanner pack hosting/root |
+| `STACKR_RECOGNITION_ACTIVE_INDEX_VERSION` | Stage 7 private recognition service active index gate |
+| `STACKR_RECOGNITION_ALLOW_DETERMINISTIC_TEST_MODEL` | Stage 7 tests only; do not enable in production |
+| `STACKR_RECOGNITION_CATALOGUE_API_KEY` | Stage 7 private recognition service to Stackr API |
+| `STACKR_RECOGNITION_CATALOGUE_API_URL` | Stage 7 private recognition service catalogue lookup |
+| `STACKR_RECOGNITION_DATABASE_URL` | Stage 7 private recognition diagnostics database connection |
+| `STACKR_RECOGNITION_DIAGNOSTIC_RETENTION_HOURS` | Stage 7 minimised diagnostics retention |
+| `STACKR_RECOGNITION_FALLBACK_STORAGE_BUCKET` | Stage 7 private fallback image bucket |
+| `STACKR_RECOGNITION_MAX_EMBEDDING_DIMENSIONS` | Stage 7 request validation guard |
 | `STACKR_RECOGNITION_MAX_BATCH_IMAGES` | Edge recognition guard |
 | `STACKR_RECOGNITION_MAX_DIMENSION` | Edge recognition guard |
 | `STACKR_RECOGNITION_MAX_IMAGE_BYTES` | Edge recognition guard |
 | `STACKR_RECOGNITION_MAX_TOTAL_BYTES` | Edge recognition guard |
+| `STACKR_RECOGNITION_METRICS_TOKEN` | Stage 7 protected metrics endpoint |
 | `STACKR_RECOGNITION_MIN_DIMENSION` | Edge recognition guard |
+| `STACKR_RECOGNITION_MODEL_EMBEDDING_DIMENSIONS` | Stage 7 model/index validation |
+| `STACKR_RECOGNITION_MODEL_PATH` | Stage 7 server model path |
+| `STACKR_RECOGNITION_MODEL_VERSION` | Stage 7 model version validation |
+| `STACKR_RECOGNITION_REQUIRE_ACTIVE_INDEX` | Stage 7 readiness/identify gate |
+| `STACKR_RECOGNITION_SUPABASE_SERVICE_ROLE_KEY` | Stage 7 private storage fallback only |
+| `STACKR_RECOGNITION_SUPABASE_URL` | Stage 7 private storage fallback only |
 | `STACKR_SCAN_LAB_UPLOADS_ENABLED` | Scan lab backend flag |
 | `STACKR_SCAN_UPLOAD_MAX_BYTES` | Stage 4 private scan signed-upload guard |
 | `STACKR_XIMILAR_CACHE_MIN_CONFIDENCE` | Ximilar cache threshold |

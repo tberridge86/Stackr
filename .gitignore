@@ -47,6 +47,8 @@ app-example
 tmp/
 .tmp/
 .tmp_video_frames/
+__pycache__/
+*.py[cod]
 .expo-start*.log
 .expo-start*.err
 expo-qr.png

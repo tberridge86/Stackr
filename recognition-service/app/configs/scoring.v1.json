@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "stackr-recognition-scoring-config-v1.0.0",
+  "version": "stackr-recognition-scoring-v0.0.0-blocked",
+  "status": "blocked",
+  "generatedAt": "2026-07-28T00:00:00.000Z",
+  "notes": "Initial service configuration. Weights are versioned here and must be tuned against the Stage 6 benchmark set before production auto-confirm is enabled.",
+  "weights": {
+    "image": 0.34,
+    "collectorNumber": 0.18,
+    "setCode": 0.14,
+    "cardName": 0.12,
+    "language": 0.08,
+    "rarityVariant": 0.07,
+    "perceptualHash": 0.07
+  },
+  "thresholds": {
+    "autoConfirm": 0.94,
+    "probable": 0.74,
+    "ambiguousMargin": 0.06,
+    "minimumCaptureQuality": 0.45,
+    "minimumImageSimilarity": 0.35
+  },
+  "overfetch": {
+    "multiplier": 5,
+    "minimum": 25,
+    "maximum": 200
+  },
+  "calibration": {
+    "method": "none",
+    "version": "stackr-recognition-calibration-v0.0.0-blocked",
+    "ready": false,
+    "blockers": [
+      "no_selected_embedding_model",
+      "no_protected_real_capture_benchmark",
+      "no_calibrated_confidence_model"
+    ]
+  }
+}
