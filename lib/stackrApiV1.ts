@@ -177,6 +177,118 @@ export type StackrSearchResult = {
   set?: StackrSet;
 };
 
+export type StackrMarketProductType = 'raw_card' | 'graded_card' | 'sealed_product';
+export type StackrMarketEvidenceStatus =
+  | 'recent_sold_value'
+  | 'thin_sold_value'
+  | 'market_estimate'
+  | 'asking_price_indication'
+  | 'unavailable';
+
+export type StackrCardPrice = {
+  variantId: string;
+  productType: StackrMarketProductType;
+  identityKey: string | null;
+  currency: string;
+  status: StackrMarketEvidenceStatus;
+  priceType: StackrMarketEvidenceStatus;
+  estimates: {
+    low: number | null;
+    central: number | null;
+    high: number | null;
+  };
+  sample: {
+    total: number;
+    sold: number;
+    active: number;
+    sources: number;
+    dateRange: {
+      from: string | null;
+      to: string | null;
+    };
+  };
+  confidence: {
+    score: number;
+    label: 'high' | 'medium' | 'low' | 'insufficient_evidence';
+  };
+  freshness: 'fresh' | 'stale' | 'expired' | 'unknown';
+  sourceBreakdown: Array<Record<string, unknown>>;
+  outliers: Record<string, unknown>;
+  fallbackEstimate: {
+    identityKey: string;
+    reason: string;
+    exact: false;
+  } | null;
+  unavailableReason: string | null;
+  calculatedAt: string | null;
+  staleAfter: string | null;
+  estimateVersion: string;
+};
+
+export type StackrPriceHistoryObservation = {
+  observationId: string;
+  observationType: 'sold_observation' | 'active_listing';
+  variantId: string | null;
+  productType: StackrMarketProductType;
+  providerCode: string;
+  providerName: string;
+  sourceItemId: string;
+  observedPrice: number | null;
+  shippingPrice: number | null;
+  currency: string;
+  saleOrListingType: string;
+  conditionCode: string | null;
+  graderCode: string | null;
+  gradeLabel: string | null;
+  observedAt: string | null;
+  soldAt: string | null;
+  sourceUrl: string | null;
+  sourceTitle: string | null;
+  parsedMatchConfidence: number | null;
+  duplicateGroupId: string | null;
+};
+
+export type StackrMarketMover = {
+  variantId: string | null;
+  sealedProductVariantId: string | null;
+  productType: StackrMarketProductType;
+  currency: string;
+  currentEstimate: number | null;
+  previousEstimate: number | null;
+  percentageChange: number | null;
+  confidence: {
+    score: number;
+    label: string;
+  };
+  calculatedAt: string | null;
+  previousCalculatedAt: string | null;
+};
+
+export type StackrMarketOpportunity = {
+  activeListingId: string;
+  variantId: string | null;
+  sealedProductVariantId: string | null;
+  productType: StackrMarketProductType;
+  providerCode: string;
+  sourceItemId: string;
+  sourceTitle: string;
+  askingPrice: number | null;
+  shippingPrice: number | null;
+  currency: string;
+  centralEstimate: number | null;
+  lowEstimate: number | null;
+  highEstimate: number | null;
+  discountPercentage: number | null;
+  sourceUrl: string | null;
+  observedAt: string | null;
+  estimateCalculatedAt: string | null;
+  confidence: {
+    score: number;
+    label: string;
+  };
+  reason: 'active_listing_below_exact_variant_estimate';
+};
+
 type FetchLike = typeof fetch;
 
 export type StackrRecognitionLanguageCode = StackrApiLanguageCode | 'unknown';
@@ -502,6 +614,40 @@ export class StackrApiClient {
 
   cardVariants(cardId: string) {
     return this.request<{ cardId: string; variants: StackrCardVariant[] }>(`/cards/${encodeURIComponent(cardId)}/variants`);
+  }
+
+  cardPrice(variantId: string, query: {
+    productType?: StackrMarketProductType;
+    currency?: string;
+    condition?: string;
+    grader?: string;
+    grade?: string;
+  } = {}) {
+    return this.request<StackrCardPrice>(`/cards/${encodeURIComponent(variantId)}/price`, query);
+  }
+
+  cardPriceHistory(variantId: string, query: {
+    productType?: StackrMarketProductType;
+    currency?: string;
+    condition?: string;
+    grader?: string;
+    grade?: string;
+    observationType?: 'sold_observation' | 'active_listing';
+    cursor?: string | null;
+    limit?: number;
+  } = {}) {
+    return this.request<{ variantId: string; observations: StackrPriceHistoryObservation[] }>(
+      `/cards/${encodeURIComponent(variantId)}/price-history`,
+      query,
+    );
+  }
+
+  marketMovers(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
+    return this.request<{ movers: StackrMarketMover[] }>('/market/movers', query);
+  }
+
+  marketOpportunities(query: { productType?: StackrMarketProductType; currency?: string; limit?: number } = {}) {
+    return this.request<{ opportunities: StackrMarketOpportunity[] }>('/market/opportunities', query);
   }
 
   search(query: { q: string; language?: StackrApiLanguageCode; setId?: string; limit?: number }) {

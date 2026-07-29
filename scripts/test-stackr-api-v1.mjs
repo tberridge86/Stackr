@@ -350,6 +350,10 @@ for (const path of [
   '/sets/{setId}/cards',
   '/cards/{cardId}',
   '/cards/{cardId}/variants',
+  '/cards/{variantId}/price',
+  '/cards/{variantId}/price-history',
+  '/market/movers',
+  '/market/opportunities',
   '/search',
 ]) {
   assert.match(openApi, new RegExp(`^  ${path.replace(/[{}]/g, '\\$&')}:`, 'm'));
@@ -372,6 +376,10 @@ for (const method of [
   'setCards',
   'card',
   'cardVariants',
+  'cardPrice',
+  'cardPriceHistory',
+  'marketMovers',
+  'marketOpportunities',
   'search',
 ]) {
   assert.match(client, new RegExp(`\\b${method}\\(`));
