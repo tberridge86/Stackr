@@ -2,21 +2,25 @@
 
 ## Current gate
 
-This is a runbook, not an authorisation to execute. Production remains
-**NO-GO**.
+This runbook is not authorisation to execute. Production remains **NO-GO**.
 
-Blocking approvals:
+Release blockers:
 
-1. Review every matrix row containing DML against current production data.
-2. Approve provider catalogue and image legal-use status; both remain
-   `under_review`.
-3. Review the remaining Supabase security-advisor warnings.
-4. Take and verify a production backup with a recorded recovery point.
-5. Approve the final dry-run output and release window.
+1. Run and retain the authenticated CLI dry-run output for exactly 72 migrations.
+2. Verify a restorable production backup or PITR recovery point in the Supabase dashboard.
+3. Resolve or explicitly accept the four security-advisor errors.
+4. Approve the 981-row owned-card conversion and 1,288 binder links.
+5. Decide whether 26 existing later-coded achievements should receive retroactive rewards.
+6. Approve catalogue and image legal-use status; both remain `under_review`.
+7. Approve the Git commit, matrix checksum, release owner, and maintenance window.
+
+Supabase states that scheduled backups are available in **Database > Backups**
+for paid plans and that Storage object contents are not included in database
+backups: https://supabase.com/docs/guides/platform/backups
 
 ## Read-only dry run
 
-Run from the repository root using a local authenticated Supabase CLI session:
+From an authenticated local terminal at the reviewed commit:
 
 ```powershell
 npx supabase@latest link --project-ref oakdbbzdqwurpjnoqhmu
@@ -27,53 +31,61 @@ npx supabase@latest db push `
   --include-all
 ```
 
-Expected result: all 72 local versions are listed because the production
-migration ledger is empty. Any different count, SQL ordering, destructive
-statement, or new error restores the **NO-GO** decision.
+Save the output as release evidence without including the access token or
+database password. Verify exactly 72 ordered versions and compare them with
+`production-migration-matrix.csv`. Any discrepancy returns the decision to
+**NO-GO**. Do not repair or reset migration history.
 
-Do not run `migration repair`. The rehearsal proved that the corrected chain
-can replay in order; marking rows applied would discard the compatibility and
-security changes.
+## Backup gate
+
+Record all of the following before a write window is approved:
+
+- backup type: scheduled, PITR, or operator-generated logical backup;
+- successful backup timestamp and recovery point before the release;
+- retention window and expected recovery-point loss;
+- restore owner and tested restoration procedure;
+- separate plan for Storage objects, which database backup does not restore;
+- production project ref and Git commit.
+
+Prompt 6 could not inspect dashboard backup metadata through the connected
+database interface, and browser control was unavailable. Backup readiness is
+therefore unverified and blocking.
 
 ## Controlled release
 
-Only after the five blockers are approved:
+Only after every gate above is signed off:
 
-1. Freeze catalogue and schema writes for the release window.
-2. Record the production project ref, Git commit, matrix checksum, backup
-   recovery point, and dry-run output.
-3. Apply the migration chain once with `--include-all` from the reviewed commit.
-4. Stop immediately on the first error; do not repair history or skip ahead.
-5. Run the Supabase security and performance advisors.
-6. Verify auth, binder reads/writes, catalogue reads, search, manifest, and
-   delta endpoints.
-7. Confirm no catalogue version is active and no me5 data was imported by the
-   schema release.
-8. End the write freeze only after the release owner signs the checks.
+1. Freeze catalogue and schema writes.
+2. Recheck the production migration ledger is still empty.
+3. Re-run the authenticated dry run and compare its output with the approved evidence.
+4. Apply the reviewed chain exactly once from the approved commit using an interactive release process.
+5. Stop at the first error. Do not skip ahead or alter migration history.
+6. Re-run security and performance advisors.
+7. Verify auth, binder reads/writes, catalogue reads, search, manifest, and delta endpoints.
+8. Confirm no catalogue version, model, price estimate, or me5 import was activated by the schema release.
+9. End the write freeze only after the release owner signs the checks.
 
-The production apply command is intentionally not automated in CI. It requires
-an interactive release decision and must never be run from an Expo client or a
-developer branch.
+The mutating apply command is intentionally omitted from documentation and CI
+while production is **NO-GO**.
 
 ## Rollback
 
-Before catalogue activation, use the reviewed manual rollback files for the
-recent canonical migrations in reverse order. The Prompt 5 preflight rollback
-removes only objects carrying its ownership marker and refuses to drop a table
-after data has been written.
+Before catalogue activation, use the reviewed manual rollback files for recent
+canonical migrations in reverse timestamp order. The Prompt 5 preflight
+rollback removes only marker-owned additions and refuses to drop used tables.
 
-If a legacy migration changes live rows or a rollback guard refuses to proceed,
-stop and restore the verified production backup. Do not delete migration-ledger
-rows, drop customer tables, or force a history repair.
+If customer-row DML has run, a rollback guard refuses, or a legacy migration
+partially commits, stop and restore the verified backup. Do not delete
+migration-ledger rows or force history repair. Storage recovery is separate
+from database recovery.
 
-Catalogue data rollback is forward-only: create a compensating catalogue
-version with a higher change sequence. Never delete published delta history.
+Published catalogue changes use forward-only compensation with a higher change
+sequence. Never delete published delta history.
 
-## Post-schema stages
+## After schema release
 
-1. Resolve legal-use status for provider records and images.
+1. Resolve provider catalogue and image legal-use status.
 2. Run the me5 importer in production dry-run mode.
-3. Import raw records with provenance while assets remain private when under
-   review.
+3. Import raw records with complete provenance while under-review assets remain private.
 4. Create a draft catalogue version and run readiness checks.
-5. Activate only with a separate explicit approval.
+5. Activate only through a separate explicit approval.
