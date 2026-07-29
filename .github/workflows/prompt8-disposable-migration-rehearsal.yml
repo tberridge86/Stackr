@@ -40,11 +40,14 @@ jobs:
         run: |
           set -euo pipefail
           mv supabase/migrations "$RUNNER_TEMP/stackr-migrations"
+          mv supabase/seed.sql "$RUNNER_TEMP/stackr-seed.sql"
           mkdir supabase/migrations
+          : > supabase/seed.sql
           npx supabase@2.110.0 start \
-            --exclude studio,imgproxy,mailpit,edge-runtime,logflare,vector
+            --exclude gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
           rmdir supabase/migrations
           mv "$RUNNER_TEMP/stackr-migrations" supabase/migrations
+          mv "$RUNNER_TEMP/stackr-seed.sql" supabase/seed.sql
 
       - name: Load schema-only production baseline
         shell: bash
