@@ -194,6 +194,8 @@ assert.match(productionBaselineWorkflow, /head\.repo\.full_name == github\.repos
 assert.match(productionBaselineWorkflow, /head\.ref == 'chore\/api-gateway-v1'/);
 assert.match(productionBaselineWorkflow, /base\.ref == 'main'/);
 assert.match(productionBaselineWorkflow, /db dump/);
+assert.match(productionBaselineWorkflow, /no matching schemas were found/);
+assert.match(productionBaselineWorkflow, /supabase_migrations schema absent on source/);
 assert.match(productionBaselineWorkflow, /secret-scan\.mjs/);
 assert.match(productionBaselineWorkflow, /retention-days: 1/);
 assert.match(productionBaselineWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-production-baseline"/);
@@ -246,7 +248,15 @@ assert.equal(baselineEvidence.productionMutationPerformed, false);
 assert.equal(baselineEvidence.customerTableDataIncluded, false);
 assert.equal(baselineEvidence.inventory.tables, 1);
 assert.equal(baselineEvidence.inventory.policies, 1);
+assert.equal(baselineEvidence.inventory.migrationHistorySchemaPresent, true);
 assert.equal(baselineEvidence.inventory.migrationHistoryRows, 1);
+const absentHistoryEvidence = createSchemaBaselineEvidence({
+  schema: 'CREATE TABLE public.cards (id uuid);\n',
+  historySchema: '-- stackr: supabase_migrations schema absent on source\n',
+  historyData: '-- stackr: no migration history rows because schema is absent\n',
+});
+assert.equal(absentHistoryEvidence.inventory.migrationHistorySchemaPresent, false);
+assert.equal(absentHistoryEvidence.inventory.migrationHistoryRows, 0);
 assert.throws(
   () => createSchemaBaselineEvidence({
     schema: 'COPY public.cards (id) FROM stdin;\nsecret-user-row\n\\.\n',

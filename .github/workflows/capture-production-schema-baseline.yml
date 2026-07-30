@@ -61,15 +61,27 @@ jobs:
           npx --yes supabase@2.110.0 db dump \
             --db-url "$STACKR_PRODUCTION_DB_URL" \
             --file "$RUNNER_TEMP/stackr-production-baseline/production-schema.sql"
-          npx --yes supabase@2.110.0 db dump \
+          if npx --yes supabase@2.110.0 db dump \
             --db-url "$STACKR_PRODUCTION_DB_URL" \
             --schema supabase_migrations \
-            --file "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.sql"
-          npx --yes supabase@2.110.0 db dump \
-            --db-url "$STACKR_PRODUCTION_DB_URL" \
-            --schema supabase_migrations \
-            --data-only --use-copy \
-            --file "$RUNNER_TEMP/stackr-production-baseline/migration-history-data.sql"
+            --file "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.sql" \
+            2>"$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr"; then
+            npx --yes supabase@2.110.0 db dump \
+              --db-url "$STACKR_PRODUCTION_DB_URL" \
+              --schema supabase_migrations \
+              --data-only --use-copy \
+              --file "$RUNNER_TEMP/stackr-production-baseline/migration-history-data.sql"
+          elif grep -q 'no matching schemas were found' \
+            "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr"; then
+            printf '%s\n' '-- stackr: supabase_migrations schema absent on source' \
+              > "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.sql"
+            printf '%s\n' '-- stackr: no migration history rows because schema is absent' \
+              > "$RUNNER_TEMP/stackr-production-baseline/migration-history-data.sql"
+          else
+            cat "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr" >&2
+            exit 1
+          fi
+          rm -f "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr"
 
       - name: Reject secret-bearing baseline artifacts
         run: >-

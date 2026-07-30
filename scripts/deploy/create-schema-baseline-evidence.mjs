@@ -73,6 +73,9 @@ export function createSchemaBaselineEvidence({ schema, historySchema, historyDat
       triggers: countMatches(schema, /^CREATE TRIGGER\s+/gim),
       policies: countMatches(schema, /^CREATE POLICY\s+/gim),
       extensions: countMatches(schema, /^CREATE EXTENSION\s+/gim),
+      migrationHistorySchemaPresent: !historySchema.includes(
+        'stackr: supabase_migrations schema absent on source',
+      ),
       migrationHistoryRows: copyRowCount(historyData),
     },
   };
