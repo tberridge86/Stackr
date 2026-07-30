@@ -5,12 +5,12 @@
   "supabase": {
     "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
     "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
-    "localMigrationFileCount": 78,
+    "localMigrationFileCount": 79,
     "productionMigrationHistoryCount": 0,
     "stagingMigrationHistoryCount": 20,
-    "migrationHistoryStatus": "isolated_candidate_aligned_staging_promotion_blocked",
+    "migrationHistoryStatus": "isolated_candidate_stale_staging_promotion_blocked",
     "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-07-30.json",
-    "migrationReconciliationEvidenceSha256": "eb55301414ef623a23ff6193231944fa6f449760ca7f0b704b88940082e0dafa",
+    "migrationReconciliationEvidenceSha256": "06b62624a86b8e512a3717d7b9af381275b9dcffec2624749c21d2154d0bdaea",
     "stagingSecurityAdvisorFindingCountAfterRollback": 0,
     "productionPhysicalBackupCount": 8,
     "stagingPhysicalBackupCount": 11,
@@ -49,10 +49,11 @@
     "blockers": []
   },
   "migrationCandidate": {
-    "status": "aligned_security_hardened_not_promotable",
+    "status": "stale_security_hardened_not_promotable",
     "projectRef": "krjttpmthxkfsbqksxci",
     "workflowRunId": 30554631150,
     "repositoryMigrationCount": 78,
+    "missingCurrentMigrationCount": 1,
     "databaseTableCount": 179,
     "securityAdvisorFindingCount": 24,
     "securityAdvisorErrorCount": 0,
@@ -115,7 +116,8 @@
   "releaseReadiness": {
     "status": "blocked",
     "blockers": [
-      "aligned_candidate_not_promoted_to_staging",
+      "migration_candidate_is_1_migration_stale",
+      "stale_candidate_not_promoted_to_staging",
       "staging_catalogue_data_transfer_not_rehearsed",
       "destructive_staging_rebuild_not_approved",
       "model_benchmark_not_complete",

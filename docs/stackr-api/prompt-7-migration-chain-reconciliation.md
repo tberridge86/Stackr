@@ -11,15 +11,15 @@ quality, application-migration, release-control, and critical-containment work.
 Safeguards present only in Prompt 6 are folded into existing current-chain
 migrations to avoid competing timestamps. The later staging reconciliation
 initially produced a 76-migration chain. The latest base branch adds legacy
-catalogue operational-access hardening and function/storage access hardening,
-producing the current 78-migration chain.
+catalogue operational-access hardening, function/storage access hardening, and
+raw-source-history preservation, producing the current 79-migration chain.
 
 ## Nine Differences
 
 The complete decision matrix is in
 `docs/stackr-api/prompt-7-migration-differences.csv`.
 
-Eight current-only migrations are retained:
+Nine current-only migrations are retained:
 
 1. Curated CoroCoro Mew metadata coverage.
 2. Stackr API gateway controls.
@@ -29,6 +29,7 @@ Eight current-only migrations are retained:
 6. Critical security containment, expanded in place.
 7. Legacy catalogue operational-access hardening from the latest base branch.
 8. Function and Storage access hardening from the latest base branch.
+9. Raw source record history preservation from the latest base branch.
 
 Three Prompt 6-only migrations are intentionally not copied:
 
@@ -99,8 +100,8 @@ marker-owned compatibility objects.
 
 `scripts/test-prompt7-migration-chain-reconciliation.mjs` requires:
 
-- exactly 78 migration files;
-- all eight current-only migrations;
+- exactly 79 migration files;
+- all nine current-only migrations;
 - no duplicate copy of the three folded Prompt 6 migrations;
 - the restored historical fixes;
 - ingestion provenance and rarity safeguards;
@@ -166,9 +167,9 @@ npx --yes supabase@2.110.0 db push --linked --dry-run --include-all
 
 At that pre-merge checkpoint it reported `dryRun: true` and exactly 75 pending
 migrations. The later taxonomy reconciliation migration brought the reviewed
-branch to 76 files. The latest legacy catalogue operational-access and
-function/storage access hardening migrations now bring the current chain to 78
-files. No hosted-production command has validated the 78-file chain. The
+branch to 76 files. The later security hardening migrations brought the chain to
+78 files, and raw-source-history preservation now brings the current chain to 79
+files. No hosted-production command has validated the 79-file chain. The
 historical dry run did not apply schema, data, seed, role, storage,
 catalogue-version, or deployment changes.
 
@@ -214,18 +215,20 @@ run `30554631150` restored the checksum-pinned production baseline to the
 isolated candidate and executed all 78 migrations. The candidate contains 78
 migration-history entries and 179 tables; Supabase advisors report zero errors,
 9 accepted warnings and 15 informational notices. Neither staging nor production
-was mutated. The aligned candidate remains non-promotable until the authorised
-staging catalogue transfer is rehearsed and any destructive staging rebuild is
-separately approved.
+was mutated. The raw-source-history migration was added afterward, so the
+candidate is one migration stale. It remains non-promotable until all 79
+migrations and the authorised staging catalogue transfer are rehearsed and any
+destructive staging rebuild is separately approved.
 
 ## Production Decision
 
 **NO-GO for production application.** Backup recovery and isolated clean-room
-execution of all 78 migrations are verified, but production remains explicitly
-unauthorised. The draft pull request must pass fresh GitHub CI and be reviewed,
-and the hosted production migration ledger and dry run must be rechecked against
-the final commit before any separately approved cutover. No production push is
-authorised by this document.
+execution through 78 migrations are verified, but the current 79-file chain has
+not been rehearsed. Production remains explicitly unauthorised. The draft pull
+request must pass fresh GitHub CI and be reviewed, the full chain must be
+rehearsed, and the hosted production migration ledger and dry run must be
+rechecked against the final commit before any separately approved cutover. No
+production push is authorised by this document.
 
 ## Rollback
 
@@ -237,8 +240,9 @@ version or make private scan storage public as a rollback technique.
 
 ## Exact Next Step
 
-Commit and push the reconciled branch, then require fresh GitHub CI on the draft
-pull request. After review, and only with separate production authorisation,
-repeat the read-only hosted migration-history comparison and the linked 78-file
-dry run. Do not merge the draft pull request or run a non-dry-run production
-database push yet.
+Commit and push the reconciled branch, require fresh GitHub CI on the draft pull
+request, and rehearse all 79 migrations against the isolated production-shaped
+candidate. After review, and only with separate production authorisation, repeat
+the read-only hosted migration-history comparison and the linked 79-file dry
+run. Do not merge the draft pull request or run a non-dry-run production database
+push yet.

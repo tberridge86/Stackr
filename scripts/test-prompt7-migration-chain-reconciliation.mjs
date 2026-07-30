@@ -7,7 +7,7 @@ const migrationNames = readdirSync(new URL('../supabase/migrations', import.meta
   .filter((name) => name.endsWith('.sql'))
   .sort();
 
-assert.equal(migrationNames.length, 78, 'Prompt 7 must preserve the reconciled 78-migration chain');
+assert.equal(migrationNames.length, 79, 'Prompt 7 must preserve the reconciled 79-migration chain');
 
 for (const retainedMigration of [
   '20260728110000_curated_corocoro_mew_promos.sql',
@@ -19,6 +19,7 @@ for (const retainedMigration of [
   '20260730080047_reconcile_catalogue_seed_encoding_and_finish_taxonomy.sql',
   '20260730144626_harden_legacy_catalogue_operational_access.sql',
   '20260730145958_harden_function_and_storage_access.sql',
+  '20260730153923_preserve_raw_source_record_history.sql',
 ]) {
   assert.ok(migrationNames.includes(retainedMigration), `${retainedMigration} must remain in the chain`);
 }
