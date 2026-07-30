@@ -53,8 +53,14 @@ jobs:
           test -n "$SUPABASE_RESTORE_DB_URL"
           test -n "$SUPABASE_STAGING_SECRET_KEY"
           test -n "$SUPABASE_RESTORE_SECRET_KEY"
-          case "$SUPABASE_DB_URL" in *"$SUPABASE_PROJECT_REF"*) ;; *) exit 1 ;; esac
-          case "$SUPABASE_RESTORE_DB_URL" in *"$SUPABASE_RESTORE_PROJECT_REF"*) ;; *) exit 1 ;; esac
+          case "$SUPABASE_DB_URL" in
+            *"$SUPABASE_PROJECT_REF"*) ;;
+            *) echo '::error::source_database_url_project_mismatch'; exit 1 ;;
+          esac
+          case "$SUPABASE_RESTORE_DB_URL" in
+            *"$SUPABASE_RESTORE_PROJECT_REF"*) ;;
+            *) echo '::error::restore_database_url_project_mismatch'; exit 1 ;;
+          esac
 
       - name: Install pinned dependencies
         run: npm ci
