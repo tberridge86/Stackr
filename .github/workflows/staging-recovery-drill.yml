@@ -78,6 +78,8 @@ jobs:
             --db-url "$STACKR_SOURCE_DB_URL" \
             --file "$RUNNER_TEMP/stackr-recovery/backups/roles.sql" \
             --role-only
+          node scripts/deploy/sanitize-supabase-role-dump.mjs \
+            "$RUNNER_TEMP/stackr-recovery/backups/roles.sql"
           npx --yes supabase@2.110.0 db dump \
             --db-url "$STACKR_SOURCE_DB_URL" \
             --file "$RUNNER_TEMP/stackr-recovery/backups/schema.sql"

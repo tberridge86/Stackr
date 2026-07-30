@@ -138,6 +138,7 @@ assert.match(recoveryWorkflow, /kynqqwyctohrjqloyedh/);
 assert.match(recoveryWorkflow, /source_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /restore_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /prepare-postgres-urls\.mjs/);
+assert.match(recoveryWorkflow, /sanitize-supabase-role-dump\.mjs/);
 assert.match(recoveryWorkflow, /STACKR_SOURCE_DB_URL/);
 assert.match(recoveryWorkflow, /STACKR_RESTORE_DB_URL/);
 assert.doesNotMatch(recoveryWorkflow, /secrets\.SUPABASE_ACCESS_TOKEN/);
@@ -164,6 +165,26 @@ assert.equal(
 assert.throws(
   () => normalizePostgresUrl(rawPasswordUrl.normalized, 'anotherproject'),
   /database_url_project_mismatch/,
+);
+
+const { sanitizeRoleDumpText } = await import('./deploy/sanitize-supabase-role-dump.mjs');
+const roleDump = [
+  'CREATE ROLE "stackr_ingest";',
+  'ALTER ROLE "stackr_ingest" SET "statement_timeout" TO \'30s\';',
+  'ALTER ROLE "supabase_admin" SET "statement_timeout" TO \'2min\';',
+  'GRANT "stackr_ingest" TO "supabase_admin";',
+  'RESET ALL;',
+].join('\n');
+const sanitizedRoleDump = sanitizeRoleDumpText(roleDump);
+assert.equal(sanitizedRoleDump.removedStatementCount, 2);
+assert.match(sanitizedRoleDump.output, /^CREATE ROLE "stackr_ingest";/m);
+assert.match(sanitizedRoleDump.output, /^ALTER ROLE "stackr_ingest"/m);
+assert.doesNotMatch(sanitizedRoleDump.output, /^ALTER ROLE "supabase_admin"/m);
+assert.doesNotMatch(sanitizedRoleDump.output, /^GRANT "stackr_ingest" TO "supabase_admin"/m);
+assert.equal(
+  sanitizeRoleDumpText(sanitizedRoleDump.output).removedStatementCount,
+  0,
+  'sanitising a role dump must be idempotent',
 );
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /versions deploy/);
