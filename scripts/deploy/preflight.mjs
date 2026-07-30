@@ -6,6 +6,7 @@ const requiredPaths = [
   '.github/workflows/gateway-ci.yml',
   '.github/workflows/deploy-staging.yml',
   '.github/workflows/deploy-production.yml',
+  '.github/workflows/staging-recovery-drill.yml',
   '.github/workflows/rollback.yml',
   'backend/railway.json',
   'gateway/wrangler.jsonc',

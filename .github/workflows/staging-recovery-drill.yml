@@ -1,0 +1,135 @@
+name: Stackr Staging Recovery Drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RESTORE STAGING BACKUP
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-staging-recovery-drill
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    if: inputs.confirmation == 'RESTORE STAGING BACKUP'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: staging
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_RESTORE_DB_URL }}
+      SUPABASE_STAGING_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      SUPABASE_RESTORE_SECRET_KEY: ${{ secrets.SUPABASE_RESTORE_SECRET_KEY }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      SUPABASE_RESTORE_PROJECT_REF: ${{ vars.SUPABASE_RESTORE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate isolated recovery target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_PROJECT_REF" = "lmwfhvexfcoyeuoyrlco"
+          test "$SUPABASE_RESTORE_PROJECT_REF" = "kynqqwyctohrjqloyedh"
+          test "$SUPABASE_PROJECT_REF" != "$SUPABASE_RESTORE_PROJECT_REF"
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          test -n "$SUPABASE_DB_URL"
+          test -n "$SUPABASE_RESTORE_DB_URL"
+          test -n "$SUPABASE_STAGING_SECRET_KEY"
+          test -n "$SUPABASE_RESTORE_SECRET_KEY"
+          case "$SUPABASE_DB_URL" in *"$SUPABASE_PROJECT_REF"*) ;; *) exit 1 ;; esac
+          case "$SUPABASE_RESTORE_DB_URL" in *"$SUPABASE_RESTORE_PROJECT_REF"*) ;; *) exit 1 ;; esac
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Create current ephemeral Postgres backups
+        shell: bash
+        run: |
+          set -euo pipefail
+          export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
+          mkdir -p "$RUNNER_TEMP/stackr-recovery/backups" "$STACKR_RECOVERY_EVIDENCE_DIR"
+          npx --yes supabase@2.110.0 backups list \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --output json > "$STACKR_RECOVERY_EVIDENCE_DIR/physical-backups.json"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-recovery/backups/roles.sql" \
+            --role-only
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-recovery/backups/schema.sql"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
+            --use-copy --data-only \
+            -x storage.buckets_vectors -x storage.vector_indexes
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-recovery/backups/history-schema.sql" \
+            --schema supabase_migrations
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-recovery/backups/history-data.sql" \
+            --use-copy --data-only --schema supabase_migrations
+          node scripts/deploy/verify-backup.mjs \
+            --physical="$STACKR_RECOVERY_EVIDENCE_DIR/physical-backups.json" \
+            --schema="$RUNNER_TEMP/stackr-recovery/backups/schema.sql" \
+            --data="$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
+            --require-physical
+
+      - name: Restore Postgres backup into isolated project
+        shell: bash
+        env:
+          POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --env TARGET_DB_URL="$SUPABASE_RESTORE_DB_URL" \
+            --volume "$RUNNER_TEMP/stackr-recovery/backups:/backup:ro" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --command "drop schema if exists supabase_migrations cascade"; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "set session_replication_role = replica" --file /backup/data.sql --file /backup/history-schema.sql --file /backup/history-data.sql'
+
+      - name: Verify Postgres restore fingerprints
+        shell: bash
+        run: |
+          set -euo pipefail
+          export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
+          node scripts/deploy/verify-postgres-restore.mjs
+
+      - name: Backup and restore-test private Storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
+          node scripts/deploy/backup-restore-storage-fixture.mjs
+
+      - name: Record non-secret recovery evidence
+        if: always()
+        shell: bash
+        run: |
+          if [ -d "$RUNNER_TEMP/stackr-recovery/evidence" ]; then
+            {
+              echo '## Staging recovery evidence'
+              echo '```json'
+              for file in "$RUNNER_TEMP"/stackr-recovery/evidence/*-evidence.json; do
+                [ -f "$file" ] && cat "$file"
+              done
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Remove database and object backup bytes
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/stackr-recovery"
