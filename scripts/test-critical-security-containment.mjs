@@ -9,6 +9,12 @@ const legacyCatalogueHardening = read(
 const legacyCatalogueRollback = read(
   'supabase/manual/rollback_20260730144626_harden_legacy_catalogue_operational_access.sql',
 );
+const functionStorageHardening = read(
+  'supabase/migrations/20260730145958_harden_function_and_storage_access.sql',
+);
+const functionStorageRollback = read(
+  'supabase/manual/rollback_20260730145958_harden_function_and_storage_access.sql',
+);
 const profileCutover = read('supabase/manual/finalize_profile_privacy_cutover.sql');
 
 assert.match(migration, /create table if not exists public\.profile_public_directory/i);
@@ -146,5 +152,64 @@ assert.doesNotMatch(
   /create policy[^;]+on public\.(?:achievement_coin_rewards|price_refresh_queue|price_refresh_runs)/i,
   'service-owned operational tables must not gain client RLS policies',
 );
+
+for (const signature of [
+  'accept_trade_offer\\(uuid\\)',
+  'enforce_wanted_card_limit\\(\\)',
+  'recalculate_binder_values\\(uuid\\)',
+  'set_updated_at\\(\\)',
+  'touch_updated_at\\(\\)',
+  'trigger_recalculate_binder_values\\(\\)',
+  'update_binder_card_prices\\(\\)',
+  'touch_scan_lab_capture_updated_at\\(\\)',
+  'touch_recognition_feedback_updated_at\\(\\)',
+  'touch_recognition_shadow_mode_updated_at\\(\\)',
+]) {
+  assert.match(
+    functionStorageHardening,
+    new RegExp(`alter function public\\.${signature}\\s+set search_path = pg_catalog, public, pg_temp`, 'i'),
+    `${signature} must have a fixed search path`,
+  );
+}
+
+assert.match(
+  functionStorageHardening,
+  /drop policy if exists "Stackr catalogue public assets are readable" on storage\.objects/i,
+);
+assert.doesNotMatch(functionStorageHardening, /create policy "Stackr catalogue public assets are readable"/i);
+
+for (const signature of [
+  'award_achievement_unlock_coins\\(\\)',
+  'handle_new_user\\(\\)',
+  'prevent_user_feedback_review_field_changes\\(\\)',
+  'queue_scanner_feedback_review\\(\\)',
+]) {
+  assert.match(
+    functionStorageHardening,
+    new RegExp(`revoke all on function public\\.${signature} from public, anon, authenticated`, 'i'),
+    `${signature} must not be callable as a client RPC`,
+  );
+}
+
+for (const signature of [
+  'accept_trade_offer\\(uuid\\)',
+  'admin_binder_directory\\(\\)',
+  'is_recognition_feedback_reviewer\\(\\)',
+  'is_scan_lab_admin\\(\\)',
+  'purchase_cosmetic\\(text\\)',
+]) {
+  assert.match(
+    functionStorageHardening,
+    new RegExp(`revoke all on function public\\.${signature} from public, anon`, 'i'),
+    `${signature} must reject anonymous RPC access`,
+  );
+  assert.match(
+    functionStorageHardening,
+    new RegExp(`grant execute on function public\\.${signature} to authenticated, service_role`, 'i'),
+    `${signature} must preserve authenticated and backend access`,
+  );
+}
+
+assert.match(functionStorageRollback, /create policy "Stackr catalogue public assets are readable"/i);
 
 console.log('Critical security containment contract passed.');
