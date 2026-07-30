@@ -99,6 +99,9 @@ jobs:
           node scripts/deploy/verify-backup.mjs \
             --schema="$RUNNER_TEMP/stackr-recovery/backups/schema.sql" \
             --data="$RUNNER_TEMP/stackr-recovery/backups/data.sql"
+          node scripts/deploy/prepare-restore-cleanup.mjs \
+            "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
+            "$RUNNER_TEMP/stackr-recovery/backups/cleanup.sql"
 
       - name: Restore Postgres backup into isolated project
         shell: bash
@@ -110,7 +113,7 @@ jobs:
             --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
             --volume "$RUNNER_TEMP/stackr-recovery/backups:/backup:ro" \
             "$POSTGRES_IMAGE" \
-            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --command "drop schema if exists supabase_migrations cascade"; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "set session_replication_role = replica" --file /backup/data.sql --file /backup/history-schema.sql --file /backup/history-data.sql'
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "set session_replication_role = replica" --file /backup/data.sql --file /backup/history-schema.sql --file /backup/history-data.sql'
 
       - name: Verify Postgres restore fingerprints
         shell: bash

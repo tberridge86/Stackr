@@ -139,13 +139,14 @@ assert.match(recoveryWorkflow, /source_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /restore_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(recoveryWorkflow, /sanitize-supabase-role-dump\.mjs/);
+assert.match(recoveryWorkflow, /prepare-restore-cleanup\.mjs/);
 assert.match(recoveryWorkflow, /STACKR_SOURCE_DB_URL/);
 assert.match(recoveryWorkflow, /STACKR_RESTORE_DB_URL/);
 assert.doesNotMatch(recoveryWorkflow, /secrets\.SUPABASE_ACCESS_TOKEN/);
 assert.doesNotMatch(recoveryWorkflow, /vars\.SUPABASE_(?:PROJECT_REF|RESTORE_PROJECT_REF)/);
 assert.match(recoveryWorkflow, /verify-postgres-restore\.mjs/);
 assert.match(recoveryWorkflow, /backup-restore-storage-fixture\.mjs/);
-assert.match(recoveryWorkflow, /drop schema if exists supabase_migrations cascade/);
+assert.match(recoveryWorkflow, /--file \/backup\/cleanup\.sql/);
 assert.match(recoveryWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-recovery"/);
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
@@ -186,6 +187,21 @@ assert.equal(
   0,
   'sanitising a role dump must be idempotent',
 );
+
+const { buildRestoreCleanupSql } = await import('./deploy/prepare-restore-cleanup.mjs');
+const cleanup = buildRestoreCleanupSql([
+  'COPY "public"."cards" ("id") FROM stdin;',
+  'COPY "catalog"."sets" ("id") FROM stdin;',
+  'COPY "auth"."users" ("id") FROM stdin;',
+  'COPY "storage"."buckets" ("id") FROM stdin;',
+].join('\n'));
+assert.equal(cleanup.droppedSchemaCount, 8);
+assert.equal(cleanup.truncatedTableCount, 2);
+assert.match(cleanup.sql, /DROP SCHEMA IF EXISTS "public" CASCADE;/);
+assert.match(cleanup.sql, /CREATE SCHEMA "public" AUTHORIZATION "postgres";/);
+assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
+assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "storage"\."buckets" CASCADE;/);
+assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "public"\."cards"/);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
