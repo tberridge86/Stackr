@@ -155,6 +155,7 @@ const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
+const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
@@ -201,6 +202,18 @@ assert.match(productionBaselineWorkflow, /retention-days: 1/);
 assert.match(productionBaselineWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-production-baseline"/);
 assert.doesNotMatch(productionBaselineWorkflow, /db push|migration repair|psql|SUPABASE_ACCESS_TOKEN/);
 assert.doesNotMatch(productionBaselineWorkflow, /upload-artifact@v\d/);
+assert.match(baselineMigrationTrialWorkflow, /environment: staging/);
+assert.match(baselineMigrationTrialWorkflow, /secrets\.SUPABASE_RESTORE_DB_URL/);
+assert.match(baselineMigrationTrialWorkflow, /kynqqwyctohrjqloyedh/);
+assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
+assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
+assert.match(baselineMigrationTrialWorkflow, /head\.repo\.full_name == github\.repository/);
+assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --dry-run/);
+assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL"/);
+assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-baseline-trial"/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|SUPABASE_DB_URL|--linked/);
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
 const rawPasswordUrl = normalizePostgresUrl(
@@ -236,6 +249,35 @@ try {
   );
 } finally {
   rmSync(baselineUrlTemp, { recursive: true, force: true });
+}
+
+const reconciliationUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-reconciliation-url-test-'));
+try {
+  const reconciliationEnvironmentPath = path.join(reconciliationUrlTemp, 'github.env');
+  const { prepareIsolatedReconciliationUrl } = await import('./deploy/prepare-isolated-reconciliation-url.mjs');
+  const preparedReconciliation = prepareIsolatedReconciliationUrl({
+    connectionString: 'postgresql://postgres.restoreref:p=a@#ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    projectRef: 'restoreref',
+    productionProjectRef: 'productionref',
+    stagingProjectRef: 'stagingref',
+    environmentPath: reconciliationEnvironmentPath,
+  });
+  assert.equal(
+    readFileSync(reconciliationEnvironmentPath, 'utf8'),
+    `STACKR_RESTORE_DB_URL=${preparedReconciliation.normalized}\n`,
+  );
+  assert.throws(
+    () => prepareIsolatedReconciliationUrl({
+      connectionString: 'postgresql://postgres.productionref:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+      projectRef: 'productionref',
+      productionProjectRef: 'productionref',
+      stagingProjectRef: 'stagingref',
+      environmentPath: reconciliationEnvironmentPath,
+    }),
+    /reconciliation_target_not_isolated/,
+  );
+} finally {
+  rmSync(reconciliationUrlTemp, { recursive: true, force: true });
 }
 
 const { createSchemaBaselineEvidence } = await import('./deploy/create-schema-baseline-evidence.mjs');
