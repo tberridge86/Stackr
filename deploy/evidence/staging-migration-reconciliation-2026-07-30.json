@@ -1,10 +1,10 @@
 {
   "schemaVersion": "stackr-migration-reconciliation-v1.0.0",
-  "capturedAt": "2026-07-30T15:07:20.000Z",
-  "sourceCommitHash": "7950fa2d75f2f271cf1e6a009eb672ef2c0be1e3",
+  "capturedAt": "2026-07-30T15:59:56.472Z",
+  "sourceCommitHash": "d9401ced50a87f9fac806fd5ae580b442759030d",
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
-  "status": "isolated_candidate_stale_staging_promotion_blocked",
+  "status": "isolated_candidate_aligned_staging_promotion_blocked",
   "reconciliationComplete": false,
   "productionMutationPerformed": false,
   "stagingMutationPerformed": false,
@@ -59,7 +59,7 @@
     "staging_enable_vector_extension"
   ],
   "unverifiedRepositoryMigrationCount": 76,
-  "isolatedCandidateUnverifiedRepositoryMigrationCount": 1,
+  "isolatedCandidateUnverifiedRepositoryMigrationCount": 0,
   "repositoryMigrationGroups": {
     "preCanonicalLegacyCount": 63,
     "canonicalAndLaterCount": 16,
@@ -96,18 +96,15 @@
   },
   "dryRun": {
     "command": "npx supabase@2.110.0 db push --linked --dry-run",
-    "observedRepositoryMigrationCount": 78,
-    "wouldPushCount": 78,
-    "currentChainVerified": false,
+    "wouldPushCount": 79,
     "safeToApply": false,
-    "reason": "The successful isolated rehearsal predates the raw-source-history migration. The current 79-file chain requires a fresh dry run and rehearsal before any application."
+    "reason": "The CLI compares timestamps only and would replay all files, including three whose effects are already represented under different staging versions."
   },
   "isolatedCandidate": {
     "projectRef": "krjttpmthxkfsbqksxci",
     "branchId": "44bb0f63-5f96-41eb-8c90-48e60e680d7a",
-    "workflowRunId": 30554631150,
-    "repositoryMigrationCount": 78,
-    "currentChainAligned": false,
+    "workflowRunId": 30557905336,
+    "repositoryMigrationCount": 79,
     "databaseTableCount": 179,
     "migrationHistoryAligned": true,
     "productionBaselineRestored": true,
@@ -116,9 +113,10 @@
     "securityAdvisorErrorCount": 0,
     "securityAdvisorWarningCount": 9,
     "securityAdvisorInfoCount": 15,
+    "securityAdvisorLastSuccessfulMigrationCount": 79,
+    "securityAdvisorRerunStatus": "completed",
     "promotionApproved": false,
     "promotionBlockers": [
-      "authorised_staging_catalogue_data_transfer_not_rehearsed",
       "destructive_staging_rebuild_not_approved"
     ],
     "acceptedSecurityDefinerWarnings": {
@@ -138,6 +136,25 @@
       "reason": "These functions are required by current authenticated workflows or RLS policies and enforce auth.uid ownership, admin membership, or read-only active scanner configuration. Anonymous access was removed from every function that did not require it."
     }
   },
+  "stagingCataloguePreservation": {
+    "status": "rehearsed_and_rolled_back",
+    "workflowRunId": 30558754116,
+    "sourceCommitHash": "d9401ced50a87f9fac806fd5ae580b442759030d",
+    "sourceProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "targetProjectRef": "krjttpmthxkfsbqksxci",
+    "selectedTableCount": 20,
+    "sourceRowCount": 1836,
+    "matchedSourceRowCount": 1836,
+    "targetRollbackVerified": true,
+    "productionMutationPerformed": false,
+    "stagingMutationPerformed": false,
+    "rawSourceRecordDuplicateGroupCount": 122,
+    "rawSourceRecordHistoricalExtraRowCount": 122,
+    "rawSourceRecordChangedPayloadGroupCount": 120,
+    "rawSourceRecordMultipleImportRunGroupCount": 122,
+    "legacyRawRecordIdentityIndexPresent": false,
+    "importRunRawRecordIdentityIndexPresent": true
+  },
   "stagingVerification": {
     "vectorExtensionVersion": "0.8.2",
     "vectorExtensionSchema": "extensions",
@@ -156,25 +173,25 @@
     "corrected_catalogue_language_seed_and_promo_finish_drift_forward",
     "verified_staging_security_advisor_has_zero_findings",
     "confirmed_repository_chain_requires_missing_pre_repository_baseline",
-    "confirmed_cli_dry_run_would_unsafely_replay_all_78_migrations",
+    "confirmed_cli_dry_run_would_unsafely_replay_all_79_migrations",
     "compared_production_and_staging_schema_inventories_read_only",
     "captured_and_checksum_verified_the_production_schema_baseline",
-    "replayed_all_78_repository_migrations_on_an_isolated_production_like_candidate",
-    "verified_the_isolated_candidate_has_exactly_78_migration_history_entries",
+    "replayed_all_79_repository_migrations_on_an_isolated_production_like_candidate",
+    "verified_the_isolated_candidate_has_exactly_79_migration_history_entries",
     "eliminated_all_7_candidate_security_advisor_errors",
     "reduced_candidate_security_advisor_warnings_from_33_to_9",
     "removed_broad_public_catalogue_bucket_listing",
     "removed_client_execution_from_trigger_only_security_definer_functions",
     "verified_current_staging_backup_and_private_storage_restore_on_a_clean_branch",
-    "detected_current_chain_advanced_to_79_after_isolated_candidate"
+    "verified_the_79_migration_candidate_has_zero_security_advisor_errors",
+    "rehearsed_1836_row_staging_catalogue_and_provenance_transfer_with_exact_rollback",
+    "retained_122_cross_run_raw_source_history_rows_without_weakening_per_run_idempotency"
   ],
   "blockedActions": [
     "do_not_mark_unverified_repository_migrations_as_applied",
     "do_not_run_migration_repair_without_baseline_evidence",
     "do_not_push_repository_migrations_to_production",
     "do_not_push_the_current_79_file_chain_to_staging",
-    "require_a_fresh_79_migration_dry_run_and_rehearsal",
-    "preserve_and_verify_the_authorised_staging_catalogue_and_ingestion_dataset_before_rebuild",
     "require_an_explicit_destructive_staging_rebuild_approval_after_the_candidate_is_release_safe"
   ]
 }

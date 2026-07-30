@@ -210,25 +210,26 @@ the plaintext rehearsal area were truncated to zero bytes. The encrypted backup
 was retained and its SHA-256 checksum was reverified.
 
 This remains valid historical recovery and execution evidence for the former
-76-migration chain. After the two security migrations were added, GitHub Actions
-run `30554631150` restored the checksum-pinned production baseline to the
-isolated candidate and executed all 78 migrations. The candidate contains 78
-migration-history entries and 179 tables; Supabase advisors report zero errors,
-9 accepted warnings and 15 informational notices. Neither staging nor production
-was mutated. The raw-source-history migration was added afterward, so the
-candidate is one migration stale. It remains non-promotable until all 79
-migrations and the authorised staging catalogue transfer are rehearsed and any
-destructive staging rebuild is separately approved.
+76-migration chain. GitHub Actions run `30557905336` later restored the
+checksum-pinned production baseline to the isolated candidate and executed all
+79 current migrations. The candidate contains 79 migration-history entries and
+179 tables; Supabase advisors report zero errors, 9 accepted warnings and 15
+informational notices. Run `30558754116` then transferred and matched all 1,836
+allow-listed catalogue and provenance rows, retained 122 legitimate cross-import
+raw-record revisions, and verified exact target row and sequence rollback.
+Neither staging nor production was mutated. The candidate remains
+non-promotable until the real-device model benchmark, inactive index validation,
+and any destructive staging rebuild are separately approved.
 
 ## Production Decision
 
-**NO-GO for production application.** Backup recovery and isolated clean-room
-execution through 78 migrations are verified, but the current 79-file chain has
-not been rehearsed. Production remains explicitly unauthorised. The draft pull
-request must pass fresh GitHub CI and be reviewed, the full chain must be
-rehearsed, and the hosted production migration ledger and dry run must be
-rechecked against the final commit before any separately approved cutover. No
-production push is authorised by this document.
+**NO-GO for production application.** Backup recovery, isolated clean-room
+execution of all 79 migrations, security review and catalogue-preservation
+rehearsal are verified. Production remains explicitly unauthorised. The draft
+pull request must pass fresh GitHub CI and be reviewed, and the hosted production
+migration ledger and dry run must be rechecked against the final commit before
+any separately approved cutover. No production push is authorised by this
+document.
 
 ## Rollback
 
@@ -240,9 +241,8 @@ version or make private scan storage public as a rollback technique.
 
 ## Exact Next Step
 
-Commit and push the reconciled branch, require fresh GitHub CI on the draft pull
-request, and rehearse all 79 migrations against the isolated production-shaped
-candidate. After review, and only with separate production authorisation, repeat
-the read-only hosted migration-history comparison and the linked 79-file dry
-run. Do not merge the draft pull request or run a non-dry-run production database
-push yet.
+Commit and push the reconciled branch and require fresh GitHub CI on the draft
+pull request. After review, and only with separate production authorisation,
+repeat the read-only hosted migration-history comparison and the linked 79-file
+dry run. Do not promote the staging candidate, merge the draft pull request, or
+run a non-dry-run production database push yet.
