@@ -24,7 +24,7 @@ jobs:
     environment: staging
     env:
       SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_RESTORE_DB_URL }}
-      SUPABASE_RESTORE_PROJECT_REF: qlksgkrcdfuqbjlqeetb
+      SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
       SUPABASE_STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
       BASELINE_ARTIFACT_ID: '8760386714'

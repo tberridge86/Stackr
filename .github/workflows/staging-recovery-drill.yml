@@ -27,7 +27,7 @@ jobs:
       SUPABASE_STAGING_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
       SUPABASE_RESTORE_SECRET_KEY: ${{ secrets.SUPABASE_RESTORE_SECRET_KEY }}
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
-      SUPABASE_RESTORE_PROJECT_REF: qlksgkrcdfuqbjlqeetb
+      SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$SUPABASE_PROJECT_REF" = "lmwfhvexfcoyeuoyrlco"
-          test "$SUPABASE_RESTORE_PROJECT_REF" = "qlksgkrcdfuqbjlqeetb"
+          test "$SUPABASE_RESTORE_PROJECT_REF" = "krjttpmthxkfsbqksxci"
           test "$SUPABASE_PROJECT_REF" != "$SUPABASE_RESTORE_PROJECT_REF"
           test -n "$SUPABASE_DB_URL"
           test -n "$SUPABASE_RESTORE_DB_URL"

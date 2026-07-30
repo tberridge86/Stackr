@@ -171,7 +171,7 @@ assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'
 assert.doesNotMatch(recoveryWorkflow, /github\.event\.head_commit/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_PROJECT_REF/);
-assert.match(recoveryWorkflow, /qlksgkrcdfuqbjlqeetb/);
+assert.match(recoveryWorkflow, /krjttpmthxkfsbqksxci/);
 assert.match(recoveryWorkflow, /source_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /restore_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /prepare-postgres-urls\.mjs/);
@@ -200,7 +200,7 @@ assert.doesNotMatch(productionBaselineWorkflow, /db push|migration repair|psql|S
 assert.doesNotMatch(productionBaselineWorkflow, /upload-artifact@v\d/);
 assert.match(baselineMigrationTrialWorkflow, /environment: staging/);
 assert.match(baselineMigrationTrialWorkflow, /secrets\.SUPABASE_RESTORE_DB_URL/);
-assert.match(baselineMigrationTrialWorkflow, /qlksgkrcdfuqbjlqeetb/);
+assert.match(baselineMigrationTrialWorkflow, /krjttpmthxkfsbqksxci/);
 assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
 assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
