@@ -64,7 +64,7 @@ gh workflow run staging-recovery-drill.yml `
   -f confirmation='RESTORE STAGING BACKUP'
 ```
 
-The successful workflow run is `30539298501`. It deleted raw dump and object bytes at completion and recorded only non-secret fingerprints. Delete the temporary restore project after reviewing the checked-in evidence to stop its quoted USD 10 monthly charge.
+The successful workflow run is `30539298501`. It deleted raw dump and object bytes at completion and recorded only non-secret fingerprints. The temporary restore project was deleted after verification at `2026-07-30T12:03:39.986Z`, stopping further compute usage for that project.
 
 ## Dispatch
 
