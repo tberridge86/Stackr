@@ -135,6 +135,8 @@ assert.match(recoveryWorkflow, /github\.event\.head_commit\.message == 'chore: r
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_PROJECT_REF/);
 assert.match(recoveryWorkflow, /kynqqwyctohrjqloyedh/);
+assert.doesNotMatch(recoveryWorkflow, /secrets\.SUPABASE_ACCESS_TOKEN/);
+assert.doesNotMatch(recoveryWorkflow, /vars\.SUPABASE_(?:PROJECT_REF|RESTORE_PROJECT_REF)/);
 assert.match(recoveryWorkflow, /verify-postgres-restore\.mjs/);
 assert.match(recoveryWorkflow, /backup-restore-storage-fixture\.mjs/);
 assert.match(recoveryWorkflow, /drop schema if exists supabase_migrations cascade/);
