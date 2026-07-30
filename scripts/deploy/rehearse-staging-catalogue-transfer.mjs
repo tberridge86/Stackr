@@ -81,7 +81,15 @@ async function connect(connectionString, applicationName) {
 async function tableMetadata(client, tableName) {
   const { schema, table } = splitTableName(tableName);
   const columns = await client.query(`
-    select column_name, data_type, udt_schema, udt_name, is_identity
+    select
+      column_name,
+      data_type,
+      udt_schema,
+      udt_name,
+      is_nullable,
+      column_default,
+      is_identity,
+      is_generated
     from information_schema.columns
     where table_schema = $1 and table_name = $2
     order by ordinal_position
@@ -106,20 +114,72 @@ async function tableMetadata(client, tableName) {
   };
 }
 
-async function readRows(client, tableName, primaryKey) {
+async function readRows(client, tableName, primaryKey, columns = null) {
   const order = primaryKey.map(quoteIdentifier).join(', ');
-  return (await client.query(`select * from ${qualifiedName(tableName)} order by ${order}`)).rows;
+  const projection = columns?.length ? columns.map(quoteIdentifier).join(', ') : '*';
+  return (await client.query(
+    `select ${projection} from ${qualifiedName(tableName)} order by ${order}`,
+  )).rows;
 }
 
 function keyForRow(row, primaryKey) {
   return stableJson(primaryKey.map((column) => row[column]));
 }
 
-async function insertRows(client, tableName, metadata, rows) {
+function compatibleTableContract(tableName, sourceMetadata, targetMetadata) {
+  if (stableJson(sourceMetadata.primaryKey) !== stableJson(targetMetadata.primaryKey)) {
+    throw new Error(`table_contract_mismatch:${tableName}:primary_key`);
+  }
+  const targetByName = new Map(
+    targetMetadata.columns.map((column) => [column.column_name, column]),
+  );
+  const incompatibleSourceColumns = [];
+  for (const sourceColumn of sourceMetadata.columns) {
+    const targetColumn = targetByName.get(sourceColumn.column_name);
+    const compatible = targetColumn
+      && sourceColumn.data_type === targetColumn.data_type
+      && sourceColumn.udt_schema === targetColumn.udt_schema
+      && sourceColumn.udt_name === targetColumn.udt_name
+      && sourceColumn.is_generated === targetColumn.is_generated;
+    if (!compatible) incompatibleSourceColumns.push(sourceColumn.column_name);
+  }
+  if (incompatibleSourceColumns.length) {
+    throw new Error(
+      `table_contract_mismatch:${tableName}:source_columns:${incompatibleSourceColumns.join(',')}`,
+    );
+  }
+
+  const sourceColumnNames = new Set(
+    sourceMetadata.columns.map((column) => column.column_name),
+  );
+  const targetOnlyColumns = targetMetadata.columns.filter(
+    (column) => !sourceColumnNames.has(column.column_name),
+  );
+  const requiredTargetOnlyColumns = targetOnlyColumns.filter((column) => (
+    column.is_nullable !== 'YES'
+    && column.column_default === null
+    && column.is_identity !== 'YES'
+    && column.is_generated === 'NEVER'
+  ));
+  if (requiredTargetOnlyColumns.length) {
+    throw new Error(
+      `table_contract_mismatch:${tableName}:required_target_columns:${requiredTargetOnlyColumns.map((column) => column.column_name).join(',')}`,
+    );
+  }
+
+  return {
+    transferColumns: sourceMetadata.columns.map((column) => column.column_name),
+    targetOnlyColumns: targetOnlyColumns.map((column) => column.column_name),
+  };
+}
+
+async function insertRows(client, tableName, metadata, columnNames, rows) {
   if (!rows.length) return;
-  const columnNames = metadata.columns.map((column) => column.column_name);
   const columnSql = columnNames.map(quoteIdentifier).join(', ');
-  const hasIdentity = metadata.columns.some((column) => column.is_identity === 'YES');
+  const selectedColumns = new Set(columnNames);
+  const hasIdentity = metadata.columns.some((column) => (
+    selectedColumns.has(column.column_name) && column.is_identity === 'YES'
+  ));
   const maxRowsPerBatch = Math.max(1, Math.floor(50000 / columnNames.length));
 
   for (let offset = 0; offset < rows.length; offset += maxRowsPerBatch) {
@@ -238,9 +298,7 @@ try {
   for (const tableName of tableConfig.tables) {
     const sourceMetadata = await tableMetadata(source, tableName);
     const targetMetadata = await tableMetadata(target, tableName);
-    if (stableJson(sourceMetadata) !== stableJson(targetMetadata)) {
-      throw new Error(`table_contract_mismatch:${tableName}`);
-    }
+    const contract = compatibleTableContract(tableName, sourceMetadata, targetMetadata);
 
     const sourceRows = await readRows(source, tableName, sourceMetadata.primaryKey);
     const targetRowsBefore = await readRows(target, tableName, targetMetadata.primaryKey);
@@ -251,6 +309,7 @@ try {
       sourceRows,
       targetRowsBefore,
       targetSequencesBefore,
+      contract,
     });
   }
 
@@ -268,15 +327,21 @@ try {
       sourceRows,
       targetRowsBefore,
       targetSequencesBefore,
+      contract,
     } = snapshot;
     const targetRowsAfterClear = await readRows(target, tableName, targetMetadata.primaryKey);
     if (targetRowsAfterClear.length !== 0) throw new Error(`target_table_not_cleared:${tableName}`);
 
     await setUserTriggersEnabled(target, tableName, false);
-    await insertRows(target, tableName, targetMetadata, sourceRows);
+    await insertRows(target, tableName, targetMetadata, contract.transferColumns, sourceRows);
     await restartOwnedSequences(target, tableName, targetMetadata, sourceRows);
     await setUserTriggersEnabled(target, tableName, true);
-    const targetRowsAfter = await readRows(target, tableName, targetMetadata.primaryKey);
+    const targetRowsAfter = await readRows(
+      target,
+      tableName,
+      targetMetadata.primaryKey,
+      contract.transferColumns,
+    );
     const targetSequencesDuringRehearsal = await ownedSequenceStates(target, tableName, targetMetadata);
     const matchedRows = verifySourceRows(
       tableName,
@@ -288,6 +353,8 @@ try {
     results.push({
       table: tableName,
       primaryKey: sourceMetadata.primaryKey,
+      transferColumns: contract.transferColumns,
+      targetOnlyColumns: contract.targetOnlyColumns,
       sourceRowCount: sourceRows.length,
       targetRowCountBefore: targetRowsBefore.length,
       targetRowCountAfterClear: targetRowsAfterClear.length,
@@ -321,7 +388,7 @@ try {
   sourceTransactionOpen = false;
 
   const evidence = {
-    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.2.0',
+    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.3.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
     sourceProjectRef: SOURCE_PROJECT_REF,
