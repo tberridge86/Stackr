@@ -244,6 +244,8 @@ assert.match(catalogueTransferScript, /targetSequencesAfterRollback/);
 assert.match(catalogueTransferScript, /compatibleTableContract/);
 assert.match(catalogueTransferScript, /required_target_columns/);
 assert.match(catalogueTransferScript, /targetOnlyColumns/);
+assert.match(catalogueTransferScript, /column\.udt_name === 'json'/);
+assert.match(catalogueTransferScript, /transfer_insert_failed/);
 assert.match(catalogueTransferScript, /await target\.query\('rollback'\)/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.doesNotMatch(catalogueTransferScript, /target\.query\('commit'\)/i);
