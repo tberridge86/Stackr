@@ -1,11 +1,6 @@
 name: Stackr Staging Recovery Drill
 
 on:
-  push:
-    branches:
-      - chore/api-gateway-v1
-    paths:
-      - .github/recovery-drill-request.json
   workflow_dispatch:
     inputs:
       confirmation:
@@ -22,9 +17,7 @@ concurrency:
 
 jobs:
   restore:
-    if: >-
-      (github.event_name == 'workflow_dispatch' && inputs.confirmation == 'RESTORE STAGING BACKUP')
-      || (github.event_name == 'push' && github.event.head_commit.message == 'chore: run staging recovery drill')
+    if: inputs.confirmation == 'RESTORE STAGING BACKUP'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: staging

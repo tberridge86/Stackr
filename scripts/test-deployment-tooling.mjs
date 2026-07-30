@@ -52,8 +52,10 @@ assert.notEqual(migrationAlignmentGate.status, 0, 'partial reconciliation must n
 assert.match(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
 assert.notEqual(stagingReleaseGate.status, 0, 'staging evidence must block release until recovery and model gates pass');
-assert.match(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
-assert.match(stagingReleaseGate.stdout, /database_recovery_not_verified/);
+assert.doesNotMatch(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
+assert.doesNotMatch(stagingReleaseGate.stdout, /database_recovery_not_verified/);
+assert.match(stagingReleaseGate.stdout, /migration_history_not_aligned/);
+assert.match(stagingReleaseGate.stdout, /model_and_index_not_ready/);
 const releasePreflight = run('scripts/deploy/preflight.mjs', ['--release']);
 assert.notEqual(releasePreflight.status, 0, 'release preflight must fail closed without approvals and credentials');
 const completeStagingEnvironment = {
@@ -131,7 +133,7 @@ assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);
-assert.match(recoveryWorkflow, /github\.event\.head_commit\.message == 'chore: run staging recovery drill'/);
+assert.doesNotMatch(recoveryWorkflow, /github\.event\.head_commit/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_PROJECT_REF/);
 assert.match(recoveryWorkflow, /kynqqwyctohrjqloyedh/);

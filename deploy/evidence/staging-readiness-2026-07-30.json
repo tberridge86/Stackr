@@ -1,7 +1,7 @@
 {
   "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
-  "capturedAt": "2026-07-30T08:06:00.166Z",
-  "sourceCommitHash": "5a6efde155d2a347e1e726244f0a5db6f2c04fd1",
+  "capturedAt": "2026-07-30T11:52:51.287Z",
+  "sourceCommitHash": "94310b17d262b5693c4afb02d874edf103e7806d",
   "supabase": {
     "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
     "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
@@ -19,30 +19,31 @@
     "walgEnabled": true
   },
   "databaseRecovery": {
-    "status": "backup_available_restore_not_verified",
-    "logicalBackupCreated": false,
+    "status": "verified",
+    "logicalBackupCreated": true,
     "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
-    "restoreTestedAt": null,
-    "blockers": [
-      "staging_database_url_not_available_to_backup_runner",
-      "latest_physical_backup_predates_current_changes",
-      "protected_source_and_restore_database_urls_not_configured"
-    ]
+    "restoreTestedAt": "2026-07-30T11:52:45.698Z",
+    "verifiedTableCount": 34,
+    "verifiedMigrationCount": 20,
+    "schemaMatched": true,
+    "tableDataMatched": true,
+    "migrationHistoryMatched": true,
+    "extensionsMatched": true,
+    "blockers": []
   },
   "storageRecovery": {
-    "status": "not_verified",
+    "status": "verified",
     "stagingBucketCount": 0,
     "stagingObjectCount": 0,
-    "backupArtifactSha256": null,
+    "backupArtifactSha256": "3f0b6c7cd8ff190f8e35cf3b1dae1be48fc59bc39467a602ee76a7981c3f743a",
     "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
-    "restoreTestedAt": null,
-    "restoredObjectCount": null,
-    "checksumMismatchCount": null,
-    "blockers": [
-      "no_storage_backup_artifact",
-      "protected_source_and_restore_storage_credentials_not_configured",
-      "no_staging_objects_available_for_restore_verification"
-    ]
+    "restoreTestedAt": "2026-07-30T11:52:51.287Z",
+    "restoredObjectCount": 1,
+    "checksumMismatchCount": 0,
+    "anonymousReadDenied": true,
+    "sourceCleanupVerified": true,
+    "targetCleanupVerified": true,
+    "blockers": []
   },
   "stage6Rehearsal": {
     "status": "rehearsed_and_rolled_back",
@@ -79,9 +80,6 @@
     "status": "blocked",
     "blockers": [
       "migration_history_partially_reconciled",
-      "current_staging_logical_backup_missing",
-      "database_restore_not_verified",
-      "storage_recovery_not_verified",
       "model_benchmark_not_complete",
       "embedding_index_not_validated",
       "staging_provider_deployment_not_configured"

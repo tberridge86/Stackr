@@ -43,7 +43,7 @@ Review the reported warnings. The release manifest currently blocks migration, m
 
 The 2026-07-30 rehearsal proved the Stage 6 registry migration and rollback against staging, including RLS, private grants, activation guards and fixed function search paths. The `vector` extension was then enabled on staging only and verified at version `0.8.2`; no vector column or active index was created. Migration history is only partially reconciled: 3 repository migrations are accounted for, 17 entries are staging-only, and 73 repository migrations remain unverified. Do not stamp or push those migrations merely to align the counters.
 
-Supabase reports 11 completed staging physical backups, but the latest (`1245215485`, `2026-07-30T03:47:35.742Z`) predates the vector and catalogue reconciliation changes. Staging Storage is empty. A current logical Postgres dump and an isolated Postgres/Storage restore test still require the protected staging database URL and a separate restore target. The evidence is recorded in `deploy/evidence/staging-recovery-2026-07-30.json`.
+Supabase reports 11 completed staging physical backups, but the latest (`1245215485`, `2026-07-30T03:47:35.742Z`) predates the vector and catalogue reconciliation changes. On 2026-07-30, the current logical Postgres backup was restored into the isolated target and verified across 34 tables, 20 migration-history records, schema objects and selected extensions. The empty staging Storage inventory was supplemented with a private fixture; its backup and restore checksums matched, anonymous access was denied, and both temporary buckets were removed. The evidence is recorded in `deploy/evidence/staging-recovery-2026-07-30.json`.
 
 The approved temporary restore target is `kynqqwyctohrjqloyedh`. Before dispatching **Stackr Staging Recovery Drill**, configure these protected `staging` environment secrets:
 
@@ -64,7 +64,7 @@ gh workflow run staging-recovery-drill.yml `
   -f confirmation='RESTORE STAGING BACKUP'
 ```
 
-The workflow deletes raw dump and object bytes at completion. Review its non-secret job summary, update the checked-in recovery evidence only from a successful run, then delete the temporary restore project to stop its quoted USD 10 monthly charge.
+The successful workflow run is `30539298501`. It deleted raw dump and object bytes at completion and recorded only non-secret fingerprints. Delete the temporary restore project after reviewing the checked-in evidence to stop its quoted USD 10 monthly charge.
 
 ## Dispatch
 
