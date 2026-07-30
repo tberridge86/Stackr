@@ -71,8 +71,10 @@ if (evidence.status === 'isolated_candidate_aligned_staging_promotion_blocked') 
     || evidence.isolatedBranchMutationPerformed !== true) {
     errors.push('isolated_candidate_mutation_scope_invalid');
   }
-  if ((evidence.isolatedCandidate?.securityAdvisorErrorCount ?? 0) <= 0
-    || evidence.isolatedCandidate?.promotionApproved !== false) {
+  if ((evidence.isolatedCandidate?.securityAdvisorErrorCount ?? -1) !== 0
+    || evidence.isolatedCandidate?.promotionApproved !== false
+    || !Array.isArray(evidence.isolatedCandidate?.promotionBlockers)
+    || evidence.isolatedCandidate.promotionBlockers.length === 0) {
     errors.push('isolated_candidate_promotion_blocker_missing');
   }
 }
