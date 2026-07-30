@@ -9,6 +9,10 @@ const inventoryMovementMigration = readFileSync(
   'supabase/migrations/20260627120000_inventory_movements_and_binder_schema_repair.sql',
   'utf8',
 );
+const mintyInsightMigration = readFileSync(
+  'supabase/migrations/20260715143000_minty_insight_platform.sql',
+  'utf8',
+);
 
 assert.match(config, /schemas = \["public", "api", "graphql_public"\]/);
 assert.doesNotMatch(config, /schemas\s*=\s*\[[^\]]*"(?:ingest|ml|audit|market|catalog)"/);
@@ -33,5 +37,9 @@ assert.match(rollback, /drop function if exists catalog\.activate_catalogue_vers
 assert.match(rollback, /drop table if exists audit\.release_activation_events/);
 assert.match(inventoryMovementMigration, /binder_id uuid null references public\.binders\(id\)/);
 assert.doesNotMatch(inventoryMovementMigration, /binder_id text null references public\.binders\(id\)/);
+assert.match(mintyInsightMigration, /add column if not exists active boolean not null default true/);
+assert.match(mintyInsightMigration, /target_price_gbp = coalesce\(alerts\.target_price_gbp, alerts\.target_price\)/);
+assert.match(mintyInsightMigration, /cards\.id = alerts\.card_id/);
+assert.match(mintyInsightMigration, /check \(direction in \('below', 'above', 'movement'\)\)/);
 
 console.log('Stage 13 database deployment contract tests passed.');
