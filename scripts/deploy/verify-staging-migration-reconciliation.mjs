@@ -38,6 +38,25 @@ if (evidence.unverifiedRepositoryMigrationCount
   !== localMigrations.length - evidence.matchedRepositoryMigrations.length) {
   errors.push('unverified_repository_migration_count_inconsistent');
 }
+if (evidence.repositoryMigrationGroups?.preCanonicalLegacyCount
+  + evidence.repositoryMigrationGroups?.canonicalAndLaterCount !== localMigrations.length) {
+  errors.push('repository_migration_group_count_inconsistent');
+}
+if (evidence.repositoryMigrationGroups?.accountedForCount
+  !== evidence.matchedRepositoryMigrations.length) {
+  errors.push('accounted_repository_migration_count_inconsistent');
+}
+if (evidence.dryRun?.wouldPushCount !== localMigrations.length || evidence.dryRun?.safeToApply !== false) {
+  errors.push('migration_dry_run_evidence_inconsistent');
+}
+if (evidence.status === 'blocked_missing_pre_repository_baseline') {
+  if (evidence.reconciliationComplete !== false || evidence.baselineGap?.confirmed !== true) {
+    errors.push('missing_baseline_blocker_not_evidenced');
+  }
+  if (evidence.baselineGap?.firstRepositoryMigration !== localMigrations[0]) {
+    errors.push('first_repository_migration_evidence_drift');
+  }
+}
 
 for (const match of evidence.matchedRepositoryMigrations) {
   if (!localMigrations.includes(match.repositoryFile)) {

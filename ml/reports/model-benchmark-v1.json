@@ -1,10 +1,10 @@
 {
   "benchmarkVersion": "stackr-model-benchmark-v1.0.0",
   "status": "blocked",
-  "generatedAt": "2026-07-30T06:31:59.458Z",
+  "generatedAt": "2026-07-30T12:15:16.090Z",
   "datasetVersion": "stackr-pilot-recognition-dataset-v1.0.0",
-  "datasetManifestSha256": "bc88f94a95e86c6beea52387133300aba8d3f741aa037a3ecf2db074f19f25f8",
-  "sourceCommitHash": "42eaadbe04d5fdfb600bfb14be88e781ba568daa",
+  "datasetManifestSha256": "f5a400495a0c739749f7fad949e47cbceee1b8dfffc95f088c97410786678bd3",
+  "sourceCommitHash": "9904e49b3f3c25f5397edcf84d4fd9e4d2f8a544",
   "sourceTreeDirty": true,
   "measurementEvidence": {
     "path": null,

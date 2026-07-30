@@ -42,13 +42,46 @@ const preflight = run('scripts/deploy/preflight.mjs');
 assert.equal(preflight.status, 0, preflight.stderr || preflight.stdout);
 const stagingEvidence = run('scripts/deploy/verify-staging-readiness-evidence.mjs');
 assert.equal(stagingEvidence.status, 0, stagingEvidence.stderr || stagingEvidence.stdout);
+const evidenceGuardTemp = mkdtempSync(path.join(tmpdir(), 'stackr-readiness-evidence-test-'));
+try {
+  const sourceEvidence = JSON.parse(readFileSync('deploy/evidence/staging-readiness-2026-07-30.json', 'utf8'));
+  const spoofedReadyPath = path.join(evidenceGuardTemp, 'spoofed-ready.json');
+  writeFileSync(spoofedReadyPath, JSON.stringify({
+    ...sourceEvidence,
+    modelAndIndex: { ...sourceEvidence.modelAndIndex, status: 'ready' },
+  }));
+  const spoofedReady = run(
+    'scripts/deploy/verify-staging-readiness-evidence.mjs',
+    [`--evidence=${spoofedReadyPath}`],
+  );
+  assert.notEqual(spoofedReady.status, 0, 'a ready label must not override blocked capture evidence');
+  assert.match(spoofedReady.stdout, /ready_model_lacks_real_capture_evidence/);
+  assert.match(spoofedReady.stdout, /ready_model_lacks_complete_benchmark/);
+
+  const tamperedChecksumPath = path.join(evidenceGuardTemp, 'tampered-checksum.json');
+  writeFileSync(tamperedChecksumPath, JSON.stringify({
+    ...sourceEvidence,
+    modelAndIndex: {
+      ...sourceEvidence.modelAndIndex,
+      benchmarkEvidenceSha256: '0'.repeat(64),
+    },
+  }));
+  const tamperedChecksum = run(
+    'scripts/deploy/verify-staging-readiness-evidence.mjs',
+    [`--evidence=${tamperedChecksumPath}`],
+  );
+  assert.notEqual(tamperedChecksum.status, 0, 'tampered benchmark evidence must fail closed');
+  assert.match(tamperedChecksum.stdout, /model_benchmark_evidence_checksum_mismatch/);
+} finally {
+  rmSync(evidenceGuardTemp, { recursive: true, force: true });
+}
 const migrationReconciliation = run('scripts/deploy/verify-staging-migration-reconciliation.mjs');
 assert.equal(migrationReconciliation.status, 0, migrationReconciliation.stderr || migrationReconciliation.stdout);
 const migrationAlignmentGate = run(
   'scripts/deploy/verify-staging-migration-reconciliation.mjs',
   ['--require-aligned'],
 );
-assert.notEqual(migrationAlignmentGate.status, 0, 'partial reconciliation must not pass the alignment gate');
+assert.notEqual(migrationAlignmentGate.status, 0, 'blocked reconciliation must not pass the alignment gate');
 assert.match(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
 assert.notEqual(stagingReleaseGate.status, 0, 'staging evidence must block release until recovery and model gates pass');

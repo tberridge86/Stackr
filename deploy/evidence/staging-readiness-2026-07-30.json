@@ -1,14 +1,16 @@
 {
   "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
-  "capturedAt": "2026-07-30T11:52:51.287Z",
-  "sourceCommitHash": "94310b17d262b5693c4afb02d874edf103e7806d",
+  "capturedAt": "2026-07-30T12:15:18.483Z",
+  "sourceCommitHash": "9904e49b3f3c25f5397edcf84d4fd9e4d2f8a544",
   "supabase": {
     "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
     "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
     "localMigrationFileCount": 76,
     "productionMigrationHistoryCount": 0,
     "stagingMigrationHistoryCount": 20,
-    "migrationHistoryStatus": "partially_reconciled",
+    "migrationHistoryStatus": "blocked_missing_pre_repository_baseline",
+    "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-07-30.json",
+    "migrationReconciliationEvidenceSha256": "1b6f65825bea92397e4f98c62c0719237d4ba5cff398181f643cd4e813b659a4",
     "stagingSecurityAdvisorFindingCountAfterRollback": 0,
     "productionPhysicalBackupCount": 8,
     "stagingPhysicalBackupCount": 11,
@@ -71,15 +73,31 @@
     "activeIndexVersion": null,
     "realPhoneTestCaptureCount": 0,
     "approvedTrainingPixelSourceCount": 0,
+    "captureReadinessEvidence": "deploy/evidence/stage6-capture-readiness-2026-07-30.json",
+    "captureReadinessEvidenceSha256": "c5c0413993d92df9753644c5f349bf74562ae0fb1a8567a04c10ae31983156bf",
+    "benchmarkEvidence": "ml/reports/model-benchmark-v1.json",
+    "benchmarkEvidenceSha256": "4df013fbee5fad33a2b8e3e54d67146d6daa8a847c4376d675bb934705995266",
+    "indexPlanEvidence": "ml/reports/embedding-index-regeneration-plan.json",
+    "indexPlanEvidenceSha256": "5b971385198a1860ca1c0c5a56ed2997dd9571185ee61e3282d488b00b55dd84",
     "missingLanguages": [
       "zh-Hans",
       "ko"
+    ],
+    "blockers": [
+      "no_approved_training_pixels",
+      "no_real_phone_test_captures",
+      "missing_zh-Hans_benchmark_coverage",
+      "missing_ko_benchmark_coverage",
+      "measurement_evidence_missing",
+      "no_production_model_selected_by_weighted_benchmark",
+      "no_selected_embedding_dimension",
+      "benchmark_not_complete"
     ]
   },
   "releaseReadiness": {
     "status": "blocked",
     "blockers": [
-      "migration_history_partially_reconciled",
+      "migration_history_blocked_missing_pre_repository_baseline",
       "model_benchmark_not_complete",
       "embedding_index_not_validated",
       "staging_provider_deployment_not_configured"
