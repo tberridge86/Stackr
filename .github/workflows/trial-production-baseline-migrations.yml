@@ -7,10 +7,6 @@ on:
         description: Type REPLAY MIGRATIONS ON RESTORE TARGET
         required: true
         type: string
-  pull_request:
-    types: [synchronize]
-    paths:
-      - .github/workflows/trial-production-baseline-migrations.yml
 
 permissions:
   actions: read
@@ -22,13 +18,7 @@ concurrency:
 
 jobs:
   replay:
-    if: >-
-      (github.event_name == 'workflow_dispatch' && inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET') ||
-      (github.event_name == 'pull_request' &&
-       github.event.action == 'synchronize' &&
-       github.event.pull_request.head.repo.full_name == github.repository &&
-       github.event.pull_request.head.ref == 'chore/api-gateway-v1' &&
-       github.event.pull_request.base.ref == 'main')
+    if: inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: staging
