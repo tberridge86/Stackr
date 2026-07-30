@@ -269,6 +269,26 @@ async function restartOwnedSequences(client, tableName, metadata, rows) {
   }
 }
 
+async function rawSourceRecordDuplicateSummary(client) {
+  const result = await client.query(`
+    select
+      count(*)::integer as duplicate_group_count,
+      coalesce(sum(row_count - 1), 0)::integer as duplicate_row_count,
+      count(*) filter (where payload_version_count > 1)::integer as changed_payload_group_count,
+      count(*) filter (where import_run_count > 1)::integer as multiple_import_run_group_count
+    from (
+      select
+        count(*)::integer as row_count,
+        count(distinct payload_hash)::integer as payload_version_count,
+        count(distinct coalesce(import_run_id::text, ''))::integer as import_run_count
+      from ingest.raw_source_records
+      group by source_id, record_type, external_id, coalesce(language_code, '')
+      having count(*) > 1
+    ) duplicate_groups
+  `);
+  return result.rows[0];
+}
+
 function verifySourceRows(tableName, sourceRows, targetRows, primaryKey) {
   const targetByKey = new Map(targetRows.map((row) => [keyForRow(row, primaryKey), row]));
   const matched = [];
@@ -297,6 +317,17 @@ try {
   sourceTransactionOpen = true;
   await target.query('begin transaction isolation level repeatable read');
   targetTransactionOpen = true;
+
+  const rawRecordDuplicates = await rawSourceRecordDuplicateSummary(source);
+  if (rawRecordDuplicates.duplicate_group_count > 0) {
+    throw new Error(
+      'source_unique_constraint_conflict:ingest.raw_source_records'
+      + `:groups_${rawRecordDuplicates.duplicate_group_count}`
+      + `:extra_rows_${rawRecordDuplicates.duplicate_row_count}`
+      + `:changed_payload_groups_${rawRecordDuplicates.changed_payload_group_count}`
+      + `:multiple_import_run_groups_${rawRecordDuplicates.multiple_import_run_group_count}`,
+    );
+  }
 
   for (const tableName of tableConfig.excludedEmptyStagingOnlyTables) {
     const count = Number((await source.query(
