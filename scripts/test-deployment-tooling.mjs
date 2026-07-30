@@ -42,9 +42,18 @@ const preflight = run('scripts/deploy/preflight.mjs');
 assert.equal(preflight.status, 0, preflight.stderr || preflight.stdout);
 const stagingEvidence = run('scripts/deploy/verify-staging-readiness-evidence.mjs');
 assert.equal(stagingEvidence.status, 0, stagingEvidence.stderr || stagingEvidence.stdout);
+const migrationReconciliation = run('scripts/deploy/verify-staging-migration-reconciliation.mjs');
+assert.equal(migrationReconciliation.status, 0, migrationReconciliation.stderr || migrationReconciliation.stdout);
+const migrationAlignmentGate = run(
+  'scripts/deploy/verify-staging-migration-reconciliation.mjs',
+  ['--require-aligned'],
+);
+assert.notEqual(migrationAlignmentGate.status, 0, 'partial reconciliation must not pass the alignment gate');
+assert.match(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
 assert.notEqual(stagingReleaseGate.status, 0, 'staging evidence must block release until recovery and model gates pass');
 assert.match(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
+assert.match(stagingReleaseGate.stdout, /database_recovery_not_verified/);
 const releasePreflight = run('scripts/deploy/preflight.mjs', ['--release']);
 assert.notEqual(releasePreflight.status, 0, 'release preflight must fail closed without approvals and credentials');
 const completeStagingEnvironment = {
@@ -118,12 +127,14 @@ assert.match(stagingWorkflow, /backups list/);
 assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --dry-run/);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
+assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
 assert.match(productionWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: production/);
 assert.match(productionWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
+assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
 assert.doesNotMatch(productionWorkflow, /update:rollback/);

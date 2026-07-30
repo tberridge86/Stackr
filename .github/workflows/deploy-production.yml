@@ -125,6 +125,7 @@ jobs:
           npm run test:database-migrations
           npm run test:deployment
           npm test --prefix gateway
+          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
           node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
           npm run deploy:preflight -- --release
 

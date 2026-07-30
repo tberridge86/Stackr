@@ -16,6 +16,8 @@ const requiredPaths = [
   'deploy/README.md',
   'deploy/release-manifest.json',
   'deploy/evidence/staging-readiness-2026-07-30.json',
+  'deploy/evidence/staging-migration-reconciliation-2026-07-30.json',
+  'deploy/evidence/staging-recovery-2026-07-30.json',
   'deploy/staging-runbook.md',
   'deploy/production-runbook.md',
   'deploy/rollback-runbook.md',

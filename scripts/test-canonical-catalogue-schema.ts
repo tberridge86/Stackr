@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const MIGRATION_PATH = 'supabase/migrations/20260727212256_canonical_stackr_catalogue_database.sql';
+const RECONCILIATION_PATH =
+  'supabase/migrations/20260730080047_reconcile_catalogue_seed_encoding_and_finish_taxonomy.sql';
 const sql = readFileSync(MIGRATION_PATH, 'utf8');
+const reconciliationSql = readFileSync(RECONCILIATION_PATH, 'utf8');
 
 function expectSql(pattern: RegExp, message: string) {
   assert.match(sql, pattern, message);
@@ -228,6 +231,31 @@ function assertPublicSafeProjection() {
   }
 }
 
+function assertCatalogueSeedReconciliation() {
+  for (const nativeName of ['日本語', '简体中文', '繁體中文', '한국어']) {
+    assert.match(
+      reconciliationSql,
+      new RegExp(nativeName),
+      `catalogue reconciliation must restore ${nativeName}`,
+    );
+  }
+  assert.match(
+    reconciliationSql,
+    /where code = 'promo'[\s\S]+finish_group is distinct from 'other'/,
+    'promo finish must converge to the reviewed taxonomy',
+  );
+  assert.match(
+    reconciliationSql,
+    /drop constraint if exists finishes_finish_group_check/,
+    'historical finish constraints must be replaced safely',
+  );
+  assert.match(
+    reconciliationSql,
+    /check \(finish_group in \('standard', 'foil', 'parallel', 'edition', 'stamp', 'regional', 'other'\)\)/,
+    'reconciled finish constraint must match the canonical model',
+  );
+}
+
 assertMigrationStructure();
 assertSupportedLanguagesSeeded();
 assertVariantTaxonomySeeded();
@@ -236,5 +264,6 @@ assertConflictingExternalIdsAreCaught();
 assertTranslatedAliasesDoNotDefineIdentity();
 assertSharedArtworkVariantsStaySeparate();
 assertPublicSafeProjection();
+assertCatalogueSeedReconciliation();
 
 console.log('Canonical catalogue schema migration tests passed.');

@@ -41,6 +41,16 @@ if (evidence.stage6Rehearsal?.rollbackApplied !== true
 if (evidence.stage6Rehearsal?.securityAdvisorFindingCountAfterFixedMigration !== 0) {
   errors.push('stage6_rehearsal_has_security_findings');
 }
+if (evidence.stage6Rehearsal?.currentVectorExtensionInstalled !== true) {
+  errors.push('staging_vector_extension_not_verified');
+}
+if (!Number.isFinite(Date.parse(evidence.supabase?.latestStagingPhysicalBackupAt))) {
+  errors.push('invalid_latest_staging_physical_backup_time');
+}
+if (evidence.databaseRecovery?.status === 'verified'
+  && (!evidence.databaseRecovery.restoreTargetProjectRef || !evidence.databaseRecovery.restoreTestedAt)) {
+  errors.push('database_restore_evidence_incomplete');
+}
 
 if (manifest.releaseGates.migrationHistoryAligned === true
   && evidence.supabase?.migrationHistoryStatus !== 'aligned') {
@@ -53,6 +63,7 @@ if (manifest.releaseGates.storageBackupVerified === true
 
 if (requireReleaseReady) {
   if (evidence.supabase?.migrationHistoryStatus !== 'aligned') errors.push('migration_history_not_aligned');
+  if (evidence.databaseRecovery?.status !== 'verified') errors.push('database_recovery_not_verified');
   if (evidence.storageRecovery?.status !== 'verified') errors.push('storage_recovery_not_verified');
   if (evidence.modelAndIndex?.status !== 'ready') errors.push('model_and_index_not_ready');
   if (evidence.releaseReadiness?.status !== 'ready') errors.push('staging_release_not_ready');

@@ -32,7 +32,9 @@ The live Supabase project is healthy, but its migration history is empty and its
 
 The isolated Supabase staging project is `lmwfhvexfcoyeuoyrlco`; production is `oakdbbzdqwurpjnoqhmu`. The staging security rehearsal was completed and its temporary records were removed. No Stage 13 migration has been applied to production.
 
-The latest non-secret readiness snapshot is `deploy/evidence/staging-readiness-2026-07-30.json`. It records 75 local migration files, 18 isolated staging/rehearsal history entries, zero production migration entries, zero provider-reported physical backups, and an empty staging Storage inventory. `scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready` therefore fails by design.
+The latest non-secret readiness snapshot is `deploy/evidence/staging-readiness-2026-07-30.json`. It records 76 local migration files, 20 isolated staging/rehearsal history entries, zero production migration entries, 11 completed staging physical backups, 8 completed production physical backups, and an empty staging Storage inventory. The latest staging physical backup predates the vector and seed-reconciliation changes, so it is not a current rollback point.
+
+`deploy/evidence/staging-migration-reconciliation-2026-07-30.json` records the hash comparison. Three repository migrations are accounted for on staging, 17 entries are staging-only support/rehearsal changes, and 73 repository migrations remain unverified. Neither `migration repair` nor a migration push is authorised for those 73 files. `scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned` and `scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready` therefore fail by design.
 
 Do not flip manifest values to make a workflow pass. Resolve the underlying evidence, commit the evidence-backed state change for review, and independently set the matching protected GitHub variable.
 
@@ -50,6 +52,7 @@ npm run typecheck:backend
 npm run check:api-contract
 npm run test:database-migrations
 npm run test:deployment
+node scripts/deploy/verify-staging-migration-reconciliation.mjs
 node scripts/deploy/verify-staging-readiness-evidence.mjs
 npm test --prefix gateway
 docker build --pull -t stackr-recognition:local recognition-service
@@ -129,6 +132,8 @@ Railway currently has no separate inactive production recognition service record
 ## Provider Setup Still Required
 
 The workflows need protected values for every name listed above. In particular, the Railway recognition service ID, staging/production Railway environment IDs, Cloudflare account/token, three service URLs, Supabase database URLs/access tokens, and Expo token are not derivable from source control. Add them in the matching GitHub environment without posting their values in an issue, log, or client configuration.
+
+The immediate staging recovery blocker is the protected staging `SUPABASE_DB_URL` plus an isolated restore target. The local Supabase CLI state is linked to production, so backup commands must use the explicit staging database URL and must never use `--linked`. Provider PITR restores operate on the selected project and are not an acceptable staging restore rehearsal because they would overwrite the source project.
 
 Railway memory, CPU, replica, and usage limits are account-side settings rather than fields in the checked-in service configuration. Configure and record them for both `backend` and `recognition-service` before a production canary; use measured model memory to select recognition concurrency. A provider screenshot or exported non-secret settings record is required evidence.
 

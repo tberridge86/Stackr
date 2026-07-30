@@ -1,19 +1,33 @@
 {
   "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
-  "capturedAt": "2026-07-30T06:30:21.103Z",
-  "sourceCommitHash": "42eaadbe04d5fdfb600bfb14be88e781ba568daa",
+  "capturedAt": "2026-07-30T08:06:00.166Z",
+  "sourceCommitHash": "5a6efde155d2a347e1e726244f0a5db6f2c04fd1",
   "supabase": {
     "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
     "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
-    "localMigrationFileCount": 75,
+    "localMigrationFileCount": 76,
     "productionMigrationHistoryCount": 0,
-    "stagingMigrationHistoryCount": 18,
-    "migrationHistoryStatus": "not_aligned",
+    "stagingMigrationHistoryCount": 20,
+    "migrationHistoryStatus": "partially_reconciled",
     "stagingSecurityAdvisorFindingCountAfterRollback": 0,
-    "productionPhysicalBackupCount": 0,
-    "stagingPhysicalBackupCount": 0,
+    "productionPhysicalBackupCount": 8,
+    "stagingPhysicalBackupCount": 11,
+    "latestStagingPhysicalBackupId": "1245215485",
+    "latestStagingPhysicalBackupAt": "2026-07-30T03:47:35.742Z",
+    "latestStagingBackupIncludesCurrentChanges": false,
     "pitrEnabled": false,
     "walgEnabled": true
+  },
+  "databaseRecovery": {
+    "status": "backup_available_restore_not_verified",
+    "logicalBackupCreated": false,
+    "restoreTargetProjectRef": null,
+    "restoreTestedAt": null,
+    "blockers": [
+      "staging_database_url_not_available_to_backup_runner",
+      "latest_physical_backup_predates_current_changes",
+      "no_isolated_restore_target"
+    ]
   },
   "storageRecovery": {
     "status": "not_verified",
@@ -41,7 +55,9 @@
     "allStage6TablesHadRls": true,
     "securityAdvisorFindingCountAfterFixedMigration": 0,
     "finalStage6ObjectCount": 0,
-    "vectorExtensionInstalled": false,
+    "vectorExtensionInstalledDuringRehearsal": false,
+    "currentVectorExtensionInstalled": true,
+    "currentVectorExtensionVersion": "0.8.2",
     "activationGuardsVerified": [
       "unselected_model_rejected",
       "unknown_index_rejected"
@@ -62,12 +78,12 @@
   "releaseReadiness": {
     "status": "blocked",
     "blockers": [
-      "migration_history_not_aligned",
-      "production_backup_not_available",
+      "migration_history_partially_reconciled",
+      "current_staging_logical_backup_missing",
+      "database_restore_not_verified",
       "storage_recovery_not_verified",
       "model_benchmark_not_complete",
       "embedding_index_not_validated",
-      "staging_vector_extension_missing",
       "staging_provider_deployment_not_configured"
     ]
   }

@@ -62,6 +62,8 @@ This is a destructive production operation. It is intentionally absent from auto
 
 The repository does not establish cross-region bucket replication or a verified object export. Until that is configured and restore-tested, storage disaster recovery is incomplete.
 
+An empty bucket inventory is not restore proof. For a staging drill, first create a private non-user fixture object with a recorded SHA-256, export the bucket metadata and object bytes through an authorised Storage client, restore them into a separate staging-only target, and verify privacy plus the checksum. Delete the fixture after the drill. Database dumps do not include Storage object bytes.
+
 ## Railway Loss
 
 Create replacement services from the same Git commit and config-as-code files:
