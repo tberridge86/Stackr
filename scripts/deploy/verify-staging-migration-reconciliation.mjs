@@ -72,10 +72,23 @@ if (evidence.status === 'isolated_candidate_aligned_staging_promotion_blocked') 
     errors.push('isolated_candidate_mutation_scope_invalid');
   }
   if ((evidence.isolatedCandidate?.securityAdvisorErrorCount ?? -1) !== 0
+    || evidence.isolatedCandidate?.securityAdvisorLastSuccessfulMigrationCount !== localMigrations.length
+    || evidence.isolatedCandidate?.securityAdvisorRerunStatus !== 'completed'
     || evidence.isolatedCandidate?.promotionApproved !== false
     || !Array.isArray(evidence.isolatedCandidate?.promotionBlockers)
     || evidence.isolatedCandidate.promotionBlockers.length === 0) {
     errors.push('isolated_candidate_promotion_blocker_missing');
+  }
+  const preservation = evidence.stagingCataloguePreservation;
+  if (preservation?.status !== 'rehearsed_and_rolled_back'
+    || preservation?.targetRollbackVerified !== true
+    || preservation?.productionMutationPerformed !== false
+    || preservation?.stagingMutationPerformed !== false
+    || preservation?.sourceRowCount !== preservation?.matchedSourceRowCount
+    || (preservation?.sourceRowCount ?? 0) <= 0
+    || preservation?.legacyRawRecordIdentityIndexPresent !== false
+    || preservation?.importRunRawRecordIdentityIndexPresent !== true) {
+    errors.push('staging_catalogue_preservation_not_verified');
   }
 }
 

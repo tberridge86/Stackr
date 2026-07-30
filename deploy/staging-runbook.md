@@ -41,11 +41,11 @@ node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-read
 
 Review the reported warnings. The release manifest currently blocks migration, model, index, and storage gates, so a release-mode preflight must fail today. That failure is expected and prevents any provider mutation.
 
-The 2026-07-30 rehearsal proved the Stage 6 registry migration and rollback against staging, including RLS, private grants, activation guards and fixed function search paths. The `vector` extension was then enabled on staging only and verified at version `0.8.2`; no vector column or active index was created. Current staging remains a catalogue-only database with 20 historical entries. Three repository migrations are accounted for there, 17 entries are staging-only, and 75 repository migrations remain unverified. Do not stamp or push them merely to align the counters.
+The 2026-07-30 rehearsal proved the Stage 6 registry migration and rollback against staging, including RLS, private grants, activation guards and fixed function search paths. The `vector` extension was then enabled on staging only and verified at version `0.8.2`; no vector column or active index was created. Current staging remains a catalogue-only database with 20 historical entries. Three repository migrations are accounted for there, 17 entries are staging-only, and 76 repository migrations remain unverified. Do not stamp or push them merely to align the counters.
 
 The missing production-era baseline has now been captured read-only and checksum-verified. Run `30545148545` created private artifact `8760386714`; the raw dump was not committed. Keep the `migration-baseline` environment protected and leave the capture workflow manual-only.
 
-**Trial Production Baseline Migrations** accepts only the protected restore-branch URL, checks that its project ref differs from both staging and production, restores the checksum-pinned baseline, and replays the repository migrations. Run `30554631150` completed all 78 migrations; the current branch candidate has 78 history entries and 179 tables. Supabase advisors report zero errors, 9 accepted warnings and 15 informational notices. Never point this workflow at staging or production.
+**Trial Production Baseline Migrations** accepts only the protected restore-branch URL, checks that its project ref differs from both staging and production, restores the checksum-pinned baseline, and replays the repository migrations. Run `30557905336` completed all 79 migrations; the current branch candidate has 79 history entries and 179 tables. Supabase advisors report zero errors, 9 accepted warnings and 15 informational notices. Never point this workflow at staging or production.
 
 Supabase reports 11 completed staging physical backups, but the latest (`1245215485`, `2026-07-30T03:47:35.742Z`) predates the vector and catalogue reconciliation changes. On 2026-07-30, the current logical Postgres backup was restored into the isolated target and verified across 34 tables, 20 migration-history records, schema objects and selected extensions. The empty staging Storage inventory was supplemented with a private fixture; its backup and restore checksums matched, anonymous access was denied, and both temporary buckets were removed. The evidence is recorded in `deploy/evidence/staging-recovery-2026-07-30.json`.
 
@@ -70,7 +70,7 @@ gh workflow run staging-recovery-drill.yml `
 
 The current successful recovery workflow run is `30551243946`. It deleted raw dump and object bytes at completion and recorded only non-secret fingerprints. The branch is retained temporarily for candidate hardening and is billed at `$0.01344/hour`; delete it after reconciliation to stop the charge.
 
-Do not promote this candidate yet. It has 7 Supabase security-advisor errors and 33 warnings inherited from the production-like schema, and current staging contains 120 authorised printings plus their names, external identifiers, raw records and merge-decision provenance. Remediate the security errors and prove a selective catalogue/provenance transfer on the isolated branch before requesting a destructive staging rebuild.
+Do not promote this candidate yet. The catalogue-preservation rehearsal in run `30558754116` matched all 1,836 allow-listed rows and proved exact row and sequence rollback without mutating staging or production. A fresh candidate security-advisor run, the real-device model benchmark, inactive index validation and explicit destructive staging approval are still required before promotion.
 
 ## Dispatch
 

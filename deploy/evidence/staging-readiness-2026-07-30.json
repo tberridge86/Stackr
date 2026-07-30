@@ -1,16 +1,16 @@
 {
   "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
-  "capturedAt": "2026-07-30T15:07:20.000Z",
-  "sourceCommitHash": "7950fa2d75f2f271cf1e6a009eb672ef2c0be1e3",
+  "capturedAt": "2026-07-30T15:59:56.472Z",
+  "sourceCommitHash": "d9401ced50a87f9fac806fd5ae580b442759030d",
   "supabase": {
     "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
     "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
-    "localMigrationFileCount": 78,
+    "localMigrationFileCount": 79,
     "productionMigrationHistoryCount": 0,
     "stagingMigrationHistoryCount": 20,
     "migrationHistoryStatus": "isolated_candidate_aligned_staging_promotion_blocked",
     "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-07-30.json",
-    "migrationReconciliationEvidenceSha256": "e973cae4120940dc4cbd71901502aba90f6cadf8e487ba0e50b7ba465660998b",
+    "migrationReconciliationEvidenceSha256": "786fe6ecacbc3aaaec6752e182832dfe126876fd9a69dad416917ee0b6132704",
     "stagingSecurityAdvisorFindingCountAfterRollback": 0,
     "productionPhysicalBackupCount": 8,
     "stagingPhysicalBackupCount": 11,
@@ -49,19 +49,25 @@
     "blockers": []
   },
   "migrationCandidate": {
-    "status": "aligned_security_hardened_not_promotable",
+    "status": "aligned_data_preservation_rehearsed_not_promotable",
     "projectRef": "krjttpmthxkfsbqksxci",
-    "workflowRunId": 30554631150,
-    "repositoryMigrationCount": 78,
+    "workflowRunId": 30557905336,
+    "repositoryMigrationCount": 79,
     "databaseTableCount": 179,
     "securityAdvisorFindingCount": 24,
     "securityAdvisorErrorCount": 0,
     "securityAdvisorWarningCount": 9,
     "securityAdvisorInfoCount": 15,
+    "securityAdvisorLastSuccessfulMigrationCount": 79,
+    "securityAdvisorRerunStatus": "completed",
     "currentStagingCatalogueRowsRequirePreservation": true,
+    "cataloguePreservationRehearsed": true,
+    "cataloguePreservationWorkflowRunId": 30558754116,
+    "cataloguePreservationSourceRowCount": 1836,
+    "cataloguePreservationMatchedRowCount": 1836,
+    "cataloguePreservationRollbackVerified": true,
     "promotionApproved": false,
     "promotionBlockers": [
-      "authorised_staging_catalogue_data_transfer_not_rehearsed",
       "destructive_staging_rebuild_not_approved"
     ]
   },
@@ -116,7 +122,6 @@
     "status": "blocked",
     "blockers": [
       "aligned_candidate_not_promoted_to_staging",
-      "staging_catalogue_data_transfer_not_rehearsed",
       "destructive_staging_rebuild_not_approved",
       "model_benchmark_not_complete",
       "embedding_index_not_validated",
