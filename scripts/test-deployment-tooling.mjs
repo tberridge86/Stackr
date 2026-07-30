@@ -204,7 +204,7 @@ assert.doesNotMatch(productionBaselineWorkflow, /db push|migration repair|psql|S
 assert.doesNotMatch(productionBaselineWorkflow, /upload-artifact@v\d/);
 assert.match(baselineMigrationTrialWorkflow, /environment: staging/);
 assert.match(baselineMigrationTrialWorkflow, /secrets\.SUPABASE_RESTORE_DB_URL/);
-assert.match(baselineMigrationTrialWorkflow, /kynqqwyctohrjqloyedh/);
+assert.match(baselineMigrationTrialWorkflow, /qlksgkrcdfuqbjlqeetb/);
 assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
 assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(baselineMigrationTrialWorkflow, /head\.repo\.full_name == github\.repository/);
