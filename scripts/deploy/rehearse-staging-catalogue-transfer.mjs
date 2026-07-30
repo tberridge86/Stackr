@@ -237,12 +237,9 @@ try {
     });
 
     await setUserTriggersEnabled(target, tableName, false);
-    try {
-      await insertRows(target, tableName, targetMetadata, sourceRows);
-      await advanceOwnedSequences(target, tableName, targetMetadata, sourceRows);
-    } finally {
-      await setUserTriggersEnabled(target, tableName, true);
-    }
+    await insertRows(target, tableName, targetMetadata, sourceRows);
+    await advanceOwnedSequences(target, tableName, targetMetadata, sourceRows);
+    await setUserTriggersEnabled(target, tableName, true);
     const targetRowsAfter = await readRows(target, tableName, targetMetadata.primaryKey);
     const matchedRows = verifySourceRows(
       tableName,

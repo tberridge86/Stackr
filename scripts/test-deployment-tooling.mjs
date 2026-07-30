@@ -236,6 +236,7 @@ assert.match(catalogueTransferScript, /insert into[\s\S]+on conflict \(\$\{prima
 assert.match(catalogueTransferScript, /do update set/);
 assert.match(catalogueTransferScript, /disable'\} trigger user/);
 assert.match(catalogueTransferScript, /enable' : 'disable/);
+assert.match(catalogueTransferScript, /setUserTriggersEnabled\(target, tableName, true\)/);
 assert.match(catalogueTransferScript, /preExistingSourceValueMismatchCount/);
 assert.match(catalogueTransferScript, /await target\.query\('rollback'\)/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
