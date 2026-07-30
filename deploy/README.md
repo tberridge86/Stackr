@@ -26,9 +26,17 @@ No second hosting provider is introduced.
 - `activeIndexValidated=false`: no complete inactive index is available for activation.
 - `storageBackupVerified=false`: a fresh production backup has not been verified by these workflows.
 
+These checked-in booleans are authoritative. Protected GitHub variables are a second human approval, not an override: release preflight fails when either the evidence gate is false or its matching approval variable is not `true`.
+
 The live Supabase project is healthy, but its migration history is empty and its existing security advisor reports public `SECURITY DEFINER` views/functions, broad storage listing policies, and RLS tables without policies. Those are pre-existing production findings and require a separate reviewed security migration after the baseline is established.
 
-Do not flip these values to make a workflow pass. Resolve the underlying evidence, review it, and set the matching protected GitHub variable.
+The isolated Supabase staging project is `lmwfhvexfcoyeuoyrlco`; production is `oakdbbzdqwurpjnoqhmu`. The staging security rehearsal was completed and its temporary records were removed. No Stage 13 migration has been applied to production.
+
+The latest non-secret readiness snapshot is `deploy/evidence/staging-readiness-2026-07-30.json`. It records 76 local migration files, 20 isolated staging/rehearsal history entries, zero production migration entries, 11 completed staging physical backups, 8 completed production physical backups, and an empty staging Storage inventory. The latest staging physical backup predates the vector and seed-reconciliation changes, so it is not a current rollback point.
+
+`deploy/evidence/staging-migration-reconciliation-2026-07-30.json` records the hash comparison. Three repository migrations are accounted for on staging, 17 entries are staging-only support/rehearsal changes, and 73 repository migrations remain unverified. Neither `migration repair` nor a migration push is authorised for those 73 files. `scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned` and `scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready` therefore fail by design.
+
+Do not flip manifest values to make a workflow pass. Resolve the underlying evidence, commit the evidence-backed state change for review, and independently set the matching protected GitHub variable.
 
 ## Local Verification
 
@@ -44,6 +52,8 @@ npm run typecheck:backend
 npm run check:api-contract
 npm run test:database-migrations
 npm run test:deployment
+node scripts/deploy/verify-staging-migration-reconciliation.mjs
+node scripts/deploy/verify-staging-readiness-evidence.mjs
 npm test --prefix gateway
 docker build --pull -t stackr-recognition:local recognition-service
 ```
@@ -89,16 +99,17 @@ STACKR_RECOGNITION_URL
 STACKR_GATEWAY_URL
 STACKR_MIGRATION_BASELINE_APPROVED
 STACKR_MODEL_INDEX_RELEASE_APPROVED
+STACKR_STORAGE_BACKUP_APPROVED
 ```
 
-The two approval variables must remain `false` until their corresponding evidence is reviewed.
+The three approval variables must remain `false` until their corresponding evidence is reviewed. `SUPABASE_PROJECT_REF` must be `lmwfhvexfcoyeuoyrlco` in staging and `oakdbbzdqwurpjnoqhmu` in production; preflight rejects a crossed environment.
 
 ## Workflow Responsibilities
 
 - `platform-ci.yml`: lint, type checks, unit/integration tests, migration contracts, OpenAPI drift, image build, dependency and secret scans, and benchmark smoke tests.
 - `deploy-staging.yml`: verifies backup, dry-runs migrations, deploys both Railway services, requires model/index readiness, deploys the staging gateway, and optionally publishes an EAS update.
 - `deploy-production.yml`: reruns release checks, verifies backup, applies compatible migrations, deploys rolling services, activates catalogue/index versions, starts a Cloudflare and optional EAS canary, monitors, and optionally promotes.
-- `rollback.yml`: restores one known-good gateway, Railway deployment, catalogue version, index/model combination, or EAS update group.
+- `rollback.yml`: restores one known-good gateway, Railway deployment, catalogue version, index/model combination, reverts an in-progress EAS rollout, or republishes a known-good EAS update group.
 - `ingestion-workers.yml`: manual provider scopes plus a schedule that remains disabled until both terms-approval variables are true.
 
 Supabase logical backups are written only to the ephemeral GitHub runner and removed in an `always()` step. They are never uploaded as public workflow artifacts.
@@ -117,6 +128,16 @@ Supabase logical backups are written only to the ephemeral GitHub runner and rem
 10. Observe quality, errors and latency; promote only after gates pass.
 
 Railway currently has no separate inactive production recognition service recorded in the repository. Its deployment is therefore rolling, not a blue/green service swap. This is an explicit limitation and requires backward-compatible service contracts.
+
+## Provider Setup Still Required
+
+The workflows need protected values for every name listed above. In particular, the Railway recognition service ID, staging/production Railway environment IDs, Cloudflare account/token, three service URLs, Supabase database URLs/access tokens, and Expo token are not derivable from source control. Add them in the matching GitHub environment without posting their values in an issue, log, or client configuration.
+
+The immediate staging recovery blocker is the protected staging `SUPABASE_DB_URL` plus an isolated restore target. The local Supabase CLI state is linked to production, so backup commands must use the explicit staging database URL and must never use `--linked`. Provider PITR restores operate on the selected project and are not an acceptable staging restore rehearsal because they would overwrite the source project.
+
+Railway memory, CPU, replica, and usage limits are account-side settings rather than fields in the checked-in service configuration. Configure and record them for both `backend` and `recognition-service` before a production canary; use measured model memory to select recognition concurrency. A provider screenshot or exported non-secret settings record is required evidence.
+
+Current verdict: deployment tooling is reproducible, but staging and production release are **NO-GO** while the four manifest gates remain false. The workflows are intended to refuse deployment in that state.
 
 ## Model And Index Blocker
 

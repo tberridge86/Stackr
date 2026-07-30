@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Prove the exact release on isolated staging resources before production. Staging must have its own Railway environment/services, Cloudflare Worker environment, Supabase database or branch, URLs, and EAS channel.
+Prove the exact release on isolated staging resources before production. Staging must have its own Railway environment/services, Cloudflare Worker environment, Supabase project, URLs, and EAS channel. The approved Supabase staging ref is `lmwfhvexfcoyeuoyrlco`; never substitute the production ref `oakdbbzdqwurpjnoqhmu`.
 
 ## One-Time Setup
 
@@ -13,6 +13,9 @@ Prove the exact release on isolated staging resources before production. Staging
 5. Configure EAS `preview` environment values and keep only `EXPO_PUBLIC_*` public values in the update bundle.
 6. Leave `STACKR_MIGRATION_BASELINE_APPROVED=false` until a local reset from migration zero passes against the correct baseline.
 7. Leave `STACKR_MODEL_INDEX_RELEASE_APPROVED=false` until Stage 6 has approved and checksum-verified the model and inactive index.
+8. Leave `STACKR_STORAGE_BACKUP_APPROVED=false` until the bucket inventory, retention policy, backup/export mechanism, and an isolated restore have been verified.
+
+The same four facts must be `true` in `deploy/release-manifest.json`. GitHub variables cannot override false manifest gates.
 
 Required Cloudflare secret commands:
 
@@ -33,9 +36,14 @@ npm ci --prefix backend
 npm ci --prefix gateway
 npm run deploy:preflight
 npm run deploy:verify-model
+node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
 ```
 
-Review the reported warnings. A blocked model report is expected today and means the deployment must stop before gateway activation.
+Review the reported warnings. The release manifest currently blocks migration, model, index, and storage gates, so a release-mode preflight must fail today. That failure is expected and prevents any provider mutation.
+
+The 2026-07-30 rehearsal proved the Stage 6 registry migration and rollback against staging, including RLS, private grants, activation guards and fixed function search paths. The `vector` extension was then enabled on staging only and verified at version `0.8.2`; no vector column or active index was created. Migration history is only partially reconciled: 3 repository migrations are accounted for, 17 entries are staging-only, and 73 repository migrations remain unverified. Do not stamp or push those migrations merely to align the counters.
+
+Supabase reports 11 completed staging physical backups, but the latest (`1245215485`, `2026-07-30T03:47:35.742Z`) predates the vector and catalogue reconciliation changes. Staging Storage is empty. A current logical Postgres dump and an isolated Postgres/Storage restore test still require the protected staging database URL and a separate restore target. The evidence is recorded in `deploy/evidence/staging-recovery-2026-07-30.json`.
 
 ## Dispatch
 
@@ -51,11 +59,13 @@ gh workflow run deploy-staging.yml `
   -f publish_mobile_update=false
 ```
 
-The workflow must complete the physical-backup check, logical backup verification, migration dry run, both Railway deployments, private readiness, gateway activation, and public smoke tests. Logical dumps are deleted even on failure.
+Once all gates are evidence-backed, the workflow must complete the physical-backup check, logical backup verification, migration dry run, both Railway deployments, private readiness, gateway activation, and public smoke tests. Logical dumps are deleted even on failure.
+
+Before dispatch, confirm the `staging` GitHub environment contains every secret and variable listed in `deploy/README.md`. The presently unverified account-side items are the Railway recognition service and service IDs, Railway resource/usage limits, Cloudflare credentials/domain, provider URLs, Supabase database URL/access token, Expo token, and a restorable object-storage plan. Do not create placeholders for any of them.
 
 ## Migration Trial
 
-Only after the remote migration history is reconciled and staging has a verified rollback point, rerun with:
+Only after the remote migration history is fully reconciled and staging has a verified rollback point, rerun with:
 
 ```powershell
 gh workflow run deploy-staging.yml `
@@ -76,6 +86,8 @@ Verify:
 request IDs are returned unchanged
 private recognition metrics remain inaccessible without service credentials
 ```
+
+Do not use the local linked project for the backup or migration trial: its `.temp/project-ref` may identify production. Supply the protected staging `SUPABASE_DB_URL` explicitly. Do not run `backups restore` against staging as a rehearsal; that overwrites the source project. Restore the logical dump into an isolated target, verify schema and row-count/checksum evidence, then delete or retain that target according to the approved recovery plan.
 
 ## Mobile Trial
 

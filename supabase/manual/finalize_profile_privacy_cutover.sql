@@ -70,5 +70,11 @@ grant update (
 ) on public.profiles to authenticated;
 grant select, insert, update, delete on table public.profiles to service_role;
 
-revoke all on function public.admin_binder_directory() from public, anon;
-grant execute on function public.admin_binder_directory() to authenticated, service_role;
+do $$
+begin
+  if to_regprocedure('public.admin_binder_directory()') is not null then
+    revoke all on function public.admin_binder_directory() from public, anon;
+    grant execute on function public.admin_binder_directory() to authenticated, service_role;
+  end if;
+end;
+$$;

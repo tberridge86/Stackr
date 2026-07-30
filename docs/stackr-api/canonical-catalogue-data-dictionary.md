@@ -123,10 +123,12 @@ Key columns:
 
 - `code`: unique machine code.
 - `english_label`: display label.
-- `finish_group`: `standard`, `foil`, `parallel`, `edition`, `promo`, `stamp`, `regional` or `other`.
+- `finish_group`: `standard`, `foil`, `parallel`, `edition`, `stamp`, `regional` or `other`.
 - `description`, `sort_order`: documentation/order.
 
 Seeded finishes include normal, holo, reverse holo, first edition, unlimited, promo, stamped, Poke Ball, Master Ball and other regional variants.
+The `promo` finish code is retained for compatibility and belongs to `other`;
+promotional identity is represented explicitly by `variant_group = 'promo'`.
 
 ### `catalog.variant_taxonomy`
 

@@ -13,7 +13,7 @@ on:
         description: Component to roll back
         required: true
         type: choice
-        options: [gateway, catalogue-api, recognition, catalogue, embedding-index, mobile-update]
+        options: [gateway, catalogue-api, recognition, catalogue, embedding-index, mobile-rollout, mobile-update]
       target_id:
         description: Target ID; catalogue requires a validated draft compensating version UUID
         required: true
@@ -90,14 +90,25 @@ jobs:
           node scripts/deploy/release-database.mjs index rollback
           --id="$STACKR_ROLLBACK_TARGET_ID" --reason="$STACKR_ROLLBACK_REASON"
 
-      - name: Roll back EAS update and mobile feature configuration
-        if: inputs.component == 'mobile-update'
+      - name: Revert an in-progress EAS rollout
+        if: inputs.component == 'mobile-rollout'
         run: >-
-          npx --yes eas-cli@21.4.0 update:rollback "$STACKR_ROLLBACK_TARGET_ID"
+          npx --yes eas-cli@21.4.0 update:revert-update-rollout
+          --group "$STACKR_ROLLBACK_TARGET_ID"
+          --message "$STACKR_ROLLBACK_REASON" --non-interactive
+
+      - name: Republish a known-good EAS update group
+        if: inputs.component == 'mobile-update'
+        env:
+          STACKR_ROLLBACK_ENVIRONMENT: ${{ inputs.environment }}
+        run: >-
+          npx --yes eas-cli@21.4.0 update:republish
+          --group "$STACKR_ROLLBACK_TARGET_ID"
+          --destination-channel "$STACKR_ROLLBACK_ENVIRONMENT"
           --platform all --message "$STACKR_ROLLBACK_REASON" --non-interactive
 
       - name: Smoke-test surviving public paths
-        if: inputs.component != 'mobile-update'
+        if: inputs.component != 'mobile-update' && inputs.component != 'mobile-rollout'
         run: >-
           npm run deploy:smoke --
           --gateway="$STACKR_GATEWAY_URL"

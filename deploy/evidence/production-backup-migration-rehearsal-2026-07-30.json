@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "stackr-production-backup-migration-rehearsal-v1.0.0",
+  "capturedAt": "2026-07-30T09:12:54.558Z",
+  "sourceProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "productionMutationPerformed": false,
+  "productionCommandExecutedDuringRehearsal": false,
+  "paidResourceCreated": false,
+  "backup": {
+    "createdAt": "2026-07-30T06:39:13.581Z",
+    "encryptedArtifactSha256": "fa2eff353bf534245af8f32957f39951261bef9f9f8ed456b5b15c0fd7bd8734",
+    "sourcePostgresVersion": "17.6.1.104",
+    "completedManagedBackupCount": 8,
+    "pitrEnabled": false,
+    "artifactChecksumCount": 106,
+    "artifactChecksumFailures": 0,
+    "storageObjectCount": 95,
+    "storageChecksumFailures": 0
+  },
+  "restore": {
+    "target": "local_disposable_loopback_only",
+    "targetPostgresVersion": "17.10",
+    "restoredTableCount": 110,
+    "restoredRecoverableRowCount": 460853,
+    "applicationDataMismatchCount": 0,
+    "invalidConstraintCountBeforeMigrations": 0,
+    "platformHistoryExcluded": [
+      "auth.schema_migrations",
+      "storage.migrations"
+    ],
+    "managedAclAdjustment": "Reapplied standard auth and storage service-role schema usage omitted by the sectioned managed-schema dump.",
+    "platformExtensionException": "supabase_vault is unavailable in the portable local PostgreSQL runtime and the backup contained no referenced Vault objects.",
+    "restorePassed": true
+  },
+  "migrationRehearsal": {
+    "supabaseCliVersion": "2.110.0",
+    "migrationCount": 76,
+    "firstVersion": "20260513170000",
+    "lastVersion": "20260730080047",
+    "initialDryRunPassed": true,
+    "fullApplyPassed": true,
+    "ledgerCountAfter": 76,
+    "followUpDryRunUpToDate": true,
+    "followUpPendingMigrationCount": 0
+  },
+  "compatibilityCorrections": [
+    {
+      "migration": "20260702120000_owned_card_membership_model.sql",
+      "reason": "Remove obsolete four-column unique constraints and indexes by column signature before condition-aware backfill.",
+      "lfSha256": "1eab4aac90fff8b255b9ff601e6c04d1a7eb6cfbdfe65d7cac639db939872c7c"
+    },
+    {
+      "migration": "20260714120000_performance_pricing_indexes.sql",
+      "reason": "Resolve pg_trgm operator classes through the extensions schema in a transaction-local search path.",
+      "lfSha256": "73b23c511000bceb07eb28cb6a6e72040bde2943d1e455bdc124ec01da8e7869"
+    },
+    {
+      "migration": "20260719110000_fast_global_search_indexes.sql",
+      "reason": "Resolve pg_trgm operator classes through the extensions schema in a transaction-local search path.",
+      "lfSha256": "d414cbdb59d5e1cc25a8acf1264fad115f348717e39016212d28e554d1d911a2"
+    },
+    {
+      "migration": "20260727212256_canonical_stackr_catalogue_database.sql",
+      "reason": "Resolve pg_trgm operator classes through the extensions schema in a transaction-local search path.",
+      "lfSha256": "6558d98c1d82672c08d3bc6bc734e087a07a42833aa8f605c9f7c83ebdaf7515"
+    }
+  ],
+  "postMigrationValidation": {
+    "invalidConstraintCount": 0,
+    "securityInvokerViewCount": 4,
+    "obsoleteOwnedCardUniqueObjectCount": 0,
+    "intendedOwnedCardIdentityIndexCount": 1,
+    "promoVariantGroup": "promo",
+    "promoFinishGroup": "other",
+    "pgTrgmSchema": "extensions",
+    "coinLedgerRowsAfterBackfill": 68,
+    "ownedVariantRowsAfterBackfill": 1597,
+    "linkedBinderRowsAfterBackfill": 1289,
+    "cataloguePrivateSchemaRlsCoverage": {
+      "audit": "19/19",
+      "catalog": "16/16",
+      "ingest": "9/9",
+      "market": "16/16",
+      "ml": "11/11"
+    }
+  },
+  "cleanup": {
+    "localDatabaseServerStopped": true,
+    "plaintextFileCountTruncated": 6810,
+    "plaintextBytesCleared": 3935070112,
+    "truncateFailureCount": 0,
+    "remainingNonzeroPlaintextFileCount": 0,
+    "encryptedBackupPreserved": true,
+    "encryptedBackupSha256Reverified": "fa2eff353bf534245af8f32957f39951261bef9f9f8ed456b5b15c0fd7bd8734"
+  },
+  "decision": "rehearsal_passed_production_not_authorised"
+}

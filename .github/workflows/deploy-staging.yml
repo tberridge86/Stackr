@@ -32,11 +32,13 @@ jobs:
     timeout-minutes: 90
     environment: staging
     env:
+      STACKR_DEPLOYMENT_ENVIRONMENT: staging
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
       STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
       STACKR_MODEL_INDEX_RELEASE_APPROVED: ${{ vars.STACKR_MODEL_INDEX_RELEASE_APPROVED }}
+      STACKR_STORAGE_BACKUP_APPROVED: ${{ vars.STACKR_STORAGE_BACKUP_APPROVED }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
       RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
@@ -62,7 +64,10 @@ jobs:
           npm ci --prefix gateway
 
       - name: Verify release inputs and repository structure
-        run: npm run deploy:preflight -- --release
+        run: |
+          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
+          node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
+          npm run deploy:preflight -- --release
 
       - name: Verify latest physical backup and create ephemeral logical backups
         run: |

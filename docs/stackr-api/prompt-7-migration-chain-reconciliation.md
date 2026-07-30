@@ -9,7 +9,8 @@ application, activate a catalogue version, or change production data.
 The current chain remains authoritative because it includes later gateway,
 quality, application-migration, release-control, and critical-containment work.
 Safeguards present only in Prompt 6 are folded into existing current-chain
-migrations to avoid competing timestamps and to preserve a 75-migration dry run.
+migrations to avoid competing timestamps. The later staging reconciliation adds
+one forward migration, producing a 76-migration chain.
 
 ## Nine Differences
 
@@ -34,13 +35,19 @@ Three Prompt 6-only migrations are intentionally not copied:
 
 ## Restored Safeguards
 
-The reconciliation restores four shared-chain behaviors that had regressed:
+The reconciliation restores six shared-chain behaviors that had regressed:
 
 - `achievement_coin_rewards` has RLS and its authenticated read policy.
 - `inventory_movements.binder_id` is UUID-compatible with `binders.id`.
 - legacy `price_alerts` receives the guarded columns used by later indexes and
   application code.
-- `promo` remains a first-class finish group in the canonical taxonomy and seed.
+- `promo` remains a first-class variant/distribution group, while its stable
+  compatibility finish code is classified under `other` rather than presented
+  as a physical card finish.
+- the owned-card backfill removes obsolete four-column uniqueness constraints
+  and indexes by column signature before creating the condition-aware identity;
+- every trigram-index migration places `extensions` on its transaction-local
+  search path after installing `pg_trgm`.
 
 The ingestion foundation now keeps raw-record uniqueness within one import run,
 retains cross-run history for provenance, and seeds the `ultra_rare` and
@@ -88,11 +95,13 @@ marker-owned compatibility objects.
 
 `scripts/test-prompt7-migration-chain-reconciliation.mjs` requires:
 
-- exactly 75 migration files;
+- exactly 76 migration files;
 - all six current-only migrations;
 - no duplicate copy of the three folded Prompt 6 migrations;
 - the restored historical fixes;
 - ingestion provenance and rarity safeguards;
+- production-shape owned-card uniqueness compatibility;
+- deterministic `pg_trgm` operator-class resolution;
 - UUID release readiness and forward-only rollback;
 - legacy-view security-invoker controls;
 - a rollback that cannot republish private scans.
@@ -151,16 +160,56 @@ versions. This command completed successfully:
 npx --yes supabase@2.110.0 db push --linked --dry-run --include-all
 ```
 
-It reported `dryRun: true` and exactly 75 pending migrations. It did not apply
-schema, data, seed, role, storage, catalogue-version, or deployment changes.
+At that pre-merge checkpoint it reported `dryRun: true` and exactly 75 pending
+migrations. The later taxonomy reconciliation migration brings the reviewed
+branch to 76 files. No newer hosted-production command was run during this
+rehearsal, and the historical dry run did not apply schema, data, seed, role,
+storage, catalogue-version, or deployment changes.
+
+### Fresh production-copy rehearsal
+
+The encrypted manual production backup was checksum-verified and restored to a
+disposable PostgreSQL 17.10 instance listening only on `127.0.0.1`. The source
+backup was PostgreSQL 17.6 and contained 110 tables plus 95 Storage objects.
+All 95 object checksums matched and no recoverable application-data mismatch was
+found. Platform-owned migration history was deliberately excluded.
+
+The restored managed `auth` and `storage` schemas required their standard local
+role grants to be reapplied because the sectioned dump excludes managed ACLs.
+The local PostgreSQL distribution does not contain the platform-managed
+`supabase_vault` extension; the backup contained no referenced Vault objects, so
+that documented platform exception did not affect the rehearsal.
+
+Against a fresh clone of that baseline:
+
+- the dry run planned exactly 76 migrations, from `20260513170000` through
+  `20260730080047`;
+- all 76 migrations executed successfully in order;
+- the migration ledger contains exactly those 76 versions;
+- a second dry run returned `upToDate: true` with no pending migrations;
+- all constraints validate;
+- the four legacy views use `security_invoker=true`;
+- `promo` is active under `variant_group=promo` and its compatibility finish is
+  active under `finish_group=other`;
+- no obsolete four-column owned-card uniqueness object remains, while the
+  seven-column identity index exists;
+- `pg_trgm` is installed in the `extensions` schema;
+- all private canonical schemas exist with RLS on every table.
+
+Machine-readable evidence is in
+`deploy/evidence/production-backup-migration-rehearsal-2026-07-30.json`.
+After validation, the local database server was stopped and all 6,810 files in
+the plaintext rehearsal area were truncated to zero bytes. The encrypted backup
+was retained and its SHA-256 checksum was reverified.
 
 ## Production Decision
 
-**NO-GO for production application.** The dry run and repository checks pass,
-but Supabase dry run plans rather than executes the SQL. A fresh disposable
-database rehearsal, a verified restorable backup/PITR point, and review of the
-remaining live security findings are still required. No production push is
-authorised by this document.
+**NO-GO for production application.** The clean-room execution and backup
+recovery gates now pass, but production remains explicitly unauthorised. The
+draft pull request must pass fresh GitHub CI and be reviewed, and the hosted
+production migration ledger and dry run must be rechecked against the final
+commit before any separately approved cutover. No production push is authorised
+by this document.
 
 ## Rollback
 
@@ -172,6 +221,8 @@ version or make private scan storage public as a rollback technique.
 
 ## Exact Next Step
 
-Execute all 75 migrations against a fresh disposable database and record the
-SQL-level result. Do not merge the draft pull request or run a non-dry-run
-production database push.
+Commit and push the reconciled branch, then require fresh GitHub CI on the draft
+pull request. After review, and only with separate production authorisation,
+repeat the read-only hosted migration-history comparison and the linked 76-file
+dry run. Do not merge the draft pull request or run a non-dry-run production
+database push yet.

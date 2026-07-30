@@ -62,6 +62,8 @@ This is a destructive production operation. It is intentionally absent from auto
 
 The repository does not establish cross-region bucket replication or a verified object export. Until that is configured and restore-tested, storage disaster recovery is incomplete.
 
+An empty bucket inventory is not restore proof. For a staging drill, first create a private non-user fixture object with a recorded SHA-256, export the bucket metadata and object bytes through an authorised Storage client, restore them into a separate staging-only target, and verify privacy plus the checksum. Delete the fixture after the drill. Database dumps do not include Storage object bytes.
+
 ## Railway Loss
 
 Create replacement services from the same Git commit and config-as-code files:
@@ -74,6 +76,8 @@ npx @railway/cli@5.30.1 up recognition-service --path-as-root --ci `
 ```
 
 Recreate runtime variables from the password manager/provider settings, never from logs or source. Keep the gateway on the known-good backend until readiness checks pass.
+
+Railway CPU, memory, replica, and usage limits must be recreated from the release evidence because they are provider-side settings. The repository does not currently contain verified exports of those settings, so Railway disaster recovery remains incomplete until a staging replacement drill records them.
 
 ## Cloudflare Loss
 

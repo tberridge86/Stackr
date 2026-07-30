@@ -1,5 +1,6 @@
 create extension if not exists pgcrypto;
 create extension if not exists pg_trgm with schema extensions;
+set local search_path = "$user", public, extensions;
 
 create schema if not exists catalog;
 create schema if not exists ingest;
@@ -167,7 +168,7 @@ create table if not exists catalog.finishes (
   code text not null unique,
   english_label text not null,
   finish_group text not null default 'standard'
-    check (finish_group in ('standard', 'foil', 'parallel', 'edition', 'promo', 'stamp', 'regional', 'other')),
+    check (finish_group in ('standard', 'foil', 'parallel', 'edition', 'stamp', 'regional', 'other')),
   description text,
   sort_order integer not null default 100,
   source_updated_at timestamptz,
@@ -1166,7 +1167,7 @@ values
   ('reverse_holo', 'Reverse Holo', 'foil', 30, 'Reverse holographic finish.'),
   ('first_edition', 'First Edition', 'edition', 40, 'First edition print marker.'),
   ('unlimited', 'Unlimited', 'edition', 50, 'Unlimited edition print.'),
-  ('promo', 'Promo', 'promo', 60, 'Promotional release.'),
+  ('promo', 'Promo', 'other', 60, 'Promotional distribution marker retained for compatibility.'),
   ('stamped', 'Stamped', 'stamp', 70, 'Stamped promotional or event variant.'),
   ('poke_ball', 'Poke Ball', 'parallel', 80, 'Poke Ball patterned parallel finish.'),
   ('master_ball', 'Master Ball', 'parallel', 90, 'Master Ball patterned parallel finish.'),

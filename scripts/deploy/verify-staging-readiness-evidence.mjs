@@ -1,0 +1,81 @@
+import { readFileSync } from 'node:fs';
+
+const evidencePath = process.argv.find((arg) => arg.startsWith('--evidence='))?.slice(11)
+  ?? 'deploy/evidence/staging-readiness-2026-07-30.json';
+const requireReleaseReady = process.argv.includes('--require-release-ready');
+const manifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
+const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
+const errors = [];
+const warnings = [];
+
+if (evidence.schemaVersion !== 'stackr-staging-readiness-evidence-v1.0.0') {
+  errors.push('invalid_staging_readiness_evidence_version');
+}
+if (!Number.isFinite(Date.parse(evidence.capturedAt))) errors.push('invalid_evidence_capture_time');
+else if (Date.now() - Date.parse(evidence.capturedAt) > 7 * 24 * 60 * 60 * 1000) {
+  warnings.push('staging_readiness_evidence_older_than_seven_days');
+}
+if (!/^[0-9a-f]{40}$/.test(evidence.sourceCommitHash ?? '')) errors.push('invalid_evidence_source_commit');
+if (evidence.supabase?.productionProjectRef !== manifest.components.database.projectRef) {
+  errors.push('production_project_ref_evidence_mismatch');
+}
+if (evidence.supabase?.stagingProjectRef !== manifest.components.database.stagingProjectRef) {
+  errors.push('staging_project_ref_evidence_mismatch');
+}
+for (const field of [
+  'localMigrationFileCount',
+  'productionMigrationHistoryCount',
+  'stagingMigrationHistoryCount',
+  'stagingSecurityAdvisorFindingCountAfterRollback',
+  'productionPhysicalBackupCount',
+  'stagingPhysicalBackupCount',
+]) {
+  if (!Number.isInteger(evidence.supabase?.[field]) || evidence.supabase[field] < 0) {
+    errors.push(`invalid_evidence_count:${field}`);
+  }
+}
+if (evidence.stage6Rehearsal?.rollbackApplied !== true
+  || evidence.stage6Rehearsal?.finalStage6ObjectCount !== 0) {
+  errors.push('stage6_rehearsal_not_cleanly_rolled_back');
+}
+if (evidence.stage6Rehearsal?.securityAdvisorFindingCountAfterFixedMigration !== 0) {
+  errors.push('stage6_rehearsal_has_security_findings');
+}
+if (evidence.stage6Rehearsal?.currentVectorExtensionInstalled !== true) {
+  errors.push('staging_vector_extension_not_verified');
+}
+if (!Number.isFinite(Date.parse(evidence.supabase?.latestStagingPhysicalBackupAt))) {
+  errors.push('invalid_latest_staging_physical_backup_time');
+}
+if (evidence.databaseRecovery?.status === 'verified'
+  && (!evidence.databaseRecovery.restoreTargetProjectRef || !evidence.databaseRecovery.restoreTestedAt)) {
+  errors.push('database_restore_evidence_incomplete');
+}
+
+if (manifest.releaseGates.migrationHistoryAligned === true
+  && evidence.supabase?.migrationHistoryStatus !== 'aligned') {
+  errors.push('migration_gate_lacks_aligned_evidence');
+}
+if (manifest.releaseGates.storageBackupVerified === true
+  && evidence.storageRecovery?.status !== 'verified') {
+  errors.push('storage_gate_lacks_verified_restore_evidence');
+}
+
+if (requireReleaseReady) {
+  if (evidence.supabase?.migrationHistoryStatus !== 'aligned') errors.push('migration_history_not_aligned');
+  if (evidence.databaseRecovery?.status !== 'verified') errors.push('database_recovery_not_verified');
+  if (evidence.storageRecovery?.status !== 'verified') errors.push('storage_recovery_not_verified');
+  if (evidence.modelAndIndex?.status !== 'ready') errors.push('model_and_index_not_ready');
+  if (evidence.releaseReadiness?.status !== 'ready') errors.push('staging_release_not_ready');
+}
+
+console.log(JSON.stringify({
+  ok: errors.length === 0,
+  evidencePath,
+  capturedAt: evidence.capturedAt ?? null,
+  releaseReady: evidence.releaseReadiness?.status === 'ready',
+  blockers: evidence.releaseReadiness?.blockers ?? [],
+  warnings,
+  errors,
+}, null, 2));
+if (errors.length) process.exit(1);

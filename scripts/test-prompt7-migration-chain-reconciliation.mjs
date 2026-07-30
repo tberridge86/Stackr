@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 
 const read = (file) => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
@@ -6,7 +7,7 @@ const migrationNames = readdirSync(new URL('../supabase/migrations', import.meta
   .filter((name) => name.endsWith('.sql'))
   .sort();
 
-assert.equal(migrationNames.length, 75, 'Prompt 7 must preserve the reviewed 75-migration chain');
+assert.equal(migrationNames.length, 76, 'Prompt 7 must preserve the reconciled 76-migration chain');
 
 for (const retainedMigration of [
   '20260728110000_curated_corocoro_mew_promos.sql',
@@ -15,6 +16,7 @@ for (const retainedMigration of [
   '20260728202949_stackr_application_migration_provider_retirement.sql',
   '20260728203300_stackr_release_activation_controls.sql',
   '20260729055239_critical_security_containment.sql',
+  '20260730080047_reconcile_catalogue_seed_encoding_and_finish_taxonomy.sql',
 ]) {
   assert.ok(migrationNames.includes(retainedMigration), `${retainedMigration} must remain in the chain`);
 }
@@ -35,6 +37,29 @@ const inventory = read('supabase/migrations/20260627120000_inventory_movements_a
 assert.match(inventory, /binder_id\s+uuid(?:\s+null)?\s+references public\.binders\(id\)/i);
 assert.doesNotMatch(inventory, /binder_id\s+text(?:\s+null)?\s+references public\.binders\(id\)/i);
 
+const ownedMembership = read('supabase/migrations/20260702120000_owned_card_membership_model.sql');
+assert.match(ownedMembership, /con\.contype = 'u'/i);
+assert.match(
+  ownedMembership,
+  /array\['user_id', 'card_id', 'set_id', 'variant'\]/i,
+  'owned-card migration must remove obsolete four-column uniqueness by column signature',
+);
+assert.match(ownedMembership, /where con\.conindid = ind\.indexrelid/i);
+assert.match(
+  ownedMembership,
+  /user_card_variants_owned_identity_uidx[\s\S]*user_id, card_id, set_id, variant, condition, grade_company, grade/i,
+);
+
+for (const trigramMigration of [
+  'supabase/migrations/20260714120000_performance_pricing_indexes.sql',
+  'supabase/migrations/20260719110000_fast_global_search_indexes.sql',
+  'supabase/migrations/20260727212256_canonical_stackr_catalogue_database.sql',
+]) {
+  const sql = read(trigramMigration);
+  assert.match(sql, /create extension if not exists pg_trgm with schema extensions/i);
+  assert.match(sql, /set local search_path = "\$user", public, extensions/i);
+}
+
 const minty = read('supabase/migrations/20260715143000_minty_insight_platform.sql');
 for (const column of [
   'stackr_card_id',
@@ -51,8 +76,16 @@ for (const column of [
 }
 
 const canonical = read('supabase/migrations/20260727212256_canonical_stackr_catalogue_database.sql');
-assert.match(canonical, /finish_group in \([^)]*'promo'/i);
-assert.match(canonical, /'promo',\s*'Promo',\s*'promo'/i);
+assert.match(canonical, /variant_group in \([^)]*'promo'/i);
+assert.match(canonical, /'promo',\s*'Promo',\s*'other'/i);
+
+const taxonomyReconciliation = read(
+  'supabase/migrations/20260730080047_reconcile_catalogue_seed_encoding_and_finish_taxonomy.sql',
+);
+assert.match(taxonomyReconciliation, /where code = 'promo'/i);
+assert.match(taxonomyReconciliation, /finish_group = 'other'/i);
+assert.match(taxonomyReconciliation, /finish_group in \([^)]*'other'/i);
+assert.doesNotMatch(taxonomyReconciliation, /finish_group in \([^)]*'promo'/i);
 
 const ingestion = read('supabase/migrations/20260727213835_stackr_data_ingestion_reconciliation.sql');
 assert.match(ingestion, /drop index if exists ingest\.raw_source_records_identity_uidx/i);
@@ -118,5 +151,24 @@ assert.match(rollbackRunbook, /Never\s+pass an old deprecated or rolled-back cat
 const matrix = read('docs/stackr-api/prompt-7-migration-differences.csv');
 const matrixRows = matrix.trim().split(/\r?\n/);
 assert.equal(matrixRows.length, 10, 'difference matrix must contain one header plus nine decisions');
+
+const rehearsalEvidence = JSON.parse(
+  read('deploy/evidence/production-backup-migration-rehearsal-2026-07-30.json'),
+);
+assert.equal(rehearsalEvidence.productionMutationPerformed, false);
+assert.equal(rehearsalEvidence.productionCommandExecutedDuringRehearsal, false);
+assert.equal(rehearsalEvidence.paidResourceCreated, false);
+assert.equal(rehearsalEvidence.restore.restorePassed, true);
+assert.equal(rehearsalEvidence.migrationRehearsal.migrationCount, 76);
+assert.equal(rehearsalEvidence.migrationRehearsal.ledgerCountAfter, 76);
+assert.equal(rehearsalEvidence.migrationRehearsal.followUpPendingMigrationCount, 0);
+assert.equal(rehearsalEvidence.postMigrationValidation.invalidConstraintCount, 0);
+assert.equal(rehearsalEvidence.postMigrationValidation.promoVariantGroup, 'promo');
+assert.equal(rehearsalEvidence.postMigrationValidation.promoFinishGroup, 'other');
+for (const correction of rehearsalEvidence.compatibilityCorrections) {
+  const sql = read(`supabase/migrations/${correction.migration}`).replace(/\r\n/g, '\n');
+  const hash = createHash('sha256').update(sql).digest('hex');
+  assert.equal(hash, correction.lfSha256, `rehearsal hash drift: ${correction.migration}`);
+}
 
 console.log('Prompt 7 migration-chain reconciliation contract passed.');

@@ -10,10 +10,13 @@ All of these must be true:
 - Supabase production migration history is aligned with the repository and `STACKR_MIGRATION_BASELINE_APPROVED=true` was approved from evidence.
 - The release contains only backward-compatible migrations; destructive cleanup is deferred.
 - Supabase reports a recent completed physical backup and the workflow can create and verify ephemeral schema/data dumps.
+- Object-storage recovery has been restore-tested; `storageBackupVerified=true` is committed and `STACKR_STORAGE_BACKUP_APPROVED=true` was independently approved.
 - Stage 6 approved the production model and inactive index; `STACKR_MODEL_INDEX_RELEASE_APPROVED=true` is evidence-backed.
 - A valid inactive catalogue version UUID and embedding index UUID are recorded.
 - Railway rolling deployment compatibility has been reviewed.
 - The current gateway tag, Railway deployment IDs, catalogue version, index version and EAS update group are recorded for rollback.
+
+Current status is **NO-GO**: all four release gates in `deploy/release-manifest.json` are false. Do not dispatch this workflow until staging has passed on the exact commit and each gate has evidence.
 
 ## Release Command
 
@@ -51,7 +54,7 @@ The workflow performs the deployment in this order:
 10. Wait for the observation window and repeat smoke tests.
 11. Promote only when the dispatch explicitly requested it.
 
-If any step after a component change fails, the workflow attempts rollback in reverse order: EAS update, gateway traffic, index/model activation, catalogue activation, recognition deployment, then catalogue API deployment. Each rollback is attempted even if an earlier rollback action fails, and the workflow remains failed for incident review.
+If any step after a component change fails, the workflow attempts rollback in reverse order: an in-progress EAS rollout, gateway traffic, index/model activation, catalogue activation, recognition deployment, then catalogue API deployment. Each rollback is attempted even if an earlier rollback action fails, and the workflow remains failed for incident review.
 
 ## Monitoring Gate
 

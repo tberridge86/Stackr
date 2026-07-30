@@ -1,11 +1,21 @@
 {
   "benchmarkVersion": "stackr-model-benchmark-v1.0.0",
   "status": "blocked",
-  "generatedAt": "2026-07-28T15:19:29.361Z",
+  "generatedAt": "2026-07-30T06:31:59.458Z",
   "datasetVersion": "stackr-pilot-recognition-dataset-v1.0.0",
-  "datasetManifestSha256": "f5a400495a0c739749f7fad949e47cbceee1b8dfffc95f088c97410786678bd3",
-  "sourceCommitHash": "c65dbb8804de58f407dbe7a601e7ca5601965bc6",
+  "datasetManifestSha256": "bc88f94a95e86c6beea52387133300aba8d3f741aa037a3ecf2db074f19f25f8",
+  "sourceCommitHash": "42eaadbe04d5fdfb600bfb14be88e781ba568daa",
   "sourceTreeDirty": true,
+  "measurementEvidence": {
+    "path": null,
+    "sha256": null,
+    "schemaVersion": null,
+    "acceptedRunCount": 0,
+    "acceptedModelIds": [],
+    "blockers": [
+      "measurement_evidence_missing"
+    ]
+  },
   "supportedLanguages": [
     "en",
     "ja",
@@ -51,6 +61,7 @@
     "modelSelectionAndFinalTestSeparated": false,
     "queryImagesAreExcludedFromIndexedReferences": false,
     "notes": [
+      "No valid measurement evidence established protected evaluation isolation.",
       "The current pilot manifest records split metadata but does not yet provide approved real-phone captures for a protected final test.",
       "Synthetic augmentations may supplement benchmark coverage but cannot be counted as real-camera validation."
     ]
@@ -561,6 +572,11 @@
     "no_real_phone_test_captures",
     "missing_zh-Hans_benchmark_coverage",
     "missing_ko_benchmark_coverage",
+    "source_tree_dirty",
+    "measurement_evidence_not_accepted",
+    "measurement_evidence_missing",
+    "model_selection_and_final_test_not_separated",
+    "query_images_not_excluded_from_indexed_references",
     "no_production_model_selected_by_weighted_benchmark"
   ],
   "acceptanceCriteria": [
