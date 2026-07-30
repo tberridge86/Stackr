@@ -120,6 +120,14 @@ async function insertRows(client, tableName, metadata, rows) {
   const columnNames = metadata.columns.map((column) => column.column_name);
   const columnSql = columnNames.map(quoteIdentifier).join(', ');
   const hasIdentity = metadata.columns.some((column) => column.is_identity === 'YES');
+  const primaryKeySql = metadata.primaryKey.map(quoteIdentifier).join(', ');
+  const updatedColumns = columnNames.filter((column) => !metadata.primaryKey.includes(column));
+  const conflictAction = updatedColumns.length
+    ? `do update set ${updatedColumns.map((column) => {
+      const identifier = quoteIdentifier(column);
+      return `${identifier} = excluded.${identifier}`;
+    }).join(', ')}`
+    : 'do nothing';
   const maxRowsPerBatch = Math.max(1, Math.floor(50000 / columnNames.length));
 
   for (let offset = 0; offset < rows.length; offset += maxRowsPerBatch) {
@@ -135,10 +143,16 @@ async function insertRows(client, tableName, metadata, rows) {
     await client.query(
       `insert into ${qualifiedName(tableName)} (${columnSql})`
       + `${hasIdentity ? ' overriding system value' : ''} `
-      + `values ${tuples.join(', ')} on conflict do nothing`,
+      + `values ${tuples.join(', ')} on conflict (${primaryKeySql}) ${conflictAction}`,
       values,
     );
   }
+}
+
+async function setUserTriggersEnabled(client, tableName, enabled) {
+  await client.query(
+    `alter table ${qualifiedName(tableName)} ${enabled ? 'enable' : 'disable'} trigger user`,
+  );
 }
 
 async function advanceOwnedSequences(client, tableName, metadata, rows) {
@@ -211,8 +225,24 @@ try {
 
     const sourceRows = await readRows(source, tableName, sourceMetadata.primaryKey);
     const targetRowsBefore = await readRows(target, tableName, targetMetadata.primaryKey);
-    await insertRows(target, tableName, targetMetadata, sourceRows);
-    await advanceOwnedSequences(target, tableName, targetMetadata, sourceRows);
+    const targetBeforeByKey = new Map(
+      targetRowsBefore.map((row) => [keyForRow(row, targetMetadata.primaryKey), row]),
+    );
+    const preExistingSourceRows = sourceRows.filter((row) => (
+      targetBeforeByKey.has(keyForRow(row, sourceMetadata.primaryKey))
+    ));
+    const preExistingSourceValueMismatches = preExistingSourceRows.filter((row) => {
+      const key = keyForRow(row, sourceMetadata.primaryKey);
+      return stableJson(row) !== stableJson(targetBeforeByKey.get(key));
+    });
+
+    await setUserTriggersEnabled(target, tableName, false);
+    try {
+      await insertRows(target, tableName, targetMetadata, sourceRows);
+      await advanceOwnedSequences(target, tableName, targetMetadata, sourceRows);
+    } finally {
+      await setUserTriggersEnabled(target, tableName, true);
+    }
     const targetRowsAfter = await readRows(target, tableName, targetMetadata.primaryKey);
     const matchedRows = verifySourceRows(
       tableName,
@@ -227,6 +257,8 @@ try {
       sourceRowCount: sourceRows.length,
       targetRowCountBefore: targetRowsBefore.length,
       targetRowCountDuringRehearsal: targetRowsAfter.length,
+      preExistingSourceKeyCount: preExistingSourceRows.length,
+      preExistingSourceValueMismatchCount: preExistingSourceValueMismatches.length,
       matchedSourceRowCount: matchedRows.length,
       sourceSha256: digestRows(sourceRows),
       matchedTargetSha256: digestRows(matchedRows),
@@ -251,7 +283,7 @@ try {
   sourceTransactionOpen = false;
 
   const evidence = {
-    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.0.0',
+    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.1.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
     sourceProjectRef: SOURCE_PROJECT_REF,
@@ -261,6 +293,7 @@ try {
     productionMutationPerformed: false,
     stagingMutationPerformed: false,
     targetTransactionCommitted: false,
+    transferConflictPolicy: 'primary_key_upsert_with_user_triggers_disabled_in_rollback_only_transaction',
     targetRollbackVerified: results.every((result) => result.rollbackMatched),
     selectedTableCount: results.length,
     sourceRowCount: results.reduce((sum, result) => sum + result.sourceRowCount, 0),

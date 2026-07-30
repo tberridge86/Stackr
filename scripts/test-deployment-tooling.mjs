@@ -232,7 +232,11 @@ assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACC
 
 const catalogueTransferScript = readFileSync('scripts/deploy/rehearse-staging-catalogue-transfer.mjs', 'utf8');
 assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
-assert.match(catalogueTransferScript, /insert into[\s\S]+on conflict do nothing/i);
+assert.match(catalogueTransferScript, /insert into[\s\S]+on conflict \(\$\{primaryKeySql\}\) \$\{conflictAction\}/i);
+assert.match(catalogueTransferScript, /do update set/);
+assert.match(catalogueTransferScript, /disable'\} trigger user/);
+assert.match(catalogueTransferScript, /enable' : 'disable/);
+assert.match(catalogueTransferScript, /preExistingSourceValueMismatchCount/);
 assert.match(catalogueTransferScript, /await target\.query\('rollback'\)/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.doesNotMatch(catalogueTransferScript, /target\.query\('commit'\)/i);
