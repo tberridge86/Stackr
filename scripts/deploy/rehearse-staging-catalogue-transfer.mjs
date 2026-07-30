@@ -120,14 +120,6 @@ async function insertRows(client, tableName, metadata, rows) {
   const columnNames = metadata.columns.map((column) => column.column_name);
   const columnSql = columnNames.map(quoteIdentifier).join(', ');
   const hasIdentity = metadata.columns.some((column) => column.is_identity === 'YES');
-  const primaryKeySql = metadata.primaryKey.map(quoteIdentifier).join(', ');
-  const updatedColumns = columnNames.filter((column) => !metadata.primaryKey.includes(column));
-  const conflictAction = updatedColumns.length
-    ? `do update set ${updatedColumns.map((column) => {
-      const identifier = quoteIdentifier(column);
-      return `${identifier} = excluded.${identifier}`;
-    }).join(', ')}`
-    : 'do nothing';
   const maxRowsPerBatch = Math.max(1, Math.floor(50000 / columnNames.length));
 
   for (let offset = 0; offset < rows.length; offset += maxRowsPerBatch) {
@@ -143,7 +135,7 @@ async function insertRows(client, tableName, metadata, rows) {
     await client.query(
       `insert into ${qualifiedName(tableName)} (${columnSql})`
       + `${hasIdentity ? ' overriding system value' : ''} `
-      + `values ${tuples.join(', ')} on conflict (${primaryKeySql}) ${conflictAction}`,
+      + `values ${tuples.join(', ')}`,
       values,
     );
   }
@@ -155,22 +147,48 @@ async function setUserTriggersEnabled(client, tableName, enabled) {
   );
 }
 
-async function advanceOwnedSequences(client, tableName, metadata, rows) {
-  if (!rows.length) return;
+async function ownedSequenceStates(client, tableName, metadata) {
+  const states = [];
   for (const column of metadata.columns) {
-    const sequence = await client.query(
-      'select pg_get_serial_sequence($1, $2) as sequence_name',
+    const sequence = await client.query(`
+      select n.nspname as schema_name, c.relname as sequence_name, s.seqstart::text as start_value
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      join pg_sequence s on s.seqrelid = c.oid
+      where c.oid = pg_get_serial_sequence($1, $2)::regclass
+    `,
       [tableName, column.column_name],
     );
-    const sequenceName = sequence.rows[0]?.sequence_name;
-    if (!sequenceName) continue;
+    const sequenceRow = sequence.rows[0];
+    if (!sequenceRow) continue;
+    const state = await client.query(
+      `select last_value::text as last_value, is_called from ${quoteIdentifier(sequenceRow.schema_name)}.${quoteIdentifier(sequenceRow.sequence_name)}`,
+    );
+    states.push({
+      column: column.column_name,
+      schema: sequenceRow.schema_name,
+      sequence: sequenceRow.sequence_name,
+      startValue: sequenceRow.start_value,
+      lastValue: state.rows[0].last_value,
+      isCalled: state.rows[0].is_called,
+    });
+  }
+  return states;
+}
+
+async function restartOwnedSequences(client, tableName, metadata, rows) {
+  const sequenceStates = await ownedSequenceStates(client, tableName, metadata);
+  for (const sequence of sequenceStates) {
     const values = rows
-      .map((row) => row[column.column_name])
+      .map((row) => row[sequence.column])
       .filter((value) => value !== null && value !== undefined)
       .map((value) => BigInt(value));
-    if (!values.length) continue;
-    const maximum = values.reduce((left, right) => (left > right ? left : right));
-    await client.query('select setval($1::regclass, $2::bigint, true)', [sequenceName, maximum.toString()]);
+    const restartValue = values.length
+      ? values.reduce((left, right) => (left > right ? left : right)) + 1n
+      : BigInt(sequence.startValue);
+    await client.query(
+      `alter sequence ${quoteIdentifier(sequence.schema)}.${quoteIdentifier(sequence.sequence)} restart with ${restartValue}`,
+    );
   }
 }
 
@@ -193,6 +211,7 @@ const source = await connect(SOURCE_DB_URL, 'stackr-staging-catalogue-source');
 const target = await connect(TARGET_DB_URL, 'stackr-staging-catalogue-rehearsal');
 const results = [];
 const excludedChecks = [];
+const snapshots = new Map();
 let targetTransactionOpen = false;
 let sourceTransactionOpen = false;
 
@@ -225,22 +244,40 @@ try {
 
     const sourceRows = await readRows(source, tableName, sourceMetadata.primaryKey);
     const targetRowsBefore = await readRows(target, tableName, targetMetadata.primaryKey);
-    const targetBeforeByKey = new Map(
-      targetRowsBefore.map((row) => [keyForRow(row, targetMetadata.primaryKey), row]),
-    );
-    const preExistingSourceRows = sourceRows.filter((row) => (
-      targetBeforeByKey.has(keyForRow(row, sourceMetadata.primaryKey))
-    ));
-    const preExistingSourceValueMismatches = preExistingSourceRows.filter((row) => {
-      const key = keyForRow(row, sourceMetadata.primaryKey);
-      return stableJson(row) !== stableJson(targetBeforeByKey.get(key));
+    const targetSequencesBefore = await ownedSequenceStates(target, tableName, targetMetadata);
+    snapshots.set(tableName, {
+      sourceMetadata,
+      targetMetadata,
+      sourceRows,
+      targetRowsBefore,
+      targetSequencesBefore,
     });
+  }
+
+  for (const tableName of [...tableConfig.tables].reverse()) {
+    await setUserTriggersEnabled(target, tableName, false);
+    await target.query(`delete from ${qualifiedName(tableName)}`);
+    await setUserTriggersEnabled(target, tableName, true);
+  }
+
+  for (const tableName of tableConfig.tables) {
+    const snapshot = snapshots.get(tableName);
+    const {
+      sourceMetadata,
+      targetMetadata,
+      sourceRows,
+      targetRowsBefore,
+      targetSequencesBefore,
+    } = snapshot;
+    const targetRowsAfterClear = await readRows(target, tableName, targetMetadata.primaryKey);
+    if (targetRowsAfterClear.length !== 0) throw new Error(`target_table_not_cleared:${tableName}`);
 
     await setUserTriggersEnabled(target, tableName, false);
     await insertRows(target, tableName, targetMetadata, sourceRows);
-    await advanceOwnedSequences(target, tableName, targetMetadata, sourceRows);
+    await restartOwnedSequences(target, tableName, targetMetadata, sourceRows);
     await setUserTriggersEnabled(target, tableName, true);
     const targetRowsAfter = await readRows(target, tableName, targetMetadata.primaryKey);
+    const targetSequencesDuringRehearsal = await ownedSequenceStates(target, tableName, targetMetadata);
     const matchedRows = verifySourceRows(
       tableName,
       sourceRows,
@@ -253,13 +290,14 @@ try {
       primaryKey: sourceMetadata.primaryKey,
       sourceRowCount: sourceRows.length,
       targetRowCountBefore: targetRowsBefore.length,
+      targetRowCountAfterClear: targetRowsAfterClear.length,
       targetRowCountDuringRehearsal: targetRowsAfter.length,
-      preExistingSourceKeyCount: preExistingSourceRows.length,
-      preExistingSourceValueMismatchCount: preExistingSourceValueMismatches.length,
       matchedSourceRowCount: matchedRows.length,
       sourceSha256: digestRows(sourceRows),
       matchedTargetSha256: digestRows(matchedRows),
       targetBeforeSha256: digestRows(targetRowsBefore),
+      targetSequencesBefore,
+      targetSequencesDuringRehearsal,
     });
   }
 
@@ -269,10 +307,13 @@ try {
   for (const result of results) {
     const metadata = await tableMetadata(target, result.table);
     const rows = await readRows(target, result.table, metadata.primaryKey);
+    const sequences = await ownedSequenceStates(target, result.table, metadata);
     result.targetRowCountAfterRollback = rows.length;
     result.targetAfterRollbackSha256 = digestRows(rows);
+    result.targetSequencesAfterRollback = sequences;
     result.rollbackMatched = rows.length === result.targetRowCountBefore
-      && result.targetAfterRollbackSha256 === result.targetBeforeSha256;
+      && result.targetAfterRollbackSha256 === result.targetBeforeSha256
+      && stableJson(sequences) === stableJson(result.targetSequencesBefore);
     if (!result.rollbackMatched) throw new Error(`target_rollback_mismatch:${result.table}`);
   }
 
@@ -280,7 +321,7 @@ try {
   sourceTransactionOpen = false;
 
   const evidence = {
-    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.1.0',
+    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.2.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
     sourceProjectRef: SOURCE_PROJECT_REF,
@@ -290,7 +331,7 @@ try {
     productionMutationPerformed: false,
     stagingMutationPerformed: false,
     targetTransactionCommitted: false,
-    transferConflictPolicy: 'primary_key_upsert_with_user_triggers_disabled_in_rollback_only_transaction',
+    transferPolicy: 'replace_allowlisted_target_tables_with_source_rows_in_rollback_only_transaction',
     targetRollbackVerified: results.every((result) => result.rollbackMatched),
     selectedTableCount: results.length,
     sourceRowCount: results.reduce((sum, result) => sum + result.sourceRowCount, 0),
