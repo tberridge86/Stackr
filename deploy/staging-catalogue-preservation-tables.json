@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "stackr-staging-catalogue-preservation-v1.0.0",
+  "tables": [
+    "catalog.languages",
+    "catalog.games",
+    "catalog.finishes",
+    "catalog.variant_taxonomy",
+    "catalog.rarities",
+    "catalog.series",
+    "catalog.sets",
+    "catalog.catalogue_versions",
+    "catalog.card_concepts",
+    "catalog.card_printings",
+    "catalog.card_variants",
+    "catalog.card_names",
+    "ingest.sources",
+    "ingest.import_runs",
+    "ingest.raw_source_records",
+    "ingest.source_health_reports",
+    "catalog.assets",
+    "ingest.external_identifiers",
+    "catalog.catalogue_change_log",
+    "audit.ingest_merge_decisions"
+  ],
+  "excludedStagingProjections": [
+    "public.staging_api_external_identifiers"
+  ],
+  "excludedEmptyStagingOnlyTables": [
+    "audit.catalogue_release_events"
+  ]
+}

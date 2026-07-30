@@ -156,6 +156,7 @@ const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
+const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
@@ -204,6 +205,7 @@ assert.match(baselineMigrationTrialWorkflow, /krjttpmthxkfsbqksxci/);
 assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
 assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
@@ -213,7 +215,27 @@ assert.match(baselineMigrationTrialWorkflow, /find supabase\/migrations[^\n]+wc 
 assert.match(baselineMigrationTrialWorkflow, /test "\$actual_migrations" = "\$expected_migrations"/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /migration-count\.txt"\)" = '\d+'/);
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-baseline-trial"/);
-assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|SUPABASE_DB_URL|--linked/);
+assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|--linked/);
+assert.match(catalogueTransferWorkflow, /inputs\.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'/);
+assert.match(catalogueTransferWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
+assert.match(catalogueTransferWorkflow, /SUPABASE_RESTORE_DB_URL: \$\{\{ secrets\.SUPABASE_RESTORE_DB_URL \}\}/);
+assert.match(catalogueTransferWorkflow, /lmwfhvexfcoyeuoyrlco/);
+assert.match(catalogueTransferWorkflow, /krjttpmthxkfsbqksxci/);
+assert.match(catalogueTransferWorkflow, /oakdbbzdqwurpjnoqhmu/);
+assert.match(catalogueTransferWorkflow, /prepare-postgres-urls\.mjs/);
+assert.match(catalogueTransferWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
+assert.match(catalogueTransferWorkflow, /retention-days: 1/);
+assert.match(catalogueTransferWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
+assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACCESS_TOKEN|db push|migration repair/);
+
+const catalogueTransferScript = readFileSync('scripts/deploy/rehearse-staging-catalogue-transfer.mjs', 'utf8');
+assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
+assert.match(catalogueTransferScript, /insert into[\s\S]+on conflict do nothing/i);
+assert.match(catalogueTransferScript, /await target\.query\('rollback'\)/);
+assert.match(catalogueTransferScript, /targetRollbackVerified/);
+assert.doesNotMatch(catalogueTransferScript, /target\.query\('commit'\)/i);
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
 const rawPasswordUrl = normalizePostgresUrl(
