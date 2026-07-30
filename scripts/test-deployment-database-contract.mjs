@@ -13,6 +13,10 @@ const mintyInsightMigration = readFileSync(
   'supabase/migrations/20260715143000_minty_insight_platform.sql',
   'utf8',
 );
+const curatedPromoMigration = readFileSync(
+  'supabase/migrations/20260728110000_curated_corocoro_mew_promos.sql',
+  'utf8',
+);
 
 assert.match(config, /schemas = \["public", "api", "graphql_public"\]/);
 assert.doesNotMatch(config, /schemas\s*=\s*\[[^\]]*"(?:ingest|ml|audit|market|catalog)"/);
@@ -41,5 +45,6 @@ assert.match(mintyInsightMigration, /add column if not exists active boolean not
 assert.match(mintyInsightMigration, /target_price_gbp = coalesce\(alerts\.target_price_gbp, alerts\.target_price\)/);
 assert.match(mintyInsightMigration, /cards\.id = alerts\.card_id/);
 assert.match(mintyInsightMigration, /check \(direction in \('below', 'above', 'movement'\)\)/);
+assert.match(curatedPromoMigration, /alter table public\.pokemon_sets\s+add column if not exists raw_data jsonb/);
 
 console.log('Stage 13 database deployment contract tests passed.');
