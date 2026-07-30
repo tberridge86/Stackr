@@ -118,6 +118,7 @@ assert.doesNotMatch(rollbackTool, /console\.log\([^\n]*(?:RAILWAY_TOKEN|RAILWAY_
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
+const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
@@ -129,6 +130,15 @@ assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
+assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);
+assert.match(recoveryWorkflow, /github\.event\.head_commit\.message == 'chore: run staging recovery drill'/);
+assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
+assert.match(recoveryWorkflow, /SUPABASE_RESTORE_PROJECT_REF/);
+assert.match(recoveryWorkflow, /kynqqwyctohrjqloyedh/);
+assert.match(recoveryWorkflow, /verify-postgres-restore\.mjs/);
+assert.match(recoveryWorkflow, /backup-restore-storage-fixture\.mjs/);
+assert.match(recoveryWorkflow, /drop schema if exists supabase_migrations cascade/);
+assert.match(recoveryWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-recovery"/);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /rollback_catalogue_version_id/);
 assert.match(productionWorkflow, /--id="\$ROLLBACK_CATALOGUE_VERSION_ID"/);

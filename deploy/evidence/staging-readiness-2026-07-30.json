@@ -21,12 +21,12 @@
   "databaseRecovery": {
     "status": "backup_available_restore_not_verified",
     "logicalBackupCreated": false,
-    "restoreTargetProjectRef": null,
+    "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
     "restoreTestedAt": null,
     "blockers": [
       "staging_database_url_not_available_to_backup_runner",
       "latest_physical_backup_predates_current_changes",
-      "no_isolated_restore_target"
+      "protected_source_and_restore_database_urls_not_configured"
     ]
   },
   "storageRecovery": {
@@ -34,13 +34,13 @@
     "stagingBucketCount": 0,
     "stagingObjectCount": 0,
     "backupArtifactSha256": null,
-    "restoreTargetProjectRef": null,
+    "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
     "restoreTestedAt": null,
     "restoredObjectCount": null,
     "checksumMismatchCount": null,
     "blockers": [
       "no_storage_backup_artifact",
-      "no_isolated_storage_restore_drill",
+      "protected_source_and_restore_storage_credentials_not_configured",
       "no_staging_objects_available_for_restore_verification"
     ]
   },

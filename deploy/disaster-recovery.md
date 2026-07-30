@@ -64,6 +64,8 @@ The repository does not establish cross-region bucket replication or a verified 
 
 An empty bucket inventory is not restore proof. For a staging drill, first create a private non-user fixture object with a recorded SHA-256, export the bucket metadata and object bytes through an authorised Storage client, restore them into a separate staging-only target, and verify privacy plus the checksum. Delete the fixture after the drill. Database dumps do not include Storage object bytes.
 
+`staging-recovery-drill.yml` automates that empty-source fixture case and refuses to proceed if staging has acquired any real bucket. If real staging buckets exist, stop and replace the fixture-only drill with a reviewed complete export that preserves every object's bucket, path, privacy, MIME type and checksum.
+
 ## Railway Loss
 
 Create replacement services from the same Git commit and config-as-code files:

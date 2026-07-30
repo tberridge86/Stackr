@@ -1,6 +1,6 @@
 {
   "schemaVersion": "stackr-staging-recovery-evidence-v1.0.0",
-  "capturedAt": "2026-07-30T08:06:00.166Z",
+  "capturedAt": "2026-07-30T08:32:23.549Z",
   "sourceCommitHash": "5a6efde155d2a347e1e726244f0a5db6f2c04fd1",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
@@ -23,13 +23,13 @@
     "walgEnabled": true,
     "logicalBackupCreated": false,
     "logicalBackupSha256": null,
-    "restoreTargetProjectRef": null,
+    "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
     "restoreTestedAt": null,
     "restoreVerification": null,
     "blockers": [
       "staging_database_url_not_available_to_backup_runner",
       "latest_physical_backup_predates_current_changes",
-      "no_isolated_restore_target",
+      "protected_source_and_restore_database_urls_not_configured",
       "destructive_same_project_restore_prohibited"
     ]
   },
@@ -39,13 +39,22 @@
     "sourceObjectCount": 0,
     "backupCreated": false,
     "backupManifestSha256": null,
-    "restoreTargetProjectRef": null,
+    "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
     "restoreTestedAt": null,
     "restoredObjectCount": null,
     "checksumMismatchCount": null,
     "blockers": [
       "no_staging_storage_objects_available_for_backup_verification",
-      "no_isolated_storage_restore_target"
+      "protected_source_and_restore_storage_credentials_not_configured"
     ]
+  },
+  "temporaryRestoreProject": {
+    "projectRef": "kynqqwyctohrjqloyedh",
+    "name": "Stackr staging restore drill 2026-07-30",
+    "region": "eu-west-1",
+    "statusAtCapture": "ACTIVE_HEALTHY",
+    "quotedRecurringCostUsd": 10,
+    "quotedCostRecurrence": "monthly",
+    "deleteAfterVerifiedDrill": true
   }
 }

@@ -45,6 +45,35 @@ The 2026-07-30 rehearsal proved the Stage 6 registry migration and rollback agai
 
 Supabase reports 11 completed staging physical backups, but the latest (`1245215485`, `2026-07-30T03:47:35.742Z`) predates the vector and catalogue reconciliation changes. Staging Storage is empty. A current logical Postgres dump and an isolated Postgres/Storage restore test still require the protected staging database URL and a separate restore target. The evidence is recorded in `deploy/evidence/staging-recovery-2026-07-30.json`.
 
+The approved temporary restore target is `kynqqwyctohrjqloyedh`. Before dispatching **Stackr Staging Recovery Drill**, configure these protected `staging` environment secrets:
+
+```text
+SUPABASE_ACCESS_TOKEN
+SUPABASE_DB_URL
+SUPABASE_RESTORE_DB_URL
+SUPABASE_STAGING_SECRET_KEY
+SUPABASE_RESTORE_SECRET_KEY
+```
+
+Configure these environment variables:
+
+```text
+SUPABASE_PROJECT_REF=lmwfhvexfcoyeuoyrlco
+SUPABASE_RESTORE_PROJECT_REF=kynqqwyctohrjqloyedh
+```
+
+Use each project's Session pooler connection string for the database URL. Obtain or reset each database password inside its Supabase dashboard, then save the complete URL directly as the GitHub secret. Use backend-only secret API keys for the Storage drill. Never put either key or database URL in source, logs, Expo configuration, or chat.
+
+Dispatch the recovery workflow only after those protected values exist:
+
+```powershell
+gh workflow run staging-recovery-drill.yml `
+  --ref chore/api-gateway-v1 `
+  -f confirmation='RESTORE STAGING BACKUP'
+```
+
+The workflow deletes raw dump and object bytes at completion. Review its non-secret job summary, update the checked-in recovery evidence only from a successful run, then delete the temporary restore project to stop its quoted USD 10 monthly charge.
+
 ## Dispatch
 
 From GitHub Actions, choose **Deploy Stackr Staging**, type `DEPLOY STAGING`, and initially leave both optional toggles off.
