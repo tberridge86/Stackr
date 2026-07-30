@@ -289,6 +289,13 @@ async function rawSourceRecordDuplicateSummary(client) {
   return result.rows[0];
 }
 
+async function indexExists(client, qualifiedIndexName) {
+  return Boolean((await client.query(
+    'select to_regclass($1) is not null as exists',
+    [qualifiedIndexName],
+  )).rows[0].exists);
+}
+
 function verifySourceRows(tableName, sourceRows, targetRows, primaryKey) {
   const targetByKey = new Map(targetRows.map((row) => [keyForRow(row, primaryKey), row]));
   const matched = [];
@@ -319,7 +326,15 @@ try {
   targetTransactionOpen = true;
 
   const rawRecordDuplicates = await rawSourceRecordDuplicateSummary(source);
-  if (rawRecordDuplicates.duplicate_group_count > 0) {
+  const legacyRawRecordIdentityIndexPresent = await indexExists(
+    target,
+    'ingest.raw_source_records_identity_uidx',
+  );
+  const importRunRawRecordIdentityIndexPresent = await indexExists(
+    target,
+    'ingest.raw_source_records_import_run_identity_uidx',
+  );
+  if (rawRecordDuplicates.duplicate_group_count > 0 && legacyRawRecordIdentityIndexPresent) {
     throw new Error(
       'source_unique_constraint_conflict:ingest.raw_source_records'
       + `:groups_${rawRecordDuplicates.duplicate_group_count}`
@@ -455,6 +470,11 @@ try {
     excludedChecks,
     excludedStagingProjections: tableConfig.excludedStagingProjections,
     excludedEmptyStagingOnlyTables: tableConfig.excludedEmptyStagingOnlyTables,
+    rawSourceRecordHistory: {
+      ...rawRecordDuplicates,
+      legacyIdentityIndexPresent: legacyRawRecordIdentityIndexPresent,
+      importRunIdentityIndexPresent: importRunRawRecordIdentityIndexPresent,
+    },
   };
   mkdirSync(path.dirname(EVIDENCE_PATH), { recursive: true });
   writeFileSync(EVIDENCE_PATH, `${JSON.stringify(evidence, null, 2)}\n`, { mode: 0o600 });

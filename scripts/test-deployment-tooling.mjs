@@ -248,6 +248,8 @@ assert.match(catalogueTransferScript, /column\.udt_name === 'json'/);
 assert.match(catalogueTransferScript, /transfer_insert_failed/);
 assert.match(catalogueTransferScript, /source_unique_constraint_conflict:ingest\.raw_source_records/);
 assert.match(catalogueTransferScript, /count\(distinct payload_hash\)/);
+assert.match(catalogueTransferScript, /legacyRawRecordIdentityIndexPresent/);
+assert.match(catalogueTransferScript, /importRunIdentityIndexPresent/);
 assert.match(catalogueTransferScript, /await target\.query\('rollback'\)/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.doesNotMatch(catalogueTransferScript, /target\.query\('commit'\)/i);

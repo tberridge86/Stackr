@@ -13,6 +13,8 @@ import {
 } from './catalogue-ingestion/sourceAdapter';
 
 const migration = readFileSync('supabase/migrations/20260727213835_stackr_data_ingestion_reconciliation.sql', 'utf8');
+const rawHistoryMigration = readFileSync('supabase/migrations/20260730153923_preserve_raw_source_record_history.sql', 'utf8');
+const ingestionPipeline = readFileSync('scripts/catalogue-ingestion/pipeline.ts', 'utf8');
 const backendRoute = readFileSync('backend/routes/catalogueIngestion.js', 'utf8');
 
 function expectSql(pattern: RegExp, message: string) {
@@ -90,6 +92,19 @@ function assertIdentityHelpers() {
   assert.ok(parts.collectorNumberSortKey.includes('000000000001'));
 }
 
+function assertRawRecordHistoryIsRetainedPerRun() {
+  assert.match(rawHistoryMigration, /drop index if exists ingest\.raw_source_records_identity_uidx/);
+  assert.match(
+    rawHistoryMigration,
+    /create unique index if not exists raw_source_records_import_run_identity_uidx[\s\S]+source_id,[\s\S]+import_run_id,[\s\S]+record_type,[\s\S]+external_id/,
+  );
+  assert.match(rawHistoryMigration, /where import_run_id is not null/);
+  assert.match(
+    ingestionPipeline,
+    /table\(db, 'ingest', 'raw_source_records'\)[\s\S]+\.eq\('import_run_id', importRunId\)/,
+  );
+}
+
 function assertChecksumsAndBackoff() {
   assert.equal(
     payloadChecksum({ b: 2, a: 1 }),
@@ -150,6 +165,7 @@ function assertBackendRouteIsProtected() {
 async function main() {
   assertMigrationAddsIngestionState();
   assertIdentityHelpers();
+  assertRawRecordHistoryIsRetainedPerRun();
   assertChecksumsAndBackoff();
   await assertManualCsvAdapter();
   assertBackendRouteIsProtected();

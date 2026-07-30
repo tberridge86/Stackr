@@ -279,6 +279,7 @@ async function retainRawRecord(
   const query = table(db, 'ingest', 'raw_source_records')
     .select('id')
     .eq('source_id', sourceId)
+    .eq('import_run_id', importRunId)
     .eq('record_type', record.recordType)
     .eq('external_id', record.providerRecordId);
   const { data: existing, error: lookupError } = languageCode
