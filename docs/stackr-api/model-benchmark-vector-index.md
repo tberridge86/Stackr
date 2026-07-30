@@ -17,7 +17,8 @@ This stage does not replace the current scanner path, existing CLIP pack, or Xim
 - Stage 2 already created the private `ml` schema. Stage 6 extends it with benchmark registry and activation metadata only.
 - `supabase/config.toml` now exists, but Docker is not installed on the current Windows host, so the full local Supabase reset remains delegated to GitHub CI.
 - The Stage 6 migration was applied twice to isolated staging and rolled back twice. The fixed migration produced zero Supabase security-advisor findings and left zero Stage 6 objects after rollback.
-- Staging does not currently have the `vector` extension, so a concrete vector table and HNSW index cannot be generated there yet.
+- Staging has `vector` `0.8.2` installed in the `extensions` schema. No concrete vector table or HNSW index exists because no benchmark-approved model or dimension has been selected.
+- A read-only capture inventory on 2026-07-30 found no reviewed Scan Lab manifest, zero staging benchmark/feedback rows and zero rows in the legacy production training table. Ten legacy `card-scans` objects were excluded because they have no training-consent, verified-label or physical-card-session linkage.
 
 ## Benchmark Candidates
 
@@ -179,6 +180,8 @@ Current output is intentionally blocked because no model has been selected by a 
 - `ml/reports/model-benchmark-v1.html`
 - `ml/models/embedding-model-registry-v1.json`
 - `ml/reports/embedding-index-regeneration-plan.json`
+
+The 2026-07-30 run remained blocked. It measured no model performance: it rebuilt a governed manifest with 51 metadata/reference classes and 1,020 explicitly synthetic views, selected no model, selected no dimension, and refused to create an inactive index. Evidence is recorded in `deploy/evidence/stage6-capture-readiness-2026-07-30.json` and `deploy/evidence/staging-readiness-2026-07-30.json`.
 
 ## Prioritised Gaps
 

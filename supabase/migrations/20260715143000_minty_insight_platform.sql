@@ -193,13 +193,55 @@ alter table public.price_alerts
   add column if not exists stackr_card_id text references public.pokemon_cards(id) on delete cascade,
   add column if not exists product_key text,
   add column if not exists language text not null default 'en',
-  add column if not exists raw_or_graded text not null default 'raw'
-    check (raw_or_graded in ('raw', 'graded', 'sealed')),
+  add column if not exists raw_or_graded text not null default 'raw',
   add column if not exists grader text,
   add column if not exists grade text,
   add column if not exists target_price_gbp numeric,
   add column if not exists active boolean not null default true,
   add column if not exists updated_at timestamptz not null default now();
+
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'price_alerts'
+      and column_name = 'card_id'
+  ) and exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'price_alerts'
+      and column_name = 'target_price'
+  ) and exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'price_alerts'
+      and column_name = 'triggered'
+  ) then
+    execute $backfill$
+      update public.price_alerts alerts
+      set
+        stackr_card_id = cards.id,
+        target_price_gbp = coalesce(alerts.target_price_gbp, alerts.target_price),
+        active = not coalesce(alerts.triggered, false)
+      from public.pokemon_cards cards
+      where alerts.stackr_card_id is null
+        and cards.id = alerts.card_id
+    $backfill$;
+  end if;
+end
+$$;
+
+alter table public.price_alerts
+  drop constraint if exists price_alerts_raw_or_graded_check,
+  add constraint price_alerts_raw_or_graded_check
+    check (raw_or_graded in ('raw', 'graded', 'sealed')),
+  drop constraint if exists price_alerts_direction_check,
+  add constraint price_alerts_direction_check
+    check (direction in ('below', 'above', 'movement'));
 
 create index if not exists provider_mappings_stackr_card_idx
   on public.provider_mappings(stackr_card_id, language);

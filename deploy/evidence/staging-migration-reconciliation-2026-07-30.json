@@ -1,12 +1,15 @@
 {
   "schemaVersion": "stackr-migration-reconciliation-v1.0.0",
-  "capturedAt": "2026-07-30T08:30:06.211Z",
-  "sourceCommitHash": "71f6f1c63dd2bdb3e3b78d2055a81c7fec62fd9b",
-  "reconciledBaseCommitHash": "9b667f6be425575c4a617907f012ffa99ee1f01c",
+  "capturedAt": "2026-07-30T14:38:00.000Z",
+  "sourceCommitHash": "edfc018a192bbdbe89bc3031999186c0b3a01341",
+  "reconciledBaseCommitHash": "d3004ba83060920074459bfcd2ed4f395bea4b39",
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
-  "status": "partially_reconciled",
+  "status": "isolated_candidate_aligned_staging_promotion_blocked",
+  "reconciliationComplete": false,
   "productionMutationPerformed": false,
+  "stagingMutationPerformed": false,
+  "isolatedBranchMutationPerformed": true,
   "localMigrationFileCount": 76,
   "stagingMigrationHistoryCountBefore": 18,
   "stagingMigrationHistoryCountAfter": 20,
@@ -57,6 +60,58 @@
     "staging_enable_vector_extension"
   ],
   "unverifiedRepositoryMigrationCount": 73,
+  "isolatedCandidateUnverifiedRepositoryMigrationCount": 0,
+  "repositoryMigrationGroups": {
+    "preCanonicalLegacyCount": 63,
+    "canonicalAndLaterCount": 13,
+    "accountedForCount": 3,
+    "pendingCanonicalAndLaterCount": 10,
+    "pendingCanonicalAndLater": [
+      "20260728060617_stackr_asset_repository_delivery_pipeline.sql",
+      "20260728064400_embedding_model_registry_and_index_gates.sql",
+      "20260728110000_curated_corocoro_mew_promos.sql",
+      "20260728152412_recognition_service_scan_diagnostics.sql",
+      "20260728171416_stackr_market_pricing_service.sql",
+      "20260728173530_stackr_api_gateway_controls.sql",
+      "20260728182743_stackr_quality_performance_observability.sql",
+      "20260728202949_stackr_application_migration_provider_retirement.sql",
+      "20260728203300_stackr_release_activation_controls.sql",
+      "20260729055239_critical_security_containment.sql"
+    ]
+  },
+  "baselineGap": {
+    "confirmed": true,
+    "firstRepositoryMigration": "20260513170000_card_fingerprint_regions.sql",
+    "firstRequiredPreExistingRelation": "public.card_fingerprints",
+    "relationPresentOnProduction": true,
+    "relationPresentOnStaging": false,
+    "productionMigrationHistoryCount": 0,
+    "stagingLegacyPublicSchemaPresent": false,
+    "reason": "The repository starts with an ALTER of a pre-existing production table. It does not contain the schema that originally created that table or the rest of the legacy public app schema.",
+    "resolvedOnIsolatedCandidate": true,
+    "productionBaselineArtifactId": "8760386714",
+    "productionBaselineSchemaSha256": "20738c8fc54cff904f0388037abe495a4737489155f0382909ae856fbf0b3a9c"
+  },
+  "dryRun": {
+    "command": "npx supabase@2.110.0 db push --linked --dry-run",
+    "wouldPushCount": 76,
+    "safeToApply": false,
+    "reason": "The CLI compares timestamps only and would replay all files, including three whose effects are already represented under different staging versions."
+  },
+  "isolatedCandidate": {
+    "projectRef": "krjttpmthxkfsbqksxci",
+    "branchId": "44bb0f63-5f96-41eb-8c90-48e60e680d7a",
+    "workflowRunId": 30551864110,
+    "repositoryMigrationCount": 76,
+    "databaseTableCount": 179,
+    "migrationHistoryAligned": true,
+    "productionBaselineRestored": true,
+    "repositoryMigrationsReplayed": true,
+    "securityAdvisorFindingCount": 57,
+    "securityAdvisorErrorCount": 7,
+    "securityAdvisorWarningCount": 33,
+    "promotionApproved": false
+  },
   "stagingVerification": {
     "vectorExtensionVersion": "0.8.2",
     "vectorExtensionSchema": "extensions",
@@ -73,11 +128,22 @@
     "enabled_vector_extension_on_staging_only",
     "compared_catalogue_and_ingestion_statement_hashes",
     "corrected_catalogue_language_seed_and_promo_finish_drift_forward",
-    "verified_staging_security_advisor_has_zero_findings"
+    "verified_staging_security_advisor_has_zero_findings",
+    "confirmed_repository_chain_requires_missing_pre_repository_baseline",
+    "confirmed_cli_dry_run_would_unsafely_replay_all_76_migrations",
+    "compared_production_and_staging_schema_inventories_read_only",
+    "captured_and_checksum_verified_the_production_schema_baseline",
+    "replayed_all_76_repository_migrations_on_an_isolated_production_like_candidate",
+    "verified_the_isolated_candidate_has_exactly_76_migration_history_entries",
+    "verified_current_staging_backup_and_private_storage_restore_on_a_clean_branch"
   ],
   "blockedActions": [
     "do_not_mark_unverified_repository_migrations_as_applied",
     "do_not_run_migration_repair_without_baseline_evidence",
-    "do_not_push_repository_migrations_to_production"
+    "do_not_push_repository_migrations_to_production",
+    "do_not_push_the_current_76_file_chain_to_staging",
+    "do_not_replace_staging_until_the_7_candidate_security_errors_are_remediated",
+    "preserve_and_verify_the_authorised_staging_catalogue_and_ingestion_dataset_before_rebuild",
+    "require_an_explicit_destructive_staging_rebuild_approval_after_the_candidate_is_release_safe"
   ]
 }

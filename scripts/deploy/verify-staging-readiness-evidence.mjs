@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
 
 const evidencePath = process.argv.find((arg) => arg.startsWith('--evidence='))?.slice(11)
   ?? 'deploy/evidence/staging-readiness-2026-07-30.json';
@@ -7,6 +8,21 @@ const manifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8')
 const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
 const errors = [];
 const warnings = [];
+
+function readChecksumBoundJson(path, expectedSha256, errorPrefix) {
+  if (!path || !expectedSha256 || !existsSync(path)) {
+    errors.push(`${errorPrefix}_missing`);
+    return null;
+  }
+  const bytes = readFileSync(path);
+  const normalizedBytes = Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
+  const actualSha256 = createHash('sha256').update(normalizedBytes).digest('hex');
+  if (actualSha256 !== expectedSha256) {
+    errors.push(`${errorPrefix}_checksum_mismatch`);
+    return null;
+  }
+  return JSON.parse(bytes.toString('utf8'));
+}
 
 if (evidence.schemaVersion !== 'stackr-staging-readiness-evidence-v1.0.0') {
   errors.push('invalid_staging_readiness_evidence_version');
@@ -50,6 +66,45 @@ if (!Number.isFinite(Date.parse(evidence.supabase?.latestStagingPhysicalBackupAt
 if (evidence.databaseRecovery?.status === 'verified'
   && (!evidence.databaseRecovery.restoreTargetProjectRef || !evidence.databaseRecovery.restoreTestedAt)) {
   errors.push('database_restore_evidence_incomplete');
+}
+
+const migrationEvidence = readChecksumBoundJson(
+  evidence.supabase?.migrationReconciliationEvidence,
+  evidence.supabase?.migrationReconciliationEvidenceSha256,
+  'migration_reconciliation_evidence',
+);
+if (migrationEvidence && migrationEvidence.status !== evidence.supabase?.migrationHistoryStatus) {
+  errors.push('migration_reconciliation_status_mismatch');
+}
+
+const captureEvidence = readChecksumBoundJson(
+  evidence.modelAndIndex?.captureReadinessEvidence,
+  evidence.modelAndIndex?.captureReadinessEvidenceSha256,
+  'capture_readiness_evidence',
+);
+const benchmarkEvidence = readChecksumBoundJson(
+  evidence.modelAndIndex?.benchmarkEvidence,
+  evidence.modelAndIndex?.benchmarkEvidenceSha256,
+  'model_benchmark_evidence',
+);
+const indexPlanEvidence = readChecksumBoundJson(
+  evidence.modelAndIndex?.indexPlanEvidence,
+  evidence.modelAndIndex?.indexPlanEvidenceSha256,
+  'embedding_index_plan_evidence',
+);
+if (evidence.modelAndIndex?.status === 'ready') {
+  if (captureEvidence?.status !== 'ready' || captureEvidence?.eligibleCaptureCount <= 0) {
+    errors.push('ready_model_lacks_real_capture_evidence');
+  }
+  if (captureEvidence?.missingRealCaptureLanguages?.length !== 0) {
+    errors.push('ready_model_lacks_required_language_captures');
+  }
+  if (benchmarkEvidence?.status !== 'complete' || !benchmarkEvidence?.selectedModelId) {
+    errors.push('ready_model_lacks_complete_benchmark');
+  }
+  if (indexPlanEvidence?.status !== 'ready' || !indexPlanEvidence?.modelId) {
+    errors.push('ready_model_lacks_inactive_index_plan');
+  }
 }
 
 if (manifest.releaseGates.migrationHistoryAligned === true

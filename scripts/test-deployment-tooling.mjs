@@ -42,18 +42,53 @@ const preflight = run('scripts/deploy/preflight.mjs');
 assert.equal(preflight.status, 0, preflight.stderr || preflight.stdout);
 const stagingEvidence = run('scripts/deploy/verify-staging-readiness-evidence.mjs');
 assert.equal(stagingEvidence.status, 0, stagingEvidence.stderr || stagingEvidence.stdout);
+const evidenceGuardTemp = mkdtempSync(path.join(tmpdir(), 'stackr-readiness-evidence-test-'));
+try {
+  const sourceEvidence = JSON.parse(readFileSync('deploy/evidence/staging-readiness-2026-07-30.json', 'utf8'));
+  const spoofedReadyPath = path.join(evidenceGuardTemp, 'spoofed-ready.json');
+  writeFileSync(spoofedReadyPath, JSON.stringify({
+    ...sourceEvidence,
+    modelAndIndex: { ...sourceEvidence.modelAndIndex, status: 'ready' },
+  }));
+  const spoofedReady = run(
+    'scripts/deploy/verify-staging-readiness-evidence.mjs',
+    [`--evidence=${spoofedReadyPath}`],
+  );
+  assert.notEqual(spoofedReady.status, 0, 'a ready label must not override blocked capture evidence');
+  assert.match(spoofedReady.stdout, /ready_model_lacks_real_capture_evidence/);
+  assert.match(spoofedReady.stdout, /ready_model_lacks_complete_benchmark/);
+
+  const tamperedChecksumPath = path.join(evidenceGuardTemp, 'tampered-checksum.json');
+  writeFileSync(tamperedChecksumPath, JSON.stringify({
+    ...sourceEvidence,
+    modelAndIndex: {
+      ...sourceEvidence.modelAndIndex,
+      benchmarkEvidenceSha256: '0'.repeat(64),
+    },
+  }));
+  const tamperedChecksum = run(
+    'scripts/deploy/verify-staging-readiness-evidence.mjs',
+    [`--evidence=${tamperedChecksumPath}`],
+  );
+  assert.notEqual(tamperedChecksum.status, 0, 'tampered benchmark evidence must fail closed');
+  assert.match(tamperedChecksum.stdout, /model_benchmark_evidence_checksum_mismatch/);
+} finally {
+  rmSync(evidenceGuardTemp, { recursive: true, force: true });
+}
 const migrationReconciliation = run('scripts/deploy/verify-staging-migration-reconciliation.mjs');
 assert.equal(migrationReconciliation.status, 0, migrationReconciliation.stderr || migrationReconciliation.stdout);
 const migrationAlignmentGate = run(
   'scripts/deploy/verify-staging-migration-reconciliation.mjs',
   ['--require-aligned'],
 );
-assert.notEqual(migrationAlignmentGate.status, 0, 'partial reconciliation must not pass the alignment gate');
+assert.notEqual(migrationAlignmentGate.status, 0, 'blocked reconciliation must not pass the alignment gate');
 assert.match(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
 assert.notEqual(stagingReleaseGate.status, 0, 'staging evidence must block release until recovery and model gates pass');
-assert.match(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
-assert.match(stagingReleaseGate.stdout, /database_recovery_not_verified/);
+assert.doesNotMatch(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
+assert.doesNotMatch(stagingReleaseGate.stdout, /database_recovery_not_verified/);
+assert.match(stagingReleaseGate.stdout, /migration_history_not_aligned/);
+assert.match(stagingReleaseGate.stdout, /model_and_index_not_ready/);
 const releasePreflight = run('scripts/deploy/preflight.mjs', ['--release']);
 assert.notEqual(releasePreflight.status, 0, 'release preflight must fail closed without approvals and credentials');
 const completeStagingEnvironment = {
@@ -119,6 +154,8 @@ const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'ut
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
+const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
+const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
@@ -131,14 +168,177 @@ assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);
-assert.match(recoveryWorkflow, /github\.event\.head_commit\.message == 'chore: run staging recovery drill'/);
+assert.doesNotMatch(recoveryWorkflow, /github\.event\.head_commit/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_PROJECT_REF/);
-assert.match(recoveryWorkflow, /kynqqwyctohrjqloyedh/);
+assert.match(recoveryWorkflow, /krjttpmthxkfsbqksxci/);
+assert.match(recoveryWorkflow, /source_database_url_project_mismatch/);
+assert.match(recoveryWorkflow, /restore_database_url_project_mismatch/);
+assert.match(recoveryWorkflow, /prepare-postgres-urls\.mjs/);
+assert.match(recoveryWorkflow, /sanitize-supabase-role-dump\.mjs/);
+assert.match(recoveryWorkflow, /prepare-restore-cleanup\.mjs/);
+assert.match(recoveryWorkflow, /STACKR_SOURCE_DB_URL/);
+assert.match(recoveryWorkflow, /STACKR_RESTORE_DB_URL/);
+assert.doesNotMatch(recoveryWorkflow, /secrets\.SUPABASE_ACCESS_TOKEN/);
+assert.doesNotMatch(recoveryWorkflow, /vars\.SUPABASE_(?:PROJECT_REF|RESTORE_PROJECT_REF)/);
 assert.match(recoveryWorkflow, /verify-postgres-restore\.mjs/);
 assert.match(recoveryWorkflow, /backup-restore-storage-fixture\.mjs/);
-assert.match(recoveryWorkflow, /drop schema if exists supabase_migrations cascade/);
+assert.match(recoveryWorkflow, /--file \/backup\/cleanup\.sql/);
 assert.match(recoveryWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-recovery"/);
+assert.match(productionBaselineWorkflow, /environment: migration-baseline/);
+assert.match(productionBaselineWorkflow, /secrets\.SUPABASE_PRODUCTION_DB_URL/);
+assert.match(productionBaselineWorkflow, /oakdbbzdqwurpjnoqhmu/);
+assert.match(productionBaselineWorkflow, /inputs\.confirmation == 'CAPTURE PRODUCTION SCHEMA'/);
+assert.doesNotMatch(productionBaselineWorkflow, /pull_request:/);
+assert.match(productionBaselineWorkflow, /db dump/);
+assert.match(productionBaselineWorkflow, /no matching schemas were found/);
+assert.match(productionBaselineWorkflow, /supabase_migrations schema absent on source/);
+assert.match(productionBaselineWorkflow, /secret-scan\.mjs/);
+assert.match(productionBaselineWorkflow, /retention-days: 1/);
+assert.match(productionBaselineWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-production-baseline"/);
+assert.doesNotMatch(productionBaselineWorkflow, /db push|migration repair|psql|SUPABASE_ACCESS_TOKEN/);
+assert.doesNotMatch(productionBaselineWorkflow, /upload-artifact@v\d/);
+assert.match(baselineMigrationTrialWorkflow, /environment: staging/);
+assert.match(baselineMigrationTrialWorkflow, /secrets\.SUPABASE_RESTORE_DB_URL/);
+assert.match(baselineMigrationTrialWorkflow, /krjttpmthxkfsbqksxci/);
+assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
+assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
+assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --dry-run/);
+assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL"/);
+assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-baseline-trial"/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|SUPABASE_DB_URL|--linked/);
+
+const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
+const rawPasswordUrl = normalizePostgresUrl(
+  'postgresql://postgres.exampleproject:p=a@#ss%word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+  'exampleproject',
+);
+assert.equal(
+  rawPasswordUrl.normalized,
+  'postgresql://postgres.exampleproject:p%3Da%40%23ss%25word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+);
+assert.equal(
+  normalizePostgresUrl(rawPasswordUrl.normalized, 'exampleproject').normalized,
+  rawPasswordUrl.normalized,
+  'normalising an encoded URL must be idempotent',
+);
+assert.throws(
+  () => normalizePostgresUrl(rawPasswordUrl.normalized, 'anotherproject'),
+  /database_url_project_mismatch/,
+);
+
+const baselineUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-baseline-url-test-'));
+try {
+  const baselineEnvironmentPath = path.join(baselineUrlTemp, 'github.env');
+  const { prepareProductionBaselineUrl } = await import('./deploy/prepare-production-baseline-url.mjs');
+  const preparedBaseline = prepareProductionBaselineUrl({
+    connectionString: 'postgresql://postgres.productionref:p=a@#ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    projectRef: 'productionref',
+    environmentPath: baselineEnvironmentPath,
+  });
+  assert.equal(
+    readFileSync(baselineEnvironmentPath, 'utf8'),
+    `STACKR_PRODUCTION_DB_URL=${preparedBaseline.normalized}\n`,
+  );
+} finally {
+  rmSync(baselineUrlTemp, { recursive: true, force: true });
+}
+
+const reconciliationUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-reconciliation-url-test-'));
+try {
+  const reconciliationEnvironmentPath = path.join(reconciliationUrlTemp, 'github.env');
+  const { prepareIsolatedReconciliationUrl } = await import('./deploy/prepare-isolated-reconciliation-url.mjs');
+  const preparedReconciliation = prepareIsolatedReconciliationUrl({
+    connectionString: 'postgresql://postgres.restoreref:p=a@#ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    projectRef: 'restoreref',
+    productionProjectRef: 'productionref',
+    stagingProjectRef: 'stagingref',
+    environmentPath: reconciliationEnvironmentPath,
+  });
+  assert.equal(
+    readFileSync(reconciliationEnvironmentPath, 'utf8'),
+    `STACKR_RESTORE_DB_URL=${preparedReconciliation.normalized}\n`,
+  );
+  assert.throws(
+    () => prepareIsolatedReconciliationUrl({
+      connectionString: 'postgresql://postgres.productionref:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+      projectRef: 'productionref',
+      productionProjectRef: 'productionref',
+      stagingProjectRef: 'stagingref',
+      environmentPath: reconciliationEnvironmentPath,
+    }),
+    /reconciliation_target_not_isolated/,
+  );
+} finally {
+  rmSync(reconciliationUrlTemp, { recursive: true, force: true });
+}
+
+const { createSchemaBaselineEvidence } = await import('./deploy/create-schema-baseline-evidence.mjs');
+const baselineEvidence = createSchemaBaselineEvidence({
+  schema: 'CREATE SCHEMA catalog;\nCREATE TABLE catalog.cards (id uuid);\nCREATE POLICY read_cards ON catalog.cards FOR SELECT USING (true);\n',
+  historySchema: 'CREATE SCHEMA supabase_migrations;\n',
+  historyData: 'COPY supabase_migrations.schema_migrations (version) FROM stdin;\n20260513170000\n\\.\n',
+});
+assert.equal(baselineEvidence.productionMutationPerformed, false);
+assert.equal(baselineEvidence.customerTableDataIncluded, false);
+assert.equal(baselineEvidence.inventory.tables, 1);
+assert.equal(baselineEvidence.inventory.policies, 1);
+assert.equal(baselineEvidence.inventory.migrationHistorySchemaPresent, true);
+assert.equal(baselineEvidence.inventory.migrationHistoryRows, 1);
+const absentHistoryEvidence = createSchemaBaselineEvidence({
+  schema: 'CREATE TABLE public.cards (id uuid);\n',
+  historySchema: '-- stackr: supabase_migrations schema absent on source\n',
+  historyData: '-- stackr: no migration history rows because schema is absent\n',
+});
+assert.equal(absentHistoryEvidence.inventory.migrationHistorySchemaPresent, false);
+assert.equal(absentHistoryEvidence.inventory.migrationHistoryRows, 0);
+assert.throws(
+  () => createSchemaBaselineEvidence({
+    schema: 'COPY public.cards (id) FROM stdin;\nsecret-user-row\n\\.\n',
+    historySchema: 'CREATE SCHEMA supabase_migrations;\n',
+    historyData: '-- no migration rows\n',
+  }),
+  /schema_dump_contains_copy_data/,
+);
+
+const { sanitizeRoleDumpText } = await import('./deploy/sanitize-supabase-role-dump.mjs');
+const roleDump = [
+  'CREATE ROLE "stackr_ingest";',
+  'ALTER ROLE "stackr_ingest" SET "statement_timeout" TO \'30s\';',
+  'ALTER ROLE "supabase_admin" SET "statement_timeout" TO \'2min\';',
+  'GRANT "stackr_ingest" TO "supabase_admin";',
+  'RESET ALL;',
+].join('\n');
+const sanitizedRoleDump = sanitizeRoleDumpText(roleDump);
+assert.equal(sanitizedRoleDump.removedStatementCount, 2);
+assert.match(sanitizedRoleDump.output, /^CREATE ROLE "stackr_ingest";/m);
+assert.match(sanitizedRoleDump.output, /^ALTER ROLE "stackr_ingest"/m);
+assert.doesNotMatch(sanitizedRoleDump.output, /^ALTER ROLE "supabase_admin"/m);
+assert.doesNotMatch(sanitizedRoleDump.output, /^GRANT "stackr_ingest" TO "supabase_admin"/m);
+assert.equal(
+  sanitizeRoleDumpText(sanitizedRoleDump.output).removedStatementCount,
+  0,
+  'sanitising a role dump must be idempotent',
+);
+
+const { buildRestoreCleanupSql } = await import('./deploy/prepare-restore-cleanup.mjs');
+const cleanup = buildRestoreCleanupSql([
+  'COPY "public"."cards" ("id") FROM stdin;',
+  'COPY "catalog"."sets" ("id") FROM stdin;',
+  'COPY "auth"."users" ("id") FROM stdin;',
+  'COPY "storage"."buckets" ("id") FROM stdin;',
+].join('\n'));
+assert.equal(cleanup.droppedSchemaCount, 8);
+assert.equal(cleanup.truncatedTableCount, 2);
+assert.match(cleanup.sql, /DROP SCHEMA IF EXISTS "public" CASCADE;/);
+assert.match(cleanup.sql, /CREATE SCHEMA "public" AUTHORIZATION "postgres";/);
+assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
+assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "storage"\."buckets" CASCADE;/);
+assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "public"\."cards"/);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /rollback_catalogue_version_id/);
 assert.match(productionWorkflow, /--id="\$ROLLBACK_CATALOGUE_VERSION_ID"/);

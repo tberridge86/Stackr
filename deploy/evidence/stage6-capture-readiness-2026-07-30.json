@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "stackr-stage6-capture-readiness-v1.0.0",
+  "capturedAt": "2026-07-30T12:14:40.211Z",
+  "sourceCommitHash": "9904e49b3f3c25f5397edcf84d4fd9e4d2f8a544",
+  "status": "blocked_no_consent_verified_real_captures",
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+  "sourcesChecked": {
+    "localReviewedScanLabManifestPresent": false,
+    "stagingBenchmarkCaseCount": 0,
+    "stagingRecognitionFeedbackCount": 0,
+    "productionLegacyScanTrainingRowCount": 0,
+    "productionLegacyCardScanObjectCount": 10
+  },
+  "eligibleCaptureCount": 0,
+  "legacyObjectsUsed": false,
+  "legacyObjectExclusionReasons": [
+    "no_explicit_training_consent_linkage",
+    "no_verified_card_identity_label_linkage",
+    "no_physical_card_session_linkage",
+    "legacy_bucket_is_public_and_does_not_meet_the_private_capture_policy"
+  ],
+  "requiredLanguages": [
+    "en",
+    "ja",
+    "zh-Hans",
+    "zh-Hant",
+    "ko"
+  ],
+  "representedRealCaptureLanguages": [],
+  "missingRealCaptureLanguages": [
+    "en",
+    "ja",
+    "zh-Hans",
+    "zh-Hant",
+    "ko"
+  ],
+  "nextSafeCollectionPath": [
+    "establish_and_rehearse_the_missing_database_baseline",
+    "deploy_the_existing_scan_lab_tables_and_private_bucket_to_staging",
+    "enable_the_existing_admin_only_scan_lab_backend_route_on_staging",
+    "collect_and_review_consented_real_device_captures",
+    "export_the_checksum_bound_reviewed_manifest",
+    "run_the_model_benchmark_without_reusing_query_images_as_references"
+  ]
+}
