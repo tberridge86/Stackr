@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
+  "capturedAt": "2026-07-30T06:30:21.103Z",
+  "sourceCommitHash": "42eaadbe04d5fdfb600bfb14be88e781ba568daa",
+  "supabase": {
+    "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+    "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "localMigrationFileCount": 75,
+    "productionMigrationHistoryCount": 0,
+    "stagingMigrationHistoryCount": 18,
+    "migrationHistoryStatus": "not_aligned",
+    "stagingSecurityAdvisorFindingCountAfterRollback": 0,
+    "productionPhysicalBackupCount": 0,
+    "stagingPhysicalBackupCount": 0,
+    "pitrEnabled": false,
+    "walgEnabled": true
+  },
+  "storageRecovery": {
+    "status": "not_verified",
+    "stagingBucketCount": 0,
+    "stagingObjectCount": 0,
+    "backupArtifactSha256": null,
+    "restoreTargetProjectRef": null,
+    "restoreTestedAt": null,
+    "restoredObjectCount": null,
+    "checksumMismatchCount": null,
+    "blockers": [
+      "no_storage_backup_artifact",
+      "no_isolated_storage_restore_drill",
+      "no_staging_objects_available_for_restore_verification"
+    ]
+  },
+  "stage6Rehearsal": {
+    "status": "rehearsed_and_rolled_back",
+    "migrationApplied": true,
+    "rollbackApplied": true,
+    "seededCandidateModelCount": 5,
+    "selectedOrActiveModelCount": 0,
+    "activeIndexCount": 0,
+    "anonymousOrAuthenticatedMlGrantCount": 0,
+    "allStage6TablesHadRls": true,
+    "securityAdvisorFindingCountAfterFixedMigration": 0,
+    "finalStage6ObjectCount": 0,
+    "vectorExtensionInstalled": false,
+    "activationGuardsVerified": [
+      "unselected_model_rejected",
+      "unknown_index_rejected"
+    ]
+  },
+  "modelAndIndex": {
+    "status": "blocked",
+    "selectedModelId": null,
+    "selectedEmbeddingDimensions": null,
+    "activeIndexVersion": null,
+    "realPhoneTestCaptureCount": 0,
+    "approvedTrainingPixelSourceCount": 0,
+    "missingLanguages": [
+      "zh-Hans",
+      "ko"
+    ]
+  },
+  "releaseReadiness": {
+    "status": "blocked",
+    "blockers": [
+      "migration_history_not_aligned",
+      "production_backup_not_available",
+      "storage_recovery_not_verified",
+      "model_benchmark_not_complete",
+      "embedding_index_not_validated",
+      "staging_vector_extension_missing",
+      "staging_provider_deployment_not_configured"
+    ]
+  }
+}

@@ -121,6 +121,14 @@ export type ModelBenchmarkRun = {
   datasetManifestSha256: string;
   sourceCommitHash: string;
   sourceTreeDirty: boolean;
+  measurementEvidence: {
+    path: string | null;
+    sha256: string | null;
+    schemaVersion: string | null;
+    acceptedRunCount: number;
+    acceptedModelIds: string[];
+    blockers: string[];
+  };
   supportedLanguages: StackrRecognitionLanguage[];
   dataCoverage: {
     rowCount: number;
@@ -154,7 +162,6 @@ export type ModelBenchmarkRun = {
 export type ModelMeasurementOverrides = Partial<Record<string, Partial<StackrModelMeasurements> & {
   onnxExportStatus?: OnnxCompatibility;
   quantisationStatus?: QuantisationStatus;
-  productionEligible?: boolean;
 }>>;
 
 export type EmbeddingIndexRegenerationScope =
@@ -237,7 +244,6 @@ function withOverrides(candidate: ModelCandidate, overrides?: ModelMeasurementOv
   const {
     onnxExportStatus,
     quantisationStatus,
-    productionEligible,
     ...measurementOverrides
   } = override;
 
@@ -249,7 +255,6 @@ function withOverrides(candidate: ModelCandidate, overrides?: ModelMeasurementOv
     },
     onnxExportStatus: onnxExportStatus ?? candidate.onnxExportStatus,
     quantisationStatus: quantisationStatus ?? candidate.quantisationStatus,
-    productionEligible: productionEligible ?? candidate.productionEligible,
   };
 }
 
@@ -585,6 +590,9 @@ export function buildModelBenchmarkRun(input: {
   sourceTreeDirty: boolean;
   generatedAt?: string;
   measurementOverrides?: ModelMeasurementOverrides;
+  measurementEvidence?: ModelBenchmarkRun['measurementEvidence'];
+  evaluationIsolation?: ModelBenchmarkRun['leakageReport'];
+  externalBlockers?: string[];
 }): ModelBenchmarkRun {
   const candidates = createModelCandidates(input.measurementOverrides);
   const datasetBlockers = getDatasetBlockers(input.summary);
@@ -597,7 +605,34 @@ export function buildModelBenchmarkRun(input: {
   const modelBlockers = selectedDecision
     ? []
     : ['no_production_model_selected_by_weighted_benchmark'];
-  const blockers = [...datasetBlockers, ...modelBlockers];
+  const isolation = input.evaluationIsolation ?? {
+    sourceLeakageExists: input.summary?.duplicateAnalysis.sourceLeakageExists ?? false,
+    physicalCardSessionLeakageExists: input.summary?.duplicateAnalysis.physicalCardSessionLeakageExists ?? false,
+    modelSelectionAndFinalTestSeparated: false,
+    queryImagesAreExcludedFromIndexedReferences: false,
+    notes: [],
+  };
+  const measurementEvidence = input.measurementEvidence ?? {
+    path: null,
+    sha256: null,
+    schemaVersion: null,
+    acceptedRunCount: 0,
+    acceptedModelIds: [],
+    blockers: ['measurement_evidence_missing'],
+  };
+  const evidenceBlockers = [
+    ...(input.sourceTreeDirty ? ['source_tree_dirty'] : []),
+    ...(measurementEvidence.acceptedRunCount <= 0 ? ['measurement_evidence_not_accepted'] : []),
+    ...measurementEvidence.blockers,
+    ...(!isolation.modelSelectionAndFinalTestSeparated
+      ? ['model_selection_and_final_test_not_separated']
+      : []),
+    ...(!isolation.queryImagesAreExcludedFromIndexedReferences
+      ? ['query_images_not_excluded_from_indexed_references']
+      : []),
+    ...(input.externalBlockers ?? []),
+  ];
+  const blockers = [...new Set([...datasetBlockers, ...evidenceBlockers, ...modelBlockers])];
   const status = blockers.length > 0 ? 'blocked' : 'complete';
 
   return {
@@ -608,6 +643,7 @@ export function buildModelBenchmarkRun(input: {
     datasetManifestSha256: input.datasetManifestSha256,
     sourceCommitHash: input.sourceCommitHash,
     sourceTreeDirty: input.sourceTreeDirty,
+    measurementEvidence,
     supportedLanguages: [...SUPPORTED_RECOGNITION_LANGUAGES],
     dataCoverage: {
       rowCount: input.summary?.rowCount ?? 0,
@@ -622,11 +658,9 @@ export function buildModelBenchmarkRun(input: {
       hardNegativeCoverage: input.summary?.hardNegativeCoverage ?? { represented: 0, blocked: 0, total: 0 },
     },
     leakageReport: {
-      sourceLeakageExists: input.summary?.duplicateAnalysis.sourceLeakageExists ?? false,
-      physicalCardSessionLeakageExists: input.summary?.duplicateAnalysis.physicalCardSessionLeakageExists ?? false,
-      modelSelectionAndFinalTestSeparated: false,
-      queryImagesAreExcludedFromIndexedReferences: false,
+      ...isolation,
       notes: [
+        ...isolation.notes,
         'The current pilot manifest records split metadata but does not yet provide approved real-phone captures for a protected final test.',
         'Synthetic augmentations may supplement benchmark coverage but cannot be counted as real-camera validation.',
       ],

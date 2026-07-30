@@ -1,6 +1,6 @@
 # Stage 6: Model Benchmark, Embedding Generation And Vector Index
 
-Generated for branch: `chore/model-benchmark-vector-index`
+Updated on branch: `chore/api-gateway-v1`
 
 Stage status: blocked by missing approved real-world benchmark data and missing Stackr-measured model results.
 
@@ -15,7 +15,9 @@ This stage does not replace the current scanner path, existing CLIP pack, or Xim
 - The current language coverage includes English, Japanese and Traditional Chinese only. Simplified Chinese and Korean are missing from the benchmark coverage.
 - Existing `public.card_clip_embeddings` uses `jsonb` embeddings. It is not a pgvector/HNSW catalogue index.
 - Stage 2 already created the private `ml` schema. Stage 6 extends it with benchmark registry and activation metadata only.
-- There is no `supabase/config.toml` in the repository, so local Supabase migration application is not currently wired as a standard CLI project.
+- `supabase/config.toml` now exists, but Docker is not installed on the current Windows host, so the full local Supabase reset remains delegated to GitHub CI.
+- The Stage 6 migration was applied twice to isolated staging and rolled back twice. The fixed migration produced zero Supabase security-advisor findings and left zero Stage 6 objects after rollback.
+- Staging does not currently have the `vector` extension, so a concrete vector table and HNSW index cannot be generated there yet.
 
 ## Benchmark Candidates
 
@@ -63,6 +65,24 @@ The benchmark report records these fields for every candidate. A model cannot be
 
 Upstream-reported values are stored separately from Stackr measurements and are not used as proof of Stackr production readiness.
 
+## Measurement Evidence Contract
+
+The real benchmark generator accepts measurements only from `ml/measurements/model-measurement-evidence-v1.json`, or the path supplied through `STACKR_MODEL_MEASUREMENTS_PATH`. The file is deliberately absent until real measurements exist.
+
+`lib/modelBenchmarkEvidence.ts` validates all evidence before it can affect selection:
+
+- benchmark, dataset and benchmark-implementation checksums must match;
+- every model and preprocessing artifact must have a SHA-256 checksum;
+- each run records hardware, operating system, runtime, target and positive sample counts;
+- iOS, Android and server latency values must come from their matching targets;
+- accuracy values must be finite and between zero and one;
+- duplicate or conflicting metrics are rejected instead of silently overwritten;
+- model-selection and protected final-test separation must be asserted;
+- query images must be excluded from indexed references for the same evaluation;
+- measurement evidence cannot override a model's licence or production eligibility.
+
+Missing, malformed, stale or checksum-mismatched evidence contributes explicit benchmark blockers. Direct synthetic fixture values remain test-only and cannot feed the generated registry.
+
 ## Weighted Selection
 
 The current weighting is defined in `lib/modelBenchmarkV1.ts`.
@@ -95,6 +115,8 @@ The current report remains blocked until these controls can be proven:
 - Query images are not indexed as reference images for the same evaluation.
 - Synthetic transformations are labelled as synthetic supplement only.
 - Real Stackr captures are separated from clean reference imagery.
+
+The benchmark selection function now treats both isolation assertions, accepted measurement evidence and a clean source tree as mandatory gates. Previously, complete fixture metrics could select a candidate while the report still showed both isolation assertions as false; that fail-open path is covered by regression tests.
 - Same-artwork and near-identical variants are represented in a protected test set.
 
 ## Database Objects

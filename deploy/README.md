@@ -32,6 +32,8 @@ The live Supabase project is healthy, but its migration history is empty and its
 
 The isolated Supabase staging project is `lmwfhvexfcoyeuoyrlco`; production is `oakdbbzdqwurpjnoqhmu`. The staging security rehearsal was completed and its temporary records were removed. No Stage 13 migration has been applied to production.
 
+The latest non-secret readiness snapshot is `deploy/evidence/staging-readiness-2026-07-30.json`. It records 75 local migration files, 18 isolated staging/rehearsal history entries, zero production migration entries, zero provider-reported physical backups, and an empty staging Storage inventory. `scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready` therefore fails by design.
+
 Do not flip manifest values to make a workflow pass. Resolve the underlying evidence, commit the evidence-backed state change for review, and independently set the matching protected GitHub variable.
 
 ## Local Verification
@@ -48,6 +50,7 @@ npm run typecheck:backend
 npm run check:api-contract
 npm run test:database-migrations
 npm run test:deployment
+node scripts/deploy/verify-staging-readiness-evidence.mjs
 npm test --prefix gateway
 docker build --pull -t stackr-recognition:local recognition-service
 ```

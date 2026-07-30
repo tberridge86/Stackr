@@ -5,14 +5,26 @@ import path from 'node:path';
 import {
   STACKR_MODEL_BENCHMARK_VERSION,
   buildModelBenchmarkRun,
+  createModelCandidates,
   type HardNegativeDatasetSummary,
   type ModelBenchmarkRun,
 } from '../lib/modelBenchmarkV1';
+import {
+  validateModelMeasurementEvidence,
+  type ModelMeasurementEvidenceValidation,
+} from '../lib/modelBenchmarkEvidence';
 
 const HARD_NEGATIVE_PATH = 'ml/data_manifests/hard-negative-groups.json';
 const REPORT_JSON_PATH = 'ml/reports/model-benchmark-v1.json';
 const REPORT_HTML_PATH = 'ml/reports/model-benchmark-v1.html';
 const REGISTRY_PATH = 'ml/models/embedding-model-registry-v1.json';
+const MEASUREMENT_EVIDENCE_PATH = process.env.STACKR_MODEL_MEASUREMENTS_PATH
+  ?? 'ml/measurements/model-measurement-evidence-v1.json';
+const BENCHMARK_IMPLEMENTATION_PATHS = [
+  'lib/modelBenchmarkV1.ts',
+  'lib/modelBenchmarkEvidence.ts',
+  'scripts/benchmark-embedding-models.ts',
+];
 
 type HardNegativePayload = {
   summary: HardNegativeDatasetSummary;
@@ -20,6 +32,14 @@ type HardNegativePayload = {
 
 function sha256File(filePath: string) {
   return createHash('sha256').update(readFileSync(filePath)).digest('hex');
+}
+
+function benchmarkImplementationSha256() {
+  const hash = createHash('sha256');
+  for (const filePath of BENCHMARK_IMPLEMENTATION_PATHS) {
+    hash.update(filePath).update('\0').update(readFileSync(filePath)).update('\0');
+  }
+  return hash.digest('hex');
 }
 
 function tryGit(args: string[], fallback: string) {
@@ -34,6 +54,49 @@ function readSummary(): HardNegativeDatasetSummary | null {
   if (!existsSync(HARD_NEGATIVE_PATH)) return null;
   const payload = JSON.parse(readFileSync(HARD_NEGATIVE_PATH, 'utf8')) as HardNegativePayload;
   return payload.summary ?? null;
+}
+
+function missingMeasurementEvidence(): ModelMeasurementEvidenceValidation {
+  return {
+    accepted: false,
+    schemaVersion: null,
+    evidenceSha256: '',
+    sourceCommitHash: null,
+    acceptedRunCount: 0,
+    acceptedModelIds: [],
+    blockers: ['measurement_evidence_missing'],
+    evaluationIsolation: {
+      modelSelectionAndFinalTestSeparated: false,
+      queryImagesAreExcludedFromIndexedReferences: false,
+    },
+    measurementOverrides: {},
+  };
+}
+
+function readMeasurementEvidence(
+  summary: HardNegativeDatasetSummary | null,
+  datasetManifestSha256: string,
+) {
+  if (!existsSync(MEASUREMENT_EVIDENCE_PATH)) return missingMeasurementEvidence();
+  const bytes = readFileSync(MEASUREMENT_EVIDENCE_PATH);
+  let payload: unknown;
+  try {
+    payload = JSON.parse(bytes.toString('utf8'));
+  } catch {
+    return {
+      ...missingMeasurementEvidence(),
+      evidenceSha256: createHash('sha256').update(bytes).digest('hex'),
+      blockers: ['measurement_evidence_invalid_json'],
+    };
+  }
+  return validateModelMeasurementEvidence({
+    payload,
+    evidenceSha256: createHash('sha256').update(bytes).digest('hex'),
+    expectedDatasetVersion: summary?.datasetVersion ?? '',
+    expectedDatasetManifestSha256: datasetManifestSha256,
+    expectedBenchmarkImplementationSha256: benchmarkImplementationSha256(),
+    knownModelIds: createModelCandidates().map((candidate) => candidate.modelId),
+  });
 }
 
 function escapeHtml(value: unknown) {
@@ -130,6 +193,13 @@ function writeHtmlReport(run: ModelBenchmarkRun) {
     <ul>${blockers || '<li>None</li>'}</ul>
   </div>
   <div class="panel">
+    <h2>Measurement Evidence</h2>
+    <p>Path: <code>${escapeHtml(run.measurementEvidence.path ?? 'missing')}</code></p>
+    <p>Checksum: <code>${escapeHtml(run.measurementEvidence.sha256 ?? 'missing')}</code></p>
+    <p>Accepted runs: <code>${escapeHtml(run.measurementEvidence.acceptedRunCount)}</code></p>
+    <p>Accepted models: <code>${escapeHtml(run.measurementEvidence.acceptedModelIds.join(', ') || 'none')}</code></p>
+  </div>
+  <div class="panel">
     <h2>Language Coverage</h2>
     <p>Missing: <code>${escapeHtml(run.dataCoverage.missingLanguages.join(', ') || 'none')}</code></p>
     <table><thead><tr><th>Language</th><th>Rows</th></tr></thead><tbody>${coverageRows}</tbody></table>
@@ -154,11 +224,31 @@ function writeHtmlReport(run: ModelBenchmarkRun) {
 }
 
 const summary = readSummary();
+const datasetManifestSha256 = existsSync(HARD_NEGATIVE_PATH) ? sha256File(HARD_NEGATIVE_PATH) : '0'.repeat(64);
+const measurementEvidence = readMeasurementEvidence(summary, datasetManifestSha256);
 const run = buildModelBenchmarkRun({
   summary,
-  datasetManifestSha256: existsSync(HARD_NEGATIVE_PATH) ? sha256File(HARD_NEGATIVE_PATH) : '0'.repeat(64),
+  datasetManifestSha256,
   sourceCommitHash: tryGit(['rev-parse', 'HEAD'], 'unknown'),
   sourceTreeDirty: tryGit(['status', '--short'], '').length > 0,
+  measurementOverrides: measurementEvidence.measurementOverrides,
+  measurementEvidence: {
+    path: existsSync(MEASUREMENT_EVIDENCE_PATH) ? MEASUREMENT_EVIDENCE_PATH : null,
+    sha256: measurementEvidence.evidenceSha256 || null,
+    schemaVersion: measurementEvidence.schemaVersion,
+    acceptedRunCount: measurementEvidence.acceptedRunCount,
+    acceptedModelIds: measurementEvidence.acceptedModelIds,
+    blockers: measurementEvidence.blockers,
+  },
+  evaluationIsolation: {
+    sourceLeakageExists: summary?.duplicateAnalysis.sourceLeakageExists ?? false,
+    physicalCardSessionLeakageExists: summary?.duplicateAnalysis.physicalCardSessionLeakageExists ?? false,
+    ...measurementEvidence.evaluationIsolation,
+    notes: measurementEvidence.accepted
+      ? ['Isolation assertions were accepted from checksum-bound measurement evidence.']
+      : ['No valid measurement evidence established protected evaluation isolation.'],
+  },
+  externalBlockers: measurementEvidence.blockers,
 });
 
 writeJson(REPORT_JSON_PATH, run);
@@ -171,6 +261,7 @@ console.log(JSON.stringify({
   selectedModelId: run.selectedModelId,
   selectedEmbeddingDimensions: run.selectedEmbeddingDimensions,
   blockers: run.blockers,
+  measurementEvidence: run.measurementEvidence,
   reportJson: REPORT_JSON_PATH,
   reportHtml: REPORT_HTML_PATH,
   registry: REGISTRY_PATH,

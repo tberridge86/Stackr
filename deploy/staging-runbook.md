@@ -36,9 +36,12 @@ npm ci --prefix backend
 npm ci --prefix gateway
 npm run deploy:preflight
 npm run deploy:verify-model
+node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
 ```
 
 Review the reported warnings. The release manifest currently blocks migration, model, index, and storage gates, so a release-mode preflight must fail today. That failure is expected and prevents any provider mutation.
+
+The 2026-07-30 rehearsal proved the Stage 6 registry migration and rollback against staging, including RLS, private grants, activation guards and fixed function search paths. It did not establish migration-history alignment, physical backup availability, Storage restore, `vector` availability, model selection or index completeness.
 
 ## Dispatch
 

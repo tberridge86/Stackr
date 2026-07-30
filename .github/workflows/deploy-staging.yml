@@ -64,7 +64,9 @@ jobs:
           npm ci --prefix gateway
 
       - name: Verify release inputs and repository structure
-        run: npm run deploy:preflight -- --release
+        run: |
+          node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
+          npm run deploy:preflight -- --release
 
       - name: Verify latest physical backup and create ephemeral logical backups
         run: |

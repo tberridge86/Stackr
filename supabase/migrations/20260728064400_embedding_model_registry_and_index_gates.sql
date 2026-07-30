@@ -340,6 +340,7 @@ create or replace function ml.card_embedding_vector_table_sql(p_model_id text)
 returns text
 language plpgsql
 security invoker
+set search_path = ''
 as $$
 declare
   selected_model record;
@@ -429,6 +430,7 @@ create or replace function ml.activate_embedding_index_version(p_index_version_i
 returns uuid
 language plpgsql
 security invoker
+set search_path = ''
 as $$
 declare
   candidate record;

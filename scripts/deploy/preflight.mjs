@@ -15,6 +15,7 @@ const requiredPaths = [
   'supabase/seed.sql',
   'deploy/README.md',
   'deploy/release-manifest.json',
+  'deploy/evidence/staging-readiness-2026-07-30.json',
   'deploy/staging-runbook.md',
   'deploy/production-runbook.md',
   'deploy/rollback-runbook.md',
@@ -28,6 +29,7 @@ for (const filePath of requiredPaths) {
 }
 
 const manifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
+const stagingEvidence = JSON.parse(readFileSync('deploy/evidence/staging-readiness-2026-07-30.json', 'utf8'));
 const appConfig = JSON.parse(readFileSync('app.json', 'utf8'));
 const supabaseConfig = readFileSync('supabase/config.toml', 'utf8');
 const exposed = manifest.components.database.exposedSchemas;
@@ -56,6 +58,20 @@ for (const [label, projectRef] of [
   if (!/^[a-z]{20}$/.test(projectRef ?? '')) errors.push(`invalid_${label}_supabase_project_ref`);
 }
 if (productionProjectRef === stagingProjectRef) errors.push('staging_and_production_supabase_refs_match');
+if (stagingEvidence.supabase?.productionProjectRef !== productionProjectRef) {
+  errors.push('production_project_ref_evidence_mismatch');
+}
+if (stagingEvidence.supabase?.stagingProjectRef !== stagingProjectRef) {
+  errors.push('staging_project_ref_evidence_mismatch');
+}
+if (manifest.releaseGates.migrationHistoryAligned === true
+  && stagingEvidence.supabase?.migrationHistoryStatus !== 'aligned') {
+  errors.push('migration_gate_lacks_aligned_evidence');
+}
+if (manifest.releaseGates.storageBackupVerified === true
+  && stagingEvidence.storageRecovery?.status !== 'verified') {
+  errors.push('storage_gate_lacks_verified_restore_evidence');
+}
 
 const easProjectId = manifest.components.mobile.easProjectId;
 const appEasProjectId = appConfig.expo?.extra?.eas?.projectId;
@@ -91,6 +107,9 @@ if (releaseMode) {
   const deploymentEnvironment = process.env.STACKR_DEPLOYMENT_ENVIRONMENT;
   if (!['staging', 'production'].includes(deploymentEnvironment)) {
     errors.push('invalid_release_environment');
+  }
+  if (stagingEvidence.releaseReadiness?.status !== 'ready') {
+    errors.push('staging_evidence_not_release_ready');
   }
 
   for (const [gate, approvalVariable] of Object.entries(releaseGateApprovals)) {

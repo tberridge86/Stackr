@@ -9,6 +9,12 @@ import {
   type HardNegativeDatasetSummary,
   type StackrModelMeasurements,
 } from '../lib/modelBenchmarkV1';
+import {
+  STACKR_MODEL_MEASUREMENT_EVIDENCE_VERSION,
+  sha256CanonicalJson,
+  validateModelMeasurementEvidence,
+  type ModelMeasurementEvidenceFile,
+} from '../lib/modelBenchmarkEvidence';
 
 const HARD_NEGATIVE_PATH = 'ml/data_manifests/hard-negative-groups.json';
 const MIGRATION_PATH = 'supabase/migrations/20260728064400_embedding_model_registry_and_index_gates.sql';
@@ -76,6 +82,144 @@ const completeDinoMeasurements: StackrModelMeasurements = {
   quantizedTop1Delta: -0.015,
 };
 
+const READY_DATASET_SHA = 'c'.repeat(64);
+const READY_IMPLEMENTATION_SHA = 'd'.repeat(64);
+
+function validMeasurementEvidence(): ModelMeasurementEvidenceFile {
+  const modelArtifactSha256 = '1'.repeat(64);
+  const preprocessingSha256 = '2'.repeat(64);
+  return {
+    schemaVersion: STACKR_MODEL_MEASUREMENT_EVIDENCE_VERSION,
+    benchmarkVersion: 'stackr-model-benchmark-v1.0.0',
+    datasetVersion: 'stackr-ready-model-benchmark-fixture',
+    datasetManifestSha256: READY_DATASET_SHA,
+    benchmarkImplementationSha256: READY_IMPLEMENTATION_SHA,
+    sourceCommitHash: '3'.repeat(40),
+    generatedAt: '2026-07-30T00:00:00.000Z',
+    evaluationIsolation: {
+      modelSelectionAndFinalTestSeparated: true,
+      queryImagesAreExcludedFromIndexedReferences: true,
+    },
+    runs: [
+      {
+        runId: 'dino-ios-latency',
+        modelId: 'dinov2_vits14',
+        modelArtifactSha256,
+        preprocessingSha256,
+        target: 'ios',
+        hardware: 'iPhone fixture',
+        operatingSystem: 'iOS fixture',
+        runtime: 'ORT fixture',
+        measurements: { iosLatencyMs: completeDinoMeasurements.iosLatencyMs },
+        sampleCounts: { iosLatencyMs: 100 },
+      },
+      {
+        runId: 'dino-android-latency',
+        modelId: 'dinov2_vits14',
+        modelArtifactSha256,
+        preprocessingSha256,
+        target: 'android',
+        hardware: 'Android fixture',
+        operatingSystem: 'Android fixture',
+        runtime: 'ORT fixture',
+        measurements: { androidLatencyMs: completeDinoMeasurements.androidLatencyMs },
+        sampleCounts: { androidLatencyMs: 100 },
+      },
+      {
+        runId: 'dino-server-resource',
+        modelId: 'dinov2_vits14',
+        modelArtifactSha256,
+        preprocessingSha256,
+        target: 'server_cpu',
+        hardware: 'Server fixture',
+        operatingSystem: 'Linux fixture',
+        runtime: 'ONNX Runtime fixture',
+        measurements: {
+          modelSizeBytes: completeDinoMeasurements.modelSizeBytes,
+          serverCpuLatencyMs: completeDinoMeasurements.serverCpuLatencyMs,
+          peakMemoryMb: completeDinoMeasurements.peakMemoryMb,
+        },
+        sampleCounts: { modelSizeBytes: 1, serverCpuLatencyMs: 100, peakMemoryMb: 100 },
+        onnxExportStatus: 'compatible',
+      },
+      {
+        runId: 'dino-retrieval-quality',
+        modelId: 'dinov2_vits14',
+        modelArtifactSha256,
+        preprocessingSha256,
+        target: 'retrieval',
+        hardware: 'Evaluation fixture',
+        operatingSystem: 'Linux fixture',
+        runtime: 'Benchmark fixture',
+        measurements: {
+          cleanImageTop1: completeDinoMeasurements.cleanImageTop1,
+          cleanImageTop5: completeDinoMeasurements.cleanImageTop5,
+          realCameraTop1: completeDinoMeasurements.realCameraTop1,
+          realCameraTop5: completeDinoMeasurements.realCameraTop5,
+          foreignLanguageTop1: completeDinoMeasurements.foreignLanguageTop1,
+          croppedCardTop1: completeDinoMeasurements.croppedCardTop1,
+          sleevedCardTop1: completeDinoMeasurements.sleevedCardTop1,
+          glareBlurTop1: completeDinoMeasurements.glareBlurTop1,
+          sameArtworkTop1: completeDinoMeasurements.sameArtworkTop1,
+          quantizedTop1Delta: completeDinoMeasurements.quantizedTop1Delta,
+        },
+        sampleCounts: {
+          cleanImageTop1: 100,
+          cleanImageTop5: 100,
+          realCameraTop1: 100,
+          realCameraTop5: 100,
+          foreignLanguageTop1: 100,
+          croppedCardTop1: 100,
+          sleevedCardTop1: 100,
+          glareBlurTop1: 100,
+          sameArtworkTop1: 100,
+          quantizedTop1Delta: 100,
+        },
+        quantisationStatus: 'accepted',
+      },
+    ],
+  };
+}
+
+function validatedMeasurementEvidence() {
+  const payload = validMeasurementEvidence();
+  return validateModelMeasurementEvidence({
+    payload,
+    evidenceSha256: sha256CanonicalJson(payload),
+    expectedDatasetVersion: payload.datasetVersion,
+    expectedDatasetManifestSha256: READY_DATASET_SHA,
+    expectedBenchmarkImplementationSha256: READY_IMPLEMENTATION_SHA,
+    knownModelIds: createModelCandidates().map((candidate) => candidate.modelId),
+  });
+}
+
+function buildReadyBenchmarkRun() {
+  const evidence = validatedMeasurementEvidence();
+  assert.equal(evidence.accepted, true, evidence.blockers.join(', '));
+  return buildModelBenchmarkRun({
+    summary: readySummary(),
+    datasetManifestSha256: READY_DATASET_SHA,
+    sourceCommitHash: '4'.repeat(40),
+    sourceTreeDirty: false,
+    generatedAt: '2026-07-28T00:00:00.000Z',
+    measurementOverrides: evidence.measurementOverrides,
+    measurementEvidence: {
+      path: 'fixture/model-measurement-evidence.json',
+      sha256: evidence.evidenceSha256,
+      schemaVersion: evidence.schemaVersion,
+      acceptedRunCount: evidence.acceptedRunCount,
+      acceptedModelIds: evidence.acceptedModelIds,
+      blockers: evidence.blockers,
+    },
+    evaluationIsolation: {
+      sourceLeakageExists: false,
+      physicalCardSessionLeakageExists: false,
+      ...evidence.evaluationIsolation,
+      notes: ['fixture'],
+    },
+  });
+}
+
 function assertCandidatesIncludeRequiredFamilies() {
   const candidates = createModelCandidates();
   const ids = candidates.map((candidate) => candidate.modelId);
@@ -114,27 +258,17 @@ function assertCurrentDatasetBlocksSelection() {
   assert.equal(run.selectedModelId, null);
   assert.equal(run.selectedEmbeddingDimensions, null);
   assert.ok(run.blockers.includes('no_production_model_selected_by_weighted_benchmark'));
+  assert.ok(run.blockers.includes('measurement_evidence_not_accepted'));
+  assert.ok(run.blockers.includes('model_selection_and_final_test_not_separated'));
+  assert.ok(run.blockers.includes('query_images_not_excluded_from_indexed_references'));
   assert.equal(run.leakageReport.modelSelectionAndFinalTestSeparated, false);
   assert.equal(run.leakageReport.queryImagesAreExcludedFromIndexedReferences, false);
 }
 
 function assertWeightedSelectionOnlyWhenMeasured() {
-  const run = buildModelBenchmarkRun({
-    summary: readySummary(),
-    datasetManifestSha256: 'c'.repeat(64),
-    sourceCommitHash: 'd'.repeat(40),
-    sourceTreeDirty: false,
-    generatedAt: '2026-07-28T00:00:00.000Z',
-    measurementOverrides: {
-      dinov2_vits14: {
-        ...completeDinoMeasurements,
-        onnxExportStatus: 'compatible',
-        quantisationStatus: 'accepted',
-      },
-    },
-  });
+  const run = buildReadyBenchmarkRun();
 
-  assert.equal(run.status, 'complete');
+  assert.equal(run.status, 'complete', run.blockers.join(', '));
   assert.equal(run.selectedModelId, 'dinov2_vits14');
   assert.equal(run.selectedEmbeddingDimensions, 384);
   assert.equal(run.blockers.length, 0);
@@ -143,6 +277,49 @@ function assertWeightedSelectionOnlyWhenMeasured() {
   assert.equal(selectedDecision?.decision, 'selected');
   assert.equal(selectedDecision?.rank, 1);
   assert.ok((selectedDecision?.weightedScore ?? 0) > 0);
+}
+
+function assertMeasurementEvidenceFailsClosed() {
+  const missingIsolation = validMeasurementEvidence();
+  missingIsolation.evaluationIsolation.queryImagesAreExcludedFromIndexedReferences = false;
+  const isolationResult = validateModelMeasurementEvidence({
+    payload: missingIsolation,
+    evidenceSha256: sha256CanonicalJson(missingIsolation),
+    expectedDatasetVersion: missingIsolation.datasetVersion,
+    expectedDatasetManifestSha256: READY_DATASET_SHA,
+    expectedBenchmarkImplementationSha256: READY_IMPLEMENTATION_SHA,
+    knownModelIds: createModelCandidates().map((candidate) => candidate.modelId),
+  });
+  assert.equal(isolationResult.accepted, false);
+  assert.ok(isolationResult.blockers.includes('query_images_not_excluded_from_indexed_references'));
+  assert.deepEqual(isolationResult.measurementOverrides, {});
+
+  const tamperedDataset = validMeasurementEvidence();
+  const checksumResult = validateModelMeasurementEvidence({
+    payload: tamperedDataset,
+    evidenceSha256: sha256CanonicalJson(tamperedDataset),
+    expectedDatasetVersion: tamperedDataset.datasetVersion,
+    expectedDatasetManifestSha256: '9'.repeat(64),
+    expectedBenchmarkImplementationSha256: READY_IMPLEMENTATION_SHA,
+    knownModelIds: createModelCandidates().map((candidate) => candidate.modelId),
+  });
+  assert.equal(checksumResult.accepted, false);
+  assert.ok(checksumResult.blockers.includes('measurement_evidence_dataset_checksum_mismatch'));
+
+  const duplicateMetric = validMeasurementEvidence();
+  duplicateMetric.runs[1].measurements.cleanImageTop1 = 0.5;
+  duplicateMetric.runs[1].sampleCounts.cleanImageTop1 = 10;
+  duplicateMetric.runs[3].measurements.cleanImageTop1 = 0.9;
+  const duplicateResult = validateModelMeasurementEvidence({
+    payload: duplicateMetric,
+    evidenceSha256: sha256CanonicalJson(duplicateMetric),
+    expectedDatasetVersion: duplicateMetric.datasetVersion,
+    expectedDatasetManifestSha256: READY_DATASET_SHA,
+    expectedBenchmarkImplementationSha256: READY_IMPLEMENTATION_SHA,
+    knownModelIds: createModelCandidates().map((candidate) => candidate.modelId),
+  });
+  assert.equal(duplicateResult.accepted, false);
+  assert.ok(duplicateResult.blockers.some((blocker) => blocker.includes('duplicate_metric_cleanImageTop1')));
 }
 
 function assertRegenerationPlanIsGated() {
@@ -162,19 +339,7 @@ function assertRegenerationPlanIsGated() {
   assert.ok(blockedPlan.blockedReasons.includes('benchmark_not_complete'));
   assert.match(blockedPlan.jobKey, /^[0-9a-f]{64}$/);
 
-  const readyRun = buildModelBenchmarkRun({
-    summary: readySummary(),
-    datasetManifestSha256: '1'.repeat(64),
-    sourceCommitHash: '2'.repeat(40),
-    sourceTreeDirty: false,
-    measurementOverrides: {
-      dinov2_vits14: {
-        ...completeDinoMeasurements,
-        onnxExportStatus: 'compatible',
-        quantisationStatus: 'accepted',
-      },
-    },
-  });
+  const readyRun = buildReadyBenchmarkRun();
   const readyPlan = buildEmbeddingIndexRegenerationPlan({
     benchmarkRun: readyRun,
     scope: { scopeType: 'language', scopeValue: 'ja' },
@@ -198,8 +363,10 @@ function assertMigrationStructure() {
   }
 
   assert.match(sql, /create or replace function ml\.card_embedding_vector_table_sql\(p_model_id text\)/);
+  assert.match(sql, /ml\.card_embedding_vector_table_sql[\s\S]+security invoker\s+set search_path = ''/);
   assert.match(sql, /using hnsw \(embedding vector_cosine_ops\)/);
   assert.match(sql, /create or replace function ml\.activate_embedding_index_version/);
+  assert.match(sql, /ml\.activate_embedding_index_version[\s\S]+security invoker\s+set search_path = ''/);
   assert.match(sql, /index_not_validated/);
   assert.match(sql, /model_not_production_allowed/);
   assert.match(sql, /index_incomplete/);
@@ -215,6 +382,7 @@ function assertMigrationStructure() {
 assertCandidatesIncludeRequiredFamilies();
 assertCurrentDatasetBlocksSelection();
 assertWeightedSelectionOnlyWhenMeasured();
+assertMeasurementEvidenceFailsClosed();
 assertRegenerationPlanIsGated();
 assertMigrationStructure();
 
