@@ -209,6 +209,9 @@ assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-ur
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --dry-run/);
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL"/);
+assert.match(baselineMigrationTrialWorkflow, /find supabase\/migrations[^\n]+wc -l/);
+assert.match(baselineMigrationTrialWorkflow, /test "\$actual_migrations" = "\$expected_migrations"/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /migration-count\.txt"\)" = '\d+'/);
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-baseline-trial"/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|SUPABASE_DB_URL|--linked/);
 

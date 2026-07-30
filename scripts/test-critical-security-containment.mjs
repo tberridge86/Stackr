@@ -3,6 +3,12 @@ import { readFileSync } from 'node:fs';
 
 const read = (file) => readFileSync(new URL(`../${file}`, import.meta.url), 'utf8');
 const migration = read('supabase/migrations/20260729055239_critical_security_containment.sql');
+const legacyCatalogueHardening = read(
+  'supabase/migrations/20260730144626_harden_legacy_catalogue_operational_access.sql',
+);
+const legacyCatalogueRollback = read(
+  'supabase/manual/rollback_20260730144626_harden_legacy_catalogue_operational_access.sql',
+);
 const profileCutover = read('supabase/manual/finalize_profile_privacy_cutover.sql');
 
 assert.match(migration, /create table if not exists public\.profile_public_directory/i);
@@ -80,5 +86,65 @@ assert.match(backendServer, /app\.post\('\/api\/fingerprints\/reload', gatewayOr
 assert.doesNotMatch(backendServer, /req\.query\.adminKey/);
 assert.doesNotMatch(read('backend/routes/assets.js'), /req\.query\.adminKey/);
 assert.doesNotMatch(read('backend/routes/catalogueIngestion.js'), /req\.query\.adminKey/);
+
+for (const view of [
+  'catalogue_health',
+  'japanese_catalogue_health',
+  'tcg_card_printings',
+  'tcg_set_cover_images',
+]) {
+  assert.match(
+    legacyCatalogueHardening,
+    new RegExp(`alter view public\\.${view}\\s+set \\(security_invoker = true\\)`, 'i'),
+    `${view} must run with caller permissions`,
+  );
+  assert.match(
+    legacyCatalogueRollback,
+    new RegExp(`alter view public\\.${view}\\s+set \\(security_invoker = false\\)`, 'i'),
+    `${view} must have an explicit compatibility rollback`,
+  );
+}
+
+for (const table of [
+  'achievement_coin_rewards',
+  'price_refresh_queue',
+  'price_refresh_runs',
+]) {
+  assert.match(
+    legacyCatalogueHardening,
+    new RegExp(`alter table public\\.${table} enable row level security`, 'i'),
+    `${table} must have RLS enabled`,
+  );
+  assert.match(
+    legacyCatalogueHardening,
+    new RegExp(`revoke all on table public\\.${table} from public, anon, authenticated`, 'i'),
+    `${table} must not be directly accessible from client roles`,
+  );
+  assert.match(
+    legacyCatalogueHardening,
+    new RegExp(`grant select, insert, update, delete on table public\\.${table} to service_role`, 'i'),
+    `${table} must remain available to backend workers`,
+  );
+}
+
+for (const table of [
+  'card_images',
+  'card_image_checks',
+  'card_prices',
+  'card_price_checks',
+  'catalogue_sync_runs',
+]) {
+  assert.match(
+    legacyCatalogueHardening,
+    new RegExp(`create policy "[^"]+"\\s+on public\\.${table}[\\s\\S]+?to authenticated[\\s\\S]+?using \\(\\(select public\\.is_admin\\(\\)\\)\\)`, 'i'),
+    `${table} diagnostics must be restricted to authenticated admins`,
+  );
+}
+
+assert.doesNotMatch(
+  legacyCatalogueHardening,
+  /create policy[^;]+on public\.(?:achievement_coin_rewards|price_refresh_queue|price_refresh_runs)/i,
+  'service-owned operational tables must not gain client RLS policies',
+);
 
 console.log('Critical security containment contract passed.');
