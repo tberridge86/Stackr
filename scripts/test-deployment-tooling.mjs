@@ -154,6 +154,7 @@ const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'ut
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
+const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
@@ -183,6 +184,16 @@ assert.match(recoveryWorkflow, /verify-postgres-restore\.mjs/);
 assert.match(recoveryWorkflow, /backup-restore-storage-fixture\.mjs/);
 assert.match(recoveryWorkflow, /--file \/backup\/cleanup\.sql/);
 assert.match(recoveryWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-recovery"/);
+assert.match(productionBaselineWorkflow, /environment: migration-baseline/);
+assert.match(productionBaselineWorkflow, /secrets\.SUPABASE_PRODUCTION_DB_URL/);
+assert.match(productionBaselineWorkflow, /oakdbbzdqwurpjnoqhmu/);
+assert.match(productionBaselineWorkflow, /inputs\.confirmation == 'CAPTURE PRODUCTION SCHEMA'/);
+assert.match(productionBaselineWorkflow, /db dump/);
+assert.match(productionBaselineWorkflow, /secret-scan\.mjs/);
+assert.match(productionBaselineWorkflow, /retention-days: 1/);
+assert.match(productionBaselineWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-production-baseline"/);
+assert.doesNotMatch(productionBaselineWorkflow, /db push|migration repair|psql|SUPABASE_ACCESS_TOKEN/);
+assert.doesNotMatch(productionBaselineWorkflow, /upload-artifact@v\d/);
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
 const rawPasswordUrl = normalizePostgresUrl(
@@ -201,6 +212,43 @@ assert.equal(
 assert.throws(
   () => normalizePostgresUrl(rawPasswordUrl.normalized, 'anotherproject'),
   /database_url_project_mismatch/,
+);
+
+const baselineUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-baseline-url-test-'));
+try {
+  const baselineEnvironmentPath = path.join(baselineUrlTemp, 'github.env');
+  const { prepareProductionBaselineUrl } = await import('./deploy/prepare-production-baseline-url.mjs');
+  const preparedBaseline = prepareProductionBaselineUrl({
+    connectionString: 'postgresql://postgres.productionref:p=a@#ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    projectRef: 'productionref',
+    environmentPath: baselineEnvironmentPath,
+  });
+  assert.equal(
+    readFileSync(baselineEnvironmentPath, 'utf8'),
+    `STACKR_PRODUCTION_DB_URL=${preparedBaseline.normalized}\n`,
+  );
+} finally {
+  rmSync(baselineUrlTemp, { recursive: true, force: true });
+}
+
+const { createSchemaBaselineEvidence } = await import('./deploy/create-schema-baseline-evidence.mjs');
+const baselineEvidence = createSchemaBaselineEvidence({
+  schema: 'CREATE SCHEMA catalog;\nCREATE TABLE catalog.cards (id uuid);\nCREATE POLICY read_cards ON catalog.cards FOR SELECT USING (true);\n',
+  historySchema: 'CREATE SCHEMA supabase_migrations;\n',
+  historyData: 'COPY supabase_migrations.schema_migrations (version) FROM stdin;\n20260513170000\n\\.\n',
+});
+assert.equal(baselineEvidence.productionMutationPerformed, false);
+assert.equal(baselineEvidence.customerTableDataIncluded, false);
+assert.equal(baselineEvidence.inventory.tables, 1);
+assert.equal(baselineEvidence.inventory.policies, 1);
+assert.equal(baselineEvidence.inventory.migrationHistoryRows, 1);
+assert.throws(
+  () => createSchemaBaselineEvidence({
+    schema: 'COPY public.cards (id) FROM stdin;\nsecret-user-row\n\\.\n',
+    historySchema: 'CREATE SCHEMA supabase_migrations;\n',
+    historyData: '-- no migration rows\n',
+  }),
+  /schema_dump_contains_copy_data/,
 );
 
 const { sanitizeRoleDumpText } = await import('./deploy/sanitize-supabase-role-dump.mjs');
