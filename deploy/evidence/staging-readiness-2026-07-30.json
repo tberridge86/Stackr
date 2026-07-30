@@ -1,16 +1,16 @@
 {
   "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
-  "capturedAt": "2026-07-30T14:38:00.000Z",
-  "sourceCommitHash": "edfc018a192bbdbe89bc3031999186c0b3a01341",
+  "capturedAt": "2026-07-30T15:07:20.000Z",
+  "sourceCommitHash": "7950fa2d75f2f271cf1e6a009eb672ef2c0be1e3",
   "supabase": {
     "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
     "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
     "localMigrationFileCount": 78,
     "productionMigrationHistoryCount": 0,
     "stagingMigrationHistoryCount": 20,
-    "migrationHistoryStatus": "isolated_candidate_stale_staging_promotion_blocked",
+    "migrationHistoryStatus": "isolated_candidate_aligned_staging_promotion_blocked",
     "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-07-30.json",
-    "migrationReconciliationEvidenceSha256": "877037662b4b83dd93539c5be35fa8f25b0940cfdbb342f2c1f1dad539bb4e26",
+    "migrationReconciliationEvidenceSha256": "eb55301414ef623a23ff6193231944fa6f449760ca7f0b704b88940082e0dafa",
     "stagingSecurityAdvisorFindingCountAfterRollback": 0,
     "productionPhysicalBackupCount": 8,
     "stagingPhysicalBackupCount": 11,
@@ -49,17 +49,21 @@
     "blockers": []
   },
   "migrationCandidate": {
-    "status": "stale_not_promotable",
+    "status": "aligned_security_hardened_not_promotable",
     "projectRef": "krjttpmthxkfsbqksxci",
-    "workflowRunId": 30551864110,
-    "repositoryMigrationCount": 76,
-    "missingCurrentMigrationCount": 2,
+    "workflowRunId": 30554631150,
+    "repositoryMigrationCount": 78,
     "databaseTableCount": 179,
-    "securityAdvisorFindingCount": 57,
-    "securityAdvisorErrorCount": 7,
-    "securityAdvisorWarningCount": 33,
+    "securityAdvisorFindingCount": 24,
+    "securityAdvisorErrorCount": 0,
+    "securityAdvisorWarningCount": 9,
+    "securityAdvisorInfoCount": 15,
     "currentStagingCatalogueRowsRequirePreservation": true,
-    "promotionApproved": false
+    "promotionApproved": false,
+    "promotionBlockers": [
+      "authorised_staging_catalogue_data_transfer_not_rehearsed",
+      "destructive_staging_rebuild_not_approved"
+    ]
   },
   "stage6Rehearsal": {
     "status": "rehearsed_and_rolled_back",
@@ -111,9 +115,9 @@
   "releaseReadiness": {
     "status": "blocked",
     "blockers": [
-      "migration_candidate_is_2_migrations_stale",
-      "migration_candidate_has_7_security_errors",
       "aligned_candidate_not_promoted_to_staging",
+      "staging_catalogue_data_transfer_not_rehearsed",
+      "destructive_staging_rebuild_not_approved",
       "model_benchmark_not_complete",
       "embedding_index_not_validated",
       "staging_provider_deployment_not_configured"

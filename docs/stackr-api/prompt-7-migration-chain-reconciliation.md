@@ -209,18 +209,22 @@ the plaintext rehearsal area were truncated to zero bytes. The encrypted backup
 was retained and its SHA-256 checksum was reverified.
 
 This remains valid historical recovery and execution evidence for the former
-76-migration chain. Two migrations were added afterward, so the current
-78-migration chain requires a fresh isolated rehearsal from the same
-production-shaped baseline before it can be considered for promotion.
+76-migration chain. After the two security migrations were added, GitHub Actions
+run `30554631150` restored the checksum-pinned production baseline to the
+isolated candidate and executed all 78 migrations. The candidate contains 78
+migration-history entries and 179 tables; Supabase advisors report zero errors,
+9 accepted warnings and 15 informational notices. Neither staging nor production
+was mutated. The aligned candidate remains non-promotable until the authorised
+staging catalogue transfer is rehearsed and any destructive staging rebuild is
+separately approved.
 
 ## Production Decision
 
-**NO-GO for production application.** Backup recovery is verified, but the
-clean-room execution evidence covers only the former 76-migration chain.
-Production remains explicitly unauthorised. The draft pull request must pass
-fresh GitHub CI, the full 78-migration chain must be rehearsed from scratch, and
-the hosted production migration ledger and dry run must be rechecked against the
-final commit before any separately approved cutover. No production push is
+**NO-GO for production application.** Backup recovery and isolated clean-room
+execution of all 78 migrations are verified, but production remains explicitly
+unauthorised. The draft pull request must pass fresh GitHub CI and be reviewed,
+and the hosted production migration ledger and dry run must be rechecked against
+the final commit before any separately approved cutover. No production push is
 authorised by this document.
 
 ## Rollback
@@ -234,8 +238,7 @@ version or make private scan storage public as a rollback technique.
 ## Exact Next Step
 
 Commit and push the reconciled branch, then require fresh GitHub CI on the draft
-pull request. Rehearse all 78 migrations from scratch against a disposable
-production-shaped baseline. After review, and only with separate production
-authorisation, repeat the read-only hosted migration-history comparison and the
-linked 78-file dry run. Do not merge the draft pull request or run a non-dry-run
-production database push yet.
+pull request. After review, and only with separate production authorisation,
+repeat the read-only hosted migration-history comparison and the linked 78-file
+dry run. Do not merge the draft pull request or run a non-dry-run production
+database push yet.
