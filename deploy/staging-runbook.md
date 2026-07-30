@@ -41,15 +41,15 @@ node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-read
 
 Review the reported warnings. The release manifest currently blocks migration, model, index, and storage gates, so a release-mode preflight must fail today. That failure is expected and prevents any provider mutation.
 
-The 2026-07-30 rehearsal proved the Stage 6 registry migration and rollback against staging, including RLS, private grants, activation guards and fixed function search paths. The `vector` extension was then enabled on staging only and verified at version `0.8.2`; no vector column or active index was created. Migration reconciliation is blocked by a confirmed missing pre-repository baseline: the first local migration alters `public.card_fingerprints`, but no local migration creates that production-era table and staging does not contain the legacy public schema. Three repository migrations are accounted for, 17 entries are staging-only, and 73 repository migrations remain unverified. The CLI dry run would replay all 76 files. Do not stamp or push them merely to align the counters.
+The 2026-07-30 rehearsal proved the Stage 6 registry migration and rollback against staging, including RLS, private grants, activation guards and fixed function search paths. The `vector` extension was then enabled on staging only and verified at version `0.8.2`; no vector column or active index was created. Current staging remains a catalogue-only database with 20 historical entries. Three repository migrations are accounted for there, 17 entries are staging-only, and 73 repository migrations remain unverified. Do not stamp or push them merely to align the counters.
 
-To capture the missing baseline, create the protected GitHub environment `migration-baseline` with the environment secret `SUPABASE_PRODUCTION_DB_URL`, then manually dispatch **Capture Production Schema Baseline** with confirmation `CAPTURE PRODUCTION SCHEMA`. The workflow is read-only and the private artifact expires after one day. Download and review it promptly; never commit the raw dump. Do not proceed to migration-history repair until the baseline and every repository migration have replayed successfully on the isolated restore target.
+The missing production-era baseline has now been captured read-only and checksum-verified. Run `30545148545` created private artifact `8760386714`; the raw dump was not committed. Keep the `migration-baseline` environment protected and leave the capture workflow manual-only.
 
-After verifying the baseline artifact, use **Trial Production Baseline Migrations** with confirmation `REPLAY MIGRATIONS ON RESTORE TARGET`. It accepts only the protected restore-project URL, checks that its project ref differs from both staging and production, restores the checksum-pinned baseline into that isolated project, and replays the repository migrations. A failure is reconciliation evidence, not permission to stamp migration history. Never point this workflow at staging or production.
+**Trial Production Baseline Migrations** accepts only the protected restore-branch URL, checks that its project ref differs from both staging and production, restores the checksum-pinned baseline, and replays the repository migrations. Runs `30548860049` and `30551864110` both completed all 76 migrations; the current branch candidate has 76 history entries and 179 tables. Never point this workflow at staging or production.
 
 Supabase reports 11 completed staging physical backups, but the latest (`1245215485`, `2026-07-30T03:47:35.742Z`) predates the vector and catalogue reconciliation changes. On 2026-07-30, the current logical Postgres backup was restored into the isolated target and verified across 34 tables, 20 migration-history records, schema objects and selected extensions. The empty staging Storage inventory was supplemented with a private fixture; its backup and restore checksums matched, anonymous access was denied, and both temporary buckets were removed. The evidence is recorded in `deploy/evidence/staging-recovery-2026-07-30.json`.
 
-The approved temporary restore target is `kynqqwyctohrjqloyedh`. Before dispatching **Stackr Staging Recovery Drill**, configure these protected `staging` environment secrets:
+The approved temporary restore branch is `krjttpmthxkfsbqksxci`. Before dispatching **Stackr Staging Recovery Drill**, configure these protected `staging` environment secrets:
 
 ```text
 SUPABASE_DB_URL
@@ -68,7 +68,9 @@ gh workflow run staging-recovery-drill.yml `
   -f confirmation='RESTORE STAGING BACKUP'
 ```
 
-The successful workflow run is `30539298501`. It deleted raw dump and object bytes at completion and recorded only non-secret fingerprints. The temporary restore project was deleted after verification at `2026-07-30T12:03:39.986Z`, stopping further compute usage for that project.
+The current successful recovery workflow run is `30551243946`. It deleted raw dump and object bytes at completion and recorded only non-secret fingerprints. The branch is retained temporarily for candidate hardening and is billed at `$0.01344/hour`; delete it after reconciliation to stop the charge.
+
+Do not promote this candidate yet. It has 7 Supabase security-advisor errors and 33 warnings inherited from the production-like schema, and current staging contains 120 authorised printings plus their names, external identifiers, raw records and merge-decision provenance. Remediate the security errors and prove a selective catalogue/provenance transfer on the isolated branch before requesting a destructive staging rebuild.
 
 ## Dispatch
 

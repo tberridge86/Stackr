@@ -1,16 +1,16 @@
 {
   "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
-  "capturedAt": "2026-07-30T12:15:18.483Z",
-  "sourceCommitHash": "9904e49b3f3c25f5397edcf84d4fd9e4d2f8a544",
+  "capturedAt": "2026-07-30T14:38:00.000Z",
+  "sourceCommitHash": "edfc018a192bbdbe89bc3031999186c0b3a01341",
   "supabase": {
     "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
     "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
     "localMigrationFileCount": 76,
     "productionMigrationHistoryCount": 0,
     "stagingMigrationHistoryCount": 20,
-    "migrationHistoryStatus": "blocked_missing_pre_repository_baseline",
+    "migrationHistoryStatus": "isolated_candidate_aligned_staging_promotion_blocked",
     "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-07-30.json",
-    "migrationReconciliationEvidenceSha256": "1b6f65825bea92397e4f98c62c0719237d4ba5cff398181f643cd4e813b659a4",
+    "migrationReconciliationEvidenceSha256": "fc5058c3bbaaa89e6265700d0b46bda888caa4c7e64c605915ec697f115c21a1",
     "stagingSecurityAdvisorFindingCountAfterRollback": 0,
     "productionPhysicalBackupCount": 8,
     "stagingPhysicalBackupCount": 11,
@@ -23,8 +23,9 @@
   "databaseRecovery": {
     "status": "verified",
     "logicalBackupCreated": true,
-    "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
-    "restoreTestedAt": "2026-07-30T11:52:45.698Z",
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-07-30T14:24:09.904Z",
+    "workflowRunId": 30551243946,
     "verifiedTableCount": 34,
     "verifiedMigrationCount": 20,
     "schemaMatched": true,
@@ -37,15 +38,27 @@
     "status": "verified",
     "stagingBucketCount": 0,
     "stagingObjectCount": 0,
-    "backupArtifactSha256": "3f0b6c7cd8ff190f8e35cf3b1dae1be48fc59bc39467a602ee76a7981c3f743a",
-    "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
-    "restoreTestedAt": "2026-07-30T11:52:51.287Z",
+    "backupArtifactSha256": "b63e48c975e9987241598b44415b428a22f73aa52cee5bb12ad9c01fded90eaf",
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-07-30T14:24:13.724Z",
     "restoredObjectCount": 1,
     "checksumMismatchCount": 0,
     "anonymousReadDenied": true,
     "sourceCleanupVerified": true,
     "targetCleanupVerified": true,
     "blockers": []
+  },
+  "migrationCandidate": {
+    "status": "aligned_but_not_promotable",
+    "projectRef": "krjttpmthxkfsbqksxci",
+    "workflowRunId": 30551864110,
+    "repositoryMigrationCount": 76,
+    "databaseTableCount": 179,
+    "securityAdvisorFindingCount": 57,
+    "securityAdvisorErrorCount": 7,
+    "securityAdvisorWarningCount": 33,
+    "currentStagingCatalogueRowsRequirePreservation": true,
+    "promotionApproved": false
   },
   "stage6Rehearsal": {
     "status": "rehearsed_and_rolled_back",
@@ -97,7 +110,8 @@
   "releaseReadiness": {
     "status": "blocked",
     "blockers": [
-      "migration_history_blocked_missing_pre_repository_baseline",
+      "migration_candidate_has_7_security_errors",
+      "aligned_candidate_not_promoted_to_staging",
       "model_benchmark_not_complete",
       "embedding_index_not_validated",
       "staging_provider_deployment_not_configured"

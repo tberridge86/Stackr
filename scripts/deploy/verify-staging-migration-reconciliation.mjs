@@ -57,6 +57,25 @@ if (evidence.status === 'blocked_missing_pre_repository_baseline') {
     errors.push('first_repository_migration_evidence_drift');
   }
 }
+if (evidence.status === 'isolated_candidate_aligned_staging_promotion_blocked') {
+  if (evidence.reconciliationComplete !== false
+    || evidence.baselineGap?.resolvedOnIsolatedCandidate !== true) {
+    errors.push('isolated_candidate_alignment_not_evidenced');
+  }
+  if (evidence.isolatedCandidate?.migrationHistoryAligned !== true
+    || evidence.isolatedCandidate?.repositoryMigrationCount !== localMigrations.length
+    || evidence.isolatedCandidateUnverifiedRepositoryMigrationCount !== 0) {
+    errors.push('isolated_candidate_migration_count_inconsistent');
+  }
+  if (evidence.stagingMutationPerformed !== false
+    || evidence.isolatedBranchMutationPerformed !== true) {
+    errors.push('isolated_candidate_mutation_scope_invalid');
+  }
+  if ((evidence.isolatedCandidate?.securityAdvisorErrorCount ?? 0) <= 0
+    || evidence.isolatedCandidate?.promotionApproved !== false) {
+    errors.push('isolated_candidate_promotion_blocker_missing');
+  }
+}
 
 for (const match of evidence.matchedRepositoryMigrations) {
   if (!localMigrations.includes(match.repositoryFile)) {

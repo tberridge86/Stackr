@@ -1,12 +1,14 @@
 {
   "schemaVersion": "stackr-migration-reconciliation-v1.0.0",
-  "capturedAt": "2026-07-30T12:14:40.211Z",
-  "sourceCommitHash": "9904e49b3f3c25f5397edcf84d4fd9e4d2f8a544",
+  "capturedAt": "2026-07-30T14:38:00.000Z",
+  "sourceCommitHash": "edfc018a192bbdbe89bc3031999186c0b3a01341",
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
-  "status": "blocked_missing_pre_repository_baseline",
+  "status": "isolated_candidate_aligned_staging_promotion_blocked",
   "reconciliationComplete": false,
   "productionMutationPerformed": false,
+  "stagingMutationPerformed": false,
+  "isolatedBranchMutationPerformed": true,
   "localMigrationFileCount": 76,
   "stagingMigrationHistoryCountBefore": 18,
   "stagingMigrationHistoryCountAfter": 20,
@@ -57,6 +59,7 @@
     "staging_enable_vector_extension"
   ],
   "unverifiedRepositoryMigrationCount": 73,
+  "isolatedCandidateUnverifiedRepositoryMigrationCount": 0,
   "repositoryMigrationGroups": {
     "preCanonicalLegacyCount": 63,
     "canonicalAndLaterCount": 13,
@@ -83,13 +86,30 @@
     "relationPresentOnStaging": false,
     "productionMigrationHistoryCount": 0,
     "stagingLegacyPublicSchemaPresent": false,
-    "reason": "The repository starts with an ALTER of a pre-existing production table. It does not contain the schema that originally created that table or the rest of the legacy public app schema."
+    "reason": "The repository starts with an ALTER of a pre-existing production table. It does not contain the schema that originally created that table or the rest of the legacy public app schema.",
+    "resolvedOnIsolatedCandidate": true,
+    "productionBaselineArtifactId": "8760386714",
+    "productionBaselineSchemaSha256": "20738c8fc54cff904f0388037abe495a4737489155f0382909ae856fbf0b3a9c"
   },
   "dryRun": {
     "command": "npx supabase@2.110.0 db push --linked --dry-run",
     "wouldPushCount": 76,
     "safeToApply": false,
     "reason": "The CLI compares timestamps only and would replay all files, including three whose effects are already represented under different staging versions."
+  },
+  "isolatedCandidate": {
+    "projectRef": "krjttpmthxkfsbqksxci",
+    "branchId": "44bb0f63-5f96-41eb-8c90-48e60e680d7a",
+    "workflowRunId": 30551864110,
+    "repositoryMigrationCount": 76,
+    "databaseTableCount": 179,
+    "migrationHistoryAligned": true,
+    "productionBaselineRestored": true,
+    "repositoryMigrationsReplayed": true,
+    "securityAdvisorFindingCount": 57,
+    "securityAdvisorErrorCount": 7,
+    "securityAdvisorWarningCount": 33,
+    "promotionApproved": false
   },
   "stagingVerification": {
     "vectorExtensionVersion": "0.8.2",
@@ -110,14 +130,19 @@
     "verified_staging_security_advisor_has_zero_findings",
     "confirmed_repository_chain_requires_missing_pre_repository_baseline",
     "confirmed_cli_dry_run_would_unsafely_replay_all_76_migrations",
-    "compared_production_and_staging_schema_inventories_read_only"
+    "compared_production_and_staging_schema_inventories_read_only",
+    "captured_and_checksum_verified_the_production_schema_baseline",
+    "replayed_all_76_repository_migrations_on_an_isolated_production_like_candidate",
+    "verified_the_isolated_candidate_has_exactly_76_migration_history_entries",
+    "verified_current_staging_backup_and_private_storage_restore_on_a_clean_branch"
   ],
   "blockedActions": [
     "do_not_mark_unverified_repository_migrations_as_applied",
     "do_not_run_migration_repair_without_baseline_evidence",
     "do_not_push_repository_migrations_to_production",
     "do_not_push_the_current_76_file_chain_to_staging",
-    "capture_a_schema_only_pre_repository_production_baseline_before_rehearsal",
-    "replay_the_baseline_and_all_forward_migrations_on_an_isolated_restore_target_before_staging"
+    "do_not_replace_staging_until_the_7_candidate_security_errors_are_remediated",
+    "preserve_and_verify_the_authorised_staging_catalogue_and_ingestion_dataset_before_rebuild",
+    "require_an_explicit_destructive_staging_rebuild_approval_after_the_candidate_is_release_safe"
   ]
 }

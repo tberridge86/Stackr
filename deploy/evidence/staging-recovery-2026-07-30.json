@@ -1,7 +1,7 @@
 {
   "schemaVersion": "stackr-staging-recovery-evidence-v1.0.0",
-  "capturedAt": "2026-07-30T11:52:51.287Z",
-  "sourceCommitHash": "94310b17d262b5693c4afb02d874edf103e7806d",
+  "capturedAt": "2026-07-30T14:24:13.724Z",
+  "sourceCommitHash": "edfc018a192bbdbe89bc3031999186c0b3a01341",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
   "productionMutationPerformed": false,
@@ -24,8 +24,9 @@
     "logicalBackupCreated": true,
     "logicalBackupArtifactCount": 5,
     "logicalBackupSha256": null,
-    "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
-    "restoreTestedAt": "2026-07-30T11:52:45.698Z",
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-07-30T14:24:09.904Z",
+    "workflowRunId": 30551243946,
     "restoreVerification": {
       "schemaSha256": "80217290e4bc483183dff679c593616e146834adbe1b73f67e9f50322a274481",
       "tableDataSha256": "4820185ba1a161087ba3411d81071f10d97ddce58e5f99763244bd18151b3f22",
@@ -45,9 +46,11 @@
     "sourceBucketCount": 0,
     "sourceObjectCount": 0,
     "backupCreated": true,
-    "backupManifestSha256": "3f0b6c7cd8ff190f8e35cf3b1dae1be48fc59bc39467a602ee76a7981c3f743a",
-    "restoreTargetProjectRef": "kynqqwyctohrjqloyedh",
-    "restoreTestedAt": "2026-07-30T11:52:51.287Z",
+    "backupManifestSha256": "b63e48c975e9987241598b44415b428a22f73aa52cee5bb12ad9c01fded90eaf",
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-07-30T14:24:13.724Z",
+    "sourceObjectSha256": "7cebe89cba8eecd52e547423270333ffa468dbaf5b90e0035c479043256a56db",
+    "restoredObjectSha256": "7cebe89cba8eecd52e547423270333ffa468dbaf5b90e0035c479043256a56db",
     "restoredObjectCount": 1,
     "checksumMismatchCount": 0,
     "anonymousReadDenied": true,
@@ -55,7 +58,18 @@
     "targetCleanupVerified": true,
     "blockers": []
   },
-  "temporaryRestoreProject": {
+  "temporaryRestoreBranch": {
+    "projectRef": "krjttpmthxkfsbqksxci",
+    "branchId": "44bb0f63-5f96-41eb-8c90-48e60e680d7a",
+    "name": "stackr-staging-reconcile-2026-07-30",
+    "parentProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "previewProjectStatus": "ACTIVE_HEALTHY",
+    "quotedRecurringCostUsd": 0.01344,
+    "quotedCostRecurrence": "hourly",
+    "deleteAfterReconciliation": true,
+    "deletionCompleted": false
+  },
+  "priorRestoreProject": {
     "projectRef": "kynqqwyctohrjqloyedh",
     "name": "Stackr staging restore drill 2026-07-30",
     "region": "eu-west-1",
