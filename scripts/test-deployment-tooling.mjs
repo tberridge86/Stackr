@@ -137,12 +137,34 @@ assert.match(recoveryWorkflow, /SUPABASE_RESTORE_PROJECT_REF/);
 assert.match(recoveryWorkflow, /kynqqwyctohrjqloyedh/);
 assert.match(recoveryWorkflow, /source_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /restore_database_url_project_mismatch/);
+assert.match(recoveryWorkflow, /prepare-postgres-urls\.mjs/);
+assert.match(recoveryWorkflow, /STACKR_SOURCE_DB_URL/);
+assert.match(recoveryWorkflow, /STACKR_RESTORE_DB_URL/);
 assert.doesNotMatch(recoveryWorkflow, /secrets\.SUPABASE_ACCESS_TOKEN/);
 assert.doesNotMatch(recoveryWorkflow, /vars\.SUPABASE_(?:PROJECT_REF|RESTORE_PROJECT_REF)/);
 assert.match(recoveryWorkflow, /verify-postgres-restore\.mjs/);
 assert.match(recoveryWorkflow, /backup-restore-storage-fixture\.mjs/);
 assert.match(recoveryWorkflow, /drop schema if exists supabase_migrations cascade/);
 assert.match(recoveryWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-recovery"/);
+
+const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
+const rawPasswordUrl = normalizePostgresUrl(
+  'postgresql://postgres.exampleproject:p=a@#ss%word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+  'exampleproject',
+);
+assert.equal(
+  rawPasswordUrl.normalized,
+  'postgresql://postgres.exampleproject:p%3Da%40%23ss%25word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+);
+assert.equal(
+  normalizePostgresUrl(rawPasswordUrl.normalized, 'exampleproject').normalized,
+  rawPasswordUrl.normalized,
+  'normalising an encoded URL must be idempotent',
+);
+assert.throws(
+  () => normalizePostgresUrl(rawPasswordUrl.normalized, 'anotherproject'),
+  /database_url_project_mismatch/,
+);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
