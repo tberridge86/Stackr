@@ -5,6 +5,10 @@ const config = readFileSync('supabase/config.toml', 'utf8');
 const seed = readFileSync('supabase/seed.sql', 'utf8');
 const migration = readFileSync('supabase/migrations/20260728203300_stackr_release_activation_controls.sql', 'utf8');
 const rollback = readFileSync('supabase/manual/rollback_20260728203300_stackr_release_activation_controls.sql', 'utf8');
+const inventoryMovementMigration = readFileSync(
+  'supabase/migrations/20260627120000_inventory_movements_and_binder_schema_repair.sql',
+  'utf8',
+);
 
 assert.match(config, /schemas = \["public", "api", "graphql_public"\]/);
 assert.doesNotMatch(config, /schemas\s*=\s*\[[^\]]*"(?:ingest|ml|audit|market|catalog)"/);
@@ -27,5 +31,7 @@ assert.match(migration, /grant execute on function catalog\.activate_catalogue_v
 assert.match(migration, /revoke all on function ml\.rollback_embedding_index_version[^;]+from public, anon, authenticated/s);
 assert.match(rollback, /drop function if exists catalog\.activate_catalogue_version/);
 assert.match(rollback, /drop table if exists audit\.release_activation_events/);
+assert.match(inventoryMovementMigration, /binder_id uuid null references public\.binders\(id\)/);
+assert.doesNotMatch(inventoryMovementMigration, /binder_id text null references public\.binders\(id\)/);
 
 console.log('Stage 13 database deployment contract tests passed.');
