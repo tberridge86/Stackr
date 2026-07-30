@@ -66,6 +66,14 @@ function stableJson(value) {
   return JSON.stringify(stableValue(value));
 }
 
+function databaseParameterValue(value, column) {
+  if (value === null || value === undefined) return value;
+  if (column.udt_name === 'json' || column.udt_name === 'jsonb') {
+    return JSON.stringify(value);
+  }
+  return value;
+}
+
 function digestRows(rows) {
   const hash = createHash('sha256');
   for (const row of rows) hash.update(stableJson(row)).update('\n');
@@ -177,6 +185,9 @@ async function insertRows(client, tableName, metadata, columnNames, rows) {
   if (!rows.length) return;
   const columnSql = columnNames.map(quoteIdentifier).join(', ');
   const selectedColumns = new Set(columnNames);
+  const metadataByName = new Map(
+    metadata.columns.map((column) => [column.column_name, column]),
+  );
   const hasIdentity = metadata.columns.some((column) => (
     selectedColumns.has(column.column_name) && column.is_identity === 'YES'
   ));
@@ -187,17 +198,23 @@ async function insertRows(client, tableName, metadata, columnNames, rows) {
     const values = [];
     const tuples = batch.map((row) => {
       const placeholders = columnNames.map((column) => {
-        values.push(row[column]);
+        values.push(databaseParameterValue(row[column], metadataByName.get(column)));
         return `$${values.length}`;
       });
       return `(${placeholders.join(', ')})`;
     });
-    await client.query(
-      `insert into ${qualifiedName(tableName)} (${columnSql})`
-      + `${hasIdentity ? ' overriding system value' : ''} `
-      + `values ${tuples.join(', ')}`,
-      values,
-    );
+    try {
+      await client.query(
+        `insert into ${qualifiedName(tableName)} (${columnSql})`
+        + `${hasIdentity ? ' overriding system value' : ''} `
+        + `values ${tuples.join(', ')}`,
+        values,
+      );
+    } catch (error) {
+      throw new Error(
+        `transfer_insert_failed:${tableName}:batch_${offset}:postgres_${error.code ?? 'unknown'}`,
+      );
+    }
   }
 }
 
