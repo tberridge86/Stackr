@@ -46,7 +46,16 @@ if (evidence.repositoryMigrationGroups?.accountedForCount
   !== evidence.matchedRepositoryMigrations.length) {
   errors.push('accounted_repository_migration_count_inconsistent');
 }
-if (evidence.dryRun?.wouldPushCount !== localMigrations.length || evidence.dryRun?.safeToApply !== false) {
+if (evidence.dryRun?.safeToApply !== false) {
+  errors.push('migration_dry_run_evidence_inconsistent');
+}
+if (evidence.status === 'isolated_candidate_stale_staging_promotion_blocked') {
+  if (evidence.dryRun?.currentChainVerified !== false
+    || evidence.dryRun?.observedRepositoryMigrationCount !== evidence.dryRun?.wouldPushCount
+    || evidence.dryRun?.observedRepositoryMigrationCount >= localMigrations.length) {
+    errors.push('stale_migration_dry_run_not_evidenced');
+  }
+} else if (evidence.dryRun?.wouldPushCount !== localMigrations.length) {
   errors.push('migration_dry_run_evidence_inconsistent');
 }
 if (evidence.status === 'blocked_missing_pre_repository_baseline') {
@@ -74,6 +83,23 @@ if (evidence.status === 'isolated_candidate_aligned_staging_promotion_blocked') 
   if ((evidence.isolatedCandidate?.securityAdvisorErrorCount ?? 0) <= 0
     || evidence.isolatedCandidate?.promotionApproved !== false) {
     errors.push('isolated_candidate_promotion_blocker_missing');
+  }
+}
+if (evidence.status === 'isolated_candidate_stale_staging_promotion_blocked') {
+  const candidateMigrationCount = evidence.isolatedCandidate?.repositoryMigrationCount;
+  if (evidence.reconciliationComplete !== false
+    || evidence.baselineGap?.resolvedOnIsolatedCandidate !== true
+    || evidence.isolatedCandidate?.migrationHistoryAligned !== true
+    || evidence.isolatedCandidate?.currentChainAligned !== false
+    || evidence.isolatedCandidateUnverifiedRepositoryMigrationCount
+      !== localMigrations.length - candidateMigrationCount
+    || candidateMigrationCount >= localMigrations.length) {
+    errors.push('stale_isolated_candidate_not_evidenced');
+  }
+  if (evidence.stagingMutationPerformed !== false
+    || evidence.isolatedBranchMutationPerformed !== true
+    || evidence.isolatedCandidate?.promotionApproved !== false) {
+    errors.push('stale_isolated_candidate_scope_invalid');
   }
 }
 
