@@ -131,6 +131,7 @@ assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);
+assert.match(recoveryWorkflow, /github\.event\.head_commit\.message == 'chore: run staging recovery drill'/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_PROJECT_REF/);
 assert.match(recoveryWorkflow, /kynqqwyctohrjqloyedh/);
