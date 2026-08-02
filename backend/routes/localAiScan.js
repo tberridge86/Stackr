@@ -7,7 +7,7 @@ const router = express.Router();
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY
 );
 
 const CLIP_MODEL = process.env.CLIP_MODEL || 'Xenova/clip-vit-base-patch32';
@@ -15,7 +15,7 @@ const CLIP_ACCEPT_SIMILARITY = Number(process.env.CLIP_ACCEPT_SIMILARITY || 0.68
 const CLIP_ACCEPT_MARGIN = Number(process.env.CLIP_ACCEPT_MARGIN || 0.025);
 let clipExtractorPromise = null;
 const candidateEmbeddingCache = new Map();
-const CLIP_WARMUP_ON_BOOT = process.env.CLIP_WARMUP_ON_BOOT !== 'false';
+const CLIP_WARMUP_ON_BOOT = process.env.CLIP_WARMUP_ON_BOOT === 'true';
 let cardCatalogPromise = null;
 let cardCatalogLoadedAt = 0;
 const CARD_CATALOG_TTL_MS = 60 * 60 * 1000;

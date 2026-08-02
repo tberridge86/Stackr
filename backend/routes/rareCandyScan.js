@@ -18,6 +18,7 @@ const MAX_CANDIDATES = Number(process.env.RARE_CANDY_SCAN_MAX_CANDIDATES || 8);
 
 let packPromise = null;
 let extractorPromise = null;
+const RARE_CANDY_SCAN_WARMUP = process.env.RARE_CANDY_SCAN_WARMUP === 'true';
 
 function getPackDir(packId = DEFAULT_PACK_ID) {
   const cleanId = String(packId || DEFAULT_PACK_ID).replace(/[^a-zA-Z0-9._-]/g, '');
@@ -304,8 +305,10 @@ router.post('/identify', async (req, res) => {
   }
 });
 
-loadPack().catch((error) => console.log(`[rare-candy-scan] pack warmup failed: ${error?.message ?? String(error)}`));
-if (process.env.RARE_CANDY_SCAN_WARMUP !== 'false') {
+if (RARE_CANDY_SCAN_WARMUP) {
+  loadPack()
+    .then(() => console.log('[rare-candy-scan] pack warmup ready'))
+    .catch((error) => console.log(`[rare-candy-scan] pack warmup failed: ${error?.message ?? String(error)}`));
   getExtractor()
     .then(() => console.log(`[rare-candy-scan] CLIP warmup ready model=${CLIP_MODEL}`))
     .catch((error) => console.log(`[rare-candy-scan] CLIP warmup failed: ${error?.message ?? String(error)}`));
