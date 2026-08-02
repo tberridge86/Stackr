@@ -4,9 +4,18 @@ import { CardSightAI } from 'cardsightai';
 
 const router = express.Router();
 
-const client = new CardSightAI({
-  apiKey: process.env.CARDSIGHTAI_API_KEY,
-});
+let cardsightClient = null;
+
+function getCardsightClient() {
+  const apiKey = String(process.env.CARDSIGHTAI_API_KEY || '').trim();
+  if (!apiKey) {
+    throw new Error('CARDSIGHTAI_API_KEY is not configured on the backend.');
+  }
+  if (!cardsightClient) {
+    cardsightClient = new CardSightAI({ apiKey });
+  }
+  return cardsightClient;
+}
 
 function stripBase64ImagePrefix(base64Image) {
   return String(base64Image ?? '').trim().replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
@@ -50,7 +59,7 @@ router.post('/identify', async (req, res) => {
     }
 
     const aiStart = Date.now();
-    const result = await client.identify.cardBySegment('pokemon', imageBuffer);
+    const result = await getCardsightClient().identify.cardBySegment('pokemon', imageBuffer);
     const aiMs = Date.now() - aiStart;
 
     const detections = result?.data?.detections ?? [];
