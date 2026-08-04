@@ -128,21 +128,33 @@ function getRailwayCommit() {
   ).slice(0, 12) || null;
 }
 
+function getApiV1SupabaseKeyInfo() {
+  const candidates = [
+    ['SUPABASE_PUBLISHABLE_KEY', process.env.SUPABASE_PUBLISHABLE_KEY],
+    ['SUPABASE_ANON_KEY', process.env.SUPABASE_ANON_KEY],
+    ['SUPABASE_SECRET_KEY', process.env.SUPABASE_SECRET_KEY],
+    ['SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY],
+  ];
+  const selected = candidates.find(([, value]) => String(value ?? '').trim());
+  if (!selected) return { name: null, publicPreview: null };
+  const [name, rawValue] = selected;
+  const value = String(rawValue).trim();
+  const isPublicSafe = name === 'SUPABASE_PUBLISHABLE_KEY' || name === 'SUPABASE_ANON_KEY';
+  return {
+    name,
+    publicPreview: isPublicSafe ? `${value.slice(0, 26)}...${value.slice(-8)}` : null,
+  };
+}
+
 function getPublicRuntimeSummary() {
+  const apiV1SupabaseKey = getApiV1SupabaseKeyInfo();
   return {
     gitCommit: getRailwayCommit(),
     gitBranch: process.env.RAILWAY_GIT_BRANCH ?? null,
     railwayEnvironment: process.env.RAILWAY_ENVIRONMENT_NAME ?? null,
     supabaseProjectRef: getSupabaseProjectRef(),
-    apiV1SupabaseKeyName: process.env.SUPABASE_PUBLISHABLE_KEY
-      ? 'SUPABASE_PUBLISHABLE_KEY'
-      : process.env.SUPABASE_ANON_KEY
-        ? 'SUPABASE_ANON_KEY'
-        : process.env.SUPABASE_SECRET_KEY
-          ? 'SUPABASE_SECRET_KEY'
-          : process.env.SUPABASE_SERVICE_ROLE_KEY
-            ? 'SUPABASE_SERVICE_ROLE_KEY'
-            : null,
+    apiV1SupabaseKeyName: apiV1SupabaseKey.name,
+    apiV1SupabaseKeyPreview: apiV1SupabaseKey.publicPreview,
   };
 }
 
