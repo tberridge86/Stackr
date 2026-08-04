@@ -640,7 +640,7 @@ export interface components {
             reviewerNotes?: string;
         };
         /** @enum {string} */
-        LanguageCode: "en" | "ja" | "zh-Hans" | "zh-Hant" | "ko";
+        LanguageCode: "en" | "ja" | "zh-tw" | "zh-cn" | "ko";
         /** @enum {string} */
         MarketProductType: "raw_card" | "graded_card" | "sealed_product";
         /** @enum {string} */

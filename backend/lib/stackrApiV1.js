@@ -3,7 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 export const STACKR_API_V1 = '1';
 export const DEFAULT_CATALOGUE_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
 export const NO_STORE_CACHE_CONTROL = 'no-store';
-export const SUPPORTED_LANGUAGE_CODES = ['en', 'ja', 'zh-Hans', 'zh-Hant', 'ko'];
+export const SUPPORTED_LANGUAGE_CODES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EXACT_NAME_TYPES = new Set(['native', 'english_display']);
@@ -418,11 +418,9 @@ async function searchCanonicalId(supabase, parsed, limit) {
 }
 
 async function searchExternalId(supabase, parsed, limit, language) {
-  let query = table(supabase, 'ingest', 'external_identifiers')
+  let query = table(supabase, 'api', 'catalogue_external_identifiers')
     .select('source_entity_type,external_id,language_code,set_id,printing_id,variant_id,confidence')
     .eq('external_id', parsed.raw)
-    .eq('is_current', true)
-    .is('deprecated_at', null)
     .limit(limit);
   query = applyLanguageFilter(query, language);
   const identifiers = await queryRows(query);
@@ -677,9 +675,8 @@ export function createCatalogueV1Service(options) {
 
     async ready() {
       try {
-        const languages = await queryRows(table(supabase, 'catalog', 'languages')
+        const languages = await queryRows(table(supabase, 'api', 'catalogue_languages')
           .select('code')
-          .eq('active', true)
           .limit(1));
         const latest = await queryMaybeOne(table(supabase, 'api', 'catalogue_delta_changes')
           .select('change_sequence')
@@ -703,39 +700,43 @@ export function createCatalogueV1Service(options) {
     },
 
     async manifest() {
-      const [version, latest, languages] = await Promise.all([
-        queryMaybeOne(table(supabase, 'catalog', 'catalogue_versions')
-          .select('id,version_key,min_change_sequence,max_change_sequence,published_at,updated_at')
-          .eq('status', 'published')
-          .is('deprecated_at', null)
-          .order('published_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()),
+      const [versions, latest, languages] = await Promise.all([
+        queryRows(table(supabase, 'api', 'published_catalogue_versions')
+          .select('id,version_key,version_label,language_code,min_change_sequence,max_change_sequence,published_at,updated_at,language_sort_order')
+          .order('language_sort_order', { ascending: true })
+          .order('language_code', { ascending: true })),
         queryMaybeOne(table(supabase, 'api', 'catalogue_delta_changes')
           .select('change_sequence')
           .order('change_sequence', { ascending: false })
           .limit(1)
           .maybeSingle()),
-        queryRows(table(supabase, 'catalog', 'languages')
+        queryRows(table(supabase, 'api', 'catalogue_languages')
           .select('code,bcp47_code,english_name,native_name,script_code,sort_order')
-          .eq('active', true)
-          .is('deprecated_at', null)
           .order('sort_order', { ascending: true })),
       ]);
+      const currentCatalogueVersion = versions.length
+        ? versions.map((version) => version.version_key).join('|')
+        : 'bootstrap';
+      const latestVersion = versions[versions.length - 1] ?? null;
 
       const body = {
-        currentCatalogueVersion: version?.version_key ?? 'bootstrap',
-        catalogueVersionId: version?.id ?? null,
+        currentCatalogueVersion,
+        catalogueVersionId: latestVersion?.id ?? null,
         minCompatibleAppSchemaVersion,
-        latestChangeSequence: Number(latest?.change_sequence ?? version?.max_change_sequence ?? 0),
-        availableLanguageShards: languages.map((language) => ({
-          languageCode: language.code,
-          bcp47Code: language.bcp47_code,
-          nativeName: language.native_name,
-          englishName: language.english_name,
-          shardPath: `/v1/sets?language=${encodeURIComponent(language.code)}`,
-          deltaPath: `/v1/catalog/delta?language=${encodeURIComponent(language.code)}`,
-        })),
+        latestChangeSequence: Number(latest?.change_sequence ?? latestVersion?.max_change_sequence ?? 0),
+        availableLanguageShards: languages.map((language) => {
+          const languageVersion = versions.find((version) => version.language_code === language.code);
+          return {
+            languageCode: language.code,
+            bcp47Code: language.bcp47_code,
+            nativeName: language.native_name,
+            englishName: language.english_name,
+            catalogueVersion: languageVersion?.version_key ?? null,
+            catalogueVersionId: languageVersion?.id ?? null,
+            shardPath: `/v1/sets?language=${encodeURIComponent(language.code)}`,
+            deltaPath: `/v1/catalog/delta?language=${encodeURIComponent(language.code)}`,
+          };
+        }),
         assetBaseUrl: assetBaseUrl || null,
         modelIndexVersion,
         generatedAt: new Date().toISOString(),
@@ -767,19 +768,16 @@ export function createCatalogueV1Service(options) {
     },
 
     async languages() {
-      const rows = await queryRows(table(supabase, 'catalog', 'languages')
+      const rows = await queryRows(table(supabase, 'api', 'catalogue_languages')
         .select('code,bcp47_code,english_name,native_name,script_code,sort_order')
-        .eq('active', true)
-        .is('deprecated_at', null)
         .order('sort_order', { ascending: true }));
       return { languages: rows.map(toLanguage) };
     },
 
     async series(input = {}) {
       const limit = parseLimit(input.limit, 50, 250);
-      let query = table(supabase, 'catalog', 'series')
+      let query = table(supabase, 'api', 'catalogue_series')
         .select('id,game_code,language_code,native_name,english_display_name,series_code,release_date,end_date,display_order,updated_at')
-        .is('deprecated_at', null)
         .order('id', { ascending: true })
         .limit(limit + 1);
       query = applyLanguageFilter(query, input.language);

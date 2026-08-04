@@ -38,6 +38,19 @@ const fixture = {
   ],
 };
 
+async function assertPublishedCatalogueSources() {
+  const source = await readFile(new URL('../backend/lib/stackrApiV1.js', import.meta.url), 'utf8');
+  assert.match(source, /table\(supabase, 'api', 'published_catalogue_versions'\)/);
+  assert.match(source, /table\(supabase, 'api', 'catalogue_languages'\)/);
+  assert.match(source, /table\(supabase, 'api', 'catalogue_series'\)/);
+  assert.match(source, /table\(supabase, 'api', 'catalogue_external_identifiers'\)/);
+  assert.doesNotMatch(
+    source,
+    /table\(supabase, 'ingest', 'external_identifiers'\)/,
+    'v1 search must use published external identifier snapshots, not live ingest records',
+  );
+}
+
 const service = {
   async health() {
     return {
@@ -248,6 +261,8 @@ function stackrCard() {
 }
 
 async function withServer(run) {
+  await assertPublishedCatalogueSources();
+
   const app = express();
   app.use('/v1', createV1Router({ service }));
   const server = await new Promise((resolve) => {

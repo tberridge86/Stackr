@@ -1124,7 +1124,7 @@ components:
           maxLength: 2000
     LanguageCode:
       type: string
-      enum: [en, ja, zh-Hans, zh-Hant, ko]
+      enum: [en, ja, zh-tw, zh-cn, ko]
     MarketProductType:
       type: string
       enum: [raw_card, graded_card, sealed_product]
