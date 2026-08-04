@@ -18,6 +18,7 @@ import {
 import { createTracedFetch } from '../lib/traceContext.js';
 
 let supabaseAdmin = null;
+let catalogueSupabase = null;
 
 function getSupabaseKeyCandidate() {
   const candidates = [
@@ -46,9 +47,37 @@ function getSupabaseAdmin() {
   return supabaseAdmin;
 }
 
+function createApiSchemaFetch() {
+  const tracedFetch = createTracedFetch();
+  return async (input, init = {}) => {
+    const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined));
+    headers.set('Accept-Profile', 'api');
+    const method = String(init.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    if (!['GET', 'HEAD'].includes(method)) headers.set('Content-Profile', 'api');
+    return tracedFetch(input, { ...init, headers });
+  };
+}
+
+function getCatalogueSupabase() {
+  if (catalogueSupabase) return catalogueSupabase;
+  const url = process.env.SUPABASE_URL;
+  const key = getSupabaseKeyCandidate();
+  if (!url || !key) {
+    throw new Error('Supabase credentials are not configured on the backend.');
+  }
+  console.info(JSON.stringify({
+    level: 'info',
+    event: 'stackr_api_v1_catalogue_client',
+    supabaseKeyName: key.name,
+    forcedSchema: 'api',
+  }));
+  catalogueSupabase = createClient(url, key.value, { global: { fetch: createApiSchemaFetch() } });
+  return catalogueSupabase;
+}
+
 function defaultService() {
   return createCatalogueV1Service({
-    supabase: getSupabaseAdmin(),
+    supabase: getCatalogueSupabase(),
   });
 }
 
