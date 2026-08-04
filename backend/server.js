@@ -176,12 +176,13 @@ console.info(JSON.stringify({
 }));
 
 app.get(['/health', '/api/health'], (_req, res) => {
-  res.json({
+  const body = {
     ok: true,
     service: 'stackr-api',
     time: new Date().toISOString(),
-    runtime: getPublicRuntimeSummary(),
-  });
+  };
+  if (healthRuntimeDiagnosticsEnabled()) body.runtime = getPublicRuntimeSummary();
+  res.json(body);
 });
 
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
