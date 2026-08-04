@@ -105,7 +105,10 @@ function sendError(req, res, error) {
   const status = Number(error?.status ?? 500);
   const code = error?.code ?? (status >= 500 ? 'internal_error' : 'request_error');
   const message = error instanceof Error ? error.message : String(error);
-  const details = error instanceof ApiError ? error.details : undefined;
+  const postgrestDetails = /^PGRST\d+$/.test(String(error?.code ?? ''))
+    ? errorForLog(error)
+    : undefined;
+  const details = error instanceof ApiError ? error.details : postgrestDetails;
   res.setHeader('X-Request-Id', req.stackrRequestId);
   res.setHeader('X-Stackr-Api-Version', STACKR_API_V1);
   res.setHeader('Cache-Control', NO_STORE_CACHE_CONTROL);
