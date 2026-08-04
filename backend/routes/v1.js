@@ -19,14 +19,30 @@ import { createTracedFetch } from '../lib/traceContext.js';
 
 let supabaseAdmin = null;
 
+function getSupabaseKeyCandidate() {
+  const candidates = [
+    ['SUPABASE_PUBLISHABLE_KEY', process.env.SUPABASE_PUBLISHABLE_KEY],
+    ['SUPABASE_ANON_KEY', process.env.SUPABASE_ANON_KEY],
+    ['SUPABASE_SECRET_KEY', process.env.SUPABASE_SECRET_KEY],
+    ['SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY],
+  ];
+  const selected = candidates.find(([, value]) => String(value ?? '').trim());
+  return selected ? { name: selected[0], value: selected[1] } : null;
+}
+
 function getSupabaseAdmin() {
   if (supabaseAdmin) return supabaseAdmin;
   const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = getSupabaseKeyCandidate();
   if (!url || !key) {
-    throw new Error('Supabase service credentials are not configured on the backend.');
+    throw new Error('Supabase credentials are not configured on the backend.');
   }
-  supabaseAdmin = createClient(url, key, { global: { fetch: createTracedFetch() } });
+  console.info(JSON.stringify({
+    level: 'info',
+    event: 'stackr_api_v1_supabase_client',
+    supabaseKeyName: key.name,
+  }));
+  supabaseAdmin = createClient(url, key.value, { global: { fetch: createTracedFetch() } });
   return supabaseAdmin;
 }
 
