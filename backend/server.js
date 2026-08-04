@@ -134,6 +134,15 @@ function getPublicRuntimeSummary() {
     gitBranch: process.env.RAILWAY_GIT_BRANCH ?? null,
     railwayEnvironment: process.env.RAILWAY_ENVIRONMENT_NAME ?? null,
     supabaseProjectRef: getSupabaseProjectRef(),
+    apiV1SupabaseKeyName: process.env.SUPABASE_PUBLISHABLE_KEY
+      ? 'SUPABASE_PUBLISHABLE_KEY'
+      : process.env.SUPABASE_ANON_KEY
+        ? 'SUPABASE_ANON_KEY'
+        : process.env.SUPABASE_SECRET_KEY
+          ? 'SUPABASE_SECRET_KEY'
+          : process.env.SUPABASE_SERVICE_ROLE_KEY
+            ? 'SUPABASE_SERVICE_ROLE_KEY'
+            : null,
   };
 }
 
