@@ -107,6 +107,25 @@ function sendError(req, res, error) {
   });
 }
 
+function errorForLog(error) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      code: error.code ?? null,
+      status: error.status ?? null,
+    };
+  }
+  if (error && typeof error === 'object') {
+    const body = {};
+    for (const key of ['code', 'message', 'details', 'hint', 'status', 'statusCode']) {
+      if (error[key] != null) body[key] = error[key];
+    }
+    return Object.keys(body).length ? body : { message: JSON.stringify(error) };
+  }
+  return { message: String(error) };
+}
+
 function asyncRoute(handler) {
   return async (req, res) => {
     try {
@@ -120,7 +139,7 @@ function asyncRoute(handler) {
         method: req.method,
         path: req.originalUrl,
         status: Number(error?.status ?? 500),
-        error: error instanceof Error ? error.message : String(error),
+        error: errorForLog(error),
       }));
       sendError(req, res, error);
     }
