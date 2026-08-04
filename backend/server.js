@@ -110,11 +110,52 @@ app.use('/api/discord', discordRoutes);
 app.use('/api/shippo', shippoRoutes);
 app.use('/api/stripe', stripeRoutes);
 
+function getSupabaseProjectRef() {
+  try {
+    const url = new URL(String(process.env.SUPABASE_URL ?? '').trim());
+    return url.hostname.endsWith('.supabase.co') ? url.hostname.split('.')[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+function getRailwayCommit() {
+  return String(
+    process.env.RAILWAY_GIT_COMMIT_SHA
+      ?? process.env.RAILWAY_GIT_COMMIT_HASH
+      ?? process.env.SOURCE_COMMIT
+      ?? '',
+  ).slice(0, 12) || null;
+}
+
+function getPublicRuntimeSummary() {
+  return {
+    gitCommit: getRailwayCommit(),
+    gitBranch: process.env.RAILWAY_GIT_BRANCH ?? null,
+    railwayEnvironment: process.env.RAILWAY_ENVIRONMENT_NAME ?? null,
+    supabaseProjectRef: getSupabaseProjectRef(),
+  };
+}
+
+console.info(JSON.stringify({
+  event: 'stackr_runtime_config',
+  ...getPublicRuntimeSummary(),
+  supabaseKeyName: process.env.SUPABASE_SECRET_KEY
+    ? 'SUPABASE_SECRET_KEY'
+    : process.env.SUPABASE_SERVICE_ROLE_KEY
+      ? 'SUPABASE_SERVICE_ROLE_KEY'
+      : null,
+  supabaseUrlConfigured: Boolean(process.env.SUPABASE_URL),
+  originAuthMode: String(process.env.STACKR_GATEWAY_ORIGIN_AUTH_MODE ?? '').trim().toLowerCase() || null,
+  originKeyConfigured: Boolean(process.env.STACKR_GATEWAY_ORIGIN_KEY),
+}));
+
 app.get(['/health', '/api/health'], (_req, res) => {
   res.json({
     ok: true,
     service: 'stackr-api',
     time: new Date().toISOString(),
+    runtime: getPublicRuntimeSummary(),
   });
 });
 
@@ -149,7 +190,7 @@ const EBAY_OAUTH_SCOPES = (
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY,
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
   { global: { fetch: createTracedFetch() } },
 );
 
