@@ -158,6 +158,10 @@ function getPublicRuntimeSummary() {
   };
 }
 
+function healthRuntimeDiagnosticsEnabled() {
+  return String(process.env.STACKR_HEALTH_RUNTIME_DIAGNOSTICS ?? '').trim().toLowerCase() === 'true';
+}
+
 console.info(JSON.stringify({
   event: 'stackr_runtime_config',
   ...getPublicRuntimeSummary(),
