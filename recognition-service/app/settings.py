@@ -23,6 +23,11 @@ class Settings(BaseSettings):
 
     model_version: str = "stackr-recognition-model-unselected"
     model_path: Path | None = None
+    model_url: str | None = None
+    model_sha256: str | None = Field(default=None, pattern=r"^[0-9a-fA-F]{64}$")
+    model_cache_path: Path = Path("/tmp/stackr-recognition/model.onnx")
+    model_download_timeout_seconds: float = Field(default=60, ge=5, le=300)
+    model_max_download_bytes: int = Field(default=150_000_000, ge=1_000_000, le=500_000_000)
     model_input_width: int = Field(default=224, ge=32, le=2048)
     model_input_height: int = Field(default=224, ge=32, le=2048)
     model_embedding_dimensions: int = Field(default=384, ge=1, le=4096)

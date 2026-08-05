@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 import numpy as np
 from PIL import Image
@@ -14,6 +17,12 @@ from .settings import Settings
 
 class ModelUnavailable(RuntimeError):
     pass
+
+
+class ModelDownloadError(RuntimeError):
+    def __init__(self, code: str):
+        super().__init__(code)
+        self.code = code
 
 
 @dataclass
@@ -38,6 +47,55 @@ class EmbeddingModel:
         self._error: str | None = None
         self.load_count = 0
 
+    @staticmethod
+    def _file_sha256(path: Path) -> str:
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+
+    def _download_model(self) -> Path:
+        url = self.settings.model_url
+        expected_sha256 = (self.settings.model_sha256 or "").lower()
+        if not url:
+            raise ModelDownloadError("url_not_configured")
+        if not expected_sha256:
+            raise ModelDownloadError("checksum_not_configured")
+        if urlparse(url).scheme != "https":
+            raise ModelDownloadError("https_required")
+
+        destination = self.settings.model_path or self.settings.model_cache_path
+        if destination.exists() and self._file_sha256(destination) == expected_sha256:
+            return destination
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        partial = destination.with_suffix(f"{destination.suffix}.part")
+        digest = hashlib.sha256()
+        downloaded = 0
+        try:
+            request = Request(url, headers={"User-Agent": "Stackr-Recognition/1"})
+            with urlopen(request, timeout=self.settings.model_download_timeout_seconds) as response:
+                with partial.open("wb") as handle:
+                    while True:
+                        chunk = response.read(1024 * 1024)
+                        if not chunk:
+                            break
+                        downloaded += len(chunk)
+                        if downloaded > self.settings.model_max_download_bytes:
+                            raise ModelDownloadError("size_limit_exceeded")
+                        digest.update(chunk)
+                        handle.write(chunk)
+            if digest.hexdigest() != expected_sha256:
+                raise ModelDownloadError("checksum_mismatch")
+            os.replace(partial, destination)
+            return destination
+        except ModelDownloadError:
+            partial.unlink(missing_ok=True)
+            raise
+        except Exception as exc:
+            partial.unlink(missing_ok=True)
+            raise ModelDownloadError("request_failed") from exc
+
     def load(self) -> None:
         if self._loaded or self._error:
             return
@@ -46,10 +104,16 @@ class EmbeddingModel:
             self._loaded = True
             self._provider = "deterministic_test"
             return
-        if not self.settings.model_path:
+        path = Path(self.settings.model_path) if self.settings.model_path else None
+        if (path is None or not path.exists()) and self.settings.model_url:
+            try:
+                path = self._download_model()
+            except ModelDownloadError as exc:
+                self._error = f"model_download_failed:{exc.code}"
+                return
+        if path is None:
             self._error = "model_path_not_configured"
             return
-        path = Path(self.settings.model_path)
         if not path.exists():
             self._error = "model_path_missing"
             return
