@@ -23,7 +23,8 @@ assert.doesNotMatch(config, /schemas\s*=\s*\[[^\]]*"(?:ingest|ml|audit|market|ca
 assert.match(config, /major_version = 17/);
 assert.match(config, /sql_paths = \["\.\/seed\.sql"\]/);
 
-for (const code of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'ko']) assert.match(seed, new RegExp(`'${code}'`));
+for (const code of ['en', 'ja', 'zh-tw', 'zh-cn', 'ko']) assert.match(seed, new RegExp(`'${code}'`));
+assert.match(seed, /where code in \('zh-Hans', 'zh-Hant'\)/);
 for (const code of ['normal', 'holo', 'reverse_holo', 'first_edition', 'unlimited', 'promo', 'stamped', 'poke_ball', 'master_ball']) {
   assert.match(seed, new RegExp(`'${code}'`));
 }

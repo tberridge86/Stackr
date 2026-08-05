@@ -4,8 +4,14 @@ import { readFileSync } from 'node:fs';
 const MIGRATION_PATH = 'supabase/migrations/20260727212256_canonical_stackr_catalogue_database.sql';
 const RECONCILIATION_PATH =
   'supabase/migrations/20260730080047_reconcile_catalogue_seed_encoding_and_finish_taxonomy.sql';
+const STRICT_FOREIGN_IMPORT_PATH =
+  'supabase/migrations/20260801090000_strict_foreign_catalogue_import_safety.sql';
+const PUBLICATION_SNAPSHOT_PATH =
+  'supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql';
 const sql = readFileSync(MIGRATION_PATH, 'utf8');
 const reconciliationSql = readFileSync(RECONCILIATION_PATH, 'utf8');
+const strictForeignImportSql = readFileSync(STRICT_FOREIGN_IMPORT_PATH, 'utf8');
+const publicationSnapshotSql = readFileSync(PUBLICATION_SNAPSHOT_PATH, 'utf8');
 
 function expectSql(pattern: RegExp, message: string) {
   assert.match(sql, pattern, message);
@@ -16,18 +22,18 @@ function rejectSql(pattern: RegExp, message: string) {
 }
 
 function canonicalKey(input: {
-  game: string;
   language: string;
-  setId: string;
+  setCode: string;
   collectorNumber: string;
   variantCode: string;
+  finishCode?: string;
 }) {
   return [
-    input.game,
     input.language,
-    input.setId,
+    input.setCode,
     input.collectorNumber,
     input.variantCode,
+    input.finishCode ?? 'normal',
   ].join(':').toLowerCase();
 }
 
@@ -87,6 +93,10 @@ function assertSupportedLanguagesSeeded() {
   for (const language of ['en', 'ja', 'zh-Hans', 'zh-Hant', 'ko']) {
     expectSql(new RegExp(`'${language}'`), `missing language seed ${language}`);
   }
+  for (const language of ['en', 'ja', 'zh-tw', 'zh-cn', 'ko']) {
+    assert.match(strictForeignImportSql, new RegExp(`'${language}'`), `strict importer migration must support ${language}`);
+  }
+  assert.match(strictForeignImportSql, /where code in \('zh-Hans', 'zh-Hant'\)/);
 }
 
 function assertVariantTaxonomySeeded() {
@@ -109,32 +119,32 @@ function assertVariantTaxonomySeeded() {
 function assertDuplicateCollectorNumbersAreVariantScoped() {
   const setId = '11111111-1111-4111-8111-111111111111';
   const normal = canonicalKey({
-    game: 'pokemon',
     language: 'ja',
-    setId,
+    setCode: setId,
     collectorNumber: '001/184',
     variantCode: 'normal',
+    finishCode: 'normal',
   });
   const masterBall = canonicalKey({
-    game: 'pokemon',
     language: 'ja',
-    setId,
+    setCode: setId,
     collectorNumber: '001/184',
     variantCode: 'master_ball',
+    finishCode: 'normal',
   });
   const duplicateNormal = canonicalKey({
-    game: 'pokemon',
     language: 'ja',
-    setId,
+    setCode: setId,
     collectorNumber: '001/184',
     variantCode: 'normal',
+    finishCode: 'normal',
   });
   const sameNumberOtherSet = canonicalKey({
-    game: 'pokemon',
     language: 'ja',
-    setId: '22222222-2222-4222-8222-222222222222',
+    setCode: '22222222-2222-4222-8222-222222222222',
     collectorNumber: '001/184',
     variantCode: 'normal',
+    finishCode: 'normal',
   });
 
   assert.notEqual(normal, masterBall, 'same collector number in same set must be allowed for different variants');
@@ -176,16 +186,14 @@ function assertConflictingExternalIdsAreCaught() {
 
 function assertTranslatedAliasesDoNotDefineIdentity() {
   const pikachuEnglish = canonicalKey({
-    game: 'pokemon',
     language: 'en',
-    setId: '33333333-3333-4333-8333-333333333333',
+    setCode: '33333333-3333-4333-8333-333333333333',
     collectorNumber: '025',
     variantCode: 'normal',
   });
   const pikachuJapaneseAlias = canonicalKey({
-    game: 'pokemon',
     language: 'en',
-    setId: '33333333-3333-4333-8333-333333333333',
+    setCode: '33333333-3333-4333-8333-333333333333',
     collectorNumber: '025',
     variantCode: 'normal',
   });
@@ -199,16 +207,14 @@ function assertTranslatedAliasesDoNotDefineIdentity() {
 function assertSharedArtworkVariantsStaySeparate() {
   const sharedArtworkId = 'artwork:pikachu:base';
   const normal = canonicalKey({
-    game: 'pokemon',
     language: 'ja',
-    setId: '44444444-4444-4444-8444-444444444444',
+    setCode: '44444444-4444-4444-8444-444444444444',
     collectorNumber: '025',
     variantCode: 'normal',
   });
   const pokeBall = canonicalKey({
-    game: 'pokemon',
     language: 'ja',
-    setId: '44444444-4444-4444-8444-444444444444',
+    setCode: '44444444-4444-4444-8444-444444444444',
     collectorNumber: '025',
     variantCode: 'poke_ball',
   });
@@ -256,6 +262,90 @@ function assertCatalogueSeedReconciliation() {
   );
 }
 
+function assertSuspiciousLegacyRowsAreQuarantined() {
+  for (const pattern of ['ja:CS*', 'ja:SV4a', 'ja:CP5']) {
+    assert.match(
+      strictForeignImportSql,
+      new RegExp(pattern.replace('*', '\\*'), 'i'),
+      `strict importer migration must quarantine ${pattern}`,
+    );
+  }
+  assert.match(strictForeignImportSql, /insert into ingest\.data_conflicts/i);
+  assert.match(strictForeignImportSql, /data_completeness = 'quarantined'/i);
+  assert.match(strictForeignImportSql, /record_status = 'quarantined'/i);
+  assert.doesNotMatch(strictForeignImportSql, /\bdelete\s+from\b/i);
+}
+
+function assertLanguagePublicationSnapshots() {
+  for (const table of [
+    'catalog.catalogue_version_sets',
+    'catalog.catalogue_version_printings',
+    'catalog.catalogue_version_variants',
+    'catalog.catalogue_version_assets',
+    'catalog.catalogue_version_external_identifiers',
+  ]) {
+    assert.match(
+      publicationSnapshotSql,
+      new RegExp(`create table if not exists ${table.replace('.', '\\.')}`),
+      `missing ${table}`,
+    );
+  }
+  for (const view of [
+    'api.published_catalogue_versions',
+    'api.catalogue_languages',
+    'api.catalogue_series',
+    'api.catalogue_sets',
+    'api.catalogue_cards',
+    'api.catalogue_card_names',
+    'api.catalogue_external_identifiers',
+    'api.catalogue_delta_changes',
+    'api.asset_manifest',
+  ]) {
+    assert.match(
+      publicationSnapshotSql,
+      new RegExp(`create or replace view ${view.replace('.', '\\.')}`),
+      `missing ${view}`,
+    );
+  }
+  assert.match(
+    publicationSnapshotSql,
+    /catalogue_versions_one_published_per_language_uidx/,
+    'there must be one active published version per language',
+  );
+  assert.match(
+    publicationSnapshotSql,
+    /language_code = candidate\.language_code/,
+    'activation must deprecate only the previous version for the same language',
+  );
+  assert.match(
+    publicationSnapshotSql,
+    /set_status in \('Metadata incomplete', 'Images incomplete', 'Set art incomplete', 'Under review', 'Complete'\)/,
+    'set snapshot status taxonomy must match Step 9',
+  );
+  const externalIdentifierViewStart = publicationSnapshotSql.indexOf('create or replace view api.catalogue_external_identifiers');
+  const deltaViewStart = publicationSnapshotSql.indexOf('create or replace view api.catalogue_delta_changes');
+  assert.ok(externalIdentifierViewStart >= 0 && deltaViewStart > externalIdentifierViewStart);
+  const externalIdentifierViewSql = publicationSnapshotSql.slice(externalIdentifierViewStart, deltaViewStart);
+  assert.match(
+    externalIdentifierViewSql,
+    /from catalog\.catalogue_version_external_identifiers cvei/,
+    'published external IDs must be read from the snapshot table',
+  );
+  assert.doesNotMatch(
+    externalIdentifierViewSql,
+    /from ingest\.external_identifiers/i,
+    'app-facing external ID view must not read live ingest records',
+  );
+  for (const viewName of ['api.catalogue_sets', 'api.catalogue_cards', 'api.asset_manifest']) {
+    const start = publicationSnapshotSql.indexOf(`create or replace view ${viewName}`);
+    assert.ok(start >= 0, `${viewName} view missing`);
+    const nextView = publicationSnapshotSql.indexOf('create or replace view ', start + 1);
+    const body = publicationSnapshotSql.slice(start, nextView > start ? nextView : undefined);
+    assert.match(body, /cv\.status = 'published'/, `${viewName} must filter to published versions`);
+    assert.match(body, /cv\.deprecated_at is null/, `${viewName} must exclude deprecated versions`);
+  }
+}
+
 assertMigrationStructure();
 assertSupportedLanguagesSeeded();
 assertVariantTaxonomySeeded();
@@ -265,5 +355,7 @@ assertTranslatedAliasesDoNotDefineIdentity();
 assertSharedArtworkVariantsStaySeparate();
 assertPublicSafeProjection();
 assertCatalogueSeedReconciliation();
+assertSuspiciousLegacyRowsAreQuarantined();
+assertLanguagePublicationSnapshots();
 
 console.log('Canonical catalogue schema migration tests passed.');

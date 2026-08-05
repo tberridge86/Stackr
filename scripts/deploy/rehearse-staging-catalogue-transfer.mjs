@@ -10,6 +10,8 @@ const PRODUCTION_PROJECT_REF = process.env.SUPABASE_PRODUCTION_PROJECT_REF;
 const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL;
 const TARGET_DB_URL = process.env.STACKR_RESTORE_DB_URL;
 const EVIDENCE_PATH = process.env.STACKR_TRANSFER_EVIDENCE_PATH;
+const TRANSFER_MODE = process.env.STACKR_TRANSFER_MODE ?? 'rehearse';
+const TRANSFER_CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
 const TABLE_CONFIG_PATH = 'deploy/staging-catalogue-preservation-tables.json';
 
 for (const [name, value] of Object.entries({
@@ -27,6 +29,21 @@ if (SOURCE_PROJECT_REF === PRODUCTION_PROJECT_REF) throw new Error('production_s
 if (TARGET_PROJECT_REF === PRODUCTION_PROJECT_REF) throw new Error('production_target_prohibited');
 if (!SOURCE_DB_URL.includes(SOURCE_PROJECT_REF)) throw new Error('source_database_url_project_mismatch');
 if (!TARGET_DB_URL.includes(TARGET_PROJECT_REF)) throw new Error('target_database_url_project_mismatch');
+if (!['rehearse', 'commit'].includes(TRANSFER_MODE)) throw new Error('invalid_transfer_mode');
+if (TRANSFER_MODE === 'commit') {
+  if (TRANSFER_CONFIRMATION !== 'COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE') {
+    throw new Error('committed_transfer_confirmation_missing');
+  }
+  if (SOURCE_PROJECT_REF !== 'lmwfhvexfcoyeuoyrlco') {
+    throw new Error('committed_transfer_source_not_canonical_staging');
+  }
+  if (TARGET_PROJECT_REF !== 'krjttpmthxkfsbqksxci') {
+    throw new Error('committed_transfer_target_not_isolated_candidate');
+  }
+  if (PRODUCTION_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu') {
+    throw new Error('committed_transfer_production_guard_mismatch');
+  }
+}
 
 const tableConfig = JSON.parse(readFileSync(TABLE_CONFIG_PATH, 'utf8'));
 if (tableConfig.schemaVersion !== 'stackr-staging-catalogue-preservation-v1.0.0') {
@@ -431,27 +448,44 @@ try {
     });
   }
 
-  await target.query('rollback');
+  if (TRANSFER_MODE === 'commit') await target.query(TRANSFER_MODE);
+  else await target.query('rollback');
   targetTransactionOpen = false;
 
   for (const result of results) {
     const metadata = await tableMetadata(target, result.table);
-    const rows = await readRows(target, result.table, metadata.primaryKey);
+    const snapshot = snapshots.get(result.table);
+    const rows = await readRows(
+      target,
+      result.table,
+      metadata.primaryKey,
+      TRANSFER_MODE === 'commit' ? snapshot.contract.transferColumns : null,
+    );
     const sequences = await ownedSequenceStates(target, result.table, metadata);
-    result.targetRowCountAfterRollback = rows.length;
-    result.targetAfterRollbackSha256 = digestRows(rows);
-    result.targetSequencesAfterRollback = sequences;
-    result.rollbackMatched = rows.length === result.targetRowCountBefore
-      && result.targetAfterRollbackSha256 === result.targetBeforeSha256
-      && stableJson(sequences) === stableJson(result.targetSequencesBefore);
-    if (!result.rollbackMatched) throw new Error(`target_rollback_mismatch:${result.table}`);
+    if (TRANSFER_MODE === 'commit') {
+      result.targetRowCountAfterCommit = rows.length;
+      result.targetAfterCommitSha256 = digestRows(rows);
+      result.targetSequencesAfterCommit = sequences;
+      result.commitMatched = rows.length === result.sourceRowCount
+        && result.targetAfterCommitSha256 === result.sourceSha256
+        && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
+      if (!result.commitMatched) throw new Error(`target_commit_mismatch:${result.table}`);
+    } else {
+      result.targetRowCountAfterRollback = rows.length;
+      result.targetAfterRollbackSha256 = digestRows(rows);
+      result.targetSequencesAfterRollback = sequences;
+      result.rollbackMatched = rows.length === result.targetRowCountBefore
+        && result.targetAfterRollbackSha256 === result.targetBeforeSha256
+        && stableJson(sequences) === stableJson(result.targetSequencesBefore);
+      if (!result.rollbackMatched) throw new Error(`target_rollback_mismatch:${result.table}`);
+    }
   }
 
   await source.query('rollback');
   sourceTransactionOpen = false;
 
   const evidence = {
-    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.3.0',
+    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.4.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
     sourceProjectRef: SOURCE_PROJECT_REF,
@@ -460,9 +494,17 @@ try {
     sourceReadOnly: true,
     productionMutationPerformed: false,
     stagingMutationPerformed: false,
-    targetTransactionCommitted: false,
-    transferPolicy: 'replace_allowlisted_target_tables_with_source_rows_in_rollback_only_transaction',
-    targetRollbackVerified: results.every((result) => result.rollbackMatched),
+    isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
+    targetTransactionCommitted: TRANSFER_MODE === 'commit',
+    transferPolicy: TRANSFER_MODE === 'commit'
+      ? 'replace_allowlisted_isolated_candidate_tables_with_canonical_staging_rows'
+      : 'replace_allowlisted_target_tables_with_source_rows_in_rollback_only_transaction',
+    targetRollbackVerified: TRANSFER_MODE === 'rehearse'
+      ? results.every((result) => result.rollbackMatched)
+      : null,
+    targetCommitVerified: TRANSFER_MODE === 'commit'
+      ? results.every((result) => result.commitMatched)
+      : null,
     selectedTableCount: results.length,
     sourceRowCount: results.reduce((sum, result) => sum + result.sourceRowCount, 0),
     matchedSourceRowCount: results.reduce((sum, result) => sum + result.matchedSourceRowCount, 0),
@@ -484,6 +526,7 @@ try {
     sourceRowCount: evidence.sourceRowCount,
     matchedSourceRowCount: evidence.matchedSourceRowCount,
     targetRollbackVerified: evidence.targetRollbackVerified,
+    targetCommitVerified: evidence.targetCommitVerified,
   })}\n`);
 } finally {
   if (targetTransactionOpen) await target.query('rollback').catch(() => {});

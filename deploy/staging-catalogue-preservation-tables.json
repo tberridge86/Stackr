@@ -16,6 +16,7 @@
     "ingest.sources",
     "ingest.import_runs",
     "ingest.raw_source_records",
+    "ingest.data_conflicts",
     "ingest.source_health_reports",
     "catalog.assets",
     "ingest.external_identifiers",

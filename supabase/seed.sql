@@ -23,6 +23,29 @@ on conflict (code) do update set
   deprecated_at = null,
   updated_at = now();
 
+insert into catalog.languages (code, bcp47_code, english_name, native_name, script_code, sort_order)
+values
+  ('zh-cn', 'zh-CN', 'Chinese (Simplified)', 'Chinese (Simplified)', 'Hans', 30),
+  ('zh-tw', 'zh-TW', 'Chinese (Traditional)', 'Chinese (Traditional)', 'Hant', 40)
+on conflict (code) do update set
+  bcp47_code = excluded.bcp47_code,
+  english_name = excluded.english_name,
+  native_name = excluded.native_name,
+  script_code = excluded.script_code,
+  sort_order = excluded.sort_order,
+  active = true,
+  deprecated_at = null,
+  deprecated_reason = null,
+  updated_at = now();
+
+update catalog.languages
+set
+  active = false,
+  deprecated_at = coalesce(deprecated_at, now()),
+  deprecated_reason = coalesce(deprecated_reason, 'Replaced by strict importer language codes zh-cn and zh-tw.'),
+  updated_at = now()
+where code in ('zh-Hans', 'zh-Hant');
+
 insert into catalog.finishes (code, english_label, finish_group, sort_order, description)
 values
   ('normal', 'Normal', 'standard', 10, 'Standard non-special finish.'),

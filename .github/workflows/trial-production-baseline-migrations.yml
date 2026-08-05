@@ -176,3 +176,161 @@ jobs:
       - name: Remove transfer evidence
         if: always()
         run: rm -rf "$RUNNER_TEMP/stackr-catalogue-transfer"
+
+  rebuild-staging:
+    if: inputs.confirmation == 'APPROVE DESTRUCTIVE STAGING REBUILD'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: staging
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_RESTORE_DB_URL }}
+      SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+      SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
+      SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+      POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate destructive staging scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_PROJECT_REF" = 'lmwfhvexfcoyeuoyrlco'
+          test "$SUPABASE_RESTORE_PROJECT_REF" = 'krjttpmthxkfsbqksxci'
+          test "$SUPABASE_PRODUCTION_PROJECT_REF" = 'oakdbbzdqwurpjnoqhmu'
+          test "$SUPABASE_PROJECT_REF" != "$SUPABASE_RESTORE_PROJECT_REF"
+          test "$SUPABASE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
+          test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
+          test -n "$SUPABASE_DB_URL"
+          test -n "$SUPABASE_RESTORE_DB_URL"
+          case "$SUPABASE_DB_URL" in *"$SUPABASE_PROJECT_REF"*) ;; *) exit 1 ;; esac
+          case "$SUPABASE_RESTORE_DB_URL" in *"$SUPABASE_RESTORE_PROJECT_REF"*) ;; *) exit 1 ;; esac
+
+      - name: Prepare protected database URLs
+        run: node scripts/deploy/prepare-postgres-urls.mjs
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Verify rebuild tooling before mutation
+        run: node scripts/test-staging-rebuild-tooling.mjs
+
+      - name: Create ephemeral rollback backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          backup="$RUNNER_TEMP/stackr-staging-rebuild/rollback"
+          evidence="$RUNNER_TEMP/stackr-staging-rebuild/evidence"
+          mkdir -p "$backup" "$evidence"
+          docker run --rm --env TARGET_DB_URL="$STACKR_SOURCE_DB_URL" "$POSTGRES_IMAGE" \
+            sh -ceu 'test "$(psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select (select count(*) from auth.users)::text || chr(124) || (select count(*) from storage.objects)::text")" = "0|0"'
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$backup/roles.sql" --role-only
+          node scripts/deploy/sanitize-supabase-role-dump.mjs "$backup/roles.sql"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$backup/schema.sql"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$backup/data.sql" --use-copy --data-only \
+            -x storage.buckets_vectors -x storage.vector_indexes
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$backup/history-schema.sql" --schema supabase_migrations
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$backup/history-data.sql" --use-copy --data-only --schema supabase_migrations
+          node scripts/deploy/verify-backup.mjs \
+            --schema="$backup/schema.sql" --data="$backup/data.sql"
+          node scripts/deploy/prepare-restore-cleanup.mjs \
+            "$backup/data.sql" "$backup/cleanup.sql"
+
+      - name: Commit staging catalogue to isolated candidate
+        shell: bash
+        env:
+          STACKR_TRANSFER_MODE: commit
+          STACKR_TRANSFER_CONFIRMATION: COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE
+          STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-staging-rebuild/evidence/catalogue-transfer-evidence.json
+        run: node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
+
+      - name: Snapshot aligned candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate="$RUNNER_TEMP/stackr-staging-rebuild/candidate"
+          mkdir -p "$candidate"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_RESTORE_DB_URL" \
+            --file "$candidate/roles.sql" --role-only
+          node scripts/deploy/sanitize-supabase-role-dump.mjs "$candidate/roles.sql"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_RESTORE_DB_URL" \
+            --file "$candidate/schema.sql"
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_RESTORE_DB_URL" \
+            --file "$candidate/data.sql" --use-copy --data-only \
+            -x storage.buckets_vectors -x storage.vector_indexes
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_RESTORE_DB_URL" \
+            --file "$candidate/history-schema.sql" --schema supabase_migrations
+          npx --yes supabase@2.110.0 db dump --db-url "$STACKR_RESTORE_DB_URL" \
+            --file "$candidate/history-data.sql" --use-copy --data-only --schema supabase_migrations
+          node scripts/deploy/verify-backup.mjs \
+            --schema="$candidate/schema.sql" --data="$candidate/data.sql"
+          node scripts/deploy/prepare-restore-cleanup.mjs \
+            "$candidate/data.sql" "$candidate/cleanup.sql"
+
+      - name: Rebuild canonical staging database
+        shell: bash
+        run: |
+          set -euo pipefail
+          touch "$RUNNER_TEMP/stackr-staging-rebuild/mutation-started"
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_SOURCE_DB_URL" \
+            --volume "$RUNNER_TEMP/stackr-staging-rebuild/candidate:/candidate:ro" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /candidate/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /candidate/roles.sql --file /candidate/schema.sql --command "set session_replication_role = replica" --file /candidate/data.sql --file /candidate/history-schema.sql --file /candidate/history-data.sql'
+
+      - name: Verify rebuilt staging fingerprints
+        shell: bash
+        run: |
+          set -euo pipefail
+          staging_url="$STACKR_SOURCE_DB_URL"
+          candidate_url="$STACKR_RESTORE_DB_URL"
+          export SUPABASE_PROJECT_REF='krjttpmthxkfsbqksxci'
+          export SUPABASE_RESTORE_PROJECT_REF='lmwfhvexfcoyeuoyrlco'
+          export STACKR_SOURCE_DB_URL="$candidate_url"
+          export STACKR_RESTORE_DB_URL="$staging_url"
+          export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-staging-rebuild/evidence"
+          node scripts/deploy/verify-postgres-restore.mjs
+          docker run --rm --env TARGET_DB_URL="$staging_url" "$POSTGRES_IMAGE" \
+            sh -ceu 'test "$(psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select count(*) from supabase_migrations.schema_migrations")" = "82"; test "$(psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select (select count(*) from auth.users)::text || chr(124) || (select count(*) from storage.objects)::text")" = "0|0"'
+
+      - name: Restore rollback backup after a failed rebuild
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker="$RUNNER_TEMP/stackr-staging-rebuild/mutation-started"
+          backup="$RUNNER_TEMP/stackr-staging-rebuild/rollback"
+          if [ ! -f "$marker" ]; then
+            echo 'Staging mutation did not begin; rollback is unnecessary.'
+            exit 0
+          fi
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_SOURCE_DB_URL" \
+            --volume "$backup:/rollback:ro" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /rollback/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /rollback/roles.sql --file /rollback/schema.sql --command "set session_replication_role = replica" --file /rollback/data.sql --file /rollback/history-schema.sql --file /rollback/history-data.sql'
+
+      - name: Upload private non-record rebuild evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: staging-rebuild-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-staging-rebuild/evidence
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Remove database backup bytes
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/stackr-staging-rebuild"

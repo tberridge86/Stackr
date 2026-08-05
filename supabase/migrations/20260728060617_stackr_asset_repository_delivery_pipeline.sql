@@ -277,11 +277,6 @@ set
   updated_at = now();
 
 drop policy if exists "Stackr catalogue public assets are readable" on storage.objects;
-create policy "Stackr catalogue public assets are readable"
-  on storage.objects
-  for select
-  to anon, authenticated
-  using (bucket_id = 'stackr-catalogue-public');
 
 drop policy if exists "Stackr service role manages catalogue assets" on storage.objects;
 create policy "Stackr service role manages catalogue assets"
