@@ -1,6 +1,6 @@
 {
   "schemaVersion": "stackr-api-staging-progress-v1.0.0",
-  "generatedAt": "2026-08-05T20:39:20Z",
+  "generatedAt": "2026-08-05T21:13:56Z",
   "environment": "staging",
   "productionModified": false,
   "completionEstimate": {
@@ -74,17 +74,17 @@
     "metadataOnly": true,
     "imageImportAllowed": false,
     "sets": 695,
-    "cardPrintings": 2442,
-    "cardVariants": 2974,
+    "cardPrintings": 3876,
+    "cardVariants": 5012,
     "assets": 0,
-    "rawSourceRecords": 8563,
+    "rawSourceRecords": 12177,
     "publishedVersions": 0,
     "english": {
-      "providerCardOffsetsProcessedThrough": 1249,
+      "providerCardOffsetsProcessedThrough": 2749,
       "sets": 219,
-      "cardPrintings": 1446,
-      "cardVariants": 1978,
-      "rawSourceRecords": 4115
+      "cardPrintings": 2880,
+      "cardVariants": 4016,
+      "rawSourceRecords": 7729
     },
     "serialBatch": {
       "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/31038193624",
@@ -102,6 +102,12 @@
       "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/31043359763",
       "providerCards": 750,
       "batchDurationSeconds": [218, 225, 217],
+      "recordsConflicted": 0
+    },
+    "boundedLargeRange": {
+      "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/31045342638",
+      "providerCards": 1500,
+      "batchDurationSeconds": [590, 588, 589],
       "recordsConflicted": 0
     }
   },
