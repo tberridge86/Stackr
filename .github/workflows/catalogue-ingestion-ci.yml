@@ -1,0 +1,65 @@
+name: Catalogue Ingestion CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      language:
+        description: TCGdex language batch
+        required: true
+        default: en
+        type: choice
+        options: [en, ja, zh-tw, zh-cn, ko]
+      offset:
+        description: Zero-based provider card offset
+        required: true
+        default: '0'
+        type: string
+      limit:
+        description: Provider cards in this batch (maximum 500)
+        required: true
+        default: '250'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-staging-catalogue-${{ inputs.language }}
+  cancel-in-progress: false
+
+jobs:
+  ingest-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: staging
+    env:
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate bounded batch inputs
+        shell: bash
+        run: |
+          [[ "${{ inputs.offset }}" =~ ^[0-9]+$ ]] || exit 1
+          [[ "${{ inputs.limit }}" =~ ^[0-9]+$ ]] || exit 1
+          (( ${{ inputs.limit }} >= 1 && ${{ inputs.limit }} <= 500 )) || exit 1
+      - name: Import one staging metadata batch
+        run: >-
+          npm run catalogue:ingest -- run-language
+          --source=tcgdex
+          --language="${{ inputs.language }}"
+          --offset="${{ inputs.offset }}"
+          --limit="${{ inputs.limit }}"
+          --runKey="github-${{ github.run_id }}-${{ github.run_attempt }}"
+          --target=staging
+      - name: Report language quality
+        run: >-
+          npm run catalogue:ingest -- quality-report
+          --language="${{ inputs.language }}"
+          --limit=500

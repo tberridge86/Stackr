@@ -1,8 +1,8 @@
 import { createHash, randomUUID } from 'node:crypto';
 import {
   cleanText,
+  normaliseLanguageCode,
   normaliseName,
-  proposedCanonicalKey,
   type FetchScope,
   type NormalisedRecord,
   type ProviderRecord,
@@ -30,6 +30,9 @@ type ImportOptions = FetchScope & {
   requestId?: string;
   runKey?: string;
   dryRun?: boolean;
+  allowImageAssets?: boolean;
+  assetsOnly?: boolean;
+  approvedOnlyAssets?: boolean;
 };
 
 type ImportStats = {
@@ -136,10 +139,103 @@ function canonicalRunKey(adapter: SourceAdapter, options: ImportOptions) {
 }
 
 function recordKindsForCommand(adapter: SourceAdapter, options: ImportOptions) {
+  if (options.assetsOnly) {
+    return options.allowImageAssets ? [adapter.fetchAssets(options)] : [];
+  }
   const command = options.command ?? 'run_source';
-  if (command === 'rebuild_record') return [adapter.fetchCards(options), adapter.fetchVariants(options), adapter.fetchAssets(options)];
-  if (command === 'run_set') return [adapter.fetchCards(options), adapter.fetchVariants(options), adapter.fetchAssets(options)];
-  return [adapter.fetchSets(options), adapter.fetchCards(options), adapter.fetchVariants(options), adapter.fetchAssets(options)];
+  const batches = command === 'run_source' || command === 'run_language'
+    ? [adapter.fetchSets(options), adapter.fetchCards(options), adapter.fetchVariants(options)]
+    : [adapter.fetchCards(options), adapter.fetchVariants(options)];
+  return options.allowImageAssets ? [...batches, adapter.fetchAssets(options)] : batches;
+}
+
+function validateImportOptions(options: ImportOptions): ImportOptions {
+  return {
+    ...options,
+    language: options.language == null ? undefined : normaliseLanguageCode(options.language),
+  };
+}
+
+function providerRecordLanguage(record: ProviderRecord, options: ImportOptions) {
+  const payload = record.payload ?? {};
+  return normaliseLanguageCode(
+    record.languageCode
+      ?? payload.languageCode
+      ?? payload.language_code
+      ?? payload.language
+      ?? options.language,
+  );
+}
+
+function dedupeProviderRecords(records: ProviderRecord[], options: ImportOptions) {
+  const uniqueRecords = new Map<string, ProviderRecord>();
+  for (const record of records) {
+    const languageCode = providerRecordLanguage(record, options);
+    uniqueRecords.set(`${record.recordType}:${languageCode}:${record.providerRecordId}`, {
+      ...record,
+      languageCode,
+    });
+  }
+  return uniqueRecords;
+}
+
+function assertNormalisedLanguage(record: ProviderRecord, normalised: NormalisedRecord) {
+  const recordLanguage = normaliseLanguageCode(record.languageCode);
+  const normalisedLanguage = normaliseLanguageCode(normalised.languageCode);
+  if (recordLanguage !== normalisedLanguage) {
+    throw new Error(
+      `Provider record ${record.providerRecordId} normalised from ${recordLanguage} to ${normalisedLanguage}; language changes are not allowed during import.`,
+    );
+  }
+  return {
+    ...normalised,
+    languageCode: normalisedLanguage,
+  };
+}
+
+function hasCompleteCardImageIdentity(normalised: NormalisedRecord) {
+  return Boolean(
+    cleanText(normalised.languageCode)
+    && cleanText(normalised.setCode ?? normalised.providerSetId)
+    && cleanText(normalised.collectorNumber)
+    && cleanText(normalised.variantCode)
+    && cleanText(normalised.finishCode),
+  );
+}
+
+function isSetArtAsset(normalised: NormalisedRecord) {
+  return normalised.assetType === 'set_logo' || normalised.assetType === 'set_symbol';
+}
+
+function hasCompleteSetArtIdentity(normalised: NormalisedRecord) {
+  return Boolean(
+    cleanText(normalised.languageCode)
+    && cleanText(normalised.setCode ?? normalised.providerSetId)
+    && cleanText(normalised.imageUrl)
+    && isSetArtAsset(normalised),
+  );
+}
+
+function catalogVariantCanonicalKey(input: {
+  gameCode: string;
+  languageCode: string;
+  setId: string;
+  collectorNumber: string;
+  variantCode: string;
+}) {
+  return [
+    input.gameCode,
+    normaliseLanguageCode(input.languageCode),
+    input.setId,
+    input.collectorNumber,
+    input.variantCode,
+  ].map((part) => {
+    const cleaned = cleanText(part);
+    if (!cleaned) {
+      throw new Error('Catalogue variant identity requires game, language, set_id, collector_number, and variant.');
+    }
+    return cleaned;
+  }).join(':').toLowerCase();
 }
 
 export async function ensureSource(db: SupabaseClientLike, identity: SourceIdentity): Promise<SourceRow> {
@@ -198,6 +294,9 @@ async function startImportRun(
       setId: options.setId ?? null,
       providerRecordId: options.providerRecordId ?? null,
       dryRun: Boolean(options.dryRun),
+      allowImageAssets: Boolean(options.allowImageAssets),
+      assetsOnly: Boolean(options.assetsOnly),
+      approvedOnlyAssets: Boolean(options.approvedOnlyAssets),
     },
   };
 
@@ -511,10 +610,34 @@ async function upsertSet(
     provider_set_code: normalised.providerSetId ?? normalised.setCode ?? null,
     native_name: nativeName,
     english_display_name: normalised.englishDisplayName,
+    printed_total: normalised.printedTotal ?? null,
+    total: normalised.total ?? normalised.printedTotal ?? null,
     source_updated_at: normalised.sourceUpdatedAt ?? null,
   };
 
   if (match.status === 'matched') {
+    const link = await linkExternalId(db, {
+      sourceId,
+      rawRecordId,
+      sourceEntityType: 'set',
+      externalId: normalised.providerSetId ?? normalised.setCode ?? normalised.providerRecordId,
+      languageCode: normalised.languageCode,
+      setId: match.setId,
+      confidence: normalised.sourceConfidence,
+      sourceUpdatedAt: normalised.sourceUpdatedAt,
+    });
+    if (link.status === 'conflict') {
+      await quarantine(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        conflictType: 'identity_collision',
+        proposed: row,
+        existing: link.existing,
+        notes: 'Provider set identifier already points to another canonical set.',
+      });
+      return { status: 'conflicted' as const };
+    }
     const { error } = await table(db, 'catalog', 'sets').update(row).eq('id', match.setId);
     if (error) throw error;
     await auditDecision(db, {
@@ -631,11 +754,61 @@ async function insertNameIfMissing(
 async function upsertAssetForVariant(
   db: SupabaseClientLike,
   sourceId: string,
+  importRunId: string,
   rawRecordId: string,
   normalised: NormalisedRecord,
   variantId: string,
 ) {
   if (!normalised.imageUrl) return null;
+  const imageLanguage = normaliseLanguageCode(normalised.imageLanguageCode ?? normalised.languageCode);
+  const variantLanguage = normaliseLanguageCode(normalised.languageCode);
+  if (imageLanguage !== variantLanguage) {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'schema_conflict',
+      severity: 'critical',
+      proposed: normalised.raw,
+      existing: { imageLanguage, variantLanguage, imageUrl: normalised.imageUrl },
+      notes: 'asset_language_mismatch: refusing to attach a card image whose language differs from the target printing language.',
+    });
+    return null;
+  }
+
+  const { data: healthyExactLanguageImage, error: healthyLookupError } = await table(db, 'catalog', 'assets')
+    .select('id')
+    .eq('variant_id', variantId)
+    .eq('asset_type', normalised.assetType ?? 'card_image')
+    .eq('rights_status', 'approved')
+    .eq('publicly_servable', true)
+    .is('deprecated_at', null)
+    .limit(1);
+  if (healthyLookupError) throw healthyLookupError;
+  if ((healthyExactLanguageImage ?? []).length > 0) return healthyExactLanguageImage[0].id as string;
+
+  const imageSha256 = cleanText(normalised.imageSha256)?.toLowerCase();
+  if (imageSha256) {
+    const { data: duplicateBySha, error: duplicateShaError } = await table(db, 'catalog', 'assets')
+      .select('id')
+      .eq('content_sha256', imageSha256)
+      .is('deprecated_at', null)
+      .limit(1);
+    if (duplicateShaError) throw duplicateShaError;
+    if ((duplicateBySha ?? []).length > 0) return duplicateBySha[0].id as string;
+  }
+
+  const imagePerceptualHash = cleanText(normalised.imagePerceptualHash)?.toLowerCase();
+  if (imagePerceptualHash) {
+    const { data: duplicateByPhash, error: duplicatePhashError } = await table(db, 'catalog', 'assets')
+      .select('id')
+      .eq('perceptual_hash', imagePerceptualHash)
+      .is('deprecated_at', null)
+      .limit(1);
+    if (duplicatePhashError) throw duplicatePhashError;
+    if ((duplicateByPhash ?? []).length > 0) return duplicateByPhash[0].id as string;
+  }
+
   const { data: existing, error: lookupError } = await table(db, 'catalog', 'assets')
     .select('id')
     .eq('variant_id', variantId)
@@ -643,7 +816,20 @@ async function upsertAssetForVariant(
     .eq('url', normalised.imageUrl)
     .limit(1);
   if (lookupError) throw lookupError;
-  if ((existing ?? []).length > 0) return existing[0].id as string;
+  if ((existing ?? []).length > 0) {
+    const existingId = existing[0].id as string;
+    const { error: updateError } = await table(db, 'catalog', 'assets')
+      .update({
+        rights_status: normalised.licenceStatus === 'approved' ? 'approved' : 'under_review',
+        permission_status: normalised.licenceStatus === 'approved' ? 'approved' : 'under_review',
+        publicly_servable: normalised.licenceStatus === 'approved',
+        source_updated_at: normalised.sourceUpdatedAt ?? null,
+        last_verified_at: nowIso(),
+      })
+      .eq('id', existingId);
+    if (updateError) throw updateError;
+    return existingId;
+  }
 
   const { data, error } = await table(db, 'catalog', 'assets')
     .insert({
@@ -652,9 +838,20 @@ async function upsertAssetForVariant(
       variant_id: variantId,
       source_id: sourceId,
       url: normalised.imageUrl,
+      storage_provider: 'external_reference',
       rights_status: normalised.licenceStatus === 'approved' ? 'approved' : 'under_review',
+      permission_status: normalised.licenceStatus === 'approved' ? 'approved' : 'under_review',
       publicly_servable: normalised.licenceStatus === 'approved',
-      payload_hash: payloadChecksum({ url: normalised.imageUrl, providerRecordId: normalised.providerRecordId }),
+      sha256: imageSha256,
+      content_sha256: imageSha256,
+      perceptual_hash: imagePerceptualHash,
+      original_source_url: normalised.imageUrl,
+      original_source_identifier: normalised.providerRecordId,
+      source_attribution: normalised.provider,
+      externally_referenced: true,
+      acquisition_source: normalised.provider === 'pikaqian' || normalised.provider === 'tcgdex'
+        ? 'provider_url'
+        : 'approved_commercial_provider',
       source_updated_at: normalised.sourceUpdatedAt ?? null,
     })
     .select('id')
@@ -675,7 +872,7 @@ async function upsertAssetForVariant(
   return data.id as string;
 }
 
-async function upsertCardVariant(
+async function upsertAssetForSet(
   db: SupabaseClientLike,
   sourceId: string,
   importRunId: string,
@@ -683,6 +880,143 @@ async function upsertCardVariant(
   normalised: NormalisedRecord,
   requestId?: string,
 ) {
+  const setMatch = await findSetId(db, sourceId, normalised);
+  if (setMatch.status !== 'matched') {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: setMatch.status === 'conflict' ? 'set_code_conflict' : 'schema_conflict',
+      severity: 'high',
+      proposed: normalised.raw,
+      existing: { reason: setMatch.reason },
+      notes: 'Set artwork cannot be mapped to exactly one canonical language + provider set identity.',
+    });
+    return { status: 'conflicted' as const };
+  }
+
+  const imageLanguage = normaliseLanguageCode(normalised.imageLanguageCode ?? normalised.languageCode);
+  if (imageLanguage !== normalised.languageCode) {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'schema_conflict',
+      severity: 'critical',
+      proposed: normalised.raw,
+      existing: { imageLanguage, setLanguage: normalised.languageCode, imageUrl: normalised.imageUrl },
+      notes: 'asset_language_mismatch: refusing to attach set artwork from a different language catalogue.',
+    });
+    return { status: 'conflicted' as const };
+  }
+
+  const assetType = normalised.assetType as 'set_logo' | 'set_symbol';
+  const { data: exactRows, error: exactLookupError } = await table(db, 'catalog', 'assets')
+    .select('id')
+    .eq('set_id', setMatch.setId)
+    .eq('asset_type', assetType)
+    .eq('source_id', sourceId)
+    .eq('url', normalised.imageUrl)
+    .is('deprecated_at', null)
+    .limit(2);
+  if (exactLookupError) throw exactLookupError;
+  if ((exactRows ?? []).length > 1) {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'identity_collision',
+      severity: 'high',
+      proposed: normalised.raw,
+      existing: { assetIds: exactRows.map((row: { id: string }) => row.id) },
+      notes: 'Multiple active set-art assets share the same provider URL; automatic selection was refused.',
+    });
+    return { status: 'conflicted' as const };
+  }
+
+  let assetId = exactRows?.[0]?.id as string | undefined;
+  let status: 'inserted' | 'updated' = 'updated';
+  const assetPatch = {
+    asset_type: assetType,
+    game_code: normalised.gameCode,
+    set_id: setMatch.setId,
+    source_id: sourceId,
+    url: normalised.imageUrl,
+    storage_provider: 'external_reference',
+    rights_status: 'approved',
+    permission_status: 'approved',
+    publicly_servable: true,
+    original_source_url: normalised.imageUrl,
+    original_source_identifier: normalised.providerRecordId,
+    source_attribution: normalised.provider,
+    externally_referenced: true,
+    acquisition_source: 'provider_url',
+    source_updated_at: normalised.sourceUpdatedAt ?? null,
+    last_verified_at: nowIso(),
+  };
+  if (assetId) {
+    const { error } = await table(db, 'catalog', 'assets').update(assetPatch).eq('id', assetId);
+    if (error) throw error;
+  } else {
+    const { data, error } = await table(db, 'catalog', 'assets')
+      .insert(assetPatch)
+      .select('id')
+      .maybeSingle();
+    if (error) throw error;
+    assetId = data.id as string;
+    status = 'inserted';
+  }
+
+  const link = await linkExternalId(db, {
+    sourceId,
+    rawRecordId,
+    sourceEntityType: 'asset',
+    externalId: normalised.providerRecordId,
+    languageCode: normalised.languageCode,
+    setId: setMatch.setId,
+    assetId,
+    confidence: normalised.sourceConfidence,
+    sourceUpdatedAt: normalised.sourceUpdatedAt,
+  });
+  if (link.status === 'conflict') {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'identity_collision',
+      severity: 'high',
+      proposed: normalised.raw,
+      existing: link.existing,
+      notes: 'Provider set-art identifier already points to another canonical asset.',
+    });
+    return { status: 'conflicted' as const };
+  }
+
+  await auditDecision(db, {
+    sourceId,
+    importRunId,
+    rawRecordId,
+    requestId,
+    decisionType: status === 'inserted' ? 'created' : 'updated',
+    entitySchema: 'catalog',
+    entityTable: 'assets',
+    entityId: assetId,
+    confidence: normalised.sourceConfidence,
+    reason: status === 'inserted' ? 'new_set_art_from_exact_provider_identity' : 'set_art_exact_provider_identity_match',
+    proposed: assetPatch,
+  });
+  return { status, assetId };
+}
+
+async function upsertCardVariant(
+  db: SupabaseClientLike,
+  sourceId: string,
+  importRunId: string,
+  rawRecordId: string,
+  normalised: NormalisedRecord,
+  options: { requestId?: string; allowImageAssets?: boolean } = {},
+) {
+  const requestId = options.requestId;
   if (!normalised.collectorNumber || !normalised.nativeName) {
     await quarantine(db, {
       sourceId,
@@ -709,7 +1043,7 @@ async function upsertCardVariant(
     return { status: 'conflicted' as const };
   }
 
-  const canonicalKey = proposedCanonicalKey({
+  const canonicalKey = catalogVariantCanonicalKey({
     gameCode: normalised.gameCode,
     languageCode: normalised.languageCode,
     setId: setMatch.setId,
@@ -782,10 +1116,48 @@ async function upsertCardVariant(
 
   if (existingVariant?.id) {
     const { data: variant, error: variantError } = await table(db, 'catalog', 'card_variants')
-      .select('id, printing_id')
+      .select('id, printing_id, canonical_key, variant_code')
       .eq('id', existingVariant.id)
       .maybeSingle();
     if (variantError) throw variantError;
+
+    let repairedProviderIdentity = false;
+    if (externalVariantId && !identityVariantId && variant.canonical_key !== canonicalKey) {
+      const printingVariants = await table(db, 'catalog', 'card_variants')
+        .select('id')
+        .eq('printing_id', variant.printing_id)
+        .is('deprecated_at', null)
+        .limit(2);
+      if (printingVariants.error) throw printingVariants.error;
+      const activeVariantIds = (printingVariants.data ?? []).map((row: { id: string }) => row.id);
+      if (activeVariantIds.length !== 1 || activeVariantIds[0] !== variant.id) {
+        await quarantine(db, {
+          sourceId,
+          importRunId,
+          rawRecordId,
+          conflictType: 'identity_collision',
+          canonicalKey,
+          proposed: normalised.raw,
+          existing: { externalVariantId, existingCanonicalKey: variant.canonical_key, activeVariantIds },
+          notes: 'Provider variant identity changed but the printing has multiple active variants; automatic repair was refused.',
+        });
+        return { status: 'conflicted' as const };
+      }
+      const { error: staleIdentifierError } = await table(db, 'ingest', 'external_identifiers')
+        .update({
+          is_current: false,
+          deprecated_at: nowIso(),
+          deprecated_reason: 'provider_variant_identity_corrected',
+        })
+        .eq('source_id', sourceId)
+        .eq('source_entity_type', 'card')
+        .eq('variant_id', variant.id)
+        .eq('is_current', true)
+        .is('deprecated_at', null)
+        .neq('external_id', normalised.providerRecordId);
+      if (staleIdentifierError) throw staleIdentifierError;
+      repairedProviderIdentity = true;
+    }
 
     const printingPatch = {
       card_concept_id: conceptId,
@@ -799,12 +1171,17 @@ async function upsertCardVariant(
       .eq('id', variant.printing_id);
     if (printingError) throw printingError;
 
-    const variantPatch = {
+    const variantPatch: Record<string, unknown> = {
       finish_code: normalised.finishCode ?? null,
       artwork_key: normalised.artworkKey ?? null,
       source_confidence: normalised.sourceConfidence,
       source_updated_at: normalised.sourceUpdatedAt ?? null,
     };
+    if (repairedProviderIdentity) {
+      variantPatch.variant_code = normalised.variantCode ?? 'normal';
+      variantPatch.canonical_key = canonicalKey;
+      variantPatch.is_default = (normalised.variantCode ?? 'normal') === 'normal';
+    }
     const { error: updateError } = await table(db, 'catalog', 'card_variants')
       .update(variantPatch)
       .eq('id', variant.id);
@@ -827,7 +1204,9 @@ async function upsertCardVariant(
       confidence: normalised.sourceConfidence,
       sourceUpdatedAt: normalised.sourceUpdatedAt,
     });
-    await upsertAssetForVariant(db, sourceId, rawRecordId, normalised, variant.id);
+    if (options.allowImageAssets && hasCompleteCardImageIdentity(normalised)) {
+      await upsertAssetForVariant(db, sourceId, importRunId, rawRecordId, normalised, variant.id);
+    }
     await linkExternalId(db, {
       sourceId,
       rawRecordId,
@@ -849,35 +1228,74 @@ async function upsertCardVariant(
       entityId: variant.id,
       canonicalKey,
       confidence: normalised.sourceConfidence,
-      reason: externalVariantId ? 'external_id_match' : 'canonical_identity_match',
+      reason: repairedProviderIdentity
+        ? 'provider_variant_identity_corrected'
+        : externalVariantId
+        ? 'external_id_match'
+        : 'canonical_identity_match',
       proposed: { printingPatch, variantPatch },
     });
     return { status: 'updated' as const, variantId: variant.id as string };
   }
 
-  const { data: printing, error: printingError } = await table(db, 'catalog', 'card_printings')
-    .insert({
+  const printingIdentity = await table(db, 'catalog', 'card_printings')
+    .select('id')
+    .eq('game_code', normalised.gameCode)
+    .eq('set_id', setMatch.setId)
+    .eq('language_code', normalised.languageCode)
+    .eq('collector_number', normalised.collectorNumber)
+    .is('deprecated_at', null)
+    .limit(2);
+  if (printingIdentity.error) throw printingIdentity.error;
+  const printingRows = printingIdentity.data ?? [];
+  if (printingRows.length > 1) {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'identity_collision',
+      canonicalKey,
+      proposed: normalised.raw,
+      existing: { rows: printingRows },
+      notes: 'Card printing identity is ambiguous; variant was not attached by guesswork.',
+    });
+    return { status: 'conflicted' as const };
+  }
+
+  const printingPatch = {
+    card_concept_id: conceptId,
+    native_name: normalised.nativeName,
+    english_display_name: normalised.englishDisplayName,
+    rarity_id: rarityId,
+    source_updated_at: normalised.sourceUpdatedAt ?? null,
+  };
+  let printingId = printingRows[0]?.id as string | undefined;
+  if (printingId) {
+    const { error } = await table(db, 'catalog', 'card_printings')
+      .update(printingPatch)
+      .eq('id', printingId);
+    if (error) throw error;
+  } else {
+    const { data: printing, error: printingError } = await table(db, 'catalog', 'card_printings').insert({
       game_code: normalised.gameCode,
       set_id: setMatch.setId,
       language_code: normalised.languageCode,
-      card_concept_id: conceptId,
       collector_number: normalised.collectorNumber,
       collector_number_prefix: normalised.collectorNumberPrefix,
       collector_number_sort: normalised.collectorNumberSort,
       collector_number_suffix: normalised.collectorNumberSuffix,
       collector_number_sort_key: normalised.collectorNumberSortKey,
-      native_name: normalised.nativeName,
-      english_display_name: normalised.englishDisplayName,
-      rarity_id: rarityId,
-      source_updated_at: normalised.sourceUpdatedAt ?? null,
+      ...printingPatch,
     })
-    .select('id')
-    .maybeSingle();
-  if (printingError) throw printingError;
+      .select('id')
+      .maybeSingle();
+    if (printingError) throw printingError;
+    printingId = printing.id as string;
+  }
 
   const { data: variant, error: variantError } = await table(db, 'catalog', 'card_variants')
     .insert({
-      printing_id: printing.id,
+      printing_id: printingId,
       game_code: normalised.gameCode,
       set_id: setMatch.setId,
       language_code: normalised.languageCode,
@@ -895,7 +1313,7 @@ async function upsertCardVariant(
   if (variantError) throw variantError;
 
   await insertNameIfMissing(db, {
-    printingId: printing.id,
+    printingId,
     variantId: variant.id,
     languageCode: normalised.languageCode,
     nameType: 'native',
@@ -904,7 +1322,7 @@ async function upsertCardVariant(
     sourceUpdatedAt: normalised.sourceUpdatedAt,
   });
   await insertNameIfMissing(db, {
-    printingId: printing.id,
+    printingId,
     variantId: variant.id,
     languageCode: 'en',
     nameType: 'english_display',
@@ -912,7 +1330,9 @@ async function upsertCardVariant(
     confidence: normalised.sourceConfidence,
     sourceUpdatedAt: normalised.sourceUpdatedAt,
   });
-  await upsertAssetForVariant(db, sourceId, rawRecordId, normalised, variant.id);
+  if (options.allowImageAssets && hasCompleteCardImageIdentity(normalised)) {
+    await upsertAssetForVariant(db, sourceId, importRunId, rawRecordId, normalised, variant.id);
+  }
   const link = await linkExternalId(db, {
     sourceId,
     rawRecordId,
@@ -959,8 +1379,32 @@ async function reconcileRecord(
   importRunId: string,
   rawRecordId: string,
   normalised: NormalisedRecord,
-  requestId?: string,
+  options: { requestId?: string; allowImageAssets?: boolean; approvedOnlyAssets?: boolean } = {},
 ) {
+  const requestId = options.requestId;
+  if (normalised.recordType === 'asset' && options.approvedOnlyAssets && normalised.licenceStatus !== 'approved') {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'licence_conflict',
+      severity: normalised.licenceStatus === 'denied' || normalised.licenceStatus === 'restricted' ? 'high' : 'medium',
+      proposed: normalised.raw,
+      notes: `approved_only_asset_rights_blocked: licence status is ${normalised.licenceStatus}.`,
+    });
+    await auditDecision(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      requestId,
+      decisionType: 'licence_blocked',
+      reason: 'approved_only_asset_rights_not_approved',
+      confidence: normalised.sourceConfidence,
+      proposed: normalised.raw,
+    });
+    return { status: 'conflicted' as const };
+  }
+
   if (normalised.licenceStatus !== 'approved') {
     await quarantine(db, {
       sourceId,
@@ -987,8 +1431,62 @@ async function reconcileRecord(
   if (normalised.recordType === 'set') {
     return upsertSet(db, sourceId, importRunId, rawRecordId, normalised, requestId);
   }
+  if (normalised.recordType === 'asset' && !options.allowImageAssets) {
+    await auditDecision(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      requestId,
+      decisionType: 'skipped',
+      reason: 'card_image_collection_disabled_until_canonical_identity_complete',
+      proposed: normalised.raw,
+    });
+    return { status: 'skipped' as const };
+  }
+  if (normalised.recordType === 'asset' && isSetArtAsset(normalised)) {
+    if (!hasCompleteSetArtIdentity(normalised)) {
+      await quarantine(db, {
+        sourceId,
+        importRunId,
+        rawRecordId,
+        conflictType: 'schema_conflict',
+        severity: 'high',
+        proposed: normalised.raw,
+        notes: 'Set artwork lacks complete language + provider set identity + image URL + logo/symbol type.',
+      });
+      return { status: 'conflicted' as const };
+    }
+    return upsertAssetForSet(db, sourceId, importRunId, rawRecordId, normalised, requestId);
+  }
+  if (normalised.recordType === 'asset' && normalised.assetType !== 'card_image') {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'schema_conflict',
+      severity: 'high',
+      proposed: normalised.raw,
+      notes: `Unsupported provider asset type ${normalised.assetType ?? '<missing>'}; only exact card images, set logos, and set symbols are accepted.`,
+    });
+    return { status: 'conflicted' as const };
+  }
+  if (normalised.recordType === 'asset' && !hasCompleteCardImageIdentity(normalised)) {
+    await quarantine(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      conflictType: 'schema_conflict',
+      severity: 'high',
+      proposed: normalised.raw,
+      notes: 'Image asset lacks complete language + set_code + collector_number + variant + finish identity.',
+    });
+    return { status: 'conflicted' as const };
+  }
   if (['card', 'printing', 'variant', 'asset'].includes(normalised.recordType)) {
-    return upsertCardVariant(db, sourceId, importRunId, rawRecordId, normalised, requestId);
+    return upsertCardVariant(db, sourceId, importRunId, rawRecordId, normalised, {
+      requestId,
+      allowImageAssets: options.allowImageAssets,
+    });
   }
   await auditDecision(db, {
     sourceId,
@@ -1012,20 +1510,8 @@ export class CatalogueIngestionRunner {
   }
 
   async run(options: ImportOptions = {}) {
+    const safeOptions = validateImportOptions(options);
     const sourceIdentity = this.adapter.identifySource();
-    const source = await ensureSource(this.db, sourceIdentity);
-    const health = await this.adapter.healthCheck(options);
-    await recordHealth(this.db, source.id, health);
-    if (['forbidden', 'unavailable', 'failed'].includes(health.status)) {
-      return {
-        ok: false,
-        source: sourceIdentity.code,
-        health,
-        error: 'Provider is unavailable; import was not attempted.',
-      };
-    }
-
-    const run = await startImportRun(this.db, source.id, this.adapter, options);
     const stats: ImportStats = {
       recordsRequested: 0,
       recordsRetrieved: 0,
@@ -1036,18 +1522,56 @@ export class CatalogueIngestionRunner {
       decisions: 0,
     };
 
-    try {
-      const batches = recordKindsForCommand(this.adapter, options);
-      const records = (await Promise.all(batches.map((batch) => collectRecords(batch)))).flat();
-      const uniqueRecords = new Map<string, ProviderRecord>();
-      for (const record of records) {
-        uniqueRecords.set(`${record.recordType}:${record.languageCode ?? ''}:${record.providerRecordId}`, record);
-      }
+    const health = await this.adapter.healthCheck(safeOptions);
+    if (['forbidden', 'unavailable', 'failed'].includes(health.status)) {
+      return {
+        ok: false,
+        source: sourceIdentity.code,
+        health,
+        error: 'Provider is unavailable; import was not attempted.',
+      };
+    }
 
-      stats.recordsRequested = uniqueRecords.size;
-      for (const record of uniqueRecords.values()) {
-        stats.recordsRetrieved += 1;
-        const validation = await this.adapter.validateRecord(record);
+    const batches = recordKindsForCommand(this.adapter, safeOptions);
+    const records = (await Promise.all(batches.map((batch) => collectRecords(batch)))).flat();
+    const uniqueRecords = dedupeProviderRecords(records, safeOptions);
+    stats.recordsRequested = uniqueRecords.size;
+    stats.recordsRetrieved = uniqueRecords.size;
+
+    const preparedRecords: Array<{
+      record: ProviderRecord;
+      validation: ValidationResult;
+      normalised?: NormalisedRecord;
+    }> = [];
+    for (const record of uniqueRecords.values()) {
+      const validation = await this.adapter.validateRecord(record);
+      if (!validation.ok) {
+        preparedRecords.push({ record, validation });
+        stats.recordsConflicted += 1;
+        continue;
+      }
+      const normalised = assertNormalisedLanguage(record, await this.adapter.normaliseRecord(record));
+      preparedRecords.push({ record, validation, normalised });
+    }
+
+    if (safeOptions.dryRun) {
+      stats.recordsSkipped = preparedRecords.filter((entry) => entry.validation.ok).length;
+      return {
+        ok: true,
+        source: sourceIdentity.code,
+        importRunId: null,
+        dryRun: true,
+        health,
+        stats,
+      };
+    }
+
+    const source = await ensureSource(this.db, sourceIdentity);
+    await recordHealth(this.db, source.id, health);
+    const run = await startImportRun(this.db, source.id, this.adapter, safeOptions);
+
+    try {
+      for (const { record, validation, normalised } of preparedRecords) {
         const raw = await retainRawRecord(this.db, source.id, run.id, record, validation);
         if (!validation.ok) {
           await quarantine(this.db, {
@@ -1064,13 +1588,12 @@ export class CatalogueIngestionRunner {
             sourceId: source.id,
             importRunId: run.id,
             rawRecordId: raw.id,
-            requestId: options.requestId,
+            requestId: safeOptions.requestId,
             decisionType: 'quarantined',
             reason: 'raw_record_validation_failed',
             proposed: record.payload,
             existing: { validationIssues: issuePayload(validation.issues) },
           });
-          stats.recordsConflicted += 1;
           continue;
         }
 
@@ -1078,16 +1601,17 @@ export class CatalogueIngestionRunner {
           sourceId: source.id,
           importRunId: run.id,
           rawRecordId: raw.id,
-          requestId: options.requestId,
+          requestId: safeOptions.requestId,
           decisionType: 'validated',
           reason: 'raw_record_validation_passed',
           proposed: record.payload,
         });
 
-        const normalised = await this.adapter.normaliseRecord(record);
-        const result = options.dryRun
-          ? { status: 'skipped' as const }
-          : await reconcileRecord(this.db, source.id, run.id, raw.id, normalised, options.requestId);
+        const result = await reconcileRecord(this.db, source.id, run.id, raw.id, normalised!, {
+          requestId: safeOptions.requestId,
+          allowImageAssets: safeOptions.allowImageAssets,
+          approvedOnlyAssets: safeOptions.approvedOnlyAssets,
+        });
         if (result.status === 'inserted') stats.recordsInserted += 1;
         else if (result.status === 'updated') stats.recordsUpdated += 1;
         else if (result.status === 'conflicted') stats.recordsConflicted += 1;
@@ -1112,7 +1636,13 @@ export class CatalogueIngestionRunner {
 export async function enqueueWorkItem(
   db: SupabaseClientLike,
   input: {
-    queueName: 'catalogue_ingestion' | 'asset_processing' | 'embedding_generation' | 'price_refresh' | 'conflict_review';
+    queueName:
+      | 'catalogue_ingestion'
+      | 'asset_processing'
+      | 'embedding_generation'
+      | 'price_refresh'
+      | 'conflict_review'
+      | 'scan_acquisition';
     command: string;
     sourceId?: string | null;
     importRunId?: string | null;

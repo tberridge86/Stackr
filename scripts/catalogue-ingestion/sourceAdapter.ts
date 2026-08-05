@@ -103,11 +103,16 @@ export type NormalisedRecord = {
   collectorNumberSortKey?: string | null;
   nativeName?: string | null;
   englishDisplayName?: string | null;
+  printedTotal?: number | null;
+  total?: number | null;
   rarityCode?: string | null;
   variantCode?: string | null;
   finishCode?: string | null;
   artworkKey?: string | null;
   imageUrl?: string | null;
+  imageLanguageCode?: string | null;
+  imageSha256?: string | null;
+  imagePerceptualHash?: string | null;
   assetType?: 'card_image' | 'set_symbol' | 'set_logo' | 'series_logo' | 'sealed_product_image' | 'other';
   sourceConfidence: number;
   sourceUpdatedAt?: string | null;
@@ -132,20 +137,40 @@ export function cleanText(value: unknown): string | null {
   return cleaned.length ? cleaned : null;
 }
 
+export const SUPPORTED_CATALOGUE_LANGUAGE_CODES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'] as const;
+
+export type SupportedCatalogueLanguageCode = typeof SUPPORTED_CATALOGUE_LANGUAGE_CODES[number];
+
+export class UnsupportedCatalogueLanguageError extends Error {
+  readonly code = 'unsupported_catalogue_language';
+  readonly fatal = true;
+
+  constructor(value: unknown, context = 'language') {
+    const allowed = SUPPORTED_CATALOGUE_LANGUAGE_CODES.join(', ');
+    super(`Unsupported catalogue ${context}: ${String(value ?? '') || '<missing>'}. Use one of: ${allowed}.`);
+    this.name = 'UnsupportedCatalogueLanguageError';
+  }
+}
+
+export function isSupportedCatalogueLanguageCode(value: string): value is SupportedCatalogueLanguageCode {
+  return (SUPPORTED_CATALOGUE_LANGUAGE_CODES as readonly string[]).includes(value);
+}
+
 export function normaliseLanguageCode(value: unknown): string {
-  const raw = String(value ?? 'en').trim();
-  const lower = raw.toLowerCase().replace('_', '-');
-  if (['jp', 'jpn', 'ja-jp', 'japanese'].includes(lower)) return 'ja';
-  if (['zh', 'zh-cn', 'zh-hans', 'zh-simplified', 'simplified-chinese'].includes(lower)) return 'zh-Hans';
-  if (['zh-tw', 'zh-hant', 'zh-traditional', 'traditional-chinese', 'zhtw'].includes(lower)) return 'zh-Hant';
-  if (['ko', 'kor', 'ko-kr', 'korean'].includes(lower)) return 'ko';
-  return 'en';
+  const raw = value == null ? 'en' : String(value).trim();
+  const lower = raw.toLowerCase().replace(/_/g, '-');
+  if (isSupportedCatalogueLanguageCode(lower)) return lower;
+  throw new UnsupportedCatalogueLanguageError(value);
 }
 
 export function normaliseVariantCode(value: unknown): string {
   const raw = String(value ?? 'normal').trim().toLowerCase();
   const compact = raw.replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
   const aliases: Record<string, string> = {
+    standard: 'normal',
+    regular: 'normal',
+    non_holo: 'normal',
+    non_holofoil: 'normal',
     reverse: 'reverse_holo',
     reverse_holofoil: 'reverse_holo',
     reverse_holo: 'reverse_holo',
@@ -199,19 +224,22 @@ export function collectorNumberParts(value: unknown) {
 }
 
 export function proposedCanonicalKey(input: {
-  gameCode: string;
   languageCode: string;
-  setId: string;
+  setCode: string;
   collectorNumber: string;
   variantCode: string;
+  finishCode: string;
 }) {
   return [
-    input.gameCode,
-    input.languageCode,
-    input.setId,
-    input.collectorNumber,
-    input.variantCode,
-  ].join(':').toLowerCase();
+    normaliseLanguageCode(input.languageCode),
+    cleanText(input.setCode),
+    cleanText(input.collectorNumber),
+    normaliseVariantCode(input.variantCode),
+    normaliseFinishCode(input.finishCode) ?? 'normal',
+  ].map((part) => {
+    if (!part) throw new Error('Canonical card identity requires language, set_code, collector_number, variant, and finish.');
+    return part;
+  }).join(':').toLowerCase();
 }
 
 export function validateProviderRecord(record: ProviderRecord): ValidationResult {
@@ -224,6 +252,18 @@ export function validateProviderRecord(record: ProviderRecord): ValidationResult
   }
   if (!cleanText(record.recordType)) {
     issues.push({ code: 'record_type_required', severity: 'error', message: 'Record type is required.' });
+  }
+  if (record.languageCode != null) {
+    try {
+      normaliseLanguageCode(record.languageCode);
+    } catch (error) {
+      issues.push({
+        code: 'unsupported_language',
+        severity: 'error',
+        message: error instanceof Error ? error.message : String(error),
+        path: 'languageCode',
+      });
+    }
   }
   if (!record.payload || typeof record.payload !== 'object' || Array.isArray(record.payload)) {
     issues.push({ code: 'payload_object_required', severity: 'error', message: 'Raw payload must be an object.' });

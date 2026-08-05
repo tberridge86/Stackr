@@ -1,12 +1,17 @@
 import { ManualCsvSourceAdapter, ManualJsonSourceAdapter } from './manualAdapters';
+import { PikaQianApiSourceAdapter } from './pikaqianAdapter';
+import { PikaQianSourceAdapter, XimilarResidualScanSourceAdapter } from './providerFileAdapters';
 import { TcgdexSourceAdapter } from './tcgdexAdapter';
 import type { SourceAdapter } from './sourceAdapter';
+import type { LicenceStatus } from './sourceAdapter';
 
 type AdapterOptions = {
   source: string;
   file?: string;
   language?: string;
-  licenceStatus?: 'approved' | 'under_review' | 'restricted' | 'denied' | 'unknown';
+  baseUrl?: string;
+  licenceStatus?: LicenceStatus;
+  assetLicenceStatus?: LicenceStatus;
 };
 
 export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
@@ -28,10 +33,32 @@ export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
   if (source === 'tcgdex') {
     return new TcgdexSourceAdapter({
       language: options.language,
+      baseUrl: options.baseUrl,
+      licenceStatus: options.licenceStatus ?? 'approved',
+      assetLicenceStatus: options.assetLicenceStatus ?? 'under_review',
+    });
+  }
+  if (source === 'pikaqian') {
+    if (!options.file) {
+      return new PikaQianApiSourceAdapter({
+        baseUrl: options.baseUrl,
+        licenceStatus: options.licenceStatus ?? 'under_review',
+        assetLicenceStatus: options.assetLicenceStatus ?? 'under_review',
+      });
+    }
+    return new PikaQianSourceAdapter({
+      filePath: options.file,
+      licenceStatus: options.licenceStatus ?? 'under_review',
+    });
+  }
+  if (source === 'ximilar-residual-scans' || source === 'ximilar') {
+    if (!options.file) throw new Error('Ximilar residual ingestion requires --file=path/to/supplied-scan-identifications.json');
+    return new XimilarResidualScanSourceAdapter({
+      filePath: options.file,
       licenceStatus: options.licenceStatus ?? 'under_review',
     });
   }
   throw new Error(`Unsupported source adapter: ${options.source}`);
 }
 
-export const supportedSourceAdapters = ['manual-csv', 'manual-json', 'tcgdex'];
+export const supportedSourceAdapters = ['manual-csv', 'manual-json', 'tcgdex', 'pikaqian', 'ximilar-residual-scans'];

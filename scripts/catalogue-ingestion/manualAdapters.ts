@@ -95,6 +95,8 @@ function normaliseManualRecord(record: ProviderRecord): NormalisedRecord {
   const row = record.payload;
   const collector = collectorNumberParts(valueAt(row, 'collector_number', 'collectorNumber', 'number'));
   const variantCode = normaliseVariantCode(valueAt(row, 'variant_code', 'variantCode', 'variant', 'finish') ?? 'normal');
+  const printedTotal = Number(valueAt(row, 'printed_total', 'printedTotal', 'official_total', 'officialTotal') ?? NaN);
+  const total = Number(valueAt(row, 'total', 'actual_total', 'actualTotal', 'expected_card_total', 'expectedCardTotal') ?? NaN);
   return {
     provider: record.provider,
     providerRecordId: record.providerRecordId,
@@ -110,11 +112,16 @@ function normaliseManualRecord(record: ProviderRecord): NormalisedRecord {
     collectorNumberSortKey: collector.collectorNumberSortKey,
     nativeName: cleanText(valueAt(row, 'native_name', 'nativeName', 'name', 'card_name', 'cardName', 'set_name', 'setName')),
     englishDisplayName: cleanText(valueAt(row, 'english_display_name', 'englishDisplayName', 'english_name', 'englishName')),
+    printedTotal: Number.isFinite(printedTotal) && printedTotal >= 0 ? printedTotal : null,
+    total: Number.isFinite(total) && total >= 0 ? total : null,
     rarityCode: cleanText(valueAt(row, 'rarity_code', 'rarityCode', 'rarity'))?.toLowerCase().replace(/[^a-z0-9]+/g, '_') ?? null,
     variantCode,
     finishCode: normaliseFinishCode(valueAt(row, 'finish_code', 'finishCode', 'finish', 'variant')),
     artworkKey: cleanText(valueAt(row, 'artwork_key', 'artworkKey', 'image_signature', 'imageSignature')),
     imageUrl: cleanText(valueAt(row, 'image_url', 'imageUrl', 'asset_url', 'assetUrl')),
+    imageLanguageCode: cleanText(valueAt(row, 'image_language_code', 'imageLanguageCode', 'image_language', 'imageLanguage')),
+    imageSha256: cleanText(valueAt(row, 'image_sha256', 'imageSha256', 'content_sha256', 'contentSha256', 'sha256')),
+    imagePerceptualHash: cleanText(valueAt(row, 'image_perceptual_hash', 'imagePerceptualHash', 'perceptual_hash', 'perceptualHash')),
     assetType: (cleanText(valueAt(row, 'asset_type', 'assetType')) as NormalisedRecord['assetType']) ?? 'card_image',
     sourceConfidence: Number(valueAt(row, 'source_confidence', 'sourceConfidence', 'confidence') ?? 0.95),
     sourceUpdatedAt: record.providerUpdatedAt,
