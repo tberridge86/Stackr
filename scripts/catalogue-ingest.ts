@@ -192,6 +192,10 @@ async function main() {
   const runner = new CatalogueIngestionRunner(db, adapter);
   const offset = Number(arg('offset', '0'));
   if (!Number.isInteger(offset) || offset < 0) throw new Error('--offset must be a non-negative integer.');
+  const writeConcurrency = Number(arg('writeConcurrency', '1'));
+  if (!Number.isInteger(writeConcurrency) || writeConcurrency < 1 || writeConcurrency > 16) {
+    throw new Error('--writeConcurrency must be an integer from 1 to 16.');
+  }
   const result = await runner.run({
     command: cmd === 'run-language'
       ? 'run_language'
@@ -212,6 +216,7 @@ async function main() {
     requestId: arg('requestId') || undefined,
     dryRun,
     allowImageAssets: hasFlag('allowImageAssets'),
+    writeConcurrency,
   });
   console.log(JSON.stringify(result, null, 2));
 }

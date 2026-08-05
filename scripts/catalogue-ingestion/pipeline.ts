@@ -33,6 +33,7 @@ type ImportOptions = FetchScope & {
   allowImageAssets?: boolean;
   assetsOnly?: boolean;
   approvedOnlyAssets?: boolean;
+  writeConcurrency?: number;
 };
 
 type ImportStats = {
@@ -150,10 +151,49 @@ function recordKindsForCommand(adapter: SourceAdapter, options: ImportOptions) {
 }
 
 function validateImportOptions(options: ImportOptions): ImportOptions {
+  const writeConcurrency = options.writeConcurrency ?? 1;
+  if (!Number.isInteger(writeConcurrency) || writeConcurrency < 1 || writeConcurrency > 16) {
+    throw new Error('Catalogue write concurrency must be an integer from 1 to 16.');
+  }
   return {
     ...options,
     language: options.language == null ? undefined : normaliseLanguageCode(options.language),
+    writeConcurrency,
   };
+}
+
+async function runWithConcurrency<T>(
+  values: T[],
+  concurrency: number,
+  worker: (value: T) => Promise<void>,
+) {
+  let nextIndex = 0;
+  let firstError: unknown;
+  const workers = Array.from(
+    { length: Math.min(concurrency, values.length) },
+    async () => {
+      while (nextIndex < values.length && firstError === undefined) {
+        const index = nextIndex;
+        nextIndex += 1;
+        try {
+          await worker(values[index]);
+        } catch (error) {
+          firstError ??= error;
+        }
+      }
+    },
+  );
+  await Promise.all(workers);
+  if (firstError !== undefined) throw firstError;
+}
+
+function reconciliationPhase(record: ProviderRecord, validation: ValidationResult) {
+  if (!validation.ok) return 0;
+  if (record.recordType === 'set') return 1;
+  if (record.recordType === 'card' || record.recordType === 'printing') return 2;
+  if (record.recordType === 'variant') return 3;
+  if (record.recordType === 'asset') return 4;
+  return 5;
 }
 
 function providerRecordLanguage(record: ProviderRecord, options: ImportOptions) {
@@ -1571,7 +1611,7 @@ export class CatalogueIngestionRunner {
     const run = await startImportRun(this.db, source.id, this.adapter, safeOptions);
 
     try {
-      for (const { record, validation, normalised } of preparedRecords) {
+      const processRecord = async ({ record, validation, normalised }: typeof preparedRecords[number]) => {
         const raw = await retainRawRecord(this.db, source.id, run.id, record, validation);
         if (!validation.ok) {
           await quarantine(this.db, {
@@ -1594,7 +1634,7 @@ export class CatalogueIngestionRunner {
             proposed: record.payload,
             existing: { validationIssues: issuePayload(validation.issues) },
           });
-          continue;
+          return;
         }
 
         await auditDecision(this.db, {
@@ -1616,6 +1656,17 @@ export class CatalogueIngestionRunner {
         else if (result.status === 'updated') stats.recordsUpdated += 1;
         else if (result.status === 'conflicted') stats.recordsConflicted += 1;
         else stats.recordsSkipped += 1;
+      };
+
+      for (let phase = 0; phase <= 5; phase += 1) {
+        const phaseRecords = preparedRecords.filter(
+          ({ record, validation }) => reconciliationPhase(record, validation) === phase,
+        );
+        await runWithConcurrency(
+          phaseRecords,
+          safeOptions.writeConcurrency ?? 1,
+          processRecord,
+        );
       }
 
       await finishImportRun(this.db, run.id, 'completed', stats);

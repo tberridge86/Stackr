@@ -20,6 +20,7 @@ import {
 const migration = readFileSync('supabase/migrations/20260727213835_stackr_data_ingestion_reconciliation.sql', 'utf8');
 const rawHistoryMigration = readFileSync('supabase/migrations/20260730153923_preserve_raw_source_record_history.sql', 'utf8');
 const strictForeignMigration = readFileSync('supabase/migrations/20260801090000_strict_foreign_catalogue_import_safety.sql', 'utf8');
+const recognitionRoleMigration = readFileSync('supabase/migrations/20260805200000_recognition_service_database_role.sql', 'utf8');
 const ingestionPipeline = readFileSync('scripts/catalogue-ingestion/pipeline.ts', 'utf8');
 const catalogueIngest = readFileSync('scripts/catalogue-ingest.ts', 'utf8');
 const sourceAdapter = readFileSync('scripts/catalogue-ingestion/sourceAdapter.ts', 'utf8');
@@ -40,6 +41,24 @@ function assertCanonicalStagingSourceGuard() {
   assert.match(catalogueIngest, /PRODUCTION_SUPABASE_REF = 'oakdbbzdqwurpjnoqhmu'/);
   assert.match(catalogueIngest, /Catalogue imports must use the canonical staging Supabase project/);
   assert.match(catalogueIngest, /Refusing catalogue import against the known production Supabase project/);
+}
+
+function assertBoundedCatalogueWrites() {
+  assert.match(ingestionPipeline, /writeConcurrency\?: number/);
+  assert.match(ingestionPipeline, /writeConcurrency > 16/);
+  assert.match(ingestionPipeline, /function reconciliationPhase/);
+  assert.match(ingestionPipeline, /await runWithConcurrency\(/);
+  assert.match(catalogueIngest, /--writeConcurrency must be an integer from 1 to 16/);
+}
+
+function assertRecognitionRoleIsLeastPrivilege() {
+  assert.match(recognitionRoleMigration, /create role stackr_recognition[\s\S]+nologin/);
+  assert.match(recognitionRoleMigration, /grant select on table[\s\S]+ml\.embedding_models/);
+  assert.match(recognitionRoleMigration, /grant select, insert, update on table[\s\S]+ml\.recognition_scan_diagnostics/);
+  assert.match(recognitionRoleMigration, /grant insert on table[\s\S]+audit\.catalogue_events/);
+  assert.doesNotMatch(recognitionRoleMigration, /\bbypassrls\b|\bsuperuser\b/i);
+  assert.doesNotMatch(recognitionRoleMigration, /grant all/i);
+  assert.doesNotMatch(recognitionRoleMigration, /password\s+/i);
 }
 
 function assertMigrationAddsIngestionState() {
@@ -493,6 +512,8 @@ function assertBackendRouteIsProtected() {
 
 async function main() {
   assertCanonicalStagingSourceGuard();
+  assertBoundedCatalogueWrites();
+  assertRecognitionRoleIsLeastPrivilege();
   assertMigrationAddsIngestionState();
   assertIdentityHelpers();
   await assertStrictForeignLanguageSafety();

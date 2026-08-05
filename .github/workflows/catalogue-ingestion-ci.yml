@@ -56,6 +56,7 @@ jobs:
           --language="${{ inputs.language }}"
           --offset="${{ inputs.offset }}"
           --limit="${{ inputs.limit }}"
+          --writeConcurrency=8
           --runKey="github-${{ github.run_id }}-${{ github.run_attempt }}"
           --target=staging
       - name: Report language quality
