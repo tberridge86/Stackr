@@ -27,6 +27,7 @@ const sourceAdapter = readFileSync('scripts/catalogue-ingestion/sourceAdapter.ts
 const tcgdexAdapter = readFileSync('scripts/catalogue-ingestion/tcgdexAdapter.ts', 'utf8');
 const legacySync = readFileSync('scripts/sync-tcgdex-catalogue.mjs', 'utf8');
 const backendRoute = readFileSync('backend/routes/catalogueIngestion.js', 'utf8');
+const catalogueWorkflow = readFileSync('.github/workflows/catalogue-ingestion-ci.yml', 'utf8');
 
 function expectSql(pattern: RegExp, message: string) {
   assert.match(migration, pattern, message);
@@ -49,6 +50,9 @@ function assertBoundedCatalogueWrites() {
   assert.match(ingestionPipeline, /function reconciliationPhase/);
   assert.match(ingestionPipeline, /await runWithConcurrency\(/);
   assert.match(catalogueIngest, /--writeConcurrency must be an integer from 1 to 16/);
+  assert.match(catalogueWorkflow, /CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12/);
+  assert.match(catalogueWorkflow, /current_offset=\$\(\(CATALOGUE_START_OFFSET \+ batch \* CATALOGUE_BATCH_LIMIT\)\)/);
+  assert.match(catalogueWorkflow, /--runKey="github-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}-\$\{batch\}"/);
 }
 
 function assertRecognitionRoleIsLeastPrivilege() {
