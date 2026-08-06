@@ -35,6 +35,18 @@ export class PikaQianSourceAdapter extends ManualJsonSourceAdapter {
       automatedRefreshAllowed: false,
     };
   }
+
+  fetchCards(scope: FetchScope = {}) {
+    return scope.setId ? super.fetchCards(scope) : emptyRecords();
+  }
+
+  fetchVariants(scope: FetchScope = {}) {
+    return scope.setId ? super.fetchVariants(scope) : emptyRecords();
+  }
+
+  fetchAssets(scope: FetchScope = {}) {
+    return scope.setId ? super.fetchAssets(scope) : emptyRecords();
+  }
 }
 
 export class XimilarResidualScanSourceAdapter extends ManualJsonSourceAdapter {

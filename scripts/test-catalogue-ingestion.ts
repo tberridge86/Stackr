@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { ManualCsvSourceAdapter, parseManualCsv } from './catalogue-ingestion/manualAdapters';
+import { ManualCsvSourceAdapter, ManualJsonSourceAdapter, parseManualCsv } from './catalogue-ingestion/manualAdapters';
+import { PikaQianSourceAdapter } from './catalogue-ingestion/providerFileAdapters';
 import { TcgdexSourceAdapter, tcgdexAdapterInternals } from './catalogue-ingestion/tcgdexAdapter';
 import {
   CatalogueIngestionRunner,
@@ -521,6 +522,35 @@ async function assertManualCsvAdapter() {
   }
 }
 
+async function assertManualJsonAdapterHasNoImplicitLimit() {
+  const dir = mkdtempSync(join(tmpdir(), 'stackr-json-ingest-test-'));
+  const file = join(dir, 'catalogue.json');
+  const records = [
+    { record_type: 'set', provider_record_id: 'set-1', language: 'zh-cn', provider_set_id: 'set-1', name: 'Set One' },
+    { record_type: 'card', provider_record_id: 'card-1', language: 'zh-cn', provider_set_id: 'set-1', collector_number: '001', name: 'Card One' },
+    { record_type: 'card', provider_record_id: 'card-2', language: 'zh-cn', provider_set_id: 'set-1', collector_number: '002', name: 'Card Two' },
+  ];
+  try {
+    writeFileSync(file, JSON.stringify({ records }));
+
+    const manual = new ManualJsonSourceAdapter({ filePath: file });
+    const manualCards = [];
+    for await (const card of manual.fetchCards({ language: 'zh-cn' })) manualCards.push(card);
+    assert.equal(manualCards.length, 2, 'manual JSON imports without a limit must retain every matching record');
+
+    const pikaqian = new PikaQianSourceAdapter({ filePath: file, licenceStatus: 'approved' });
+    const discoveryCards = [];
+    for await (const card of pikaqian.fetchCards({ language: 'zh-cn' })) discoveryCards.push(card);
+    assert.equal(discoveryCards.length, 0, 'PikaQian discovery must not import every card before set batching');
+
+    const scopedCards = [];
+    for await (const card of pikaqian.fetchCards({ language: 'zh-cn', setId: 'set-1' })) scopedCards.push(card);
+    assert.equal(scopedCards.length, 2, 'PikaQian set batches must retain every card in the selected set');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 function assertBackendRouteIsProtected() {
   assert.match(backendRoute, /STACKR_ADMIN_API_KEY \|\| process\.env\.ADMIN_API_KEY/, 'admin route must use existing admin key pattern');
   assert.match(backendRoute, /\/:command\(run-source\|run-language\|run-set\|resume-import\|rebuild-record\)/, 'admin route must support required commands');
@@ -542,6 +572,7 @@ async function main() {
   assertRawRecordHistoryIsRetainedPerRun();
   assertChecksumsAndBackoff();
   await assertManualCsvAdapter();
+  await assertManualJsonAdapterHasNoImplicitLimit();
   assertBackendRouteIsProtected();
 
   console.log('Catalogue ingestion framework tests passed.');

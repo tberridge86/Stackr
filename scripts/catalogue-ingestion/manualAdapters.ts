@@ -202,8 +202,9 @@ export class ManualCsvSourceAdapter implements SourceAdapter {
       if (scope.setId && setId !== scope.setId) return false;
       if (scope.providerRecordId && providerRecordId(row, index) !== scope.providerRecordId) return false;
       return true;
-    }).slice(0, scope.limit);
-    return filtered.map((row, index) => rowToProviderRecord(row, index, identity));
+    });
+    const limited = scope.limit == null ? filtered : filtered.slice(0, scope.limit);
+    return limited.map((row, index) => rowToProviderRecord(row, index, identity));
   }
 
   fetchSets(scope?: FetchScope) {
@@ -262,8 +263,9 @@ export class ManualJsonSourceAdapter implements SourceAdapter {
       if (scope.setId && setId !== scope.setId) return false;
       if (scope.providerRecordId && providerRecordId(row, index) !== scope.providerRecordId) return false;
       return true;
-    }).slice(0, scope.limit);
-    return filtered.map((row: Record<string, unknown>, index: number) => rowToProviderRecord(row, index, identity));
+    });
+    const limited = scope.limit == null ? filtered : filtered.slice(0, scope.limit);
+    return limited.map((row: Record<string, unknown>, index: number) => rowToProviderRecord(row, index, identity));
   }
 
   fetchSets(scope?: FetchScope) {

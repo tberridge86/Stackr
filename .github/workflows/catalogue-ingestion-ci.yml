@@ -58,6 +58,8 @@ jobs:
       SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
       PIKAQIAN_API_KEY: ${{ secrets.PIKAQIAN_API_KEY }}
+      PIKAQIAN_SNAPSHOT_URL: ${{ secrets.PIKAQIAN_SNAPSHOT_URL }}
+      PIKAQIAN_SNAPSHOT_DECRYPTION_KEY: ${{ secrets.PIKAQIAN_SNAPSHOT_DECRYPTION_KEY }}
       STACKR_CATALOGUE_IMPORT_TARGET: staging
       CATALOGUE_PROVIDER: ${{ inputs.provider }}
       CATALOGUE_LANGUAGE: ${{ inputs.language }}
@@ -83,6 +85,34 @@ jobs:
           [[ "$CATALOGUE_BATCH_COUNT" =~ ^[0-9]+$ ]] || exit 1
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
+      - name: Prepare encrypted PikaQian snapshot
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian' && env.PIKAQIAN_SNAPSHOT_URL != ''
+        shell: bash
+        run: |
+          [[ -n "$PIKAQIAN_SNAPSHOT_DECRYPTION_KEY" ]] || { echo 'PikaQian snapshot key is not configured'; exit 1; }
+          encrypted="$RUNNER_TEMP/pikaqian-snapshot.enc.json"
+          output="$RUNNER_TEMP/pikaqian-snapshot.json"
+          curl --fail --silent --show-error --location "$PIKAQIAN_SNAPSHOT_URL" --output "$encrypted"
+          SNAPSHOT_INPUT="$encrypted" SNAPSHOT_OUTPUT="$output" node --input-type=module <<'NODE'
+          import { createDecipheriv } from 'node:crypto';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { gunzipSync } from 'node:zlib';
+
+          const envelope = JSON.parse(readFileSync(process.env.SNAPSHOT_INPUT, 'utf8'));
+          const key = Buffer.from(process.env.PIKAQIAN_SNAPSHOT_DECRYPTION_KEY, 'hex');
+          if (key.length !== 32 || envelope.version !== 1 || envelope.algorithm !== 'aes-256-gcm+gzip') {
+            throw new Error('Invalid encrypted PikaQian snapshot envelope.');
+          }
+          const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(envelope.iv, 'base64'));
+          decipher.setAuthTag(Buffer.from(envelope.tag, 'base64'));
+          const compressed = Buffer.concat([
+            decipher.update(Buffer.from(envelope.ciphertext, 'base64')),
+            decipher.final(),
+          ]);
+          writeFileSync(process.env.SNAPSHOT_OUTPUT, gunzipSync(compressed), { mode: 0o600 });
+          NODE
+          echo "PIKAQIAN_CATALOGUE_FILE=$output" >> "$GITHUB_ENV"
+          rm -f "$encrypted"
       - name: Import bounded TCGdex snapshot range
         if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
         shell: bash
@@ -108,7 +138,7 @@ jobs:
         if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian'
         shell: bash
         run: |
-          [[ -n "$PIKAQIAN_API_KEY" ]] || { echo 'PIKAQIAN_API_KEY is not configured'; exit 1; }
+          [[ -n "$PIKAQIAN_API_KEY" || -n "$PIKAQIAN_CATALOGUE_FILE" ]] || { echo 'PikaQian API key or snapshot is not configured'; exit 1; }
           asset_args=(--licenceStatus=approved)
           if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
             asset_args+=(--include-images --approved-only --assetLicenceStatus=approved)
@@ -143,3 +173,7 @@ jobs:
           --limit="${{ inputs.limit }}"
           --concurrency=2
           --target=staging
+      - name: Remove decrypted PikaQian snapshot
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/pikaqian-snapshot.json" "$RUNNER_TEMP/pikaqian-snapshot.enc.json"
