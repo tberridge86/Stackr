@@ -97,6 +97,7 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
   readonly licenceStatus: LicenceStatus;
   readonly assetLicenceStatus: LicenceStatus;
   readonly language = PIKAQIAN_LANGUAGE;
+  readonly cardRecordCache = new Map<string, Promise<ProviderRecord[]>>();
 
   constructor(options: PikaQianAdapterOptions = {}) {
     this.apiKey = cleanText(options.apiKey ?? process.env.PIKAQIAN_API_KEY) ?? '';
@@ -141,10 +142,24 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
       rateLimit: response.headers.get('x-ratelimit-limit'),
       rateLimitRemaining: response.headers.get('x-ratelimit-remaining'),
       rateLimitReset: response.headers.get('x-ratelimit-reset'),
+      retryAfter: response.headers.get('retry-after'),
     };
     if (response.status === 401 || response.status === 403) {
       const error = new Error('PikaQian request was forbidden. Check the staging PIKAQIAN_API_KEY.');
       Object.assign(error, { responseStatus: response.status, metadata });
+      throw error;
+    }
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('retry-after');
+      const error = new Error(
+        `PikaQian quota exhausted. Stop this snapshot and resume after Retry-After${retryAfter ? ` (${retryAfter} seconds)` : ''}.`,
+      );
+      Object.assign(error, {
+        code: 'pikaqian_quota_exhausted',
+        responseStatus: response.status,
+        retryAfter,
+        metadata,
+      });
       throw error;
     }
     if (!response.ok) {
@@ -184,7 +199,7 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
   async fetchPaged(path: string, initialQuery: Record<string, string>, scope: FetchScope = {}) {
     const records: Record<string, unknown>[] = [];
     let cursor = cleanText(scope.cursor?.nextCursor);
-    const pageSize = Math.min(Math.max(1, Number(scope.limit ?? 50)), 100);
+    const pageSize = Math.min(Math.max(1, Number(scope.limit ?? 100)), 100);
     while (records.length < (scope.limit ?? Number.POSITIVE_INFINITY)) {
       const query = new URLSearchParams({ ...initialQuery, page_size: String(pageSize) });
       if (cursor) query.set('cursor', cursor);
@@ -215,6 +230,24 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
   }
 
   async fetchCards(scope: FetchScope = {}) {
+    const cacheKey = JSON.stringify({
+      setId: scope.setId ?? null,
+      limit: scope.limit ?? null,
+      cursor: scope.cursor ?? null,
+    });
+    const cached = this.cardRecordCache.get(cacheKey);
+    if (cached) return cached;
+    const pending = this.fetchCardsUncached(scope);
+    this.cardRecordCache.set(cacheKey, pending);
+    try {
+      return await pending;
+    } catch (error) {
+      this.cardRecordCache.delete(cacheKey);
+      throw error;
+    }
+  }
+
+  async fetchCardsUncached(scope: FetchScope = {}) {
     if (!scope.setId) return [];
     const requestedSetId = scope.setId;
     const rows = await this.fetchPaged('/cards', { set_id: requestedSetId }, scope);
@@ -269,8 +302,7 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
 
   async fetchAssets(scope?: FetchScope) {
     const cards = await this.fetchCards(scope);
-    const detailedCards = await Promise.all(cards.map((card) => this.fetchCardDetail(card)));
-    return detailedCards.flatMap((card) => {
+    return cards.flatMap((card) => {
       const imageUrl = imageUrlFrom(card.payload);
       if (!imageUrl) return [];
       const variant = variantFrom(card.payload);

@@ -618,7 +618,8 @@ function buildSetScopedStages(args: Args, setScopes: SetScope[]): Stage[] {
     file: args.pikaqianFile,
     baseUrl: args.pikaqianBaseUrl,
     setId: scope.setId,
-    allowImageAssets: false,
+    allowImageAssets: args.includeImages,
+    approvedOnly: args.approvedOnly,
     writes: args.apply,
     reason: 'Fill Simplified Chinese card metadata gaps after staging set identity exists.',
   })) : [];
@@ -637,7 +638,7 @@ function buildSetScopedStages(args: Args, setScopes: SetScope[]): Stage[] {
       writes: args.apply,
       reason: 'Import native-language card images only after card metadata is present.',
       })) : []),
-      ...pikaqianScopes.map((scope) => ({
+      ...(args.assetsOnly ? pikaqianScopes.map((scope) => ({
         id: `pikaqian:${scope.language}:${scope.setId}:images`,
         phase: 'images' as const,
         provider: 'pikaqian' as const,
@@ -651,7 +652,7 @@ function buildSetScopedStages(args: Args, setScopes: SetScope[]): Stage[] {
         approvedOnly: args.approvedOnly,
         writes: args.apply,
         reason: 'Attach PikaQian Simplified Chinese image URLs only after exact zh-cn card identity exists.',
-      })),
+      })) : []),
     ]
     : [];
   return [...tcgdexCards, ...pikaqianCards, ...imageStages];

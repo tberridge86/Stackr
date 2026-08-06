@@ -3,8 +3,14 @@ name: Catalogue Ingestion CI
 on:
   workflow_dispatch:
     inputs:
+      provider:
+        description: One-time catalogue snapshot provider
+        required: true
+        default: tcgdex
+        type: choice
+        options: [tcgdex, pikaqian]
       language:
-        description: TCGdex language batch
+        description: TCGdex language batch (PikaQian is always zh-cn)
         required: true
         default: en
         type: choice
@@ -24,12 +30,17 @@ on:
         required: true
         default: '1'
         type: string
+      include_assets:
+        description: Store approved provider image references in the same pass
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: stackr-staging-catalogue-${{ inputs.language }}
+  group: stackr-staging-catalogue-${{ inputs.provider }}-${{ inputs.language }}-${{ inputs.offset }}
   cancel-in-progress: false
 
 jobs:
@@ -40,11 +51,14 @@ jobs:
     env:
       SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      PIKAQIAN_API_KEY: ${{ secrets.PIKAQIAN_API_KEY }}
       STACKR_CATALOGUE_IMPORT_TARGET: staging
+      CATALOGUE_PROVIDER: ${{ inputs.provider }}
       CATALOGUE_LANGUAGE: ${{ inputs.language }}
       CATALOGUE_START_OFFSET: ${{ inputs.offset }}
       CATALOGUE_BATCH_LIMIT: ${{ inputs.limit }}
       CATALOGUE_BATCH_COUNT: ${{ inputs.batches }}
+      CATALOGUE_INCLUDE_ASSETS: ${{ inputs.include_assets }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -60,9 +74,14 @@ jobs:
           [[ "$CATALOGUE_BATCH_COUNT" =~ ^[0-9]+$ ]] || exit 1
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
-      - name: Import bounded staging metadata range
+      - name: Import bounded TCGdex snapshot range
+        if: inputs.provider == 'tcgdex'
         shell: bash
         run: |
+          asset_args=()
+          if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
+            asset_args+=(--allowImageAssets --approvedOnlyAssets --assetLicenceStatus=approved)
+          fi
           for (( batch=0; batch<CATALOGUE_BATCH_COUNT; batch++ )); do
             current_offset=$((CATALOGUE_START_OFFSET + batch * CATALOGUE_BATCH_LIMIT))
             npm run catalogue:ingest -- run-language \
@@ -72,10 +91,37 @@ jobs:
               --limit="$CATALOGUE_BATCH_LIMIT" \
               --writeConcurrency=8 \
               --runKey="github-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${batch}" \
-              --target=staging
+              --target=staging \
+              "${asset_args[@]}"
           done
+
+      - name: Import bounded PikaQian snapshot range
+        if: inputs.provider == 'pikaqian'
+        shell: bash
+        run: |
+          [[ -n "$PIKAQIAN_API_KEY" ]] || { echo 'PIKAQIAN_API_KEY is not configured'; exit 1; }
+          asset_args=(--licenceStatus=approved)
+          if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
+            asset_args+=(--include-images --approved-only --assetLicenceStatus=approved)
+          fi
+          npm run catalogue:apply -- \
+            --provider=pikaqian \
+            --language=zh-cn \
+            --setOffset="$CATALOGUE_START_OFFSET" \
+            --maxSets="$CATALOGUE_BATCH_LIMIT" \
+            --target=staging \
+            --apply \
+            "${asset_args[@]}"
       - name: Report language quality
+        if: inputs.provider == 'tcgdex'
         run: >-
           npm run catalogue:ingest -- quality-report
           --language="${{ inputs.language }}"
+          --limit=500
+
+      - name: Report PikaQian quality
+        if: inputs.provider == 'pikaqian'
+        run: >-
+          npm run catalogue:ingest -- quality-report
+          --language=zh-cn
           --limit=500

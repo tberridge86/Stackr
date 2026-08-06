@@ -264,10 +264,14 @@ async function assertStrictForeignLanguageSafety() {
     logo: 'https://assets.example/set/logo',
     symbol: 'https://assets.example/set/symbol',
   }), [
-    { assetType: 'set_logo', imageUrl: 'https://assets.example/set/logo' },
-    { assetType: 'set_symbol', imageUrl: 'https://assets.example/set/symbol' },
+    { assetType: 'set_logo', imageUrl: 'https://assets.example/set/logo.webp' },
+    { assetType: 'set_symbol', imageUrl: 'https://assets.example/set/symbol.webp' },
   ]);
   assert.deepEqual(tcgdexAdapterInternals.setAssetCandidates({ logo: null, symbol: null }), []);
+  assert.equal(
+    tcgdexAdapterInternals.tcgdexAssetUrl('https://assets.example/cards/001', 'card_image'),
+    'https://assets.example/cards/001/high.webp',
+  );
   assert.match(proposedCanonicalKey({
     languageCode: simplified.languageCode,
     setCode: 'CS1',
@@ -425,6 +429,11 @@ async function assertImageAssetsAreBlockedByDefault() {
   assert.match(ingestionPipeline, /hasCompleteSetArtIdentity/);
   assert.match(ingestionPipeline, /new_set_art_from_exact_provider_identity/);
   assert.match(ingestionPipeline, /storage_provider: 'external_reference'/);
+  assert.match(
+    ingestionPipeline,
+    /card_concepts'\)[\s\S]{0,300}\.upsert\([\s\S]{0,300}onConflict: 'game_code,concept_key'/,
+    'parallel catalogue writes must resolve card concepts with a database-native upsert',
+  );
   assert.match(tcgdexAdapter, /assetLicenceStatus \?\? 'under_review'/);
 }
 

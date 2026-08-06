@@ -107,6 +107,7 @@ function assertDryRunApplyRules() {
   const apiPlan = masterCatalogueInternals.buildSetScopedStages({
     ...applied,
     includeImages: true,
+    approvedOnly: true,
     languages: ['en', 'zh-cn'],
     setId: null,
     pikaqianApiConfigured: true,
@@ -117,8 +118,9 @@ function assertDryRunApplyRules() {
   const pikaqianCardIndex = apiPlan.findIndex((stage) => stage.id === 'pikaqian:zh-cn:csv6c:cards');
   const pikaqianImageIndex = apiPlan.findIndex((stage) => stage.id === 'pikaqian:zh-cn:csv6c:images');
   assert.ok(pikaqianCardIndex >= 0, 'PikaQian API metadata stage must exist for zh-cn set scopes');
-  assert.ok(pikaqianImageIndex > pikaqianCardIndex, 'PikaQian image references must be second phase after metadata');
-  assert.equal(apiPlan[pikaqianImageIndex].allowImageAssets, true);
+  assert.equal(pikaqianImageIndex, -1, 'PikaQian must not spend quota on a duplicate image pass');
+  assert.equal(apiPlan[pikaqianCardIndex].allowImageAssets, true);
+  assert.equal(apiPlan[pikaqianCardIndex].approvedOnly, true);
   assert.ok(apiPlan.some((stage) => stage.id === 'tcgdex:en:sv1:cards'));
   assert.ok(!apiPlan.some((stage) => stage.id === 'tcgdex:zh-cn:csv6c:cards'), 'PikaQian set IDs must never be sent to TCGdex');
 
@@ -208,6 +210,7 @@ async function assertPikaQianApiAdapter() {
           card_number: '001/165',
           variant: 'standard',
           finish: 'standard',
+          image_url: 'https://images.pikaqian.invalid/cards/csv6c/001.webp',
         }],
         pagination: { next_cursor: null, page_size: 50 },
       }), { status: 200, headers: { 'content-type': 'application/json' } });
@@ -261,7 +264,15 @@ async function assertPikaQianApiAdapter() {
     assert.ok(requests.every((request) => request.apiKey === 'pk_live_test'), 'every PikaQian API request must carry X-API-Key');
     assert.ok(requests.some((request) => request.url.includes('/sets')), 'sets endpoint must be requested');
     assert.ok(requests.some((request) => request.url.includes('/cards?')), 'cards list endpoint must be requested');
-    assert.ok(requests.some((request) => request.url.includes('/cards/8c1f0000')), 'card detail endpoint must be requested for image metadata');
+    assert.equal(
+      requests.filter((request) => new URL(request.url).pathname.endsWith('/cards')).length,
+      1,
+      'card list response must be reused for metadata and image references',
+    );
+    assert.ok(
+      !requests.some((request) => request.url.includes('/cards/8c1f0000')),
+      'one-time snapshots must not spend one API request per card image',
+    );
   } finally {
     (globalThis as typeof globalThis & { fetch: typeof fetch }).fetch = originalFetch;
   }

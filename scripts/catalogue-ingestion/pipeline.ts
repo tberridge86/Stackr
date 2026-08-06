@@ -738,16 +738,11 @@ async function getRarityId(db: SupabaseClientLike, gameCode: string, rarityCode?
 async function ensureConcept(db: SupabaseClientLike, normalised: NormalisedRecord) {
   const name = normalised.englishDisplayName ?? normalised.nativeName ?? normalised.providerRecordId;
   const conceptKey = `${normalised.gameCode}:${normaliseName(name)}`;
-  const { data: existing, error: lookupError } = await table(db, 'catalog', 'card_concepts')
-    .select('id')
-    .eq('game_code', normalised.gameCode)
-    .eq('concept_key', conceptKey)
-    .maybeSingle();
-  if (lookupError) throw lookupError;
-  if (existing?.id) return existing.id as string;
-
   const { data, error } = await table(db, 'catalog', 'card_concepts')
-    .insert({ game_code: normalised.gameCode, concept_key: conceptKey })
+    .upsert(
+      { game_code: normalised.gameCode, concept_key: conceptKey },
+      { onConflict: 'game_code,concept_key' },
+    )
     .select('id')
     .maybeSingle();
   if (error) throw error;

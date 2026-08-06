@@ -116,9 +116,16 @@ async function mapWithConcurrency<T, R>(
 
 function setAssetCandidates(set: Record<string, unknown>) {
   return ([
-    { assetType: 'set_logo' as const, imageUrl: cleanText(set.logo) },
-    { assetType: 'set_symbol' as const, imageUrl: cleanText(set.symbol) },
+    { assetType: 'set_logo' as const, imageUrl: tcgdexAssetUrl(set.logo, 'set_logo') },
+    { assetType: 'set_symbol' as const, imageUrl: tcgdexAssetUrl(set.symbol, 'set_symbol') },
   ]).filter((candidate): candidate is { assetType: 'set_logo' | 'set_symbol'; imageUrl: string } => Boolean(candidate.imageUrl));
+}
+
+function tcgdexAssetUrl(value: unknown, assetType: 'card_image' | 'set_logo' | 'set_symbol') {
+  const base = cleanText(value)?.replace(/\/$/, '');
+  if (!base) return null;
+  if (/\.(?:png|jpe?g|webp)$/i.test(base)) return base;
+  return assetType === 'card_image' ? `${base}/high.webp` : `${base}.webp`;
 }
 
 export class TcgdexSourceAdapter implements SourceAdapter {
@@ -305,34 +312,36 @@ export class TcgdexSourceAdapter implements SourceAdapter {
   }
 
   async fetchAssets(scope?: FetchScope) {
-    if (!scope?.setId) return [];
-    const setResult = await this.fetchJson(`/sets/${encodeURIComponent(scope.setId)}`, scope);
-    const setPayload = setResult.value && typeof setResult.value === 'object' && !Array.isArray(setResult.value)
-      ? setResult.value as Record<string, unknown>
-      : {};
-    const setId = cleanText(setPayload.id) ?? scope.setId;
-    const setAssets: ProviderRecord[] = setAssetCandidates(setPayload).map(({ assetType, imageUrl }) => ({
-      provider: 'tcgdex',
-      providerRecordId: `${setId}:${assetType}:image`,
-      recordType: 'asset' as const,
-      languageCode: stackrLanguage(this.language),
-      sourceUrl: imageUrl,
-      sourceEndpoint: setResult.url,
-      providerUpdatedAt: cleanText(setPayload.updatedAt ?? setPayload.updated_at),
-      licenceStatus: this.assetLicenceStatus,
-      attributionText: 'TCGdex',
-      httpMetadata: setResult.metadata,
-      payload: {
-        ...setPayload,
-        set: setPayload,
-        image_url: imageUrl,
-        image_language_code: stackrLanguage(this.language),
-        asset_type: assetType,
-      },
-    }));
+    const setAssets: ProviderRecord[] = [];
+    if (scope?.setId) {
+      const setResult = await this.fetchJson(`/sets/${encodeURIComponent(scope.setId)}`, scope);
+      const setPayload = setResult.value && typeof setResult.value === 'object' && !Array.isArray(setResult.value)
+        ? setResult.value as Record<string, unknown>
+        : {};
+      const setId = cleanText(setPayload.id) ?? scope.setId;
+      setAssets.push(...setAssetCandidates(setPayload).map(({ assetType, imageUrl }) => ({
+        provider: 'tcgdex',
+        providerRecordId: `${setId}:${assetType}:image`,
+        recordType: 'asset' as const,
+        languageCode: stackrLanguage(this.language),
+        sourceUrl: imageUrl,
+        sourceEndpoint: setResult.url,
+        providerUpdatedAt: cleanText(setPayload.updatedAt ?? setPayload.updated_at),
+        licenceStatus: this.assetLicenceStatus,
+        attributionText: 'TCGdex',
+        httpMetadata: setResult.metadata,
+        payload: {
+          ...setPayload,
+          set: setPayload,
+          image_url: imageUrl,
+          image_language_code: stackrLanguage(this.language),
+          asset_type: assetType,
+        },
+      })));
+    }
     const cards = await this.fetchCards(scope);
     const cardAssets = cards.flatMap((card) => {
-      const image = cleanText(card.payload.image);
+      const image = tcgdexAssetUrl(card.payload.image, 'card_image');
       if (!image) return [];
       const variant = tcgdexVariantCode(card.payload.image_variant);
       if (!variant) return [];
@@ -362,6 +371,7 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       : {};
     const collector = collectorNumberParts(payload.localId ?? payload.number);
     const recordVariant = payload.variant ?? 'normal';
+    const imageUrl = tcgdexAssetUrl(payload.image_url ?? payload.image, 'card_image');
     return {
       provider: record.provider,
       providerRecordId: record.providerRecordId,
@@ -382,8 +392,8 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       rarityCode: cleanText(payload.rarity)?.toLowerCase().replace(/[^a-z0-9]+/g, '_') ?? null,
       variantCode: normaliseVariantCode(recordVariant),
       finishCode: normaliseVariantCode(recordVariant),
-      artworkKey: cleanText(payload.image) ? `tcgdex:${payload.image}` : null,
-      imageUrl: cleanText(payload.image ?? payload.image_url),
+      artworkKey: imageUrl ? `tcgdex:${imageUrl}` : null,
+      imageUrl,
       imageLanguageCode: stackrLanguage(record.languageCode ?? this.language),
       assetType: cleanText(payload.asset_type) as NormalisedRecord['assetType'] ?? 'card_image',
       sourceConfidence: 0.85,
@@ -402,5 +412,6 @@ export const tcgdexAdapterInternals = {
   imageVariantCandidate,
   scopeOffset,
   setAssetCandidates,
+  tcgdexAssetUrl,
   variantCandidates,
 };
