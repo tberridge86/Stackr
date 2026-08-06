@@ -2881,6 +2881,9 @@ async function main() {
     result = await buildReports(db, args);
   }
   console.log(JSON.stringify(result, null, 2));
+  if (result && typeof result === 'object' && 'ok' in result && result.ok === false) {
+    process.exitCode = 1;
+  }
 }
 
 function serialiseCliError(error: unknown) {

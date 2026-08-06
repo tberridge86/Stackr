@@ -91,6 +91,22 @@ function sourceUrlFrom(baseUrl: string, path: string, query?: URLSearchParams) {
   return `${baseUrl}${path}${suffix ? `?${suffix}` : ''}`;
 }
 
+function providerErrorFrom(text: string) {
+  try {
+    const body = JSON.parse(text) as Record<string, unknown>;
+    const providerError = body.error && typeof body.error === 'object'
+      ? body.error as Record<string, unknown>
+      : {};
+    return {
+      code: cleanText(providerError.code),
+      message: cleanText(providerError.message),
+      requestId: cleanText(providerError.request_id ?? providerError.requestId),
+    };
+  } catch {
+    return { code: null, message: null, requestId: null };
+  }
+}
+
 export class PikaQianApiSourceAdapter implements SourceAdapter {
   readonly apiKey: string;
   readonly baseUrl: string;
@@ -145,7 +161,13 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
       retryAfter: response.headers.get('retry-after'),
     };
     if (response.status === 401 || response.status === 403) {
-      const error = new Error('PikaQian request was forbidden. Check the staging PIKAQIAN_API_KEY.');
+      const providerError = providerErrorFrom(text);
+      const suffix = providerError.code ? ` (${providerError.code})` : '';
+      const error = new Error(`PikaQian request was forbidden${suffix}. Check the staging PIKAQIAN_API_KEY.`);
+      Object.assign(metadata, {
+        providerErrorCode: providerError.code,
+        providerRequestId: providerError.requestId,
+      });
       Object.assign(error, { responseStatus: response.status, metadata });
       throw error;
     }
