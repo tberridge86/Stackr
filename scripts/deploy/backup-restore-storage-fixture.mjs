@@ -15,6 +15,9 @@ const EVIDENCE_DIR = process.env.STACKR_RECOVERY_EVIDENCE_DIR ?? process.cwd();
 const SOURCE_URL = `https://${SOURCE_PROJECT_REF}.supabase.co`;
 const TARGET_URL = `https://${TARGET_PROJECT_REF}.supabase.co`;
 const backupDir = path.join(EVIDENCE_DIR, 'storage-backup');
+const TARGET_FILE_SIZE_CEILING_BYTES = Number(
+  process.env.STACKR_RECOVERY_TARGET_MAX_FILE_SIZE_BYTES ?? 50 * 1024 * 1024,
+);
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -89,19 +92,19 @@ async function clearTargetStorage() {
 }
 
 function bucketOptions(bucket) {
+  const sourceLimit = bucket.file_size_limit ? Number(bucket.file_size_limit) : null;
   return {
     public: Boolean(bucket.public),
-    ...(bucket.file_size_limit ? { fileSizeLimit: Number(bucket.file_size_limit) } : {}),
+    ...(sourceLimit ? { fileSizeLimit: Math.min(sourceLimit, TARGET_FILE_SIZE_CEILING_BYTES) } : {}),
     ...(bucket.allowed_mime_types ? { allowedMimeTypes: bucket.allowed_mime_types } : {}),
   };
 }
 
-function comparableBucket(bucket) {
+function comparableBucketPolicy(bucket) {
   return {
     id: bucket.id,
     name: bucket.name,
     public: Boolean(bucket.public),
-    fileSizeLimit: bucket.file_size_limit == null ? null : Number(bucket.file_size_limit),
     allowedMimeTypes: bucket.allowed_mime_types ?? null,
   };
 }
@@ -166,9 +169,22 @@ try {
     target.storage.listBuckets({ limit: 1000, offset: 0 }),
     'list_restored_buckets',
   );
-  const sourceBucketSummary = inventory.buckets.map(comparableBucket);
-  const restoredBucketSummary = restoredBuckets.map(comparableBucket).sort((a, b) => a.id.localeCompare(b.id));
-  const bucketConfigurationMatches = JSON.stringify(sourceBucketSummary) === JSON.stringify(restoredBucketSummary);
+  const sourceBucketSummary = inventory.buckets.map(comparableBucketPolicy);
+  const restoredBucketSummary = restoredBuckets.map(comparableBucketPolicy).sort((a, b) => a.id.localeCompare(b.id));
+  const bucketPolicyMatches = JSON.stringify(sourceBucketSummary) === JSON.stringify(restoredBucketSummary);
+  const restoredBucketById = new Map(restoredBuckets.map((bucket) => [bucket.id, bucket]));
+  let bucketLimitDowngradeCount = 0;
+  let fileSizeLimitCompatible = true;
+  for (const bucket of inventory.buckets) {
+    const sourceLimit = bucket.file_size_limit == null ? null : Number(bucket.file_size_limit);
+    const restoredLimitRaw = restoredBucketById.get(bucket.id)?.file_size_limit;
+    const restoredLimit = restoredLimitRaw == null ? null : Number(restoredLimitRaw);
+    const largestObject = backedUpObjects
+      .filter((object) => object.bucket_id === bucket.id)
+      .reduce((largest, object) => Math.max(largest, object.byteSize), 0);
+    if (sourceLimit != null && restoredLimit != null && restoredLimit < sourceLimit) bucketLimitDowngradeCount += 1;
+    if (restoredLimit != null && restoredLimit < largestObject) fileSizeLimitCompatible = false;
+  }
 
   let checksumMismatchCount = 0;
   let mimeTypeMismatchCount = 0;
@@ -209,7 +225,10 @@ try {
     privateObjectCount,
     publicReadVerifiedCount,
     privateReadDeniedCount,
-    bucketConfigurationMatches,
+    bucketPolicyMatches,
+    fileSizeLimitCompatible,
+    bucketLimitDowngradeCount,
+    restoreTargetFileSizeCeilingBytes: TARGET_FILE_SIZE_CEILING_BYTES,
     checksumMismatchCount,
     mimeTypeMismatchCount,
     targetCleanupVerified,
@@ -219,7 +238,8 @@ try {
       byteSize: object.byteSize,
       sha256: object.sha256,
     }))))),
-    ok: bucketConfigurationMatches
+    ok: bucketPolicyMatches
+      && fileSizeLimitCompatible
       && checksumMismatchCount === 0
       && mimeTypeMismatchCount === 0
       && publicReadVerifiedCount === publicObjectCount
