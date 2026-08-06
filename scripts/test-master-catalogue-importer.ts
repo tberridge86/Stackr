@@ -16,6 +16,10 @@ const targetedQualityReportMigration = readFileSync(
   'supabase/migrations/20260806170501_make_catalogue_quality_report_targeted.sql',
   'utf8',
 );
+const assetManifestIdentityMigration = readFileSync(
+  'supabase/migrations/20260806171907_resolve_asset_manifest_catalogue_identity.sql',
+  'utf8',
+);
 const stackrApiService = readFileSync('backend/lib/stackrApiV1.js', 'utf8');
 
 function assertRequiredCommandsExist() {
@@ -756,6 +760,14 @@ function assertQualityReportRules() {
   );
 }
 
+function assertAssetManifestRules() {
+  assert.match(assetManifestIdentityMigration, /with \(security_invoker = true\)/);
+  assert.match(assetManifestIdentityMigration, /coalesce\(a\.asset_id, a\.id::text\) as asset_id/);
+  assert.match(assetManifestIdentityMigration, /coalesce\(cva\.set_id, a\.set_id, av\.set_id, ap\.set_id\) as set_id/);
+  assert.match(assetManifestIdentityMigration, /left join catalog\.card_variants av/);
+  assert.match(assetManifestIdentityMigration, /left join catalog\.card_printings ap/);
+}
+
 function assertPublishRules() {
   assert.deepEqual(masterCatalogueInternals.LANGUAGE_PUBLISH_ORDER, ['en', 'ja', 'zh-tw', 'zh-cn', 'ko']);
   assert.deepEqual(masterCatalogueInternals.previousPublishLanguages('en'), []);
@@ -962,6 +974,7 @@ async function main() {
   assertImageLeftoverClassification();
   assertImagePipelineRules();
   assertQualityReportRules();
+  assertAssetManifestRules();
   assertPublishRules();
   assertAppReadsPublishedSnapshots();
   await assertValidationBlocksProduction();
