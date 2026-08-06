@@ -12,6 +12,10 @@ const adapters = readFileSync('scripts/catalogue-ingestion/adapters.ts', 'utf8')
 const pikaqianAdapter = readFileSync('scripts/catalogue-ingestion/pikaqianAdapter.ts', 'utf8');
 const imageLeftoverMigration = readFileSync('supabase/migrations/20260801103000_catalogue_image_leftover_workflow.sql', 'utf8');
 const publicationSnapshotMigration = readFileSync('supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql', 'utf8');
+const targetedQualityReportMigration = readFileSync(
+  'supabase/migrations/20260806170501_make_catalogue_quality_report_targeted.sql',
+  'utf8',
+);
 const stackrApiService = readFileSync('backend/lib/stackrApiV1.js', 'utf8');
 
 function assertRequiredCommandsExist() {
@@ -736,6 +740,18 @@ function assertImagePipelineRules() {
   );
 }
 
+function assertQualityReportRules() {
+  assert.match(targetedQualityReportMigration, /with \(security_invoker = true\)/);
+  assert.match(targetedQualityReportMigration, /raw_source_records_active_set_ref_idx/);
+  assert.match(targetedQualityReportMigration, /data_conflicts_open_set_ref_idx/);
+  assert.match(targetedQualityReportMigration, /left join lateral/);
+  assert.doesNotMatch(
+    targetedQualityReportMigration,
+    /join raw_record_quality rrq[\s\S]*rrq\.set_ref in/,
+    'quality reports must not rebuild the previous high-cardinality OR join',
+  );
+}
+
 function assertPublishRules() {
   assert.deepEqual(masterCatalogueInternals.LANGUAGE_PUBLISH_ORDER, ['en', 'ja', 'zh-tw', 'zh-cn', 'ko']);
   assert.deepEqual(masterCatalogueInternals.previousPublishLanguages('en'), []);
@@ -941,6 +957,7 @@ async function main() {
   await assertSetArtRules();
   assertImageLeftoverClassification();
   assertImagePipelineRules();
+  assertQualityReportRules();
   assertPublishRules();
   assertAppReadsPublishedSnapshots();
   await assertValidationBlocksProduction();
