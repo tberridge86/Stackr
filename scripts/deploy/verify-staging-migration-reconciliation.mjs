@@ -1,8 +1,14 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';
 
-const evidencePath = process.argv.find((arg) => arg.startsWith('--evidence='))?.slice(11)
-  ?? 'deploy/evidence/staging-migration-reconciliation-2026-07-30.json';
+const explicitEvidencePath = process.argv.find((arg) => arg.startsWith('--evidence='))?.slice(11);
+const latestEvidenceFile = readdirSync('deploy/evidence')
+  .filter((name) => /^staging-migration-reconciliation-\d{4}-\d{2}-\d{2}\.json$/.test(name))
+  .sort()
+  .at(-1);
+const evidencePath = explicitEvidencePath
+  ?? (latestEvidenceFile ? `deploy/evidence/${latestEvidenceFile}` : null);
+if (!evidencePath) throw new Error('No staging migration reconciliation evidence file was found.');
 const requireAligned = process.argv.includes('--require-aligned');
 const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
 const manifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
@@ -13,11 +19,25 @@ function lfSha256(filePath) {
   return createHash('sha256').update(normalized).digest('hex');
 }
 
+function orderedMigrationKeySha256(migrations) {
+  return createHash('sha256').update(`${migrations.map((name) => name.replace(/\.sql$/, '')).join('\n')}\n`).digest('hex');
+}
+
+function repositoryMigrationContentSha256(migrations) {
+  const ledger = migrations.map((name) => (
+    `${name.replace(/\.sql$/, '')}\n${lfSha256(`supabase/migrations/${name}`)}\n`
+  )).join('');
+  return createHash('sha256').update(ledger).digest('hex');
+}
+
 const localMigrations = readdirSync('supabase/migrations')
   .filter((name) => name.endsWith('.sql'))
   .sort();
 
-if (evidence.schemaVersion !== 'stackr-migration-reconciliation-v1.0.0') {
+if (![
+  'stackr-migration-reconciliation-v1.0.0',
+  'stackr-migration-reconciliation-v1.1.0',
+].includes(evidence.schemaVersion)) {
   errors.push('invalid_migration_reconciliation_version');
 }
 if (evidence.productionProjectRef !== manifest.components.database.projectRef) {
@@ -27,6 +47,41 @@ if (evidence.stagingProjectRef !== manifest.components.database.stagingProjectRe
   errors.push('staging_project_ref_mismatch');
 }
 if (evidence.productionMutationPerformed !== false) errors.push('production_mutation_not_prohibited');
+
+if (evidence.schemaVersion === 'stackr-migration-reconciliation-v1.1.0') {
+  const keyDigest = orderedMigrationKeySha256(localMigrations);
+  const contentDigest = repositoryMigrationContentSha256(localMigrations);
+  if (evidence.localMigrationFileCount !== localMigrations.length) {
+    errors.push('local_migration_count_drift');
+  }
+  if (evidence.stagingMigrationHistoryCountAfter !== localMigrations.length) {
+    errors.push('staging_migration_count_drift');
+  }
+  if (evidence.exactVersionNameOrderMatch !== true) {
+    errors.push('migration_history_not_exact');
+  }
+  if (evidence.orderedMigrationKeySha256 !== keyDigest
+    || evidence.remoteOrderedMigrationKeySha256 !== keyDigest) {
+    errors.push('ordered_migration_key_hash_drift');
+  }
+  if (evidence.repositoryMigrationContentSha256 !== contentDigest) {
+    errors.push('repository_migration_content_hash_drift');
+  }
+  if (requireAligned && evidence.status !== 'aligned') errors.push('migration_history_not_aligned');
+
+  console.log(JSON.stringify({
+    ok: errors.length === 0,
+    evidencePath,
+    status: evidence.status,
+    localMigrationFileCount: localMigrations.length,
+    stagingMigrationHistoryCount: evidence.stagingMigrationHistoryCountAfter,
+    exactVersionNameOrderMatch: evidence.exactVersionNameOrderMatch,
+    errors,
+  }, null, 2));
+  if (errors.length) process.exit(1);
+  process.exit(0);
+}
+
 if (evidence.localMigrationFileCount !== localMigrations.length) {
   errors.push('local_migration_count_drift');
 }

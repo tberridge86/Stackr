@@ -6,7 +6,9 @@ import { parseManualCsv } from './catalogue-ingestion/manualAdapters';
 
 const MANIFEST_NAME = 'capture-review-manifest.csv';
 const CONSENT_NAME = 'capture-consent-evidence.json';
-const REQUIRED_CONSENT_SCOPE = 'private_model_evaluation_and_training';
+const PRIVATE_CONSENT_SCOPE = 'private_model_evaluation_and_training';
+const PUBLIC_CONSENT_SCOPE = 'public_catalogue_model_evaluation_training_and_production';
+const SUPPORTED_CONSENT_SCOPES = new Set([PRIVATE_CONSENT_SCOPE, PUBLIC_CONSENT_SCOPE]);
 
 type CaptureRow = Record<string, string>;
 
@@ -101,8 +103,16 @@ export function buildReviewedCaptureEvaluationManifest({
   const reviewBytes = readFileSync(reviewPath);
   const consentBytes = readFileSync(consentPath);
   const consent = JSON.parse(consentBytes.toString('utf8').replace(/^\uFEFF/, '')) as ConsentEvidence;
-  if (consent.scope !== REQUIRED_CONSENT_SCOPE) throw new Error('Consent scope does not permit private model evaluation and training.');
-  if (consent.productionPublicationApproved !== false) throw new Error('Consent evidence must explicitly prohibit production publication.');
+  if (!consent.scope || !SUPPORTED_CONSENT_SCOPES.has(consent.scope)) {
+    throw new Error('Consent scope does not permit model evaluation and training.');
+  }
+  const productionPublicationApproved = consent.productionPublicationApproved === true;
+  if (consent.scope === PRIVATE_CONSENT_SCOPE && consent.productionPublicationApproved !== false) {
+    throw new Error('Private consent evidence must explicitly prohibit production publication.');
+  }
+  if (consent.scope === PUBLIC_CONSENT_SCOPE && !productionPublicationApproved) {
+    throw new Error('Public-production consent evidence must explicitly approve production publication.');
+  }
   if (!clean(consent.ownerStatement)) throw new Error('Consent owner statement is missing.');
 
   const rows = parseManualCsv(reviewBytes.toString('utf8')) as CaptureRow[];
@@ -152,10 +162,10 @@ export function buildReviewedCaptureEvaluationManifest({
   const protectedTestEligible = [...sessionsByIdentity.values()].every((sessions) => sessions.size >= 2);
 
   return {
-    schemaVersion: 'stackr-reviewed-capture-evaluation-manifest-v1.0.0',
+    schemaVersion: 'stackr-reviewed-capture-evaluation-manifest-v1.1.0',
     generatedAt,
-    privacyScope: REQUIRED_CONSENT_SCOPE,
-    productionPublicationApproved: false,
+    privacyScope: consent.scope,
+    productionPublicationApproved,
     sourceRootName: path.basename(resolvedRoot),
     evidence: {
       consentSchemaVersion: consent.schemaVersion ?? null,
@@ -178,6 +188,15 @@ export function buildReviewedCaptureEvaluationManifest({
       reason: protectedTestEligible
         ? 'Private reviewed captures are eligible for a future protected split, but this manifest does not approve production.'
         : 'At least two physical-card sessions per identity are required before model selection and protected testing can be separated.',
+    },
+    publicationPolicy: {
+      cataloguePublicationAllowed: productionPublicationApproved,
+      derivativeGenerationAllowed: productionPublicationApproved,
+      stagingPublicationAllowed: productionPublicationApproved,
+      productionPublicationApproved,
+      reason: productionPublicationApproved
+        ? 'Owner-authorised public catalogue and production publication.'
+        : 'Consent is limited to private model evaluation and training.',
     },
     duplicateGroups,
     images: uniqueRows.map((row) => ({
@@ -239,7 +258,7 @@ function main() {
     outputPath: result.outputPath,
     sha256: result.sha256,
     summary: result.manifest.summary,
-    productionPublicationApproved: false,
+    productionPublicationApproved: result.manifest.productionPublicationApproved,
   }, null, 2));
 }
 

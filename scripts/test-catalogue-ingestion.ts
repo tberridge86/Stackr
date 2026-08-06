@@ -397,6 +397,11 @@ async function assertImageAssetsAreBlockedByDefault() {
   assert.equal(assetFetches, 0, 'normal imports must not fetch image assets by default');
   assert.match(ingestionPipeline, /allowImageAssets/, 'image assets must require an explicit opt-in');
   assert.match(
+    catalogueIngest,
+    /approvedOnlyAssets: hasFlag\('approvedOnlyAssets'\) \|\| hasFlag\('approved-only'\)/,
+    'the ingestion CLI must pass the approved-only asset gate into the runner',
+  );
+  assert.match(
     ingestionPipeline,
     /card_image_collection_disabled_until_canonical_identity_complete/,
     'asset records need an explicit skipped decision reason while image collection is paused',

@@ -45,12 +45,18 @@ def sha256_file(path: Path) -> str:
 
 def read_manifest(path: Path) -> dict[str, Any]:
     manifest = json.loads(path.read_text(encoding="utf-8"))
-    if manifest.get("schemaVersion") != "stackr-reviewed-capture-evaluation-manifest-v1.0.0":
+    if manifest.get("schemaVersion") not in {
+        "stackr-reviewed-capture-evaluation-manifest-v1.0.0",
+        "stackr-reviewed-capture-evaluation-manifest-v1.1.0",
+    }:
         raise ValueError("Unsupported reviewed-capture manifest.")
-    if manifest.get("privacyScope") != "private_model_evaluation_and_training":
-        raise ValueError("Manifest is not approved for private model evaluation.")
-    if manifest.get("productionPublicationApproved") is not False:
-        raise ValueError("Manifest must explicitly prohibit production publication.")
+    if manifest.get("privacyScope") not in {
+        "private_model_evaluation_and_training",
+        "public_catalogue_model_evaluation_training_and_production",
+    }:
+        raise ValueError("Manifest is not approved for model evaluation.")
+    if not isinstance(manifest.get("productionPublicationApproved"), bool):
+        raise ValueError("Manifest publication approval must be explicit.")
     if not manifest.get("images"):
         raise ValueError("Manifest has no images.")
     return manifest
@@ -294,6 +300,8 @@ def main() -> None:
 
     torch.manual_seed(12012)
     manifest = read_manifest(args.manifest)
+    privacy_scope = manifest["privacyScope"]
+    production_publication_approved = bool(manifest["productionPublicationApproved"])
     entries, tensors = load_images(manifest, args.root)
     backbone = torch.hub.load(MODEL_REPOSITORY, MODEL_ID, pretrained=True, trust_repo=True)
     model = Dinov2Embedding(backbone.eval()).eval()
@@ -339,6 +347,10 @@ def main() -> None:
             "identityClasses": manifest["summary"]["identityClasses"],
             "physicalCardSessions": manifest["summary"]["physicalCardSessions"],
             "languageDistribution": {"zh-Hans": len(entries)},
+            "publicationConsent": {
+                "privacyScope": privacy_scope,
+                "productionPublicationApproved": production_publication_approved,
+            },
         },
         "evaluationIsolation": {
             "queryImagesAreExcludedFromIndexedReferences": retrieval["queryImagesExcludedFromReferences"],
@@ -374,7 +386,12 @@ def main() -> None:
             "active_database_index_not_built",
         ],
         "limitations": [
-            "This is a private development retrieval pilot, not production acceptance evidence.",
+            (
+                "This development retrieval pilot has owner-approved public publication consent, "
+                "but it is not model production acceptance evidence."
+                if production_publication_approved
+                else "This is a private development retrieval pilot, not production acceptance evidence."
+            ),
             "Reference and query images are different files, but they show the same physical card session for each identity.",
             "Top-5 is weak evidence with only six identity classes.",
         ],

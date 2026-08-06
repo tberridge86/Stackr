@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "stackr-migration-reconciliation-v1.1.0",
+  "capturedAt": "2026-08-06T07:48:01.565Z",
+  "sourceCommitHash": "4d3a0a3cc0adb1dd5a7104bcb1d15efd8e123dbd",
+  "workingTreeChangesIncluded": true,
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+  "status": "aligned",
+  "reconciliationComplete": true,
+  "productionMutationPerformed": false,
+  "stagingMutationPerformed": true,
+  "stagingApplicationSchemaOrDataMutationPerformedByReconciliation": false,
+  "localMigrationFileCount": 84,
+  "stagingMigrationHistoryCountAfter": 84,
+  "exactVersionNameOrderMatch": true,
+  "orderedMigrationKeySha256": "7b750c9586d815a48cc5c9fdcf7a8943c03a1020c0781b57f5f0675ed3beb82e",
+  "remoteOrderedMigrationKeySha256": "7b750c9586d815a48cc5c9fdcf7a8943c03a1020c0781b57f5f0675ed3beb82e",
+  "repositoryMigrationContentSha256": "c05f51c7b4ce7a7fecd5640f010642bdbcabfe6eb434b954feabcbdb5cb10d5e",
+  "firstMigration": "20260513170000_card_fingerprint_regions",
+  "latestMigration": "20260806073146_recognition_reference_asset_eligibility",
+  "historyRepairs": [
+    {
+      "name": "strict_foreign_catalogue_import_safety",
+      "fromVersion": "20260805155815",
+      "toVersion": "20260801090000"
+    },
+    {
+      "name": "catalogue_image_leftover_workflow",
+      "fromVersion": "20260805155819",
+      "toVersion": "20260801103000"
+    },
+    {
+      "name": "language_catalogue_publication_snapshots",
+      "fromVersion": "20260805155821",
+      "toVersion": "20260801120000"
+    },
+    {
+      "name": "recognition_service_database_role",
+      "fromVersion": "20260805200102",
+      "toVersion": "20260805200000"
+    }
+  ],
+  "latestMigrationVerification": {
+    "column": "catalog.assets.recognition_reference_eligible",
+    "notNull": true,
+    "default": true,
+    "partialIndex": "assets_recognition_reference_eligible_idx",
+    "partialIndexPresent": true
+  },
+  "advisorReview": {
+    "securityAdvisorRun": true,
+    "performanceAdvisorRun": true,
+    "newFindingAttributedToLatestMigration": false,
+    "preExistingFindingsRemain": true
+  },
+  "actionsTaken": [
+    "applied_and_verified_recognition_reference_asset_eligibility",
+    "repaired_four_connector_generated_staging_history_versions",
+    "verified_exact_84_for_84_repository_and_staging_migration_order",
+    "verified_production_was_not_modified"
+  ]
+}

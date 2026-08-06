@@ -1,0 +1,72 @@
+{
+  "ok": true,
+  "apply": true,
+  "productionModified": false,
+  "manifestSha256": "6bdf058eb49064c1eff9929535f62ca903e1d3194062236f9009fd7666b55afd",
+  "inputAssets": 6,
+  "publicationApproved": true,
+  "recognitionReferenceEligible": false,
+  "assets": [
+    {
+      "collectorNumber": "037",
+      "captureId": "capture_6718d6f4b0ad314610c9a319",
+      "derivativeSha256": "0a64ffa971d8032a2fc70667dcf24a8bcb63531d355bb0e1bb211cebeab083c5",
+      "assetId": "cac7d53d-cacf-4408-b0a7-41b87f53faf4",
+      "publicUrl": "https://lmwfhvexfcoyeuoyrlco.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/0a/55/0a55de6c2af4e6e96f99908e235d99ea6b178bfda1747129c4ae02b03da7fa71/original.jpg",
+      "originalSha256": "0a55de6c2af4e6e96f99908e235d99ea6b178bfda1747129c4ae02b03da7fa71",
+      "derivativeCount": 3,
+      "recognitionReferenceEligible": false
+    },
+    {
+      "collectorNumber": "048",
+      "captureId": "capture_75da32a9c38616c04582d5ad",
+      "derivativeSha256": "b2cbcbab7384a246dd25d7bfc18209e5c8d01ba8bc607cf85c754382bdc6d965",
+      "assetId": "17cb0508-3f75-42da-8ee0-99eede8d2254",
+      "publicUrl": "https://lmwfhvexfcoyeuoyrlco.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/54/17/5417949cfc4bdce7dc95c042e6bb4b6ef7b804ae771cf592b984bd3c33bfcc22/original.jpg",
+      "originalSha256": "5417949cfc4bdce7dc95c042e6bb4b6ef7b804ae771cf592b984bd3c33bfcc22",
+      "derivativeCount": 3,
+      "recognitionReferenceEligible": false
+    },
+    {
+      "collectorNumber": "082",
+      "captureId": "capture_9a0b0479a250363c88de8fc1",
+      "derivativeSha256": "f88be1bd754cb86f9ce9c5121fe53ca2cb08e45053250bd9426747236d0163fc",
+      "assetId": "375dba6a-88ad-49a3-af66-69074fa00675",
+      "publicUrl": "https://lmwfhvexfcoyeuoyrlco.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/51/60/5160d0d837575f9f2738a388c89ceabe4e79ec1b481a92d19fecd5f5e8aafc0b/original.jpg",
+      "originalSha256": "5160d0d837575f9f2738a388c89ceabe4e79ec1b481a92d19fecd5f5e8aafc0b",
+      "derivativeCount": 3,
+      "recognitionReferenceEligible": false
+    },
+    {
+      "collectorNumber": "100",
+      "captureId": "capture_ca8d48b8688f49fcad8377a3",
+      "derivativeSha256": "ce30b7e6392546e10740db057674f56b78a756defaf5b00351866f6ac59f15a9",
+      "assetId": "e89b3f7b-7cdc-4987-8875-5d7def801d24",
+      "publicUrl": "https://lmwfhvexfcoyeuoyrlco.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/a4/c6/a4c6946ce6a22cbf7c694a26e6bbbcaa64c1f1469a61fca3e20ceddabf80b4cb/original.jpg",
+      "originalSha256": "a4c6946ce6a22cbf7c694a26e6bbbcaa64c1f1469a61fca3e20ceddabf80b4cb",
+      "derivativeCount": 3,
+      "recognitionReferenceEligible": false
+    },
+    {
+      "collectorNumber": "119",
+      "captureId": "capture_3f586bb242c1e0733798e1ca",
+      "derivativeSha256": "9b36b52761059b327397ba8da9b6c8fb0bcead0cc9ed94e4b7b0e1483dedf9d5",
+      "assetId": "658e4c91-7c7e-4117-902a-a81d365a46f1",
+      "publicUrl": "https://lmwfhvexfcoyeuoyrlco.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/a1/41/a14181f0bf7774378a58831e8385a7423ea39ec21d62beb87ef426fe9d9443ff/original.jpg",
+      "originalSha256": "a14181f0bf7774378a58831e8385a7423ea39ec21d62beb87ef426fe9d9443ff",
+      "derivativeCount": 3,
+      "recognitionReferenceEligible": false
+    },
+    {
+      "collectorNumber": "138",
+      "captureId": "capture_0c94cb2e731b7b72e3348bc9",
+      "derivativeSha256": "4ec303eebc9d46add244f18fd09107cda644d4d364120aa62659c57ebee29203",
+      "assetId": "b8679c5e-c926-49ed-a21a-99754c6083f9",
+      "publicUrl": "https://lmwfhvexfcoyeuoyrlco.supabase.co/storage/v1/object/public/stackr-catalogue-public/public/card_image/fd/76/fd76c8c106deb0a2b70d5e14f69be277c7c31c0ec48a8b800ee546ab5fa3b653/original.jpg",
+      "originalSha256": "fd76c8c106deb0a2b70d5e14f69be277c7c31c0ec48a8b800ee546ab5fa3b653",
+      "derivativeCount": 3,
+      "recognitionReferenceEligible": false
+    }
+  ],
+  "completedAt": "2026-08-06T07:36:09.066Z"
+}

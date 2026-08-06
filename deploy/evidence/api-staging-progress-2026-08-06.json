@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "stackr-api-staging-progress-v1.1.0",
+  "generatedAt": "2026-08-06T07:43:06Z",
+  "environment": "staging",
+  "productionModified": false,
+  "completionEstimate": {
+    "wholeApiPercent": 89,
+    "softwareAndContractLayerPercent": 96,
+    "productionReady": false
+  },
+  "stagingDatabase": {
+    "supabaseProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "status": "ACTIVE_HEALTHY",
+    "postgresVersion": "17.6.1.147",
+    "migrationCount": 84,
+    "exactRepositoryHistoryMatch": true,
+    "reconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-08-06.json",
+    "recognitionReferenceEligibilityMigration": {
+      "version": "20260806073146",
+      "name": "recognition_reference_asset_eligibility",
+      "applied": true,
+      "columnVerified": true,
+      "partialIndexVerified": true
+    },
+    "backendCredentialRepair": {
+      "service": "stackr-backend-staging",
+      "variable": "SUPABASE_SERVICE_ROLE_KEY",
+      "previouslyMisconfiguredAsPublishableKey": true,
+      "repairedWithExistingStagingSecret": true,
+      "deploymentHealthy": true
+    }
+  },
+  "rightsAndReview": {
+    "consentManifestSchema": "stackr-reviewed-capture-evaluation-manifest-v1.1.0",
+    "consentManifestSha256": "6bdf058eb49064c1eff9929535f62ca903e1d3194062236f9009fd7666b55afd",
+    "privacyScope": "public_catalogue_model_evaluation_training_and_production",
+    "productionPublicationApproved": true,
+    "reviewedRows": 143,
+    "uniqueImages": 142,
+    "identityClasses": 6,
+    "physicalCardSessions": 6,
+    "protectedTestEligible": false,
+    "modelProductionAccepted": false
+  },
+  "catalogue": {
+    "sets": 695,
+    "cardPrintings": 3880,
+    "cardVariants": 5016,
+    "assets": 6,
+    "publicApprovedAssets": 6,
+    "recognitionReferenceEligibleAssets": 0,
+    "publishedVersions": 0,
+    "set151c": {
+      "expectedCards": 343,
+      "canonicalPrintings": 54,
+      "ownedCaptureAssets": 6,
+      "complete": false,
+      "publicationBlocked": true
+    },
+    "ownedCaptureImport": {
+      "importRunId": "5f8d6d24-5a56-451d-881c-3479e55ba72d",
+      "recordsRequested": 6,
+      "recordsInserted": 4,
+      "recordsUpdated": 2,
+      "recordsConflicted": 0
+    }
+  },
+  "assetDeliveryPilot": {
+    "bucket": "stackr-catalogue-public",
+    "originals": 6,
+    "derivatives": 18,
+    "publicUrlsChecked": 24,
+    "publicUrlsReturning200": 24,
+    "rightsStatus": "approved",
+    "permissionStatus": "approved",
+    "acquisitionSource": "user_licensed",
+    "recognitionReferenceEligible": false
+  },
+  "recognitionPilot": {
+    "modelId": "dinov2_vits14",
+    "selectionStatus": "candidate",
+    "artifactVersion": "dinov2_vits14_int8_pilot_v0_1_0",
+    "artifactSha256": "eb9447f288fe8225cc222d96177458c53d22ce6d794603e10b10a8905962b19a",
+    "latestReportSha256": "9418dab68db8bee2304a6d43bedbddce4493a5786c98301dec9d20d9f327f1b5",
+    "realCameraTop1": 0.75,
+    "realCameraTop3": 0.8676470588235294,
+    "realCameraTop5": 0.9705882352941176,
+    "int8Top1": 0.75,
+    "int8Top3": 0.8897058823529411,
+    "int8Top5": 0.9705882352941176,
+    "meanReciprocalRank": 0.8322303921568628,
+    "int8ServerCpuMedianMs": 25.932349999493454,
+    "int8ServerCpuP95Ms": 28.63739999884274,
+    "queryFilesExcludedFromReferences": true,
+    "activeIndex": false,
+    "calibrationReady": false,
+    "productionAccepted": false
+  },
+  "liveServices": {
+    "gateway": {
+      "url": "https://stackr-api-gateway-staging.berridge14.workers.dev",
+      "healthStatus": 200,
+      "readyStatus": 503
+    },
+    "backend": {
+      "url": "https://stackr-backend-staging-staging.up.railway.app",
+      "healthStatus": 200
+    },
+    "recognition": {
+      "url": "https://stackr-recognition-staging-staging.up.railway.app",
+      "healthStatus": 200,
+      "readyStatus": 503,
+      "modelLoaded": true,
+      "activeIndex": false,
+      "calibrationReady": false
+    }
+  },
+  "remainingReleaseBlockers": [
+    "complete multilingual catalogue metadata coverage",
+    "complete approved card-image, set-logo, and set-symbol coverage",
+    "publish and validate a versioned catalogue snapshot",
+    "build and validate the complete recognition reference embedding index",
+    "capture a separate multi-session protected evaluation set",
+    "calibrate scoring thresholds and ambiguity handling",
+    "resolve pre-existing Supabase security advisor warnings",
+    "complete storage recovery evidence and production DNS release approval"
+  ]
+}

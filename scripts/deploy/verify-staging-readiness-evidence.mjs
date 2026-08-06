@@ -1,8 +1,13 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
+const latestEvidenceFile = readdirSync('deploy/evidence')
+  .filter((name) => /^staging-readiness-\d{4}-\d{2}-\d{2}\.json$/.test(name))
+  .sort()
+  .at(-1);
 const evidencePath = process.argv.find((arg) => arg.startsWith('--evidence='))?.slice(11)
-  ?? 'deploy/evidence/staging-readiness-2026-07-30.json';
+  ?? (latestEvidenceFile ? `deploy/evidence/${latestEvidenceFile}` : null);
+if (!evidencePath) throw new Error('No staging readiness evidence file was found.');
 const requireReleaseReady = process.argv.includes('--require-release-ready');
 const manifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
 const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));

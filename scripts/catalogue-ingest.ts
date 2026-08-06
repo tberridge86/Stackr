@@ -216,6 +216,7 @@ async function main() {
     requestId: arg('requestId') || undefined,
     dryRun,
     allowImageAssets: hasFlag('allowImageAssets'),
+    approvedOnlyAssets: hasFlag('approvedOnlyAssets') || hasFlag('approved-only'),
     writeConcurrency,
   });
   console.log(JSON.stringify(result, null, 2));

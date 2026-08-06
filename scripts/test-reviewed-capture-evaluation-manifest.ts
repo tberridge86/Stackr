@@ -64,14 +64,27 @@ try {
   assert.ok(!JSON.stringify(manifest).includes(root));
 
   writeFileSync(path.join(root, 'capture-consent-evidence.json'), JSON.stringify({
-    scope: 'private_model_evaluation_and_training',
-    ownerStatement: 'Fixture consent.',
+    schemaVersion: 'stackr-stage6-capture-consent-v1.1.0',
+    scope: 'public_catalogue_model_evaluation_training_and_production',
+    ownerStatement: 'Fixture public-production consent.',
     reviewedPhysicalCardSessions: ['Magneton_1'],
     productionPublicationApproved: true,
   }));
+  const publicManifest = buildReviewedCaptureEvaluationManifest({ root });
+  assert.equal(publicManifest.productionPublicationApproved, true);
+  assert.equal(publicManifest.publicationPolicy.cataloguePublicationAllowed, true);
+  assert.equal(publicManifest.publicationPolicy.derivativeGenerationAllowed, true);
+  assert.equal(publicManifest.evaluationPolicy.productionAcceptanceAllowed, false);
+
+  writeFileSync(path.join(root, 'capture-consent-evidence.json'), JSON.stringify({
+    scope: 'public_catalogue_model_evaluation_training_and_production',
+    ownerStatement: 'Fixture incomplete public consent.',
+    reviewedPhysicalCardSessions: ['Magneton_1'],
+    productionPublicationApproved: false,
+  }));
   assert.throws(
     () => buildReviewedCaptureEvaluationManifest({ root }),
-    /must explicitly prohibit production publication/,
+    /must explicitly approve production publication/,
   );
 } finally {
   rmSync(root, { recursive: true, force: true });

@@ -23,7 +23,7 @@ const scanLabRoute = readFileSync('backend/routes/scanLab.js', 'utf8');
 const server = readFileSync('backend/server.js', 'utf8');
 
 const tinyPng = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAGElEQVR42mP8z8BQz0AEYBxVSF+FhAAAfv4E/fu0d6UAAAAASUVORK5CYII=',
+  'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEUlEQVQImWO4o2HzH4QZYAwAT/QI/b1BT1MAAAAASUVORK5CYII=',
   'base64',
 );
 

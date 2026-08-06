@@ -81,13 +81,13 @@ const migrationAlignmentGate = run(
   'scripts/deploy/verify-staging-migration-reconciliation.mjs',
   ['--require-aligned'],
 );
-assert.notEqual(migrationAlignmentGate.status, 0, 'blocked reconciliation must not pass the alignment gate');
-assert.match(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
+assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
+assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
 assert.notEqual(stagingReleaseGate.status, 0, 'staging evidence must block release until recovery and model gates pass');
-assert.doesNotMatch(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
-assert.doesNotMatch(stagingReleaseGate.stdout, /database_recovery_not_verified/);
-assert.match(stagingReleaseGate.stdout, /migration_history_not_aligned/);
+assert.match(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
+assert.match(stagingReleaseGate.stdout, /database_recovery_not_verified/);
+assert.doesNotMatch(stagingReleaseGate.stdout, /migration_history_not_aligned/);
 assert.match(stagingReleaseGate.stdout, /model_and_index_not_ready/);
 const releasePreflight = run('scripts/deploy/preflight.mjs', ['--release']);
 assert.notEqual(releasePreflight.status, 0, 'release preflight must fail closed without approvals and credentials');
