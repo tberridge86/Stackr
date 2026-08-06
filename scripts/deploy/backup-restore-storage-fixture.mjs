@@ -18,6 +18,12 @@ const backupDir = path.join(EVIDENCE_DIR, 'storage-backup');
 const TARGET_FILE_SIZE_CEILING_BYTES = Number(
   process.env.STACKR_RECOVERY_TARGET_MAX_FILE_SIZE_BYTES ?? 50 * 1024 * 1024,
 );
+const TARGET_BUCKET_DELETE_ATTEMPTS = Number(
+  process.env.STACKR_RECOVERY_BUCKET_DELETE_ATTEMPTS ?? 30,
+);
+const TARGET_BUCKET_DELETE_RETRY_MS = Number(
+  process.env.STACKR_RECOVERY_BUCKET_DELETE_RETRY_MS ?? 2_000,
+);
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -48,6 +54,23 @@ async function expectNoError(operation, context) {
   const result = await operation;
   if (result.error) throw new Error(`${context}:${result.error.message}`);
   return result.data;
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function emptyAndDeleteTargetBucket(bucketId) {
+  await expectNoError(target.storage.emptyBucket(bucketId), `empty_restore_bucket:${bucketId}`);
+  for (let attempt = 1; attempt <= TARGET_BUCKET_DELETE_ATTEMPTS; attempt += 1) {
+    const result = await target.storage.deleteBucket(bucketId);
+    if (!result.error) return;
+    if (!/not empty/i.test(result.error.message)) {
+      throw new Error(`delete_restore_bucket:${bucketId}:${result.error.message}`);
+    }
+    if (attempt < TARGET_BUCKET_DELETE_ATTEMPTS) await wait(TARGET_BUCKET_DELETE_RETRY_MS);
+  }
+  throw new Error(`delete_restore_bucket:${bucketId}:bucket_did_not_become_empty`);
 }
 
 async function sourceInventory() {
@@ -81,8 +104,7 @@ async function clearTargetStorage() {
     'list_restore_buckets',
   );
   for (const bucket of buckets) {
-    await expectNoError(target.storage.emptyBucket(bucket.id), `empty_restore_bucket:${bucket.id}`);
-    await expectNoError(target.storage.deleteBucket(bucket.id), `delete_restore_bucket:${bucket.id}`);
+    await emptyAndDeleteTargetBucket(bucket.id);
   }
   const remaining = await expectNoError(
     target.storage.listBuckets({ limit: 1000, offset: 0 }),
