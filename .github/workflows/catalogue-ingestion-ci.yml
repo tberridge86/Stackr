@@ -26,6 +26,11 @@ on:
         required: true
         default: '0'
         type: string
+      set_id:
+        description: Optional exact provider set ID for a targeted retry
+        required: false
+        default: ''
+        type: string
       limit:
         description: Provider cards in this batch (maximum 500)
         required: true
@@ -69,6 +74,7 @@ jobs:
       CATALOGUE_PROVIDER: ${{ inputs.provider }}
       CATALOGUE_LANGUAGE: ${{ inputs.language }}
       CATALOGUE_START_OFFSET: ${{ inputs.offset }}
+      CATALOGUE_SET_ID: ${{ inputs.set_id }}
       CATALOGUE_BATCH_LIMIT: ${{ inputs.limit }}
       CATALOGUE_BATCH_COUNT: ${{ inputs.batches }}
       CATALOGUE_INCLUDE_ASSETS: ${{ inputs.include_assets }}
@@ -88,6 +94,7 @@ jobs:
           [[ "$CATALOGUE_START_OFFSET" =~ ^[0-9]+$ ]] || exit 1
           [[ "$CATALOGUE_BATCH_LIMIT" =~ ^[0-9]+$ ]] || exit 1
           [[ "$CATALOGUE_BATCH_COUNT" =~ ^[0-9]+$ ]] || exit 1
+          [[ -z "$CATALOGUE_SET_ID" || "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+$ ]] || exit 1
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
       - name: Prepare encrypted PikaQian snapshot
@@ -148,14 +155,17 @@ jobs:
           if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
             asset_args+=(--include-images --approved-only --assetLicenceStatus=approved)
           fi
+          scope_args=(--setOffset="$CATALOGUE_START_OFFSET" --maxSets="$CATALOGUE_BATCH_LIMIT")
+          if [[ -n "$CATALOGUE_SET_ID" ]]; then
+            scope_args=(--setId="$CATALOGUE_SET_ID")
+          fi
           npx tsx scripts/catalogue-master.ts apply \
             --provider=pikaqian \
             --language=zh-cn \
-            --setOffset="$CATALOGUE_START_OFFSET" \
-            --maxSets="$CATALOGUE_BATCH_LIMIT" \
             --writeConcurrency=8 \
             --target=staging \
             --apply \
+            "${scope_args[@]}" \
             "${asset_args[@]}"
       - name: Report language quality
         if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex' && inputs.report_quality
