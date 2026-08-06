@@ -187,6 +187,44 @@ async function runWithConcurrency<T>(
   if (firstError !== undefined) throw firstError;
 }
 
+export async function runWithConcurrencyByKey<T>(
+  values: T[],
+  concurrency: number,
+  keyFor: (value: T, index: number) => string,
+  worker: (value: T) => Promise<void>,
+) {
+  const groups = new Map<string, T[]>();
+  values.forEach((value, index) => {
+    const key = keyFor(value, index);
+    const group = groups.get(key);
+    if (group) group.push(value);
+    else groups.set(key, [value]);
+  });
+  await runWithConcurrency([...groups.values()], concurrency, async (group) => {
+    for (const value of group) await worker(value);
+  });
+}
+
+function reconciliationConcurrencyKey(
+  prepared: { record: ProviderRecord; normalised?: NormalisedRecord },
+  index: number,
+) {
+  const normalised = prepared.normalised;
+  if (
+    normalised
+    && ['card', 'printing', 'variant'].includes(prepared.record.recordType)
+    && normalised.collectorNumber
+  ) {
+    return [
+      normalised.gameCode,
+      normalised.languageCode,
+      normalised.providerSetId ?? normalised.setCode ?? 'unknown-set',
+      normalised.collectorNumber,
+    ].join(':');
+  }
+  return `${prepared.record.recordType}:${prepared.record.providerRecordId}:${index}`;
+}
+
 function reconciliationPhase(record: ProviderRecord, validation: ValidationResult) {
   if (!validation.ok) return 0;
   if (record.recordType === 'set') return 1;
@@ -1657,9 +1695,10 @@ export class CatalogueIngestionRunner {
         const phaseRecords = preparedRecords.filter(
           ({ record, validation }) => reconciliationPhase(record, validation) === phase,
         );
-        await runWithConcurrency(
+        await runWithConcurrencyByKey(
           phaseRecords,
           safeOptions.writeConcurrency ?? 1,
+          reconciliationConcurrencyKey,
           processRecord,
         );
       }

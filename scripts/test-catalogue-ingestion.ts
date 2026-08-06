@@ -9,6 +9,7 @@ import {
   CatalogueIngestionRunner,
   calculateExponentialBackoff,
   payloadChecksum,
+  runWithConcurrencyByKey,
 } from './catalogue-ingestion/pipeline';
 import {
   collectorNumberParts,
@@ -522,6 +523,32 @@ async function assertManualCsvAdapter() {
   }
 }
 
+async function assertSamePrintingRecordsAreSerialised() {
+  const activeKeys = new Set<string>();
+  let activeWorkers = 0;
+  let maxActiveWorkers = 0;
+  await runWithConcurrencyByKey(
+    [
+      { id: 'card-a-normal', printing: 'card-a' },
+      { id: 'card-a-reverse', printing: 'card-a' },
+      { id: 'card-b-normal', printing: 'card-b' },
+      { id: 'card-b-holo', printing: 'card-b' },
+    ],
+    4,
+    (record) => record.printing,
+    async (record) => {
+      assert.equal(activeKeys.has(record.printing), false, 'variants of one printing must never overlap');
+      activeKeys.add(record.printing);
+      activeWorkers += 1;
+      maxActiveWorkers = Math.max(maxActiveWorkers, activeWorkers);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      activeWorkers -= 1;
+      activeKeys.delete(record.printing);
+    },
+  );
+  assert.equal(maxActiveWorkers, 2, 'different printings should still reconcile concurrently');
+}
+
 async function assertManualJsonAdapterHasNoImplicitLimit() {
   const dir = mkdtempSync(join(tmpdir(), 'stackr-json-ingest-test-'));
   const file = join(dir, 'catalogue.json');
@@ -571,6 +598,7 @@ async function main() {
   assertStrictForeignMigration();
   assertRawRecordHistoryIsRetainedPerRun();
   assertChecksumsAndBackoff();
+  await assertSamePrintingRecordsAreSerialised();
   await assertManualCsvAdapter();
   await assertManualJsonAdapterHasNoImplicitLimit();
   assertBackendRouteIsProtected();
