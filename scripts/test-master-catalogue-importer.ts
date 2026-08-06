@@ -289,6 +289,10 @@ async function assertPikaQianApiAdapter() {
 }
 
 function assertIdentityAndReportRules() {
+  assert.match(masterScript, /const activeSets = sets\.filter\(\(set\) => set\.deprecated_at == null\)/);
+  assert.match(masterScript, /const activePrintings = printings\.filter\(\(printing\) => printing\.deprecated_at == null\)/);
+  assert.match(masterScript, /const activeVariants = variants\.filter\(\(variant\) => variant\.deprecated_at == null\)/);
+  assert.match(masterScript, /const activeRawRecords = rawRecords\.filter\(\(row\) => row\.deprecated_at == null\)/);
   const expected = masterCatalogueInternals.expectedFromRaw({
     id: 'raw-1',
     source_id: 'source-1',

@@ -127,6 +127,7 @@ type SetRow = {
   english_display_name: string | null;
   release_date: string | null;
   total: number | null;
+  deprecated_at?: string | null;
 };
 
 type PrintingRow = {
@@ -134,6 +135,7 @@ type PrintingRow = {
   set_id: string;
   language_code: string;
   collector_number: string;
+  deprecated_at?: string | null;
 };
 
 type VariantRow = {
@@ -146,6 +148,7 @@ type VariantRow = {
   finish_code: string | null;
   canonical_key: string;
   artwork_key?: string | null;
+  deprecated_at?: string | null;
 };
 
 type AssetRow = {
@@ -179,6 +182,7 @@ type RawRecordRow = {
   licence_status: string;
   validation_status?: string | null;
   raw_payload: Record<string, unknown>;
+  deprecated_at?: string | null;
 };
 
 type ExternalIdentifierRow = {
@@ -1690,30 +1694,34 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
   const files = reportFiles(args.reportDir);
   mkdirSync(args.reportDir, { recursive: true });
   const [sets, printings, variants, assets, rawRecords, conflicts] = await Promise.all([
-    fetchAll(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total') as Promise<SetRow[]>,
-    fetchAll(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number') as Promise<PrintingRow[]>,
-    fetchAll(db, 'catalog', 'card_variants', 'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key') as Promise<VariantRow[]>,
+    fetchAll(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at') as Promise<SetRow[]>,
+    fetchAll(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,deprecated_at') as Promise<PrintingRow[]>,
+    fetchAll(db, 'catalog', 'card_variants', 'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key,deprecated_at') as Promise<VariantRow[]>,
     fetchAll(db, 'catalog', 'assets', 'id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_path,storage_key,content_sha256,perceptual_hash,deprecated_at') as Promise<AssetRow[]>,
-    fetchAll(db, 'ingest', 'raw_source_records', 'id,source_id,record_type,external_id,language_code,source_url,licence_status,validation_status,raw_payload') as Promise<RawRecordRow[]>,
+    fetchAll(db, 'ingest', 'raw_source_records', 'id,source_id,record_type,external_id,language_code,source_url,licence_status,validation_status,raw_payload,deprecated_at') as Promise<RawRecordRow[]>,
     fetchAll(db, 'ingest', 'data_conflicts', 'id,conflict_type,severity,status,entity_schema,entity_table,entity_id,canonical_key,proposed_payload,existing_payload,internal_notes') as Promise<ConflictRow[]>,
   ]);
+  const activeSets = sets.filter((set) => set.deprecated_at == null);
+  const activePrintings = printings.filter((printing) => printing.deprecated_at == null);
+  const activeVariants = variants.filter((variant) => variant.deprecated_at == null);
+  const activeRawRecords = rawRecords.filter((row) => row.deprecated_at == null);
   const selectedLanguages = new Set(args.languages);
-  const reportSets = sets.filter((set) => selectedLanguages.has(normaliseLanguageCode(set.language_code) as SupportedCatalogueLanguageCode));
+  const reportSets = activeSets.filter((set) => selectedLanguages.has(normaliseLanguageCode(set.language_code) as SupportedCatalogueLanguageCode));
 
   const printingsBySet = new Map<string, PrintingRow[]>();
-  for (const printing of printings) {
+  for (const printing of activePrintings) {
     const list = printingsBySet.get(printing.set_id) ?? [];
     list.push(printing);
     printingsBySet.set(printing.set_id, list);
   }
   const variantsBySet = new Map<string, VariantRow[]>();
-  for (const variant of variants) {
+  for (const variant of activeVariants) {
     const list = variantsBySet.get(variant.set_id) ?? [];
     list.push(variant);
     variantsBySet.set(variant.set_id, list);
   }
-  const printingsById = new Map(printings.map((printing) => [printing.id, printing]));
-  const variantsById = new Map(variants.map((variant) => [variant.id, variant]));
+  const printingsById = new Map(activePrintings.map((printing) => [printing.id, printing]));
+  const variantsById = new Map(activeVariants.map((variant) => [variant.id, variant]));
   const approvedImagesByVariant = new Set(assets
     .filter((asset) => assetIsApproved(asset) && asset.publicly_servable)
     .map((asset) => asset.variant_id)
@@ -1731,7 +1739,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     }
   }
   const unvalidatedRawImageRecordIdsBySetRef = new Map<string, Set<string>>();
-  for (const row of rawRecords) {
+  for (const row of activeRawRecords) {
     if (row.record_type !== 'asset' || (row.validation_status ?? 'valid') === 'valid') continue;
     const payload = row.raw_payload ?? {};
     const refs = [
@@ -1771,14 +1779,14 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     }
   }
 
-  const expectedCards = rawRecords
+  const expectedCards = activeRawRecords
     .filter((row) => ['card', 'printing', 'variant'].includes(row.record_type))
     .map(expectedFromRaw)
     .filter(Boolean) as ExpectedCardRecord[];
   const expectedReportCards = expectedCards.filter((expected) => selectedLanguages.has(expected.language as SupportedCatalogueLanguageCode));
-  const variantsByIdentity = new Set(variants.map((variant) => proposedCanonicalKey({
+  const variantsByIdentity = new Set(activeVariants.map((variant) => proposedCanonicalKey({
     languageCode: variant.language_code,
-    setCode: sets.find((set) => set.id === variant.set_id)?.set_code ?? variant.set_id,
+    setCode: activeSets.find((set) => set.id === variant.set_id)?.set_code ?? variant.set_id,
     collectorNumber: variant.collector_number,
     variantCode: variant.variant_code,
     finishCode: variant.finish_code ?? 'normal',
@@ -1890,7 +1898,12 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     return { ...row, completion_percentage: coveragePercent(row) };
   });
 
-  const imageLeftovers = classifyImageLeftovers({ sets, variants, assets, rawRecords });
+  const imageLeftovers = classifyImageLeftovers({
+    sets: activeSets,
+    variants: activeVariants,
+    assets,
+    rawRecords: activeRawRecords,
+  });
   const missingCardImages = imageLeftovers.leftovers.map((row) => ({
     ...row,
     reason: row.group === 'A'
@@ -1941,7 +1954,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
   for (const expected of expectedCards) {
     if (expected.provider === 'pikaqian') pikaqianSetRefs.add(expected.setRef);
   }
-  for (const row of rawRecords) {
+  for (const row of activeRawRecords) {
     if (rawPayloadProvider(row) !== 'pikaqian') continue;
     const ref = setRef(row.raw_payload);
     if (ref) pikaqianSetRefs.add(ref);
@@ -1977,7 +1990,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     )),
   ];
 
-  const rightsBlockedRows = rawRecords
+  const rightsBlockedRows = activeRawRecords
     .filter((row) => row.licence_status !== 'approved')
     .filter((row) => !args.provider || rawPayloadProvider(row) === args.provider)
     .map((row) => {
@@ -2224,7 +2237,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     ],
     files,
     totals: {
-      sets: sets.length,
+      sets: coverageRows.length,
       setStatuses: setStatusCounts,
       expectedCards: coverageRows.reduce((sum, row) => sum + row.expected_cards, 0),
       storedCardRecords: coverageRows.reduce((sum, row) => sum + row.stored_card_records, 0),
