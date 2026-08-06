@@ -113,7 +113,7 @@ jobs:
           if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
             asset_args+=(--include-images --approved-only --assetLicenceStatus=approved)
           fi
-          npm run catalogue:apply -- \
+          npx tsx scripts/catalogue-master.ts apply \
             --provider=pikaqian \
             --language=zh-cn \
             --setOffset="$CATALOGUE_START_OFFSET" \
