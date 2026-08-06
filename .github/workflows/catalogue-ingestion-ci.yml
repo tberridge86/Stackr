@@ -41,6 +41,11 @@ on:
         required: true
         default: true
         type: boolean
+      report_quality:
+        description: Run the catalogue quality report after this batch
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -153,14 +158,14 @@ jobs:
             --apply \
             "${asset_args[@]}"
       - name: Report language quality
-        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex' && inputs.report_quality
         run: >-
           npm run catalogue:ingest -- quality-report
           --language="${{ inputs.language }}"
           --limit=500
 
       - name: Report PikaQian quality
-        if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian'
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian' && inputs.report_quality
         run: >-
           npm run catalogue:ingest -- quality-report
           --language=zh-cn
