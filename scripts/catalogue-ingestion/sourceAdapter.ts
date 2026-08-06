@@ -189,6 +189,7 @@ export function normaliseVariantCode(value: unknown): string {
 
 export function normaliseFinishCode(value: unknown): string | null {
   const cleaned = normaliseVariantCode(value);
+  if (/(^|_)stamp(?:_|$)/.test(cleaned)) return 'stamped';
   return cleaned === 'regional_other' ? null : cleaned;
 }
 

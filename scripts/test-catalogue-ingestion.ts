@@ -13,7 +13,9 @@ import {
 } from './catalogue-ingestion/pipeline';
 import {
   collectorNumberParts,
+  normaliseFinishCode,
   normaliseLanguageCode,
+  normaliseVariantCode,
   proposedCanonicalKey,
   type ProviderRecord,
   type SourceAdapter,
@@ -110,6 +112,10 @@ function assertMigrationAddsIngestionState() {
 }
 
 function assertIdentityHelpers() {
+  assert.equal(normaliseVariantCode('Reverse Pikachu Stamp'), 'reverse_pikachu_stamp');
+  assert.equal(normaliseFinishCode('Reverse Pikachu Stamp'), 'stamped');
+  assert.equal(normaliseFinishCode('Mewtwo Stamp 15'), 'stamped');
+  assert.equal(normaliseFinishCode('reverse'), 'reverse_holo');
   const keyA = proposedCanonicalKey({
     languageCode: 'ja',
     setCode: 'SV4a',
