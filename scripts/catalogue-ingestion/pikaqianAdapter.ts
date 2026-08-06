@@ -148,6 +148,7 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
       headers: {
         Accept: 'application/json',
         'X-API-Key': this.apiKey,
+        'User-Agent': 'Stackr-Catalogue-Ingestion/1.0 (+https://stackrtcg.com)',
       },
     });
     const text = await response.text();
@@ -159,6 +160,10 @@ export class PikaQianApiSourceAdapter implements SourceAdapter {
       rateLimitRemaining: response.headers.get('x-ratelimit-remaining'),
       rateLimitReset: response.headers.get('x-ratelimit-reset'),
       retryAfter: response.headers.get('retry-after'),
+      contentType: response.headers.get('content-type'),
+      edgeServer: response.headers.get('server'),
+      edgeRequestId: response.headers.get('cf-ray'),
+      edgeMitigation: response.headers.get('cf-mitigated'),
     };
     if (response.status === 401 || response.status === 403) {
       const providerError = providerErrorFrom(text);
