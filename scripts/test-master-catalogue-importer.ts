@@ -718,6 +718,11 @@ function assertImagePipelineRules() {
   assert.match(pipeline, /content_sha256/, 'duplicate images must be skipped by SHA-256 when provided');
   assert.match(pipeline, /perceptual_hash/, 'duplicate images must be skipped by perceptual hash when provided');
   assert.match(pipeline, /healthyExactLanguageImage/, 'healthy exact-language images must not be overwritten');
+  assert.match(
+    pipeline,
+    /linkVariantAssetExternalId\(healthyExactLanguageImage\[0\]\.id as string\)/,
+    'existing healthy images must retain their provider asset identifier',
+  );
   assert.match(pipeline, /acquisition_source/, 'assets must record their acquisition source');
   assert.match(imageLeftoverMigration, /native_image_status/, 'variants must track native image status');
   assert.match(imageLeftoverMigration, /same_artwork_as_variant_id/, 'same-artwork references must be stored separately from native images');

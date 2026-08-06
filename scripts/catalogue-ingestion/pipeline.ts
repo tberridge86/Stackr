@@ -849,6 +849,20 @@ async function upsertAssetForVariant(
     return null;
   }
 
+  const linkVariantAssetExternalId = async (assetId: string) => {
+    const link = await linkExternalId(db, {
+      sourceId,
+      rawRecordId,
+      sourceEntityType: 'asset',
+      externalId: `${normalised.providerRecordId}:asset`,
+      languageCode: normalised.languageCode,
+      assetId,
+      confidence: normalised.sourceConfidence,
+      sourceUpdatedAt: normalised.sourceUpdatedAt,
+    });
+    return link.status === 'conflict' ? null : assetId;
+  };
+
   const { data: healthyExactLanguageImage, error: healthyLookupError } = await table(db, 'catalog', 'assets')
     .select('id')
     .eq('variant_id', variantId)
@@ -858,7 +872,9 @@ async function upsertAssetForVariant(
     .is('deprecated_at', null)
     .limit(1);
   if (healthyLookupError) throw healthyLookupError;
-  if ((healthyExactLanguageImage ?? []).length > 0) return healthyExactLanguageImage[0].id as string;
+  if ((healthyExactLanguageImage ?? []).length > 0) {
+    return linkVariantAssetExternalId(healthyExactLanguageImage[0].id as string);
+  }
 
   const imageSha256 = cleanText(normalised.imageSha256)?.toLowerCase();
   if (imageSha256) {
@@ -868,7 +884,9 @@ async function upsertAssetForVariant(
       .is('deprecated_at', null)
       .limit(1);
     if (duplicateShaError) throw duplicateShaError;
-    if ((duplicateBySha ?? []).length > 0) return duplicateBySha[0].id as string;
+    if ((duplicateBySha ?? []).length > 0) {
+      return linkVariantAssetExternalId(duplicateBySha[0].id as string);
+    }
   }
 
   const imagePerceptualHash = cleanText(normalised.imagePerceptualHash)?.toLowerCase();
@@ -879,7 +897,9 @@ async function upsertAssetForVariant(
       .is('deprecated_at', null)
       .limit(1);
     if (duplicatePhashError) throw duplicatePhashError;
-    if ((duplicateByPhash ?? []).length > 0) return duplicateByPhash[0].id as string;
+    if ((duplicateByPhash ?? []).length > 0) {
+      return linkVariantAssetExternalId(duplicateByPhash[0].id as string);
+    }
   }
 
   const { data: existing, error: lookupError } = await table(db, 'catalog', 'assets')
@@ -901,7 +921,7 @@ async function upsertAssetForVariant(
       })
       .eq('id', existingId);
     if (updateError) throw updateError;
-    return existingId;
+    return linkVariantAssetExternalId(existingId);
   }
 
   const { data, error } = await table(db, 'catalog', 'assets')
@@ -931,18 +951,7 @@ async function upsertAssetForVariant(
     .maybeSingle();
   if (error) throw error;
 
-  const link = await linkExternalId(db, {
-    sourceId,
-    rawRecordId,
-    sourceEntityType: 'asset',
-    externalId: `${normalised.providerRecordId}:asset`,
-    languageCode: normalised.languageCode,
-    assetId: data.id,
-    confidence: normalised.sourceConfidence,
-    sourceUpdatedAt: normalised.sourceUpdatedAt,
-  });
-  if (link.status === 'conflict') return null;
-  return data.id as string;
+  return linkVariantAssetExternalId(data.id as string);
 }
 
 async function ensureNamedStampTaxonomy(db: SupabaseClientLike, normalised: NormalisedRecord) {
