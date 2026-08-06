@@ -72,9 +72,15 @@ function assertDryRunApplyRules() {
     '--language=en',
     '--set-offset=1',
     '--maxSets=1',
+    '--writeConcurrency=8',
     '--apply',
   ]);
   assert.equal(offset.setOffset, 1);
+  assert.equal(offset.writeConcurrency, 8);
+  assert.throws(
+    () => masterCatalogueInternals.parseArgv(['apply', '--writeConcurrency=17']),
+    /integer from 1 to 16/,
+  );
   const offsetPlan = masterCatalogueInternals.buildSetScopedStages(offset, [
     { provider: 'tcgdex', language: 'en', setId: 'first' },
     { provider: 'tcgdex', language: 'en', setId: 'second' },

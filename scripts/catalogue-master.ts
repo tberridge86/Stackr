@@ -56,6 +56,7 @@ type Args = {
   setId: string | null;
   maxSets: number | null;
   setOffset: number;
+  writeConcurrency: number;
   reportDir: string;
   setArtRoot: string;
   version: string | null;
@@ -330,6 +331,10 @@ function parseArgv(argv: string[]): Args {
   const languages = (arg('language') || arg('languages') || SUPPORTED_CATALOGUE_LANGUAGE_CODES.join(','))
     .split(',')
     .map((entry) => normaliseLanguageCode(entry.trim()) as SupportedCatalogueLanguageCode);
+  const writeConcurrency = Number(arg('writeConcurrency') || arg('write-concurrency') || 1);
+  if (!Number.isInteger(writeConcurrency) || writeConcurrency < 1 || writeConcurrency > 16) {
+    throw new Error('--writeConcurrency must be an integer from 1 to 16.');
+  }
 
   return {
     command,
@@ -351,6 +356,7 @@ function parseArgv(argv: string[]): Args {
     setId: cleanText(arg('setId') || arg('set')),
     maxSets: arg('maxSets') ? Number(arg('maxSets')) : null,
     setOffset: Number(arg('setOffset') || arg('set-offset') || 0),
+    writeConcurrency,
     reportDir: cleanText(arg('reportDir')) ?? REPORT_DIR,
     setArtRoot: cleanText(arg('setArtRoot') || arg('set-art-root') || process.env.STACKR_SET_ART_ROOT) ?? 'catalogue',
     version: cleanText(arg('version') || process.env.STACKR_CATALOGUE_PUBLISH_VERSION),
@@ -726,6 +732,7 @@ async function executeStage(db: SupabaseClientLike, stage: Stage, args: Args) {
     allowImageAssets: stage.allowImageAssets,
     assetsOnly: stage.assetsOnly,
     approvedOnlyAssets: stage.approvedOnly,
+    writeConcurrency: args.writeConcurrency,
     requestId: `master-catalogue:${stage.id}`,
   });
   return { stage: stage.id, ok: result.ok, result };

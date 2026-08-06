@@ -148,6 +148,7 @@ jobs:
             --language=zh-cn \
             --setOffset="$CATALOGUE_START_OFFSET" \
             --maxSets="$CATALOGUE_BATCH_LIMIT" \
+            --writeConcurrency=8 \
             --target=staging \
             --apply \
             "${asset_args[@]}"
