@@ -945,6 +945,29 @@ async function upsertAssetForVariant(
   return data.id as string;
 }
 
+async function ensureNamedStampTaxonomy(db: SupabaseClientLike, normalised: NormalisedRecord) {
+  const variantCode = normalised.variantCode ?? 'normal';
+  if (!/(^|_)stamp(?:_|$)/.test(variantCode)) return;
+  const englishLabel = variantCode
+    .split('_')
+    .filter(Boolean)
+    .map((part) => `${part.slice(0, 1).toUpperCase()}${part.slice(1)}`)
+    .join(' ');
+  const { error } = await table(db, 'catalog', 'variant_taxonomy').upsert({
+    code: variantCode,
+    english_label: englishLabel,
+    variant_group: 'stamp',
+    finish_code: 'stamped',
+    description: 'Named stamped card variant retained from an approved catalogue provider.',
+    sort_order: 75,
+    active: true,
+    deprecated_at: null,
+    deprecated_reason: null,
+    updated_at: nowIso(),
+  }, { onConflict: 'code' });
+  if (error) throw error;
+}
+
 async function upsertAssetForSet(
   db: SupabaseClientLike,
   sourceId: string,
@@ -1183,6 +1206,7 @@ async function upsertCardVariant(
     return { status: 'conflicted' as const };
   }
 
+  await ensureNamedStampTaxonomy(db, normalised);
   const conceptId = await ensureConcept(db, normalised);
   const rarityId = await getRarityId(db, normalised.gameCode, normalised.rarityCode);
   const existingVariant = identityRows[0] ?? (externalVariantId ? { id: externalVariantId, printing_id: null } : null);

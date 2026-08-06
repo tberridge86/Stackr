@@ -435,6 +435,8 @@ async function assertImageAssetsAreBlockedByDefault() {
     'image assets must require language, set_code, collector_number, variant and finish',
   );
   assert.match(ingestionPipeline, /hasCompleteSetArtIdentity/);
+  assert.match(ingestionPipeline, /variant_taxonomy'\)\.upsert/);
+  assert.match(ingestionPipeline, /finish_code: 'stamped'/);
   assert.match(ingestionPipeline, /new_set_art_from_exact_provider_identity/);
   assert.match(ingestionPipeline, /storage_provider: 'external_reference'/);
   assert.match(
