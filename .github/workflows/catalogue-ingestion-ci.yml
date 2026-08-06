@@ -3,6 +3,12 @@ name: Catalogue Ingestion CI
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: Snapshot provider data or mirror approved image references into Stackr storage
+        required: true
+        default: snapshot
+        type: choice
+        options: [snapshot, mirror]
       provider:
         description: One-time catalogue snapshot provider
         required: true
@@ -40,7 +46,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-staging-catalogue-${{ inputs.provider }}-${{ inputs.language }}-${{ inputs.offset }}
+  group: stackr-staging-catalogue-${{ inputs.operation }}-${{ inputs.provider }}-${{ inputs.language }}-${{ inputs.offset }}
   cancel-in-progress: false
 
 jobs:
@@ -75,7 +81,7 @@ jobs:
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
       - name: Import bounded TCGdex snapshot range
-        if: inputs.provider == 'tcgdex'
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
         shell: bash
         run: |
           asset_args=()
@@ -96,7 +102,7 @@ jobs:
           done
 
       - name: Import bounded PikaQian snapshot range
-        if: inputs.provider == 'pikaqian'
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian'
         shell: bash
         run: |
           [[ -n "$PIKAQIAN_API_KEY" ]] || { echo 'PIKAQIAN_API_KEY is not configured'; exit 1; }
@@ -113,15 +119,24 @@ jobs:
             --apply \
             "${asset_args[@]}"
       - name: Report language quality
-        if: inputs.provider == 'tcgdex'
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
         run: >-
           npm run catalogue:ingest -- quality-report
           --language="${{ inputs.language }}"
           --limit=500
 
       - name: Report PikaQian quality
-        if: inputs.provider == 'pikaqian'
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian'
         run: >-
           npm run catalogue:ingest -- quality-report
           --language=zh-cn
           --limit=500
+
+      - name: Mirror approved provider images into Stackr storage
+        if: inputs.operation == 'mirror'
+        run: >-
+          node scripts/mirror-approved-catalogue-assets.mjs
+          --provider="${{ inputs.provider }}"
+          --limit="${{ inputs.limit }}"
+          --concurrency=2
+          --target=staging
