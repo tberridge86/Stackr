@@ -80,7 +80,13 @@ jobs:
             --db-url "$STACKR_SOURCE_DB_URL" \
             --file "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
             --use-copy --data-only \
-            -x storage.buckets_vectors -x storage.vector_indexes
+            -x storage.buckets \
+            -x storage.buckets_analytics \
+            -x storage.buckets_vectors \
+            -x storage.objects \
+            -x storage.s3_multipart_uploads \
+            -x storage.s3_multipart_uploads_parts \
+            -x storage.vector_indexes
           npx --yes supabase@2.110.0 db dump \
             --db-url "$STACKR_SOURCE_DB_URL" \
             --file "$RUNNER_TEMP/stackr-recovery/backups/history-schema.sql" \
@@ -115,7 +121,7 @@ jobs:
           export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
           node scripts/deploy/verify-postgres-restore.mjs
 
-      - name: Backup and restore-test private Storage
+      - name: Backup and restore-test current Storage inventory
         shell: bash
         run: |
           set -euo pipefail
