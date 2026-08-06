@@ -100,7 +100,8 @@ jobs:
             --data="$RUNNER_TEMP/stackr-recovery/backups/data.sql"
           node scripts/deploy/prepare-restore-cleanup.mjs \
             "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
-            "$RUNNER_TEMP/stackr-recovery/backups/cleanup.sql"
+            "$RUNNER_TEMP/stackr-recovery/backups/cleanup.sql" \
+            "$RUNNER_TEMP/stackr-recovery/backups/roles.sql"
 
       - name: Restore Postgres backup into isolated project
         shell: bash
