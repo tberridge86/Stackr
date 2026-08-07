@@ -34,6 +34,8 @@ function quoteIdentifier(value) {
 async function connect(connectionString) {
   const client = new Client({ connectionString, application_name: 'stackr-recovery-verifier' });
   await client.connect();
+  // Full-table recovery fingerprints intentionally exceed the normal API query limit.
+  await client.query('set statement_timeout = 0');
   return client;
 }
 
