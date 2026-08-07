@@ -19,7 +19,13 @@ async function check(baseUrl, path, options = {}) {
     });
     const returnedRequestId = response.headers.get('x-request-id');
     let bodyCheck = null;
-    if (options.inspectJson) {
+    if (options.inspectResponse) {
+      try {
+        bodyCheck = await options.inspectResponse(response.clone(), response);
+      } catch (error) {
+        bodyCheck = { ok: false, error: error.name };
+      }
+    } else if (options.inspectJson) {
       try {
         bodyCheck = options.inspectJson(await response.clone().json(), response);
       } catch (error) {
@@ -39,6 +45,7 @@ async function check(baseUrl, path, options = {}) {
       status: response.status,
       ok: statusOk && corsOk && (bodyCheck?.ok ?? true),
       requestIdPropagated: returnedRequestId === requestId,
+      requestIdRequired: options.requireRequestId !== false,
       corsOrigin,
       bodyCheck,
     };
@@ -49,6 +56,7 @@ async function check(baseUrl, path, options = {}) {
       status: null,
       ok: false,
       requestIdPropagated: false,
+      requestIdRequired: options.requireRequestId !== false,
       error: error.name,
     };
   } finally {
@@ -133,12 +141,33 @@ if (gatewayUrl) {
       }));
     }
     checks.push(await check(gatewayUrl, `/v1/search?q=${searchQuery}&limit=1`));
+    let firstAssetDeliveryUrl = null;
     checks.push(await check(gatewayUrl, '/v1/assets/manifest?limit=1', {
       inspectJson(body) {
         const assets = body?.data?.assets;
+        const firstAsset = assets?.[0] ?? null;
+        const derivatives = Array.isArray(firstAsset?.derivative_list) ? firstAsset.derivative_list : [];
+        firstAssetDeliveryUrl = derivatives.find((item) => item?.role === 'search-result')?.deliveryUrl
+          ?? firstAsset?.delivery_url
+          ?? null;
         return { ok: Array.isArray(assets) && assets.length > 0, assetCount: assets?.length ?? 0 };
       },
     }));
+    if (firstAssetDeliveryUrl) {
+      checks.push(await check('', firstAssetDeliveryUrl, {
+        name: 'asset_delivery',
+        requireRequestId: false,
+        async inspectResponse(response) {
+          const contentType = response.headers.get('content-type');
+          const bytes = (await response.arrayBuffer()).byteLength;
+          return {
+            ok: Boolean(contentType?.startsWith('image/')) && bytes > 0,
+            contentType,
+            bytes,
+          };
+        },
+      }));
+    }
     checks.push(await check(gatewayUrl, '/v1/health', {
       name: 'cors_allowed_preflight',
       method: 'OPTIONS',
@@ -163,6 +192,9 @@ if (!checks.length) {
   process.exit(1);
 }
 
-const failed = checks.filter((item) => !item.ok || (!allowMissingRequestId && !item.requestIdPropagated));
+const failed = checks.filter((item) => (
+  !item.ok
+  || (!allowMissingRequestId && item.requestIdRequired !== false && !item.requestIdPropagated)
+));
 console.log(JSON.stringify({ ok: failed.length === 0, checks }, null, 2));
 if (failed.length) process.exit(1);
