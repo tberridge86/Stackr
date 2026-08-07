@@ -8,6 +8,7 @@ const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const ALLOWED_PROVIDERS = new Set(['tcgdex', 'pikaqian']);
 const RETRYABLE_SOURCE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 const MAX_SOURCE_ATTEMPTS = 3;
+const MAX_DEFERRED_PER_BATCH = 5;
 
 class SourceImageUnavailableError extends Error {
   constructor(status) {
@@ -446,23 +447,26 @@ async function main() {
           return { id: asset.id, status: 'failed', error: errorMessage(markError) };
         }
       }
-      return { id: asset.id, status: 'failed', error: errorMessage(error) };
+      return { id: asset.id, status: 'deferred', error: errorMessage(error) };
     }
   });
   const summary = results.reduce((counts, result) => {
     counts[result.status] = (counts[result.status] ?? 0) + 1;
     return counts;
   }, {});
+  const deferredLimit = Math.min(MAX_DEFERRED_PER_BATCH, Math.max(results.length - 1, 0));
+  const ok = !summary.failed && (summary.deferred ?? 0) <= deferredLimit;
   console.log(JSON.stringify({
-    ok: !summary.failed,
+    ok,
     provider,
     dryRun,
     range: { afterId: afterId || null, throughId: throughId || null, assetIds: assetIds.length || null },
     inspected: results.length,
+    deferredLimit,
     summary,
     results,
   }, null, 2));
-  if (summary.failed) process.exitCode = 1;
+  if (!ok) process.exitCode = 1;
 }
 
 main().catch((error) => {
