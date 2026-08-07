@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: Type RESTORE STAGING BACKUP
+        description: Type RESTORE STAGING BACKUP, RESTORE STAGING DATABASE, or RESTORE STAGING STORAGE
         required: true
         type: string
 
@@ -17,7 +17,10 @@ concurrency:
 
 jobs:
   restore:
-    if: inputs.confirmation == 'RESTORE STAGING BACKUP'
+    if: >-
+      inputs.confirmation == 'RESTORE STAGING BACKUP' ||
+      inputs.confirmation == 'RESTORE STAGING DATABASE' ||
+      inputs.confirmation == 'RESTORE STAGING STORAGE'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: staging
@@ -62,6 +65,7 @@ jobs:
         run: npm ci
 
       - name: Create current ephemeral Postgres backups
+        if: inputs.confirmation != 'RESTORE STAGING STORAGE'
         shell: bash
         run: |
           set -euo pipefail
@@ -115,6 +119,7 @@ jobs:
             "$RUNNER_TEMP/stackr-recovery/backups/roles.sql"
 
       - name: Restore Postgres backup into isolated project
+        if: inputs.confirmation != 'RESTORE STAGING STORAGE'
         shell: bash
         env:
           POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
@@ -127,6 +132,7 @@ jobs:
             sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/cleanup.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "set session_replication_role = replica" --file /backup/data.sql --file /backup/history-schema.sql --file /backup/history-data.sql'
 
       - name: Verify Postgres restore fingerprints
+        if: inputs.confirmation != 'RESTORE STAGING STORAGE'
         shell: bash
         run: |
           set -euo pipefail
@@ -134,6 +140,7 @@ jobs:
           node scripts/deploy/verify-postgres-restore.mjs
 
       - name: Backup and restore-test current Storage inventory
+        if: inputs.confirmation != 'RESTORE STAGING DATABASE'
         shell: bash
         run: |
           set -euo pipefail
