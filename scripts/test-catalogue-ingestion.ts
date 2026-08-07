@@ -55,8 +55,16 @@ function assertBoundedCatalogueWrites() {
   assert.match(ingestionPipeline, /await runWithConcurrency\(/);
   assert.match(catalogueIngest, /--writeConcurrency must be an integer from 1 to 16/);
   assert.match(catalogueWorkflow, /CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12/);
-  assert.match(catalogueWorkflow, /current_offset=\$\(\(CATALOGUE_START_OFFSET \+ batch \* CATALOGUE_BATCH_LIMIT\)\)/);
-  assert.match(catalogueWorkflow, /--runKey="github-\$\{GITHUB_RUN_ID\}-\$\{GITHUB_RUN_ATTEMPT\}-\$\{batch\}"/);
+  assert.match(catalogueWorkflow, /TCGDEX_SNAPSHOT_COMMIT: [0-9a-f]{40}/);
+  assert.match(catalogueWorkflow, /repository: tcgdex\/cards-database/);
+  assert.match(catalogueWorkflow, /TCGDEX_COMPILE_LANGS: \$\{\{ inputs\.language \}\}/);
+  assert.match(catalogueWorkflow, /--setIds="\$CATALOGUE_SET_ID"/);
+  assert.match(catalogueWorkflow, /--tcgdexSnapshotRoot="\$GITHUB_WORKSPACE\/\.tcgdex-source\/server\/generated"/);
+  assert.doesNotMatch(
+    catalogueWorkflow,
+    /npm run catalogue:ingest -- run-language/,
+    'the one-time TCGdex workflow must import from its pinned local snapshot rather than the live card API',
+  );
 }
 
 function assertRecognitionRoleIsLeastPrivilege() {
@@ -344,7 +352,11 @@ async function assertTcgdexLanguageRunFetchesSetsCardsAndVariants() {
     });
     assert.equal(result.ok, true);
     assert.ok(result.stats);
-    assert.equal(result.stats.recordsRetrieved, 4, 'language run must include one set, one card and two variants');
+    assert.equal(
+      result.stats.recordsRetrieved,
+      3,
+      'language run must include one set, one card with its primary finish, and one additional variant',
+    );
     assert.equal(requests.some((url) => url.endsWith('/zh-cn/cards')), true);
     assert.equal(requests.some((url) => url.endsWith('/zh-cn/cards/CS1-001')), true);
     assert.equal(
@@ -434,10 +446,10 @@ async function assertImageAssetsAreBlockedByDefault() {
     /hasCompleteCardImageIdentity/,
     'image assets must require language, set_code, collector_number, variant and finish',
   );
-  assert.match(ingestionPipeline, /hasCompleteSetArtIdentity/);
+  assert.match(ingestionPipeline, /hasCompleteSetScopedAssetIdentity/);
   assert.match(ingestionPipeline, /variant_taxonomy'\)\.upsert/);
   assert.match(ingestionPipeline, /finish_code: 'stamped'/);
-  assert.match(ingestionPipeline, /new_set_art_from_exact_provider_identity/);
+  assert.match(ingestionPipeline, /new_set_asset_from_exact_provider_identity/);
   assert.match(ingestionPipeline, /storage_provider: 'external_reference'/);
   assert.match(
     ingestionPipeline,

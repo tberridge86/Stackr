@@ -1,0 +1,29 @@
+diff --git a/server/compiler/index.ts b/server/compiler/index.ts
+index 582d1905..9169af38 100644
+--- a/server/compiler/index.ts
++++ b/server/compiler/index.ts
+@@ -7 +7 @@ import { fetchRemoteFile, loadLastEdits } from './utils/util'
+-const LANGS: Array<SupportedLanguages> = [
++const ALL_LANGS: Array<SupportedLanguages> = [
+@@ -10,0 +11,7 @@ const LANGS: Array<SupportedLanguages> = [
++const requestedLanguages = new Set((process.env.TCGDEX_COMPILE_LANGS ?? '')
++	.split(',')
++	.map((language) => language.trim())
++	.filter(Boolean))
++const LANGS = requestedLanguages.size
++	? ALL_LANGS.filter((language) => requestedLanguages.has(language))
++	: ALL_LANGS
+diff --git a/server/compiler/utils/util.ts b/server/compiler/utils/util.ts
+index a3279e95..480ee55b 100644
+--- a/server/compiler/utils/util.ts
++++ b/server/compiler/utils/util.ts
+@@ -139,0 +140,9 @@ export async function loadLastEdits() {
++	if (process.env.TCGDEX_SHALLOW_SNAPSHOT === '1') {
++		const commitDate = await runCommand('git log -1 --pretty="format:%cd" --date=iso-strict HEAD', false)
++		for (let file of files) {
++			file = file.replace(/"/g, '').replace("\\303\\251", "\u00e9")
++			if (file) lastEditsCache[file] = commitDate
++		}
++		console.log('Using pinned shallow-clone commit time for', objectSize(lastEditsCache), 'files')
++		return
++	}

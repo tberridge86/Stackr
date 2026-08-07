@@ -27,7 +27,7 @@ on:
         default: '0'
         type: string
       set_id:
-        description: Optional exact provider set ID for a targeted retry
+        description: Optional comma-separated exact provider set IDs for a targeted snapshot
         required: false
         default: ''
         type: string
@@ -78,12 +78,26 @@ jobs:
       CATALOGUE_BATCH_LIMIT: ${{ inputs.limit }}
       CATALOGUE_BATCH_COUNT: ${{ inputs.batches }}
       CATALOGUE_INCLUDE_ASSETS: ${{ inputs.include_assets }}
+      TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 22
           cache: npm
+      - name: Check out pinned TCGdex catalogue source
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: tcgdex/cards-database
+          ref: ${{ env.TCGDEX_SNAPSHOT_COMMIT }}
+          path: .tcgdex-source
+          fetch-depth: 1
+      - name: Set up Bun for the pinned TCGdex compiler
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: 1.2.22
       - run: npm ci
       - name: Install catalogue image pipeline dependencies
         if: inputs.operation == 'mirror'
@@ -94,9 +108,37 @@ jobs:
           [[ "$CATALOGUE_START_OFFSET" =~ ^[0-9]+$ ]] || exit 1
           [[ "$CATALOGUE_BATCH_LIMIT" =~ ^[0-9]+$ ]] || exit 1
           [[ "$CATALOGUE_BATCH_COUNT" =~ ^[0-9]+$ ]] || exit 1
-          [[ -z "$CATALOGUE_SET_ID" || "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+$ ]] || exit 1
+          [[ -z "$CATALOGUE_SET_ID" || "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+)*$ ]] || exit 1
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
+          if [[ "${{ inputs.operation }}" == "snapshot" && "${{ inputs.provider }}" == "tcgdex" ]]; then
+            [[ -n "$CATALOGUE_SET_ID" ]] || { echo 'Pinned TCGdex snapshots require one or more exact set IDs.'; exit 1; }
+          fi
+      - name: Scope the pinned TCGdex compiler
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        shell: bash
+        run: |
+          git -C "$GITHUB_WORKSPACE/.tcgdex-source" apply --unidiff-zero --whitespace=error \
+            "$GITHUB_WORKSPACE/catalogue/tcgdex-pinned-compiler.patch"
+      - name: Install pinned TCGdex compiler dependencies
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        working-directory: .tcgdex-source
+        run: bun install --frozen-lockfile
+      - name: Install pinned TCGdex server dependencies
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        working-directory: .tcgdex-source/server
+        run: bun install --frozen-lockfile
+      - name: Compile the pinned TCGdex language snapshot
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        working-directory: .tcgdex-source/server
+        env:
+          TCGCSV_USER_AGENT: Stackr/1.0 (stackrtcg.com)
+          TCGDEX_COMPILE_LANGS: ${{ inputs.language }}
+          TCGDEX_SHALLOW_SNAPSHOT: '1'
+        run: |
+          bun run compile
+          test -s "$GITHUB_WORKSPACE/.tcgdex-source/server/generated/$CATALOGUE_LANGUAGE/cards.json"
+          test -s "$GITHUB_WORKSPACE/.tcgdex-source/server/generated/$CATALOGUE_LANGUAGE/sets.json"
       - name: Prepare encrypted PikaQian snapshot
         if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian' && env.PIKAQIAN_SNAPSHOT_URL != ''
         shell: bash
@@ -125,26 +167,25 @@ jobs:
           NODE
           echo "PIKAQIAN_CATALOGUE_FILE=$output" >> "$GITHUB_ENV"
           rm -f "$encrypted"
-      - name: Import bounded TCGdex snapshot range
+      - name: Import exact sets from the pinned TCGdex snapshot
         if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
         shell: bash
         run: |
           asset_args=()
           if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
-            asset_args+=(--allowImageAssets --approvedOnlyAssets --assetLicenceStatus=approved)
+            asset_args+=(--include-images --approved-only --assetLicenceStatus=approved)
           fi
-          for (( batch=0; batch<CATALOGUE_BATCH_COUNT; batch++ )); do
-            current_offset=$((CATALOGUE_START_OFFSET + batch * CATALOGUE_BATCH_LIMIT))
-            npm run catalogue:ingest -- run-language \
-              --source=tcgdex \
-              --language="$CATALOGUE_LANGUAGE" \
-              --offset="$current_offset" \
-              --limit="$CATALOGUE_BATCH_LIMIT" \
-              --writeConcurrency=8 \
-              --runKey="github-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${batch}" \
-              --target=staging \
-              "${asset_args[@]}"
-          done
+          npx tsx scripts/catalogue-master.ts apply \
+            --provider=tcgdex \
+            --language="$CATALOGUE_LANGUAGE" \
+            --setIds="$CATALOGUE_SET_ID" \
+            --tcgdexSnapshotRoot="$GITHUB_WORKSPACE/.tcgdex-source/server/generated" \
+            --tcgdexSnapshotVersion="$TCGDEX_SNAPSHOT_COMMIT" \
+            --licenceStatus=approved \
+            --writeConcurrency=8 \
+            --target=staging \
+            --apply \
+            "${asset_args[@]}"
 
       - name: Import bounded PikaQian snapshot range
         if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian'

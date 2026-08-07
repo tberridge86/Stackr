@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import {
   cleanText,
   collectorNumberParts,
@@ -15,13 +17,47 @@ import {
 
 const DEFAULT_BASE_URL = 'https://api.tcgdex.net/v2';
 const DEFAULT_DETAIL_CONCURRENCY = 8;
+const DEFAULT_REQUEST_TIMEOUT_MS = 30_000;
+const MAX_REQUEST_ATTEMPTS = 3;
 
 type TcgdexAdapterOptions = {
   language?: string;
   baseUrl?: string;
+  snapshotRoot?: string;
+  snapshotVersion?: string;
   licenceStatus?: LicenceStatus;
   assetLicenceStatus?: LicenceStatus;
 };
+
+const snapshotListCache = new Map<string, Promise<Record<string, unknown>[]>>();
+const snapshotIndexCache = new Map<string, Promise<Map<string, Record<string, unknown>>>>();
+
+async function snapshotList(root: string, language: string, kind: 'sets' | 'cards') {
+  const key = `${root}:${language}:${kind}`;
+  let pending = snapshotListCache.get(key);
+  if (!pending) {
+    pending = readFile(join(root, language, `${kind}.json`), 'utf8')
+      .then((body) => JSON.parse(body))
+      .then((value) => {
+        if (!Array.isArray(value)) throw new Error(`TCGdex snapshot ${language}/${kind}.json must be an array.`);
+        return value as Record<string, unknown>[];
+      });
+    snapshotListCache.set(key, pending);
+  }
+  return pending;
+}
+
+async function snapshotIndex(root: string, language: string, kind: 'sets' | 'cards') {
+  const key = `${root}:${language}:${kind}`;
+  let pending = snapshotIndexCache.get(key);
+  if (!pending) {
+    pending = snapshotList(root, language, kind).then((items) => new Map(items
+      .map((item) => [cleanText(item.id)?.toLowerCase(), item] as const)
+      .filter((entry): entry is readonly [string, Record<string, unknown>] => Boolean(entry[0]))));
+    snapshotIndexCache.set(key, pending);
+  }
+  return pending;
+}
 
 function tcgdexLanguage(value: unknown) {
   return normaliseLanguageCode(value);
@@ -55,6 +91,21 @@ function tcgdexVariantCode(value: unknown) {
   const raw = cleanText(value);
   if (!raw) return null;
   return TCGDEX_VARIANT_CODES[raw] ?? normaliseVariantCode(raw);
+}
+
+function retryDelayMs(response: Response | null, attempt: number) {
+  const retryAfter = response?.headers.get('retry-after');
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds)) return Math.min(Math.max(seconds * 1000, 250), 30_000);
+    const at = Date.parse(retryAfter);
+    if (Number.isFinite(at)) return Math.min(Math.max(at - Date.now(), 250), 30_000);
+  }
+  return 500 * (2 ** (attempt - 1));
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function variantCandidates(card: Record<string, unknown>) {
@@ -131,6 +182,8 @@ function tcgdexAssetUrl(value: unknown, assetType: 'card_image' | 'set_logo' | '
 export class TcgdexSourceAdapter implements SourceAdapter {
   readonly language: string;
   readonly baseUrl: string;
+  readonly snapshotRoot: string | null;
+  readonly snapshotVersion: string | null;
   readonly licenceStatus: LicenceStatus;
   readonly assetLicenceStatus: LicenceStatus;
   readonly cardRecordCache = new Map<string, Promise<ProviderRecord[]>>();
@@ -138,6 +191,8 @@ export class TcgdexSourceAdapter implements SourceAdapter {
   constructor(options: TcgdexAdapterOptions = {}) {
     this.language = tcgdexLanguage(options.language ?? 'en');
     this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, '');
+    this.snapshotRoot = cleanText(options.snapshotRoot);
+    this.snapshotVersion = cleanText(options.snapshotVersion);
     this.licenceStatus = options.licenceStatus ?? 'approved';
     this.assetLicenceStatus = options.assetLicenceStatus ?? 'under_review';
   }
@@ -152,7 +207,9 @@ export class TcgdexSourceAdapter implements SourceAdapter {
       licenceStatus: this.licenceStatus,
       attributionRequired: true,
       robotsPolicy: 'api_only_no_scraping',
-      rateLimitConfig: { source: 'provider_terms_required_before_scheduling' },
+      rateLimitConfig: this.snapshotRoot
+        ? { source: 'pinned_local_snapshot', version: this.snapshotVersion }
+        : { source: 'provider_terms_required_before_scheduling' },
       capabilities: ['sets', 'cards', 'variants', 'assets', 'conditional_requests'],
       automatedRefreshAllowed: false,
     };
@@ -170,12 +227,52 @@ export class TcgdexSourceAdapter implements SourceAdapter {
     if (scope.conditionalHeaders?.lastModified) headers['If-Modified-Since'] = scope.conditionalHeaders.lastModified;
 
     const url = this.endpoint(path);
-    const response = await fetch(url, { headers });
+    if (this.snapshotRoot) {
+      const match = path.match(/^\/(sets|cards)(?:\/([^/?#]+))?$/);
+      if (!match) throw new Error(`Unsupported TCGdex snapshot path: ${path}`);
+      const kind = match[1] as 'sets' | 'cards';
+      const id = match[2] ? decodeURIComponent(match[2]).toLowerCase() : null;
+      const value = id
+        ? (await snapshotIndex(this.snapshotRoot, this.language, kind)).get(id) ?? null
+        : await snapshotList(this.snapshotRoot, this.language, kind);
+      return {
+        url,
+        value,
+        metadata: {
+          status: value == null ? 404 : 200,
+          responseTimeMs: Date.now() - startedAt,
+          endpoint: url,
+          source: 'pinned_local_snapshot',
+          snapshotVersion: this.snapshotVersion,
+        },
+      };
+    }
+    let response: Response | null = null;
+    let lastError: unknown = null;
+    let attempts = 0;
+    for (let attempt = 1; attempt <= MAX_REQUEST_ATTEMPTS; attempt += 1) {
+      attempts = attempt;
+      try {
+        response = await fetch(url, {
+          headers,
+          signal: AbortSignal.timeout(DEFAULT_REQUEST_TIMEOUT_MS),
+        });
+        if (![408, 429, 500, 502, 503, 504].includes(response.status) || attempt === MAX_REQUEST_ATTEMPTS) break;
+        await response.body?.cancel().catch(() => undefined);
+        await sleep(retryDelayMs(response, attempt));
+      } catch (error) {
+        lastError = error;
+        if (attempt === MAX_REQUEST_ATTEMPTS) throw error;
+        await sleep(retryDelayMs(null, attempt));
+      }
+    }
+    if (!response) throw lastError ?? new Error(`TCGdex request failed before receiving a response for ${url}.`);
     const text = await response.text();
     const metadata = {
       ...headerMetadata(response),
       responseTimeMs: Date.now() - startedAt,
       endpoint: url,
+      attempts,
     };
 
     if (response.status === 304) return { url, value: null, metadata };
@@ -219,8 +316,12 @@ export class TcgdexSourceAdapter implements SourceAdapter {
   }
 
   async fetchSets(scope: FetchScope = {}) {
-    const result = await this.fetchJson('/sets', scope);
-    const sets = Array.isArray(result.value) ? result.value : [];
+    const result = scope.setId
+      ? await this.fetchJson(`/sets/${encodeURIComponent(scope.setId)}`, scope)
+      : await this.fetchJson('/sets', scope);
+    const sets = scope.setId
+      ? (result.value && typeof result.value === 'object' && !Array.isArray(result.value) ? [result.value] : [])
+      : (Array.isArray(result.value) ? result.value : []);
     const offset = scopeOffset(scope);
     const limit = scope.limit ?? sets.length;
     return sets.slice(offset, offset + limit).map((set: Record<string, unknown>) => ({
@@ -303,12 +404,15 @@ export class TcgdexSourceAdapter implements SourceAdapter {
 
   async fetchVariants(scope?: FetchScope) {
     const cards = await this.fetchCards(scope);
-    return cards.flatMap((card) => variantCandidates(card.payload).map((variant) => ({
-      ...card,
-      providerRecordId: `${card.providerRecordId}:${variant}`,
-      recordType: 'variant' as const,
-      payload: { ...card.payload, variant },
-    })));
+    return cards.flatMap((card) => {
+      const [, ...additionalVariants] = variantCandidates(card.payload);
+      return additionalVariants.map((variant) => ({
+        ...card,
+        providerRecordId: `${card.providerRecordId}:${variant}`,
+        recordType: 'variant' as const,
+        payload: { ...card.payload, variant },
+      }));
+    });
   }
 
   async fetchAssets(scope?: FetchScope) {

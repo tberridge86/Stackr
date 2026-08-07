@@ -54,6 +54,7 @@ type Args = {
   approvedOnly: boolean;
   languages: SupportedCatalogueLanguageCode[];
   setId: string | null;
+  setIds: string[];
   maxSets: number | null;
   setOffset: number;
   writeConcurrency: number;
@@ -64,6 +65,8 @@ type Args = {
   pikaqianFile: string | null;
   pikaqianApiConfigured: boolean;
   pikaqianBaseUrl: string | null;
+  tcgdexSnapshotRoot: string | null;
+  tcgdexSnapshotVersion: string | null;
   ximilarScanFile: string | null;
   licenceStatus: 'approved' | 'under_review' | 'restricted' | 'denied' | 'unknown';
   assetLicenceStatus: 'approved' | 'under_review' | 'restricted' | 'denied' | 'unknown';
@@ -79,6 +82,7 @@ type Stage = {
   file?: string | null;
   baseUrl?: string | null;
   allowImageAssets: boolean;
+  setsOnly?: boolean;
   assetsOnly?: boolean;
   approvedOnly?: boolean;
   writes: boolean;
@@ -339,6 +343,14 @@ function parseArgv(argv: string[]): Args {
   if (!Number.isInteger(writeConcurrency) || writeConcurrency < 1 || writeConcurrency > 16) {
     throw new Error('--writeConcurrency must be an integer from 1 to 16.');
   }
+  const setId = cleanText(arg('setId') || arg('set'));
+  const setIds = [...new Set([
+    ...(setId ? [setId] : []),
+    ...(arg('setIds') || arg('set-ids'))
+      .split(',')
+      .map(cleanText)
+      .filter(Boolean) as string[],
+  ])];
 
   return {
     command,
@@ -357,7 +369,8 @@ function parseArgv(argv: string[]): Args {
     assetKind,
     approvedOnly: hasFlag('approved-only') || hasFlag('approvedOnly'),
     languages: [...new Set(languages)],
-    setId: cleanText(arg('setId') || arg('set')),
+    setId,
+    setIds,
     maxSets: arg('maxSets') ? Number(arg('maxSets')) : null,
     setOffset: Number(arg('setOffset') || arg('set-offset') || 0),
     writeConcurrency,
@@ -368,6 +381,8 @@ function parseArgv(argv: string[]): Args {
     pikaqianFile: cleanText(arg('pikaqianFile') || process.env.PIKAQIAN_CATALOGUE_FILE),
     pikaqianApiConfigured: Boolean(cleanText(process.env.PIKAQIAN_API_KEY)),
     pikaqianBaseUrl: cleanText(arg('pikaqianBaseUrl') || process.env.PIKAQIAN_BASE_URL),
+    tcgdexSnapshotRoot: cleanText(arg('tcgdexSnapshotRoot') || arg('tcgdex-snapshot-root') || process.env.TCGDEX_SNAPSHOT_ROOT),
+    tcgdexSnapshotVersion: cleanText(arg('tcgdexSnapshotVersion') || arg('tcgdex-snapshot-version') || process.env.TCGDEX_SNAPSHOT_VERSION),
     ximilarScanFile: cleanText(arg('ximilarScanFile') || process.env.XIMILAR_RESIDUAL_SCAN_FILE),
     licenceStatus: (cleanText(arg('licenceStatus')) as Args['licenceStatus']) ?? 'under_review',
     assetLicenceStatus: (cleanText(arg('assetLicenceStatus') || arg('asset-licence-status')) as Args['assetLicenceStatus']) ?? 'under_review',
@@ -503,9 +518,15 @@ function buildSetArtPlan(args: Args) {
 
 export function buildMasterPlan(args: Args, setIds: string[] = []): Stage[] {
   if (args.assetKind === 'set-art') return [];
-  const selectedSets = args.setId ? [args.setId] : setIds.slice(0, args.maxSets ?? setIds.length);
+  const selectedSets = args.setIds.length
+    ? args.setIds
+    : args.setId
+    ? [args.setId]
+    : setIds.slice(0, args.maxSets ?? setIds.length);
+  const plannedTcgdexSets = args.apply ? [] : selectedSets;
   const pikaqianConfigured = Boolean(args.pikaqianFile || args.pikaqianApiConfigured);
-  const tcgdexMetadata = providerSelected(args, 'tcgdex') && !args.assetsOnly ? args.languages.map((language) => ({
+  const refreshTcgdexSetList = !args.setId && args.setIds.length === 0 && args.setOffset === 0;
+  const tcgdexMetadata = providerSelected(args, 'tcgdex') && !args.assetsOnly && refreshTcgdexSetList ? args.languages.map((language) => ({
     id: `tcgdex:${language}:sets`,
     phase: 'metadata' as const,
     provider: 'tcgdex' as const,
@@ -513,10 +534,11 @@ export function buildMasterPlan(args: Args, setIds: string[] = []): Stage[] {
     command: 'run_source' as const,
     setId: null,
     allowImageAssets: false,
+    setsOnly: true,
     writes: args.apply,
     reason: 'Import set metadata before card identities or images.',
   })) : [];
-  const tcgdexCards = providerSelected(args, 'tcgdex') && !args.assetsOnly ? selectedSets.flatMap((setId) => args.languages.map((language) => ({
+  const tcgdexCards = providerSelected(args, 'tcgdex') && !args.assetsOnly ? plannedTcgdexSets.flatMap((setId) => args.languages.map((language) => ({
     id: `tcgdex:${language}:${setId}:cards`,
     phase: 'metadata' as const,
     provider: 'tcgdex' as const,
@@ -561,7 +583,7 @@ export function buildMasterPlan(args: Args, setIds: string[] = []): Stage[] {
       : 'Skipped until --ximilarScanFile is supplied; Ximilar bulk image download is forbidden.',
   }] : [];
   const tcgdexImageStages = args.includeImages && providerSelected(args, 'tcgdex')
-    ? selectedSets.flatMap((setId) => args.languages.map((language) => ({
+    ? plannedTcgdexSets.flatMap((setId) => args.languages.map((language) => ({
       id: `tcgdex:${language}:${setId}:images`,
       phase: 'images' as const,
       provider: 'tcgdex' as const,
@@ -598,8 +620,9 @@ export function buildMasterPlan(args: Args, setIds: string[] = []): Stage[] {
 
 function buildSetScopedStages(args: Args, setScopes: SetScope[]): Stage[] {
   const pikaqianConfigured = Boolean(args.pikaqianFile || args.pikaqianApiConfigured);
-  const availableScopes = args.setId ? explicitSetScopes(args) : setScopes;
-  const start = args.setId ? 0 : Math.max(0, Math.trunc(args.setOffset));
+  const hasExplicitSets = Boolean(args.setId || args.setIds.length);
+  const availableScopes = hasExplicitSets ? explicitSetScopes(args) : setScopes;
+  const start = hasExplicitSets ? 0 : Math.max(0, Math.trunc(args.setOffset));
   const selectedScopes = availableScopes.slice(start, start + (args.maxSets ?? availableScopes.length));
   const tcgdexScopes = selectedScopes.filter((scope) => scope.provider === 'tcgdex');
   const tcgdexCards = providerSelected(args, 'tcgdex') && !args.assetsOnly ? tcgdexScopes.map((scope) => ({
@@ -609,9 +632,12 @@ function buildSetScopedStages(args: Args, setScopes: SetScope[]): Stage[] {
     language: scope.language,
     command: 'run_set' as const,
     setId: scope.setId,
-    allowImageAssets: false,
+    allowImageAssets: args.includeImages,
+    approvedOnly: args.approvedOnly,
     writes: args.apply,
-    reason: 'Import card identities with variant and finish before images.',
+    reason: args.includeImages
+      ? 'Import card identities, variants, finishes, and approved native images in one provider pass.'
+      : 'Import card identities with variant and finish before images.',
   })) : [];
   const pikaqianScopes = selectedScopes.filter((scope) => (
     providerSelected(args, 'pikaqian')
@@ -635,7 +661,7 @@ function buildSetScopedStages(args: Args, setScopes: SetScope[]): Stage[] {
   })) : [];
   const imageStages = args.includeImages
     ? [
-      ...(providerSelected(args, 'tcgdex') ? tcgdexScopes.map((scope) => ({
+      ...(args.assetsOnly && providerSelected(args, 'tcgdex') ? tcgdexScopes.map((scope) => ({
       id: `tcgdex:${scope.language}:${scope.setId}:images`,
       phase: 'images' as const,
       provider: 'tcgdex' as const,
@@ -669,13 +695,16 @@ function buildSetScopedStages(args: Args, setScopes: SetScope[]): Stage[] {
 }
 
 function explicitSetScopes(args: Args): SetScope[] {
-  if (!args.setId) return [];
+  const setIds = args.setIds.length ? args.setIds : args.setId ? [args.setId] : [];
+  if (!setIds.length) return [];
   const scopes: SetScope[] = [];
-  if (providerSelected(args, 'tcgdex')) {
-    scopes.push(...args.languages.map((language) => ({ provider: 'tcgdex' as const, language, setId: args.setId! })));
-  }
-  if (providerSelected(args, 'pikaqian') && args.languages.includes('zh-cn')) {
-    scopes.push({ provider: 'pikaqian', language: 'zh-cn', setId: args.setId });
+  for (const setId of setIds) {
+    if (providerSelected(args, 'tcgdex')) {
+      scopes.push(...args.languages.map((language) => ({ provider: 'tcgdex' as const, language, setId })));
+    }
+    if (providerSelected(args, 'pikaqian') && args.languages.includes('zh-cn')) {
+      scopes.push({ provider: 'pikaqian', language: 'zh-cn', setId });
+    }
   }
   return scopes;
 }
@@ -723,6 +752,8 @@ async function executeStage(db: SupabaseClientLike, stage: Stage, args: Args) {
     file: stage.file ?? undefined,
     language: stage.language,
     baseUrl: stage.baseUrl ?? undefined,
+    snapshotRoot: stage.provider === 'tcgdex' ? args.tcgdexSnapshotRoot ?? undefined : undefined,
+    snapshotVersion: stage.provider === 'tcgdex' ? args.tcgdexSnapshotVersion ?? undefined : undefined,
     licenceStatus: args.licenceStatus,
     assetLicenceStatus: args.assetLicenceStatus,
   });
@@ -734,6 +765,7 @@ async function executeStage(db: SupabaseClientLike, stage: Stage, args: Args) {
     setId: stage.setId ?? undefined,
     dryRun: !args.apply,
     allowImageAssets: stage.allowImageAssets,
+    setsOnly: stage.setsOnly,
     assetsOnly: stage.assetsOnly,
     approvedOnlyAssets: stage.approvedOnly,
     writeConcurrency: args.writeConcurrency,
@@ -743,7 +775,7 @@ async function executeStage(db: SupabaseClientLike, stage: Stage, args: Args) {
 }
 
 async function fetchStagingSetScopes(db: SupabaseClientLike, args: Args): Promise<SetScope[]> {
-  if (args.setId) return explicitSetScopes(args);
+  if (args.setId || args.setIds.length) return explicitSetScopes(args);
   const [sets, sources, identifiers] = await Promise.all([
     fetchAll(db, 'catalog', 'sets', 'id,language_code'),
     fetchAll(db, 'ingest', 'sources', 'id,code'),
@@ -1251,7 +1283,7 @@ function setRef(row: Record<string, unknown>) {
   return cleanText(valueAt(row, 'provider_set_id', 'providerSetId', 'set_code', 'setCode', 'set_id', 'setId'));
 }
 
-function expectedFromRaw(row: RawRecordRow): ExpectedCardRecord | null {
+function expectedFromRaw(row: RawRecordRow, sourceCode?: string | null): ExpectedCardRecord | null {
   const payload = row.raw_payload ?? {};
   const language = normaliseLanguageCode(row.language_code ?? valueAt(payload, 'language_code', 'languageCode', 'language'));
   const rawSetRef = setRef(payload);
@@ -1273,7 +1305,7 @@ function expectedFromRaw(row: RawRecordRow): ExpectedCardRecord | null {
     collectorNumber,
     variant,
     finish,
-    provider: cleanText(valueAt(payload, 'provider')) ?? 'unknown',
+    provider: cleanText(sourceCode) ?? cleanText(valueAt(payload, 'provider')) ?? 'unknown',
     providerId: row.external_id,
     sourceUrl: row.source_url,
     rightsStatus: row.licence_status,
@@ -1281,8 +1313,10 @@ function expectedFromRaw(row: RawRecordRow): ExpectedCardRecord | null {
   };
 }
 
-function rawPayloadProvider(row: RawRecordRow) {
-  return cleanText(valueAt(row.raw_payload ?? {}, 'provider', 'source', 'source_code', 'sourceCode')) ?? 'unknown';
+function rawPayloadProvider(row: RawRecordRow, sourceCode?: string | null) {
+  return cleanText(sourceCode)
+    ?? cleanText(valueAt(row.raw_payload ?? {}, 'provider', 'source', 'source_code', 'sourceCode'))
+    ?? 'unknown';
 }
 
 function providerGroup(provider: string): ImageCandidate['providerGroup'] | null {
@@ -1403,11 +1437,38 @@ function candidateSummary(candidates: ImageCandidate[]) {
   ].filter(Boolean).join('|')).join('; ');
 }
 
-function assetIsApproved(asset: AssetRow) {
-  return asset.asset_type === 'card_image'
-    && asset.rights_status === 'approved'
+function assetRightsAreApproved(asset: AssetRow) {
+  return asset.rights_status === 'approved'
     && (asset.permission_status == null || asset.permission_status === 'approved')
     && !asset.deprecated_at;
+}
+
+function assetIsApproved(asset: AssetRow) {
+  return asset.asset_type === 'card_image' && assetRightsAreApproved(asset);
+}
+
+function providerSetRefsByCanonicalSetId(
+  sources: SetScopeSourceRow[],
+  identifiers: SetScopeIdentifierRow[],
+  provider: string,
+) {
+  const providerSourceIds = new Set(sources
+    .filter((source) => source.code === provider)
+    .map((source) => source.id));
+  const result = new Map<string, Set<string>>();
+  for (const identifier of identifiers) {
+    if (identifier.source_entity_type !== 'set'
+      || !providerSourceIds.has(identifier.source_id)
+      || !identifier.is_current
+      || identifier.deprecated_at != null
+      || !identifier.set_id) continue;
+    const externalId = cleanText(identifier.external_id)?.toLowerCase();
+    if (!externalId) continue;
+    const refs = result.get(identifier.set_id) ?? new Set<string>();
+    refs.add(externalId);
+    result.set(identifier.set_id, refs);
+  }
+  return result;
 }
 
 function classifyImageLeftovers(input: {
@@ -1693,20 +1754,45 @@ function previousPublishLanguages(language: SupportedCatalogueLanguageCode) {
 async function buildReports(db: SupabaseClientLike, args: Args) {
   const files = reportFiles(args.reportDir);
   mkdirSync(args.reportDir, { recursive: true });
-  const [sets, printings, variants, assets, rawRecords, conflicts] = await Promise.all([
+  const [sets, printings, variants, assets, rawRecords, conflicts, sources, externalIdentifiers] = await Promise.all([
     fetchAll(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at') as Promise<SetRow[]>,
     fetchAll(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,deprecated_at') as Promise<PrintingRow[]>,
     fetchAll(db, 'catalog', 'card_variants', 'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key,deprecated_at') as Promise<VariantRow[]>,
     fetchAll(db, 'catalog', 'assets', 'id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_path,storage_key,content_sha256,perceptual_hash,deprecated_at') as Promise<AssetRow[]>,
     fetchAll(db, 'ingest', 'raw_source_records', 'id,source_id,record_type,external_id,language_code,source_url,licence_status,validation_status,raw_payload,deprecated_at') as Promise<RawRecordRow[]>,
     fetchAll(db, 'ingest', 'data_conflicts', 'id,conflict_type,severity,status,entity_schema,entity_table,entity_id,canonical_key,proposed_payload,existing_payload,internal_notes') as Promise<ConflictRow[]>,
+    fetchAll(db, 'ingest', 'sources', 'id,code') as Promise<SetScopeSourceRow[]>,
+    fetchAll(db, 'ingest', 'external_identifiers', 'source_id,source_entity_type,external_id,language_code,set_id,is_current,deprecated_at') as Promise<SetScopeIdentifierRow[]>,
   ]);
   const activeSets = sets.filter((set) => set.deprecated_at == null);
   const activePrintings = printings.filter((printing) => printing.deprecated_at == null);
   const activeVariants = variants.filter((variant) => variant.deprecated_at == null);
   const activeRawRecords = rawRecords.filter((row) => row.deprecated_at == null);
   const selectedLanguages = new Set(args.languages);
-  const reportSets = activeSets.filter((set) => selectedLanguages.has(normaliseLanguageCode(set.language_code) as SupportedCatalogueLanguageCode));
+  const sourceCodeById = new Map(sources.map((source) => [source.id, source.code]));
+  const selectedSourceIds = new Set(sources
+    .filter((source) => !args.provider || source.code === args.provider)
+    .map((source) => source.id));
+  const selectedProviderSetIds = new Set(externalIdentifiers
+    .filter((identifier) => identifier.source_entity_type === 'set'
+      && selectedSourceIds.has(identifier.source_id)
+      && identifier.is_current
+      && identifier.deprecated_at == null
+      && identifier.set_id)
+    .map((identifier) => identifier.set_id as string));
+  const selectedProviderSetRefsBySetId = args.provider
+    ? providerSetRefsByCanonicalSetId(sources, externalIdentifiers, args.provider)
+    : new Map<string, Set<string>>();
+  const pikaqianSourceIds = new Set(sources.filter((source) => source.code === 'pikaqian').map((source) => source.id));
+  const pikaqianSetIds = new Set(externalIdentifiers
+    .filter((identifier) => identifier.source_entity_type === 'set'
+      && pikaqianSourceIds.has(identifier.source_id)
+      && identifier.is_current
+      && identifier.deprecated_at == null
+      && identifier.set_id)
+    .map((identifier) => identifier.set_id as string));
+  const reportSets = activeSets.filter((set) => selectedLanguages.has(normaliseLanguageCode(set.language_code) as SupportedCatalogueLanguageCode)
+    && (!args.provider || selectedProviderSetIds.has(set.id)));
 
   const printingsBySet = new Map<string, PrintingRow[]>();
   for (const printing of activePrintings) {
@@ -1761,6 +1847,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     .filter((asset) => asset.asset_type === 'set_symbol' && asset.publicly_servable && asset.rights_status === 'approved' && !asset.deprecated_at)
     .map((asset) => asset.set_id)
     .filter(Boolean) as string[]);
+  const setCoverIds = new Set(assets
+    .filter((asset) => asset.asset_type === 'sealed_product_image' && asset.publicly_servable && assetRightsAreApproved(asset))
+    .map((asset) => asset.set_id)
+    .filter(Boolean) as string[]);
   const openConflicts = conflicts.filter((conflict) => ['open', 'in_review'].includes(conflict.status));
   const conflictsBySetRef = new Map<string, ConflictRow[]>();
   for (const conflict of openConflicts) {
@@ -1781,7 +1871,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
 
   const expectedCards = activeRawRecords
     .filter((row) => ['card', 'printing', 'variant'].includes(row.record_type))
-    .map(expectedFromRaw)
+    .map((row) => expectedFromRaw(row, sourceCodeById.get(row.source_id)))
     .filter(Boolean) as ExpectedCardRecord[];
   const expectedReportCards = expectedCards.filter((expected) => selectedLanguages.has(expected.language as SupportedCatalogueLanguageCode));
   const variantsByIdentity = new Set(activeVariants.map((variant) => proposedCanonicalKey({
@@ -1810,8 +1900,15 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     const folderSetCode = setArtFolderCode(set);
     const setPrintings = printingsBySet.get(set.id) ?? [];
     const setVariants = variantsBySet.get(set.id) ?? [];
+    const expectedSetRefs = args.provider
+      ? selectedProviderSetRefsBySetId.get(set.id) ?? new Set<string>()
+      : new Set([set.id, set.set_code, set.provider_set_code]
+        .map(cleanText)
+        .filter(Boolean)
+        .map((ref) => String(ref).toLowerCase()));
     const expectedForSet = expectedCards.filter((expected) => expected.language === set.language_code
-      && [set.id, set.set_code, set.provider_set_code].filter(Boolean).includes(expected.setRef));
+      && expectedSetRefs.has(expected.setRef.toLowerCase())
+      && (!args.provider || expected.provider === args.provider));
     const expectedCollectorNumbers = new Set(expectedForSet.map((expected) => expected.collectorNumber));
     const expectedVariantKeys = new Set(expectedForSet.map((expected) => expected.canonicalKey));
     const setVariantKeys = new Set(setVariants.map((variant) => proposedCanonicalKey({
@@ -1821,7 +1918,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       variantCode: variant.variant_code,
       finishCode: variant.finish_code ?? 'normal',
     })));
-    const expectedCardCount = Math.max(Number(set.total ?? 0), expectedCollectorNumbers.size, setPrintings.length);
+    const hasPikaqianRecords = expectedForSet.some((expected) => expected.provider === 'pikaqian');
+    const expectedCardCount = hasPikaqianRecords
+      ? Math.max(expectedCollectorNumbers.size, setPrintings.length)
+      : Math.max(Number(set.total ?? 0), expectedCollectorNumbers.size, setPrintings.length);
     const storedCardRecords = setPrintings.length;
     const missingCardRecords = Math.max(expectedCardCount - storedCardRecords, 0);
     const expectedRequiredVariantCount = Math.max(expectedVariantKeys.size, setVariants.length);
@@ -1848,18 +1948,26 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     const missingExactNativeImages = Math.max(expectedRequiredVariantCount - exactNativeImages, 0);
     const missingLogo = setLogoIds.has(set.id) ? 0 : 1;
     const missingSymbol = setSymbolIds.has(set.id) ? 0 : 1;
+    const isPikaqianSet = pikaqianSetIds.has(set.id);
+    const setCoverAvailable = setCoverIds.has(set.id);
+    const representativeCardCoverAvailable = exactNativeImages > 0;
+    const setArtFallbackAvailable = setCoverAvailable || representativeCardCoverAvailable;
+    const releaseBlockingMissingLogo = isPikaqianSet && setArtFallbackAvailable ? 0 : missingLogo;
+    const releaseBlockingMissingSymbol = isPikaqianSet && setArtFallbackAvailable ? 0 : missingSymbol;
     const checklistCompletionPercentage = percentComplete(storedCardRecords, expectedCardCount);
     const variantCompletionPercentage = expectedRequiredVariantCount > 0
       ? percentComplete(storedRequiredVariants - missingRequiredVariants, expectedRequiredVariantCount)
       : 100;
     const imageCompletionPercentage = percentComplete(exactNativeImages, Math.max(expectedRequiredVariantCount, setVariants.length));
-    const setArtCompletionPercentage = percentComplete(2 - missingLogo - missingSymbol, 2);
+    const setArtCompletionPercentage = releaseBlockingMissingLogo === 0 && releaseBlockingMissingSymbol === 0
+      ? 100
+      : percentComplete(2 - missingLogo - missingSymbol, 2);
     const gates: SetCompletionGates = {
       missingCardRecords,
       missingRequiredVariants,
       missingExactNativeImages,
-      missingLogo,
-      missingSymbol,
+      missingLogo: releaseBlockingMissingLogo,
+      missingSymbol: releaseBlockingMissingSymbol,
       unresolvedIdentityConflicts,
       unvalidatedImages,
     };
@@ -1886,6 +1994,18 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       missing_set_symbol: missingSymbol > 0,
       native_logo_status: missingLogo === 0 ? 'approved' : 'missing',
       set_symbol_status: missingSymbol === 0 ? 'approved' : 'missing',
+      set_cover_available: setCoverAvailable,
+      representative_card_cover_available: representativeCardCoverAvailable,
+      set_art_requirement: isPikaqianSet ? 'optional_source_unavailable_with_fallback' : 'native_logo_and_symbol_required',
+      set_art_fallback_status: missingLogo === 0 || missingSymbol === 0
+        ? 'native_set_art'
+        : setCoverAvailable
+        ? 'approved_pack_cover'
+        : representativeCardCoverAvailable
+        ? 'approved_representative_card'
+        : 'unavailable',
+      release_blocking_missing_logo: releaseBlockingMissingLogo,
+      release_blocking_missing_symbol: releaseBlockingMissingSymbol,
       unresolved_identity_conflicts: unresolvedIdentityConflicts,
       unvalidated_images: unvalidatedImages,
       conflicts: conflictCount,
@@ -1955,14 +2075,14 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     if (expected.provider === 'pikaqian') pikaqianSetRefs.add(expected.setRef);
   }
   for (const row of activeRawRecords) {
-    if (rawPayloadProvider(row) !== 'pikaqian') continue;
+    if (rawPayloadProvider(row, sourceCodeById.get(row.source_id)) !== 'pikaqian') continue;
     const ref = setRef(row.raw_payload);
     if (ref) pikaqianSetRefs.add(ref);
   }
   const pikaqianCoverageRows = coverageRows
     .filter((row) => row.language === 'zh-cn'
       && (
-        args.provider === 'pikaqian'
+        pikaqianSetIds.has(String(row.set_id))
         || pikaqianSetRefs.has(String(row.set_id))
         || pikaqianSetRefs.has(String(row.set_code))
       ))
@@ -1998,7 +2118,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       const variant = normaliseVariantCode(valueAt(payload, 'variant_code', 'variantCode', 'variant', 'finish') ?? 'normal');
       const finish = normaliseFinishCode(valueAt(payload, 'finish_code', 'finishCode', 'finish', 'variant') ?? variant) ?? 'normal';
       return {
-        provider: rawPayloadProvider(row),
+        provider: rawPayloadProvider(row, sourceCodeById.get(row.source_id)),
         language: normaliseLanguageCode(row.language_code ?? valueAt(payload, 'language_code', 'languageCode', 'language')),
         record_type: row.record_type,
         provider_id: row.external_id,
@@ -2035,6 +2155,12 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     'missing_set_symbol',
     'native_logo_status',
     'set_symbol_status',
+    'set_cover_available',
+    'representative_card_cover_available',
+    'set_art_requirement',
+    'set_art_fallback_status',
+    'release_blocking_missing_logo',
+    'release_blocking_missing_symbol',
     'unresolved_identity_conflicts',
     'unvalidated_images',
     'conflicts',
@@ -2068,6 +2194,12 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     'missing_set_symbol',
     'native_logo_status',
     'set_symbol_status',
+    'set_cover_available',
+    'representative_card_cover_available',
+    'set_art_requirement',
+    'set_art_fallback_status',
+    'release_blocking_missing_logo',
+    'release_blocking_missing_symbol',
     'unresolved_identity_conflicts',
     'unvalidated_images',
     'conflicts',
@@ -2223,8 +2355,8 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       'missing_card_records',
       'missing_required_variants',
       'missing_exact_native_images',
-      'missing_logo',
-      'missing_symbol',
+      'release_blocking_missing_logo',
+      'release_blocking_missing_symbol',
       'unresolved_identity_conflicts',
       'unvalidated_images',
     ],
@@ -2251,6 +2383,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       missingSetArt: missingSetArt.length,
       missingLogos: coverageRows.reduce((sum, row) => sum + row.missing_logo, 0),
       missingSymbols: coverageRows.reduce((sum, row) => sum + row.missing_symbol, 0),
+      releaseBlockingMissingLogos: coverageRows.reduce((sum, row) => sum + row.release_blocking_missing_logo, 0),
+      releaseBlockingMissingSymbols: coverageRows.reduce((sum, row) => sum + row.release_blocking_missing_symbol, 0),
+      approvedSetCovers: coverageRows.reduce((sum, row) => sum + Number(row.set_cover_available), 0),
+      representativeCardCoverFallbacks: coverageRows.reduce((sum, row) => sum + Number(row.representative_card_cover_available && !row.set_cover_available), 0),
       unresolvedIdentityConflicts: coverageRows.reduce((sum, row) => sum + row.unresolved_identity_conflicts, 0),
       unvalidatedImages: coverageRows.reduce((sum, row) => sum + row.unvalidated_images, 0),
       conflicts: conflictRows.length,
@@ -2281,6 +2417,8 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
         missingExactNativeImages: rows.reduce((sum, row) => sum + row.missing_exact_native_images, 0),
         missingLogos: rows.reduce((sum, row) => sum + row.missing_logo, 0),
         missingSymbols: rows.reduce((sum, row) => sum + row.missing_symbol, 0),
+        releaseBlockingMissingLogos: rows.reduce((sum, row) => sum + row.release_blocking_missing_logo, 0),
+        releaseBlockingMissingSymbols: rows.reduce((sum, row) => sum + row.release_blocking_missing_symbol, 0),
         unresolvedIdentityConflicts: rows.reduce((sum, row) => sum + row.unresolved_identity_conflicts, 0),
         unvalidatedImages: rows.reduce((sum, row) => sum + row.unvalidated_images, 0),
         conflicts: rows.reduce((sum, row) => sum + row.conflicts, 0),
@@ -2336,8 +2474,8 @@ function publishReadinessFromSummary(summary: any, language: SupportedCatalogueL
     ['missingCardRecords', 'missing_card_records'],
     ['missingRequiredVariants', 'missing_required_variants'],
     ['missingExactNativeImages', 'missing_exact_native_images'],
-    ['missingLogos', 'missing_logo'],
-    ['missingSymbols', 'missing_symbol'],
+    ['releaseBlockingMissingLogos', 'release_blocking_missing_logo'],
+    ['releaseBlockingMissingSymbols', 'release_blocking_missing_symbol'],
     ['unresolvedIdentityConflicts', 'unresolved_identity_conflicts'],
     ['unvalidatedImages', 'unvalidated_images'],
   ] as const) {
@@ -2956,6 +3094,8 @@ export const masterCatalogueInternals = {
   coveragePercent,
   deriveSetCompletionStatus,
   expectedFromRaw,
+  assetRightsAreApproved,
+  providerSetRefsByCanonicalSetId,
   LANGUAGE_PUBLISH_ORDER,
   percentComplete,
   previousPublishLanguages,

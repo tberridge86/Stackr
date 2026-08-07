@@ -10,6 +10,8 @@ type AdapterOptions = {
   file?: string;
   language?: string;
   baseUrl?: string;
+  snapshotRoot?: string;
+  snapshotVersion?: string;
   licenceStatus?: LicenceStatus;
   assetLicenceStatus?: LicenceStatus;
 };
@@ -34,6 +36,8 @@ export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
     return new TcgdexSourceAdapter({
       language: options.language,
       baseUrl: options.baseUrl,
+      snapshotRoot: options.snapshotRoot,
+      snapshotVersion: options.snapshotVersion,
       licenceStatus: options.licenceStatus ?? 'approved',
       assetLicenceStatus: options.assetLicenceStatus ?? 'under_review',
     });

@@ -4,12 +4,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { masterCatalogueInternals } from './catalogue-master';
 import { PikaQianApiSourceAdapter } from './catalogue-ingestion/pikaqianAdapter';
+import { PikaQianSourceAdapter } from './catalogue-ingestion/providerFileAdapters';
+import { TcgdexSourceAdapter } from './catalogue-ingestion/tcgdexAdapter';
 
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 const masterScript = readFileSync('scripts/catalogue-master.ts', 'utf8');
 const pipeline = readFileSync('scripts/catalogue-ingestion/pipeline.ts', 'utf8');
 const adapters = readFileSync('scripts/catalogue-ingestion/adapters.ts', 'utf8');
 const pikaqianAdapter = readFileSync('scripts/catalogue-ingestion/pikaqianAdapter.ts', 'utf8');
+const tcgdexAdapter = readFileSync('scripts/catalogue-ingestion/tcgdexAdapter.ts', 'utf8');
 const imageLeftoverMigration = readFileSync('supabase/migrations/20260801103000_catalogue_image_leftover_workflow.sql', 'utf8');
 const publicationSnapshotMigration = readFileSync('supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql', 'utf8');
 const targetedQualityReportMigration = readFileSync(
@@ -18,6 +21,18 @@ const targetedQualityReportMigration = readFileSync(
 );
 const assetManifestIdentityMigration = readFileSync(
   'supabase/migrations/20260806171907_resolve_asset_manifest_catalogue_identity.sql',
+  'utf8',
+);
+const artworkFallbackMigration = readFileSync(
+  'supabase/migrations/20260806212500_expose_catalogue_artwork_fallbacks.sql',
+  'utf8',
+);
+const artworkFallbackBackfillMigration = readFileSync(
+  'supabase/migrations/20260806213000_backfill_catalogue_native_image_states.sql',
+  'utf8',
+);
+const providerVariantRepairMigration = readFileSync(
+  'supabase/migrations/20260807034806_repair_provider_variant_identity.sql',
   'utf8',
 );
 const stackrApiService = readFileSync('backend/lib/stackrApiV1.js', 'utf8');
@@ -64,6 +79,11 @@ function assertDryRunApplyRules() {
     plan.every((stage) => stage.provider !== 'ximilar_residual_scans' || !stage.allowImageAssets),
     'Ximilar must not be a bulk image source',
   );
+  assert.equal(
+    plan.some((stage) => stage.provider === 'tcgdex' && stage.setId === 'SV4a'),
+    false,
+    'applied TCGdex set work must be scheduled once through the cached set-scoped path',
+  );
   const filtered = masterCatalogueInternals.parseArgv([
     'discover',
     '--target=staging',
@@ -85,6 +105,20 @@ function assertDryRunApplyRules() {
   ]);
   assert.equal(offset.setOffset, 1);
   assert.equal(offset.writeConcurrency, 8);
+  const explicitBatch = masterCatalogueInternals.parseArgv([
+    'apply',
+    '--target=staging',
+    '--provider=tcgdex',
+    '--language=en',
+    '--setIds=sv1,sv2,sv1',
+    '--apply',
+  ]);
+  assert.deepEqual(explicitBatch.setIds, ['sv1', 'sv2']);
+  assert.deepEqual(
+    masterCatalogueInternals.buildSetScopedStages(explicitBatch, []).map((stage) => stage.setId),
+    ['sv1', 'sv2'],
+    'explicit set batches must preserve order and remove duplicates',
+  );
   assert.throws(
     () => masterCatalogueInternals.parseArgv(['apply', '--writeConcurrency=17']),
     /integer from 1 to 16/,
@@ -94,6 +128,16 @@ function assertDryRunApplyRules() {
     { provider: 'tcgdex', language: 'en', setId: 'second' },
   ]);
   assert.deepEqual(offsetPlan.map((stage) => stage.setId), ['second']);
+  assert.equal(
+    masterCatalogueInternals.buildMasterPlan(offset).some((stage) => stage.id === 'tcgdex:en:sets'),
+    false,
+    'offset batches must reuse the existing set catalogue instead of reprocessing every set',
+  );
+  assert.equal(
+    masterCatalogueInternals.buildMasterPlan({ ...offset, setId: 'second', setOffset: 0 }).some((stage) => stage.id === 'tcgdex:en:sets'),
+    false,
+    'explicit set retries must not reprocess the full set catalogue',
+  );
   const providerPlan = masterCatalogueInternals.buildMasterPlan(filtered, ['csv6c']);
   assert.ok(providerPlan.length > 0, 'PikaQian provider filter must keep PikaQian stages');
   assert.ok(providerPlan.every((stage) => stage.provider === 'pikaqian'), 'provider filter must not schedule TCGdex or Ximilar stages');
@@ -131,11 +175,16 @@ function assertDryRunApplyRules() {
   ]);
   const pikaqianCardIndex = apiPlan.findIndex((stage) => stage.id === 'pikaqian:zh-cn:csv6c:cards');
   const pikaqianImageIndex = apiPlan.findIndex((stage) => stage.id === 'pikaqian:zh-cn:csv6c:images');
+  const tcgdexCardIndex = apiPlan.findIndex((stage) => stage.id === 'tcgdex:en:sv1:cards');
+  const tcgdexImageIndex = apiPlan.findIndex((stage) => stage.id === 'tcgdex:en:sv1:images');
   assert.ok(pikaqianCardIndex >= 0, 'PikaQian API metadata stage must exist for zh-cn set scopes');
   assert.equal(pikaqianImageIndex, -1, 'PikaQian must not spend quota on a duplicate image pass');
   assert.equal(apiPlan[pikaqianCardIndex].allowImageAssets, true);
   assert.equal(apiPlan[pikaqianCardIndex].approvedOnly, true);
-  assert.ok(apiPlan.some((stage) => stage.id === 'tcgdex:en:sv1:cards'));
+  assert.ok(tcgdexCardIndex >= 0);
+  assert.equal(tcgdexImageIndex, -1, 'TCGdex metadata and images must share one cached card-detail pass');
+  assert.equal(apiPlan[tcgdexCardIndex].allowImageAssets, true);
+  assert.equal(apiPlan[tcgdexCardIndex].approvedOnly, true);
   assert.ok(!apiPlan.some((stage) => stage.id === 'tcgdex:zh-cn:csv6c:cards'), 'PikaQian set IDs must never be sent to TCGdex');
 
   const scopes = masterCatalogueInternals.deriveProviderSetScopes(
@@ -183,6 +232,38 @@ function assertProviderRules() {
   assert.match(pikaqianAdapter, /X-API-Key/, 'PikaQian API requests must use the X-API-Key header');
   assert.match(pikaqianAdapter, /\/sets/, 'PikaQian API adapter must fetch sets');
   assert.match(pikaqianAdapter, /\/cards/, 'PikaQian API adapter must fetch cards');
+  assert.match(tcgdexAdapter, /AbortSignal\.timeout\(DEFAULT_REQUEST_TIMEOUT_MS\)/, 'TCGdex requests must have a bounded timeout');
+  assert.match(tcgdexAdapter, /MAX_REQUEST_ATTEMPTS/, 'TCGdex transient failures must use bounded retries');
+  assert.match(
+    pipeline,
+    /command === 'run_set' && adapter\.identifySource\(\)\.code === 'tcgdex'/,
+    'TCGdex set jobs must upsert set metadata before importing cards',
+  );
+  assert.match(pipeline, /JSON\.stringify\(error\)/, 'non-Error database failures must be recorded with useful details');
+  assert.match(
+    pipeline,
+    /records_retrieved: 0,[\s\S]*records_conflicted: 0,[\s\S]*error_message: null/,
+    'retried daily import runs must reset stale counters before processing',
+  );
+  assert.match(pipeline, /repair_provider_variant_identity/, 'pinned finish corrections must use the guarded database repair');
+  assert.match(pipeline, /provider_primary_variant_changed/, 'a supported primary finish change must preserve suffixed variants');
+  assert.match(pipeline, /retainedAlias[\s\S]*providerRecordId}:\$\{currentVariant\.variant_code}/,
+    'the previous finish must retain an exact suffixed provider alias before the base alias moves');
+  assert.match(providerVariantRepairMigration, /security invoker/i, 'variant repair must use caller permissions');
+  assert.match(providerVariantRepairMigration, /source\.code <> 'tcgdex'|unexpected current provider link/i);
+  assert.match(providerVariantRepairMigration, /storage_key = null[\s\S]*storage_key = transfer\.storage_key/,
+    'stored assets must be released before reassignment to the supported variant');
+  assert.match(providerVariantRepairMigration, /revoke all on function[\s\S]*from public, anon, authenticated/i);
+  assert.match(
+    pipeline,
+    /native_image_status: 'same_artwork_reference',[\s\S]*same_artwork_as_variant_id: sameArtworkAsVariantId/,
+    'approved duplicate imagery must be represented as an explicit same-artwork reference',
+  );
+  assert.match(
+    pipeline,
+    /native_image_status: 'available', same_artwork_as_variant_id: null/,
+    'approved native imagery must clear any previous artwork fallback',
+  );
 }
 
 async function assertPikaQianApiAdapter() {
@@ -292,11 +373,101 @@ async function assertPikaQianApiAdapter() {
   }
 }
 
+async function assertPikaQianSnapshotSetCovers() {
+  const root = mkdtempSync(join(tmpdir(), 'stackr-pika-covers-'));
+  const filePath = join(root, 'snapshot.json');
+  writeFileSync(filePath, JSON.stringify({
+    records: [{
+      provider_record_id: '151c',
+      record_type: 'set',
+      language_code: 'zh-cn',
+      set_code: '151c',
+      provider_set_id: '151c',
+      native_name: 'Collect 151',
+      licence_status: 'approved',
+      pack_image_url: 'https://images.pikaqian.invalid/sets/packs/151c.webp',
+    }],
+  }));
+  try {
+    const adapter = new PikaQianSourceAdapter({ filePath, licenceStatus: 'approved' });
+    const assets = await adapter.fetchAssets({ language: 'zh-cn' });
+    const rows: any[] = [];
+    for await (const asset of assets) rows.push(asset);
+    assert.equal(rows.length, 1);
+    const normalised = adapter.normaliseRecord(rows[0]);
+    assert.equal(normalised.assetType, 'sealed_product_image');
+    assert.equal(normalised.imageUrl, 'https://images.pikaqian.invalid/sets/packs/151c.webp');
+    assert.equal(normalised.providerRecordId, '151c:set-cover');
+    assert.equal(normalised.raw.asset_role, 'set_cover');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
+async function assertTcgdexPinnedSnapshot() {
+  const root = mkdtempSync(join(tmpdir(), 'stackr-tcgdex-snapshot-'));
+  mkdirSync(join(root, 'en'), { recursive: true });
+  writeFileSync(join(root, 'en', 'sets.json'), JSON.stringify([{
+    id: 'sv1', name: 'Scarlet & Violet', cardCount: { official: 1, total: 1 },
+    cards: [{ id: 'sv1-1', localId: '1', name: 'Pikachu', image: 'https://assets.tcgdex.invalid/en/sv/sv1/1' }],
+  }, {
+    id: 'CP2', name: 'Uppercase Set', cardCount: { official: 1, total: 1 },
+    cards: [{ id: 'CP2-001', localId: '001', name: 'Raichu' }],
+  }]));
+  writeFileSync(join(root, 'en', 'cards.json'), JSON.stringify([{
+    id: 'sv1-1', localId: '1', name: 'Pikachu', image: 'https://assets.tcgdex.invalid/en/sv/sv1/1',
+    set: { id: 'sv1', name: 'Scarlet & Violet' }, variants: { normal: true, reverse: true },
+  }, {
+    id: 'CP2-001', localId: '001', name: 'Raichu',
+    set: { id: 'CP2', name: 'Uppercase Set' }, variants: { normal: true },
+  }]));
+  try {
+    const adapter = new TcgdexSourceAdapter({
+      language: 'en',
+      snapshotRoot: root,
+      snapshotVersion: 'test-commit',
+      licenceStatus: 'approved',
+      assetLicenceStatus: 'approved',
+    });
+    const sets = await adapter.fetchSets();
+    const exactSet = await adapter.fetchSets({ setId: 'sv1' });
+    const uppercaseSet = await adapter.fetchSets({ setId: 'CP2' });
+    const uppercaseCards = await adapter.fetchCards({ setId: 'CP2' });
+    const cards = await adapter.fetchCards({ setId: 'sv1' });
+    const variants = await adapter.fetchVariants({ setId: 'sv1' });
+    const assets = await adapter.fetchAssets({ setId: 'sv1' });
+    assert.equal(sets.length, 2);
+    assert.equal(exactSet.length, 1, 'an exact set import must include its canonical set record');
+    assert.equal(exactSet[0].providerRecordId, 'sv1');
+    assert.equal(uppercaseSet[0].providerRecordId, 'CP2', 'snapshot lookup must preserve uppercase provider IDs');
+    assert.equal(uppercaseCards[0].providerRecordId, 'CP2-001');
+    assert.equal(cards.length, 1);
+    assert.equal(variants.length, 1, 'the primary variant is already represented by the card record');
+    assert.equal(variants[0].payload.variant, 'reverse_holo');
+    assert.equal(assets.length, 1);
+    assert.equal(assets[0].payload.image_url, 'https://assets.tcgdex.invalid/en/sv/sv1/1/high.webp');
+    assert.equal(adapter.identifySource().rateLimitConfig?.source, 'pinned_local_snapshot');
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+}
+
 function assertIdentityAndReportRules() {
   assert.match(masterScript, /const activeSets = sets\.filter\(\(set\) => set\.deprecated_at == null\)/);
   assert.match(masterScript, /const activePrintings = printings\.filter\(\(printing\) => printing\.deprecated_at == null\)/);
   assert.match(masterScript, /const activeVariants = variants\.filter\(\(variant\) => variant\.deprecated_at == null\)/);
   assert.match(masterScript, /const activeRawRecords = rawRecords\.filter\(\(row\) => row\.deprecated_at == null\)/);
+  assert.match(
+    masterScript,
+    /hasPikaqianRecords[\s\S]*Math\.max\(expectedCollectorNumbers\.size, setPrintings\.length\)/,
+    'PikaQian provider totals must not be compared with unique collector-number printings',
+  );
+  assert.match(masterScript, /selectedProviderSetIds/, 'provider reports must use exact canonical source links');
+  assert.match(masterScript, /selectedProviderSetRefsBySetId/, 'provider reports must match raw rows through exact provider set identifiers');
+  assert.match(masterScript, /sourceCodeById\.get\(row\.source_id\)/, 'reviewed snapshots must inherit provider identity from ingest sources');
+  assert.match(masterScript, /!args\.provider \|\| expected\.provider === args\.provider/, 'provider reports must not blend same-code card lists from another source');
+  assert.match(masterScript, /optional_source_unavailable_with_fallback/, 'PikaQian set art gaps must remain explicit when a truthful cover fallback is used');
+  assert.match(masterScript, /releaseBlockingMissingLogos/, 'publishing must distinguish optional missing art from release-blocking art');
   const expected = masterCatalogueInternals.expectedFromRaw({
     id: 'raw-1',
     source_id: 'source-1',
@@ -319,6 +490,45 @@ function assertIdentityAndReportRules() {
   assert.equal(expected.variant, 'master_ball');
   assert.equal(expected.finish, 'holo');
   assert.equal(expected.canonicalKey, 'zh-cn:csv4a:001/165:master_ball:holo');
+  const sourceAuthoritative = masterCatalogueInternals.expectedFromRaw({
+    id: 'raw-2',
+    source_id: 'source-pikaqian',
+    record_type: 'variant',
+    external_id: 'pikaqian:csv4a:001',
+    language_code: 'zh-cn',
+    source_url: 'https://provider.invalid/card',
+    licence_status: 'approved',
+    raw_payload: {
+      set_code: 'csv4a',
+      collector_number: '001',
+      provider: 'tcgdex',
+    },
+  }, 'pikaqian');
+  assert.equal(sourceAuthoritative?.provider, 'pikaqian', 'ingest source identity must override payload provider text');
+
+  const exactProviderRefs = masterCatalogueInternals.providerSetRefsByCanonicalSetId([
+    { id: 'source-pikaqian', code: 'pikaqian' },
+    { id: 'source-tcgdex', code: 'tcgdex' },
+  ], [
+    { source_id: 'source-pikaqian', source_entity_type: 'set', external_id: 'csv6c', language_code: 'zh-cn', set_id: 'canonical-pika', is_current: true, deprecated_at: null },
+    { source_id: 'source-tcgdex', source_entity_type: 'set', external_id: 'csv6c', language_code: 'zh-cn', set_id: 'canonical-tcgdex', is_current: true, deprecated_at: null },
+    { source_id: 'source-pikaqian', source_entity_type: 'set', external_id: 'old-csv6c', language_code: 'zh-cn', set_id: 'canonical-pika', is_current: false, deprecated_at: null },
+  ], 'pikaqian');
+  assert.deepEqual([...exactProviderRefs.get('canonical-pika') ?? []], ['csv6c']);
+  assert.equal(exactProviderRefs.has('canonical-tcgdex'), false, 'same-code sets from other providers must not enter provider coverage');
+
+  assert.equal(masterCatalogueInternals.assetRightsAreApproved({
+    id: 'cover-1',
+    set_id: 'canonical-pika',
+    printing_id: null,
+    variant_id: null,
+    asset_type: 'sealed_product_image',
+    url: 'https://provider.invalid/pack.webp',
+    rights_status: 'approved',
+    permission_status: 'approved',
+    publicly_servable: true,
+    deprecated_at: null,
+  }), true, 'approved pack covers must count without pretending to be card images');
 
   const files = masterCatalogueInternals.reportFiles('reports/catalogue');
   for (const file of [
@@ -736,6 +946,13 @@ function assertImagePipelineRules() {
     'existing healthy images must retain their provider asset identifier',
   );
   assert.match(pipeline, /acquisition_source/, 'assets must record their acquisition source');
+  assert.match(pipeline, /sealed_product_image/, 'licensed pack images must remain set-cover assets rather than fabricated logos');
+  assert.match(pipeline, /isSetScopedAsset/, 'set-scoped provider assets must use exact provider set identity');
+  assert.doesNotMatch(
+    pipeline,
+    /sourceEntityType: 'asset',[\s\S]{0,180}setId:/,
+    'asset provenance identifiers must point to exactly one canonical asset',
+  );
   assert.match(imageLeftoverMigration, /native_image_status/, 'variants must track native image status');
   assert.match(imageLeftoverMigration, /same_artwork_as_variant_id/, 'same-artwork references must be stored separately from native images');
   assert.match(imageLeftoverMigration, /scan_acquisition/, 'scan acquisition must have a durable queue');
@@ -766,6 +983,13 @@ function assertAssetManifestRules() {
   assert.match(assetManifestIdentityMigration, /coalesce\(cva\.set_id, a\.set_id, av\.set_id, ap\.set_id\) as set_id/);
   assert.match(assetManifestIdentityMigration, /left join catalog\.card_variants av/);
   assert.match(assetManifestIdentityMigration, /left join catalog\.card_printings ap/);
+  assert.match(artworkFallbackMigration, /v\.native_image_status/);
+  assert.match(artworkFallbackMigration, /v\.same_artwork_as_variant_id/);
+  assert.match(stackrApiService, /imageVariantId: row\.same_artwork_as_variant_id \?\? row\.variant_id/);
+  assert.match(artworkFallbackBackfillMigration, /native_image_status = 'available'/);
+  assert.match(artworkFallbackBackfillMigration, /native_image_status = 'same_artwork_reference'/);
+  assert.match(artworkFallbackBackfillMigration, /candidate\.language_code = target\.language_code/);
+  assert.match(artworkFallbackBackfillMigration, /candidate\.artwork_key = target\.artwork_key/);
 }
 
 function assertPublishRules() {
@@ -968,6 +1192,8 @@ async function main() {
   assertDryRunApplyRules();
   assertProviderRules();
   await assertPikaQianApiAdapter();
+  await assertPikaQianSnapshotSetCovers();
+  await assertTcgdexPinnedSnapshot();
   assertIdentityAndReportRules();
   assertSetCompletionStatusRules();
   await assertSetArtRules();

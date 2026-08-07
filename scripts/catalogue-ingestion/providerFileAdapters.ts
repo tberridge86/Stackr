@@ -1,5 +1,11 @@
 import { ManualJsonSourceAdapter } from './manualAdapters';
-import type { FetchScope, ProviderRecord, SourceHealth, SourceIdentity } from './sourceAdapter';
+import {
+  cleanText,
+  type FetchScope,
+  type ProviderRecord,
+  type SourceHealth,
+  type SourceIdentity,
+} from './sourceAdapter';
 
 type ProviderFileAdapterOptions = {
   filePath: string;
@@ -8,6 +14,10 @@ type ProviderFileAdapterOptions = {
 
 async function* emptyRecords() {
   return;
+}
+
+async function* streamRecords(records: ProviderRecord[]) {
+  for (const record of records) yield record;
 }
 
 export class PikaQianSourceAdapter extends ManualJsonSourceAdapter {
@@ -45,7 +55,30 @@ export class PikaQianSourceAdapter extends ManualJsonSourceAdapter {
   }
 
   fetchAssets(scope: FetchScope = {}) {
-    return scope.setId ? super.fetchAssets(scope) : emptyRecords();
+    const records = this.records(scope);
+    const cardAssets = scope.setId ? records.filter((record) => Boolean(
+      record.payload.image_url
+      ?? record.payload.imageUrl
+      ?? record.payload.asset_url
+      ?? record.payload.assetUrl,
+    )) : [];
+    const setCovers = records.flatMap((record) => {
+      const imageUrl = cleanText(record.payload.pack_image_url ?? record.payload.packImageUrl);
+      if (record.recordType !== 'set' || !imageUrl) return [];
+      return [{
+        ...record,
+        providerRecordId: `${record.providerRecordId}:set-cover`,
+        recordType: 'asset' as const,
+        payload: {
+          ...record.payload,
+          image_url: imageUrl,
+          image_language_code: record.languageCode,
+          asset_type: 'sealed_product_image',
+          asset_role: 'set_cover',
+        },
+      }];
+    });
+    return streamRecords([...cardAssets, ...setCovers]);
   }
 }
 
