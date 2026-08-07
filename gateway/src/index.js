@@ -29,6 +29,7 @@ import {
 import { createTraceContext } from './trace.js';
 
 const encoder = new TextEncoder();
+const DEPENDENCY_HEALTH_TIMEOUT_MS = 5_000;
 
 function envelope(data, requestId, apiVersion, status = 200) {
   return new Response(JSON.stringify({
@@ -50,7 +51,7 @@ function envelope(data, requestId, apiVersion, status = 200) {
 async function dependencyHealth(origin, path, fetchImpl) {
   if (!origin) return false;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 1500);
+  const timer = setTimeout(() => controller.abort(), DEPENDENCY_HEALTH_TIMEOUT_MS);
   try {
     const response = await fetchImpl(new URL(path, origin), {
       method: 'GET',
@@ -81,7 +82,7 @@ async function gatewayRoute(route, env, requestId, apiVersion, payload, fetchImp
     const [backendOk, recognitionOk] = configured
       ? await Promise.all([
           dependencyHealth(env.BACKEND_ORIGIN, '/health', fetchImpl),
-          dependencyHealth(env.RECOGNITION_ORIGIN, '/health', fetchImpl),
+          dependencyHealth(env.RECOGNITION_ORIGIN, '/ready', fetchImpl),
         ])
       : [false, false];
     const ready = configured && backendOk && recognitionOk;

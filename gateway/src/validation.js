@@ -2,7 +2,7 @@ import { GatewayError } from './errors.js';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SAFE_TOKEN = /^[A-Za-z0-9._~:/+-]+$/;
-const LANGUAGE_CODES = new Set(['en', 'ja', 'zh-Hans', 'zh-Hant', 'ko']);
+const LANGUAGE_CODES = new Set(['en', 'ja', 'zh-tw', 'zh-cn', 'ko']);
 const PRODUCT_TYPES = new Set(['raw_card', 'graded_card', 'sealed_product']);
 const OBSERVATION_TYPES = new Set(['sold_observation', 'active_listing']);
 const FEEDBACK_ACTIONS = new Set([
@@ -248,6 +248,9 @@ function validateAdminOptions(payload) {
   if (payload.setId != null && !UUID_PATTERN.test(payload.setId)) bad('invalid_set_id', 'setId must be a UUID.');
   if (payload.language != null && !LANGUAGE_CODES.has(payload.language)) bad('invalid_language', 'language is not supported.');
   if (payload.dryRun != null && typeof payload.dryRun !== 'boolean') bad('invalid_dry_run', 'dryRun must be a boolean.');
+  if (payload.allowImageAssets != null && typeof payload.allowImageAssets !== 'boolean') {
+    bad('invalid_allow_image_assets', 'allowImageAssets must be a boolean.');
+  }
   if (payload.priority != null && (!Number.isInteger(payload.priority) || payload.priority < 0 || payload.priority > 100)) {
     bad('invalid_priority', 'priority must be an integer between 0 and 100.');
   }
@@ -255,7 +258,7 @@ function validateAdminOptions(payload) {
 
 function validateCatalogueAdminCommand(payload, pathname) {
   rejectUnknownKeys(payload, new Set([
-    'source', 'language', 'setId', 'providerRecordId', 'runKey', 'dryRun',
+    'source', 'language', 'setId', 'providerRecordId', 'runKey', 'dryRun', 'allowImageAssets',
     'priority', 'runAfter', 'idempotencyKey', 'requestId',
   ]));
   validateAdminOptions(payload);

@@ -95,7 +95,7 @@ function authenticated(claimOverrides = {}) {
 }
 
 function request(path, init = {}) {
-  return new Request(`https://api.stackr.app${path}`, {
+  return new Request(`https://api.stackrtcg.com${path}`, {
     ...init,
     headers: {
       Origin: 'https://staging.stackr.app',
@@ -117,7 +117,7 @@ test('health is local, CORS is explicit, and unsupported query parameters are re
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   assert.equal(response.headers.get('cache-control'), 'no-store');
 
-  const denied = await handleRequest(new Request('https://api.stackr.app/v1/health', {
+  const denied = await handleRequest(new Request('https://api.stackrtcg.com/v1/health', {
     headers: { Origin: 'https://evil.example' },
   }), environment(), context(), { cache });
   assert.equal(denied.status, 403);
@@ -126,6 +126,45 @@ test('health is local, CORS is explicit, and unsupported query parameters are re
   const invalidQuery = await handleRequest(request('/v1/sets?admin=true'), environment(), context(), { cache });
   assert.equal(invalidQuery.status, 400);
   assert.equal((await invalidQuery.json()).error.code, 'unsupported_query_parameter');
+});
+
+test('readiness requires the recognition model and index to be ready', async () => {
+  const paths = [];
+  const fetchImpl = async (url) => {
+    const path = new URL(url).pathname;
+    paths.push(path);
+    return new Response(null, { status: path === '/ready' ? 503 : 200 });
+  };
+
+  const response = await handleRequest(request('/v1/ready'), environment(), context(), {
+    cache: new MemoryCache(),
+    fetchImpl,
+  });
+
+  assert.equal(response.status, 503);
+  assert.deepEqual(paths.sort(), ['/health', '/ready']);
+});
+
+test('readiness allows bounded time for downstream dependency checks', async () => {
+  const fetchImpl = async (url, init) => {
+    if (new URL(url).pathname === '/ready') {
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(resolve, 1_600);
+        init.signal.addEventListener('abort', () => {
+          clearTimeout(timer);
+          reject(new DOMException('aborted', 'AbortError'));
+        }, { once: true });
+      });
+    }
+    return new Response(null, { status: 200 });
+  };
+
+  const response = await handleRequest(request('/v1/ready'), environment(), context(), {
+    cache: new MemoryCache(),
+    fetchImpl,
+  });
+
+  assert.equal(response.status, 200);
 });
 
 test('public catalogue reads use a versioned cache and preserve ETags', async () => {
@@ -356,6 +395,36 @@ test('admin ingestion commands reject missing selectors and unknown fields befor
   assert.equal(called, false);
 });
 
+test('admin ingestion commands accept the explicit approved-image switch', async () => {
+  let forwarded = null;
+  const response = await handleRequest(request('/v1/admin/catalogue-ingestion/run-source', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer admin-access-token',
+      'Content-Type': 'application/json',
+      'X-Stackr-Device-Id': DEVICE_ID,
+      'Idempotency-Key': 'admin-command:test:000002',
+    },
+    body: JSON.stringify({ source: 'tcgdex', language: 'en', allowImageAssets: true }),
+  }), environment(), context(), {
+    cache: new MemoryCache(),
+    verifyAuth: async () => authenticated({ appMetadata: { role: 'admin' } }),
+    fetchImpl: async (url, init) => {
+      forwarded = {
+        pathname: new URL(url).pathname,
+        body: JSON.parse(new TextDecoder().decode(init.body)),
+      };
+      return new Response(JSON.stringify({ accepted: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(forwarded.pathname, '/api/admin/catalogue-ingestion/run-source');
+  assert.equal(forwarded.body.allowImageAssets, true);
+});
+
 test('Supabase JWT verification checks signature, issuer, audience, and authenticated role', async () => {
   const issuer = 'https://project.supabase.co/auth/v1';
   const { publicKey, privateKey } = await generateKeyPair('RS256');
@@ -370,7 +439,7 @@ test('Supabase JWT verification checks signature, issuer, audience, and authenti
     .setIssuedAt()
     .setExpirationTime('5m')
     .sign(privateKey);
-  const verified = await verifySupabaseRequest(new Request('https://api.stackr.app/v1/recognition/identify', {
+  const verified = await verifySupabaseRequest(new Request('https://api.stackrtcg.com/v1/recognition/identify', {
     headers: { Authorization: `Bearer ${token}` },
   }), { SUPABASE_URL: 'https://project.supabase.co' }, {
     jwks: createLocalJWKSet({ keys: [publicJwk] }),
@@ -379,7 +448,7 @@ test('Supabase JWT verification checks signature, issuer, audience, and authenti
   assert.equal(verified.claims.appMetadata.role, 'admin');
 
   await assert.rejects(
-    verifySupabaseRequest(new Request('https://api.stackr.app/v1/recognition/identify', {
+    verifySupabaseRequest(new Request('https://api.stackrtcg.com/v1/recognition/identify', {
       headers: { Authorization: `Bearer ${token}tampered` },
     }), { SUPABASE_URL: 'https://project.supabase.co' }, {
       jwks: createLocalJWKSet({ keys: [publicJwk] }),
@@ -396,7 +465,7 @@ test('legacy HS256 sessions use the bounded Supabase Auth compatibility check', 
     .setExpirationTime('5m')
     .sign(new TextEncoder().encode('test-signing-secret-that-is-not-used-by-the-gateway'));
   let authRequest = null;
-  const verified = await verifySupabaseRequest(new Request('https://api.stackr.app/v1/recognition/identify', {
+  const verified = await verifySupabaseRequest(new Request('https://api.stackrtcg.com/v1/recognition/identify', {
     headers: { Authorization: `Bearer ${token}` },
   }), {
     SUPABASE_URL: 'https://project.supabase.co',
