@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Database/full group: stackr-staging-database-maintenance
-  group: ${{ inputs.confirmation == 'RESTORE STAGING STORAGE' && 'stackr-staging-storage-maintenance' || 'stackr-staging-database-maintenance' }}
+  # Every mode mutates the same isolated restore project.
+  group: stackr-staging-recovery-maintenance
   cancel-in-progress: false
 
 jobs:
@@ -129,11 +129,25 @@ jobs:
           POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
         run: |
           set -euo pipefail
-          docker run --rm \
-            --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
-            --volume "$RUNNER_TEMP/stackr-recovery/backups:/backup:ro" \
-            "$POSTGRES_IMAGE" \
-            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/cleanup.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "set session_replication_role = replica" --file /backup/data.sql --file /backup/history-schema.sql --file /backup/history-data.sql'
+          restore_database() {
+            docker run --rm \
+              --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
+              --volume "$RUNNER_TEMP/stackr-recovery/backups:/backup:ro" \
+              "$POSTGRES_IMAGE" \
+              sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/cleanup.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "set session_replication_role = replica" --file /backup/data.sql --file /backup/history-schema.sql --file /backup/history-data.sql'
+          }
+
+          for attempt in 1 2 3; do
+            if restore_database; then
+              exit 0
+            fi
+            if (( attempt == 3 )); then
+              echo "::error::Database restore failed after $attempt clean attempts."
+              exit 1
+            fi
+            echo "::warning::Database restore attempt $attempt failed; cleaning and retrying in $((attempt * 20)) seconds."
+            sleep $((attempt * 20))
+          done
 
       - name: Verify Postgres restore fingerprints
         if: inputs.confirmation != 'RESTORE STAGING STORAGE'
