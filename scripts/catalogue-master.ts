@@ -859,14 +859,26 @@ function writeCsv(path: string, rows: Record<string, unknown>[], headers: string
 async function fetchAll(db: SupabaseClientLike, schema: string, tableName: string, columns: string) {
   const pageSize = 1000;
   const rows: any[] = [];
-  for (let from = 0; ; from += pageSize) {
-    const { data, error } = await db.schema(schema)
+  const selectedColumns = columns.split(',').map((column) => column.trim()).includes('id')
+    ? columns
+    : `${columns},id`;
+  let afterId: string | null = null;
+  for (;;) {
+    let query = db.schema(schema)
       .from(tableName)
-      .select(columns)
-      .range(from, from + pageSize - 1);
+      .select(selectedColumns)
+      .order('id', { ascending: true })
+      .limit(pageSize);
+    if (afterId) query = query.gt('id', afterId);
+    const { data, error } = await query;
     if (error) throw error;
     rows.push(...(data ?? []));
     if (!data || data.length < pageSize) break;
+    const nextAfterId = data.at(-1)?.id;
+    if (!nextAfterId || nextAfterId === afterId) {
+      throw new Error(`Keyset pagination stalled for ${schema}.${tableName}.`);
+    }
+    afterId = nextAfterId;
   }
   return rows;
 }

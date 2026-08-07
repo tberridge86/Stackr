@@ -52,6 +52,16 @@ function assertCanonicalStagingSourceGuard() {
   assert.match(masterScript, /PRODUCTION_SUPABASE_REFS = new Set\(\['oakdbbzdqwurpjnoqhmu'\]\)/);
   assert.match(masterScript, /staging_supabase_url_not_configured/);
   assert.match(masterScript, /https:\/\/\$\{STAGING_SUPABASE_REF\}\.supabase\.co/);
+  assert.match(
+    masterScript,
+    /\.order\('id', \{ ascending: true \}\)[\s\S]*\.limit\(pageSize\)[\s\S]*query = query\.gt\('id', afterId\)/,
+    'large catalogue reads must use indexed keyset pagination',
+  );
+  assert.doesNotMatch(
+    masterScript,
+    /async function fetchAll[\s\S]*?\.range\(/,
+    'large catalogue reads must not use progressively slower offset pagination',
+  );
 }
 
 function assertDryRunApplyRules() {
