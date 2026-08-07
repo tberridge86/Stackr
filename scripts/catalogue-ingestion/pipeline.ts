@@ -115,6 +115,54 @@ function declaredVariantCodes(raw: Record<string, unknown>) {
   return [...supported];
 }
 
+export function isSafeUnsupportedPrimaryVariantCorrection(input: {
+  provider: string;
+  sourceId: string;
+  languageCode: string;
+  providerRecordId: string;
+  staleVariantId: string;
+  staleVariantCode: string;
+  staleArtworkKey?: string | null;
+  expectedVariantCode: string;
+  expectedArtworkKey?: string | null;
+  supportedVariantCodes: string[];
+  activeVariants: Array<{ id: string; variant_code: string }>;
+  currentIdentifiers: Array<{
+    source_id: string;
+    source_entity_type: string;
+    language_code: string | null;
+    external_id: string;
+  }>;
+}) {
+  if (input.provider !== 'tcgdex') return false;
+  if (!input.supportedVariantCodes.includes(input.expectedVariantCode)) return false;
+  if (input.supportedVariantCodes.includes(input.staleVariantCode)) return false;
+  if (!input.staleArtworkKey || input.staleArtworkKey !== input.expectedArtworkKey) return false;
+
+  const stale = input.activeVariants.filter((variant) => variant.id === input.staleVariantId);
+  if (stale.length !== 1 || stale[0].variant_code !== input.staleVariantCode) return false;
+  const activeCodes = input.activeVariants.map((variant) => variant.variant_code);
+  if (new Set(activeCodes).size !== activeCodes.length) return false;
+  const siblingVariants = input.activeVariants.filter((variant) => variant.id !== input.staleVariantId);
+  if (siblingVariants.length < 1) return false;
+  if (siblingVariants.some((variant) => variant.variant_code === input.expectedVariantCode)) return false;
+  if (siblingVariants.some((variant) => !input.supportedVariantCodes.includes(variant.variant_code))) return false;
+
+  const allowedExternalIds = new Set([
+    input.providerRecordId,
+    `${input.providerRecordId}:${input.staleVariantCode}`,
+  ]);
+  if (!input.currentIdentifiers.some((identifier) => identifier.external_id === input.providerRecordId)) return false;
+  return input.currentIdentifiers.length >= 1
+    && input.currentIdentifiers.length <= allowedExternalIds.size
+    && input.currentIdentifiers.every((identifier) => (
+      identifier.source_id === input.sourceId
+      && identifier.source_entity_type === 'card'
+      && identifier.language_code === input.languageCode
+      && allowedExternalIds.has(identifier.external_id)
+    ));
+}
+
 async function tryRepairProviderVariantIdentity(
   db: SupabaseClientLike,
   input: {
@@ -1443,7 +1491,7 @@ async function upsertCardVariant(
 
   if (existingVariant?.id) {
     const { data: variant, error: variantError } = await table(db, 'catalog', 'card_variants')
-      .select('id, printing_id, canonical_key, variant_code')
+      .select('id, printing_id, canonical_key, variant_code, artwork_key')
       .eq('id', existingVariant.id)
       .maybeSingle();
     if (variantError) throw variantError;
@@ -1451,13 +1499,38 @@ async function upsertCardVariant(
     let repairedProviderIdentity = false;
     if (externalVariantId && !identityVariantId && variant.canonical_key !== canonicalKey) {
       const printingVariants = await table(db, 'catalog', 'card_variants')
-        .select('id')
+        .select('id, variant_code')
         .eq('printing_id', variant.printing_id)
-        .is('deprecated_at', null)
-        .limit(2);
+        .is('deprecated_at', null);
       if (printingVariants.error) throw printingVariants.error;
-      const activeVariantIds = (printingVariants.data ?? []).map((row: { id: string }) => row.id);
-      if (activeVariantIds.length !== 1 || activeVariantIds[0] !== variant.id) {
+      const activeVariants = (printingVariants.data ?? []) as Array<{ id: string; variant_code: string }>;
+      const activeVariantIds = activeVariants.map((row) => row.id);
+      const soleVariantRepair = activeVariantIds.length === 1 && activeVariantIds[0] === variant.id;
+      let supportedSiblingRepair = false;
+      if (!soleVariantRepair) {
+        const currentIdentifiers = await table(db, 'ingest', 'external_identifiers')
+          .select('source_id, source_entity_type, language_code, external_id')
+          .eq('variant_id', variant.id)
+          .eq('is_current', true)
+          .is('deprecated_at', null)
+          .limit(3);
+        if (currentIdentifiers.error) throw currentIdentifiers.error;
+        supportedSiblingRepair = isSafeUnsupportedPrimaryVariantCorrection({
+          provider: normalised.provider,
+          sourceId,
+          languageCode: normalised.languageCode,
+          providerRecordId: normalised.providerRecordId,
+          staleVariantId: variant.id,
+          staleVariantCode: variant.variant_code,
+          staleArtworkKey: variant.artwork_key,
+          expectedVariantCode: normalised.variantCode ?? 'normal',
+          expectedArtworkKey: normalised.artworkKey,
+          supportedVariantCodes: declaredVariantCodes(normalised.raw),
+          activeVariants,
+          currentIdentifiers: currentIdentifiers.data ?? [],
+        });
+      }
+      if (!soleVariantRepair && !supportedSiblingRepair) {
         await quarantine(db, {
           sourceId,
           importRunId,

@@ -8,6 +8,7 @@ import { TcgdexSourceAdapter, tcgdexAdapterInternals } from './catalogue-ingesti
 import {
   CatalogueIngestionRunner,
   calculateExponentialBackoff,
+  isSafeUnsupportedPrimaryVariantCorrection,
   payloadChecksum,
   runWithConcurrencyByKey,
 } from './catalogue-ingestion/pipeline';
@@ -73,6 +74,63 @@ function assertBoundedCatalogueWrites() {
     /npm run catalogue:ingest -- run-language/,
     'the one-time TCGdex workflow must import from its pinned local snapshot rather than the live card API',
   );
+}
+
+function assertPinnedPrimaryVariantCorrectionSafety() {
+  const base = {
+    provider: 'tcgdex',
+    sourceId: 'source-tcgdex',
+    languageCode: 'en',
+    providerRecordId: 'pl3-36',
+    staleVariantId: 'variant-holo',
+    staleVariantCode: 'holo',
+    staleArtworkKey: 'tcgdex:pl3-36',
+    expectedVariantCode: 'normal',
+    expectedArtworkKey: 'tcgdex:pl3-36',
+    supportedVariantCodes: ['normal', 'reverse_holo'],
+    activeVariants: [
+      { id: 'variant-holo', variant_code: 'holo' },
+      { id: 'variant-reverse', variant_code: 'reverse_holo' },
+    ],
+    currentIdentifiers: [
+      {
+        source_id: 'source-tcgdex',
+        source_entity_type: 'card',
+        language_code: 'en',
+        external_id: 'pl3-36',
+      },
+      {
+        source_id: 'source-tcgdex',
+        source_entity_type: 'card',
+        language_code: 'en',
+        external_id: 'pl3-36:holo',
+      },
+    ],
+  };
+
+  assert.equal(isSafeUnsupportedPrimaryVariantCorrection(base), true);
+  assert.equal(isSafeUnsupportedPrimaryVariantCorrection({ ...base, provider: 'unreviewed' }), false);
+  assert.equal(isSafeUnsupportedPrimaryVariantCorrection({
+    ...base,
+    supportedVariantCodes: ['normal', 'holo', 'reverse_holo'],
+  }), false);
+  assert.equal(isSafeUnsupportedPrimaryVariantCorrection({
+    ...base,
+    activeVariants: [...base.activeVariants, { id: 'variant-normal', variant_code: 'normal' }],
+  }), false);
+  assert.equal(isSafeUnsupportedPrimaryVariantCorrection({
+    ...base,
+    currentIdentifiers: [...base.currentIdentifiers, {
+      source_id: 'other-source',
+      source_entity_type: 'card',
+      language_code: 'en',
+      external_id: 'other-36',
+    }],
+  }), false);
+  assert.equal(isSafeUnsupportedPrimaryVariantCorrection({
+    ...base,
+    expectedArtworkKey: 'different-artwork',
+  }), false);
 }
 
 function assertRecognitionRoleIsLeastPrivilege() {
@@ -446,8 +504,9 @@ async function assertImageAssetsAreBlockedByDefault() {
   assert.match(
     ingestionPipeline,
     /Provider variant identity changed but the printing has multiple active variants; automatic repair was refused\./,
-    'provider variant corrections must fail closed once a printing has multiple active finishes',
+    'provider variant corrections without the exact pinned finish evidence must fail closed',
   );
+  assert.match(ingestionPipeline, /isSafeUnsupportedPrimaryVariantCorrection/);
   assert.match(ingestionPipeline, /provider_variant_identity_corrected/);
   assert.match(
     ingestionPipeline,
@@ -616,6 +675,7 @@ function assertBackendRouteIsProtected() {
 async function main() {
   assertCanonicalStagingSourceGuard();
   assertBoundedCatalogueWrites();
+  assertPinnedPrimaryVariantCorrectionSafety();
   assertRecognitionRoleIsLeastPrivilege();
   assertMigrationAddsIngestionState();
   assertIdentityHelpers();
