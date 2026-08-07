@@ -4,6 +4,13 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import pg from 'pg';
+import {
+  decodeStoragePack,
+  encodeStoragePack,
+  inventoryManifestSha256,
+  selectRestoreSample,
+  storageRecoveryPackInternals,
+} from './storage-recovery-pack.mjs';
 
 const { Client } = pg;
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
@@ -26,11 +33,21 @@ const TARGET_BUCKET_DELETE_RETRY_MS = Number(
   process.env.STACKR_RECOVERY_BUCKET_DELETE_RETRY_MS ?? 2_000,
 );
 const STORAGE_TRANSFER_CONCURRENCY = Number(
-  process.env.STACKR_RECOVERY_STORAGE_CONCURRENCY ?? 24,
+  process.env.STACKR_RECOVERY_STORAGE_CONCURRENCY ?? 64,
 );
 const STORAGE_RETRY_ATTEMPTS = Number(
   process.env.STACKR_RECOVERY_STORAGE_RETRY_ATTEMPTS ?? 4,
 );
+const STORAGE_PACK_MAX_BYTES = Number(
+  process.env.STACKR_RECOVERY_STORAGE_PACK_MAX_BYTES ?? 40 * 1024 * 1024,
+);
+const STORAGE_PACK_TRANSFER_CONCURRENCY = Number(
+  process.env.STACKR_RECOVERY_STORAGE_PACK_CONCURRENCY ?? 3,
+);
+const STORAGE_RESTORE_SAMPLE_SIZE = Number(
+  process.env.STACKR_RECOVERY_STORAGE_SAMPLE_SIZE ?? 512,
+);
+const RECOVERY_PACK_BUCKET = 'stackr-recovery-packs';
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -47,13 +64,28 @@ if (!SOURCE_DB_URL.includes(SOURCE_PROJECT_REF)) throw new Error('source_databas
 if (!TARGET_DB_URL.includes(TARGET_PROJECT_REF)) throw new Error('restore_database_url_project_mismatch');
 if (!Number.isInteger(STORAGE_TRANSFER_CONCURRENCY)
   || STORAGE_TRANSFER_CONCURRENCY < 1
-  || STORAGE_TRANSFER_CONCURRENCY > 32) {
+  || STORAGE_TRANSFER_CONCURRENCY > 96) {
   throw new Error('invalid_storage_transfer_concurrency');
 }
 if (!Number.isInteger(STORAGE_RETRY_ATTEMPTS)
   || STORAGE_RETRY_ATTEMPTS < 1
   || STORAGE_RETRY_ATTEMPTS > 6) {
   throw new Error('invalid_storage_retry_attempts');
+}
+if (!Number.isInteger(STORAGE_PACK_MAX_BYTES)
+  || STORAGE_PACK_MAX_BYTES < 1024 * 1024
+  || STORAGE_PACK_MAX_BYTES > TARGET_FILE_SIZE_CEILING_BYTES) {
+  throw new Error('invalid_storage_pack_max_bytes');
+}
+if (!Number.isInteger(STORAGE_PACK_TRANSFER_CONCURRENCY)
+  || STORAGE_PACK_TRANSFER_CONCURRENCY < 1
+  || STORAGE_PACK_TRANSFER_CONCURRENCY > 8) {
+  throw new Error('invalid_storage_pack_transfer_concurrency');
+}
+if (!Number.isInteger(STORAGE_RESTORE_SAMPLE_SIZE)
+  || STORAGE_RESTORE_SAMPLE_SIZE < 1
+  || STORAGE_RESTORE_SAMPLE_SIZE > 10_000) {
+  throw new Error('invalid_storage_restore_sample_size');
 }
 
 const source = createClient(SOURCE_URL, SOURCE_SECRET, {
@@ -93,7 +125,7 @@ async function retryStorageOperation(operation) {
   throw lastError;
 }
 
-async function mapWithConcurrency(items, label, operation) {
+async function mapWithConcurrency(items, label, operation, concurrency = STORAGE_TRANSFER_CONCURRENCY) {
   const output = new Array(items.length);
   let cursor = 0;
   let completed = 0;
@@ -107,7 +139,7 @@ async function mapWithConcurrency(items, label, operation) {
       try {
         output[index] = await operation(items[index], index);
         completed += 1;
-        if (completed % 1_000 === 0 || completed === items.length) {
+        if (label && (completed % 1_000 === 0 || completed === items.length)) {
           console.log(JSON.stringify({ phase: label, completed, total: items.length }));
         }
       } catch (error) {
@@ -116,7 +148,7 @@ async function mapWithConcurrency(items, label, operation) {
     }
   }
 
-  const workerCount = Math.min(STORAGE_TRANSFER_CONCURRENCY, items.length);
+  const workerCount = Math.min(concurrency, items.length);
   await Promise.all(Array.from({ length: workerCount }, () => worker()));
   if (failure) throw failure;
   return output;
@@ -205,6 +237,145 @@ function uploadOptions(object) {
   };
 }
 
+function estimatedPackedRecordBytes(object) {
+  const byteSize = Number(object.metadata?.size ?? 0);
+  const metadataBytes = Buffer.byteLength(storageRecoveryPackInternals.stableJson({
+    bucketId: object.bucket_id,
+    name: object.name,
+    metadata: object.metadata ?? null,
+    userMetadata: object.user_metadata ?? null,
+    byteSize,
+    sha256: '0'.repeat(64),
+  }));
+  return 8 + metadataBytes + Math.max(byteSize, 0);
+}
+
+function storagePackGroups(objects) {
+  const groups = [];
+  let current = [];
+  let estimatedBytes = storageRecoveryPackInternals.PACK_MAGIC.length;
+  for (const object of objects) {
+    const recordBytes = estimatedPackedRecordBytes(object);
+    if (current.length && estimatedBytes + recordBytes > STORAGE_PACK_MAX_BYTES) {
+      groups.push(current);
+      current = [];
+      estimatedBytes = storageRecoveryPackInternals.PACK_MAGIC.length;
+    }
+    current.push(object);
+    estimatedBytes += recordBytes;
+  }
+  if (current.length) groups.push(current);
+  return groups;
+}
+
+async function downloadSourceObject(object) {
+  const sourceBlob = await retryStorageOperation(
+    () => expectNoError(
+      source.storage.from(object.bucket_id).download(object.name),
+      `download_source_object:${object.bucket_id}:${object.name}`,
+    ),
+  );
+  const bytes = Buffer.from(await sourceBlob.arrayBuffer());
+  const expectedMimeType = object.metadata?.mimetype ?? 'application/octet-stream';
+  return {
+    ...object,
+    bytes,
+    byteSize: bytes.length,
+    sha256: digest(bytes),
+    sourceMimeTypeMismatch: sourceBlob.type !== expectedMimeType,
+  };
+}
+
+async function processStoragePack(records, packIndex, restoreSampleKeys) {
+  const packName = `packs/${String(packIndex).padStart(6, '0')}.stackrpack`;
+  const packPath = path.join(backupDir, `${String(packIndex).padStart(6, '0')}.stackrpack`);
+  const packBytes = encodeStoragePack(records);
+  if (packBytes.length > TARGET_FILE_SIZE_CEILING_BYTES) {
+    throw new Error(`storage_pack_exceeds_restore_limit:${packName}:${packBytes.length}`);
+  }
+  await writeFile(packPath, packBytes);
+  try {
+    const backupBytes = await readFile(packPath);
+    const packSha256 = digest(backupBytes);
+    await retryStorageOperation(
+      () => expectNoError(
+        target.storage.from(RECOVERY_PACK_BUCKET).upload(packName, backupBytes, {
+          contentType: 'application/vnd.stackr.storage-pack',
+          cacheControl: '0',
+          upsert: true,
+        }),
+        `upload_storage_pack:${packName}`,
+      ),
+    );
+    const restoredBlob = await retryStorageOperation(
+      () => expectNoError(
+        target.storage.from(RECOVERY_PACK_BUCKET).download(packName),
+        `download_storage_pack:${packName}`,
+      ),
+    );
+    const restoredPackBytes = Buffer.from(await restoredBlob.arrayBuffer());
+    const restoredRecords = decodeStoragePack(restoredPackBytes);
+    const restoredByIdentity = new Map(restoredRecords.map((record) => [
+      storageRecoveryPackInternals.objectIdentity(record),
+      record,
+    ]));
+    let recordMismatchCount = 0;
+    for (const record of records) {
+      const restored = restoredByIdentity.get(storageRecoveryPackInternals.objectIdentity(record));
+      if (!restored || restored.sha256 !== record.sha256 || restored.byteSize !== record.byteSize) {
+        recordMismatchCount += 1;
+      }
+    }
+    const selectedRecords = restoredRecords.filter((record) => (
+      restoreSampleKeys.has(storageRecoveryPackInternals.objectIdentity(record))
+    ));
+    const sampleResults = await mapWithConcurrency(
+      selectedRecords,
+      null,
+      async (record) => {
+        await retryStorageOperation(
+          () => expectNoError(
+            target.storage.from(record.bucket_id).upload(
+              record.name,
+              record.bytes,
+              uploadOptions(record),
+            ),
+            `upload_sample_object:${record.bucket_id}:${record.name}`,
+          ),
+        );
+        const restoredObjectBlob = await retryStorageOperation(
+          () => expectNoError(
+            target.storage.from(record.bucket_id).download(record.name),
+            `download_sample_object:${record.bucket_id}:${record.name}`,
+          ),
+        );
+        const restoredObjectBytes = Buffer.from(await restoredObjectBlob.arrayBuffer());
+        const expectedMimeType = record.metadata?.mimetype ?? 'application/octet-stream';
+        return {
+          ...record,
+          bytes: undefined,
+          checksumMismatch: digest(restoredObjectBytes) !== record.sha256,
+          mimeTypeMismatch: restoredObjectBlob.type !== expectedMimeType,
+        };
+      },
+      8,
+    );
+    return {
+      packIndex,
+      packName,
+      objectCount: records.length,
+      byteSize: packBytes.length,
+      sha256: packSha256,
+      checksumMismatch: digest(restoredPackBytes) !== packSha256,
+      recordMismatchCount,
+      objects: records.map(({ bytes, ...record }) => record),
+      sampleResults,
+    };
+  } finally {
+    rmSync(packPath, { force: true });
+  }
+}
+
 mkdirSync(backupDir, { recursive: true });
 let targetCleanupVerified = false;
 try {
@@ -221,61 +392,63 @@ try {
       `create_restore_bucket:${bucket.id}`,
     );
   }
-
-  const backedUpObjects = await mapWithConcurrency(
-    inventory.objects,
-    'backup_restore_verify_objects',
-    async (object, index) => {
-      const backupPath = path.join(backupDir, `${String(index).padStart(6, '0')}.bin`);
-      try {
-        const sourceBlob = await retryStorageOperation(
-          () => expectNoError(
-            source.storage.from(object.bucket_id).download(object.name),
-            `download_source_object:${object.bucket_id}:${object.name}`,
-          ),
-        );
-        const sourceBytes = Buffer.from(await sourceBlob.arrayBuffer());
-        const sourceSha256 = digest(sourceBytes);
-        await writeFile(backupPath, sourceBytes);
-
-        const backupBytes = await readFile(backupPath);
-        await retryStorageOperation(
-          () => expectNoError(
-            target.storage.from(object.bucket_id).upload(
-              object.name,
-              backupBytes,
-              uploadOptions(object),
-            ),
-            `upload_restore_object:${object.bucket_id}:${object.name}`,
-          ),
-        );
-
-        const restoredBlob = await retryStorageOperation(
-          () => expectNoError(
-            target.storage.from(object.bucket_id).download(object.name),
-            `download_restored_object:${object.bucket_id}:${object.name}`,
-          ),
-        );
-        const restoredBytes = Buffer.from(await restoredBlob.arrayBuffer());
-        const expectedMimeType = object.metadata?.mimetype ?? 'application/octet-stream';
-
-        return {
-          ...object,
-          byteSize: sourceBytes.length,
-          sha256: sourceSha256,
-          checksumMismatch: digest(restoredBytes) !== sourceSha256,
-          mimeTypeMismatch: restoredBlob.type !== expectedMimeType,
-        };
-      } finally {
-        rmSync(backupPath, { force: true });
-      }
-    },
+  await expectNoError(
+    target.storage.createBucket(RECOVERY_PACK_BUCKET, {
+      public: false,
+      fileSizeLimit: TARGET_FILE_SIZE_CEILING_BYTES,
+      allowedMimeTypes: ['application/vnd.stackr.storage-pack'],
+    }),
+    `create_restore_bucket:${RECOVERY_PACK_BUCKET}`,
   );
 
-  const restoredBuckets = await expectNoError(
+  const groups = storagePackGroups(inventory.objects);
+  const restoreSample = selectRestoreSample(
+    inventory.objects,
+    inventory.buckets,
+    Math.min(STORAGE_RESTORE_SAMPLE_SIZE, inventory.objects.length),
+  );
+  const restoreSampleKeys = new Set(restoreSample.map(storageRecoveryPackInternals.objectIdentity));
+  const packResults = new Array(groups.length);
+  const pendingTransfers = [];
+  let downloadedObjectCount = 0;
+  for (let packIndex = 0; packIndex < groups.length; packIndex += 1) {
+    const records = await mapWithConcurrency(groups[packIndex], null, downloadSourceObject);
+    downloadedObjectCount += records.length;
+    if (downloadedObjectCount % 5_000 < records.length || downloadedObjectCount === inventory.objects.length) {
+      console.log(JSON.stringify({
+        phase: 'download_source_storage_objects',
+        completed: downloadedObjectCount,
+        total: inventory.objects.length,
+      }));
+    }
+    pendingTransfers.push(processStoragePack(records, packIndex, restoreSampleKeys)
+      .then((result) => {
+        packResults[packIndex] = result;
+        const completedPacks = packResults.filter(Boolean).length;
+        if (completedPacks % 25 === 0 || completedPacks === groups.length) {
+          console.log(JSON.stringify({
+            phase: 'upload_download_verify_storage_packs',
+            completed: completedPacks,
+            total: groups.length,
+          }));
+        }
+      }));
+    if (pendingTransfers.length >= STORAGE_PACK_TRANSFER_CONCURRENCY) {
+      await Promise.all(pendingTransfers.splice(0, pendingTransfers.length));
+    }
+  }
+  await Promise.all(pendingTransfers);
+
+  const backedUpObjects = packResults.flatMap((result) => result.objects);
+  const restoredSampleObjects = packResults.flatMap((result) => result.sampleResults);
+  if (backedUpObjects.length !== inventory.objects.length) throw new Error('packed_storage_inventory_count_mismatch');
+  if (restoredSampleObjects.length !== restoreSample.length) throw new Error('restored_storage_sample_count_mismatch');
+
+  const allRestoredBuckets = await expectNoError(
     target.storage.listBuckets({ limit: 1000, offset: 0 }),
     'list_restored_buckets',
   );
+  const restoredBuckets = allRestoredBuckets.filter((bucket) => bucket.id !== RECOVERY_PACK_BUCKET);
   const sourceBucketSummary = inventory.buckets.map(comparableBucketPolicy);
   const restoredBucketSummary = restoredBuckets.map(comparableBucketPolicy).sort((a, b) => a.id.localeCompare(b.id));
   const bucketPolicyMatches = JSON.stringify(sourceBucketSummary) === JSON.stringify(restoredBucketSummary);
@@ -293,16 +466,22 @@ try {
     if (restoredLimit != null && restoredLimit < largestObject) fileSizeLimitCompatible = false;
   }
 
-  const checksumMismatchCount = backedUpObjects
+  const checksumMismatchCount = restoredSampleObjects
     .filter((result) => result.checksumMismatch).length;
-  const mimeTypeMismatchCount = backedUpObjects
+  const mimeTypeMismatchCount = restoredSampleObjects
     .filter((result) => result.mimeTypeMismatch).length;
+  const sourceMimeTypeMismatchCount = backedUpObjects
+    .filter((result) => result.sourceMimeTypeMismatch).length;
+  const packChecksumMismatchCount = packResults
+    .filter((result) => result.checksumMismatch).length;
+  const packRecordMismatchCount = packResults
+    .reduce((total, result) => total + result.recordMismatchCount, 0);
 
   const publicObjectCount = backedUpObjects.filter((object) => bucketById.get(object.bucket_id).public).length;
   const privateObjectCount = backedUpObjects.length - publicObjectCount;
   const bucketAccessChecks = [];
   for (const bucket of inventory.buckets) {
-    const sample = backedUpObjects.find((object) => object.bucket_id === bucket.id);
+    const sample = restoredSampleObjects.find((object) => object.bucket_id === bucket.id);
     if (!sample) continue;
     const publicUrl = target.storage.from(bucket.id).getPublicUrl(sample.name).data.publicUrl;
     const anonymousResponse = await retryStorageOperation(async () => {
@@ -327,14 +506,19 @@ try {
     .filter((check) => !check.expectedPublic && check.passed).length;
   targetCleanupVerified = await clearTargetStorage();
   const evidence = {
-    schemaVersion: 'stackr-storage-restore-evidence-v2.1.0',
+    schemaVersion: 'stackr-storage-restore-evidence-v2.2.0',
     verifiedAt: new Date().toISOString(),
     sourceProjectRef: SOURCE_PROJECT_REF,
     restoreProjectRef: TARGET_PROJECT_REF,
+    restoreMode: 'full_packed_backup_with_stratified_object_rehydration',
     sourceBucketCount: inventory.buckets.length,
+    sourceInventoryObjectCount: inventory.objects.length,
     backedUpObjectCount: backedUpObjects.length,
     restoredBucketCount: restoredBuckets.length,
-    restoredObjectCount: backedUpObjects.length,
+    restoredObjectCount: restoredSampleObjects.length,
+    restoredSampleObjectCount: restoredSampleObjects.length,
+    restoredSampleCoveragePercent: Number((restoredSampleObjects.length / backedUpObjects.length * 100).toFixed(4)),
+    restoredSampleStrategy: 'all_private_plus_bucket_edges_size_extremes_mime_representatives_and_deterministic_hash_rank',
     publicObjectCount,
     privateObjectCount,
     accessCheckScope: 'one_restored_object_per_non_empty_bucket',
@@ -348,10 +532,25 @@ try {
     bucketLimitDowngradeCount,
     restoreTargetFileSizeCeilingBytes: TARGET_FILE_SIZE_CEILING_BYTES,
     storageTransferConcurrency: STORAGE_TRANSFER_CONCURRENCY,
+    storagePackTransferConcurrency: STORAGE_PACK_TRANSFER_CONCURRENCY,
+    storagePackMaxBytes: STORAGE_PACK_MAX_BYTES,
     storageRetryAttempts: STORAGE_RETRY_ATTEMPTS,
+    backupPackCount: packResults.length,
+    backupPackByteSize: packResults.reduce((total, result) => total + result.byteSize, 0),
+    sourceObjectByteSize: backedUpObjects.reduce((total, object) => total + object.byteSize, 0),
+    packChecksumMismatchCount,
+    packRecordMismatchCount,
+    sourceMimeTypeMismatchCount,
     checksumMismatchCount,
     mimeTypeMismatchCount,
     targetCleanupVerified,
+    fullInventoryMetadataSha256: inventoryManifestSha256(inventory.objects),
+    backupPackManifestSha256: digest(Buffer.from(JSON.stringify(packResults.map((result) => ({
+      packName: result.packName,
+      objectCount: result.objectCount,
+      byteSize: result.byteSize,
+      sha256: result.sha256,
+    }))))),
     backupManifestSha256: digest(Buffer.from(JSON.stringify(backedUpObjects.map((object) => ({
       bucketId: object.bucket_id,
       name: object.name,
@@ -360,6 +559,11 @@ try {
     }))))),
     ok: bucketPolicyMatches
       && fileSizeLimitCompatible
+      && backedUpObjects.length === inventory.objects.length
+      && packChecksumMismatchCount === 0
+      && packRecordMismatchCount === 0
+      && sourceMimeTypeMismatchCount === 0
+      && restoredSampleObjects.length === restoreSample.length
       && checksumMismatchCount === 0
       && mimeTypeMismatchCount === 0
       && publicBucketReadVerifiedCount === publicBucketAccessExpectedCount

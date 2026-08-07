@@ -31,6 +31,9 @@ jobs:
       SUPABASE_RESTORE_SECRET_KEY: ${{ secrets.SUPABASE_RESTORE_SECRET_KEY }}
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
+      STACKR_RECOVERY_STORAGE_CONCURRENCY: 64
+      STACKR_RECOVERY_STORAGE_PACK_CONCURRENCY: 3
+      STACKR_RECOVERY_STORAGE_SAMPLE_SIZE: 512
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
