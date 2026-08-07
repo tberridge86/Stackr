@@ -46,6 +46,11 @@ on:
         required: true
         default: '4'
         type: string
+      mirror_concurrency:
+        description: Concurrent provider image transfers (maximum 4)
+        required: true
+        default: '4'
+        type: string
       include_assets:
         description: Store approved provider image references in the same pass
         required: true
@@ -88,6 +93,7 @@ jobs:
       CATALOGUE_BATCH_LIMIT: ${{ inputs.limit }}
       CATALOGUE_BATCH_COUNT: ${{ inputs.batches }}
       CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency }}
+      CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency }}
       CATALOGUE_INCLUDE_ASSETS: ${{ inputs.include_assets }}
       CATALOGUE_PUBLISH_VERSION: ${{ inputs.publish_version }}
       TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
@@ -121,10 +127,12 @@ jobs:
           [[ "$CATALOGUE_BATCH_LIMIT" =~ ^[0-9]+$ ]] || exit 1
           [[ "$CATALOGUE_BATCH_COUNT" =~ ^[0-9]+$ ]] || exit 1
           [[ "$CATALOGUE_WRITE_CONCURRENCY" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_MIRROR_CONCURRENCY" =~ ^[0-9]+$ ]] || exit 1
           [[ -z "$CATALOGUE_SET_ID" || "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+)*$ ]] || exit 1
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
           (( CATALOGUE_WRITE_CONCURRENCY >= 1 && CATALOGUE_WRITE_CONCURRENCY <= 8 )) || exit 1
+          (( CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 4 )) || exit 1
           if [[ "${{ inputs.operation }}" == "snapshot" && "${{ inputs.provider }}" == "tcgdex" ]]; then
             [[ -n "$CATALOGUE_SET_ID" ]] || { echo 'Pinned TCGdex snapshots require one or more exact set IDs.'; exit 1; }
           fi
@@ -251,7 +259,7 @@ jobs:
             node scripts/mirror-approved-catalogue-assets.mjs \
               --provider="$CATALOGUE_PROVIDER" \
               --limit="$CATALOGUE_BATCH_LIMIT" \
-              --concurrency=2 \
+              --concurrency="$CATALOGUE_MIRROR_CONCURRENCY" \
               --target=staging
           done
       - name: Publish validated language shard
