@@ -1112,11 +1112,23 @@ function assertPublishRules() {
     /args\.controlledStaging[\s\S]*buildControlledStagingReport\(db, args, language, args\.setId!\)[\s\S]*buildReports/,
     'controlled staging publication must use a set-scoped report instead of reading the full raw catalogue',
   );
-  assert.match(
-    masterScript,
-    /\.eq\('record_type', 'asset'\)[\s\S]*\.neq\('validation_status', 'valid'\)/,
-    'controlled staging review must query only invalid raw image records',
+  const controlledReport = masterScript.slice(
+    masterScript.indexOf('async function buildControlledStagingReport'),
+    masterScript.indexOf('async function requirePreviousLanguagesPublished'),
   );
+  assert.doesNotMatch(
+    controlledReport,
+    /raw_source_records/,
+    'controlled staging review must validate canonical assets without scanning the global raw-record archive',
+  );
+  const snapshotPublisher = masterScript.slice(
+    masterScript.indexOf('async function snapshotPublishedLanguage'),
+    masterScript.indexOf('async function activateCatalogueVersion'),
+  );
+  assert.match(snapshotPublisher, /includedSetIds[\s\S]*\.in\('set_id', \[\.\.\.setIds\]\)/);
+  assert.match(snapshotPublisher, /\.in\('printing_id', \[\.\.\.printingIds\]\)/);
+  assert.match(snapshotPublisher, /\.in\('variant_id', \[\.\.\.variantIds\]\)/);
+  assert.match(masterScript, /runPublicationStage\('snapshot_catalogue_membership'/);
   assert.match(masterScript, /controlled_staging_snapshot_not_full_language/);
   assert.match(masterScript, /schema\('catalog'\)[\s\S]*rpc\('activate_catalogue_version'/, 'activation must call the catalog-scoped RPC');
   assert.match(masterScript, /catalogue_version_external_identifiers/, 'publish must snapshot provider identifiers');

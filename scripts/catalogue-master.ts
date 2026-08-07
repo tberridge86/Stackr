@@ -2578,7 +2578,7 @@ async function buildControlledStagingReport(
   }
 
   const set = matchingSets[0];
-  const [printings, variants, invalidRawImages, openConflicts] = await Promise.all([
+  const [printings, variants, openConflicts] = await Promise.all([
     fetchAllFiltered(
       db,
       'catalog',
@@ -2593,16 +2593,6 @@ async function buildControlledStagingReport(
       'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key,deprecated_at',
       (query) => query.eq('set_id', set.id).is('deprecated_at', null),
     ) as Promise<VariantRow[]>,
-    fetchAllFiltered(
-      db,
-      'ingest',
-      'raw_source_records',
-      'id,source_id,record_type,external_id,language_code,source_url,licence_status,validation_status,raw_payload,deprecated_at',
-      (query) => query
-        .eq('record_type', 'asset')
-        .neq('validation_status', 'valid')
-        .is('deprecated_at', null),
-    ) as Promise<RawRecordRow[]>,
     fetchAllFiltered(
       db,
       'ingest',
@@ -2649,15 +2639,6 @@ async function buildControlledStagingReport(
     .filter(Boolean)
     .map((value) => String(value).toLowerCase()));
   const entityIds = new Set([set.id, ...printingIds, ...variantIds]);
-  const scopedInvalidRawImages = invalidRawImages.filter((row) => {
-    const payload = row.raw_payload ?? {};
-    const refs = [
-      setRef(payload),
-      cleanText(valueAt(payload, 'provider_set_code', 'providerSetCode', 'set_id', 'setId')),
-      row.external_id?.split(':')[1],
-    ].map(cleanText).filter(Boolean).map((value) => String(value).toLowerCase());
-    return refs.some((ref) => targetRefs.has(ref));
-  });
   const scopedConflicts = openConflicts.filter((conflict) => {
     if (conflict.entity_id && entityIds.has(conflict.entity_id)) return true;
     const refs = [
@@ -2682,7 +2663,7 @@ async function buildControlledStagingReport(
       asset.rights_status !== 'approved'
       || (asset.permission_status ?? 'unknown') !== 'approved'
     )
-  )).length + scopedInvalidRawImages.length;
+  )).length;
   const missingLogo = assets.some((asset) => (
     asset.asset_type === 'set_logo'
     && asset.publicly_servable
@@ -2907,47 +2888,158 @@ async function snapshotPublishedLanguage(
     includedSetIds?: string[];
   },
 ) {
-  const allSets = await fetchAll(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at');
-  const includedSetIds = input.includedSetIds ? new Set(input.includedSetIds) : null;
-  const sets = allSets.filter((set) => (
-    set.language_code === input.language
-    && set.deprecated_at == null
-    && (!includedSetIds || includedSetIds.has(set.id))
-  ));
-  const setIds = new Set(sets.map((set) => set.id));
-  const allPrintings = await fetchAll(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,deprecated_at');
-  const printings = allPrintings.filter((printing) => printing.language_code === input.language && setIds.has(printing.set_id) && printing.deprecated_at == null);
-  const printingIds = new Set(printings.map((printing) => printing.id));
-  const allVariants = await fetchAll(db, 'catalog', 'card_variants', 'id,printing_id,set_id,language_code,canonical_key,deprecated_at');
-  const variants = allVariants.filter((variant) => variant.language_code === input.language && setIds.has(variant.set_id) && printingIds.has(variant.printing_id) && variant.deprecated_at == null);
-  const variantIds = new Set(variants.map((variant) => variant.id));
-  const allAssets = await fetchAll(
+  const includedSetIds = input.includedSetIds?.length
+    ? [...new Set(input.includedSetIds)]
+    : null;
+  const sets = await fetchAllFiltered(
     db,
     'catalog',
-    'assets',
-    'id,set_id,printing_id,variant_id,asset_type,rights_status,permission_status,publicly_servable,asset_visibility,retention_status,deleted_at,deprecated_at',
+    'sets',
+    'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at',
+    (query) => {
+      const activeLanguageQuery = query
+        .eq('language_code', input.language)
+        .is('deprecated_at', null);
+      return includedSetIds ? activeLanguageQuery.in('id', includedSetIds) : activeLanguageQuery;
+    },
   );
-  const assets = allAssets.filter((asset) => (
-    asset.deprecated_at == null
-    && asset.deleted_at == null
-    && asset.publicly_servable
-    && asset.asset_visibility === 'public_catalogue'
-    && asset.retention_status === 'active'
-    && asset.rights_status === 'approved'
-    && asset.permission_status === 'approved'
-    && (
+  const setIds = new Set(sets.map((set) => set.id));
+  const printings = sets.length === 0
+    ? []
+    : (await fetchAllFiltered(
+        db,
+        'catalog',
+        'card_printings',
+        'id,set_id,language_code,collector_number,deprecated_at',
+        (query) => {
+          const activeLanguageQuery = query
+            .eq('language_code', input.language)
+            .is('deprecated_at', null);
+          return includedSetIds
+            ? activeLanguageQuery.in('set_id', [...setIds])
+            : activeLanguageQuery;
+        },
+      )).filter((printing) => setIds.has(printing.set_id));
+  const printingIds = new Set(printings.map((printing) => printing.id));
+  const variants = sets.length === 0
+    ? []
+    : (await fetchAllFiltered(
+        db,
+        'catalog',
+        'card_variants',
+        'id,printing_id,set_id,language_code,canonical_key,deprecated_at',
+        (query) => {
+          const activeLanguageQuery = query
+            .eq('language_code', input.language)
+            .is('deprecated_at', null);
+          return includedSetIds
+            ? activeLanguageQuery.in('set_id', [...setIds])
+            : activeLanguageQuery;
+        },
+      )).filter((variant) => setIds.has(variant.set_id) && printingIds.has(variant.printing_id));
+  const variantIds = new Set(variants.map((variant) => variant.id));
+  const assetColumns = 'id,set_id,printing_id,variant_id,asset_type,rights_status,permission_status,publicly_servable,asset_visibility,retention_status,deleted_at,deprecated_at';
+  const activePublicAssets = (query: any) => query
+    .is('deprecated_at', null)
+    .is('deleted_at', null)
+    .eq('publicly_servable', true)
+    .eq('asset_visibility', 'public_catalogue')
+    .eq('retention_status', 'active')
+    .eq('rights_status', 'approved')
+    .eq('permission_status', 'approved');
+  let assets: any[];
+  if (includedSetIds) {
+    const assetQueries: Promise<any[]>[] = [];
+    if (setIds.size) {
+      assetQueries.push(fetchAllFiltered(
+        db,
+        'catalog',
+        'assets',
+        assetColumns,
+        (query) => activePublicAssets(query).in('set_id', [...setIds]),
+      ));
+    }
+    if (printingIds.size) {
+      assetQueries.push(fetchAllFiltered(
+        db,
+        'catalog',
+        'assets',
+        assetColumns,
+        (query) => activePublicAssets(query).in('printing_id', [...printingIds]),
+      ));
+    }
+    if (variantIds.size) {
+      assetQueries.push(fetchAllFiltered(
+        db,
+        'catalog',
+        'assets',
+        assetColumns,
+        (query) => activePublicAssets(query).in('variant_id', [...variantIds]),
+      ));
+    }
+    assets = [...new Map((await Promise.all(assetQueries)).flat()
+      .map((asset) => [asset.id, asset] as const)).values()];
+  } else {
+    const allAssets = await fetchAllFiltered(
+      db,
+      'catalog',
+      'assets',
+      assetColumns,
+      activePublicAssets,
+    );
+    assets = allAssets.filter((asset) => (
       (asset.set_id && setIds.has(asset.set_id))
       || (asset.printing_id && printingIds.has(asset.printing_id))
       || (asset.variant_id && variantIds.has(asset.variant_id))
-    )
-  ));
-  const allExternalIdentifiers = await fetchAll(
-    db,
-    'ingest',
-    'external_identifiers',
-    'id,source_id,source_entity_type,external_id,external_uri,language_code,set_id,printing_id,variant_id,confidence,is_current,deprecated_at',
-  ) as ExternalIdentifierRow[];
-  const externalIdentifiers = allExternalIdentifiers.filter((identifier) => (
+    ));
+  }
+
+  const identifierColumns = 'id,source_id,source_entity_type,external_id,external_uri,language_code,set_id,printing_id,variant_id,confidence,is_current,deprecated_at';
+  let candidateExternalIdentifiers: ExternalIdentifierRow[];
+  if (includedSetIds) {
+    const identifierQueries: Promise<ExternalIdentifierRow[]>[] = [];
+    const activeIdentifiers = (query: any) => query
+      .eq('is_current', true)
+      .is('deprecated_at', null);
+    if (setIds.size) {
+      identifierQueries.push(fetchAllFiltered(
+        db,
+        'ingest',
+        'external_identifiers',
+        identifierColumns,
+        (query) => activeIdentifiers(query).in('set_id', [...setIds]),
+      ) as Promise<ExternalIdentifierRow[]>);
+    }
+    if (printingIds.size) {
+      identifierQueries.push(fetchAllFiltered(
+        db,
+        'ingest',
+        'external_identifiers',
+        identifierColumns,
+        (query) => activeIdentifiers(query).in('printing_id', [...printingIds]),
+      ) as Promise<ExternalIdentifierRow[]>);
+    }
+    if (variantIds.size) {
+      identifierQueries.push(fetchAllFiltered(
+        db,
+        'ingest',
+        'external_identifiers',
+        identifierColumns,
+        (query) => activeIdentifiers(query).in('variant_id', [...variantIds]),
+      ) as Promise<ExternalIdentifierRow[]>);
+    }
+    candidateExternalIdentifiers = [...new Map((await Promise.all(identifierQueries)).flat()
+      .map((identifier) => [identifier.id, identifier] as const)).values()];
+  } else {
+    candidateExternalIdentifiers = await fetchAllFiltered(
+      db,
+      'ingest',
+      'external_identifiers',
+      identifierColumns,
+      (query) => query.eq('is_current', true).is('deprecated_at', null),
+    ) as ExternalIdentifierRow[];
+  }
+  const externalIdentifiers = candidateExternalIdentifiers.filter((identifier) => (
     identifier.is_current
     && identifier.deprecated_at == null
     && (
@@ -3069,6 +3161,27 @@ async function activateCatalogueVersion(db: SupabaseClientLike, input: {
   if (publishError) throw publishError;
 }
 
+async function runPublicationStage<T>(stage: string, operation: () => Promise<T>) {
+  try {
+    return await operation();
+  } catch (error) {
+    const message = error && typeof error === 'object' && typeof (error as Record<string, unknown>).message === 'string'
+      ? String((error as Record<string, unknown>).message)
+      : String(error);
+    if (error && typeof error === 'object') {
+      throw {
+        ...(error as Record<string, unknown>),
+        message: `${stage}: ${message}`,
+        publicationStage: stage,
+      };
+    }
+    throw {
+      message: `${stage}: ${message}`,
+      publicationStage: stage,
+    };
+  }
+}
+
 async function publishMaster(args: Args) {
   assertStagingTarget(args);
   const language = publishLanguage(args);
@@ -3110,8 +3223,14 @@ async function publishMaster(args: Args) {
 
   const db = createStagingSupabase(args);
   const reportSummary = args.controlledStaging
-    ? await buildControlledStagingReport(db, args, language, args.setId!)
-    : await buildReports(db, { ...args, languages: [language] });
+    ? await runPublicationStage(
+        'build_publication_report',
+        () => buildControlledStagingReport(db, args, language, args.setId!),
+      )
+    : await runPublicationStage(
+        'build_publication_report',
+        () => buildReports(db, { ...args, languages: [language] }),
+      );
   const fullLanguageReadiness = args.controlledStaging
     ? {
         ok: false,
@@ -3137,7 +3256,10 @@ async function publishMaster(args: Args) {
 
   const order = args.controlledStaging
     ? { ok: true, missing: [] as SupportedCatalogueLanguageCode[] }
-    : await requirePreviousLanguagesPublished(db, language, version);
+    : await runPublicationStage(
+        'verify_publication_order',
+        () => requirePreviousLanguagesPublished(db, language, version),
+      );
   if (!order.ok) {
     return {
       ok: false,
@@ -3177,13 +3299,13 @@ async function publishMaster(args: Args) {
       }
     : fullLanguageReadiness.languageSummary;
 
-  const versionRow = await upsertDraftCatalogueVersion(db, {
+  const versionRow = await runPublicationStage('upsert_draft_version', () => upsertDraftCatalogueVersion(db, {
     language,
     version,
     summary: coverageSummary,
     controlledStaging: args.controlledStaging,
-  });
-  const snapshot = await snapshotPublishedLanguage(db, {
+  }));
+  const snapshot = await runPublicationStage('snapshot_catalogue_membership', () => snapshotPublishedLanguage(db, {
     versionId: versionRow.id,
     language,
     summary: {
@@ -3191,13 +3313,13 @@ async function publishMaster(args: Args) {
       coverageRows: reportSummary.coverageRows,
     },
     includedSetIds: setCoverage?.set_id ? [setCoverage.set_id] : undefined,
-  });
-  await activateCatalogueVersion(db, {
+  }));
+  await runPublicationStage('activate_catalogue_version', () => activateCatalogueVersion(db, {
     versionId: versionRow.id,
     language,
     version,
     controlledStaging: args.controlledStaging,
-  });
+  }));
 
   return {
     ok: true,
@@ -3329,9 +3451,11 @@ async function main() {
 
 function serialiseCliError(error: unknown) {
   if (error instanceof Error) {
+    const publicationStage = (error as Error & { publicationStage?: unknown }).publicationStage;
     return {
       name: error.name,
       message: error.message,
+      publicationStage: typeof publicationStage === 'string' ? publicationStage : null,
     };
   }
   if (error && typeof error === 'object') {
@@ -3342,6 +3466,7 @@ function serialiseCliError(error: unknown) {
       details: record.details ?? null,
       hint: record.hint ?? null,
       status: record.status ?? record.statusCode ?? null,
+      publicationStage: record.publicationStage ?? null,
     };
   }
   return {
