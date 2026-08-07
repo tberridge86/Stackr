@@ -135,6 +135,11 @@ if (releaseMode) {
     'STACKR_BACKEND_URL',
     'STACKR_RECOGNITION_URL',
     'STACKR_GATEWAY_URL',
+    'STACKR_SUPABASE_URL',
+    'STACKR_SUPABASE_PUBLISHABLE_KEY',
+    'BACKEND_ORIGIN_KEY',
+    'BACKEND_ADMIN_KEY',
+    'RECOGNITION_SERVICE_SECRET',
     'EXPO_TOKEN',
   ]) {
     if (!process.env[variable]) errors.push(`missing_release_variable:${variable}`);

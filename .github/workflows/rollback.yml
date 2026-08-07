@@ -68,7 +68,7 @@ jobs:
         env:
           STACKR_ROLLBACK_ENVIRONMENT: ${{ inputs.environment }}
         run: >-
-          npm exec --prefix gateway -- wrangler versions deploy
+          npm --prefix gateway exec -- wrangler --cwd gateway versions deploy
           --env "$STACKR_ROLLBACK_ENVIRONMENT"
           --version-tag "$STACKR_ROLLBACK_TARGET_ID@100"
           --message "$STACKR_ROLLBACK_REASON"

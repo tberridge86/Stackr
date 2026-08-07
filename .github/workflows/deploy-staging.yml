@@ -12,6 +12,11 @@ on:
         required: true
         default: false
         type: boolean
+      release_candidate:
+        description: Require every production evidence gate during this staging rehearsal
+        required: true
+        default: false
+        type: boolean
       publish_mobile_update:
         description: Publish an EAS update to the staging channel
         required: true
@@ -49,6 +54,11 @@ jobs:
       STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL }}
       STACKR_RECOGNITION_URL: ${{ vars.STACKR_RECOGNITION_URL }}
       STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL }}
+      STACKR_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+      STACKR_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
+      BACKEND_ADMIN_KEY: ${{ secrets.BACKEND_ADMIN_KEY }}
+      RECOGNITION_SERVICE_SECRET: ${{ secrets.RECOGNITION_SERVICE_SECRET }}
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -63,11 +73,26 @@ jobs:
           npm ci --prefix backend
           npm ci --prefix gateway
 
-      - name: Verify release inputs and repository structure
+      - name: Verify repository structure
+        run: npm run deploy:preflight
+
+      - name: Validate staging release mode
+        if: inputs.apply_migrations && !inputs.release_candidate
+        run: |
+          echo "Staging migrations require release_candidate=true and reviewed evidence."
+          exit 1
+
+      - name: Require production-candidate evidence
+        if: inputs.release_candidate
         run: |
           node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
           node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
           npm run deploy:preflight -- --release
+
+      - name: Prepare gateway runtime configuration
+        run: >-
+          node scripts/deploy/write-worker-secrets.mjs
+          --output="$RUNNER_TEMP/stackr-worker-secrets.json"
 
       - name: Verify latest physical backup and create ephemeral logical backups
         run: |
@@ -90,6 +115,7 @@ jobs:
             --require-physical
 
       - name: Dry-run backward-compatible migrations
+        if: inputs.release_candidate
         run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --dry-run
 
       - name: Apply backward-compatible migrations
@@ -110,7 +136,11 @@ jobs:
           --environment "$RAILWAY_ENVIRONMENT_ID"
           --service "$RAILWAY_RECOGNITION_SERVICE_ID"
 
+      - name: Inspect model and index evidence
+        run: npm run deploy:verify-model
+
       - name: Require an approved model and complete inactive index
+        if: inputs.release_candidate
         run: npm run deploy:verify-model -- --require-active
 
       - name: Verify private service readiness
@@ -120,14 +150,19 @@ jobs:
         env:
           RELEASE_TAG: staging-${{ github.sha }}
         run: |
-          npm exec --prefix gateway -- wrangler versions upload \
+          npm --prefix gateway exec -- wrangler --cwd gateway versions upload \
             --env staging --tag "$RELEASE_TAG" --message "GitHub $GITHUB_SHA" \
-            --strict --keep-vars
-          npm exec --prefix gateway -- wrangler versions deploy \
+            --strict --keep-vars \
+            --secrets-file "$RUNNER_TEMP/stackr-worker-secrets.json" \
+            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL" \
+            --var "RECOGNITION_ORIGIN:$STACKR_RECOGNITION_URL" \
+            --var "SUPABASE_URL:$STACKR_SUPABASE_URL" \
+            --var "SUPABASE_PUBLISHABLE_KEY:$STACKR_SUPABASE_PUBLISHABLE_KEY"
+          npm --prefix gateway exec -- wrangler --cwd gateway versions deploy \
             --env staging --version-tag "$RELEASE_TAG@100" --yes
 
       - name: Smoke-test the public staging contract
-        run: npm run deploy:smoke -- --gateway="$STACKR_GATEWAY_URL"
+        run: npm run deploy:smoke -- --gateway="$STACKR_GATEWAY_URL" --full-gateway
 
       - name: Publish staging mobile configuration
         if: inputs.publish_mobile_update
@@ -141,4 +176,6 @@ jobs:
 
       - name: Remove ephemeral logical backups
         if: always()
-        run: rm -rf "$RUNNER_TEMP/stackr-backup"
+        run: |
+          rm -rf "$RUNNER_TEMP/stackr-backup"
+          rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"

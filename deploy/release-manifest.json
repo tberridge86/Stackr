@@ -22,7 +22,7 @@
       "path": "gateway",
       "healthPath": "/v1/health",
       "readyPath": "/v1/ready",
-      "productionHost": "api.stackr.app"
+      "productionHost": "api.stackrtcg.com"
     },
     "database": {
       "path": "supabase",

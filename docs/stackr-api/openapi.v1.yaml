@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   summary: Stable public API for catalogue, delta sync and search.
 servers:
-  - url: https://api.stackr.app/v1
+  - url: https://api.stackrtcg.com/v1
     description: Production edge gateway
   - url: http://localhost:8787/v1
     description: Local Cloudflare Worker
