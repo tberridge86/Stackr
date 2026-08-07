@@ -225,6 +225,42 @@ async function reuseExistingStorageObject(supabase, asset, mirrored) {
   };
 }
 
+async function reuseExactSourceMatch(supabase, asset, sourceUrl) {
+  if (asset.asset_type !== 'card_image' || !asset.variant_id) return null;
+
+  const { data: existing, error } = await supabase.schema('catalog').from('assets')
+    .select([
+      'id',
+      'storage_provider',
+      'storage_bucket',
+      'storage_key',
+      'content_sha256',
+      'perceptual_hash',
+      'mime_type',
+      'width',
+      'height',
+      'byte_size',
+      'derivative_list',
+      'archival_storage_key',
+      'last_verified_at',
+    ].join(','))
+    .eq('asset_type', 'card_image')
+    .eq('original_source_url', sourceUrl)
+    .in('storage_provider', ['supabase_storage', 's3_compatible', 'local_dev'])
+    .eq('rights_status', 'approved')
+    .eq('permission_status', 'approved')
+    .eq('publicly_servable', true)
+    .is('deprecated_at', null)
+    .is('deleted_at', null)
+    .neq('id', asset.id)
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!existing?.id) return null;
+
+  return reuseExistingStorageObject(supabase, asset, existing);
+}
+
 async function markSourceUnavailable(supabase, asset, error) {
   const unavailableReason = `source_http_${error.status}`;
   const { error: assetError } = await supabase.schema('catalog').from('assets').update({
@@ -297,6 +333,9 @@ async function mirrorOne(supabase, storage, asset, options) {
   const sourceUrl = asset.original_source_url || asset.url;
   if (!sourceUrl) throw new Error('Approved asset has no source URL.');
   if (options.dryRun) return { id: asset.id, status: 'would_mirror' };
+
+  const exactSourceReuse = await reuseExactSourceMatch(supabase, asset, sourceUrl);
+  if (exactSourceReuse) return exactSourceReuse;
 
   const image = await downloadApprovedImage(sourceUrl, options.timeoutMs, options.maxBytes);
   const mirrored = await buildApprovedCatalogueAsset({

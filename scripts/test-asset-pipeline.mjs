@@ -292,6 +292,16 @@ function assertMirrorRequestsAreBounded() {
   );
   assert.match(
     catalogueMirror,
+    /reuseExactSourceMatch[\s\S]+\.eq\('asset_type', 'card_image'\)[\s\S]+\.eq\('original_source_url', sourceUrl\)/,
+    'exact card-image source matches must be eligible for artwork reuse',
+  );
+  assert.match(
+    catalogueMirror,
+    /const exactSourceReuse = await reuseExactSourceMatch[\s\S]+if \(exactSourceReuse\) return exactSourceReuse;[\s\S]+downloadApprovedImage/,
+    'exact source artwork reuse must happen before another provider download',
+  );
+  assert.match(
+    catalogueMirror,
     /fallbackAvailable[\s\S]+\? 'same_artwork_reference'[\s\S]+same_artwork_as_variant_id: fallbackAvailable/,
     'an unavailable provider image must preserve a verified same-artwork fallback',
   );
