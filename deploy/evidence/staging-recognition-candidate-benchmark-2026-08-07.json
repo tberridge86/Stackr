@@ -64,6 +64,13 @@
       "singleFrameIdentityTop1": 0.64375,
       "multiFrameIdentityTop1": 0.75,
       "reportSha256": "bd5de54147830895071dcfe1eef1735abfab43b20639f29927b7a2e6d8bc2a99"
+    },
+    {
+      "queryViewMode": "stackr-rank-fusion",
+      "singleFrameIdentityTop1": 0.54375,
+      "multiFrameIdentityTop1": 0.75,
+      "slidingTwoFrameIdentityTop1": 0.6842105263157895,
+      "reportSha256": "47fc17c347c5de16622037a9e743cb4574cc973c95b0a4dae4529c314f38d0ef"
     }
   ],
   "catalogueCoverageGap": {
