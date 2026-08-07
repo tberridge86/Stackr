@@ -1,7 +1,7 @@
 {
   "schemaVersion": "stackr-migration-reconciliation-v1.1.0",
-  "capturedAt": "2026-08-06T07:48:01.565Z",
-  "sourceCommitHash": "4d3a0a3cc0adb1dd5a7104bcb1d15efd8e123dbd",
+  "capturedAt": "2026-08-07T18:08:09.406Z",
+  "sourceCommitHash": "4b64599c325db5411fdcc1d99a710a6379ceb68f",
   "workingTreeChangesIncluded": true,
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
@@ -9,15 +9,15 @@
   "reconciliationComplete": true,
   "productionMutationPerformed": false,
   "stagingMutationPerformed": true,
-  "stagingApplicationSchemaOrDataMutationPerformedByReconciliation": false,
-  "localMigrationFileCount": 84,
-  "stagingMigrationHistoryCountAfter": 84,
+  "stagingApplicationSchemaOrDataMutationPerformedByReconciliation": true,
+  "localMigrationFileCount": 95,
+  "stagingMigrationHistoryCountAfter": 95,
   "exactVersionNameOrderMatch": true,
-  "orderedMigrationKeySha256": "7b750c9586d815a48cc5c9fdcf7a8943c03a1020c0781b57f5f0675ed3beb82e",
-  "remoteOrderedMigrationKeySha256": "7b750c9586d815a48cc5c9fdcf7a8943c03a1020c0781b57f5f0675ed3beb82e",
-  "repositoryMigrationContentSha256": "c05f51c7b4ce7a7fecd5640f010642bdbcabfe6eb434b954feabcbdb5cb10d5e",
+  "orderedMigrationKeySha256": "286fd8e457a1e5299c0c38424a44867fa2c5451099749dea215f746371772ea8",
+  "remoteOrderedMigrationKeySha256": "286fd8e457a1e5299c0c38424a44867fa2c5451099749dea215f746371772ea8",
+  "repositoryMigrationContentSha256": "e189b2fdbf52e243dce04c080addf86d512165ad9a109ebd4602e8083e047639",
   "firstMigration": "20260513170000_card_fingerprint_regions",
-  "latestMigration": "20260806073146_recognition_reference_asset_eligibility",
+  "latestMigration": "20260807180227_allow_recognition_vector_extension_usage",
   "historyRepairs": [
     {
       "name": "strict_foreign_catalogue_import_safety",
@@ -38,14 +38,69 @@
       "name": "recognition_service_database_role",
       "fromVersion": "20260805200102",
       "toVersion": "20260805200000"
+    },
+    {
+      "name": "optimise_catalogue_quality_report",
+      "fromVersion": "20260806170343",
+      "toVersion": "20260806170203"
+    },
+    {
+      "name": "make_catalogue_quality_report_targeted",
+      "fromVersion": "20260806170638",
+      "toVersion": "20260806170501"
+    },
+    {
+      "name": "resolve_asset_manifest_catalogue_identity",
+      "fromVersion": "20260806171951",
+      "toVersion": "20260806171907"
+    },
+    {
+      "name": "materialize_dinov2_vits14_embedding_index",
+      "fromVersion": "20260806174146",
+      "toVersion": "20260806174020"
+    },
+    {
+      "name": "index_dinov2_embedding_foreign_keys",
+      "fromVersion": "20260806183038",
+      "toVersion": "20260806183600"
+    },
+    {
+      "name": "expose_catalogue_artwork_fallbacks",
+      "fromVersion": "20260806211433",
+      "toVersion": "20260806212500"
+    },
+    {
+      "name": "backfill_catalogue_native_image_states",
+      "fromVersion": "20260806211631",
+      "toVersion": "20260806213000"
+    },
+    {
+      "name": "repair_provider_variant_identity",
+      "fromVersion": "20260807035102",
+      "toVersion": "20260807034806"
+    },
+    {
+      "name": "register_private_scan_upload",
+      "fromVersion": "20260807173417",
+      "toVersion": "20260807173127"
+    },
+    {
+      "name": "allow_recognition_read_private_scan_uploads",
+      "fromVersion": "20260807174748",
+      "toVersion": "20260807174127"
+    },
+    {
+      "name": "allow_recognition_vector_extension_usage",
+      "fromVersion": "20260807180041",
+      "toVersion": "20260807180227"
     }
   ],
   "latestMigrationVerification": {
-    "column": "catalog.assets.recognition_reference_eligible",
-    "notNull": true,
-    "default": true,
-    "partialIndex": "assets_recognition_reference_eligible_idx",
-    "partialIndexPresent": true
+    "migration": "20260807180227_allow_recognition_vector_extension_usage",
+    "grant": "usage_on_extensions_schema_to_stackr_recognition",
+    "privateScanRegistrationSecurity": "invoker_service_role_only",
+    "privateScanResolutionSecurity": "definer_stackr_recognition_only",
+    "stagingVerificationPassed": true
   },
   "advisorReview": {
     "securityAdvisorRun": true,
@@ -54,9 +109,11 @@
     "preExistingFindingsRemain": true
   },
   "actionsTaken": [
-    "applied_and_verified_recognition_reference_asset_eligibility",
-    "repaired_four_connector_generated_staging_history_versions",
-    "verified_exact_84_for_84_repository_and_staging_migration_order",
+    "applied_and_verified_eight_catalogue_and_embedding_migrations",
+    "repaired_fifteen_connector_generated_staging_history_versions",
+    "verified_exact_95_for_95_repository_and_staging_migration_order",
+    "replayed_current_native_image_status_reconciliation_after_repository_hash_drift",
+    "tracked_and_verified_three_private_scan_recognition_migrations",
     "verified_production_was_not_modified"
   ]
 }

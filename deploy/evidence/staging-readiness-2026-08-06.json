@@ -1,22 +1,22 @@
 {
   "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
-  "capturedAt": "2026-08-06T07:50:41.046Z",
-  "sourceCommitHash": "4d3a0a3cc0adb1dd5a7104bcb1d15efd8e123dbd",
+  "capturedAt": "2026-08-07T18:10:41.754Z",
+  "sourceCommitHash": "4b64599c325db5411fdcc1d99a710a6379ceb68f",
   "workingTreeChangesIncluded": true,
   "supabase": {
     "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
     "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
-    "localMigrationFileCount": 84,
+    "localMigrationFileCount": 95,
     "productionMigrationHistoryCount": 1,
-    "stagingMigrationHistoryCount": 84,
+    "stagingMigrationHistoryCount": 95,
     "migrationHistoryStatus": "aligned",
     "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-08-06.json",
-    "migrationReconciliationEvidenceSha256": "c820f3253682ef0a1560716588c3fea2bc48138d7e0167f9ea65eba00e80ba42",
+    "migrationReconciliationEvidenceSha256": "75e392b0508962fc1c465f5b19d9bb1047a143c6c3debc835825dba987fd2c2f",
     "stagingSecurityAdvisorFindingCountAfterRollback": 24,
     "productionPhysicalBackupCount": 8,
-    "stagingPhysicalBackupCount": 11,
-    "latestStagingPhysicalBackupId": "1245215485",
-    "latestStagingPhysicalBackupAt": "2026-07-30T03:47:35.742Z",
+    "stagingPhysicalBackupCount": 8,
+    "latestStagingPhysicalBackupId": "1309013249",
+    "latestStagingPhysicalBackupAt": "2026-08-07T03:51:07.875Z",
     "latestStagingBackupIncludesCurrentChanges": false,
     "pitrEnabled": false,
     "walgEnabled": true
@@ -26,26 +26,26 @@
     "lastVerifiedRestoreTargetProjectRef": "krjttpmthxkfsbqksxci",
     "lastRestoreTestedAt": "2026-07-30T14:24:09.904Z",
     "lastVerifiedMigrationCount": 20,
-    "currentMigrationCount": 84,
+    "currentMigrationCount": 95,
     "blockers": [
-      "current_84_migration_staging_database_has_not_been_restored_from_a_fresh_backup"
+      "current_95_migration_staging_database_has_not_been_restored_from_a_fresh_backup"
     ]
   },
   "storageRecovery": {
     "status": "blocked",
     "stagingBucketCount": 6,
-    "stagingObjectCount": 24,
-    "publicCatalogueObjectCount": 24,
+    "stagingObjectCount": 102821,
+    "publicCatalogueObjectCount": 102819,
     "lastRestoreTestedAt": "2026-07-30T14:24:13.724Z",
     "lastRestoredObjectCount": 1,
     "blockers": [
-      "current_24_object_catalogue_storage_has_not_been_backed_up_and_restored"
+      "current_102821_object_storage_inventory_has_not_been_backed_up_and_restored"
     ]
   },
   "migrationCandidate": {
     "status": "aligned_on_staging",
-    "repositoryMigrationCount": 84,
-    "stagingMigrationHistoryCount": 84,
+    "repositoryMigrationCount": 95,
+    "stagingMigrationHistoryCount": 95,
     "exactVersionNameOrderMatch": true,
     "securityAdvisorErrorCount": 0,
     "promotionApproved": false,
@@ -105,12 +105,12 @@
     ]
   },
   "catalogue": {
-    "sets": 695,
-    "cardPrintings": 3880,
-    "cardVariants": 5016,
-    "publicApprovedAssets": 6,
-    "publishedVersions": 0,
-    "set151cPrintings": 54,
+    "sets": 788,
+    "cardPrintings": 56963,
+    "cardVariants": 75586,
+    "publicApprovedAssets": 56387,
+    "publishedVersions": 1,
+    "set151cPrintings": 192,
     "set151cExpectedCards": 343,
     "complete": false
   },
