@@ -24,6 +24,7 @@ const feedbackRoute = readFileSync('backend/routes/recognitionFeedback.js', 'utf
 const scanLabRoute = readFileSync('backend/routes/scanLab.js', 'utf8');
 const server = readFileSync('backend/server.js', 'utf8');
 const catalogueMirror = readFileSync('scripts/mirror-approved-catalogue-assets.mjs', 'utf8');
+const catalogueWorkflow = readFileSync('.github/workflows/catalogue-ingestion-ci.yml', 'utf8');
 
 const tinyPng = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEUlEQVQImWO4o2HzH4QZYAwAT/QI/b1BT1MAAAAASUVORK5CYII=',
@@ -291,6 +292,11 @@ function assertMirrorRequestsAreBounded() {
     catalogueMirror,
     /fallbackAvailable[\s\S]+\? 'same_artwork_reference'[\s\S]+same_artwork_as_variant_id: fallbackAvailable/,
     'an unavailable provider image must preserve a verified same-artwork fallback',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /for \(\( batch=0; batch<CATALOGUE_BATCH_COUNT; batch\+\+ \)\)[\s\S]+mirror-approved-catalogue-assets\.mjs/,
+    'the mirror workflow must support multiple bounded batches without raising request concurrency',
   );
 }
 

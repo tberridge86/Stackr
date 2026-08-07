@@ -226,12 +226,16 @@ jobs:
 
       - name: Mirror approved provider images into Stackr storage
         if: inputs.operation == 'mirror'
-        run: >-
-          node scripts/mirror-approved-catalogue-assets.mjs
-          --provider="${{ inputs.provider }}"
-          --limit="${{ inputs.limit }}"
-          --concurrency=2
-          --target=staging
+        shell: bash
+        run: |
+          for (( batch=0; batch<CATALOGUE_BATCH_COUNT; batch++ )); do
+            echo "Mirroring bounded batch $((batch + 1)) of $CATALOGUE_BATCH_COUNT for $CATALOGUE_PROVIDER"
+            node scripts/mirror-approved-catalogue-assets.mjs \
+              --provider="$CATALOGUE_PROVIDER" \
+              --limit="$CATALOGUE_BATCH_LIMIT" \
+              --concurrency=2 \
+              --target=staging
+          done
       - name: Remove decrypted PikaQian snapshot
         if: always()
         shell: bash
