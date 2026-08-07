@@ -10,6 +10,7 @@ const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL ?? process.env.SUPABASE_D
 const TARGET_DB_URL = process.env.STACKR_RESTORE_DB_URL ?? process.env.SUPABASE_RESTORE_DB_URL;
 const EVIDENCE_DIR = process.env.STACKR_RECOVERY_EVIDENCE_DIR ?? process.cwd();
 const APPLICATION_SCHEMAS = ['public', 'catalog', 'ingest', 'market', 'ml', 'api', 'audit'];
+const VOLATILE_TABLES = new Set(['audit.observability_events']);
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -25,6 +26,31 @@ if (!TARGET_DB_URL.includes(TARGET_PROJECT_REF)) throw new Error('restore_databa
 
 function digest(value) {
   return createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+function tableKey(table) {
+  return `${table.schema_name}.${table.table_name}`;
+}
+
+function volatileTableCheck(key, sourceTables, targetTables) {
+  const source = sourceTables.find((table) => tableKey(table) === key);
+  const restore = targetTables.find((table) => tableKey(table) === key);
+  const sourceCount = source ? BigInt(source.row_count) : -1n;
+  const restoreCount = restore ? BigInt(restore.row_count) : -1n;
+  const acceptable = Boolean(source && restore)
+    && restoreCount <= sourceCount
+    && (sourceCount === 0n || restoreCount > 0n);
+  return {
+    table: key,
+    sourcePresent: Boolean(source),
+    restorePresent: Boolean(restore),
+    sourceRowCount: source?.row_count ?? null,
+    restoreRowCount: restore?.row_count ?? null,
+    sourceRowDigest: source?.row_digest ?? null,
+    restoreRowDigest: restore?.row_digest ?? null,
+    restoreNotAheadOfLiveSource: source && restore ? restoreCount <= sourceCount : false,
+    acceptable,
+  };
 }
 
 function quoteIdentifier(value) {
@@ -163,26 +189,36 @@ try {
     extensionSnapshot(target),
   ]);
 
+  const sourceStrictTables = sourceTables.filter((table) => !VOLATILE_TABLES.has(tableKey(table)));
+  const targetStrictTables = targetTables.filter((table) => !VOLATILE_TABLES.has(tableKey(table)));
+  const volatileTableChecks = [...VOLATILE_TABLES]
+    .sort()
+    .map((key) => volatileTableCheck(key, sourceTables, targetTables));
+
   const checks = {
     schema: digest(sourceSchema) === digest(targetSchema),
-    tableData: digest(sourceTables) === digest(targetTables),
+    tableData: digest(sourceStrictTables) === digest(targetStrictTables),
+    volatileTableSnapshotBounds: volatileTableChecks.every((check) => check.acceptable),
     migrationHistory: digest(sourceMigrations) === digest(targetMigrations),
     extensions: digest(sourceExtensions) === digest(targetExtensions),
   };
   const evidence = {
-    schemaVersion: 'stackr-postgres-restore-evidence-v1.0.0',
+    schemaVersion: 'stackr-postgres-restore-evidence-v1.1.0',
     verifiedAt: new Date().toISOString(),
     sourceProjectRef: SOURCE_PROJECT_REF,
     restoreProjectRef: TARGET_PROJECT_REF,
     sourceSchemaSha256: digest(sourceSchema),
     restoreSchemaSha256: digest(targetSchema),
-    sourceTableDataSha256: digest(sourceTables),
-    restoreTableDataSha256: digest(targetTables),
+    sourceTableDataSha256: digest(sourceStrictTables),
+    restoreTableDataSha256: digest(targetStrictTables),
     sourceMigrationHistorySha256: digest(sourceMigrations),
     restoreMigrationHistorySha256: digest(targetMigrations),
     sourceExtensionSha256: digest(sourceExtensions),
     restoreExtensionSha256: digest(targetExtensions),
     tableCount: sourceTables.length,
+    strictTableCount: sourceStrictTables.length,
+    volatileTableCount: volatileTableChecks.length,
+    volatileTableChecks,
     migrationCount: sourceMigrations.length,
     checks,
     ok: Object.values(checks).every(Boolean),
