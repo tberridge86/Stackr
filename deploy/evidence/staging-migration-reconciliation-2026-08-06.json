@@ -1,7 +1,7 @@
 {
   "schemaVersion": "stackr-migration-reconciliation-v1.1.0",
-  "capturedAt": "2026-08-07T18:40:48.930Z",
-  "sourceCommitHash": "36ea2a8ef9f7370652f67d13f72be1bd1b74e060",
+  "capturedAt": "2026-08-07T19:18:25.035Z",
+  "sourceCommitHash": "2e9dee16088c0f3d0f3d0b31559543e42e12339e",
   "workingTreeChangesIncluded": true,
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
@@ -10,14 +10,14 @@
   "productionMutationPerformed": false,
   "stagingMutationPerformed": true,
   "stagingApplicationSchemaOrDataMutationPerformedByReconciliation": true,
-  "localMigrationFileCount": 96,
-  "stagingMigrationHistoryCountAfter": 96,
+  "localMigrationFileCount": 97,
+  "stagingMigrationHistoryCountAfter": 97,
   "exactVersionNameOrderMatch": true,
-  "orderedMigrationKeySha256": "ab132414b1a3bbc621055b4dabb4d5a3c9d2dd421e9e05430d7af398ec3be9c3",
-  "remoteOrderedMigrationKeySha256": "ab132414b1a3bbc621055b4dabb4d5a3c9d2dd421e9e05430d7af398ec3be9c3",
-  "repositoryMigrationContentSha256": "6422654db5ff72c83d7617a571454a94271bb9300239ff597ba5e5d3c910ce91",
+  "orderedMigrationKeySha256": "81adec03934e5a56de2e18937f4748e7cfcc7a41c458871e69541e5188e65b4d",
+  "remoteOrderedMigrationKeySha256": "81adec03934e5a56de2e18937f4748e7cfcc7a41c458871e69541e5188e65b4d",
+  "repositoryMigrationContentSha256": "de4af70b8dfd16bc41de78f32b109550f133724459f8ebe25bdfe28a23021d0e",
   "firstMigration": "20260513170000_card_fingerprint_regions",
-  "latestMigration": "20260807183118_recognition_index_build_api",
+  "latestMigration": "20260807184200_search_recognition_candidate_index",
   "historyRepairs": [
     {
       "name": "strict_foreign_catalogue_import_safety",
@@ -96,8 +96,8 @@
     }
   ],
   "latestMigrationVerification": {
-    "migration": "20260807183118_recognition_index_build_api",
-    "grant": "four_recognition_index_functions_service_role_only",
+    "migration": "20260807184200_search_recognition_candidate_index",
+    "grant": "recognition_candidate_search_service_role_only",
     "securityDefinerSearchPath": "empty",
     "anonymousAndAuthenticatedExecute": false,
     "stagingVerificationPassed": true
@@ -111,10 +111,11 @@
   "actionsTaken": [
     "applied_and_verified_eight_catalogue_and_embedding_migrations",
     "repaired_fifteen_connector_generated_staging_history_versions",
-    "verified_exact_96_for_96_repository_and_staging_migration_order",
+    "verified_exact_97_for_97_repository_and_staging_migration_order",
     "replayed_current_native_image_status_reconciliation_after_repository_hash_drift",
     "tracked_and_verified_three_private_scan_recognition_migrations",
     "tracked_and_verified_service_role_only_recognition_index_build_api",
+    "tracked_and_verified_service_role_only_recognition_candidate_search",
     "verified_production_was_not_modified"
   ]
 }
