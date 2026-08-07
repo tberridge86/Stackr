@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Snapshot provider data or mirror approved image references into Stackr storage
+        description: Snapshot provider data, mirror approved images, or publish one validated language shard
         required: true
         default: snapshot
         type: choice
-        options: [snapshot, mirror]
+        options: [snapshot, mirror, publish]
       provider:
         description: One-time catalogue snapshot provider
         required: true
@@ -51,6 +51,11 @@ on:
         required: true
         default: true
         type: boolean
+      publish_version:
+        description: Shared catalogue version label required for publish operations
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -78,6 +83,7 @@ jobs:
       CATALOGUE_BATCH_LIMIT: ${{ inputs.limit }}
       CATALOGUE_BATCH_COUNT: ${{ inputs.batches }}
       CATALOGUE_INCLUDE_ASSETS: ${{ inputs.include_assets }}
+      CATALOGUE_PUBLISH_VERSION: ${{ inputs.publish_version }}
       TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -113,6 +119,10 @@ jobs:
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
           if [[ "${{ inputs.operation }}" == "snapshot" && "${{ inputs.provider }}" == "tcgdex" ]]; then
             [[ -n "$CATALOGUE_SET_ID" ]] || { echo 'Pinned TCGdex snapshots require one or more exact set IDs.'; exit 1; }
+          fi
+          if [[ "${{ inputs.operation }}" == "publish" ]]; then
+            [[ "$CATALOGUE_PUBLISH_VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$ ]] \
+              || { echo 'Publish operations require a safe 8-160 character version label.'; exit 1; }
           fi
       - name: Scope the pinned TCGdex compiler
         if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
@@ -236,6 +246,13 @@ jobs:
               --concurrency=2 \
               --target=staging
           done
+      - name: Publish validated language shard
+        if: inputs.operation == 'publish'
+        run: >-
+          npx tsx scripts/catalogue-master.ts publish
+          --language="$CATALOGUE_LANGUAGE"
+          --version="$CATALOGUE_PUBLISH_VERSION"
+          --target=staging
       - name: Remove decrypted PikaQian snapshot
         if: always()
         shell: bash
