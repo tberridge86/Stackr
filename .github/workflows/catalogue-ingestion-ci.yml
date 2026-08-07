@@ -208,15 +208,17 @@ jobs:
             --apply \
             "${scope_args[@]}" \
             "${asset_args[@]}"
-      - name: Report language quality
+      - name: Report language quality (advisory)
         if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex' && inputs.report_quality
+        continue-on-error: true
         run: >-
           npm run catalogue:ingest -- quality-report
           --language="${{ inputs.language }}"
           --limit=500
 
-      - name: Report PikaQian quality
+      - name: Report PikaQian quality (advisory)
         if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian' && inputs.report_quality
+        continue-on-error: true
         run: >-
           npm run catalogue:ingest -- quality-report
           --language=zh-cn

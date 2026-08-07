@@ -60,6 +60,11 @@ function assertBoundedCatalogueWrites() {
   assert.match(catalogueWorkflow, /TCGDEX_COMPILE_LANGS: \$\{\{ inputs\.language \}\}/);
   assert.match(catalogueWorkflow, /--setIds="\$CATALOGUE_SET_ID"/);
   assert.match(catalogueWorkflow, /--tcgdexSnapshotRoot="\$GITHUB_WORKSPACE\/\.tcgdex-source\/server\/generated"/);
+  assert.match(
+    catalogueWorkflow,
+    /Report language quality \(advisory\)[\s\S]+continue-on-error: true/,
+    'a busy staging quality view must not invalidate a completed one-time snapshot import',
+  );
   assert.doesNotMatch(
     catalogueWorkflow,
     /npm run catalogue:ingest -- run-language/,
