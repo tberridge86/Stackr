@@ -1107,6 +1107,17 @@ function assertPublishRules() {
   assert.match(masterScript, /requirePreviousLanguagesPublished/, 'publish must enforce language release order');
   assert.match(masterScript, /snapshotPublishedLanguage/, 'publish must create a language snapshot');
   assert.match(masterScript, /includedSetIds/, 'controlled staging publication must limit snapshot membership to the reviewed set');
+  assert.match(
+    masterScript,
+    /args\.controlledStaging[\s\S]*buildControlledStagingReport\(db, args, language, args\.setId!\)[\s\S]*buildReports/,
+    'controlled staging publication must use a set-scoped report instead of reading the full raw catalogue',
+  );
+  assert.match(
+    masterScript,
+    /\.eq\('record_type', 'asset'\)[\s\S]*\.neq\('validation_status', 'valid'\)/,
+    'controlled staging review must query only invalid raw image records',
+  );
+  assert.match(masterScript, /controlled_staging_snapshot_not_full_language/);
   assert.match(masterScript, /schema\('catalog'\)[\s\S]*rpc\('activate_catalogue_version'/, 'activation must call the catalog-scoped RPC');
   assert.match(masterScript, /catalogue_version_external_identifiers/, 'publish must snapshot provider identifiers');
 }

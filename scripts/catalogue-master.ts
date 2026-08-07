@@ -856,7 +856,13 @@ function writeCsv(path: string, rows: Record<string, unknown>[], headers: string
   writeFileSync(path, `${lines.join('\n')}\n`, 'utf8');
 }
 
-async function fetchAll(db: SupabaseClientLike, schema: string, tableName: string, columns: string) {
+async function fetchAllFiltered(
+  db: SupabaseClientLike,
+  schema: string,
+  tableName: string,
+  columns: string,
+  configure: (query: any) => any = (query) => query,
+) {
   const pageSize = 1000;
   const rows: any[] = [];
   const selectedColumns = columns.split(',').map((column) => column.trim()).includes('id')
@@ -864,9 +870,9 @@ async function fetchAll(db: SupabaseClientLike, schema: string, tableName: strin
     : `${columns},id`;
   let afterId: string | null = null;
   for (;;) {
-    let query = db.schema(schema)
+    let query = configure(db.schema(schema)
       .from(tableName)
-      .select(selectedColumns)
+      .select(selectedColumns))
       .order('id', { ascending: true })
       .limit(pageSize);
     if (afterId) query = query.gt('id', afterId);
@@ -881,6 +887,10 @@ async function fetchAll(db: SupabaseClientLike, schema: string, tableName: strin
     afterId = nextAfterId;
   }
   return rows;
+}
+
+async function fetchAll(db: SupabaseClientLike, schema: string, tableName: string, columns: string) {
+  return fetchAllFiltered(db, schema, tableName, columns);
 }
 
 function payloadChecksum(payload: unknown) {
@@ -2534,6 +2544,259 @@ function controlledStagingReadinessFromSummary(
   };
 }
 
+async function buildControlledStagingReport(
+  db: SupabaseClientLike,
+  args: Args,
+  language: SupportedCatalogueLanguageCode,
+  requestedSetRef: string,
+) {
+  const sets = await fetchAllFiltered(
+    db,
+    'catalog',
+    'sets',
+    'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at',
+    (query) => query.eq('language_code', language).is('deprecated_at', null),
+  ) as SetRow[];
+  const cleanedSetRef = requestedSetRef.toLowerCase();
+  const matchingSets = sets.filter((set) => [set.id, set.set_code, set.provider_set_code]
+    .map(cleanText)
+    .filter(Boolean)
+    .some((value) => String(value).toLowerCase() === cleanedSetRef));
+  if (matchingSets.length !== 1) {
+    return {
+      generatedAt: new Date().toISOString(),
+      sourceOfTruth: 'staging_supabase',
+      productionModified: false,
+      controlledStagingSnapshot: true,
+      byLanguage: [],
+      coverageRows: matchingSets.map((set) => ({
+        language: set.language_code,
+        set_id: set.id,
+        set_code: setArtFolderCode(set),
+      })),
+    };
+  }
+
+  const set = matchingSets[0];
+  const [printings, variants, invalidRawImages, openConflicts] = await Promise.all([
+    fetchAllFiltered(
+      db,
+      'catalog',
+      'card_printings',
+      'id,set_id,language_code,collector_number,deprecated_at',
+      (query) => query.eq('set_id', set.id).is('deprecated_at', null),
+    ) as Promise<PrintingRow[]>,
+    fetchAllFiltered(
+      db,
+      'catalog',
+      'card_variants',
+      'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key,deprecated_at',
+      (query) => query.eq('set_id', set.id).is('deprecated_at', null),
+    ) as Promise<VariantRow[]>,
+    fetchAllFiltered(
+      db,
+      'ingest',
+      'raw_source_records',
+      'id,source_id,record_type,external_id,language_code,source_url,licence_status,validation_status,raw_payload,deprecated_at',
+      (query) => query
+        .eq('record_type', 'asset')
+        .neq('validation_status', 'valid')
+        .is('deprecated_at', null),
+    ) as Promise<RawRecordRow[]>,
+    fetchAllFiltered(
+      db,
+      'ingest',
+      'data_conflicts',
+      'id,conflict_type,severity,status,entity_schema,entity_table,entity_id,canonical_key,proposed_payload,existing_payload,internal_notes',
+      (query) => query.in('status', ['open', 'in_review']),
+    ) as Promise<ConflictRow[]>,
+  ]);
+
+  const printingIds = printings.map((printing) => printing.id);
+  const variantIds = variants.map((variant) => variant.id);
+  const assetQueries = [
+    fetchAllFiltered(
+      db,
+      'catalog',
+      'assets',
+      'id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_path,storage_key,content_sha256,perceptual_hash,deprecated_at',
+      (query) => query.eq('set_id', set.id),
+    ) as Promise<AssetRow[]>,
+  ];
+  if (printingIds.length) {
+    assetQueries.push(fetchAllFiltered(
+      db,
+      'catalog',
+      'assets',
+      'id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_path,storage_key,content_sha256,perceptual_hash,deprecated_at',
+      (query) => query.in('printing_id', printingIds),
+    ) as Promise<AssetRow[]>);
+  }
+  if (variantIds.length) {
+    assetQueries.push(fetchAllFiltered(
+      db,
+      'catalog',
+      'assets',
+      'id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_path,storage_key,content_sha256,perceptual_hash,deprecated_at',
+      (query) => query.in('variant_id', variantIds),
+    ) as Promise<AssetRow[]>);
+  }
+  const assets = [...new Map((await Promise.all(assetQueries)).flat()
+    .map((asset) => [asset.id, asset] as const)).values()];
+
+  const targetRefs = new Set([set.id, set.set_code, set.provider_set_code]
+    .map(cleanText)
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase()));
+  const entityIds = new Set([set.id, ...printingIds, ...variantIds]);
+  const scopedInvalidRawImages = invalidRawImages.filter((row) => {
+    const payload = row.raw_payload ?? {};
+    const refs = [
+      setRef(payload),
+      cleanText(valueAt(payload, 'provider_set_code', 'providerSetCode', 'set_id', 'setId')),
+      row.external_id?.split(':')[1],
+    ].map(cleanText).filter(Boolean).map((value) => String(value).toLowerCase());
+    return refs.some((ref) => targetRefs.has(ref));
+  });
+  const scopedConflicts = openConflicts.filter((conflict) => {
+    if (conflict.entity_id && entityIds.has(conflict.entity_id)) return true;
+    const refs = [
+      conflict.proposed_payload?.set_id,
+      conflict.proposed_payload?.setId,
+      conflict.proposed_payload?.set_code,
+      conflict.proposed_payload?.setCode,
+      conflict.canonical_key?.split(':')[1],
+    ].map(cleanText).filter(Boolean).map((value) => String(value).toLowerCase());
+    return refs.some((ref) => targetRefs.has(ref));
+  });
+
+  const approvedImageVariantIds = new Set(assets
+    .filter((asset) => assetIsApproved(asset) && asset.publicly_servable)
+    .map((asset) => asset.variant_id)
+    .filter(Boolean) as string[]);
+  const exactNativeImages = variants.filter((variant) => approvedImageVariantIds.has(variant.id)).length;
+  const unvalidatedImages = assets.filter((asset) => (
+    ['card_image', 'set_logo', 'set_symbol'].includes(asset.asset_type)
+    && !asset.deprecated_at
+    && (
+      asset.rights_status !== 'approved'
+      || (asset.permission_status ?? 'unknown') !== 'approved'
+    )
+  )).length + scopedInvalidRawImages.length;
+  const missingLogo = assets.some((asset) => (
+    asset.asset_type === 'set_logo'
+    && asset.publicly_servable
+    && assetRightsAreApproved(asset)
+  )) ? 0 : 1;
+  const missingSymbol = assets.some((asset) => (
+    asset.asset_type === 'set_symbol'
+    && asset.publicly_servable
+    && assetRightsAreApproved(asset)
+  )) ? 0 : 1;
+  const setCoverAvailable = assets.some((asset) => (
+    asset.asset_type === 'sealed_product_image'
+    && asset.publicly_servable
+    && assetRightsAreApproved(asset)
+  ));
+  const isPikaqianSet = args.provider === 'pikaqian';
+  const setArtFallbackAvailable = setCoverAvailable || exactNativeImages > 0;
+  const releaseBlockingMissingLogo = isPikaqianSet && setArtFallbackAvailable ? 0 : missingLogo;
+  const releaseBlockingMissingSymbol = isPikaqianSet && setArtFallbackAvailable ? 0 : missingSymbol;
+  const expectedCardCount = Math.max(Number(set.total ?? 0), printings.length);
+  const expectedRequiredVariantCount = variants.length;
+  const unresolvedIdentityConflicts = scopedConflicts
+    .filter((conflict) => IDENTITY_CONFLICT_TYPES.has(conflict.conflict_type))
+    .length;
+  const gates: SetCompletionGates = {
+    missingCardRecords: Math.max(expectedCardCount - printings.length, 0),
+    missingRequiredVariants: 0,
+    missingExactNativeImages: Math.max(expectedRequiredVariantCount - exactNativeImages, 0),
+    missingLogo: releaseBlockingMissingLogo,
+    missingSymbol: releaseBlockingMissingSymbol,
+    unresolvedIdentityConflicts,
+    unvalidatedImages,
+  };
+  const row = {
+    set_status: deriveSetCompletionStatus(gates),
+    language,
+    set_id: set.id,
+    set_code: setArtFolderCode(set),
+    set_name: set.native_name,
+    english_display_name: set.english_display_name ?? '',
+    release_date: set.release_date ?? '',
+    expected_cards: expectedCardCount,
+    stored_card_records: printings.length,
+    missing_card_records: gates.missingCardRecords,
+    expected_required_variants: expectedRequiredVariantCount,
+    stored_required_variants: variants.length,
+    missing_required_variants: gates.missingRequiredVariants,
+    exact_native_images: exactNativeImages,
+    missing_exact_native_images: gates.missingExactNativeImages,
+    missing_native_images: gates.missingExactNativeImages,
+    missing_logo: missingLogo,
+    missing_symbol: missingSymbol,
+    missing_set_logo: missingLogo > 0,
+    missing_set_symbol: missingSymbol > 0,
+    native_logo_status: missingLogo === 0 ? 'approved' : 'missing',
+    set_symbol_status: missingSymbol === 0 ? 'approved' : 'missing',
+    set_cover_available: setCoverAvailable,
+    representative_card_cover_available: exactNativeImages > 0,
+    set_art_requirement: isPikaqianSet ? 'optional_source_unavailable_with_fallback' : 'native_logo_and_symbol_required',
+    set_art_fallback_status: missingLogo === 0 || missingSymbol === 0
+      ? 'native_set_art'
+      : setCoverAvailable
+      ? 'approved_pack_cover'
+      : exactNativeImages > 0
+      ? 'approved_representative_card'
+      : 'unavailable',
+    release_blocking_missing_logo: releaseBlockingMissingLogo,
+    release_blocking_missing_symbol: releaseBlockingMissingSymbol,
+    unresolved_identity_conflicts: unresolvedIdentityConflicts,
+    unvalidated_images: unvalidatedImages,
+    conflicts: scopedConflicts.length,
+    checklist_completion_percentage: percentComplete(printings.length, expectedCardCount),
+    variant_completion_percentage: 100,
+    image_completion_percentage: percentComplete(exactNativeImages, expectedRequiredVariantCount),
+    set_art_completion_percentage: releaseBlockingMissingLogo === 0 && releaseBlockingMissingSymbol === 0
+      ? 100
+      : percentComplete(2 - missingLogo - missingSymbol, 2),
+    completion_percentage: 0,
+  };
+  const coverageRow = { ...row, completion_percentage: coveragePercent(row) };
+  return {
+    generatedAt: new Date().toISOString(),
+    sourceOfTruth: 'staging_supabase',
+    productionModified: false,
+    controlledStagingSnapshot: true,
+    totals: {
+      sets: 1,
+      storedCardRecords: printings.length,
+      storedRequiredVariants: variants.length,
+      exactNativeImages,
+      unresolvedIdentityConflicts,
+      unvalidatedImages,
+    },
+    byLanguage: [{
+      language,
+      sets: 1,
+      setStatuses: { [coverageRow.set_status]: 1 },
+      storedCardRecords: printings.length,
+      missingCardRecords: coverageRow.missing_card_records,
+      missingRequiredVariants: coverageRow.missing_required_variants,
+      exactNativeImages,
+      missingExactNativeImages: coverageRow.missing_exact_native_images,
+      missingLogos: missingLogo,
+      missingSymbols: missingSymbol,
+      releaseBlockingMissingLogos: releaseBlockingMissingLogo,
+      releaseBlockingMissingSymbols: releaseBlockingMissingSymbol,
+      unresolvedIdentityConflicts,
+      unvalidatedImages,
+      conflicts: scopedConflicts.length,
+    }],
+    coverageRows: [coverageRow],
+  };
+}
+
 async function requirePreviousLanguagesPublished(
   db: SupabaseClientLike,
   language: SupportedCatalogueLanguageCode,
@@ -2846,8 +3109,16 @@ async function publishMaster(args: Args) {
   }
 
   const db = createStagingSupabase(args);
-  const reportSummary = await buildReports(db, { ...args, languages: [language] });
-  const fullLanguageReadiness = publishReadinessFromSummary(reportSummary, language);
+  const reportSummary = args.controlledStaging
+    ? await buildControlledStagingReport(db, args, language, args.setId!)
+    : await buildReports(db, { ...args, languages: [language] });
+  const fullLanguageReadiness = args.controlledStaging
+    ? {
+        ok: false,
+        blockers: ['controlled_staging_snapshot_not_full_language'],
+        languageSummary: null,
+      }
+    : publishReadinessFromSummary(reportSummary, language);
   const controlledReadiness = args.controlledStaging
     ? controlledStagingReadinessFromSummary(reportSummary, language, args.setId)
     : null;
