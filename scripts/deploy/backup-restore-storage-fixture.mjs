@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import pg from 'pg';
@@ -24,6 +25,12 @@ const TARGET_BUCKET_DELETE_ATTEMPTS = Number(
 const TARGET_BUCKET_DELETE_RETRY_MS = Number(
   process.env.STACKR_RECOVERY_BUCKET_DELETE_RETRY_MS ?? 2_000,
 );
+const STORAGE_TRANSFER_CONCURRENCY = Number(
+  process.env.STACKR_RECOVERY_STORAGE_CONCURRENCY ?? 24,
+);
+const STORAGE_RETRY_ATTEMPTS = Number(
+  process.env.STACKR_RECOVERY_STORAGE_RETRY_ATTEMPTS ?? 4,
+);
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -38,6 +45,16 @@ for (const [name, value] of Object.entries({
 if (SOURCE_PROJECT_REF === TARGET_PROJECT_REF) throw new Error('source_and_restore_project_refs_match');
 if (!SOURCE_DB_URL.includes(SOURCE_PROJECT_REF)) throw new Error('source_database_url_project_mismatch');
 if (!TARGET_DB_URL.includes(TARGET_PROJECT_REF)) throw new Error('restore_database_url_project_mismatch');
+if (!Number.isInteger(STORAGE_TRANSFER_CONCURRENCY)
+  || STORAGE_TRANSFER_CONCURRENCY < 1
+  || STORAGE_TRANSFER_CONCURRENCY > 32) {
+  throw new Error('invalid_storage_transfer_concurrency');
+}
+if (!Number.isInteger(STORAGE_RETRY_ATTEMPTS)
+  || STORAGE_RETRY_ATTEMPTS < 1
+  || STORAGE_RETRY_ATTEMPTS > 6) {
+  throw new Error('invalid_storage_retry_attempts');
+}
 
 const source = createClient(SOURCE_URL, SOURCE_SECRET, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -58,6 +75,51 @@ async function expectNoError(operation, context) {
 
 function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function retryStorageOperation(operation) {
+  let lastError;
+  for (let attempt = 1; attempt <= STORAGE_RETRY_ATTEMPTS; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (attempt < STORAGE_RETRY_ATTEMPTS) {
+        console.warn(JSON.stringify({ phase: 'retry_storage_operation', attempt }));
+        await wait(250 * (2 ** (attempt - 1)));
+      }
+    }
+  }
+  throw lastError;
+}
+
+async function mapWithConcurrency(items, label, operation) {
+  const output = new Array(items.length);
+  let cursor = 0;
+  let completed = 0;
+  let failure = null;
+
+  async function worker() {
+    while (!failure) {
+      const index = cursor;
+      cursor += 1;
+      if (index >= items.length) return;
+      try {
+        output[index] = await operation(items[index], index);
+        completed += 1;
+        if (completed % 1_000 === 0 || completed === items.length) {
+          console.log(JSON.stringify({ phase: label, completed, total: items.length }));
+        }
+      } catch (error) {
+        failure ??= error;
+      }
+    }
+  }
+
+  const workerCount = Math.min(STORAGE_TRANSFER_CONCURRENCY, items.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  if (failure) throw failure;
+  return output;
 }
 
 async function emptyAndDeleteTargetBucket(bucketId) {
@@ -139,7 +201,7 @@ function uploadOptions(object) {
   return {
     contentType: metadata.mimetype ?? 'application/octet-stream',
     ...(cacheControl ? { cacheControl } : {}),
-    upsert: false,
+    upsert: true,
   };
 }
 
@@ -152,23 +214,6 @@ try {
     if (!bucketById.has(object.bucket_id)) throw new Error(`storage_object_bucket_missing:${object.bucket_id}`);
   }
 
-  const backedUpObjects = [];
-  for (const [index, object] of inventory.objects.entries()) {
-    const blob = await expectNoError(
-      source.storage.from(object.bucket_id).download(object.name),
-      `download_source_object:${object.bucket_id}:${object.name}`,
-    );
-    const bytes = Buffer.from(await blob.arrayBuffer());
-    const backupPath = path.join(backupDir, `${String(index).padStart(6, '0')}.bin`);
-    writeFileSync(backupPath, bytes);
-    backedUpObjects.push({
-      ...object,
-      backupPath,
-      byteSize: bytes.length,
-      sha256: digest(bytes),
-    });
-  }
-
   if (!await clearTargetStorage()) throw new Error('restore_storage_cleanup_failed');
   for (const bucket of inventory.buckets) {
     await expectNoError(
@@ -176,16 +221,56 @@ try {
       `create_restore_bucket:${bucket.id}`,
     );
   }
-  for (const object of backedUpObjects) {
-    await expectNoError(
-      target.storage.from(object.bucket_id).upload(
-        object.name,
-        readFileSync(object.backupPath),
-        uploadOptions(object),
-      ),
-      `upload_restore_object:${object.bucket_id}:${object.name}`,
-    );
-  }
+
+  const backedUpObjects = await mapWithConcurrency(
+    inventory.objects,
+    'backup_restore_verify_objects',
+    async (object, index) => {
+      const backupPath = path.join(backupDir, `${String(index).padStart(6, '0')}.bin`);
+      try {
+        const sourceBlob = await retryStorageOperation(
+          () => expectNoError(
+            source.storage.from(object.bucket_id).download(object.name),
+            `download_source_object:${object.bucket_id}:${object.name}`,
+          ),
+        );
+        const sourceBytes = Buffer.from(await sourceBlob.arrayBuffer());
+        const sourceSha256 = digest(sourceBytes);
+        await writeFile(backupPath, sourceBytes);
+
+        const backupBytes = await readFile(backupPath);
+        await retryStorageOperation(
+          () => expectNoError(
+            target.storage.from(object.bucket_id).upload(
+              object.name,
+              backupBytes,
+              uploadOptions(object),
+            ),
+            `upload_restore_object:${object.bucket_id}:${object.name}`,
+          ),
+        );
+
+        const restoredBlob = await retryStorageOperation(
+          () => expectNoError(
+            target.storage.from(object.bucket_id).download(object.name),
+            `download_restored_object:${object.bucket_id}:${object.name}`,
+          ),
+        );
+        const restoredBytes = Buffer.from(await restoredBlob.arrayBuffer());
+        const expectedMimeType = object.metadata?.mimetype ?? 'application/octet-stream';
+
+        return {
+          ...object,
+          byteSize: sourceBytes.length,
+          sha256: sourceSha256,
+          checksumMismatch: digest(restoredBytes) !== sourceSha256,
+          mimeTypeMismatch: restoredBlob.type !== expectedMimeType,
+        };
+      } finally {
+        rmSync(backupPath, { force: true });
+      }
+    },
+  );
 
   const restoredBuckets = await expectNoError(
     target.storage.listBuckets({ limit: 1000, offset: 0 }),
@@ -208,34 +293,41 @@ try {
     if (restoredLimit != null && restoredLimit < largestObject) fileSizeLimitCompatible = false;
   }
 
-  let checksumMismatchCount = 0;
-  let mimeTypeMismatchCount = 0;
-  let publicReadVerifiedCount = 0;
-  let privateReadDeniedCount = 0;
-  for (const object of backedUpObjects) {
-    const restoredBlob = await expectNoError(
-      target.storage.from(object.bucket_id).download(object.name),
-      `download_restored_object:${object.bucket_id}:${object.name}`,
-    );
-    const restoredBytes = Buffer.from(await restoredBlob.arrayBuffer());
-    if (digest(restoredBytes) !== object.sha256) checksumMismatchCount += 1;
-    const expectedMimeType = object.metadata?.mimetype ?? 'application/octet-stream';
-    if (restoredBlob.type !== expectedMimeType) mimeTypeMismatchCount += 1;
-
-    const publicUrl = target.storage.from(object.bucket_id).getPublicUrl(object.name).data.publicUrl;
-    const anonymousResponse = await fetch(publicUrl, { redirect: 'manual' });
-    if (bucketById.get(object.bucket_id).public) {
-      if (anonymousResponse.ok) publicReadVerifiedCount += 1;
-    } else if (!anonymousResponse.ok) {
-      privateReadDeniedCount += 1;
-    }
-  }
+  const checksumMismatchCount = backedUpObjects
+    .filter((result) => result.checksumMismatch).length;
+  const mimeTypeMismatchCount = backedUpObjects
+    .filter((result) => result.mimeTypeMismatch).length;
 
   const publicObjectCount = backedUpObjects.filter((object) => bucketById.get(object.bucket_id).public).length;
   const privateObjectCount = backedUpObjects.length - publicObjectCount;
+  const bucketAccessChecks = [];
+  for (const bucket of inventory.buckets) {
+    const sample = backedUpObjects.find((object) => object.bucket_id === bucket.id);
+    if (!sample) continue;
+    const publicUrl = target.storage.from(bucket.id).getPublicUrl(sample.name).data.publicUrl;
+    const anonymousResponse = await retryStorageOperation(async () => {
+      const response = await fetch(publicUrl, { redirect: 'manual' });
+      if (response.status >= 500) throw new Error(`anonymous_storage_check_failed:${bucket.id}`);
+      return response;
+    });
+    bucketAccessChecks.push({
+      bucketId: bucket.id,
+      expectedPublic: Boolean(bucket.public),
+      anonymousStatus: anonymousResponse.status,
+      passed: bucket.public ? anonymousResponse.ok : !anonymousResponse.ok,
+    });
+  }
+  const publicBucketAccessExpectedCount = bucketAccessChecks
+    .filter((check) => check.expectedPublic).length;
+  const publicBucketReadVerifiedCount = bucketAccessChecks
+    .filter((check) => check.expectedPublic && check.passed).length;
+  const privateBucketAccessExpectedCount = bucketAccessChecks
+    .filter((check) => !check.expectedPublic).length;
+  const privateBucketReadDeniedCount = bucketAccessChecks
+    .filter((check) => !check.expectedPublic && check.passed).length;
   targetCleanupVerified = await clearTargetStorage();
   const evidence = {
-    schemaVersion: 'stackr-storage-restore-evidence-v2.0.0',
+    schemaVersion: 'stackr-storage-restore-evidence-v2.1.0',
     verifiedAt: new Date().toISOString(),
     sourceProjectRef: SOURCE_PROJECT_REF,
     restoreProjectRef: TARGET_PROJECT_REF,
@@ -245,12 +337,18 @@ try {
     restoredObjectCount: backedUpObjects.length,
     publicObjectCount,
     privateObjectCount,
-    publicReadVerifiedCount,
-    privateReadDeniedCount,
+    accessCheckScope: 'one_restored_object_per_non_empty_bucket',
+    bucketAccessChecks,
+    publicBucketAccessExpectedCount,
+    publicBucketReadVerifiedCount,
+    privateBucketAccessExpectedCount,
+    privateBucketReadDeniedCount,
     bucketPolicyMatches,
     fileSizeLimitCompatible,
     bucketLimitDowngradeCount,
     restoreTargetFileSizeCeilingBytes: TARGET_FILE_SIZE_CEILING_BYTES,
+    storageTransferConcurrency: STORAGE_TRANSFER_CONCURRENCY,
+    storageRetryAttempts: STORAGE_RETRY_ATTEMPTS,
     checksumMismatchCount,
     mimeTypeMismatchCount,
     targetCleanupVerified,
@@ -264,8 +362,8 @@ try {
       && fileSizeLimitCompatible
       && checksumMismatchCount === 0
       && mimeTypeMismatchCount === 0
-      && publicReadVerifiedCount === publicObjectCount
-      && privateReadDeniedCount === privateObjectCount
+      && publicBucketReadVerifiedCount === publicBucketAccessExpectedCount
+      && privateBucketReadDeniedCount === privateBucketAccessExpectedCount
       && targetCleanupVerified,
   };
   writeFileSync(
