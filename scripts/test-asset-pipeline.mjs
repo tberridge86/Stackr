@@ -282,6 +282,8 @@ function assertMigrationClassifier() {
 function assertMirrorRequestsAreBounded() {
   assert.match(catalogueMirror, /AbortSignal\.timeout\(60_000\)/, 'Supabase mirror requests must have a bounded timeout');
   assert.match(catalogueMirror, /global:\s*\{ fetch: boundedSupabaseFetch \}/, 'the bounded fetch must cover Storage uploads');
+  assert.match(catalogueMirror, /MAX_SOURCE_ATTEMPTS = 3/, 'provider image downloads must have a bounded retry count');
+  assert.match(catalogueMirror, /RETRYABLE_SOURCE_STATUSES\.has\(response\.status\)/, 'only transient source responses may retry');
   assert.match(catalogueMirror, /same_artwork_as_variant_id: null/, 'a mirrored native image must clear any artwork fallback');
   assert.match(
     catalogueMirror,

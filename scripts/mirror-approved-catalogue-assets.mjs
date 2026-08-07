@@ -6,6 +6,8 @@ import { SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const ALLOWED_PROVIDERS = new Set(['tcgdex', 'pikaqian']);
+const RETRYABLE_SOURCE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
+const MAX_SOURCE_ATTEMPTS = 3;
 
 class SourceImageUnavailableError extends Error {
   constructor(status) {
@@ -65,6 +67,21 @@ function errorMessage(error) {
   }
 }
 
+function sourceRetryDelayMs(response, attempt) {
+  const retryAfter = response?.headers.get('retry-after');
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds)) return Math.min(Math.max(seconds * 1000, 250), 30_000);
+    const at = Date.parse(retryAfter);
+    if (Number.isFinite(at)) return Math.min(Math.max(at - Date.now(), 250), 30_000);
+  }
+  return 500 * (2 ** (attempt - 1));
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function requireStaging() {
   const target = String(arg('target') || process.env.STACKR_CATALOGUE_IMPORT_TARGET || '').trim().toLowerCase();
   const url = process.env.SUPABASE_URL ?? '';
@@ -105,23 +122,40 @@ async function mapWithConcurrency(values, concurrency, mapper) {
 }
 
 async function downloadApprovedImage(url, timeoutMs, maxBytes) {
-  const response = await fetch(url, {
-    headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg' },
-    redirect: 'follow',
-    signal: AbortSignal.timeout(timeoutMs),
-  });
-  if (response.status === 404 || response.status === 410) {
-    throw new SourceImageUnavailableError(response.status);
+  let lastError = null;
+  for (let attempt = 1; attempt <= MAX_SOURCE_ATTEMPTS; attempt += 1) {
+    let response = null;
+    try {
+      response = await fetch(url, {
+        headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg' },
+        redirect: 'follow',
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (response.status === 404 || response.status === 410) {
+        throw new SourceImageUnavailableError(response.status);
+      }
+      if (RETRYABLE_SOURCE_STATUSES.has(response.status) && attempt < MAX_SOURCE_ATTEMPTS) {
+        await response.body?.cancel().catch(() => undefined);
+        await sleep(sourceRetryDelayMs(response, attempt));
+        continue;
+      }
+      if (!response.ok) throw new Error(`Source image returned HTTP ${response.status}.`);
+      const declaredBytes = Number(response.headers.get('content-length') ?? 0);
+      if (declaredBytes > maxBytes) throw new Error(`Source image exceeds ${maxBytes} bytes.`);
+      const buffer = Buffer.from(await response.arrayBuffer());
+      if (buffer.byteLength > maxBytes) throw new Error(`Downloaded image exceeds ${maxBytes} bytes.`);
+      return {
+        buffer,
+        mimeType: String(response.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase(),
+      };
+    } catch (error) {
+      if (error instanceof SourceImageUnavailableError) throw error;
+      lastError = error;
+      if (attempt === MAX_SOURCE_ATTEMPTS) throw error;
+      await sleep(sourceRetryDelayMs(response, attempt));
+    }
   }
-  if (!response.ok) throw new Error(`Source image returned HTTP ${response.status}.`);
-  const declaredBytes = Number(response.headers.get('content-length') ?? 0);
-  if (declaredBytes > maxBytes) throw new Error(`Source image exceeds ${maxBytes} bytes.`);
-  const buffer = Buffer.from(await response.arrayBuffer());
-  if (buffer.byteLength > maxBytes) throw new Error(`Downloaded image exceeds ${maxBytes} bytes.`);
-  return {
-    buffer,
-    mimeType: String(response.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase(),
-  };
+  throw lastError ?? new Error('Source image download failed.');
 }
 
 async function providerSourceId(supabase, provider) {
