@@ -284,6 +284,7 @@ function assertMirrorRequestsAreBounded() {
   assert.match(catalogueMirror, /global:\s*\{ fetch: boundedSupabaseFetch \}/, 'the bounded fetch must cover Storage uploads');
   assert.match(catalogueMirror, /MAX_SOURCE_ATTEMPTS = 3/, 'provider image downloads must have a bounded retry count');
   assert.match(catalogueMirror, /MAX_DEFERRED_PER_BATCH = 5/, 'isolated transient asset failures must have a small batch limit');
+  assert.match(catalogueMirror, /boundedInteger\(arg\('concurrency', '2'\), 2, 1, 6\)/, 'provider image concurrency must remain bounded at six');
   assert.match(catalogueMirror, /RETRYABLE_SOURCE_STATUSES\.has\(response\.status\)/, 'only transient source responses may retry');
   assert.match(catalogueMirror, /same_artwork_as_variant_id: null/, 'a mirrored native image must clear any artwork fallback');
   assert.match(
@@ -315,6 +316,11 @@ function assertMirrorRequestsAreBounded() {
     catalogueWorkflow,
     /for \(\( batch=0; batch<CATALOGUE_BATCH_COUNT; batch\+\+ \)\)[\s\S]+mirror-approved-catalogue-assets\.mjs/,
     'the mirror workflow must support multiple bounded batches without raising request concurrency',
+  );
+  assert.match(
+    catalogueWorkflow,
+    /CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 6/,
+    'the mirror workflow must cap provider image concurrency at six',
   );
 }
 

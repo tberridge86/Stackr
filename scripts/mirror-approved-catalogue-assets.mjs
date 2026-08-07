@@ -404,7 +404,7 @@ async function main() {
   const provider = arg('provider');
   if (!ALLOWED_PROVIDERS.has(provider)) throw new Error('Use --provider=tcgdex or --provider=pikaqian.');
   const limit = boundedInteger(arg('limit', '100'), 100, 1, 2000);
-  const concurrency = boundedInteger(arg('concurrency', '2'), 2, 1, 4);
+  const concurrency = boundedInteger(arg('concurrency', '2'), 2, 1, 6);
   const timeoutMs = boundedInteger(arg('timeoutMs', '30000'), 30000, 1000, 120000);
   const maxBytes = boundedInteger(arg('maxBytes', String(12 * 1024 * 1024)), 12 * 1024 * 1024, 1024, 25 * 1024 * 1024);
   const afterId = optionalUuidArg('afterId');

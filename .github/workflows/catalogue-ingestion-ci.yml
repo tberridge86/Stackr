@@ -47,7 +47,7 @@ on:
         default: '4'
         type: string
       mirror_concurrency:
-        description: Concurrent provider image transfers (maximum 4)
+        description: Concurrent provider image transfers (maximum 6)
         required: true
         default: '4'
         type: string
@@ -139,7 +139,7 @@ jobs:
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
           (( CATALOGUE_WRITE_CONCURRENCY >= 1 && CATALOGUE_WRITE_CONCURRENCY <= 8 )) || exit 1
-          (( CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 4 )) || exit 1
+          (( CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 6 )) || exit 1
           if [[ "${{ inputs.operation }}" == "snapshot" && "${{ inputs.provider }}" == "tcgdex" ]]; then
             [[ -n "$CATALOGUE_SET_ID" ]] || { echo 'Pinned TCGdex snapshots require one or more exact set IDs.'; exit 1; }
           fi
