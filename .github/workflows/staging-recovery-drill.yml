@@ -12,7 +12,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-staging-database-maintenance
+  # Database/full group: stackr-staging-database-maintenance
+  group: ${{ inputs.confirmation == 'RESTORE STAGING STORAGE' && 'stackr-staging-storage-maintenance' || 'stackr-staging-database-maintenance' }}
   cancel-in-progress: false
 
 jobs:
@@ -32,7 +33,7 @@ jobs:
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
       STACKR_RECOVERY_STORAGE_CONCURRENCY: 64
-      STACKR_RECOVERY_STORAGE_PACK_CONCURRENCY: 3
+      STACKR_RECOVERY_STORAGE_PACK_CONCURRENCY: 4
       STACKR_RECOVERY_STORAGE_SAMPLE_SIZE: 512
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
