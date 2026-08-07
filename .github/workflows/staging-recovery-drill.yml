@@ -12,8 +12,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Every mode mutates the same isolated restore project.
-  group: stackr-staging-recovery-maintenance
+  # Every mode reads staging and mutates the same isolated restore project.
+  group: stackr-staging-database-maintenance
   cancel-in-progress: false
 
 jobs:
