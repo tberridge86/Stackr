@@ -61,6 +61,11 @@ on:
         required: true
         default: true
         type: boolean
+      controlled_staging:
+        description: Publish one staging-only set snapshot for API verification
+        required: true
+        default: false
+        type: boolean
       publish_version:
         description: Shared catalogue version label required for publish operations
         required: false
@@ -95,6 +100,7 @@ jobs:
       CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency }}
       CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency }}
       CATALOGUE_INCLUDE_ASSETS: ${{ inputs.include_assets }}
+      CATALOGUE_CONTROLLED_STAGING: ${{ inputs.controlled_staging }}
       CATALOGUE_PUBLISH_VERSION: ${{ inputs.publish_version }}
       TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
     steps:
@@ -128,6 +134,7 @@ jobs:
           [[ "$CATALOGUE_BATCH_COUNT" =~ ^[0-9]+$ ]] || exit 1
           [[ "$CATALOGUE_WRITE_CONCURRENCY" =~ ^[0-9]+$ ]] || exit 1
           [[ "$CATALOGUE_MIRROR_CONCURRENCY" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_CONTROLLED_STAGING" == "true" || "$CATALOGUE_CONTROLLED_STAGING" == "false" ]] || exit 1
           [[ -z "$CATALOGUE_SET_ID" || "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+)*$ ]] || exit 1
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
           (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
@@ -139,6 +146,12 @@ jobs:
           if [[ "${{ inputs.operation }}" == "publish" ]]; then
             [[ "$CATALOGUE_PUBLISH_VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$ ]] \
               || { echo 'Publish operations require a safe 8-160 character version label.'; exit 1; }
+            if [[ "$CATALOGUE_CONTROLLED_STAGING" == "true" ]]; then
+              [[ "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+$ ]] \
+                || { echo 'Controlled staging publication requires exactly one set ID.'; exit 1; }
+              [[ "$CATALOGUE_PUBLISH_VERSION" == staging-* ]] \
+                || { echo 'Controlled staging publication versions must start with staging-.'; exit 1; }
+            fi
           fi
       - name: Scope the pinned TCGdex compiler
         if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
@@ -264,11 +277,17 @@ jobs:
           done
       - name: Publish validated language shard
         if: inputs.operation == 'publish'
-        run: >-
-          npx tsx scripts/catalogue-master.ts publish
-          --language="$CATALOGUE_LANGUAGE"
-          --version="$CATALOGUE_PUBLISH_VERSION"
-          --target=staging
+        shell: bash
+        run: |
+          controlled_args=()
+          if [[ "$CATALOGUE_CONTROLLED_STAGING" == "true" ]]; then
+            controlled_args+=(--controlled-staging --setId="$CATALOGUE_SET_ID")
+          fi
+          npx tsx scripts/catalogue-master.ts publish \
+            --language="$CATALOGUE_LANGUAGE" \
+            --version="$CATALOGUE_PUBLISH_VERSION" \
+            --target=staging \
+            "${controlled_args[@]}"
       - name: Remove decrypted PikaQian snapshot
         if: always()
         shell: bash

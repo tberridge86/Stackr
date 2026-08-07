@@ -67,6 +67,9 @@ function assertBoundedCatalogueWrites() {
   assert.match(catalogueWorkflow, /options: \[snapshot, mirror, publish\]/);
   assert.match(catalogueWorkflow, /Publish validated language shard[\s\S]+catalogue-master\.ts publish/);
   assert.match(catalogueWorkflow, /--version="\$CATALOGUE_PUBLISH_VERSION"/);
+  assert.match(catalogueWorkflow, /controlled_staging:/);
+  assert.match(catalogueWorkflow, /--controlled-staging --setId="\$CATALOGUE_SET_ID"/);
+  assert.match(catalogueWorkflow, /CATALOGUE_PUBLISH_VERSION" == staging-\*/);
   assert.match(
     catalogueWorkflow,
     /Report language quality \(advisory\)[\s\S]+continue-on-error: true/,
