@@ -67,18 +67,33 @@ jobs:
           set -euo pipefail
           export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
           mkdir -p "$RUNNER_TEMP/stackr-recovery/backups" "$STACKR_RECOVERY_EVIDENCE_DIR"
-          npx --yes supabase@2.110.0 db dump \
-            --db-url "$STACKR_SOURCE_DB_URL" \
-            --file "$RUNNER_TEMP/stackr-recovery/backups/roles.sql" \
-            --role-only
+
+          retry_dump() {
+            local output_file="$1"
+            shift
+            local attempt
+            for attempt in 1 2 3; do
+              rm -f "$output_file"
+              if npx --yes supabase@2.110.0 db dump \
+                --db-url "$STACKR_SOURCE_DB_URL" \
+                --file "$output_file" \
+                "$@"; then
+                return 0
+              fi
+              if (( attempt == 3 )); then
+                echo "::error::Database export failed after $attempt attempts: $output_file"
+                return 1
+              fi
+              echo "::warning::Database export attempt $attempt failed; retrying in $((attempt * 15)) seconds."
+              sleep $((attempt * 15))
+            done
+          }
+
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/roles.sql" --role-only
           node scripts/deploy/sanitize-supabase-role-dump.mjs \
             "$RUNNER_TEMP/stackr-recovery/backups/roles.sql"
-          npx --yes supabase@2.110.0 db dump \
-            --db-url "$STACKR_SOURCE_DB_URL" \
-            --file "$RUNNER_TEMP/stackr-recovery/backups/schema.sql"
-          npx --yes supabase@2.110.0 db dump \
-            --db-url "$STACKR_SOURCE_DB_URL" \
-            --file "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/schema.sql"
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
             --use-copy --data-only \
             -x storage.buckets \
             -x storage.buckets_analytics \
@@ -87,13 +102,9 @@ jobs:
             -x storage.s3_multipart_uploads \
             -x storage.s3_multipart_uploads_parts \
             -x storage.vector_indexes
-          npx --yes supabase@2.110.0 db dump \
-            --db-url "$STACKR_SOURCE_DB_URL" \
-            --file "$RUNNER_TEMP/stackr-recovery/backups/history-schema.sql" \
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/history-schema.sql" \
             --schema supabase_migrations
-          npx --yes supabase@2.110.0 db dump \
-            --db-url "$STACKR_SOURCE_DB_URL" \
-            --file "$RUNNER_TEMP/stackr-recovery/backups/history-data.sql" \
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/history-data.sql" \
             --use-copy --data-only --schema supabase_migrations
           node scripts/deploy/verify-backup.mjs \
             --schema="$RUNNER_TEMP/stackr-recovery/backups/schema.sql" \
