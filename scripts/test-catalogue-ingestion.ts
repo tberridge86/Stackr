@@ -32,6 +32,7 @@ const tcgdexAdapter = readFileSync('scripts/catalogue-ingestion/tcgdexAdapter.ts
 const legacySync = readFileSync('scripts/sync-tcgdex-catalogue.mjs', 'utf8');
 const backendRoute = readFileSync('backend/routes/catalogueIngestion.js', 'utf8');
 const catalogueWorkflow = readFileSync('.github/workflows/catalogue-ingestion-ci.yml', 'utf8');
+const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 
 function expectSql(pattern: RegExp, message: string) {
   assert.match(migration, pattern, message);
@@ -55,6 +56,8 @@ function assertBoundedCatalogueWrites() {
   assert.match(ingestionPipeline, /await runWithConcurrency\(/);
   assert.match(catalogueIngest, /--writeConcurrency must be an integer from 1 to 16/);
   assert.match(catalogueWorkflow, /CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12/);
+  assert.match(catalogueWorkflow, /group: stackr-staging-database-maintenance/);
+  assert.match(recoveryWorkflow, /group: stackr-staging-database-maintenance/);
   assert.match(catalogueWorkflow, /TCGDEX_SNAPSHOT_COMMIT: [0-9a-f]{40}/);
   assert.match(catalogueWorkflow, /repository: tcgdex\/cards-database/);
   assert.match(catalogueWorkflow, /TCGDEX_COMPILE_LANGS: \$\{\{ inputs\.language \}\}/);

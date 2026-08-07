@@ -56,7 +56,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-staging-catalogue-${{ inputs.operation }}-${{ inputs.provider }}-${{ inputs.language }}-${{ inputs.offset }}
+  group: stackr-staging-database-maintenance
   cancel-in-progress: false
 
 jobs:

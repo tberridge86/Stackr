@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-staging-recovery-drill
+  group: stackr-staging-database-maintenance
   cancel-in-progress: false
 
 jobs:
