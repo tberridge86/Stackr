@@ -7,6 +7,14 @@ import { SupabaseObjectStorageAdapter } from '../backend/lib/objectStorage.js';
 const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const ALLOWED_PROVIDERS = new Set(['tcgdex', 'pikaqian']);
 
+class SourceImageUnavailableError extends Error {
+  constructor(status) {
+    super(`Source image returned HTTP ${status}.`);
+    this.name = 'SourceImageUnavailableError';
+    this.status = status;
+  }
+}
+
 function arg(name, fallback = '') {
   const prefix = `--${name}=`;
   const match = process.argv.find((item) => item.startsWith(prefix));
@@ -25,6 +33,38 @@ function boundedInteger(value, fallback, min, max) {
   return parsed;
 }
 
+function optionalUuidArg(name) {
+  const value = String(arg(name) || '').trim().toLowerCase();
+  if (!value) return '';
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value)) {
+    throw new Error(`Expected --${name} to be a UUID.`);
+  }
+  return value;
+}
+
+function uuidListArg(name, maxItems = 100) {
+  const raw = String(arg(name) || '').trim();
+  if (!raw) return [];
+  const values = [...new Set(raw.split(',').map((value) => value.trim().toLowerCase()).filter(Boolean))];
+  if (values.length > maxItems) throw new Error(`--${name} accepts at most ${maxItems} UUIDs.`);
+  for (const value of values) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value)) {
+      throw new Error(`Expected --${name} to contain UUIDs.`);
+    }
+  }
+  return values;
+}
+
+function errorMessage(error) {
+  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') return error;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 function requireStaging() {
   const target = String(arg('target') || process.env.STACKR_CATALOGUE_IMPORT_TARGET || '').trim().toLowerCase();
   const url = process.env.SUPABASE_URL ?? '';
@@ -33,11 +73,21 @@ function requireStaging() {
   }
 }
 
+function boundedSupabaseFetch(input, init = {}) {
+  return fetch(input, {
+    ...init,
+    signal: init.signal ?? AbortSignal.timeout(60_000),
+  });
+}
+
 function adminSupabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
   if (!url || !key) throw new Error('Staging Supabase backend credentials are required.');
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: boundedSupabaseFetch },
+  });
 }
 
 async function mapWithConcurrency(values, concurrency, mapper) {
@@ -60,6 +110,9 @@ async function downloadApprovedImage(url, timeoutMs, maxBytes) {
     redirect: 'follow',
     signal: AbortSignal.timeout(timeoutMs),
   });
+  if (response.status === 404 || response.status === 410) {
+    throw new SourceImageUnavailableError(response.status);
+  }
   if (!response.ok) throw new Error(`Source image returned HTTP ${response.status}.`);
   const declaredBytes = Number(response.headers.get('content-length') ?? 0);
   if (declaredBytes > maxBytes) throw new Error(`Source image exceeds ${maxBytes} bytes.`);
@@ -79,6 +132,131 @@ async function providerSourceId(supabase, provider) {
   if (error) throw error;
   if (!data?.id) throw new Error(`Staging source ${provider} is missing.`);
   return data.id;
+}
+
+async function reuseExistingStorageObject(supabase, asset, mirrored) {
+  const { data: existing, error: existingError } = await supabase.schema('catalog').from('assets')
+    .select('id,asset_id,variant_id,url')
+    .eq('storage_provider', mirrored.storage_provider)
+    .eq('storage_bucket', mirrored.storage_bucket)
+    .eq('storage_key', mirrored.storage_key)
+    .eq('rights_status', 'approved')
+    .eq('permission_status', 'approved')
+    .eq('publicly_servable', true)
+    .is('deprecated_at', null)
+    .is('deleted_at', null)
+    .neq('id', asset.id)
+    .limit(1)
+    .maybeSingle();
+  if (existingError) throw existingError;
+  if (!existing?.id || (asset.asset_type === 'card_image' && !existing.variant_id)) {
+    throw new Error(`Stored object ${mirrored.storage_key} exists without a reusable catalogue asset.`);
+  }
+
+  const { error: duplicateError } = await supabase.schema('catalog').from('assets').update({
+    storage_provider: 'unavailable',
+    storage_bucket: null,
+    storage_key: null,
+    storage_path: null,
+    externally_referenced: false,
+    publicly_servable: false,
+    unavailable_reason: `duplicate_content:${existing.asset_id || existing.id}`,
+    content_sha256: mirrored.content_sha256,
+    perceptual_hash: mirrored.perceptual_hash,
+    mime_type: mirrored.mime_type,
+    width: mirrored.width,
+    height: mirrored.height,
+    byte_size: mirrored.byte_size,
+    derivative_list: mirrored.derivative_list,
+    archival_storage_key: mirrored.archival_storage_key,
+    last_verified_at: mirrored.last_verified_at,
+    retention_status: 'unavailable',
+  }).eq('id', asset.id);
+  if (duplicateError) throw duplicateError;
+
+  if (asset.variant_id) {
+    const sameVariant = existing.variant_id === asset.variant_id;
+    const { error: variantError } = await supabase.schema('catalog').from('card_variants').update({
+      native_image_status: sameVariant ? 'available' : 'same_artwork_reference',
+      same_artwork_as_variant_id: sameVariant ? null : existing.variant_id,
+    }).eq('id', asset.variant_id);
+    if (variantError) throw variantError;
+  }
+
+  return {
+    id: asset.id,
+    status: 'reused_existing',
+    canonicalAssetId: existing.id,
+    bytes: mirrored.byte_size,
+  };
+}
+
+async function markSourceUnavailable(supabase, asset, error) {
+  const unavailableReason = `source_http_${error.status}`;
+  const { error: assetError } = await supabase.schema('catalog').from('assets').update({
+    storage_provider: 'unavailable',
+    storage_bucket: null,
+    storage_key: null,
+    storage_path: null,
+    externally_referenced: false,
+    publicly_servable: false,
+    unavailable_reason: unavailableReason,
+    last_verified_at: new Date().toISOString(),
+    retention_status: 'unavailable',
+  }).eq('id', asset.id);
+  if (assetError) throw assetError;
+
+  if (asset.variant_id) {
+    const { data: alternative, error: alternativeError } = await supabase.schema('catalog').from('assets')
+      .select('id')
+      .eq('variant_id', asset.variant_id)
+      .eq('rights_status', 'approved')
+      .eq('permission_status', 'approved')
+      .eq('publicly_servable', true)
+      .in('storage_provider', ['supabase_storage', 's3_compatible', 'local_dev'])
+      .is('deprecated_at', null)
+      .neq('id', asset.id)
+      .limit(1)
+      .maybeSingle();
+    if (alternativeError) throw alternativeError;
+
+    let fallbackVariantId = null;
+    let fallbackAvailable = false;
+    if (!alternative?.id) {
+      const { data: variant, error: variantReadError } = await supabase.schema('catalog').from('card_variants')
+        .select('same_artwork_as_variant_id')
+        .eq('id', asset.variant_id)
+        .maybeSingle();
+      if (variantReadError) throw variantReadError;
+      fallbackVariantId = variant?.same_artwork_as_variant_id ?? null;
+      if (fallbackVariantId) {
+        const { data: fallbackAsset, error: fallbackAssetError } = await supabase.schema('catalog').from('assets')
+          .select('id')
+          .eq('variant_id', fallbackVariantId)
+          .eq('rights_status', 'approved')
+          .eq('permission_status', 'approved')
+          .eq('publicly_servable', true)
+          .in('storage_provider', ['supabase_storage', 's3_compatible', 'local_dev'])
+          .is('deprecated_at', null)
+          .is('deleted_at', null)
+          .limit(1)
+          .maybeSingle();
+        if (fallbackAssetError) throw fallbackAssetError;
+        fallbackAvailable = Boolean(fallbackAsset?.id);
+      }
+    }
+    const { error: variantError } = await supabase.schema('catalog').from('card_variants').update({
+      native_image_status: alternative?.id
+        ? 'available'
+        : fallbackAvailable
+        ? 'same_artwork_reference'
+        : 'scan_acquisition_required',
+      same_artwork_as_variant_id: fallbackAvailable ? fallbackVariantId : null,
+    }).eq('id', asset.variant_id);
+    if (variantError) throw variantError;
+  }
+
+  return { id: asset.id, status: 'source_unavailable', reason: unavailableReason };
 }
 
 async function mirrorOne(supabase, storage, asset, options) {
@@ -129,11 +307,14 @@ async function mirrorOne(supabase, storage, asset, options) {
     retention_status: 'active',
     acquisition_source: 'provider_url',
   }).eq('id', asset.id);
+  if (error?.code === '23505' && String(error.message || '').includes('assets_storage_object_uidx')) {
+    return reuseExistingStorageObject(supabase, asset, mirrored);
+  }
   if (error) throw error;
 
   if (asset.variant_id) {
     const { error: variantError } = await supabase.schema('catalog').from('card_variants')
-      .update({ native_image_status: 'available' })
+      .update({ native_image_status: 'available', same_artwork_as_variant_id: null })
       .eq('id', asset.variant_id);
     if (variantError) throw variantError;
   }
@@ -142,7 +323,7 @@ async function mirrorOne(supabase, storage, asset, options) {
 
 async function main() {
   if (hasFlag('help')) {
-    console.log('node scripts/mirror-approved-catalogue-assets.mjs --provider=tcgdex --limit=100 --concurrency=2 --target=staging');
+    console.log('node scripts/mirror-approved-catalogue-assets.mjs --provider=tcgdex --limit=100 --concurrency=2 --target=staging [--afterId=<uuid>] [--throughId=<uuid>] [--assetIds=<uuid,...>]');
     return;
   }
   requireStaging();
@@ -152,18 +333,31 @@ async function main() {
   const concurrency = boundedInteger(arg('concurrency', '2'), 2, 1, 4);
   const timeoutMs = boundedInteger(arg('timeoutMs', '30000'), 30000, 1000, 120000);
   const maxBytes = boundedInteger(arg('maxBytes', String(12 * 1024 * 1024)), 12 * 1024 * 1024, 1024, 25 * 1024 * 1024);
+  const afterId = optionalUuidArg('afterId');
+  const throughId = optionalUuidArg('throughId');
+  const assetIds = uuidListArg('assetIds');
+  if (afterId && throughId && afterId >= throughId) {
+    throw new Error('--afterId must sort before --throughId.');
+  }
+  if (assetIds.length && (afterId || throughId)) {
+    throw new Error('--assetIds cannot be combined with --afterId or --throughId.');
+  }
   const dryRun = hasFlag('dry-run') || hasFlag('dryRun');
   const supabase = adminSupabase();
   const storage = new SupabaseObjectStorageAdapter(supabase);
   const sourceId = await providerSourceId(supabase, provider);
-  const { data, error } = await supabase.schema('catalog').from('assets')
+  let assetQuery = supabase.schema('catalog').from('assets')
     .select('id,asset_id,asset_type,variant_id,url,original_source_url,original_source_identifier,source_attribution')
     .eq('source_id', sourceId)
     .eq('rights_status', 'approved')
     .eq('permission_status', 'approved')
     .eq('storage_provider', 'external_reference')
     .eq('publicly_servable', true)
-    .is('deprecated_at', null)
+    .is('deprecated_at', null);
+  if (afterId) assetQuery = assetQuery.gt('id', afterId);
+  if (throughId) assetQuery = assetQuery.lte('id', throughId);
+  if (assetIds.length) assetQuery = assetQuery.in('id', assetIds);
+  const { data, error } = await assetQuery
     .order('id', { ascending: true })
     .limit(limit);
   if (error) throw error;
@@ -172,18 +366,33 @@ async function main() {
     try {
       return await mirrorOne(supabase, storage, asset, { provider, dryRun, timeoutMs, maxBytes });
     } catch (error) {
-      return { id: asset.id, status: 'failed', error: error instanceof Error ? error.message : String(error) };
+      if (error instanceof SourceImageUnavailableError && !dryRun) {
+        try {
+          return await markSourceUnavailable(supabase, asset, error);
+        } catch (markError) {
+          return { id: asset.id, status: 'failed', error: errorMessage(markError) };
+        }
+      }
+      return { id: asset.id, status: 'failed', error: errorMessage(error) };
     }
   });
   const summary = results.reduce((counts, result) => {
     counts[result.status] = (counts[result.status] ?? 0) + 1;
     return counts;
   }, {});
-  console.log(JSON.stringify({ ok: !summary.failed, provider, dryRun, inspected: results.length, summary, results }, null, 2));
+  console.log(JSON.stringify({
+    ok: !summary.failed,
+    provider,
+    dryRun,
+    range: { afterId: afterId || null, throughId: throughId || null, assetIds: assetIds.length || null },
+    inspected: results.length,
+    summary,
+    results,
+  }, null, 2));
   if (summary.failed) process.exitCode = 1;
 }
 
 main().catch((error) => {
-  console.error(JSON.stringify({ ok: false, error: error instanceof Error ? error.message : String(error) }, null, 2));
+  console.error(JSON.stringify({ ok: false, error: errorMessage(error) }, null, 2));
   process.exitCode = 1;
 });

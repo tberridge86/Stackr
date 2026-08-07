@@ -250,6 +250,9 @@ export function toVariant(row) {
     finishCode: row.finish_code ?? null,
     finishLabel: row.finish_label ?? null,
     artworkKey: row.artwork_key ?? null,
+    nativeImageStatus: row.native_image_status ?? 'missing',
+    sameArtworkAsVariantId: row.same_artwork_as_variant_id ?? null,
+    imageVariantId: row.same_artwork_as_variant_id ?? row.variant_id,
     updatedAt: row.updated_at ?? null,
   };
 }

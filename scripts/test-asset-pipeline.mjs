@@ -13,6 +13,8 @@ import {
   IMMUTABLE_CACHE_CONTROL,
   LocalObjectStorageAdapter,
   S3CompatibleObjectStorageAdapter,
+  SupabaseObjectStorageAdapter,
+  supabaseCacheControlSeconds,
 } from '../backend/lib/objectStorage.js';
 import { validateImageBuffer } from '../backend/lib/assetValidation.js';
 
@@ -21,6 +23,7 @@ const assetRoute = readFileSync('backend/routes/assets.js', 'utf8');
 const feedbackRoute = readFileSync('backend/routes/recognitionFeedback.js', 'utf8');
 const scanLabRoute = readFileSync('backend/routes/scanLab.js', 'utf8');
 const server = readFileSync('backend/server.js', 'utf8');
+const catalogueMirror = readFileSync('scripts/mirror-approved-catalogue-assets.mjs', 'utf8');
 
 const tinyPng = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEUlEQVQImWO4o2HzH4QZYAwAT/QI/b1BT1MAAAAASUVORK5CYII=',
@@ -197,6 +200,34 @@ function assertS3Compatibility() {
   assert.equal(storage.publicUrl('stackr-catalogue-public', signed.key), 'https://cdn.example.invalid/public/card_image/aa/bb/hash/original.jpg');
 }
 
+async function assertSupabaseCacheControl() {
+  assert.equal(supabaseCacheControlSeconds(IMMUTABLE_CACHE_CONTROL), '31536000');
+  assert.equal(supabaseCacheControlSeconds('private, max-age=0'), '0');
+  assert.equal(supabaseCacheControlSeconds('86400'), '86400');
+
+  let uploadOptions = null;
+  const storage = new SupabaseObjectStorageAdapter({
+    storage: {
+      from() {
+        return {
+          async upload(_key, _body, options) {
+            uploadOptions = options;
+            return { data: { path: 'public/test.png' }, error: null };
+          },
+        };
+      },
+    },
+  });
+  await storage.putObject({
+    bucket: 'stackr-catalogue-public',
+    key: 'public/test.png',
+    body: tinyPng,
+    contentType: 'image/png',
+    cacheControl: IMMUTABLE_CACHE_CONTROL,
+  });
+  assert.equal(uploadOptions.cacheControl, '31536000', 'Supabase upload cacheControl must be a TTL in seconds');
+}
+
 function assertRoutesAndMigrationCommand() {
   assert.match(
     server,
@@ -247,14 +278,32 @@ function assertMigrationClassifier() {
   }).action, 'already_ready');
 }
 
+function assertMirrorRequestsAreBounded() {
+  assert.match(catalogueMirror, /AbortSignal\.timeout\(60_000\)/, 'Supabase mirror requests must have a bounded timeout');
+  assert.match(catalogueMirror, /global:\s*\{ fetch: boundedSupabaseFetch \}/, 'the bounded fetch must cover Storage uploads');
+  assert.match(catalogueMirror, /same_artwork_as_variant_id: null/, 'a mirrored native image must clear any artwork fallback');
+  assert.match(
+    catalogueMirror,
+    /\.eq\('rights_status', 'approved'\)[\s\S]+\.eq\('permission_status', 'approved'\)[\s\S]+\.eq\('publicly_servable', true\)/,
+    'duplicate storage reuse must only target approved public catalogue assets',
+  );
+  assert.match(
+    catalogueMirror,
+    /fallbackAvailable[\s\S]+\? 'same_artwork_reference'[\s\S]+same_artwork_as_variant_id: fallbackAvailable/,
+    'an unavailable provider image must preserve a verified same-artwork fallback',
+  );
+}
+
 async function main() {
   assertMigrationIsSafe();
   await assertApprovedAssetProcessing();
   assertImageValidation();
   await assertPrivateSignedUpload();
   assertS3Compatibility();
+  await assertSupabaseCacheControl();
   assertRoutesAndMigrationCommand();
   assertMigrationClassifier();
+  assertMirrorRequestsAreBounded();
 
   console.log('Asset repository and delivery pipeline tests passed.');
 }

@@ -4,6 +4,13 @@ import path from 'node:path';
 
 const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
+function supabaseCacheControlSeconds(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return undefined;
+  if (/^\d+$/.test(raw)) return raw;
+  return raw.match(/(?:^|,)\s*max-age=(\d+)/i)?.[1];
+}
+
 function encodePathPart(value) {
   return String(value).split('/').map(encodeURIComponent).join('/');
 }
@@ -42,7 +49,7 @@ export class SupabaseObjectStorageAdapter {
       .from(input.bucket)
       .upload(input.key, input.body, {
         contentType: input.contentType,
-        cacheControl: input.cacheControl,
+        cacheControl: supabaseCacheControlSeconds(input.cacheControl),
         upsert: input.upsert === true,
       });
     if (error) throw error;
@@ -248,4 +255,4 @@ export function createObjectStorageAdapter(kind, options = {}) {
   throw new Error(`Unsupported object storage adapter: ${kind}`);
 }
 
-export { IMMUTABLE_CACHE_CONTROL };
+export { IMMUTABLE_CACHE_CONTROL, supabaseCacheControlSeconds };
