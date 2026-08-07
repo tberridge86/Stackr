@@ -32,15 +32,57 @@ alter table public.binder_cards
   add column if not exists owned_card_variant_id uuid null;
 
 do $$
+declare
+  constraint_record record;
+  index_record record;
 begin
-  if exists (
-    select 1
-    from pg_indexes
-    where schemaname = 'public'
-      and indexname = 'user_card_variants_user_card_set_variant_uidx'
-  ) then
-    drop index public.user_card_variants_user_card_set_variant_uidx;
-  end if;
+  for constraint_record in
+    select con.conname
+    from pg_constraint con
+    where con.conrelid = 'public.user_card_variants'::regclass
+      and con.contype = 'u'
+      and (
+        select array_agg(attr.attname::text order by key.ordinality)
+        from unnest(con.conkey) with ordinality key(attnum, ordinality)
+        join pg_attribute attr
+          on attr.attrelid = con.conrelid
+         and attr.attnum = key.attnum
+      ) = array['user_id', 'card_id', 'set_id', 'variant']
+  loop
+    execute format(
+      'alter table public.user_card_variants drop constraint if exists %I',
+      constraint_record.conname
+    );
+  end loop;
+
+  for index_record in
+    select ns.nspname as schema_name, idx.relname as index_name
+    from pg_index ind
+    join pg_class idx on idx.oid = ind.indexrelid
+    join pg_class tbl on tbl.oid = ind.indrelid
+    join pg_namespace ns on ns.oid = idx.relnamespace
+    where tbl.oid = 'public.user_card_variants'::regclass
+      and ind.indisunique
+      and not ind.indisprimary
+      and not exists (
+        select 1
+        from pg_constraint con
+        where con.conindid = ind.indexrelid
+      )
+      and (
+        select array_agg(attr.attname::text order by key.ordinality)
+        from unnest(ind.indkey) with ordinality key(attnum, ordinality)
+        join pg_attribute attr
+          on attr.attrelid = tbl.oid
+         and attr.attnum = key.attnum
+      ) = array['user_id', 'card_id', 'set_id', 'variant']
+  loop
+    execute format(
+      'drop index if exists %I.%I',
+      index_record.schema_name,
+      index_record.index_name
+    );
+  end loop;
 end $$;
 
 with binder_owned as (

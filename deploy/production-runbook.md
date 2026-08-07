@@ -29,7 +29,7 @@ gh workflow run deploy-production.yml `
   -f previous_gateway_tag='<known-good-tag>' `
   -f previous_backend_deployment_id='<known-good-backend-deployment-id>' `
   -f previous_recognition_deployment_id='<known-good-recognition-deployment-id>' `
-  -f previous_catalogue_version_id='<known-good-catalogue-uuid>' `
+  -f rollback_catalogue_version_id='<validated-draft-compensating-catalogue-uuid>' `
   -f previous_index_version_id='<known-good-index-uuid>' `
   -f catalogue_version_id='<validated-catalogue-uuid>' `
   -f index_version_id='<validated-index-uuid>' `

@@ -171,6 +171,36 @@ create index if not exists raw_source_records_provider_record_idx
 create index if not exists raw_source_records_retrieved_idx
   on ingest.raw_source_records(source_id, retrieved_at desc);
 
+-- Preserve each provider response per import run. The original canonical
+-- uniqueness rule collapsed the same provider identity across separate runs.
+drop index if exists ingest.raw_source_records_identity_uidx;
+
+create unique index if not exists raw_source_records_run_identity_uidx
+  on ingest.raw_source_records(
+    source_id,
+    import_run_id,
+    record_type,
+    external_id,
+    coalesce(language_code, '')
+  );
+
+create index if not exists raw_source_records_history_idx
+  on ingest.raw_source_records(source_id, record_type, external_id, retrieved_at desc);
+
+comment on index ingest.raw_source_records_run_identity_uidx is
+  'Retains one copy of each provider record for every import run while preventing duplicate processing inside a run.';
+
+insert into catalog.rarities (game_code, code, english_label, rarity_group, sort_order)
+values
+  ('pokemon', 'ultra_rare', 'Ultra Rare', 'special', 65),
+  ('pokemon', 'mega_hyper_rare', 'Mega Hyper Rare', 'secret', 75)
+on conflict (game_code, code) do update set
+  english_label = excluded.english_label,
+  rarity_group = excluded.rarity_group,
+  sort_order = excluded.sort_order,
+  deprecated_at = null,
+  updated_at = now();
+
 create index if not exists import_checkpoints_active_idx
   on ingest.import_checkpoints(source_id, status, updated_at desc);
 

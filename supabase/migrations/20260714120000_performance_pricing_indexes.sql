@@ -1,4 +1,5 @@
 create extension if not exists pg_trgm with schema extensions;
+set local search_path = "$user", public, extensions;
 
 create index if not exists pokemon_cards_language_set_number_idx
   on public.pokemon_cards(language, set_id, number);

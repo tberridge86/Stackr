@@ -70,7 +70,7 @@ gh workflow run staging-recovery-drill.yml `
 
 The current successful recovery workflow run is `30551243946`. It deleted raw dump and object bytes at completion and recorded only non-secret fingerprints. The branch is retained temporarily for candidate hardening and is billed at `$0.01344/hour`; delete it after reconciliation to stop the charge.
 
-Do not promote this candidate yet. The catalogue-preservation rehearsal in run `30558754116` matched all 1,836 allow-listed rows and proved exact row and sequence rollback without mutating staging or production. A fresh candidate security-advisor run, the real-device model benchmark, inactive index validation and explicit destructive staging approval are still required before promotion.
+Do not promote this candidate yet. The catalogue-preservation rehearsal in run `30558754116` matched all 1,836 allow-listed rows and proved exact row and sequence rollback without mutating staging or production. The 79-migration candidate has zero security-advisor errors; the real-device model benchmark, inactive index validation and explicit destructive staging approval are still required before promotion.
 
 ## Dispatch
 

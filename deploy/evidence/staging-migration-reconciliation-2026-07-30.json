@@ -16,27 +16,27 @@
   "matchedRepositoryMigrations": [
     {
       "repositoryFile": "20260727212256_canonical_stackr_catalogue_database.sql",
-      "repositoryLfSha256": "f0c5251fee5a633311317f5c3d16a62c029400155d6eee3d66a379f94f33cc65",
+      "repositoryLfSha256": "6558d98c1d82672c08d3bc6bc734e087a07a42833aa8f605c9f7c83ebdaf7515",
       "stagingVersion": "20260728200816",
       "stagingName": "canonical_stackr_catalogue_database",
       "stagingStatementsSha256": "dc60fb061c23fecfd5d693e1db002faa4f7cd11e57489c93692b6433f1db24d9",
-      "status": "historical_drift_corrected_forward"
+      "status": "historical_drift_corrected_forward_repository_rehearsal_hardened"
     },
     {
       "repositoryFile": "20260727213835_stackr_data_ingestion_reconciliation.sql",
-      "repositoryLfSha256": "e113d3f67aa1f69b340fa4ee3eb792b7b1319143428b11194411fef77bf5591e",
+      "repositoryLfSha256": "4393d3208b19d3baa889bc7a847904e7abac0253e62cde7d3f95f93547c542fc",
       "stagingVersion": "20260728200831",
       "stagingName": "stackr_data_ingestion_reconciliation",
       "stagingStatementsSha256": "e113d3f67aa1f69b340fa4ee3eb792b7b1319143428b11194411fef77bf5591e",
-      "status": "exact_lf_normalized_match"
+      "status": "staging_snapshot_precedes_repository_provenance_hardening"
     },
     {
       "repositoryFile": "20260730080047_reconcile_catalogue_seed_encoding_and_finish_taxonomy.sql",
-      "repositoryLfSha256": "ea1a819ac8fa92cf381fcc55b718830d9af67ea1046d19fe01abe77a766c0a2f",
+      "repositoryLfSha256": "99651e27944c7d84059ed8612a3fe7357c0d7012f43469272c5e12fa2fbe1604",
       "stagingVersion": "20260730080145",
       "stagingName": "reconcile_catalogue_seed_encoding_and_finish_taxonomy",
       "stagingStatementsSha256": "1e75d7b5c4deb95b95a84321481f646f0381ac021a167790d75d777aeb252368",
-      "status": "applied_and_verified"
+      "status": "applied_and_verified_before_description_hardening"
     }
   ],
   "stagingOnlyMigrationNames": [

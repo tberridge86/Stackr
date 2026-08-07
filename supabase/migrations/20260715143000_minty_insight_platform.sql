@@ -186,6 +186,9 @@ create table if not exists public.price_alerts (
   updated_at timestamptz not null default now()
 );
 
+-- price_alerts predates Minty on the live project. CREATE TABLE IF NOT EXISTS
+-- does not add the newer columns to that legacy table, so reconcile them
+-- explicitly before creating Minty's indexes and policies.
 alter table public.price_alerts
   add column if not exists stackr_card_id text references public.pokemon_cards(id) on delete cascade,
   add column if not exists product_key text,

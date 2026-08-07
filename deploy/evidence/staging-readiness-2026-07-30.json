@@ -10,7 +10,7 @@
     "stagingMigrationHistoryCount": 20,
     "migrationHistoryStatus": "isolated_candidate_aligned_staging_promotion_blocked",
     "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-07-30.json",
-    "migrationReconciliationEvidenceSha256": "786fe6ecacbc3aaaec6752e182832dfe126876fd9a69dad416917ee0b6132704",
+    "migrationReconciliationEvidenceSha256": "77fa805103e2b7b0862ef8e481772dc559604a403191e1f0a053f3689ec21614",
     "stagingSecurityAdvisorFindingCountAfterRollback": 0,
     "productionPhysicalBackupCount": 8,
     "stagingPhysicalBackupCount": 11,

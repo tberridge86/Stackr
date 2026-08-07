@@ -382,6 +382,9 @@ assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "storage"\."buckets" CASCADE;/);
 assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "public"\."cards"/);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
+assert.match(productionWorkflow, /rollback_catalogue_version_id/);
+assert.match(productionWorkflow, /--id="\$ROLLBACK_CATALOGUE_VERSION_ID"/);
+assert.doesNotMatch(productionWorkflow, /PREVIOUS_CATALOGUE_VERSION_ID/);
 assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
 assert.match(productionWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: production/);
@@ -391,6 +394,7 @@ assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --requi
 assert.match(productionWorkflow, /update:revert-update-rollout/);
 assert.doesNotMatch(productionWorkflow, /update:rollback/);
 assert.match(rollbackWorkflow, /release-database\.mjs index rollback/);
+assert.match(rollbackWorkflow, /catalogue requires a validated draft compensating version UUID/);
 assert.match(rollbackWorkflow, /update:revert-update-rollout/);
 assert.match(rollbackWorkflow, /update:republish/);
 assert.match(rollbackWorkflow, /destination-channel/);

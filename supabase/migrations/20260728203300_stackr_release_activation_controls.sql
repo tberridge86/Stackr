@@ -6,14 +6,19 @@ create table if not exists audit.release_activation_events (
     check (action in ('activate', 'rollback')),
   target_id uuid not null,
   previous_id uuid,
-  request_id text,
-  reason text,
+  request_id text not null check (btrim(request_id) <> ''),
+  reason text not null check (btrim(reason) <> ''),
   actor_user_id uuid default auth.uid(),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  unique (component, action, request_id)
 );
 
 create index if not exists release_activation_events_component_created_idx
   on audit.release_activation_events(component, created_at desc);
+
+create unique index if not exists catalogue_versions_single_active_idx
+  on catalog.catalogue_versions ((true))
+  where status = 'published' and deprecated_at is null;
 
 alter table audit.release_activation_events enable row level security;
 
@@ -25,6 +30,152 @@ create policy "release activation events service role only"
   using (true)
   with check (true);
 
+create or replace function catalog.catalogue_activation_readiness(
+  p_catalogue_version_id uuid
+)
+returns jsonb
+language plpgsql
+stable
+security invoker
+set search_path = ''
+as $function$
+declare
+  candidate catalog.catalogue_versions%rowtype;
+  active_version catalog.catalogue_versions%rowtype;
+  blockers text[] := array[]::text[];
+  expected_min_sequence bigint;
+  latest_mobile_sequence bigint;
+  mobile_change_count bigint := 0;
+  unassigned_change_count bigint := 0;
+  foreign_assignment_count bigint := 0;
+  outside_assignment_count bigint := 0;
+begin
+  select *
+  into candidate
+  from catalog.catalogue_versions
+  where id = p_catalogue_version_id;
+
+  if candidate.id is null then
+    return pg_catalog.jsonb_build_object(
+      'ready', false,
+      'versionId', p_catalogue_version_id,
+      'blockers', pg_catalog.to_jsonb(array['version_not_found']::text[])
+    );
+  end if;
+
+  select *
+  into active_version
+  from catalog.catalogue_versions
+  where status = 'published'
+    and deprecated_at is null
+  order by published_at desc nulls last, created_at desc
+  limit 1;
+
+  if candidate.status = 'published'
+     and candidate.deprecated_at is null
+     and active_version.id = candidate.id then
+    return pg_catalog.jsonb_build_object(
+      'ready', true,
+      'alreadyActive', true,
+      'versionId', candidate.id,
+      'versionKey', candidate.version_key,
+      'activeVersionId', candidate.id,
+      'minChangeSequence', candidate.min_change_sequence,
+      'maxChangeSequence', candidate.max_change_sequence,
+      'blockers', '[]'::jsonb
+    );
+  end if;
+
+  if candidate.status <> 'draft' then
+    blockers := pg_catalog.array_append(blockers, 'candidate_status_must_be_draft');
+  end if;
+
+  if candidate.min_change_sequence is null or candidate.max_change_sequence is null then
+    blockers := pg_catalog.array_append(blockers, 'candidate_sequence_range_required');
+  elsif candidate.min_change_sequence > candidate.max_change_sequence then
+    blockers := pg_catalog.array_append(blockers, 'candidate_sequence_range_invalid');
+  end if;
+
+  if active_version.id is not null and active_version.max_change_sequence is null then
+    blockers := pg_catalog.array_append(blockers, 'active_version_max_sequence_required');
+  end if;
+
+  select min(change_sequence), max(change_sequence)
+  into expected_min_sequence, latest_mobile_sequence
+  from catalog.catalogue_change_log
+  where mobile_syncable
+    and (
+      active_version.id is null
+      or (
+        active_version.max_change_sequence is not null
+        and change_sequence > active_version.max_change_sequence
+      )
+    );
+
+  if expected_min_sequence is null then
+    blockers := pg_catalog.array_append(blockers, 'no_pending_mobile_changes');
+  elsif candidate.min_change_sequence is distinct from expected_min_sequence then
+    blockers := pg_catalog.array_append(blockers, 'candidate_does_not_start_at_next_mobile_change');
+  end if;
+
+  if candidate.max_change_sequence is not null
+     and latest_mobile_sequence is not null
+     and candidate.max_change_sequence > latest_mobile_sequence then
+    blockers := pg_catalog.array_append(blockers, 'candidate_exceeds_latest_mobile_change');
+  end if;
+
+  if candidate.min_change_sequence is not null and candidate.max_change_sequence is not null then
+    select
+      count(*) filter (where mobile_syncable),
+      count(*) filter (where mobile_syncable and catalogue_version_id is null),
+      count(*) filter (
+        where mobile_syncable
+          and catalogue_version_id is not null
+          and catalogue_version_id <> candidate.id
+      )
+    into mobile_change_count, unassigned_change_count, foreign_assignment_count
+    from catalog.catalogue_change_log
+    where change_sequence between candidate.min_change_sequence and candidate.max_change_sequence;
+
+    select count(*)
+    into outside_assignment_count
+    from catalog.catalogue_change_log
+    where catalogue_version_id = candidate.id
+      and mobile_syncable
+      and change_sequence not between candidate.min_change_sequence and candidate.max_change_sequence;
+
+    if mobile_change_count = 0 then
+      blockers := pg_catalog.array_append(blockers, 'candidate_contains_no_mobile_changes');
+    end if;
+    if foreign_assignment_count > 0 then
+      blockers := pg_catalog.array_append(blockers, 'candidate_range_assigned_to_another_version');
+    end if;
+    if outside_assignment_count > 0 then
+      blockers := pg_catalog.array_append(blockers, 'candidate_has_changes_outside_declared_range');
+    end if;
+  end if;
+
+  return pg_catalog.jsonb_build_object(
+    'ready', pg_catalog.cardinality(blockers) = 0,
+    'alreadyActive', false,
+    'versionId', candidate.id,
+    'versionKey', candidate.version_key,
+    'candidateStatus', candidate.status,
+    'activeVersionId', active_version.id,
+    'activeVersionKey', active_version.version_key,
+    'minChangeSequence', candidate.min_change_sequence,
+    'maxChangeSequence', candidate.max_change_sequence,
+    'expectedMinChangeSequence', expected_min_sequence,
+    'latestMobileChangeSequence', latest_mobile_sequence,
+    'mobileChangeCount', mobile_change_count,
+    'unassignedChangeCount', unassigned_change_count,
+    'foreignAssignmentCount', foreign_assignment_count,
+    'outsideAssignmentCount', outside_assignment_count,
+    'blockers', pg_catalog.to_jsonb(blockers)
+  );
+end
+$function$;
+
 create or replace function catalog.activate_catalogue_version(
   p_catalogue_version_id uuid,
   p_request_id text default null,
@@ -33,62 +184,120 @@ create or replace function catalog.activate_catalogue_version(
 returns uuid
 language plpgsql
 security invoker
-set search_path = catalog, audit, public
-as $$
+set search_path = ''
+as $function$
 declare
   candidate catalog.catalogue_versions%rowtype;
-  previous_id uuid;
+  active_version catalog.catalogue_versions%rowtype;
+  readiness jsonb;
+  now_at timestamptz := pg_catalog.clock_timestamp();
+  existing_target_id uuid;
 begin
-  select * into candidate
+  if nullif(pg_catalog.btrim(p_request_id), '') is null then
+    raise exception 'request_id is required' using errcode = '22023';
+  end if;
+  if nullif(pg_catalog.btrim(p_reason), '') is null then
+    raise exception 'activation reason is required' using errcode = '22023';
+  end if;
+
+  select target_id
+  into existing_target_id
+  from audit.release_activation_events
+  where component = 'catalogue'
+    and action = 'activate'
+    and request_id = pg_catalog.btrim(p_request_id);
+
+  if existing_target_id is not null then
+    if existing_target_id <> p_catalogue_version_id then
+      raise exception 'request_id was already used for another catalogue version'
+        using errcode = '23505';
+    end if;
+    return existing_target_id;
+  end if;
+
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('stackr:catalogue-activation', 0)
+  );
+  lock table catalog.catalogue_versions in share row exclusive mode;
+  lock table catalog.catalogue_change_log in share row exclusive mode;
+
+  select *
+  into candidate
   from catalog.catalogue_versions
   where id = p_catalogue_version_id
   for update;
 
-  if not found then
-    raise exception 'Catalogue version not found.' using errcode = 'P0001';
+  if candidate.id is null then
+    raise exception 'Catalogue version not found.' using errcode = 'P0002';
   end if;
 
-  if candidate.status not in ('draft', 'published', 'deprecated', 'rolled_back') then
-    raise exception 'Catalogue version cannot be activated from status %.', candidate.status
-      using errcode = 'P0001';
+  if candidate.status = 'published' and candidate.deprecated_at is null then
+    return candidate.id;
   end if;
 
-  select id into previous_id
+  readiness := catalog.catalogue_activation_readiness(candidate.id);
+  if coalesce((readiness ->> 'ready')::boolean, false) is not true then
+    raise exception 'Catalogue version % is not ready: %',
+      candidate.version_key,
+      readiness -> 'blockers'
+      using errcode = '23514';
+  end if;
+
+  select *
+  into active_version
   from catalog.catalogue_versions
   where status = 'published'
     and deprecated_at is null
-    and id <> p_catalogue_version_id
-  order by published_at desc nulls last, updated_at desc
+  order by published_at desc nulls last, created_at desc
   limit 1
   for update;
 
-  update catalog.catalogue_versions
-  set status = 'deprecated',
-      deprecated_at = now(),
-      deprecated_reason = coalesce(p_reason, 'Superseded by catalogue activation.'),
-      superseded_by_version_id = p_catalogue_version_id,
-      updated_at = now()
-  where id = previous_id;
+  update catalog.catalogue_change_log
+  set
+    catalogue_version_id = candidate.id,
+    updated_at = now_at
+  where mobile_syncable
+    and catalogue_version_id is null
+    and change_sequence between candidate.min_change_sequence and candidate.max_change_sequence;
+
+  if active_version.id is not null then
+    update catalog.catalogue_versions
+    set
+      status = 'deprecated',
+      superseded_by_version_id = candidate.id,
+      deprecated_at = now_at,
+      deprecated_reason = 'Superseded by ' || candidate.version_key,
+      updated_at = now_at
+    where id = active_version.id;
+  end if;
 
   update catalog.catalogue_versions
-  set status = 'published',
-      published_at = now(),
-      deprecated_at = null,
-      deprecated_reason = null,
-      superseded_by_version_id = null,
-      updated_at = now()
-  where id = p_catalogue_version_id;
+  set
+    status = 'published',
+    published_at = now_at,
+    superseded_by_version_id = null,
+    deprecated_at = null,
+    deprecated_reason = null,
+    updated_at = now_at
+  where id = candidate.id;
 
   insert into audit.release_activation_events(
     component, action, target_id, previous_id, request_id, reason
   ) values (
-    'catalogue', 'activate', p_catalogue_version_id, previous_id, p_request_id, p_reason
+    'catalogue',
+    'activate',
+    candidate.id,
+    active_version.id,
+    pg_catalog.btrim(p_request_id),
+    pg_catalog.btrim(p_reason)
   );
 
-  return p_catalogue_version_id;
-end;
-$$;
+  return candidate.id;
+end
+$function$;
 
+-- Catalogue rollback is forward-only. The UUID identifies a new draft
+-- compensating version whose sequence range starts after the active version.
 create or replace function catalog.rollback_catalogue_version(
   p_catalogue_version_id uuid,
   p_request_id text default null,
@@ -97,64 +306,131 @@ create or replace function catalog.rollback_catalogue_version(
 returns uuid
 language plpgsql
 security invoker
-set search_path = catalog, audit, public
-as $$
+set search_path = ''
+as $function$
 declare
   candidate catalog.catalogue_versions%rowtype;
-  previous_id uuid;
+  failed_version catalog.catalogue_versions%rowtype;
+  readiness jsonb;
+  now_at timestamptz := pg_catalog.clock_timestamp();
+  existing_target_id uuid;
 begin
-  select * into candidate
+  if nullif(pg_catalog.btrim(p_request_id), '') is null then
+    raise exception 'request_id is required' using errcode = '22023';
+  end if;
+  if nullif(pg_catalog.btrim(p_reason), '') is null then
+    raise exception 'rollback reason is required' using errcode = '22023';
+  end if;
+
+  select target_id
+  into existing_target_id
+  from audit.release_activation_events
+  where component = 'catalogue'
+    and action = 'rollback'
+    and request_id = pg_catalog.btrim(p_request_id);
+
+  if existing_target_id is not null then
+    if existing_target_id <> p_catalogue_version_id then
+      raise exception 'request_id was already used for another rollback version'
+        using errcode = '23505';
+    end if;
+    return existing_target_id;
+  end if;
+
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('stackr:catalogue-activation', 0)
+  );
+  lock table catalog.catalogue_versions in share row exclusive mode;
+  lock table catalog.catalogue_change_log in share row exclusive mode;
+
+  select *
+  into candidate
   from catalog.catalogue_versions
   where id = p_catalogue_version_id
   for update;
 
-  if not found then
-    raise exception 'Catalogue rollback target not found.' using errcode = 'P0001';
+  if candidate.id is null then
+    raise exception 'Catalogue rollback version not found.' using errcode = 'P0002';
   end if;
 
-  if candidate.status not in ('published', 'deprecated', 'rolled_back') then
-    raise exception 'Catalogue rollback target must have been published previously.'
-      using errcode = 'P0001';
-  end if;
-
-  select id into previous_id
+  select *
+  into failed_version
   from catalog.catalogue_versions
   where status = 'published'
     and deprecated_at is null
-  order by published_at desc nulls last, updated_at desc
+    and id <> candidate.id
+  order by published_at desc nulls last, created_at desc
   limit 1
   for update;
 
-  if previous_id = p_catalogue_version_id then
-    return p_catalogue_version_id;
+  if failed_version.id is null then
+    if candidate.status = 'published' and candidate.deprecated_at is null then
+      return candidate.id;
+    end if;
+    raise exception 'No active catalogue version is available to roll back'
+      using errcode = '23514';
   end if;
 
-  update catalog.catalogue_versions
-  set status = 'rolled_back',
-      deprecated_at = now(),
-      deprecated_reason = coalesce(p_reason, 'Rolled back by release control.'),
-      superseded_by_version_id = p_catalogue_version_id,
-      updated_at = now()
-  where id = previous_id;
+  if candidate.status <> 'draft' then
+    raise exception 'Rollback version must be draft' using errcode = '23514';
+  end if;
+
+  if failed_version.max_change_sequence is null
+     or candidate.min_change_sequence is null
+     or candidate.min_change_sequence <= failed_version.max_change_sequence then
+    raise exception 'Rollback must use forward-only compensating change sequences'
+      using errcode = '23514';
+  end if;
+
+  readiness := catalog.catalogue_activation_readiness(candidate.id);
+  if coalesce((readiness ->> 'ready')::boolean, false) is not true then
+    raise exception 'Rollback version % is not ready: %',
+      candidate.version_key,
+      readiness -> 'blockers'
+      using errcode = '23514';
+  end if;
+
+  update catalog.catalogue_change_log
+  set
+    catalogue_version_id = candidate.id,
+    updated_at = now_at
+  where mobile_syncable
+    and catalogue_version_id is null
+    and change_sequence between candidate.min_change_sequence and candidate.max_change_sequence;
 
   update catalog.catalogue_versions
-  set status = 'published',
-      published_at = now(),
-      deprecated_at = null,
-      deprecated_reason = null,
-      superseded_by_version_id = null,
-      updated_at = now()
-  where id = p_catalogue_version_id;
+  set
+    status = 'rolled_back',
+    superseded_by_version_id = candidate.id,
+    deprecated_at = now_at,
+    deprecated_reason = 'Rolled back by ' || candidate.version_key || ': ' || pg_catalog.btrim(p_reason),
+    updated_at = now_at
+  where id = failed_version.id;
+
+  update catalog.catalogue_versions
+  set
+    status = 'published',
+    published_at = now_at,
+    superseded_by_version_id = null,
+    deprecated_at = null,
+    deprecated_reason = null,
+    updated_at = now_at
+  where id = candidate.id;
 
   insert into audit.release_activation_events(
     component, action, target_id, previous_id, request_id, reason
   ) values (
-    'catalogue', 'rollback', p_catalogue_version_id, previous_id, p_request_id, p_reason
+    'catalogue',
+    'rollback',
+    candidate.id,
+    failed_version.id,
+    pg_catalog.btrim(p_request_id),
+    pg_catalog.btrim(p_reason)
   );
 
-  return p_catalogue_version_id;
-end;
-$$;
+  return candidate.id;
+end
+$function$;
 
 create or replace function ml.rollback_embedding_index_version(
   p_index_version_id uuid,
@@ -164,13 +440,41 @@ create or replace function ml.rollback_embedding_index_version(
 returns uuid
 language plpgsql
 security invoker
-set search_path = ml, audit, public
-as $$
+set search_path = ''
+as $function$
 declare
   candidate record;
   previous_id uuid;
   previous_model_id text;
+  existing_target_id uuid;
+  now_at timestamptz := pg_catalog.clock_timestamp();
 begin
+  if nullif(pg_catalog.btrim(p_request_id), '') is null then
+    raise exception 'request_id is required' using errcode = '22023';
+  end if;
+  if nullif(pg_catalog.btrim(p_reason), '') is null then
+    raise exception 'rollback reason is required' using errcode = '22023';
+  end if;
+
+  select target_id
+  into existing_target_id
+  from audit.release_activation_events
+  where component = 'embedding_index'
+    and action = 'rollback'
+    and request_id = pg_catalog.btrim(p_request_id);
+
+  if existing_target_id is not null then
+    if existing_target_id <> p_index_version_id then
+      raise exception 'request_id was already used for another embedding rollback'
+        using errcode = '23505';
+    end if;
+    return existing_target_id;
+  end if;
+
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended('stackr:embedding-index-activation', 0)
+  );
+
   select i.*, m.license_status, m.selection_status
     into candidate
   from ml.embedding_index_versions i
@@ -179,19 +483,19 @@ begin
   for update of i, m;
 
   if not found then
-    raise exception 'Embedding index rollback target not found.' using errcode = 'P0001';
+    raise exception 'Embedding index rollback target not found.' using errcode = 'P0002';
   end if;
 
   if candidate.status not in ('validated', 'retired', 'active') then
-    raise exception 'Embedding index rollback target is not validated.' using errcode = 'P0001';
+    raise exception 'Embedding index rollback target is not validated.' using errcode = '23514';
   end if;
 
   if candidate.license_status <> 'production_allowed' then
-    raise exception 'Embedding model is not production deployable.' using errcode = 'P0001';
+    raise exception 'Embedding model is not production deployable.' using errcode = '23514';
   end if;
 
   if candidate.reference_embedding_count <= 0 or candidate.missing_embedding_count <> 0 then
-    raise exception 'Embedding index rollback target is incomplete.' using errcode = 'P0001';
+    raise exception 'Embedding index rollback target is incomplete.' using errcode = '23514';
   end if;
 
   select id, model_id into previous_id, previous_model_id
@@ -207,17 +511,17 @@ begin
 
   update ml.embedding_index_versions
   set status = 'retired',
-      retired_at = now(),
+      retired_at = now_at,
       replaced_by = p_index_version_id,
-      updated_at = now()
+      updated_at = now_at
   where id = previous_id;
 
   update ml.embedding_index_versions
   set status = 'active',
-      activated_at = now(),
+      activated_at = now_at,
       retired_at = null,
       replaced_by = null,
-      updated_at = now()
+      updated_at = now_at
   where id = p_index_version_id;
 
   update ml.embedding_models
@@ -226,7 +530,7 @@ begin
         when model_id = previous_model_id and selection_status = 'active' then 'selected'
         else selection_status
       end,
-      updated_at = now()
+      updated_at = now_at
   where model_id in (candidate.model_id, previous_model_id);
 
   insert into ml.embedding_activation_events(
@@ -236,34 +540,50 @@ begin
     event_type,
     event_payload
   ) values (
-    p_request_id,
+    pg_catalog.btrim(p_request_id),
     p_index_version_id,
     previous_id,
     'rollback',
-    jsonb_build_object('reason', p_reason, 'model_id', candidate.model_id)
+    pg_catalog.jsonb_build_object('reason', pg_catalog.btrim(p_reason), 'model_id', candidate.model_id)
   );
 
   insert into audit.release_activation_events(
     component, action, target_id, previous_id, request_id, reason
   ) values (
-    'embedding_index', 'rollback', p_index_version_id, previous_id, p_request_id, p_reason
+    'embedding_index',
+    'rollback',
+    p_index_version_id,
+    previous_id,
+    pg_catalog.btrim(p_request_id),
+    pg_catalog.btrim(p_reason)
   );
 
   return p_index_version_id;
-end;
-$$;
+end
+$function$;
 
 revoke all on audit.release_activation_events from public, anon, authenticated;
 grant select, insert on audit.release_activation_events to service_role;
 grant usage, select on sequence audit.release_activation_events_id_seq to service_role;
 
+revoke all on function catalog.catalogue_activation_readiness(uuid) from public, anon, authenticated;
 revoke all on function catalog.activate_catalogue_version(uuid, text, text) from public, anon, authenticated;
 revoke all on function catalog.rollback_catalogue_version(uuid, text, text) from public, anon, authenticated;
 revoke all on function ml.rollback_embedding_index_version(uuid, text, text) from public, anon, authenticated;
 
+grant execute on function catalog.catalogue_activation_readiness(uuid) to service_role;
 grant execute on function catalog.activate_catalogue_version(uuid, text, text) to service_role;
 grant execute on function catalog.rollback_catalogue_version(uuid, text, text) to service_role;
 grant execute on function ml.rollback_embedding_index_version(uuid, text, text) to service_role;
 
 comment on table audit.release_activation_events is
-  'Service-only audit trail for catalogue and embedding-index activation or rollback.';
+  'Service-only, idempotent audit trail for catalogue and embedding-index activation or rollback.';
+
+comment on function catalog.catalogue_activation_readiness(uuid) is
+  'Read-only readiness report for one draft catalogue version. Service role only.';
+
+comment on function catalog.activate_catalogue_version(uuid, text, text) is
+  'Atomically assigns the declared mobile delta range and activates one draft catalogue version.';
+
+comment on function catalog.rollback_catalogue_version(uuid, text, text) is
+  'Activates a new forward-only compensating version and marks the active failed version rolled back.';

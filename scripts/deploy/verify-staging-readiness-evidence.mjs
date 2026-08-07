@@ -20,7 +20,8 @@ function readChecksumBoundJson(path, expectedSha256, errorPrefix) {
     return null;
   }
   const bytes = readFileSync(path);
-  const actualSha256 = createHash('sha256').update(bytes).digest('hex');
+  const normalizedBytes = Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'), 'utf8');
+  const actualSha256 = createHash('sha256').update(normalizedBytes).digest('hex');
   if (actualSha256 !== expectedSha256) {
     errors.push(`${errorPrefix}_checksum_mismatch`);
     return null;

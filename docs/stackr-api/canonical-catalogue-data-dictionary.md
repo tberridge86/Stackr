@@ -127,6 +127,8 @@ Key columns:
 - `description`, `sort_order`: documentation/order.
 
 Seeded finishes include normal, holo, reverse holo, first edition, unlimited, promo, stamped, Poke Ball, Master Ball and other regional variants.
+The `promo` finish code is retained for compatibility and belongs to `other`;
+promotional identity is represented explicitly by `variant_group = 'promo'`.
 
 ### `catalog.variant_taxonomy`
 

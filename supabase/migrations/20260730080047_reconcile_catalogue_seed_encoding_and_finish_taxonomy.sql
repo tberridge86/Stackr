@@ -1,5 +1,7 @@
 -- Reconcile the canonical catalogue seed with the reviewed UTF-8 source and
--- the current finish taxonomy. This is forward-only and idempotent so that
+-- the current finish taxonomy. Promo remains a stable finish code for existing
+-- references, while its first-class classification lives in variant_group.
+-- This is forward-only and idempotent so that
 -- environments created from either historical Stage 2 variant converge.
 
 update catalog.languages
@@ -22,9 +24,11 @@ where code in ('ja', 'zh-Hans', 'zh-Hant', 'ko')
 
 update catalog.finishes
 set finish_group = 'other',
+  description = 'Promotional distribution marker retained for compatibility.',
   updated_at = now()
 where code = 'promo'
-  and finish_group is distinct from 'other';
+  and (finish_group is distinct from 'other'
+    or description is distinct from 'Promotional distribution marker retained for compatibility.');
 
 alter table catalog.finishes
   drop constraint if exists finishes_finish_group_check;

@@ -24,8 +24,8 @@ on:
         description: Known-good Railway recognition deployment ID
         required: true
         type: string
-      previous_catalogue_version_id:
-        description: Known-good active catalogue version UUID
+      rollback_catalogue_version_id:
+        description: Validated draft forward-only compensating catalogue version UUID
         required: true
         type: string
       previous_index_version_id:
@@ -108,7 +108,7 @@ jobs:
       INDEX_VERSION_ID: ${{ inputs.index_version_id }}
       PREVIOUS_BACKEND_DEPLOYMENT_ID: ${{ inputs.previous_backend_deployment_id }}
       PREVIOUS_RECOGNITION_DEPLOYMENT_ID: ${{ inputs.previous_recognition_deployment_id }}
-      PREVIOUS_CATALOGUE_VERSION_ID: ${{ inputs.previous_catalogue_version_id }}
+      ROLLBACK_CATALOGUE_VERSION_ID: ${{ inputs.rollback_catalogue_version_id }}
       PREVIOUS_INDEX_VERSION_ID: ${{ inputs.previous_index_version_id }}
       PREVIOUS_GATEWAY_TAG: ${{ inputs.previous_gateway_tag }}
     steps:
@@ -355,7 +355,7 @@ jobs:
         continue-on-error: true
         run: >-
           node scripts/deploy/release-database.mjs catalogue rollback
-          --id="$PREVIOUS_CATALOGUE_VERSION_ID"
+          --id="$ROLLBACK_CATALOGUE_VERSION_ID"
           --reason="Automatic rollback for GitHub run $GITHUB_RUN_ID"
 
       - name: Roll back recognition deployment after a release failure

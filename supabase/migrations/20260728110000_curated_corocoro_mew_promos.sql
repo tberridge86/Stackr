@@ -2,7 +2,7 @@
 -- CoroCoro Mew promos. These records intentionally do not include card image
 -- URLs; approved imagery should come through the existing asset pipeline.
 
-alter table public.pokemon_sets
+alter table if exists public.pokemon_sets
   add column if not exists raw_data jsonb;
 
 insert into public.canonical_card_concepts (id, canonical_name, pokemon_dex_ids)
