@@ -10,7 +10,11 @@ const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL ?? process.env.SUPABASE_D
 const TARGET_DB_URL = process.env.STACKR_RESTORE_DB_URL ?? process.env.SUPABASE_RESTORE_DB_URL;
 const EVIDENCE_DIR = process.env.STACKR_RECOVERY_EVIDENCE_DIR ?? process.cwd();
 const APPLICATION_SCHEMAS = ['public', 'catalog', 'ingest', 'market', 'ml', 'api', 'audit'];
-const VOLATILE_TABLES = new Set(['audit.observability_events']);
+const VOLATILE_TABLES = new Set([
+  'audit.observability_events',
+  'ml.embedding_activation_events',
+  'ml.scan_upload_assets',
+]);
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -32,14 +36,30 @@ function tableKey(table) {
   return `${table.schema_name}.${table.table_name}`;
 }
 
-function volatileTableCheck(key, sourceTables, targetTables) {
+function multisetContains(sourceValues, restoreValues) {
+  const remaining = new Map();
+  for (const value of sourceValues) remaining.set(value, (remaining.get(value) ?? 0) + 1);
+  for (const value of restoreValues) {
+    const count = remaining.get(value) ?? 0;
+    if (count === 0) return false;
+    remaining.set(value, count - 1);
+  }
+  return true;
+}
+
+function volatileTableCheck(key, sourceTables, targetTables, sourceRows, targetRows) {
   const source = sourceTables.find((table) => tableKey(table) === key);
   const restore = targetTables.find((table) => tableKey(table) === key);
+  const sourceRowHashes = sourceRows.find((table) => table.table === key)?.row_hashes ?? [];
+  const restoreRowHashes = targetRows.find((table) => table.table === key)?.row_hashes ?? [];
   const sourceCount = source ? BigInt(source.row_count) : -1n;
   const restoreCount = restore ? BigInt(restore.row_count) : -1n;
+  const sameCount = Boolean(source && restore) && restoreCount === sourceCount;
+  const sameDigest = Boolean(source && restore) && restore.row_digest === source.row_digest;
+  const restoreRowsAreLiveSourceSubset = multisetContains(sourceRowHashes, restoreRowHashes);
   const acceptable = Boolean(source && restore)
     && restoreCount <= sourceCount
-    && (sourceCount === 0n || restoreCount > 0n);
+    && restoreRowsAreLiveSourceSubset;
   return {
     table: key,
     sourcePresent: Boolean(source),
@@ -49,8 +69,34 @@ function volatileTableCheck(key, sourceTables, targetTables) {
     sourceRowDigest: source?.row_digest ?? null,
     restoreRowDigest: restore?.row_digest ?? null,
     restoreNotAheadOfLiveSource: source && restore ? restoreCount <= sourceCount : false,
+    snapshotBehindLiveSource: source && restore ? restoreCount < sourceCount : false,
+    sameCountRowsMatch: sameCount ? sameDigest : null,
+    restoreRowsAreLiveSourceSubset,
     acceptable,
   };
+}
+
+function tableMismatches(sourceTables, targetTables) {
+  const sourceByKey = new Map(sourceTables.map((table) => [tableKey(table), table]));
+  const targetByKey = new Map(targetTables.map((table) => [tableKey(table), table]));
+  return [...new Set([...sourceByKey.keys(), ...targetByKey.keys()])]
+    .sort()
+    .flatMap((key) => {
+      const source = sourceByKey.get(key);
+      const restore = targetByKey.get(key);
+      if (source?.row_count === restore?.row_count && source?.row_digest === restore?.row_digest) {
+        return [];
+      }
+      return [{
+        table: key,
+        sourcePresent: Boolean(source),
+        restorePresent: Boolean(restore),
+        sourceRowCount: source?.row_count ?? null,
+        restoreRowCount: restore?.row_count ?? null,
+        sourceRowDigest: source?.row_digest ?? null,
+        restoreRowDigest: restore?.row_digest ?? null,
+      }];
+    });
 }
 
 function quoteIdentifier(value) {
@@ -145,6 +191,20 @@ async function tableDigests(client) {
   return output;
 }
 
+async function volatileRowDigests(client) {
+  const output = [];
+  for (const key of [...VOLATILE_TABLES].sort()) {
+    const [schemaName, tableName] = key.split('.');
+    const qualified = `${quoteIdentifier(schemaName)}.${quoteIdentifier(tableName)}`;
+    const result = await client.query(`
+      select coalesce(array_agg(row_hash order by row_hash), '{}') as row_hashes
+      from (select md5(to_jsonb(source_row)::text) as row_hash from ${qualified} source_row) rows
+    `);
+    output.push({ table: key, row_hashes: result.rows[0].row_hashes });
+  }
+  return output;
+}
+
 async function migrationSnapshot(client) {
   const exists = await client.query(`
     select to_regclass('supabase_migrations.schema_migrations') is not null as present
@@ -180,6 +240,10 @@ try {
     tableDigests(source),
     tableDigests(target),
   ]);
+  const [sourceVolatileRows, targetVolatileRows] = await Promise.all([
+    volatileRowDigests(source),
+    volatileRowDigests(target),
+  ]);
   const [sourceMigrations, targetMigrations] = await Promise.all([
     migrationSnapshot(source),
     migrationSnapshot(target),
@@ -191,9 +255,16 @@ try {
 
   const sourceStrictTables = sourceTables.filter((table) => !VOLATILE_TABLES.has(tableKey(table)));
   const targetStrictTables = targetTables.filter((table) => !VOLATILE_TABLES.has(tableKey(table)));
+  const strictTableMismatches = tableMismatches(sourceStrictTables, targetStrictTables);
   const volatileTableChecks = [...VOLATILE_TABLES]
     .sort()
-    .map((key) => volatileTableCheck(key, sourceTables, targetTables));
+    .map((key) => volatileTableCheck(
+      key,
+      sourceTables,
+      targetTables,
+      sourceVolatileRows,
+      targetVolatileRows,
+    ));
 
   const checks = {
     schema: digest(sourceSchema) === digest(targetSchema),
@@ -203,7 +274,7 @@ try {
     extensions: digest(sourceExtensions) === digest(targetExtensions),
   };
   const evidence = {
-    schemaVersion: 'stackr-postgres-restore-evidence-v1.1.0',
+    schemaVersion: 'stackr-postgres-restore-evidence-v1.2.0',
     verifiedAt: new Date().toISOString(),
     sourceProjectRef: SOURCE_PROJECT_REF,
     restoreProjectRef: TARGET_PROJECT_REF,
@@ -217,6 +288,7 @@ try {
     restoreExtensionSha256: digest(targetExtensions),
     tableCount: sourceTables.length,
     strictTableCount: sourceStrictTables.length,
+    strictTableMismatches,
     volatileTableCount: volatileTableChecks.length,
     volatileTableChecks,
     migrationCount: sourceMigrations.length,
