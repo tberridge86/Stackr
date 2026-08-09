@@ -37,7 +37,7 @@ on:
         default: '250'
         type: string
       batches:
-        description: Consecutive batches to run (maximum 12)
+        description: Consecutive batches to run (maximum 60)
         required: true
         default: '1'
         type: string
@@ -82,7 +82,7 @@ concurrency:
 jobs:
   ingest-staging:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 360
     environment: staging
     env:
       SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
@@ -137,7 +137,7 @@ jobs:
           [[ "$CATALOGUE_CONTROLLED_STAGING" == "true" || "$CATALOGUE_CONTROLLED_STAGING" == "false" ]] || exit 1
           [[ -z "$CATALOGUE_SET_ID" || "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+)*$ ]] || exit 1
           (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
-          (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12 )) || exit 1
+          (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 60 )) || exit 1
           (( CATALOGUE_WRITE_CONCURRENCY >= 1 && CATALOGUE_WRITE_CONCURRENCY <= 8 )) || exit 1
           (( CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 6 )) || exit 1
           if [[ "${{ inputs.operation }}" == "snapshot" && "${{ inputs.provider }}" == "tcgdex" ]]; then
