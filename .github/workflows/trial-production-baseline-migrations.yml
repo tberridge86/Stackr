@@ -95,10 +95,10 @@ jobs:
             sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-schema.sql'
 
       - name: Confirm full migration plan
-        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL" --dry-run
+        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL" --include-all --dry-run
 
       - name: Replay repository migrations on isolated target
-        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL"
+        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL" --include-all
 
       - name: Record isolated migration history
         shell: bash
@@ -302,8 +302,12 @@ jobs:
           export STACKR_RESTORE_DB_URL="$staging_url"
           export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-staging-rebuild/evidence"
           node scripts/deploy/verify-postgres-restore.mjs
+          expected_migrations="$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d '[:space:]')"
+          actual_migrations="$(docker run --rm --env TARGET_DB_URL="$staging_url" "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select count(*) from supabase_migrations.schema_migrations"')"
+          test "$(printf '%s' "$actual_migrations" | tr -d '[:space:]')" = "$expected_migrations"
           docker run --rm --env TARGET_DB_URL="$staging_url" "$POSTGRES_IMAGE" \
-            sh -ceu 'test "$(psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select count(*) from supabase_migrations.schema_migrations")" = "82"; test "$(psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select (select count(*) from auth.users)::text || chr(124) || (select count(*) from storage.objects)::text")" = "0|0"'
+            sh -ceu 'test "$(psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select (select count(*) from auth.users)::text || chr(124) || (select count(*) from storage.objects)::text")" = "0|0"'
 
       - name: Restore rollback backup after a failed rebuild
         if: failure()

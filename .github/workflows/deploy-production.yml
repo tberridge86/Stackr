@@ -243,11 +243,11 @@ jobs:
             --require-physical
 
       - name: Dry-run backward-compatible migrations
-        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --dry-run
+        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all --dry-run
 
       - name: Apply backward-compatible migrations
         if: inputs.apply_migrations
-        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL"
+        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all
 
       - name: Prepare protected catalogue promotion URLs
         if: inputs.release_scope == 'catalogue_api'
