@@ -115,9 +115,31 @@ jobs:
             "$POSTGRES_IMAGE" \
             sh -ceu 'psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select count(*) from supabase_migrations.schema_migrations"' \
             > "$RUNNER_TEMP/stackr-baseline-trial/migration-count.txt"
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select concat(version, chr(95), name) from supabase_migrations.schema_migrations order by version, name"' \
+            > "$RUNNER_TEMP/stackr-baseline-trial/actual-migration-keys.txt"
           expected_migrations="$(find supabase/migrations -maxdepth 1 -type f -name '*.sql' | wc -l | tr -d '[:space:]')"
           actual_migrations="$(tr -d '[:space:]' < "$RUNNER_TEMP/stackr-baseline-trial/migration-count.txt")"
           test "$actual_migrations" = "$expected_migrations"
+          node scripts/deploy/create-production-migration-replay-evidence.mjs \
+            --actual-keys="$RUNNER_TEMP/stackr-baseline-trial/actual-migration-keys.txt" \
+            --output="$RUNNER_TEMP/stackr-baseline-trial/evidence.json" \
+            --production-project-ref="$SUPABASE_PRODUCTION_PROJECT_REF" \
+            --staging-project-ref="$SUPABASE_STAGING_PROJECT_REF" \
+            --restore-project-ref="$SUPABASE_RESTORE_PROJECT_REF" \
+            --baseline-artifact-id="$BASELINE_ARTIFACT_ID" \
+            --baseline-archive-sha256="$BASELINE_ARCHIVE_SHA256" \
+            --baseline-schema-sha256="$BASELINE_SCHEMA_SHA256"
+
+      - name: Upload non-secret migration replay evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: production-migration-replay-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-baseline-trial/evidence.json
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Remove baseline and connection evidence
         if: always()
