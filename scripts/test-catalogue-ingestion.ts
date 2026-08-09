@@ -56,7 +56,7 @@ function assertBoundedCatalogueWrites() {
   assert.match(ingestionPipeline, /function reconciliationPhase/);
   assert.match(ingestionPipeline, /await runWithConcurrency\(/);
   assert.match(catalogueIngest, /--writeConcurrency must be an integer from 1 to 16/);
-  assert.match(catalogueWorkflow, /CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 12/);
+  assert.match(catalogueWorkflow, /CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 60/);
   assert.match(catalogueWorkflow, /group: stackr-staging-database-maintenance/);
   assert.match(recoveryWorkflow, /group: stackr-staging-database-maintenance/);
   assert.match(catalogueWorkflow, /TCGDEX_SNAPSHOT_COMMIT: [0-9a-f]{40}/);
@@ -69,6 +69,7 @@ function assertBoundedCatalogueWrites() {
   assert.match(catalogueWorkflow, /--version="\$CATALOGUE_PUBLISH_VERSION"/);
   assert.match(catalogueWorkflow, /controlled_staging:/);
   assert.match(catalogueWorkflow, /--controlled-staging --setId="\$CATALOGUE_SET_ID"/);
+  assert.match(catalogueWorkflow, /controlled_args\+=\(--coverage-limited\)/);
   assert.match(catalogueWorkflow, /CATALOGUE_PUBLISH_VERSION" == staging-\*/);
   assert.match(
     catalogueWorkflow,

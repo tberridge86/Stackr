@@ -62,6 +62,7 @@ type Args = {
   setArtRoot: string;
   version: string | null;
   controlledStaging: boolean;
+  coverageLimited: boolean;
   pikaqianFile: string | null;
   pikaqianApiConfigured: boolean;
   pikaqianBaseUrl: string | null;
@@ -378,6 +379,7 @@ function parseArgv(argv: string[]): Args {
     setArtRoot: cleanText(arg('setArtRoot') || arg('set-art-root') || process.env.STACKR_SET_ART_ROOT) ?? 'catalogue',
     version: cleanText(arg('version') || process.env.STACKR_CATALOGUE_PUBLISH_VERSION),
     controlledStaging: hasFlag('controlled-staging') || hasFlag('controlledStaging'),
+    coverageLimited: hasFlag('coverage-limited') || hasFlag('coverageLimited'),
     pikaqianFile: cleanText(arg('pikaqianFile') || process.env.PIKAQIAN_CATALOGUE_FILE),
     pikaqianApiConfigured: Boolean(cleanText(process.env.PIKAQIAN_API_KEY)),
     pikaqianBaseUrl: cleanText(arg('pikaqianBaseUrl') || process.env.PIKAQIAN_BASE_URL),
@@ -2462,12 +2464,14 @@ function buildPublishPlan(args: Args) {
   const language = publishLanguage(args);
   const version = cleanText(args.version);
   const controlledStaging = args.controlledStaging;
+  const coverageLimited = args.coverageLimited;
   return {
     id: `catalogue:publish:${language}:${version ?? '<missing-version>'}`,
     language,
     version,
     versionKey: version ? publicationVersionKey(language, version) : null,
     controlledStaging,
+    coverageLimited,
     releaseEligible: !controlledStaging,
     setRef: controlledStaging ? args.setId : null,
     publishOrder: LANGUAGE_PUBLISH_ORDER,
@@ -2476,6 +2480,8 @@ function buildPublishPlan(args: Args) {
     writes: args.apply,
     reason: controlledStaging
       ? 'Publish one explicitly incomplete, single-set staging snapshot for API verification; it is never production-release eligible.'
+      : coverageLimited
+      ? 'Publish all approved imported records for one language with measured provider gaps; correctness and rights blockers still fail closed.'
       : 'Publish one complete language snapshot; app-facing API views read published snapshots only.',
   };
 }
@@ -2507,6 +2513,28 @@ function publishReadinessFromSummary(summary: any, language: SupportedCatalogueL
     ok: blockers.length === 0,
     blockers,
     languageSummary,
+  };
+}
+
+function coverageLimitedReadinessFromSummary(summary: any, language: SupportedCatalogueLanguageCode) {
+  const strictReadiness = publishReadinessFromSummary(summary, language);
+  const toleratedProviderGapBlockers = new Set([
+    'language_has_incomplete_sets',
+    'missing_card_records',
+    'missing_exact_native_images',
+    'release_blocking_missing_logo',
+    'release_blocking_missing_symbol',
+  ]);
+  const blockers = strictReadiness.blockers.filter(
+    (blocker: string) => !toleratedProviderGapBlockers.has(blocker),
+  );
+  return {
+    ok: blockers.length === 0,
+    blockers,
+    acknowledgedProviderGaps: strictReadiness.blockers.filter(
+      (blocker: string) => toleratedProviderGapBlockers.has(blocker),
+    ),
+    languageSummary: strictReadiness.languageSummary,
   };
 }
 
@@ -2819,6 +2847,7 @@ async function upsertDraftCatalogueVersion(
       version: string;
       summary: Record<string, unknown>;
       controlledStaging?: boolean;
+      coverageLimited?: boolean;
   },
 ) {
   const versionKey = publicationVersionKey(input.language, input.version);
@@ -2829,6 +2858,8 @@ async function upsertDraftCatalogueVersion(
     status: 'draft',
       description: input.controlledStaging
         ? `Stackr controlled staging catalogue ${input.language} ${input.version}`
+        : input.coverageLimited
+        ? `Stackr coverage-limited catalogue ${input.language} ${input.version}`
         : `Stackr ${input.language} catalogue ${input.version}`,
     coverage_summary: input.summary,
     deprecated_at: null,
@@ -3121,6 +3152,7 @@ async function activateCatalogueVersion(db: SupabaseClientLike, input: {
   language: SupportedCatalogueLanguageCode;
   version: string;
   controlledStaging?: boolean;
+  coverageLimited?: boolean;
 }) {
   const catalogClient = (db as any).schema('catalog');
   if (typeof catalogClient.rpc === 'function') {
@@ -3131,6 +3163,8 @@ async function activateCatalogueVersion(db: SupabaseClientLike, input: {
         : `catalogue:publish:${input.language}:${input.version}`,
       p_reason: input.controlledStaging
         ? `Published controlled staging ${input.language} catalogue ${input.version}`
+        : input.coverageLimited
+        ? `Published coverage-limited ${input.language} catalogue ${input.version}`
         : `Published ${input.language} catalogue ${input.version}`,
     });
     if (error) throw error;
@@ -3220,6 +3254,16 @@ async function publishMaster(args: Args) {
       plan,
     };
   }
+  if (args.controlledStaging && args.coverageLimited) {
+    return {
+      ok: false,
+      dryRun: args.dryRun,
+      writes: false,
+      productionModified: false,
+      blockers: ['controlled_staging_and_coverage_limited_are_mutually_exclusive'],
+      plan,
+    };
+  }
 
   const db = createStagingSupabase(args);
   const reportSummary = args.controlledStaging
@@ -3238,10 +3282,13 @@ async function publishMaster(args: Args) {
         languageSummary: null,
       }
     : publishReadinessFromSummary(reportSummary, language);
+  const coverageLimitedReadiness = args.coverageLimited
+    ? coverageLimitedReadinessFromSummary(reportSummary, language)
+    : null;
   const controlledReadiness = args.controlledStaging
     ? controlledStagingReadinessFromSummary(reportSummary, language, args.setId)
     : null;
-  const readiness = controlledReadiness ?? fullLanguageReadiness;
+  const readiness = controlledReadiness ?? coverageLimitedReadiness ?? fullLanguageReadiness;
   if (!readiness.ok) {
     return {
       ok: false,
@@ -3279,7 +3326,9 @@ async function publishMaster(args: Args) {
       writes: false,
       productionModified: false,
       readiness: 'setCoverage' in readiness ? readiness.setCoverage : readiness.languageSummary,
-      acknowledgedPublicationBlockers: args.controlledStaging ? fullLanguageReadiness.blockers : [],
+      acknowledgedPublicationBlockers: args.controlledStaging
+        ? fullLanguageReadiness.blockers
+        : coverageLimitedReadiness?.acknowledgedProviderGaps ?? [],
       plan,
     };
   }
@@ -3297,13 +3346,28 @@ async function publishMaster(args: Args) {
         acknowledgedPublicationBlockers: fullLanguageReadiness.blockers,
         setCoverage,
       }
-    : fullLanguageReadiness.languageSummary;
+    : args.coverageLimited
+    ? {
+        ...fullLanguageReadiness.languageSummary,
+        coverageLimitedSnapshot: true,
+        releaseEligible: true,
+        publicationPolicy: 'measured_provider_coverage',
+        acknowledgedPublicationBlockers: coverageLimitedReadiness?.acknowledgedProviderGaps ?? [],
+      }
+    : {
+        ...fullLanguageReadiness.languageSummary,
+        coverageLimitedSnapshot: false,
+        releaseEligible: true,
+        publicationPolicy: 'complete_language',
+        acknowledgedPublicationBlockers: [],
+      };
 
   const versionRow = await runPublicationStage('upsert_draft_version', () => upsertDraftCatalogueVersion(db, {
     language,
     version,
     summary: coverageSummary,
     controlledStaging: args.controlledStaging,
+    coverageLimited: args.coverageLimited,
   }));
   const snapshot = await runPublicationStage('snapshot_catalogue_membership', () => snapshotPublishedLanguage(db, {
     versionId: versionRow.id,
@@ -3319,6 +3383,7 @@ async function publishMaster(args: Args) {
     language,
     version,
     controlledStaging: args.controlledStaging,
+    coverageLimited: args.coverageLimited,
   }));
 
   return {
@@ -3332,7 +3397,9 @@ async function publishMaster(args: Args) {
     catalogueVersionId: versionRow.id,
     snapshot,
     releaseEligible: !args.controlledStaging,
-    acknowledgedPublicationBlockers: args.controlledStaging ? fullLanguageReadiness.blockers : [],
+    acknowledgedPublicationBlockers: args.controlledStaging
+      ? fullLanguageReadiness.blockers
+      : coverageLimitedReadiness?.acknowledgedProviderGaps ?? [],
     plan,
   };
 }
@@ -3396,6 +3463,9 @@ async function validateMaster(args: Args) {
     if (args.controlledStaging && !args.setId) blockers.push('controlled_staging_set_required');
     if (args.controlledStaging && !cleanText(args.version)?.startsWith('staging-')) {
       blockers.push('controlled_staging_version_prefix_required');
+    }
+    if (args.controlledStaging && args.coverageLimited) {
+      blockers.push('controlled_staging_and_coverage_limited_are_mutually_exclusive');
     }
     return {
       ok: blockers.length === 0,
@@ -3509,6 +3579,7 @@ export const masterCatalogueInternals = {
   previousPublishLanguages,
   publicationVersionKey,
   publishReadinessFromSummary,
+  coverageLimitedReadinessFromSummary,
   controlledStagingReadinessFromSummary,
   setArtExpectedPath,
   setArtFolderCode,

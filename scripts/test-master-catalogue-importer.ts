@@ -1020,6 +1020,16 @@ function assertPublishRules() {
   assert.deepEqual(publishArgs.languages, ['ja']);
   assert.equal(publishArgs.version, '2026-08-01');
   assert.equal(publishArgs.controlledStaging, false);
+  assert.equal(publishArgs.coverageLimited, false);
+
+  const coverageLimitedPublishArgs = masterCatalogueInternals.parseArgv([
+    'publish',
+    '--target=staging',
+    '--language=en',
+    '--version=api-launch-2026-08-09',
+    '--coverage-limited',
+  ]);
+  assert.equal(coverageLimitedPublishArgs.coverageLimited, true);
 
   const controlledPublishArgs = masterCatalogueInternals.parseArgv([
     'publish',
@@ -1055,6 +1065,11 @@ function assertPublishRules() {
   assert.equal(controlledPlan.setRef, '151c');
   assert.match(controlledPlan.reason, /never production-release eligible/);
 
+  const coverageLimitedPlan = masterCatalogueInternals.buildPublishPlan(coverageLimitedPublishArgs);
+  assert.equal(coverageLimitedPlan.releaseEligible, true);
+  assert.equal(coverageLimitedPlan.coverageLimited, true);
+  assert.match(coverageLimitedPlan.reason, /measured provider gaps/);
+
   const completeSummary = {
     byLanguage: [{
       language: 'ja',
@@ -1082,6 +1097,21 @@ function assertPublishRules() {
   assert.equal(readiness.ok, false);
   assert.ok(readiness.blockers.includes('language_has_incomplete_sets'));
   assert.ok(readiness.blockers.includes('missing_exact_native_images'));
+
+  const coverageLimitedReadiness = masterCatalogueInternals.coverageLimitedReadinessFromSummary(
+    incompleteSummary,
+    'ja',
+  );
+  assert.equal(coverageLimitedReadiness.ok, true);
+  assert.ok(coverageLimitedReadiness.acknowledgedProviderGaps.includes('missing_exact_native_images'));
+  const unsafeCoverageLimitedReadiness = masterCatalogueInternals.coverageLimitedReadinessFromSummary({
+    byLanguage: [{
+      ...incompleteSummary.byLanguage[0],
+      unresolvedIdentityConflicts: 1,
+    }],
+  }, 'ja');
+  assert.equal(unsafeCoverageLimitedReadiness.ok, false);
+  assert.ok(unsafeCoverageLimitedReadiness.blockers.includes('unresolved_identity_conflicts'));
 
   const controlledReadiness = masterCatalogueInternals.controlledStagingReadinessFromSummary({
     coverageRows: [{
