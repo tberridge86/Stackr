@@ -7,6 +7,12 @@ on:
         description: Type DEPLOY PRODUCTION
         required: true
         type: string
+      release_scope:
+        description: Launch the catalogue API now, or the full platform after recognition approval
+        required: true
+        default: catalogue_api
+        type: choice
+        options: [catalogue_api, full_platform]
       gateway_bootstrap:
         description: First release only - create the production Worker at 100 percent
         required: true
@@ -18,27 +24,31 @@ on:
         type: string
       previous_backend_deployment_id:
         description: Known-good Railway catalogue API deployment ID
-        required: true
+        required: false
         type: string
       previous_recognition_deployment_id:
         description: Known-good Railway recognition deployment ID
-        required: true
+        required: false
         type: string
       previous_catalogue_version_id:
         description: Known-good active catalogue version UUID
-        required: true
+        required: false
         type: string
       previous_index_version_id:
         description: Known-good active embedding index UUID
-        required: true
+        required: false
         type: string
       catalogue_version_id:
-        description: Validated inactive catalogue version UUID
-        required: true
+        description: Validated inactive catalogue version UUID for a full-platform release
+        required: false
+        type: string
+      catalogue_release_label:
+        description: Shared five-language staging catalogue release label
+        required: false
         type: string
       index_version_id:
         description: Validated inactive embedding index UUID
-        required: true
+        required: false
         type: string
       canary_percent:
         description: Initial gateway and mobile canary percentage
@@ -77,12 +87,16 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION'
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 360
     environment: production
     env:
       STACKR_DEPLOYMENT_ENVIRONMENT: production
+      STACKR_DEPLOYMENT_SCOPE: ${{ inputs.release_scope }}
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+      SUPABASE_STAGING_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
       STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
       STACKR_MODEL_INDEX_RELEASE_APPROVED: ${{ vars.STACKR_MODEL_INDEX_RELEASE_APPROVED }}
@@ -105,6 +119,7 @@ jobs:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
       STACKR_RELEASE_REQUEST_ID: production-${{ github.run_id }}-${{ github.run_attempt }}
       CATALOGUE_VERSION_ID: ${{ inputs.catalogue_version_id }}
+      CATALOGUE_RELEASE_LABEL: ${{ inputs.catalogue_release_label }}
       INDEX_VERSION_ID: ${{ inputs.index_version_id }}
       PREVIOUS_BACKEND_DEPLOYMENT_ID: ${{ inputs.previous_backend_deployment_id }}
       PREVIOUS_RECOGNITION_DEPLOYMENT_ID: ${{ inputs.previous_recognition_deployment_id }}
@@ -136,23 +151,38 @@ jobs:
           npm run test:deployment
           npm test --prefix gateway
           node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
-          node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
-          npm run deploy:preflight -- --release
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ]; then
+            node scripts/deploy/verify-staging-readiness-evidence.mjs --require-catalogue-api-ready
+            npm run deploy:preflight -- --catalogue-api-release
+          else
+            node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
+            npm run deploy:preflight -- --release
+          fi
 
       - name: Validate gateway release mode
         env:
           GATEWAY_BOOTSTRAP: ${{ inputs.gateway_bootstrap }}
         run: |
-          for variable in \
-            PREVIOUS_BACKEND_DEPLOYMENT_ID \
-            PREVIOUS_RECOGNITION_DEPLOYMENT_ID \
-            PREVIOUS_CATALOGUE_VERSION_ID \
-            PREVIOUS_INDEX_VERSION_ID; do
-            if [ -z "${!variable}" ]; then
-              echo "Every release requires rollback value $variable."
-              exit 1
-            fi
-          done
+          if [ "${{ inputs.release_scope }}" = "full_platform" ] && [ -z "$INDEX_VERSION_ID" ]; then
+            echo "Full-platform releases require INDEX_VERSION_ID."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "full_platform" ] && [ -z "$CATALOGUE_VERSION_ID" ]; then
+            echo "Full-platform releases require CATALOGUE_VERSION_ID."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ -z "$CATALOGUE_RELEASE_LABEL" ]; then
+            echo "Catalogue API releases require CATALOGUE_RELEASE_LABEL."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ "$GATEWAY_BOOTSTRAP" != "true" ]; then
+            echo "Catalogue API promotion currently supports the guarded first-release bootstrap only."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
+            echo "Catalogue API bootstrap does not publish a mobile update."
+            exit 1
+          fi
           if [ "$GATEWAY_BOOTSTRAP" = "true" ]; then
             if [ -n "$PREVIOUS_GATEWAY_TAG" ]; then
               echo "First release must not provide a previous gateway tag."
@@ -167,6 +197,20 @@ jobs:
               echo "Canary releases require PREVIOUS_GATEWAY_TAG."
               exit 1
             fi
+            for variable in PREVIOUS_BACKEND_DEPLOYMENT_ID PREVIOUS_CATALOGUE_VERSION_ID; do
+              if [ -z "${!variable}" ]; then
+                echo "Canary releases require rollback value $variable."
+                exit 1
+              fi
+            done
+            if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+              for variable in PREVIOUS_RECOGNITION_DEPLOYMENT_ID PREVIOUS_INDEX_VERSION_ID; do
+                if [ -z "${!variable}" ]; then
+                  echo "Full-platform canaries require rollback value $variable."
+                  exit 1
+                fi
+              done
+            fi
           fi
 
       - name: Prepare gateway runtime configuration
@@ -175,6 +219,7 @@ jobs:
           --output="$RUNNER_TEMP/stackr-worker-secrets.json"
 
       - name: Require an approved model and complete inactive index
+        if: inputs.release_scope == 'full_platform'
         run: npm run deploy:verify-model -- --require-active
 
       - name: Verify latest physical backup and create ephemeral logical backups
@@ -204,6 +249,34 @@ jobs:
         if: inputs.apply_migrations
         run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL"
 
+      - name: Prepare protected catalogue promotion URLs
+        if: inputs.release_scope == 'catalogue_api'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+          SUPABASE_RESTORE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+        run: node scripts/deploy/prepare-postgres-urls.mjs
+
+      - name: Promote verified catalogue snapshot into production
+        if: inputs.release_scope == 'catalogue_api'
+        env:
+          SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+          SUPABASE_RESTORE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+          SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+          STACKR_TRANSFER_MODE: promote
+          STACKR_TRANSFER_CONFIRMATION: PROMOTE VERIFIED CATALOGUE TO PRODUCTION
+          STACKR_TRANSFER_TABLE_CONFIG: deploy/production-catalogue-promotion-tables.json
+          STACKR_CATALOGUE_RELEASE_LABEL: ${{ inputs.catalogue_release_label }}
+          STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn,ko
+          STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/evidence.json
+          STACKR_STORAGE_PROMOTION_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/storage-evidence.json
+          STACKR_STORAGE_PROMOTION_CONCURRENCY: 32
+        run: |
+          node scripts/deploy/promote-catalogue-storage.mjs
+          node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
+          echo "STACKR_CATALOGUE_PROMOTED=true" >> "$GITHUB_ENV"
+
       - name: Deploy rolling catalogue API version
         run: |
           npx --yes @railway/cli@5.30.1 up backend --path-as-root --ci \
@@ -213,6 +286,7 @@ jobs:
           echo "STACKR_BACKEND_DEPLOYED=true" >> "$GITHUB_ENV"
 
       - name: Deploy rolling recognition version
+        if: inputs.release_scope == 'full_platform'
         run: |
           npx --yes @railway/cli@5.30.1 up recognition-service --path-as-root --ci \
             --project "$RAILWAY_PROJECT_ID" \
@@ -221,15 +295,22 @@ jobs:
           echo "STACKR_RECOGNITION_DEPLOYED=true" >> "$GITHUB_ENV"
 
       - name: Verify service readiness before activation
-        run: npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
+        run: |
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
+          else
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL"
+          fi
 
       - name: Atomically activate validated catalogue version
+        if: inputs.release_scope == 'full_platform'
         run: |
           node scripts/deploy/release-database.mjs catalogue activate \
             --id="$CATALOGUE_VERSION_ID" --reason="GitHub production release $GITHUB_SHA"
           echo "STACKR_CATALOGUE_ACTIVATED=true" >> "$GITHUB_ENV"
 
       - name: Atomically activate validated model and index version
+        if: inputs.release_scope == 'full_platform'
         run: |
           node scripts/deploy/release-database.mjs index activate \
             --id="$INDEX_VERSION_ID" --reason="GitHub production release $GITHUB_SHA"
@@ -240,14 +321,20 @@ jobs:
         env:
           RELEASE_TAG: production-${{ github.sha }}
         run: |
+          runtime_args=(
+            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL"
+            --var "RECOGNITION_REQUIRED:${{ inputs.release_scope == 'full_platform' && 'true' || 'false' }}"
+            --var "SUPABASE_URL:$STACKR_SUPABASE_URL"
+            --var "SUPABASE_PUBLISHABLE_KEY:$STACKR_SUPABASE_PUBLISHABLE_KEY"
+          )
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            runtime_args+=(--var "RECOGNITION_ORIGIN:$STACKR_RECOGNITION_URL")
+          fi
           npm --prefix gateway exec -- wrangler --cwd gateway versions upload \
             --env production --tag "$RELEASE_TAG" --message "GitHub $GITHUB_SHA" \
             --strict --keep-vars \
             --secrets-file "$RUNNER_TEMP/stackr-worker-secrets.json" \
-            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL" \
-            --var "RECOGNITION_ORIGIN:$STACKR_RECOGNITION_URL" \
-            --var "SUPABASE_URL:$STACKR_SUPABASE_URL" \
-            --var "SUPABASE_PUBLISHABLE_KEY:$STACKR_SUPABASE_PUBLISHABLE_KEY"
+            "${runtime_args[@]}"
 
       - name: Start gateway canary
         if: ${{ !inputs.gateway_bootstrap }}
@@ -273,14 +360,20 @@ jobs:
         env:
           RELEASE_TAG: production-${{ github.sha }}
         run: |
+          runtime_args=(
+            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL"
+            --var "RECOGNITION_REQUIRED:${{ inputs.release_scope == 'full_platform' && 'true' || 'false' }}"
+            --var "SUPABASE_URL:$STACKR_SUPABASE_URL"
+            --var "SUPABASE_PUBLISHABLE_KEY:$STACKR_SUPABASE_PUBLISHABLE_KEY"
+          )
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            runtime_args+=(--var "RECOGNITION_ORIGIN:$STACKR_RECOGNITION_URL")
+          fi
           npm --prefix gateway exec -- wrangler --cwd gateway deploy \
             --env production --tag "$RELEASE_TAG" --message "GitHub first release $GITHUB_SHA" \
             --strict --keep-vars \
             --secrets-file "$RUNNER_TEMP/stackr-worker-secrets.json" \
-            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL" \
-            --var "RECOGNITION_ORIGIN:$STACKR_RECOGNITION_URL" \
-            --var "SUPABASE_URL:$STACKR_SUPABASE_URL" \
-            --var "SUPABASE_PUBLISHABLE_KEY:$STACKR_SUPABASE_PUBLISHABLE_KEY"
+            "${runtime_args[@]}"
           echo "STACKR_GATEWAY_BOOTSTRAPPED=true" >> "$GITHUB_ENV"
 
       - name: Publish matching mobile canary
@@ -310,12 +403,16 @@ jobs:
             exit 1
           fi
           sleep "$((MONITOR_MINUTES * 60))"
-          npm run deploy:smoke -- \
-            --gateway="$STACKR_GATEWAY_URL" \
-            --backend="$STACKR_BACKEND_URL" \
-            --recognition="$STACKR_RECOGNITION_URL" \
-            --full-gateway \
+          smoke_args=(
+            --gateway="$STACKR_GATEWAY_URL"
+            --backend="$STACKR_BACKEND_URL"
+            --full-gateway
             --require-published-catalogue
+          )
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            smoke_args+=(--recognition="$STACKR_RECOGNITION_URL")
+          fi
+          npm run deploy:smoke -- "${smoke_args[@]}"
 
       - name: Promote gateway after successful observation
         if: ${{ !inputs.gateway_bootstrap && inputs.promote_gateway }}
@@ -341,6 +438,11 @@ jobs:
           npm --prefix gateway exec -- wrangler --cwd gateway versions deploy
           --env production --version-tag "$PREVIOUS_GATEWAY_TAG@100"
           --message "Automatic rollback for GitHub run $GITHUB_RUN_ID" --yes
+
+      - name: Remove a failed first production gateway
+        if: failure() && env.STACKR_GATEWAY_BOOTSTRAPPED == 'true'
+        continue-on-error: true
+        run: npm --prefix gateway exec -- wrangler --cwd gateway delete --env production --force
 
       - name: Roll back model and index after a failed activation or canary
         if: failure() && env.STACKR_INDEX_ACTIVATED == 'true' && env.PREVIOUS_INDEX_VERSION_ID != ''
@@ -372,4 +474,5 @@ jobs:
         if: always()
         run: |
           rm -rf "$RUNNER_TEMP/stackr-backup"
+          rm -rf "$RUNNER_TEMP/stackr-catalogue-promotion"
           rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"

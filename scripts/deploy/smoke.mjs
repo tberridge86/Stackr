@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-const REQUIRED_CATALOGUE_LANGUAGES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
+const DEFAULT_REQUIRED_CATALOGUE_LANGUAGES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 
 function argument(name, fallback = null) {
   const prefix = `--${name}=`;
@@ -71,7 +71,7 @@ function manifestPublishedCheck(body) {
     : [];
   const missingVersions = shards.filter((shard) => !shard.catalogueVersion || !shard.catalogueVersionId);
   const publishedLanguages = new Set(shards.map((shard) => shard.languageCode));
-  const missingLanguages = REQUIRED_CATALOGUE_LANGUAGES.filter((language) => !publishedLanguages.has(language));
+  const missingLanguages = requiredCatalogueLanguages.filter((language) => !publishedLanguages.has(language));
   return {
     ok: Boolean(manifest?.currentCatalogueVersion)
       && manifest.currentCatalogueVersion !== 'bootstrap'
@@ -91,6 +91,10 @@ const allowRecognitionNotReady = process.argv.includes('--allow-recognition-not-
 const allowMissingRequestId = process.argv.includes('--allow-missing-request-id');
 const fullGateway = process.argv.includes('--full-gateway');
 const requirePublishedCatalogue = process.argv.includes('--require-published-catalogue');
+const requiredCatalogueLanguages = argument(
+  'required-catalogue-languages',
+  DEFAULT_REQUIRED_CATALOGUE_LANGUAGES.join(','),
+).split(',').map((language) => language.trim()).filter(Boolean);
 const allowedOrigin = argument('allowed-origin', process.env.STACKR_ALLOWED_ORIGIN ?? 'https://staging.stackr.app');
 const deniedOrigin = argument('denied-origin', 'https://not-stackr.invalid');
 const searchQuery = encodeURIComponent(argument('search-query', 'SV2a 157'));

@@ -6,8 +6,10 @@ const outputPath = outputArgument ? resolve(outputArgument.slice('--output='.len
 const requiredSecretNames = [
   'BACKEND_ORIGIN_KEY',
   'BACKEND_ADMIN_KEY',
-  'RECOGNITION_SERVICE_SECRET',
 ];
+if (process.env.STACKR_DEPLOYMENT_SCOPE !== 'catalogue_api') {
+  requiredSecretNames.push('RECOGNITION_SERVICE_SECRET');
+}
 
 function fail(message) {
   console.error(JSON.stringify({ ok: false, error: message }));

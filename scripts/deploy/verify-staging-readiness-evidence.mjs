@@ -9,6 +9,8 @@ const evidencePath = process.argv.find((arg) => arg.startsWith('--evidence='))?.
   ?? (latestEvidenceFile ? `deploy/evidence/${latestEvidenceFile}` : null);
 if (!evidencePath) throw new Error('No staging readiness evidence file was found.');
 const requireReleaseReady = process.argv.includes('--require-release-ready');
+const requireCatalogueApiReady = process.argv.includes('--require-catalogue-api-ready');
+const requiredCatalogueLanguages = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 const manifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
 const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
 const errors = [];
@@ -126,6 +128,29 @@ if (requireReleaseReady) {
   if (evidence.storageRecovery?.status !== 'verified') errors.push('storage_recovery_not_verified');
   if (evidence.modelAndIndex?.status !== 'ready') errors.push('model_and_index_not_ready');
   if (evidence.releaseReadiness?.status !== 'ready') errors.push('staging_release_not_ready');
+}
+if (requireCatalogueApiReady) {
+  if (evidence.supabase?.migrationHistoryStatus !== 'aligned') errors.push('migration_history_not_aligned');
+  if (evidence.databaseRecovery?.status !== 'verified') errors.push('database_recovery_not_verified');
+  if (evidence.storageRecovery?.status !== 'verified') errors.push('storage_recovery_not_verified');
+  if (!Number.isInteger(evidence.catalogue?.publishedVersions)
+    || evidence.catalogue.publishedVersions <= 0) {
+    errors.push('catalogue_version_not_published');
+  }
+  if (!Number.isInteger(evidence.catalogue?.cardPrintings)
+    || evidence.catalogue.cardPrintings <= 0) {
+    errors.push('catalogue_has_no_card_printings');
+  }
+  if (!Number.isInteger(evidence.catalogue?.publicApprovedAssets)
+    || evidence.catalogue.publicApprovedAssets <= 0) {
+    errors.push('catalogue_has_no_approved_assets');
+  }
+  const releaseEligibleLanguages = new Set(evidence.catalogue?.releaseEligibleLanguages ?? []);
+  for (const language of requiredCatalogueLanguages) {
+    if (!releaseEligibleLanguages.has(language)) {
+      errors.push(`release_eligible_catalogue_language_missing:${language}`);
+    }
+  }
 }
 
 console.log(JSON.stringify({

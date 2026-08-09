@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "stackr-production-catalogue-promotion-v1.0.0",
+  "tables": [
+    "catalog.languages",
+    "catalog.games",
+    "catalog.finishes",
+    "catalog.variant_taxonomy",
+    "catalog.rarities",
+    "ingest.sources",
+    "catalog.series",
+    "catalog.sets",
+    "catalog.card_concepts",
+    "catalog.card_printings",
+    "catalog.card_variants",
+    "catalog.card_names",
+    "catalog.sealed_products",
+    "catalog.sealed_product_variants",
+    "catalog.catalogue_versions",
+    "catalog.assets",
+    "ingest.external_identifiers",
+    "catalog.catalogue_change_log",
+    "catalog.catalogue_version_sets",
+    "catalog.catalogue_version_printings",
+    "catalog.catalogue_version_variants",
+    "catalog.catalogue_version_assets",
+    "catalog.catalogue_version_external_identifiers"
+  ],
+  "excludedStagingProjections": [],
+  "excludedEmptyStagingOnlyTables": []
+}

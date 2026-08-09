@@ -12,7 +12,12 @@ const TARGET_DB_URL = process.env.STACKR_RESTORE_DB_URL;
 const EVIDENCE_PATH = process.env.STACKR_TRANSFER_EVIDENCE_PATH;
 const TRANSFER_MODE = process.env.STACKR_TRANSFER_MODE ?? 'rehearse';
 const TRANSFER_CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
-const TABLE_CONFIG_PATH = 'deploy/staging-catalogue-preservation-tables.json';
+const CATALOGUE_RELEASE_LABEL = process.env.STACKR_CATALOGUE_RELEASE_LABEL ?? null;
+const REQUIRED_CATALOGUE_LANGUAGES = String(
+  process.env.STACKR_REQUIRED_CATALOGUE_LANGUAGES ?? 'en,ja,zh-tw,zh-cn,ko',
+).split(',').map((value) => value.trim()).filter(Boolean);
+const TABLE_CONFIG_PATH = process.env.STACKR_TRANSFER_TABLE_CONFIG
+  ?? 'deploy/staging-catalogue-preservation-tables.json';
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -26,10 +31,12 @@ for (const [name, value] of Object.entries({
 }
 if (SOURCE_PROJECT_REF === TARGET_PROJECT_REF) throw new Error('source_and_target_project_refs_match');
 if (SOURCE_PROJECT_REF === PRODUCTION_PROJECT_REF) throw new Error('production_source_prohibited');
-if (TARGET_PROJECT_REF === PRODUCTION_PROJECT_REF) throw new Error('production_target_prohibited');
 if (!SOURCE_DB_URL.includes(SOURCE_PROJECT_REF)) throw new Error('source_database_url_project_mismatch');
 if (!TARGET_DB_URL.includes(TARGET_PROJECT_REF)) throw new Error('target_database_url_project_mismatch');
-if (!['rehearse', 'commit'].includes(TRANSFER_MODE)) throw new Error('invalid_transfer_mode');
+if (!['rehearse', 'commit', 'promote'].includes(TRANSFER_MODE)) throw new Error('invalid_transfer_mode');
+if (TRANSFER_MODE !== 'promote' && TARGET_PROJECT_REF === PRODUCTION_PROJECT_REF) {
+  throw new Error('production_target_prohibited');
+}
 if (TRANSFER_MODE === 'commit') {
   if (TRANSFER_CONFIRMATION !== 'COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE') {
     throw new Error('committed_transfer_confirmation_missing');
@@ -44,9 +51,28 @@ if (TRANSFER_MODE === 'commit') {
     throw new Error('committed_transfer_production_guard_mismatch');
   }
 }
+if (TRANSFER_MODE === 'promote') {
+  if (TRANSFER_CONFIRMATION !== 'PROMOTE VERIFIED CATALOGUE TO PRODUCTION') {
+    throw new Error('production_promotion_confirmation_missing');
+  }
+  if (SOURCE_PROJECT_REF !== 'lmwfhvexfcoyeuoyrlco') {
+    throw new Error('production_promotion_source_not_canonical_staging');
+  }
+  if (TARGET_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu'
+    || TARGET_PROJECT_REF !== PRODUCTION_PROJECT_REF) {
+    throw new Error('production_promotion_target_guard_mismatch');
+  }
+  if (!CATALOGUE_RELEASE_LABEL) throw new Error('catalogue_release_label_missing');
+  if (REQUIRED_CATALOGUE_LANGUAGES.length === 0) {
+    throw new Error('required_catalogue_languages_missing');
+  }
+}
 
 const tableConfig = JSON.parse(readFileSync(TABLE_CONFIG_PATH, 'utf8'));
-if (tableConfig.schemaVersion !== 'stackr-staging-catalogue-preservation-v1.0.0') {
+if (![
+  'stackr-staging-catalogue-preservation-v1.0.0',
+  'stackr-production-catalogue-promotion-v1.0.0',
+].includes(tableConfig.schemaVersion)) {
   throw new Error('invalid_table_config_version');
 }
 
@@ -313,6 +339,33 @@ async function indexExists(client, qualifiedIndexName) {
   )).rows[0].exists);
 }
 
+async function releaseCatalogueVersions(client) {
+  if (!CATALOGUE_RELEASE_LABEL) return [];
+  return (await client.query(`
+    select id, version_key, version_label, language_code, status, coverage_summary
+    from catalog.catalogue_versions
+    where version_label = $1
+    order by language_code, id
+  `, [CATALOGUE_RELEASE_LABEL])).rows;
+}
+
+function verifyReleaseCatalogueVersions(rows, context) {
+  const eligibleRows = rows.filter((row) => (
+    row.status === 'published'
+    && row.coverage_summary?.releaseEligible === true
+    && row.coverage_summary?.controlledStagingSnapshot !== true
+  ));
+  const byLanguage = new Map(eligibleRows.map((row) => [row.language_code, row]));
+  const missingLanguages = REQUIRED_CATALOGUE_LANGUAGES.filter((language) => !byLanguage.has(language));
+  if (missingLanguages.length) {
+    throw new Error(`${context}_release_languages_missing:${missingLanguages.join(',')}`);
+  }
+  if (eligibleRows.length !== REQUIRED_CATALOGUE_LANGUAGES.length) {
+    throw new Error(`${context}_release_language_version_count_mismatch`);
+  }
+  return eligibleRows;
+}
+
 function verifySourceRows(tableName, sourceRows, targetRows, primaryKey) {
   const targetByKey = new Map(targetRows.map((row) => [keyForRow(row, primaryKey), row]));
   const matched = [];
@@ -335,12 +388,20 @@ const excludedChecks = [];
 const snapshots = new Map();
 let targetTransactionOpen = false;
 let sourceTransactionOpen = false;
+let sourceReleaseVersions = [];
 
 try {
   await source.query('begin transaction isolation level repeatable read read only');
   sourceTransactionOpen = true;
   await target.query('begin transaction isolation level repeatable read');
   targetTransactionOpen = true;
+
+  if (TRANSFER_MODE === 'promote') {
+    sourceReleaseVersions = verifyReleaseCatalogueVersions(
+      await releaseCatalogueVersions(source),
+      'source',
+    );
+  }
 
   const rawRecordDuplicates = await rawSourceRecordDuplicateSummary(source);
   const legacyRawRecordIdentityIndexPresent = await indexExists(
@@ -448,7 +509,7 @@ try {
     });
   }
 
-  if (TRANSFER_MODE === 'commit') await target.query(TRANSFER_MODE);
+  if (TRANSFER_MODE !== 'rehearse') await target.query('commit');
   else await target.query('rollback');
   targetTransactionOpen = false;
 
@@ -459,10 +520,10 @@ try {
       target,
       result.table,
       metadata.primaryKey,
-      TRANSFER_MODE === 'commit' ? snapshot.contract.transferColumns : null,
+      TRANSFER_MODE !== 'rehearse' ? snapshot.contract.transferColumns : null,
     );
     const sequences = await ownedSequenceStates(target, result.table, metadata);
-    if (TRANSFER_MODE === 'commit') {
+    if (TRANSFER_MODE !== 'rehearse') {
       result.targetRowCountAfterCommit = rows.length;
       result.targetAfterCommitSha256 = digestRows(rows);
       result.targetSequencesAfterCommit = sequences;
@@ -481,29 +542,70 @@ try {
     }
   }
 
+  let targetReleaseVersions = [];
+  let productionAssetUrlRewriteCount = 0;
+  if (TRANSFER_MODE === 'promote') {
+    targetReleaseVersions = verifyReleaseCatalogueVersions(
+      await releaseCatalogueVersions(target),
+      'target',
+    );
+    if (digestRows(targetReleaseVersions) !== digestRows(sourceReleaseVersions)) {
+      throw new Error('production_release_versions_mismatch');
+    }
+    const rewritten = await target.query(`
+      update catalog.assets
+      set url = replace(url, $1, $2), updated_at = now()
+      where storage_provider = 'supabase_storage'
+        and storage_bucket = 'stackr-catalogue-public'
+        and url like '%' || $1 || '%'
+    `, [SOURCE_PROJECT_REF, TARGET_PROJECT_REF]);
+    productionAssetUrlRewriteCount = rewritten.rowCount;
+    const staleUrls = Number((await target.query(`
+      select count(*)::integer as count
+      from catalog.assets
+      where storage_provider = 'supabase_storage'
+        and storage_bucket = 'stackr-catalogue-public'
+        and url like '%' || $1 || '%'
+    `, [SOURCE_PROJECT_REF])).rows[0].count);
+    if (staleUrls !== 0) throw new Error('production_asset_url_rewrite_incomplete');
+  }
+
   await source.query('rollback');
   sourceTransactionOpen = false;
 
   const evidence = {
-    schemaVersion: 'stackr-staging-catalogue-transfer-evidence-v1.4.0',
+    schemaVersion: TRANSFER_MODE === 'promote'
+      ? 'stackr-production-catalogue-data-promotion-evidence-v1.0.0'
+      : 'stackr-staging-catalogue-transfer-evidence-v1.4.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
     sourceProjectRef: SOURCE_PROJECT_REF,
     targetProjectRef: TARGET_PROJECT_REF,
     productionProjectRef: PRODUCTION_PROJECT_REF,
     sourceReadOnly: true,
-    productionMutationPerformed: false,
+    productionMutationPerformed: TRANSFER_MODE === 'promote',
     stagingMutationPerformed: false,
     isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
-    targetTransactionCommitted: TRANSFER_MODE === 'commit',
-    transferPolicy: TRANSFER_MODE === 'commit'
+    targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
+    transferPolicy: TRANSFER_MODE === 'promote'
+      ? 'replace_allowlisted_production_catalogue_tables_with_verified_staging_release_rows'
+      : TRANSFER_MODE === 'commit'
       ? 'replace_allowlisted_isolated_candidate_tables_with_canonical_staging_rows'
       : 'replace_allowlisted_target_tables_with_source_rows_in_rollback_only_transaction',
     targetRollbackVerified: TRANSFER_MODE === 'rehearse'
       ? results.every((result) => result.rollbackMatched)
       : null,
-    targetCommitVerified: TRANSFER_MODE === 'commit'
+    targetCommitVerified: TRANSFER_MODE !== 'rehearse'
       ? results.every((result) => result.commitMatched)
+      : null,
+    catalogueRelease: TRANSFER_MODE === 'promote'
+      ? {
+          versionLabel: CATALOGUE_RELEASE_LABEL,
+          requiredLanguages: REQUIRED_CATALOGUE_LANGUAGES,
+          sourceVersionIds: sourceReleaseVersions.map((row) => row.id),
+          releaseVersionSha256: digestRows(sourceReleaseVersions),
+          productionAssetUrlRewriteCount,
+        }
       : null,
     selectedTableCount: results.length,
     sourceRowCount: results.reduce((sum, result) => sum + result.sourceRowCount, 0),

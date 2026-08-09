@@ -145,6 +145,44 @@ test('readiness requires the recognition model and index to be ready', async () 
   assert.deepEqual(paths.sort(), ['/health', '/ready']);
 });
 
+test('catalogue-only readiness does not depend on the disabled recognition service', async () => {
+  const paths = [];
+  const fetchImpl = async (url) => {
+    paths.push(new URL(url).pathname);
+    return new Response(null, { status: 200 });
+  };
+  const env = environment({
+    RECOGNITION_REQUIRED: 'false',
+    RECOGNITION_ORIGIN: undefined,
+    RECOGNITION_SERVICE_SECRET: undefined,
+  });
+
+  const response = await handleRequest(request('/v1/ready'), env, context(), {
+    cache: new MemoryCache(),
+    fetchImpl,
+  });
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(paths, ['/health']);
+
+  const disabled = await handleRequest(request('/v1/recognition/identify', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Bearer user-access-token',
+      'Content-Type': 'application/json',
+      'X-Stackr-Device-Id': DEVICE_ID,
+      'Idempotency-Key': 'recognition:disabled:000001',
+    },
+    body: JSON.stringify({ modelVersion: 'model-v1', privateImageKey: 'private/card.jpg' }),
+  }), env, context(), {
+    cache: new MemoryCache(),
+    verifyAuth: async () => authenticated(),
+    fetchImpl,
+  });
+  assert.equal(disabled.status, 503);
+  assert.equal((await disabled.json()).error.code, 'recognition_not_enabled');
+});
+
 test('readiness allows bounded time for downstream dependency checks', async () => {
   const fetchImpl = async (url, init) => {
     if (new URL(url).pathname === '/ready') {

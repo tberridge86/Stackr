@@ -71,6 +71,7 @@
         "ENVIRONMENT": "production",
         "API_VERSION": "1",
         "ALLOWED_ORIGINS": "https://stackr.app,https://www.stackr.app",
+        "RECOGNITION_REQUIRED": "false",
         "STACKR_OBSERVABILITY_EVENTS_ENABLED": "true"
       },
       "durable_objects": {

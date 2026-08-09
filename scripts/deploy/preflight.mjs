@@ -1,6 +1,8 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
-const releaseMode = process.argv.includes('--release');
+const fullPlatformReleaseMode = process.argv.includes('--release');
+const catalogueApiReleaseMode = process.argv.includes('--catalogue-api-release');
+const releaseMode = fullPlatformReleaseMode || catalogueApiReleaseMode;
 const requiredPaths = [
   '.github/workflows/platform-ci.yml',
   '.github/workflows/gateway-ci.yml',
@@ -32,7 +34,16 @@ for (const filePath of requiredPaths) {
 }
 
 const manifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
-const stagingEvidence = JSON.parse(readFileSync('deploy/evidence/staging-readiness-2026-07-30.json', 'utf8'));
+const latestStagingEvidenceName = readdirSync('deploy/evidence')
+  .filter((name) => /^staging-readiness-\d{4}-\d{2}-\d{2}\.json$/.test(name))
+  .sort()
+  .at(-1);
+const stagingEvidence = JSON.parse(readFileSync(
+  latestStagingEvidenceName
+    ? `deploy/evidence/${latestStagingEvidenceName}`
+    : 'deploy/evidence/staging-readiness-2026-07-30.json',
+  'utf8',
+));
 const appConfig = JSON.parse(readFileSync('app.json', 'utf8'));
 const supabaseConfig = readFileSync('supabase/config.toml', 'utf8');
 const exposed = manifest.components.database.exposedSchemas;
@@ -96,6 +107,7 @@ const releaseGateApprovals = {
   activeIndexValidated: 'STACKR_MODEL_INDEX_RELEASE_APPROVED',
   storageBackupVerified: 'STACKR_STORAGE_BACKUP_APPROVED',
 };
+const requiredCatalogueLanguages = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 const releaseGateWarnings = {
   migrationHistoryAligned: 'migration_history_not_aligned',
   activeModelSelected: 'active_model_not_selected',
@@ -111,17 +123,49 @@ if (releaseMode) {
   if (!['staging', 'production'].includes(deploymentEnvironment)) {
     errors.push('invalid_release_environment');
   }
-  if (stagingEvidence.releaseReadiness?.status !== 'ready') {
+  if (catalogueApiReleaseMode && process.env.STACKR_DEPLOYMENT_SCOPE !== 'catalogue_api') {
+    errors.push('invalid_catalogue_api_release_scope');
+  }
+  if (fullPlatformReleaseMode && process.env.STACKR_DEPLOYMENT_SCOPE !== 'full_platform') {
+    errors.push('invalid_full_platform_release_scope');
+  }
+  if (fullPlatformReleaseMode && stagingEvidence.releaseReadiness?.status !== 'ready') {
     errors.push('staging_evidence_not_release_ready');
   }
+  if (catalogueApiReleaseMode) {
+    if (stagingEvidence.supabase?.migrationHistoryStatus !== 'aligned') {
+      errors.push('catalogue_api_migration_history_not_aligned');
+    }
+    if (stagingEvidence.databaseRecovery?.status !== 'verified') {
+      errors.push('catalogue_api_database_recovery_not_verified');
+    }
+    if (stagingEvidence.storageRecovery?.status !== 'verified') {
+      errors.push('catalogue_api_storage_recovery_not_verified');
+    }
+    if (!Number.isInteger(stagingEvidence.catalogue?.publishedVersions)
+      || stagingEvidence.catalogue.publishedVersions <= 0) {
+      errors.push('catalogue_api_version_not_published');
+    }
+    const releaseEligibleLanguages = new Set(stagingEvidence.catalogue?.releaseEligibleLanguages ?? []);
+    for (const language of requiredCatalogueLanguages) {
+      if (!releaseEligibleLanguages.has(language)) {
+        errors.push(`catalogue_api_release_language_missing:${language}`);
+      }
+    }
+  }
 
-  for (const [gate, approvalVariable] of Object.entries(releaseGateApprovals)) {
+  const requiredReleaseGates = catalogueApiReleaseMode
+    ? ['migrationHistoryAligned', 'storageBackupVerified']
+    : Object.keys(releaseGateApprovals);
+  for (const gate of requiredReleaseGates) {
+    const approvalVariable = releaseGateApprovals[gate];
     if (manifest.releaseGates[gate] !== true) errors.push(`release_gate_not_ready:${gate}`);
     if (process.env[approvalVariable] !== 'true') errors.push(`release_approval_missing:${approvalVariable}`);
   }
 
-  for (const variable of [
+  const requiredReleaseVariables = [
     'STACKR_DEPLOYMENT_ENVIRONMENT',
+    'STACKR_DEPLOYMENT_SCOPE',
     'SUPABASE_ACCESS_TOKEN',
     'SUPABASE_DB_URL',
     'SUPABASE_PROJECT_REF',
@@ -129,19 +173,31 @@ if (releaseMode) {
     'RAILWAY_PROJECT_ID',
     'RAILWAY_ENVIRONMENT_ID',
     'RAILWAY_BACKEND_SERVICE_ID',
-    'RAILWAY_RECOGNITION_SERVICE_ID',
     'CLOUDFLARE_API_TOKEN',
     'CLOUDFLARE_ACCOUNT_ID',
     'STACKR_BACKEND_URL',
-    'STACKR_RECOGNITION_URL',
     'STACKR_GATEWAY_URL',
     'STACKR_SUPABASE_URL',
     'STACKR_SUPABASE_PUBLISHABLE_KEY',
     'BACKEND_ORIGIN_KEY',
     'BACKEND_ADMIN_KEY',
-    'RECOGNITION_SERVICE_SECRET',
-    'EXPO_TOKEN',
-  ]) {
+  ];
+  if (catalogueApiReleaseMode) {
+    requiredReleaseVariables.push(
+      'SUPABASE_STAGING_DB_URL',
+      'SUPABASE_STAGING_SECRET_KEY',
+      'SUPABASE_PRODUCTION_SECRET_KEY',
+    );
+  }
+  if (fullPlatformReleaseMode) {
+    requiredReleaseVariables.push(
+      'RAILWAY_RECOGNITION_SERVICE_ID',
+      'STACKR_RECOGNITION_URL',
+      'RECOGNITION_SERVICE_SECRET',
+      'EXPO_TOKEN',
+    );
+  }
+  for (const variable of requiredReleaseVariables) {
     if (!process.env[variable]) errors.push(`missing_release_variable:${variable}`);
   }
 

@@ -38,6 +38,27 @@ assert.notEqual(
   'staging and production Supabase refs must be isolated',
 );
 
+const catalogueWorkerSecretsTemp = mkdtempSync(path.join(tmpdir(), 'stackr-catalogue-worker-secrets-test-'));
+try {
+  const outputPath = path.join(catalogueWorkerSecretsTemp, 'worker-secrets.json');
+  const catalogueSecrets = {
+    BACKEND_ORIGIN_KEY: 'test-catalogue-origin-key',
+    BACKEND_ADMIN_KEY: 'test-catalogue-admin-key',
+  };
+  const workerSecrets = run(
+    'scripts/deploy/write-worker-secrets.mjs',
+    [`--output=${outputPath}`],
+    { ...catalogueSecrets, STACKR_DEPLOYMENT_SCOPE: 'catalogue_api' },
+  );
+  assert.equal(workerSecrets.status, 0, workerSecrets.stderr || workerSecrets.stdout);
+  assert.deepEqual(JSON.parse(readFileSync(outputPath, 'utf8')), catalogueSecrets);
+  for (const value of Object.values(catalogueSecrets)) {
+    assert.doesNotMatch(workerSecrets.stdout, new RegExp(value), 'worker secret values must not be logged');
+  }
+} finally {
+  rmSync(catalogueWorkerSecretsTemp, { recursive: true, force: true });
+}
+
 const preflight = run('scripts/deploy/preflight.mjs');
 assert.equal(preflight.status, 0, preflight.stderr || preflight.stdout);
 const stagingEvidence = run('scripts/deploy/verify-staging-readiness-evidence.mjs');
@@ -250,9 +271,11 @@ assert.match(catalogueTransferScript, /source_unique_constraint_conflict:ingest\
 assert.match(catalogueTransferScript, /count\(distinct payload_hash\)/);
 assert.match(catalogueTransferScript, /legacyRawRecordIdentityIndexPresent/);
 assert.match(catalogueTransferScript, /importRunIdentityIndexPresent/);
-assert.match(catalogueTransferScript, /await target\.query\('rollback'\)/);
+assert.match(catalogueTransferScript, /if \(TRANSFER_MODE !== 'rehearse'\) await target\.query\('commit'\)/);
+assert.match(catalogueTransferScript, /PROMOTE VERIFIED CATALOGUE TO PRODUCTION/);
+assert.match(catalogueTransferScript, /production_promotion_target_guard_mismatch/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
-assert.doesNotMatch(catalogueTransferScript, /target\.query\('commit'\)/i);
+assert.match(catalogueTransferScript, /targetCommitVerified/);
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
 const rawPasswordUrl = normalizePostgresUrl(
@@ -389,6 +412,12 @@ assert.match(productionWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
+assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /--require-catalogue-api-ready/);
+assert.match(productionWorkflow, /Catalogue API promotion currently supports the guarded first-release bootstrap only/);
+assert.match(productionWorkflow, /Catalogue API bootstrap does not publish a mobile update/);
+assert.match(productionWorkflow, /Remove a failed first production gateway[\s\S]+wrangler --cwd gateway delete --env production --force/);
+assert.match(productionWorkflow, /promote-catalogue-storage\.mjs/);
 assert.doesNotMatch(productionWorkflow, /update:rollback/);
 assert.match(rollbackWorkflow, /release-database\.mjs index rollback/);
 assert.match(rollbackWorkflow, /update:revert-update-rollout/);

@@ -71,18 +71,20 @@ async function gatewayRoute(route, env, requestId, apiVersion, payload, fetchImp
     return envelope({ status: 'ok', service: 'stackr-api-gateway', apiVersion }, requestId, apiVersion);
   }
   if (route.id === 'ready') {
+    const recognitionRequired = env.RECOGNITION_REQUIRED !== 'false';
     const configured = Boolean(
       env.BACKEND_ORIGIN
       && env.BACKEND_ORIGIN_KEY
-      && env.RECOGNITION_ORIGIN
-      && env.RECOGNITION_SERVICE_SECRET
       && env.SUPABASE_URL
-      && env.GATEWAY_STATE,
+      && env.GATEWAY_STATE
+      && (!recognitionRequired || (env.RECOGNITION_ORIGIN && env.RECOGNITION_SERVICE_SECRET)),
     );
     const [backendOk, recognitionOk] = configured
       ? await Promise.all([
           dependencyHealth(env.BACKEND_ORIGIN, '/health', fetchImpl),
-          dependencyHealth(env.RECOGNITION_ORIGIN, '/ready', fetchImpl),
+          recognitionRequired
+            ? dependencyHealth(env.RECOGNITION_ORIGIN, '/ready', fetchImpl)
+            : Promise.resolve(true),
         ])
       : [false, false];
     const ready = configured && backendOk && recognitionOk;
@@ -194,6 +196,9 @@ async function processRequest(request, env, ctx, deps) {
     }
     if (!route.methods.includes(request.method)) {
       throw new GatewayError(405, 'method_not_allowed', 'HTTP method is not allowed for this route.', { allowed: route.methods });
+    }
+    if (route.target === 'recognition' && env.RECOGNITION_REQUIRED === 'false') {
+      throw new GatewayError(503, 'recognition_not_enabled', 'Card recognition is not enabled for this API release.');
     }
 
     const ipHash = await sha256Hex(`ip:${clientIp(request)}`);
