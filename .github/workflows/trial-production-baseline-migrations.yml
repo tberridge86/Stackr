@@ -90,11 +90,13 @@ jobs:
           node scripts/deploy/prepare-restore-cleanup.mjs \
             "$RUNNER_TEMP/stackr-baseline-trial/artifact/migration-history-data.sql" \
             "$RUNNER_TEMP/stackr-baseline-trial/cleanup.sql"
+          cp scripts/deploy/isolated-production-storage-fixture.sql \
+            "$RUNNER_TEMP/stackr-baseline-trial/storage-fixture.sql"
           docker run --rm \
             --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
             --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
             "$POSTGRES_IMAGE" \
-            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-schema.sql'
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-schema.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/storage-fixture.sql'
 
       - name: Confirm full migration plan
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL" --include-all --dry-run
