@@ -414,6 +414,17 @@ jobs:
           fi
           npm run deploy:smoke -- "${smoke_args[@]}"
 
+      - name: Enforce public API latency thresholds
+        run: >-
+          node scripts/deploy/benchmark-public-api.mjs
+          --gateway="$STACKR_GATEWAY_URL"
+          --samples=20
+          --warmups=3
+          --health-p95-ms=150
+          --catalogue-p95-ms=150
+          --search-p95-ms=300
+          --assets-p95-ms=300
+
       - name: Promote gateway after successful observation
         if: ${{ !inputs.gateway_bootstrap && inputs.promote_gateway }}
         env:
