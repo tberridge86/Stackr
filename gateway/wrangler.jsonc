@@ -70,7 +70,7 @@
       "vars": {
         "ENVIRONMENT": "production",
         "API_VERSION": "1",
-        "ALLOWED_ORIGINS": "https://stackr.app,https://www.stackr.app",
+        "ALLOWED_ORIGINS": "https://stackr.app,https://www.stackr.app,https://stackrtcg.com,https://www.stackrtcg.com",
         "RECOGNITION_REQUIRED": "false",
         "STACKR_OBSERVABILITY_EVENTS_ENABLED": "true"
       },
