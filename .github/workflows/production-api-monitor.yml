@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: stackr-production-api-monitor
@@ -38,3 +39,32 @@ jobs:
             if [ "$attempt" -lt 3 ]; then sleep 20; fi
           done
           exit 1
+      - name: Open or update production API incident
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          title='Production API monitor failure'
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          issue_number="$(gh issue list --state open --search '"Production API monitor failure" in:title' \
+            --json number,title --jq '.[] | select(.title == "Production API monitor failure") | .number' | head -n 1)"
+          if [ -n "$issue_number" ]; then
+            gh issue comment "$issue_number" --body "The production API monitor failed again after three attempts. Run: $run_url"
+          else
+            gh issue create --title "$title" \
+              --body "The production API monitor failed after three attempts. Run: $run_url"
+          fi
+      - name: Resolve recovered production API incident
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          issue_number="$(gh issue list --state open --search '"Production API monitor failure" in:title' \
+            --json number,title --jq '.[] | select(.title == "Production API monitor failure") | .number' | head -n 1)"
+          if [ -n "$issue_number" ]; then
+            gh issue comment "$issue_number" --body "The production API monitor recovered. Run: $run_url"
+            gh issue close "$issue_number" --reason completed
+          fi

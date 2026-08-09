@@ -193,6 +193,9 @@ assert.match(productionMonitorWorkflow, /STACKR_PRODUCTION_MONITOR_ENABLED == 't
 assert.match(productionMonitorWorkflow, /--full-gateway/);
 assert.match(productionMonitorWorkflow, /--require-published-catalogue/);
 assert.match(productionMonitorWorkflow, /--required-catalogue-languages=en,ja,zh-tw,zh-cn,ko/);
+assert.match(productionMonitorWorkflow, /issues: write/);
+assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comment|create)/);
+assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
