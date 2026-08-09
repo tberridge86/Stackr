@@ -160,6 +160,8 @@ drop policy if exists "Allow authenticated users to read market snapshots"
   on public.market_price_snapshots;
 drop policy if exists "Market price snapshots are readable"
   on public.market_price_snapshots;
+drop policy if exists "Public or owner market snapshots are readable"
+  on public.market_price_snapshots;
 create policy "Public or owner market snapshots are readable"
   on public.market_price_snapshots
   for select
