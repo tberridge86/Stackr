@@ -8,6 +8,7 @@ const STAGING_SUPABASE_REF = 'lmwfhvexfcoyeuoyrlco';
 const ALLOWED_PROVIDERS = new Set(['tcgdex', 'pikaqian']);
 const RETRYABLE_SOURCE_STATUSES = new Set([408, 429, 500, 502, 503, 504]);
 const MAX_SOURCE_ATTEMPTS = 3;
+const MAX_DATABASE_ATTEMPTS = 3;
 const MAX_DEFERRED_PER_BATCH = 5;
 
 class SourceImageUnavailableError extends Error {
@@ -81,6 +82,14 @@ function sourceRetryDelayMs(response, attempt) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableDatabaseError(error) {
+  const code = String(error?.code || '');
+  const message = errorMessage(error).toLowerCase();
+  return ['40001', '40P01', '53300', '57014', '57P03'].includes(code)
+    || message.includes('statement timeout')
+    || message.includes('fetch failed');
 }
 
 function requireStaging() {
@@ -395,6 +404,20 @@ async function mirrorOne(supabase, storage, asset, options) {
   return { id: asset.id, status: 'mirrored', bytes: mirrored.byte_size };
 }
 
+async function mirrorOneWithDatabaseRetry(supabase, storage, asset, options) {
+  let lastError = null;
+  for (let attempt = 1; attempt <= MAX_DATABASE_ATTEMPTS; attempt += 1) {
+    try {
+      return await mirrorOne(supabase, storage, asset, options);
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableDatabaseError(error) || attempt === MAX_DATABASE_ATTEMPTS) throw error;
+      await sleep(250 * (2 ** (attempt - 1)));
+    }
+  }
+  throw lastError ?? new Error('Catalogue asset mirror failed.');
+}
+
 async function main() {
   if (hasFlag('help')) {
     console.log('node scripts/mirror-approved-catalogue-assets.mjs --provider=tcgdex --limit=100 --concurrency=2 --target=staging [--afterId=<uuid>] [--throughId=<uuid>] [--assetIds=<uuid,...>]');
@@ -438,7 +461,12 @@ async function main() {
 
   const results = await mapWithConcurrency(data ?? [], concurrency, async (asset) => {
     try {
-      return await mirrorOne(supabase, storage, asset, { provider, dryRun, timeoutMs, maxBytes });
+      return await mirrorOneWithDatabaseRetry(supabase, storage, asset, {
+        provider,
+        dryRun,
+        timeoutMs,
+        maxBytes,
+      });
     } catch (error) {
       if (error instanceof SourceImageUnavailableError && !dryRun) {
         try {
