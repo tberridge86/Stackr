@@ -7,7 +7,7 @@ Branch: `chore/api-gateway-v1`
 Audited commit: `87daaa94508fc931b54454505872765567932eef` plus 117 uncommitted paths
 Live Supabase project: `oakdbbzdqwurpjnoqhmu`
 Live Railway backend: `https://pocketvault-production.up.railway.app`
-Intended gateway: `https://api.stackr.app`
+Intended gateway: `https://api.stackrtcg.com`
 
 ## Decision
 
@@ -152,7 +152,7 @@ Remove the unconditional authenticated policy, separate public aggregate prices 
 
 **Evidence**
 
-- `api.stackr.app` has no DNS record. `/v1/health`, `/v1/ready`, and `/v1/catalog/manifest` cannot be reached.
+- `api.stackrtcg.com` has no DNS record. `/v1/health`, `/v1/ready`, and `/v1/catalog/manifest` cannot be reached.
 - All EAS environments set `EXPO_PUBLIC_PRICE_API_URL` to `https://pocketvault-production.up.railway.app`; development and preview also target production.
 - Direct Railway `/health` returns `200`, `Access-Control-Allow-Origin: *`, `X-Powered-By: Express`, and no Stackr request ID.
 - Direct Railway `/v1/health` returns `404`.
@@ -165,7 +165,7 @@ Remove the unconditional authenticated policy, separate public aggregate prices 
 **Reproduction**
 
 ```text
-Resolve-DnsName api.stackr.app
+Resolve-DnsName api.stackrtcg.com
 GET https://pocketvault-production.up.railway.app/health
 GET https://pocketvault-production.up.railway.app/v1/health
 GET https://pocketvault-production.up.railway.app/debug-env
@@ -319,7 +319,7 @@ These controls are not deployed end to end and do not offset the critical findin
 | `npm run deploy:preflight -- --release` | Failed migration/model approvals and missing local release credentials |
 | `npm run deploy:smoke` | Failed: no staging URLs |
 | Direct Railway smoke | `/health` 200 but request-ID propagation failed; `/v1/health` 404 |
-| `api.stackr.app` smoke | Failed: DNS name does not exist |
+| `api.stackrtcg.com` smoke | Failed: DNS name does not exist |
 | Docker build/layer scan | Not run: Docker unavailable on audit host |
 | Full staging smoke | Not run: no staging endpoints/branch and no Railway credentials |
 
@@ -360,7 +360,7 @@ A new release audit may begin only after:
 2. Profile, scan-storage, and market-snapshot isolation tests pass against staging and production-safe assertions.
 3. The exact release branch is committed, pushed, reviewed, and reproducible.
 4. Remote migration history is reconciled and restore/rollback is demonstrated in staging.
-5. `api.stackr.app` resolves and the mobile staging build uses it exclusively.
+5. `api.stackrtcg.com` resolves and the mobile staging build uses it exclusively.
 6. Direct Railway origin access fails without gateway credentials.
 7. The recognition service has a selected licensed model, complete index, real vector lookup, and calibrated benchmark evidence.
 8. Real concurrent load, cold-start, malformed-image, decompression-bomb, provider-outage, and cost tests pass.

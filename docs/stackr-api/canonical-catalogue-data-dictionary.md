@@ -63,8 +63,8 @@ Seeded rows:
 | --- | --- | --- | --- |
 | `en` | `en` | English | English |
 | `ja` | `ja` | Japanese | 日本語 |
-| `zh-Hans` | `zh-Hans` | Simplified Chinese | 简体中文 |
-| `zh-Hant` | `zh-Hant` | Traditional Chinese | 繁體中文 |
+| `zh-cn` | `zh-CN` | Simplified Chinese | Simplified Chinese |
+| `zh-tw` | `zh-TW` | Traditional Chinese | Traditional Chinese |
 | `ko` | `ko` | Korean | 한국어 |
 
 ### `catalog.series`

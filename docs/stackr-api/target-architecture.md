@@ -8,7 +8,7 @@ Stage scope: target design only. No API route, database schema, Edge Function or
 ```text
 Stackr mobile application
 -> Stackr API client
--> api.stackr.app edge gateway
+-> api.stackrtcg.com edge gateway
 -> catalogue/search service
 -> Supabase Postgres
 -> private recognition service
@@ -22,7 +22,7 @@ Stackr mobile application
 flowchart LR
   Mobile["Stackr mobile application"]
   Client["Stackr API client"]
-  Gateway["api.stackr.app edge gateway"]
+  Gateway["api.stackrtcg.com edge gateway"]
   Catalogue["catalogue/search service"]
   Postgres["Supabase Postgres"]
   Recognition["private recognition service"]
@@ -88,7 +88,7 @@ The client should own:
 
 ### Edge Gateway
 
-`api.stackr.app` should own:
+`api.stackrtcg.com` should own:
 
 - Request ID normalization and response headers.
 - Auth verification and role mapping.

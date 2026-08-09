@@ -14,7 +14,7 @@ This stage does not remove existing Supabase clients, pricing routes, scanner ro
 ```text
 Stackr mobile application
 -> Stackr API client
--> api.stackr.app edge gateway
+-> api.stackrtcg.com edge gateway
 -> /v1 backend routes
 -> api-safe catalogue projections
 -> Supabase Postgres

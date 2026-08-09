@@ -10,7 +10,7 @@ Stage 11 adds a Cloudflare Worker under `gateway/` and keeps Railway as the cata
 
 ```text
 Stackr mobile app
-  -> https://api.stackr.app/v1
+  -> https://api.stackrtcg.com/v1
   -> Cloudflare Worker
        -> Railway Stackr backend
        -> private FastAPI recognition service
@@ -149,8 +149,8 @@ Expo needs only `EXPO_PUBLIC_STACKR_API_URL`, the Supabase publishable configura
 2. Configure matching backend origin keys while Railway origin auth remains disabled.
 3. Configure the recognition HMAC secret in both Cloudflare and the recognition service.
 4. Deploy and test the staging Worker with staging-only CORS origins.
-5. Deploy the production Worker and attach the `api.stackr.app` custom domain.
-6. Set `EXPO_PUBLIC_STACKR_API_URL=https://api.stackr.app`, keep scanner feature flags gated, and publish a tested Expo build.
+5. Deploy the production Worker and attach the `api.stackrtcg.com` custom domain.
+6. Set `EXPO_PUBLIC_STACKR_API_URL=https://api.stackrtcg.com`, keep scanner feature flags gated, and publish a tested Expo build.
 7. Confirm app traffic reaches the Worker, then require Railway origin authentication.
 8. Do not enable partner API access.
 
@@ -174,7 +174,7 @@ No production deployment or database migration was performed in Stage 11.
 1. Restore the previous Railway deployment while keeping the origin key configured.
 2. Use `STACKR_GATEWAY_ORIGIN_AUTH_MODE=disabled` only for a time-bounded incident rollback with compensating access controls and an incident owner.
 3. Point `EXPO_PUBLIC_STACKR_API_URL` back to the previous Railway URL only if emergency compatibility requires it.
-4. Remove the `api.stackr.app` Worker custom-domain binding or roll back the Worker deployment.
+4. Remove the `api.stackrtcg.com` Worker custom-domain binding or roll back the Worker deployment.
 5. Set `STACKR_RECOGNITION_GATEWAY_AUTH_MODE=disabled` only while rolling recognition back to the previous trusted network boundary.
 6. Revert the Stage 11 code commit.
 7. If the private partner tables were applied and remain unused, run `supabase/manual/rollback_20260728173530_stackr_api_gateway_controls.sql` in an approved maintenance window.

@@ -11,7 +11,7 @@ Audit date: 2026-07-27
 | R3 | Live/local private storage drift can break feedback and scan lab. | High | Live buckets: `card-scans`, `profile-backgrounds`, `trade-listings`; local migrations expect private `recognition-feedback` and `scan-lab-training`. | Create storage migration plan and RLS/policy tests before enabling upload flags. |
 | R4 | Public Supabase exposure and RLS advisor findings create security risk. | High | Advisor reported RLS-enabled tables with no policy, security-definer views, public executable functions and public buckets allowing listing. | Remediate before exposing new public projections; prefer private schemas and `security_invoker` views. |
 | R5 | Mobile app is directly coupled to Supabase table names and RLS behavior. | High | 457 direct Supabase call markers across 59 targets. | Introduce Stackr API facade in staged, feature-flagged slices. |
-| R6 | Required language coverage is incomplete. | High | Live aggregate checks found English and Japanese coverage, but no Simplified Chinese, Traditional Chinese or Korean production coverage. | Add coverage reports and provider strategy for `zh-Hans`, `zh-Hant` and `ko`. |
+| R6 | Required language coverage is incomplete. | High | Live aggregate checks found English and Japanese coverage, but no Simplified Chinese, Traditional Chinese or Korean production coverage. | Add coverage reports and provider strategy for `zh-cn`, `zh-tw` and `ko`. |
 | R7 | Local recognition assets are blocked. | High | Card-identity catalogue pack and ONNX manifest are blocked; zero approved embeddings and no approved production model. | Keep Ximilar/CardSight/current fallbacks. Do not make local recognition primary until benchmark passes. |
 | R8 | Current recognition fallback deployment is not proven. | High | App invokes `stackr-card-recognition`, but live Supabase function listing did not include it. | Reconcile scanner fallback routing before any scanner cutover. |
 | R9 | Provider licensing/provenance is not uniformly enforced. | High | Canonical tables have provenance fields, but legacy provider data and images may not consistently carry rights status. | Centralize provider ingestion, raw IDs, retrieval timestamps and rights checks. |
@@ -36,7 +36,7 @@ Audit date: 2026-07-27
 7. Build Stage 2 canonical catalogue migrations in a local/isolated Supabase environment first.
 8. Add automated migration tests for duplicate collector numbers, conflicting external IDs, aliases and shared-artwork variants.
 9. Add request IDs and structured logging before introducing public API routes.
-10. Add required-language coverage reports for `en`, `ja`, `zh-Hans`, `zh-Hant` and `ko`.
+10. Add required-language coverage reports for `en`, `ja`, `zh-cn`, `zh-tw` and `ko`.
 11. Keep Ximilar/CardSight/current recognition fallback until Stackr benchmark passes.
 12. Move direct mobile catalogue/search/pricing/provider calls behind feature-flagged API clients.
 
