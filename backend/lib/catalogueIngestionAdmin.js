@@ -7,10 +7,42 @@ const COMMANDS = new Map([
   ['resume-import', 'resume_import'],
   ['rebuild-record', 'rebuild_record'],
 ]);
+const SUPPORTED_CATALOGUE_LANGUAGE_CODES = new Set(['en', 'ja', 'zh-tw', 'zh-cn', 'ko']);
+const PRODUCTION_SUPABASE_REFS = new Set(['oakdbbzdqwurpjnoqhmu']);
 
 function clean(value) {
   const trimmed = String(value ?? '').trim();
   return trimmed.length ? trimmed : null;
+}
+
+function normaliseCatalogueLanguage(value) {
+  const raw = clean(value);
+  if (!raw) return null;
+  const language = raw.toLowerCase().replace(/_/g, '-');
+  if (SUPPORTED_CATALOGUE_LANGUAGE_CODES.has(language)) return language;
+  const error = new Error(`Unsupported catalogue language: ${raw}. Use one of: ${[...SUPPORTED_CATALOGUE_LANGUAGE_CODES].join(', ')}.`);
+  error.status = 400;
+  error.code = 'unsupported_catalogue_language';
+  error.fatal = true;
+  throw error;
+}
+
+function requireStagingTarget() {
+  const target = clean(process.env.STACKR_CATALOGUE_IMPORT_TARGET || process.env.STACKR_IMPORT_TARGET)?.toLowerCase();
+  if (target !== 'staging') {
+    const error = new Error('Catalogue ingestion queue writes must target staging.');
+    error.status = 409;
+    throw error;
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL || '';
+  for (const ref of PRODUCTION_SUPABASE_REFS) {
+    if (supabaseUrl.includes(ref)) {
+      const error = new Error(`Refusing catalogue ingestion queue write against production Supabase project ${ref}.`);
+      error.status = 409;
+      throw error;
+    }
+  }
 }
 
 function queueKey(command, input = {}) {
@@ -45,9 +77,12 @@ export async function enqueueCatalogueIngestionCommand(supabase, commandSlug, in
     throw error;
   }
 
+  requireStagingTarget();
   const source = clean(input.source);
+  const language = normaliseCatalogueLanguage(input.language);
   const sourceId = await sourceIdForCode(supabase, source);
-  const idempotencyKey = clean(input.idempotencyKey) ?? queueKey(command, input);
+  const normalizedInput = { ...input, language };
+  const idempotencyKey = clean(input.idempotencyKey) ?? queueKey(command, normalizedInput);
   const requestId = clean(input.requestId) ?? randomUUID();
   const row = {
     queue_name: 'catalogue_ingestion',
@@ -58,11 +93,12 @@ export async function enqueueCatalogueIngestionCommand(supabase, commandSlug, in
     run_after: clean(input.runAfter) ?? new Date().toISOString(),
     payload: {
       source,
-      language: clean(input.language),
+      language,
       setId: clean(input.setId),
       providerRecordId: clean(input.providerRecordId),
       runKey: clean(input.runKey),
       dryRun: input.dryRun === true,
+      allowImageAssets: input.allowImageAssets === true,
     },
     request_id: requestId,
     status: 'pending',

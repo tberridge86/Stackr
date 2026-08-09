@@ -35,7 +35,7 @@ export function createGatewayOriginAuth(options = {}) {
       return;
     }
     if (!safeEqual(req.headers['x-stackr-origin-key'], expected)) {
-      failure(res, 401, 'gateway_origin_auth_required', 'This Stackr origin route is available through api.stackr.app only.', requestId);
+      failure(res, 401, 'gateway_origin_auth_required', 'This Stackr origin route is available through api.stackrtcg.com only.', requestId);
       return;
     }
     next();

@@ -30,9 +30,10 @@ const tcgdexFetchCache = new Map();
 const imageProbeCache = new Map();
 const pokeWalletSetCache = new Map();
 
-const SUPPORTED_LANGUAGES = new Set(['en', 'ja', 'zh-tw']);
+const SUPPORTED_LANGUAGES = new Set(['en', 'ja', 'zh-tw', 'zh-cn', 'ko']);
 const PROVIDER = 'tcgdex';
 const JAPANESE_CARD_UNIVERSE_TARGET = Number(process.env.STACKR_JAPANESE_CARD_UNIVERSE_TARGET || 30000);
+const PRODUCTION_SUPABASE_REFS = new Set(['oakdbbzdqwurpjnoqhmu']);
 const IMAGE_STATUS_PRIORITY = new Map([
   ['resolved', 1],
   ['resolved_secondary', 2],
@@ -81,14 +82,40 @@ function money(value) {
 
 function normalizeLanguage(value = 'en') {
   const language = normalizeTcgdexLanguage(value);
-  if (!SUPPORTED_LANGUAGES.has(language)) return 'en';
+  if (!SUPPORTED_LANGUAGES.has(language)) {
+    const error = new Error(`Unsupported catalogue language: ${String(value ?? '') || '<missing>'}. Use en, ja, zh-tw, zh-cn, or ko.`);
+    error.code = 'unsupported_catalogue_language';
+    error.fatal = true;
+    throw error;
+  }
   return language;
+}
+
+function assertLegacyCatalogueMutationAllowed(jobName) {
+  const allowed = String(process.env.STACKR_ALLOW_LEGACY_TCGDEX_APP_TABLE_WRITES || '').toLowerCase() === 'true';
+  if (!allowed) {
+    throw new Error(`${jobName} is disabled because legacy TCGdex writes go directly to app tables. Use the staging ingest pipeline instead.`);
+  }
+
+  const target = String(process.env.STACKR_CATALOGUE_IMPORT_TARGET || process.env.STACKR_IMPORT_TARGET || '').trim().toLowerCase();
+  if (target !== 'staging') {
+    throw new Error(`${jobName} requires STACKR_CATALOGUE_IMPORT_TARGET=staging.`);
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL || '';
+  for (const ref of PRODUCTION_SUPABASE_REFS) {
+    if (supabaseUrl.includes(ref)) {
+      throw new Error(`${jobName} refuses to run against production Supabase project ${ref}.`);
+    }
+  }
 }
 
 export function getCatalogueRegion(language = 'en') {
   const lang = normalizeLanguage(language);
   if (lang === 'ja') return 'japan';
   if (lang === 'zh-tw') return 'taiwan';
+  if (lang === 'zh-cn') return 'china';
+  if (lang === 'ko') return 'korea';
   return 'international';
 }
 
@@ -130,7 +157,7 @@ export function createTCGdexClient(language = 'en') {
 }
 
 function stripLanguagePrefix(value) {
-  return String(value || '').trim().replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+  return String(value || '').trim().replace(/^(en|ja|zh-tw|zh_tw|zhtw|zh-cn|zh_cn|ko):/i, '');
 }
 
 function stackrSetId(language, providerSetId) {
@@ -815,7 +842,7 @@ async function upsertImageResolution(db, cardId, candidate, result) {
 function safeStoragePathPart(value) {
   return String(value || '')
     .trim()
-    .replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, (match) => match.toLowerCase().replace(/_/g, '-'))
+    .replace(/^(en|ja|zh-tw|zh_tw|zhtw|zh-cn|zh_cn|ko):/i, (match) => match.toLowerCase().replace(/_/g, '-'))
     .replace(/[^a-zA-Z0-9._:-]+/g, '-')
     .replace(/^-+|-+$/g, '') || 'card';
 }
@@ -2058,6 +2085,7 @@ async function fetchFullCardsForSet(client, set, options, run, db) {
 }
 
 export async function syncCardsForSet(db, options = {}) {
+  assertLegacyCatalogueMutationAllowed('syncCardsForSet');
   const language = normalizeLanguage(options.language ?? 'en');
   const client = createTCGdexClient(language);
   const setId = stripLanguagePrefix(options.setId);
@@ -2133,6 +2161,7 @@ export async function syncCardsForSet(db, options = {}) {
 }
 
 export async function syncTcgdexCatalogue(db, options = {}) {
+  assertLegacyCatalogueMutationAllowed('syncTcgdexCatalogue');
   const language = normalizeLanguage(options.language ?? 'en');
   const client = createTCGdexClient(language);
   const run = await startSyncRun(db, 'syncTcgdexCatalogue', language, options.setId ?? null);
@@ -2326,6 +2355,7 @@ export async function listCatalogueSets(db, options = {}) {
 }
 
 export async function repairSetAssetUrls(db, options = {}) {
+  assertLegacyCatalogueMutationAllowed('repairSetAssetUrls');
   const language = normalizeLanguage(options.language ?? 'en');
   const limit = Math.max(1, Math.min(toInt(options.limit, 500), 5000));
   let query = db
@@ -2441,7 +2471,7 @@ function formatCatalogueCardForClient(card) {
 }
 
 export async function getCatalogueCard(db, cardId, options = {}) {
-  const language = normalizeLanguage(options.language ?? (String(cardId).startsWith('ja:') ? 'ja' : 'en'));
+  const language = normalizeLanguage(options.language ?? 'en');
   const id = stackrCardId(language, cardId);
   const { data, error } = await db
     .from('tcg_cards')
@@ -2523,7 +2553,7 @@ async function fetchLatestPrices(db, cardIds) {
 }
 
 export async function listCatalogueSetCards(db, setId, options = {}) {
-  const language = normalizeLanguage(options.language ?? (String(setId).startsWith('ja:') ? 'ja' : 'en'));
+  const language = normalizeLanguage(options.language ?? 'en');
   const canonicalSetId = stackrSetId(language, setId);
   let query = db
     .from('tcg_cards')
@@ -2652,6 +2682,7 @@ export async function getCatalogueHealth(db, options = {}) {
 }
 
 export async function resolveMissingImages(db, options = {}) {
+  assertLegacyCatalogueMutationAllowed('resolveMissingImages');
   const language = normalizeLanguage(options.language ?? 'en');
   const limit = Math.max(1, Math.min(toInt(options.limit, 100), 500));
   const force = Boolean(options.force);
@@ -2683,6 +2714,7 @@ export async function resolveMissingImages(db, options = {}) {
 }
 
 export async function refreshCardPrices(db, options = {}) {
+  assertLegacyCatalogueMutationAllowed('refreshCardPrices');
   const language = normalizeLanguage(options.language ?? 'en');
   const limit = Math.max(1, Math.min(toInt(options.limit, 100), 500));
   let query = db
@@ -2738,7 +2770,8 @@ export async function refreshCardPrices(db, options = {}) {
 }
 
 export async function repairTcgdexCatalogue(db, options = {}) {
-  const languages = options.language ? [normalizeLanguage(options.language)] : ['en', 'ja', 'zh-tw'];
+  assertLegacyCatalogueMutationAllowed('repairTcgdexCatalogue');
+  const languages = options.language ? [normalizeLanguage(options.language)] : ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
   const run = await startSyncRun(db, 'repairTcgdexCatalogue', null, options.setId ?? null);
   const summary = {
     languages,
@@ -2795,6 +2828,8 @@ export const tcgdexCatalogueJobs = {
   syncEnglishSets: (db, options = {}) => syncTcgdexCatalogue(db, { ...options, language: 'en' }),
   syncJapaneseSets: (db, options = {}) => syncTcgdexCatalogue(db, { ...options, language: 'ja' }),
   syncChineseSets: (db, options = {}) => syncTcgdexCatalogue(db, { ...options, language: 'zh-tw' }),
+  syncSimplifiedChineseSets: (db, options = {}) => syncTcgdexCatalogue(db, { ...options, language: 'zh-cn' }),
+  syncKoreanSets: (db, options = {}) => syncTcgdexCatalogue(db, { ...options, language: 'ko' }),
   syncCardsForSet,
   repairSetAssetUrls,
   resolveMissingImages,

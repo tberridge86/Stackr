@@ -21,6 +21,8 @@ export const TCGDEX_LANGUAGES = [
   { code: 'de', label: 'German', region: 'DE' },
   { code: 'ja', label: 'Japanese', region: 'JP' },
   { code: 'zh-tw', label: 'Chinese (Traditional)', region: 'TW' },
+  { code: 'zh-cn', label: 'Chinese (Simplified)', region: 'CN' },
+  { code: 'ko', label: 'Korean', region: 'KR' },
   { code: 'id', label: 'Indonesian', region: 'ID' },
   { code: 'th', label: 'Thai', region: 'TH' },
 ];
@@ -36,6 +38,7 @@ const LANGUAGE_ALIASES = new Map([
   ['pt_br', 'pt-br'],
   ['portuguese', 'pt-br'],
   ['zh', 'zh-tw'],
+  ['zh_cn', 'zh-cn'],
   ['zhtw', 'zh-tw'],
   ['zh_tw', 'zh-tw'],
   ['traditional-chinese', 'zh-tw'],
@@ -54,7 +57,12 @@ const LANGUAGE_ALIASES = new Map([
 function normalizeLanguage(value = 'en') {
   const cleaned = String(value || 'en').trim().toLowerCase().replace(/\s+/g, '-');
   const aliased = LANGUAGE_ALIASES.get(cleaned) ?? cleaned;
-  return TCGDEX_LANGUAGES.some((language) => language.code === aliased) ? aliased : 'en';
+  if (TCGDEX_LANGUAGES.some((language) => language.code === aliased)) return aliased;
+  const supported = TCGDEX_LANGUAGES.map((language) => language.code).join(', ');
+  const error = new Error(`Unsupported TCGdex language: ${String(value ?? '') || '<missing>'}. Use one of: ${supported}.`);
+  error.code = 'unsupported_tcgdex_language';
+  error.fatal = true;
+  throw error;
 }
 
 export function normalizeTcgdexLanguage(value = 'en') {

@@ -53,12 +53,6 @@ import {
   listCatalogueSeries,
   listCatalogueSetCards,
   listCatalogueSets,
-  refreshCardPrices,
-  repairSetAssetUrls,
-  repairTcgdexCatalogue,
-  resolveMissingImages,
-  syncCardsForSet,
-  syncTcgdexCatalogue,
 } from './lib/tcgdexCatalogue.js';
 import { getCachedPricingResponse } from './lib/pricingV2/engine.js';
 import { Buffer } from 'node:buffer';
@@ -2234,60 +2228,23 @@ app.get('/admin/catalogue/:language/health', async (req, res) => {
 app.post('/admin/catalogue/:language/sync', async (req, res) => {
   if (!requireAdminAccess(req, res)) return;
 
-  try {
-    const body = req.body ?? {};
-    const job = String(body.job ?? req.query.job ?? '').trim();
-    const options = {
-      language: req.params.language,
-      setId: body.setId ?? req.query.setId,
-      allCards: boolQuery(body.allCards ?? req.query.allCards),
-      resolveImages: boolQuery(body.resolveImages ?? req.query.resolveImages, true),
-      refreshPrices: boolQuery(body.refreshPrices ?? req.query.refreshPrices, true),
-      forceImages: boolQuery(body.forceImages ?? req.query.forceImages),
-      forcePrices: boolQuery(body.forcePrices ?? req.query.forcePrices),
-      limit: body.limit ?? req.query.limit,
-    };
-
-    if (job === 'cards') {
-      const result = await syncCardsForSet(supabase, options);
-      return res.json({ ok: true, source: 'tcgdex', job, ...result });
-    }
-    if (job === 'images') {
-      const result = await resolveMissingImages(supabase, options);
-      return res.json({ ok: true, source: 'tcgdex', job, ...result });
-    }
-    if (job === 'prices') {
-      const result = await refreshCardPrices(supabase, options);
-      return res.json({ ok: true, source: 'tcgdex', job, ...result });
-    }
-    if (job === 'set-assets') {
-      const result = await repairSetAssetUrls(supabase, options);
-      return res.json({ ok: true, source: 'tcgdex', job, ...result });
-    }
-
-    const result = await syncTcgdexCatalogue(supabase, options);
-    return res.json({ ok: true, source: 'tcgdex', job: 'sync', ...result });
-  } catch (error) {
-    return res.status(500).json({ error: 'Catalogue sync failed', detail: getErrorMessage(error) });
-  }
+  return res.status(410).json({
+    ok: false,
+    error: 'Legacy direct TCGdex catalogue sync is disabled.',
+    replacement: '/v1/admin/catalogue-ingestion/run-language',
+    supportedLanguages: ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'],
+  });
 });
 
 app.post('/admin/catalogue/:language/repair', async (req, res) => {
   if (!requireAdminAccess(req, res)) return;
 
-  try {
-    const body = req.body ?? {};
-    const result = await repairTcgdexCatalogue(supabase, {
-      language: req.params.language,
-      setId: body.setId ?? req.query.setId,
-      limit: body.limit ?? req.query.limit,
-      forceImages: boolQuery(body.forceImages ?? req.query.forceImages),
-      forcePrices: boolQuery(body.forcePrices ?? req.query.forcePrices),
-    });
-    return res.json({ ok: true, source: 'tcgdex', job: 'repair', ...result });
-  } catch (error) {
-    return res.status(500).json({ error: 'Catalogue repair failed', detail: getErrorMessage(error) });
-  }
+  return res.status(410).json({
+    ok: false,
+    error: 'Legacy direct TCGdex catalogue repair is disabled.',
+    replacement: '/v1/admin/catalogue-ingestion/run-language',
+    supportedLanguages: ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'],
+  });
 });
 
 app.get('/catalogue/jp/series', async (_req, res) => {
@@ -3683,7 +3640,7 @@ app.post('/api/fingerprints/reload', gatewayOriginAuth, (_req, res) => {
   res.json({ ok: true, message: 'Fingerprint cache cleared — will reload on next scan' });
 });
 
-app.post('/api/scan/fingerprint', async (req, res) => {
+app.post('/api/scan/fingerprint', gatewayOriginAuth, async (req, res) => {
   try {
     const { base64Image, setId } = req.body;
     const expectedSetId = typeof setId === 'string' && setId.trim() ? setId.trim() : null;
