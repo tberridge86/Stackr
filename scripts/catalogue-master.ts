@@ -864,8 +864,11 @@ async function fetchAllFiltered(
   tableName: string,
   columns: string,
   configure: (query: any) => any = (query) => query,
+  pageSize = 1000,
 ) {
-  const pageSize = 1000;
+  if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 1000) {
+    throw new Error(`Invalid page size for ${schema}.${tableName}: ${pageSize}`);
+  }
   const rows: any[] = [];
   const selectedColumns = columns.split(',').map((column) => column.trim()).includes('id')
     ? columns
@@ -879,7 +882,13 @@ async function fetchAllFiltered(
       .limit(pageSize);
     if (afterId) query = query.gt('id', afterId);
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      const message = typeof error.message === 'string' ? error.message : String(error);
+      throw {
+        ...error,
+        message: `${schema}.${tableName}: ${message}`,
+      };
+    }
     rows.push(...(data ?? []));
     if (!data || data.length < pageSize) break;
     const nextAfterId = data.at(-1)?.id;
@@ -1778,15 +1787,41 @@ function previousPublishLanguages(language: SupportedCatalogueLanguageCode) {
 async function buildReports(db: SupabaseClientLike, args: Args) {
   const files = reportFiles(args.reportDir);
   mkdirSync(args.reportDir, { recursive: true });
-  const [sets, printings, variants, assets, rawRecords, conflicts, sources, externalIdentifiers] = await Promise.all([
-    fetchAll(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at') as Promise<SetRow[]>,
-    fetchAll(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,deprecated_at') as Promise<PrintingRow[]>,
-    fetchAll(db, 'catalog', 'card_variants', 'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key,deprecated_at') as Promise<VariantRow[]>,
+  const sources = await fetchAll(
+    db,
+    'ingest',
+    'sources',
+    'id,code',
+  ) as SetScopeSourceRow[];
+  const selectedSourceIds = sources
+    .filter((source) => !args.provider || source.code === args.provider)
+    .map((source) => source.id);
+  const configureLanguageQuery = (query: any) => query.in('language_code', args.languages);
+  const configureProviderLanguageQuery = (query: any) => {
+    const languageQuery = configureLanguageQuery(query);
+    return args.provider ? languageQuery.in('source_id', selectedSourceIds) : languageQuery;
+  };
+  const [sets, printings, variants, assets, rawRecords, conflicts, externalIdentifiers] = await Promise.all([
+    fetchAllFiltered(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at', configureLanguageQuery) as Promise<SetRow[]>,
+    fetchAllFiltered(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,deprecated_at', configureLanguageQuery) as Promise<PrintingRow[]>,
+    fetchAllFiltered(db, 'catalog', 'card_variants', 'id,printing_id,set_id,language_code,collector_number,variant_code,finish_code,canonical_key,artwork_key,deprecated_at', configureLanguageQuery) as Promise<VariantRow[]>,
     fetchAll(db, 'catalog', 'assets', 'id,set_id,printing_id,variant_id,asset_type,url,rights_status,permission_status,publicly_servable,original_source_url,original_source_identifier,source_attribution,storage_provider,storage_path,storage_key,content_sha256,perceptual_hash,deprecated_at') as Promise<AssetRow[]>,
-    fetchAll(db, 'ingest', 'raw_source_records', 'id,source_id,record_type,external_id,language_code,source_url,licence_status,validation_status,raw_payload,deprecated_at') as Promise<RawRecordRow[]>,
+    fetchAllFiltered(
+      db,
+      'ingest',
+      'raw_source_records',
+      'id,source_id,record_type,external_id,language_code,source_url,licence_status,validation_status,raw_payload,deprecated_at',
+      configureProviderLanguageQuery,
+      250,
+    ) as Promise<RawRecordRow[]>,
     fetchAll(db, 'ingest', 'data_conflicts', 'id,conflict_type,severity,status,entity_schema,entity_table,entity_id,canonical_key,proposed_payload,existing_payload,internal_notes') as Promise<ConflictRow[]>,
-    fetchAll(db, 'ingest', 'sources', 'id,code') as Promise<SetScopeSourceRow[]>,
-    fetchAll(db, 'ingest', 'external_identifiers', 'source_id,source_entity_type,external_id,language_code,set_id,is_current,deprecated_at') as Promise<SetScopeIdentifierRow[]>,
+    fetchAllFiltered(
+      db,
+      'ingest',
+      'external_identifiers',
+      'source_id,source_entity_type,external_id,language_code,set_id,is_current,deprecated_at',
+      configureProviderLanguageQuery,
+    ) as Promise<SetScopeIdentifierRow[]>,
   ]);
   const activeSets = sets.filter((set) => set.deprecated_at == null);
   const activePrintings = printings.filter((printing) => printing.deprecated_at == null);
@@ -1794,12 +1829,10 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
   const activeRawRecords = rawRecords.filter((row) => row.deprecated_at == null);
   const selectedLanguages = new Set(args.languages);
   const sourceCodeById = new Map(sources.map((source) => [source.id, source.code]));
-  const selectedSourceIds = new Set(sources
-    .filter((source) => !args.provider || source.code === args.provider)
-    .map((source) => source.id));
+  const selectedSourceIdSet = new Set(selectedSourceIds);
   const selectedProviderSetIds = new Set(externalIdentifiers
     .filter((identifier) => identifier.source_entity_type === 'set'
-      && selectedSourceIds.has(identifier.source_id)
+      && selectedSourceIdSet.has(identifier.source_id)
       && identifier.is_current
       && identifier.deprecated_at == null
       && identifier.set_id)

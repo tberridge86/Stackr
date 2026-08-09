@@ -62,6 +62,21 @@ function assertCanonicalStagingSourceGuard() {
     /async function fetchAll[\s\S]*?\.range\(/,
     'large catalogue reads must not use progressively slower offset pagination',
   );
+  assert.match(
+    masterScript,
+    /configureLanguageQuery[\s\S]*\.in\('language_code', args\.languages\)/,
+    'publication reports must scope canonical and provider reads to the requested language',
+  );
+  assert.match(
+    masterScript,
+    /raw_source_records'[\s\S]*configureProviderLanguageQuery,[\s\S]*250/,
+    'large raw provider payloads must use bounded pages below the hosted statement timeout',
+  );
+  assert.match(
+    masterScript,
+    /message: `\$\{schema\}\.\$\{tableName\}: \$\{message\}`/,
+    'paged catalogue failures must identify the table that failed',
+  );
 }
 
 function assertDryRunApplyRules() {
