@@ -173,6 +173,7 @@ assert.doesNotMatch(rollbackTool, /console\.log\([^\n]*(?:RAILWAY_TOKEN|RAILWAY_
 
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
+const productionMonitorWorkflow = readFileSync('.github/workflows/production-api-monitor.yml', 'utf8');
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
@@ -187,6 +188,11 @@ assert.match(stagingWorkflow, /backups list/);
 assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --dry-run/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all/);
+assert.match(productionMonitorWorkflow, /cron: '\*\/10 \* \* \* \*'/);
+assert.match(productionMonitorWorkflow, /STACKR_PRODUCTION_MONITOR_ENABLED == 'true'/);
+assert.match(productionMonitorWorkflow, /--full-gateway/);
+assert.match(productionMonitorWorkflow, /--require-published-catalogue/);
+assert.match(productionMonitorWorkflow, /--required-catalogue-languages=en,ja,zh-tw,zh-cn,ko/);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
