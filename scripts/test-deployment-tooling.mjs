@@ -232,6 +232,11 @@ assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REHEARSE 
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /--expected-history-version=20260802160643/);
+assert.match(
+  baselineMigrationTrialWorkflow,
+  /--expected-history-name=production_critical_rls_storage_containment_20260802/,
+);
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --include-all --dry-run/);
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --include-all/);
 assert.match(baselineMigrationTrialWorkflow, /find supabase\/migrations[^\n]+wc -l/);

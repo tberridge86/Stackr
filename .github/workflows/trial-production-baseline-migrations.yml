@@ -75,7 +75,9 @@ jobs:
             -d "$RUNNER_TEMP/stackr-baseline-trial/artifact"
           node scripts/deploy/verify-production-schema-baseline.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact" \
-            --expected-schema-sha256="$BASELINE_SCHEMA_SHA256"
+            --expected-schema-sha256="$BASELINE_SCHEMA_SHA256" \
+            --expected-history-version=20260802160643 \
+            --expected-history-name=production_critical_rls_storage_containment_20260802
           node scripts/deploy/secret-scan.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact"
 
