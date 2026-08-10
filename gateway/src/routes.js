@@ -56,7 +56,6 @@ export const ROUTES = [
     id: 'asset_manifest',
     pattern: /^\/v1\/assets\/manifest$/,
     ...publicGet,
-    targetPath: '/api/assets/manifest',
     query: query('assetType', 'setId', 'printingId', 'variantId', 'cursor', 'limit'),
   },
   {

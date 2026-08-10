@@ -146,17 +146,47 @@ if (gatewayUrl) {
     }
     checks.push(await check(gatewayUrl, `/v1/search?q=${searchQuery}&limit=1`));
     let firstAssetDeliveryUrl = null;
+    let firstAssetId = null;
+    let assetManifestNextCursor = null;
     checks.push(await check(gatewayUrl, '/v1/assets/manifest?limit=1', {
       inspectJson(body) {
         const assets = body?.data?.assets;
         const firstAsset = assets?.[0] ?? null;
+        firstAssetId = firstAsset?.assetId ?? null;
+        assetManifestNextCursor = body?.meta?.pagination?.nextCursor ?? null;
         const derivatives = Array.isArray(firstAsset?.derivative_list) ? firstAsset.derivative_list : [];
         firstAssetDeliveryUrl = derivatives.find((item) => item?.role === 'search-result')?.deliveryUrl
+          ?? firstAsset?.derivatives?.find((item) => item?.role === 'search-result')?.deliveryUrl
           ?? firstAsset?.delivery_url
+          ?? firstAsset?.deliveryUrl
           ?? null;
-        return { ok: Array.isArray(assets) && assets.length > 0, assetCount: assets?.length ?? 0 };
+        return {
+          ok: Array.isArray(assets)
+            && assets.length > 0
+            && (!requirePublishedCatalogue || Boolean(assetManifestNextCursor)),
+          assetCount: assets?.length ?? 0,
+          nextCursorPresent: Boolean(assetManifestNextCursor),
+        };
       },
     }));
+    if (assetManifestNextCursor) {
+      checks.push(await check(
+        gatewayUrl,
+        `/v1/assets/manifest?limit=1&cursor=${encodeURIComponent(assetManifestNextCursor)}`,
+        {
+          name: 'asset_manifest_cursor_page',
+          inspectJson(body) {
+            const assets = body?.data?.assets;
+            const nextAssetId = assets?.[0]?.assetId ?? null;
+            return {
+              ok: Array.isArray(assets) && assets.length > 0 && nextAssetId !== firstAssetId,
+              assetCount: assets?.length ?? 0,
+              repeatedAsset: Boolean(nextAssetId && nextAssetId === firstAssetId),
+            };
+          },
+        },
+      ));
+    }
     if (firstAssetDeliveryUrl) {
       checks.push(await check('', firstAssetDeliveryUrl, {
         name: 'asset_delivery',

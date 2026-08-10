@@ -232,6 +232,38 @@ test('public catalogue reads use a versioned cache and preserve ETags', async ()
   assert.equal(second.headers.get('vary'), 'Origin');
 });
 
+test('asset manifests use the versioned API route and preserve cursor pagination', async () => {
+  let downstreamUrl = null;
+  const response = await handleRequest(
+    request('/v1/assets/manifest?limit=1&cursor=asset-cursor'),
+    environment(),
+    context(),
+    {
+      cache: new MemoryCache(),
+      fetchImpl: async (url) => {
+        downstreamUrl = String(url);
+        return new Response(JSON.stringify({
+          data: { assets: [{ assetId: 'asset-1' }] },
+          meta: {
+            requestId: 'origin',
+            apiVersion: '1',
+            pagination: { limit: 1, nextCursor: 'asset-cursor-2' },
+          },
+        }), { headers: { 'Content-Type': 'application/json' } });
+      },
+    },
+  );
+
+  assert.equal(
+    downstreamUrl,
+    'https://backend.stackr.test/v1/assets/manifest?limit=1&cursor=asset-cursor',
+  );
+  assert.deepEqual((await response.json()).meta.pagination, {
+    limit: 1,
+    nextCursor: 'asset-cursor-2',
+  });
+});
+
 test('recognition requires user, device, idempotency, and a signed private hop', async () => {
   const env = environment();
   const cache = new MemoryCache();
