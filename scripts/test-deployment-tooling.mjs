@@ -144,21 +144,23 @@ assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || 
 assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
 assert.notEqual(stagingReleaseGate.status, 0, 'staging evidence must block release until recovery and model gates pass');
-assert.match(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
-assert.match(stagingReleaseGate.stdout, /database_recovery_not_verified/);
+assert.doesNotMatch(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
+assert.doesNotMatch(stagingReleaseGate.stdout, /database_recovery_not_verified/);
 assert.doesNotMatch(stagingReleaseGate.stdout, /migration_history_not_aligned/);
 assert.match(stagingReleaseGate.stdout, /model_and_index_not_ready/);
+assert.match(stagingReleaseGate.stdout, /staging_release_not_ready/);
 const releasePreflight = run('scripts/deploy/preflight.mjs', ['--release']);
 assert.notEqual(releasePreflight.status, 0, 'release preflight must fail closed without approvals and credentials');
 const completeStagingEnvironment = {
   STACKR_DEPLOYMENT_ENVIRONMENT: 'staging',
+  STACKR_DEPLOYMENT_SCOPE: 'full_platform',
   STACKR_MIGRATION_BASELINE_APPROVED: 'true',
   STACKR_MODEL_INDEX_RELEASE_APPROVED: 'true',
   STACKR_STORAGE_BACKUP_APPROVED: 'true',
   SUPABASE_ACCESS_TOKEN: 'test-only',
   SUPABASE_DB_URL: 'postgresql://test-only',
   SUPABASE_PROJECT_REF: releaseManifest.components.database.stagingProjectRef,
-  RAILWAY_TOKEN: 'test-only',
+  RAILWAY_API_TOKEN: 'test-only',
   RAILWAY_PROJECT_ID: 'test-only',
   RAILWAY_ENVIRONMENT_ID: 'test-only',
   RAILWAY_BACKEND_SERVICE_ID: 'test-only',
@@ -168,6 +170,11 @@ const completeStagingEnvironment = {
   STACKR_BACKEND_URL: 'https://backend.invalid',
   STACKR_RECOGNITION_URL: 'https://recognition.invalid',
   STACKR_GATEWAY_URL: 'https://gateway.invalid',
+  STACKR_SUPABASE_URL: 'https://staging.supabase.invalid',
+  STACKR_SUPABASE_PUBLISHABLE_KEY: 'test-only',
+  BACKEND_ORIGIN_KEY: 'test-only',
+  BACKEND_ADMIN_KEY: 'test-only',
+  RECOGNITION_SERVICE_SECRET: 'test-only',
   EXPO_TOKEN: 'test-only',
 };
 const credentialledReleasePreflight = run(
@@ -180,8 +187,10 @@ assert.notEqual(
   0,
   'protected variables must not override false authoritative release gates',
 );
-assert.match(credentialledReleasePreflight.stdout, /release_gate_not_ready:migrationHistoryAligned/);
-assert.match(credentialledReleasePreflight.stdout, /release_gate_not_ready:storageBackupVerified/);
+assert.match(credentialledReleasePreflight.stdout, /release_gate_not_ready:activeModelSelected/);
+assert.match(credentialledReleasePreflight.stdout, /release_gate_not_ready:activeIndexValidated/);
+assert.doesNotMatch(credentialledReleasePreflight.stdout, /release_gate_not_ready:migrationHistoryAligned/);
+assert.doesNotMatch(credentialledReleasePreflight.stdout, /release_gate_not_ready:storageBackupVerified/);
 assert.doesNotMatch(credentialledReleasePreflight.stdout, /release_approval_missing/);
 const crossedProjectPreflight = run('scripts/deploy/preflight.mjs', ['--release'], {
   ...completeStagingEnvironment,
@@ -196,7 +205,7 @@ const catalogueReleaseEnvironment = {
   SUPABASE_ACCESS_TOKEN: 'test-only',
   SUPABASE_DB_URL: 'postgresql://test-only',
   SUPABASE_PROJECT_REF: releaseManifest.components.database.stagingProjectRef,
-  RAILWAY_TOKEN: 'test-only',
+  RAILWAY_API_TOKEN: 'test-only',
   RAILWAY_PROJECT_ID: 'test-only',
   RAILWAY_ENVIRONMENT_ID: 'test-only',
   RAILWAY_BACKEND_SERVICE_ID: 'test-only',
@@ -218,13 +227,11 @@ const catalogueStagingPreflight = run(
   ['--catalogue-api-release'],
   catalogueReleaseEnvironment,
 );
-assert.notEqual(
+assert.equal(
   catalogueStagingPreflight.status,
   0,
-  'staging catalogue preflight must remain blocked by the current authoritative release gates',
+  catalogueStagingPreflight.stderr || catalogueStagingPreflight.stdout,
 );
-assert.match(catalogueStagingPreflight.stdout, /release_gate_not_ready:migrationHistoryAligned/);
-assert.match(catalogueStagingPreflight.stdout, /release_gate_not_ready:storageBackupVerified/);
 assert.doesNotMatch(
   catalogueStagingPreflight.stdout,
   /missing_release_variable:SUPABASE_(?:STAGING_DB_URL|STAGING_SECRET_KEY|PRODUCTION_SECRET_KEY)/,

@@ -38,10 +38,10 @@
     }
   },
   "releaseGates": {
-    "migrationHistoryAligned": false,
+    "migrationHistoryAligned": true,
     "activeModelSelected": false,
     "activeIndexValidated": false,
-    "storageBackupVerified": false,
+    "storageBackupVerified": true,
     "productionCanaryPercent": 5
   }
 }

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "stackr-migration-reconciliation-v1.1.0",
+  "capturedAt": "2026-08-10T21:12:27.972Z",
+  "sourceCommitHash": "a0dfaf628e00038a426a825495f593ecc7cdeeed",
+  "workingTreeChangesIncluded": false,
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+  "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+  "status": "aligned",
+  "reconciliationComplete": true,
+  "productionMutationPerformed": false,
+  "stagingMutationPerformed": false,
+  "isolatedBranchMutationPerformed": true,
+  "localMigrationFileCount": 103,
+  "stagingMigrationHistoryCountAfter": 103,
+  "exactVersionNameOrderMatch": true,
+  "orderedMigrationKeySha256": "b2a624e971d6dc451f3363a1690c1f2e33dcbeb39bfd5305459cf781f7513c5d",
+  "remoteOrderedMigrationKeySha256": "b2a624e971d6dc451f3363a1690c1f2e33dcbeb39bfd5305459cf781f7513c5d",
+  "repositoryMigrationContentSha256": "977f9e689d6538d2fbf56fc8199235a94dc371dea82e2d61ad5dbd7444774cf4",
+  "firstMigration": "20260513170000_card_fingerprint_regions",
+  "latestMigration": "20260810170607_optimize_raw_source_publication_reads",
+  "baseline": {
+    "artifactId": "9072158961",
+    "archiveSha256": "ddd8c05b3595bf8a2035928f81dc56d24ce3a3f9ef9d13ad9850cbb9f6c428cb",
+    "schemaSha256": "01a74817c0a3df96f1d44622877f358f6372a837aea521ff53de2511adbd0aee",
+    "expectedProductionHistoryVersion": "20260802160643",
+    "expectedProductionHistoryName": "production_critical_rls_storage_containment_20260802"
+  },
+  "workflow": {
+    "repository": "tberridge86/Stackr",
+    "runId": "31432064222",
+    "runAttempt": "1",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/31432064222"
+  },
+  "isolatedCandidateUnverifiedRepositoryMigrationCount": 0,
+  "isolatedCandidate": {
+    "projectRef": "krjttpmthxkfsbqksxci",
+    "repositoryMigrationCount": 103,
+    "migrationHistoryAligned": true,
+    "productionBaselineRestored": true,
+    "repositoryMigrationsReplayed": true,
+    "storageFixtureSeeded": true
+  },
+  "actionsTaken": [
+    "verified_private_production_schema_baseline_checksums",
+    "restored_production_schema_to_isolated_target",
+    "seeded_empty_pre_containment_storage_fixture",
+    "replayed_all_repository_migrations_on_isolated_target",
+    "verified_exact_migration_version_name_order",
+    "verified_production_was_not_modified"
+  ]
+}
