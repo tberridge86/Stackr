@@ -1,0 +1,17 @@
+sequenceDiagram
+  participant Camera as VisionCamera Preview Frame
+  participant Android as Android stackrCardFrameAnalyser Plugin
+  participant IOS as iOS StackrCardFrameAnalyser Core
+  participant Native as Native Luminance Analyser
+  participant JS as React Native
+
+  Camera->>Android: ImageProxy frame
+  Android->>Native: Y plane bytes, row stride, dimensions, guide
+  Camera->>IOS: CVPixelBuffer frame
+  IOS->>Native: First plane bytes, row stride, dimensions, guide
+  Native->>Native: Edge components and quadrilateral ordering
+  Native->>Native: Fill, aspect, blur, glare, exposure, perspective, clipping
+  Native-->>Android: Small structured result only
+  Native-->>IOS: Small structured result only
+  Android-->>JS: Metrics and deterministic reason codes
+  IOS-->>JS: Metrics and deterministic reason codes

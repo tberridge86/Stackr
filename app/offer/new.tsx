@@ -15,17 +15,19 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { createTradeOffer } from '../../lib/tradeOffers';
 import { getCachedCardSync } from '../../lib/pokemonTcgCache';
-import { getPreferredMarketPrice, getPriceFromPokemonCard } from '../../lib/pricing';
-import { BETA_TRADE_DEMO_MODE, PRICE_API_URL, USD_TO_GBP } from '../../lib/config';
+import { BETA_TRADE_DEMO_MODE, PRICE_API_URL } from '../../lib/config';
 import { fetchUserCardAvailability } from '../../lib/cardOwnership';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import { stackrBrand } from '../../lib/stackrBrand';
+import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 
 // ===============================
 // CONSTANTS
 // ===============================
 
 const MAX_OFFER_CARDS = 6;
+const TRADE_SELECTOR_PAGE_SIZE = 1000;
+const TRADE_SELECTOR_CARD_BATCH_SIZE = 200;
 
 // ===============================
 // TYPES
@@ -33,6 +35,7 @@ const MAX_OFFER_CARDS = 6;
 
 type CashPayer = 'sender' | 'receiver';
 type OfferCardFilter = 'all' | 'duplicates' | 'priced';
+type OwnedTradeSourceKind = 'canonical' | 'binder';
 
 type TradeCardOption = {
   id: string;
@@ -42,6 +45,10 @@ type TradeCardOption = {
   image_url: string | null;
   set_name?: string | null;
   number?: string | null;
+  variant?: string | null;
+  condition?: string | null;
+  grade_company?: string | null;
+  grade?: string | null;
   estimated_value?: number | null;
   price_source?: string | null;
   owned_quantity?: number | null;
@@ -52,11 +59,22 @@ type OwnedTradeSource = {
   card_id: string;
   set_id: string | null;
   quantity: number;
+  source?: OwnedTradeSourceKind;
   name?: string | null;
   image_url?: string | null;
   set_name?: string | null;
   number?: string | null;
+  variant?: string | null;
+  condition?: string | null;
+  grade_company?: string | null;
+  grade?: string | null;
   fallback_price?: number | null;
+};
+
+type GroupedOwnedTradeSource = OwnedTradeSource & {
+  canonicalQuantity: number;
+  binderQuantity: number;
+  hasCanonicalQuantity: boolean;
 };
 
 const OFFER_CARD_FILTERS: { key: OfferCardFilter; label: string }[] = [
@@ -100,27 +118,92 @@ const money = (value: number | null | undefined) =>
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-function getRawTcgPriceGbp(rawData: any): number | null {
-  const usdPrice = getPriceFromPokemonCard(rawData);
-  return typeof usdPrice === 'number' ? usdPrice * USD_TO_GBP : null;
+const normaliseOwnershipPart = (
+  value: string | null | undefined,
+  fallback = 'none'
+) => {
+  const trimmed = String(value ?? '').trim();
+  return trimmed ? trimmed.toLowerCase() : fallback;
+};
+
+const tradeOwnershipKey = (
+  source: Pick<
+    OwnedTradeSource,
+    'set_id' | 'card_id' | 'variant' | 'condition' | 'grade_company' | 'grade'
+  >
+) =>
+  [
+    source.set_id ?? 'unknown',
+    source.card_id,
+    normaliseOwnershipPart(source.variant, 'normal'),
+    normaliseOwnershipPart(source.condition),
+    normaliseOwnershipPart(source.grade_company),
+    normaliseOwnershipPart(source.grade),
+  ].join(':');
+
+const tradeAvailabilityKey = (card: Pick<TradeCardOption, 'set_id' | 'card_id'>) =>
+  `${card.set_id ?? 'unknown'}:${card.card_id}`;
+
+const formatVariantLabel = (value: string | null | undefined) => {
+  const trimmed = String(value ?? '').trim();
+  if (!trimmed || trimmed.toLowerCase() === 'normal') return null;
+  return trimmed.replace(/_/g, ' ');
+};
+
+const formatOwnershipLabel = (
+  card: Pick<TradeCardOption, 'variant' | 'condition' | 'grade_company' | 'grade'>
+) => {
+  const gradeLabel = [card.grade_company, card.grade]
+    .map((part) => String(part ?? '').trim())
+    .filter(Boolean)
+    .join(' ');
+  return [
+    formatVariantLabel(card.variant),
+    String(card.condition ?? '').trim() || null,
+    gradeLabel || null,
+  ]
+    .filter(Boolean)
+    .join(' - ');
+};
+
+function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
 }
 
-async function fetchEstimatedPrice(cardIdValue: string, rawData?: any) {
-  const fallbackTcg = getRawTcgPriceGbp(rawData);
-
-  const { data, error } = await supabase
-    .from('market_price_snapshots')
-    .select('ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
-    .eq('card_id', cardIdValue)
-    .order('snapshot_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.log('Trade price lookup failed:', error.message);
+async function fetchPagedRows<T>(buildQuery: () => any): Promise<T[]> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += TRADE_SELECTOR_PAGE_SIZE) {
+    const to = from + TRADE_SELECTOR_PAGE_SIZE - 1;
+    const { data, error } = await buildQuery().range(from, to);
+    if (error) throw error;
+    rows.push(...((data ?? []) as T[]));
+    if (!data || data.length < TRADE_SELECTOR_PAGE_SIZE) return rows;
   }
+}
 
-  return getPreferredMarketPrice(data ?? null, { tcg: fallbackTcg });
+async function fetchCardRowsByIds<T>(
+  ids: string[],
+  buildQuery: (batch: string[]) => any
+): Promise<T[]> {
+  const batches = chunkArray([...new Set(ids.filter(Boolean))], TRADE_SELECTOR_CARD_BATCH_SIZE);
+  const results = await Promise.all(
+    batches.map(async (batch) => {
+      const { data, error } = await buildQuery(batch);
+      if (error) throw error;
+      return (data ?? []) as T[];
+    })
+  );
+  return results.flat();
+}
+
+async function fetchEstimatedPrice(cardIdValue: string) {
+  const snapshots = await fetchStackrPriceSnapshots([cardIdValue]);
+  const snapshot = snapshots.get(cardIdValue);
+  return { value: snapshot?.market_central ?? null, source: snapshot ? 'stackr-api' : null };
 }
 
 async function sendPushNotification(
@@ -182,7 +265,7 @@ export default function NewOfferScreen() {
 
   const cashInvolved = cashAmountNumber > 0;
   const selectedTradeCards = useMemo(
-    () => myTradeCards.filter((card) => selectedCardIds.includes(card.card_id)),
+    () => myTradeCards.filter((card) => selectedCardIds.includes(card.id)),
     [myTradeCards, selectedCardIds]
   );
   const filteredTradeCards = useMemo(() => {
@@ -193,6 +276,10 @@ export default function NewOfferScreen() {
         card.set_name,
         card.set_id,
         card.number,
+        card.variant,
+        card.condition,
+        card.grade_company,
+        card.grade,
       ]
         .filter(Boolean)
         .join(' ')
@@ -310,7 +397,7 @@ export default function NewOfferScreen() {
 
       const [target, receiverProfile, ownCards] = await Promise.all([
         buildTargetCard(listing.card_id, listing.set_id ?? null, listing),
-        supabase.from('profiles').select('collector_name').eq('id', listing.user_id).maybeSingle(),
+        supabase.from('profile_public_directory').select('collector_name').eq('id', listing.user_id).maybeSingle(),
         fetchMyTradeCards(user.id),
       ]);
 
@@ -375,15 +462,12 @@ export default function NewOfferScreen() {
       ? (getCachedCardSync(setIdValue, cardIdValue) as any)
       : null;
 
-    const { data: cardRow } = await supabase
-      .from('pokemon_cards')
-      .select('id, name, set_id, number, image_small, image_large, raw_data')
-      .eq('id', cardIdValue)
-      .maybeSingle();
+    const cardRows = await fetchStackrCardRows([cardIdValue]);
+    const cardRow = cardRows.get(cardIdValue) ?? null;
 
     if (cardRow || cached) {
       const rawData = (cardRow as any)?.raw_data ?? cached;
-      const price = await fetchEstimatedPrice(cardIdValue, rawData);
+      const price = await fetchEstimatedPrice(cardIdValue);
 
       return {
         id: cardIdValue,
@@ -403,18 +487,12 @@ export default function NewOfferScreen() {
       };
     }
 
-    const { data } = await supabase
-      .from('card_previews')
-      .select('card_id, name, image_url')
-      .eq('card_id', cardIdValue)
-      .maybeSingle();
-
     return {
       id: cardIdValue,
       card_id: cardIdValue,
       set_id: setIdValue ?? null,
-      name: data?.name ?? cardIdValue,
-      image_url: data?.image_url ?? null,
+      name: cardIdValue,
+      image_url: null,
       set_name: null,
       number: null,
       estimated_value: listing?.market_estimate ?? listing?.asking_price ?? null,
@@ -427,30 +505,36 @@ export default function NewOfferScreen() {
   // ===============================
 
   async function fetchBinderOwnedTradeSources(userId: string): Promise<OwnedTradeSource[]> {
-    const { data: binders, error: bindersError } = await supabase
-      .from('binders')
-      .select('id')
-      .eq('user_id', userId);
-
-    if (bindersError) {
-      console.log('Owned binder lookup failed:', bindersError.message);
+    let binders: any[] = [];
+    try {
+      binders = await fetchPagedRows<any>(() =>
+        supabase
+          .from('binders')
+          .select('id')
+          .eq('user_id', userId)
+      );
+    } catch (error: any) {
+      console.log('Owned binder lookup failed:', error?.message ?? error);
       return [];
     }
 
     const binderIds = (binders ?? []).map((binder: any) => binder.id).filter(Boolean);
     if (binderIds.length === 0) return [];
 
-    const { data, error } = await supabase
-      .from('binder_cards')
-      .select(`
-        id, card_id, set_id, card_name, set_name, card_number, image_url,
-        owned_quantity, ebay_price, tcg_price, cardmarket_price, owned
-      `)
-      .in('binder_id', binderIds)
-      .eq('owned', true);
-
-    if (error) {
-      console.log('Owned binder card lookup failed:', error.message);
+    let data: any[] = [];
+    try {
+      data = await fetchPagedRows<any>(() =>
+        supabase
+          .from('binder_cards')
+          .select(`
+            id, card_id, set_id, card_name, set_name, card_number, image_url,
+            owned_quantity, ebay_price, tcg_price, cardmarket_price, owned
+          `)
+          .in('binder_id', binderIds)
+          .eq('owned', true)
+      );
+    } catch (error: any) {
+      console.log('Owned binder card lookup failed:', error?.message ?? error);
       return [];
     }
 
@@ -461,6 +545,7 @@ export default function NewOfferScreen() {
         card_id: row.card_id,
         set_id: row.set_id ?? null,
         quantity: Math.max(1, Number(row.owned_quantity ?? 1) || 1),
+        source: 'binder',
         name: row.card_name ?? null,
         image_url: row.image_url ?? null,
         set_name: row.set_name ?? null,
@@ -474,43 +559,65 @@ export default function NewOfferScreen() {
   }
 
   async function fetchMyTradeCards(userId: string): Promise<TradeCardOption[]> {
-    let ownedSources: OwnedTradeSource[] = [];
-    let useCanonicalAvailability = false;
+    const ownedSources: OwnedTradeSource[] = [];
 
     try {
       const ownedRows = await fetchOwnedCardRows();
-      useCanonicalAvailability = ownedRows.length > 0;
-      ownedSources = ownedRows.map((row) => ({
+      ownedSources.push(...ownedRows.map((row) => ({
         id: row.id ?? null,
         card_id: row.card_id,
         set_id: row.set_id ?? null,
         quantity: Math.max(1, Number(row.quantity ?? 1) || 1),
-      }));
+        source: 'canonical' as const,
+        variant: row.variant ?? null,
+        condition: row.condition ?? null,
+        grade_company: row.grade_company ?? null,
+        grade: row.grade ?? null,
+      })));
     } catch (error: any) {
       console.log('Owned variant lookup failed:', error?.message ?? error);
     }
 
-    if (ownedSources.length === 0) {
-      ownedSources = await fetchBinderOwnedTradeSources(userId);
-    }
+    ownedSources.push(...await fetchBinderOwnedTradeSources(userId));
 
-    const grouped = new Map<string, OwnedTradeSource>();
+    const grouped = new Map<string, GroupedOwnedTradeSource>();
+    const canonicalBaseKeys = new Set(
+      ownedSources
+        .filter((source) => source.source === 'canonical')
+        .map((source) => `${source.set_id ?? 'unknown'}:${source.card_id}`)
+    );
     for (const source of ownedSources) {
       if (!source.card_id) continue;
-      const key = `${source.set_id ?? 'unknown'}:${source.card_id}`;
+      const baseKey = `${source.set_id ?? 'unknown'}:${source.card_id}`;
+      if (source.source === 'binder' && canonicalBaseKeys.has(baseKey)) continue;
+
+      const key = tradeOwnershipKey(source);
       const current = grouped.get(key);
-      if (!current) {
-        grouped.set(key, { ...source, quantity: Math.max(1, Number(source.quantity ?? 1) || 1) });
-        continue;
-      }
+      const quantity = Math.max(1, Number(source.quantity ?? 1) || 1);
+      const canonicalQuantity =
+        (current?.canonicalQuantity ?? 0) + (source.source === 'canonical' ? quantity : 0);
+      const binderQuantity =
+        (current?.binderQuantity ?? 0) + (source.source === 'binder' ? quantity : 0);
+
       grouped.set(key, {
-        ...current,
-        quantity: Math.max(1, Number(current.quantity ?? 1) || 1) + Math.max(1, Number(source.quantity ?? 1) || 1),
-        name: current.name ?? source.name ?? null,
-        image_url: current.image_url ?? source.image_url ?? null,
-        set_name: current.set_name ?? source.set_name ?? null,
-        number: current.number ?? source.number ?? null,
-        fallback_price: current.fallback_price ?? source.fallback_price ?? null,
+        ...(current ?? source),
+        id: current?.id ?? source.id ?? null,
+        card_id: source.card_id,
+        set_id: current?.set_id ?? source.set_id ?? null,
+        source: canonicalQuantity > 0 ? 'canonical' : source.source,
+        quantity: Math.max(canonicalQuantity, binderQuantity, quantity),
+        canonicalQuantity,
+        binderQuantity,
+        hasCanonicalQuantity: canonicalQuantity > 0,
+        name: current?.name ?? source.name ?? null,
+        image_url: current?.image_url ?? source.image_url ?? null,
+        set_name: current?.set_name ?? source.set_name ?? null,
+        number: current?.number ?? source.number ?? null,
+        variant: current?.variant ?? source.variant ?? null,
+        condition: current?.condition ?? source.condition ?? null,
+        grade_company: current?.grade_company ?? source.grade_company ?? null,
+        grade: current?.grade ?? source.grade ?? null,
+        fallback_price: current?.fallback_price ?? source.fallback_price ?? null,
       });
     }
 
@@ -520,87 +627,79 @@ export default function NewOfferScreen() {
     const cardIds = [...new Set(ownedCards.map((card) => card.card_id).filter(Boolean))];
     const availableQuantityByKey = new Map<string, number>();
 
-    if (useCanonicalAvailability) {
-      await Promise.all(ownedCards.map(async (owned) => {
-        try {
-          const availability = await fetchUserCardAvailability({
-            userId,
-            cardId: owned.card_id,
-            setId: owned.set_id,
-          });
-          availableQuantityByKey.set(`${owned.set_id ?? 'unknown'}:${owned.card_id}`, availability.availableQuantity);
-        } catch (error: any) {
-          console.log('Offer availability lookup failed:', error?.message ?? error);
-          availableQuantityByKey.set(`${owned.set_id ?? 'unknown'}:${owned.card_id}`, owned.quantity);
-        }
-      }));
-    }
+    await Promise.all(ownedCards.map(async (owned) => {
+      const key = tradeOwnershipKey(owned);
 
-    const [cardRowsResult, previewsResult, snapshotsResult] = await Promise.all([
-      supabase
-        .from('pokemon_cards')
-        .select('id, name, set_id, number, image_small, image_large, raw_data')
-        .in('id', cardIds),
-      supabase
-      .from('card_previews')
-        .select('card_id, name, image_url')
-        .in('card_id', cardIds),
-      supabase
-        .from('market_price_snapshots')
-        .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
-        .in('card_id', cardIds)
-        .order('snapshot_at', { ascending: false }),
+      if (!owned.hasCanonicalQuantity) {
+        availableQuantityByKey.set(key, owned.quantity);
+        return;
+      }
+
+      try {
+        const availability = await fetchUserCardAvailability({
+          userId,
+          cardId: owned.card_id,
+          setId: owned.set_id,
+        });
+        const committedQuantity = Math.max(
+          0,
+          Number(availability.committedQuantity ?? 0) || 0
+        );
+        const knownOwnedQuantity = Math.max(
+          owned.quantity,
+          Number(availability.ownedQuantity ?? 0) || 0
+        );
+        availableQuantityByKey.set(key, Math.max(0, knownOwnedQuantity - committedQuantity));
+      } catch (error: any) {
+        console.log('Offer availability lookup failed:', error?.message ?? error);
+        availableQuantityByKey.set(key, owned.quantity);
+      }
+    }));
+
+    const [cardRowsById, snapshotsById] = await Promise.all([
+      fetchStackrCardRows(cardIds),
+      fetchStackrPriceSnapshots(cardIds).catch((error: any) => {
+        console.log('Trade snapshot lookup failed:', error?.message ?? error);
+        return new Map();
+      }),
     ]);
 
-    if (cardRowsResult.error) throw cardRowsResult.error;
-    if (previewsResult.error) throw previewsResult.error;
-    if (snapshotsResult.error) {
-      console.log('Trade snapshot lookup failed:', snapshotsResult.error.message);
-    }
-
-    const previewMap = new Map(
-      (previewsResult.data ?? []).map((preview: any) => [preview.card_id, preview])
-    );
-    const cardRowMap = new Map(
-      (cardRowsResult.data ?? []).map((card: any) => [card.id, card])
-    );
-    const snapshotMap = new Map<string, any>();
-    for (const snapshot of snapshotsResult.data ?? []) {
-      if (!snapshotMap.has((snapshot as any).card_id)) {
-        snapshotMap.set((snapshot as any).card_id, snapshot);
-      }
-    }
+    const cardRowMap = cardRowsById;
 
     const options: TradeCardOption[] = [];
 
     for (const owned of ownedCards) {
-      const availableQuantity = availableQuantityByKey.get(`${owned.set_id ?? 'unknown'}:${owned.card_id}`) ?? owned.quantity;
+      const availableQuantity = availableQuantityByKey.get(tradeOwnershipKey(owned)) ?? owned.quantity;
       if (availableQuantity <= 0) continue;
-      const preview = previewMap.get(owned.card_id) as any;
       const row = cardRowMap.get(owned.card_id) as any;
       const cached = owned.set_id
         ? (getCachedCardSync(owned.set_id, owned.card_id) as any)
         : null;
       const rawData = row?.raw_data ?? cached;
-      const price = getPreferredMarketPrice(snapshotMap.get(owned.card_id), {
-        tcg: owned.fallback_price ?? getRawTcgPriceGbp(rawData),
-      });
+      const priceSnapshot = snapshotsById.get(owned.card_id);
+      const price = {
+        value: priceSnapshot?.market_central ?? owned.fallback_price ?? null,
+        source: priceSnapshot ? 'stackr-api' : owned.fallback_price != null ? 'owned' : null,
+      };
 
       options.push({
-        id: owned.id ?? `${owned.set_id ?? 'owned'}:${owned.card_id}`,
+        id: tradeOwnershipKey(owned),
         card_id: owned.card_id,
         set_id: owned.set_id ?? row?.set_id ?? cached?.set?.id ?? null,
-        name: row?.name ?? preview?.name ?? cached?.name ?? owned.name ?? owned.card_id,
+        name: row?.name ?? cached?.name ?? owned.name ?? owned.card_id,
         image_url:
           row?.image_small ??
           row?.image_large ??
-          preview?.image_url ??
           cached?.images?.small ??
           cached?.images?.large ??
           owned.image_url ??
           null,
         set_name: rawData?.set?.name ?? owned.set_name ?? cached?.set?.name ?? null,
         number: row?.number ?? owned.number ?? cached?.number ?? null,
+        variant: owned.variant ?? null,
+        condition: owned.condition ?? null,
+        grade_company: owned.grade_company ?? null,
+        grade: owned.grade ?? null,
         estimated_value: price.value ?? owned.fallback_price ?? null,
         price_source: price.source ?? (owned.fallback_price != null ? 'owned' : null),
         owned_quantity: availableQuantity,
@@ -614,10 +713,10 @@ export default function NewOfferScreen() {
   // TOGGLE CARD SELECTION
   // ===============================
 
-  function toggleCard(cardIdValue: string) {
+  function toggleCard(optionId: string) {
     setSelectedCardIds((current) => {
-      if (current.includes(cardIdValue)) {
-        return current.filter((id) => id !== cardIdValue);
+      if (current.includes(optionId)) {
+        return current.filter((id) => id !== optionId);
       }
       if (current.length >= MAX_OFFER_CARDS) {
         Alert.alert(
@@ -626,7 +725,7 @@ export default function NewOfferScreen() {
         );
         return current;
       }
-      return [...current, cardIdValue];
+      return [...current, optionId];
     });
   }
 
@@ -647,18 +746,36 @@ export default function NewOfferScreen() {
         return;
       }
 
-      for (const card of selectedTradeCards) {
+      const selectedByAvailability = new Map<string, TradeCardOption[]>();
+      selectedTradeCards.forEach((card) => {
+        const key = tradeAvailabilityKey(card);
+        const current = selectedByAvailability.get(key) ?? [];
+        current.push(card);
+        selectedByAvailability.set(key, current);
+      });
+
+      for (const cards of selectedByAvailability.values()) {
+        const card = cards[0];
         const availability = await fetchUserCardAvailability({
           userId: currentUserId,
           cardId: card.card_id,
           setId: card.set_id,
         });
-        if (availability.availableQuantity < 1) {
+        const knownOwnedQuantity = Math.max(
+          Number(card.owned_quantity ?? 0) || 0,
+          Number(availability.ownedQuantity ?? 0) || 0
+        );
+        const availableQuantity = availability.ownedQuantity > 0
+          ? Math.max(0, knownOwnedQuantity - (Number(availability.committedQuantity ?? 0) || 0))
+          : knownOwnedQuantity;
+
+        if (availableQuantity < cards.length) {
           Alert.alert(
             'Card no longer available',
             `${card.name} is already committed to another listing, reservation or pending transaction.`
           );
-          setSelectedCardIds((current) => current.filter((id) => id !== card.card_id));
+          const unavailableIds = new Set(cards.map((item) => item.id));
+          setSelectedCardIds((current) => current.filter((id) => !unavailableIds.has(id)));
           return;
         }
       }
@@ -998,11 +1115,12 @@ export default function NewOfferScreen() {
                 No owned cards match that search or filter.
               </Text>
             ) : filteredTradeCards.map((card) => {
-              const selected = selectedCardIds.includes(card.card_id);
+              const selected = selectedCardIds.includes(card.id);
+              const ownershipLabel = formatOwnershipLabel(card);
               return (
                 <TouchableOpacity
-                  key={`${card.id}-${card.card_id}`}
-                  onPress={() => toggleCard(card.card_id)}
+                  key={card.id}
+                  onPress={() => toggleCard(card.id)}
                   style={[
                     styles.selectCardRow,
                     selected && styles.selectCardRowActive,
@@ -1020,6 +1138,11 @@ export default function NewOfferScreen() {
                       {card.number ? ` · ${card.number}` : ''}
                       {card.owned_quantity ? ` · x${card.owned_quantity} owned` : ''}
                     </Text>
+                    {ownershipLabel ? (
+                      <Text style={styles.cardMeta} numberOfLines={1}>
+                        {ownershipLabel}
+                      </Text>
+                    ) : null}
                     <Text style={styles.priceMeta}>
                       {money(card.estimated_value)}
                       {card.price_source ? ` ${card.price_source}` : ''}

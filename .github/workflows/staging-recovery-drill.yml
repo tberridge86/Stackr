@@ -1,0 +1,194 @@
+name: Stackr Staging Recovery Drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RESTORE STAGING BACKUP, RESTORE STAGING DATABASE, or RESTORE STAGING STORAGE
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  # Every mode reads staging and mutates the same isolated restore project.
+  group: stackr-staging-database-maintenance
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    if: >-
+      inputs.confirmation == 'RESTORE STAGING BACKUP' ||
+      inputs.confirmation == 'RESTORE STAGING DATABASE' ||
+      inputs.confirmation == 'RESTORE STAGING STORAGE'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: staging
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_RESTORE_DB_URL }}
+      SUPABASE_STAGING_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      SUPABASE_RESTORE_SECRET_KEY: ${{ secrets.SUPABASE_RESTORE_SECRET_KEY }}
+      SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+      SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
+      STACKR_RECOVERY_STORAGE_CONCURRENCY: 64
+      STACKR_RECOVERY_STORAGE_PACK_CONCURRENCY: 4
+      STACKR_RECOVERY_STORAGE_SAMPLE_SIZE: 512
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate isolated recovery target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_PROJECT_REF" = "lmwfhvexfcoyeuoyrlco"
+          test "$SUPABASE_RESTORE_PROJECT_REF" = "krjttpmthxkfsbqksxci"
+          test "$SUPABASE_PROJECT_REF" != "$SUPABASE_RESTORE_PROJECT_REF"
+          test -n "$SUPABASE_DB_URL"
+          test -n "$SUPABASE_RESTORE_DB_URL"
+          test -n "$SUPABASE_STAGING_SECRET_KEY"
+          test -n "$SUPABASE_RESTORE_SECRET_KEY"
+          case "$SUPABASE_DB_URL" in
+            *"$SUPABASE_PROJECT_REF"*) ;;
+            *) echo '::error::source_database_url_project_mismatch'; exit 1 ;;
+          esac
+          case "$SUPABASE_RESTORE_DB_URL" in
+            *"$SUPABASE_RESTORE_PROJECT_REF"*) ;;
+            *) echo '::error::restore_database_url_project_mismatch'; exit 1 ;;
+          esac
+
+      - name: Prepare protected database URLs
+        run: node scripts/deploy/prepare-postgres-urls.mjs
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Create current ephemeral Postgres backups
+        if: inputs.confirmation != 'RESTORE STAGING STORAGE'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
+          mkdir -p "$RUNNER_TEMP/stackr-recovery/backups" "$STACKR_RECOVERY_EVIDENCE_DIR"
+
+          retry_dump() {
+            local output_file="$1"
+            shift
+            local attempt
+            for attempt in 1 2 3; do
+              rm -f "$output_file"
+              if npx --yes supabase@2.110.0 db dump \
+                --db-url "$STACKR_SOURCE_DB_URL" \
+                --file "$output_file" \
+                "$@"; then
+                return 0
+              fi
+              if (( attempt == 3 )); then
+                echo "::error::Database export failed after $attempt attempts: $output_file"
+                return 1
+              fi
+              echo "::warning::Database export attempt $attempt failed; retrying in $((attempt * 15)) seconds."
+              sleep $((attempt * 15))
+            done
+          }
+
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/roles.sql" --role-only
+          node scripts/deploy/sanitize-supabase-role-dump.mjs \
+            "$RUNNER_TEMP/stackr-recovery/backups/roles.sql"
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/schema.sql"
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
+            --use-copy --data-only \
+            -x storage.buckets \
+            -x storage.buckets_analytics \
+            -x storage.buckets_vectors \
+            -x storage.objects \
+            -x storage.s3_multipart_uploads \
+            -x storage.s3_multipart_uploads_parts \
+            -x storage.vector_indexes
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/history-schema.sql" \
+            --schema supabase_migrations
+          retry_dump "$RUNNER_TEMP/stackr-recovery/backups/history-data.sql" \
+            --use-copy --data-only --schema supabase_migrations
+          node scripts/deploy/verify-backup.mjs \
+            --schema="$RUNNER_TEMP/stackr-recovery/backups/schema.sql" \
+            --data="$RUNNER_TEMP/stackr-recovery/backups/data.sql"
+          node scripts/deploy/prepare-restore-cleanup.mjs \
+            "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
+            "$RUNNER_TEMP/stackr-recovery/backups/cleanup.sql" \
+            "$RUNNER_TEMP/stackr-recovery/backups/roles.sql"
+
+      - name: Restore Postgres backup into isolated project
+        if: inputs.confirmation != 'RESTORE STAGING STORAGE'
+        shell: bash
+        env:
+          POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        run: |
+          set -euo pipefail
+          restore_database() {
+            docker run --rm \
+              --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
+              --volume "$RUNNER_TEMP/stackr-recovery/backups:/backup:ro" \
+              "$POSTGRES_IMAGE" \
+              sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/cleanup.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "set session_replication_role = replica" --file /backup/data.sql --file /backup/history-schema.sql --file /backup/history-data.sql'
+          }
+
+          for attempt in 1 2 3; do
+            if restore_database; then
+              exit 0
+            fi
+            if (( attempt == 3 )); then
+              echo "::error::Database restore failed after $attempt clean attempts."
+              exit 1
+            fi
+            echo "::warning::Database restore attempt $attempt failed; cleaning and retrying in $((attempt * 20)) seconds."
+            sleep $((attempt * 20))
+          done
+
+      - name: Verify Postgres restore fingerprints
+        if: inputs.confirmation != 'RESTORE STAGING STORAGE'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
+          node scripts/deploy/verify-postgres-restore.mjs
+
+      - name: Backup and restore-test current Storage inventory
+        if: inputs.confirmation != 'RESTORE STAGING DATABASE'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
+          node scripts/deploy/backup-restore-storage-fixture.mjs
+
+      - name: Record non-secret recovery evidence
+        if: always()
+        shell: bash
+        run: |
+          if [ -d "$RUNNER_TEMP/stackr-recovery/evidence" ]; then
+            {
+              echo '## Staging recovery evidence'
+              echo '```json'
+              for file in "$RUNNER_TEMP"/stackr-recovery/evidence/*-evidence.json; do
+                [ -f "$file" ] && cat "$file"
+              done
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload non-secret recovery evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: staging-recovery-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-recovery/evidence/*-evidence.json
+          if-no-files-found: warn
+          retention-days: 1
+
+      - name: Remove database and object backup bytes
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/stackr-recovery"

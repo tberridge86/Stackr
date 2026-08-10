@@ -4,7 +4,6 @@ import { useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
   ImageSourcePropType,
-  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -17,6 +16,7 @@ import { useTheme } from './theme-context';
 import { StackrHeroBackdrop } from './StackrBackdrop';
 import { StackrButtonPattern } from './StackrEmboss';
 import { StackrCardActionIcon } from './StackrScreen';
+import { StackrCenterModal } from './StackrModalSystem';
 import { stackrIcons } from '../lib/stackrIcons';
 import { typeScale } from '../lib/typography';
 
@@ -24,6 +24,7 @@ type TipIcon = React.ComponentProps<typeof Ionicons>['name'];
 
 type FeatureTipItem = {
   icon: TipIcon;
+  imageIcon?: ImageSourcePropType;
   title: string;
   body: string;
 };
@@ -36,6 +37,7 @@ type FeatureTipModalProps = {
   storageLabel?: string;
   ctaLabel?: string;
   accentColor?: string;
+  showDontShowAgain?: boolean;
   onClose: (dontShowAgain: boolean) => void;
 };
 
@@ -65,6 +67,7 @@ export function FeatureTipModal({
   storageLabel = "Don't show this again",
   ctaLabel = 'Got it',
   accentColor,
+  showDontShowAgain = true,
   onClose,
 }: FeatureTipModalProps) {
   const { theme } = useTheme();
@@ -77,19 +80,7 @@ export function FeatureTipModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={close}>
-      <View style={styles.backdrop}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: theme.colors.card,
-              borderColor: theme.colors.border,
-              shadowOpacity: theme.dark ? 0.32 : 0.16,
-            },
-          ]}
-        >
+    <StackrCenterModal visible={visible} onClose={close} contentStyle={styles.card}>
           <StackrHeroBackdrop opacity={0.18} />
           <TouchableOpacity
             onPress={close}
@@ -105,18 +96,20 @@ export function FeatureTipModal({
             <View style={styles.header}>
               <StackrCardActionIcon
                 source={getFeatureTipIcon(title)}
-                frameSize={64}
-                artworkSize={52}
+                frameSize={52}
+                artworkSize={42}
                 style={[styles.headerIcon, { backgroundColor: `${accent}10`, borderColor: `${accent}20` }]}
               />
-              <Text style={[styles.title, { color: theme.colors.text }]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.84}>
-                {title}
-              </Text>
-              {!!subtitle && (
-                <Text style={[styles.subtitle, { color: theme.colors.textSoft }]} numberOfLines={3}>
-                  {subtitle}
+              <View style={styles.headerCopy}>
+                <Text style={[styles.title, { color: theme.colors.text }]} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.84}>
+                  {title}
                 </Text>
-              )}
+                {!!subtitle && (
+                  <Text style={[styles.subtitle, { color: theme.colors.textSoft }]} numberOfLines={2}>
+                    {subtitle}
+                  </Text>
+                )}
+              </View>
             </View>
 
             <ScrollView style={styles.itemsScroll} contentContainerStyle={styles.items} showsVerticalScrollIndicator={false}>
@@ -126,13 +119,22 @@ export function FeatureTipModal({
                   style={[styles.itemCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
                 >
                   <View style={[styles.itemIcon, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                    <Ionicons name={item.icon} size={18} color={accent} />
+                    {item.imageIcon ? (
+                      <StackrCardActionIcon
+                        source={item.imageIcon}
+                        frameSize={30}
+                        artworkSize={24}
+                        style={styles.itemImageIcon}
+                      />
+                    ) : (
+                      <Ionicons name={item.icon} size={18} color={accent} />
+                    )}
                   </View>
                   <View style={styles.itemCopy}>
                     <Text style={[styles.itemTitle, { color: theme.colors.text }]} numberOfLines={1}>
                       {item.title}
                     </Text>
-                    <Text style={[styles.itemBody, { color: theme.colors.textSoft }]} numberOfLines={3}>
+                    <Text style={[styles.itemBody, { color: theme.colors.textSoft }]} numberOfLines={2}>
                       {item.body}
                     </Text>
                   </View>
@@ -140,26 +142,28 @@ export function FeatureTipModal({
               ))}
             </ScrollView>
 
-            <Pressable
-              onPress={() => setDontShowAgain((current) => !current)}
-              accessibilityRole="switch"
-              accessibilityState={{ checked: dontShowAgain }}
-              style={[styles.preferenceRow, { borderColor: theme.colors.border, backgroundColor: 'rgba(255,255,255,0.70)' }]}
-            >
-              <Text style={[styles.preferenceLabel, { color: theme.colors.textSoft }]}>{storageLabel}</Text>
-              <View
-                style={[
-                  styles.preferenceTrack,
-                  {
-                    justifyContent: dontShowAgain ? 'flex-end' : 'flex-start',
-                    backgroundColor: dontShowAgain ? `${accent}24` : theme.colors.border,
-                    borderColor: dontShowAgain ? `${accent}55` : theme.colors.border,
-                  },
-                ]}
+            {showDontShowAgain ? (
+              <Pressable
+                onPress={() => setDontShowAgain((current) => !current)}
+                accessibilityRole="switch"
+                accessibilityState={{ checked: dontShowAgain }}
+                style={[styles.preferenceRow, { borderColor: theme.colors.border, backgroundColor: 'rgba(255,255,255,0.70)' }]}
               >
-                <View style={[styles.preferenceThumb, { backgroundColor: dontShowAgain ? accent : theme.colors.card }]} />
-              </View>
-            </Pressable>
+                <Text style={[styles.preferenceLabel, { color: theme.colors.textSoft }]}>{storageLabel}</Text>
+                <View
+                  style={[
+                    styles.preferenceTrack,
+                    {
+                      justifyContent: dontShowAgain ? 'flex-end' : 'flex-start',
+                      backgroundColor: dontShowAgain ? `${accent}24` : theme.colors.border,
+                      borderColor: dontShowAgain ? `${accent}55` : theme.colors.border,
+                    },
+                  ]}
+                >
+                  <View style={[styles.preferenceThumb, { backgroundColor: dontShowAgain ? accent : theme.colors.card }]} />
+                </View>
+              </Pressable>
+            ) : null}
 
             <TouchableOpacity onPress={close} activeOpacity={0.85} style={styles.ctaShell}>
               <LinearGradient
@@ -173,9 +177,7 @@ export function FeatureTipModal({
               </LinearGradient>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
-    </Modal>
+    </StackrCenterModal>
   );
 }
 
@@ -216,64 +218,56 @@ export function FeatureTipGate({ tipKey, enabled = true, ...modalProps }: Featur
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(7, 10, 32, 0.56)',
-    justifyContent: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 32,
-  },
   card: {
-    width: '100%',
-    maxWidth: 430,
-    alignSelf: 'center',
+    padding: 0,
     borderRadius: 26,
-    borderWidth: 1,
-    maxHeight: '84%',
+    maxHeight: '82%',
     overflow: 'hidden',
-    shadowColor: '#07145F',
-    shadowRadius: 26,
-    shadowOffset: { width: 0, height: 14 },
-    elevation: 10,
   },
   content: {
-    padding: 16,
-    paddingTop: 24,
+    padding: 14,
+    paddingTop: 18,
   },
   closeButton: {
     position: 'absolute',
-    top: 14,
-    right: 14,
-    width: 42,
-    height: 42,
-    borderRadius: 16,
+    top: 12,
+    right: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 4,
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 34,
-    marginBottom: 14,
+    gap: 12,
+    paddingRight: 38,
+    marginBottom: 12,
   },
   headerIcon: {
-    marginBottom: 8,
+    flexShrink: 0,
+  },
+  headerCopy: {
+    flex: 1,
+    minWidth: 0,
   },
   title: {
     ...typeScale.pageTitle,
-    fontSize: 24,
-    lineHeight: 29,
+    fontSize: 22,
+    lineHeight: 27,
     fontWeight: '900',
-    textAlign: 'center',
+    textAlign: 'left',
   },
   subtitle: {
     ...typeScale.support,
     fontSize: 13,
-    lineHeight: 19,
+    lineHeight: 18,
     fontWeight: '800',
-    textAlign: 'center',
-    marginTop: 6,
+    textAlign: 'left',
+    marginTop: 3,
   },
   itemsScroll: {
     flexGrow: 0,
@@ -282,22 +276,26 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   itemCard: {
-    minHeight: 74,
+    minHeight: 62,
     flexDirection: 'row',
-    gap: 11,
-    paddingVertical: 11,
+    gap: 10,
+    paddingVertical: 9,
     paddingHorizontal: 12,
-    borderRadius: 17,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
   },
   itemIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 14,
+    width: 34,
+    height: 34,
+    borderRadius: 13,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  itemImageIcon: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   },
   itemCopy: {
     flex: 1,
@@ -305,20 +303,20 @@ const styles = StyleSheet.create({
   },
   itemTitle: {
     ...typeScale.cardTitle,
-    fontSize: 15,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 18,
     fontWeight: '900',
   },
   itemBody: {
     ...typeScale.caption,
     fontSize: 12,
-    lineHeight: 17,
+    lineHeight: 16,
     fontWeight: '700',
     marginTop: 2,
   },
   preferenceRow: {
-    minHeight: 50,
-    borderRadius: 17,
+    minHeight: 46,
+    borderRadius: 16,
     borderWidth: 1,
     marginTop: 12,
     paddingLeft: 14,
@@ -336,18 +334,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   preferenceTrack: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
+    width: 48,
+    height: 28,
+    borderRadius: 14,
     borderWidth: 1,
     padding: 3,
     flexDirection: 'row',
     alignItems: 'center',
   },
   preferenceThumb: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     shadowColor: '#07145F',
     shadowOpacity: 0.14,
     shadowRadius: 5,
@@ -355,8 +353,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   ctaShell: {
-    minHeight: 54,
-    borderRadius: 18,
+    minHeight: 50,
+    borderRadius: 16,
     overflow: 'hidden',
     marginTop: 12,
     shadowColor: '#6136F5',
@@ -367,8 +365,8 @@ const styles = StyleSheet.create({
   },
   cta: {
     flex: 1,
-    minHeight: 54,
-    borderRadius: 18,
+    minHeight: 50,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',

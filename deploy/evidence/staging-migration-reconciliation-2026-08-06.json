@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "stackr-migration-reconciliation-v1.1.0",
+  "capturedAt": "2026-08-07T19:18:25.035Z",
+  "sourceCommitHash": "2e9dee16088c0f3d0f3d0b31559543e42e12339e",
+  "workingTreeChangesIncluded": true,
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+  "status": "aligned",
+  "reconciliationComplete": true,
+  "productionMutationPerformed": false,
+  "stagingMutationPerformed": true,
+  "stagingApplicationSchemaOrDataMutationPerformedByReconciliation": true,
+  "localMigrationFileCount": 97,
+  "stagingMigrationHistoryCountAfter": 97,
+  "exactVersionNameOrderMatch": true,
+  "orderedMigrationKeySha256": "81adec03934e5a56de2e18937f4748e7cfcc7a41c458871e69541e5188e65b4d",
+  "remoteOrderedMigrationKeySha256": "81adec03934e5a56de2e18937f4748e7cfcc7a41c458871e69541e5188e65b4d",
+  "repositoryMigrationContentSha256": "de4af70b8dfd16bc41de78f32b109550f133724459f8ebe25bdfe28a23021d0e",
+  "firstMigration": "20260513170000_card_fingerprint_regions",
+  "latestMigration": "20260807184200_search_recognition_candidate_index",
+  "historyRepairs": [
+    {
+      "name": "strict_foreign_catalogue_import_safety",
+      "fromVersion": "20260805155815",
+      "toVersion": "20260801090000"
+    },
+    {
+      "name": "catalogue_image_leftover_workflow",
+      "fromVersion": "20260805155819",
+      "toVersion": "20260801103000"
+    },
+    {
+      "name": "language_catalogue_publication_snapshots",
+      "fromVersion": "20260805155821",
+      "toVersion": "20260801120000"
+    },
+    {
+      "name": "recognition_service_database_role",
+      "fromVersion": "20260805200102",
+      "toVersion": "20260805200000"
+    },
+    {
+      "name": "optimise_catalogue_quality_report",
+      "fromVersion": "20260806170343",
+      "toVersion": "20260806170203"
+    },
+    {
+      "name": "make_catalogue_quality_report_targeted",
+      "fromVersion": "20260806170638",
+      "toVersion": "20260806170501"
+    },
+    {
+      "name": "resolve_asset_manifest_catalogue_identity",
+      "fromVersion": "20260806171951",
+      "toVersion": "20260806171907"
+    },
+    {
+      "name": "materialize_dinov2_vits14_embedding_index",
+      "fromVersion": "20260806174146",
+      "toVersion": "20260806174020"
+    },
+    {
+      "name": "index_dinov2_embedding_foreign_keys",
+      "fromVersion": "20260806183038",
+      "toVersion": "20260806183600"
+    },
+    {
+      "name": "expose_catalogue_artwork_fallbacks",
+      "fromVersion": "20260806211433",
+      "toVersion": "20260806212500"
+    },
+    {
+      "name": "backfill_catalogue_native_image_states",
+      "fromVersion": "20260806211631",
+      "toVersion": "20260806213000"
+    },
+    {
+      "name": "repair_provider_variant_identity",
+      "fromVersion": "20260807035102",
+      "toVersion": "20260807034806"
+    },
+    {
+      "name": "register_private_scan_upload",
+      "fromVersion": "20260807173417",
+      "toVersion": "20260807173127"
+    },
+    {
+      "name": "allow_recognition_read_private_scan_uploads",
+      "fromVersion": "20260807174748",
+      "toVersion": "20260807174127"
+    },
+    {
+      "name": "allow_recognition_vector_extension_usage",
+      "fromVersion": "20260807180041",
+      "toVersion": "20260807180227"
+    }
+  ],
+  "latestMigrationVerification": {
+    "migration": "20260807184200_search_recognition_candidate_index",
+    "grant": "recognition_candidate_search_service_role_only",
+    "securityDefinerSearchPath": "empty",
+    "anonymousAndAuthenticatedExecute": false,
+    "stagingVerificationPassed": true
+  },
+  "advisorReview": {
+    "securityAdvisorRun": true,
+    "performanceAdvisorRun": true,
+    "newFindingAttributedToLatestMigration": false,
+    "preExistingFindingsRemain": true
+  },
+  "actionsTaken": [
+    "applied_and_verified_eight_catalogue_and_embedding_migrations",
+    "repaired_fifteen_connector_generated_staging_history_versions",
+    "verified_exact_97_for_97_repository_and_staging_migration_order",
+    "replayed_current_native_image_status_reconciliation_after_repository_hash_drift",
+    "tracked_and_verified_three_private_scan_recognition_migrations",
+    "tracked_and_verified_service_role_only_recognition_index_build_api",
+    "tracked_and_verified_service_role_only_recognition_candidate_search",
+    "verified_production_was_not_modified"
+  ]
+}

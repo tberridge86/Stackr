@@ -1,7 +1,7 @@
 import { searchLocalPokemonCards } from './cardSearch';
-import { USD_TO_GBP } from './config';
-import { getPreferredMarketPrice, getPriceFromPokemonCard } from './pricing';
 import { supabase } from './supabase';
+import { getPreferredSetDisplayName } from './pokemonDisplayNames';
+import { fetchStackrCardRows, fetchStackrPriceSnapshots, fetchStackrSetRows } from './stackrDomainAdapter';
 
 export type PokedexCard = {
   id: string;
@@ -80,13 +80,7 @@ const uniqueUrls = (urls: (string | null | undefined)[]) =>
   Array.from(new Set(urls.filter((url): url is string => Boolean(url))));
 
 const buildPokedexImageUrls = (card: any) => {
-  const id = String(card.id ?? '').trim();
-  const scrydexLarge = id ? `https://images.scrydex.com/pokemon/${id}/large` : null;
-  const scrydexSmall = id ? `https://images.scrydex.com/pokemon/${id}/small` : null;
-
   return uniqueUrls([
-    scrydexLarge,
-    scrydexSmall,
     card.raw_data?.images?.large,
     card.raw_data?.images?.small,
     card.image_large,
@@ -96,6 +90,18 @@ const buildPokedexImageUrls = (card: any) => {
 
 const mapCardRow = (card: any): PokedexCard => {
   const imageUrls = buildPokedexImageUrls(card);
+  const setName = getPreferredSetDisplayName({
+    id: card.set_id ?? card.raw_data?.set?.id ?? null,
+    sourceId: card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set?.source_id ?? card.raw_data?.source_id ?? card.set_id ?? null,
+    setCode: card.raw_data?.set?.set_code ?? card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set_code ?? card.set_id ?? null,
+    language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
+    region: card.region ?? card.raw_data?.region ?? card.raw_data?.set?.region ?? null,
+    localName: card.raw_data?.set?.local_name ?? card.raw_data?.set?.name ?? null,
+    englishDisplayName: card.raw_data?.set?.english_display_name ?? card.raw_data?.set?.englishDisplayName ?? null,
+    canonicalName: card.raw_data?.set?.name ?? card.set_name ?? null,
+    fallbackName: card.set_name ?? card.set_id ?? null,
+    raw: card.raw_data?.set ?? card.raw_data,
+  });
 
   return {
     id: card.id,
@@ -103,7 +109,7 @@ const mapCardRow = (card: any): PokedexCard => {
     number: card.number ?? null,
     rarity: card.rarity ?? card.raw_data?.rarity ?? null,
     set_id: card.set_id ?? card.raw_data?.set?.id ?? null,
-    set_name: card.raw_data?.set?.name ?? card.set_name ?? null,
+    set_name: setName,
     image_small: imageUrls[1] ?? imageUrls[0] ?? null,
     image_large: imageUrls[0] ?? null,
     image_urls: imageUrls,
@@ -133,20 +139,10 @@ async function addSetNames(cards: PokedexCard[]): Promise<PokedexCard[]> {
 
   if (!missingSetNameIds.length) return cards;
 
-  const { data, error } = await supabase
-    .from('pokemon_sets')
-    .select('id, name')
-    .in('id', missingSetNameIds);
-
-  if (error) {
-    console.log('Pokedex set name lookup failed:', error.message);
-    return cards;
-  }
-
-  const setNameMap = new Map((data ?? []).map((set: any) => [set.id, set.name]));
+  const sets = await fetchStackrSetRows(missingSetNameIds);
   return cards.map((card) => ({
     ...card,
-    set_name: card.set_name ?? (card.set_id ? setNameMap.get(card.set_id) ?? null : null),
+    set_name: card.set_name ?? (card.set_id ? sets.get(card.set_id)?.name ?? null : null),
   }));
 }
 
@@ -154,37 +150,15 @@ async function addLatestPrices(cards: PokedexCard[]): Promise<PokedexCard[]> {
   const cardIds = [...new Set(cards.map((card) => card.id).filter(Boolean))];
   if (!cardIds.length) return cards;
 
-  const snapshotMap = new Map<string, any>();
-  for (let i = 0; i < cardIds.length; i += 250) {
-    const batch = cardIds.slice(i, i + 250);
-    const { data, error } = await supabase
-      .from('market_price_snapshots')
-      .select('card_id, ebay_average, tcg_mid, cardmarket_trend, snapshot_at')
-      .in('card_id', batch)
-      .order('snapshot_at', { ascending: false });
-
-    if (error) {
-      console.log('Pokedex price lookup failed:', error.message);
-      continue;
-    }
-
-    for (const row of data ?? []) {
-      if (!snapshotMap.has((row as any).card_id)) {
-        snapshotMap.set((row as any).card_id, row);
-      }
-    }
-  }
+  const snapshotMap = await fetchStackrPriceSnapshots(cardIds);
 
   return cards.map((card) => {
-    const fallbackTcgUsd = getPriceFromPokemonCard(card.raw_data);
-    const price = getPreferredMarketPrice(snapshotMap.get(card.id), {
-      tcg: typeof fallbackTcgUsd === 'number' ? fallbackTcgUsd * USD_TO_GBP : null,
-    });
+    const price = snapshotMap.get(card.id);
 
     return {
       ...card,
-      estimated_value: price.value,
-      price_source: price.source,
+      estimated_value: price?.market_central ?? null,
+      price_source: price ? 'stackr-api' : null,
     };
   });
 }
@@ -200,33 +174,14 @@ async function fetchPokemonTcgApiCardsForPokemon(pokemonName: string): Promise<P
   const cardsById = new Map<string, PokedexCard>();
 
   for (const term of terms) {
-    const query = `name:"*${term.replace(/"/g, '')}*"`;
-    const url = `https://api.pokemontcg.io/v2/cards?q=${encodeURIComponent(query)}&pageSize=250&orderBy=-set.releaseDate`;
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        console.log('Pokedex Pokemon TCG API fallback failed:', {
-          pokemonName,
-          term,
-          status: response.status,
-        });
-        continue;
-      }
-
-      const json = await response.json();
-      const rows = Array.isArray(json?.data) ? json.data : [];
-
-      for (const row of rows) {
-        if (!pokemonNameMatchesCardName(displayName, row.name ?? '')) continue;
-        cardsById.set(row.id, mapApiCard(row));
-      }
-    } catch (error) {
-      console.log('Pokedex Pokemon TCG API fallback errored:', {
-        pokemonName,
-        term,
-        message: error instanceof Error ? error.message : String(error),
-      });
+    const rows = await searchLocalPokemonCards<any>(term, {
+      language: 'all',
+      limit: 250,
+      skipSetDetection: true,
+    });
+    for (const row of rows) {
+      if (!pokemonNameMatchesCardName(displayName, row.name ?? '')) continue;
+      cardsById.set(row.id, mapCardRow(row));
     }
   }
 
@@ -239,23 +194,12 @@ export async function fetchCardsForPokemon(pokemonName: string): Promise<Pokedex
   const rowsById = new Map<string, any>();
 
   for (const term of searchTerms) {
-    const { data, error } = await supabase
-      .from('pokemon_cards')
-      .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-      .ilike('name', `%${term}%`)
-      .limit(1000);
-
-    if (error) {
-      console.log('Pokedex direct card lookup failed:', {
-        pokemonName,
-        term,
-        message: error.message,
-        code: error.code,
-      });
-      continue;
-    }
-
-    for (const row of data ?? []) {
+    const data = await searchLocalPokemonCards<any>(term, {
+      language: 'all',
+      limit: 100,
+      skipSetDetection: true,
+    });
+    for (const row of data) {
       rowsById.set(row.id, row);
     }
   }
@@ -364,16 +308,10 @@ export async function fetchOwnedPokemonNameSet(): Promise<Set<string>> {
 
   if (!cardIds.length) return names;
 
-  for (let i = 0; i < cardIds.length; i += 200) {
-    const batch = cardIds.slice(i, i + 200);
-    const { data, error } = await supabase
-      .from('pokemon_cards')
-      .select('name')
-      .in('id', batch);
-
-    if (error) throw error;
-
-    for (const card of data ?? []) {
+  const rows = await fetchStackrCardRows(cardIds);
+  for (const cardId of cardIds) {
+    const card = rows.get(cardId);
+    if (card) {
       const normalizedCardName = normalise(card.name ?? '');
       if (!normalizedCardName) continue;
       names.add(normalizedCardName);

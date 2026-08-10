@@ -1,4 +1,10 @@
-import type { MintyInsight, MintyInsightScores } from './mintyInsights';
+import {
+  getMintyInsightCategory,
+  getMintyRecommendedActionLabel,
+  type MintyInsight,
+  type MintyInsightEvidenceSignal,
+  type MintyInsightScores,
+} from './mintyInsights';
 
 export type MintyRecommendation =
   | 'strong_buy'
@@ -218,21 +224,21 @@ export function getMintyConfidenceLabel(score: number): MintyConfidenceBand {
 export function getMintyRecommendationLabel(recommendation: MintyRecommendation) {
   switch (recommendation) {
     case 'strong_buy':
-      return 'Strong opportunity';
+      return 'Looks like a strong buy';
     case 'buy':
-      return 'Buy';
+      return 'Looks like a buy';
     case 'watch':
-      return 'Worth watching';
+      return 'Keep watching';
     case 'hold':
-      return 'Hold';
+      return 'Hold for now';
     case 'consider_selling':
       return 'Consider selling';
     case 'sell':
-      return 'Sell';
+      return 'Think about selling';
     case 'avoid':
-      return 'Avoid for now';
+      return 'Skip for now';
     default:
-      return 'Not enough reliable data';
+      return 'Not enough recent sales';
   }
 }
 
@@ -325,62 +331,85 @@ function buildSignals(input: MintyRecommendationInput, scoreParts: Record<string
   if (metrics.change30dPercent != null) {
     signals.push(signal(
       metrics.change30dPercent >= 0 ? 'positive' : 'negative',
-      metrics.change30dPercent >= 0 ? 'Price momentum is positive' : 'Price momentum is softening',
-      `Thirty-day movement is ${metrics.change30dPercent > 0 ? '+' : ''}${metrics.change30dPercent.toFixed(1)}%.`,
+      metrics.change30dPercent >= 0 ? 'Price has been moving up' : 'Price has been moving down',
+      `Over the last 30 days it moved ${metrics.change30dPercent > 0 ? '+' : ''}${metrics.change30dPercent.toFixed(1)}%.`,
       Math.max(35, scoreParts.priceMomentum)
     ));
   }
   if (metrics.confirmedSales30d > 0) {
-    signals.push(signal('positive', 'Recent sold data exists', `${metrics.confirmedSales30d} confirmed sale${metrics.confirmedSales30d === 1 ? '' : 's'} in the last 30 days.`, 62 + Math.min(25, metrics.confirmedSales30d * 2)));
+    signals.push(signal('positive', 'Recent sales found', `${metrics.confirmedSales30d} confirmed sale${metrics.confirmedSales30d === 1 ? '' : 's'} in the last 30 days.`, 62 + Math.min(25, metrics.confirmedSales30d * 2)));
   } else {
-    signals.push(signal('negative', 'Sold-data coverage is limited', 'No confirmed sales were found in the current 30-day window.', 36));
+    signals.push(signal('negative', 'Not many recent sales', 'No confirmed sales were found in the last 30 days.', 36));
   }
   if (metrics.activeSupply > 0) {
     const type = metrics.activeSupply > metrics.confirmedSales30d * 2 ? 'negative' : 'neutral';
-    signals.push(signal(type, 'Active supply check', `${metrics.activeSupply} active listing${metrics.activeSupply === 1 ? '' : 's'} against ${metrics.confirmedSales30d} recent sale${metrics.confirmedSales30d === 1 ? '' : 's'}.`, scoreParts.supplyPressure));
+    signals.push(signal(type, 'Listings versus sales', `${metrics.activeSupply} active listing${metrics.activeSupply === 1 ? '' : 's'} against ${metrics.confirmedSales30d} recent sale${metrics.confirmedSales30d === 1 ? '' : 's'}.`, scoreParts.supplyPressure));
   }
   if (marketplace.favouriteCount || marketplace.chaseCount) {
-    signals.push(signal('positive', 'StackR collector interest', `${marketplace.favouriteCount} favourite${marketplace.favouriteCount === 1 ? '' : 's'} and ${marketplace.chaseCount} chase marker${marketplace.chaseCount === 1 ? '' : 's'} in StackR.`, scoreParts.stackrInterest));
+    signals.push(signal('positive', 'Collector interest in StackR', `${marketplace.favouriteCount} saved listing${marketplace.favouriteCount === 1 ? '' : 's'} and ${marketplace.chaseCount} chase marker${marketplace.chaseCount === 1 ? '' : 's'} in StackR.`, scoreParts.stackrInterest));
   }
   if (metrics.sourceAgreement < 45) {
-    signals.push(signal('negative', 'Sources disagree', 'Pricing sources are not closely aligned, so Minty reduces confidence.', metrics.sourceAgreement));
+    signals.push(signal('negative', 'Price sources do not agree', 'Recent prices are spread out, so Minty is less certain.', metrics.sourceAgreement));
   }
   if (metrics.outlierRate > 0.25) {
-    signals.push(signal('negative', 'Outlier rate is high', `${Math.round(metrics.outlierRate * 100)}% of observations were treated as outliers or unreliable.`, 42));
+    signals.push(signal('negative', 'Some prices looked unusual', `${Math.round(metrics.outlierRate * 100)}% of observations looked too unusual to trust fully.`, 42));
   }
   return signals;
 }
 
+function getPlainRecommendationSummary(
+  recommendation: MintyRecommendation,
+  input: MintyRecommendationInput,
+  name: string
+) {
+  switch (recommendation) {
+    case 'strong_buy':
+    case 'buy':
+      return `${name} looks worth buying if the price fits your budget. Recent patterns are leaning in its favour, but check the latest sold prices before you commit.`;
+    case 'watch':
+      return `${name} is interesting, but I would not rush. Set an alert and wait for the next few sales to confirm the direction.`;
+    case 'hold':
+      return `${name} looks steady. If you own it, I would keep it for now; if you want it, wait for a fair listing rather than chasing the first one.`;
+    case 'consider_selling':
+    case 'sell':
+      return input.userContext.ownsCard
+        ? `Recent patterns are weaker for ${name}. If this is a spare copy, compare recent sold prices and consider listing it.`
+        : `I would be careful buying ${name} right now. Recent patterns do not give a strong reason to chase it.`;
+    case 'avoid':
+      return `I would skip ${name} for now unless it is a personal chase or grail. The current patterns do not support paying up.`;
+    default:
+      return `${name} matters to your collection, but there are not enough recent sold prices for confident advice yet. I would set an alert and wait for a few more sales before buying or selling.`;
+  }
+}
+
 function buildNarrativeFallback(
   input: MintyRecommendationInput,
+  recommendation: MintyRecommendation,
   recommendationLabel: string,
-  confidenceLabel: MintyConfidenceBand,
   signals: MintyStructuredSignal[],
   limitations: string[]
 ): MintyNarrative {
   const positives = signals.filter((item) => item.type === 'positive').slice(0, 3);
   const negatives = signals.filter((item) => item.type === 'negative').slice(0, 3);
   const name = input.card.name;
-  const summary = recommendationLabel === 'Not enough reliable data'
-    ? `${name} is relevant, but Minty does not have enough reliable sold-price evidence to recommend an action yet.`
-    : `${recommendationLabel} for ${name}. Minty is ${confidenceLabel.toLowerCase()} confidence because the recommendation is based on the current price, demand, supply and source-quality signals.`;
+  const summary = getPlainRecommendationSummary(recommendation, input, name);
   return {
     headline: `${recommendationLabel}: ${name}`,
     recommendationSummary: summary,
-    opportunities: positives.length ? positives.map((item) => `${item.label}: ${item.evidence}`) : ['No strong positive signal is confirmed yet.'],
-    risks: negatives.length ? negatives.map((item) => `${item.label}: ${item.evidence}`) : ['No major risk signal is dominant, but check fresh sold comps before acting.'],
+    opportunities: positives.length ? positives.map((item) => `${item.label}: ${item.evidence}`) : ['No strong positive pattern is clear yet.'],
+    risks: negatives.length ? negatives.map((item) => `${item.label}: ${item.evidence}`) : ['No big warning sign right now, but check recent sold prices before acting.'],
     whyMintyPickedThis: [
-      input.userContext.ownsCard ? 'It is connected to your collection.' : 'It is connected to your StackR activity.',
-      input.userContext.inChaseList ? 'It appears in your chase list.' : 'Minty ranked it using current market and StackR demand signals.',
-      signals[0]?.evidence ?? 'The recommendation is based on scored market metrics.',
+      input.userContext.ownsCard ? 'This card is in your collection.' : 'This card came from your StackR activity.',
+      input.userContext.inChaseList ? 'It appears in your chase list.' : 'Minty compared recent prices, listings, and StackR interest.',
+      signals[0]?.evidence ?? 'Minty looked at recent price and listing patterns.',
     ],
     outlook: input.metrics.change30dPercent == null
-      ? 'Highly uncertain until more sold-price coverage appears.'
+      ? 'Unclear until more recent sold prices appear.'
       : input.metrics.change30dPercent > 4
-        ? 'Likely to rise if demand continues and supply stays controlled.'
+        ? 'Could rise if people keep buying and listings stay limited.'
         : input.metrics.change30dPercent < -4
-          ? 'Likely to soften unless new demand absorbs supply.'
-          : 'Likely to remain stable unless new sales shift the trend.',
+          ? 'Could dip unless collector interest picks up.'
+          : 'Looks fairly steady unless new sales change the pattern.',
     limitationText: limitations.length ? limitations.join(' ') : undefined,
   };
 }
@@ -396,32 +425,32 @@ function getOutlook(metrics: CardMarketMetrics, confidenceScore: number): MintyR
 function getActions(recommendation: MintyRecommendation, input: MintyRecommendationInput): MintyRecommendedAction[] {
   if (recommendation === 'insufficient_data') {
     return [
-      { key: 'set_price_alert', label: 'Set Price Alert', primary: true },
-      { key: 'view_price_history', label: 'View Price History' },
+      { key: 'set_price_alert', label: 'Set price alert', primary: true },
+      { key: 'view_price_history', label: 'View price history' },
     ];
   }
   if (recommendation === 'sell' || recommendation === 'consider_selling') {
     return input.userContext.ownsCard
       ? [
-          { key: 'list_mine', label: 'List Mine', primary: true },
-          { key: 'view_price_history', label: 'View Price History' },
+          { key: 'list_mine', label: 'List mine', primary: true },
+          { key: 'view_price_history', label: 'View price history' },
           { key: 'hold', label: 'Hold' },
         ]
-      : [{ key: 'view_price_history', label: 'View Price History', primary: true }];
+      : [{ key: 'view_price_history', label: 'View price history', primary: true }];
   }
   if (recommendation === 'buy' || recommendation === 'strong_buy') {
     return [
-      { key: 'view_listings', label: 'View Listings', primary: true },
-      { key: 'set_price_alert', label: 'Set Price Alert' },
+      { key: 'view_listings', label: 'View listings', primary: true },
+      { key: 'set_price_alert', label: 'Set price alert' },
       input.card.language?.toLowerCase().startsWith('ja')
-        ? { key: 'compare_english', label: 'Compare English Version' }
-        : { key: 'compare_japanese', label: 'Compare Japanese Version' },
+        ? { key: 'compare_english', label: 'Compare English version' }
+        : { key: 'compare_japanese', label: 'Compare Japanese version' },
     ];
   }
   return [
-    { key: 'set_price_alert', label: 'Set Price Alert', primary: true },
-    { key: 'view_price_history', label: 'View Price History' },
-    input.userContext.inChaseList ? { key: 'view_listings', label: 'View Listings' } : { key: 'add_to_chase', label: 'Add to Chase Cards' },
+    { key: 'set_price_alert', label: 'Set price alert', primary: true },
+    { key: 'view_price_history', label: 'View price history' },
+    input.userContext.inChaseList ? { key: 'view_listings', label: 'View listings' } : { key: 'add_to_chase', label: 'Add to Chase' },
   ];
 }
 
@@ -454,7 +483,7 @@ export function evaluateMintyRecommendation(input: MintyRecommendationInput): Mi
   const recommendation = determineRecommendation(recommendationScore, confidenceScore, dataQualityScore, config);
   const recommendationLabel = getMintyRecommendationLabel(recommendation);
   const limitations = [...(input.dataLimitations ?? [])];
-  if (!hasSoldData) limitations.push('Confirmed sold-price coverage is limited.');
+  if (!hasSoldData) limitations.push('There are not many confirmed recent sales yet.');
   if (metrics.language?.toLowerCase().startsWith('ja') && metrics.sourceCount < 2) {
     limitations.push('Japanese pricing is available from limited source coverage.');
   }
@@ -466,7 +495,7 @@ export function evaluateMintyRecommendation(input: MintyRecommendationInput): Mi
   const opportunities = signals.filter((item) => item.type === 'positive');
   const risks = signals.filter((item) => item.type === 'negative');
   const generatedAt = input.generatedAt ?? new Date().toISOString();
-  const narrative = buildNarrativeFallback(input, recommendationLabel, confidenceLabel, signals, limitations);
+  const narrative = buildNarrativeFallback(input, recommendation, recommendationLabel, signals, limitations);
   const relevanceScore = clampScore(
     (input.userContext.ownsCard ? 30 : 0) +
     (input.userContext.inChaseList ? 24 : 0) +
@@ -525,21 +554,45 @@ export function mintyRecommendationToHomeInsight(
     freshness: 84,
     actionability: result.recommendedActions.some((action) => action.primary) ? 88 : 54,
   };
+  const recommendedRoute = routeForRecommendation(result.recommendation);
+  const evidence = result.signals.map((signal): MintyInsightEvidenceSignal => ({
+    type: signal.type,
+    label: signal.label,
+    evidence: signal.evidence,
+    confidenceScore: signal.confidenceScore,
+    confidenceLabel: signal.confidenceLabel,
+    source: 'market',
+  }));
+  const tags = ['api-backed', result.recommendation, card.language ?? 'unknown-language'];
   return {
     id: result.id,
     title: result.narrative.headline,
     body: result.narrative.recommendationSummary,
+    action_label: getMintyRecommendedActionLabel(recommendedRoute, {
+      recommended_actions: result.recommendedActions,
+      recommendation_label: result.recommendationLabel,
+    }),
+    explanation: result.narrative.recommendationSummary,
+    evidence,
+    data_refreshed_at: result.generatedAt,
+    source_context: 'market',
     confidence: confidenceToLegacy(result.confidenceLabel),
     confidence_score: result.confidenceScore,
     personalisation_reason: result.narrative.whyMintyPickedThis.join(' '),
     related_user_goal: result.recommendation === 'sell' || result.recommendation === 'consider_selling' ? 'selling_duplicate' : 'watching_market',
     related_cards: [card.name].filter(Boolean),
     related_products: [card.setName ?? ''].filter(Boolean),
-    recommended_route: routeForRecommendation(result.recommendation),
+    recommended_route: recommendedRoute,
     user_feedback_options: ['useful', 'not_relevant', 'show_less', 'hide'],
     privacy_level: 'personalised',
     scoring: scores,
-    tags: ['api-backed', result.recommendation, card.language ?? 'unknown-language'],
+    tags,
+    insight_category: getMintyInsightCategory({
+      tags,
+      recommendation: result.recommendation,
+      recommended_route: recommendedRoute,
+      related_user_goal: result.recommendation === 'sell' || result.recommendation === 'consider_selling' ? 'selling_duplicate' : 'watching_market',
+    }),
     recommendation: result.recommendation,
     recommendation_label: result.recommendationLabel,
     recommendation_score: result.recommendationScore,

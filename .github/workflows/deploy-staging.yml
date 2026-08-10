@@ -1,0 +1,225 @@
+name: Deploy Stackr Staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type DEPLOY STAGING
+        required: true
+        type: string
+      release_scope:
+        description: Rehearse the catalogue API now, or the full platform after recognition approval
+        required: true
+        default: catalogue_api
+        type: choice
+        options: [catalogue_api, full_platform]
+      apply_migrations:
+        description: Apply migrations after the dry run
+        required: true
+        default: false
+        type: boolean
+      release_candidate:
+        description: Require the production evidence gates for the selected scope
+        required: true
+        default: false
+        type: boolean
+      publish_mobile_update:
+        description: Publish an EAS update to the staging channel
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-staging-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      inputs.confirmation == 'DEPLOY STAGING' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/chore/api-gateway-v1')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: staging
+    env:
+      STACKR_DEPLOYMENT_ENVIRONMENT: staging
+      STACKR_DEPLOYMENT_SCOPE: ${{ inputs.release_scope }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
+      STACKR_MODEL_INDEX_RELEASE_APPROVED: ${{ vars.STACKR_MODEL_INDEX_RELEASE_APPROVED }}
+      STACKR_STORAGE_BACKUP_APPROVED: ${{ vars.STACKR_STORAGE_BACKUP_APPROVED }}
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      RAILWAY_RECOGNITION_SERVICE_ID: ${{ vars.RAILWAY_RECOGNITION_SERVICE_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL }}
+      STACKR_RECOGNITION_URL: ${{ vars.STACKR_RECOGNITION_URL }}
+      STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL }}
+      STACKR_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+      STACKR_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
+      BACKEND_ADMIN_KEY: ${{ secrets.BACKEND_ADMIN_KEY }}
+      RECOGNITION_SERVICE_SECRET: ${{ secrets.RECOGNITION_SERVICE_SECRET }}
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+          npm ci --prefix gateway
+
+      - name: Verify repository structure
+        run: npm run deploy:preflight
+
+      - name: Validate staging release mode
+        run: |
+          if [ "${{ inputs.apply_migrations }}" = "true" ] && [ "${{ inputs.release_candidate }}" != "true" ]; then
+            echo "Staging migrations require release_candidate=true and reviewed evidence."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
+            echo "Catalogue API rehearsals do not publish a mobile update."
+            exit 1
+          fi
+
+      - name: Require scoped production-candidate evidence
+        if: inputs.release_candidate
+        run: |
+          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ]; then
+            node scripts/deploy/verify-staging-readiness-evidence.mjs --require-catalogue-api-ready
+            npm run deploy:preflight -- --catalogue-api-release
+          else
+            node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
+            npm run deploy:preflight -- --release
+          fi
+
+      - name: Prepare gateway runtime configuration
+        run: >-
+          node scripts/deploy/write-worker-secrets.mjs
+          --output="$RUNNER_TEMP/stackr-worker-secrets.json"
+
+      - name: Validate the staging database target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_PROJECT_REF" = "lmwfhvexfcoyeuoyrlco"
+          node scripts/deploy/prepare-postgres-urls.mjs --source-only
+
+      - name: Verify latest physical backup and create ephemeral logical backups
+        run: |
+          mkdir -p "$RUNNER_TEMP/stackr-backup"
+          npx --yes supabase@2.110.0 backups list \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --output-format json > "$RUNNER_TEMP/stackr-backup/physical.json"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-backup/schema.sql"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --data-only \
+            --use-copy \
+            --file "$RUNNER_TEMP/stackr-backup/data.sql"
+          node scripts/deploy/verify-backup.mjs \
+            --physical="$RUNNER_TEMP/stackr-backup/physical.json" \
+            --schema="$RUNNER_TEMP/stackr-backup/schema.sql" \
+            --data="$RUNNER_TEMP/stackr-backup/data.sql" \
+            --require-physical
+
+      - name: Dry-run backward-compatible migrations
+        if: inputs.release_candidate
+        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all --dry-run
+
+      - name: Apply backward-compatible migrations
+        if: inputs.apply_migrations
+        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all
+
+      - name: Deploy catalogue API behind the staging gateway
+        run: >-
+          npx --yes @railway/cli@5.30.1 up backend --path-as-root --ci
+          --project "$RAILWAY_PROJECT_ID"
+          --environment "$RAILWAY_ENVIRONMENT_ID"
+          --service "$RAILWAY_BACKEND_SERVICE_ID"
+
+      - name: Deploy recognition container behind the staging gateway
+        if: inputs.release_scope == 'full_platform'
+        run: >-
+          npx --yes @railway/cli@5.30.1 up recognition-service --path-as-root --ci
+          --project "$RAILWAY_PROJECT_ID"
+          --environment "$RAILWAY_ENVIRONMENT_ID"
+          --service "$RAILWAY_RECOGNITION_SERVICE_ID"
+
+      - name: Inspect model and index evidence
+        if: inputs.release_scope == 'full_platform'
+        run: npm run deploy:verify-model
+
+      - name: Require an approved model and complete inactive index
+        if: inputs.release_candidate && inputs.release_scope == 'full_platform'
+        run: npm run deploy:verify-model -- --require-active
+
+      - name: Verify private service readiness
+        run: |
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
+          else
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL"
+          fi
+
+      - name: Upload and activate the staging gateway version
+        env:
+          RELEASE_TAG: staging-${{ github.sha }}
+        run: |
+          runtime_args=(
+            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL"
+            --var "RECOGNITION_REQUIRED:${{ inputs.release_scope == 'full_platform' && 'true' || 'false' }}"
+            --var "SUPABASE_URL:$STACKR_SUPABASE_URL"
+            --var "SUPABASE_PUBLISHABLE_KEY:$STACKR_SUPABASE_PUBLISHABLE_KEY"
+          )
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            runtime_args+=(--var "RECOGNITION_ORIGIN:$STACKR_RECOGNITION_URL")
+          fi
+          npm --prefix gateway exec -- wrangler --cwd gateway versions upload \
+            --env staging --tag "$RELEASE_TAG" --message "GitHub $GITHUB_SHA" \
+            --strict --keep-vars \
+            --secrets-file "$RUNNER_TEMP/stackr-worker-secrets.json" \
+            "${runtime_args[@]}"
+          npm --prefix gateway exec -- wrangler --cwd gateway versions deploy \
+            --env staging --version-tag "$RELEASE_TAG@100" --yes
+
+      - name: Smoke-test the public staging contract
+        run: >-
+          npm run deploy:smoke --
+          --gateway="$STACKR_GATEWAY_URL"
+          --full-gateway
+          --require-published-catalogue
+          --required-catalogue-languages=en,ja,zh-tw,zh-cn,ko
+
+      - name: Publish staging mobile configuration
+        if: inputs.publish_mobile_update && inputs.release_scope == 'full_platform'
+        run: >-
+          npx --yes eas-cli@21.4.0 update
+          --channel staging
+          --environment preview
+          --platform all
+          --message "Stackr staging $GITHUB_SHA"
+          --non-interactive
+
+      - name: Remove ephemeral logical backups
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/stackr-backup"
+          rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"

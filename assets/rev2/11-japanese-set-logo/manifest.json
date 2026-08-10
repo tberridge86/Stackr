@@ -1,0 +1,3947 @@
+{
+  "sourceDirectory": "D:\\Stackr-1\\assets\\rev2\\11-japanese-set-logo",
+  "logoDirectory": "D:\\Stackr-1\\assets\\rev2\\11-japanese-set-logo\\logos",
+  "totalUniqueLogos": 204,
+  "duplicateSourceCount": 7,
+  "logos": [
+    {
+      "key": "pmcg6",
+      "normalizedKey": "pmcg6",
+      "listedName": "Challenge from the Darkness",
+      "code": "PMCG6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pmcg6.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53 (1).jpeg",
+      "sourceIndex": 1,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 512,
+        "bottom": 512
+      },
+      "width": 1000,
+      "height": 476
+    },
+    {
+      "key": "pmcg5",
+      "normalizedKey": "pmcg5",
+      "listedName": "Leader's Stadium",
+      "code": "PMCG5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pmcg5.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53 (1).jpeg",
+      "sourceIndex": 1,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 0,
+        "right": 1024,
+        "bottom": 512
+      },
+      "width": 1000,
+      "height": 431
+    },
+    {
+      "key": "pmcg4",
+      "normalizedKey": "pmcg4",
+      "listedName": "Team Rocket",
+      "code": "PMCG4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pmcg4.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53 (1).jpeg",
+      "sourceIndex": 1,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 0,
+        "right": 1536,
+        "bottom": 512
+      },
+      "width": 1000,
+      "height": 444
+    },
+    {
+      "key": "pmcg3",
+      "normalizedKey": "pmcg3",
+      "listedName": "Mystery of the Fossils",
+      "code": "PMCG3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pmcg3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53 (1).jpeg",
+      "sourceIndex": 1,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 512,
+        "right": 512,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 437
+    },
+    {
+      "key": "pmcg2",
+      "normalizedKey": "pmcg2",
+      "listedName": "Pokemon Jungle",
+      "code": "PMCG2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pmcg2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53 (1).jpeg",
+      "sourceIndex": 1,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 512,
+        "right": 1024,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 507
+    },
+    {
+      "key": "pmcg1",
+      "normalizedKey": "pmcg1",
+      "listedName": "Base Set",
+      "code": "PMCG1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pmcg1.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53 (1).jpeg",
+      "sourceIndex": 1,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 512,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 412
+    },
+    {
+      "key": "vending-series-3-green",
+      "normalizedKey": "vendingseries3green",
+      "listedName": "Vending Series 3 (Green)",
+      "code": "Vending 3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/vending-series-3-green.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53.jpeg",
+      "sourceIndex": 2,
+      "sourcePosition": 1,
+      "sourceLayout": "3x1",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 512,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 387
+    },
+    {
+      "key": "vending-series-2-red",
+      "normalizedKey": "vendingseries2red",
+      "listedName": "Vending Series 2 (Red)",
+      "code": "Vending 2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/vending-series-2-red.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53.jpeg",
+      "sourceIndex": 2,
+      "sourcePosition": 2,
+      "sourceLayout": "3x1",
+      "sourceCrop": {
+        "left": 512,
+        "top": 0,
+        "right": 1024,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 526
+    },
+    {
+      "key": "vending-series-1-blue",
+      "normalizedKey": "vendingseries1blue",
+      "listedName": "Vending Series 1 (Blue)",
+      "code": "Vending 1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/vending-series-1-blue.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.53.jpeg",
+      "sourceIndex": 2,
+      "sourcePosition": 3,
+      "sourceLayout": "3x1",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 0,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 378
+    },
+    {
+      "key": "e2",
+      "normalizedKey": "e2",
+      "listedName": "The Town on No Map",
+      "code": "e2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/e2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (1).jpeg",
+      "sourceIndex": 3,
+      "sourcePosition": 1,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 260,
+        "top": 0,
+        "right": 1300,
+        "bottom": 420
+      },
+      "width": 929,
+      "height": 325,
+      "duplicateSources": [
+        {
+          "key": "e2",
+          "listedName": "The Town on No Map",
+          "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (2).jpeg",
+          "sourceIndex": 12,
+          "sourcePosition": 2
+        }
+      ]
+    },
+    {
+      "key": "vs1",
+      "normalizedKey": "vs1",
+      "listedName": "Pokemon VS",
+      "code": "VS",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/vs1.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (1).jpeg",
+      "sourceIndex": 3,
+      "sourcePosition": 2,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 330,
+        "top": 405,
+        "right": 1200,
+        "bottom": 980
+      },
+      "width": 1000,
+      "height": 514,
+      "duplicateSources": [
+        {
+          "key": "vs1",
+          "listedName": "Pokemon VS",
+          "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55.jpeg",
+          "sourceIndex": 20,
+          "sourcePosition": 1
+        }
+      ]
+    },
+    {
+      "key": "y33-vstar-half-deck",
+      "normalizedKey": "y33vstarhalfdeck",
+      "listedName": "Vstar Half Deck",
+      "code": "Y33",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/y33-vstar-half-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (10).jpeg",
+      "sourceIndex": 4,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 400
+      },
+      "width": 1032,
+      "height": 388
+    },
+    {
+      "key": "xy1b",
+      "normalizedKey": "xy1b",
+      "listedName": "Collection Y",
+      "code": "XY1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy1b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (10).jpeg",
+      "sourceIndex": 4,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 400
+      },
+      "width": 1000,
+      "height": 447,
+      "duplicateSources": [
+        {
+          "key": "xy1b",
+          "listedName": "Collection Y",
+          "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (11).jpeg",
+          "sourceIndex": 5,
+          "sourcePosition": 5
+        }
+      ]
+    },
+    {
+      "key": "xy1a",
+      "normalizedKey": "xy1a",
+      "listedName": "Collection X",
+      "code": "XY1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy1a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (10).jpeg",
+      "sourceIndex": 4,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 400
+      },
+      "width": 1000,
+      "height": 441,
+      "duplicateSources": [
+        {
+          "key": "xy1a",
+          "listedName": "Collection X",
+          "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (11).jpeg",
+          "sourceIndex": 5,
+          "sourcePosition": 6
+        }
+      ]
+    },
+    {
+      "key": "xy-beginning-set",
+      "normalizedKey": "xybeginningset",
+      "listedName": "XY Beginning Set",
+      "code": "XY1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy-beginning-set.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (10).jpeg",
+      "sourceIndex": 4,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 400,
+        "right": 533,
+        "bottom": 800
+      },
+      "width": 972,
+      "height": 780
+    },
+    {
+      "key": "xy-promos",
+      "normalizedKey": "xypromos",
+      "listedName": "XY Promos",
+      "code": "Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy-promos.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (10).jpeg",
+      "sourceIndex": 4,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 400,
+        "right": 1067,
+        "bottom": 800
+      },
+      "width": 1050,
+      "height": 528
+    },
+    {
+      "key": "xya-m-charizard-mega-battle-deck",
+      "normalizedKey": "xyamcharizardmegabattledeck",
+      "listedName": "M Charizard EX Mega Battle Deck",
+      "code": "XYA",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xya-m-charizard-mega-battle-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (11).jpeg",
+      "sourceIndex": 5,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 438
+      },
+      "width": 1000,
+      "height": 552
+    },
+    {
+      "key": "xy2",
+      "normalizedKey": "xy2",
+      "listedName": "Wild Blaze",
+      "code": "XY2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (11).jpeg",
+      "sourceIndex": 5,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 438
+      },
+      "width": 1000,
+      "height": 532
+    },
+    {
+      "key": "x30-xerneas-half-deck",
+      "normalizedKey": "x30xerneashalfdeck",
+      "listedName": "Xerneas Half Deck",
+      "code": "X30",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/x30-xerneas-half-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (11).jpeg",
+      "sourceIndex": 5,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 438
+      },
+      "width": 1000,
+      "height": 550
+    },
+    {
+      "key": "y30-yveltal-half-deck",
+      "normalizedKey": "y30yveltalhalfdeck",
+      "listedName": "Yveltal Half Deck",
+      "code": "Y30",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/y30-yveltal-half-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (11).jpeg",
+      "sourceIndex": 5,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 438,
+        "right": 533,
+        "bottom": 877
+      },
+      "width": 1000,
+      "height": 513
+    },
+    {
+      "key": "cp1",
+      "normalizedKey": "cp1",
+      "listedName": "Magma Gang vs Aqua Gang: Double Crisis",
+      "code": "CP1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/cp1.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (12).jpeg",
+      "sourceIndex": 6,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 438
+      },
+      "width": 1000,
+      "height": 617
+    },
+    {
+      "key": "xy5a",
+      "normalizedKey": "xy5a",
+      "listedName": "Gaia Volcano",
+      "code": "XY5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy5a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (12).jpeg",
+      "sourceIndex": 6,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 438
+      },
+      "width": 1006,
+      "height": 504
+    },
+    {
+      "key": "xy5b",
+      "normalizedKey": "xy5b",
+      "listedName": "Tidal Storm",
+      "code": "XY5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy5b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (12).jpeg",
+      "sourceIndex": 6,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 438
+      },
+      "width": 1000,
+      "height": 555
+    },
+    {
+      "key": "xyb-hyper-metal-chain-deck",
+      "normalizedKey": "xybhypermetalchaindeck",
+      "listedName": "Hyper Metal Chain Deck",
+      "code": "XYB",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xyb-hyper-metal-chain-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (12).jpeg",
+      "sourceIndex": 6,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 438,
+        "right": 533,
+        "bottom": 876
+      },
+      "width": 1000,
+      "height": 447
+    },
+    {
+      "key": "xy4",
+      "normalizedKey": "xy4",
+      "listedName": "Phantom Gate",
+      "code": "XY4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy4.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (12).jpeg",
+      "sourceIndex": 6,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 438,
+        "right": 1067,
+        "bottom": 876
+      },
+      "width": 1000,
+      "height": 470
+    },
+    {
+      "key": "xy3",
+      "normalizedKey": "xy3",
+      "listedName": "Rising Fist",
+      "code": "XY3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (12).jpeg",
+      "sourceIndex": 6,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 438,
+        "right": 1600,
+        "bottom": 876
+      },
+      "width": 1000,
+      "height": 474
+    },
+    {
+      "key": "xy8a",
+      "normalizedKey": "xy8a",
+      "listedName": "Blue Impact",
+      "code": "XY8",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy8a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (13).jpeg",
+      "sourceIndex": 7,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 452
+      },
+      "width": 1008,
+      "height": 532
+    },
+    {
+      "key": "xy8b",
+      "normalizedKey": "xy8b",
+      "listedName": "Red Flash",
+      "code": "XY8",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy8b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (13).jpeg",
+      "sourceIndex": 7,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 452
+      },
+      "width": 1000,
+      "height": 555
+    },
+    {
+      "key": "cp2",
+      "normalizedKey": "cp2",
+      "listedName": "Legendary Holo Collection",
+      "code": "CP2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/cp2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (13).jpeg",
+      "sourceIndex": 7,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 452
+      },
+      "width": 1000,
+      "height": 562
+    },
+    {
+      "key": "xy7",
+      "normalizedKey": "xy7",
+      "listedName": "Bandit Ring",
+      "code": "XY7",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy7.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (13).jpeg",
+      "sourceIndex": 7,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 452,
+        "right": 533,
+        "bottom": 904
+      },
+      "width": 1020,
+      "height": 518
+    },
+    {
+      "key": "xy6-mega-rayquaza-ex-battle-deck",
+      "normalizedKey": "xy6megarayquazaexbattledeck",
+      "listedName": "Mega Rayquaza EX Battle Deck",
+      "code": "XY6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy6-mega-rayquaza-ex-battle-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (13).jpeg",
+      "sourceIndex": 7,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 452,
+        "right": 1067,
+        "bottom": 904
+      },
+      "width": 1012,
+      "height": 536
+    },
+    {
+      "key": "xy6",
+      "normalizedKey": "xy6",
+      "listedName": "Emerald Break",
+      "code": "XY6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy6.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (13).jpeg",
+      "sourceIndex": 7,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 452,
+        "right": 1600,
+        "bottom": 904
+      },
+      "width": 1040,
+      "height": 500
+    },
+    {
+      "key": "20th-starter-pack",
+      "normalizedKey": "20thstarterpack",
+      "listedName": "Pokemon Card Game Starter Pack",
+      "code": "20th",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/20th-starter-pack.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (14).jpeg",
+      "sourceIndex": 8,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 450
+      },
+      "width": 1000,
+      "height": 562
+    },
+    {
+      "key": "cp3",
+      "normalizedKey": "cp3",
+      "listedName": "Pokekyun Collection",
+      "code": "CP3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/cp3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (14).jpeg",
+      "sourceIndex": 8,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 450
+      },
+      "width": 1000,
+      "height": 693
+    },
+    {
+      "key": "xy9",
+      "normalizedKey": "xy9",
+      "listedName": "Rage of the Broken Sky",
+      "code": "XY9",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy9.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (14).jpeg",
+      "sourceIndex": 8,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 450
+      },
+      "width": 1000,
+      "height": 595
+    },
+    {
+      "key": "xyf-golduck-break-palkia-ex-combo-deck",
+      "normalizedKey": "xyfgolduckbreakpalkiaexcombodeck",
+      "listedName": "Golduck BREAK & Palkia EX Combo Deck",
+      "code": "XYF",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xyf-golduck-break-palkia-ex-combo-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (14).jpeg",
+      "sourceIndex": 8,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 450,
+        "right": 533,
+        "bottom": 900
+      },
+      "width": 1000,
+      "height": 557
+    },
+    {
+      "key": "snp-noivern-break-evolution-pack",
+      "normalizedKey": "snpnoivernbreakevolutionpack",
+      "listedName": "Noivern BREAK Evolution Pack",
+      "code": "SNP",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/snp-noivern-break-evolution-pack.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (14).jpeg",
+      "sourceIndex": 8,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 450,
+        "right": 1067,
+        "bottom": 900
+      },
+      "width": 1000,
+      "height": 603
+    },
+    {
+      "key": "snp-raichu-break-evolution-pack",
+      "normalizedKey": "snpraichubreakevolutionpack",
+      "listedName": "Raichu BREAK Evolution Pack",
+      "code": "SNP",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/snp-raichu-break-evolution-pack.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (14).jpeg",
+      "sourceIndex": 8,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 450,
+        "right": 1600,
+        "bottom": 900
+      },
+      "width": 1000,
+      "height": 574
+    },
+    {
+      "key": "xy11a",
+      "normalizedKey": "xy11a",
+      "listedName": "Explosive Warrior",
+      "code": "XY11",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy11a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (15).jpeg",
+      "sourceIndex": 9,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 426
+      },
+      "width": 1000,
+      "height": 551
+    },
+    {
+      "key": "xy11b",
+      "normalizedKey": "xy11b",
+      "listedName": "Ruthless Rebel",
+      "code": "XY11",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy11b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (15).jpeg",
+      "sourceIndex": 9,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 426
+      },
+      "width": 1000,
+      "height": 550
+    },
+    {
+      "key": "cp4",
+      "normalizedKey": "cp4",
+      "listedName": "Premium Champion Pack: EX x M x BREAK",
+      "code": "CP4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/cp4.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (15).jpeg",
+      "sourceIndex": 9,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 426
+      },
+      "width": 1000,
+      "height": 570
+    },
+    {
+      "key": "xyh-mega-audino-ex-mega-battle-deck",
+      "normalizedKey": "xyhmegaaudinoexmegabattledeck",
+      "listedName": "Mega Audino EX Mega Battle Deck",
+      "code": "XYH",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xyh-mega-audino-ex-mega-battle-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (15).jpeg",
+      "sourceIndex": 9,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 426,
+        "right": 533,
+        "bottom": 853
+      },
+      "width": 1000,
+      "height": 572
+    },
+    {
+      "key": "xy10",
+      "normalizedKey": "xy10",
+      "listedName": "Awakening of Psychic Kings",
+      "code": "XY10",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy10.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (15).jpeg",
+      "sourceIndex": 9,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 426,
+        "right": 1067,
+        "bottom": 853
+      },
+      "width": 1000,
+      "height": 571
+    },
+    {
+      "key": "xyg-zygarde-ex-perfect-battle-deck",
+      "normalizedKey": "xygzygardeexperfectbattledeck",
+      "listedName": "Zygarde EX Perfect Battle Deck",
+      "code": "XYG",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xyg-zygarde-ex-perfect-battle-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (15).jpeg",
+      "sourceIndex": 9,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 426,
+        "right": 1600,
+        "bottom": 853
+      },
+      "width": 1000,
+      "height": 578
+    },
+    {
+      "key": "smb-premium-trainer-box",
+      "normalizedKey": "smbpremiumtrainerbox",
+      "listedName": "Premium Trainer Box",
+      "code": "SMB",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/smb-premium-trainer-box.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (16).jpeg",
+      "sourceIndex": 10,
+      "sourcePosition": 1,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 85,
+        "top": 10,
+        "right": 620,
+        "bottom": 225
+      },
+      "width": 1000,
+      "height": 428
+    },
+    {
+      "key": "xy-best-of-xy",
+      "normalizedKey": "xybestofxy",
+      "listedName": "The Best of XY",
+      "code": "XY",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/xy-best-of-xy.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (16).jpeg",
+      "sourceIndex": 10,
+      "sourcePosition": 2,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 45,
+        "top": 380,
+        "right": 515,
+        "bottom": 735
+      },
+      "width": 1000,
+      "height": 671
+    },
+    {
+      "key": "cp6",
+      "normalizedKey": "cp6",
+      "listedName": "20th Anniversary Collection",
+      "code": "CP6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/cp6.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (16).jpeg",
+      "sourceIndex": 10,
+      "sourcePosition": 3,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 525,
+        "top": 390,
+        "right": 1045,
+        "bottom": 735
+      },
+      "width": 1000,
+      "height": 576
+    },
+    {
+      "key": "cp5",
+      "normalizedKey": "cp5",
+      "listedName": "Mythical / Legendary Dream Holo Collection",
+      "code": "CP5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/cp5.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (16).jpeg",
+      "sourceIndex": 10,
+      "sourcePosition": 4,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 1090,
+        "top": 360,
+        "right": 1585,
+        "bottom": 735
+      },
+      "width": 1000,
+      "height": 695
+    },
+    {
+      "key": "dp-promos",
+      "normalizedKey": "dppromos",
+      "listedName": "DP Promos",
+      "code": "DP Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/dp-promos.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (2).jpeg",
+      "sourceIndex": 12,
+      "sourcePosition": 1,
+      "sourceLayout": "1x3",
+      "sourceCrop": {
+        "left": 0,
+        "top": 90,
+        "right": 1536,
+        "bottom": 401
+      },
+      "width": 562,
+      "height": 202
+    },
+    {
+      "key": "ppp-promos",
+      "normalizedKey": "ppppromos",
+      "listedName": "PPP Promos",
+      "code": "PPP Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/ppp-promos.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (2).jpeg",
+      "sourceIndex": 12,
+      "sourcePosition": 3,
+      "sourceLayout": "1x3",
+      "sourceCrop": {
+        "left": 0,
+        "top": 713,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 508
+    },
+    {
+      "key": "pt4",
+      "normalizedKey": "pt4",
+      "listedName": "Advent of Arceus",
+      "code": "Pt4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pt4.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (3).jpeg",
+      "sourceIndex": 13,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 105,
+        "right": 512,
+        "bottom": 564
+      },
+      "width": 1000,
+      "height": 833
+    },
+    {
+      "key": "pts-shaymin-lvx-collection-pack",
+      "normalizedKey": "ptsshayminlvxcollectionpack",
+      "listedName": "Shaymin LV.X Collection Pack",
+      "code": "PtS",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pts-shaymin-lvx-collection-pack.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (3).jpeg",
+      "sourceIndex": 13,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 105,
+        "right": 1024,
+        "bottom": 564
+      },
+      "width": 1000,
+      "height": 533
+    },
+    {
+      "key": "pt3",
+      "normalizedKey": "pt3",
+      "listedName": "Beat of the Frontier",
+      "code": "Pt3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pt3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (3).jpeg",
+      "sourceIndex": 13,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 105,
+        "right": 1536,
+        "bottom": 564
+      },
+      "width": 1000,
+      "height": 594
+    },
+    {
+      "key": "pt2",
+      "normalizedKey": "pt2",
+      "listedName": "Bonds to the End of Time",
+      "code": "Pt2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pt2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (3).jpeg",
+      "sourceIndex": 13,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 564,
+        "right": 512,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 645
+    },
+    {
+      "key": "pt1",
+      "normalizedKey": "pt1",
+      "listedName": "Galactic's Conquest",
+      "code": "Pt1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pt1.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (3).jpeg",
+      "sourceIndex": 13,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 564,
+        "right": 1024,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 559
+    },
+    {
+      "key": "pt-promos",
+      "normalizedKey": "ptpromos",
+      "listedName": "DPt Promos",
+      "code": "Pt Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pt-promos.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (3).jpeg",
+      "sourceIndex": 13,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 564,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 648
+    },
+    {
+      "key": "l3",
+      "normalizedKey": "l3",
+      "listedName": "Clash at the Summit",
+      "code": "L3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/l3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
+      "sourceIndex": 14,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 100,
+        "right": 512,
+        "bottom": 562
+      },
+      "width": 1000,
+      "height": 515
+    },
+    {
+      "key": "l2",
+      "normalizedKey": "l2",
+      "listedName": "Reviving Legends",
+      "code": "L2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/l2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
+      "sourceIndex": 14,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 100,
+        "right": 1024,
+        "bottom": 562
+      },
+      "width": 954,
+      "height": 615
+    },
+    {
+      "key": "l1a",
+      "normalizedKey": "l1a",
+      "listedName": "HeartGold Collection",
+      "code": "L1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/l1a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
+      "sourceIndex": 14,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 100,
+        "right": 1536,
+        "bottom": 562
+      },
+      "width": 1000,
+      "height": 489
+    },
+    {
+      "key": "l1b",
+      "normalizedKey": "l1b",
+      "listedName": "SoulSilver Collection",
+      "code": "L1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/l1b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
+      "sourceIndex": 14,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 562,
+        "right": 512,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 833
+    },
+    {
+      "key": "ll",
+      "normalizedKey": "ll",
+      "listedName": "Lost Link",
+      "code": "LL",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/ll.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (4).jpeg",
+      "sourceIndex": 14,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 562,
+        "right": 1024,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 565
+    },
+    {
+      "key": "kld-keldeo-battle-strength-deck",
+      "normalizedKey": "kldkeldeobattlestrengthdeck",
+      "listedName": "Keldeo Battle Strength Deck",
+      "code": "KLD",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/kld-keldeo-battle-strength-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (5).jpeg",
+      "sourceIndex": 15,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 115,
+        "right": 512,
+        "bottom": 570
+      },
+      "width": 1000,
+      "height": 659
+    },
+    {
+      "key": "gbr-garchomp-half-deck",
+      "normalizedKey": "gbrgarchomphalfdeck",
+      "listedName": "Garchomp Half Deck",
+      "code": "GBR",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/gbr-garchomp-half-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (5).jpeg",
+      "sourceIndex": 15,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 115,
+        "right": 1024,
+        "bottom": 570
+      },
+      "width": 1000,
+      "height": 711
+    },
+    {
+      "key": "szd-hydreigon-half-deck",
+      "normalizedKey": "szdhydreigonhalfdeck",
+      "listedName": "Hydreigon Half Deck",
+      "code": "SZD",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/szd-hydreigon-half-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (5).jpeg",
+      "sourceIndex": 15,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 115,
+        "right": 1536,
+        "bottom": 570
+      },
+      "width": 1000,
+      "height": 738
+    },
+    {
+      "key": "ds-dragon-selection",
+      "normalizedKey": "dsdragonselection",
+      "listedName": "Dragon Selection",
+      "code": "DS",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/ds-dragon-selection.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (5).jpeg",
+      "sourceIndex": 15,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 570,
+        "right": 512,
+        "bottom": 1024
+      },
+      "width": 905,
+      "height": 431
+    },
+    {
+      "key": "bw-promos",
+      "normalizedKey": "bwpromos",
+      "listedName": "Black & White Promos",
+      "code": "BW Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw-promos.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (5).jpeg",
+      "sourceIndex": 15,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 570,
+        "right": 1024,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 799
+    },
+    {
+      "key": "mg-genesect",
+      "normalizedKey": "mggenesect",
+      "listedName": "Mewtwo Vs Genesect: Genesect",
+      "code": "MG",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/mg-genesect.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (6).jpeg",
+      "sourceIndex": 16,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 100,
+        "right": 512,
+        "bottom": 562
+      },
+      "width": 990,
+      "height": 840
+    },
+    {
+      "key": "mg-mewtwo",
+      "normalizedKey": "mgmewtwo",
+      "listedName": "Mewtwo Vs Genesect: Mewtwo",
+      "code": "MG",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/mg-mewtwo.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (6).jpeg",
+      "sourceIndex": 16,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 100,
+        "right": 1024,
+        "bottom": 562
+      },
+      "width": 822,
+      "height": 711
+    },
+    {
+      "key": "kk-blastoise-kyurem-combo-deck",
+      "normalizedKey": "kkblastoisekyuremcombodeck",
+      "listedName": "Blastoise & Kyurem Combo Deck",
+      "code": "KK",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/kk-blastoise-kyurem-combo-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (6).jpeg",
+      "sourceIndex": 16,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 100,
+        "right": 1536,
+        "bottom": 562
+      },
+      "width": 1000,
+      "height": 589
+    },
+    {
+      "key": "sc-shiny-collection",
+      "normalizedKey": "scshinycollection",
+      "listedName": "Shiny Collection",
+      "code": "SC",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sc-shiny-collection.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (6).jpeg",
+      "sourceIndex": 16,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 562,
+        "right": 512,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 656
+    },
+    {
+      "key": "wak-exciting-battle-for-everyone",
+      "normalizedKey": "wakexcitingbattleforeveryone",
+      "listedName": "Exciting Battle for Everyone",
+      "code": "WAK",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/wak-exciting-battle-for-everyone.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (6).jpeg",
+      "sourceIndex": 16,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 562,
+        "right": 1024,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 602
+    },
+    {
+      "key": "pbg-team-plasma-battle-gift-set",
+      "normalizedKey": "pbgteamplasmabattlegiftset",
+      "listedName": "Team Plasma Battle Gift Set",
+      "code": "PBG",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/pbg-team-plasma-battle-gift-set.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (6).jpeg",
+      "sourceIndex": 16,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 562,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 598
+    },
+    {
+      "key": "bw2-red-collection",
+      "normalizedKey": "bw2redcollection",
+      "listedName": "Red Collection",
+      "code": "BW2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw2-red-collection.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (7).jpeg",
+      "sourceIndex": 17,
+      "sourcePosition": 1,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 35,
+        "top": 405,
+        "right": 520,
+        "bottom": 675
+      },
+      "width": 1000,
+      "height": 524
+    },
+    {
+      "key": "bw1-white-collection",
+      "normalizedKey": "bw1whitecollection",
+      "listedName": "White Collection",
+      "code": "BW1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw1-white-collection.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (7).jpeg",
+      "sourceIndex": 17,
+      "sourcePosition": 2,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 530,
+        "top": 405,
+        "right": 1045,
+        "bottom": 675
+      },
+      "width": 1000,
+      "height": 492
+    },
+    {
+      "key": "bw1-black-collection",
+      "normalizedKey": "bw1blackcollection",
+      "listedName": "Black Collection",
+      "code": "BW1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw1-black-collection.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (7).jpeg",
+      "sourceIndex": 17,
+      "sourcePosition": 3,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 1035,
+        "top": 405,
+        "right": 1530,
+        "bottom": 675
+      },
+      "width": 1000,
+      "height": 465
+    },
+    {
+      "key": "bw6-cold-flare",
+      "normalizedKey": "bw6coldflare",
+      "listedName": "Cold Flare",
+      "code": "BW6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw6-cold-flare.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (8).jpeg",
+      "sourceIndex": 18,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 440
+      },
+      "width": 1012,
+      "height": 536
+    },
+    {
+      "key": "bw5-dragon-blade",
+      "normalizedKey": "bw5dragonblade",
+      "listedName": "Dragon Blade",
+      "code": "BW5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw5-dragon-blade.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (8).jpeg",
+      "sourceIndex": 18,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 440
+      },
+      "width": 1000,
+      "height": 571
+    },
+    {
+      "key": "bw5-dragon-blast",
+      "normalizedKey": "bw5dragonblast",
+      "listedName": "Dragon Blast",
+      "code": "BW5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw5-dragon-blast.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (8).jpeg",
+      "sourceIndex": 18,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 440
+      },
+      "width": 1000,
+      "height": 556
+    },
+    {
+      "key": "bw4-dark-rush",
+      "normalizedKey": "bw4darkrush",
+      "listedName": "Dark Rush",
+      "code": "BW4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw4-dark-rush.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (8).jpeg",
+      "sourceIndex": 18,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 440,
+        "right": 533,
+        "bottom": 879
+      },
+      "width": 1000,
+      "height": 584
+    },
+    {
+      "key": "bw3-hail-blizzard",
+      "normalizedKey": "bw3hailblizzard",
+      "listedName": "Hail Blizzard",
+      "code": "BW3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw3-hail-blizzard.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (8).jpeg",
+      "sourceIndex": 18,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 440,
+        "right": 1067,
+        "bottom": 879
+      },
+      "width": 1000,
+      "height": 562
+    },
+    {
+      "key": "bw3-psycho-drive",
+      "normalizedKey": "bw3psychodrive",
+      "listedName": "Psycho Drive",
+      "code": "BW3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw3-psycho-drive.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (8).jpeg",
+      "sourceIndex": 18,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 440,
+        "right": 1600,
+        "bottom": 879
+      },
+      "width": 1000,
+      "height": 547
+    },
+    {
+      "key": "ebb-ex-battle-boost",
+      "normalizedKey": "ebbexbattleboost",
+      "listedName": "EX Battle Boost",
+      "code": "EBB",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/ebb-ex-battle-boost.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (9).jpeg",
+      "sourceIndex": 19,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 450
+      },
+      "width": 1000,
+      "height": 610
+    },
+    {
+      "key": "bw9-megalo-cannon",
+      "normalizedKey": "bw9megalocannon",
+      "listedName": "Megalo Cannon",
+      "code": "BW9",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw9-megalo-cannon.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (9).jpeg",
+      "sourceIndex": 19,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 450
+      },
+      "width": 1000,
+      "height": 495
+    },
+    {
+      "key": "bw8-thunder-knuckle",
+      "normalizedKey": "bw8thunderknuckle",
+      "listedName": "Thunder Knuckle",
+      "code": "BW8",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw8-thunder-knuckle.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (9).jpeg",
+      "sourceIndex": 19,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 450
+      },
+      "width": 1000,
+      "height": 506
+    },
+    {
+      "key": "bw8-spiral-force",
+      "normalizedKey": "bw8spiralforce",
+      "listedName": "Spiral Force",
+      "code": "BW8",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw8-spiral-force.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (9).jpeg",
+      "sourceIndex": 19,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 450,
+        "right": 533,
+        "bottom": 900
+      },
+      "width": 1000,
+      "height": 451
+    },
+    {
+      "key": "bw7-plasma-gale",
+      "normalizedKey": "bw7plasmagale",
+      "listedName": "Plasma Gale",
+      "code": "BW7",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw7-plasma-gale.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (9).jpeg",
+      "sourceIndex": 19,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 450,
+        "right": 1067,
+        "bottom": 900
+      },
+      "width": 1000,
+      "height": 451
+    },
+    {
+      "key": "bw6-freeze-bolt",
+      "normalizedKey": "bw6freezebolt",
+      "listedName": "Freeze Bolt",
+      "code": "BW6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/bw6-freeze-bolt.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55 (9).jpeg",
+      "sourceIndex": 19,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 450,
+        "right": 1600,
+        "bottom": 900
+      },
+      "width": 1006,
+      "height": 426
+    },
+    {
+      "key": "neo4",
+      "normalizedKey": "neo4",
+      "listedName": "Darkness, and to Light...",
+      "code": "Neo 4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/neo4.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55.jpeg",
+      "sourceIndex": 20,
+      "sourcePosition": 2,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 55,
+        "top": 430,
+        "right": 550,
+        "bottom": 750
+      },
+      "width": 1000,
+      "height": 784
+    },
+    {
+      "key": "neo3",
+      "normalizedKey": "neo3",
+      "listedName": "Awakening Legends",
+      "code": "Neo 3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/neo3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55.jpeg",
+      "sourceIndex": 20,
+      "sourcePosition": 3,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 540,
+        "top": 430,
+        "right": 1045,
+        "bottom": 750
+      },
+      "width": 1000,
+      "height": 572
+    },
+    {
+      "key": "neo2",
+      "normalizedKey": "neo2",
+      "listedName": "Crossing the Ruins...",
+      "code": "Neo 2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/neo2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55.jpeg",
+      "sourceIndex": 20,
+      "sourcePosition": 4,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 1030,
+        "top": 430,
+        "right": 1530,
+        "bottom": 750
+      },
+      "width": 1000,
+      "height": 678
+    },
+    {
+      "key": "neo1",
+      "normalizedKey": "neo1",
+      "listedName": "Gold, Silver, to a New World...",
+      "code": "Neo 1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/neo1.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.55.jpeg",
+      "sourceIndex": 20,
+      "sourcePosition": 5,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 35,
+        "top": 735,
+        "right": 530,
+        "bottom": 1020
+      },
+      "width": 1000,
+      "height": 577
+    },
+    {
+      "key": "sm2k",
+      "normalizedKey": "sm2k",
+      "listedName": "Islands Awaiting You",
+      "code": "SM2K",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm2k.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (1).jpeg",
+      "sourceIndex": 21,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 410
+      },
+      "width": 1014,
+      "height": 526
+    },
+    {
+      "key": "sm1p",
+      "normalizedKey": "sm1p",
+      "listedName": "Sun & Moon",
+      "code": "SM1+",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm1p.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (1).jpeg",
+      "sourceIndex": 21,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 410
+      },
+      "width": 1046,
+      "height": 512
+    },
+    {
+      "key": "sm1s",
+      "normalizedKey": "sm1s",
+      "listedName": "Collection Sun",
+      "code": "SM1S",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm1s.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (1).jpeg",
+      "sourceIndex": 21,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 410
+      },
+      "width": 1000,
+      "height": 561
+    },
+    {
+      "key": "sm1m",
+      "normalizedKey": "sm1m",
+      "listedName": "Collection Moon",
+      "code": "SM1M",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm1m.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (1).jpeg",
+      "sourceIndex": 21,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 410,
+        "right": 533,
+        "bottom": 820
+      },
+      "width": 1000,
+      "height": 577
+    },
+    {
+      "key": "sm-promos",
+      "normalizedKey": "smpromos",
+      "listedName": "Sun & Moon Promos",
+      "code": "SM Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm-promos.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (1).jpeg",
+      "sourceIndex": 21,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 410,
+        "right": 1067,
+        "bottom": 820
+      },
+      "width": 1000,
+      "height": 643
+    },
+    {
+      "key": "sm6b",
+      "normalizedKey": "sm6b",
+      "listedName": "Champion Road",
+      "code": "SM6B",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm6b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (1).jpeg",
+      "sourceIndex": 21,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 410,
+        "right": 1600,
+        "bottom": 820
+      },
+      "width": 1046,
+      "height": 506
+    },
+    {
+      "key": "s8a-promo-pack",
+      "normalizedKey": "s8apromopack",
+      "listedName": "25th Anniversary Promo Pack",
+      "code": "S8a Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s8a-promo-pack.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (10).jpeg",
+      "sourceIndex": 22,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 260
+      },
+      "width": 927,
+      "height": 726
+    },
+    {
+      "key": "s8a",
+      "normalizedKey": "s8a",
+      "listedName": "25th Anniversary Collection",
+      "code": "S8a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s8a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (10).jpeg",
+      "sourceIndex": 22,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 260
+      },
+      "width": 1000,
+      "height": 519
+    },
+    {
+      "key": "s8",
+      "normalizedKey": "s8",
+      "listedName": "Fusion Arts",
+      "code": "S8",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s8.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (10).jpeg",
+      "sourceIndex": 22,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 260
+      },
+      "width": 1000,
+      "height": 422
+    },
+    {
+      "key": "s7r",
+      "normalizedKey": "s7r",
+      "listedName": "Blue Sky Stream",
+      "code": "S7R",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s7r.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (10).jpeg",
+      "sourceIndex": 22,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 260,
+        "right": 533,
+        "bottom": 520
+      },
+      "width": 1000,
+      "height": 489
+    },
+    {
+      "key": "s7d",
+      "normalizedKey": "s7d",
+      "listedName": "Towering Perfection",
+      "code": "S7D",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s7d.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (10).jpeg",
+      "sourceIndex": 22,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 260,
+        "right": 1067,
+        "bottom": 520
+      },
+      "width": 1000,
+      "height": 416
+    },
+    {
+      "key": "s6a",
+      "normalizedKey": "s6a",
+      "listedName": "Eevee Heroes",
+      "code": "S6a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s6a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (10).jpeg",
+      "sourceIndex": 22,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 260,
+        "right": 1600,
+        "bottom": 520
+      },
+      "width": 1000,
+      "height": 480
+    },
+    {
+      "key": "s10d",
+      "normalizedKey": "s10d",
+      "listedName": "Time Gazer",
+      "code": "S10D",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s10d.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (12).jpeg",
+      "sourceIndex": 24,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 512,
+        "bottom": 512
+      },
+      "width": 969,
+      "height": 657
+    },
+    {
+      "key": "s10p",
+      "normalizedKey": "s10p",
+      "listedName": "Space Juggler",
+      "code": "S10P",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s10p.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (12).jpeg",
+      "sourceIndex": 24,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 0,
+        "right": 1024,
+        "bottom": 512
+      },
+      "width": 963,
+      "height": 636
+    },
+    {
+      "key": "s9a",
+      "normalizedKey": "s9a",
+      "listedName": "Battle Region",
+      "code": "S9a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s9a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (12).jpeg",
+      "sourceIndex": 24,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 0,
+        "right": 1536,
+        "bottom": 512
+      },
+      "width": 1000,
+      "height": 613
+    },
+    {
+      "key": "s9",
+      "normalizedKey": "s9",
+      "listedName": "Star Birth",
+      "code": "S9",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s9.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (12).jpeg",
+      "sourceIndex": 24,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 512,
+        "right": 512,
+        "bottom": 1024
+      },
+      "width": 993,
+      "height": 630
+    },
+    {
+      "key": "mc",
+      "normalizedKey": "mc",
+      "listedName": "Start Deck 100",
+      "code": "S1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/mc.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (12).jpeg",
+      "sourceIndex": 24,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 512,
+        "top": 512,
+        "right": 1024,
+        "bottom": 1024
+      },
+      "width": 861,
+      "height": 696
+    },
+    {
+      "key": "s8b",
+      "normalizedKey": "s8b",
+      "listedName": "VMAX Climax",
+      "code": "S8b",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s8b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (12).jpeg",
+      "sourceIndex": 24,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1024,
+        "top": 512,
+        "right": 1536,
+        "bottom": 1024
+      },
+      "width": 1000,
+      "height": 626
+    },
+    {
+      "key": "s12a",
+      "normalizedKey": "s12a",
+      "listedName": "VSTAR Universe",
+      "code": "S12a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s12a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (13).jpeg",
+      "sourceIndex": 25,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 439
+      },
+      "width": 1000,
+      "height": 595
+    },
+    {
+      "key": "s12",
+      "normalizedKey": "s12",
+      "listedName": "Paradigm Trigger",
+      "code": "S12",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s12.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (13).jpeg",
+      "sourceIndex": 25,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 439
+      },
+      "width": 1000,
+      "height": 564
+    },
+    {
+      "key": "s11a",
+      "normalizedKey": "s11a",
+      "listedName": "Incandescent Arcana",
+      "code": "S11a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s11a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (13).jpeg",
+      "sourceIndex": 25,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 439
+      },
+      "width": 1000,
+      "height": 569
+    },
+    {
+      "key": "s11",
+      "normalizedKey": "s11",
+      "listedName": "Lost Abyss",
+      "code": "S11",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s11.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (13).jpeg",
+      "sourceIndex": 25,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 439,
+        "right": 533,
+        "bottom": 878
+      },
+      "width": 1000,
+      "height": 590
+    },
+    {
+      "key": "s10b",
+      "normalizedKey": "s10b",
+      "listedName": "Pokemon GO",
+      "code": "S10b",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s10b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (13).jpeg",
+      "sourceIndex": 25,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 439,
+        "right": 1067,
+        "bottom": 878
+      },
+      "width": 975,
+      "height": 636
+    },
+    {
+      "key": "s10a",
+      "normalizedKey": "s10a",
+      "listedName": "Dark Phantasma",
+      "code": "S10a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s10a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (13).jpeg",
+      "sourceIndex": 25,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 439,
+        "right": 1600,
+        "bottom": 878
+      },
+      "width": 1000,
+      "height": 565
+    },
+    {
+      "key": "sv2d",
+      "normalizedKey": "sv2d",
+      "listedName": "Clay Burst",
+      "code": "SV2D",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv2d.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (14).jpeg",
+      "sourceIndex": 26,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 389
+      },
+      "width": 1000,
+      "height": 529
+    },
+    {
+      "key": "sv1a",
+      "normalizedKey": "sv1a",
+      "listedName": "Triplet Beat",
+      "code": "SV1a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv1a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (14).jpeg",
+      "sourceIndex": 26,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 389
+      },
+      "width": 1000,
+      "height": 528
+    },
+    {
+      "key": "sv1v",
+      "normalizedKey": "sv1v",
+      "listedName": "Violet ex",
+      "code": "SV1V",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv1v.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (14).jpeg",
+      "sourceIndex": 26,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 389
+      },
+      "width": 1000,
+      "height": 499
+    },
+    {
+      "key": "sv1s",
+      "normalizedKey": "sv1s",
+      "listedName": "Scarlet ex",
+      "code": "SV1S",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv1s.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (14).jpeg",
+      "sourceIndex": 26,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 389,
+        "right": 533,
+        "bottom": 778
+      },
+      "width": 939,
+      "height": 672
+    },
+    {
+      "key": "svp",
+      "normalizedKey": "svp",
+      "listedName": "Scarlet & Violet Promos",
+      "code": "SV Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/svp.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (14).jpeg",
+      "sourceIndex": 26,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 389,
+        "right": 1067,
+        "bottom": 778
+      },
+      "width": 1000,
+      "height": 467
+    },
+    {
+      "key": "sv4m",
+      "normalizedKey": "sv4m",
+      "listedName": "Future Flash",
+      "code": "SV4M",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv4m.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (15).jpeg",
+      "sourceIndex": 27,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 370
+      },
+      "width": 1000,
+      "height": 541
+    },
+    {
+      "key": "sv4k",
+      "normalizedKey": "sv4k",
+      "listedName": "Ancient Roar",
+      "code": "SV4K",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv4k.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (15).jpeg",
+      "sourceIndex": 27,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 370
+      },
+      "width": 1000,
+      "height": 552
+    },
+    {
+      "key": "sv3a",
+      "normalizedKey": "sv3a",
+      "listedName": "Raging Surf",
+      "code": "SV3a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv3a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (15).jpeg",
+      "sourceIndex": 27,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 370
+      },
+      "width": 1000,
+      "height": 537
+    },
+    {
+      "key": "sv3",
+      "normalizedKey": "sv3",
+      "listedName": "Ruler of the Black Flame",
+      "code": "SV3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (15).jpeg",
+      "sourceIndex": 27,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 370,
+        "right": 533,
+        "bottom": 741
+      },
+      "width": 1000,
+      "height": 532
+    },
+    {
+      "key": "sv2a",
+      "normalizedKey": "sv2a",
+      "listedName": "Pokemon 151",
+      "code": "SV2a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv2a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (15).jpeg",
+      "sourceIndex": 27,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 370,
+        "right": 1067,
+        "bottom": 741
+      },
+      "width": 1000,
+      "height": 672
+    },
+    {
+      "key": "sv2p",
+      "normalizedKey": "sv2p",
+      "listedName": "Snow Hazard",
+      "code": "SV2P",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv2p.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (15).jpeg",
+      "sourceIndex": 27,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 370,
+        "right": 1600,
+        "bottom": 741
+      },
+      "width": 1000,
+      "height": 558
+    },
+    {
+      "key": "sv6a",
+      "normalizedKey": "sv6a",
+      "listedName": "Night Wanderer",
+      "code": "SV6a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv6a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (16).jpeg",
+      "sourceIndex": 28,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 384
+      },
+      "width": 1000,
+      "height": 581
+    },
+    {
+      "key": "sv6",
+      "normalizedKey": "sv6",
+      "listedName": "Mask of Change",
+      "code": "SV6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv6.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (16).jpeg",
+      "sourceIndex": 28,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 384
+      },
+      "width": 1000,
+      "height": 540
+    },
+    {
+      "key": "sv5a",
+      "normalizedKey": "sv5a",
+      "listedName": "Crimson Haze",
+      "code": "SV5a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv5a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (16).jpeg",
+      "sourceIndex": 28,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 384
+      },
+      "width": 1000,
+      "height": 540
+    },
+    {
+      "key": "sv5m",
+      "normalizedKey": "sv5m",
+      "listedName": "Cyber Judge",
+      "code": "SV5M",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv5m.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (16).jpeg",
+      "sourceIndex": 28,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 384,
+        "right": 533,
+        "bottom": 768
+      },
+      "width": 1000,
+      "height": 527
+    },
+    {
+      "key": "sv5k",
+      "normalizedKey": "sv5k",
+      "listedName": "Wild Force",
+      "code": "SV5K",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv5k.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (16).jpeg",
+      "sourceIndex": 28,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 384,
+        "right": 1067,
+        "bottom": 768
+      },
+      "width": 1000,
+      "height": 516
+    },
+    {
+      "key": "sv4a",
+      "normalizedKey": "sv4a",
+      "listedName": "Shiny Treasure ex",
+      "code": "SV4a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv4a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (16).jpeg",
+      "sourceIndex": 28,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 384,
+        "right": 1600,
+        "bottom": 768
+      },
+      "width": 1000,
+      "height": 566
+    },
+    {
+      "key": "sv9a",
+      "normalizedKey": "sv9a",
+      "listedName": "Heat Wave Arena",
+      "code": "SV9a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv9a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (17).jpeg",
+      "sourceIndex": 29,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 453
+      },
+      "width": 1000,
+      "height": 581
+    },
+    {
+      "key": "sv9",
+      "normalizedKey": "sv9",
+      "listedName": "Battle Partners",
+      "code": "SV9",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv9.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (17).jpeg",
+      "sourceIndex": 29,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 453
+      },
+      "width": 1000,
+      "height": 567
+    },
+    {
+      "key": "sv8a",
+      "normalizedKey": "sv8a",
+      "listedName": "Terastal Festival ex",
+      "code": "SV8a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv8a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (17).jpeg",
+      "sourceIndex": 29,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 453
+      },
+      "width": 1000,
+      "height": 656
+    },
+    {
+      "key": "sv8",
+      "normalizedKey": "sv8",
+      "listedName": "Super Electric Breaker",
+      "code": "SV8",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv8.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (17).jpeg",
+      "sourceIndex": 29,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 453,
+        "right": 533,
+        "bottom": 906
+      },
+      "width": 1000,
+      "height": 611
+    },
+    {
+      "key": "sv7a",
+      "normalizedKey": "sv7a",
+      "listedName": "Paradise Dragona",
+      "code": "SV7a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv7a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (17).jpeg",
+      "sourceIndex": 29,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 453,
+        "right": 1067,
+        "bottom": 906
+      },
+      "width": 1000,
+      "height": 582
+    },
+    {
+      "key": "sv7",
+      "normalizedKey": "sv7",
+      "listedName": "Stellar Miracle",
+      "code": "SV7",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv7.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (17).jpeg",
+      "sourceIndex": 29,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 453,
+        "right": 1600,
+        "bottom": 906
+      },
+      "width": 1000,
+      "height": 591
+    },
+    {
+      "key": "m1l",
+      "normalizedKey": "m1l",
+      "listedName": "Mega Brave",
+      "code": "M1L",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m1l.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (18).jpeg",
+      "sourceIndex": 30,
+      "sourcePosition": 1,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 535,
+        "bottom": 235
+      },
+      "width": 1000,
+      "height": 381
+    },
+    {
+      "key": "m1s",
+      "normalizedKey": "m1s",
+      "listedName": "Mega Symphonia",
+      "code": "M1S",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m1s.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (18).jpeg",
+      "sourceIndex": 30,
+      "sourcePosition": 2,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 535,
+        "top": 0,
+        "right": 1070,
+        "bottom": 235
+      },
+      "width": 1000,
+      "height": 363
+    },
+    {
+      "key": "m-p",
+      "normalizedKey": "mp",
+      "listedName": "Mega Series Promos",
+      "code": "M Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m-p.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (18).jpeg",
+      "sourceIndex": 30,
+      "sourcePosition": 3,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 1070,
+        "top": 0,
+        "right": 1600,
+        "bottom": 235
+      },
+      "width": 1000,
+      "height": 449
+    },
+    {
+      "key": "sv11w",
+      "normalizedKey": "sv11w",
+      "listedName": "White Flare",
+      "code": "SV11W",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv11w.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (18).jpeg",
+      "sourceIndex": 30,
+      "sourcePosition": 4,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 0,
+        "top": 435,
+        "right": 535,
+        "bottom": 740
+      },
+      "width": 1000,
+      "height": 487
+    },
+    {
+      "key": "sv11b",
+      "normalizedKey": "sv11b",
+      "listedName": "Black Bolt",
+      "code": "SV11B",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv11b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (18).jpeg",
+      "sourceIndex": 30,
+      "sourcePosition": 5,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 535,
+        "top": 435,
+        "right": 1070,
+        "bottom": 740
+      },
+      "width": 1000,
+      "height": 486
+    },
+    {
+      "key": "sv10",
+      "normalizedKey": "sv10",
+      "listedName": "Glory of Team Rocket",
+      "code": "SV10",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sv10.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (18).jpeg",
+      "sourceIndex": 30,
+      "sourcePosition": 6,
+      "sourceLayout": "custom",
+      "sourceCrop": {
+        "left": 1070,
+        "top": 435,
+        "right": 1600,
+        "bottom": 740
+      },
+      "width": 1000,
+      "height": 482
+    },
+    {
+      "key": "m6a",
+      "normalizedKey": "m6a",
+      "listedName": "30th Celebration",
+      "code": "M6a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m6a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (19).jpeg",
+      "sourceIndex": 31,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 76,
+        "right": 533,
+        "bottom": 467
+      },
+      "width": 897,
+      "height": 528
+    },
+    {
+      "key": "m5",
+      "normalizedKey": "m5",
+      "listedName": "Abyss Eye",
+      "code": "M5",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m5.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (19).jpeg",
+      "sourceIndex": 31,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 76,
+        "right": 1067,
+        "bottom": 467
+      },
+      "width": 933,
+      "height": 495
+    },
+    {
+      "key": "m4",
+      "normalizedKey": "m4",
+      "listedName": "Ninja Spinner",
+      "code": "M4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m4.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (19).jpeg",
+      "sourceIndex": 31,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 76,
+        "right": 1600,
+        "bottom": 467
+      },
+      "width": 852,
+      "height": 456
+    },
+    {
+      "key": "m3",
+      "normalizedKey": "m3",
+      "listedName": "Munikisu Zero",
+      "code": "M3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (19).jpeg",
+      "sourceIndex": 31,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 467,
+        "right": 533,
+        "bottom": 858
+      },
+      "width": 1000,
+      "height": 512
+    },
+    {
+      "key": "m2a",
+      "normalizedKey": "m2a",
+      "listedName": "Mega Dream ex",
+      "code": "M2a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m2a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (19).jpeg",
+      "sourceIndex": 31,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 467,
+        "right": 1067,
+        "bottom": 858
+      },
+      "width": 1000,
+      "height": 563
+    },
+    {
+      "key": "m2",
+      "normalizedKey": "m2",
+      "listedName": "Inferno X",
+      "code": "M2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/m2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (19).jpeg",
+      "sourceIndex": 31,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 467,
+        "right": 1600,
+        "bottom": 858
+      },
+      "width": 1000,
+      "height": 512
+    },
+    {
+      "key": "s4",
+      "normalizedKey": "s4",
+      "listedName": "Electrifying Tackle",
+      "code": "S4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s4.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (2).jpeg",
+      "sourceIndex": 32,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 268
+      },
+      "width": 1000,
+      "height": 457
+    },
+    {
+      "key": "s3a",
+      "normalizedKey": "s3a",
+      "listedName": "Legendary Pulse",
+      "code": "S3a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s3a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (2).jpeg",
+      "sourceIndex": 32,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 268
+      },
+      "width": 1000,
+      "height": 434
+    },
+    {
+      "key": "s3",
+      "normalizedKey": "s3",
+      "listedName": "Infinity Zone",
+      "code": "S3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s3.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (2).jpeg",
+      "sourceIndex": 32,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 268
+      },
+      "width": 1000,
+      "height": 455
+    },
+    {
+      "key": "s2a",
+      "normalizedKey": "s2a",
+      "listedName": "Explosive Flame Walker",
+      "code": "S2a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s2a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (2).jpeg",
+      "sourceIndex": 32,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 268,
+        "right": 533,
+        "bottom": 535
+      },
+      "width": 1000,
+      "height": 449
+    },
+    {
+      "key": "s2",
+      "normalizedKey": "s2",
+      "listedName": "Rebellion Crash",
+      "code": "S2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (2).jpeg",
+      "sourceIndex": 32,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 268,
+        "right": 1067,
+        "bottom": 535
+      },
+      "width": 1000,
+      "height": 450
+    },
+    {
+      "key": "s1a",
+      "normalizedKey": "s1a",
+      "listedName": "VMAX Rising",
+      "code": "S1a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s1a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (2).jpeg",
+      "sourceIndex": 32,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 268,
+        "right": 1600,
+        "bottom": 535
+      },
+      "width": 1000,
+      "height": 467
+    },
+    {
+      "key": "s1w",
+      "normalizedKey": "s1w",
+      "listedName": "Sword",
+      "code": "S1W",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s1w.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (3).jpeg",
+      "sourceIndex": 33,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 268
+      },
+      "width": 1000,
+      "height": 533
+    },
+    {
+      "key": "s1h",
+      "normalizedKey": "s1h",
+      "listedName": "Shield",
+      "code": "S1H",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s1h.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (3).jpeg",
+      "sourceIndex": 33,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 268
+      },
+      "width": 1000,
+      "height": 519
+    },
+    {
+      "key": "swsh-promos",
+      "normalizedKey": "swshpromos",
+      "listedName": "Sword & Shield Promos",
+      "code": "S Promo",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/swsh-promos.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (3).jpeg",
+      "sourceIndex": 33,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 268
+      },
+      "width": 1000,
+      "height": 513
+    },
+    {
+      "key": "sp4-eevee-heroes-vmax-special-set",
+      "normalizedKey": "sp4eeveeheroesvmaxspecialset",
+      "listedName": "Eevee Heroes VMAX Special Set",
+      "code": "SP4",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sp4-eevee-heroes-vmax-special-set.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (3).jpeg",
+      "sourceIndex": 33,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 268,
+        "right": 533,
+        "bottom": 535
+      },
+      "width": 1000,
+      "height": 530
+    },
+    {
+      "key": "sp3-silver-lance-jet-black-spirit-promos",
+      "normalizedKey": "sp3silverlancejetblackspiritpromos",
+      "listedName": "Silver Lance & Jet-Black Spirit Promos",
+      "code": "SP3",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sp3-silver-lance-jet-black-spirit-promos.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (3).jpeg",
+      "sourceIndex": 33,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 268,
+        "right": 1067,
+        "bottom": 535
+      },
+      "width": 1000,
+      "height": 523
+    },
+    {
+      "key": "sp2-vmax-special-set",
+      "normalizedKey": "sp2vmaxspecialset",
+      "listedName": "VMAX Special Set",
+      "code": "SP2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sp2-vmax-special-set.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (3).jpeg",
+      "sourceIndex": 33,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 268,
+        "right": 1600,
+        "bottom": 535
+      },
+      "width": 1000,
+      "height": 498
+    },
+    {
+      "key": "sm12a",
+      "normalizedKey": "sm12a",
+      "listedName": "Tag Team GX All Stars",
+      "code": "SM12a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm12a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (4).jpeg",
+      "sourceIndex": 34,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 90,
+        "right": 533,
+        "bottom": 340
+      },
+      "width": 1000,
+      "height": 627
+    },
+    {
+      "key": "sm12",
+      "normalizedKey": "sm12",
+      "listedName": "Alter Genesis",
+      "code": "SM12",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm12.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (4).jpeg",
+      "sourceIndex": 34,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 90,
+        "right": 1067,
+        "bottom": 340
+      },
+      "width": 1000,
+      "height": 474
+    },
+    {
+      "key": "sm11b",
+      "normalizedKey": "sm11b",
+      "listedName": "Dream League",
+      "code": "SM11b",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm11b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (4).jpeg",
+      "sourceIndex": 34,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 90,
+        "right": 1600,
+        "bottom": 340
+      },
+      "width": 1000,
+      "height": 426
+    },
+    {
+      "key": "sm11a",
+      "normalizedKey": "sm11a",
+      "listedName": "Remix Bout",
+      "code": "SM11a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm11a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (4).jpeg",
+      "sourceIndex": 34,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 340,
+        "right": 533,
+        "bottom": 590
+      },
+      "width": 1000,
+      "height": 449
+    },
+    {
+      "key": "sm11",
+      "normalizedKey": "sm11",
+      "listedName": "Miracle Twins",
+      "code": "SM11",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm11.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (4).jpeg",
+      "sourceIndex": 34,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 340,
+        "right": 1067,
+        "bottom": 590
+      },
+      "width": 1000,
+      "height": 432
+    },
+    {
+      "key": "sm10b",
+      "normalizedKey": "sm10b",
+      "listedName": "Sky Legend",
+      "code": "SM10b",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm10b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (4).jpeg",
+      "sourceIndex": 34,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 340,
+        "right": 1600,
+        "bottom": 590
+      },
+      "width": 1010,
+      "height": 502
+    },
+    {
+      "key": "sm7b",
+      "normalizedKey": "sm7b",
+      "listedName": "Fairy Rise",
+      "code": "SM7b",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm7b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 1,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 246
+      },
+      "width": 1000,
+      "height": 425,
+      "duplicateSources": [
+        {
+          "key": "sm7b",
+          "listedName": "Fairy Rise",
+          "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (6).jpeg",
+          "sourceIndex": 36,
+          "sourcePosition": 4
+        }
+      ]
+    },
+    {
+      "key": "sm7a",
+      "normalizedKey": "sm7a",
+      "listedName": "Thunderclap Spark",
+      "code": "SM7a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm7a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 2,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 246
+      },
+      "width": 1000,
+      "height": 396,
+      "duplicateSources": [
+        {
+          "key": "sm7a",
+          "listedName": "Thunderclap Spark",
+          "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (6).jpeg",
+          "sourceIndex": 36,
+          "sourcePosition": 5
+        }
+      ]
+    },
+    {
+      "key": "sm7",
+      "normalizedKey": "sm7",
+      "listedName": "Charisma of the Cracked Sky",
+      "code": "SM7",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm7.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 3,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 246
+      },
+      "width": 1000,
+      "height": 401,
+      "duplicateSources": [
+        {
+          "key": "sm7",
+          "listedName": "Charisma of the Wrecked Sky",
+          "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (6).jpeg",
+          "sourceIndex": 36,
+          "sourcePosition": 6
+        }
+      ]
+    },
+    {
+      "key": "sm6",
+      "normalizedKey": "sm6",
+      "listedName": "Forbidden Light",
+      "code": "SM6",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm6.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 4,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 0,
+        "top": 246,
+        "right": 533,
+        "bottom": 491
+      },
+      "width": 1000,
+      "height": 484
+    },
+    {
+      "key": "sm5p",
+      "normalizedKey": "sm5p",
+      "listedName": "Ultra Force",
+      "code": "SM5+",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm5p.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 5,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 533,
+        "top": 246,
+        "right": 1067,
+        "bottom": 491
+      },
+      "width": 1000,
+      "height": 447
+    },
+    {
+      "key": "sm5s",
+      "normalizedKey": "sm5s",
+      "listedName": "Ultra Sun",
+      "code": "SM5S",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm5s.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 6,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 246,
+        "right": 1600,
+        "bottom": 491
+      },
+      "width": 1010,
+      "height": 354
+    },
+    {
+      "key": "sm5m",
+      "normalizedKey": "sm5m",
+      "listedName": "Ultra Moon",
+      "code": "SM5M",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm5m.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 7,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 0,
+        "top": 491,
+        "right": 533,
+        "bottom": 737
+      },
+      "width": 1000,
+      "height": 447
+    },
+    {
+      "key": "sm4p",
+      "normalizedKey": "sm4p",
+      "listedName": "GX Battle Boost",
+      "code": "SM4+",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm4p.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 8,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 533,
+        "top": 491,
+        "right": 1067,
+        "bottom": 737
+      },
+      "width": 1000,
+      "height": 460
+    },
+    {
+      "key": "sm4a",
+      "normalizedKey": "sm4a",
+      "listedName": "The Transdimensional Beast",
+      "code": "SM4a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm4a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (5).jpeg",
+      "sourceIndex": 35,
+      "sourcePosition": 9,
+      "sourceLayout": "3x3",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 491,
+        "right": 1600,
+        "bottom": 737
+      },
+      "width": 1026,
+      "height": 442
+    },
+    {
+      "key": "sm8b",
+      "normalizedKey": "sm8b",
+      "listedName": "GX Ultra Shiny",
+      "code": "SM8b",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm8b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (6).jpeg",
+      "sourceIndex": 36,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 295
+      },
+      "width": 1000,
+      "height": 681
+    },
+    {
+      "key": "sm8a",
+      "normalizedKey": "sm8a",
+      "listedName": "Dark Order",
+      "code": "SM8a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm8a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (6).jpeg",
+      "sourceIndex": 36,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 295
+      },
+      "width": 1000,
+      "height": 546
+    },
+    {
+      "key": "sm8",
+      "normalizedKey": "sm8",
+      "listedName": "Explosive Impact",
+      "code": "SM8",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm8.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (6).jpeg",
+      "sourceIndex": 36,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 295
+      },
+      "width": 1000,
+      "height": 545
+    },
+    {
+      "key": "smp2",
+      "normalizedKey": "smp2",
+      "listedName": "Detective Pikachu",
+      "code": "SMP2",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/smp2.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (7).jpeg",
+      "sourceIndex": 37,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 310
+      },
+      "width": 1000,
+      "height": 559
+    },
+    {
+      "key": "sm10a",
+      "normalizedKey": "sm10a",
+      "listedName": "GG End",
+      "code": "SM10a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm10a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (7).jpeg",
+      "sourceIndex": 37,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 310
+      },
+      "width": 1000,
+      "height": 508
+    },
+    {
+      "key": "sm10",
+      "normalizedKey": "sm10",
+      "listedName": "Double Blaze",
+      "code": "SM10",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm10.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (7).jpeg",
+      "sourceIndex": 37,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 310
+      },
+      "width": 1006,
+      "height": 504
+    },
+    {
+      "key": "sm9b",
+      "normalizedKey": "sm9b",
+      "listedName": "Full Metal Wall",
+      "code": "SM9b",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm9b.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (7).jpeg",
+      "sourceIndex": 37,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 310,
+        "right": 533,
+        "bottom": 620
+      },
+      "width": 1000,
+      "height": 486
+    },
+    {
+      "key": "sm9a",
+      "normalizedKey": "sm9a",
+      "listedName": "Night Unison",
+      "code": "SM9a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm9a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (7).jpeg",
+      "sourceIndex": 37,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 310,
+        "right": 1067,
+        "bottom": 620
+      },
+      "width": 1000,
+      "height": 471
+    },
+    {
+      "key": "sm9",
+      "normalizedKey": "sm9",
+      "listedName": "Tag Bolt",
+      "code": "SM9",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm9.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (7).jpeg",
+      "sourceIndex": 37,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 310,
+        "right": 1600,
+        "bottom": 620
+      },
+      "width": 1000,
+      "height": 483
+    },
+    {
+      "key": "sm4s",
+      "normalizedKey": "sm4s",
+      "listedName": "The Awoken Hero",
+      "code": "SM4S",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm4s.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (8).jpeg",
+      "sourceIndex": 38,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 300
+      },
+      "width": 1000,
+      "height": 600
+    },
+    {
+      "key": "sm3p",
+      "normalizedKey": "sm3p",
+      "listedName": "Shining Legends",
+      "code": "SM3+",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm3p.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (8).jpeg",
+      "sourceIndex": 38,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 300
+      },
+      "width": 1000,
+      "height": 585
+    },
+    {
+      "key": "sm3n",
+      "normalizedKey": "sm3n",
+      "listedName": "Light-Consuming Darkness",
+      "code": "SM3N",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm3n.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (8).jpeg",
+      "sourceIndex": 38,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 300
+      },
+      "width": 1002,
+      "height": 512
+    },
+    {
+      "key": "sm3h",
+      "normalizedKey": "sm3h",
+      "listedName": "Seen the Rainbow Battle",
+      "code": "SM3H",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm3h.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (8).jpeg",
+      "sourceIndex": 38,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 300,
+        "right": 533,
+        "bottom": 600
+      },
+      "width": 1000,
+      "height": 522
+    },
+    {
+      "key": "sm2p",
+      "normalizedKey": "sm2p",
+      "listedName": "Beyond A New Challenge",
+      "code": "SM2+",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm2p.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (8).jpeg",
+      "sourceIndex": 38,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 300,
+        "right": 1067,
+        "bottom": 600
+      },
+      "width": 1000,
+      "height": 484
+    },
+    {
+      "key": "sm2l",
+      "normalizedKey": "sm2l",
+      "listedName": "Alola Moonlight",
+      "code": "SM2L",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm2l.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (8).jpeg",
+      "sourceIndex": 38,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 300,
+        "right": 1600,
+        "bottom": 600
+      },
+      "width": 1000,
+      "height": 543
+    },
+    {
+      "key": "s6k",
+      "normalizedKey": "s6k",
+      "listedName": "Jet Black Spirit",
+      "code": "S6K",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s6k.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (9).jpeg",
+      "sourceIndex": 39,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 288
+      },
+      "width": 1000,
+      "height": 479
+    },
+    {
+      "key": "s6h",
+      "normalizedKey": "s6h",
+      "listedName": "Silver Lance",
+      "code": "S6H",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s6h.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (9).jpeg",
+      "sourceIndex": 39,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 288
+      },
+      "width": 1000,
+      "height": 487
+    },
+    {
+      "key": "s5a",
+      "normalizedKey": "s5a",
+      "listedName": "Matchless Fighter",
+      "code": "S5a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s5a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (9).jpeg",
+      "sourceIndex": 39,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 288
+      },
+      "width": 1000,
+      "height": 515
+    },
+    {
+      "key": "s5r",
+      "normalizedKey": "s5r",
+      "listedName": "Rapid Strike Master",
+      "code": "S5R",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s5r.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (9).jpeg",
+      "sourceIndex": 39,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 288,
+        "right": 533,
+        "bottom": 575
+      },
+      "width": 1000,
+      "height": 491
+    },
+    {
+      "key": "s5i",
+      "normalizedKey": "s5i",
+      "listedName": "Single Strike Master",
+      "code": "S5I",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s5i.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (9).jpeg",
+      "sourceIndex": 39,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 288,
+        "right": 1067,
+        "bottom": 575
+      },
+      "width": 1000,
+      "height": 473
+    },
+    {
+      "key": "s4a",
+      "normalizedKey": "s4a",
+      "listedName": "Shiny Star V",
+      "code": "S4a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/s4a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56 (9).jpeg",
+      "sourceIndex": 39,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 288,
+        "right": 1600,
+        "bottom": 575
+      },
+      "width": 1000,
+      "height": 527
+    },
+    {
+      "key": "sm6a",
+      "normalizedKey": "sm6a",
+      "listedName": "Dragon Storm",
+      "code": "SM6a",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm6a.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56.jpeg",
+      "sourceIndex": 40,
+      "sourcePosition": 1,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 0,
+        "right": 533,
+        "bottom": 440
+      },
+      "width": 1000,
+      "height": 562
+    },
+    {
+      "key": "smd-ash-vs-team-rocket-battle-set",
+      "normalizedKey": "smdashvsteamrocketbattleset",
+      "listedName": "Ash vs Team Rocket Battle Set",
+      "code": "SMD",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/smd-ash-vs-team-rocket-battle-set.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56.jpeg",
+      "sourceIndex": 40,
+      "sourcePosition": 2,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 0,
+        "right": 1067,
+        "bottom": 440
+      },
+      "width": 1000,
+      "height": 695
+    },
+    {
+      "key": "sm0",
+      "normalizedKey": "sm0",
+      "listedName": "Pikachu & New Friends",
+      "code": "SM0",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sm0.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56.jpeg",
+      "sourceIndex": 40,
+      "sourcePosition": 3,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 0,
+        "right": 1600,
+        "bottom": 440
+      },
+      "width": 1000,
+      "height": 665
+    },
+    {
+      "key": "smc-tapu-bulu-gx-enhanced-starter",
+      "normalizedKey": "smctapubulugxenhancedstarter",
+      "listedName": "Tapu Bulu GX Enhanced Starter",
+      "code": "SMC",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/smc-tapu-bulu-gx-enhanced-starter.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56.jpeg",
+      "sourceIndex": 40,
+      "sourcePosition": 4,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 0,
+        "top": 440,
+        "right": 533,
+        "bottom": 879
+      },
+      "width": 1000,
+      "height": 536
+    },
+    {
+      "key": "smp1-rockruff-full-power-deck",
+      "normalizedKey": "smp1rockrufffullpowerdeck",
+      "listedName": "Rockruff Full Power Deck",
+      "code": "SMP1",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/smp1-rockruff-full-power-deck.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56.jpeg",
+      "sourceIndex": 40,
+      "sourcePosition": 5,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 533,
+        "top": 440,
+        "right": 1067,
+        "bottom": 879
+      },
+      "width": 1000,
+      "height": 607
+    },
+    {
+      "key": "sma-starter-set-decks",
+      "normalizedKey": "smastartersetdecks",
+      "listedName": "Starter Set Decks",
+      "code": "SMA",
+      "assetPath": "assets/rev2/11-japanese-set-logo/logos/sma-starter-set-decks.png",
+      "sourceFile": "WhatsApp Image 2026-07-24 at 14.31.56.jpeg",
+      "sourceIndex": 40,
+      "sourcePosition": 6,
+      "sourceLayout": "3x2",
+      "sourceCrop": {
+        "left": 1067,
+        "top": 440,
+        "right": 1600,
+        "bottom": 879
+      },
+      "width": 1000,
+      "height": 598
+    }
+  ]
+}

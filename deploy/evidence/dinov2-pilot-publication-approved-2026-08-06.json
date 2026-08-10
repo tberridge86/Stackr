@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "stackr-dinov2-capture-pilot-v1.0.0",
+  "generatedAt": "2026-08-06T07:41:10Z",
+  "status": "development_pilot_complete",
+  "productionAccepted": false,
+  "model": {
+    "modelId": "dinov2_vits14",
+    "repository": "facebookresearch/dinov2",
+    "embeddingDimensions": 384,
+    "license": "Apache-2.0",
+    "checkpointPath": "C:\\Users\\berri\\.cache\\torch\\hub\\checkpoints\\dinov2_vits14_pretrain.pth",
+    "checkpointSha256": "b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9",
+    "checkpointBytes": 88283115
+  },
+  "dataset": {
+    "manifestSha256": "6bdf058eb49064c1eff9929535f62ca903e1d3194062236f9009fd7666b55afd",
+    "uniqueImages": 142,
+    "identityClasses": 6,
+    "physicalCardSessions": 6,
+    "languageDistribution": {
+      "zh-Hans": 142
+    },
+    "publicationConsent": {
+      "privacyScope": "public_catalogue_model_evaluation_training_and_production",
+      "productionPublicationApproved": true
+    }
+  },
+  "evaluationIsolation": {
+    "queryImagesAreExcludedFromIndexedReferences": true,
+    "modelSelectionAndProtectedTestSeparated": false,
+    "physicalCardSessionLeakageExists": true
+  },
+  "measurements": {
+    "realCameraTop1": 0.75,
+    "realCameraTop3": 0.8676470588235294,
+    "realCameraTop5": 0.9705882352941176,
+    "foreignLanguageTop1": 0.75,
+    "meanReciprocalRank": 0.8322303921568628,
+    "serverCpuLatency": {
+      "samples": 20,
+      "medianMs": 38.54410000349162,
+      "p95Ms": 49.64470000413712,
+      "meanMs": 40.68409999963478
+    }
+  },
+  "retrieval": {
+    "referenceImages": 6,
+    "queryImages": 136,
+    "queryImagesExcludedFromReferences": true,
+    "top1": 0.75,
+    "top3": 0.8676470588235294,
+    "top5": 0.9705882352941176,
+    "meanReciprocalRank": 0.8322303921568628,
+    "perIdentity": [
+      {
+        "identityKey": "151c|037/151|normal|normal|vulpix|zh-Hans",
+        "cardName": "Vulpix",
+        "queries": 22,
+        "top1": 0.9545454545454546,
+        "meanRank": 1.0454545454545454
+      },
+      {
+        "identityKey": "151c|048/151|normal|normal|venonat|zh-Hans",
+        "cardName": "Venonat",
+        "queries": 22,
+        "top1": 0.7272727272727273,
+        "meanRank": 1.7727272727272727
+      },
+      {
+        "identityKey": "151c|082/151|normal|normal|magneton|zh-Hans",
+        "cardName": "Magneton",
+        "queries": 23,
+        "top1": 0.8260869565217391,
+        "meanRank": 1.434782608695652
+      },
+      {
+        "identityKey": "151c|100/151|normal|normal|voltorb|zh-Hans",
+        "cardName": "Voltorb",
+        "queries": 24,
+        "top1": 0.25,
+        "meanRank": 2.9166666666666665
+      },
+      {
+        "identityKey": "151c|119/151|normal|normal|seaking|zh-Hans",
+        "cardName": "Seaking",
+        "queries": 23,
+        "top1": 0.9565217391304348,
+        "meanRank": 1.173913043478261
+      },
+      {
+        "identityKey": "151c|138/151|normal|normal|omanyte|zh-Hans",
+        "cardName": "Omanyte",
+        "queries": 22,
+        "top1": 0.8181818181818182,
+        "meanRank": 1.3636363636363635
+      }
+    ]
+  },
+  "onnx": {
+    "status": "compatible",
+    "path": "D:\\Stackr-model-evaluation\\artifacts-publication-approved-2026-08-06\\dinov2-vits14-stackr-pilot.onnx",
+    "sha256": "59b82e5be00387d32534a49d40451e6a6fc8e230fc90143b3e660dee612e8c77",
+    "bytes": 88336307,
+    "exportSeconds": 7.327641800002311,
+    "maximumEmbeddingDifference": 5.066394805908203e-07,
+    "cosineSimilarity": 1.0000001192092896,
+    "inputName": "pixels",
+    "inputShape": [
+      1,
+      3,
+      224,
+      224
+    ],
+    "outputShape": [
+      1,
+      384
+    ]
+  },
+  "quantization": {
+    "status": "accepted",
+    "path": "D:\\Stackr-model-evaluation\\artifacts-publication-approved-2026-08-06\\dinov2-vits14-stackr-pilot-int8.onnx",
+    "sha256": "eb9447f288fe8225cc222d96177458c53d22ce6d794603e10b10a8905962b19a",
+    "bytes": 24946729,
+    "sizeReduction": 0.717593706968076,
+    "quantizationSeconds": 10.438700799990329,
+    "realCameraTop1": 0.75,
+    "realCameraTop3": 0.8897058823529411,
+    "realCameraTop5": 0.9705882352941176,
+    "top1Delta": 0.0,
+    "acceptanceThreshold": -0.03,
+    "serverCpuLatency": {
+      "samples": 20,
+      "medianMs": 25.932349999493454,
+      "p95Ms": 28.63739999884274,
+      "meanMs": 26.03519500044058
+    }
+  },
+  "runtime": {
+    "python": "3.12.13",
+    "operatingSystem": "Windows-11-10.0.26200-SP0",
+    "torch": "2.13.0+cpu",
+    "numpy": "2.5.1",
+    "device": "cpu"
+  },
+  "blockers": [
+    "model_selection_and_protected_test_not_separated",
+    "one_physical_card_session_per_identity",
+    "six_identity_classes_only",
+    "single_language_only",
+    "variant_and_finish_hard_negatives_missing",
+    "mobile_latency_not_measured",
+    "active_database_index_not_built",
+    "onnx_development_export_not_release_approved",
+    "int8_development_export_not_release_approved"
+  ],
+  "limitations": [
+    "This development retrieval pilot has owner-approved public publication consent, but it is not model production acceptance evidence.",
+    "Reference and query images are different files, but they show the same physical card session for each identity.",
+    "Top-5 is weak evidence with only six identity classes."
+  ]
+}

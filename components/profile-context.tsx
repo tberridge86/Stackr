@@ -73,13 +73,20 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = useCallback(async (updates: Partial<Profile>) => {
     if (!user) return { error: 'No user' };
 
+    const {
+      id: _ignoredId,
+      email: _ignoredEmail,
+      role: _ignoredRole,
+      created_at: _ignoredCreatedAt,
+      ...publicUpdates
+    } = updates;
+
     const { error } = await supabase
       .from('profiles')
       .upsert(
         {
           id: user.id,
-          email: user.email ?? null,
-          ...updates,
+          ...publicUpdates,
         },
         { onConflict: 'id' }
       );

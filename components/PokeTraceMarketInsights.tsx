@@ -36,9 +36,9 @@ const PERIODS: PokeTraceHistoryPeriod[] = ['7d', '30d', '90d'];
 const MINTY_REV2_SOURCE = require('../assets/rev2/03-ui-illustrations/mascot/Stackrrev2_mascot-cutout.png');
 
 const SOURCE_COPY: Record<SourceKey, { label: string; color: string }> = {
-  ebay: { label: 'eBay sold', color: '#20C997' },
-  tcgplayer: { label: 'TCGPlayer', color: '#F5B941' },
-  cardmarket: { label: 'CardMarket', color: '#7C8CFF' },
+  ebay: { label: 'eBay market', color: '#20C997' },
+  tcgplayer: { label: 'TCGPlayer cached', color: '#F5B941' },
+  cardmarket: { label: 'CardMarket cached', color: '#7C8CFF' },
 };
 
 const formatCurrency = (value: number | null | undefined) =>
@@ -66,9 +66,18 @@ const getRawTier = (price: PokeTraceCardPriceResult | null, rawCondition?: strin
 const getChartValue = (point: PokeTraceHistoryPoint) => point.value ?? point.avg;
 
 const getRawPrimaryPrice = (price: PokeTraceCardPriceResult | null) => {
+  if (price?.source === 'stackr-api') {
+    return {
+      label: 'Stackr market estimate',
+      value: price.stackr_central ?? null,
+      low: price.stackr_low ?? null,
+      high: price.stackr_high ?? null,
+      count: price.ebay_count ?? 0,
+    };
+  }
   if (price?.ebay_average != null || price?.ebay_low != null || price?.ebay_high != null) {
     return {
-      label: 'eBay sold',
+      label: 'eBay market comps',
       value: price.ebay_average ?? null,
       low: price.ebay_low ?? null,
       high: price.ebay_high ?? null,
@@ -224,6 +233,7 @@ export default function PokeTraceMarketInsights({
   const [history, setHistory] = useState<PokeTraceHistoryPoint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [sourceHelpOpen, setSourceHelpOpen] = useState(false);
   const isGradedMode = Boolean(gradingCompany && grade);
   const displayGradingCompany = formatSlabCompanyLabel(gradingCompany);
 
@@ -281,10 +291,10 @@ export default function PokeTraceMarketInsights({
     const rows = [
       {
         key: 'ebay',
-        label: isGradedMode ? `${displayGradingCompany} ${grade}` : 'eBay sold',
-        value: isGradedMode ? price?.graded_average ?? null : price?.ebay_average ?? null,
-        low: isGradedMode ? price?.graded_low ?? null : price?.ebay_low ?? null,
-        high: isGradedMode ? price?.graded_high ?? null : price?.ebay_high ?? null,
+        label: isGradedMode ? `${displayGradingCompany} ${grade}` : price?.source === 'stackr-api' ? 'Stackr market' : 'eBay market',
+        value: isGradedMode ? price?.graded_average ?? null : price?.source === 'stackr-api' ? price.stackr_central ?? null : price?.ebay_average ?? null,
+        low: isGradedMode ? price?.graded_low ?? null : price?.source === 'stackr-api' ? price.stackr_low ?? null : price?.ebay_low ?? null,
+        high: isGradedMode ? price?.graded_high ?? null : price?.source === 'stackr-api' ? price.stackr_high ?? null : price?.ebay_high ?? null,
         count: isGradedMode ? price?.graded_count ?? 0 : price?.ebay_count ?? 0,
         color: SOURCE_COPY.ebay.color,
       },
@@ -336,7 +346,7 @@ export default function PokeTraceMarketInsights({
               <Image source={MINTY_REV2_SOURCE} style={styles.insightMascot} resizeMode="contain" />
             </View>
             <View style={styles.insightCopy}>
-              <Text style={[styles.eyebrow, { color: theme.colors.textSoft }]}>PokeTrace live sold comps</Text>
+              <Text style={[styles.eyebrow, { color: theme.colors.textSoft }]}>Market comps</Text>
               <Text
                 style={[styles.title, { color: theme.colors.text }]}
                 numberOfLines={2}
@@ -355,23 +365,38 @@ export default function PokeTraceMarketInsights({
             Live pricing is unavailable right now. Stored values may still appear elsewhere on this card.
           </Text>
         ) : (
-          <View style={styles.summaryGrid}>
-            <View style={[styles.summaryMain, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>Average</Text>
-              <Text style={{ color: theme.colors.primary, fontSize: 24, fontWeight: '900', marginTop: 2 }}>
-                {formatCurrency(primaryValue)}
-              </Text>
+          <>
+            <View style={styles.summaryGrid}>
+              <View style={[styles.summaryMain, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                <Text style={[styles.summaryTileLabel, { color: theme.colors.textSoft }]}>Guide value</Text>
+                <Text
+                  style={[styles.summaryAverageValue, { color: theme.colors.primary }]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.52}
+                >
+                  {formatCurrency(primaryValue)}
+                </Text>
+              </View>
+              <View style={[styles.summarySide, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
+                <Text style={[styles.summaryTileLabel, { color: theme.colors.textSoft }]}>Range</Text>
+                <Text
+                  style={[styles.summaryRangeValue, { color: theme.colors.text }]}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.66}
+                >
+                  {formatCurrency(primaryLow)} - {formatCurrency(primaryHigh)}
+                </Text>
+                <Text style={[styles.summarySalesText, { color: theme.colors.textSoft }]}>
+                  {primaryCount ? `${primaryCount}+ comps` : 'No volume yet'}
+                </Text>
+              </View>
             </View>
-            <View style={[styles.summarySide, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>Range</Text>
-              <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '900', marginTop: 4 }}>
-                {formatCurrency(primaryLow)} - {formatCurrency(primaryHigh)}
-              </Text>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>
-                {primaryCount ? `${primaryCount}+ sales` : 'No sales yet'}
-              </Text>
-            </View>
-          </View>
+            <Text style={[styles.sourceNote, { color: theme.colors.textSoft }]}>
+              Source: PokeTrace market data. Stored fallback prices appear separately.
+            </Text>
+          </>
         )}
       </View>
     );
@@ -421,22 +446,49 @@ export default function PokeTraceMarketInsights({
         <>
           <View style={styles.statGrid}>
             <View style={[styles.statCell, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSoft }]}>Range</Text>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>{formatCurrency(low)} - {formatCurrency(high)}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.textSoft }]} numberOfLines={1}>Market range</Text>
+              <Text
+                style={[styles.statValue, { color: theme.colors.text }]}
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.66}
+              >
+                {formatCurrency(low)} - {formatCurrency(high)}
+              </Text>
             </View>
             <View style={[styles.statCell, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSoft }]}>Volume</Text>
-              <Text style={[styles.statValue, { color: theme.colors.text }]}>
+              <Text style={[styles.statLabel, { color: theme.colors.textSoft }]} numberOfLines={1}>Market volume</Text>
+              <Text style={[styles.statValue, { color: theme.colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>
                 {isGradedMode
                   ? price?.graded_count ? `${price.graded_count}+` : '--'
                   : price?.ebay_count ? `${price.ebay_count}+` : '--'}
               </Text>
             </View>
             <View style={[styles.statCell, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-              <Text style={[styles.statLabel, { color: theme.colors.textSoft }]}>Change</Text>
-              <Text style={[styles.statValue, { color: change != null && change < 0 ? '#EF4444' : '#20C997' }]}>{formatPercent(change)}</Text>
+              <Text style={[styles.statLabel, { color: theme.colors.textSoft }]} numberOfLines={1}>Period change</Text>
+              <Text style={[styles.statValue, { color: change != null && change < 0 ? '#EF4444' : '#20C997' }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72}>{formatPercent(change)}</Text>
             </View>
           </View>
+
+          <TouchableOpacity
+            activeOpacity={0.82}
+            onPress={() => setSourceHelpOpen((current) => !current)}
+            style={[styles.sourceHelp, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+          >
+            <Text style={[styles.sourceHelpText, { color: theme.colors.textSoft }]}>
+              Minty reads verified market comps where available, then compares cached marketplace feeds when live data is thin.
+            </Text>
+            <Text style={[styles.sourceHelpAction, { color: theme.colors.primary }]}>
+              {sourceHelpOpen ? 'Hide' : 'More'}
+            </Text>
+          </TouchableOpacity>
+          {sourceHelpOpen ? (
+            <View style={[styles.sourceHelpExpanded, { backgroundColor: theme.colors.primary + '0F', borderColor: theme.colors.primary + '24' }]}>
+              <Text style={[styles.sourceHelpExpandedText, { color: theme.colors.textSoft }]}>
+                Verified comps are preferred when the provider exposes them. Cached prices are daily marketplace snapshots. Backup lookup is a broader live search used only when the primary source has gaps.
+              </Text>
+            </View>
+          ) : null}
 
           <MiniMarketChart history={history} width={chartWidth} height={170} />
 
@@ -454,11 +506,13 @@ export default function PokeTraceMarketInsights({
               <View key={row.key} style={[styles.depthRow, { borderColor: theme.colors.border }]}>
                 <View style={styles.depthLabelWrap}>
                   <View style={[styles.legendDot, { backgroundColor: row.color }]} />
-                  <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 12 }}>{row.label}</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 12, flex: 1 }} numberOfLines={1}>{row.label}</Text>
                 </View>
-                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>{formatCurrency(row.value)}</Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 11 }}>
-                  {row.low != null || row.high != null ? `${formatCurrency(row.low)} - ${formatCurrency(row.high)}` : row.count ? `${row.count} sales` : '--'}
+                <Text style={[styles.depthPrice, { color: theme.colors.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.68}>
+                  {formatCurrency(row.value)}
+                </Text>
+                <Text style={[styles.depthRange, { color: theme.colors.textSoft }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.68}>
+                  {row.low != null || row.high != null ? `${formatCurrency(row.low)} - ${formatCurrency(row.high)}` : row.count ? `${row.count} sold` : '--'}
                 </Text>
               </View>
             ))}
@@ -496,7 +550,7 @@ const styles = StyleSheet.create({
   summaryPanel: {
     borderWidth: 1,
     borderRadius: 14,
-    padding: 14,
+    padding: 12,
     marginBottom: 12,
   },
   summaryHeader: {
@@ -532,19 +586,60 @@ const styles = StyleSheet.create({
   },
   summaryGrid: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
+    alignItems: 'stretch',
   },
   summaryMain: {
-    flex: 1,
+    flex: 1.08,
+    minWidth: 0,
+    minHeight: 110,
     borderWidth: 1,
     borderRadius: 12,
     padding: 12,
+    justifyContent: 'center',
+    overflow: 'visible',
   },
   summarySide: {
     flex: 1,
+    minWidth: 0,
+    minHeight: 110,
     borderWidth: 1,
     borderRadius: 12,
-    padding: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+  summaryTileLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '900',
+  },
+  summaryAverageValue: {
+    fontSize: 25,
+    lineHeight: 31,
+    fontWeight: '900',
+    marginTop: 3,
+    includeFontPadding: false,
+  },
+  summaryRangeValue: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '900',
+    marginTop: 5,
+    includeFontPadding: false,
+  },
+  summarySalesText: {
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 6,
+    fontWeight: '800',
+  },
+  sourceNote: {
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '700',
+    marginTop: 8,
   },
   periodRow: {
     flexDirection: 'row',
@@ -591,7 +686,43 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 13,
+    lineHeight: 17,
     fontWeight: '900',
+  },
+  sourceHelp: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sourceHelpText: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '700',
+  },
+  sourceHelpAction: {
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '900',
+  },
+  sourceHelpExpanded: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    marginTop: -4,
+    marginBottom: 10,
+  },
+  sourceHelpExpandedText: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    fontWeight: '700',
   },
   chartEmpty: {
     alignItems: 'center',
@@ -648,5 +779,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     flex: 1.1,
+    minWidth: 0,
+  },
+  depthPrice: {
+    flex: 0.72,
+    minWidth: 52,
+    textAlign: 'right',
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '900',
+  },
+  depthRange: {
+    flex: 0.95,
+    minWidth: 68,
+    textAlign: 'right',
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '700',
   },
 });

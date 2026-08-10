@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "providers": {
+    "source": "github",
+    "databaseAndStorage": "supabase",
+    "services": "railway",
+    "edgeGateway": "cloudflare-workers",
+    "mobile": "expo-eas"
+  },
+  "components": {
+    "catalogueApi": {
+      "path": "backend",
+      "healthPath": "/health",
+      "readyPath": "/v1/ready"
+    },
+    "recognitionService": {
+      "path": "recognition-service",
+      "healthPath": "/health",
+      "readyPath": "/ready"
+    },
+    "gateway": {
+      "path": "gateway",
+      "healthPath": "/v1/health",
+      "readyPath": "/v1/ready",
+      "productionHost": "api.stackrtcg.com"
+    },
+    "database": {
+      "path": "supabase",
+      "projectRef": "oakdbbzdqwurpjnoqhmu",
+      "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+      "exposedSchemas": ["public", "api", "graphql_public"],
+      "privateSchemas": ["catalog", "ingest", "market", "ml", "audit"]
+    },
+    "mobile": {
+      "easProjectId": "22048198-a309-41d2-a2bf-aa354c76be3a",
+      "stagingChannel": "staging",
+      "productionChannel": "production"
+    }
+  },
+  "releaseGates": {
+    "migrationHistoryAligned": true,
+    "activeModelSelected": false,
+    "activeIndexValidated": false,
+    "storageBackupVerified": true,
+    "productionCanaryPercent": 5
+  }
+}

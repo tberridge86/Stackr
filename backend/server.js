@@ -2,19 +2,29 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import express from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
 import Jimp from 'jimp';
+import assetRoutes, { adminAssetsRouter } from './routes/assets.js';
 import cardsightRoutes from './routes/cardsight.js';
+import catalogueIngestionRoutes from './routes/catalogueIngestion.js';
 import giblRoutes from './routes/gibl.js';
 import localAiScanRoutes from './routes/localAiScan.js';
 import rareCandyScanRoutes from './routes/rareCandyScan.js';
+import recognitionFeedbackRoutes from './routes/recognitionFeedback.js';
+import recognitionShadowModeRoutes from './routes/recognitionShadowMode.js';
+import observabilityRoutes from './routes/observability.js';
+import scanLabRoutes from './routes/scanLab.js';
 import scannerPackRoutes from './routes/scannerPacks.js';
 import shippoRoutes from './routes/shippo.js';
 import stripeRoutes from './routes/stripe.js';
+import createV1Router from './routes/v1.js';
+import { createGatewayOriginAuth } from './lib/gatewayOriginAuth.js';
+import { createTracedFetch, traceMiddleware } from './lib/traceContext.js';
 import {
   fetchTcgdexCardDetail,
   fetchTcgdexCardPrice,
@@ -24,27 +34,149 @@ import {
   searchTcgdexCards,
   searchTcgdexCardsDetailed,
 } from './lib/tcgdex.js';
+import {
+  getJapaneseCard,
+  getJapaneseCatalogueHealth,
+  getJapaneseProduct,
+  getJapaneseSet,
+  listJapaneseSeries,
+  listJapaneseSetCards,
+  listJapaneseSetProducts,
+  listJapaneseSets,
+  searchCatalogue,
+  syncJapaneseCatalogue,
+} from './lib/japaneseCatalogue.js';
+import {
+  getCatalogueCard,
+  getCatalogueHealth,
+  getCatalogueSet,
+  listCatalogueSeries,
+  listCatalogueSetCards,
+  listCatalogueSets,
+} from './lib/tcgdexCatalogue.js';
+import { getCachedPricingResponse } from './lib/pricingV2/engine.js';
 import { Buffer } from 'node:buffer';
+import { randomUUID } from 'node:crypto';
 
 const app = express();
+const gatewayOriginAuth = createGatewayOriginAuth();
+const allowedOrigins = new Set(
+  String(
+    process.env.ALLOWED_ORIGINS
+      ?? (process.env.NODE_ENV === 'production'
+        ? 'https://stackr.app,https://www.stackr.app'
+        : 'http://localhost:8081,http://localhost:19006'),
+  )
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+);
 
-app.use(cors());
-app.use(express.json({ limit: '25mb' }));
+app.disable('x-powered-by');
+app.use(traceMiddleware());
+app.use((req, res, next) => {
+  const supplied = String(req.headers['x-request-id'] ?? '').trim();
+  const requestId = /^[A-Za-z0-9._:-]{1,120}$/.test(supplied) ? supplied : randomUUID();
+  req.stackrRequestId = requestId;
+  res.setHeader('X-Request-Id', requestId);
+  next();
+});
+app.use(cors({
+  origin(origin, callback) {
+    callback(null, !origin || allowedOrigins.has(origin));
+  },
+}));
+app.use(express.json({ limit: '8mb' }));
+app.use('/v1', gatewayOriginAuth, compression({ threshold: 1024 }), createV1Router());
+app.use('/api/assets', gatewayOriginAuth, assetRoutes);
+app.use('/api/admin/assets', gatewayOriginAuth, adminAssetsRouter);
 app.use('/api/cardsight', cardsightRoutes);
+app.use('/api/admin/catalogue-ingestion', gatewayOriginAuth, catalogueIngestionRoutes);
+app.use('/api/admin/observability', gatewayOriginAuth, observabilityRoutes);
 app.use('/api/gibl', giblRoutes);
 app.use('/api/local-ai', localAiScanRoutes);
 app.use('/api/rare-candy-scan', rareCandyScanRoutes);
+app.use('/api/recognition-feedback', recognitionFeedbackRoutes);
+app.use('/api/recognition-shadow-mode', recognitionShadowModeRoutes);
+app.use('/api/scan-lab', scanLabRoutes);
 app.use('/api/scanner-packs', scannerPackRoutes);
 app.use('/api/discord', discordRoutes);
 app.use('/api/shippo', shippoRoutes);
 app.use('/api/stripe', stripeRoutes);
 
+function getSupabaseProjectRef() {
+  try {
+    const url = new URL(String(process.env.SUPABASE_URL ?? '').trim());
+    return url.hostname.endsWith('.supabase.co') ? url.hostname.split('.')[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+function getRailwayCommit() {
+  return String(
+    process.env.RAILWAY_GIT_COMMIT_SHA
+      ?? process.env.RAILWAY_GIT_COMMIT_HASH
+      ?? process.env.SOURCE_COMMIT
+      ?? '',
+  ).slice(0, 12) || null;
+}
+
+function getApiV1SupabaseKeyInfo() {
+  const candidates = [
+    ['SUPABASE_PUBLISHABLE_KEY', process.env.SUPABASE_PUBLISHABLE_KEY],
+    ['SUPABASE_ANON_KEY', process.env.SUPABASE_ANON_KEY],
+    ['SUPABASE_SECRET_KEY', process.env.SUPABASE_SECRET_KEY],
+    ['SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY],
+  ];
+  const selected = candidates.find(([, value]) => String(value ?? '').trim());
+  if (!selected) return { name: null, publicPreview: null };
+  const [name, rawValue] = selected;
+  const value = String(rawValue).trim();
+  const isPublicSafe = name === 'SUPABASE_PUBLISHABLE_KEY' || name === 'SUPABASE_ANON_KEY';
+  return {
+    name,
+    publicPreview: isPublicSafe ? `${value.slice(0, 26)}...${value.slice(-8)}` : null,
+  };
+}
+
+function getPublicRuntimeSummary() {
+  const apiV1SupabaseKey = getApiV1SupabaseKeyInfo();
+  return {
+    gitCommit: getRailwayCommit(),
+    gitBranch: process.env.RAILWAY_GIT_BRANCH ?? null,
+    railwayEnvironment: process.env.RAILWAY_ENVIRONMENT_NAME ?? null,
+    supabaseProjectRef: getSupabaseProjectRef(),
+    apiV1SupabaseKeyName: apiV1SupabaseKey.name,
+    apiV1SupabaseKeyPreview: apiV1SupabaseKey.publicPreview,
+  };
+}
+
+function healthRuntimeDiagnosticsEnabled() {
+  return String(process.env.STACKR_HEALTH_RUNTIME_DIAGNOSTICS ?? '').trim().toLowerCase() === 'true';
+}
+
+console.info(JSON.stringify({
+  event: 'stackr_runtime_config',
+  ...getPublicRuntimeSummary(),
+  supabaseKeyName: process.env.SUPABASE_SECRET_KEY
+    ? 'SUPABASE_SECRET_KEY'
+    : process.env.SUPABASE_SERVICE_ROLE_KEY
+      ? 'SUPABASE_SERVICE_ROLE_KEY'
+      : null,
+  supabaseUrlConfigured: Boolean(process.env.SUPABASE_URL),
+  originAuthMode: String(process.env.STACKR_GATEWAY_ORIGIN_AUTH_MODE ?? '').trim().toLowerCase() || null,
+  originKeyConfigured: Boolean(process.env.STACKR_GATEWAY_ORIGIN_KEY),
+}));
+
 app.get(['/health', '/api/health'], (_req, res) => {
-  res.json({
+  const body = {
     ok: true,
     service: 'stackr-api',
     time: new Date().toISOString(),
-  });
+  };
+  if (healthRuntimeDiagnosticsEnabled()) body.runtime = getPublicRuntimeSummary();
+  res.json(body);
 });
 
 const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
@@ -78,7 +210,8 @@ const EBAY_OAUTH_SCOPES = (
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { global: { fetch: createTracedFetch() } },
 );
 
 function getErrorMessage(error) {
@@ -97,6 +230,42 @@ function getApiErrorMessage(payload) {
   } catch {
     return String(payload);
   }
+}
+
+app.get('/api/pricing/:cardId', async (req, res) => {
+  try {
+    const result = await getCachedPricingResponse(supabase, String(req.params.cardId || '').trim(), req.query);
+    return res.status(result.status ?? 200).json(result.body ?? result);
+  } catch (error) {
+    return res.status(500).json({
+      error: 'Pricing Engine V2 lookup failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+function getAuthToken(req) {
+  const header = String(req.headers.authorization || '').trim();
+  if (header.toLowerCase().startsWith('bearer ')) return header.slice(7).trim();
+  return String(req.headers['x-stackr-admin-key'] || '').trim();
+}
+
+function requireAdminAccess(req, res) {
+  const expected = String(process.env.STACKR_ADMIN_API_KEY || process.env.ADMIN_API_KEY || '').trim();
+  if (!expected) {
+    res.status(503).json({
+      error: 'Admin API key is not configured',
+      detail: 'Set STACKR_ADMIN_API_KEY on the backend before running catalogue sync routes.',
+    });
+    return false;
+  }
+
+  if (getAuthToken(req) !== expected) {
+    res.status(401).json({ error: 'Admin API key required' });
+    return false;
+  }
+
+  return true;
 }
 
 function stripBase64ImagePrefix(value) {
@@ -625,7 +794,22 @@ function getRarityMismatchReasons(title = '', { rarity = '' } = {}) {
 function normalizePriceLanguage(value = '') {
   const cleaned = normaliseForTitleMatch(value);
   if (['ja', 'jp', 'jpn', 'japanese', 'japan'].includes(cleaned)) return 'ja';
+  if (['zh', 'zh-tw', 'zh tw', 'zhtw', 'zh_tw', 'chinese', 'traditional chinese', 'chinese traditional', 'tc', 'tw', 'taiwan'].includes(cleaned)) return 'zh-tw';
   return 'en';
+}
+
+function inferPriceLanguageFromText(value = '') {
+  const cleaned = normaliseForTitleMatch(value);
+  if (/\b(japanese|japan|jpn|jp)\b/.test(cleaned)) return 'ja';
+  if (/\b(chinese|traditional chinese|taiwan|tc|zh(?:\s|-)?tw|zhtw)\b/.test(cleaned)) return 'zh-tw';
+  return 'en';
+}
+
+function getPriceLanguageQueryTerms(language = 'en') {
+  const normalized = normalizePriceLanguage(language);
+  if (normalized === 'ja') return ['Japanese'];
+  if (normalized === 'zh-tw') return ['Chinese'];
+  return [];
 }
 
 function titleHasJapaneseLanguageMarker(title = '') {
@@ -633,9 +817,19 @@ function titleHasJapaneseLanguageMarker(title = '') {
   return /\b(japanese|japan|jpn|jp)\b/.test(cleaned);
 }
 
+function titleHasChineseLanguageMarker(title = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  return /\b(chinese|traditional chinese|taiwan|tc|zh(?:\s|-)?tw|zhtw)\b/.test(cleaned);
+}
+
 function titleHasNonJapaneseForeignMarker(title = '') {
   const cleaned = normaliseForTitleMatch(title);
   return /\b(korean|chinese|thai|indonesian|french|german|spanish|italian|portuguese|dutch|foreign|non\s*-?\s*english)\b/.test(cleaned);
+}
+
+function titleHasNonChineseForeignMarker(title = '') {
+  const cleaned = normaliseForTitleMatch(title);
+  return /\b(japanese|japan|jpn|jp|korean|thai|indonesian|french|german|spanish|italian|portuguese|dutch|foreign|non\s*-?\s*english)\b/.test(cleaned);
 }
 
 function getLanguageMismatchReasons(title = '', language = 'en') {
@@ -649,8 +843,36 @@ function getLanguageMismatchReasons(title = '', language = 'en') {
     return reasons;
   }
 
+  if (normalizedLanguage === 'zh-tw') {
+    const reasons = [];
+    if (!titleHasChineseLanguageMarker(cleaned)) reasons.push('MISSING_CHINESE_LANGUAGE_MARKER');
+    if (titleHasNonChineseForeignMarker(cleaned)) reasons.push('WRONG_NON_CHINESE_LANGUAGE');
+    return reasons;
+  }
+
   const languagePattern = /\b(japanese|japan|jpn|jp|korean|chinese|thai|indonesian|french|german|spanish|italian|portuguese|dutch|foreign|non\s*-?\s*english)\b/;
   return languagePattern.test(cleaned) ? ['NON_ENGLISH_LISTING'] : [];
+}
+
+function getLanguageScopedEntityCandidates(entityId = '', language = '') {
+  const rawId = String(entityId || '').trim();
+  if (!rawId) return [];
+  const hasPrefix = /^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i.test(rawId);
+  const stripped = rawId.replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+  const normalized = language ? normalizePriceLanguage(language) : normalizePriceLanguage(rawId);
+  const candidates = new Set([rawId]);
+
+  if (normalized === 'ja') {
+    candidates.add(stripped);
+    candidates.add(`ja:${stripped}`);
+  } else if (normalized === 'zh-tw') {
+    candidates.add(`zh-tw:${stripped}`);
+  } else if (!hasPrefix) {
+    candidates.add(`ja:${stripped}`);
+    candidates.add(`zh-tw:${stripped}`);
+  }
+
+  return [...candidates].filter(Boolean);
 }
 
 function getGradingMismatchReasons(title = '', { pricingMode = 'raw', gradingCompany = '', grade = '' } = {}) {
@@ -999,9 +1221,7 @@ function buildCardQuery({ name = '', setName = '', number = '', setTotal = '', r
     parts.push(setName);
   }
 
-  if (normalizePriceLanguage(language) === 'ja') {
-    parts.push('Japanese');
-  }
+  parts.push(...getPriceLanguageQueryTerms(language));
 
   // Add full collector number when we know the printed set total (e.g. "46/102").
   const collectorNumber = getFullCollectorNumber(number, setTotal);
@@ -1041,9 +1261,7 @@ function buildFallbackQuery({ name = '', setName = '', number = '', setTotal = '
     parts.push(setName);
   }
 
-  if (normalizePriceLanguage(language) === 'ja') {
-    parts.push('Japanese');
-  }
+  parts.push(...getPriceLanguageQueryTerms(language));
   
   // Always add collector number if available (critical for uniqueness)
   const collectorNumber = getFullCollectorNumber(number, setTotal);
@@ -1677,7 +1895,7 @@ async function fetchEbaySummary(query, options = {}) {
 // ROUTES
 // ===============================
 
-app.get('/debug-serpapi', async (req, res) => {
+app.get('/debug-serpapi', gatewayOriginAuth, async (req, res) => {
   const query = String(req.query.q || 'Charizard base set').trim();
   if (!SERPAPI_API_KEY) return res.status(500).json({ error: 'Missing SERPAPI_API_KEY' });
 
@@ -1702,7 +1920,7 @@ app.get('/', (req, res) => {
   res.send('Stackr API is running');
 });
 
-app.get('/debug-env', (req, res) => {
+app.get('/debug-env', gatewayOriginAuth, (req, res) => {
   res.json({
     ok: true,
     hasEbayClientId: Boolean(EBAY_CLIENT_ID),
@@ -1800,7 +2018,83 @@ app.get('/api/pokewallet/images/:id', async (req, res) => {
   }
 });
 
-app.get('/ebay-rate-limits', async (_req, res) => {
+app.get('/api/pokewallet/set-images/:setCode', async (req, res) => {
+  try {
+    const setCode = String(req.params.setCode || '').trim();
+    const language = String(req.query.language || req.query.lang || '').trim();
+    if (!setCode) return res.status(400).json({ error: 'Missing set code' });
+
+    const params = new URLSearchParams();
+    if (language) params.set('language', language);
+    const query = params.toString();
+    const response = await fetchWithTimeout(
+      `${POKEWALLET_API_BASE_URL.replace(/\/$/, '')}/sets/${encodeURIComponent(setCode)}/image${query ? `?${query}` : ''}`,
+      { headers: getPokeWalletHeaders() },
+      7000,
+      'PokeWallet set image'
+    );
+
+    if (!response.ok) {
+      const text = await response.text();
+      return res.status(response.status).json({
+        error: 'PokeWallet set image failed',
+        detail: text.slice(0, 240),
+      });
+    }
+
+    const contentType = response.headers.get('content-type') || 'image/png';
+    const buffer = Buffer.from(await response.arrayBuffer());
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.send(buffer);
+  } catch (error) {
+    return res.status(500).json({
+      error: 'PokeWallet set image failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+app.get('/api/pokewallet/sets/:setCode', async (req, res) => {
+  try {
+    const setCode = String(req.params.setCode || '').trim();
+    const language = String(req.query.language || req.query.lang || '').trim();
+    if (!setCode) return res.status(400).json({ error: 'Missing set code' });
+
+    const params = new URLSearchParams();
+    if (language) params.set('language', language);
+    const query = params.toString();
+    const response = await fetchWithTimeout(
+      `${POKEWALLET_API_BASE_URL.replace(/\/$/, '')}/sets/${encodeURIComponent(setCode)}${query ? `?${query}` : ''}`,
+      { headers: getPokeWalletHeaders() },
+      7000,
+      'PokeWallet set'
+    );
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: 'PokeWallet set failed',
+        detail: data?.message ?? data?.error ?? text.slice(0, 240),
+      });
+    }
+
+    return res.json({
+      ok: true,
+      source: 'pokewallet',
+      set: data?.data ?? data?.set ?? data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: 'PokeWallet set failed',
+      detail: getErrorMessage(error),
+    });
+  }
+});
+
+app.get('/ebay-rate-limits', gatewayOriginAuth, async (_req, res) => {
   try {
     const token = await getToken();
     const response = await fetch('https://api.ebay.com/developer/analytics/v1_beta/rate_limit/', {
@@ -1829,12 +2123,314 @@ app.get('/ebay-rate-limits', async (_req, res) => {
   }
 });
 
-app.get('/test-ebay-token', async (req, res) => {
+app.get('/test-ebay-token', gatewayOriginAuth, async (req, res) => {
   try {
     const token = await getToken();
     return res.json({ ok: true, tokenPreview: `${token.slice(0, 10)}...` });
   } catch (error) {
     return res.status(500).json({ ok: false, error: getErrorMessage(error) });
+  }
+});
+
+function boolQuery(value, defaultValue = false) {
+  if (value == null || value === '') return defaultValue;
+  return ['1', 'true', 'yes', 'y'].includes(String(value).trim().toLowerCase());
+}
+
+app.get('/catalogue/:language/series', async (req, res) => {
+  try {
+    const result = await listCatalogueSeries(supabase, {
+      language: req.params.language,
+      q: req.query.q || req.query.query,
+      page: req.query.page,
+      limit: req.query.limit,
+    });
+    return res.json({ ok: true, source: 'tcgdex', ...result });
+  } catch (error) {
+    return res.status(500).json({ error: 'Catalogue series lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/:language/sets', async (req, res) => {
+  try {
+    const result = await listCatalogueSets(supabase, {
+      language: req.params.language,
+      q: req.query.q || req.query.query,
+      page: req.query.page,
+      limit: req.query.limit,
+    });
+    return res.json({ ok: true, source: 'tcgdex', ...result });
+  } catch (error) {
+    return res.status(500).json({ error: 'Catalogue set lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/:language/sets/:setId', async (req, res) => {
+  try {
+    const set = await getCatalogueSet(supabase, req.params.setId, { language: req.params.language });
+    if (!set) return res.status(404).json({ error: 'Catalogue set not found' });
+    return res.json({ ok: true, source: 'tcgdex', language: set.language, region: set.region, set });
+  } catch (error) {
+    return res.status(500).json({ error: 'Catalogue set fetch failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/:language/sets/:setId/cards', async (req, res) => {
+  try {
+    const result = await listCatalogueSetCards(supabase, req.params.setId, {
+      language: req.params.language,
+      page: req.query.page,
+      limit: req.query.limit,
+      includeRaw: boolQuery(req.query.includeRaw),
+    });
+    return res.json({ ok: true, source: 'tcgdex', ...result });
+  } catch (error) {
+    return res.status(500).json({ error: 'Catalogue set cards lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/:language/cards/:cardId', async (req, res) => {
+  try {
+    const card = await getCatalogueCard(supabase, req.params.cardId, { language: req.params.language });
+    if (!card) return res.status(404).json({ error: 'Catalogue card not found' });
+    return res.json({ ok: true, source: 'tcgdex', language: card.language, region: card.region, card });
+  } catch (error) {
+    return res.status(500).json({ error: 'Catalogue card lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/admin/catalogue/health', async (req, res) => {
+  if (!requireAdminAccess(req, res)) return;
+
+  try {
+    const health = await getCatalogueHealth(supabase, {
+      language: req.query.language,
+    });
+    return res.json({ ok: true, source: 'tcgdex', health });
+  } catch (error) {
+    return res.status(500).json({ error: 'Catalogue health check failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/admin/catalogue/:language/health', async (req, res) => {
+  if (!requireAdminAccess(req, res)) return;
+
+  try {
+    const health = await getCatalogueHealth(supabase, { language: req.params.language });
+    const resolvedLanguage = health?.[0]?.language ?? req.params.language;
+    const resolvedRegion = health?.[0]?.region ?? null;
+    return res.json({ ok: true, source: 'tcgdex', language: resolvedLanguage, region: resolvedRegion, health });
+  } catch (error) {
+    return res.status(500).json({ error: 'Catalogue health check failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.post('/admin/catalogue/:language/sync', async (req, res) => {
+  if (!requireAdminAccess(req, res)) return;
+
+  return res.status(410).json({
+    ok: false,
+    error: 'Legacy direct TCGdex catalogue sync is disabled.',
+    replacement: '/v1/admin/catalogue-ingestion/run-language',
+    supportedLanguages: ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'],
+  });
+});
+
+app.post('/admin/catalogue/:language/repair', async (req, res) => {
+  if (!requireAdminAccess(req, res)) return;
+
+  return res.status(410).json({
+    ok: false,
+    error: 'Legacy direct TCGdex catalogue repair is disabled.',
+    replacement: '/v1/admin/catalogue-ingestion/run-language',
+    supportedLanguages: ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'],
+  });
+});
+
+app.get('/catalogue/jp/series', async (_req, res) => {
+  try {
+    const series = await listJapaneseSeries(supabase);
+    return res.json({ region: 'JP', language: 'ja', count: series.length, series });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese series lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/jp/sets', async (req, res) => {
+  try {
+    const sets = await listJapaneseSets(supabase, {
+      q: req.query.q || req.query.query,
+      page: req.query.page,
+      limit: req.query.limit,
+    });
+    return res.json({ region: 'JP', language: 'ja', count: sets.length, sets });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese set lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/jp/sets/:setId', async (req, res) => {
+  try {
+    const set = await getJapaneseSet(supabase, req.params.setId);
+    if (!set) return res.status(404).json({ error: 'Japanese set not found' });
+    return res.json({ region: 'JP', language: 'ja', set });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese set fetch failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/jp/sets/:setId/cards', async (req, res) => {
+  try {
+    const cards = await listJapaneseSetCards(supabase, req.params.setId, {
+      page: req.query.page,
+      limit: req.query.limit,
+    });
+    return res.json({ region: 'JP', language: 'ja', setId: req.params.setId, count: cards.length, cards });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese set cards lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/jp/sets/:setId/products', async (req, res) => {
+  try {
+    const products = await listJapaneseSetProducts(supabase, req.params.setId);
+    return res.json({ region: 'JP', language: 'ja', setId: req.params.setId, count: products.length, products });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese set products lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/jp/cards/:cardId', async (req, res) => {
+  try {
+    const card = await getJapaneseCard(supabase, req.params.cardId);
+    if (!card) return res.status(404).json({ error: 'Japanese card not found' });
+    return res.json({ region: 'JP', language: 'ja', card });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese card lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/jp/products/:productId', async (req, res) => {
+  try {
+    const product = await getJapaneseProduct(supabase, req.params.productId);
+    if (!product) return res.status(404).json({ error: 'Japanese product not found' });
+    return res.json({ region: 'JP', language: 'ja', product });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese product lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/catalogue/search', async (req, res) => {
+  try {
+    const query = String(req.query.q || req.query.query || '').trim();
+    const results = await searchCatalogue(supabase, {
+      q: query,
+      limit: req.query.limit,
+    });
+    return res.json({ region: 'JP', language: 'ja', ...results });
+  } catch (error) {
+    return res.status(500).json({ error: 'Catalogue search failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.post('/admin/catalogue/jp/sync', async (req, res) => {
+  if (!requireAdminAccess(req, res)) return;
+
+  try {
+    const body = req.body ?? {};
+    const allCardsValue = body.allCards ?? req.query.allCards;
+    const options = {
+      seriesId: body.seriesId ?? req.query.seriesId,
+      setId: body.setId ?? req.query.setId,
+      allCards: String(allCardsValue ?? '').toLowerCase() === 'true',
+    };
+    const result = await syncJapaneseCatalogue(supabase, options);
+    return res.json({ ok: true, region: 'JP', language: 'ja', ...result });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese catalogue sync failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/admin/catalogue/jp/health', async (req, res) => {
+  if (!requireAdminAccess(req, res)) return;
+
+  try {
+    const health = await getJapaneseCatalogueHealth(supabase);
+    return res.json({ ok: true, region: 'JP', language: 'ja', health });
+  } catch (error) {
+    return res.status(500).json({ error: 'Japanese catalogue health check failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/market/cards/:cardId', async (req, res) => {
+  try {
+    const rawId = String(req.params.cardId || '').trim();
+    const language = String(req.query.language || '').trim();
+    const candidates = getLanguageScopedEntityCandidates(rawId, language);
+
+    let query = supabase
+      .from('market_prices')
+      .select('*')
+      .in('entity_type', ['card', 'card_printing'])
+      .in('entity_id', candidates)
+      .order('retrieved_at', { ascending: false })
+      .limit(20);
+
+    if (language) query = query.eq('language', language);
+
+    const { data: prices, error } = await query;
+    if (error) throw error;
+
+    const { data: legacySnapshots } = await supabase
+      .from('market_price_snapshots')
+      .select('*')
+      .in('card_id', candidates)
+      .order('snapshot_at', { ascending: false })
+      .limit(10);
+
+    return res.json({
+      entityType: 'card',
+      cardId: rawId,
+      prices: prices ?? [],
+      legacySnapshots: legacySnapshots ?? [],
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Card market lookup failed', detail: getErrorMessage(error) });
+  }
+});
+
+app.get('/market/products/:productId', async (req, res) => {
+  try {
+    const productId = String(req.params.productId || '').trim();
+    const language = String(req.query.language || '').trim();
+    const candidates = getLanguageScopedEntityCandidates(productId, language);
+
+    const [{ data: prices, error }, { data: legacySnapshots }] = await Promise.all([
+      supabase
+        .from('market_prices')
+        .select('*')
+        .in('entity_type', ['sealed_product', 'product'])
+        .in('entity_id', candidates)
+        .order('retrieved_at', { ascending: false })
+        .limit(20),
+      supabase
+        .from('market_product_price_snapshots')
+        .select('*')
+        .in('product_id', candidates)
+        .order('snapshot_at', { ascending: false })
+        .limit(10),
+    ]);
+
+    if (error) throw error;
+
+    return res.json({
+      entityType: 'sealed_product',
+      productId,
+      prices: prices ?? [],
+      legacySnapshots: legacySnapshots ?? [],
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'Product market lookup failed', detail: getErrorMessage(error) });
   }
 });
 
@@ -2040,7 +2636,7 @@ app.get('/price', async (req, res) => {
     const query = String(req.query.q || '').trim();
     const productType = String(req.query.productType || 'card').trim();
     const productSubtype = String(req.query.productSubtype || '').trim();
-    const language = String(req.query.language || (/\b(japanese|japan|jpn|jp)\b/i.test(query) ? 'ja' : 'en')).trim();
+    const language = String(req.query.language || inferPriceLanguageFromText(query)).trim();
     const pricingMode = String(req.query.pricingMode || 'raw').trim();
     const condition = String(req.query.condition || '').trim();
     const gradingCompany = String(req.query.gradingCompany || '').trim();
@@ -2098,7 +2694,7 @@ app.get('/api/price/ebay', async (req, res) => {
     let rarity = String(req.query.rarity || '').trim();
     const productType = String(req.query.productType || (directQuery ? 'sealed' : 'card')).trim();
     const productSubtype = String(req.query.productSubtype || '').trim();
-    let language = String(req.query.language || (/\b(japanese|japan|jpn|jp)\b/i.test(directQuery) ? 'ja' : 'en')).trim();
+    let language = String(req.query.language || inferPriceLanguageFromText(directQuery)).trim();
     const refreshLane = String(req.query.refreshLane || '').trim() || null;
     const refreshReason = String(req.query.refreshReason || '').trim() || null;
     const pricingMode = String(req.query.pricingMode || 'raw').trim();
@@ -2291,7 +2887,7 @@ app.get('/api/price/ebay', async (req, res) => {
 // DEBUG: PRICE FILTER INSPECTOR
 // ===============================
 
-app.get('/price/debug', async (req, res) => {
+app.get('/price/debug', gatewayOriginAuth, async (req, res) => {
   try {
     const name = String(req.query.name || '').trim();
     const setName = String(req.query.set || '').trim();
@@ -3035,7 +3631,7 @@ function scoreFingerprintCandidate(reference, queryHashes) {
   };
 }
 
-app.post('/api/fingerprints/reload', (_req, res) => {
+app.post('/api/fingerprints/reload', gatewayOriginAuth, (_req, res) => {
   _fpCache = null;
   _fpCacheAt = 0;
   _fpCacheLoading = null;
@@ -3044,7 +3640,7 @@ app.post('/api/fingerprints/reload', (_req, res) => {
   res.json({ ok: true, message: 'Fingerprint cache cleared — will reload on next scan' });
 });
 
-app.post('/api/scan/fingerprint', async (req, res) => {
+app.post('/api/scan/fingerprint', gatewayOriginAuth, async (req, res) => {
   try {
     const { base64Image, setId } = req.body;
     const expectedSetId = typeof setId === 'string' && setId.trim() ? setId.trim() : null;
@@ -4223,7 +4819,7 @@ app.get('/api/pokemon-price-tracker/card', async (req, res) => {
   }
 });
 
-app.get('/debug-ximilar', async (req, res) => {
+app.get('/debug-ximilar', gatewayOriginAuth, async (req, res) => {
   try {
     if (!XIMILAR_API_TOKEN) return res.status(500).json({ ok: false, error: 'Missing token' });
 
@@ -4474,7 +5070,7 @@ app.post('/api/notify/price-alert', async (req, res) => {
 // SYNC SET
 // ===============================
 
-app.get('/api/sync/set', async (req, res) => {
+app.get('/api/sync/set', gatewayOriginAuth, async (req, res) => {
   try {
     const setId = String(req.query.setId || req.body.setId || '').trim();
     if (!setId) return res.status(400).json({ error: 'Missing setId' });

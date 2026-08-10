@@ -11,6 +11,7 @@ import { InteractionManager } from 'react-native';
 import type { MarketplaceListing } from '../lib/marketplace';
 import { supabase } from '../lib/supabase';
 import { createActivityPost } from '../lib/activity';
+import { fetchStackrCard } from '../lib/stackrDomainAdapter';
 
 import { PRICE_API_URL } from '../lib/config';
 
@@ -593,14 +594,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
                 .maybeSingle();
 
               const sellerName = profile?.collector_name ?? 'Another collector';
-
-              // Get card name for notification
-              const { data: cardData } = await supabase
-                .from('pokemon_cards')
-                .select('name')
-                .eq('id', cardId)
-                .maybeSingle();
-
+              const cardData = await fetchStackrCard(cardId).catch(() => null);
               const cardName = cardData?.name ?? 'a card';
 
               // Insert in-app notifications
@@ -744,11 +738,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
           .eq('id', user.id)
           .maybeSingle();
 
-        const { data: cardData } = await supabase
-          .from('pokemon_cards')
-          .select('name')
-          .eq('id', input.cardId)
-          .maybeSingle();
+        const cardData = await fetchStackrCard(input.cardId).catch(() => null);
 
         const sellerName = profile?.collector_name ?? 'Another collector';
         const cardName = cardData?.name ?? 'a card';

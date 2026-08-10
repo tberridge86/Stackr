@@ -1,6 +1,9 @@
 import { searchLocalPokemonCards } from './cardSearch';
+import { getPreferredSetDisplayName } from './pokemonDisplayNames';
 import { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 import { supabase } from './supabase';
+import { getPokemonCardLanguageLabel, normalizePokemonCardLanguage } from './pokemonTcg';
+import { fetchStackrSets } from './stackrDomainAdapter';
 
 export { expandSearchQuery, normaliseSearchText } from './searchNormalisation';
 
@@ -58,26 +61,33 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
         limit,
         select: 'id, name, language, set_id, image_small, image_large, raw_data, number',
       }),
-    ]).then(([englishCards, japaneseCards]) => {
+      searchLocalPokemonCards<any>(primaryQuery, {
+        language: 'zh-tw',
+        limit,
+        select: 'id, name, language, set_id, image_small, image_large, raw_data, number',
+      }),
+    ]).then(([englishCards, japaneseCards, chineseCards]) => {
       const seen = new Set<string>();
-      return [...englishCards, ...japaneseCards].filter((card) => {
+      return [...englishCards, ...japaneseCards, ...chineseCards].filter((card) => {
         if (!card?.id || seen.has(card.id)) return false;
         seen.add(card.id);
         return true;
       }).slice(0, limit);
     }),
-    supabase
-      .from('pokemon_sets')
-      .select('id, name, series, printed_total, total, images')
-      .or(`name.ilike.%${primaryQuery}%,id.ilike.%${primaryQuery}%`)
-      .limit(limit),
+    fetchStackrSets().then((sets) => sets.filter((set) => {
+      const haystack = [set.id, set.name, set.series, set.localName, set.externalIds.setCode]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(primaryQuery.toLowerCase());
+    }).slice(0, limit)),
     supabase
       .from('binders')
       .select('id, name, type, source_set_id, cover_key')
       .ilike('name', `%${primaryQuery}%`)
       .limit(limit),
     supabase
-      .from('profiles')
+      .from('profile_public_directory')
       .select('id, collector_name, avatar_url, avatar_preset')
       .ilike('collector_name', `%${primaryQuery}%`)
       .limit(limit),
@@ -95,8 +105,19 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
       category: 'cards',
       title: card.name,
       subtitle: joinSubtitle([
-        card.language === 'ja' ? 'Japanese' : null,
-        card.raw_data?.set?.name ?? card.set_id,
+        normalizePokemonCardLanguage(card.language) !== 'en' ? getPokemonCardLanguageLabel(card.language) : null,
+        getPreferredSetDisplayName({
+          id: card.set_id ?? card.raw_data?.set?.id ?? null,
+          sourceId: card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set?.source_id ?? card.raw_data?.source_id ?? card.set_id ?? null,
+          setCode: card.raw_data?.set?.set_code ?? card.raw_data?.set?.tcgdex_id ?? card.raw_data?.set_code ?? card.set_id ?? null,
+          language: card.language ?? card.raw_data?.language ?? card.raw_data?.set?.language ?? null,
+          region: card.region ?? card.raw_data?.region ?? card.raw_data?.set?.region ?? null,
+          localName: card.raw_data?.set?.local_name ?? card.raw_data?.set?.name ?? null,
+          englishDisplayName: card.raw_data?.set?.english_display_name ?? card.raw_data?.set?.englishDisplayName ?? null,
+          canonicalName: card.raw_data?.set?.name ?? null,
+          fallbackName: card.set_id ?? null,
+          raw: card.raw_data?.set ?? card.raw_data,
+        }),
         card.number ? `#${card.number}` : null,
       ]),
       imageUrl: card.image_small ?? card.image_large ?? null,
@@ -105,13 +126,13 @@ export async function runGlobalSearch(query: string, options: { limit?: number }
     }));
   }
 
-  if (setsResult.status === 'fulfilled' && !setsResult.value.error) {
-    groups.sets = (setsResult.value.data ?? []).map((set: any) => ({
+  if (setsResult.status === 'fulfilled') {
+    groups.sets = setsResult.value.map((set) => ({
       id: set.id,
       category: 'sets',
       title: set.name,
-      subtitle: joinSubtitle([set.series, set.printed_total ?? set.total ? `${set.printed_total ?? set.total} cards` : null]),
-      imageUrl: set.images?.logo ?? null,
+      subtitle: joinSubtitle([set.series, set.printedTotal ?? set.total ? `${set.printedTotal ?? set.total} cards` : null]),
+      imageUrl: set.images.logo ?? set.images.symbol ?? set.images.cover ?? null,
       route: `/set/${set.id}`,
       raw: set,
     }));

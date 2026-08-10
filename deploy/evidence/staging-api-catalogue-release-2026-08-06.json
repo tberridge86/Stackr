@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "stackr-staging-api-catalogue-release-v1.0.0",
+  "capturedAt": "2026-08-06T09:31:38.189Z",
+  "productionMutationPerformed": false,
+  "controlledCatalogueSnapshot": {
+    "languageCode": "zh-cn",
+    "version": "zh-cn:staging-151c-20260806",
+    "versionId": "c9d0090b-aa13-4f3a-a96b-334820f0cbe6",
+    "setId": "8e3da79a-1d8d-40ae-9f09-0150728cfbd6",
+    "setCode": "151c",
+    "status": "published",
+    "setCount": 1,
+    "printingCount": 54,
+    "variantCount": 54,
+    "assetCount": 6,
+    "externalIdentifierCount": 57,
+    "releaseEligible": false,
+    "knownBlockers": [
+      "incomplete_language_catalogue",
+      "289_set_cards_missing",
+      "48_card_images_missing",
+      "set_logo_missing",
+      "set_symbol_missing"
+    ]
+  },
+  "liveStagingApi": {
+    "verifiedAt": "2026-08-06T09:31:06.379Z",
+    "baseUrl": "https://stackr-api-gateway-staging.berridge14.workers.dev",
+    "healthStatus": 200,
+    "readyStatus": 503,
+    "setsStatus": 200,
+    "setsReturned": 1,
+    "setDetailStatus": 200,
+    "setCardsStatus": 200,
+    "cardsReturned": 54,
+    "cardDetailStatus": 200,
+    "cardVariantsStatus": 200,
+    "variantsReturned": 1,
+    "searchStatus": 200,
+    "searchResultsReturned": 1,
+    "assetManifestStatus": 200,
+    "assetRowsReturned": 6,
+    "stableRequestIdEchoVerified": true,
+    "conditionalEtagStatus": 304
+  },
+  "liveAssetDelivery": {
+    "assetRows": 6,
+    "originalFiles": 6,
+    "derivativeFiles": 18,
+    "http200Count": 24,
+    "sha256MatchCount": 24,
+    "mimeTypeMatchCount": 24,
+    "ok": true
+  },
+  "recoveryDrill": {
+    "workflowRunId": 31088315455,
+    "workflowUrl": "https://github.com/tberridge86/Stackr/actions/runs/31088315455",
+    "sourceCommitHash": "1ddacf6779a6a4136f423e850bd5666d5cef56c6",
+    "conclusion": "success",
+    "sourceProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "restoreProjectRef": "krjttpmthxkfsbqksxci",
+    "postgres": {
+      "verifiedAt": "2026-08-06T09:26:52.939Z",
+      "tableCount": 184,
+      "migrationCount": 84,
+      "schemaSha256": "9769d8ebbd7b757ad446e2f91b00acb041d8f9c0bf7479d2fe0afec10897c658",
+      "tableDataSha256": "b1fa92df7699c3f39f1951be1b41e5fdfaa3db01d226f0df2c0c0b7bcc664eb4",
+      "migrationHistorySha256": "901b0949344bbd05da1ed31efcd0e661b9d3a48f81c6f9b36152b4dde44a13dd",
+      "extensionSha256": "49b2747d46eeb18936a73a583da57822ebac38754abb53833ea6bc71a6bde2bc",
+      "sourceAndRestoreFingerprintsMatch": true,
+      "ok": true
+    },
+    "storage": {
+      "verifiedAt": "2026-08-06T09:28:33.525Z",
+      "sourceBucketCount": 6,
+      "restoredBucketCount": 6,
+      "backedUpObjectCount": 24,
+      "restoredObjectCount": 24,
+      "publicReadVerifiedCount": 24,
+      "checksumMismatchCount": 0,
+      "mimeTypeMismatchCount": 0,
+      "bucketPolicyMatches": true,
+      "fileSizeLimitCompatible": true,
+      "isolatedTargetBucketLimitDowngradeCount": 1,
+      "targetCleanupVerified": true,
+      "backupManifestSha256": "0b91aba0b709a81779b0e187ea2d73087278770d7d21507938e880a48e6382a0",
+      "ok": true
+    }
+  },
+  "supabaseAdvisors": {
+    "securityErrorCount": 0,
+    "securityWarningCount": 9,
+    "securityInfoCount": 15,
+    "performanceWarningCount": 353,
+    "performanceInfoCount": 414
+  },
+  "cloudflare": {
+    "accountId": "b4c23b0834cc5a113aa4a98fd904b281",
+    "zoneId": "98114dac171e4fd0a2a1ca5ba31ec160",
+    "productionHost": "api.stackrtcg.com",
+    "dnsConfigured": false,
+    "productionWorkerExists": false,
+    "productionTrafficExposed": false
+  },
+  "recognitionReadiness": {
+    "modelLoaded": true,
+    "modelVersion": "dinov2_vits14_int8_pilot_v0_1_0",
+    "activeIndexReady": false,
+    "activeIndexVersion": null,
+    "scoringCalibrationReady": false
+  },
+  "productionPromotion": {
+    "approved": false,
+    "performed": false,
+    "blockers": [
+      "controlled_catalogue_snapshot_not_release_eligible",
+      "gateway_readiness_status_503",
+      "active_recognition_index_not_validated",
+      "recognition_scoring_calibration_not_ready",
+      "release_manifest_approvals_still_closed"
+    ]
+  }
+}

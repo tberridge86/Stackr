@@ -4,8 +4,11 @@ import { USD_TO_GBP } from './config';
 import { fetchOwnedCardRows, type OwnedCardRow } from './ownership';
 import { getPriceFromPokemonCard } from './pricing';
 import { supabase } from './supabase';
+import { bumpCollectionSummaryVersion, getCollectionSummaryVersion } from './collectionSummaryInvalidation';
 
-const SUMMARY_CACHE_TTL_MS = 20 * 1000;
+const SUMMARY_CACHE_TTL_MS = 60 * 1000;
+const SUMMARY_PERSISTED_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+const SUMMARY_CACHE_STORAGE_PREFIX = 'stackr:collection-summary:v2:';
 const MASTER_SET_STORAGE_PREFIX = 'stackr:binder-master-set:';
 
 export type CollectionSummary = {
@@ -22,7 +25,7 @@ export type CollectionSummary = {
   updatedAt: string;
 };
 
-let cachedSummary: { expiresAt: number; value: CollectionSummary } | null = null;
+let cachedSummary: { userId: string; version: number; expiresAt: number; value: CollectionSummary } | null = null;
 let inflightSummary: Promise<CollectionSummary> | null = null;
 
 const toQuantity = (value: unknown) => Math.max(1, Math.floor(Number(value ?? 1) || 1));
@@ -386,21 +389,119 @@ async function buildCollectionSummary(): Promise<CollectionSummary> {
   };
 }
 
-export function invalidateCollectionSummary() {
-  cachedSummary = null;
-  inflightSummary = null;
+function getEmptySummary(): CollectionSummary {
+  return {
+    totalOwnedItems: 0,
+    totalCardsOwned: 0,
+    uniqueCards: 0,
+    rawCardsOwned: 0,
+    gradedSlabsOwned: 0,
+    sealedProductsOwned: 0,
+    duplicateCopies: 0,
+    collectionValue: 0,
+    binderCount: 0,
+    completedSets: 0,
+    updatedAt: new Date().toISOString(),
+  };
 }
 
-export async function getCollectionSummary(options?: { forceRefresh?: boolean }) {
-  if (!options?.forceRefresh && cachedSummary && cachedSummary.expiresAt > Date.now()) return cachedSummary.value;
-  if (!options?.forceRefresh && inflightSummary) return inflightSummary;
+function getSummaryCacheKey(userId: string) {
+  return `${SUMMARY_CACHE_STORAGE_PREFIX}${userId}`;
+}
 
+function isUsableSummary(value: any): value is CollectionSummary {
+  return Boolean(
+    value
+    && typeof value === 'object'
+    && typeof value.totalCardsOwned === 'number'
+    && typeof value.collectionValue === 'number'
+    && typeof value.binderCount === 'number'
+  );
+}
+
+async function readPersistedSummary(userId: string, maxAgeMs = SUMMARY_PERSISTED_MAX_AGE_MS) {
+  try {
+    const raw = await AsyncStorage.getItem(getSummaryCacheKey(userId));
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    const cachedAt = Number(parsed?.cachedAt ?? 0);
+    if (!cachedAt || Date.now() - cachedAt > maxAgeMs || !isUsableSummary(parsed?.value)) {
+      return null;
+    }
+
+    return parsed.value as CollectionSummary;
+  } catch (error) {
+    console.log('Collection summary persisted cache read failed:', error);
+    return null;
+  }
+}
+
+async function writePersistedSummary(userId: string, value: CollectionSummary) {
+  try {
+    await AsyncStorage.setItem(
+      getSummaryCacheKey(userId),
+      JSON.stringify({ cachedAt: Date.now(), value, version: getCollectionSummaryVersion() })
+    );
+  } catch (error) {
+    console.log('Collection summary persisted cache write failed:', error);
+  }
+}
+
+async function refreshCollectionSummary(userId: string) {
   inflightSummary = buildCollectionSummary();
   try {
     const value = await inflightSummary;
-    cachedSummary = { expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS, value };
+    cachedSummary = {
+      userId,
+      version: getCollectionSummaryVersion(),
+      expiresAt: Date.now() + SUMMARY_CACHE_TTL_MS,
+      value,
+    };
+    await writePersistedSummary(userId, value);
     return value;
   } finally {
     inflightSummary = null;
   }
+}
+
+export function invalidateCollectionSummary() {
+  bumpCollectionSummaryVersion();
+  cachedSummary = null;
+  inflightSummary = null;
+}
+
+export async function getCollectionSummary(options?: {
+  forceRefresh?: boolean;
+  staleWhileRefresh?: boolean;
+  maxPersistedAgeMs?: number;
+}) {
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) throw error;
+  if (!user) return getEmptySummary();
+
+  const now = Date.now();
+  const version = getCollectionSummaryVersion();
+  const memoryHit = cachedSummary?.userId === user.id && cachedSummary.version === version ? cachedSummary : null;
+  if (!options?.forceRefresh && memoryHit && memoryHit.expiresAt > now) return memoryHit.value;
+  if (!options?.forceRefresh && inflightSummary) return inflightSummary;
+
+  const persisted = version === 0 ? await readPersistedSummary(user.id, options?.maxPersistedAgeMs) : null;
+  if (!options?.forceRefresh && persisted) {
+    cachedSummary = { userId: user.id, version, expiresAt: now + SUMMARY_CACHE_TTL_MS, value: persisted };
+    return persisted;
+  }
+
+  if (options?.forceRefresh && options.staleWhileRefresh && (memoryHit || persisted)) {
+    const staleValue = memoryHit?.value ?? persisted!;
+    if (!inflightSummary) {
+      void refreshCollectionSummary(user.id).catch((refreshError) => {
+        console.log('Collection summary background refresh failed:', refreshError?.message ?? refreshError);
+      });
+    }
+    return staleValue;
+  }
+
+  if (inflightSummary) return inflightSummary;
+  return refreshCollectionSummary(user.id);
 }

@@ -8,7 +8,9 @@ export type ForeignPokemonLanguageCode =
   | 'pt-br'
   | 'de'
   | 'ja'
+  | 'zh-cn'
   | 'zh-tw'
+  | 'ko'
   | 'id'
   | 'th';
 
@@ -24,12 +26,20 @@ export type ForeignPokemonSet = {
   language: ForeignPokemonLanguageCode;
   region: string;
   name: string;
+  localName?: string | null;
+  englishDisplayName?: string | null;
   series?: string | null;
   releaseDate?: string | null;
   logo?: string | null;
   logoBase?: string | null;
   symbol?: string | null;
   symbolBase?: string | null;
+  images?: {
+    logo?: string | null;
+    symbol?: string | null;
+    cover?: string | null;
+    artwork?: string | null;
+  };
   cardCount?: {
     total?: number | null;
     official?: number | null;
@@ -49,6 +59,8 @@ export type ForeignPokemonCardBrief = {
   localId?: string | null;
   number?: string | null;
   name: string;
+  localName?: string | null;
+  englishDisplayName?: string | null;
   image?: string | null;
   imageSmall?: string | null;
   imageBase?: string | null;
@@ -93,6 +105,8 @@ export type ForeignPokemonCard = ForeignPokemonCardBrief & {
   set?: {
     id?: string | null;
     name?: string | null;
+    localName?: string | null;
+    englishDisplayName?: string | null;
     logo?: string | null;
     symbol?: string | null;
     cardCount?: unknown;

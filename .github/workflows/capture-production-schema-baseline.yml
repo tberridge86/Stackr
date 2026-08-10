@@ -1,0 +1,100 @@
+name: Capture Production Schema Baseline
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type CAPTURE PRODUCTION SCHEMA
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-schema-baseline
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    if: inputs.confirmation == 'CAPTURE PRODUCTION SCHEMA'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: migration-baseline
+    env:
+      SUPABASE_PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
+      SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+
+      - name: Validate protected production connection
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_PRODUCTION_DB_URL"
+          case "$SUPABASE_PRODUCTION_DB_URL" in
+            *"$SUPABASE_PRODUCTION_PROJECT_REF"*) ;;
+            *) echo '::error::production_database_url_project_mismatch'; exit 1 ;;
+          esac
+          node scripts/deploy/prepare-production-baseline-url.mjs
+
+      - name: Capture schema-only baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stackr-production-baseline"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_PRODUCTION_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-production-baseline/production-schema.sql"
+          if npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_PRODUCTION_DB_URL" \
+            --schema supabase_migrations \
+            --file "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.sql" \
+            2>"$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr"; then
+            npx --yes supabase@2.110.0 db dump \
+              --db-url "$STACKR_PRODUCTION_DB_URL" \
+              --schema supabase_migrations \
+              --data-only --use-copy \
+              --file "$RUNNER_TEMP/stackr-production-baseline/migration-history-data.sql"
+          elif grep -q 'no matching schemas were found' \
+            "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr"; then
+            printf '%s\n' '-- stackr: supabase_migrations schema absent on source' \
+              > "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.sql"
+            printf '%s\n' '-- stackr: no migration history rows because schema is absent' \
+              > "$RUNNER_TEMP/stackr-production-baseline/migration-history-data.sql"
+          else
+            cat "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr" >&2
+            exit 1
+          fi
+          rm -f "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr"
+
+      - name: Reject secret-bearing baseline artifacts
+        run: >-
+          node scripts/deploy/secret-scan.mjs
+          --directory="$RUNNER_TEMP/stackr-production-baseline"
+
+      - name: Create non-secret baseline evidence
+        run: >-
+          node scripts/deploy/create-schema-baseline-evidence.mjs
+          --schema="$RUNNER_TEMP/stackr-production-baseline/production-schema.sql"
+          --history-schema="$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.sql"
+          --history-data="$RUNNER_TEMP/stackr-production-baseline/migration-history-data.sql"
+          --output="$RUNNER_TEMP/stackr-production-baseline/baseline-evidence.json"
+
+      - name: Upload short-lived private baseline artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-schema-baseline-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-production-baseline
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 9
+
+      - name: Remove schema bytes from runner
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/stackr-production-baseline"

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Stackr Embedding V0 Training Report</title>
+  <style>
+    body { font-family: Inter, Arial, sans-serif; margin: 32px; color: #171321; background: #fbfaff; }
+    h1, h2 { margin-bottom: 8px; }
+    .panel { border: 1px solid #ded8f7; background: #fff; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    code { background: #f0ebff; padding: 2px 5px; border-radius: 5px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #e7e2f8; padding: 10px; text-align: left; vertical-align: top; }
+    th { color: #4d2cc7; font-size: 12px; text-transform: uppercase; }
+    .blocked { color: #b45309; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <h1>Stackr Embedding V0 Training Report</h1>
+  <div class="panel">
+    <p>Status: <span class="blocked">blocked</span></p>
+    <p>Dataset hash: <code>9ded04ffc25428ad733cdb1530a64a58c40526f61ff5edd3e1838b616ab6e815</code></p>
+    <p>Source commit: <code>b6495cc77fd0e56e5911c5925c6bf3680640860a</code></p>
+    <p>Dirty tree: <code>true</code></p>
+  </div>
+  <div class="panel">
+    <h2>Blocking Evidence</h2>
+    <ul><li>no_approved_training_pixels</li><li>no_real_phone_test_captures</li></ul>
+  </div>
+  <div class="panel">
+    <h2>Baseline Comparison Plan</h2>
+    <table>
+      <thead>
+        <tr><th>Baseline</th><th>Status</th><th>Objective</th><th>Hard negatives</th><th>Pretrained</th></tr>
+      </thead>
+      <tbody>
+    <tr>
+      <td>A. Supervised contrastive MobileNetV3 Small</td>
+      <td>blocked</td>
+      <td>Supervised contrastive metric-learning objective with class-aware batches.</td>
+      <td>yes</td>
+      <td>no</td>
+    </tr>
+  
+    <tr>
+      <td>B. Multi-similarity MobileNetV3 Small</td>
+      <td>blocked</td>
+      <td>Multi-similarity metric-learning objective with hard-negative mining.</td>
+      <td>yes</td>
+      <td>no</td>
+    </tr>
+  
+    <tr>
+      <td>C. Perceptual hash plus local-feature matching</td>
+      <td>blocked</td>
+      <td>Nearest-neighbour retrieval over non-neural visual descriptors.</td>
+      <td>yes</td>
+      <td>no</td>
+    </tr>
+  </tbody>
+    </table>
+  </div>
+  <script id="embedding-v0-run" type="application/json">{&quot;status&quot;:&quot;blocked&quot;,&quot;blockers&quot;:[&quot;no_approved_training_pixels&quot;,&quot;no_real_phone_test_captures&quot;],&quot;datasetManifestSha256&quot;:&quot;9ded04ffc25428ad733cdb1530a64a58c40526f61ff5edd3e1838b616ab6e815&quot;,&quot;datasetVersion&quot;:&quot;stackr-pilot-recognition-dataset-v1.0.0&quot;,&quot;sourceCommitHash&quot;:&quot;b6495cc77fd0e56e5911c5925c6bf3680640860a&quot;,&quot;sourceTreeDirty&quot;:true,&quot;generatedAt&quot;:&quot;2026-07-27T18:27:17.190Z&quot;,&quot;config&quot;:{&quot;configVersion&quot;:&quot;stackr-embedding-training-config-v1.0.0&quot;,&quot;modelVersion&quot;:&quot;stackr-embedding-v0.0.0-blocked&quot;,&quot;randomSeed&quot;:12012,&quot;deterministic&quot;:true,&quot;input&quot;:{&quot;width&quot;:224,&quot;height&quot;:320,&quot;preservesFullCardRatio&quot;:true,&quot;colorSpace&quot;:&quot;rgb&quot;},&quot;embedding&quot;:{&quot;dimensions&quot;:128,&quot;l2Normalised&quot;:true},&quot;backbone&quot;:{&quot;name&quot;:&quot;MobileNetV3 Small&quot;,&quot;pretrainedWeights&quot;:&quot;none&quot;,&quot;provenanceStatus&quot;:&quot;not_reviewed_for_external_weights&quot;},&quot;optimisation&quot;:{&quot;maxEpochs&quot;:80,&quot;batchSize&quot;:64,&quot;learningRate&quot;:0.0003,&quot;weightDecay&quot;:0.00004},&quot;baselinesCompared&quot;:[&quot;supervised_contrastive_mobilenetv3_small&quot;,&quot;multi_similarity_mobilenetv3_small&quot;,&quot;non_neural_perceptual_hash_local_features&quot;]},&quot;baselines&quot;:[{&quot;id&quot;:&quot;supervised_contrastive_mobilenetv3_small&quot;,&quot;label&quot;:&quot;A. Supervised contrastive MobileNetV3 Small&quot;,&quot;family&quot;:&quot;neural_metric_learning&quot;,&quot;architecture&quot;:&quot;MobileNetV3 Small backbone, 224x320 portrait input, 128-dimensional L2-normalised embedding head.&quot;,&quot;objective&quot;:&quot;Supervised contrastive metric-learning objective with class-aware batches.&quot;,&quot;hardNegativeSampling&quot;:true,&quot;pretrainedInitialisation&quot;:{&quot;used&quot;:false,&quot;provenanceReviewed&quot;:false,&quot;source&quot;:null,&quot;notes&quot;:&quot;External pretrained weights were not used because model-weight provenance has not been reviewed for this task.&quot;},&quot;status&quot;:&quot;blocked&quot;,&quot;metrics&quot;:{&quot;trainingLoss&quot;:null,&quot;validationRetrievalAccuracy&quot;:null,&quot;top1&quot;:null,&quot;top3&quot;:null,&quot;meanReciprocalRank&quot;:null,&quot;hardNegativeAccuracy&quot;:null,&quot;languageAccuracy&quot;:null,&quot;sameArtReprintAccuracy&quot;:null,&quot;exactVariantAccuracy&quot;:null,&quot;positiveDistanceMean&quot;:null,&quot;negativeDistanceMean&quot;:null,&quot;hardNegativeDistanceMean&quot;:null,&quot;modelSizeBytes&quot;:null,&quot;desktopInferenceMsP50&quot;:null,&quot;desktopInferenceMsP95&quot;:null}},{&quot;id&quot;:&quot;multi_similarity_mobilenetv3_small&quot;,&quot;label&quot;:&quot;B. Multi-similarity MobileNetV3 Small&quot;,&quot;family&quot;:&quot;neural_metric_learning&quot;,&quot;architecture&quot;:&quot;MobileNetV3 Small backbone, 224x320 portrait input, 128-dimensional L2-normalised embedding head.&quot;,&quot;objective&quot;:&quot;Multi-similarity metric-learning objective with hard-negative mining.&quot;,&quot;hardNegativeSampling&quot;:true,&quot;pretrainedInitialisation&quot;:{&quot;used&quot;:false,&quot;provenanceReviewed&quot;:false,&quot;source&quot;:null,&quot;notes&quot;:&quot;External pretrained weights were not used because model-weight provenance has not been reviewed for this task.&quot;},&quot;status&quot;:&quot;blocked&quot;,&quot;metrics&quot;:{&quot;trainingLoss&quot;:null,&quot;validationRetrievalAccuracy&quot;:null,&quot;top1&quot;:null,&quot;top3&quot;:null,&quot;meanReciprocalRank&quot;:null,&quot;hardNegativeAccuracy&quot;:null,&quot;languageAccuracy&quot;:null,&quot;sameArtReprintAccuracy&quot;:null,&quot;exactVariantAccuracy&quot;:null,&quot;positiveDistanceMean&quot;:null,&quot;negativeDistanceMean&quot;:null,&quot;hardNegativeDistanceMean&quot;:null,&quot;modelSizeBytes&quot;:null,&quot;desktopInferenceMsP50&quot;:null,&quot;desktopInferenceMsP95&quot;:null}},{&quot;id&quot;:&quot;non_neural_perceptual_hash_local_features&quot;,&quot;label&quot;:&quot;C. Perceptual hash plus local-feature matching&quot;,&quot;family&quot;:&quot;non_neural_visual&quot;,&quot;architecture&quot;:&quot;Portrait-preserving 224x320 preprocessing, perceptual hashes, edge/color histograms and local feature agreement.&quot;,&quot;objective&quot;:&quot;Nearest-neighbour retrieval over non-neural visual descriptors.&quot;,&quot;hardNegativeSampling&quot;:true,&quot;pretrainedInitialisation&quot;:{&quot;used&quot;:false,&quot;provenanceReviewed&quot;:true,&quot;source&quot;:null,&quot;notes&quot;:&quot;No pretrained weights are involved in this baseline.&quot;},&quot;status&quot;:&quot;blocked&quot;,&quot;metrics&quot;:{&quot;trainingLoss&quot;:null,&quot;validationRetrievalAccuracy&quot;:null,&quot;top1&quot;:null,&quot;top3&quot;:null,&quot;meanReciprocalRank&quot;:null,&quot;hardNegativeAccuracy&quot;:null,&quot;languageAccuracy&quot;:null,&quot;sameArtReprintAccuracy&quot;:null,&quot;exactVariantAccuracy&quot;:null,&quot;positiveDistanceMean&quot;:null,&quot;negativeDistanceMean&quot;:null,&quot;hardNegativeDistanceMean&quot;:null,&quot;modelSizeBytes&quot;:null,&quot;desktopInferenceMsP50&quot;:null,&quot;desktopInferenceMsP95&quot;:null}}],&quot;selectedBaseline&quot;:null,&quot;selectionReason&quot;:&quot;No winning baseline was selected because training and retrieval evaluation were blocked before image pixels could be loaded.&quot;,&quot;protectedTestSet&quot;:{&quot;available&quot;:true,&quot;rowCount&quot;:315,&quot;hasRealPhoneCaptures&quot;:false},&quot;hardNegativeCoverage&quot;:{&quot;represented&quot;:6,&quot;blocked&quot;:4,&quot;total&quot;:10}}</script>
+</body>
+</html>

@@ -21,7 +21,7 @@ import {
   EmptyStateCard,
 } from '../../components/PremiumUI';
 import { BinderArtwork } from '../../components/BinderArtwork';
-import { BinderModeIconBadge } from '../../components/BinderModeBadge';
+import { BINDER_MODE_BADGE_SOURCES, BinderModeIconBadge } from '../../components/BinderModeBadge';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useFocusEffect } from 'expo-router';
@@ -34,18 +34,25 @@ import {
   getEstimatedValue,
 } from '../../lib/binders';
 import { supabase } from '../../lib/supabase';
-import { getPokemonSetLogoUrl, normalizePokemonCardLanguage, type PokemonCardLanguage } from '../../lib/pokemonTcg';
+import {
+  getKnownPokemonSetTotal,
+  getPokemonSetLogoUrl,
+  normalizePokemonCardLanguage,
+  normalizePokemonSetId,
+  type PokemonCardLanguage,
+} from '../../lib/pokemonTcg';
+import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { StackrHeroBackdrop } from '../../components/StackrBackdrop';
 import { StackrActionButton } from '../../components/StackrActionButton';
 import { StackrButtonPattern } from '../../components/StackrEmboss';
 import { StackrImage } from '../../components/StackrImage';
-import { StackrPageTitle } from '../../components/StackrScreen';
 import { useProfile } from '../../components/profile-context';
 import { numericTextStyle, typeScale } from '../../lib/typography';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrListPerformance } from '../../lib/performance';
 import { ROUTES } from '../../lib/routes';
+import { stackrQueryClient, stackrQueryKeys, stackrQueryTiming } from '../../lib/stackrQuery';
 import {
   getCustomBinderNameArt,
   getCustomBinderNameArtKeyForBinder,
@@ -61,7 +68,8 @@ import DraggableFlatList, {
 // TYPES
 // ===============================
 
-type BinderCardCountMap = Record<string, { owned: number; total: number }>;
+type BinderCardCount = { owned: number; total: number | null; totalKnown: boolean };
+type BinderCardCountMap = Record<string, BinderCardCount>;
 type BinderMasterSetMap = Record<string, boolean>;
 
 type SortKey =
@@ -91,6 +99,20 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 const PADDING = 16;
 const GAP = 10;
+const BINDER_GRID_ARTWORK = {
+  minWidth: 112,
+  maxWidth: 136,
+  stageHeight: 128,
+  plateWidth: 94,
+  plateHeight: 110,
+  artworkWidth: 104,
+  artworkHeight: 116,
+  progressWidth: 90,
+  progressHeight: 4,
+};
+const BINDER_GRID_ENGLISH_LOGO_HEIGHT = 31;
+const BINDER_GRID_JAPANESE_LOGO_HEIGHT = 52;
+const CUSTOM_BINDER_GRID_LOGO_HEIGHT = 22;
 const COLLECTION_VAULT_SHORTCUTS: {
   label: string;
   imageIcon: ImageSourcePropType;
@@ -115,6 +137,8 @@ const STACKR_BINDER_COLORS = {
   muted: '#8A84B8',
   gold: '#FFBE35',
 };
+
+const EMPTY_BINDER_COUNT: BinderCardCount = { owned: 0, total: null, totalKnown: false };
 
 const lavenderShadow = {
   shadowColor: '#6136F5',
@@ -148,11 +172,65 @@ const getPreferredBinderCardPrice = (card: any): number => {
 };
 
 const getBinderLogoUrl = (item: BinderRecord): string | null => {
-  return getPokemonSetLogoUrl(item.source_set_id) ?? null;
+  return item.source_set_logo_url
+    ?? item.source_set_symbol_url
+    ?? getPokemonSetLogoUrl(item.source_set_id, item.language)
+    ?? null;
+};
+
+const getBinderLogoSource = (item: BinderRecord): ImageSourcePropType | null => {
+  return getJapaneseSetLogoSourceForSet({
+    id: item.source_set_id,
+    language: item.language,
+    name: item.source_set_display_name ?? item.name,
+    localName: item.source_set_local_name,
+    englishDisplayName: item.source_set_english_display_name,
+  });
+};
+
+const stripSetLanguagePrefix = (setId?: string | null) =>
+  String(setId ?? '').trim().replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+
+const inferBinderLanguage = (language?: string | null, setId?: string | null): PokemonCardLanguage => {
+  const explicit = String(language ?? '').trim();
+  if (explicit) return normalizePokemonCardLanguage(explicit);
+  const rawSetId = String(setId ?? '').trim().toLowerCase();
+  const strippedSetId = stripSetLanguagePrefix(rawSetId);
+  if (/^(zh-tw|zh_tw|zhtw|zh):/i.test(rawSetId)) return 'zh-tw';
+  return rawSetId.startsWith('ja:') || rawSetId.startsWith('jp:') || /^sv\d+[a-z]$/i.test(strippedSetId) ? 'ja' : 'en';
 };
 
 const getLanguageSetKey = (setId?: string | null, language?: string | null) =>
-  `${normalizePokemonCardLanguage(language)}:${setId ?? ''}`;
+  `${inferBinderLanguage(language, setId)}:${normalizePokemonSetId(stripSetLanguagePrefix(setId))}`;
+
+const getSetLookupCandidates = (setId?: string | null) => {
+  const raw = String(setId ?? '').trim();
+  if (!raw) return [];
+  const stripped = stripSetLanguagePrefix(raw);
+  return [...new Set([raw, stripped, `ja:${stripped}`, `zh-tw:${stripped}`, `en:${stripped}`].filter(Boolean))];
+};
+
+const getCountTotal = (count?: BinderCardCount) =>
+  count?.totalKnown && typeof count.total === 'number' && count.total > 0 ? count.total : null;
+
+const getBinderProgressPercent = (count?: BinderCardCount) => {
+  const total = getCountTotal(count);
+  if (!total) return 0;
+  return Math.min(100, Math.round((count?.owned ?? 0) / total * 100));
+};
+
+const getBinderOwnedLabel = (count?: BinderCardCount) => {
+  const total = getCountTotal(count);
+  const owned = count?.owned ?? 0;
+  return total ? `${owned}/${total} owned` : owned > 0 ? `${owned} owned - needs sync` : 'Total unknown - needs sync';
+};
+
+const readStoredSetTotal = (set: { printed_total?: number | null; total?: number | null }) => {
+  const printedTotal = Number(set.printed_total ?? 0);
+  if (Number.isFinite(printedTotal) && printedTotal > 0) return printedTotal;
+  const total = Number(set.total ?? 0);
+  return Number.isFinite(total) && total > 0 ? total : null;
+};
 
 function CollectionVaultShortcutButton({
   label,
@@ -175,41 +253,41 @@ function CollectionVaultShortcutButton({
       style={{
         flex: 1,
         minWidth: 0,
-        minHeight: 76,
-        borderRadius: 18,
-        backgroundColor: theme.colors.card,
+        minHeight: 62,
+        borderRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.74)',
         borderWidth: 1,
-        borderColor: STACKR_BINDER_COLORS.border,
-        paddingHorizontal: 9,
-        paddingVertical: 10,
+        borderColor: theme.colors.primary + '18',
+        paddingHorizontal: 8,
+        paddingVertical: 8,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 7,
+        gap: 5,
         shadowColor: '#6136F5',
-        shadowOpacity: 0.08,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 5 },
-        elevation: 2,
+        shadowOpacity: 0.03,
+        shadowRadius: 7,
+        shadowOffset: { width: 0, height: 3 },
+        elevation: 1,
       }}
     >
       <View
         style={{
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 7,
+          gap: 5,
         }}
       >
         <View
           style={{
-            width: 44,
-            height: 40,
+            width: 36,
+            height: 34,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
           <Image
             source={imageIcon}
-            style={{ width: 38, height: 38 }}
+            style={{ width: 30, height: 30 }}
             resizeMode="contain"
             accessibilityIgnoresInvertColors
           />
@@ -222,8 +300,8 @@ function CollectionVaultShortcutButton({
             ...typeScale.caption,
             color: STACKR_BINDER_COLORS.deepNavy,
             fontWeight: '900',
-            fontSize: 12.2,
-            lineHeight: 15,
+            fontSize: 11.4,
+            lineHeight: 14,
             textAlign: 'center',
           }}
         >
@@ -416,23 +494,47 @@ function BinderOptionsSheet({
 
 function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirmDeleteBinder, index, cardWidth, columns }: BinderCardProps) {
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const progress = counts[item.id] ?? { owned: 0, total: 0 };
+  const progress = counts[item.id] ?? EMPTY_BINDER_COUNT;
+  const isOfficial = item.type === 'official';
   const isMasterSet = masterSets[item.id] === true;
   const isGraded = item.card_mode === 'graded';
   const isJapanese = normalizePokemonCardLanguage(item.language) === 'ja';
-  const percentage = progress.total
-    ? Math.round((progress.owned / progress.total) * 100)
-    : 0;
+  const knownTotal = isOfficial ? getCountTotal(progress) : null;
+  const percentage = isOfficial ? getBinderProgressPercent(progress) : 0;
+  const ownedLabel = isOfficial
+    ? getBinderOwnedLabel(progress)
+    : `${progress.owned ?? 0} card${(progress.owned ?? 0) === 1 ? '' : 's'} owned`;
   const innerWidth = Math.max(106, cardWidth - 16);
-  const logoUrl = item.type === 'official' ? getBinderLogoUrl(item) : null;
+  const logoSource = isOfficial ? getBinderLogoSource(item) : null;
+  const logoUrl = isOfficial && !logoSource ? getBinderLogoUrl(item) : null;
   const customNameArt = item.type === 'custom'
     ? getCustomBinderNameArt(customNameArtKey ?? getDefaultCustomBinderNameArtKey(`${item.id}:${item.name}`))
     : null;
+  const labelLogoSource = customNameArt ? null : logoSource;
   const labelLogoUrl = customNameArt ? null : logoUrl;
-  const hasBinderLabel = Boolean(customNameArt || labelLogoUrl);
-  const shouldShowNameText = !labelLogoUrl;
-  const artWidth = Math.min(144, innerWidth + 4);
+  const hasBinderLabel = Boolean(customNameArt || labelLogoSource || labelLogoUrl);
+  const shouldShowNameText = !labelLogoSource && !labelLogoUrl;
+  const artWidth = Math.min(
+    BINDER_GRID_ARTWORK.maxWidth,
+    Math.max(BINDER_GRID_ARTWORK.minWidth, innerWidth + 2)
+  );
   const nameIsLong = item.name.length > 24;
+  const officialLogoHeight = isJapanese ? BINDER_GRID_JAPANESE_LOGO_HEIGHT : BINDER_GRID_ENGLISH_LOGO_HEIGHT;
+  const officialLogoFrameHeight = officialLogoHeight + (isJapanese ? 14 : 8);
+  const officialLogoWidth = isJapanese ? '100%' : '86%';
+  const footerMinHeight = hasBinderLabel
+    ? customNameArt
+      ? 72
+      : isJapanese
+        ? 108
+        : 80
+    : 58;
+  const fallbackNameFontSize = isJapanese
+    ? hasBinderLabel ? 15 : nameIsLong ? 15 : 17
+    : hasBinderLabel ? 9 : nameIsLong ? 9 : 10;
+  const fallbackNameLineHeight = isJapanese
+    ? hasBinderLabel ? 18 : nameIsLong ? 18 : 20
+    : hasBinderLabel ? 11 : nameIsLong ? 11 : 12;
 
   // Column-based rotation
   const col = index % columns;
@@ -466,7 +568,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
           borderRadius: 21,
           padding: 8,
           borderWidth: 1,
-          borderColor: percentage >= 100 ? `${STACKR_BINDER_COLORS.gold}66` : STACKR_BINDER_COLORS.border,
+          borderColor: isOfficial && knownTotal && percentage >= 100 ? `${STACKR_BINDER_COLORS.gold}66` : STACKR_BINDER_COLORS.border,
           ...lavenderShadow,
           transform: [{ rotate: rotation }],
         }}
@@ -474,7 +576,7 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
       {/* Binder art */}
       <View style={{
         width: innerWidth,
-        minHeight: 154,
+        minHeight: isOfficial ? 154 : 136,
         borderRadius: 18,
         overflow: 'visible',
         borderWidth: 0,
@@ -485,58 +587,63 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
       }}>
         <BinderArtwork
           coverKey={item.cover_key}
-          sourceSetId={item.type === 'official' ? item.source_set_id : null}
-          setName={item.type === 'official' ? item.name : null}
+          sourceSetId={isOfficial ? item.source_set_id : null}
+          sourceSetLanguage={isOfficial ? item.language : null}
+          setName={isOfficial ? item.name : null}
           fallbackLogoUrl={logoUrl}
+          fallbackLogoSource={logoSource}
           fallbackArtSource={customNameArt?.source ?? null}
           fallbackColor={item.color}
           progress={percentage}
           width={artWidth}
-          stageHeight={132}
-          plateWidth={94}
-          plateHeight={110}
-          artworkWidth={104}
-          artworkHeight={118}
-          progressWidth={92}
-          progressHeight={4}
+          stageHeight={BINDER_GRID_ARTWORK.stageHeight}
+          plateWidth={BINDER_GRID_ARTWORK.plateWidth}
+          plateHeight={BINDER_GRID_ARTWORK.plateHeight}
+          artworkWidth={BINDER_GRID_ARTWORK.artworkWidth}
+          artworkHeight={BINDER_GRID_ARTWORK.artworkHeight}
+          progressWidth={BINDER_GRID_ARTWORK.progressWidth}
+          progressHeight={BINDER_GRID_ARTWORK.progressHeight}
+          showProgressBar={isOfficial}
           showProgressText={false}
         />
-        <LinearGradient
-          colors={['#8B55FF', '#6938F5', '#5226D9']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{
-            alignSelf: 'center',
-            marginTop: 3,
-            minWidth: 38,
-            height: 18,
-            paddingHorizontal: 10,
-            borderRadius: 9,
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            borderWidth: 1,
-            borderColor: 'rgba(255,255,255,0.62)',
-            shadowColor: STACKR_BINDER_COLORS.primary,
-            shadowOpacity: 0.18,
-            shadowRadius: 7,
-            shadowOffset: { width: 0, height: 3 },
-          }}
-        >
-          <StackrButtonPattern tone="purple" />
-          <Text
-            numeric
+        {isOfficial ? (
+          <LinearGradient
+            colors={['#8B55FF', '#6938F5', '#5226D9']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
             style={{
-              ...numericTextStyle,
-              color: '#FFFFFF',
-              fontSize: 9.5,
-              lineHeight: 12,
-              fontWeight: '900',
+              alignSelf: 'center',
+              marginTop: 3,
+              minWidth: 38,
+              height: 18,
+              paddingHorizontal: 10,
+              borderRadius: 9,
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.62)',
+              shadowColor: STACKR_BINDER_COLORS.primary,
+              shadowOpacity: 0.18,
+              shadowRadius: 7,
+              shadowOffset: { width: 0, height: 3 },
             }}
           >
-            {percentage}%
-          </Text>
-        </LinearGradient>
+            <StackrButtonPattern tone="purple" />
+            <Text
+              numeric
+              style={{
+                ...numericTextStyle,
+                color: '#FFFFFF',
+                fontSize: 9.5,
+                lineHeight: 12,
+                fontWeight: '900',
+              }}
+            >
+              {knownTotal ? `${percentage}%` : 'Sync'}
+            </Text>
+          </LinearGradient>
+        ) : null}
 
         {/* Options button */}
         <Pressable
@@ -586,16 +693,20 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
       </View>
 
       {/* Footer */}
-      <View style={{ marginTop: 5, minHeight: hasBinderLabel ? 72 : 58 }}>
+      <View style={{ marginTop: 5, minHeight: footerMinHeight, overflow: 'visible' }}>
         {customNameArt ? (
-          <View style={{ minHeight: 23, justifyContent: 'center', marginBottom: 1 }}>
-            <Image source={customNameArt.source} style={{ width: '100%', height: 20 }} resizeMode="contain" />
+          <View style={{ minHeight: CUSTOM_BINDER_GRID_LOGO_HEIGHT + 4, justifyContent: 'center', marginBottom: 1 }}>
+            <Image source={customNameArt.source} style={{ width: '100%', height: CUSTOM_BINDER_GRID_LOGO_HEIGHT }} resizeMode="contain" />
+          </View>
+        ) : labelLogoSource ? (
+          <View style={{ minHeight: officialLogoFrameHeight, justifyContent: 'center', alignItems: 'center', marginBottom: 0, overflow: 'visible', paddingHorizontal: isJapanese ? 2 : 0 }}>
+            <Image source={labelLogoSource} style={{ width: officialLogoWidth, height: officialLogoHeight }} resizeMode="contain" />
           </View>
         ) : labelLogoUrl ? (
-          <View style={{ minHeight: 23, justifyContent: 'center', marginBottom: 1 }}>
+          <View style={{ minHeight: officialLogoFrameHeight, justifyContent: 'center', alignItems: 'center', marginBottom: 0, overflow: 'visible', paddingHorizontal: isJapanese ? 2 : 0 }}>
             <StackrImage
               uri={labelLogoUrl}
-              style={{ width: '100%', height: 21, backgroundColor: 'transparent' }}
+              style={{ width: officialLogoWidth, height: officialLogoHeight, backgroundColor: 'transparent' }}
               contentFit="contain"
               priority="low"
               showFallbackIcon={false}
@@ -610,8 +721,8 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
             style={{
               ...typeScale.cardTitle,
               color: STACKR_BINDER_COLORS.navy,
-              fontSize: hasBinderLabel ? 11.5 : nameIsLong ? 11.5 : 13,
-              lineHeight: hasBinderLabel ? 14 : nameIsLong ? 14 : 16,
+              fontSize: fallbackNameFontSize,
+              lineHeight: fallbackNameLineHeight,
               fontWeight: '800',
               textAlign: 'center',
             }}
@@ -623,8 +734,8 @@ function BinderCard({ item, counts, masterSets, value, customNameArtKey, confirm
           <Text numeric numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.82} style={{ ...numericTextStyle, color: STACKR_BINDER_COLORS.primary, fontSize: 12.5, lineHeight: 15, fontWeight: '900', textAlign: 'center' }}>
             {'\u00A3'}{(value ?? 0).toFixed(2)}
           </Text>
-          <Text numberOfLines={1} style={{ ...typeScale.caption, color: STACKR_BINDER_COLORS.textSoft, fontSize: 11.5, lineHeight: 14, fontWeight: '900', textAlign: 'center' }}>
-            {progress.owned}/{progress.total} owned
+          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.72} style={{ ...typeScale.caption, color: STACKR_BINDER_COLORS.textSoft, fontSize: 11.5, lineHeight: 14, fontWeight: '900', textAlign: 'center' }}>
+            {ownedLabel}
           </Text>
         </View>
       </View>
@@ -675,7 +786,36 @@ type OwnedVariantRow = {
   variant: string | null;
 };
 
+type BinderLibraryOverviewSnapshot = {
+  binders: BinderRecord[];
+  customNameArtKeys: Record<string, string>;
+};
+
+type BinderLibrarySummarySnapshot = {
+  counts: BinderCardCountMap;
+  masterSets: BinderMasterSetMap;
+  values: BinderValueMap;
+};
+
+const EMPTY_BINDER_LIBRARY_SUMMARY: BinderLibrarySummarySnapshot = {
+  counts: {},
+  masterSets: {},
+  values: {},
+};
+
+const BINDER_SUMMARY_COUNT_VERSION = 'set-total-known-state-v3';
 const getMasterSetStorageKey = (binderId: string) => `stackr:binder-master-set:${binderId}`;
+
+const getBinderLibrarySignature = (data: BinderRecord[]) =>
+  [BINDER_SUMMARY_COUNT_VERSION, data
+    .map((binder) => [
+      binder.id,
+      binder.created_at ?? '',
+      binder.source_set_id ?? '',
+      binder.master_set_enabled ? 'master' : 'standard',
+      binder.card_mode ?? '',
+    ].join(':'))
+    .join('|') || 'empty'].join('|');
 
 const getVariants = (card: any, explicitSetId?: string | null): string[] => {
   const setId = String(explicitSetId ?? card?.set?.id ?? card?.set_id ?? '').toLowerCase();
@@ -735,17 +875,46 @@ export default function BinderLibraryScreen() {
   // LOAD
   // ===============================
 
-  const loadBinderSummaries = useCallback(async (data: BinderRecord[]) => {
+  const applyBinderOverviewSnapshot = useCallback((snapshot: BinderLibraryOverviewSnapshot) => {
+    setBinders(snapshot.binders);
+    setCustomNameArtKeys(snapshot.customNameArtKeys);
+  }, []);
+
+  const applyBinderSummarySnapshot = useCallback((snapshot: BinderLibrarySummarySnapshot) => {
+    setCounts(snapshot.counts);
+    setMasterSets(snapshot.masterSets);
+    setValues(snapshot.values);
+  }, []);
+
+  const fetchBinderOverviewSnapshot = useCallback(async (): Promise<BinderLibraryOverviewSnapshot> => {
+    const data = await fetchBinders();
+    const customArtEntries = await Promise.all(
+      data
+        .filter((binder) => binder.type === 'custom')
+        .map(async (binder) => [
+          binder.id,
+          await getCustomBinderNameArtKeyForBinder(binder.id, binder.name),
+        ] as const)
+    );
+
+    return {
+      binders: data,
+      customNameArtKeys: Object.fromEntries(customArtEntries),
+    };
+  }, []);
+
+  const fetchBinderSummarySnapshot = useCallback(async (
+    data: BinderRecord[],
+    currentUserId?: string | null
+  ): Promise<BinderLibrarySummarySnapshot> => {
     const binderIds = data.map((binder) => binder.id);
 
     if (!binderIds.length) {
-      setCounts({});
-      setMasterSets({});
-      setValues({});
-      return;
+      return EMPTY_BINDER_LIBRARY_SUMMARY;
     }
 
     const setIds = data.map((binder) => binder.source_set_id).filter(Boolean) as string[];
+    const setIdCandidates = [...new Set(setIds.flatMap(getSetLookupCandidates))];
     const storedMasterEntries = await Promise.all(
       data.map(async (binder) => {
         const stored = await AsyncStorage.getItem(getMasterSetStorageKey(binder.id));
@@ -756,37 +925,76 @@ export default function BinderLibraryScreen() {
     const masterSetIds = data
       .filter((binder) => binder.source_set_id && nextMasterSets[binder.id])
       .map((binder) => binder.source_set_id as string);
+    const masterSetIdCandidates = [...new Set(masterSetIds.flatMap(getSetLookupCandidates))];
 
-    const [cardRowsResult, setRowsResult, officialCardsResult, userResult] = await Promise.all([
+    const [
+      cardRowsResult,
+      setRowsResult,
+      canonicalSetRowsResult,
+      officialCardsResult,
+      canonicalOfficialCardsResult,
+    ] = await Promise.all([
       supabase
         .from('binder_cards')
         .select('binder_id, card_id, set_id, language, owned, ebay_price, tcg_price, cardmarket_price, condition')
         .in('binder_id', binderIds),
-      setIds.length
+      setIdCandidates.length
         ? supabase
             .from('pokemon_sets')
             .select('id, language, printed_total, total')
-            .in('id', setIds)
+            .in('id', setIdCandidates)
         : Promise.resolve({ data: [], error: null }),
-      masterSetIds.length
+      setIdCandidates.length
+        ? supabase
+            .from('tcg_sets')
+            .select('id, source_id, language, printed_total, actual_total')
+            .in('id', setIdCandidates)
+        : Promise.resolve({ data: [], error: null }),
+      masterSetIdCandidates.length
         ? supabase
             .from('pokemon_cards')
             .select('id, set_id, language, name, number, rarity, raw_data')
-            .in('set_id', masterSetIds)
+            .in('set_id', masterSetIdCandidates)
         : Promise.resolve({ data: [], error: null }),
-      supabase.auth.getUser(),
+      masterSetIdCandidates.length
+        ? supabase
+            .from('tcg_cards')
+            .select('id, set_id, language, canonical_name, local_name, english_display_name, collector_number, rarity, raw_payload')
+            .in('set_id', masterSetIdCandidates)
+        : Promise.resolve({ data: [], error: null }),
     ]);
 
     if (cardRowsResult.error) throw cardRowsResult.error;
     if (setRowsResult.error) throw setRowsResult.error;
+    if (canonicalSetRowsResult.error) console.log('Canonical binder set totals failed:', canonicalSetRowsResult.error.message);
     if (officialCardsResult.error) throw officialCardsResult.error;
+    if (canonicalOfficialCardsResult.error) console.log('Canonical binder official cards failed:', canonicalOfficialCardsResult.error.message);
 
     const rows = (cardRowsResult.data ?? []) as BinderSummaryRow[];
-    const officialCards = (officialCardsResult.data ?? []) as BinderOfficialCardRow[];
+    const officialCards = [
+      ...((officialCardsResult.data ?? []) as BinderOfficialCardRow[]),
+      ...((canonicalOfficialCardsResult.data ?? []) as any[]).map((card): BinderOfficialCardRow => ({
+        id: card.id,
+        set_id: card.set_id ?? null,
+        language: normalizePokemonCardLanguage(card.language),
+        name: card.english_display_name ?? card.canonical_name ?? card.local_name ?? null,
+        number: card.collector_number ?? card.raw_payload?.localId ?? null,
+        rarity: card.rarity ?? card.raw_payload?.rarity ?? null,
+        raw_data: card.raw_payload ?? null,
+      })),
+    ];
     const setTotals = new Map(
-      (setRowsResult.data ?? []).map((set) => [
+      [
+        ...(setRowsResult.data ?? []),
+        ...((canonicalSetRowsResult.data ?? []) as any[]).map((set) => ({
+          id: set.id,
+          language: set.language,
+          printed_total: set.printed_total,
+          total: set.actual_total,
+        })),
+      ].map((set) => [
         getLanguageSetKey(set.id, set.language),
-        Number(set.printed_total ?? set.total ?? 0),
+        readStoredSetTotal(set),
       ])
     );
 
@@ -797,9 +1005,13 @@ export default function BinderLibraryScreen() {
         .map((row) => `${getLanguageSetKey(row.set_id, row.language)}:${row.card_id}`)
     );
     const cardsBySet = new Map<string, BinderOfficialCardRow[]>();
+    const officialCardKeys = new Set<string>();
     for (const card of officialCards) {
       if (!card.set_id) continue;
       const key = getLanguageSetKey(card.set_id, card.language);
+      const cardKey = `${key}:${card.id}`;
+      if (officialCardKeys.has(cardKey)) continue;
+      officialCardKeys.add(cardKey);
       const current = cardsBySet.get(key) ?? [];
       current.push(card);
       cardsBySet.set(key, current);
@@ -807,7 +1019,7 @@ export default function BinderLibraryScreen() {
 
     const variantSetIds = [...new Set(masterSetIds)];
     let ownedVariantRows: OwnedVariantRow[] = [];
-    const userId = userResult.data.user?.id;
+    const userId = currentUserId ?? null;
     if (userId && variantSetIds.length) {
       const { data: variantRows, error: variantError } = await supabase
         .from('user_card_variants')
@@ -840,21 +1052,26 @@ export default function BinderLibraryScreen() {
     const nextValues: BinderValueMap = {};
 
     for (const binder of data) {
-      const binderLanguage = normalizePokemonCardLanguage(binder.language);
+      const binderLanguage = inferBinderLanguage(binder.language, binder.source_set_id);
       const binderSetKey = getLanguageSetKey(binder.source_set_id, binderLanguage);
       const binderRows = rowsByBinder.get(binder.id) ?? [];
       const ownedRows = binderRows.filter((row) =>
         row.owned || globalOwnedKeys.has(`${getLanguageSetKey(row.set_id, row.language ?? binderLanguage)}:${row.card_id}`)
       );
-      const officialTotal = binder.source_set_id ? setTotals.get(binderSetKey) ?? 0 : 0;
+      const storedOfficialTotal = binder.source_set_id ? setTotals.get(binderSetKey) ?? null : null;
+      const knownOfficialTotal = getKnownPokemonSetTotal(binder.source_set_id, binderLanguage) ?? null;
+      const officialTotal = storedOfficialTotal && storedOfficialTotal > 0
+        ? storedOfficialTotal
+        : knownOfficialTotal;
       const isMasterSet = nextMasterSets[binder.id] === true;
       const masterCards = binder.source_set_id ? cardsBySet.get(binderSetKey) ?? [] : [];
-      let total = binder.type === 'official' && officialTotal > 0
-        ? officialTotal
+      const catalogueLooksComplete = binder.type === 'official' && masterCards.length > binderRows.length;
+      let total: number | null = binder.type === 'official'
+        ? officialTotal ?? (catalogueLooksComplete ? masterCards.length : null)
         : binderRows.length;
       let owned = ownedRows.length;
 
-      if (isMasterSet && binder.type === 'official' && binder.source_set_id && masterCards.length) {
+      if (isMasterSet && binder.type === 'official' && binder.source_set_id && masterCards.length && (officialTotal || catalogueLooksComplete)) {
         const ownedRowsByCard = new Map(ownedRows.map((row) => [`${getLanguageSetKey(row.set_id, row.language ?? binderLanguage)}:${row.card_id}`, row]));
         total = 0;
         owned = 0;
@@ -871,6 +1088,7 @@ export default function BinderLibraryScreen() {
       nextCounts[binder.id] = {
         owned,
         total,
+        totalKnown: typeof total === 'number' && total > 0,
       };
 
       nextValues[binder.id] = ownedRows.reduce((sum, row) => {
@@ -879,38 +1097,79 @@ export default function BinderLibraryScreen() {
       }, 0);
     }
 
-    setCounts(nextCounts);
-    setMasterSets(nextMasterSets);
-    setValues(nextValues);
+    return {
+      counts: nextCounts,
+      masterSets: nextMasterSets,
+      values: nextValues,
+    };
   }, []);
 
-  const load = useCallback(async () => {
-    try {
-      if (!loadedOnceRef.current) setLoading(true);
+  const loadBinderSummaries = useCallback(async (
+    data: BinderRecord[],
+    currentUserId?: string | null,
+    forceRefresh = false
+  ) => {
+    const summarySignature = getBinderLibrarySignature(data);
+    const queryKey = stackrQueryKeys.binderLibrarySummaries(currentUserId, summarySignature);
 
-      const data = await fetchBinders();
-      const customArtEntries = await Promise.all(
-        data
-          .filter((binder) => binder.type === 'custom')
-          .map(async (binder) => [
-            binder.id,
-            await getCustomBinderNameArtKeyForBinder(binder.id, binder.name),
-          ] as const)
-      );
-      setBinders(data);
-      setCustomNameArtKeys(Object.fromEntries(customArtEntries));
+    if (!forceRefresh) {
+      const cached = stackrQueryClient.getQueryData<BinderLibrarySummarySnapshot>(queryKey);
+      if (cached) {
+        applyBinderSummarySnapshot(cached);
+      }
+    }
+
+    const snapshot = await stackrQueryClient.fetchQuery({
+      queryKey,
+      queryFn: () => fetchBinderSummarySnapshot(data, currentUserId),
+      staleTime: forceRefresh ? 0 : stackrQueryTiming.hotPathStaleMs,
+    });
+    applyBinderSummarySnapshot(snapshot);
+  }, [applyBinderSummarySnapshot, fetchBinderSummarySnapshot]);
+
+  const load = useCallback(async (forceRefresh = false) => {
+    const shouldForceRefresh = forceRefresh === true;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const queryKey = stackrQueryKeys.binderLibrary(user?.id ?? null);
+
+      if (shouldForceRefresh) {
+        await stackrQueryClient.invalidateQueries({ queryKey: stackrQueryKeys.binderLibraryRoot });
+      }
+
+      const cached = shouldForceRefresh
+        ? null
+        : stackrQueryClient.getQueryData<BinderLibraryOverviewSnapshot>(queryKey);
+
+      if (cached) {
+        applyBinderOverviewSnapshot(cached);
+        loadedOnceRef.current = true;
+        setLoading(false);
+        loadBinderSummaries(cached.binders, user?.id ?? null).catch((summaryError) => {
+          console.log('Failed to load cached binder summaries', summaryError);
+        });
+      } else if (!loadedOnceRef.current) {
+        setLoading(true);
+      }
+
+      const snapshot = await stackrQueryClient.fetchQuery({
+        queryKey,
+        queryFn: fetchBinderOverviewSnapshot,
+        staleTime: shouldForceRefresh ? 0 : stackrQueryTiming.hotPathStaleMs,
+      });
+
+      applyBinderOverviewSnapshot(snapshot);
       loadedOnceRef.current = true;
       setLoading(false);
 
-      loadBinderSummaries(data).catch((summaryError) => {
+      loadBinderSummaries(snapshot.binders, user?.id ?? null, shouldForceRefresh).catch((summaryError) => {
         console.log('Failed to load binder summaries', summaryError);
       });
     } catch (error) {
       console.log('Failed to load binders', error);
       setLoading(false);
-    } finally {
     }
-  }, [loadBinderSummaries]);
+  }, [applyBinderOverviewSnapshot, fetchBinderOverviewSnapshot, loadBinderSummaries]);
 
   useFocusEffect(
     useCallback(() => {
@@ -934,8 +1193,19 @@ export default function BinderLibraryScreen() {
           onPress: async () => {
             try {
               await deleteBinder(binder.id);
+              await stackrQueryClient.invalidateQueries({ queryKey: stackrQueryKeys.binderLibraryRoot });
               setBinders((prev) => prev.filter((item) => item.id !== binder.id));
               setCounts((prev) => {
+                const next = { ...prev };
+                delete next[binder.id];
+                return next;
+              });
+              setMasterSets((prev) => {
+                const next = { ...prev };
+                delete next[binder.id];
+                return next;
+              });
+              setValues((prev) => {
                 const next = { ...prev };
                 delete next[binder.id];
                 return next;
@@ -958,8 +1228,9 @@ export default function BinderLibraryScreen() {
     const list = [...binders];
 
     const getProgress = (id: string) => {
-      const p = counts[id] ?? { owned: 0, total: 0 };
-      return p.total ? p.owned / p.total : 0;
+      const p = counts[id] ?? EMPTY_BINDER_COUNT;
+      const total = getCountTotal(p);
+      return total ? p.owned / total : 0;
     };
 
     const getOwned = (id: string) => counts[id]?.owned ?? 0;
@@ -1005,7 +1276,7 @@ export default function BinderLibraryScreen() {
         subtitle="Binders, Discover Sets, Pokédex and duplicates now live under one collection destination."
         items={[
           { icon: 'book-outline', title: 'Track ownership', body: 'Open a binder to mark cards owned or missing.' },
-          { icon: 'albums-outline', title: 'Master sets', body: 'Use Master Set mode inside a binder to track variants.' },
+          { icon: 'albums-outline', imageIcon: BINDER_MODE_BADGE_SOURCES.master, title: 'Master sets', body: 'Use Master Set mode inside a binder to track variants.' },
           { icon: 'camera-outline', title: 'Scan cards', body: 'Jump straight into the scanner from this screen.' },
         ]}
       />
@@ -1016,35 +1287,40 @@ export default function BinderLibraryScreen() {
           colors={['#FFFFFF', '#F7F2FF', '#EEE5FF']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={{ position: 'relative', gap: 8, marginBottom: 18, borderRadius: 22, padding: 10, overflow: 'hidden', borderWidth: 1, borderColor: STACKR_BINDER_COLORS.border, ...lavenderShadow }}
+          style={{ position: 'relative', gap: 7, marginBottom: 14, borderRadius: 20, padding: 8, overflow: 'hidden', borderWidth: 1, borderColor: STACKR_BINDER_COLORS.border, ...lavenderShadow }}
         >
           <StackrHeroBackdrop opacity={0.20} />
-          <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-            <View style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
-              <StackrPageTitle
-                title="Collection Vault"
-                accentText="Vault"
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text
                 numberOfLines={1}
                 adjustsFontSizeToFit
-                minimumFontScale={0.86}
+                minimumFontScale={0.84}
                 style={{
                   maxWidth: heroTitleWidth,
+                  color: STACKR_BINDER_COLORS.deepNavy,
+                  fontSize: 31,
+                  lineHeight: 36,
+                  fontWeight: '900',
+                  letterSpacing: 0,
                 }}
-              />
-              <Text style={{ ...typeScale.support, color: STACKR_BINDER_COLORS.textSoft, marginTop: 1, fontSize: 18, lineHeight: 22, fontWeight: '800' }}>
+              >
+                Collection V<Text style={{ color: STACKR_BINDER_COLORS.primary, fontSize: 31, lineHeight: 36, fontWeight: '900', letterSpacing: 0 }}>ault</Text>
+              </Text>
+              <Text style={{ ...typeScale.support, color: STACKR_BINDER_COLORS.textSoft, marginTop: -1, fontSize: 15, lineHeight: 18, fontWeight: '800' }}>
                 {binders.length} Live Binder{binders.length !== 1 ? 's' : ''}
               </Text>
             </View>
 
-            <View style={{ width: 84, gap: 5, alignItems: 'stretch' }}>
+            <View style={{ width: 82, gap: 4, alignItems: 'stretch' }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 6 }}>
                 <TouchableOpacity
                   onPress={() => router.push(ROUTES.profile as any)}
                   accessibilityRole="button"
                   accessibilityLabel="Open Profile"
                   style={{
-                    width: 39,
-                    height: 35,
+                    width: 38,
+                    height: 34,
                     borderRadius: 13,
                     backgroundColor: '#FFFFFF',
                     borderWidth: 1,
@@ -1062,7 +1338,7 @@ export default function BinderLibraryScreen() {
                   <StackrProfileAvatar
                     avatarUrl={profile?.avatar_url}
                     avatarPreset={profile?.avatar_preset}
-                    size={33}
+                    size={32}
                     borderWidth={1}
                     accessibilityLabel="Open Profile"
                   />
@@ -1072,8 +1348,8 @@ export default function BinderLibraryScreen() {
                   onPress={() => setReorderMode((prev) => !prev)}
                   style={{
                     backgroundColor: reorderMode ? `${STACKR_BINDER_COLORS.gold}26` : '#FFFFFF',
-                    width: 39,
-                    height: 35,
+                    width: 38,
+                    height: 34,
                     borderRadius: 13,
                     borderWidth: 1,
                     borderColor: reorderMode ? `${STACKR_BINDER_COLORS.gold}80` : STACKR_BINDER_COLORS.border,
@@ -1090,7 +1366,7 @@ export default function BinderLibraryScreen() {
                   {reorderMode ? (
                     <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.78} style={{ color: STACKR_BINDER_COLORS.navy, fontWeight: '900', fontSize: 11 }}>Done</Text>
                   ) : (
-                    <Ionicons name="grid-outline" size={21} color={STACKR_BINDER_COLORS.textSoft} />
+                    <Ionicons name="grid-outline" size={20} color={STACKR_BINDER_COLORS.textSoft} />
                   )}
                 </TouchableOpacity>
               </View>
@@ -1104,11 +1380,12 @@ export default function BinderLibraryScreen() {
                 title="Scan Card"
                 subtitle="Add or identify"
                 imageIcon={stackrIcons.scanCard}
-                size="compact"
+                variant="scan"
+                size="hero"
                 onPress={handleScanCard}
                 accessibilityLabel="Scan Card. Add or identify."
-                style={{ flex: 1.45, minHeight: 48 }}
-                contentStyle={{ minHeight: 48 }}
+                style={{ flex: 1.45, minHeight: 58 }}
+                contentStyle={{ minHeight: 58, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 8 }}
               />
               <StackrActionButton
                 title="New"
@@ -1119,8 +1396,8 @@ export default function BinderLibraryScreen() {
                 showArrow={false}
                 onPress={() => router.push('/binder/new')}
                 accessibilityLabel="Create new binder"
-                style={{ flex: 0.78, minHeight: 48 }}
-                contentStyle={{ minHeight: 48, paddingHorizontal: 10 }}
+                style={{ flex: 0.78, minHeight: 58 }}
+                contentStyle={{ minHeight: 58, paddingHorizontal: 10 }}
               />
             </View>
           )}
@@ -1156,23 +1433,23 @@ export default function BinderLibraryScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={`Sort binder cards. Current sort: ${currentSortLabel}`}
                 style={{
-                  minHeight: 44,
+                  minHeight: 42,
                   borderRadius: 999,
                   borderWidth: 1,
-                  borderColor: STACKR_BINDER_COLORS.border,
-                  backgroundColor: '#FFFFFF',
+                  borderColor: theme.colors.primary + '18',
+                  backgroundColor: 'rgba(255,255,255,0.92)',
                   paddingHorizontal: 13,
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 7,
                   shadowColor: '#6136F5',
-                  shadowOpacity: 0.06,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 3 },
+                  shadowOpacity: 0.03,
+                  shadowRadius: 6,
+                  shadowOffset: { width: 0, height: 2 },
                 }}
               >
-                <Text numberOfLines={1} style={{ ...typeScale.buttonPrimary, color: STACKR_BINDER_COLORS.deepNavy, fontWeight: '900', fontSize: 12 }}>
+                <Text numberOfLines={1} style={{ ...typeScale.buttonPrimary, color: STACKR_BINDER_COLORS.deepNavy, fontWeight: '900', fontSize: 12.2 }}>
                   Sort: {currentSortLabel}
                 </Text>
                 <Ionicons name={sortOpen ? 'chevron-up' : 'chevron-down'} size={16} color={STACKR_BINDER_COLORS.textSoft} />
@@ -1252,6 +1529,7 @@ export default function BinderLibraryScreen() {
                       .eq('id', binder.id)
                   )
                 );
+                await stackrQueryClient.invalidateQueries({ queryKey: stackrQueryKeys.binderLibraryRoot });
               }}
               activationDistance={10}
               contentContainerStyle={{ paddingBottom: stackrTabContentPadding.standard }}
@@ -1285,14 +1563,14 @@ export default function BinderLibraryScreen() {
                         <BinderArtwork
                           coverKey={item.cover_key}
                           sourceSetId={item.type === 'official' ? item.source_set_id : null}
+                          sourceSetLanguage={item.type === 'official' ? item.language : null}
                           setName={item.type === 'official' ? item.name : null}
                           fallbackLogoUrl={item.type === 'official' ? getBinderLogoUrl(item) : null}
+                          fallbackLogoSource={item.type === 'official' ? getBinderLogoSource(item) : null}
                           fallbackArtSource={customNameArt?.source ?? null}
                           fallbackColor={item.color}
                           progress={
-                            counts[item.id]?.total
-                              ? Math.round(((counts[item.id]?.owned ?? 0) / (counts[item.id]?.total ?? 1)) * 100)
-                              : 0
+                            item.type === 'official' ? getBinderProgressPercent(counts[item.id]) : 0
                           }
                           width={54}
                           stageHeight={64}
@@ -1302,6 +1580,7 @@ export default function BinderLibraryScreen() {
                           artworkHeight={46}
                           progressWidth={44}
                           progressHeight={3}
+                          showProgressBar={item.type === 'official'}
                           showFan={false}
                         />
 
@@ -1310,8 +1589,10 @@ export default function BinderLibraryScreen() {
                           <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15 }} numberOfLines={1}>
                             {item.name}
                           </Text>
-                          <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }}>
-                            {counts[item.id]?.owned ?? 0} / {counts[item.id]?.total ?? 0} owned
+                          <Text style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 3 }} numberOfLines={1}>
+                            {item.type === 'official'
+                              ? getBinderOwnedLabel(counts[item.id])
+                              : `${counts[item.id]?.owned ?? 0} card${(counts[item.id]?.owned ?? 0) === 1 ? '' : 's'} owned`}
                           </Text>
                         </View>
 
@@ -1343,7 +1624,7 @@ export default function BinderLibraryScreen() {
             refreshControl={
               <RefreshControl
                 refreshing={loading}
-                onRefresh={load}
+                onRefresh={() => load(true)}
                 tintColor={theme.colors.primary}
               />
             }

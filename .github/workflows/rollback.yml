@@ -1,0 +1,117 @@
+name: Roll Back Stackr Component
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Protected environment to operate on
+        required: true
+        default: staging
+        type: choice
+        options: [staging, production]
+      component:
+        description: Component to roll back
+        required: true
+        type: choice
+        options: [gateway, catalogue-api, recognition, catalogue, embedding-index, mobile-rollout, mobile-update]
+      target_id:
+        description: Version tag, deployment ID, database UUID, or EAS update group ID
+        required: true
+        type: string
+      confirmation:
+        description: Type ROLLBACK STACKR
+        required: true
+        type: string
+      reason:
+        description: Incident or rollback reason
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-${{ inputs.environment }}-rollback
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    if: inputs.confirmation == 'ROLLBACK STACKR'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.environment }}
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL }}
+      STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL }}
+      STACKR_RECOGNITION_URL: ${{ vars.STACKR_RECOGNITION_URL }}
+      STACKR_RELEASE_REQUEST_ID: rollback-${{ github.run_id }}-${{ github.run_attempt }}
+      STACKR_ROLLBACK_TARGET_ID: ${{ inputs.target_id }}
+      STACKR_ROLLBACK_REASON: ${{ inputs.reason }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: |
+          npm ci
+          npm ci --prefix gateway
+
+      - name: Roll back gateway traffic
+        if: inputs.component == 'gateway'
+        env:
+          STACKR_ROLLBACK_ENVIRONMENT: ${{ inputs.environment }}
+        run: >-
+          npm --prefix gateway exec -- wrangler --cwd gateway versions deploy
+          --env "$STACKR_ROLLBACK_ENVIRONMENT"
+          --version-tag "$STACKR_ROLLBACK_TARGET_ID@100"
+          --message "$STACKR_ROLLBACK_REASON"
+          --yes
+
+      - name: Roll back Railway deployment
+        if: inputs.component == 'catalogue-api' || inputs.component == 'recognition'
+        run: node scripts/deploy/railway-rollback.mjs --deployment="$STACKR_ROLLBACK_TARGET_ID"
+
+      - name: Roll back catalogue activation
+        if: inputs.component == 'catalogue'
+        run: >-
+          node scripts/deploy/release-database.mjs catalogue rollback
+          --id="$STACKR_ROLLBACK_TARGET_ID" --reason="$STACKR_ROLLBACK_REASON"
+
+      - name: Roll back model and embedding index activation
+        if: inputs.component == 'embedding-index'
+        run: >-
+          node scripts/deploy/release-database.mjs index rollback
+          --id="$STACKR_ROLLBACK_TARGET_ID" --reason="$STACKR_ROLLBACK_REASON"
+
+      - name: Revert an in-progress EAS rollout
+        if: inputs.component == 'mobile-rollout'
+        run: >-
+          npx --yes eas-cli@21.4.0 update:revert-update-rollout
+          --group "$STACKR_ROLLBACK_TARGET_ID"
+          --message "$STACKR_ROLLBACK_REASON" --non-interactive
+
+      - name: Republish a known-good EAS update group
+        if: inputs.component == 'mobile-update'
+        env:
+          STACKR_ROLLBACK_ENVIRONMENT: ${{ inputs.environment }}
+        run: >-
+          npx --yes eas-cli@21.4.0 update:republish
+          --group "$STACKR_ROLLBACK_TARGET_ID"
+          --destination-channel "$STACKR_ROLLBACK_ENVIRONMENT"
+          --platform all --message "$STACKR_ROLLBACK_REASON" --non-interactive
+
+      - name: Smoke-test surviving public paths
+        if: inputs.component != 'mobile-update' && inputs.component != 'mobile-rollout'
+        run: >-
+          npm run deploy:smoke --
+          --gateway="$STACKR_GATEWAY_URL"
+          --backend="$STACKR_BACKEND_URL"
+          --recognition="$STACKR_RECOGNITION_URL"
+          --allow-recognition-not-ready

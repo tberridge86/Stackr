@@ -1,0 +1,77 @@
+# EAS Build upload rules.
+# Keep local-only files out of the build archive while allowing
+# google-services.json to be uploaded from this machine for Android builds.
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+.cache/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native/build credentials and generated native folders
+.kotlin/
+stackr-release.keystore
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.keystore
+*.mobileprovision
+/ios
+/android
+
+# Metro
+.metro-health-check*
+.metro-cache/
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env
+.env*.local
+backend/.env
+
+# typescript
+*.tsbuildinfo
+
+app-example
+
+# local/generated artifacts
+tmp/
+.tmp/
+.tmp_video_frames/
+.expo-start*.log
+.expo-start*.err
+expo-qr.png
+expo-go-qr.png
+expo-go-tunnel-qr.png
+tmp-*.png
+
+# local editor/tool state
+.claude/
+.idea/
+.vscode/
+.npmrc
+backend/.npmrc
+
+# browser source captures that should not ship with the app
+assets/**/ChatGPT Images 2.0 _ AI Image Generator*
+
+# Backend Android build
+backend/android/
+backend/app.json
+
+# Firebase admin service account files are server-side only.
+stackr-*-firebase-adminsdk-*.json

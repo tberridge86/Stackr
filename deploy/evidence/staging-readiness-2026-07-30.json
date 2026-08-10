@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
+  "capturedAt": "2026-07-30T15:59:56.472Z",
+  "sourceCommitHash": "d9401ced50a87f9fac806fd5ae580b442759030d",
+  "supabase": {
+    "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+    "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "localMigrationFileCount": 79,
+    "productionMigrationHistoryCount": 0,
+    "stagingMigrationHistoryCount": 20,
+    "migrationHistoryStatus": "isolated_candidate_aligned_staging_promotion_blocked",
+    "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-07-30.json",
+    "migrationReconciliationEvidenceSha256": "786fe6ecacbc3aaaec6752e182832dfe126876fd9a69dad416917ee0b6132704",
+    "stagingSecurityAdvisorFindingCountAfterRollback": 0,
+    "productionPhysicalBackupCount": 8,
+    "stagingPhysicalBackupCount": 11,
+    "latestStagingPhysicalBackupId": "1245215485",
+    "latestStagingPhysicalBackupAt": "2026-07-30T03:47:35.742Z",
+    "latestStagingBackupIncludesCurrentChanges": false,
+    "pitrEnabled": false,
+    "walgEnabled": true
+  },
+  "databaseRecovery": {
+    "status": "verified",
+    "logicalBackupCreated": true,
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-07-30T14:24:09.904Z",
+    "workflowRunId": 30551243946,
+    "verifiedTableCount": 34,
+    "verifiedMigrationCount": 20,
+    "schemaMatched": true,
+    "tableDataMatched": true,
+    "migrationHistoryMatched": true,
+    "extensionsMatched": true,
+    "blockers": []
+  },
+  "storageRecovery": {
+    "status": "verified",
+    "stagingBucketCount": 0,
+    "stagingObjectCount": 0,
+    "backupArtifactSha256": "b63e48c975e9987241598b44415b428a22f73aa52cee5bb12ad9c01fded90eaf",
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-07-30T14:24:13.724Z",
+    "restoredObjectCount": 1,
+    "checksumMismatchCount": 0,
+    "anonymousReadDenied": true,
+    "sourceCleanupVerified": true,
+    "targetCleanupVerified": true,
+    "blockers": []
+  },
+  "migrationCandidate": {
+    "status": "aligned_data_preservation_rehearsed_not_promotable",
+    "projectRef": "krjttpmthxkfsbqksxci",
+    "workflowRunId": 30557905336,
+    "repositoryMigrationCount": 79,
+    "databaseTableCount": 179,
+    "securityAdvisorFindingCount": 24,
+    "securityAdvisorErrorCount": 0,
+    "securityAdvisorWarningCount": 9,
+    "securityAdvisorInfoCount": 15,
+    "securityAdvisorLastSuccessfulMigrationCount": 79,
+    "securityAdvisorRerunStatus": "completed",
+    "currentStagingCatalogueRowsRequirePreservation": true,
+    "cataloguePreservationRehearsed": true,
+    "cataloguePreservationWorkflowRunId": 30558754116,
+    "cataloguePreservationSourceRowCount": 1836,
+    "cataloguePreservationMatchedRowCount": 1836,
+    "cataloguePreservationRollbackVerified": true,
+    "promotionApproved": false,
+    "promotionBlockers": [
+      "destructive_staging_rebuild_not_approved"
+    ]
+  },
+  "stage6Rehearsal": {
+    "status": "rehearsed_and_rolled_back",
+    "migrationApplied": true,
+    "rollbackApplied": true,
+    "seededCandidateModelCount": 5,
+    "selectedOrActiveModelCount": 0,
+    "activeIndexCount": 0,
+    "anonymousOrAuthenticatedMlGrantCount": 0,
+    "allStage6TablesHadRls": true,
+    "securityAdvisorFindingCountAfterFixedMigration": 0,
+    "finalStage6ObjectCount": 0,
+    "vectorExtensionInstalledDuringRehearsal": false,
+    "currentVectorExtensionInstalled": true,
+    "currentVectorExtensionVersion": "0.8.2",
+    "activationGuardsVerified": [
+      "unselected_model_rejected",
+      "unknown_index_rejected"
+    ]
+  },
+  "modelAndIndex": {
+    "status": "blocked",
+    "selectedModelId": null,
+    "selectedEmbeddingDimensions": null,
+    "activeIndexVersion": null,
+    "realPhoneTestCaptureCount": 0,
+    "approvedTrainingPixelSourceCount": 0,
+    "captureReadinessEvidence": "deploy/evidence/stage6-capture-readiness-2026-07-30.json",
+    "captureReadinessEvidenceSha256": "c5c0413993d92df9753644c5f349bf74562ae0fb1a8567a04c10ae31983156bf",
+    "benchmarkEvidence": "ml/reports/model-benchmark-v1.json",
+    "benchmarkEvidenceSha256": "4df013fbee5fad33a2b8e3e54d67146d6daa8a847c4376d675bb934705995266",
+    "indexPlanEvidence": "ml/reports/embedding-index-regeneration-plan.json",
+    "indexPlanEvidenceSha256": "5b971385198a1860ca1c0c5a56ed2997dd9571185ee61e3282d488b00b55dd84",
+    "missingLanguages": [
+      "zh-Hans",
+      "ko"
+    ],
+    "blockers": [
+      "no_approved_training_pixels",
+      "no_real_phone_test_captures",
+      "missing_zh-Hans_benchmark_coverage",
+      "missing_ko_benchmark_coverage",
+      "measurement_evidence_missing",
+      "no_production_model_selected_by_weighted_benchmark",
+      "no_selected_embedding_dimension",
+      "benchmark_not_complete"
+    ]
+  },
+  "releaseReadiness": {
+    "status": "blocked",
+    "blockers": [
+      "aligned_candidate_not_promoted_to_staging",
+      "destructive_staging_rebuild_not_approved",
+      "model_benchmark_not_complete",
+      "embedding_index_not_validated",
+      "staging_provider_deployment_not_configured"
+    ]
+  }
+}

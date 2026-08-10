@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
+  "capturedAt": "2026-08-07T18:10:41.754Z",
+  "sourceCommitHash": "4b64599c325db5411fdcc1d99a710a6379ceb68f",
+  "workingTreeChangesIncluded": true,
+  "supabase": {
+    "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+    "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "localMigrationFileCount": 95,
+    "productionMigrationHistoryCount": 1,
+    "stagingMigrationHistoryCount": 95,
+    "migrationHistoryStatus": "aligned",
+    "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-08-06.json",
+    "migrationReconciliationEvidenceSha256": "75e392b0508962fc1c465f5b19d9bb1047a143c6c3debc835825dba987fd2c2f",
+    "stagingSecurityAdvisorFindingCountAfterRollback": 24,
+    "productionPhysicalBackupCount": 8,
+    "stagingPhysicalBackupCount": 8,
+    "latestStagingPhysicalBackupId": "1309013249",
+    "latestStagingPhysicalBackupAt": "2026-08-07T03:51:07.875Z",
+    "latestStagingBackupIncludesCurrentChanges": false,
+    "pitrEnabled": false,
+    "walgEnabled": true
+  },
+  "databaseRecovery": {
+    "status": "blocked",
+    "lastVerifiedRestoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "lastRestoreTestedAt": "2026-07-30T14:24:09.904Z",
+    "lastVerifiedMigrationCount": 20,
+    "currentMigrationCount": 95,
+    "blockers": [
+      "current_95_migration_staging_database_has_not_been_restored_from_a_fresh_backup"
+    ]
+  },
+  "storageRecovery": {
+    "status": "blocked",
+    "stagingBucketCount": 6,
+    "stagingObjectCount": 102821,
+    "publicCatalogueObjectCount": 102819,
+    "lastRestoreTestedAt": "2026-07-30T14:24:13.724Z",
+    "lastRestoredObjectCount": 1,
+    "blockers": [
+      "current_102821_object_storage_inventory_has_not_been_backed_up_and_restored"
+    ]
+  },
+  "migrationCandidate": {
+    "status": "aligned_on_staging",
+    "repositoryMigrationCount": 95,
+    "stagingMigrationHistoryCount": 95,
+    "exactVersionNameOrderMatch": true,
+    "securityAdvisorErrorCount": 0,
+    "promotionApproved": false,
+    "promotionBlockers": [
+      "database_recovery_not_current",
+      "storage_recovery_not_current",
+      "model_index_and_calibration_not_ready"
+    ]
+  },
+  "stage6Rehearsal": {
+    "status": "rehearsed_and_rolled_back",
+    "migrationApplied": true,
+    "rollbackApplied": true,
+    "seededCandidateModelCount": 5,
+    "selectedOrActiveModelCount": 0,
+    "activeIndexCount": 0,
+    "anonymousOrAuthenticatedMlGrantCount": 0,
+    "allStage6TablesHadRls": true,
+    "securityAdvisorFindingCountAfterFixedMigration": 0,
+    "finalStage6ObjectCount": 0,
+    "vectorExtensionInstalledDuringRehearsal": false,
+    "currentVectorExtensionInstalled": true,
+    "currentVectorExtensionVersion": "0.8.2",
+    "activationGuardsVerified": [
+      "unselected_model_rejected",
+      "unknown_index_rejected"
+    ]
+  },
+  "modelAndIndex": {
+    "status": "blocked",
+    "candidateModelId": "dinov2_vits14",
+    "candidateArtifactSha256": "eb9447f288fe8225cc222d96177458c53d22ce6d794603e10b10a8905962b19a",
+    "selectedModelId": null,
+    "selectedEmbeddingDimensions": null,
+    "activeIndexVersion": null,
+    "realPhoneTestCaptureCount": 142,
+    "approvedTrainingPixelSourceCount": 142,
+    "captureReadinessEvidence": "deploy/evidence/dinov2-pilot-publication-approved-2026-08-06.json",
+    "captureReadinessEvidenceSha256": "9418dab68db8bee2304a6d43bedbddce4493a5786c98301dec9d20d9f327f1b5",
+    "benchmarkEvidence": "deploy/evidence/dinov2-pilot-publication-approved-2026-08-06.json",
+    "benchmarkEvidenceSha256": "9418dab68db8bee2304a6d43bedbddce4493a5786c98301dec9d20d9f327f1b5",
+    "indexPlanEvidence": "ml/reports/embedding-index-regeneration-plan.json",
+    "indexPlanEvidenceSha256": "5b971385198a1860ca1c0c5a56ed2997dd9571185ee61e3282d488b00b55dd84",
+    "missingProtectedEvaluationLanguages": [
+      "zh-Hans",
+      "ko"
+    ],
+    "blockers": [
+      "model_selection_and_protected_test_not_separated",
+      "one_physical_card_session_per_identity",
+      "six_identity_classes_only",
+      "single_language_only",
+      "variant_and_finish_hard_negatives_missing",
+      "mobile_latency_not_measured",
+      "active_database_index_not_built",
+      "calibration_not_completed"
+    ]
+  },
+  "catalogue": {
+    "sets": 788,
+    "cardPrintings": 56963,
+    "cardVariants": 75586,
+    "publicApprovedAssets": 56387,
+    "publishedVersions": 1,
+    "set151cPrintings": 192,
+    "set151cExpectedCards": 343,
+    "complete": false
+  },
+  "releaseReadiness": {
+    "status": "blocked",
+    "blockers": [
+      "database_recovery_not_current",
+      "storage_recovery_not_current",
+      "catalogue_metadata_and_media_coverage_incomplete",
+      "versioned_catalogue_not_published",
+      "protected_multisession_benchmark_missing",
+      "embedding_index_not_validated",
+      "recognition_calibration_not_ready",
+      "pre_existing_supabase_security_warnings_remain",
+      "production_dns_release_not_approved"
+    ]
+  }
+}

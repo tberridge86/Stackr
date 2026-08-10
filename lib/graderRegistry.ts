@@ -203,5 +203,5 @@ export function getGraderGradeLabel(
 }
 
 export function getSupportedSlabGraderLabels() {
-  return ['PSA', 'CGC', 'BGS', 'ACE', 'TAG'] as const;
+  return ['PSA', 'CGC', 'BGS', 'ACE', 'TAG', 'AGS', 'GetGraded'] as const;
 }

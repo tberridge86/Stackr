@@ -119,9 +119,9 @@ export default function SellerDashboardScreen() {
         data={SELLER_WORKSPACE_ITEMS}
         keyExtractor={(item) => item.key}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={theme.colors.primary} />}
-        contentContainerStyle={{ padding: 16, paddingBottom: stackrTabContentPadding.standard, gap: 12 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: stackrTabContentPadding.standard, gap: 10 }}
         ListHeaderComponent={
-          <View style={{ gap: 14, marginBottom: 4 }}>
+          <View style={{ gap: 12, marginBottom: 2 }}>
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
               <View style={{ flex: 1, minWidth: 0 }}>
                 <StackrPageTitle title="Seller Dashboard" accentText="Dashboard" />
@@ -148,9 +148,9 @@ export default function SellerDashboardScreen() {
                 ['Movements', String(movements.length)],
                 ['Sales records', String(summary.sales)],
               ].map(([label, value]) => (
-                <View key={label} style={{ flexGrow: 1, flexBasis: '47%', minHeight: 78, borderRadius: 16, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, padding: 12 }}>
+                <View key={label} style={{ flexGrow: 1, flexBasis: '47%', minHeight: 64, borderRadius: 15, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, padding: 10 }}>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>{label}</Text>
-                  <Text style={{ color: theme.colors.text, fontSize: 21, lineHeight: 26, fontWeight: '900', marginTop: 5 }}>{value}</Text>
+                  <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900', marginTop: 3 }} numberOfLines={1}>{value}</Text>
                 </View>
               ))}
             </View>

@@ -585,7 +585,7 @@ export default function NotificationsScreen() {
                 No activity here yet
               </Text>
               <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 20, maxWidth: 260 }}>
-                Trade updates, offers, messages and wishlist matches will appear here.
+                Trade updates, offers, messages and chase matches will appear here.
               </Text>
             </View>
           }

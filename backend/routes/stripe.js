@@ -5,13 +5,24 @@ import { createClient } from '@supabase/supabase-js';
 
 const router = express.Router();
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2024-06-20',
-});
+const stripeSecretKey = String(process.env.STRIPE_SECRET_KEY ?? '').trim();
+const stripe = stripeSecretKey
+  ? new Stripe(stripeSecretKey, { apiVersion: '2024-06-20' })
+  : null;
+
+function requireStripeConfigured(_req, res, next) {
+  if (!stripe) {
+    return res.status(503).json({
+      error: 'Payments are temporarily unavailable.',
+    });
+  }
+
+  return next();
+}
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY
+  process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 // Public base URL for Stripe redirect pages (set this in your .env)
@@ -27,7 +38,7 @@ const BETA_TRADE_DEMO_MODE = process.env.BETA_TRADE_DEMO_MODE !== 'false';
 // Creates a Stripe Express account if none exists, then returns an onboarding URL.
 // If an account already exists but onboarding is incomplete, returns a fresh link.
 
-router.post('/create-connect-account', async (req, res) => {
+router.post('/create-connect-account', requireStripeConfigured, async (req, res) => {
   const { userId, email } = req.body;
   if (!userId || !email) {
     return res.status(400).json({ error: 'userId and email are required' });
@@ -87,7 +98,7 @@ router.post('/create-connect-account', async (req, res) => {
 // ACCOUNT STATUS CHECK
 // ===============================
 
-router.get('/account-status', async (req, res) => {
+router.get('/account-status', requireStripeConfigured, async (req, res) => {
   const { userId } = req.query;
   if (!userId) return res.status(400).json({ error: 'userId required' });
 
@@ -121,7 +132,7 @@ router.get('/account-status', async (req, res) => {
 // FRESH ACCOUNT LINK (resume incomplete onboarding)
 // ===============================
 
-router.post('/create-account-link', async (req, res) => {
+router.post('/create-account-link', requireStripeConfigured, async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(400).json({ error: 'userId required' });
 
@@ -155,7 +166,7 @@ router.post('/create-account-link', async (req, res) => {
 // ===============================
 // Called when a buyer taps Buy Now. Holds funds with Stripe until delivery confirmed.
 
-router.post('/create-payment-intent', async (req, res) => {
+router.post('/create-payment-intent', requireStripeConfigured, async (req, res) => {
   const { listingId, buyerId } = req.body;
   if (!listingId || !buyerId) {
     return res.status(400).json({ error: 'listingId and buyerId required' });
@@ -209,7 +220,7 @@ router.post('/create-payment-intent', async (req, res) => {
 // The payer/recipient are determined from trade_cash_terms.
 // Recipient must have Stripe Connect set up.
 
-router.post('/create-trade-cash-payment-intent', async (req, res) => {
+router.post('/create-trade-cash-payment-intent', requireStripeConfigured, async (req, res) => {
   if (BETA_TRADE_DEMO_MODE) {
     return res.status(403).json({
       error: 'Demo trade mode is enabled. No real trade cash payment can be started during beta.',

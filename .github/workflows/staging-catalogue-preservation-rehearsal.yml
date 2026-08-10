@@ -1,0 +1,75 @@
+name: Staging Catalogue Preservation Rehearsal
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type REHEARSE STAGING CATALOGUE TRANSFER
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-staging-catalogue-preservation-rehearsal
+  cancel-in-progress: false
+
+jobs:
+  transfer:
+    if: inputs.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: staging
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_RESTORE_DB_URL }}
+      SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+      SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
+      SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate isolated transfer target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_PROJECT_REF" = 'lmwfhvexfcoyeuoyrlco'
+          test "$SUPABASE_RESTORE_PROJECT_REF" = 'krjttpmthxkfsbqksxci'
+          test "$SUPABASE_PRODUCTION_PROJECT_REF" = 'oakdbbzdqwurpjnoqhmu'
+          test "$SUPABASE_PROJECT_REF" != "$SUPABASE_RESTORE_PROJECT_REF"
+          test "$SUPABASE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
+          test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
+          test -n "$SUPABASE_DB_URL"
+          test -n "$SUPABASE_RESTORE_DB_URL"
+          case "$SUPABASE_DB_URL" in *"$SUPABASE_PROJECT_REF"*) ;; *) exit 1 ;; esac
+          case "$SUPABASE_RESTORE_DB_URL" in *"$SUPABASE_RESTORE_PROJECT_REF"*) ;; *) exit 1 ;; esac
+
+      - name: Prepare protected database URLs
+        run: node scripts/deploy/prepare-postgres-urls.mjs
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Rehearse catalogue and provenance transfer
+        env:
+          STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-transfer/evidence.json
+        run: node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
+
+      - name: Upload private non-record evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: staging-catalogue-transfer-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-catalogue-transfer/evidence.json
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Remove transfer evidence
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/stackr-catalogue-transfer"

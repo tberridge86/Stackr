@@ -3,6 +3,12 @@
     "name": "Stackr",
     "slug": "Stackr",
     "version": "1.0.3",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/22048198-a309-41d2-a2bf-aa354c76be3a"
+    },
     "orientation": "portrait",
     "icon": "./assets/rev2/01-brand/app/icon.png",
     "scheme": "stackr",
@@ -12,9 +18,16 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/rev2/01-brand/app/splash.png",
+          "image": "./assets/rev2/01-brand/app/splash-ultra-hd.png",
           "resizeMode": "cover",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Stackr needs camera access so you can scan your Pokemon cards.",
+          "recordAudioAndroid": false
         }
       ],
       [

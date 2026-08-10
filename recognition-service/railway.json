@@ -1,0 +1,26 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile",
+    "watchPatterns": [
+      "recognition-service/**",
+      "app/**",
+      "tests/**",
+      ".dockerignore",
+      "Dockerfile",
+      "railway.json",
+      "README.md",
+      "requirements-dev.txt",
+      "requirements.txt"
+    ]
+  },
+  "deploy": {
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 180,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 5,
+    "overlapSeconds": "30",
+    "drainingSeconds": "30"
+  }
+}

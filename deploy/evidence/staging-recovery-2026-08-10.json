@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "stackr-staging-recovery-evidence-v1.0.0",
+  "capturedAt": "2026-08-10T21:01:36.454Z",
+  "sourceCommitHash": "a0dfaf628e00038a426a825495f593ecc7cdeeed",
+  "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "productionMutationPerformed": false,
+  "recoveryRunMode": "split_database_and_storage_verification",
+  "workflowRuns": {
+    "database": {
+      "id": 31416853579,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/31416853579",
+      "headCommit": "030e8b3c99f119ed8aabc6a05baa3fa79b95d836",
+      "conclusion": "cancelled_after_database_verification_before_storage_completed"
+    },
+    "storage": {
+      "id": 31424877755,
+      "url": "https://github.com/tberridge86/Stackr/actions/runs/31424877755",
+      "headCommit": "a0dfaf628e00038a426a825495f593ecc7cdeeed",
+      "conclusion": "success"
+    }
+  },
+  "sourceArtifacts": {
+    "postgresEvidenceFile": "postgres-restore-evidence.json",
+    "postgresEvidenceSha256": "6a0108ffbd1817b182fbd1f386aad5b187852b0f775010a37066c1e4f0b37d06",
+    "storageEvidenceFile": "storage-restore-evidence.json",
+    "storageEvidenceSha256": "d4e69d0568e8b72c02542e77e8139d9dd3b3646693a5e74205c7d2477a3d7438"
+  },
+  "postgres": {
+    "status": "verified",
+    "sourceProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-08-10T18:26:55.564Z",
+    "sourceSchemaSha256": "ed2dd9456555b206d730e8e427b4a4dd06deb83913e921976bfa691d7a86121c",
+    "restoreSchemaSha256": "ed2dd9456555b206d730e8e427b4a4dd06deb83913e921976bfa691d7a86121c",
+    "sourceTableDataSha256": "4893ca45b572ed2b0d41ab0059872415c9a9a9d12ac92b15e330a504713149d7",
+    "restoreTableDataSha256": "4893ca45b572ed2b0d41ab0059872415c9a9a9d12ac92b15e330a504713149d7",
+    "sourceMigrationHistorySha256": "3639550f5065d24cb0fc6a4a76d0ca61bcaa6e4c49eb5849ef08b2675d52f298",
+    "restoreMigrationHistorySha256": "3639550f5065d24cb0fc6a4a76d0ca61bcaa6e4c49eb5849ef08b2675d52f298",
+    "sourceExtensionSha256": "49b2747d46eeb18936a73a583da57822ebac38754abb53833ea6bc71a6bde2bc",
+    "restoreExtensionSha256": "49b2747d46eeb18936a73a583da57822ebac38754abb53833ea6bc71a6bde2bc",
+    "tableCount": 185,
+    "strictTableCount": 182,
+    "strictTableMismatches": [],
+    "volatileTableCount": 3,
+    "volatileTableChecks": [
+      {
+        "table": "audit.observability_events",
+        "sourcePresent": true,
+        "restorePresent": true,
+        "sourceRowCount": "1810",
+        "restoreRowCount": "1810",
+        "sourceRowDigest": "411af94cc91c6e35b2e21a720c34e757",
+        "restoreRowDigest": "411af94cc91c6e35b2e21a720c34e757",
+        "restoreNotAheadOfLiveSource": true,
+        "snapshotBehindLiveSource": false,
+        "sameCountRowsMatch": true,
+        "restoreRowsAreLiveSourceSubset": true,
+        "acceptable": true
+      },
+      {
+        "table": "ml.embedding_activation_events",
+        "sourcePresent": true,
+        "restorePresent": true,
+        "sourceRowCount": "2",
+        "restoreRowCount": "2",
+        "sourceRowDigest": "75259cc2609dfa134b4fdc873c518750",
+        "restoreRowDigest": "75259cc2609dfa134b4fdc873c518750",
+        "restoreNotAheadOfLiveSource": true,
+        "snapshotBehindLiveSource": false,
+        "sameCountRowsMatch": true,
+        "restoreRowsAreLiveSourceSubset": true,
+        "acceptable": true
+      },
+      {
+        "table": "ml.scan_upload_assets",
+        "sourcePresent": true,
+        "restorePresent": true,
+        "sourceRowCount": "4",
+        "restoreRowCount": "4",
+        "sourceRowDigest": "2fda0a6ff821ed1522a78644c7ccd83d",
+        "restoreRowDigest": "2fda0a6ff821ed1522a78644c7ccd83d",
+        "restoreNotAheadOfLiveSource": true,
+        "snapshotBehindLiveSource": false,
+        "sameCountRowsMatch": true,
+        "restoreRowsAreLiveSourceSubset": true,
+        "acceptable": true
+      }
+    ],
+    "migrationCount": 103,
+    "checks": {
+      "schema": true,
+      "tableData": true,
+      "volatileTableSnapshotBounds": true,
+      "migrationHistory": true,
+      "extensions": true
+    },
+    "ok": true,
+    "blockers": []
+  },
+  "storage": {
+    "status": "verified",
+    "sourceProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-08-10T21:01:36.454Z",
+    "restoreMode": "full_packed_backup_with_stratified_object_rehydration",
+    "sourceBucketCount": 8,
+    "sourceInventoryObjectCount": 190325,
+    "backedUpObjectCount": 190325,
+    "restoredBucketCount": 8,
+    "restoredObjectCount": 512,
+    "restoredSampleObjectCount": 512,
+    "restoredSampleCoveragePercent": 0.269,
+    "restoredSampleStrategy": "all_private_plus_bucket_edges_size_extremes_mime_representatives_and_deterministic_hash_rank",
+    "publicObjectCount": 190316,
+    "privateObjectCount": 9,
+    "accessCheckScope": "one_restored_object_per_non_empty_bucket",
+    "bucketAccessChecks": [
+      {
+        "bucketId": "recognition-marketplace-staging",
+        "expectedPublic": false,
+        "anonymousStatus": 400,
+        "passed": true
+      },
+      {
+        "bucketId": "stackr-catalogue-public",
+        "expectedPublic": true,
+        "anonymousStatus": 200,
+        "passed": true
+      }
+    ],
+    "publicBucketAccessExpectedCount": 1,
+    "publicBucketReadVerifiedCount": 1,
+    "privateBucketAccessExpectedCount": 1,
+    "privateBucketReadDeniedCount": 1,
+    "bucketPolicyMatches": true,
+    "fileSizeLimitCompatible": true,
+    "bucketLimitDowngradeCount": 1,
+    "restoreTargetFileSizeCeilingBytes": 52428800,
+    "storageTransferConcurrency": 64,
+    "storagePackTransferConcurrency": 4,
+    "storagePackMaxBytes": 41943040,
+    "storageRetryAttempts": 4,
+    "backupPackCount": 338,
+    "backupPackByteSize": 14113864992,
+    "sourceObjectByteSize": 14021309161,
+    "packChecksumMismatchCount": 0,
+    "packRecordMismatchCount": 0,
+    "sourceMimeTypeMismatchCount": 0,
+    "checksumMismatchCount": 0,
+    "mimeTypeMismatchCount": 0,
+    "targetCleanupVerified": true,
+    "fullInventoryMetadataSha256": "33f6a96737aa7df61621c425337786470d536fee7c5eb1fcd2f36d59493b1959",
+    "backupPackManifestSha256": "958823b5b62d37a8530692d8ffa3ca1d75b5e53dbd802912f26acfba8fd234f2",
+    "backupManifestSha256": "b2c2cd658f057a29c9992a3e1c6a92e715e15765fbeb922e9599ff128d2d0406",
+    "ok": true,
+    "blockers": []
+  }
+}

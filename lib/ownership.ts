@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { bumpCollectionSummaryVersion } from './collectionSummaryInvalidation';
 
 export const DEFAULT_OWNED_VARIANT = 'normal';
 export const DEFAULT_OWNED_CONDITION = 'Near Mint';
@@ -28,6 +29,7 @@ const FULL_OWNED_COLUMNS = 'id, user_id, card_id, set_id, variant, quantity, con
 const LEGACY_OWNED_COLUMNS = 'card_id, set_id, variant, quantity';
 const FULL_OWNED_CONFLICT = 'user_id,card_id,set_id,variant,condition,grade_company,grade';
 const LEGACY_OWNED_CONFLICT = 'user_id,card_id,set_id,variant';
+const OWNED_ROWS_PAGE_SIZE = 1000;
 
 function isSchemaCacheError(error: any) {
   const message = String(error?.message ?? '').toLowerCase();
@@ -78,7 +80,7 @@ export async function fetchOwnedCardRows(options?: {
   const userId = await getCurrentUserId();
   if (!userId) return [];
 
-  const run = async (columns: string) => {
+  const buildQuery = (columns: string) => {
     let query = supabase
       .from('user_card_variants')
       .select(columns)
@@ -91,9 +93,22 @@ export async function fetchOwnedCardRows(options?: {
     return query;
   };
 
-  let { data, error } = await run(FULL_OWNED_COLUMNS);
+  const fetchAll = async (columns: string) => {
+    const rows: any[] = [];
+    for (let from = 0; ; from += OWNED_ROWS_PAGE_SIZE) {
+      const to = from + OWNED_ROWS_PAGE_SIZE - 1;
+      const { data, error } = await buildQuery(columns).range(from, to);
+      if (error) return { data: rows, error };
+      rows.push(...(data ?? []));
+      if (!data || data.length < OWNED_ROWS_PAGE_SIZE) {
+        return { data: rows, error: null };
+      }
+    }
+  };
+
+  let { data, error } = await fetchAll(FULL_OWNED_COLUMNS);
   if (error && isSchemaCacheError(error)) {
-    const legacy = await run(LEGACY_OWNED_COLUMNS);
+    const legacy = await fetchAll(LEGACY_OWNED_COLUMNS);
     data = legacy.data;
     error = legacy.error;
   }
@@ -187,6 +202,7 @@ export async function ensureOwnedCardQuantity(
       error = legacy.error;
     }
     if (error) throw error;
+    bumpCollectionSummaryVersion();
     return data ? normalizeOwnedRow(data) : { ...fullPayload, id: current.id };
   }
 
@@ -209,6 +225,7 @@ export async function ensureOwnedCardQuantity(
   }
   if (error) throw error;
 
+  bumpCollectionSummaryVersion();
   return data ? normalizeOwnedRow(data) : normalizeOwnedRow(fullPayload);
 }
 

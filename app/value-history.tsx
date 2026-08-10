@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -17,6 +17,7 @@ import Svg, { Defs, LinearGradient as SvgLinearGradient, Path, Stop } from 'reac
 import { Text } from '../components/Text';
 import { useTheme } from '../components/theme-context';
 import { StackrBackdrop } from '../components/StackrBackdrop';
+import { StackrBackButton } from '../components/StackrBackButton';
 import { StackrPageTitle } from '../components/StackrScreen';
 import { fetchBinderCards, fetchBinders, type BinderCardRecord } from '../lib/binders';
 import {
@@ -26,10 +27,13 @@ import {
   type InventorySaleTransaction,
 } from '../lib/inventory';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
+import { getPreferredSetDisplayName } from '../lib/pokemonDisplayNames';
 import { stackrIcons } from '../lib/stackrIcons';
 import { stackrTabContentPadding } from '../lib/stackrSizing';
 import { supabase } from '../lib/supabase';
 import { tabularNumberStyle, typeScale } from '../lib/typography';
+import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../lib/stackrDomainAdapter';
+import { stackrApiClient } from '../lib/stackrApiV1';
 
 type RangeKey = '7D' | '30D' | '6M' | '12M';
 type MoverDisplayMode = 'money' | 'percent';
@@ -193,7 +197,18 @@ const getCardName = (card: BinderCardRecord) =>
   card.card_name ?? card.card?.name ?? card.card?.raw_data?.name ?? card.card_id;
 
 const getCardSetName = (card: BinderCardRecord) =>
-  card.set_name ?? card.card?.set?.name ?? card.card?.raw_data?.set?.name ?? card.set_id ?? null;
+  getPreferredSetDisplayName({
+    id: card.set_id ?? card.card?.set?.id ?? card.card?.raw_data?.set?.id ?? null,
+    sourceId: card.card?.raw_data?.set?.tcgdex_id ?? card.card?.raw_data?.set?.source_id ?? card.set_id ?? null,
+    setCode: card.card?.raw_data?.set?.set_code ?? card.card?.raw_data?.set?.tcgdex_id ?? card.set_id ?? null,
+    language: card.language ?? card.card?.language ?? card.card?.raw_data?.language ?? card.card?.raw_data?.set?.language ?? null,
+    region: card.card?.region ?? card.card?.raw_data?.region ?? card.card?.raw_data?.set?.region ?? null,
+    localName: card.card?.raw_data?.set?.local_name ?? card.card?.raw_data?.set?.name ?? null,
+    englishDisplayName: card.card?.raw_data?.set?.english_display_name ?? card.card?.raw_data?.set?.englishDisplayName ?? null,
+    canonicalName: card.card?.set?.name ?? card.card?.raw_data?.set?.name ?? card.set_name ?? null,
+    fallbackName: card.set_name ?? card.set_id ?? null,
+    raw: card.card?.raw_data?.set ?? card.card?.raw_data,
+  });
 
 function groupLatestTwoSnapshots(rows: any[]) {
   const grouped = new Map<string, any[]>();
@@ -254,56 +269,28 @@ async function fetchPreviews(cardIds: string[]) {
   const previews = new Map<string, CardPreview>();
   if (!ids.length) return previews;
 
-  const [previewResult, cardResult] = await Promise.all([
-    supabase
-      .from('card_previews')
-      .select('card_id, name, image_url, set_name')
-      .in('card_id', ids),
-    supabase
-      .from('pokemon_cards')
-      .select('id, name, image_small, image_large, set_id, raw_data')
-      .in('id', ids),
-  ]);
-
-  const cardsById = new Map<string, any>();
-  if (!cardResult.error) {
-    for (const card of cardResult.data ?? []) {
-      cardsById.set(card.id, card);
-    }
-  } else {
-    console.log('Mover pokemon card fallback unavailable:', cardResult.error.message);
-  }
-
-  if (!previewResult.error) {
-    for (const row of previewResult.data ?? []) {
-      const card = cardsById.get(row.card_id);
-      previews.set(row.card_id, {
-        name: row.name ?? card?.name ?? card?.raw_data?.name ?? row.card_id,
-        setId: card?.set_id ?? card?.raw_data?.set?.id ?? null,
-        setName: row.set_name ?? card?.raw_data?.set?.name ?? card?.set_id ?? null,
-        imageUrl:
-          row.image_url ??
-          card?.image_small ??
-          card?.image_large ??
-          card?.raw_data?.images?.small ??
-          card?.raw_data?.images?.large ??
-          null,
-      });
-    }
-  } else {
-    console.log('Mover card previews unavailable:', previewResult.error.message);
-  }
-
-  const missing = ids.filter((id) => !previews.has(id));
-  for (const id of missing) {
+  const cardsById = await fetchStackrCardRows(ids);
+  for (const id of ids) {
     const card = cardsById.get(id);
     if (!card) continue;
+    const raw = card.raw_data as any;
 
-    previews.set(card.id, {
-      name: card.name ?? card.raw_data?.name ?? card.id,
-      setId: card.set_id ?? card.raw_data?.set?.id ?? null,
-      setName: card.raw_data?.set?.name ?? card.set_id ?? null,
-      imageUrl: card.image_small ?? card.image_large ?? card.raw_data?.images?.small ?? card.raw_data?.images?.large ?? null,
+    previews.set(id, {
+      name: card.name ?? raw?.name ?? id,
+      setId: card.set_id ?? raw?.set?.id ?? null,
+      setName: getPreferredSetDisplayName({
+        id: card.set_id ?? raw?.set?.id ?? null,
+        sourceId: raw?.set?.tcgdex_id ?? raw?.set?.source_id ?? card.set_id ?? null,
+        setCode: raw?.set?.set_code ?? raw?.set?.tcgdex_id ?? card.set_id ?? null,
+        language: card.language ?? raw?.language ?? raw?.set?.language ?? null,
+        region: card.region ?? raw?.region ?? raw?.set?.region ?? null,
+        localName: raw?.set?.local_name ?? raw?.set?.name ?? null,
+        englishDisplayName: raw?.set?.english_display_name ?? raw?.set?.englishDisplayName ?? null,
+        canonicalName: raw?.set?.name ?? null,
+        fallbackName: card.set_id ?? null,
+        raw: raw?.set ?? raw,
+      }),
+      imageUrl: card.image_small ?? card.image_large ?? raw?.images?.small ?? raw?.images?.large ?? null,
     });
   }
 
@@ -334,43 +321,35 @@ async function executeMarketSnapshotRowsQuery({
   ascending?: boolean;
   limit?: number;
 }): Promise<any[]> {
-  const runQuery = async (includeTcgdex: boolean) => {
-    let query = supabase
-      .from('market_price_snapshots')
-      .select(includeTcgdex ? PRICE_COLUMNS_TCGDEX : PRICE_COLUMNS_LEGACY)
-      .is('user_id', null)
-      .or(includeTcgdex ? PRICE_FILTER_TCGDEX : PRICE_FILTER_LEGACY)
-      .gte('snapshot_at', since)
-      .order('snapshot_at', { ascending })
-      .limit(limit);
-
-    if (cardIds?.length) {
-      query = query.in('card_id', cardIds);
-    }
-
-    if (before) {
-      query = query.lt('snapshot_at', before);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return (data ?? []) as any[];
+  const lowerBound = Date.parse(since);
+  const upperBound = before ? Date.parse(before) : Number.POSITIVE_INFINITY;
+  const withinWindow = (value?: string | null) => {
+    const timestamp = value ? Date.parse(value) : NaN;
+    return Number.isFinite(timestamp) && timestamp >= lowerBound && timestamp < upperBound;
   };
 
-  if (tcgdexSnapshotColumnSupported === false) {
-    return runQuery(false);
+  if (cardIds?.length) {
+    const snapshots = await fetchStackrPriceSnapshots(cardIds);
+    return cardIds.flatMap((cardId) => {
+      const snapshot = snapshots.get(cardId);
+      if (!snapshot?.snapshot_at || !withinWindow(snapshot.snapshot_at)) return [];
+      return [{ card_id: cardId, tcg_mid: snapshot.market_central, snapshot_at: snapshot.snapshot_at }];
+    }).slice(0, limit);
   }
 
-  try {
-    const rows = await runQuery(true);
-    tcgdexSnapshotColumnSupported = true;
-    return rows;
-  } catch (error) {
-    if (!isMissingTcgdexSnapshotColumn(error)) throw error;
-    tcgdexSnapshotColumnSupported = false;
-    console.log('Value History falling back to legacy market snapshot columns:', (error as any)?.message ?? error);
-    return runQuery(false);
-  }
+  const response = await stackrApiClient.marketMovers({ productType: 'raw_card', currency: 'GBP', limit: Math.min(limit, 100) });
+  const rows = response.data.movers.flatMap((mover) => {
+    const cardId = mover.variantId;
+    if (!cardId) return [];
+    const points = [
+      { card_id: cardId, tcg_mid: mover.currentEstimate, snapshot_at: mover.calculatedAt },
+      { card_id: cardId, tcg_mid: mover.previousEstimate, snapshot_at: mover.previousCalculatedAt },
+    ];
+    return points.filter((point) => point.tcg_mid != null && withinWindow(point.snapshot_at));
+  });
+  return rows.sort((a, b) => ascending
+    ? String(a.snapshot_at).localeCompare(String(b.snapshot_at))
+    : String(b.snapshot_at).localeCompare(String(a.snapshot_at))).slice(0, limit);
 }
 
 async function fetchMarketSnapshotRows({
@@ -885,10 +864,10 @@ function SellerModeSummaryPanel({ summary }: { summary: SellerModeSummary }) {
   if (!hasActivity) {
     return (
       <View style={[styles.sellerEmpty, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-        <StackrAssetIcon source={stackrIcons.sellerMode} label="Seller Mode" size={48} />
-        <Text style={[styles.sellerEmptyTitle, { color: theme.colors.text }]}>No Seller Mode activity in the last 30 days.</Text>
+        <StackrAssetIcon source={stackrIcons.sellerMode} label="Seller Mode" size={40} />
+        <Text style={[styles.sellerEmptyTitle, { color: theme.colors.text }]}>No seller activity yet</Text>
         <Text style={[styles.emptyText, { color: theme.colors.textSoft }]}>
-          Stock-in, stock-out and completed sales will appear here.
+          Stock moves and completed sales will appear here.
         </Text>
         <TouchableOpacity
           activeOpacity={0.82}
@@ -980,7 +959,7 @@ function EmptyMovers({ message }: { message: string }) {
   const { theme } = useTheme();
   return (
     <View style={[styles.emptyMovers, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-      <StackrAssetIcon source={stackrIcons.marketMovers} label="Market movement" size={46} />
+      <StackrAssetIcon source={stackrIcons.marketMovers} label="Market movement" size={34} />
       <Text style={[styles.emptyText, { color: theme.colors.textSoft }]}>{message}</Text>
     </View>
   );
@@ -1057,9 +1036,9 @@ export default function ValueHistoryScreen() {
             ? 'unchanged'
             : 'ready';
   const historyStateCopy = historyStatus === 'empty'
-    ? 'No valuation history is available for this range yet.'
+    ? 'No valuation snapshots yet.'
     : historyStatus === 'single'
-      ? 'One valuation point is available. More snapshots are needed for a trend.'
+      ? 'One snapshot found. More are needed for a trend.'
       : historyStatus === 'unchanged'
         ? 'Your collection value is unchanged across this range.'
         : null;
@@ -1202,8 +1181,12 @@ export default function ValueHistoryScreen() {
   }, [loadMarketScreen]);
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.bg }]} edges={['left', 'right']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.colors.bg }]} edges={['top', 'left', 'right']}>
+      <Stack.Screen options={{ headerShown: false }} />
       <StackrBackdrop />
+      <View style={styles.topBar}>
+        <StackrBackButton onPress={() => router.back()} />
+      </View>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -1218,7 +1201,7 @@ export default function ValueHistoryScreen() {
                 Track the cards and collections moving your value.
               </Text>
             </View>
-            <StackrAssetIcon source={stackrIcons.marketMovers} label="Market movement chart" size={54} />
+            <StackrAssetIcon source={stackrIcons.marketMovers} label="Market movement chart" size={44} />
           </View>
           <View style={styles.heroMiniRow}>
             <View style={[styles.heroMiniPill, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
@@ -1234,7 +1217,7 @@ export default function ValueHistoryScreen() {
 
         <View style={[styles.pulseCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
           <View style={styles.heroTopRow}>
-            <StackrAssetIcon source={stackrIcons.marketMovers} label="Market pulse" size={50} />
+            <StackrAssetIcon source={stackrIcons.marketMovers} label="Market pulse" size={42} />
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={[styles.heroLabel, { color: theme.colors.textSoft }]}>Market Pulse</Text>
               <Text style={[styles.heroValue, { color: theme.colors.text }]}>
@@ -1301,7 +1284,7 @@ export default function ValueHistoryScreen() {
                   <MoverColumn title="Fallers" items={generalLosers} direction="down" displayMode={moverDisplayMode} />
                 </View>
               ) : (
-                <EmptyMovers message={trackedMarketCount > 0 ? 'Market data loaded, but no meaningful risers or fallers were found between the latest snapshots.' : 'No market-wide price snapshots are available yet.'} />
+                <EmptyMovers message={trackedMarketCount > 0 ? 'No meaningful movers in the latest snapshots.' : 'No market-wide snapshots yet.'} />
               )}
             </SectionCard>
 
@@ -1318,7 +1301,7 @@ export default function ValueHistoryScreen() {
                   <MoverColumn title="Fallers" items={personalLosers} direction="down" displayMode={moverDisplayMode} personal />
                 </View>
               ) : (
-                <EmptyMovers message="No personal movers yet. Once your owned cards have two price snapshots, they will appear here." />
+                <EmptyMovers message="No personal movers yet. Two snapshots are needed." />
               )}
             </SectionCard>
 
@@ -1358,7 +1341,7 @@ export default function ValueHistoryScreen() {
               </View>
 
               {historyStatus === 'empty' ? (
-                <EmptyMovers message="No History: valuation snapshots have not been written for this range yet." />
+                <EmptyMovers message="No valuation snapshots for this range yet." />
               ) : (
                 <ValueHistoryChart points={activePoints} />
               )}
@@ -1376,9 +1359,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   content: {
-    paddingHorizontal: 18,
-    paddingTop: 12,
+    paddingHorizontal: 16,
+    paddingTop: 2,
     paddingBottom: stackrTabContentPadding.standard,
+  },
+  topBar: {
+    minHeight: 36,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 0,
   },
   eyebrow: {
     ...typeScale.caption,
@@ -1394,10 +1383,10 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     position: 'relative',
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 1,
-    padding: 16,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 9,
     overflow: 'hidden',
     shadowColor: '#4B22A2',
     shadowOpacity: 0.08,
@@ -1408,7 +1397,7 @@ const styles = StyleSheet.create({
   heroCardInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 10,
   },
   heroCopy: {
     flex: 1,
@@ -1417,15 +1406,15 @@ const styles = StyleSheet.create({
   heroMiniRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 14,
+    marginTop: 10,
   },
   heroMiniPill: {
     flex: 1,
-    minHeight: 48,
-    borderRadius: 16,
+    minHeight: 42,
+    borderRadius: 14,
     borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
     justifyContent: 'center',
   },
   heroMiniLabel: {
@@ -1443,10 +1432,10 @@ const styles = StyleSheet.create({
   },
   pulseCard: {
     position: 'relative',
-    borderRadius: 22,
+    borderRadius: 20,
     borderWidth: 1,
-    padding: 15,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 10,
     overflow: 'hidden',
     shadowColor: '#4B22A2',
     shadowOpacity: 0.10,
@@ -1457,7 +1446,7 @@ const styles = StyleSheet.create({
   heroTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   heroLabel: {
     ...typeScale.caption,
@@ -1502,10 +1491,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   sectionCard: {
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
-    padding: 14,
-    marginBottom: 12,
+    padding: 12,
+    marginBottom: 10,
     shadowColor: '#1B2A4B',
     shadowOpacity: 0.07,
     shadowRadius: 16,
@@ -1515,7 +1504,7 @@ const styles = StyleSheet.create({
   sectionCardOpen: {
     borderWidth: 0,
     paddingHorizontal: 0,
-    paddingVertical: 4,
+    paddingVertical: 2,
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -1536,21 +1525,21 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   sectionBody: {
-    marginTop: 9,
+    marginTop: 7,
   },
   displayToggle: {
     alignSelf: 'flex-start',
-    minHeight: 44,
+    minHeight: 38,
     borderRadius: 999,
     borderWidth: 1,
     flexDirection: 'row',
-    padding: 4,
+    padding: 3,
     gap: 4,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   displayToggleButton: {
-    minWidth: 82,
-    minHeight: 36,
+    minWidth: 76,
+    minHeight: 30,
     borderWidth: 1,
     borderColor: 'transparent',
     borderRadius: 999,
@@ -1561,8 +1550,8 @@ const styles = StyleSheet.create({
   displayToggleText: {
     ...typeScale.buttonSecondary,
     ...tabularNumberStyle,
-    fontSize: 12,
-    lineHeight: 15,
+    fontSize: 11.5,
+    lineHeight: 14,
   },
   sellerGrid: {
     flexDirection: 'row',
@@ -1573,11 +1562,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     flexBasis: '47%',
     minWidth: 132,
-    minHeight: 76,
-    borderRadius: 16,
+    minHeight: 68,
+    borderRadius: 14,
     borderWidth: 1,
-    paddingHorizontal: 11,
-    paddingVertical: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     justifyContent: 'center',
   },
   sellerMetricLabel: {
@@ -1603,13 +1592,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   sellerEmpty: {
-    minHeight: 136,
-    borderRadius: 18,
+    minHeight: 108,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    padding: 16,
+    gap: 6,
+    padding: 12,
   },
   sellerEmptyTitle: {
     ...typeScale.cardTitle,
@@ -1783,9 +1772,9 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   emptyMovers: {
-    borderRadius: 18,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -1795,12 +1784,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   loadingCard: {
-    minHeight: 170,
-    borderRadius: 24,
+    minHeight: 128,
+    borderRadius: 20,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
+    padding: 14,
   },
   loadingText: {
     ...typeScale.support,
@@ -1810,8 +1799,8 @@ const styles = StyleSheet.create({
   historyValue: {
     ...typeScale.heroValue,
     ...tabularNumberStyle,
-    fontSize: 36,
-    lineHeight: 40,
+    fontSize: 32,
+    lineHeight: 36,
   },
   historyChange: {
     ...typeScale.numericStrong,
@@ -1828,13 +1817,13 @@ const styles = StyleSheet.create({
   },
   rangeRow: {
     flexDirection: 'row',
-    gap: 7,
-    marginTop: 14,
-    marginBottom: 8,
+    gap: 6,
+    marginTop: 10,
+    marginBottom: 6,
   },
   rangeButton: {
     flex: 1,
-    minHeight: 44,
+    minHeight: 38,
     borderRadius: 999,
     borderWidth: 1,
     alignItems: 'center',
@@ -1849,9 +1838,9 @@ const styles = StyleSheet.create({
   chartWrap: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 206,
-    marginTop: 8,
-    borderRadius: 22,
+    minHeight: 188,
+    marginTop: 6,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(123,86,200,0.22)',
     backgroundColor: 'rgba(123,86,200,0.08)',

@@ -25,13 +25,16 @@ import {
 import { BETA_TRADE_DEMO_MODE } from '../lib/config';
 import { LatestFeaturesModal } from '../components/LatestFeaturesModal';
 import { StackrPopupProvider } from '../components/StackrPopupProvider';
+import { StackrQueryProvider } from '../components/StackrQueryProvider';
 import { StackrBackdrop } from '../components/StackrBackdrop';
 import { stackrIcons } from '../lib/stackrIcons';
 import { stackrFonts, typeScale } from '../lib/typography';
 import { COLLECTOR_TABS, SELLER_TABS } from '../lib/routes';
 import { StackrCardActionIcon } from '../components/StackrScreen';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
+import { installRuntimeFetchDiagnostics } from '../lib/runtimeFetchDiagnostics';
 
+installRuntimeFetchDiagnostics();
 void SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function configureNativeTypographyDefaults() {
@@ -99,6 +102,7 @@ const shouldHideShellControls = (pathname: string) =>
   pathname.startsWith('/(auth)') ||
   pathname.startsWith('/login') ||
   pathname.startsWith('/signup') ||
+  pathname.startsWith('/binder/new') ||
   pathname.startsWith('/listing') ||
   pathname.startsWith('/grade') ||
   pathname.startsWith('/scan');
@@ -303,6 +307,10 @@ const PersistentTabBar = memo(function PersistentTabBar() {
 function AppNavigation() {
   const { theme } = useTheme();
   const [showDeferredShellExtras, setShowDeferredShellExtras] = useState(false);
+  const legacyRedirectScreenOptions = {
+    headerShown: false,
+    animation: 'none' as const,
+  };
 
   useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => {
@@ -343,7 +351,7 @@ function AppNavigation() {
                 >
                   <Stack.Screen name="index" options={{ headerShown: false }} />
                   <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
-                  <Stack.Screen name="search" options={{ title: '' }} />
+                  <Stack.Screen name="search" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="card/[id]" options={{ title: '' }} />
                   <Stack.Screen name="set/[id]" options={{ title: '' }} />
                   <Stack.Screen name="product/[id]" options={{ title: '' }} />
@@ -355,34 +363,53 @@ function AppNavigation() {
                   <Stack.Screen name="watchlist" options={{ title: '' }} />
                   <Stack.Screen name="value-history" options={{ title: 'Value History' }} />
                   <Stack.Screen name="listing/new" options={{ headerShown: false, title: '' }} />
-                  <Stack.Screen name="listing/[id]" options={{ title: '' }} />
-                  <Stack.Screen name="listing/camera" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="listing/[id]" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="listing/index" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="listing/camera" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="seller/index" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="seller/onboarding" options={{ title: '' }} />
                   <Stack.Screen name="seller/orders" options={{ title: '' }} />
-                  <Stack.Screen name="binder/new" options={{ title: '' }} />
+                  <Stack.Screen name="binder/new" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="binder/[id]" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
+                  <Stack.Screen name="binder/index" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="scan" options={{ title: '' }} />
-                  <Stack.Screen name="scan/camera" options={{ title: '' }} />
+                  <Stack.Screen name="scan/camera" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="scan/result" options={{ title: '' }} />
+                  <Stack.Screen name="scan/binder-page-result" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="scan/rectification-diagnostics" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="prices/index" options={{ title: '' }} />
                   <Stack.Screen name="community/profile/[userId]" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="community/index" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="price-builder/index" options={{ title: '' }} />
-                  <Stack.Screen name="user/[id]" options={{ title: '' }} />
+                  <Stack.Screen name="user/[id]" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="pokemon/[id]" options={{ title: '' }} />
-                  <Stack.Screen name="trade/[userId]" options={{ title: '' }} />
+                  <Stack.Screen name="trade/index" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="trade/[userId]" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="(tabs)/trade" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="(auth)/login" options={{ title: '' }} />
                   <Stack.Screen name="(auth)/callback" options={{ title: '' }} />
                   <Stack.Screen name="(auth)/reset-password" options={{ title: '' }} />
-                  <Stack.Screen name="callback" options={{ title: '' }} />
-                  <Stack.Screen name="reset-password" options={{ title: '' }} />
-                  <Stack.Screen name="auth/callback" options={{ title: '' }} />
-                  <Stack.Screen name="auth/reset-password" options={{ title: '' }} />
+                  <Stack.Screen name="callback" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="reset-password" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="auth/callback" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="auth/reset-password" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="notifications" options={{ title: '' }} />
                   <Stack.Screen name="settings" options={{ title: '' }} />
-                  <Stack.Screen name="camera" options={{ title: '' }} />
+                  <Stack.Screen name="admin/japanese-catalogue" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="admin/scanner-analytics" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="admin/quality-observability" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="admin/scan-lab" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="admin/recognition-feedback" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="admin/social-content" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="camera" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
+                  <Stack.Screen name="binder-legacy" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="collection" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="marketplace" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="market-place" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="list" options={legacyRedirectScreenOptions} />
+                  <Stack.Screen name="--/index" options={legacyRedirectScreenOptions} />
                 </Stack>
                 {showDeferredShellExtras ? <LatestFeaturesModal /> : null}
                 <PersistentTabBar />
@@ -442,7 +469,7 @@ export default function RootLayout() {
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
         <Image
-          source={require('../assets/rev2/01-brand/app/splash.png')}
+          source={require('../assets/rev2/01-brand/app/splash-ultra-hd.png')}
           style={{ width: '100%', height: '100%' }}
           resizeMode="cover"
         />
@@ -452,7 +479,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <AppShell />
+      <StackrQueryProvider>
+        <AppShell />
+      </StackrQueryProvider>
     </ThemeProvider>
   );
 }

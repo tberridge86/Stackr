@@ -1,0 +1,308 @@
+name: Catalogue Ingestion CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Snapshot provider data, mirror approved images, or publish one validated language shard
+        required: true
+        default: snapshot
+        type: choice
+        options: [snapshot, mirror, publish]
+      provider:
+        description: One-time catalogue snapshot provider
+        required: true
+        default: tcgdex
+        type: choice
+        options: [tcgdex, pikaqian]
+      language:
+        description: TCGdex language batch (PikaQian is always zh-cn)
+        required: true
+        default: en
+        type: choice
+        options: [en, ja, zh-tw, zh-cn, ko]
+      offset:
+        description: Zero-based provider card offset
+        required: true
+        default: '0'
+        type: string
+      set_id:
+        description: Optional comma-separated exact provider set IDs for a targeted snapshot
+        required: false
+        default: ''
+        type: string
+      limit:
+        description: Provider cards in this batch (maximum 500)
+        required: true
+        default: '250'
+        type: string
+      batches:
+        description: Consecutive batches to run (maximum 60)
+        required: true
+        default: '1'
+        type: string
+      write_concurrency:
+        description: Concurrent staging database writes (maximum 8)
+        required: true
+        default: '4'
+        type: string
+      mirror_concurrency:
+        description: Concurrent provider image transfers (maximum 6)
+        required: true
+        default: '4'
+        type: string
+      include_assets:
+        description: Store approved provider image references in the same pass
+        required: true
+        default: true
+        type: boolean
+      report_quality:
+        description: Run the catalogue quality report after this batch
+        required: true
+        default: true
+        type: boolean
+      controlled_staging:
+        description: Publish one staging-only set snapshot for API verification
+        required: true
+        default: false
+        type: boolean
+      coverage_limited:
+        description: Publish all approved imported records while recording provider coverage gaps
+        required: true
+        default: false
+        type: boolean
+      publish_version:
+        description: Shared catalogue version label required for publish operations
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ inputs.operation == 'mirror' && format('stackr-staging-catalogue-mirror-{0}', inputs.provider) || 'stackr-staging-database-maintenance' }}
+  cancel-in-progress: false
+
+jobs:
+  ingest-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: staging
+    env:
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      PIKAQIAN_API_KEY: ${{ secrets.PIKAQIAN_API_KEY }}
+      PIKAQIAN_SNAPSHOT_URL: ${{ secrets.PIKAQIAN_SNAPSHOT_URL }}
+      PIKAQIAN_SNAPSHOT_DECRYPTION_KEY: ${{ secrets.PIKAQIAN_SNAPSHOT_DECRYPTION_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      CATALOGUE_PROVIDER: ${{ inputs.provider }}
+      CATALOGUE_LANGUAGE: ${{ inputs.language }}
+      CATALOGUE_START_OFFSET: ${{ inputs.offset }}
+      CATALOGUE_SET_ID: ${{ inputs.set_id }}
+      CATALOGUE_BATCH_LIMIT: ${{ inputs.limit }}
+      CATALOGUE_BATCH_COUNT: ${{ inputs.batches }}
+      CATALOGUE_WRITE_CONCURRENCY: ${{ inputs.write_concurrency }}
+      CATALOGUE_MIRROR_CONCURRENCY: ${{ inputs.mirror_concurrency }}
+      CATALOGUE_INCLUDE_ASSETS: ${{ inputs.include_assets }}
+      CATALOGUE_CONTROLLED_STAGING: ${{ inputs.controlled_staging }}
+      CATALOGUE_COVERAGE_LIMITED: ${{ inputs.coverage_limited }}
+      CATALOGUE_PUBLISH_VERSION: ${{ inputs.publish_version }}
+      TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - name: Check out pinned TCGdex catalogue source
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: tcgdex/cards-database
+          ref: ${{ env.TCGDEX_SNAPSHOT_COMMIT }}
+          path: .tcgdex-source
+          fetch-depth: 1
+      - name: Set up Bun for the pinned TCGdex compiler
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: 1.2.22
+      - run: npm ci
+      - name: Install catalogue image pipeline dependencies
+        if: inputs.operation == 'mirror'
+        run: npm ci --prefix backend
+      - name: Validate bounded batch inputs
+        shell: bash
+        run: |
+          [[ "$CATALOGUE_START_OFFSET" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_BATCH_LIMIT" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_BATCH_COUNT" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_WRITE_CONCURRENCY" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_MIRROR_CONCURRENCY" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$CATALOGUE_CONTROLLED_STAGING" == "true" || "$CATALOGUE_CONTROLLED_STAGING" == "false" ]] || exit 1
+          [[ "$CATALOGUE_COVERAGE_LIMITED" == "true" || "$CATALOGUE_COVERAGE_LIMITED" == "false" ]] || exit 1
+          [[ -z "$CATALOGUE_SET_ID" || "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+)*$ ]] || exit 1
+          (( CATALOGUE_BATCH_LIMIT >= 1 && CATALOGUE_BATCH_LIMIT <= 500 )) || exit 1
+          (( CATALOGUE_BATCH_COUNT >= 1 && CATALOGUE_BATCH_COUNT <= 60 )) || exit 1
+          (( CATALOGUE_WRITE_CONCURRENCY >= 1 && CATALOGUE_WRITE_CONCURRENCY <= 8 )) || exit 1
+          (( CATALOGUE_MIRROR_CONCURRENCY >= 1 && CATALOGUE_MIRROR_CONCURRENCY <= 6 )) || exit 1
+          if [[ "${{ inputs.operation }}" == "snapshot" && "${{ inputs.provider }}" == "tcgdex" ]]; then
+            [[ -n "$CATALOGUE_SET_ID" ]] || { echo 'Pinned TCGdex snapshots require one or more exact set IDs.'; exit 1; }
+          fi
+          if [[ "${{ inputs.operation }}" == "publish" ]]; then
+            [[ "$CATALOGUE_PUBLISH_VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{7,159}$ ]] \
+              || { echo 'Publish operations require a safe 8-160 character version label.'; exit 1; }
+            if [[ "$CATALOGUE_CONTROLLED_STAGING" == "true" ]]; then
+              [[ "$CATALOGUE_SET_ID" =~ ^[A-Za-z0-9._:-]+$ ]] \
+                || { echo 'Controlled staging publication requires exactly one set ID.'; exit 1; }
+              [[ "$CATALOGUE_PUBLISH_VERSION" == staging-* ]] \
+                || { echo 'Controlled staging publication versions must start with staging-.'; exit 1; }
+            fi
+            if [[ "$CATALOGUE_CONTROLLED_STAGING" == "true" && "$CATALOGUE_COVERAGE_LIMITED" == "true" ]]; then
+              echo 'Controlled staging and coverage-limited publication are mutually exclusive.'
+              exit 1
+            fi
+          fi
+      - name: Scope the pinned TCGdex compiler
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        shell: bash
+        run: |
+          git -C "$GITHUB_WORKSPACE/.tcgdex-source" apply --unidiff-zero --whitespace=error \
+            "$GITHUB_WORKSPACE/catalogue/tcgdex-pinned-compiler.patch"
+      - name: Install pinned TCGdex compiler dependencies
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        working-directory: .tcgdex-source
+        run: bun install --frozen-lockfile
+      - name: Install pinned TCGdex server dependencies
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        working-directory: .tcgdex-source/server
+        run: bun install --frozen-lockfile
+      - name: Compile the pinned TCGdex language snapshot
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        working-directory: .tcgdex-source/server
+        env:
+          TCGCSV_USER_AGENT: Stackr/1.0 (stackrtcg.com)
+          TCGDEX_COMPILE_LANGS: ${{ inputs.language }}
+          TCGDEX_SHALLOW_SNAPSHOT: '1'
+        run: |
+          bun run compile
+          test -s "$GITHUB_WORKSPACE/.tcgdex-source/server/generated/$CATALOGUE_LANGUAGE/cards.json"
+          test -s "$GITHUB_WORKSPACE/.tcgdex-source/server/generated/$CATALOGUE_LANGUAGE/sets.json"
+      - name: Prepare encrypted PikaQian snapshot
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian' && env.PIKAQIAN_SNAPSHOT_URL != ''
+        shell: bash
+        run: |
+          [[ -n "$PIKAQIAN_SNAPSHOT_DECRYPTION_KEY" ]] || { echo 'PikaQian snapshot key is not configured'; exit 1; }
+          encrypted="$RUNNER_TEMP/pikaqian-snapshot.enc.json"
+          output="$RUNNER_TEMP/pikaqian-snapshot.json"
+          curl --fail --silent --show-error --location "$PIKAQIAN_SNAPSHOT_URL" --output "$encrypted"
+          SNAPSHOT_INPUT="$encrypted" SNAPSHOT_OUTPUT="$output" node --input-type=module <<'NODE'
+          import { createDecipheriv } from 'node:crypto';
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { gunzipSync } from 'node:zlib';
+
+          const envelope = JSON.parse(readFileSync(process.env.SNAPSHOT_INPUT, 'utf8'));
+          const key = Buffer.from(process.env.PIKAQIAN_SNAPSHOT_DECRYPTION_KEY, 'hex');
+          if (key.length !== 32 || envelope.version !== 1 || envelope.algorithm !== 'aes-256-gcm+gzip') {
+            throw new Error('Invalid encrypted PikaQian snapshot envelope.');
+          }
+          const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(envelope.iv, 'base64'));
+          decipher.setAuthTag(Buffer.from(envelope.tag, 'base64'));
+          const compressed = Buffer.concat([
+            decipher.update(Buffer.from(envelope.ciphertext, 'base64')),
+            decipher.final(),
+          ]);
+          writeFileSync(process.env.SNAPSHOT_OUTPUT, gunzipSync(compressed), { mode: 0o600 });
+          NODE
+          echo "PIKAQIAN_CATALOGUE_FILE=$output" >> "$GITHUB_ENV"
+          rm -f "$encrypted"
+      - name: Import exact sets from the pinned TCGdex snapshot
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
+        shell: bash
+        run: |
+          asset_args=()
+          if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
+            asset_args+=(--include-images --approved-only --assetLicenceStatus=approved)
+          fi
+          npx tsx scripts/catalogue-master.ts apply \
+            --provider=tcgdex \
+            --language="$CATALOGUE_LANGUAGE" \
+            --setIds="$CATALOGUE_SET_ID" \
+            --tcgdexSnapshotRoot="$GITHUB_WORKSPACE/.tcgdex-source/server/generated" \
+            --tcgdexSnapshotVersion="$TCGDEX_SNAPSHOT_COMMIT" \
+            --licenceStatus=approved \
+            --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+            --target=staging \
+            --apply \
+            "${asset_args[@]}"
+
+      - name: Import bounded PikaQian snapshot range
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian'
+        shell: bash
+        run: |
+          [[ -n "$PIKAQIAN_API_KEY" || -n "$PIKAQIAN_CATALOGUE_FILE" ]] || { echo 'PikaQian API key or snapshot is not configured'; exit 1; }
+          asset_args=(--licenceStatus=approved)
+          if [[ "$CATALOGUE_INCLUDE_ASSETS" == "true" ]]; then
+            asset_args+=(--include-images --approved-only --assetLicenceStatus=approved)
+          fi
+          scope_args=(--setOffset="$CATALOGUE_START_OFFSET" --maxSets="$CATALOGUE_BATCH_LIMIT")
+          if [[ -n "$CATALOGUE_SET_ID" ]]; then
+            scope_args=(--setId="$CATALOGUE_SET_ID")
+          fi
+          npx tsx scripts/catalogue-master.ts apply \
+            --provider=pikaqian \
+            --language=zh-cn \
+            --writeConcurrency="$CATALOGUE_WRITE_CONCURRENCY" \
+            --target=staging \
+            --apply \
+            "${scope_args[@]}" \
+            "${asset_args[@]}"
+      - name: Report language quality (advisory)
+        if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex' && inputs.report_quality
+        continue-on-error: true
+        run: >-
+          npm run catalogue:ingest -- quality-report
+          --language="${{ inputs.language }}"
+          --limit=500
+
+      - name: Report PikaQian quality (advisory)
+        if: inputs.operation == 'snapshot' && inputs.provider == 'pikaqian' && inputs.report_quality
+        continue-on-error: true
+        run: >-
+          npm run catalogue:ingest -- quality-report
+          --language=zh-cn
+          --limit=500
+
+      - name: Mirror approved provider images into Stackr storage
+        if: inputs.operation == 'mirror'
+        shell: bash
+        run: |
+          for (( batch=0; batch<CATALOGUE_BATCH_COUNT; batch++ )); do
+            echo "Mirroring bounded batch $((batch + 1)) of $CATALOGUE_BATCH_COUNT for $CATALOGUE_PROVIDER"
+            node scripts/mirror-approved-catalogue-assets.mjs \
+              --provider="$CATALOGUE_PROVIDER" \
+              --limit="$CATALOGUE_BATCH_LIMIT" \
+              --concurrency="$CATALOGUE_MIRROR_CONCURRENCY" \
+              --target=staging
+          done
+      - name: Publish validated language shard
+        if: inputs.operation == 'publish'
+        shell: bash
+        run: |
+          controlled_args=()
+          if [[ "$CATALOGUE_CONTROLLED_STAGING" == "true" ]]; then
+            controlled_args+=(--controlled-staging --setId="$CATALOGUE_SET_ID")
+          fi
+          if [[ "$CATALOGUE_COVERAGE_LIMITED" == "true" ]]; then
+            controlled_args+=(--coverage-limited)
+          fi
+          npx tsx scripts/catalogue-master.ts publish \
+            --language="$CATALOGUE_LANGUAGE" \
+            --version="$CATALOGUE_PUBLISH_VERSION" \
+            --target=staging \
+            "${controlled_args[@]}"
+      - name: Remove decrypted PikaQian snapshot
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/pikaqian-snapshot.json" "$RUNNER_TEMP/pikaqian-snapshot.enc.json"

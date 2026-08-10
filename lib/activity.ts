@@ -52,7 +52,7 @@ export async function fetchActivityFeed(): Promise<{
   const activityIds = posts.map((post) => post.id);
 
   const { data: profiles } = await supabase
-    .from('profiles')
+    .from('profile_public_directory')
     .select('id, collector_name, avatar_preset')
     .in('id', userIds);
 

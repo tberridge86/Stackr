@@ -2,9 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  Modal,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -14,6 +12,7 @@ import {
 } from 'react-native';
 import { Text } from './Text';
 import { useTheme } from './theme-context';
+import { StackrCenterModal } from './StackrModalSystem';
 import { typeScale } from '../lib/typography';
 
 type StackrPopupRequest = {
@@ -131,25 +130,19 @@ export function StackrPopupProvider({ children }: { children: React.ReactNode })
   return (
     <>
       {children}
-      <Modal
+      <StackrCenterModal
         visible={Boolean(activePopup)}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        onRequestClose={dismissPopup}
+        onClose={dismissPopup}
+        dismissible={Boolean(activePopup?.options?.cancelable)}
+        contentStyle={[
+          styles.card,
+          {
+            backgroundColor: theme.colors.card,
+            borderColor: theme.colors.border,
+            shadowOpacity: theme.dark ? 0.32 : 0.14,
+          },
+        ]}
       >
-        <View style={styles.backdrop}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={dismissPopup} />
-          <View
-            style={[
-              styles.card,
-              {
-                backgroundColor: theme.colors.card,
-                borderColor: theme.colors.border,
-                shadowOpacity: theme.dark ? 0.32 : 0.14,
-              },
-            ]}
-          >
             <View style={styles.header}>
               <View style={[styles.iconBadge, { backgroundColor: `${toneColor}18`, borderColor: `${toneColor}33` }]}>
                 <Ionicons name={tone.icon} size={23} color={toneColor} />
@@ -214,32 +207,15 @@ export function StackrPopupProvider({ children }: { children: React.ReactNode })
                 );
               })}
             </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      </StackrCenterModal>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(7, 10, 32, 0.54)',
-    justifyContent: 'center',
-    paddingHorizontal: 22,
-    paddingVertical: 32,
-  },
   card: {
-    width: '100%',
-    maxWidth: 430,
-    alignSelf: 'center',
     borderRadius: 24,
-    borderWidth: 1,
     padding: 16,
-    shadowColor: '#000',
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 10,
   },
   header: {
     flexDirection: 'row',

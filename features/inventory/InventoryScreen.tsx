@@ -7,7 +7,6 @@ import {
   Animated,
   FlatList,
   Image,
-  Modal,
   RefreshControl,
   ScrollView,
   TextInput,
@@ -17,8 +16,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FeatureTipGate } from '../../components/FeatureTipModal';
-import { StackrBackdrop, StackrHeroBackdrop } from '../../components/StackrBackdrop';
+import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrImage } from '../../components/StackrImage';
+import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { Text } from '../../components/Text';
 import { useAppMode } from '../../components/app-mode-context';
 import { StackrCardActionIcon, StackrPageTitle } from '../../components/StackrScreen';
@@ -58,6 +58,7 @@ import {
   searchMarketProducts,
 } from '../../lib/productSearch';
 import type { ProductLookupType } from '../../lib/productSearch';
+import { fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -751,31 +752,31 @@ function SellerSessionCard({
 }) {
   const { theme } = useTheme();
   return (
-    <View style={{ minHeight: 72, borderRadius: 18, padding: 16, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
+    <View style={{ minHeight: 64, borderRadius: 16, padding: 12, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
       {/* TODO seller sessions: persist session name/type/start time when seller_sessions exists. */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 17, lineHeight: 22, fontWeight: '900' }}>Store Inventory</Text>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 3 }} numberOfLines={1}>
+          <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900' }}>Store Inventory</Text>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 2 }} numberOfLines={1}>
             Manual session - {totalStock} in stock - {money(inventoryValue)} inventory value
           </Text>
         </View>
         <TouchableOpacity
           onPress={onNewSession}
           activeOpacity={0.78}
-          style={{ minHeight: 44, borderRadius: 14, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}
+          style={{ minHeight: 38, borderRadius: 13, paddingHorizontal: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}
         >
           <Text style={{ color: theme.colors.primary, fontSize: 12, lineHeight: 16, fontWeight: '900' }}>New session</Text>
         </TouchableOpacity>
       </View>
-      <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-        <View style={{ flex: 1, borderRadius: 14, padding: 10, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700' }}>Scanned today</Text>
-          <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900', marginTop: 2 }}>{scannedToday}</Text>
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 9 }}>
+        <View style={{ flex: 1, borderRadius: 13, padding: 9, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700' }}>Scanned today</Text>
+          <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900', marginTop: 1 }}>{scannedToday}</Text>
         </View>
-        <View style={{ flex: 1, borderRadius: 14, padding: 10, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700' }}>Needs review</Text>
-          <Text style={{ color: pendingCount > 0 ? VAULT_ORANGE : VAULT_PURPLE, fontSize: 18, lineHeight: 23, fontWeight: '900', marginTop: 2 }}>{pendingCount}</Text>
+        <View style={{ flex: 1, borderRadius: 13, padding: 9, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700' }}>Needs review</Text>
+          <Text style={{ color: pendingCount > 0 ? VAULT_ORANGE : VAULT_PURPLE, fontSize: 16, lineHeight: 21, fontWeight: '900', marginTop: 1 }}>{pendingCount}</Text>
         </View>
       </View>
     </View>
@@ -850,9 +851,9 @@ function StockReasonChips({
             accessibilityRole="button"
             accessibilityState={{ selected }}
             style={{
-              minHeight: 44,
+              minHeight: 36,
               borderRadius: 999,
-              paddingHorizontal: 14,
+              paddingHorizontal: 12,
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: selected ? VAULT_PURPLE_SOFT : theme.colors.card,
@@ -860,7 +861,7 @@ function StockReasonChips({
               borderColor: selected ? 'rgba(105,56,245,0.44)' : theme.colors.border,
             }}
           >
-            <Text style={{ color: selected ? VAULT_PURPLE : theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '900' }}>
+            <Text style={{ color: selected ? VAULT_PURPLE : theme.colors.textSoft, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }}>
               {option.label}
             </Text>
           </TouchableOpacity>
@@ -888,22 +889,22 @@ function InventoryScanEntryCard({
       activeOpacity={0.86}
       accessibilityRole="button"
       accessibilityLabel="Open inventory scanner"
-      style={{ minHeight: 108, borderRadius: 24, padding: 18, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: inbound ? 'rgba(105,56,245,0.26)' : 'rgba(249,115,22,0.28)', ...cardShadow }}
+      style={{ minHeight: 88, borderRadius: 18, padding: 14, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: inbound ? 'rgba(105,56,245,0.26)' : 'rgba(249,115,22,0.28)', ...cardShadow }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <View style={{ width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: inbound ? VAULT_PURPLE : VAULT_ORANGE_SOFT, borderWidth: 1, borderColor: inbound ? VAULT_PURPLE : 'rgba(249,115,22,0.30)' }}>
-          <StackrCardActionIcon source={stackrIcons.scanCard} frameSize={40} artworkSize={32} />
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ width: 44, height: 44, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: inbound ? VAULT_PURPLE : VAULT_ORANGE_SOFT, borderWidth: 1, borderColor: inbound ? VAULT_PURPLE : 'rgba(249,115,22,0.30)' }}>
+          <StackrCardActionIcon source={stackrIcons.scanCard} frameSize={36} artworkSize={29} />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900' }}>Scan inventory</Text>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 4 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 16.5, lineHeight: 21, fontWeight: '900' }}>Scan inventory</Text>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, lineHeight: 17, fontWeight: '700', marginTop: 3 }} numberOfLines={2}>
             {inbound ? 'Scan cards into the intake batch.' : 'Scan cards into the out cart before completing a sale or trade.'}
           </Text>
-          <Text style={{ color: activeColor, fontSize: 12, lineHeight: 16, fontWeight: '900', marginTop: 8 }} numberOfLines={1}>
+          <Text style={{ color: activeColor, fontSize: 11.5, lineHeight: 15, fontWeight: '900', marginTop: 5 }} numberOfLines={1}>
             {reasonLabel}
           </Text>
         </View>
-        <Ionicons name="chevron-forward" size={22} color={activeColor} />
+        <Ionicons name="chevron-forward" size={20} color={activeColor} />
       </View>
     </TouchableOpacity>
   );
@@ -913,9 +914,9 @@ function SellerModeHelperNote({ mode }: { mode: VaultModeKey }) {
   const { theme } = useTheme();
   const inbound = mode === 'inbound';
   return (
-    <View style={{ minHeight: 52, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: inbound ? VAULT_PURPLE_SOFT : '#FFF7ED', borderWidth: 1, borderColor: inbound ? 'rgba(105,56,245,0.20)' : '#FED7AA' }}>
-      <Ionicons name={inbound ? 'checkmark-circle-outline' : 'shield-checkmark-outline'} size={20} color={inbound ? VAULT_PURPLE : '#C2410C'} />
-      <Text style={{ flex: 1, color: theme.colors.text, fontSize: 13, lineHeight: 18, fontWeight: '700' }}>
+    <View style={{ minHeight: 44, borderRadius: 15, paddingHorizontal: 12, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 9, backgroundColor: inbound ? VAULT_PURPLE_SOFT : '#FFF7ED', borderWidth: 1, borderColor: inbound ? 'rgba(105,56,245,0.20)' : '#FED7AA' }}>
+      <Ionicons name={inbound ? 'checkmark-circle-outline' : 'shield-checkmark-outline'} size={18} color={inbound ? VAULT_PURPLE : '#C2410C'} />
+      <Text style={{ flex: 1, color: theme.colors.text, fontSize: 12.5, lineHeight: 17, fontWeight: '700' }}>
         {inbound ? 'High-confidence scans go into a reviewable intake batch.' : 'Cards are only removed after you complete the transaction.'}
       </Text>
     </View>
@@ -951,11 +952,11 @@ function SellerSessionStats({
         { label: 'Needs review', value: String(reviewCount) },
       ];
   return (
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
       {stats.map((stat) => (
-        <View key={stat.label} style={{ flexGrow: 1, flexBasis: '30%', minWidth: 96, borderRadius: 18, padding: 14, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700' }}>{stat.label}</Text>
-          <Text style={{ color: inbound ? VAULT_PURPLE : '#C2410C', fontSize: 19, lineHeight: 24, fontWeight: '900', marginTop: 4 }} numberOfLines={1}>
+        <View key={stat.label} style={{ flexGrow: 1, flexBasis: '30%', minWidth: 92, borderRadius: 15, padding: 10, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700' }}>{stat.label}</Text>
+          <Text style={{ color: inbound ? VAULT_PURPLE : '#C2410C', fontSize: 16, lineHeight: 21, fontWeight: '900', marginTop: 2 }} numberOfLines={1}>
             {stat.value}
           </Text>
         </View>
@@ -1002,20 +1003,20 @@ function SellerQueuePreview({
         status: `${line.item.quantity} available`,
       }));
   return (
-    <View style={{ borderRadius: 20, padding: 16, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+    <View style={{ borderRadius: 16, padding: 12, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 9 }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900' }}>{title}</Text>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 2 }}>
+          <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900' }}>{title}</Text>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 1 }}>
             {hasRows ? `${rows.length} line${rows.length === 1 ? '' : 's'} ready` : empty}
           </Text>
         </View>
         <TouchableOpacity
           onPress={hasRows ? onComplete : onReview}
           activeOpacity={0.78}
-          style={{ minHeight: 44, borderRadius: 14, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: hasRows ? VAULT_PURPLE : theme.colors.surface, borderWidth: 1, borderColor: hasRows ? VAULT_PURPLE : theme.colors.border }}
+          style={{ minHeight: 38, borderRadius: 13, paddingHorizontal: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: hasRows ? VAULT_PURPLE : theme.colors.surface, borderWidth: 1, borderColor: hasRows ? VAULT_PURPLE : theme.colors.border }}
         >
-          <Text style={{ color: hasRows ? '#FFFFFF' : theme.colors.primary, fontSize: 12, lineHeight: 16, fontWeight: '900' }}>
+          <Text style={{ color: hasRows ? '#FFFFFF' : theme.colors.primary, fontSize: 11.5, lineHeight: 15, fontWeight: '900' }}>
             {hasRows ? (inbound ? 'Complete intake' : 'Complete transaction') : (inbound ? 'Review batch' : 'Review cart')}
           </Text>
         </TouchableOpacity>
@@ -1023,11 +1024,11 @@ function SellerQueuePreview({
       {hasRows ? (
         <View style={{ gap: 8 }}>
           {rows.map((row) => (
-            <View key={row.key} style={{ minHeight: 68, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 16, padding: 8, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+            <View key={row.key} style={{ minHeight: 58, flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 14, padding: 7, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
               {row.image ? (
-                <Image source={{ uri: row.image }} resizeMode="contain" style={{ width: 40, height: 56, borderRadius: 6 }} />
+                <Image source={{ uri: row.image }} resizeMode="contain" style={{ width: 36, height: 50, borderRadius: 6 }} />
               ) : (
-                <View style={{ width: 40, height: 56, borderRadius: 8, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center' }}>
+                <View style={{ width: 36, height: 50, borderRadius: 8, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center' }}>
                   <Ionicons name="albums-outline" size={20} color={VAULT_PURPLE} />
                 </View>
               )}
@@ -1044,8 +1045,8 @@ function SellerQueuePreview({
           ))}
         </View>
       ) : (
-        <View style={{ minHeight: 64, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, padding: 12 }}>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', textAlign: 'center' }}>{empty}</Text>
+        <View style={{ minHeight: 50, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, padding: 10 }}>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', textAlign: 'center' }}>{empty}</Text>
         </View>
       )}
     </View>
@@ -1094,6 +1095,7 @@ export default function InventoryScreen() {
   const [maxPrice, setMaxPrice] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [saleOpen, setSaleOpen] = useState(false);
+  const [sessionInfoOpen, setSessionInfoOpen] = useState(false);
   const [saleCart, setSaleCart] = useState<SaleCartLine[]>([]);
   const [salePrice, setSalePrice] = useState('');
   const [, setActiveFlow] = useState<InventoryFlow | null>(null);
@@ -1267,20 +1269,26 @@ export default function InventoryScreen() {
     try {
       setSearching(true);
       const data = await searchLocalPokemonCards<any>(trimmed, {
+        language: 'all',
         limit: 60,
-        select: 'id,name,number,rarity,set_id,image_small,image_large,raw_data',
+        select: 'id,name,language,number,rarity,set_id,image_small,image_large,raw_data',
       });
 
       const ids = (data ?? []).map((row: any) => row.id);
       const snapshotMap = new Map<string, any>();
       if (ids.length) {
-        const { data: snapshots } = await supabase
-          .from('market_price_snapshots')
-          .select('card_id,tcg_mid,ebay_average,cardmarket_trend,snapshot_date')
-          .in('card_id', ids)
-          .order('snapshot_date', { ascending: false });
-        for (const snap of snapshots ?? []) {
-          if (!snapshotMap.has(snap.card_id)) snapshotMap.set(snap.card_id, snap);
+        const snapshots = await fetchStackrPriceSnapshots(ids);
+        for (const id of ids) {
+          const snap = snapshots.get(id);
+          if (!snap) continue;
+          snapshotMap.set(id, {
+            card_id: id,
+            tcg_mid: snap.market_central,
+            ebay_average: null,
+            cardmarket_trend: null,
+            snapshot_date: snap.snapshot_date,
+            stackr_market: snap,
+          });
         }
       }
 
@@ -1635,12 +1643,9 @@ export default function InventoryScreen() {
   }, [items, pendingStockOut, persist, recordMovement, syncBinderScanOut]);
 
   const identifyScannedCard = useCallback(async (base64Image: string) => {
-    const response = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ base64Image }),
-    });
-    return response.json().catch(() => null);
+    const { identifyCardsDetailed } = await import('../../lib/recognition/orchestrator');
+    const result = await identifyCardsDetailed([base64Image]);
+    return (result.cards[0] ?? null) as any;
   }, []);
 
   const findStockOutCandidates = useCallback((parsed: any) => {
@@ -1804,25 +1809,11 @@ export default function InventoryScreen() {
   const selectedVaultModeOption =
     vaultModeOptions.find((option) => option.key === vaultMode) ?? vaultModeOptions[0];
   const selectedVaultModeIcon = vaultMode === 'inbound' ? stackrIcons.inbound : stackrIcons.outbound;
-  const sessionActionType = vaultMode === 'inbound' ? 'scan_in' : 'scan_out';
   const todayStart = useMemo(() => {
     const start = new Date();
     start.setHours(0, 0, 0, 0);
     return start.getTime();
   }, []);
-  const todayModeMovements = useMemo(
-    () => movements.filter((movement) =>
-      movement.action_type === sessionActionType &&
-      new Date(movement.created_at).getTime() >= todayStart
-    ),
-    [movements, sessionActionType, todayStart]
-  );
-  const todayModeQuantity = todayModeMovements.reduce((sum, movement) => sum + movement.quantity, 0);
-  const todayModeValue = todayModeMovements.reduce(
-    (sum, movement) => sum + (movement.value_at_time ?? 0) * movement.quantity,
-    0
-  );
-  const terminalRecentMovements = movements.slice(0, 5);
   const scannedTodayTotal = movements
     .filter((movement) => new Date(movement.created_at).getTime() >= todayStart)
     .reduce((sum, movement) => sum + movement.quantity, 0);
@@ -2236,8 +2227,8 @@ export default function InventoryScreen() {
         ]}
       />
 
-      <View style={{ paddingHorizontal: width < 360 ? SELLER_TOKENS.layout.screenPaddingSmall : SELLER_TOKENS.layout.screenPadding, paddingTop: 8, flex: 1 }}>
-        <View style={{ minHeight: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+      <View style={{ paddingHorizontal: width < 360 ? SELLER_TOKENS.layout.screenPaddingSmall : SELLER_TOKENS.layout.screenPadding, paddingTop: 4, flex: 1 }}>
+        <View style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <StackrPageTitle title="Seller Mode" accentText="Mode" />
             <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 14, lineHeight: 19, fontWeight: '700' }}>
@@ -2271,7 +2262,7 @@ export default function InventoryScreen() {
           inventoryValue={inventoryValue}
           scannedToday={scannedTodayTotal}
           pendingCount={sellerReviewCount}
-          onNewSession={() => Alert.alert('Seller sessions coming soon', 'This screen uses Store Inventory until seller sessions are available.')}
+          onNewSession={() => setSessionInfoOpen(true)}
         />
 
         <StockModeSegmentedControl mode={vaultMode} onChange={selectVaultMode} />
@@ -2336,90 +2327,6 @@ export default function InventoryScreen() {
             )) : (
               <View style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
                 <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 13 }}>No seller activity yet.</Text>
-              </View>
-            )
-          )}
-        </View>
-
-        <View style={{ display: 'none', position: 'relative', borderRadius: 24, padding: 12, marginBottom: 10, overflow: 'hidden', backgroundColor: `${theme.colors.card}CC`, borderWidth: 1, borderColor: theme.colors.border }}>
-          <StackrHeroBackdrop opacity={0.24} />
-        <View style={{ marginBottom: 12 }}>
-          <StackrPageTitle title="Seller Mode" accentText="Mode" />
-          <Text style={{ color: theme.colors.textSoft, marginTop: 2, fontSize: 13, fontWeight: '700' }}>
-            {totalStock} owned · {money(inventoryValue)} estimated value
-          </Text>
-        </View>
-
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
-          {vaultModeOptions.map((option) => (
-            <VaultModeCard
-              key={option.key}
-              option={option}
-              selected={vaultMode === option.key}
-              onPress={() => selectVaultMode(option.key)}
-            />
-          ))}
-        </View>
-
-        <VaultTerminalPanel
-          mode={vaultMode}
-          onScan={runVaultScan}
-          todayQuantity={todayModeQuantity}
-          todayValue={todayModeValue}
-          recentMovements={terminalRecentMovements}
-          scanFeedback={scanFeedback}
-          feedbackAnim={feedbackAnim}
-        />
-        </View>
-
-        <View style={{ display: 'none', backgroundColor: theme.colors.card, borderRadius: 16, padding: 12, borderWidth: 1, borderColor: theme.colors.border, marginBottom: 10, ...cardShadow }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: historyOpen ? 8 : 0 }}>
-            <TouchableOpacity onPress={() => setHistoryOpen((open) => !open)} style={{ flex: 1, minWidth: 0, paddingRight: 10 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '900' }}>Inventory history</Text>
-                <Ionicons name={historyOpen ? 'chevron-up' : 'chevron-down'} size={16} color={theme.colors.textSoft} />
-              </View>
-              {!historyOpen && (
-                <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 2 }}>
-                  {recentMovements[0]
-                    ? `${recentMovements[0].action_type === 'scan_in' ? 'In' : 'Out'}: ${recentMovements[0].card_name}`
-                    : 'No Scan In or Scan Out history yet.'}
-                </Text>
-              )}
-            </TouchableOpacity>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <TouchableOpacity onPress={startSale} style={{ borderRadius: 12, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                <Ionicons name="receipt-outline" size={15} color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 11 }}>Build sale</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={refreshMovements} style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-                <Ionicons name="refresh" size={17} color={theme.colors.primary} />
-              </TouchableOpacity>
-            </View>
-          </View>
-          {historyOpen && (
-            recentMovements.length ? recentMovements.map((movement) => (
-              <View key={movement.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
-                <View style={{ width: 34, height: 34, borderRadius: 12, backgroundColor: movement.action_type === 'scan_in' ? '#DCFCE7' : '#FFEDD5', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
-                  <Image
-                    source={movement.action_type === 'scan_in' ? stackrIcons.inbound : stackrIcons.outbound}
-                    resizeMode="contain"
-                    style={{ width: 27, height: 27 }}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
-                    {movement.action_type === 'scan_in' ? 'Scanned in' : 'Scanned out'}: {movement.card_name}
-                  </Text>
-                  <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 11, marginTop: 2 }}>
-                    {new Date(movement.created_at).toLocaleDateString()} · {movement.reason}{movement.binder_name ? ` · ${movement.binder_name}` : ''}{movement.value_at_time != null ? ` · ${money(movement.value_at_time * movement.quantity)}` : ''}
-                  </Text>
-                </View>
-                <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>x{movement.quantity}</Text>
-              </View>
-            )) : (
-              <View style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: theme.colors.border }}>
-                <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 13 }}>No Scan In or Scan Out history yet.</Text>
               </View>
             )
           )}
@@ -2517,6 +2424,7 @@ export default function InventoryScreen() {
               placeholder={stockScanMode === 'add' ? (lookupType === 'raw_card' ? 'Search card to scan in...' : `Search ${productLookupLabel(lookupType).toLowerCase()}...`) : 'Search currently owned items...'}
               placeholderTextColor={theme.colors.textSoft}
               autoCorrect={false}
+              spellCheck={false}
               autoCapitalize="words"
               style={{ flex: 1, color: theme.colors.text, paddingVertical: 11, fontWeight: '800' }}
             />
@@ -2935,411 +2843,344 @@ export default function InventoryScreen() {
           contentContainerStyle={{ paddingBottom: stackrTabContentPadding.standard }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} tintColor={theme.colors.primary} />}
           ListEmptyComponent={
-            <View style={{ alignItems: 'center', paddingTop: 55, paddingHorizontal: 24 }}>
-              <Ionicons name="file-tray-full-outline" size={44} color={theme.colors.primary} />
-              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 18, marginTop: 12 }}>No inventory yet</Text>
-              <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 6, lineHeight: 20 }}>Use Scan In to add cards or products to your collection.</Text>
+            <View style={{ alignItems: 'center', paddingTop: 24, paddingHorizontal: 24 }}>
+              <Ionicons name="file-tray-full-outline" size={34} color={theme.colors.primary} />
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginTop: 9 }}>No inventory yet</Text>
+              <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 4, lineHeight: 18, fontSize: 12.5, fontWeight: '700' }}>Use Scan In to add cards or products to your collection.</Text>
             </View>
           }
         />
       </View>
 
-      <Modal visible={!!selectedProduct} transparent animationType="slide" onRequestClose={() => setSelectedProduct(null)}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(10, 8, 25, 0.34)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 16, borderWidth: 1, borderColor: theme.colors.border, maxHeight: '90%', ...cardShadow }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <View style={{ flex: 1, paddingRight: 12 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Confirm Scan In</Text>
-                <Text style={{ color: theme.colors.textSoft, marginTop: 3, fontWeight: '700' }}>
-                  {selectedProduct?.product_type ? productLookupLabel(selectedProduct.product_type as ProductLookupType) : 'Sealed product'}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => setSelectedProduct(null)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-                <Ionicons name="close" size={20} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-
-            {selectedProduct && (
-              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-                <View style={{ flexDirection: 'row', gap: 14 }}>
-                  {selectedProduct.image_large || selectedProduct.image_small ? (
-                    <Image source={{ uri: selectedProduct.image_large ?? selectedProduct.image_small ?? '' }} style={{ width: 124, height: 124, borderRadius: 14, backgroundColor: theme.colors.surface }} resizeMode="contain" />
-                  ) : (
-                    <View style={{ width: 124, height: 124, borderRadius: 14, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-                      <Ionicons name="cube-outline" size={34} color={theme.colors.primary} />
-                    </View>
-                  )}
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '900' }} numberOfLines={3}>{selectedProduct.name}</Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 5 }} numberOfLines={2}>{selectedProduct.set_name ?? 'Product'}</Text>
-                    {getProductConfidence(selectedProduct) ? (
-                      <View style={{ alignSelf: 'flex-start', marginTop: 9, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: `${getProductConfidence(selectedProduct)!.color}18` }}>
-                        <Text style={{ color: getProductConfidence(selectedProduct)!.color, fontWeight: '900', fontSize: 11 }}>
-                          {getProductConfidence(selectedProduct)!.label}
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-                </View>
-
-                <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 12, borderWidth: 1, borderColor: theme.colors.border }}>
-                  <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14, marginBottom: 10 }}>Recommended prices</Text>
-                  <View style={{ flexDirection: 'row', gap: 8 }}>
-                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
-                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>TCG</Text>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginTop: 4 }}>{money(selectedProduct.tcg_price)}</Text>
-                    </View>
-                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
-                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>eBay sold avg</Text>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16, marginTop: 4 }}>{money(selectedProduct.ebay_price)}</Text>
-                    </View>
-                  </View>
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
-                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>eBay low</Text>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 4 }}>{money(selectedProduct.product_price_low)}</Text>
-                    </View>
-                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
-                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>eBay high</Text>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 4 }}>{money(selectedProduct.product_price_high)}</Text>
-                    </View>
-                    <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 10, borderWidth: 1, borderColor: theme.colors.border }}>
-                      <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 11 }}>Sold comps</Text>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 4 }}>{selectedProduct.product_price_count ?? '--'}</Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={{ marginTop: 14, gap: 10 }}>
-                  <View>
-                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12, marginBottom: 6 }}>Sell/trade price</Text>
-                    <TextInput
-                      value={productAskingPrice}
-                      onChangeText={(value) => setProductAskingPrice(value.replace(/[^0-9.]/g, '').slice(0, 9))}
-                      placeholder={`Recommended ${money(getPreferredPrice(selectedProduct))}`}
-                      placeholderTextColor={theme.colors.textSoft}
-                      keyboardType="decimal-pad"
-                      style={{ backgroundColor: theme.colors.surface, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 11, color: theme.colors.text, fontWeight: '900' }}
-                    />
-                  </View>
-                  <View>
-                    <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12, marginBottom: 6 }}>Quantity to add</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                      <TouchableOpacity onPress={() => setProductQuantity((value) => String(Math.max(1, (Number.parseInt(value, 10) || 1) - 1)))} style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
-                        <Ionicons name="remove" size={18} color={theme.colors.text} />
-                      </TouchableOpacity>
-                      <TextInput
-                        value={productQuantity}
-                        onChangeText={(value) => setProductQuantity(value.replace(/[^0-9]/g, '').slice(0, 4) || '1')}
-                        keyboardType="number-pad"
-                        style={{ flex: 1, textAlign: 'center', backgroundColor: theme.colors.surface, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 11, color: theme.colors.text, fontWeight: '900', fontSize: 16 }}
-                      />
-                      <TouchableOpacity onPress={() => setProductQuantity((value) => String((Number.parseInt(value, 10) || 1) + 1))} style={{ width: 42, height: 42, borderRadius: 13, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-                        <Ionicons name="add" size={18} color="#FFFFFF" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-
-                <TouchableOpacity onPress={addSelectedProductToInventory} style={{ marginTop: 16, backgroundColor: theme.colors.primary, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
-                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Confirm Add</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            )}
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={stockOutPickerOpen} transparent animationType="fade" onRequestClose={() => setStockOutPickerOpen(false)}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(10, 8, 25, 0.34)', justifyContent: 'center', padding: 18 }}>
-          <View style={{ backgroundColor: theme.colors.card, borderRadius: 22, padding: 16, borderWidth: 1, borderColor: theme.colors.border, maxHeight: '78%', ...cardShadow }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <View>
-                <Text style={{ color: theme.colors.text, fontSize: 20, fontWeight: '900' }}>Choose owned copy</Text>
-                <Text style={{ color: theme.colors.textSoft, marginTop: 3, fontWeight: '700' }}>
-                  Pick the exact condition to {stockOutContext === 'sale' ? 'add to this sale' : 'review before Scan Out'}.
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => { setStockOutPickerOpen(false); if (stockOutContext === 'sale') setSaleOpen(true); }} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-                <Ionicons name="close" size={20} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {stockOutCandidates.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  onPress={() => chooseStockOutItem(item)}
-                  style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderTopWidth: 1, borderTopColor: theme.colors.border }}
-                >
-                  {item.card.image_small ? (
-                    <Image source={{ uri: item.card.image_small }} style={{ width: 44, height: 62, borderRadius: 5 }} resizeMode="cover" />
-                  ) : (
-                    <View style={{ width: 44, height: 62, borderRadius: 5, backgroundColor: theme.colors.surface }} />
-                  )}
-                  <View style={{ flex: 1, marginLeft: 11 }}>
-                    <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900' }}>{item.card.name}</Text>
-                    <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 12, marginTop: 2 }}>{item.card.set_name ?? item.card.set_id} · #{item.card.number ?? '--'}</Text>
-                    <Text style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 12, marginTop: 4 }}>{conditionShort[item.condition]} · {item.quantity} owned · {money(getPreferredPrice(item.card))}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={theme.colors.textSoft} />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={!!pendingStockOut} transparent animationType="slide" onRequestClose={() => setPendingStockOut(null)}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(10, 8, 25, 0.38)', justifyContent: 'flex-end' }}>
-          <View style={{ backgroundColor: theme.colors.card, borderTopLeftRadius: 26, borderTopRightRadius: 26, padding: 16, borderWidth: 1, borderColor: theme.colors.border, maxHeight: '92%', ...cardShadow }}>
-            {pendingStockOut && (
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <View>
-                    <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>Confirm Scan Out</Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 3 }}>Nothing is removed until you confirm.</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => setPendingStockOut(null)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-                    <Ionicons name="close" size={20} color={theme.colors.text} />
-                  </TouchableOpacity>
-                </View>
-
-                <View style={{ flexDirection: 'row', gap: 14 }}>
-                  {pendingStockOut.item.card.image_small ? (
-                    <Image source={{ uri: pendingStockOut.item.card.image_small }} style={{ width: 86, height: pendingStockOut.item.card.is_product ? 86 : 120, borderRadius: 10, backgroundColor: theme.colors.surface }} resizeMode="contain" />
-                  ) : (
-                    <View style={{ width: 86, height: 120, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
-                      <Ionicons name={pendingStockOut.item.card.is_product ? 'cube-outline' : 'albums-outline'} size={26} color={theme.colors.primary} />
-                    </View>
-                  )}
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }} numberOfLines={3}>{pendingStockOut.item.card.name}</Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 4 }} numberOfLines={2}>
-                      {pendingStockOut.item.card.set_name ?? pendingStockOut.item.card.set_id ?? 'Collection'} · #{pendingStockOut.item.card.number ?? '--'}
-                    </Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 9 }}>
-                      <View style={{ borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
-                        <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>{pendingStockOut.item.condition}</Text>
-                      </View>
-                      <View style={{ borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
-                        <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>{pendingStockOut.item.quantity} owned</Text>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-
-                {pendingStockOut.item.card.inventory_binder_name && (
-                  <View style={{ marginTop: 14, backgroundColor: '#FFFBEB', borderRadius: 14, borderWidth: 1, borderColor: '#FDE68A', padding: 12 }}>
-                    <Text style={{ color: '#92400E', fontWeight: '900', fontSize: 13 }}>Binder completion may change</Text>
-                    <Text style={{ color: '#92400E', fontWeight: '700', fontSize: 12, marginTop: 3 }}>
-                      This copy is linked to {pendingStockOut.item.card.inventory_binder_name}. Removing it can reduce binder completion.
-                    </Text>
-                  </View>
-                )}
-
-                <View style={{ marginTop: 16 }}>
-                  <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13, marginBottom: 8 }}>Reason</Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                    {scanOutReasons.map((reason) => {
-                      const active = pendingStockOut.reason === reason;
-                      return (
-                        <TouchableOpacity
-                          key={reason}
-                          onPress={() => setPendingStockOut((current) => current ? { ...current, reason } : current)}
-                          style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? '#FFEDD5' : theme.colors.surface, borderWidth: 1, borderColor: active ? '#FDBA74' : theme.colors.border }}
-                        >
-                          <Text style={{ color: active ? '#C2410C' : theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>{reason}</Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </View>
-
-                <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, padding: 12 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <View>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>Quantity to remove</Text>
-                      <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 11, marginTop: 2 }}>Current quantity: {pendingStockOut.item.quantity}</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                      <TouchableOpacity onPress={() => updatePendingStockOutQuantity(-1)} style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
-                        <Ionicons name="remove" size={16} color={theme.colors.text} />
-                      </TouchableOpacity>
-                      <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', minWidth: 26, textAlign: 'center' }}>{pendingStockOut.quantity}</Text>
-                      <TouchableOpacity onPress={() => updatePendingStockOutQuantity(1)} style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: '#FFEDD5', borderWidth: 1, borderColor: '#FDBA74', alignItems: 'center', justifyContent: 'center' }}>
-                        <Ionicons name="add" size={16} color="#C2410C" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                  <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>Value impact</Text>
-                    <Text style={{ color: '#C2410C', fontWeight: '900', fontSize: 13 }}>
-                      -{money((getPreferredPrice(pendingStockOut.item.card) ?? 0) * pendingStockOut.quantity)}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
-                  <TouchableOpacity onPress={() => setPendingStockOut(null)} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingVertical: 13, alignItems: 'center' }}>
-                    <Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => { setPendingStockOut(null); scanToInventory('remove'); }} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: '#FDBA74', backgroundColor: '#FFF7ED', paddingVertical: 13, alignItems: 'center' }}>
-                    <Text style={{ color: '#C2410C', fontWeight: '900' }}>Scan Another</Text>
-                  </TouchableOpacity>
-                </View>
-                <TouchableOpacity onPress={confirmScanOut} style={{ marginTop: 10, borderRadius: 16, backgroundColor: '#DC2626', paddingVertical: 15, alignItems: 'center' }}>
-                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Confirm Remove</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            )}
-          </View>
-        </View>
-      </Modal>
-
-      <Modal visible={saleOpen} transparent animationType="fade" onRequestClose={() => setSaleOpen(false)}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(10, 8, 25, 0.34)', justifyContent: 'center', padding: 18 }}>
-          <View style={{ backgroundColor: '#FFFFFF', borderRadius: 26, padding: 18, borderWidth: 1, borderColor: '#E8E1FF', ...cardShadow }}>
-            <TouchableOpacity
-              onPress={() => setSaleOpen(false)}
-              style={{ position: 'absolute', top: 14, right: 14, zIndex: 2, width: 34, height: 34, borderRadius: 17, backgroundColor: '#F4F1FC', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <Ionicons name="close" size={22} color={theme.colors.primary} />
+      <StackrBottomSheet
+        visible={sessionInfoOpen}
+        title="Seller sessions"
+        subtitle="Store Inventory is active now. Named sessions can be added when the seller session table is ready."
+        onClose={() => setSessionInfoOpen(false)}
+        maxHeight="42%"
+        contentContainerStyle={{ gap: 10 }}
+        footer={(
+          <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+            <TouchableOpacity onPress={() => setSessionInfoOpen(false)} style={{ backgroundColor: theme.colors.primary, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Got it</Text>
             </TouchableOpacity>
+          </View>
+        )}
+      >
+        <View style={{ borderRadius: 16, padding: 12, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+          <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14 }}>Current workflow</Text>
+          <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 12.5, lineHeight: 18, marginTop: 4 }}>
+            Stock In and Stock Out still save against your Store Inventory with movement reasons, quantities, and value context.
+          </Text>
+        </View>
+      </StackrBottomSheet>
 
-            <View style={{ alignItems: 'center', paddingTop: 10 }}>
-              <View style={{ width: 140, height: 94, alignItems: 'center', justifyContent: 'flex-end', marginBottom: 8 }}>
-                <View style={{ position: 'absolute', top: 0, flexDirection: 'row', gap: 3 }}>
-                  {salePreviewImages.length
-                    ? salePreviewImages.slice(0, 3).map((uri, index) => (
-                        <Image
-                          key={`${uri}:${index}`}
-                          source={{ uri }}
-                          style={{
-                            width: 42,
-                            height: 58,
-                            borderRadius: 4,
-                            borderWidth: 1,
-                            borderColor: '#D9CCFF',
-                            transform: [{ rotate: `${(index - 1) * 8}deg` }],
-                          }}
-                          resizeMode="cover"
-                        />
-                      ))
-                    : [
-                        require('../../assets/rev2/05-binder-covers/clean-cutouts/charizard.png'),
-                        require('../../assets/rev2/05-binder-covers/clean-cutouts/pikachu.png'),
-                        require('../../assets/rev2/05-binder-covers/clean-cutouts/blastoise.png'),
-                      ].map((source, index) => (
-                        <Image
-                          key={`sale-placeholder:${index}`}
-                          source={source}
-                          style={{
-                            width: 42,
-                            height: 58,
-                            borderRadius: 4,
-                            borderWidth: 1,
-                            borderColor: '#D9CCFF',
-                            transform: [{ rotate: `${(index - 1) * 8}deg` }],
-                          }}
-                          resizeMode="contain"
-                        />
-                      ))}
+      <StackrBottomSheet
+        visible={!!selectedProduct}
+        title="Confirm Scan In"
+        subtitle={selectedProduct?.product_type ? productLookupLabel(selectedProduct.product_type as ProductLookupType) : 'Sealed product'}
+        onClose={() => setSelectedProduct(null)}
+        maxHeight="88%"
+        contentContainerStyle={{ gap: 12 }}
+        footer={selectedProduct ? (
+          <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+            <TouchableOpacity onPress={addSelectedProductToInventory} style={{ backgroundColor: theme.colors.primary, borderRadius: 16, paddingVertical: 14, alignItems: 'center' }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Confirm Add</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+      >
+        {selectedProduct ? (
+          <>
+            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+              {selectedProduct.image_large || selectedProduct.image_small ? (
+                <Image source={{ uri: selectedProduct.image_large ?? selectedProduct.image_small ?? '' }} style={{ width: 104, height: 104, borderRadius: 14, backgroundColor: theme.colors.surface }} resizeMode="contain" />
+              ) : (
+                <View style={{ width: 104, height: 104, borderRadius: 14, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="cube-outline" size={30} color={theme.colors.primary} />
                 </View>
-                <View style={{ width: 104, height: 48, borderRadius: 10, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', shadowColor: theme.colors.primary, shadowOpacity: 0.22, shadowRadius: 18, shadowOffset: { width: 0, height: 8 } }}>
-                  <Image source={require('../../assets/rev2/01-brand/app/icon.png')} style={{ width: 34, height: 34 }} resizeMode="contain" />
-                </View>
-                <Ionicons name="sparkles" size={18} color={theme.colors.primary} style={{ position: 'absolute', left: 0, top: 30 }} />
-                <Ionicons name="sparkles" size={18} color={theme.colors.primary} style={{ position: 'absolute', right: 0, top: 36 }} />
-              </View>
-
-              <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900', textAlign: 'center' }}>Great Sale building!</Text>
-              <Text style={{ color: theme.colors.textSoft, fontSize: 14, fontWeight: '700', marginTop: 3 }}>Keep scanning to add more items.</Text>
-            </View>
-
-            <View style={{ backgroundColor: '#F9F7FF', borderRadius: 16, borderWidth: 1, borderColor: '#E6DEFF', padding: 14, marginTop: 16 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <View style={{ width: 86, borderRightWidth: 1, borderRightColor: '#E2DAFA', paddingRight: 12 }}>
-                  <Text style={{ color: theme.colors.primary, fontSize: 9, fontWeight: '900' }}>ITEMS SCANNED</Text>
-                  <Text style={{ color: theme.colors.primary, fontSize: 42, fontWeight: '900', marginTop: 2 }}>{saleCart.reduce((sum, line) => sum + line.quantity, 0)}</Text>
-                </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingLeft: 12 }}>
-                  {salePreviewImages.length ? salePreviewImages.map((uri, index) => (
-                    <Image key={`${uri}:preview:${index}`} source={{ uri }} style={{ width: 48, height: 66, borderRadius: 5, backgroundColor: '#FFFFFF' }} resizeMode="cover" />
-                  )) : (
-                    <View style={{ height: 66, justifyContent: 'center' }}>
-                      <Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>Add owned cards to begin</Text>
-                    </View>
-                  )}
-                </ScrollView>
-              </View>
-
-              <View style={{ height: 1, backgroundColor: '#E2DAFA', marginVertical: 13 }} />
-
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <Ionicons name="pricetag-outline" size={30} color={theme.colors.primary} />
-                  <View>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 9, fontWeight: '900' }}>ESTIMATED VALUE</Text>
-                    <Text style={{ color: theme.colors.text, fontSize: 26, fontWeight: '900' }}>{money(saleEstimatedValue)}</Text>
+              )}
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900' }} numberOfLines={3}>{selectedProduct.name}</Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 4 }} numberOfLines={2}>{selectedProduct.set_name ?? 'Product'}</Text>
+                {getProductConfidence(selectedProduct) ? (
+                  <View style={{ alignSelf: 'flex-start', marginTop: 8, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: `${getProductConfidence(selectedProduct)!.color}18` }}>
+                    <Text style={{ color: getProductConfidence(selectedProduct)!.color, fontWeight: '900', fontSize: 11 }}>
+                      {getProductConfidence(selectedProduct)!.label}
+                    </Text>
                   </View>
+                ) : null}
+              </View>
+            </View>
+
+            <View style={{ backgroundColor: theme.colors.surface, borderRadius: 16, padding: 12, borderWidth: 1, borderColor: theme.colors.border }}>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13, marginBottom: 8 }}>Recommended prices</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 9, borderWidth: 1, borderColor: theme.colors.border }}>
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 10.5 }}>TCG</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15, marginTop: 3 }} numberOfLines={1}>{money(selectedProduct.tcg_price)}</Text>
                 </View>
-                <View style={{ backgroundColor: '#EAF9EF', borderRadius: 13, paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center' }}>
-                  <Text style={{ color: '#1C9B4C', fontWeight: '900', fontSize: 12 }}>+18%</Text>
-                  <Text style={{ color: '#1C9B4C', fontWeight: '800', fontSize: 10 }}>Great Sale bonus</Text>
+                <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 9, borderWidth: 1, borderColor: theme.colors.border }}>
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 10.5 }}>eBay sold avg</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 15, marginTop: 3 }} numberOfLines={1}>{money(selectedProduct.ebay_price)}</Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 9, borderWidth: 1, borderColor: theme.colors.border }}>
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 10.5 }}>eBay low</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 3 }} numberOfLines={1}>{money(selectedProduct.product_price_low)}</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 9, borderWidth: 1, borderColor: theme.colors.border }}>
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 10.5 }}>eBay high</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 3 }} numberOfLines={1}>{money(selectedProduct.product_price_high)}</Text>
+                </View>
+                <View style={{ flex: 1, backgroundColor: theme.colors.card, borderRadius: 12, padding: 9, borderWidth: 1, borderColor: theme.colors.border }}>
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 10.5 }}>Sold comps</Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', marginTop: 3 }} numberOfLines={1}>{selectedProduct.product_price_count ?? '--'}</Text>
                 </View>
               </View>
             </View>
 
-            {saleCart.length > 0 && (
-              <View style={{ marginTop: 12, maxHeight: 150 }}>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  {saleCart.map((line) => (
-                    <View key={line.item.id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: '#EFEAFB' }}>
-                      <Text numberOfLines={1} style={{ flex: 1, color: theme.colors.text, fontWeight: '900' }}>{line.item.card.name}</Text>
-                      <Text style={{ color: theme.colors.textSoft, fontWeight: '800', marginRight: 8 }}>{conditionShort[line.item.condition]}</Text>
-                      <TouchableOpacity onPress={() => updateSaleQuantity(line.item.id, -1)} style={{ width: 26, height: 26, borderRadius: 9, backgroundColor: '#F4F1FC', alignItems: 'center', justifyContent: 'center' }}>
-                        <Ionicons name="remove" size={15} color={theme.colors.text} />
-                      </TouchableOpacity>
-                      <Text style={{ width: 28, textAlign: 'center', color: theme.colors.text, fontWeight: '900' }}>{line.quantity}</Text>
-                      <TouchableOpacity onPress={() => updateSaleQuantity(line.item.id, 1)} style={{ width: 26, height: 26, borderRadius: 9, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-                        <Ionicons name="add" size={15} color="#FFFFFF" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </ScrollView>
+            <View style={{ gap: 10 }}>
+              <View>
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12, marginBottom: 6 }}>Sell/trade price</Text>
+                <TextInput
+                  value={productAskingPrice}
+                  onChangeText={(value) => setProductAskingPrice(value.replace(/[^0-9.]/g, '').slice(0, 9))}
+                  placeholder={`Recommended ${money(getPreferredPrice(selectedProduct))}`}
+                  placeholderTextColor={theme.colors.textSoft}
+                  keyboardType="decimal-pad"
+                  style={{ backgroundColor: theme.colors.surface, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 11, color: theme.colors.text, fontWeight: '900' }}
+                />
+              </View>
+              <View>
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12, marginBottom: 6 }}>Quantity to add</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <TouchableOpacity onPress={() => setProductQuantity((value) => String(Math.max(1, (Number.parseInt(value, 10) || 1) - 1)))} style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
+                    <Ionicons name="remove" size={18} color={theme.colors.text} />
+                  </TouchableOpacity>
+                  <TextInput
+                    value={productQuantity}
+                    onChangeText={(value) => setProductQuantity(value.replace(/[^0-9]/g, '').slice(0, 4) || '1')}
+                    keyboardType="number-pad"
+                    style={{ flex: 1, textAlign: 'center', backgroundColor: theme.colors.surface, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingHorizontal: 12, paddingVertical: 10, color: theme.colors.text, fontWeight: '900', fontSize: 16 }}
+                  />
+                  <TouchableOpacity onPress={() => setProductQuantity((value) => String((Number.parseInt(value, 10) || 1) + 1))} style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="add" size={18} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </>
+        ) : null}
+      </StackrBottomSheet>
+
+      <StackrBottomSheet
+        visible={stockOutPickerOpen}
+        title="Choose owned copy"
+        subtitle={`Pick the exact condition to ${stockOutContext === 'sale' ? 'add to this sale' : 'review before Scan Out'}.`}
+        onClose={() => {
+          setStockOutPickerOpen(false);
+          if (stockOutContext === 'sale') setSaleOpen(true);
+        }}
+        maxHeight="76%"
+        contentContainerStyle={{ gap: 8 }}
+      >
+        {stockOutCandidates.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            onPress={() => chooseStockOutItem(item)}
+            style={{ minHeight: 72, flexDirection: 'row', alignItems: 'center', padding: 9, borderRadius: 16, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}
+          >
+            {item.card.image_small ? (
+              <Image source={{ uri: item.card.image_small }} style={{ width: 42, height: 58, borderRadius: 6 }} resizeMode="contain" />
+            ) : (
+              <View style={{ width: 42, height: 58, borderRadius: 6, backgroundColor: theme.colors.card, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name={item.card.is_product ? 'cube-outline' : 'albums-outline'} size={20} color={theme.colors.primary} />
               </View>
             )}
+            <View style={{ flex: 1, marginLeft: 10, minWidth: 0 }}>
+              <Text numberOfLines={1} style={{ color: theme.colors.text, fontWeight: '900', fontSize: 14 }}>{item.card.name}</Text>
+              <Text numberOfLines={1} style={{ color: theme.colors.textSoft, fontSize: 11.5, marginTop: 2, fontWeight: '700' }}>{item.card.set_name ?? item.card.set_id} - #{item.card.number ?? '--'}</Text>
+              <Text numberOfLines={1} style={{ color: theme.colors.primary, fontWeight: '900', fontSize: 11.5, marginTop: 4 }}>{conditionShort[item.condition]} - {item.quantity} owned - {money(getPreferredPrice(item.card))}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={19} color={theme.colors.textSoft} />
+          </TouchableOpacity>
+        ))}
+      </StackrBottomSheet>
 
-            <TextInput
-              value={salePrice}
-              onChangeText={setSalePrice}
-              placeholder="Actual sold price"
-              placeholderTextColor={theme.colors.textSoft}
-              keyboardType="decimal-pad"
-              style={{ marginTop: 12, borderRadius: 14, borderWidth: 1, borderColor: '#E3DAFF', backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 12, color: theme.colors.text, fontWeight: '900' }}
-            />
-
-            <View style={{ flexDirection: 'row', gap: 12, marginTop: 14 }}>
-              <TouchableOpacity onPress={scanToSale} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: '#D8CCFF', paddingVertical: 13, alignItems: 'center' }}>
-                <Ionicons name="scan-outline" size={22} color={theme.colors.primary} />
-                <Text style={{ color: theme.colors.primary, fontWeight: '900', marginTop: 4 }}>Scan More</Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '700' }}>Keep adding items</Text>
+      <StackrBottomSheet
+        visible={!!pendingStockOut}
+        title="Confirm Scan Out"
+        subtitle="Nothing is removed until you confirm."
+        onClose={() => setPendingStockOut(null)}
+        maxHeight="88%"
+        contentContainerStyle={{ gap: 12 }}
+        footer={pendingStockOut ? (
+          <View style={{ paddingHorizontal: 16, paddingTop: 10, gap: 10 }}>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity onPress={() => setPendingStockOut(null)} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: theme.colors.border, paddingVertical: 13, alignItems: 'center' }}>
+                <Text style={{ color: theme.colors.textSoft, fontWeight: '900' }}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={completeSale} style={{ flex: 1, borderRadius: 14, backgroundColor: theme.colors.primary, paddingVertical: 13, alignItems: 'center', shadowColor: theme.colors.primary, shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }}>
-                <Ionicons name="checkmark" size={24} color="#FFFFFF" />
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', marginTop: 3 }}>Complete Sale</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.82)', fontSize: 10, fontWeight: '700' }}>Scan out sold items</Text>
+              <TouchableOpacity onPress={() => { setPendingStockOut(null); scanToInventory('remove'); }} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: '#FDBA74', backgroundColor: '#FFF7ED', paddingVertical: 13, alignItems: 'center' }}>
+                <Text style={{ color: '#C2410C', fontWeight: '900' }}>Scan Another</Text>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity onPress={confirmScanOut} style={{ borderRadius: 16, backgroundColor: '#DC2626', paddingVertical: 15, alignItems: 'center' }}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Confirm Remove</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+      >
+        {pendingStockOut ? (
+          <>
+            <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+              {pendingStockOut.item.card.image_small ? (
+                <Image source={{ uri: pendingStockOut.item.card.image_small }} style={{ width: 76, height: pendingStockOut.item.card.is_product ? 76 : 106, borderRadius: 10, backgroundColor: theme.colors.surface }} resizeMode="contain" />
+              ) : (
+                <View style={{ width: 76, height: 106, borderRadius: 10, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name={pendingStockOut.item.card.is_product ? 'cube-outline' : 'albums-outline'} size={24} color={theme.colors.primary} />
+                </View>
+              )}
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900' }} numberOfLines={3}>{pendingStockOut.item.card.name}</Text>
+                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, fontWeight: '700', marginTop: 4 }} numberOfLines={2}>
+                  {pendingStockOut.item.card.set_name ?? pendingStockOut.item.card.set_id ?? 'Collection'} - #{pendingStockOut.item.card.number ?? '--'}
+                </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                  <View style={{ borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>{pendingStockOut.item.condition}</Text>
+                  </View>
+                  <View style={{ borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900' }}>{pendingStockOut.item.quantity} owned</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
 
-            <Text style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '800', textAlign: 'center', marginTop: 16 }}>
-              The more you scan, the bigger your sale report.
-            </Text>
+            {pendingStockOut.item.card.inventory_binder_name ? (
+              <View style={{ backgroundColor: '#FFFBEB', borderRadius: 14, borderWidth: 1, borderColor: '#FDE68A', padding: 11 }}>
+                <Text style={{ color: '#92400E', fontWeight: '900', fontSize: 12.5 }}>Binder completion may change</Text>
+                <Text style={{ color: '#92400E', fontWeight: '700', fontSize: 12, lineHeight: 16, marginTop: 3 }}>
+                  This copy is linked to {pendingStockOut.item.card.inventory_binder_name}. Removing it can reduce binder completion.
+                </Text>
+              </View>
+            ) : null}
+
+            <View>
+              <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13, marginBottom: 8 }}>Reason</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {scanOutReasons.map((reason) => {
+                  const active = pendingStockOut.reason === reason;
+                  return (
+                    <TouchableOpacity
+                      key={reason}
+                      onPress={() => setPendingStockOut((current) => current ? { ...current, reason } : current)}
+                      style={{ borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: active ? '#FFEDD5' : theme.colors.surface, borderWidth: 1, borderColor: active ? '#FDBA74' : theme.colors.border }}
+                    >
+                      <Text style={{ color: active ? '#C2410C' : theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>{reason}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={{ backgroundColor: theme.colors.surface, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, padding: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>Quantity to remove</Text>
+                  <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 11, marginTop: 2 }}>Current quantity: {pendingStockOut.item.quantity}</Text>
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <TouchableOpacity onPress={() => updatePendingStockOutQuantity(-1)} style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="remove" size={16} color={theme.colors.text} />
+                  </TouchableOpacity>
+                  <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900', minWidth: 26, textAlign: 'center' }}>{pendingStockOut.quantity}</Text>
+                  <TouchableOpacity onPress={() => updatePendingStockOutQuantity(1)} style={{ width: 34, height: 34, borderRadius: 11, backgroundColor: '#FFEDD5', borderWidth: 1, borderColor: '#FDBA74', alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="add" size={16} color="#C2410C" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+                <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>Value impact</Text>
+                <Text style={{ color: '#C2410C', fontWeight: '900', fontSize: 13 }} numberOfLines={1}>
+                  -{money((getPreferredPrice(pendingStockOut.item.card) ?? 0) * pendingStockOut.quantity)}
+                </Text>
+              </View>
+            </View>
+          </>
+        ) : null}
+      </StackrBottomSheet>
+
+      <StackrBottomSheet
+        visible={saleOpen}
+        title="Out cart"
+        subtitle={`${saleCart.reduce((sum, line) => sum + line.quantity, 0)} item${saleCart.reduce((sum, line) => sum + line.quantity, 0) === 1 ? '' : 's'} ready - ${money(saleEstimatedValue)} estimated`}
+        onClose={() => setSaleOpen(false)}
+        maxHeight="82%"
+        contentContainerStyle={{ gap: 12 }}
+        footer={(
+          <View style={{ paddingHorizontal: 16, paddingTop: 10, gap: 10 }}>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity onPress={scanToSale} style={{ flex: 1, borderRadius: 14, borderWidth: 1, borderColor: '#D8CCFF', paddingVertical: 13, alignItems: 'center', backgroundColor: theme.colors.card }}>
+                <Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Scan More</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={completeSale} style={{ flex: 1, borderRadius: 14, backgroundColor: theme.colors.primary, paddingVertical: 13, alignItems: 'center', shadowColor: theme.colors.primary, shadowOpacity: 0.20, shadowRadius: 10, shadowOffset: { width: 0, height: 5 } }}>
+                <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Complete Sale</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      >
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={{ flex: 1, borderRadius: 14, padding: 11, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, fontWeight: '900' }}>ITEMS SCANNED</Text>
+            <Text style={{ color: theme.colors.primary, fontSize: 24, lineHeight: 30, fontWeight: '900', marginTop: 2 }}>{saleCart.reduce((sum, line) => sum + line.quantity, 0)}</Text>
+          </View>
+          <View style={{ flex: 1, borderRadius: 14, padding: 11, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 10.5, fontWeight: '900' }}>ESTIMATED VALUE</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 20, lineHeight: 26, fontWeight: '900', marginTop: 2 }} numberOfLines={1}>{money(saleEstimatedValue)}</Text>
           </View>
         </View>
-      </Modal>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          {salePreviewImages.length ? salePreviewImages.map((uri, index) => (
+            <Image key={`${uri}:preview:${index}`} source={{ uri }} style={{ width: 44, height: 62, borderRadius: 6, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }} resizeMode="contain" />
+          )) : (
+            <View style={{ minHeight: 54, borderRadius: 14, paddingHorizontal: 12, justifyContent: 'center', backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
+              <Text style={{ color: theme.colors.textSoft, fontWeight: '800' }}>Add owned cards to begin</Text>
+            </View>
+          )}
+        </ScrollView>
+
+        {saleCart.length > 0 ? (
+          <View style={{ borderRadius: 16, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden' }}>
+            {saleCart.map((line, index) => (
+              <View key={line.item.id} style={{ minHeight: 52, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 8, borderTopWidth: index === 0 ? 0 : 1, borderTopColor: theme.colors.border }}>
+                <Text numberOfLines={1} style={{ flex: 1, color: theme.colors.text, fontWeight: '900', fontSize: 13.5 }}>{line.item.card.name}</Text>
+                <Text style={{ color: theme.colors.textSoft, fontWeight: '800', marginHorizontal: 8, fontSize: 11.5 }}>{conditionShort[line.item.condition]}</Text>
+                <TouchableOpacity onPress={() => updateSaleQuantity(line.item.id, -1)} style={{ width: 28, height: 28, borderRadius: 10, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="remove" size={15} color={theme.colors.text} />
+                </TouchableOpacity>
+                <Text style={{ width: 28, textAlign: 'center', color: theme.colors.text, fontWeight: '900' }}>{line.quantity}</Text>
+                <TouchableOpacity onPress={() => updateSaleQuantity(line.item.id, 1)} style={{ width: 28, height: 28, borderRadius: 10, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name="add" size={15} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        <TextInput
+          value={salePrice}
+          onChangeText={setSalePrice}
+          placeholder="Actual sold price"
+          placeholderTextColor={theme.colors.textSoft}
+          keyboardType="decimal-pad"
+          style={{ borderRadius: 14, borderWidth: 1, borderColor: '#E3DAFF', backgroundColor: theme.colors.surface, paddingHorizontal: 14, paddingVertical: 12, color: theme.colors.text, fontWeight: '900' }}
+        />
+      </StackrBottomSheet>
     </SafeAreaView>
   );
 }

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Stackr Native Embedding Search Benchmark</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 32px; color: #17142c; }
+    table { border-collapse: collapse; width: 100%; margin-top: 18px; }
+    th, td { border: 1px solid #d7d2ea; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #f2efff; }
+    code { background: #f6f4ff; padding: 2px 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Stackr Native Embedding Search Benchmark</h1>
+  <p>Engine: <code>stackr-card-identity-flat-search-v1.0.0</code></p>
+  <p>Exact native flat search has been implemented, but this shell cannot execute the Expo native module. Real-device search timings are therefore not claimed here.</p>
+  <p>Initial target: p95 below 75 ms for 100,000 embeddings on the agreed reference Android device.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Target</th>
+        <th>Embeddings</th>
+        <th>Status</th>
+        <th>Load</th>
+        <th>p50 Search</th>
+        <th>p95 Search</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody>
+  <tr>
+    <td>pilot catalogue</td>
+    <td>0</td>
+    <td>blocked_no_embeddings</td>
+    <td>not measured</td>
+    <td>not measured</td>
+    <td>not measured</td>
+    <td>The current catalogue pack is blocked and contains zero approved reference embeddings.</td>
+  </tr>
+
+  <tr>
+    <td>25,000 embeddings</td>
+    <td>25,000</td>
+    <td>native_unavailable</td>
+    <td>not measured</td>
+    <td>not measured</td>
+    <td>not measured</td>
+    <td>Native Expo module benchmarks require an installed development build on the reference Android device.</td>
+  </tr>
+
+  <tr>
+    <td>50,000 embeddings</td>
+    <td>50,000</td>
+    <td>native_unavailable</td>
+    <td>not measured</td>
+    <td>not measured</td>
+    <td>not measured</td>
+    <td>Native Expo module benchmarks require an installed development build on the reference Android device.</td>
+  </tr>
+
+  <tr>
+    <td>100,000 embeddings</td>
+    <td>100,000</td>
+    <td>native_unavailable</td>
+    <td>not measured</td>
+    <td>not measured</td>
+    <td>not measured</td>
+    <td>Native Expo module benchmarks require an installed development build on the reference Android device.</td>
+  </tr>
+</tbody>
+  </table>
+  <p>Run <code>npm run test:card-identity-search</code> for deterministic Python reference parity on the search semantics. Run the native benchmark from an installed development build for real device timings.</p>
+</body>
+</html>

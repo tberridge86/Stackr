@@ -1,0 +1,11 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["StackrCardVisionModule"],
+    "podspecPath": "ios/StackrCardVision.podspec"
+  },
+  "android": {
+    "modules": ["com.stackr.cardvision.StackrCardVisionModule"]
+  }
+}
+

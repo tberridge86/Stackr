@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 import {
   fetchCardsForPokemon,
   fetchOwnedPokedexCards,
@@ -52,7 +53,7 @@ const getParamValue = (value?: string | string[]) => Array.isArray(value) ? valu
 
 const formatMoney = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
-    ? `£${value.toFixed(value >= 100 ? 0 : 2)}`
+    ? `\u00A3${value.toFixed(value >= 100 ? 0 : 2)}`
     : 'Value pending';
 
 export default function PokemonDetailScreen() {
@@ -286,13 +287,18 @@ export default function PokemonDetailScreen() {
               />
             )}
           </View>
+          <RaritySymbol
+            rarity={item.rarity}
+            size={15}
+            style={RARITY_SYMBOL_CARD_OVERLAY}
+          />
         </View>
 
         <Text numberOfLines={2} style={styles.cardName}>{item.name}</Text>
         <Text numberOfLines={1} style={styles.cardMeta}>{setName}</Text>
         <Text numberOfLines={1} style={styles.cardValue}>{formatMoney(item.estimated_value)}</Text>
         <Text numberOfLines={1} style={styles.cardMeta}>
-          {item.number ? `#${item.number}` : 'No number'}{item.rarity ? ` - ${item.rarity}` : ''}
+          {item.number ? `#${item.number}` : 'No number'}
         </Text>
       </Pressable>
     );

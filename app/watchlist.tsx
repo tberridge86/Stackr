@@ -9,12 +9,11 @@ import { StackrBackButton } from '../components/StackrBackButton';
 import { useTheme } from '../components/theme-context';
 import { useTrade } from '../components/trade-context';
 import { fetchSavedMarketListingIds, toggleSavedMarketListing } from '../lib/marketSavedItems';
-import { marketIcons } from '../lib/marketIcons';
 import { stackrIcons } from '../lib/stackrIcons';
 
 export default function FavoritesMarketItemsScreen() {
   const { theme } = useTheme();
-  const { marketplaceListings, myListings, tradeLoading, refreshTrade } = useTrade();
+  const { marketplaceListings, tradeLoading, refreshTrade } = useTrade();
   const [savedIds, setSavedIds] = useState<string[]>([]);
 
   const load = useCallback(async () => {
@@ -29,22 +28,21 @@ export default function FavoritesMarketItemsScreen() {
   );
 
   const listings = useMemo(() => {
-    const all = [...marketplaceListings, ...myListings];
     return savedIds
-      .map((id) => all.find((listing) => listing.id === id))
+      .map((id) => marketplaceListings.find((listing) => listing.id === id))
       .filter(Boolean) as typeof marketplaceListings;
-  }, [marketplaceListings, myListings, savedIds]);
+  }, [marketplaceListings, savedIds]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.bg }} edges={['top', 'left', 'right']}>
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 18 }}>
         <StackrBackdrop />
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 }}>
           <StackrBackButton onPress={() => router.back()} />
           <View style={{ flex: 1 }}>
-            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 30, fontWeight: '900' }}>Favorites</Text>
+            <Text style={{ color: theme.colors.text, fontSize: 24, lineHeight: 30, fontWeight: '900' }}>Favorited Listings</Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12.5, fontWeight: '700', marginTop: 2 }}>
-              Favourited Market listings on this device.
+              Market listings you have favorited on this device.
             </Text>
           </View>
         </View>
@@ -67,7 +65,9 @@ export default function FavoritesMarketItemsScreen() {
                 terms: item.trade_only ? 'Trade listing' : item.asking_price == null ? 'Open to offers' : 'Purchase listing',
                 sellerName: item.profiles?.collector_name ?? 'Collector',
                 sellerAvatarUrl: item.profiles?.avatar_url ?? null,
-                protectionTier: item.admin_review_required ? 'Gold' : item.listing_images?.length ? 'Silver' : 'Bronze',
+                protectionTier: (!item.product_type || item.product_type === 'raw_card' || item.pricing_mode === 'raw')
+                  ? item.admin_review_required ? 'Gold' : item.listing_images?.length ? 'Silver' : 'Bronze'
+                  : undefined,
                 variantType: item.trade_only ? 'trade' : item.asking_price == null ? 'openToOffers' : 'buy',
                 saved: true,
               }}
@@ -84,10 +84,9 @@ export default function FavoritesMarketItemsScreen() {
           ListEmptyComponent={
             <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 60 }}>
               <MarketEmptyState
-                icon={marketIcons.saved}
                 imageIcon={stackrIcons.favorite}
-                title="No Favorites yet"
-                body="Add a specific listing to Favorites in The Market to return to it later. Chase cards and price watchlists stay separate."
+                title="No favorited listings yet"
+                body="Favorite a specific Market listing to return to it later. Chase cards and price watchlists stay separate."
                 actionLabel="Browse The Market"
                 onAction={() => router.replace('/(tabs)/market' as any)}
               />

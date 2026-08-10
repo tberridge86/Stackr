@@ -12,6 +12,8 @@ expo-env.d.ts
 
 # Native
 .kotlin/
+google-services.json
+stackr-release.keystore
 *.orig.*
 *.jks
 *.p8
@@ -43,12 +45,17 @@ app-example
 
 # local/generated artifacts
 tmp/
+outputs/
 .tmp/
 .tmp_video_frames/
+__pycache__/
+*.py[cod]
 .expo-start*.log
+.expo-start*.err
 expo-qr.png
 expo-go-qr.png
 expo-go-tunnel-qr.png
+tmp-*.png
 
 # local editor/tool state
 .claude/

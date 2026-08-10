@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Stackr Embedding Failure Analysis</title>
+  <style>
+    body { font-family: Inter, Arial, sans-serif; margin: 32px; color: #171321; background: #fbfaff; }
+    h1, h2 { margin-bottom: 8px; }
+    .panel { border: 1px solid #ded8f7; background: #fff; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .blocked { color: #b45309; font-weight: 800; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #e7e2f8; padding: 9px; text-align: left; vertical-align: top; }
+    th { color: #4d2cc7; font-size: 12px; text-transform: uppercase; }
+    code { background: #f0ebff; padding: 2px 5px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Stackr Embedding Failure Analysis</h1>
+  <div class="panel">
+    <p>Analysis version: <code>stackr-embedding-failure-analysis-v1.0.0</code></p>
+    <p>Status: <span class="blocked">blocked</span></p>
+    <p>Dataset: <code>stackr-pilot-recognition-dataset-v1.0.0</code></p>
+    <p>Protected test rows: <code>336</code></p>
+  </div>
+  <div class="panel">
+    <h2>Blocking Evidence</h2>
+    <ul><li>v0_model_blocked</li><li>no_selected_v0_baseline</li><li>no_approved_training_pixels</li><li>no_real_phone_test_captures</li><li>v0_checkpoint_has_no_weights</li><li>no_embedding_vectors</li><li>no_measured_failures</li><li>protected_test_metrics_missing</li></ul>
+    <p>No top-neighbour visual reports were generated because no embedding vectors or approved image pixels exist for V0.</p>
+  </div>
+  <div class="panel">
+    <h2>Failure Categories</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Measured failures</th><th>Candidate confusion groups</th></tr></thead>
+      <tbody>
+      <tr>
+        <td>crop_failure</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    
+      <tr>
+        <td>blur</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    
+      <tr>
+        <td>glare</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    
+      <tr>
+        <td>sleeve</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    
+      <tr>
+        <td>binder_pocket</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    
+      <tr>
+        <td>same_artwork</td>
+        <td>0</td>
+        <td>2</td>
+      </tr>
+    
+      <tr>
+        <td>wrong_language</td>
+        <td>0</td>
+        <td>1</td>
+      </tr>
+    
+      <tr>
+        <td>wrong_set</td>
+        <td>0</td>
+        <td>3</td>
+      </tr>
+    
+      <tr>
+        <td>wrong_collector_number</td>
+        <td>0</td>
+        <td>1</td>
+      </tr>
+    
+      <tr>
+        <td>wrong_variant</td>
+        <td>0</td>
+        <td>5</td>
+      </tr>
+    
+      <tr>
+        <td>promo_stamp</td>
+        <td>0</td>
+        <td>2</td>
+      </tr>
+    
+      <tr>
+        <td>reverse_holo</td>
+        <td>0</td>
+        <td>1</td>
+      </tr>
+    
+      <tr>
+        <td>low_resolution_reference</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    
+      <tr>
+        <td>catalogue_error</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    
+      <tr>
+        <td>ocr_conflict</td>
+        <td>0</td>
+        <td>1</td>
+      </tr>
+    
+      <tr>
+        <td>unknown_card</td>
+        <td>0</td>
+        <td>0</td>
+      </tr>
+    
+      <tr>
+        <td>model_confusion</td>
+        <td>0</td>
+        <td>10</td>
+      </tr>
+    </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <h2>Candidate Hard-Negative Mining Groups</h2>
+    <table>
+      <thead><tr><th>Group</th><th>Type</th><th>Categories</th><th>Mining decision</th><th>Protected test handling</th></tr></thead>
+      <tbody>
+    <tr>
+      <td>hardneg_same_pokemon_different_artwork_charizard</td>
+      <td>same_pokemon_different_artwork</td>
+      <td>model_confusion</td>
+      <td>candidate_when_approved_pixels_exist</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_identical_artwork_different_set_base_charizard</td>
+      <td>identical_artwork_different_set</td>
+      <td>same_artwork, wrong_set, model_confusion</td>
+      <td>candidate_when_approved_pixels_exist</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_identical_artwork_different_language_bulbasaur_151</td>
+      <td>identical_artwork_different_language</td>
+      <td>same_artwork, wrong_language, model_confusion</td>
+      <td>candidate_when_approved_pixels_exist</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_standard_vs_reverse_holo</td>
+      <td>standard_versus_reverse_holo</td>
+      <td>wrong_variant, reverse_holo, model_confusion</td>
+      <td>blocked_until_approved_source_pair_exists</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_stamped_vs_unstamped</td>
+      <td>stamped_versus_unstamped</td>
+      <td>wrong_variant, promo_stamp, model_confusion</td>
+      <td>blocked_until_approved_source_pair_exists</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_first_edition_vs_unlimited</td>
+      <td>first_edition_versus_unlimited</td>
+      <td>wrong_variant, model_confusion</td>
+      <td>blocked_until_approved_source_pair_exists</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_promo_vs_set_release</td>
+      <td>promo_versus_set_release</td>
+      <td>promo_stamp, wrong_set, wrong_variant, model_confusion</td>
+      <td>candidate_when_approved_pixels_exist</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_same_collector_number_different_set</td>
+      <td>same_collector_number_different_set</td>
+      <td>wrong_collector_number, wrong_set, ocr_conflict, model_confusion</td>
+      <td>candidate_when_approved_pixels_exist</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_similar_full_art_layouts</td>
+      <td>similar_full_art_layouts</td>
+      <td>model_confusion</td>
+      <td>candidate_when_approved_pixels_exist</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  
+    <tr>
+      <td>hardneg_pokeball_vs_masterball_patterns</td>
+      <td>poke_ball_versus_master_ball_patterns</td>
+      <td>wrong_variant, model_confusion</td>
+      <td>blocked_until_approved_source_pair_exists</td>
+      <td>not_added_to_training_batches</td>
+    </tr>
+  </tbody>
+    </table>
+  </div>
+  <script id="failure-analysis-payload" type="application/json">{&quot;analysisVersion&quot;:&quot;stackr-embedding-failure-analysis-v1.0.0&quot;,&quot;status&quot;:&quot;blocked&quot;,&quot;generatedAt&quot;:&quot;2026-07-26T19:39:57.483Z&quot;,&quot;blockers&quot;:[&quot;v0_model_blocked&quot;,&quot;no_selected_v0_baseline&quot;,&quot;no_approved_training_pixels&quot;,&quot;no_real_phone_test_captures&quot;,&quot;v0_checkpoint_has_no_weights&quot;,&quot;no_embedding_vectors&quot;,&quot;no_measured_failures&quot;,&quot;protected_test_metrics_missing&quot;],&quot;datasetManifestSha256&quot;:&quot;30088194d480c2b037db56329514c75e67a296b8889beda9e073b5d4c7c937ce&quot;,&quot;datasetVersion&quot;:&quot;stackr-pilot-recognition-dataset-v1.0.0&quot;,&quot;protectedTestSet&quot;:{&quot;sharedEvaluationData&quot;:true,&quot;rowCount&quot;:336,&quot;hasRealPhoneCaptures&quot;:false},&quot;developmentTargets&quot;:{&quot;acceptedResultPrecision&quot;:0.99,&quot;falseAutomaticAcceptRateMax&quot;:0.005,&quot;top3Retrieval&quot;:0.99,&quot;exactVariantAccuracyReportedSeparately&quot;:true,&quot;unknownCardsRejectedInsteadOfNearestKnown&quot;:true},&quot;v0&quot;:{&quot;status&quot;:&quot;blocked&quot;,&quot;selectedBaseline&quot;:null,&quot;metrics&quot;:{&quot;top1&quot;:null,&quot;top3&quot;:null,&quot;meanReciprocalRank&quot;:null,&quot;acceptedResultPrecision&quot;:null,&quot;falseAutomaticAcceptRate&quot;:null,&quot;hardNegativeAccuracy&quot;:null,&quot;languageAccuracy&quot;:null,&quot;sameArtReprintAccuracy&quot;:null,&quot;exactVariantAccuracy&quot;:null,&quot;unknownRejectAccuracy&quot;:null}},&quot;v1&quot;:{&quot;status&quot;:&quot;not_advanced&quot;,&quot;selectedBaseline&quot;:null,&quot;metrics&quot;:{&quot;top1&quot;:null,&quot;top3&quot;:null,&quot;meanReciprocalRank&quot;:null,&quot;acceptedResultPrecision&quot;:null,&quot;falseAutomaticAcceptRate&quot;:null,&quot;hardNegativeAccuracy&quot;:null,&quot;languageAccuracy&quot;:null,&quot;sameArtReprintAccuracy&quot;:null,&quot;exactVariantAccuracy&quot;:null,&quot;unknownRejectAccuracy&quot;:null},&quot;reason&quot;:&quot;V1 was not trained because V0 has no approved-pixel checkpoint or measured nearest-neighbour failures to mine.&quot;},&quot;retrievalVersusAcceptance&quot;:{&quot;retrievalMetricsMeasured&quot;:false,&quot;acceptedMatchPrecisionMeasured&quot;:false,&quot;note&quot;:&quot;Retrieval accuracy and accepted-match precision are intentionally separate, but neither was measured because no embedding vectors exist.&quot;},&quot;unknownCardPolicy&quot;:{&quot;evaluated&quot;:false,&quot;modelAdvanced&quot;:false,&quot;reason&quot;:&quot;Unknown-card rejection was not evaluated; model advancement is blocked until confidently-misidentified unknowns can be measured and rejected.&quot;},&quot;failureCategorySummary&quot;:{&quot;crop_failure&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:0},&quot;blur&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:0},&quot;glare&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:0},&quot;sleeve&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:0},&quot;binder_pocket&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:0},&quot;same_artwork&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:2},&quot;wrong_language&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:1},&quot;wrong_set&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:3},&quot;wrong_collector_number&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:1},&quot;wrong_variant&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:5},&quot;promo_stamp&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:2},&quot;reverse_holo&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:1},&quot;low_resolution_reference&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:0},&quot;catalogue_error&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:0},&quot;ocr_conflict&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:1},&quot;unknown_card&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:0},&quot;model_confusion&quot;:{&quot;measuredFailureCount&quot;:0,&quot;candidateConfusionGroupCount&quot;:10}},&quot;measuredFailures&quot;:[],&quot;topNeighbourVisualReports&quot;:[],&quot;confusionGroups&quot;:[{&quot;groupId&quot;:&quot;hardneg_same_pokemon_different_artwork_charizard&quot;,&quot;type&quot;:&quot;same_pokemon_different_artwork&quot;,&quot;sourceStatus&quot;:&quot;represented&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;hard&quot;,&quot;members&quot;:[{&quot;sourceImageId&quot;:&quot;src_e2d5f7dd2175ed3f&quot;,&quot;cardId&quot;:&quot;base1-4&quot;,&quot;cardName&quot;:&quot;Charizard&quot;,&quot;setId&quot;:&quot;base1&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;4&quot;,&quot;variant&quot;:&quot;holo&quot;},{&quot;sourceImageId&quot;:&quot;src_059ffe96cf9d445e&quot;,&quot;cardId&quot;:&quot;xy12-11&quot;,&quot;cardName&quot;:&quot;Charizard&quot;,&quot;setId&quot;:&quot;xy12&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;11&quot;,&quot;variant&quot;:&quot;holo&quot;},{&quot;sourceImageId&quot;:&quot;src_acdf1a72b5f7dcc8&quot;,&quot;cardId&quot;:&quot;base4-4&quot;,&quot;cardName&quot;:&quot;Charizard&quot;,&quot;setId&quot;:&quot;base4&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;4&quot;,&quot;variant&quot;:&quot;holo&quot;}],&quot;miningDecision&quot;:&quot;candidate_when_approved_pixels_exist&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;Same card name across different sets can make OCR-only or name-first matching overconfident.&quot;,&quot;notes&quot;:&quot;Artwork difference is metadata-inferred and must be visually reviewed before training use.&quot;},{&quot;groupId&quot;:&quot;hardneg_identical_artwork_different_set_base_charizard&quot;,&quot;type&quot;:&quot;identical_artwork_different_set&quot;,&quot;sourceStatus&quot;:&quot;represented&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;same_artwork&quot;,&quot;wrong_set&quot;,&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;near_identical&quot;,&quot;members&quot;:[{&quot;sourceImageId&quot;:&quot;src_e2d5f7dd2175ed3f&quot;,&quot;cardId&quot;:&quot;base1-4&quot;,&quot;cardName&quot;:&quot;Charizard&quot;,&quot;setId&quot;:&quot;base1&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;4&quot;,&quot;variant&quot;:&quot;holo&quot;},{&quot;sourceImageId&quot;:&quot;src_2c72404bc43fc7ff&quot;,&quot;cardId&quot;:&quot;base2-4&quot;,&quot;cardName&quot;:&quot;Jolteon&quot;,&quot;setId&quot;:&quot;base2&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;4&quot;,&quot;variant&quot;:&quot;holo&quot;}],&quot;miningDecision&quot;:&quot;candidate_when_approved_pixels_exist&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;Known Base Set and Base Set 2 style reprint risk: artwork can be near-identical while set identity differs.&quot;,&quot;notes&quot;:&quot;Needs visual verification from licensed pixels before model training.&quot;},{&quot;groupId&quot;:&quot;hardneg_identical_artwork_different_language_bulbasaur_151&quot;,&quot;type&quot;:&quot;identical_artwork_different_language&quot;,&quot;sourceStatus&quot;:&quot;represented&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;same_artwork&quot;,&quot;wrong_language&quot;,&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;near_identical&quot;,&quot;members&quot;:[{&quot;sourceImageId&quot;:&quot;src_c9d659a1bc78dc6e&quot;,&quot;cardId&quot;:&quot;sv3pt5-1&quot;,&quot;cardName&quot;:&quot;Bulbasaur&quot;,&quot;setId&quot;:&quot;sv3pt5&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;1&quot;,&quot;variant&quot;:&quot;standard&quot;},{&quot;sourceImageId&quot;:&quot;src_7704193ab983c055&quot;,&quot;cardId&quot;:&quot;tcgdex:ja:SV2a-001&quot;,&quot;cardName&quot;:&quot;フシギダネ&quot;,&quot;setId&quot;:&quot;SV2a&quot;,&quot;language&quot;:&quot;ja&quot;,&quot;collectorNumber&quot;:&quot;001&quot;,&quot;variant&quot;:&quot;standard&quot;},{&quot;sourceImageId&quot;:&quot;src_9f70d2a3e00ae94e&quot;,&quot;cardId&quot;:&quot;tcgdex:zh-tw:SV2a-001&quot;,&quot;cardName&quot;:&quot;妙蛙種子&quot;,&quot;setId&quot;:&quot;SV2a&quot;,&quot;language&quot;:&quot;zh-Hant&quot;,&quot;collectorNumber&quot;:&quot;001&quot;,&quot;variant&quot;:&quot;standard&quot;}],&quot;miningDecision&quot;:&quot;candidate_when_approved_pixels_exist&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;Same printed card family across English/Japanese/Traditional Chinese can confuse artwork-only matching.&quot;,&quot;notes&quot;:&quot;Uses provider probe metadata for JA/ZH references; no pixels redistributed.&quot;},{&quot;groupId&quot;:&quot;hardneg_standard_vs_reverse_holo&quot;,&quot;type&quot;:&quot;standard_versus_reverse_holo&quot;,&quot;sourceStatus&quot;:&quot;blocked_no_approved_source&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;wrong_variant&quot;,&quot;reverse_holo&quot;,&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;near_identical&quot;,&quot;members&quot;:[],&quot;miningDecision&quot;:&quot;blocked_until_approved_source_pair_exists&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;Current approved local metadata does not expose separate reverse-holo image classes.&quot;,&quot;notes&quot;:&quot;Must be filled from licensed/reference variant sources or reviewed real captures.&quot;},{&quot;groupId&quot;:&quot;hardneg_stamped_vs_unstamped&quot;,&quot;type&quot;:&quot;stamped_versus_unstamped&quot;,&quot;sourceStatus&quot;:&quot;blocked_no_approved_source&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;wrong_variant&quot;,&quot;promo_stamp&quot;,&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;near_identical&quot;,&quot;members&quot;:[],&quot;miningDecision&quot;:&quot;blocked_until_approved_source_pair_exists&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;No approved stamped and unstamped source-image pair was found locally.&quot;,&quot;notes&quot;:&quot;Do not synthesize a stamp and treat it as a true class variant.&quot;},{&quot;groupId&quot;:&quot;hardneg_first_edition_vs_unlimited&quot;,&quot;type&quot;:&quot;first_edition_versus_unlimited&quot;,&quot;sourceStatus&quot;:&quot;blocked_no_approved_source&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;wrong_variant&quot;,&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;near_identical&quot;,&quot;members&quot;:[],&quot;miningDecision&quot;:&quot;blocked_until_approved_source_pair_exists&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;The current scanner pack does not model first-edition versus unlimited as separate verified source classes.&quot;,&quot;notes&quot;:&quot;Requires licensed vintage variant references or reviewed real captures.&quot;},{&quot;groupId&quot;:&quot;hardneg_promo_vs_set_release&quot;,&quot;type&quot;:&quot;promo_versus_set_release&quot;,&quot;sourceStatus&quot;:&quot;represented&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;promo_stamp&quot;,&quot;wrong_set&quot;,&quot;wrong_variant&quot;,&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;hard&quot;,&quot;members&quot;:[{&quot;sourceImageId&quot;:&quot;src_11f0a21c2c8986ea&quot;,&quot;cardId&quot;:&quot;base1-10&quot;,&quot;cardName&quot;:&quot;Mewtwo&quot;,&quot;setId&quot;:&quot;base1&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;10&quot;,&quot;variant&quot;:&quot;holo&quot;},{&quot;sourceImageId&quot;:&quot;src_96afd81ef7ae187d&quot;,&quot;cardId&quot;:&quot;basep-3&quot;,&quot;cardName&quot;:&quot;Mewtwo&quot;,&quot;setId&quot;:&quot;basep&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;3&quot;,&quot;variant&quot;:&quot;promo&quot;},{&quot;sourceImageId&quot;:&quot;src_5e4025c94003f15e&quot;,&quot;cardId&quot;:&quot;swshp-SWSH020&quot;,&quot;cardName&quot;:&quot;Pikachu&quot;,&quot;setId&quot;:&quot;swshp&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;SWSH020&quot;,&quot;variant&quot;:&quot;promo&quot;}],&quot;miningDecision&quot;:&quot;candidate_when_approved_pixels_exist&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;Promo releases can share Pokemon/name cues with set releases while differing in identifiers and layout.&quot;,&quot;notes&quot;:&quot;Selected from existing scanner-pack metadata when promo set IDs are present.&quot;},{&quot;groupId&quot;:&quot;hardneg_same_collector_number_different_set&quot;,&quot;type&quot;:&quot;same_collector_number_different_set&quot;,&quot;sourceStatus&quot;:&quot;represented&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;wrong_collector_number&quot;,&quot;wrong_set&quot;,&quot;ocr_conflict&quot;,&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;hard&quot;,&quot;members&quot;:[{&quot;sourceImageId&quot;:&quot;src_c9d659a1bc78dc6e&quot;,&quot;cardId&quot;:&quot;sv3pt5-1&quot;,&quot;cardName&quot;:&quot;Bulbasaur&quot;,&quot;setId&quot;:&quot;sv3pt5&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;1&quot;,&quot;variant&quot;:&quot;standard&quot;},{&quot;sourceImageId&quot;:&quot;src_be8df74de5a7adde&quot;,&quot;cardId&quot;:&quot;bw1-1&quot;,&quot;cardName&quot;:&quot;Snivy&quot;,&quot;setId&quot;:&quot;bw1&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;1&quot;,&quot;variant&quot;:&quot;standard&quot;},{&quot;sourceImageId&quot;:&quot;src_069e5131cc018899&quot;,&quot;cardId&quot;:&quot;cel25-1&quot;,&quot;cardName&quot;:&quot;Ho-Oh&quot;,&quot;setId&quot;:&quot;cel25&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;1&quot;,&quot;variant&quot;:&quot;standard&quot;},{&quot;sourceImageId&quot;:&quot;src_9fb974a01fe2dfcd&quot;,&quot;cardId&quot;:&quot;tcgdex:en:base1-1&quot;,&quot;cardName&quot;:&quot;Alakazam&quot;,&quot;setId&quot;:&quot;base1&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;1&quot;,&quot;variant&quot;:&quot;standard&quot;}],&quot;miningDecision&quot;:&quot;candidate_when_approved_pixels_exist&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;A collector number alone is not an identity; set and visual evidence must separate these.&quot;,&quot;notes&quot;:&quot;Directly targets the isolated-number false-positive risk.&quot;},{&quot;groupId&quot;:&quot;hardneg_similar_full_art_layouts&quot;,&quot;type&quot;:&quot;similar_full_art_layouts&quot;,&quot;sourceStatus&quot;:&quot;represented&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;hard&quot;,&quot;members&quot;:[{&quot;sourceImageId&quot;:&quot;src_48bd440a99d26706&quot;,&quot;cardId&quot;:&quot;base5-83&quot;,&quot;cardName&quot;:&quot;Dark Raichu&quot;,&quot;setId&quot;:&quot;base5&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;83&quot;,&quot;variant&quot;:&quot;high_rarity_art&quot;},{&quot;sourceImageId&quot;:&quot;src_627ac15fa04530d7&quot;,&quot;cardId&quot;:&quot;bw1-113&quot;,&quot;cardName&quot;:&quot;Reshiram&quot;,&quot;setId&quot;:&quot;bw1&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;113&quot;,&quot;variant&quot;:&quot;high_rarity_art&quot;},{&quot;sourceImageId&quot;:&quot;src_b9ae970688509b8f&quot;,&quot;cardId&quot;:&quot;bw1-114&quot;,&quot;cardName&quot;:&quot;Zekrom&quot;,&quot;setId&quot;:&quot;bw1&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;114&quot;,&quot;variant&quot;:&quot;high_rarity_art&quot;},{&quot;sourceImageId&quot;:&quot;src_2e251c8f319cb024&quot;,&quot;cardId&quot;:&quot;bw1-115&quot;,&quot;cardName&quot;:&quot;Pikachu&quot;,&quot;setId&quot;:&quot;bw1&quot;,&quot;language&quot;:&quot;en&quot;,&quot;collectorNumber&quot;:&quot;115&quot;,&quot;variant&quot;:&quot;high_rarity_art&quot;}],&quot;miningDecision&quot;:&quot;candidate_when_approved_pixels_exist&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;Full-art compositions can produce high visual similarity despite different card identities.&quot;,&quot;notes&quot;:&quot;Rarity/layout category is metadata-inferred and requires visual review before training use.&quot;},{&quot;groupId&quot;:&quot;hardneg_pokeball_vs_masterball_patterns&quot;,&quot;type&quot;:&quot;poke_ball_versus_master_ball_patterns&quot;,&quot;sourceStatus&quot;:&quot;blocked_no_approved_source&quot;,&quot;measured&quot;:false,&quot;categories&quot;:[&quot;wrong_variant&quot;,&quot;model_confusion&quot;],&quot;difficulty&quot;:&quot;near_identical&quot;,&quot;members&quot;:[],&quot;miningDecision&quot;:&quot;blocked_until_approved_source_pair_exists&quot;,&quot;protectedTestHandling&quot;:&quot;not_added_to_training_batches&quot;,&quot;reason&quot;:&quot;No approved local Poke Ball versus Master Ball pattern pair is available.&quot;,&quot;notes&quot;:&quot;Keep this explicit because Japanese 151 variants are high-risk when the data becomes available.&quot;}]}</script>
+</body>
+</html>

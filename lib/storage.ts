@@ -2,10 +2,14 @@ import { supabase } from './supabase';
 
 export async function uploadCardScan(uri: string) {
   try {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Authentication is required to upload a card scan.');
+
     const response = await fetch(uri);
     const blob = await response.blob();
 
-    const fileName = `scan_${Date.now()}.jpg`;
+    const fileName = `${authData.user.id}/scan_${Date.now()}.jpg`;
 
     const { error } = await supabase.storage
       .from('card-scans')
@@ -15,11 +19,13 @@ export async function uploadCardScan(uri: string) {
 
     if (error) throw error;
 
-    const { data } = supabase.storage
+    const { data, error: signedUrlError } = await supabase.storage
       .from('card-scans')
-      .getPublicUrl(fileName);
+      .createSignedUrl(fileName, 300);
 
-    return data.publicUrl;
+    if (signedUrlError) throw signedUrlError;
+
+    return data.signedUrl;
   } catch (error) {
     console.log('Upload failed', error);
     throw error;

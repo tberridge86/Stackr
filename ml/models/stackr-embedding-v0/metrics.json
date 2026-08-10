@@ -1,0 +1,154 @@
+{
+  "status": "blocked",
+  "blockers": [
+    "no_approved_training_pixels",
+    "no_real_phone_test_captures"
+  ],
+  "datasetManifestSha256": "9ded04ffc25428ad733cdb1530a64a58c40526f61ff5edd3e1838b616ab6e815",
+  "datasetVersion": "stackr-pilot-recognition-dataset-v1.0.0",
+  "sourceCommitHash": "b6495cc77fd0e56e5911c5925c6bf3680640860a",
+  "sourceTreeDirty": true,
+  "generatedAt": "2026-07-27T18:27:17.190Z",
+  "config": {
+    "configVersion": "stackr-embedding-training-config-v1.0.0",
+    "modelVersion": "stackr-embedding-v0.0.0-blocked",
+    "randomSeed": 12012,
+    "deterministic": true,
+    "input": {
+      "width": 224,
+      "height": 320,
+      "preservesFullCardRatio": true,
+      "colorSpace": "rgb"
+    },
+    "embedding": {
+      "dimensions": 128,
+      "l2Normalised": true
+    },
+    "backbone": {
+      "name": "MobileNetV3 Small",
+      "pretrainedWeights": "none",
+      "provenanceStatus": "not_reviewed_for_external_weights"
+    },
+    "optimisation": {
+      "maxEpochs": 80,
+      "batchSize": 64,
+      "learningRate": 0.0003,
+      "weightDecay": 0.00004
+    },
+    "baselinesCompared": [
+      "supervised_contrastive_mobilenetv3_small",
+      "multi_similarity_mobilenetv3_small",
+      "non_neural_perceptual_hash_local_features"
+    ]
+  },
+  "baselines": [
+    {
+      "id": "supervised_contrastive_mobilenetv3_small",
+      "label": "A. Supervised contrastive MobileNetV3 Small",
+      "family": "neural_metric_learning",
+      "architecture": "MobileNetV3 Small backbone, 224x320 portrait input, 128-dimensional L2-normalised embedding head.",
+      "objective": "Supervised contrastive metric-learning objective with class-aware batches.",
+      "hardNegativeSampling": true,
+      "pretrainedInitialisation": {
+        "used": false,
+        "provenanceReviewed": false,
+        "source": null,
+        "notes": "External pretrained weights were not used because model-weight provenance has not been reviewed for this task."
+      },
+      "status": "blocked",
+      "metrics": {
+        "trainingLoss": null,
+        "validationRetrievalAccuracy": null,
+        "top1": null,
+        "top3": null,
+        "meanReciprocalRank": null,
+        "hardNegativeAccuracy": null,
+        "languageAccuracy": null,
+        "sameArtReprintAccuracy": null,
+        "exactVariantAccuracy": null,
+        "positiveDistanceMean": null,
+        "negativeDistanceMean": null,
+        "hardNegativeDistanceMean": null,
+        "modelSizeBytes": null,
+        "desktopInferenceMsP50": null,
+        "desktopInferenceMsP95": null
+      }
+    },
+    {
+      "id": "multi_similarity_mobilenetv3_small",
+      "label": "B. Multi-similarity MobileNetV3 Small",
+      "family": "neural_metric_learning",
+      "architecture": "MobileNetV3 Small backbone, 224x320 portrait input, 128-dimensional L2-normalised embedding head.",
+      "objective": "Multi-similarity metric-learning objective with hard-negative mining.",
+      "hardNegativeSampling": true,
+      "pretrainedInitialisation": {
+        "used": false,
+        "provenanceReviewed": false,
+        "source": null,
+        "notes": "External pretrained weights were not used because model-weight provenance has not been reviewed for this task."
+      },
+      "status": "blocked",
+      "metrics": {
+        "trainingLoss": null,
+        "validationRetrievalAccuracy": null,
+        "top1": null,
+        "top3": null,
+        "meanReciprocalRank": null,
+        "hardNegativeAccuracy": null,
+        "languageAccuracy": null,
+        "sameArtReprintAccuracy": null,
+        "exactVariantAccuracy": null,
+        "positiveDistanceMean": null,
+        "negativeDistanceMean": null,
+        "hardNegativeDistanceMean": null,
+        "modelSizeBytes": null,
+        "desktopInferenceMsP50": null,
+        "desktopInferenceMsP95": null
+      }
+    },
+    {
+      "id": "non_neural_perceptual_hash_local_features",
+      "label": "C. Perceptual hash plus local-feature matching",
+      "family": "non_neural_visual",
+      "architecture": "Portrait-preserving 224x320 preprocessing, perceptual hashes, edge/color histograms and local feature agreement.",
+      "objective": "Nearest-neighbour retrieval over non-neural visual descriptors.",
+      "hardNegativeSampling": true,
+      "pretrainedInitialisation": {
+        "used": false,
+        "provenanceReviewed": true,
+        "source": null,
+        "notes": "No pretrained weights are involved in this baseline."
+      },
+      "status": "blocked",
+      "metrics": {
+        "trainingLoss": null,
+        "validationRetrievalAccuracy": null,
+        "top1": null,
+        "top3": null,
+        "meanReciprocalRank": null,
+        "hardNegativeAccuracy": null,
+        "languageAccuracy": null,
+        "sameArtReprintAccuracy": null,
+        "exactVariantAccuracy": null,
+        "positiveDistanceMean": null,
+        "negativeDistanceMean": null,
+        "hardNegativeDistanceMean": null,
+        "modelSizeBytes": null,
+        "desktopInferenceMsP50": null,
+        "desktopInferenceMsP95": null
+      }
+    }
+  ],
+  "selectedBaseline": null,
+  "selectionReason": "No winning baseline was selected because training and retrieval evaluation were blocked before image pixels could be loaded.",
+  "protectedTestSet": {
+    "available": true,
+    "rowCount": 315,
+    "hasRealPhoneCaptures": false
+  },
+  "hardNegativeCoverage": {
+    "represented": 6,
+    "blocked": 4,
+    "total": 10
+  }
+}

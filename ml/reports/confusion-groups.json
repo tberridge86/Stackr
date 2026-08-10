@@ -1,0 +1,366 @@
+{
+  "analysisVersion": "stackr-embedding-failure-analysis-v1.0.0",
+  "status": "blocked",
+  "generatedAt": "2026-07-26T19:39:57.483Z",
+  "blockers": [
+    "v0_model_blocked",
+    "no_selected_v0_baseline",
+    "no_approved_training_pixels",
+    "no_real_phone_test_captures",
+    "v0_checkpoint_has_no_weights",
+    "no_embedding_vectors",
+    "no_measured_failures",
+    "protected_test_metrics_missing"
+  ],
+  "datasetManifestSha256": "30088194d480c2b037db56329514c75e67a296b8889beda9e073b5d4c7c937ce",
+  "protectedTestSet": {
+    "sharedEvaluationData": true,
+    "rowCount": 336,
+    "hasRealPhoneCaptures": false
+  },
+  "confusionGroups": [
+    {
+      "groupId": "hardneg_same_pokemon_different_artwork_charizard",
+      "type": "same_pokemon_different_artwork",
+      "sourceStatus": "represented",
+      "measured": false,
+      "categories": [
+        "model_confusion"
+      ],
+      "difficulty": "hard",
+      "members": [
+        {
+          "sourceImageId": "src_e2d5f7dd2175ed3f",
+          "cardId": "base1-4",
+          "cardName": "Charizard",
+          "setId": "base1",
+          "language": "en",
+          "collectorNumber": "4",
+          "variant": "holo"
+        },
+        {
+          "sourceImageId": "src_059ffe96cf9d445e",
+          "cardId": "xy12-11",
+          "cardName": "Charizard",
+          "setId": "xy12",
+          "language": "en",
+          "collectorNumber": "11",
+          "variant": "holo"
+        },
+        {
+          "sourceImageId": "src_acdf1a72b5f7dcc8",
+          "cardId": "base4-4",
+          "cardName": "Charizard",
+          "setId": "base4",
+          "language": "en",
+          "collectorNumber": "4",
+          "variant": "holo"
+        }
+      ],
+      "miningDecision": "candidate_when_approved_pixels_exist",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "Same card name across different sets can make OCR-only or name-first matching overconfident.",
+      "notes": "Artwork difference is metadata-inferred and must be visually reviewed before training use."
+    },
+    {
+      "groupId": "hardneg_identical_artwork_different_set_base_charizard",
+      "type": "identical_artwork_different_set",
+      "sourceStatus": "represented",
+      "measured": false,
+      "categories": [
+        "same_artwork",
+        "wrong_set",
+        "model_confusion"
+      ],
+      "difficulty": "near_identical",
+      "members": [
+        {
+          "sourceImageId": "src_e2d5f7dd2175ed3f",
+          "cardId": "base1-4",
+          "cardName": "Charizard",
+          "setId": "base1",
+          "language": "en",
+          "collectorNumber": "4",
+          "variant": "holo"
+        },
+        {
+          "sourceImageId": "src_2c72404bc43fc7ff",
+          "cardId": "base2-4",
+          "cardName": "Jolteon",
+          "setId": "base2",
+          "language": "en",
+          "collectorNumber": "4",
+          "variant": "holo"
+        }
+      ],
+      "miningDecision": "candidate_when_approved_pixels_exist",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "Known Base Set and Base Set 2 style reprint risk: artwork can be near-identical while set identity differs.",
+      "notes": "Needs visual verification from licensed pixels before model training."
+    },
+    {
+      "groupId": "hardneg_identical_artwork_different_language_bulbasaur_151",
+      "type": "identical_artwork_different_language",
+      "sourceStatus": "represented",
+      "measured": false,
+      "categories": [
+        "same_artwork",
+        "wrong_language",
+        "model_confusion"
+      ],
+      "difficulty": "near_identical",
+      "members": [
+        {
+          "sourceImageId": "src_c9d659a1bc78dc6e",
+          "cardId": "sv3pt5-1",
+          "cardName": "Bulbasaur",
+          "setId": "sv3pt5",
+          "language": "en",
+          "collectorNumber": "1",
+          "variant": "standard"
+        },
+        {
+          "sourceImageId": "src_7704193ab983c055",
+          "cardId": "tcgdex:ja:SV2a-001",
+          "cardName": "フシギダネ",
+          "setId": "SV2a",
+          "language": "ja",
+          "collectorNumber": "001",
+          "variant": "standard"
+        },
+        {
+          "sourceImageId": "src_9f70d2a3e00ae94e",
+          "cardId": "tcgdex:zh-tw:SV2a-001",
+          "cardName": "妙蛙種子",
+          "setId": "SV2a",
+          "language": "zh-Hant",
+          "collectorNumber": "001",
+          "variant": "standard"
+        }
+      ],
+      "miningDecision": "candidate_when_approved_pixels_exist",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "Same printed card family across English/Japanese/Traditional Chinese can confuse artwork-only matching.",
+      "notes": "Uses provider probe metadata for JA/ZH references; no pixels redistributed."
+    },
+    {
+      "groupId": "hardneg_standard_vs_reverse_holo",
+      "type": "standard_versus_reverse_holo",
+      "sourceStatus": "blocked_no_approved_source",
+      "measured": false,
+      "categories": [
+        "wrong_variant",
+        "reverse_holo",
+        "model_confusion"
+      ],
+      "difficulty": "near_identical",
+      "members": [],
+      "miningDecision": "blocked_until_approved_source_pair_exists",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "Current approved local metadata does not expose separate reverse-holo image classes.",
+      "notes": "Must be filled from licensed/reference variant sources or reviewed real captures."
+    },
+    {
+      "groupId": "hardneg_stamped_vs_unstamped",
+      "type": "stamped_versus_unstamped",
+      "sourceStatus": "blocked_no_approved_source",
+      "measured": false,
+      "categories": [
+        "wrong_variant",
+        "promo_stamp",
+        "model_confusion"
+      ],
+      "difficulty": "near_identical",
+      "members": [],
+      "miningDecision": "blocked_until_approved_source_pair_exists",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "No approved stamped and unstamped source-image pair was found locally.",
+      "notes": "Do not synthesize a stamp and treat it as a true class variant."
+    },
+    {
+      "groupId": "hardneg_first_edition_vs_unlimited",
+      "type": "first_edition_versus_unlimited",
+      "sourceStatus": "blocked_no_approved_source",
+      "measured": false,
+      "categories": [
+        "wrong_variant",
+        "model_confusion"
+      ],
+      "difficulty": "near_identical",
+      "members": [],
+      "miningDecision": "blocked_until_approved_source_pair_exists",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "The current scanner pack does not model first-edition versus unlimited as separate verified source classes.",
+      "notes": "Requires licensed vintage variant references or reviewed real captures."
+    },
+    {
+      "groupId": "hardneg_promo_vs_set_release",
+      "type": "promo_versus_set_release",
+      "sourceStatus": "represented",
+      "measured": false,
+      "categories": [
+        "promo_stamp",
+        "wrong_set",
+        "wrong_variant",
+        "model_confusion"
+      ],
+      "difficulty": "hard",
+      "members": [
+        {
+          "sourceImageId": "src_11f0a21c2c8986ea",
+          "cardId": "base1-10",
+          "cardName": "Mewtwo",
+          "setId": "base1",
+          "language": "en",
+          "collectorNumber": "10",
+          "variant": "holo"
+        },
+        {
+          "sourceImageId": "src_96afd81ef7ae187d",
+          "cardId": "basep-3",
+          "cardName": "Mewtwo",
+          "setId": "basep",
+          "language": "en",
+          "collectorNumber": "3",
+          "variant": "promo"
+        },
+        {
+          "sourceImageId": "src_5e4025c94003f15e",
+          "cardId": "swshp-SWSH020",
+          "cardName": "Pikachu",
+          "setId": "swshp",
+          "language": "en",
+          "collectorNumber": "SWSH020",
+          "variant": "promo"
+        }
+      ],
+      "miningDecision": "candidate_when_approved_pixels_exist",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "Promo releases can share Pokemon/name cues with set releases while differing in identifiers and layout.",
+      "notes": "Selected from existing scanner-pack metadata when promo set IDs are present."
+    },
+    {
+      "groupId": "hardneg_same_collector_number_different_set",
+      "type": "same_collector_number_different_set",
+      "sourceStatus": "represented",
+      "measured": false,
+      "categories": [
+        "wrong_collector_number",
+        "wrong_set",
+        "ocr_conflict",
+        "model_confusion"
+      ],
+      "difficulty": "hard",
+      "members": [
+        {
+          "sourceImageId": "src_c9d659a1bc78dc6e",
+          "cardId": "sv3pt5-1",
+          "cardName": "Bulbasaur",
+          "setId": "sv3pt5",
+          "language": "en",
+          "collectorNumber": "1",
+          "variant": "standard"
+        },
+        {
+          "sourceImageId": "src_be8df74de5a7adde",
+          "cardId": "bw1-1",
+          "cardName": "Snivy",
+          "setId": "bw1",
+          "language": "en",
+          "collectorNumber": "1",
+          "variant": "standard"
+        },
+        {
+          "sourceImageId": "src_069e5131cc018899",
+          "cardId": "cel25-1",
+          "cardName": "Ho-Oh",
+          "setId": "cel25",
+          "language": "en",
+          "collectorNumber": "1",
+          "variant": "standard"
+        },
+        {
+          "sourceImageId": "src_9fb974a01fe2dfcd",
+          "cardId": "tcgdex:en:base1-1",
+          "cardName": "Alakazam",
+          "setId": "base1",
+          "language": "en",
+          "collectorNumber": "1",
+          "variant": "standard"
+        }
+      ],
+      "miningDecision": "candidate_when_approved_pixels_exist",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "A collector number alone is not an identity; set and visual evidence must separate these.",
+      "notes": "Directly targets the isolated-number false-positive risk."
+    },
+    {
+      "groupId": "hardneg_similar_full_art_layouts",
+      "type": "similar_full_art_layouts",
+      "sourceStatus": "represented",
+      "measured": false,
+      "categories": [
+        "model_confusion"
+      ],
+      "difficulty": "hard",
+      "members": [
+        {
+          "sourceImageId": "src_48bd440a99d26706",
+          "cardId": "base5-83",
+          "cardName": "Dark Raichu",
+          "setId": "base5",
+          "language": "en",
+          "collectorNumber": "83",
+          "variant": "high_rarity_art"
+        },
+        {
+          "sourceImageId": "src_627ac15fa04530d7",
+          "cardId": "bw1-113",
+          "cardName": "Reshiram",
+          "setId": "bw1",
+          "language": "en",
+          "collectorNumber": "113",
+          "variant": "high_rarity_art"
+        },
+        {
+          "sourceImageId": "src_b9ae970688509b8f",
+          "cardId": "bw1-114",
+          "cardName": "Zekrom",
+          "setId": "bw1",
+          "language": "en",
+          "collectorNumber": "114",
+          "variant": "high_rarity_art"
+        },
+        {
+          "sourceImageId": "src_2e251c8f319cb024",
+          "cardId": "bw1-115",
+          "cardName": "Pikachu",
+          "setId": "bw1",
+          "language": "en",
+          "collectorNumber": "115",
+          "variant": "high_rarity_art"
+        }
+      ],
+      "miningDecision": "candidate_when_approved_pixels_exist",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "Full-art compositions can produce high visual similarity despite different card identities.",
+      "notes": "Rarity/layout category is metadata-inferred and requires visual review before training use."
+    },
+    {
+      "groupId": "hardneg_pokeball_vs_masterball_patterns",
+      "type": "poke_ball_versus_master_ball_patterns",
+      "sourceStatus": "blocked_no_approved_source",
+      "measured": false,
+      "categories": [
+        "wrong_variant",
+        "model_confusion"
+      ],
+      "difficulty": "near_identical",
+      "members": [],
+      "miningDecision": "blocked_until_approved_source_pair_exists",
+      "protectedTestHandling": "not_added_to_training_batches",
+      "reason": "No approved local Poke Ball versus Master Ball pattern pair is available.",
+      "notes": "Keep this explicit because Japanese 151 variants are high-risk when the data becomes available."
+    }
+  ]
+}

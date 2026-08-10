@@ -45,12 +45,17 @@ function toLocalScanCard(card: ScannerPackCard): LocalScanCard {
     name: card.name,
     language: card.language ?? 'en',
     number: card.number,
+    number_denominator: card.printedTotal,
     set_id: card.setId ?? '',
     set_name: card.setName ?? card.setId ?? '',
     set_code: card.setId ?? '',
     set_printed_total: card.printedTotal,
+    release_year: null,
+    release_date: null,
     image_small: card.imageSmall,
+    image_hash: null,
     rarity: card.rarity,
+    variant: card.rarity || null,
   };
 }
 

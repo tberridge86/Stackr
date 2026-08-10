@@ -9,14 +9,15 @@ import { Text } from '../components/Text';
 import { useAchievements } from '../components/achievement-context';
 import { useTheme } from '../components/theme-context';
 import { ACHIEVEMENTS, type AchievementDefinition } from '../lib/achievements';
+import { stackrIcons } from '../lib/stackrIcons';
 
 const ACHIEVEMENT_ICONS = {
-  binders: require('../assets/rev2/03-ui-illustrations/hero-icons/binders.png'),
-  cards: require('../assets/rev2/03-ui-illustrations/hero-icons/scan-card.png'),
-  progress: require('../assets/rev2/03-ui-illustrations/hero-icons/hub.png'),
-  protect: require('../assets/rev2/03-ui-illustrations/hero-icons/protect.png'),
-  favorite: require('../assets/rev2/03-ui-illustrations/hero-icons/duplicates.png'),
-  coins: require('../assets/rev2/03-ui-illustrations/hero-icons/price-builder.png'),
+  binders: stackrIcons.binders,
+  cards: stackrIcons.scanCard,
+  progress: stackrIcons.hub,
+  protect: stackrIcons.protect,
+  featured: stackrIcons.scanCard,
+  coins: stackrIcons.priceBuilder,
 };
 
 type AchievementFilter = 'all' | 'completed' | 'locked' | 'collector' | 'binder' | 'marketplace' | 'social' | 'seller';
@@ -27,7 +28,7 @@ function getIcon(achievement: AchievementDefinition): ImageSourcePropType {
   if (achievement.id.includes('binder')) return ACHIEVEMENT_ICONS.binders;
   if (achievement.id.includes('scan')) return ACHIEVEMENT_ICONS.cards;
   if (achievement.id.includes('master')) return ACHIEVEMENT_ICONS.protect;
-  if (achievement.id.includes('card')) return ACHIEVEMENT_ICONS.favorite;
+  if (achievement.id.includes('card')) return ACHIEVEMENT_ICONS.featured;
   return ACHIEVEMENT_ICONS.progress;
 }
 
@@ -98,17 +99,17 @@ export default function AchievementsScreen() {
             const unlocked = unlockMap.get(achievement.id);
             const tierColour = getTierColour(achievement.tier);
             return (
-              <View key={achievement.id} style={{ width: '48%', minHeight: 156, borderRadius: 22, padding: 13, backgroundColor: unlocked ? '#FFFFFF' : 'rgba(255,255,255,0.68)', borderWidth: 1, borderColor: unlocked ? tierColour : '#E8E1FF', opacity: unlocked ? 1 : 0.72 }}>
+              <View key={achievement.id} style={{ width: '48%', minHeight: 148, borderRadius: 20, padding: 12, backgroundColor: unlocked ? '#FFFFFF' : 'rgba(255,255,255,0.62)', borderWidth: 1, borderColor: unlocked ? tierColour : '#E8E1FF', opacity: unlocked ? 1 : 0.66 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                  <View style={{ width: 52, height: 52, borderRadius: 26, borderWidth: 4, borderColor: tierColour, backgroundColor: `${tierColour}18`, alignItems: 'center', justifyContent: 'center' }}>
-                    <Image source={getIcon(achievement)} resizeMode="contain" style={{ width: 30, height: 30 }} />
+                  <View style={{ width: 46, height: 46, borderRadius: 23, borderWidth: 3, borderColor: unlocked ? tierColour : '#DCD5F4', backgroundColor: unlocked ? `${tierColour}18` : '#F7F3FF', alignItems: 'center', justifyContent: 'center' }}>
+                    <Image source={getIcon(achievement)} resizeMode="contain" style={{ width: 28, height: 28, opacity: unlocked ? 1 : 0.56 }} />
                   </View>
-                  <Text style={{ color: tierColour, fontSize: 10.5, lineHeight: 13, fontWeight: '900', textTransform: 'uppercase' }}>{achievement.tier}</Text>
+                  <Text style={{ color: unlocked ? tierColour : theme.colors.textSoft, fontSize: 10.5, lineHeight: 13, fontWeight: '900', textTransform: 'uppercase' }}>{achievement.tier}</Text>
                 </View>
                 <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900', marginTop: 10 }} numberOfLines={2}>{achievement.title}</Text>
                 <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700', marginTop: 3 }} numberOfLines={2}>{achievement.description}</Text>
-                <Text style={{ color: unlocked ? tierColour : theme.colors.primary, fontSize: 11.5, lineHeight: 14, fontWeight: '900', marginTop: 10 }}>
-                  {unlocked ? 'Completed' : 'In progress'} · +{achievement.coinReward} coins
+                <Text style={{ color: unlocked ? tierColour : theme.colors.textSoft, fontSize: 11.5, lineHeight: 14, fontWeight: '900', marginTop: 10 }}>
+                  {unlocked ? 'Unlocked' : 'Locked'} · +{achievement.coinReward} coins
                 </Text>
               </View>
             );

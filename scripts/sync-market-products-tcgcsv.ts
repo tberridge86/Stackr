@@ -49,6 +49,7 @@ function productTypeHints(productType: string) {
     case 'booster_pack': return ['booster pack'];
     case 'sleeved_booster_pack': return ['sleeved booster'];
     case 'collection_bundle': return ['collection', 'premium collection', 'ultra premium'];
+    case 'case': return ['case'];
     case 'accessories': return ['sleeves', 'binder', 'playmat', 'deck box'];
     default: return [];
   }
@@ -58,6 +59,9 @@ function scoreMatch(product: MarketProductRow, candidate: { name: string }) {
   const productName = normalize(product.name);
   const candidateName = normalize(candidate.name);
   const aliases = (product.aliases ?? []).map(normalize);
+  if (/\bcase\b/.test(candidateName) && product.product_type !== 'case' && !/\bcase\b/.test(productName)) {
+    return -1000;
+  }
   let score = 0;
 
   if (candidateName === productName) score += 100;
@@ -68,16 +72,17 @@ function scoreMatch(product: MarketProductRow, candidate: { name: string }) {
   for (const hint of productTypeHints(product.product_type)) {
     if (candidateName.includes(normalize(hint))) score += 12;
   }
-  if (/\bcase\b/.test(candidateName) && !/\bcase\b/.test(productName)) score -= 60;
   if (/\bcode card\b/.test(candidateName)) score -= 100;
 
   return score;
 }
 
 function summarize(variants: { lowPrice: number | null; midPrice: number | null; marketPrice: number | null }[]) {
-  const lows = variants.map((v) => v.lowPrice).filter((v): v is number => typeof v === 'number');
-  const mids = variants.map((v) => v.midPrice).filter((v): v is number => typeof v === 'number');
-  const markets = variants.map((v) => v.marketPrice).filter((v): v is number => typeof v === 'number');
+  const saleableVariants = variants.filter((v: any) => !/\bcase\b/i.test(String(v.subTypeName ?? '')));
+  const nextVariants = saleableVariants.length ? saleableVariants : variants;
+  const lows = nextVariants.map((v) => v.lowPrice).filter((v): v is number => typeof v === 'number');
+  const mids = nextVariants.map((v) => v.midPrice).filter((v): v is number => typeof v === 'number');
+  const markets = nextVariants.map((v) => v.marketPrice).filter((v): v is number => typeof v === 'number');
   const avg = (arr: number[]) => arr.length ? arr.reduce((sum, value) => sum + value, 0) / arr.length : null;
   return {
     low: toGbp(lows.length ? Math.min(...lows) : null),

@@ -11,10 +11,11 @@ import { useAchievements } from '../components/achievement-context';
 import { useProfile } from '../components/profile-context';
 import { useTheme } from '../components/theme-context';
 import { COSMETIC_ITEMS, equipCosmetic, fetchOwnedCosmeticIds, purchaseCosmetic, type CosmeticItem } from '../lib/cosmetics';
+import { stackrIcons } from '../lib/stackrIcons';
 
 const SHOP_ICONS = {
-  coins: require('../assets/rev2/03-ui-illustrations/hero-icons/price-builder.png'),
-  profile: require('../assets/rev2/03-ui-illustrations/hero-icons/profile.png'),
+  coins: stackrIcons.priceBuilder,
+  profile: stackrIcons.profile,
 };
 
 function CosmeticShopCard({
@@ -36,24 +37,24 @@ function CosmeticShopCard({
 }) {
   const { theme } = useTheme();
   return (
-    <View style={{ width: '48%', borderRadius: 22, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: equipped ? item.color : '#E8E1FF', padding: 12 }}>
-      <LinearGradient colors={[item.color, item.accentColor]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 98, borderRadius: 18, alignItems: 'center', justifyContent: 'center', padding: 10 }}>
+    <View style={{ width: '48%', borderRadius: 20, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: equipped ? item.color : '#E8E1FF', padding: 10 }}>
+      <LinearGradient colors={[item.color, item.accentColor]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ height: 84, borderRadius: 16, alignItems: 'center', justifyContent: 'center', padding: 10 }}>
         {item.type === 'border' ? (
-          <View style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 5, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
-            <Image source={SHOP_ICONS.profile} resizeMode="contain" style={{ width: 34, height: 34 }} />
+          <View style={{ width: 56, height: 56, borderRadius: 28, borderWidth: 4, borderColor: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' }}>
+            <Image source={SHOP_ICONS.profile} resizeMode="contain" style={{ width: 30, height: 30 }} />
           </View>
         ) : (
           <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 17, fontWeight: '900' }}>Profile Banner</Text>
         )}
       </LinearGradient>
-      <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900', marginTop: 10 }} numberOfLines={1}>{item.name}</Text>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 16, fontWeight: '700', marginTop: 3 }} numberOfLines={2}>{item.description}</Text>
+      <Text style={{ color: theme.colors.text, fontSize: 13.5, lineHeight: 17, fontWeight: '900', marginTop: 9 }} numberOfLines={1}>{item.name}</Text>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700', marginTop: 3 }} numberOfLines={2}>{item.description}</Text>
       <TouchableOpacity
         onPress={() => (owned ? onEquip(item.id) : onBuy(item.id))}
         disabled={busy || (!owned && !canBuy)}
         accessibilityRole="button"
         accessibilityLabel={`${owned ? 'Equip' : 'Unlock'} ${item.name}`}
-        style={{ minHeight: 40, borderRadius: 15, backgroundColor: equipped ? '#F7F3FF' : owned || canBuy ? theme.colors.primary : '#E8E1FF', alignItems: 'center', justifyContent: 'center', marginTop: 10, opacity: busy ? 0.68 : 1 }}
+        style={{ minHeight: 38, borderRadius: 14, backgroundColor: equipped ? '#F7F3FF' : owned || canBuy ? theme.colors.primary : '#E8E1FF', alignItems: 'center', justifyContent: 'center', marginTop: 9, opacity: busy ? 0.68 : 1 }}
       >
         {busy ? (
           <ActivityIndicator color={equipped ? theme.colors.primary : '#FFFFFF'} />

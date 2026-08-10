@@ -1,0 +1,91 @@
+{
+  "schemaVersion": "stackr-staging-recognition-candidate-evidence-v1.0.0",
+  "capturedAt": "2026-08-07T19:41:37.011Z",
+  "productionMutationPerformed": false,
+  "productionAccepted": false,
+  "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+  "index": {
+    "indexVersion": "dinov2-vits14-int8-staging-stored-20260807-v1",
+    "indexVersionId": "f875ddc9-b8e3-426b-9cd4-77292a5c28a1",
+    "status": "validated",
+    "activated": false,
+    "modelId": "dinov2_vits14",
+    "modelSha256": "eb9447f288fe8225cc222d96177458c53d22ce6d794603e10b10a8905962b19a",
+    "embeddingDimensions": 384,
+    "referenceEmbeddingCount": 25529,
+    "missingEmbeddingCount": 0,
+    "checksumSha256": "24fd7322532fb128c21445fa1b1a2615d4c9313b298f1c0d1ce86628c22c7ec1"
+  },
+  "captures": {
+    "privacyScope": "private_model_evaluation_and_training",
+    "manifestSha256": "55896aaaf912e20fc59a5fd268807f77ad5c9ec58876919b52d8db1e1ecacd36",
+    "imageCount": 160,
+    "identityClassCount": 8,
+    "catalogueCoveredIdentityClassCount": 7,
+    "privateImagesCommitted": false
+  },
+  "bestMode": {
+    "queryViewMode": "artwork-ensemble",
+    "status": "staging_candidate_blocked",
+    "reportSha256": "eccc2a1305d1a3224af8192d38d6091375e4f0f41de26ffd57080e4da3c881b3",
+    "singleFrameIdentityTop1": 0.65625,
+    "singleFrameIdentityTop3": 0.725,
+    "singleFrameIdentityTop5": 0.75,
+    "multiFrameIdentityTop1": 0.875,
+    "multiFrameIdentityTop3": 0.875,
+    "multiFrameIdentityTop5": 0.875,
+    "catalogueCoveredMultiFrameIdentityTop1": 1,
+    "catalogueCoveredMultiFrameIdentityCount": 7,
+    "expectedSimilarityP05": 0.47447478771209717,
+    "expectedSimilarityMedian": 0.6664878129959106,
+    "minimumSingleFrameIdentityTop1": 0.75
+  },
+  "modeComparison": [
+    {
+      "queryViewMode": "standard",
+      "singleFrameIdentityTop1": 0.53125,
+      "multiFrameIdentityTop1": 0.625,
+      "reportSha256": "2be7c8b238990da3ed24aaa106823152da4b694287a61a95bb94f10e436f109c"
+    },
+    {
+      "queryViewMode": "whole-card-ensemble",
+      "singleFrameIdentityTop1": 0.49375,
+      "multiFrameIdentityTop1": 0.625,
+      "reportSha256": "1f16b9db21a3a73550fa46f71a467b8d99b2a2270bba2705be20fe13c611fd25"
+    },
+    {
+      "queryViewMode": "artwork-ensemble",
+      "singleFrameIdentityTop1": 0.65625,
+      "multiFrameIdentityTop1": 0.875,
+      "reportSha256": "eccc2a1305d1a3224af8192d38d6091375e4f0f41de26ffd57080e4da3c881b3"
+    },
+    {
+      "queryViewMode": "stackr-ensemble",
+      "singleFrameIdentityTop1": 0.64375,
+      "multiFrameIdentityTop1": 0.75,
+      "reportSha256": "bd5de54147830895071dcfe1eef1735abfab43b20639f29927b7a2e6d8bc2a99"
+    },
+    {
+      "queryViewMode": "stackr-rank-fusion",
+      "singleFrameIdentityTop1": 0.54375,
+      "multiFrameIdentityTop1": 0.75,
+      "slidingTwoFrameIdentityTop1": 0.6842105263157895,
+      "reportSha256": "47fc17c347c5de16622037a9e743cb4574cc973c95b0a4dae4529c314f38d0ef"
+    }
+  ],
+  "catalogueCoverageGap": {
+    "languageCode": "ja",
+    "setCode": "S12a",
+    "collectorNumber": "178/172",
+    "identity": "Manaphy",
+    "catalogueMatchFound": false,
+    "indexMatchPossible": false
+  },
+  "productionBlockers": [
+    "single_frame_identity_top1_below_0_75",
+    "japanese_s12a_178_missing_from_catalogue_and_index",
+    "protected_physical_card_sessions_not_separated",
+    "binder_and_sweep_capture_modes_not_yet_benchmarked",
+    "recognition_scoring_calibration_not_completed"
+  ]
+}

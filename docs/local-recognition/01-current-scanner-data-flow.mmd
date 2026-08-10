@@ -1,0 +1,100 @@
+sequenceDiagram
+    autonumber
+    participant User
+    participant ScanRoute as app/scan/index.tsx
+    participant ScanScreen as features/scan/ScanScreen.tsx
+    participant ExpoCamera as expo-camera CameraView
+    participant Geometry as lib/captureGeometry.ts
+    participant Quality as lib/scanQuality.ts + lib/cardLocalisation.ts
+    participant MLKit as @react-native-ml-kit/text-recognition
+    participant LocalOcr as lib/localOcrCardMatcher.ts
+    participant LocalIndex as lib/localCardIndex.ts
+    participant CardSightOrchestrator as lib/cardSight.ts
+    participant RareCandy as backend/routes/rareCandyScan.js
+    participant LocalAI as backend/routes/localAiScan.js
+    participant CardSightAPI as backend/routes/cardsight.js
+    participant XimilarEdge as supabase/functions/stackr-card-recognition
+    participant ClaudeFallback as backend/server.js /api/scan/identify
+    participant Result as app/scan/result.tsx
+    participant Inventory as features/inventory/InventoryScreen.tsx
+    participant BinderPage as app/scan/binder-page-result.tsx
+    participant Supabase as Supabase tables
+
+    User->>ScanRoute: Open /scan
+    ScanRoute->>ScanScreen: Render current scanner
+    ScanScreen->>ExpoCamera: Request permission and mount CameraView
+    ExpoCamera-->>ScanScreen: Camera ready or mount error
+
+    opt Auto-capture frame check
+        ScanScreen->>ExpoCamera: takePictureAsync quality 0.46, base64 false
+        ScanScreen->>Geometry: Map guide rect to captured frame
+        ScanScreen->>Quality: Resize/check JPEG base64 at 180 or 320 px
+        Quality-->>ScanScreen: localisation, quality, stable-frame decision
+    end
+
+    User->>ScanScreen: Tap capture or auto state triggers capture
+    ScanScreen->>ExpoCamera: takePictureAsync quality 0.7, base64 false
+    ExpoCamera-->>ScanScreen: Photo URI and dimensions
+    ScanScreen->>Geometry: createCapturedFrame and crop guide
+
+    alt Quality gate enabled
+        ScanScreen->>Quality: preparePhotoForFrameCheck and validateScannerFrame
+        Quality-->>ScanScreen: pass or reject
+        alt quality rejected
+            ScanScreen-->>User: Retry/manual search prompt
+        end
+    end
+
+    ScanScreen->>Quality: preparePhotosForRecognition
+    Quality-->>ScanScreen: localised crop, target crop, wide crop, full-frame fallback
+    ScanScreen->>MLKit: OCR targeted name, HP, number, set-code, year crops
+    MLKit-->>ScanScreen: OCR text regions
+    ScanScreen->>LocalOcr: extractLocalOcrSignals and matchLocalOcrCandidates
+    LocalOcr->>LocalIndex: Search cached Supabase pokemon_cards index
+    LocalIndex-->>LocalOcr: local candidates
+
+    alt Strong local OCR match
+        LocalOcr-->>ScanScreen: matched card and alternatives
+    else Needs backend recognition
+        ScanScreen->>CardSightOrchestrator: identifyCardsDetailed(images, binderId, hints)
+        CardSightOrchestrator->>RareCandy: POST /api/rare-candy-scan/identify
+        RareCandy-->>CardSightOrchestrator: visual-pack candidates or no strong match
+        opt printed-number OCR evidence exists
+            CardSightOrchestrator->>LocalAI: POST /api/local-ai/identify
+            LocalAI->>Supabase: Query pokemon_cards and card_clip_embeddings
+            Supabase-->>LocalAI: catalogue rows and embeddings
+            LocalAI-->>CardSightOrchestrator: local-AI candidates
+        end
+        opt visual fallback
+            CardSightOrchestrator->>CardSightAPI: POST /api/cardsight/identify
+            CardSightAPI-->>CardSightOrchestrator: CardSight candidate
+        end
+        opt Ximilar fallback enabled and reasoned
+            CardSightOrchestrator->>XimilarEdge: invoke stackr-card-recognition
+            XimilarEdge->>Supabase: auth, rate-limit log, cache read/write
+            XimilarEdge-->>CardSightOrchestrator: Ximilar candidate(s)
+        end
+        opt final text fallback
+            CardSightOrchestrator->>ClaudeFallback: POST /api/scan/identify
+            ClaudeFallback-->>CardSightOrchestrator: Claude identity JSON
+        end
+        CardSightOrchestrator-->>ScanScreen: normalized provider candidates and diagnostics
+    end
+
+    ScanScreen->>LocalIndex: resolveMatches to local card records
+    LocalIndex-->>ScanScreen: resolved cards or provider fallback card
+    ScanScreen->>Supabase: logScanLearningEvent attempt/metadata
+
+    alt Normal scan route
+        ScanScreen->>Result: Navigate with cardsJson, imageUri, diagnostics
+        Result-->>User: Candidate review, manual search, rescan, add to binder/listing
+        Result->>Supabase: User feedback or binder add events
+    else Inventory callback route
+        ScanScreen->>Inventory: scanStore.triggerCallback(base64, resolvedCard)
+        Inventory-->>User: Stock update or picker/manual flow
+    else Binder page route
+        ScanScreen->>BinderPage: Store page and pocket candidates
+        BinderPage-->>User: Review pockets, confirm high-confidence matches
+        BinderPage->>Supabase: Add confirmed cards to binder
+    end
+

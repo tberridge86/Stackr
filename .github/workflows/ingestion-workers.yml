@@ -1,0 +1,100 @@
+name: Stackr Ingestion Workers
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: Approved ingestion command
+        required: true
+        default: quality-report
+        type: choice
+        options: [quality-report, ingest-source, ingest-language, ingest-set, resume-import, rebuild-record]
+      source:
+        description: Source code for ingest-source
+        required: false
+        type: string
+      language:
+        description: Language code for ingest-language
+        required: false
+        type: string
+      set:
+        description: Set ID for ingest-set
+        required: false
+        type: string
+      id:
+        description: Resume run key or provider record ID
+        required: false
+        type: string
+  schedule:
+    - cron: '23 3 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-catalogue-ingestion
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (vars.STACKR_CATALOGUE_INGESTION_SCHEDULED == 'true' &&
+      vars.STACKR_CATALOGUE_INGESTION_AUTOMATION_APPROVED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: ingestion
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      STACKR_INGEST_SOURCE: ${{ inputs.source }}
+      STACKR_INGEST_LANGUAGE: ${{ inputs.language }}
+      STACKR_INGEST_SET: ${{ inputs.set }}
+      STACKR_INGEST_ID: ${{ inputs.id }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Run terms-safe scheduled quality report
+        if: github.event_name == 'schedule'
+        run: npm run catalogue:quality-report
+
+      - name: Run manual quality report
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'quality-report'
+        run: npm run catalogue:quality-report
+
+      - name: Run one source
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'ingest-source'
+        run: npm run catalogue:ingest -- run-source --source="$STACKR_INGEST_SOURCE"
+
+      - name: Run one language
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'ingest-language'
+        run: >-
+          npm run catalogue:ingest -- run-language
+          --source="$STACKR_INGEST_SOURCE"
+          --language="$STACKR_INGEST_LANGUAGE"
+
+      - name: Run one set
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'ingest-set'
+        run: >-
+          npm run catalogue:ingest -- run-set
+          --source="$STACKR_INGEST_SOURCE"
+          --setId="$STACKR_INGEST_SET"
+
+      - name: Resume interrupted import
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'resume-import'
+        run: >-
+          npm run catalogue:ingest -- resume-import
+          --source="$STACKR_INGEST_SOURCE"
+          --runKey="$STACKR_INGEST_ID"
+
+      - name: Rebuild canonical record
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'rebuild-record'
+        run: >-
+          npm run catalogue:ingest -- rebuild-record
+          --source="$STACKR_INGEST_SOURCE"
+          --providerRecordId="$STACKR_INGEST_ID"

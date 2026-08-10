@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stackr Pilot Recognition Dataset Report</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; background: #f6f7fb; color: #111229; }
+    main { max-width: 1120px; margin: 0 auto; padding: 32px 20px 56px; }
+    h1 { font-size: 32px; margin: 0 0 8px; }
+    h2 { font-size: 20px; margin: 0 0 12px; }
+    p { line-height: 1.55; }
+    section { background: #fff; border: 1px solid #dde1ee; border-radius: 8px; padding: 18px; margin-top: 18px; box-shadow: 0 10px 30px rgba(20, 24, 50, 0.06); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .metric { background: #f8f5ff; border: 1px solid #ded3ff; border-radius: 8px; padding: 14px; }
+    .metric span { display: block; color: #5b5871; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .metric strong { display: block; font-size: 26px; margin-top: 6px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #e8e9f2; text-align: left; vertical-align: top; }
+    th { font-size: 12px; text-transform: uppercase; color: #5b5871; letter-spacing: 0.04em; }
+    code { background: #f1effa; border-radius: 4px; padding: 2px 5px; }
+    .warning { background: #fff7ed; border-color: #fed7aa; }
+    .ok { background: #eefbf4; border-color: #bbf7d0; }
+    .aug-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 14px; }
+    .aug-card { display: grid; gap: 8px; min-width: 0; }
+    .aug-card strong { font-size: 13px; }
+    .aug-card span { color: #66627c; font-size: 11px; overflow-wrap: anywhere; }
+    .fixture { position: relative; aspect-ratio: 0.7; border-radius: 7px; border: 6px solid #251d38; background: linear-gradient(155deg, #fcfcff, #ded9ff 45%, #f9f6fd); box-shadow: 0 16px 28px rgba(25, 22, 45, 0.18); padding: 8%; overflow: hidden; }
+    .fixture::before { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,.48) 48%, transparent 62%); opacity: .24; }
+    .fixture.moderate_glare::before, .fixture.sleeve_reflection::before, .fixture.binder_pocket_reflection::before { opacity: .66; }
+    .fixture.toploader_borders { outline: 8px solid rgba(119, 164, 210, 0.22); }
+    .fixture.corner_occlusion::after { content: ""; position: absolute; left: 0; top: 0; width: 20%; height: 16%; background: rgba(32, 24, 18, .45); border-bottom-right-radius: 18px; }
+    .fixture.background_intrusion::after { content: ""; position: absolute; right: -4%; bottom: -2%; width: 28%; height: 18%; background: #3b4254; transform: rotate(-14deg); }
+    .name-line, .text-line, .number-line { border-radius: 3px; background: #1d1731; height: 5%; opacity: .76; }
+    .art-box { height: 42%; margin: 9% 0 8%; border-radius: 6px; background: radial-gradient(circle at 60% 35%, #fff3a6, transparent 19%), linear-gradient(135deg, #6656f3, #2bc2a2); }
+    .text-line { height: 4%; margin-bottom: 5%; background: #716b85; }
+    .text-line.short { width: 74%; }
+    .number-line { width: 38%; margin-top: 10%; }
+    .small { color: #5d5a70; font-size: 13px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Stackr Pilot Recognition Dataset Report</h1>
+  <p class="small">Generated 2026-07-26T00:00:00.000Z. Dataset version <code>stackr-pilot-recognition-dataset-v1.0.0</code>.</p>
+
+  <section class="warning">
+    <h2>Readiness Limitation</h2>
+    <p>This pilot is a governed manifest and augmentation plan. It does not redistribute card-image pixels, and it must not be used to claim production readiness from clean reference images alone. No approved real Stackr phone-capture export was found locally.</p>
+  </section>
+
+  <section>
+    <h2>Summary</h2>
+    <div class="grid">
+      <div class="metric"><span>Classes</span><strong>51</strong></div>
+      <div class="metric"><span>Source Images</span><strong>51</strong></div>
+      <div class="metric"><span>Reference Rows</span><strong>51</strong></div>
+      <div class="metric"><span>Synthetic Rows</span><strong>1020</strong></div>
+      <div class="metric"><span>Real Phone Sources</span><strong>0</strong></div>
+      <div class="metric"><span>Real Phone Test</span><strong>0</strong></div>
+      <div class="metric"><span>Hard Negatives</span><strong>6/10</strong></div>
+    </div>
+  </section>
+
+  
+    <section>
+      <h2>Language Distribution</h2>
+      <table>
+        <thead><tr><th>Bucket</th><th>Count</th></tr></thead>
+        <tbody><tr><td>en</td><td>47</td></tr><tr><td>ja</td><td>2</td></tr><tr><td>zh-Hant</td><td>2</td></tr></tbody>
+      </table>
+    </section>
+  
+  
+    <section>
+      <h2>Real Versus Synthetic</h2>
+      <table>
+        <thead><tr><th>Bucket</th><th>Count</th></tr></thead>
+        <tbody><tr><td>source_reference_rows</td><td>51</td></tr><tr><td>synthetic_controlled_rows</td><td>1020</td></tr><tr><td>real_phone_source_images</td><td>0</td></tr><tr><td>approved_training_pixel_sources</td><td>0</td></tr></tbody>
+      </table>
+    </section>
+  
+  
+    <section>
+      <h2>Set-Era Distribution</h2>
+      <table>
+        <thead><tr><th>Bucket</th><th>Count</th></tr></thead>
+        <tbody><tr><td>japanese_or_asian_modern</td><td>2</td></tr><tr><td>mid_era_dp_bw</td><td>16</td></tr><tr><td>sword_shield_scarlet_violet</td><td>9</td></tr><tr><td>vintage_wotc_ex</td><td>21</td></tr><tr><td>xy_sun_moon</td><td>3</td></tr></tbody>
+      </table>
+    </section>
+  
+  
+    <section>
+      <h2>Variant Distribution</h2>
+      <table>
+        <thead><tr><th>Bucket</th><th>Count</th></tr></thead>
+        <tbody><tr><td>high_rarity_art</td><td>8</td></tr><tr><td>holo</td><td>12</td></tr><tr><td>promo</td><td>5</td></tr><tr><td>standard</td><td>26</td></tr></tbody>
+      </table>
+    </section>
+  
+  
+    <section>
+      <h2>Source Rights Distribution</h2>
+      <table>
+        <thead><tr><th>Bucket</th><th>Count</th></tr></thead>
+        <tbody><tr><td>existing_stackr_reference_not_redistributed</td><td>46</td></tr><tr><td>needs_license_confirmation</td><td>5</td></tr></tbody>
+      </table>
+    </section>
+  
+  
+    <section>
+      <h2>Provenance Status Distribution</h2>
+      <table>
+        <thead><tr><th>Bucket</th><th>Count</th></tr></thead>
+        <tbody><tr><td>included_metadata_only</td><td>51</td></tr></tbody>
+      </table>
+    </section>
+  
+  
+    <section>
+      <h2>Split Distribution</h2>
+      <table>
+        <thead><tr><th>Bucket</th><th>Count</th></tr></thead>
+        <tbody><tr><td>test</td><td>315</td></tr><tr><td>train</td><td>567</td></tr><tr><td>validation</td><td>189</td></tr></tbody>
+      </table>
+    </section>
+  
+
+  <section class="ok">
+    <h2>Split Integrity</h2>
+    <p>Source-image leakage between train, validation and test: <strong>none found</strong>.</p>
+    <p>Physical-card session leakage between train, validation and test: <strong>none found</strong>.</p>
+    <p>Duplicate source URIs: 0. Duplicate class IDs: 0.</p>
+  </section>
+
+  <section>
+    <h2>Hard-Negative Groups</h2>
+    <table>
+      <thead><tr><th>Group</th><th>Status</th><th>Members</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>same_pokemon_different_artwork</td><td>represented</td><td>3</td><td>Same card name across different sets can make OCR-only or name-first matching overconfident.</td></tr><tr><td>identical_artwork_different_set</td><td>represented</td><td>2</td><td>Known Base Set and Base Set 2 style reprint risk: artwork can be near-identical while set identity differs.</td></tr><tr><td>identical_artwork_different_language</td><td>represented</td><td>3</td><td>Same printed card family across English/Japanese/Traditional Chinese can confuse artwork-only matching.</td></tr><tr><td>standard_versus_reverse_holo</td><td>blocked_no_approved_source</td><td>0</td><td>Current approved local metadata does not expose separate reverse-holo image classes.</td></tr><tr><td>stamped_versus_unstamped</td><td>blocked_no_approved_source</td><td>0</td><td>No approved stamped and unstamped source-image pair was found locally.</td></tr><tr><td>first_edition_versus_unlimited</td><td>blocked_no_approved_source</td><td>0</td><td>The current scanner pack does not model first-edition versus unlimited as separate verified source classes.</td></tr><tr><td>promo_versus_set_release</td><td>represented</td><td>3</td><td>Promo releases can share Pokemon/name cues with set releases while differing in identifiers and layout.</td></tr><tr><td>same_collector_number_different_set</td><td>represented</td><td>4</td><td>A collector number alone is not an identity; set and visual evidence must separate these.</td></tr><tr><td>similar_full_art_layouts</td><td>represented</td><td>4</td><td>Full-art compositions can produce high visual similarity despite different card identities.</td></tr><tr><td>poke_ball_versus_master_ball_patterns</td><td>blocked_no_approved_source</td><td>0</td><td>No approved local Poke Ball versus Master Ball pattern pair is available.</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Represented groups: 6. Blocked groups: 4.</p>
+  </section>
+
+  <section>
+    <h2>Example Augmentation Grids</h2>
+    <div class="aug-grid">
+    <div class="aug-card">
+      <div class="fixture perspective_rotation" style="transform: rotate(-7deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Perspective rotation</strong>
+      <span>{&quot;yawDegrees&quot;:9,&quot;pitchDegrees&quot;:-6,&quot;rollDegrees&quot;:3}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture partial_crop" style="transform: rotate(3deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Partial crop</strong>
+      <span>{&quot;cropTopPct&quot;:0.02,&quot;cropLeftPct&quot;:0.015,&quot;preservesCollectorNumber&quot;:true}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture motion_blur" style="transform: rotate(8deg); filter: blur(1px);">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Motion blur</strong>
+      <span>{&quot;radiusPx&quot;:2.2,&quot;angleDegrees&quot;:11}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture focus_blur" style="transform: rotate(-7deg); filter: blur(1px);">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Focus blur</strong>
+      <span>{&quot;gaussianRadiusPx&quot;:1.5}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture jpeg_compression" style="transform: rotate(3deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>JPEG compression</strong>
+      <span>{&quot;quality&quot;:58,&quot;chromaSubsampling&quot;:&quot;420&quot;}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture exposure_changes" style="transform: rotate(8deg); filter: brightness(0.82) contrast(1.12);">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Exposure changes</strong>
+      <span>{&quot;exposureEv&quot;:-0.45,&quot;contrast&quot;:1.08}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture white_balance" style="transform: rotate(-7deg); filter: sepia(0.25) saturate(1.12);">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Warm white balance</strong>
+      <span>{&quot;temperatureShiftKelvin&quot;:900,&quot;tint&quot;:0.04}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture white_balance" style="transform: rotate(3deg); filter: hue-rotate(190deg) saturate(0.92);">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Cool white balance</strong>
+      <span>{&quot;temperatureShiftKelvin&quot;:-800,&quot;tint&quot;:-0.03}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture uneven_lighting" style="transform: rotate(8deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Uneven lighting</strong>
+      <span>{&quot;leftFalloff&quot;:0.22,&quot;rightBoost&quot;:0.14}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture soft_shadows" style="transform: rotate(-7deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Soft shadows</strong>
+      <span>{&quot;shadowOpacity&quot;:0.18,&quot;blurPx&quot;:22,&quot;offsetPct&quot;:0.08}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture moderate_glare" style="transform: rotate(3deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Moderate glare</strong>
+      <span>{&quot;highlightOpacity&quot;:0.26,&quot;widthPct&quot;:0.18,&quot;angleDegrees&quot;:-18}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture sleeve_reflection" style="transform: rotate(8deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Sleeve reflection</strong>
+      <span>{&quot;reflectionBands&quot;:2,&quot;opacity&quot;:0.2}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture binder_pocket_reflection" style="transform: rotate(-7deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Binder-pocket reflection</strong>
+      <span>{&quot;gridEdgeOpacity&quot;:0.2,&quot;diagonalHighlightOpacity&quot;:0.16}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture toploader_borders" style="transform: rotate(3deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Top-loader borders</strong>
+      <span>{&quot;borderThicknessPct&quot;:0.055,&quot;plasticTintOpacity&quot;:0.1}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture background_intrusion" style="transform: rotate(8deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Minor background intrusion</strong>
+      <span>{&quot;intrusionSide&quot;:&quot;bottomRight&quot;,&quot;intrusionPct&quot;:0.045}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture phone_camera_sharpening" style="transform: rotate(-7deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Phone-camera sharpening</strong>
+      <span>{&quot;unsharpAmount&quot;:0.42,&quot;haloControl&quot;:&quot;mild&quot;}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture image_noise" style="transform: rotate(3deg); filter: contrast(1.25);">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Image noise</strong>
+      <span>{&quot;isoNoiseSigma&quot;:0.025,&quot;chromaNoiseSigma&quot;:0.01}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture corner_occlusion" style="transform: rotate(8deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Small corner occlusion</strong>
+      <span>{&quot;corner&quot;:&quot;topLeft&quot;,&quot;occlusionPct&quot;:0.055}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture sensor_rotation" style="transform: rotate(-7deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Portrait sensor rotation</strong>
+      <span>{&quot;sensorRotationDegrees&quot;:0,&quot;exifOrientation&quot;:&quot;portrait&quot;}</span>
+    </div>
+  
+    <div class="aug-card">
+      <div class="fixture sensor_rotation" style="transform: rotate(90deg); filter: none;">
+        <div class="name-line"></div>
+        <div class="art-box"></div>
+        <div class="text-line short"></div>
+        <div class="text-line"></div>
+        <div class="number-line"></div>
+      </div>
+      <strong>Landscape sensor rotation</strong>
+      <span>{&quot;sensorRotationDegrees&quot;:90,&quot;exifOrientation&quot;:&quot;landscape-left&quot;}</span>
+    </div>
+  </div>
+  </section>
+
+  <section>
+    <h2>Sample Source References</h2>
+    <table>
+      <thead><tr><th>Card</th><th>Set</th><th>Language</th><th>Variant</th><th>Split</th></tr></thead>
+      <tbody>
+        <tr><td>Charizard</td><td>base1</td><td>en</td><td>holo</td><td>test</td></tr><tr><td>Charizard</td><td>base4</td><td>en</td><td>holo</td><td>validation</td></tr><tr><td>Pikachu</td><td>base1</td><td>en</td><td>standard</td><td>test</td></tr><tr><td>Blastoise</td><td>base1</td><td>en</td><td>holo</td><td>train</td></tr><tr><td>Mewtwo</td><td>base1</td><td>en</td><td>holo</td><td>train</td></tr><tr><td>Mewtwo</td><td>basep</td><td>en</td><td>promo</td><td>train</td></tr><tr><td>Pikachu</td><td>swshp</td><td>en</td><td>promo</td><td>test</td></tr><tr><td>Pikachu</td><td>smp</td><td>en</td><td>promo</td><td>validation</td></tr><tr><td>Charizard</td><td>xy12</td><td>en</td><td>holo</td><td>train</td></tr><tr><td>Pikachu</td><td>xy12</td><td>en</td><td>standard</td><td>validation</td></tr><tr><td>Bulbasaur</td><td>sv3pt5</td><td>en</td><td>standard</td><td>train</td></tr><tr><td>Charizard</td><td>base6</td><td>en</td><td>holo</td><td>train</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Provenance Exclusions</h2>
+    <table>
+      <thead><tr><th>Path</th><th>Reason</th></tr></thead>
+      <tbody><tr><td><code>ml/data_manifests/scan-lab-reviewed-training-manifest.json</code></td><td>No reviewed Scan Lab export manifest was found locally.</td></tr><tr><td><code>.tmp_video_frames/</code></td><td>No consent, card identity, or label-verification manifest found.</td></tr><tr><td><code>tmp/gem-pack-vol5-variants/</code></td><td>Local images have no durable provenance manifest tying them to permitted recognition training use.</td></tr><tr><td><code>assets/rev2/**</code></td><td>App artwork is not card reference imagery for recognition training.</td></tr></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Limitations</h2>
+    <ul><li>No approved real Stackr phone-capture export was found locally; .tmp_video_frames was excluded for missing consent/provenance metadata.</li><li>Source image pixels are not redistributed; generated rows describe controlled augmentation views that must be materialized only after rights are confirmed.</li><li>The pilot remains synthetic-heavy and cannot support a production-readiness claim.</li><li>Some requested hard-negative families are blocked until licensed/reference variant pairs are available.</li><li>No approved Korean reference or real-phone capture source was found locally.</li><li>No approved Simplified Chinese reference or real-phone capture source was found locally.</li></ul>
+  </section>
+
+  <script id="pilot-dataset-summary" type="application/json">{
+  &quot;datasetVersion&quot;: &quot;stackr-pilot-recognition-dataset-v1.0.0&quot;,
+  &quot;generatedAt&quot;: &quot;2026-07-26T00:00:00.000Z&quot;,
+  &quot;rowCount&quot;: 1071,
+  &quot;classCount&quot;: 51,
+  &quot;sourceImageCount&quot;: 51,
+  &quot;sourceReferenceRowCount&quot;: 51,
+  &quot;syntheticViewRowCount&quot;: 1020,
+  &quot;realPhoneCaptureSourceCount&quot;: 0,
+  &quot;realPhoneTestSourceCount&quot;: 0,
+  &quot;approvedTrainingPixelSourceCount&quot;: 0,
+  &quot;realVersusSyntheticDistribution&quot;: [
+    {
+      &quot;key&quot;: &quot;source_reference_rows&quot;,
+      &quot;count&quot;: 51
+    },
+    {
+      &quot;key&quot;: &quot;synthetic_controlled_rows&quot;,
+      &quot;count&quot;: 1020
+    },
+    {
+      &quot;key&quot;: &quot;real_phone_source_images&quot;,
+      &quot;count&quot;: 0
+    },
+    {
+      &quot;key&quot;: &quot;approved_training_pixel_sources&quot;,
+      &quot;count&quot;: 0
+    }
+  ],
+  &quot;languageDistribution&quot;: [
+    {
+      &quot;key&quot;: &quot;en&quot;,
+      &quot;count&quot;: 47
+    },
+    {
+      &quot;key&quot;: &quot;ja&quot;,
+      &quot;count&quot;: 2
+    },
+    {
+      &quot;key&quot;: &quot;zh-Hant&quot;,
+      &quot;count&quot;: 2
+    }
+  ],
+  &quot;setEraDistribution&quot;: [
+    {
+      &quot;key&quot;: &quot;japanese_or_asian_modern&quot;,
+      &quot;count&quot;: 2
+    },
+    {
+      &quot;key&quot;: &quot;mid_era_dp_bw&quot;,
+      &quot;count&quot;: 16
+    },
+    {
+      &quot;key&quot;: &quot;sword_shield_scarlet_violet&quot;,
+      &quot;count&quot;: 9
+    },
+    {
+      &quot;key&quot;: &quot;vintage_wotc_ex&quot;,
+      &quot;count&quot;: 21
+    },
+    {
+      &quot;key&quot;: &quot;xy_sun_moon&quot;,
+      &quot;count&quot;: 3
+    }
+  ],
+  &quot;variantDistribution&quot;: [
+    {
+      &quot;key&quot;: &quot;high_rarity_art&quot;,
+      &quot;count&quot;: 8
+    },
+    {
+      &quot;key&quot;: &quot;holo&quot;,
+      &quot;count&quot;: 12
+    },
+    {
+      &quot;key&quot;: &quot;promo&quot;,
+      &quot;count&quot;: 5
+    },
+    {
+      &quot;key&quot;: &quot;standard&quot;,
+      &quot;count&quot;: 26
+    }
+  ],
+  &quot;difficultyDistribution&quot;: [
+    {
+      &quot;key&quot;: &quot;hard&quot;,
+      &quot;count&quot;: 25
+    },
+    {
+      &quot;key&quot;: &quot;near_identical&quot;,
+      &quot;count&quot;: 3
+    },
+    {
+      &quot;key&quot;: &quot;normal&quot;,
+      &quot;count&quot;: 23
+    }
+  ],
+  &quot;sourceRightsDistribution&quot;: [
+    {
+      &quot;key&quot;: &quot;existing_stackr_reference_not_redistributed&quot;,
+      &quot;count&quot;: 46
+    },
+    {
+      &quot;key&quot;: &quot;needs_license_confirmation&quot;,
+      &quot;count&quot;: 5
+    }
+  ],
+  &quot;provenanceStatusDistribution&quot;: [
+    {
+      &quot;key&quot;: &quot;included_metadata_only&quot;,
+      &quot;count&quot;: 51
+    }
+  ],
+  &quot;splitDistribution&quot;: [
+    {
+      &quot;key&quot;: &quot;test&quot;,
+      &quot;count&quot;: 315
+    },
+    {
+      &quot;key&quot;: &quot;train&quot;,
+      &quot;count&quot;: 567
+    },
+    {
+      &quot;key&quot;: &quot;validation&quot;,
+      &quot;count&quot;: 189
+    }
+  ],
+  &quot;duplicateAnalysis&quot;: {
+    &quot;duplicateSourceUris&quot;: [],
+    &quot;duplicateCardClasses&quot;: [],
+    &quot;sourceLeakage&quot;: [],
+    &quot;sourceLeakageExists&quot;: false,
+    &quot;physicalCardSessionLeakage&quot;: [],
+    &quot;physicalCardSessionLeakageExists&quot;: false
+  },
+  &quot;hardNegativeCoverage&quot;: {
+    &quot;represented&quot;: 6,
+    &quot;blocked&quot;: 4,
+    &quot;total&quot;: 10
+  },
+  &quot;limitations&quot;: [
+    &quot;No approved real Stackr phone-capture export was found locally; .tmp_video_frames was excluded for missing consent/provenance metadata.&quot;,
+    &quot;Source image pixels are not redistributed; generated rows describe controlled augmentation views that must be materialized only after rights are confirmed.&quot;,
+    &quot;The pilot remains synthetic-heavy and cannot support a production-readiness claim.&quot;,
+    &quot;Some requested hard-negative families are blocked until licensed/reference variant pairs are available.&quot;,
+    &quot;No approved Korean reference or real-phone capture source was found locally.&quot;,
+    &quot;No approved Simplified Chinese reference or real-phone capture source was found locally.&quot;
+  ],
+  &quot;provenanceExclusions&quot;: [
+    {
+      &quot;path&quot;: &quot;ml/data_manifests/scan-lab-reviewed-training-manifest.json&quot;,
+      &quot;reason&quot;: &quot;No reviewed Scan Lab export manifest was found locally.&quot;
+    },
+    {
+      &quot;path&quot;: &quot;.tmp_video_frames/&quot;,
+      &quot;reason&quot;: &quot;No consent, card identity, or label-verification manifest found.&quot;
+    },
+    {
+      &quot;path&quot;: &quot;tmp/gem-pack-vol5-variants/&quot;,
+      &quot;reason&quot;: &quot;Local images have no durable provenance manifest tying them to permitted recognition training use.&quot;
+    },
+    {
+      &quot;path&quot;: &quot;assets/rev2/**&quot;,
+      &quot;reason&quot;: &quot;App artwork is not card reference imagery for recognition training.&quot;
+    }
+  ]
+}</script>
+</main>
+</body>
+</html>

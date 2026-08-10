@@ -10,6 +10,8 @@ import {
   TextInput,
   type DimensionValue,
   type ImageSourcePropType,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -21,7 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchOwnedPokemonNameSet, pokemonNameMatchesCardName } from '../../lib/pokedexCollection';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
-import { PokemonArtworkGlow, StackrPageHeader, StackrScreen } from '../../components/StackrScreen';
+import { PokemonArtworkGlow, StackrScreen } from '../../components/StackrScreen';
 import { stackrIcons } from '../../lib/stackrIcons';
 
 type PokemonListItem = {
@@ -139,6 +141,7 @@ export default function PokedexScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedRange, setSelectedRange] = useState<RangeKey>('all');
   const [ownedPokemonNames, setOwnedPokemonNames] = useState<Set<string>>(new Set());
+  const [compactProgress, setCompactProgress] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -272,6 +275,11 @@ export default function PokedexScreen() {
   const mastersetPercent = Math.round(mastersetProgress * 100);
   const mastersetFillWidth = `${Math.min(100, mastersetProgress * 100)}%` as DimensionValue;
 
+  const handleListScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const nextCompact = event.nativeEvent.contentOffset.y > 18;
+    setCompactProgress((current) => (current === nextCompact ? current : nextCompact));
+  }, []);
+
   const renderRangeChip = (option: { key: RangeKey; label: string; source: ImageSourcePropType }) => {
     const { key, label, source } = option;
     const active = selectedRange === key;
@@ -355,11 +363,12 @@ export default function PokedexScreen() {
       />
       <View style={styles.container}>
         <View style={styles.headerBlock}>
-          <StackrPageHeader
-            title="Pokédex"
-            accentText="dex"
-            subtitle="Explore Pokémon and discover every card linked to them."
-          />
+          <View style={styles.compactHeader}>
+            <Text style={styles.pageTitle}>Pokédex</Text>
+            <Text style={styles.pageSubtitle} numberOfLines={1}>
+              Explore Pokémon and linked cards.
+            </Text>
+          </View>
 
           <View style={styles.searchWrap}>
             <Ionicons name="search-outline" size={18} color={theme.colors.textSoft} />
@@ -385,23 +394,28 @@ export default function PokedexScreen() {
           </ScrollView>
         </View>
 
-        <View style={styles.mastersetProgress}>
+        <View style={[styles.mastersetProgress, compactProgress && styles.mastersetProgressCompact]}>
           <View style={styles.mastersetProgressTop}>
             <Text style={styles.mastersetProgressLabel}>Masterset progress</Text>
-            <Text style={styles.mastersetProgressValue}>
-              {ownedPokedexCount}/{pokedexTotal} Pokémon owned
+            <Text style={styles.mastersetPercent}>
+              {compactProgress
+                ? `${mastersetPercent}% · ${ownedPokedexCount}/${pokedexTotal}`
+                : `${ownedPokedexCount}/${pokedexTotal} owned`}
             </Text>
           </View>
-          <View style={styles.mastersetTrack}>
+          <View style={[styles.mastersetTrack, compactProgress && styles.mastersetTrackCompact]}>
             <View style={[styles.mastersetFill, { width: mastersetFillWidth }]} />
           </View>
-          <Text style={styles.mastersetPercent}>{mastersetPercent}% complete</Text>
-        </View>
-
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryText}>
-            {loading ? 'Loading...' : `${filteredPokemon.length} Pokémon shown`}
-          </Text>
+          {!compactProgress && (
+            <View style={styles.mastersetMetaRow}>
+              <Text style={styles.mastersetProgressValue}>
+                {mastersetPercent}% complete
+              </Text>
+              <Text style={styles.mastersetProgressValue}>
+                {loading ? 'Loading...' : `${filteredPokemon.length} shown`}
+              </Text>
+            </View>
+          )}
         </View>
 
         {loading ? (
@@ -421,6 +435,8 @@ export default function PokedexScreen() {
             maxToRenderPerBatch={numColumns * 5}
             windowSize={7}
             removeClippedSubviews
+            onScroll={handleListScroll}
+            scrollEventThrottle={16}
             columnWrapperStyle={{ gap: 6, marginBottom: 6, paddingHorizontal: 6 }}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
@@ -451,24 +467,45 @@ function makeStyles(theme: any) {
   },
   container: {
     flex: 1,
-    paddingHorizontal: 18,
-    paddingTop: theme.spacing.sm,
+    paddingHorizontal: 14,
+    paddingTop: 2,
   },
   list: {
     flex: 1,
   },
   headerBlock: {
-    gap: 12,
-    marginBottom: 12,
+    gap: 6,
+    marginBottom: 6,
+  },
+  compactHeader: {
+    gap: 1,
+  },
+  pageTitle: {
+    color: theme.colors.text,
+    fontSize: 28,
+    lineHeight: 32,
+    fontWeight: '900',
+    letterSpacing: 0,
+  },
+  pageSubtitle: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '800',
   },
   mastersetProgress: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.82)',
+    borderRadius: 13,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: 12,
-    marginBottom: 10,
-    gap: 8,
+    borderColor: theme.colors.primary + '16',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    marginBottom: 6,
+    gap: 5,
+  },
+  mastersetProgressCompact: {
+    paddingVertical: 6,
+    gap: 4,
   },
   mastersetProgressTop: {
     flexDirection: 'row',
@@ -478,23 +515,33 @@ function makeStyles(theme: any) {
   },
   mastersetProgressLabel: {
     color: theme.colors.text,
-    fontSize: 13,
+    fontSize: 12,
+    lineHeight: 15,
     fontWeight: '900',
     flexShrink: 1,
   },
   mastersetProgressValue: {
     color: theme.colors.textSoft,
-    fontSize: 12,
+    fontSize: 11,
+    lineHeight: 14,
     fontWeight: '800',
-    textAlign: 'right',
+  },
+  mastersetMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
   },
   mastersetTrack: {
-    height: 8,
+    height: 6,
     borderRadius: 999,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary + '12',
     overflow: 'hidden',
+  },
+  mastersetTrackCompact: {
+    height: 5,
   },
   mastersetFill: {
     height: '100%',
@@ -504,43 +551,45 @@ function makeStyles(theme: any) {
   mastersetPercent: {
     color: theme.colors.primary,
     fontSize: 12,
+    lineHeight: 15,
     fontWeight: '900',
   },
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    paddingHorizontal: 14,
+    backgroundColor: 'rgba(255,255,255,0.72)',
+    borderRadius: 14,
+    paddingHorizontal: 11,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary + '18',
   },
   searchInput: {
     flex: 1,
     color: theme.colors.text,
-    paddingVertical: 13,
-    paddingHorizontal: 10,
-    fontSize: 15,
-    fontWeight: '600',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '800',
   },
   regionScroller: {
-    marginBottom: 12,
-    marginHorizontal: -18,
+    marginBottom: 6,
+    marginHorizontal: -14,
   },
   regionRail: {
-    gap: 10,
-    paddingHorizontal: 18,
-    paddingBottom: 2,
+    gap: 7,
+    paddingHorizontal: 14,
+    paddingBottom: 1,
   },
   regionTile: {
-    width: 82,
-    minHeight: 72,
-    backgroundColor: theme.colors.card,
-    borderRadius: 18,
-    paddingHorizontal: 8,
-    paddingVertical: 7,
+    width: 58,
+    minHeight: 46,
+    backgroundColor: 'rgba(255,255,255,0.78)',
+    borderRadius: 14,
+    paddingHorizontal: 5,
+    paddingVertical: 4,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primary + '14',
     alignItems: 'center',
     justifyContent: 'center',
     ...cardShadow,
@@ -554,22 +603,14 @@ function makeStyles(theme: any) {
     opacity: 0.94,
   },
   regionIconFrame: {
-    width: 68,
-    height: 58,
+    width: 48,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
   regionIcon: {
-    width: 66,
-    height: 56,
-  },
-  summaryRow: {
-    marginBottom: 10,
-  },
-  summaryText: {
-    color: theme.colors.textSoft,
-    fontSize: 13,
-    fontWeight: '700',
+    width: 46,
+    height: 34,
   },
   dexRow: {
     flexDirection: 'row',
@@ -644,8 +685,8 @@ function makeStyles(theme: any) {
   },
   gridCard: {
   backgroundColor: theme.colors.card,
-  borderRadius: 16,
-  padding: 10,
+  borderRadius: 14,
+  padding: 8,
   alignItems: 'center',
   borderWidth: 1,
   borderColor: theme.colors.border,
@@ -658,7 +699,7 @@ gridImageWrap: {
   borderRadius: 12,
   alignItems: 'center',
   justifyContent: 'center',
-  marginBottom: 6,
+  marginBottom: 5,
   overflow: 'visible',
 },
 pokemonArtworkFrame: {

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "stackr-card-variant-families-v1.0.0",
+  "version": "stackr-card-variant-families-v0.0.0-blocked",
+  "status": "blocked_needs_curated_catalogue",
+  "generatedAt": "2026-07-26T00:00:00.000Z",
+  "familyKeyFields": [
+    "artworkId",
+    "collectorNumber",
+    "setId",
+    "layoutId",
+    "language"
+  ],
+  "notes": [
+    "This file contains versioned resolver templates, not licensed card images.",
+    "Production family rows must be generated from approved catalogue metadata where cards share artwork, collector number, set, layout and language.",
+    "Valuable special variants require explicit discriminating evidence and must not be inferred from base artwork alone."
+  ],
+  "families": [
+    {
+      "familyId": "template-standard-vs-reverse-holo",
+      "status": "template",
+      "description": "Standard card versus reverse-holo finish.",
+      "variants": [
+        { "variantId": "standard", "label": "Standard", "valuableSpecialVariant": false },
+        { "variantId": "reverse_holo", "label": "Reverse holo", "valuableSpecialVariant": true }
+      ],
+      "discriminators": ["reverse_holo_pattern", "foil_area", "rarity_symbol", "copyright_line"],
+      "regions": ["artwork", "setRarity", "regulationCopyright", "fullFront"],
+      "requiresTiltCaptureWhenUnresolved": true
+    },
+    {
+      "familyId": "template-pokeball-vs-masterball",
+      "status": "template",
+      "description": "Japanese patterned reverse variants.",
+      "variants": [
+        { "variantId": "pokeball_holo", "label": "Poke Ball reverse", "valuableSpecialVariant": true },
+        { "variantId": "masterball_holo", "label": "Master Ball reverse", "valuableSpecialVariant": true }
+      ],
+      "discriminators": ["pokeball_pattern", "masterball_pattern", "foil_area", "texture"],
+      "regions": ["artwork", "fullFront"],
+      "requiresTiltCaptureWhenUnresolved": true
+    },
+    {
+      "familyId": "template-stamped-vs-unstamped",
+      "status": "template",
+      "description": "Stamped release versus unstamped release.",
+      "variants": [
+        { "variantId": "unstamped", "label": "Unstamped", "valuableSpecialVariant": false },
+        { "variantId": "stamped", "label": "Stamped", "valuableSpecialVariant": true }
+      ],
+      "discriminators": ["promo_stamp", "edition_stamp", "set_symbol", "copyright_line"],
+      "regions": ["cardTitle", "artwork", "setRarity", "regulationCopyright"],
+      "requiresTiltCaptureWhenUnresolved": false
+    },
+    {
+      "familyId": "template-first-edition-vs-unlimited",
+      "status": "template",
+      "description": "First edition stamp versus unlimited.",
+      "variants": [
+        { "variantId": "unlimited", "label": "Unlimited", "valuableSpecialVariant": false },
+        { "variantId": "first_edition", "label": "First edition", "valuableSpecialVariant": true }
+      ],
+      "discriminators": ["edition_stamp", "copyright_line", "set_symbol"],
+      "regions": ["artwork", "setRarity", "regulationCopyright"],
+      "requiresTiltCaptureWhenUnresolved": false
+    },
+    {
+      "familyId": "template-promo-vs-set-release",
+      "status": "template",
+      "description": "Same-art promotional release versus set release.",
+      "variants": [
+        { "variantId": "set_release", "label": "Set release", "valuableSpecialVariant": false },
+        { "variantId": "promo", "label": "Promo", "valuableSpecialVariant": true }
+      ],
+      "discriminators": ["promo_stamp", "collector_number_formatting", "set_symbol", "copyright_line"],
+      "regions": ["artwork", "collectorNumber", "setRarity", "regulationCopyright"],
+      "requiresTiltCaptureWhenUnresolved": false
+    },
+    {
+      "familyId": "template-texture-vs-non-texture",
+      "status": "template",
+      "description": "Textured high-rarity finish versus non-textured print.",
+      "variants": [
+        { "variantId": "non_texture", "label": "Non-texture", "valuableSpecialVariant": false },
+        { "variantId": "texture", "label": "Texture", "valuableSpecialVariant": true }
+      ],
+      "discriminators": ["texture", "foil_area", "rarity_symbol"],
+      "regions": ["artwork", "fullFront", "setRarity"],
+      "requiresTiltCaptureWhenUnresolved": true
+    }
+  ],
+  "blockedAccuracy": {
+    "variantAccuracy": null,
+    "standardVsReverseHolo": null,
+    "pokeballVsMasterball": null,
+    "stampedVsUnstamped": null,
+    "firstEditionVsUnlimited": null,
+    "promoVsSetRelease": null,
+    "japaneseVsEnglishSameArtwork": null,
+    "textureVsNonTexture": null,
+    "reason": "No approved reviewed variant validation set exists yet."
+  }
+}

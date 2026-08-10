@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "stackr-api-staging-progress-v1.0.0",
+  "generatedAt": "2026-08-05T21:13:56Z",
+  "environment": "staging",
+  "productionModified": false,
+  "completionEstimate": {
+    "wholeApiPercent": 87,
+    "softwareAndContractLayerPercent": 95,
+    "productionReady": false
+  },
+  "stagingRebuild": {
+    "supabaseProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/31031383876",
+    "migrationCount": 82,
+    "currentRepositoryMigrationCount": 83,
+    "currentRepositoryMigrationIsolatedReplayComplete": false,
+    "applicationBaseTableCount": 184,
+    "schemaHashMatched": true,
+    "dataHashMatched": true,
+    "migrationHashMatched": true,
+    "extensionHashMatched": true,
+    "authUserCount": 0,
+    "storageObjectCount": 0
+  },
+  "liveServices": {
+    "gateway": {
+      "url": "https://stackr-api-gateway-staging.berridge14.workers.dev",
+      "healthStatus": 200,
+      "readyStatus": 503,
+      "contractAndCorsSmokePassed": true
+    },
+    "backend": {
+      "url": "https://stackr-backend-staging-staging.up.railway.app"
+    },
+    "recognition": {
+      "url": "https://stackr-recognition-staging-staging.up.railway.app",
+      "healthStatus": 200,
+      "readyStatus": 503,
+      "catalogueConnected": true,
+      "databaseConnected": true,
+      "databaseRole": "stackr_recognition",
+      "databaseRoleBypassesRls": false,
+      "databaseConnectionLimit": 5,
+      "modelLoaded": true,
+      "modelProvider": "onnxruntime_cpu",
+      "activeIndex": false,
+      "calibrationReady": false
+    }
+  },
+  "recognitionPilot": {
+    "modelId": "dinov2_vits14",
+    "artifactVersion": "dinov2_vits14_int8_pilot_v0_1_0",
+    "release": "https://github.com/tberridge86/Stackr/releases/tag/stackr-recognition-dinov2-pilot-v0.1.0",
+    "artifactSha256": "eb9447f288fe8225cc222d96177458c53d22ce6d794603e10b10a8905962b19a",
+    "artifactBytes": 24946729,
+    "checksumVerified": true,
+    "downloadAndServiceLoadVerified": true,
+    "uniquePrivatePilotImages": 107,
+    "identityClasses": 6,
+    "physicalCardSessions": 6,
+    "realCameraTop1": 0.7920792079207921,
+    "realCameraTop3": 0.9306930693069307,
+    "realCameraTop5": 0.9801980198019802,
+    "meanReciprocalRank": 0.8641914191419142,
+    "serverCpuMedianMs": 25.802000000112457,
+    "serverCpuP95Ms": 33.77270000055432,
+    "selectionStatus": "candidate",
+    "productionAccepted": false,
+    "activeIndexCount": 0,
+    "blockedCandidateIndexCount": 1
+  },
+  "catalogue": {
+    "provider": "TCGdex",
+    "metadataOnly": true,
+    "imageImportAllowed": false,
+    "sets": 695,
+    "cardPrintings": 3876,
+    "cardVariants": 5012,
+    "assets": 0,
+    "rawSourceRecords": 12177,
+    "publishedVersions": 0,
+    "english": {
+      "providerCardOffsetsProcessedThrough": 2749,
+      "sets": 219,
+      "cardPrintings": 2880,
+      "cardVariants": 4016,
+      "rawSourceRecords": 7729
+    },
+    "serialBatch": {
+      "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/31038193624",
+      "providerCards": 250,
+      "durationSeconds": 1805,
+      "recordsConflicted": 0
+    },
+    "boundedBatch": {
+      "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/31042850045",
+      "providerCards": 250,
+      "durationSeconds": 228,
+      "recordsConflicted": 0
+    },
+    "boundedRange": {
+      "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/31043359763",
+      "providerCards": 750,
+      "batchDurationSeconds": [218, 225, 217],
+      "recordsConflicted": 0
+    },
+    "boundedLargeRange": {
+      "workflowRun": "https://github.com/tberridge86/Stackr/actions/runs/31045342638",
+      "providerCards": 1500,
+      "batchDurationSeconds": [590, 588, 589],
+      "recordsConflicted": 0
+    }
+  },
+  "remainingReleaseBlockers": [
+    "complete multilingual catalogue metadata coverage",
+    "approve and import publicly usable card images, set logos, and symbols",
+    "publish a versioned catalogue snapshot",
+    "build and validate the complete reference embedding index",
+    "capture a separate multi-session protected evaluation set",
+    "calibrate scoring thresholds and ambiguity handling",
+    "complete storage recovery evidence and production DNS release approval"
+  ]
+}

@@ -1,0 +1,489 @@
+name: Deploy Stackr Production Canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type DEPLOY PRODUCTION
+        required: true
+        type: string
+      release_scope:
+        description: Launch the catalogue API now, or the full platform after recognition approval
+        required: true
+        default: catalogue_api
+        type: choice
+        options: [catalogue_api, full_platform]
+      gateway_bootstrap:
+        description: First release only - create the production Worker at 100 percent
+        required: true
+        default: false
+        type: boolean
+      previous_gateway_tag:
+        description: Known-good Cloudflare version tag (leave blank for first release)
+        required: false
+        type: string
+      previous_backend_deployment_id:
+        description: Known-good Railway catalogue API deployment ID
+        required: false
+        type: string
+      previous_recognition_deployment_id:
+        description: Known-good Railway recognition deployment ID
+        required: false
+        type: string
+      previous_catalogue_version_id:
+        description: Known-good active catalogue version UUID
+        required: false
+        type: string
+      previous_index_version_id:
+        description: Known-good active embedding index UUID
+        required: false
+        type: string
+      catalogue_version_id:
+        description: Validated inactive catalogue version UUID for a full-platform release
+        required: false
+        type: string
+      catalogue_release_label:
+        description: Shared five-language staging catalogue release label
+        required: false
+        type: string
+      index_version_id:
+        description: Validated inactive embedding index UUID
+        required: false
+        type: string
+      canary_percent:
+        description: Initial gateway and mobile canary percentage
+        required: true
+        default: 5
+        type: number
+      monitor_minutes:
+        description: Canary observation period
+        required: true
+        default: 15
+        type: number
+      apply_migrations:
+        description: Apply migrations after the dry run
+        required: true
+        default: true
+        type: boolean
+      publish_mobile_update:
+        description: Publish a production EAS update
+        required: true
+        default: false
+        type: boolean
+      promote_gateway:
+        description: Promote the gateway canary to 100 percent after monitoring
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && inputs.confirmation == 'DEPLOY PRODUCTION'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: production
+    env:
+      STACKR_DEPLOYMENT_ENVIRONMENT: production
+      STACKR_DEPLOYMENT_SCOPE: ${{ inputs.release_scope }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+      SUPABASE_STAGING_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+      STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
+      STACKR_MODEL_INDEX_RELEASE_APPROVED: ${{ vars.STACKR_MODEL_INDEX_RELEASE_APPROVED }}
+      STACKR_STORAGE_BACKUP_APPROVED: ${{ vars.STACKR_STORAGE_BACKUP_APPROVED }}
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      RAILWAY_RECOGNITION_SERVICE_ID: ${{ vars.RAILWAY_RECOGNITION_SERVICE_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+      STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL }}
+      STACKR_RECOGNITION_URL: ${{ vars.STACKR_RECOGNITION_URL }}
+      STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL }}
+      STACKR_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+      STACKR_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
+      BACKEND_ORIGIN_KEY: ${{ secrets.BACKEND_ORIGIN_KEY }}
+      BACKEND_ADMIN_KEY: ${{ secrets.BACKEND_ADMIN_KEY }}
+      RECOGNITION_SERVICE_SECRET: ${{ secrets.RECOGNITION_SERVICE_SECRET }}
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      STACKR_RELEASE_REQUEST_ID: production-${{ github.run_id }}-${{ github.run_attempt }}
+      CATALOGUE_VERSION_ID: ${{ inputs.catalogue_version_id }}
+      CATALOGUE_RELEASE_LABEL: ${{ inputs.catalogue_release_label }}
+      INDEX_VERSION_ID: ${{ inputs.index_version_id }}
+      PREVIOUS_BACKEND_DEPLOYMENT_ID: ${{ inputs.previous_backend_deployment_id }}
+      PREVIOUS_RECOGNITION_DEPLOYMENT_ID: ${{ inputs.previous_recognition_deployment_id }}
+      PREVIOUS_CATALOGUE_VERSION_ID: ${{ inputs.previous_catalogue_version_id }}
+      PREVIOUS_INDEX_VERSION_ID: ${{ inputs.previous_index_version_id }}
+      PREVIOUS_GATEWAY_TAG: ${{ inputs.previous_gateway_tag }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          npm ci --prefix backend
+          npm ci --prefix gateway
+
+      - name: Re-run release-critical checks
+        run: |
+          npm run lint
+          npm run typecheck
+          npm run typecheck:backend
+          npm run check:api-contract
+          npm run test:database-migrations
+          npm run test:deployment
+          npm test --prefix gateway
+          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ]; then
+            node scripts/deploy/verify-staging-readiness-evidence.mjs --require-catalogue-api-ready
+            npm run deploy:preflight -- --catalogue-api-release
+          else
+            node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
+            npm run deploy:preflight -- --release
+          fi
+
+      - name: Validate gateway release mode
+        env:
+          GATEWAY_BOOTSTRAP: ${{ inputs.gateway_bootstrap }}
+        run: |
+          if [ "${{ inputs.release_scope }}" = "full_platform" ] && [ -z "$INDEX_VERSION_ID" ]; then
+            echo "Full-platform releases require INDEX_VERSION_ID."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "full_platform" ] && [ -z "$CATALOGUE_VERSION_ID" ]; then
+            echo "Full-platform releases require CATALOGUE_VERSION_ID."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ -z "$CATALOGUE_RELEASE_LABEL" ]; then
+            echo "Catalogue API releases require CATALOGUE_RELEASE_LABEL."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ "$GATEWAY_BOOTSTRAP" != "true" ]; then
+            echo "Catalogue API promotion currently supports the guarded first-release bootstrap only."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
+            echo "Catalogue API bootstrap does not publish a mobile update."
+            exit 1
+          fi
+          if [ "$GATEWAY_BOOTSTRAP" = "true" ]; then
+            if [ -n "$PREVIOUS_GATEWAY_TAG" ]; then
+              echo "First release must not provide a previous gateway tag."
+              exit 1
+            fi
+            if [ "${{ inputs.promote_gateway }}" = "true" ]; then
+              echo "First release is already deployed at 100 percent and cannot be promoted again."
+              exit 1
+            fi
+          else
+            if [ -z "$PREVIOUS_GATEWAY_TAG" ]; then
+              echo "Canary releases require PREVIOUS_GATEWAY_TAG."
+              exit 1
+            fi
+            for variable in PREVIOUS_BACKEND_DEPLOYMENT_ID PREVIOUS_CATALOGUE_VERSION_ID; do
+              if [ -z "${!variable}" ]; then
+                echo "Canary releases require rollback value $variable."
+                exit 1
+              fi
+            done
+            if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+              for variable in PREVIOUS_RECOGNITION_DEPLOYMENT_ID PREVIOUS_INDEX_VERSION_ID; do
+                if [ -z "${!variable}" ]; then
+                  echo "Full-platform canaries require rollback value $variable."
+                  exit 1
+                fi
+              done
+            fi
+          fi
+
+      - name: Prepare gateway runtime configuration
+        run: >-
+          node scripts/deploy/write-worker-secrets.mjs
+          --output="$RUNNER_TEMP/stackr-worker-secrets.json"
+
+      - name: Require an approved model and complete inactive index
+        if: inputs.release_scope == 'full_platform'
+        run: npm run deploy:verify-model -- --require-active
+
+      - name: Verify latest physical backup and create ephemeral logical backups
+        run: |
+          mkdir -p "$RUNNER_TEMP/stackr-backup"
+          npx --yes supabase@2.110.0 backups list \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --output-format json > "$RUNNER_TEMP/stackr-backup/physical.json"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-backup/schema.sql"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --data-only \
+            --use-copy \
+            --file "$RUNNER_TEMP/stackr-backup/data.sql"
+          node scripts/deploy/verify-backup.mjs \
+            --physical="$RUNNER_TEMP/stackr-backup/physical.json" \
+            --schema="$RUNNER_TEMP/stackr-backup/schema.sql" \
+            --data="$RUNNER_TEMP/stackr-backup/data.sql" \
+            --require-physical
+
+      - name: Dry-run backward-compatible migrations
+        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all --dry-run
+
+      - name: Apply backward-compatible migrations
+        if: inputs.apply_migrations
+        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all
+
+      - name: Prepare protected catalogue promotion URLs
+        if: inputs.release_scope == 'catalogue_api'
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+          SUPABASE_RESTORE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+        run: node scripts/deploy/prepare-postgres-urls.mjs
+
+      - name: Promote verified catalogue snapshot into production
+        if: inputs.release_scope == 'catalogue_api'
+        env:
+          SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+          SUPABASE_RESTORE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+          SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+          STACKR_TRANSFER_MODE: promote
+          STACKR_TRANSFER_CONFIRMATION: PROMOTE VERIFIED CATALOGUE TO PRODUCTION
+          STACKR_TRANSFER_TABLE_CONFIG: deploy/production-catalogue-promotion-tables.json
+          STACKR_CATALOGUE_RELEASE_LABEL: ${{ inputs.catalogue_release_label }}
+          STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn,ko
+          STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/evidence.json
+          STACKR_STORAGE_PROMOTION_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/storage-evidence.json
+          STACKR_STORAGE_PROMOTION_CONCURRENCY: 32
+        run: |
+          node scripts/deploy/promote-catalogue-storage.mjs
+          node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
+          echo "STACKR_CATALOGUE_PROMOTED=true" >> "$GITHUB_ENV"
+
+      - name: Deploy rolling catalogue API version
+        run: |
+          npx --yes @railway/cli@5.30.1 up backend --path-as-root --ci \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID"
+          echo "STACKR_BACKEND_DEPLOYED=true" >> "$GITHUB_ENV"
+
+      - name: Deploy rolling recognition version
+        if: inputs.release_scope == 'full_platform'
+        run: |
+          npx --yes @railway/cli@5.30.1 up recognition-service --path-as-root --ci \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_RECOGNITION_SERVICE_ID"
+          echo "STACKR_RECOGNITION_DEPLOYED=true" >> "$GITHUB_ENV"
+
+      - name: Verify service readiness before activation
+        run: |
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
+          else
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL"
+          fi
+
+      - name: Atomically activate validated catalogue version
+        if: inputs.release_scope == 'full_platform'
+        run: |
+          node scripts/deploy/release-database.mjs catalogue activate \
+            --id="$CATALOGUE_VERSION_ID" --reason="GitHub production release $GITHUB_SHA"
+          echo "STACKR_CATALOGUE_ACTIVATED=true" >> "$GITHUB_ENV"
+
+      - name: Atomically activate validated model and index version
+        if: inputs.release_scope == 'full_platform'
+        run: |
+          node scripts/deploy/release-database.mjs index activate \
+            --id="$INDEX_VERSION_ID" --reason="GitHub production release $GITHUB_SHA"
+          echo "STACKR_INDEX_ACTIVATED=true" >> "$GITHUB_ENV"
+
+      - name: Upload gateway version
+        if: ${{ !inputs.gateway_bootstrap }}
+        env:
+          RELEASE_TAG: production-${{ github.sha }}
+        run: |
+          runtime_args=(
+            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL"
+            --var "RECOGNITION_REQUIRED:${{ inputs.release_scope == 'full_platform' && 'true' || 'false' }}"
+            --var "SUPABASE_URL:$STACKR_SUPABASE_URL"
+            --var "SUPABASE_PUBLISHABLE_KEY:$STACKR_SUPABASE_PUBLISHABLE_KEY"
+          )
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            runtime_args+=(--var "RECOGNITION_ORIGIN:$STACKR_RECOGNITION_URL")
+          fi
+          npm --prefix gateway exec -- wrangler --cwd gateway versions upload \
+            --env production --tag "$RELEASE_TAG" --message "GitHub $GITHUB_SHA" \
+            --strict --keep-vars \
+            --secrets-file "$RUNNER_TEMP/stackr-worker-secrets.json" \
+            "${runtime_args[@]}"
+
+      - name: Start gateway canary
+        if: ${{ !inputs.gateway_bootstrap }}
+        env:
+          RELEASE_TAG: production-${{ github.sha }}
+          CANARY_PERCENT: ${{ inputs.canary_percent }}
+          PREVIOUS_TAG: ${{ inputs.previous_gateway_tag }}
+        run: |
+          if [ "$CANARY_PERCENT" -lt 1 ] || [ "$CANARY_PERCENT" -gt 50 ]; then
+            echo "Production canary must be between 1 and 50 percent."
+            exit 1
+          fi
+          PREVIOUS_PERCENT=$((100 - CANARY_PERCENT))
+          npm --prefix gateway exec -- wrangler --cwd gateway versions deploy \
+            --env production \
+            --version-tag "$PREVIOUS_TAG@$PREVIOUS_PERCENT" \
+            --version-tag "$RELEASE_TAG@$CANARY_PERCENT" \
+            --yes
+          echo "STACKR_GATEWAY_CANARY_STARTED=true" >> "$GITHUB_ENV"
+
+      - name: Create first production gateway deployment
+        if: inputs.gateway_bootstrap
+        env:
+          RELEASE_TAG: production-${{ github.sha }}
+        run: |
+          runtime_args=(
+            --var "BACKEND_ORIGIN:$STACKR_BACKEND_URL"
+            --var "RECOGNITION_REQUIRED:${{ inputs.release_scope == 'full_platform' && 'true' || 'false' }}"
+            --var "SUPABASE_URL:$STACKR_SUPABASE_URL"
+            --var "SUPABASE_PUBLISHABLE_KEY:$STACKR_SUPABASE_PUBLISHABLE_KEY"
+          )
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            runtime_args+=(--var "RECOGNITION_ORIGIN:$STACKR_RECOGNITION_URL")
+          fi
+          npm --prefix gateway exec -- wrangler --cwd gateway deploy \
+            --env production --tag "$RELEASE_TAG" --message "GitHub first release $GITHUB_SHA" \
+            --strict --keep-vars \
+            --secrets-file "$RUNNER_TEMP/stackr-worker-secrets.json" \
+            "${runtime_args[@]}"
+          echo "STACKR_GATEWAY_BOOTSTRAPPED=true" >> "$GITHUB_ENV"
+
+      - name: Publish matching mobile canary
+        if: inputs.publish_mobile_update
+        env:
+          CANARY_PERCENT: ${{ inputs.canary_percent }}
+        run: |
+          npx --yes eas-cli@21.4.0 update \
+            --channel production \
+            --environment production \
+            --platform all \
+            --rollout-percentage "$CANARY_PERCENT" \
+            --message "Stackr production $GITHUB_SHA" \
+            --json \
+            --non-interactive > "$RUNNER_TEMP/eas-update.json"
+          node scripts/deploy/capture-eas-update-group.mjs \
+            --file="$RUNNER_TEMP/eas-update.json" \
+            --github-env="$GITHUB_ENV"
+          echo "STACKR_MOBILE_UPDATE_PUBLISHED=true" >> "$GITHUB_ENV"
+
+      - name: Observe and smoke-test canary
+        env:
+          MONITOR_MINUTES: ${{ inputs.monitor_minutes }}
+        run: |
+          if [ "$MONITOR_MINUTES" -lt 1 ] || [ "$MONITOR_MINUTES" -gt 60 ]; then
+            echo "Monitor period must be between 1 and 60 minutes."
+            exit 1
+          fi
+          sleep "$((MONITOR_MINUTES * 60))"
+          smoke_args=(
+            --gateway="$STACKR_GATEWAY_URL"
+            --backend="$STACKR_BACKEND_URL"
+            --full-gateway
+            --require-published-catalogue
+          )
+          if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            smoke_args+=(--recognition="$STACKR_RECOGNITION_URL")
+          fi
+          npm run deploy:smoke -- "${smoke_args[@]}"
+
+      - name: Enforce public API latency thresholds
+        run: >-
+          node scripts/deploy/benchmark-public-api.mjs
+          --gateway="$STACKR_GATEWAY_URL"
+          --samples=20
+          --warmups=3
+          --health-p95-ms=150
+          --catalogue-p95-ms=150
+          --search-p95-ms=300
+          --assets-p95-ms=300
+
+      - name: Promote gateway after successful observation
+        if: ${{ !inputs.gateway_bootstrap && inputs.promote_gateway }}
+        env:
+          RELEASE_TAG: production-${{ github.sha }}
+        run: >-
+          npm --prefix gateway exec -- wrangler --cwd gateway versions deploy
+          --env production --version-tag "$RELEASE_TAG@100" --yes
+
+      - name: Roll back mobile update after a failed canary
+        if: failure() && env.STACKR_MOBILE_UPDATE_PUBLISHED == 'true'
+        continue-on-error: true
+        run: >-
+          npx --yes eas-cli@21.4.0 update:revert-update-rollout
+          --group "$STACKR_EAS_UPDATE_GROUP_ID"
+          --message "Automatic rollback for GitHub run $GITHUB_RUN_ID"
+          --non-interactive
+
+      - name: Roll back gateway after a failed canary
+        if: failure() && env.STACKR_GATEWAY_CANARY_STARTED == 'true'
+        continue-on-error: true
+        run: >-
+          npm --prefix gateway exec -- wrangler --cwd gateway versions deploy
+          --env production --version-tag "$PREVIOUS_GATEWAY_TAG@100"
+          --message "Automatic rollback for GitHub run $GITHUB_RUN_ID" --yes
+
+      - name: Remove a failed first production gateway
+        if: failure() && env.STACKR_GATEWAY_BOOTSTRAPPED == 'true'
+        continue-on-error: true
+        run: npm --prefix gateway exec -- wrangler --cwd gateway delete --env production --force
+
+      - name: Roll back model and index after a failed activation or canary
+        if: failure() && env.STACKR_INDEX_ACTIVATED == 'true' && env.PREVIOUS_INDEX_VERSION_ID != ''
+        continue-on-error: true
+        run: >-
+          node scripts/deploy/release-database.mjs index rollback
+          --id="$PREVIOUS_INDEX_VERSION_ID"
+          --reason="Automatic rollback for GitHub run $GITHUB_RUN_ID"
+
+      - name: Roll back catalogue after a failed activation or canary
+        if: failure() && env.STACKR_CATALOGUE_ACTIVATED == 'true' && env.PREVIOUS_CATALOGUE_VERSION_ID != ''
+        continue-on-error: true
+        run: >-
+          node scripts/deploy/release-database.mjs catalogue rollback
+          --id="$PREVIOUS_CATALOGUE_VERSION_ID"
+          --reason="Automatic rollback for GitHub run $GITHUB_RUN_ID"
+
+      - name: Roll back recognition deployment after a release failure
+        if: failure() && env.STACKR_RECOGNITION_DEPLOYED == 'true' && env.PREVIOUS_RECOGNITION_DEPLOYMENT_ID != ''
+        continue-on-error: true
+        run: node scripts/deploy/railway-rollback.mjs --deployment="$PREVIOUS_RECOGNITION_DEPLOYMENT_ID"
+
+      - name: Roll back catalogue API deployment after a release failure
+        if: failure() && env.STACKR_BACKEND_DEPLOYED == 'true' && env.PREVIOUS_BACKEND_DEPLOYMENT_ID != ''
+        continue-on-error: true
+        run: node scripts/deploy/railway-rollback.mjs --deployment="$PREVIOUS_BACKEND_DEPLOYMENT_ID"
+
+      - name: Remove ephemeral logical backups
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/stackr-backup"
+          rm -rf "$RUNNER_TEMP/stackr-catalogue-promotion"
+          rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"

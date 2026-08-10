@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   ScrollView,
   StyleSheet,
@@ -12,13 +13,19 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useIsFocused } from '@react-navigation/native';
 import { router, Stack } from 'expo-router';
-import { Camera, useCameraPermission } from 'react-native-vision-camera';
+import { Camera, useCameraPermission } from '../../lib/visionCamera';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
 import { StackrBackButton } from '../../components/StackrBackButton';
 import { useTheme } from '../../components/theme-context';
+import { createGradingJob, updateGradingJob, type GradingJobStatus } from '../../lib/gradingJobs';
 import { gradeCardWithXimilar } from '../../lib/ximilar';
 import { useScanCamera } from '../../lib/useScanCamera';
+import {
+  assessCardCenteringFromJpeg,
+  formatCardCenteringAssessment,
+  type CardCenteringAssessment,
+} from '../../lib/cardCenteringAssessment';
 
 const CAPTURE_STEPS = [
   { id: 'front', label: 'Front', next: 'Front done. Now capture the back.' },
@@ -120,7 +127,10 @@ export default function CardGraderScreen() {
   const [currentStep, setCurrentStep] = useState<CaptureStepId>('front');
   const [captureNotice, setCaptureNotice] = useState('Capture the front of the card');
   const [grading, setGrading] = useState(false);
+  const [gradingJobId, setGradingJobId] = useState<string | null>(null);
+  const [gradingJobStatus, setGradingJobStatus] = useState<GradingJobStatus | null>(null);
   const [result, setResult] = useState<any>(null);
+  const mountedRef = useRef(true);
   const isCornerStep = currentStep.startsWith('corner_');
   const bottomControlsHeight = 204;
   const headerHeight = insets.top + 74;
@@ -143,6 +153,10 @@ export default function CardGraderScreen() {
     compress: 0.86,
   });
   const { hasPermission, requestPermission } = useCameraPermission();
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
   const photosByStage = useMemo(() => (
     photos.reduce<Partial<Record<CaptureStepId, GradePhoto>>>((acc, photo) => {
@@ -187,21 +201,91 @@ export default function CardGraderScreen() {
   }, [currentStep, moveToNextStep, takePhoto]);
 
   const handleGrade = async () => {
-    if (!frontPhoto) return;
+    if (!frontPhoto || !backPhoto || grading) {
+      if (!frontPhoto || !backPhoto) {
+        Alert.alert('Front and back needed', 'Capture the front and back before submitting a full pre-grade.');
+      }
+      return;
+    }
+
+    const gradeImages = [
+      { base64: frontPhoto.base64, side: 'Front' as const },
+      { base64: backPhoto.base64, side: 'Back' as const },
+    ];
+    const photoStages = photos.map((photo) => photo.stage);
+    const localCenteringAssessment = assessCardCenteringFromJpeg(frontPhoto.base64);
 
     setGrading(true);
+    setGradingJobStatus('queued');
+    setCaptureNotice('Pre-grade queued. You can leave this screen while it processes.');
+
     try {
-      const gradeImages = [
-        { base64: frontPhoto.base64, side: 'Front' as const },
-        backPhoto ? { base64: backPhoto.base64, side: 'Back' as const } : null,
-      ].filter((image): image is { base64: string; side: 'Front' | 'Back' } => Boolean(image));
-      const data = await gradeCardWithXimilar(gradeImages);
-      setResult(data.records?.[0] || null);
+      const job = await createGradingJob({
+        intent: 'full_pregrade',
+        provider: 'ximilar',
+        photoStages,
+      });
+      setGradingJobId(job.id);
+
+      void (async () => {
+        try {
+          await updateGradingJob(job.id, { status: 'processing', provider: 'ximilar' });
+          if (mountedRef.current) {
+            setGradingJobStatus('processing');
+            setCaptureNotice('Full pre-grade is processing. You can leave this screen and come back later.');
+          }
+
+          const data = await gradeCardWithXimilar(gradeImages);
+          const record = data.records?.[0] || null;
+          if (!record) {
+            await updateGradingJob(job.id, {
+              status: 'requires_rescan',
+              errorMessage: 'Provider returned no grade record.',
+              result: data as unknown as Record<string, unknown>,
+            });
+            if (mountedRef.current) {
+              setGradingJobStatus('requires_rescan');
+              Alert.alert('Rescan needed', 'The pre-grade service could not read this card clearly enough.');
+            }
+            return;
+          }
+          const enrichedRecord = {
+            ...record,
+            _stackr_visible_centering_guidance: localCenteringAssessment,
+          };
+          const enrichedData = {
+            ...data,
+            records: data.records?.map((item, index) => (index === 0 ? enrichedRecord : item)),
+            _stackr_visible_centering_guidance: localCenteringAssessment,
+          };
+
+          await updateGradingJob(job.id, {
+            status: 'complete',
+            result: enrichedData as unknown as Record<string, unknown>,
+          });
+          if (mountedRef.current) {
+            setResult(enrichedRecord);
+            setGradingJobStatus('complete');
+          }
+        } catch (error) {
+          console.error(error);
+          await updateGradingJob(job.id, {
+            status: 'failed',
+            errorMessage: error instanceof Error ? error.message : 'Grading failed',
+          }).catch((updateError) => console.error(updateError));
+          if (mountedRef.current) {
+            setGradingJobStatus('failed');
+            Alert.alert('Pre-grade failed', 'The job was saved, but the grading service did not complete. You can retry from this capture.');
+          }
+        } finally {
+          if (mountedRef.current) setGrading(false);
+        }
+      })();
     } catch (error) {
       console.error(error);
-      alert('Grading failed');
-    } finally {
       setGrading(false);
+      setGradingJobStatus('failed');
+      Alert.alert('Pre-grade could not start', 'Stackr could not create the grading job. Check you are signed in and try again.');
     }
   };
 
@@ -210,6 +294,10 @@ export default function CardGraderScreen() {
     const grades = record.grades || {};
     const cardAnalysis = Array.isArray(record.card) ? record.card[0] : record.card;
     const centering = cardAnalysis?.centering || {};
+    const localCenteringAssessment = (
+      record._stackr_visible_centering_guidance
+      ?? (frontPhoto?.base64 ? assessCardCenteringFromJpeg(frontPhoto.base64) : null)
+    ) as CardCenteringAssessment | null;
     const exactImageUrl = record._exact_url_card || record._clean_url_card;
     const fullImageUrl = record._full_url_card;
     const preprocessedBase64 = record._stackr_preprocessed_base64 ?? record._pocketvault_preprocessed_base64;
@@ -313,6 +401,11 @@ export default function CardGraderScreen() {
 
           <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '900', marginBottom: 10 }}>Centering</Text>
           <View style={{ backgroundColor: '#111', padding: 14, borderRadius: 10, marginBottom: 18, gap: 6 }}>
+            {localCenteringAssessment ? (
+              <Text style={{ color: '#fff', fontSize: 13, lineHeight: 18, fontWeight: '800', marginBottom: 4 }}>
+                {formatCardCenteringAssessment(localCenteringAssessment)}
+              </Text>
+            ) : null}
             <Text style={{ color: '#fff' }}>Left/Right: {getCenteringValue(centering, 'left/right')}</Text>
             <Text style={{ color: '#fff' }}>Top/Bottom: {getCenteringValue(centering, 'top/bottom')}</Text>
             <Text style={{ color: '#fff' }}>Grade: {formatGradeValue(grades.centering)}</Text>
@@ -554,7 +647,9 @@ export default function CardGraderScreen() {
 
           <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 999, paddingHorizontal: 12, paddingVertical: 5, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' }}>
             <Text style={{ color: 'rgba(255,255,255,0.82)', fontSize: 10, fontWeight: '800', textAlign: 'center' }}>
-              Good lighting - card flat - edges visible
+              {gradingJobStatus
+                ? `Pre-grade ${gradingJobStatus}${gradingJobId ? ` - ${gradingJobId.slice(0, 8)}` : ''}`
+                : 'Good lighting - card flat - edges visible'}
             </Text>
           </View>
 
@@ -577,11 +672,11 @@ export default function CardGraderScreen() {
           <View style={{ height: 38, alignItems: 'center', justifyContent: 'center' }}>
             <TouchableOpacity
               onPress={handleGrade}
-              disabled={grading || !frontPhoto}
-              style={{ backgroundColor: theme.colors.primary, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 9, opacity: grading || !frontPhoto ? 0.45 : 1 }}
+              disabled={grading || !frontPhoto || !backPhoto}
+              style={{ backgroundColor: theme.colors.primary, borderRadius: 12, paddingHorizontal: 18, paddingVertical: 9, opacity: grading || !frontPhoto || !backPhoto ? 0.45 : 1 }}
             >
               <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13 }}>
-                {grading ? 'Grading...' : 'Grade Card'}
+                {grading ? 'Processing...' : 'Submit pre-grade'}
               </Text>
             </TouchableOpacity>
           </View>

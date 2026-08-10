@@ -11,6 +11,7 @@ import { Text } from './Text';
 import { StackrImage } from './StackrImage';
 import { useTheme } from './theme-context';
 import { stackrCardImageSizes } from '../lib/stackrSizing';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from './RaritySymbol';
 
 type StackrCardTileProps = {
   imageUri?: string | null;
@@ -57,6 +58,11 @@ function StackrCardTileBase({
   const imageWidth = compact ? '100%' : stackrCardImageSizes.rowCard.width;
   const imageHeight = compact ? undefined : stackrCardImageSizes.rowCard.height;
   const meta = [setName, number ? `#${number}` : null].filter(Boolean).join(' | ');
+  const cardAccessibilityLabel = accessibilityLabel ?? [
+    name,
+    rarity ? `${rarity} rarity` : null,
+    hint ?? 'Tap to select. Hold for details.',
+  ].filter(Boolean).join('. ');
 
   return (
     <TouchableOpacity
@@ -66,7 +72,7 @@ function StackrCardTileBase({
       disabled={disabled}
       activeOpacity={0.82}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? `${name}. ${hint ?? 'Tap to select. Hold for details.'}`}
+      accessibilityLabel={cardAccessibilityLabel}
       style={[
         compact ? styles.gridTile : styles.rowTile,
         {
@@ -103,6 +109,11 @@ function StackrCardTileBase({
             <Text numeric style={styles.quantityText}>x{quantity}</Text>
           </View>
         ) : null}
+        <RaritySymbol
+          rarity={rarity}
+          size={compact ? 16 : 14}
+          style={RARITY_SYMBOL_CARD_OVERLAY}
+        />
       </View>
 
       <View style={compact ? styles.gridCopy : styles.rowCopy}>
@@ -112,11 +123,6 @@ function StackrCardTileBase({
         {meta ? (
           <Text style={[styles.meta, { color: theme.colors.textSoft }]} numberOfLines={1}>
             {meta}
-          </Text>
-        ) : null}
-        {rarity ? (
-          <Text style={[styles.rarity, { color: theme.colors.secondary }]} numberOfLines={1}>
-            {rarity}
           </Text>
         ) : null}
         {hint ? (
@@ -198,13 +204,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
     fontWeight: '700',
-    includeFontPadding: true,
-  },
-  rarity: {
-    marginTop: 4,
-    fontSize: 11,
-    lineHeight: 15,
-    fontWeight: '800',
     includeFontPadding: true,
   },
   hint: {

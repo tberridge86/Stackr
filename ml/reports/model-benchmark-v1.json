@@ -1,0 +1,591 @@
+{
+  "benchmarkVersion": "stackr-model-benchmark-v1.0.0",
+  "status": "blocked",
+  "generatedAt": "2026-07-30T12:15:16.090Z",
+  "datasetVersion": "stackr-pilot-recognition-dataset-v1.0.0",
+  "datasetManifestSha256": "f5a400495a0c739749f7fad949e47cbceee1b8dfffc95f088c97410786678bd3",
+  "sourceCommitHash": "9904e49b3f3c25f5397edcf84d4fd9e4d2f8a544",
+  "sourceTreeDirty": true,
+  "measurementEvidence": {
+    "path": null,
+    "sha256": null,
+    "schemaVersion": null,
+    "acceptedRunCount": 0,
+    "acceptedModelIds": [],
+    "blockers": [
+      "measurement_evidence_missing"
+    ]
+  },
+  "supportedLanguages": [
+    "en",
+    "ja",
+    "zh-Hans",
+    "zh-Hant",
+    "ko"
+  ],
+  "dataCoverage": {
+    "rowCount": 1071,
+    "classCount": 51,
+    "sourceImageCount": 51,
+    "syntheticViewRowCount": 1020,
+    "realPhoneCaptureSourceCount": 0,
+    "realPhoneTestSourceCount": 0,
+    "approvedTrainingPixelSourceCount": 0,
+    "languageDistribution": [
+      {
+        "key": "en",
+        "count": 47
+      },
+      {
+        "key": "ja",
+        "count": 2
+      },
+      {
+        "key": "zh-Hant",
+        "count": 2
+      }
+    ],
+    "missingLanguages": [
+      "zh-Hans",
+      "ko"
+    ],
+    "hardNegativeCoverage": {
+      "represented": 6,
+      "blocked": 4,
+      "total": 10
+    }
+  },
+  "leakageReport": {
+    "sourceLeakageExists": false,
+    "physicalCardSessionLeakageExists": false,
+    "modelSelectionAndFinalTestSeparated": false,
+    "queryImagesAreExcludedFromIndexedReferences": false,
+    "notes": [
+      "No valid measurement evidence established protected evaluation isolation.",
+      "The current pilot manifest records split metadata but does not yet provide approved real-phone captures for a protected final test.",
+      "Synthetic augmentations may supplement benchmark coverage but cannot be counted as real-camera validation."
+    ]
+  },
+  "selectionWeights": {
+    "modelSizeBytes": 0.03,
+    "iosLatencyMs": 0.06,
+    "androidLatencyMs": 0.06,
+    "serverCpuLatencyMs": 0.03,
+    "peakMemoryMb": 0.03,
+    "cleanImageTop1": 0.06,
+    "cleanImageTop5": 0.04,
+    "realCameraTop1": 0.16,
+    "realCameraTop5": 0.08,
+    "foreignLanguageTop1": 0.12,
+    "croppedCardTop1": 0.08,
+    "sleevedCardTop1": 0.08,
+    "glareBlurTop1": 0.08,
+    "sameArtworkTop1": 0.14,
+    "quantizedTop1Delta": 0.05
+  },
+  "candidates": [
+    {
+      "modelId": "mobileclip2_s0",
+      "displayName": "Apple MobileCLIP2-S0",
+      "family": "mobileclip",
+      "source": {
+        "name": "Apple ml-mobileclip / Apple MobileCLIP2-S0",
+        "url": "https://github.com/apple/ml-mobileclip",
+        "revision": null
+      },
+      "license": {
+        "name": "Apple ML Research Model License",
+        "url": "https://raw.githubusercontent.com/apple/ml-mobileclip/main/LICENSE_MODELS",
+        "status": "research_only",
+        "notes": "Apple code is MIT, but published MobileCLIP model weights are governed by Apple ML Research terms and are not approved here for Stackr production service use."
+      },
+      "input": {
+        "width": 224,
+        "height": 224,
+        "channels": 3,
+        "notes": "Square CLIP-style image input; final Stackr crop policy still requires measurement."
+      },
+      "embeddingDimensions": null,
+      "parameterCount": 11400000,
+      "deploymentTargets": [
+        "mobile",
+        "server"
+      ],
+      "preprocessing": {
+        "status": "not_verified_in_stackr"
+      },
+      "normalisation": {
+        "l2Normalised": true,
+        "status": "not_verified_in_stackr"
+      },
+      "upstreamReported": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": 1.5,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "notes": "Latency is upstream-reported for the image encoder, not measured by Stackr."
+      },
+      "stackrMeasurements": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": null,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "cleanImageTop1": null,
+        "cleanImageTop5": null,
+        "realCameraTop1": null,
+        "realCameraTop5": null,
+        "foreignLanguageTop1": null,
+        "croppedCardTop1": null,
+        "sleevedCardTop1": null,
+        "glareBlurTop1": null,
+        "sameArtworkTop1": null,
+        "quantizedTop1Delta": null
+      },
+      "onnxExportStatus": "not_tested",
+      "quantisationStatus": "not_tested",
+      "productionEligible": false,
+      "selectionStatus": "blocked"
+    },
+    {
+      "modelId": "mobileclip2_s2",
+      "displayName": "Apple MobileCLIP2-S2",
+      "family": "mobileclip",
+      "source": {
+        "name": "Apple ml-mobileclip / Apple MobileCLIP2-S2",
+        "url": "https://github.com/apple/ml-mobileclip",
+        "revision": null
+      },
+      "license": {
+        "name": "Apple ML Research Model License",
+        "url": "https://raw.githubusercontent.com/apple/ml-mobileclip/main/LICENSE_MODELS",
+        "status": "research_only",
+        "notes": "Included for benchmark comparison only; published weights are not production-approved for Stackr."
+      },
+      "input": {
+        "width": 224,
+        "height": 224,
+        "channels": 3,
+        "notes": "Square CLIP-style image input; final Stackr crop policy still requires measurement."
+      },
+      "embeddingDimensions": null,
+      "parameterCount": 35700000,
+      "deploymentTargets": [
+        "mobile",
+        "server"
+      ],
+      "preprocessing": {
+        "status": "not_verified_in_stackr"
+      },
+      "normalisation": {
+        "l2Normalised": true,
+        "status": "not_verified_in_stackr"
+      },
+      "upstreamReported": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": 3.6,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "notes": "Latency is upstream-reported for the image encoder, not measured by Stackr."
+      },
+      "stackrMeasurements": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": null,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "cleanImageTop1": null,
+        "cleanImageTop5": null,
+        "realCameraTop1": null,
+        "realCameraTop5": null,
+        "foreignLanguageTop1": null,
+        "croppedCardTop1": null,
+        "sleevedCardTop1": null,
+        "glareBlurTop1": null,
+        "sameArtworkTop1": null,
+        "quantizedTop1Delta": null
+      },
+      "onnxExportStatus": "not_tested",
+      "quantisationStatus": "not_tested",
+      "productionEligible": false,
+      "selectionStatus": "blocked"
+    },
+    {
+      "modelId": "dinov2_vits14",
+      "displayName": "Meta DINOv2 ViT-S/14",
+      "family": "dino",
+      "source": {
+        "name": "facebookresearch/dinov2",
+        "url": "https://github.com/facebookresearch/dinov2",
+        "revision": null
+      },
+      "license": {
+        "name": "Apache License 2.0",
+        "url": "https://raw.githubusercontent.com/facebookresearch/dinov2/main/LICENSE",
+        "status": "production_allowed",
+        "notes": "Production eligibility still requires Stackr-specific measurement, ONNX export validation and quantisation validation."
+      },
+      "input": {
+        "width": 224,
+        "height": 224,
+        "channels": 3,
+        "notes": "DINOv2 ViT-S uses patch size 14; 224x224 produces a class token plus patch tokens."
+      },
+      "embeddingDimensions": 384,
+      "parameterCount": 21000000,
+      "deploymentTargets": [
+        "server"
+      ],
+      "preprocessing": {
+        "status": "not_verified_in_stackr"
+      },
+      "normalisation": {
+        "l2Normalised": true,
+        "status": "not_verified_in_stackr"
+      },
+      "upstreamReported": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": null,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "notes": "No Stackr device or CPU latency has been measured yet."
+      },
+      "stackrMeasurements": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": null,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "cleanImageTop1": null,
+        "cleanImageTop5": null,
+        "realCameraTop1": null,
+        "realCameraTop5": null,
+        "foreignLanguageTop1": null,
+        "croppedCardTop1": null,
+        "sleevedCardTop1": null,
+        "glareBlurTop1": null,
+        "sameArtworkTop1": null,
+        "quantizedTop1Delta": null
+      },
+      "onnxExportStatus": "not_tested",
+      "quantisationStatus": "not_tested",
+      "productionEligible": true,
+      "selectionStatus": "candidate"
+    },
+    {
+      "modelId": "clip_vit_base_patch32_current_pack",
+      "displayName": "Current Stackr CLIP reference-pack baseline",
+      "family": "clip",
+      "source": {
+        "name": "Existing Stackr scanner-pack baseline",
+        "url": "backend/data/scanner-packs/en-clip-base-v1/manifest.json",
+        "revision": null
+      },
+      "license": {
+        "name": "Needs review",
+        "url": "",
+        "status": "needs_review",
+        "notes": "Retained as the existing fallback/reference comparison. It must not define the new permanent Stackr index without licence and benchmark review."
+      },
+      "input": {
+        "width": 224,
+        "height": 224,
+        "channels": 3,
+        "notes": "Existing pack metadata must be reconciled before production selection."
+      },
+      "embeddingDimensions": 512,
+      "parameterCount": null,
+      "deploymentTargets": [
+        "server"
+      ],
+      "preprocessing": {
+        "status": "existing_pack_needs_review"
+      },
+      "normalisation": {
+        "l2Normalised": true,
+        "status": "existing_pack_needs_review"
+      },
+      "upstreamReported": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": null,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "notes": "Existing Stackr pack exists, but Stage 6 requires a reproducible benchmark before activation."
+      },
+      "stackrMeasurements": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": null,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "cleanImageTop1": null,
+        "cleanImageTop5": null,
+        "realCameraTop1": null,
+        "realCameraTop5": null,
+        "foreignLanguageTop1": null,
+        "croppedCardTop1": null,
+        "sleevedCardTop1": null,
+        "glareBlurTop1": null,
+        "sameArtworkTop1": null,
+        "quantizedTop1Delta": null
+      },
+      "onnxExportStatus": "not_tested",
+      "quantisationStatus": "not_tested",
+      "productionEligible": false,
+      "selectionStatus": "blocked"
+    },
+    {
+      "modelId": "stackr_embedding_v0_blocked",
+      "displayName": "Stackr embedding V0 blocked training plan",
+      "family": "stackr_metric_learning",
+      "source": {
+        "name": "Stackr local embedding V0 guard",
+        "url": "ml/models/stackr-embedding-v0/metrics.json",
+        "revision": null
+      },
+      "license": {
+        "name": "Internal blocked artifact",
+        "url": "",
+        "status": "rejected",
+        "notes": "No approved training pixels or real phone captures exist, and no weights were produced."
+      },
+      "input": {
+        "width": 224,
+        "height": 320,
+        "channels": 3,
+        "notes": "Portrait full-card training plan only; blocked before training."
+      },
+      "embeddingDimensions": 128,
+      "parameterCount": null,
+      "deploymentTargets": [
+        "mobile",
+        "server"
+      ],
+      "preprocessing": {
+        "preservesFullCardRatio": true
+      },
+      "normalisation": {
+        "l2Normalised": true
+      },
+      "upstreamReported": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": null,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "notes": "Blocked local plan with no model weights."
+      },
+      "stackrMeasurements": {
+        "modelSizeBytes": null,
+        "iosLatencyMs": null,
+        "androidLatencyMs": null,
+        "serverCpuLatencyMs": null,
+        "peakMemoryMb": null,
+        "cleanImageTop1": null,
+        "cleanImageTop5": null,
+        "realCameraTop1": null,
+        "realCameraTop5": null,
+        "foreignLanguageTop1": null,
+        "croppedCardTop1": null,
+        "sleevedCardTop1": null,
+        "glareBlurTop1": null,
+        "sameArtworkTop1": null,
+        "quantizedTop1Delta": null
+      },
+      "onnxExportStatus": "blocked",
+      "quantisationStatus": "blocked",
+      "productionEligible": false,
+      "selectionStatus": "blocked"
+    }
+  ],
+  "candidateDecisions": [
+    {
+      "modelId": "mobileclip2_s0",
+      "displayName": "Apple MobileCLIP2-S0",
+      "productionEligible": false,
+      "blockers": [
+        "model_not_production_eligible",
+        "license_research_only",
+        "embedding_dimension_unknown",
+        "onnx_not_tested",
+        "quantisation_not_tested",
+        "required_stackr_measurements_missing"
+      ],
+      "missingMetrics": [
+        "modelSizeBytes",
+        "iosLatencyMs",
+        "androidLatencyMs",
+        "serverCpuLatencyMs",
+        "peakMemoryMb",
+        "cleanImageTop1",
+        "cleanImageTop5",
+        "realCameraTop1",
+        "realCameraTop5",
+        "foreignLanguageTop1",
+        "croppedCardTop1",
+        "sleevedCardTop1",
+        "glareBlurTop1",
+        "sameArtworkTop1",
+        "quantizedTop1Delta"
+      ],
+      "weightedScore": null,
+      "rank": null,
+      "decision": "blocked"
+    },
+    {
+      "modelId": "mobileclip2_s2",
+      "displayName": "Apple MobileCLIP2-S2",
+      "productionEligible": false,
+      "blockers": [
+        "model_not_production_eligible",
+        "license_research_only",
+        "embedding_dimension_unknown",
+        "onnx_not_tested",
+        "quantisation_not_tested",
+        "required_stackr_measurements_missing"
+      ],
+      "missingMetrics": [
+        "modelSizeBytes",
+        "iosLatencyMs",
+        "androidLatencyMs",
+        "serverCpuLatencyMs",
+        "peakMemoryMb",
+        "cleanImageTop1",
+        "cleanImageTop5",
+        "realCameraTop1",
+        "realCameraTop5",
+        "foreignLanguageTop1",
+        "croppedCardTop1",
+        "sleevedCardTop1",
+        "glareBlurTop1",
+        "sameArtworkTop1",
+        "quantizedTop1Delta"
+      ],
+      "weightedScore": null,
+      "rank": null,
+      "decision": "blocked"
+    },
+    {
+      "modelId": "dinov2_vits14",
+      "displayName": "Meta DINOv2 ViT-S/14",
+      "productionEligible": true,
+      "blockers": [
+        "onnx_not_tested",
+        "quantisation_not_tested",
+        "required_stackr_measurements_missing"
+      ],
+      "missingMetrics": [
+        "modelSizeBytes",
+        "iosLatencyMs",
+        "androidLatencyMs",
+        "serverCpuLatencyMs",
+        "peakMemoryMb",
+        "cleanImageTop1",
+        "cleanImageTop5",
+        "realCameraTop1",
+        "realCameraTop5",
+        "foreignLanguageTop1",
+        "croppedCardTop1",
+        "sleevedCardTop1",
+        "glareBlurTop1",
+        "sameArtworkTop1",
+        "quantizedTop1Delta"
+      ],
+      "weightedScore": null,
+      "rank": null,
+      "decision": "blocked"
+    },
+    {
+      "modelId": "clip_vit_base_patch32_current_pack",
+      "displayName": "Current Stackr CLIP reference-pack baseline",
+      "productionEligible": false,
+      "blockers": [
+        "model_not_production_eligible",
+        "license_needs_review",
+        "onnx_not_tested",
+        "quantisation_not_tested",
+        "required_stackr_measurements_missing"
+      ],
+      "missingMetrics": [
+        "modelSizeBytes",
+        "iosLatencyMs",
+        "androidLatencyMs",
+        "serverCpuLatencyMs",
+        "peakMemoryMb",
+        "cleanImageTop1",
+        "cleanImageTop5",
+        "realCameraTop1",
+        "realCameraTop5",
+        "foreignLanguageTop1",
+        "croppedCardTop1",
+        "sleevedCardTop1",
+        "glareBlurTop1",
+        "sameArtworkTop1",
+        "quantizedTop1Delta"
+      ],
+      "weightedScore": null,
+      "rank": null,
+      "decision": "blocked"
+    },
+    {
+      "modelId": "stackr_embedding_v0_blocked",
+      "displayName": "Stackr embedding V0 blocked training plan",
+      "productionEligible": false,
+      "blockers": [
+        "model_not_production_eligible",
+        "license_rejected",
+        "onnx_blocked",
+        "quantisation_blocked",
+        "required_stackr_measurements_missing"
+      ],
+      "missingMetrics": [
+        "modelSizeBytes",
+        "iosLatencyMs",
+        "androidLatencyMs",
+        "serverCpuLatencyMs",
+        "peakMemoryMb",
+        "cleanImageTop1",
+        "cleanImageTop5",
+        "realCameraTop1",
+        "realCameraTop5",
+        "foreignLanguageTop1",
+        "croppedCardTop1",
+        "sleevedCardTop1",
+        "glareBlurTop1",
+        "sameArtworkTop1",
+        "quantizedTop1Delta"
+      ],
+      "weightedScore": null,
+      "rank": null,
+      "decision": "blocked"
+    }
+  ],
+  "selectedModelId": null,
+  "selectedEmbeddingDimensions": null,
+  "selectionReason": "No active model selected: required Stackr measurements, legal production eligibility, ONNX compatibility, quantisation acceptance and dataset coverage are incomplete.",
+  "blockers": [
+    "no_approved_training_pixels",
+    "no_real_phone_test_captures",
+    "missing_zh-Hans_benchmark_coverage",
+    "missing_ko_benchmark_coverage",
+    "source_tree_dirty",
+    "measurement_evidence_not_accepted",
+    "measurement_evidence_missing",
+    "model_selection_and_final_test_not_separated",
+    "query_images_not_excluded_from_indexed_references",
+    "no_production_model_selected_by_weighted_benchmark"
+  ],
+  "acceptanceCriteria": [
+    "At least one production-eligible model has complete Stackr-measured metrics for mobile, server and retrieval quality.",
+    "Model-selection and protected final-test splits are separated by physical card session.",
+    "Query images are not also indexed as reference images for the same evaluation.",
+    "English, Japanese, Simplified Chinese, Traditional Chinese and Korean benchmark cases are represented.",
+    "The selected model has verified ONNX or ORT export, checksum, preprocessing and normalisation metadata.",
+    "The quantised variant does not exceed the accepted retrieval-quality loss threshold.",
+    "A complete embedding index is validated before atomic activation."
+  ]
+}

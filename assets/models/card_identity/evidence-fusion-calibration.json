@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "stackr-evidence-fusion-calibration-v1.0.0",
+  "status": "blocked",
+  "version": "stackr-evidence-fusion-calibration-v0.0.0-blocked",
+  "generatedAt": "2026-07-26T21:42:59.870Z",
+  "method": "none",
+  "trainedOnDatasetVersion": null,
+  "validationDatasetSha256": null,
+  "featureKeys": [
+    "visualSimilarity",
+    "rank",
+    "topOneTopTwoSimilarityMargin",
+    "collectorNumberExactMatch",
+    "collectorNumberPartialMatch",
+    "setCodeMatch",
+    "setIdentityMatch",
+    "cardNameSimilarity",
+    "languageAgreement",
+    "regulationMarkAgreement",
+    "releaseEraAgreement",
+    "variantEvidence",
+    "frameToFrameAgreement",
+    "captureQualityScore",
+    "focusScore",
+    "glareScore",
+    "exposureScore",
+    "framingScore",
+    "stabilityScore",
+    "cardCoverage",
+    "ocrConflictWithVisual"
+  ],
+  "logistic": null,
+  "isotonic": null,
+  "thresholds": {
+    "acceptedMinProbability": null,
+    "reviewMinProbability": null,
+    "maxFalseAcceptRate": 0.005,
+    "minVisualSimilarityForAccept": null,
+    "minTopOneTopTwoMarginForAccept": null,
+    "minCaptureQualityForAccept": null
+  },
+  "metrics": {
+    "reliabilityDiagram": [],
+    "falseAcceptRate": null,
+    "falseRejectRate": null,
+    "acceptedCoverage": null,
+    "precisionByConfidenceBand": [],
+    "byLanguage": {},
+    "byVariant": {}
+  },
+  "blockers": [
+    "no_approved_embedding_model",
+    "no_search_predictions_with_ground_truth",
+    "no_protected_validation_rows_for_calibration"
+  ]
+}

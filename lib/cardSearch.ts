@@ -1,16 +1,33 @@
 import { supabase } from './supabase';
 import { getLocalCardIndex } from './localCardIndex';
+import { findCuratedPokemonSearchRows } from './curatedPokemonCatalogue';
 import { correctPokemonNameQuery } from './pokemonNameAutocorrect';
-import { normalizePokemonCardLanguage, type PokemonCardLanguage } from './pokemonTcg';
+import { searchStackrCards } from './stackrDomainAdapter';
+import {
+  getEnglishCardDisplayName,
+  getLocalCardName,
+  getPreferredCardDisplayName,
+  getPreferredSetDisplayName,
+} from './pokemonDisplayNames';
+import {
+  fetchAllSets,
+  fetchPokemonTcgApiCardsByQuery,
+  normalizePokemonCardLanguage,
+  type PokemonCard,
+  type PokemonCardLanguage,
+} from './pokemonTcg';
 
 type SearchRow = Record<string, any>;
 
 type SearchOptions = {
   limit?: number;
   select?: string;
-  language?: PokemonCardLanguage | string | null;
+  language?: PokemonCardLanguage | 'all' | string | null;
   skipSetDetection?: boolean;
   enableShortSetDetection?: boolean;
+  skipApiBackedSearch?: boolean;
+  skipIndexFallback?: boolean;
+  skipNameCorrection?: boolean;
 };
 
 type ParsedSearch = {
@@ -25,9 +42,11 @@ type ParsedSearch = {
 };
 
 const rarityAliases: Record<string, string[]> = {
-  sir: ['special illustration rare', 'rare special illustration'],
-  'special illustration rare': ['special illustration rare', 'rare special illustration'],
-  'special illustration': ['special illustration rare', 'rare special illustration'],
+  sar: ['special art rare', 'special illustration rare', 'rare special illustration', 'sar'],
+  sir: ['special illustration rare', 'rare special illustration', 'sir'],
+  'special art rare': ['special art rare', 'special illustration rare', 'rare special illustration', 'sar'],
+  'special illustration rare': ['special illustration rare', 'rare special illustration', 'sir'],
+  'special illustration': ['special illustration rare', 'rare special illustration', 'sir'],
   ir: ['illustration rare'],
   'illustration rare': ['illustration rare'],
   'ultra rare': ['ultra rare'],
@@ -67,6 +86,34 @@ const styleAliases = new Set([
 ]);
 
 const fillerTerms = new Set(['card', 'cards', 'pokemon', 'tcg']);
+const apiBackedSetIds = new Set(['me5']);
+
+const japaneseNameSearchAliases: Record<string, string[]> = {
+  zac: ['ザシアン'],
+  zacian: ['ザシアン'],
+  zamazenta: ['ザマゼンタ'],
+  pikachu: ['ピカチュウ'],
+  charizard: ['リザードン'],
+  mewtwo: ['ミュウツー'],
+  mew: ['ミュウ'],
+  eevee: ['イーブイ'],
+  gengar: ['ゲンガー'],
+  lucario: ['ルカリオ'],
+  rayquaza: ['レックウザ'],
+  gardevoir: ['サーナイト'],
+  umbreon: ['ブラッキー'],
+  espeon: ['エーフィ'],
+  sylveon: ['ニンフィア'],
+  glaceon: ['グレイシア'],
+  leafeon: ['リーフィア'],
+  vaporeon: ['シャワーズ'],
+  jolteon: ['サンダース'],
+  flareon: ['ブースター'],
+  arceus: ['アルセウス'],
+  giratina: ['ギラティナ'],
+  dialga: ['ディアルガ'],
+  palkia: ['パルキア'],
+};
 
 const normalise = (value: string) =>
   String(value ?? '')
@@ -86,11 +133,51 @@ const normalise = (value: string) =>
 
 const compact = (value: string) => normalise(value).replace(/\s+/g, '');
 const tokenize = (value: string) => normalise(value).split(/\s+/).filter(Boolean);
-const getSetName = (row: SearchRow) => row.raw_data?.set?.name ?? row.set?.name ?? row.set_name ?? row.set_id ?? '';
+const getSetName = (row: SearchRow) => getPreferredSetDisplayName({
+  id: row.set_id ?? row.raw_data?.set?.id ?? row.set?.id ?? null,
+  sourceId: row.raw_data?.set?.tcgdex_id ?? row.raw_data?.set?.source_id ?? row.raw_data?.source_id ?? row.set_id ?? null,
+  setCode: row.raw_data?.set?.set_code ?? row.raw_data?.set?.tcgdex_id ?? row.raw_data?.set_code ?? row.set_id ?? null,
+  language: row.language ?? row.raw_data?.language ?? row.raw_data?.set?.language ?? null,
+  region: row.region ?? row.raw_data?.region ?? row.raw_data?.set?.region ?? null,
+  localName: row.raw_data?.set?.local_name ?? row.raw_data?.set?.name ?? null,
+  englishDisplayName: row.raw_data?.set?.english_display_name ?? row.raw_data?.set?.englishDisplayName ?? null,
+  canonicalName: row.raw_data?.set?.name ?? row.set?.name ?? row.set_name ?? null,
+  fallbackName: row.set_name ?? row.set_id ?? null,
+  raw: row.raw_data?.set ?? row.raw_data,
+}) ?? '';
 const getRarity = (row: SearchRow) => row.rarity ?? row.raw_data?.rarity ?? '';
 const getSubtypes = (row: SearchRow): string[] => row.raw_data?.subtypes ?? row.subtypes ?? [];
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const setSearchCache = new Map<string, Promise<string[]>>();
+
+function isAllLanguageSearch(value: SearchOptions['language']) {
+  return String(value ?? '').trim().toLowerCase() === 'all';
+}
+
+function containsJapaneseText(value: string) {
+  return /[\u3040-\u30ff\u3400-\u9fff]/.test(value);
+}
+
+function getJapaneseNameSearchAliases(term: string) {
+  return japaneseNameSearchAliases[normalise(term)] ?? [];
+}
+
+function mergeLanguageResults<T extends SearchRow>(primary: T[], secondary: T[], limit: number) {
+  const merged: T[] = [];
+  const seen = new Set<string>();
+  const maxLength = Math.max(primary.length, secondary.length);
+
+  for (let index = 0; index < maxLength && merged.length < limit; index += 1) {
+    for (const row of [primary[index], secondary[index]]) {
+      if (!row?.id || seen.has(row.id)) continue;
+      seen.add(row.id);
+      merged.push(row);
+      if (merged.length >= limit) break;
+    }
+  }
+
+  return merged;
+}
 
 const stripLeadingZeroes = (value: string) => {
   const trimmed = String(value ?? '').trim();
@@ -241,15 +328,88 @@ function getMinimumScore(parsed: ParsedSearch) {
 }
 
 function scoreCard(row: SearchRow, parsed: ParsedSearch) {
-  const name = normalise(row.name ?? '');
+  const raw = row.raw_data ?? {};
+  const language = normalizePokemonCardLanguage(row.language ?? raw.language);
+  const providerCardId = row.source_id
+    ?? row.provider_card_id
+    ?? raw.source_id
+    ?? raw.provider_card_id
+    ?? raw.id
+    ?? row.external_ids?.tcgdex
+    ?? row.id
+    ?? null;
+  const collectorNumber = row.number ?? raw.localId ?? raw.number ?? null;
+  const localName = getLocalCardName({
+    id: row.id ?? null,
+    sourceId: providerCardId,
+    setId: row.set_id ?? raw.set?.id ?? null,
+    collectorNumber,
+    language,
+    region: row.region ?? raw.region ?? null,
+    localName: row.local_name ?? raw.local_name ?? (language !== 'en' ? row.name ?? raw.name ?? null : null),
+    englishDisplayName: row.english_display_name ?? raw.english_display_name ?? null,
+    canonicalName: row.canonical_name ?? raw.canonical_name ?? null,
+    fallbackName: row.name ?? raw.name ?? null,
+    raw,
+  });
+  const englishDisplayName = getEnglishCardDisplayName({
+    id: row.id ?? null,
+    sourceId: providerCardId,
+    setId: row.set_id ?? raw.set?.id ?? null,
+    collectorNumber,
+    language,
+    region: row.region ?? raw.region ?? null,
+    localName,
+    englishDisplayName: row.english_display_name ?? raw.english_display_name ?? null,
+    canonicalName: row.canonical_name ?? raw.canonical_name ?? null,
+    fallbackName: row.name ?? raw.name ?? null,
+    raw,
+  });
+  const preferredName = getPreferredCardDisplayName({
+    id: row.id ?? null,
+    sourceId: providerCardId,
+    setId: row.set_id ?? raw.set?.id ?? null,
+    collectorNumber,
+    language,
+    region: row.region ?? raw.region ?? null,
+    localName,
+    englishDisplayName,
+    canonicalName: row.canonical_name ?? raw.canonical_name ?? null,
+    fallbackName: row.name ?? raw.name ?? null,
+    raw,
+  });
+  const name = normalise(preferredName ?? row.name ?? '');
   const setName = normalise(getSetName(row));
   const rarity = normalise(getRarity(row));
   const subtypes = normalise(getSubtypes(row).join(' '));
   const number = normalise(String(row.number ?? ''));
   const printedTotal = String(row.raw_data?.set?.printedTotal ?? row.raw_data?.set?.total ?? '').trim();
+  const aliasText = normalise([
+    localName,
+    englishDisplayName,
+    preferredName,
+    row.local_name,
+    row.english_display_name,
+    row.canonical_name,
+    row.raw_data?.local_name,
+    row.raw_data?.english_display_name,
+    row.raw_data?.canonical_name,
+    ...(Array.isArray(row.raw_data?.aliases) ? row.raw_data.aliases : []),
+  ].filter(Boolean).join(' '));
+  const providerText = normalise([
+    row.id,
+    row.source_id,
+    row.provider_card_id,
+    row.raw_data?.source_id,
+    row.raw_data?.provider_card_id,
+    row.raw_data?.id,
+    row.external_ids?.tcgdex,
+  ].filter(Boolean).join(' '));
   let score = 0;
 
   score += scoreTermsAgainstField(parsed.nameTerms, name, 1);
+  score += scoreTermsAgainstField(parsed.nameTerms, aliasText, 0.82);
+  score += scoreTermsAgainstField(parsed.nameTerms, providerText, 0.8);
   score += scoreTermsAgainstField(parsed.nameTerms, setName, 0.34);
 
   if (parsed.nameTerms.length && compact(name) === parsed.nameTerms.join('')) score += 28;
@@ -260,6 +420,7 @@ function scoreCard(row: SearchRow, parsed: ParsedSearch) {
     return name.includes(normalizedHint) || subtypes.includes(normalizedHint) || rarity.includes(normalizedHint);
   })) score += 25;
   if (setName.includes(parsed.normalizedOriginal)) score += 12;
+  if (providerText && providerText.includes(parsed.normalizedOriginal)) score += 80;
   if (number && parsed.nameTerms.includes(number)) score += 18;
   if (parsed.cardNumberHints.length && parsed.cardNumberHints.some((hint) => stripLeadingZeroes(number) === stripLeadingZeroes(hint))) {
     score += parsed.setTotalHint && printedTotal && stripLeadingZeroes(printedTotal) === parsed.setTotalHint ? 130 : 74;
@@ -280,15 +441,18 @@ async function findMatchingSetIds(term: string, language: PokemonCardLanguage) {
   if (cached) return cached;
 
   const request = (async () => {
-    const { data } = await supabase
-      .from('pokemon_sets')
-      .select('id, name')
-      .eq('language', language)
-      .or(`name.ilike.%${term}%,id.ilike.%${term}%`)
-      .limit(20);
-
     const setSearch = normalise(term);
-    return (data ?? [])
+    const sets = await fetchAllSets({ language }).catch(async () => {
+      const { data } = await supabase
+        .from('pokemon_sets')
+        .select('id, name')
+        .eq('language', language)
+        .or(`name.ilike.%${term}%,id.ilike.%${term}%`)
+        .limit(20);
+      return data ?? [];
+    });
+
+    return (sets ?? [])
       .filter((set: any) => {
         const name = normalise(set.name ?? '');
         const id = normalise(set.id ?? '');
@@ -301,11 +465,80 @@ async function findMatchingSetIds(term: string, language: PokemonCardLanguage) {
   return request;
 }
 
+function getCardSetId(card: PokemonCard) {
+  return card.set?.id ?? card.raw_data?.set?.id ?? card.id.split('-').slice(0, -1).join('-') ?? '';
+}
+
+function mapPokemonTcgApiSearchRow(card: PokemonCard): SearchRow {
+  const setId = getCardSetId(card);
+  const raw = {
+    ...(card.raw_data ?? {}),
+    id: card.raw_data?.id ?? card.id,
+    name: card.raw_data?.name ?? card.name,
+    number: card.raw_data?.number ?? card.number,
+    rarity: card.raw_data?.rarity ?? card.rarity,
+    images: card.raw_data?.images ?? card.images,
+    set: card.raw_data?.set ?? card.set,
+    tcgplayer: card.raw_data?.tcgplayer ?? card.tcgplayer,
+    cardmarket: card.raw_data?.cardmarket ?? card.cardmarket,
+    supertype: card.raw_data?.supertype ?? card.supertype,
+    subtypes: card.raw_data?.subtypes ?? card.subtypes,
+  };
+
+  return {
+    id: card.id,
+    name: card.name,
+    language: card.language ?? 'en',
+    region: card.region ?? null,
+    external_ids: card.externalIds ?? {},
+    number: card.number ?? '',
+    rarity: card.rarity ?? null,
+    image_small: card.images?.small ?? null,
+    image_large: card.images?.large ?? null,
+    set_id: setId,
+    raw_data: raw,
+  };
+}
+
+function buildPokemonTcgApiQuery(parsed: ParsedSearch) {
+  const nameTerms = parsed.nameTerms
+    .filter((term) => term.length >= 3 && !fillerTerms.has(term))
+    .slice(0, 3);
+  const backedSetIds = parsed.matchedSetIds
+    .filter((setId) => apiBackedSetIds.has(normalise(setId)))
+    .slice(0, 1);
+
+  if (!nameTerms.length && !backedSetIds.length) return null;
+
+  const parts: string[] = [];
+  if (backedSetIds.length === 1) parts.push(`set.id:${backedSetIds[0]}`);
+  parts.push(...nameTerms.map((term) => `name:"*${term}*"`));
+  return parts.join(' ');
+}
+
+async function fetchApiBackedSearchRows(parsed: ParsedSearch, language: PokemonCardLanguage, limit: number) {
+  if (language !== 'en') return [];
+
+  const query = buildPokemonTcgApiQuery(parsed);
+  if (!query) return [];
+
+  try {
+    const cards = await fetchPokemonTcgApiCardsByQuery(query, {
+      limit: Math.max(80, Math.min(250, limit * 2)),
+    });
+    return cards.map(mapPokemonTcgApiSearchRow);
+  } catch (error) {
+    console.log('Pokemon TCG API search fallback failed:', error);
+    return [];
+  }
+}
+
 async function parseCardSearch(
   input: string,
   language: PokemonCardLanguage,
   skipSetDetection = false,
-  enableShortSetDetection = false
+  enableShortSetDetection = false,
+  skipNameCorrection = false
 ): Promise<ParsedSearch> {
   const original = input.trim();
   const rawTokens = original.split(/\s+/).filter(Boolean);
@@ -342,7 +575,9 @@ async function parseCardSearch(
     }
   }
 
-  const correctedCardTerm = await correctPokemonNameQuery(cardTerm, { allowIndex: false });
+  const correctedCardTerm = skipNameCorrection
+    ? { changed: false, correctedQuery: cardTerm }
+    : await correctPokemonNameQuery(cardTerm, { allowIndex: false });
   const lowerTerm = normalise(correctedCardTerm.changed ? correctedCardTerm.correctedQuery : cardTerm);
   const rarityHints: string[] = [];
   const styleHints: string[] = [];
@@ -395,6 +630,7 @@ function getDbSearchTerms(parsed: ParsedSearch, trimmed: string) {
 
   for (const term of terms) {
     variants.add(term);
+    for (const alias of getJapaneseNameSearchAliases(term)) variants.add(alias);
     if (term === 'pokemon') variants.add('pok_mon');
     if (/^[a-z]+s$/.test(term) && term.length > 3) {
       variants.add(`${term.slice(0, -1)}_s`);
@@ -403,6 +639,205 @@ function getDbSearchTerms(parsed: ParsedSearch, trimmed: string) {
   }
 
   return Array.from(variants).slice(0, 10);
+}
+
+function getCatalogueDbSearchTerms(parsed: ParsedSearch, trimmed: string) {
+  const variants = new Set<string>([
+    ...getDbSearchTerms(parsed, trimmed),
+    trimmed,
+    trimmed.replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, ''),
+    parsed.normalizedOriginal,
+    compact(trimmed),
+    ...parsed.cardNumberHints,
+    ...parsed.matchedSetIds,
+  ]);
+
+  return Array.from(variants)
+    .map((term) => String(term ?? '').trim().replace(/[,%()]/g, ' ').replace(/\s+/g, ' '))
+    .filter((term) => term.length >= 2)
+    .slice(0, 12);
+}
+
+function mapCatalogueCardSearchRow(row: SearchRow): SearchRow {
+  const raw = row.raw_payload ?? row.raw_source ?? row.raw_data ?? {};
+  const rawSet = raw.set && typeof raw.set === 'object' ? raw.set : {};
+  const language = normalizePokemonCardLanguage(row.language ?? raw.language ?? 'ja');
+  const providerCardId = String(row.source_id ?? row.provider_card_id ?? raw.source_id ?? raw.provider_card_id ?? raw.id ?? row.id ?? '')
+    .replace(/^(en|ja|jp|zh-tw|zh_tw|zhtw|zh):/i, '');
+  const collectorNumber = row.collector_number ?? raw.localId ?? raw.number ?? '';
+  const imageSmall = row.image_small_url ?? raw.images?.small ?? null;
+  const imageLarge = row.image_large_url ?? raw.images?.large ?? null;
+  const localName = getLocalCardName({
+    id: row.id,
+    sourceId: providerCardId,
+    language,
+    region: row.region ?? raw.region ?? null,
+    localName: row.local_name ?? raw.local_name ?? null,
+    fallbackName: raw.name ?? providerCardId,
+    raw,
+  });
+  const englishDisplayName = getEnglishCardDisplayName({
+    id: row.id,
+    sourceId: providerCardId,
+    setId: row.set_id ?? rawSet.id ?? null,
+    collectorNumber,
+    language,
+    region: row.region ?? raw.region ?? null,
+    localName,
+    englishDisplayName: row.english_display_name ?? raw.english_display_name ?? null,
+    canonicalName: row.canonical_name ?? raw.canonical_name ?? null,
+    fallbackName: raw.name ?? providerCardId,
+    raw,
+  });
+  const name = getPreferredCardDisplayName({
+    id: row.id,
+    sourceId: providerCardId,
+    setId: row.set_id ?? rawSet.id ?? null,
+    collectorNumber,
+    language,
+    region: row.region ?? raw.region ?? null,
+    localName,
+    englishDisplayName,
+    canonicalName: row.canonical_name ?? raw.canonical_name ?? null,
+    fallbackName: raw.name ?? providerCardId,
+    raw,
+  });
+
+  return {
+    id: row.id,
+    name,
+    language,
+    region: row.region ?? raw.region ?? null,
+    external_ids: {
+      ...(raw.external_ids && typeof raw.external_ids === 'object' ? raw.external_ids : {}),
+      tcgdex: providerCardId,
+    },
+    number: collectorNumber,
+    rarity: row.rarity ?? raw.rarity ?? null,
+    image_small: imageSmall,
+    image_large: imageLarge,
+    set_id: row.set_id ?? rawSet.id ?? '',
+    raw_data: {
+      ...raw,
+      id: providerCardId,
+      name,
+      localId: raw.localId ?? collectorNumber,
+      number: collectorNumber,
+      rarity: row.rarity ?? raw.rarity ?? null,
+      language,
+      region: row.region ?? raw.region ?? null,
+      local_name: localName,
+      english_display_name: englishDisplayName ?? row.english_display_name ?? raw.english_display_name ?? null,
+      canonical_name: row.canonical_name ?? raw.canonical_name ?? name,
+      source_id: providerCardId,
+      provider_card_id: row.provider_card_id ?? raw.provider_card_id ?? providerCardId,
+      images: {
+        ...(raw.images && typeof raw.images === 'object' ? raw.images : {}),
+        small: imageSmall,
+        large: imageLarge,
+      },
+      set: {
+        ...rawSet,
+        id: row.set_id ?? rawSet.id ?? '',
+        name: rawSet.name ?? row.set_name ?? row.set_id ?? '',
+      },
+    },
+  };
+}
+
+async function fetchCatalogueSearchRows(parsed: ParsedSearch, language: PokemonCardLanguage, limit: number, trimmed: string) {
+  if (!['ja', 'zh-tw'].includes(language)) return [];
+
+  const terms = getCatalogueDbSearchTerms(parsed, trimmed);
+  let query = supabase
+    .from('tcg_cards')
+    .select('id,set_id,canonical_name,local_name,english_display_name,collector_number,rarity,image_small_url,image_large_url,language,region,source_id,provider_card_id,raw_payload')
+    .eq('language', language)
+    .limit(Math.max(limit, 160));
+
+  if (terms.length) {
+    const conditions = terms.flatMap((term) => [
+      `canonical_name.ilike.%${term}%`,
+      `local_name.ilike.%${term}%`,
+      `english_display_name.ilike.%${term}%`,
+      `collector_number.ilike.%${term}%`,
+      `source_id.ilike.%${term}%`,
+      `provider_card_id.ilike.%${term}%`,
+      `set_id.ilike.%${term}%`,
+    ]);
+    query = query.or(conditions.join(','));
+  }
+
+  if (parsed.matchedSetIds.length > 0) query = query.in('set_id', parsed.matchedSetIds);
+
+  try {
+    const { data, error } = await query;
+    if (error) {
+      console.log('Canonical foreign card search unavailable:', error.message);
+      return [];
+    }
+    return (data ?? []).map(mapCatalogueCardSearchRow);
+  } catch (error) {
+    console.log('Canonical foreign card search failed:', error);
+    return [];
+  }
+}
+
+function readDexIds(value: unknown): number[] {
+  const values = Array.isArray(value) ? value : value == null ? [] : [value];
+  return values
+    .map((entry) => Number(entry))
+    .filter((entry) => Number.isInteger(entry) && entry > 0);
+}
+
+function getDexIdsFromRows(rows: SearchRow[], limit = 4) {
+  const dexIds = new Set<number>();
+  for (const row of rows) {
+    for (const id of [
+      ...readDexIds(row.dexId),
+      ...readDexIds(row.nationalPokedexNumbers),
+      ...readDexIds(row.raw_data?.dexId),
+      ...readDexIds(row.raw_data?.nationalPokedexNumbers),
+      ...readDexIds(row.raw_data?.nationalPokedexNumber),
+    ]) {
+      dexIds.add(id);
+      if (dexIds.size >= limit) return [...dexIds];
+    }
+  }
+  return [...dexIds];
+}
+
+async function fetchJapaneseCatalogueRowsByDexIds(dexIds: number[], limit: number) {
+  const ids = [...new Set(dexIds)].slice(0, 4);
+  if (!ids.length) return [];
+
+  const rows: SearchRow[] = [];
+  const seen = new Set<string>();
+  await Promise.all(ids.map(async (dexId) => {
+    try {
+      const { data, error } = await supabase
+        .from('tcg_cards')
+        .select('id,set_id,canonical_name,local_name,english_display_name,collector_number,rarity,image_small_url,image_large_url,language,region,source_id,provider_card_id,raw_payload')
+        .eq('language', 'ja')
+        .contains('raw_payload', { dexId: [dexId] })
+        .limit(Math.max(12, Math.ceil(limit / Math.max(ids.length, 1))));
+
+      if (error) {
+        console.log('Japanese dex alias search unavailable:', error.message);
+        return;
+      }
+
+      for (const row of (data ?? []).map(mapCatalogueCardSearchRow)) {
+        if (!row.id || seen.has(row.id)) continue;
+        seen.add(row.id);
+        rows.push(row);
+      }
+    } catch (error) {
+      console.log('Japanese dex alias search failed:', error);
+    }
+  }));
+
+  return rows.slice(0, limit);
 }
 
 async function getIndexCandidateIds(parsed: ParsedSearch, limit: number) {
@@ -442,75 +877,23 @@ export async function searchLocalPokemonCards<T extends SearchRow = SearchRow>(
 ): Promise<T[]> {
   const trimmed = input.trim();
   if (trimmed.length < 2) return [];
-
-  const language = normalizePokemonCardLanguage(options.language);
-  const parsed = await parseCardSearch(trimmed, language, options.skipSetDetection, options.enableShortSetDetection);
   const limit = options.limit ?? 80;
-  const dbSearchTerms = getDbSearchTerms(parsed, trimmed);
-  const select = options.select ?? 'id, name, language, number, rarity, image_small, image_large, set_id, raw_data';
-
-  let query = supabase
-    .from('pokemon_cards')
-    .select(select)
-    .eq('language', language)
-    .limit(Math.max(limit, 160));
-
-  if (dbSearchTerms.length) {
-    query = query.or(dbSearchTerms.map((term) => `name.ilike.%${term}%`).join(','));
-  }
-
-  if (parsed.matchedSetIds.length > 0) query = query.in('set_id', parsed.matchedSetIds);
-
-  const { data, error } = await query;
-  if (error) throw error;
-
-  const candidateMap = new Map<string, T>();
-  for (const row of (data ?? []) as unknown as T[]) {
-    if (row?.id) candidateMap.set(row.id, row);
-  }
-
-  if (parsed.cardNumberHints.length) {
-    const numberConditions = parsed.cardNumberHints
-      .flatMap((hint) => [hint, stripLeadingZeroes(hint), hint.padStart(3, '0')])
-      .filter(Boolean)
-      .map((hint) => `number.eq.${hint}`);
-    const { data: numberRows, error: numberError } = await supabase
-      .from('pokemon_cards')
-      .select(select)
-      .eq('language', language)
-      .or([...new Set(numberConditions)].join(','))
-      .limit(Math.max(limit * 3, 120));
-
-    if (numberError) throw numberError;
-    for (const row of (numberRows ?? []) as unknown as T[]) {
-      if (row?.id) candidateMap.set(row.id, row);
-    }
-  }
-
-  const strongDbRows = Array.from(candidateMap.values()).filter((row) => hasUsefulMatch(row, parsed));
-
-  if (strongDbRows.length === 0) {
-    const candidateIds = await getIndexCandidateIds(parsed, limit);
-    const missingIds = candidateIds.filter((id) => !candidateMap.has(id)).slice(0, Math.max(limit * 3, 120));
-
-    if (missingIds.length) {
-      const { data: indexedRows, error: indexedError } = await supabase
-        .from('pokemon_cards')
-        .select(select)
-        .eq('language', language)
-        .in('id', missingIds);
-
-      if (indexedError) throw indexedError;
-      for (const row of (indexedRows ?? []) as unknown as T[]) {
-        if (row?.id) candidateMap.set(row.id, row);
-      }
-    }
-  }
-
-  return Array.from(candidateMap.values())
-    .map((row) => ({ row, score: scoreCard(row, parsed) }))
-    .filter((item) => item.score >= getMinimumScore(parsed))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((item) => item.row);
+  const cards = await searchStackrCards(trimmed, {
+    language: isAllLanguageSearch(options.language) ? null : options.language,
+    limit,
+  });
+  return cards.map((card) => ({
+    id: card.id,
+    name: card.name,
+    language: card.language,
+    region: card.region,
+    number: card.number,
+    rarity: card.rarity ?? null,
+    image_small: card.images.small ?? null,
+    image_large: card.images.large ?? null,
+    set_id: card.set.id,
+    set_name: card.set.name,
+    external_ids: card.externalIds,
+    raw_data: card.raw_data,
+  })) as unknown as T[];
 }

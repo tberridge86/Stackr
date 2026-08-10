@@ -5,7 +5,6 @@ import { Text } from './Text';
 import { useTheme } from './theme-context';
 import { stackrLogoSizes } from '../lib/stackrSizing';
 import { typeScale } from '../lib/typography';
-import { stackrIcons } from '../lib/stackrIcons';
 
 type StackrLoadingScreenProps = {
   message?: string;
@@ -18,7 +17,6 @@ const BLOB_PURPLE = require('../assets/rev2/01-brand/logos/purple.png');
 const BLOB_LIGHT_PURPLE = require('../assets/rev2/01-brand/logos/lpurple.png');
 const BLOB_ORANGE = require('../assets/rev2/01-brand/logos/orange.png');
 const DOUBLE_STAR = require('../assets/rev2/01-brand/logos/doublestar.png');
-const PROTECT_ICON = stackrIcons.protect;
 
 export function StackrLoadingScreen({
   message = 'Opening your vault',
@@ -267,9 +265,8 @@ export function StackrLoadingScreen({
             numberOfLines={1}
             adjustsFontSizeToFit
           >
-            Collect. Store.
+            Collect. Trade. Protect.
           </Text>
-          <Image source={PROTECT_ICON} style={styles.protectIcon} resizeMode="contain" />
         </Animated.View>
 
         <Animated.Image
@@ -381,10 +378,6 @@ const styles = StyleSheet.create({
     fontSize: 25,
     lineHeight: 31,
     textAlign: 'center',
-  },
-  protectIcon: {
-    width: 92,
-    height: 26,
   },
   doubleStar: {
     width: 70,

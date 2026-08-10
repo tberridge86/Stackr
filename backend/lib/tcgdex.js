@@ -1,3 +1,9 @@
+import {
+  getEnglishCardDisplayName,
+  getEnglishSetDisplayName,
+  getPreferredSetDisplayName,
+} from './cardDisplayNames.js';
+
 const TCGDEX_BASE_URL = process.env.TCGDEX_API_BASE_URL || 'https://api.tcgdex.net/v2';
 const TCGDEX_CACHE_TTL_MS = Number(process.env.TCGDEX_CACHE_TTL_MS || 10 * 60 * 1000);
 const USD_TO_GBP = Number(process.env.USD_TO_GBP || 0.79);
@@ -15,6 +21,8 @@ export const TCGDEX_LANGUAGES = [
   { code: 'de', label: 'German', region: 'DE' },
   { code: 'ja', label: 'Japanese', region: 'JP' },
   { code: 'zh-tw', label: 'Chinese (Traditional)', region: 'TW' },
+  { code: 'zh-cn', label: 'Chinese (Simplified)', region: 'CN' },
+  { code: 'ko', label: 'Korean', region: 'KR' },
   { code: 'id', label: 'Indonesian', region: 'ID' },
   { code: 'th', label: 'Thai', region: 'TH' },
 ];
@@ -30,6 +38,7 @@ const LANGUAGE_ALIASES = new Map([
   ['pt_br', 'pt-br'],
   ['portuguese', 'pt-br'],
   ['zh', 'zh-tw'],
+  ['zh_cn', 'zh-cn'],
   ['zhtw', 'zh-tw'],
   ['zh_tw', 'zh-tw'],
   ['traditional-chinese', 'zh-tw'],
@@ -48,7 +57,12 @@ const LANGUAGE_ALIASES = new Map([
 function normalizeLanguage(value = 'en') {
   const cleaned = String(value || 'en').trim().toLowerCase().replace(/\s+/g, '-');
   const aliased = LANGUAGE_ALIASES.get(cleaned) ?? cleaned;
-  return TCGDEX_LANGUAGES.some((language) => language.code === aliased) ? aliased : 'en';
+  if (TCGDEX_LANGUAGES.some((language) => language.code === aliased)) return aliased;
+  const supported = TCGDEX_LANGUAGES.map((language) => language.code).join(', ');
+  const error = new Error(`Unsupported TCGdex language: ${String(value ?? '') || '<missing>'}. Use one of: ${supported}.`);
+  error.code = 'unsupported_tcgdex_language';
+  error.fatal = true;
+  throw error;
 }
 
 export function normalizeTcgdexLanguage(value = 'en') {
@@ -123,21 +137,54 @@ async function fetchJson(path) {
   }
 }
 
-function withWebpAsset(url, size = 'high') {
+function withCardImageAsset(url, size = 'high') {
   if (!url) return null;
-  return `${String(url).replace(/\/$/, '')}/${size}.webp`;
+  const value = String(url).trim();
+  if (/\.(webp|png|jpe?g)(?:[?#].*)?$/i.test(value)) return value;
+  return `${value.replace(/\/$/, '')}/${size}.webp`;
+}
+
+function withSetAsset(url, extension = 'webp') {
+  if (!url) return null;
+  const value = String(url).trim();
+  if (/\.(webp|png|jpe?g)(?:[?#].*)?$/i.test(value)) return value;
+  return `${value.replace(/\/$/, '')}.${extension}`;
 }
 
 function mapSetBrief(set, language) {
   const lang = normalizeLanguage(language);
   const meta = getLanguageMeta(lang);
   const total = set?.cardCount?.total ?? set?.cardCount?.official ?? null;
+  const localName = set?.name ?? set?.id ?? null;
+  const englishDisplayName = lang === 'en'
+    ? localName
+    : getEnglishSetDisplayName({
+      id: set?.id ?? null,
+      sourceId: set?.id ?? null,
+      setCode: set?.id ?? null,
+      language: lang,
+      region: meta.region,
+      localName,
+      raw: set,
+    });
+  const displayName = getPreferredSetDisplayName({
+    id: set?.id ?? null,
+    sourceId: set?.id ?? null,
+    setCode: set?.id ?? null,
+    language: lang,
+    region: meta.region,
+    localName,
+    englishDisplayName,
+    raw: set,
+  });
   return {
     id: set?.id ?? null,
     providerSetId: set?.id ?? null,
     language: lang,
     region: meta.region,
-    name: set?.name ?? set?.id ?? null,
+    name: displayName,
+    localName,
+    englishDisplayName,
     series: set?.serie?.name ?? set?.serie?.id ?? set?.series ?? null,
     releaseDate: set?.releaseDate ?? null,
     cardCount: {
@@ -148,17 +195,37 @@ function mapSetBrief(set, language) {
       reverse: set?.cardCount?.reverse ?? null,
       firstEd: set?.cardCount?.firstEd ?? null,
     },
-    logo: set?.logo ? withWebpAsset(set.logo, 'high') : null,
+    logo: set?.logo ? withSetAsset(set.logo, 'webp') : null,
     logoBase: set?.logo ?? null,
-    symbol: set?.symbol ? withWebpAsset(set.symbol, 'high') : null,
+    symbol: set?.symbol ? withSetAsset(set.symbol, 'webp') : null,
     symbolBase: set?.symbol ?? null,
     raw: set ?? null,
   };
 }
 
-function mapCardBrief(card, language) {
+function mapCardBrief(card, language, context = {}) {
   const lang = normalizeLanguage(language);
   const meta = getLanguageMeta(lang);
+  const localName = card?.name ?? card?.id ?? null;
+  const contextSet = card?.set ?? context.set ?? null;
+  const setId = contextSet?.id ?? context.setId ?? null;
+  const raw = {
+    ...(card ?? {}),
+    set: contextSet ?? card?.set ?? undefined,
+  };
+  const englishDisplayName = lang === 'en'
+    ? localName
+    : getEnglishCardDisplayName({
+      id: card?.id ?? null,
+      sourceId: card?.id ?? null,
+      setId,
+      collectorNumber: card?.localId ?? null,
+      language: lang,
+      region: meta.region,
+      localName,
+      raw,
+    });
+  const displayName = englishDisplayName ?? localName;
   return {
     id: card?.id ?? null,
     providerCardId: card?.id ?? null,
@@ -166,11 +233,13 @@ function mapCardBrief(card, language) {
     region: meta.region,
     localId: card?.localId ?? null,
     number: card?.localId ?? null,
-    name: card?.name ?? card?.id ?? null,
-    image: card?.image ? withWebpAsset(card.image, 'high') : null,
-    imageSmall: card?.image ? withWebpAsset(card.image, 'low') : null,
+    name: displayName,
+    localName,
+    englishDisplayName,
+    image: card?.image ? withCardImageAsset(card.image, 'high') : null,
+    imageSmall: card?.image ? withCardImageAsset(card.image, 'low') : null,
     imageBase: card?.image ?? null,
-    raw: card ?? null,
+    raw,
   };
 }
 
@@ -251,10 +320,10 @@ function getCardmarketVariants(pricing) {
 export function summariseTcgdexPricing(card, language = 'en') {
   const lang = normalizeLanguage(language);
   const cardmarket = getCardmarketVariants(card?.pricing);
-  const tcgplayer = getTcgplayerVariants(card?.pricing);
+  const tcgplayer = lang === 'en' ? getTcgplayerVariants(card?.pricing) : [];
   const preferred = lang === 'en'
     ? tcgplayer[0] ?? cardmarket[0] ?? null
-    : cardmarket[0] ?? tcgplayer[0] ?? null;
+    : cardmarket[0] ?? null;
 
   return {
     preferredGbp: preferred?.marketGbp ?? preferred?.averageGbp ?? preferred?.midGbp ?? preferred?.lowGbp ?? null,
@@ -268,6 +337,30 @@ export function summariseTcgdexPricing(card, language = 'en') {
 
 function mapDetailedCard(card, language) {
   const brief = mapCardBrief(card, language);
+  const lang = normalizeLanguage(language);
+  const meta = getLanguageMeta(lang);
+  const localSetName = card?.set?.name ?? null;
+  const setEnglishDisplayName = lang === 'en'
+    ? localSetName
+    : getEnglishSetDisplayName({
+      id: card?.set?.id ?? null,
+      sourceId: card?.set?.id ?? null,
+      setCode: card?.set?.id ?? null,
+      language: lang,
+      region: meta.region,
+      localName: localSetName,
+      raw: card?.set,
+    });
+  const setDisplayName = getPreferredSetDisplayName({
+    id: card?.set?.id ?? null,
+    sourceId: card?.set?.id ?? null,
+    setCode: card?.set?.id ?? null,
+    language: lang,
+    region: meta.region,
+    localName: localSetName,
+    englishDisplayName: setEnglishDisplayName,
+    raw: card?.set,
+  });
   return {
     ...brief,
     rarity: card?.rarity ?? null,
@@ -281,9 +374,11 @@ function mapDetailedCard(card, language) {
     set: card?.set
       ? {
           id: card.set.id ?? null,
-          name: card.set.name ?? null,
-          logo: card.set.logo ? withWebpAsset(card.set.logo, 'high') : null,
-          symbol: card.set.symbol ? withWebpAsset(card.set.symbol, 'high') : null,
+          name: setDisplayName,
+          localName: localSetName,
+          englishDisplayName: setEnglishDisplayName,
+          logo: card.set.logo ? withSetAsset(card.set.logo, 'webp') : null,
+          symbol: card.set.symbol ? withSetAsset(card.set.symbol, 'webp') : null,
           cardCount: card.set.cardCount ?? null,
         }
       : null,
@@ -302,7 +397,7 @@ export async function searchTcgdexCards({ query, language = 'ja', limit = 20 }) 
   const list = Array.isArray(results) ? results : Array.isArray(results?.value) ? results.value : [];
   return list.slice(0, Math.max(1, Math.min(Number(limit) || 20, 100))).map((card) => ({
     ...mapCardBrief(card, lang),
-    image: card.image ? withWebpAsset(card.image, 'low') : null,
+    image: card.image ? withCardImageAsset(card.image, 'low') : null,
   }));
 }
 
@@ -322,12 +417,11 @@ export async function fetchTcgdexSets({ language = 'en', limit = 250, query = ''
   const trimmed = String(query || '').trim().toLowerCase();
   const results = await fetchJson(`/${lang}/sets`);
   const list = Array.isArray(results) ? results : [];
+  const mapped = list.map((set) => mapSetBrief(set, lang));
   const filtered = trimmed
-    ? list.filter((set) => normalizeText(`${set?.name ?? ''} ${set?.id ?? ''}`).includes(normalizeText(trimmed)))
-    : list;
-  return filtered
-    .slice(0, Math.max(1, Math.min(Number(limit) || 250, 500)))
-    .map((set) => mapSetBrief(set, lang));
+    ? mapped.filter((set) => normalizeText(`${set?.name ?? ''} ${set?.localName ?? ''} ${set?.id ?? ''}`).includes(normalizeText(trimmed)))
+    : mapped;
+  return filtered.slice(0, Math.max(1, Math.min(Number(limit) || 250, 500)));
 }
 
 export async function fetchTcgdexSet(setId, language = 'en') {
@@ -335,9 +429,10 @@ export async function fetchTcgdexSet(setId, language = 'en') {
   if (!id) return null;
   const lang = normalizeLanguage(language);
   const set = await fetchJson(`/${lang}/sets/${encodeURIComponent(id)}`);
+  const setContext = { id: set?.id ?? id, name: set?.name ?? null };
   return {
     ...mapSetBrief(set, lang),
-    cards: Array.isArray(set?.cards) ? set.cards.map((card) => mapCardBrief(card, lang)) : [],
+    cards: Array.isArray(set?.cards) ? set.cards.map((card) => mapCardBrief(card, lang, { set: setContext })) : [],
   };
 }
 
@@ -382,7 +477,14 @@ export async function searchTcgdexCardsDetailed({
     try {
       const detail = await fetchTcgdexCardDetail(card.id, lang);
       if (detail) detailed.push(detail);
-    } catch {
+    } catch (error) {
+      console.log(JSON.stringify({
+        event: 'tcgdex_detail_failure',
+        provider: 'tcgdex',
+        language: lang,
+        cardId: card?.id ?? null,
+        failureReason: error instanceof Error ? error.message : String(error),
+      }));
       detailed.push(card);
     }
   }
@@ -438,21 +540,50 @@ function getCardmarketPrice(pricing) {
 
 function resolveTcgdexPrice(card, language = 'ja') {
   const lang = normalizeLanguage(language);
-  const tcgplayer = getTcgplayerPrice(card?.pricing);
+  const meta = getLanguageMeta(lang);
+  const localName = card?.name ?? null;
+  const englishDisplayName = lang === 'en'
+    ? localName
+    : getEnglishCardDisplayName({
+      id: card?.id ?? null,
+      sourceId: card?.id ?? null,
+      collectorNumber: card?.localId ?? null,
+      language: lang,
+      region: meta.region,
+      localName,
+      raw: card,
+    });
+  const localSetName = card?.set?.name ?? null;
+  const setEnglishDisplayName = lang === 'en'
+    ? localSetName
+    : getEnglishSetDisplayName({
+      id: card?.set?.id ?? null,
+      sourceId: card?.set?.id ?? null,
+      setCode: card?.set?.id ?? null,
+      language: lang,
+      region: meta.region,
+      localName: localSetName,
+      raw: card?.set,
+    });
+  const tcgplayer = lang === 'en' ? getTcgplayerPrice(card?.pricing) : null;
   const cardmarket = getCardmarketPrice(card?.pricing);
-  const preferred = lang === 'ja'
-    ? cardmarket ?? tcgplayer
-    : tcgplayer ?? cardmarket;
+  const preferred = lang === 'en'
+    ? tcgplayer ?? cardmarket
+    : cardmarket;
 
   if (!preferred) {
     return {
       source: 'tcgdex',
       providerCardId: card?.id ?? null,
       language: lang,
-      name: card?.name ?? null,
-      setName: card?.set?.name ?? null,
+      name: englishDisplayName ?? localName,
+      localName,
+      englishDisplayName,
+      setName: setEnglishDisplayName ?? localSetName,
+      setLocalName: localSetName,
+      setEnglishDisplayName,
       number: card?.localId ?? null,
-      image: card?.image ? `${card.image}/high.webp` : null,
+      image: card?.image ? withCardImageAsset(card.image, 'high') : null,
       tcg_low: null,
       tcg_mid: null,
       cardmarket_trend: null,
@@ -467,11 +598,15 @@ function resolveTcgdexPrice(card, language = 'ja') {
     source: 'tcgdex',
     providerCardId: card?.id ?? null,
     language: lang,
-    name: card?.name ?? null,
-    setName: card?.set?.name ?? null,
+    name: englishDisplayName ?? localName,
+    localName,
+    englishDisplayName,
+    setName: setEnglishDisplayName ?? localSetName,
+    setLocalName: localSetName,
+    setEnglishDisplayName,
     number: card?.localId ?? null,
     rarity: card?.rarity ?? null,
-    image: card?.image ? `${card.image}/high.webp` : null,
+    image: card?.image ? withCardImageAsset(card.image, 'high') : null,
     tcg_low: preferred.source === 'tcgdex_tcgplayer' ? preferred.low : null,
     tcg_mid: preferred.source === 'tcgdex_tcgplayer' ? preferred.market : null,
     cardmarket_trend: preferred.source === 'tcgdex_cardmarket' ? preferred.market : null,
@@ -519,8 +654,14 @@ export async function fetchTcgdexCardPrice({
     try {
       const card = await fetchTcgdexCard(cardId, lang);
       if (card?.id) return resolveTcgdexPrice(card, lang);
-    } catch {
-      // Fall through to search, because existing English IDs may not exist in the Japanese catalogue.
+    } catch (error) {
+      console.log(JSON.stringify({
+        event: 'tcgdex_price_card_lookup_failure',
+        provider: 'tcgdex',
+        language: lang,
+        cardId,
+        failureReason: error instanceof Error ? error.message : String(error),
+      }));
     }
   }
 
@@ -533,8 +674,14 @@ export async function fetchTcgdexCardPrice({
     try {
       const card = await fetchTcgdexCard(summary.id, lang);
       if (card?.id) detailed.push(card);
-    } catch {
-      // Skip individual card failures so one bad card does not break pricing.
+    } catch (error) {
+      console.log(JSON.stringify({
+        event: 'tcgdex_price_search_detail_failure',
+        provider: 'tcgdex',
+        language: lang,
+        cardId: summary?.id ?? null,
+        failureReason: error instanceof Error ? error.message : String(error),
+      }));
     }
   }
 

@@ -1,0 +1,12 @@
+{
+  "modelVersion": "stackr-embedding-v0.0.0-blocked",
+  "status": "blocked",
+  "containsWeights": false,
+  "reason": "No winning baseline was selected because training and retrieval evaluation were blocked before image pixels could be loaded.",
+  "blockers": [
+    "no_approved_training_pixels",
+    "no_real_phone_test_captures"
+  ],
+  "datasetManifestSha256": "9ded04ffc25428ad733cdb1530a64a58c40526f61ff5edd3e1838b616ab6e815",
+  "sourceCommitHash": "b6495cc77fd0e56e5911c5925c6bf3680640860a"
+}

@@ -1,0 +1,31 @@
+{
+  "status": "blocked",
+  "generatedAt": "2026-07-26T21:50:38.698Z",
+  "resolverVersion": "stackr-exact-variant-resolver-v1.0.0",
+  "familyRegisterVersion": "stackr-card-variant-families-v0.0.0-blocked",
+  "validationRows": 0,
+  "metrics": {
+    "exactVariantAccuracy": null,
+    "unresolvedRate": null,
+    "falseExactVariantRate": null,
+    "byGroup": {
+      "standard_vs_reverse_holo": null,
+      "pokeball_vs_masterball": null,
+      "stamped_vs_unstamped": null,
+      "first_edition_vs_unlimited": null,
+      "same_art_promotional_release": null,
+      "japanese_vs_english_same_artwork": null,
+      "texture_vs_non_texture": null
+    }
+  },
+  "blockers": [
+    "missing ml/data_manifests/variant-resolver-validation.jsonl",
+    "no_reviewed_variant_validation_rows",
+    "variant_accuracy_not_measured"
+  ],
+  "exitCriteria": {
+    "baseIdentityAndExactVariantReportedSeparately": true,
+    "unresolvedFinishDoesNotBecomeFalseExactMatch": true,
+    "variantAccuracyMeasuredIndependently": false
+  }
+}

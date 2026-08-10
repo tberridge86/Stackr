@@ -19,10 +19,10 @@ export type ProfileShowcaseCard = {
 export type ProfileShowcaseState = Partial<Record<ProfileShowcaseSlot, ProfileShowcaseCard>>;
 
 export const PROFILE_SHOWCASE_SLOT_LABELS: Record<ProfileShowcaseSlot, string> = {
-  favorite: 'Favourite Card',
+  favorite: 'Featured Card',
   chase: 'Chase Card',
   grail: 'Grail',
-  slab: 'Favourite Slab',
+  slab: 'Featured Slab',
 };
 
 export const PROFILE_SHOWCASE_SEARCH_CONFIG: Record<ProfileShowcaseSlot, {
@@ -33,7 +33,7 @@ export const PROFILE_SHOWCASE_SEARCH_CONFIG: Record<ProfileShowcaseSlot, {
 }> = {
   favorite: {
     category: 'raw_card',
-    title: 'Choose Favourite Card',
+    title: 'Choose Featured Card',
     subtitle: 'Search for the card that represents your collection.',
     placeholder: 'Search cards, sets or card numbers',
   },
@@ -51,7 +51,7 @@ export const PROFILE_SHOWCASE_SEARCH_CONFIG: Record<ProfileShowcaseSlot, {
   },
   slab: {
     category: 'graded_slab',
-    title: 'Choose Favourite Slab',
+    title: 'Choose Featured Slab',
     subtitle: 'Search graded cards and slab listings.',
     placeholder: 'Search PSA, CGC, BGS or graded cards',
   },

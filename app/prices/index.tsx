@@ -24,14 +24,18 @@ import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { SLAB_GRADE_SHORTCUTS, SLAB_GRADING_COMPANIES, getSlabAccent } from '../../components/SlabStickerLabel';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrCardActionIcon } from '../../components/StackrScreen';
+import { ScrollToEndButton } from '../../components/ScrollToEndButton';
+import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
 
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { PRICE_API_URL, USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
+import { getIncrementalListWindow } from '../../lib/performance';
 import { buildProductQuery, searchMarketProducts } from '../../lib/productSearch';
 import type { ProductLookupType, ProductPriceResult } from '../../lib/productSearch';
 import { listingCategoryIcons } from '../../lib/listingCategoryIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
 import { StackrCardIdentity } from '../../components/StackrCardIdentity';
+import { fetchStackrCardRows, fetchStackrPrice, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 
 
 // ===============================
@@ -229,6 +233,7 @@ const mapCard = (card: any): PokemonCard => ({
   id: card.id,
   name: card.name,
   number: card.number ?? '',
+  language: card.language ?? card.raw_data?.language ?? null,
   rarity: card.rarity ?? undefined,
   images: {
     small: card.image_small ?? undefined,
@@ -257,6 +262,11 @@ export default function MarketScreen() {
   const [lookupMenuOpen, setLookupMenuOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<PokemonCard[]>([]);
+  const priceResultWindow = useMemo(
+    () => getIncrementalListWindow(1, { initialRows: 12, pageRows: 10, minInitial: 12, minPage: 10 }),
+    []
+  );
+  const [visibleSearchResultCount, setVisibleSearchResultCount] = useState(priceResultWindow.initialCount);
   const [productPriceData, setProductPriceData] = useState<ProductPriceResult | null>(null);
   const [productPriceLoading, setProductPriceLoading] = useState(false);
   const [selectedCard, setSelectedCard] = useState<PokemonCard | null>(null);
@@ -279,6 +289,7 @@ export default function MarketScreen() {
 
   const translateY = useRef(new Animated.Value(0)).current;
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const priceListRef = useRef<FlatList<PokemonCard>>(null);
 
   useEffect(() => {
     return () => {
@@ -290,6 +301,25 @@ export default function MarketScreen() {
     () => new Set(watchlist.map((item) => item.card_id)),
     [watchlist]
   );
+  useEffect(() => {
+    setVisibleSearchResultCount(Math.min(searchResults.length, priceResultWindow.initialCount));
+  }, [lookupType, priceResultWindow.initialCount, query, searchResults.length]);
+
+  const visibleSearchResults = useMemo(
+    () => searchResults.slice(0, visibleSearchResultCount),
+    [searchResults, visibleSearchResultCount]
+  );
+  const hasMoreSearchResults = visibleSearchResultCount < searchResults.length;
+  const renderMoreSearchResults = useCallback(() => {
+    setVisibleSearchResultCount((current) => Math.min(searchResults.length, current + priceResultWindow.pageSize));
+  }, [priceResultWindow.pageSize, searchResults.length]);
+  const scrollPriceResultsToEnd = useCallback(() => {
+    setVisibleSearchResultCount(searchResults.length);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => priceListRef.current?.scrollToEnd({ animated: true }));
+    });
+  }, [searchResults.length]);
+  const showPriceEndButton = isCardLookup(lookupType) && searchResults.length > 10;
 
   const isWatching = useCallback(
     (cardId: string) => watchedCardIds.has(cardId),
@@ -335,33 +365,12 @@ export default function MarketScreen() {
 
   const loadWatchlistPrices = useCallback(async (cardIds: string[]) => {
     if (!cardIds.length) { setWatchlistPriceMap({}); return; }
-
-    const { data, error } = await supabase
-      .from('market_price_snapshots')
-      .select('card_id, tcg_mid, tcg_low, snapshot_at')
-      .is('user_id', null)
-      .or('tcg_mid.not.is.null,tcg_low.not.is.null')
-      .in('card_id', cardIds)
-      .order('snapshot_at', { ascending: false });
-
-    if (error) { console.log('Watchlist price snapshot error:', error); return; }
-
-    const grouped: Record<string, any[]> = {};
-    for (const row of data ?? []) {
-      if (!grouped[row.card_id]) grouped[row.card_id] = [];
-      if (grouped[row.card_id].length < 2) grouped[row.card_id].push(row);
-    }
+    const snapshots = await fetchStackrPriceSnapshots(cardIds);
 
     const nextMap: Record<string, WatchlistPriceState> = {};
     for (const cardId of cardIds) {
-      const snapshots = grouped[cardId] ?? [];
-      const latest = snapshots[0];
-      const previous = snapshots[1];
-      const latestPrice = latest?.tcg_mid ?? latest?.tcg_low ?? null;
-      const previousPrice = previous?.tcg_mid ?? previous?.tcg_low ?? null;
-      const change = latestPrice != null && previousPrice != null ? latestPrice - previousPrice : null;
-      const percentChange = change != null && previousPrice != null && previousPrice !== 0 ? (change / previousPrice) * 100 : null;
-      nextMap[cardId] = { latestPrice, previousPrice, change, percentChange, hasHistory: snapshots.length > 1 };
+      const latestPrice = snapshots.get(cardId)?.market_central ?? null;
+      nextMap[cardId] = { latestPrice, previousPrice: null, change: null, percentChange: null, hasHistory: false };
     }
 
     setWatchlistPriceMap(nextMap);
@@ -374,45 +383,22 @@ export default function MarketScreen() {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('market_price_snapshots')
-      .select('card_id, ebay_average, ebay_low, ebay_high, ebay_count, tcg_mid, tcg_low, snapshot_at')
-      .is('user_id', null)
-      .in('card_id', cardIds)
-      .or('tcg_mid.not.is.null,tcg_low.not.is.null')
-      .order('snapshot_at', { ascending: false });
-
-    if (error) {
-      console.log('Search price snapshot error:', error);
-      setSearchPriceMap({});
-      return;
-    }
-
-    const grouped: Record<string, any[]> = {};
-    for (const row of data ?? []) {
-      if (!grouped[row.card_id]) grouped[row.card_id] = [];
-      if (grouped[row.card_id].length < 2) grouped[row.card_id].push(row);
-    }
+    const snapshots = await fetchStackrPriceSnapshots(cardIds);
 
     const nextMap: Record<string, SearchPriceState> = {};
     for (const cardId of cardIds) {
-      const snapshots = grouped[cardId] ?? [];
-      const latest = snapshots[0];
-      const previous = snapshots[1];
-      const latestTcg = latest?.tcg_mid == null && latest?.tcg_low == null ? null : Number(latest.tcg_mid ?? latest.tcg_low);
-      const previousTcg = previous?.tcg_mid == null && previous?.tcg_low == null ? null : Number(previous.tcg_mid ?? previous.tcg_low);
-      const change = latestTcg != null && previousTcg != null ? latestTcg - previousTcg : null;
-      const percentChange = change != null && previousTcg != null && previousTcg !== 0 ? (change / previousTcg) * 100 : null;
+      const latest = snapshots.get(cardId);
+      const latestTcg = latest?.market_central ?? null;
 
       nextMap[cardId] = {
-        ebayAverage: latest?.ebay_average == null ? null : Number(latest.ebay_average),
-        ebayLow: latest?.ebay_low == null ? null : Number(latest.ebay_low),
-        ebayHigh: latest?.ebay_high == null ? null : Number(latest.ebay_high),
-        ebayCount: latest?.ebay_count == null ? null : Number(latest.ebay_count),
+        ebayAverage: latest?.market_central ?? null,
+        ebayLow: latest?.market_low ?? null,
+        ebayHigh: latest?.market_high ?? null,
+        ebayCount: latest?.sample_count ?? null,
         tcgLatest: latestTcg,
-        tcgPrevious: previousTcg,
-        tcgChange: change,
-        tcgPercentChange: percentChange,
+        tcgPrevious: null,
+        tcgChange: null,
+        tcgPercentChange: null,
         snapshotAt: latest?.snapshot_at ?? null,
       };
     }
@@ -421,56 +407,23 @@ export default function MarketScreen() {
   }, []);
 
   const fetchLiveEbayForCard = useCallback(async (card: PokemonCard): Promise<EbayDetailData> => {
-    if (!PRICE_API_URL) return null;
     if (lookupType === 'graded_slab') return null;
-
-    const rawSetName = card.set?.name ?? '';
-    const setName = (rawSetName && rawSetName !== card.set?.id) ? rawSetName : '';
-
-    const params = new URLSearchParams({
-      name: card.name ?? '',
-      setName,
-      number: card.number ?? '',
-      rarity: card.rarity ?? '',
-      cardId: card.id ?? '',
-      productType: 'card',
-      pricingMode: 'raw',
-    });
-
-    params.set('condition', rawCondition);
-
-    const printedTotal = card.set?.printedTotal ?? card.set?.total;
-    if (printedTotal != null) params.set('setTotal', String(printedTotal));
-
-    const response = await fetch(`${PRICE_API_URL}/api/price/ebay?${params.toString()}`);
-    if (!response.ok) throw new Error('Failed to fetch eBay price');
-
-    const data = await response.json();
-    if (__DEV__) {
-      console.log('[market:eBay:card]', {
-        cardId: card.id,
-        pricingMode: 'raw',
-        condition: rawCondition,
-        query: data.query,
-        count: data.count,
-        average: data.average,
-        source: data.soldDataSource,
-        usedCachedPrice: data.usedCachedPrice,
-      });
-    }
+    const result = await fetchStackrPrice(card.id, { productType: 'raw_card', currency: 'GBP', condition: rawCondition });
+    if (!result) return null;
+    const data = result.price;
     return {
-      low: data.low ?? null,
-      average: data.average ?? null,
-      high: data.high ?? null,
-      count: data.count ?? null,
-      query: data.query ?? null,
-      soldDataSource: data.soldDataSource ?? null,
+      low: data.estimates.low,
+      average: data.estimates.central,
+      high: data.estimates.high,
+      count: data.sample.total,
+      query: card.id,
+      soldDataSource: 'stackr-api',
     };
   }, [lookupType, rawCondition]);
 
   const loadLiveEbayForSearchResults = useCallback(async (cards: PokemonCard[]) => {
     const visibleCards = cards.slice(0, 12);
-    if (!visibleCards.length || !PRICE_API_URL) {
+    if (!visibleCards.length) {
       setSearchEbayMap({});
       return;
     }
@@ -510,13 +463,11 @@ export default function MarketScreen() {
       if (!rows.length) { setWatchlistCards([]); setWatchlistPriceMap({}); return; }
 
       const cardIds = rows.map((r) => r.card_id);
-      const { data: cardData } = await supabase
-        .from('pokemon_cards')
-        .select('id, name, number, rarity, image_small, image_large, set_id, raw_data')
-        .in('id', cardIds);
-
-      const cards: PokemonCard[] = (cardData ?? []).map(mapCard);
-      const cardMap = Object.fromEntries(cards.map((c) => [c.id, c]));
+      const cardRows = await fetchStackrCardRows(cardIds);
+      const cardMap = Object.fromEntries(cardIds.flatMap((id) => {
+        const row = cardRows.get(id);
+        return row ? [[id, mapCard(row)]] : [];
+      }));
       const ordered = cardIds.map((id) => cardMap[id]).filter(Boolean) as PokemonCard[];
 
       setWatchlistCards(ordered);
@@ -537,14 +488,16 @@ export default function MarketScreen() {
   try {
     setSearching(true);
     const smartResults = await searchLocalPokemonCards<any>(trimmed, {
+      language: 'all',
       limit: 120,
-      select: 'id, name, number, rarity, image_small, image_large, set_id, raw_data',
+      select: 'id, name, language, number, rarity, image_small, image_large, set_id, raw_data',
       skipSetDetection: skipSetFilter,
     });
     const cards = smartResults.map(mapCard);
     setSearchResults(cards);
     await loadSearchResultPrices(cards.map((card) => card.id));
-    if (smartResults.length < 0) {
+    // Legacy direct-table fallback is unreachable and retained only until rollback gates pass.
+    if (false) {
     const words = trimmed.split(/\s+/).filter(Boolean);
     let cardTerm = trimmed;
     let matchedSetIds: string[] = [];
@@ -693,6 +646,23 @@ export default function MarketScreen() {
         return;
       }
 
+      const stackrResult = await fetchStackrPrice(card.id, {
+        productType: 'raw_card',
+        currency: 'GBP',
+        condition: rawCondition,
+      });
+      if (!stackrResult) { setDetailEbayData(null); return; }
+      setDetailEbayData({
+        low: stackrResult.price.estimates.low,
+        average: stackrResult.price.estimates.central,
+        high: stackrResult.price.estimates.high,
+        count: stackrResult.price.sample.total,
+        query: card.id,
+        soldDataSource: 'stackr-api',
+      });
+      return;
+
+      /* Legacy provider fallback retained unreachable until rollback gates pass. */
       if (!PRICE_API_URL) { setDetailEbayData(null); return; }
 
       // set.name falls back to set_id (e.g. "base1") when raw_data is absent —
@@ -814,15 +784,24 @@ export default function MarketScreen() {
         onPress={() => openCardDetail(item)}
         style={{ flexDirection: 'row', marginHorizontal: 16, marginBottom: 12, backgroundColor: theme.colors.card, borderRadius: 18, padding: 12, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}
       >
-        <Image source={{ uri: item.images?.small ?? item.images?.large }} style={{ width: 86, height: 120, borderRadius: 12, backgroundColor: theme.colors.surface }} resizeMode="contain" />
+        <View style={{ width: 86, height: 120, borderRadius: 12, overflow: 'hidden', backgroundColor: theme.colors.surface }}>
+          <Image
+            source={{ uri: item.images?.small ?? item.images?.large }}
+            style={{ width: '100%', height: '100%', borderRadius: 12 }}
+            resizeMode="contain"
+          />
+          <RaritySymbol
+            rarity={item.rarity}
+            size={14}
+            style={RARITY_SYMBOL_CARD_OVERLAY}
+          />
+        </View>
 
         <View style={{ flex: 1, marginLeft: 12, justifyContent: 'space-between' }}>
           <Text style={{ color: theme.colors.text, fontSize: 16, fontWeight: '800' }} numberOfLines={2}>{item.name}</Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 13, marginTop: 4 }} numberOfLines={1}>
             {item.set?.name ?? 'Unknown set'}{item.number ? ` • #${item.number}` : ''}
           </Text>
-          {item.rarity && <Text style={{ color: '#FFD166', fontSize: 12, marginTop: 3, fontWeight: '700' }}>{item.rarity}</Text>}
-
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, fontWeight: '700' }}>
               {snapshotTcg != null ? formatSnapshotDay(priceSnapshot?.snapshotAt) : 'TCG'}
@@ -932,35 +911,35 @@ export default function MarketScreen() {
           }
         }}
         style={{
-          width: '31%',
-          minHeight: 102,
+          width: '31.5%',
+          minHeight: 78,
           backgroundColor: active ? theme.colors.primary + '10' : theme.colors.card,
-          borderRadius: 14,
-          borderWidth: 1.5,
+          borderRadius: 13,
+          borderWidth: 1,
           borderColor: active ? theme.colors.primary : theme.colors.border,
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 10,
-          marginBottom: 10,
+          padding: 8,
+          marginBottom: 8,
           position: 'relative',
         }}
       >
         {active && (
-          <View style={{ position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: 10, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+          <View style={{ position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 9, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="checkmark" size={12} color="#FFFFFF" />
           </View>
         )}
         {iconAsset ? (
           <StackrCardActionIcon
             source={iconAsset}
-            frameSize={stackrSellCategoryIconSizes.priceTileFrame}
-            artworkSize={stackrSellCategoryIconSizes.priceTileArtwork}
+            frameSize={stackrSellCategoryIconSizes.selectedPickerFrame}
+            artworkSize={stackrSellCategoryIconSizes.selectedPickerArtwork}
             style={{ opacity: active ? 1 : 0.86 }}
           />
         ) : (
-          <Ionicons name={option.icon} size={34} color={active ? theme.colors.primary : theme.colors.text} />
+          <Ionicons name={option.icon} size={28} color={active ? theme.colors.primary : theme.colors.text} />
         )}
-        <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 11, textAlign: 'center', marginTop: 8 }} numberOfLines={2}>
+        <Text style={{ color: theme.colors.text, fontWeight: '800', fontSize: 10.5, lineHeight: 13, textAlign: 'center', marginTop: 5 }} numberOfLines={2}>
           {option.label}
         </Text>
       </TouchableOpacity>
@@ -978,10 +957,13 @@ export default function MarketScreen() {
     <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: theme.colors.bg, overflow: 'hidden' }}>
       <StackrBackdrop />
       <FlatList
-        data={searchResults}
+        ref={priceListRef}
+        data={visibleSearchResults}
         keyExtractor={(item) => item.id}
         renderItem={renderCard}
         showsVerticalScrollIndicator={false}
+        onEndReached={hasMoreSearchResults ? renderMoreSearchResults : undefined}
+        onEndReachedThreshold={0.8}
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
           <RefreshControl
@@ -991,9 +973,9 @@ export default function MarketScreen() {
           />
         }
         ListHeaderComponent={
-          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10 }}>
-            <Text style={{ fontSize: 24, lineHeight: 29, fontWeight: '900', color: theme.colors.text }}>Latest Prices</Text>
-            <Text style={{ marginTop: 2, fontSize: 12, fontWeight: '700', lineHeight: 18, color: theme.colors.textSoft, marginBottom: 16 }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8 }}>
+            <Text style={{ fontSize: 22, lineHeight: 27, fontWeight: '900', color: theme.colors.text }}>Latest Prices</Text>
+            <Text style={{ marginTop: 1, fontSize: 12, fontWeight: '700', lineHeight: 16, color: theme.colors.textSoft, marginBottom: 10 }}>
               Search raw cards, graded slabs, sealed products, and accessories.
             </Text>
 
@@ -1008,17 +990,17 @@ export default function MarketScreen() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                marginBottom: lookupMenuOpen ? 10 : 12,
+                paddingHorizontal: 11,
+                paddingVertical: 8,
+                marginBottom: lookupMenuOpen ? 8 : 10,
               }}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
                 <View
                   style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 10,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 9,
                     backgroundColor: theme.colors.primary + '14',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1036,7 +1018,7 @@ export default function MarketScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 10, fontWeight: '900' }}>PRICE MODE</Text>
-                  <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>
+                  <Text style={{ color: theme.colors.text, fontSize: 13, lineHeight: 16, fontWeight: '900' }} numberOfLines={1}>
                     {selectedLookupOption.label}
                   </Text>
                 </View>
@@ -1049,19 +1031,20 @@ export default function MarketScreen() {
             </TouchableOpacity>
 
             {lookupMenuOpen ? (
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 8 }}>
                 {LOOKUP_OPTIONS.map(renderLookupOption)}
               </View>
             ) : null}
 
             {/* Search + Scan row */}
-            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
-<TextInput
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+              <TextInput
                 value={query}
                 onChangeText={handleSearchChange}
                 placeholder={getLookupSearchHint(lookupType)}
                 placeholderTextColor={theme.colors.textSoft}
                 autoCorrect={false}
+                spellCheck={false}
                 autoCapitalize="words"
                 style={{
                   flex: 1,
@@ -1069,9 +1052,9 @@ export default function MarketScreen() {
                   color: theme.colors.text,
                   borderWidth: 1,
                   borderColor: theme.colors.border,
-                  borderRadius: 14,
-                  paddingHorizontal: 14,
-                  paddingVertical: 12,
+                  borderRadius: 13,
+                  paddingHorizontal: 12,
+                  paddingVertical: 9,
                   fontSize: 13,
                 }}
                 returnKeyType="search"
@@ -1080,17 +1063,17 @@ export default function MarketScreen() {
 
               <TouchableOpacity
                 onPress={() => runLookupSearch(query, false, lookupType)}
-                style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingHorizontal: 16, justifyContent: 'center', alignItems: 'center' }}
+                style={{ backgroundColor: theme.colors.primary, borderRadius: 13, paddingHorizontal: 14, justifyContent: 'center', alignItems: 'center' }}
               >
-                <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 15 }}>Search</Text>
+                <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 14 }}>Search</Text>
               </TouchableOpacity>
 
               {isCardLookup(lookupType) && (
                 <TouchableOpacity
                   onPress={handleScanCard}
-                  style={{ backgroundColor: theme.colors.card, borderRadius: 14, width: 48, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
+                  style={{ backgroundColor: theme.colors.card, borderRadius: 13, width: 44, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
                 >
-                  <Ionicons name="camera-outline" size={22} color={theme.colors.text} />
+                  <Ionicons name="camera-outline" size={21} color={theme.colors.text} />
                 </TouchableOpacity>
               )}
             </View>
@@ -1106,15 +1089,15 @@ export default function MarketScreen() {
             {isCardLookup(lookupType) && (
               <>
                 {/* Watchlist */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>Watchlist</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <Text style={{ fontSize: 16, lineHeight: 20, fontWeight: '900', color: theme.colors.text }}>Watchlist</Text>
                   {watchlistLoading && <ActivityIndicator color={theme.colors.textSoft} size="small" />}
                 </View>
 
                 {!userId ? (
                   <EmptyBox text="Sign in to use your market watchlist." />
                 ) : watchlistLoading ? (
-                  <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 18, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
+                  <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 12, alignItems: 'center', marginBottom: 12, borderWidth: 1, borderColor: theme.colors.border }}>
                     <ActivityIndicator color={theme.colors.primary} />
                   </View>
                 ) : watchlistCards.length === 0 ? (
@@ -1126,13 +1109,13 @@ export default function MarketScreen() {
                     renderItem={renderWatchlistCard}
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ gap: 0, paddingBottom: 4, marginBottom: 16 }}
+                    contentContainerStyle={{ gap: 0, paddingBottom: 4, marginBottom: 12 }}
                   />
                 )}
 
                 {/* Results header */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '900', color: theme.colors.text }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <Text style={{ fontSize: 16, lineHeight: 20, fontWeight: '900', color: theme.colors.text }}>
                     {searchResults.length > 0 ? `Latest prices (${searchResults.length})` : 'Latest price results'}
                   </Text>
                   {searching && <ActivityIndicator color={theme.colors.textSoft} size="small" />}
@@ -1143,13 +1126,24 @@ export default function MarketScreen() {
         }
         ListEmptyComponent={
           !searching && isCardLookup(lookupType) ? (
-            <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 18, marginHorizontal: 16, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
-              <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 20 }}>
-                Search for a Pokémon card to view pricing and add it to your watchlist.
+            <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 12, marginHorizontal: 16, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}>
+              <Text style={{ color: theme.colors.textSoft, textAlign: 'center', lineHeight: 17, fontSize: 12 }}>
+                Search to view prices and add cards to your watchlist.
               </Text>
             </View>
           ) : null
         }
+        ListFooterComponent={hasMoreSearchResults ? (
+          <View style={{ height: 34, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator color={theme.colors.primary} size="small" />
+          </View>
+        ) : null}
+      />
+      <ScrollToEndButton
+        visible={showPriceEndButton}
+        onPress={scrollPriceResultsToEnd}
+        bottom={28}
+        accessibilityLabel="Skip to end of card price results"
       />
 
       {/* Card Detail Modal */}
@@ -1169,18 +1163,24 @@ export default function MarketScreen() {
 
                 {selectedCard && (
                   <>
-                    <Image
-                      source={{ uri: selectedCard.images?.large ?? selectedCard.images?.small }}
-                      style={{ width: '100%', height: 330, borderRadius: 20, alignSelf: 'center', marginBottom: 18 }}
-                      resizeMode="contain"
-                    />
+                    <View style={{ width: '100%', height: 330, borderRadius: 20, alignSelf: 'center', marginBottom: 18, overflow: 'hidden', backgroundColor: theme.colors.surface }}>
+                      <Image
+                        source={{ uri: selectedCard.images?.large ?? selectedCard.images?.small }}
+                        style={{ width: '100%', height: '100%', borderRadius: 20 }}
+                        resizeMode="contain"
+                      />
+                      <RaritySymbol
+                        rarity={selectedCard.rarity}
+                        size={18}
+                        style={RARITY_SYMBOL_CARD_OVERLAY}
+                      />
+                    </View>
 
                     <View style={{ backgroundColor: theme.colors.card, borderRadius: 22, padding: 16, borderWidth: 1, borderColor: theme.colors.border, ...cardShadow }}>
                       <StackrCardIdentity
                         name={selectedCard.name}
                         setName={selectedCard.set?.name ?? 'Unknown set'}
                         number={selectedCard.number ?? null}
-                        rarity={selectedCard.rarity ?? null}
                         size="compact"
                         style={{ marginBottom: 8 }}
                       />
@@ -1280,8 +1280,11 @@ export default function MarketScreen() {
                       {lookupType !== 'graded_slab' && (
                         <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
                           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                            <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800' }}>
-                              Live eBay sold - {rawCondition}
+                            <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '800' }}>
+                              Live sold comps
+                            </Text>
+                            <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.7 }}>
+                              eBay sold - GBP - {rawCondition}
                             </Text>
                             {detailPriceLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
                           </View>
@@ -1303,14 +1306,14 @@ export default function MarketScreen() {
                         </View>
                       )}
 
-                      <PriceSection title="TCGPlayer (GBP est.)">
+                      <PriceSection title="Cached daily price - TCGPlayer (GBP)">
                         <PriceRow label="Low" value={getBestTcgPrice(selectedCard, 'low') != null ? `£${((getBestTcgPrice(selectedCard, 'low') ?? 0) * USD_TO_GBP).toFixed(2)}` : '--'} />
                         <PriceRow label="Mid" value={getBestTcgPrice(selectedCard, 'mid') != null ? `£${((getBestTcgPrice(selectedCard, 'mid') ?? 0) * USD_TO_GBP).toFixed(2)}` : '--'} />
                         <PriceRow label="Market" value={getBestTcgPrice(selectedCard, 'market') != null ? `£${((getBestTcgPrice(selectedCard, 'market') ?? 0) * USD_TO_GBP).toFixed(2)}` : '--'} />
                       </PriceSection>
 
                       {selectedCard.cardmarket?.prices && (
-                        <PriceSection title="Cardmarket (GBP est.)">
+                        <PriceSection title="Cached daily price - CardMarket (GBP)">
                           <PriceRow label="Trend" value={selectedCard.cardmarket.prices.trendPrice != null ? `£${(selectedCard.cardmarket.prices.trendPrice * EUR_TO_GBP).toFixed(2)}` : '--'} />
                           <PriceRow label="30d Avg" value={selectedCard.cardmarket.prices.avg30 != null ? `£${(selectedCard.cardmarket.prices.avg30 * EUR_TO_GBP).toFixed(2)}` : '--'} />
                         </PriceSection>
@@ -1345,8 +1348,8 @@ export default function MarketScreen() {
 function EmptyBox({ text }: { text: string }) {
   const { theme } = useTheme();
   return (
-    <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 18, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
-      <Text style={{ color: theme.colors.textSoft, textAlign: 'center' }}>{text}</Text>
+    <View style={{ backgroundColor: theme.colors.card, borderRadius: 15, padding: 12, alignItems: 'center', marginBottom: 12, borderWidth: 1, borderColor: theme.colors.border }}>
+      <Text style={{ color: theme.colors.textSoft, textAlign: 'center', fontSize: 12, lineHeight: 17 }}>{text}</Text>
     </View>
   );
 }
@@ -1357,34 +1360,34 @@ function ProductPricePanel({ title, data, loading }: { title: string; data: Prod
   const tcgMid = data?.tcgMid ?? null;
   const tcgLow = data?.tcgLow ?? null;
   return (
-    <View style={{ backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginHorizontal: 16, marginBottom: 16, borderWidth: 1, borderColor: theme.colors.border }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <Text style={{ color: theme.colors.text, fontSize: 17, fontWeight: '900', flex: 1 }} numberOfLines={2}>{title}</Text>
+    <View style={{ backgroundColor: theme.colors.card, borderRadius: 15, padding: 12, marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.colors.border }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 6 }}>
+        <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900', flex: 1, minWidth: 0 }} numberOfLines={1}>{title}</Text>
         {loading && <ActivityIndicator color={theme.colors.primary} size="small" />}
       </View>
       {loading ? (
-        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Checking latest TCG prices...</Text>
+        <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17 }}>Checking latest TCG prices...</Text>
       ) : data ? (
         <>
-          <PriceRow label="TCG Market" value={formatCurrency(tcgMarket)} highlight />
-          <PriceRow label="TCG Mid" value={formatCurrency(tcgMid)} />
-          <PriceRow label="TCG Low" value={formatCurrency(tcgLow)} />
-          <PriceRow label="eBay Sold Avg" value={formatCurrency(data.average)} />
-          <PriceRow label="eBay Low" value={formatCurrency(data.low)} />
-          <PriceRow label="eBay High" value={formatCurrency(data.high)} />
+          <PriceRow label="Cached TCG market" value={formatCurrency(tcgMarket)} highlight />
+          <PriceRow label="Cached TCG mid" value={formatCurrency(tcgMid)} />
+          <PriceRow label="Cached TCG low" value={formatCurrency(tcgLow)} />
+          <PriceRow label="Live sold avg (eBay)" value={formatCurrency(data.average)} />
+          <PriceRow label="Live sold low (eBay)" value={formatCurrency(data.low)} />
+          <PriceRow label="Live sold high (eBay)" value={formatCurrency(data.high)} />
           {data.tcgProductId != null && (
-            <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 6 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: 5 }}>
               TCGCSV product #{data.tcgProductId}
             </Text>
           )}
           {data.count != null && data.count > 0 && (
-            <Text style={{ color: theme.colors.textSoft, fontSize: 11, marginTop: 4 }}>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: 3 }}>
               eBay based on {data.count} sold listing{data.count !== 1 ? 's' : ''}
             </Text>
           )}
         </>
       ) : (
-        <Text style={{ color: theme.colors.textSoft, fontSize: 13 }}>Search the product catalog to see latest TCG prices.</Text>
+        <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17 }}>Search a product to see latest prices.</Text>
       )}
     </View>
   );
@@ -1393,8 +1396,8 @@ function ProductPricePanel({ title, data, loading }: { title: string; data: Prod
 function PriceSection({ title, children }: { title: string; children: React.ReactNode }) {
   const { theme } = useTheme();
   return (
-    <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, padding: 14, borderWidth: 1, borderColor: theme.colors.border }}>
-      <Text style={{ color: theme.colors.text, fontSize: 15, fontWeight: '800', marginBottom: 10 }}>{title}</Text>
+    <View style={{ marginTop: 12, backgroundColor: theme.colors.surface, borderRadius: 15, padding: 12, borderWidth: 1, borderColor: theme.colors.border }}>
+      <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '800', marginBottom: 6 }} numberOfLines={1}>{title}</Text>
       {children}
     </View>
   );
@@ -1403,9 +1406,16 @@ function PriceSection({ title, children }: { title: string; children: React.Reac
 function PriceRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   const { theme } = useTheme();
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 }}>
-      <Text style={{ color: theme.colors.textSoft, fontSize: 14 }}>{label}</Text>
-      <Text style={{ color: highlight ? theme.colors.primary : theme.colors.text, fontSize: highlight ? 15 : 14, fontWeight: highlight ? '900' : '700' }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10, paddingVertical: 5 }}>
+      <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 17, flex: 1, minWidth: 0 }} numberOfLines={1}>
+        {label}
+      </Text>
+      <Text
+        style={{ color: highlight ? theme.colors.primary : theme.colors.text, fontSize: highlight ? 14 : 13, lineHeight: 17, fontWeight: highlight ? '900' : '700', maxWidth: '46%', textAlign: 'right' }}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.68}
+      >
         {value}
       </Text>
     </View>

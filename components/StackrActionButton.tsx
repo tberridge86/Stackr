@@ -20,7 +20,7 @@ import { useTheme } from './theme-context';
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
-type StackrActionButtonVariant = 'primary' | 'secondary' | 'quiet';
+type StackrActionButtonVariant = 'primary' | 'scan' | 'secondary' | 'quiet' | 'destructive' | 'disabled';
 type StackrActionButtonSize = 'hero' | 'standard' | 'compact';
 
 type StackrActionButtonProps = {
@@ -55,21 +55,38 @@ export function StackrActionButton({
   disabled = false,
 }: StackrActionButtonProps) {
   const { theme } = useTheme();
-  const isPrimary = variant === 'primary';
-  const isQuiet = variant === 'quiet';
-  const resolvedShowArrow = showArrow ?? isPrimary;
+  const resolvedVariant = disabled || variant === 'disabled' ? 'disabled' : variant;
+  const isPrimary = resolvedVariant === 'primary';
+  const isScan = resolvedVariant === 'scan';
+  const isQuiet = resolvedVariant === 'quiet';
+  const isDestructive = resolvedVariant === 'destructive';
+  const isDisabled = resolvedVariant === 'disabled';
+  const usesGradient = isPrimary || isScan;
+  const resolvedShowArrow = showArrow ?? (isPrimary || (isScan && size === 'hero'));
   const iconFrameSize = size === 'hero' ? 44 : size === 'compact' ? 30 : 38;
   const artworkSize = size === 'hero' ? 34 : size === 'compact' ? 24 : 30;
   const iconSize = size === 'hero' ? 22 : size === 'compact' ? 17 : 20;
-  const textColor = isPrimary ? '#FFFFFF' : theme.colors.text;
-  const subtitleColor = isPrimary ? 'rgba(255,255,255,0.78)' : theme.colors.textSoft;
-  const iconColor = theme.colors.primary;
-  const backgroundColor = isQuiet ? theme.colors.surface : theme.colors.card;
-  const borderColor = isPrimary ? 'rgba(255,255,255,0.30)' : theme.colors.border;
+  const textColor = usesGradient ? '#FFFFFF' : isDestructive ? '#D1294B' : isDisabled ? theme.colors.textSoft : theme.colors.text;
+  const subtitleColor = usesGradient ? 'rgba(255,255,255,0.78)' : isDestructive ? '#A33A4B' : theme.colors.textSoft;
+  const iconColor = isDestructive ? '#D1294B' : theme.colors.primary;
+  const backgroundColor = isDisabled
+    ? theme.colors.surface
+    : isDestructive
+      ? '#FFF1F5'
+      : isQuiet
+        ? theme.colors.surface
+        : theme.colors.card;
+  const borderColor = usesGradient
+    ? 'rgba(255,255,255,0.30)'
+    : isDestructive
+      ? '#FFC2D0'
+      : isDisabled
+        ? theme.colors.border
+        : theme.colors.border;
 
   const content = (
     <>
-      {isPrimary ? <StackrButtonPattern tone="purple" /> : null}
+      {usesGradient ? <StackrButtonPattern tone="purple" /> : null}
       {imageIcon ? (
         <StackrCardActionIcon
           source={imageIcon}
@@ -78,7 +95,7 @@ export function StackrActionButton({
           imageStyle={imageStyle}
         />
       ) : icon ? (
-        <View style={[styles.fallbackIcon, isPrimary ? styles.primaryFallbackIcon : styles.secondaryFallbackIcon, { width: iconFrameSize, height: iconFrameSize }]}>
+        <View style={[styles.fallbackIcon, usesGradient ? styles.primaryFallbackIcon : styles.secondaryFallbackIcon, { width: iconFrameSize, height: iconFrameSize }]}>
           <Ionicons name={icon} size={iconSize} color={iconColor} />
         </View>
       ) : null}
@@ -110,7 +127,7 @@ export function StackrActionButton({
       </View>
 
       {resolvedShowArrow ? (
-        <Ionicons name="arrow-forward" size={size === 'compact' ? 17 : 20} color={isPrimary ? '#FFFFFF' : theme.colors.primary} />
+        <Ionicons name="arrow-forward" size={size === 'compact' ? 17 : 20} color={usesGradient ? '#FFFFFF' : theme.colors.primary} />
       ) : null}
     </>
   );
@@ -118,19 +135,20 @@ export function StackrActionButton({
   return (
     <TouchableOpacity
       onPress={onPress}
-      disabled={disabled}
+      disabled={isDisabled}
       activeOpacity={0.84}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? (subtitle ? `${title}. ${subtitle}` : title)}
       style={[
         styles.shell,
         styles[`${size}Shell`],
-        isPrimary ? styles.primaryShell : styles.secondaryShell,
-        disabled && styles.disabledShell,
+        usesGradient ? styles.primaryShell : isDestructive ? styles.destructiveShell : styles.secondaryShell,
+        isScan && styles.scanShell,
+        isDisabled && styles.disabledShell,
         style,
       ]}
     >
-      {isPrimary ? (
+      {usesGradient ? (
         <LinearGradient
           colors={stackrGradients.actionPrimary as any}
           start={{ x: 0, y: 0 }}
@@ -146,6 +164,7 @@ export function StackrActionButton({
             styles.content,
             styles[`${size}Content`],
             styles.secondaryContent,
+            isDestructive && styles.destructiveContent,
             { backgroundColor, borderColor },
             contentStyle,
           ]}
@@ -180,9 +199,21 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     elevation: 3,
   },
+  scanShell: {
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+  },
   secondaryShell: {
     shadowColor: '#6136F5',
     shadowOpacity: 0.07,
+    shadowRadius: 9,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  destructiveShell: {
+    shadowColor: '#D1294B',
+    shadowOpacity: 0.08,
     shadowRadius: 9,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -224,6 +255,9 @@ const styles = StyleSheet.create({
   },
   secondaryContent: {
     justifyContent: 'center',
+  },
+  destructiveContent: {
+    borderWidth: 1,
   },
   primaryTopHighlight: {
     position: 'absolute',
