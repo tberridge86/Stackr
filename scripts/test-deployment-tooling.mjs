@@ -469,6 +469,25 @@ assert.equal(sourceOnlyValidation.status, 0, sourceOnlyValidation.stderr || sour
 assert.match(sourceOnlyValidation.stdout, /Protected source database URL verified\./);
 assert.doesNotMatch(sourceOnlyValidation.stdout, /p=a@#ss%word/);
 
+const sourceOnlyEnvironmentTemp = mkdtempSync(path.join(tmpdir(), 'stackr-source-url-test-'));
+try {
+  const sourceOnlyEnvironmentPath = path.join(sourceOnlyEnvironmentTemp, 'github.env');
+  const sourceOnlyExport = run('scripts/deploy/prepare-postgres-urls.mjs', ['--source-only'], {
+    SUPABASE_DB_URL: rawPasswordUrl.normalized,
+    SUPABASE_PROJECT_REF: 'exampleproject',
+    SUPABASE_RESTORE_DB_URL: '',
+    SUPABASE_RESTORE_PROJECT_REF: '',
+    GITHUB_ENV: sourceOnlyEnvironmentPath,
+  });
+  assert.equal(sourceOnlyExport.status, 0, sourceOnlyExport.stderr || sourceOnlyExport.stdout);
+  assert.equal(
+    readFileSync(sourceOnlyEnvironmentPath, 'utf8'),
+    `STACKR_SOURCE_DB_URL=${rawPasswordUrl.normalized}\n`,
+  );
+} finally {
+  rmSync(sourceOnlyEnvironmentTemp, { recursive: true, force: true });
+}
+
 const baselineUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-baseline-url-test-'));
 try {
   const baselineEnvironmentPath = path.join(baselineUrlTemp, 'github.env');
