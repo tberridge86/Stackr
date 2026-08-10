@@ -1801,6 +1801,9 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
     const languageQuery = configureLanguageQuery(query);
     return args.provider ? languageQuery.in('source_id', selectedSourceIds) : languageQuery;
   };
+  const configureActiveProviderLanguageQuery = (query: any) => (
+    configureProviderLanguageQuery(query).is('deprecated_at', null)
+  );
   const [sets, printings, variants, assets, rawRecords, conflicts, externalIdentifiers] = await Promise.all([
     fetchAllFiltered(db, 'catalog', 'sets', 'id,language_code,set_code,provider_set_code,native_name,english_display_name,release_date,total,deprecated_at', configureLanguageQuery) as Promise<SetRow[]>,
     fetchAllFiltered(db, 'catalog', 'card_printings', 'id,set_id,language_code,collector_number,deprecated_at', configureLanguageQuery) as Promise<PrintingRow[]>,
@@ -1811,7 +1814,7 @@ async function buildReports(db: SupabaseClientLike, args: Args) {
       'ingest',
       'raw_source_records',
       'id,source_id,record_type,external_id,language_code,source_url,licence_status,validation_status,raw_payload,deprecated_at',
-      configureProviderLanguageQuery,
+      configureActiveProviderLanguageQuery,
       250,
     ) as Promise<RawRecordRow[]>,
     fetchAll(db, 'ingest', 'data_conflicts', 'id,conflict_type,severity,status,entity_schema,entity_table,entity_id,canonical_key,proposed_payload,existing_payload,internal_notes') as Promise<ConflictRow[]>,

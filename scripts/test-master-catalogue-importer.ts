@@ -35,6 +35,10 @@ const providerVariantRepairMigration = readFileSync(
   'supabase/migrations/20260807034806_repair_provider_variant_identity.sql',
   'utf8',
 );
+const publicationReadMigration = readFileSync(
+  'supabase/migrations/20260810170353_optimize_raw_source_publication_reads.sql',
+  'utf8',
+);
 const stackrApiService = readFileSync('backend/lib/stackrApiV1.js', 'utf8');
 
 function assertRequiredCommandsExist() {
@@ -69,8 +73,18 @@ function assertCanonicalStagingSourceGuard() {
   );
   assert.match(
     masterScript,
-    /raw_source_records'[\s\S]*configureProviderLanguageQuery,[\s\S]*250/,
+    /raw_source_records'[\s\S]*configureActiveProviderLanguageQuery,[\s\S]*250/,
     'large raw provider payloads must use bounded pages below the hosted statement timeout',
+  );
+  assert.match(
+    masterScript,
+    /configureActiveProviderLanguageQuery[\s\S]*\.is\('deprecated_at', null\)/,
+    'publication reports must exclude superseded raw provider revisions in the database query',
+  );
+  assert.match(
+    publicationReadMigration,
+    /on ingest\.raw_source_records\s*\(source_id, language_code, id\)[\s\S]*where deprecated_at is null/i,
+    'publication reads need a provider-language keyset index over active raw records',
   );
   assert.match(
     masterScript,
