@@ -16,7 +16,6 @@ function getCardsightClient() {
   }
   return cardsightClient;
 }
-
 function stripBase64ImagePrefix(base64Image) {
   return String(base64Image ?? '').trim().replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
 }
