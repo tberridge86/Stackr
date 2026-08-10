@@ -150,6 +150,83 @@ const crossedProjectPreflight = run('scripts/deploy/preflight.mjs', ['--release'
   SUPABASE_PROJECT_REF: releaseManifest.components.database.projectRef,
 });
 assert.match(crossedProjectPreflight.stdout, /supabase_project_ref_mismatch:staging/);
+const catalogueReleaseEnvironment = {
+  STACKR_DEPLOYMENT_ENVIRONMENT: 'staging',
+  STACKR_DEPLOYMENT_SCOPE: 'catalogue_api',
+  STACKR_MIGRATION_BASELINE_APPROVED: 'true',
+  STACKR_STORAGE_BACKUP_APPROVED: 'true',
+  SUPABASE_ACCESS_TOKEN: 'test-only',
+  SUPABASE_DB_URL: 'postgresql://test-only',
+  SUPABASE_PROJECT_REF: releaseManifest.components.database.stagingProjectRef,
+  RAILWAY_TOKEN: 'test-only',
+  RAILWAY_PROJECT_ID: 'test-only',
+  RAILWAY_ENVIRONMENT_ID: 'test-only',
+  RAILWAY_BACKEND_SERVICE_ID: 'test-only',
+  RAILWAY_RECOGNITION_SERVICE_ID: '',
+  CLOUDFLARE_API_TOKEN: 'test-only',
+  CLOUDFLARE_ACCOUNT_ID: 'test-only',
+  STACKR_BACKEND_URL: 'https://backend.invalid',
+  STACKR_RECOGNITION_URL: '',
+  STACKR_GATEWAY_URL: 'https://gateway.invalid',
+  STACKR_SUPABASE_URL: 'https://staging.supabase.invalid',
+  STACKR_SUPABASE_PUBLISHABLE_KEY: 'test-only',
+  BACKEND_ORIGIN_KEY: 'test-only',
+  BACKEND_ADMIN_KEY: 'test-only',
+  RECOGNITION_SERVICE_SECRET: '',
+  EXPO_TOKEN: '',
+};
+const catalogueStagingPreflight = run(
+  'scripts/deploy/preflight.mjs',
+  ['--catalogue-api-release'],
+  catalogueReleaseEnvironment,
+);
+assert.notEqual(
+  catalogueStagingPreflight.status,
+  0,
+  'staging catalogue preflight must remain blocked by the current authoritative release gates',
+);
+assert.match(catalogueStagingPreflight.stdout, /release_gate_not_ready:migrationHistoryAligned/);
+assert.match(catalogueStagingPreflight.stdout, /release_gate_not_ready:storageBackupVerified/);
+assert.doesNotMatch(
+  catalogueStagingPreflight.stdout,
+  /missing_release_variable:SUPABASE_(?:STAGING_DB_URL|STAGING_SECRET_KEY|PRODUCTION_SECRET_KEY)/,
+  'staging catalogue rehearsals must not require production catalogue-promotion credentials',
+);
+assert.doesNotMatch(
+  catalogueStagingPreflight.stdout,
+  /missing_release_variable:(?:RAILWAY_RECOGNITION_SERVICE_ID|STACKR_RECOGNITION_URL|RECOGNITION_SERVICE_SECRET|EXPO_TOKEN)/,
+  'catalogue rehearsals must not require recognition or mobile credentials',
+);
+
+const catalogueProductionPreflight = run(
+  'scripts/deploy/preflight.mjs',
+  ['--catalogue-api-release'],
+  {
+    ...catalogueReleaseEnvironment,
+    STACKR_DEPLOYMENT_ENVIRONMENT: 'production',
+    SUPABASE_PROJECT_REF: releaseManifest.components.database.projectRef,
+    SUPABASE_STAGING_DB_URL: '',
+    SUPABASE_STAGING_SECRET_KEY: '',
+    SUPABASE_PRODUCTION_SECRET_KEY: '',
+  },
+);
+assert.notEqual(
+  catalogueProductionPreflight.status,
+  0,
+  'production catalogue preflight must fail closed without promotion credentials',
+);
+for (const variable of [
+  'SUPABASE_STAGING_DB_URL',
+  'SUPABASE_STAGING_SECRET_KEY',
+  'SUPABASE_PRODUCTION_SECRET_KEY',
+]) {
+  assert.match(catalogueProductionPreflight.stdout, new RegExp(`missing_release_variable:${variable}`));
+}
+assert.doesNotMatch(
+  catalogueProductionPreflight.stdout,
+  /missing_release_variable:(?:RAILWAY_RECOGNITION_SERVICE_ID|STACKR_RECOGNITION_URL|RECOGNITION_SERVICE_SECRET|EXPO_TOKEN)/,
+  'production catalogue releases must not require recognition or mobile credentials',
+);
 
 const modelReport = run('scripts/deploy/verify-model-release.mjs');
 assert.equal(modelReport.status, 0, modelReport.stderr || modelReport.stdout);
@@ -185,7 +262,7 @@ for (const workflowName of readdirSync('.github/workflows').filter((name) => nam
   assert.doesNotMatch(workflow, /uses:\s+actions\/(?:checkout|setup-node|setup-python)@v\d/, `${workflowName} must pin first-party actions`);
 }
 assert.match(stagingWorkflow, /backups list/);
-assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --dry-run/);
+assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all/);
 assert.match(productionWorkflow, /benchmark-public-api\.mjs/);
@@ -200,9 +277,17 @@ assert.match(productionMonitorWorkflow, /issues: write/);
 assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comment|create)/);
 assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
+assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_SCOPE: \$\{\{ inputs\.release_scope \}\}/);
+assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[catalogue_api, full_platform\]/);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
+assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-catalogue-api-ready/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
+assert.match(stagingWorkflow, /deploy:preflight -- --catalogue-api-release/);
+assert.match(stagingWorkflow, /prepare-postgres-urls\.mjs --source-only/);
+assert.match(stagingWorkflow, /Deploy recognition container[\s\S]+if: inputs\.release_scope == 'full_platform'/);
+assert.match(stagingWorkflow, /RECOGNITION_REQUIRED:\$\{\{ inputs\.release_scope/);
+assert.match(stagingWorkflow, /--require-published-catalogue/);
 assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);
 assert.doesNotMatch(recoveryWorkflow, /github\.event\.head_commit/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
@@ -314,6 +399,25 @@ assert.throws(
   () => normalizePostgresUrl(rawPasswordUrl.normalized, 'anotherproject'),
   /database_url_project_mismatch/,
 );
+assert.throws(
+  () => normalizePostgresUrl(
+    'postgresql://postgres.productionproject:password-stagingproject@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?project=stagingproject',
+    'stagingproject',
+  ),
+  /database_url_project_mismatch/,
+  'a project ref outside the parsed database username must not satisfy the target guard',
+);
+
+const sourceOnlyValidation = run('scripts/deploy/prepare-postgres-urls.mjs', ['--source-only'], {
+  SUPABASE_DB_URL: rawPasswordUrl.normalized,
+  SUPABASE_PROJECT_REF: 'exampleproject',
+  SUPABASE_RESTORE_DB_URL: '',
+  SUPABASE_RESTORE_PROJECT_REF: '',
+  GITHUB_ENV: '',
+});
+assert.equal(sourceOnlyValidation.status, 0, sourceOnlyValidation.stderr || sourceOnlyValidation.stdout);
+assert.match(sourceOnlyValidation.stdout, /Protected source database URL verified\./);
+assert.doesNotMatch(sourceOnlyValidation.stdout, /p=a@#ss%word/);
 
 const baselineUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-baseline-url-test-'));
 try {
@@ -429,6 +533,7 @@ assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "public"\."cards"/);
 const cleanupWithRoles = buildRestoreCleanupSqlWithRoles('', [
   'CREATE ROLE "stackr_recognition";',
   "CREATE ROLE \"stackr_o'brien\";",
+  'CREATE ROLE "stackr_recognition";',
 ].join('\n'));
 assert.equal(cleanupWithRoles.droppedRoleCount, 2);
 assert.match(

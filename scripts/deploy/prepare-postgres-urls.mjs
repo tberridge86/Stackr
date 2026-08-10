@@ -50,21 +50,27 @@ function writeGitHubEnvironment(name, value) {
 }
 
 function main() {
+  const sourceOnly = process.argv.includes('--source-only');
   const source = normalizePostgresUrl(
     process.env.SUPABASE_DB_URL,
     process.env.SUPABASE_PROJECT_REF,
   );
+
+  for (const value of [source.encodedPassword, source.normalized]) {
+    process.stdout.write(`::add-mask::${value}\n`);
+  }
+
+  if (sourceOnly) {
+    process.stdout.write('Protected source database URL verified.\n');
+    return;
+  }
+
   const restore = normalizePostgresUrl(
     process.env.SUPABASE_RESTORE_DB_URL,
     process.env.SUPABASE_RESTORE_PROJECT_REF,
   );
 
-  for (const value of [
-    source.encodedPassword,
-    source.normalized,
-    restore.encodedPassword,
-    restore.normalized,
-  ]) {
+  for (const value of [restore.encodedPassword, restore.normalized]) {
     process.stdout.write(`::add-mask::${value}\n`);
   }
 

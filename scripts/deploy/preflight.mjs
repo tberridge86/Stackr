@@ -182,7 +182,7 @@ if (releaseMode) {
     'BACKEND_ORIGIN_KEY',
     'BACKEND_ADMIN_KEY',
   ];
-  if (catalogueApiReleaseMode) {
+  if (catalogueApiReleaseMode && deploymentEnvironment === 'production') {
     requiredReleaseVariables.push(
       'SUPABASE_STAGING_DB_URL',
       'SUPABASE_STAGING_SECRET_KEY',
