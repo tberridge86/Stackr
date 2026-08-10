@@ -281,6 +281,19 @@ assert.notEqual(modelGate.status, 0, 'model release gate must reject the current
 const secretScan = run('scripts/deploy/secret-scan.mjs');
 assert.equal(secretScan.status, 0, secretScan.stderr || secretScan.stdout);
 
+const secretScanTemp = mkdtempSync(path.join(tmpdir(), 'stackr-secret-scan-test-'));
+try {
+  writeFileSync(
+    path.join(secretScanTemp, 'diagnostic.txt'),
+    `provider error: ${'sbp' + '_' + 'A'.repeat(24)}\n`,
+  );
+  const scannedDiagnostic = run('scripts/deploy/secret-scan.mjs', [`--directory=${secretScanTemp}`]);
+  assert.notEqual(scannedDiagnostic.status, 0, 'backup diagnostics containing a Supabase access token must not be uploaded');
+  assert.match(scannedDiagnostic.stderr, /supabase_access_token/);
+} finally {
+  rmSync(secretScanTemp, { recursive: true, force: true });
+}
+
 const dockerfile = readFileSync('recognition-service/Dockerfile', 'utf8');
 assert.match(dockerfile, /python:3\.12\.11-slim-bookworm@sha256:[0-9a-f]{64}/);
 assert.match(dockerfile, /USER 10001:10001/);
@@ -307,6 +320,18 @@ for (const workflowName of readdirSync('.github/workflows').filter((name) => nam
   assert.doesNotMatch(workflow, /uses:\s+actions\/(?:checkout|setup-node|setup-python)@v\d/, `${workflowName} must pin first-party actions`);
 }
 assert.match(stagingWorkflow, /backups list/);
+assert.match(stagingWorkflow, /id: physical_backup_list/);
+assert.match(stagingWorkflow, /physical-backup-list\.stderr/);
+assert.match(stagingWorkflow, /stackr-staging-physical-backup-diagnostics-\$\{\{ github\.run_id \}\}/);
+assert.match(stagingWorkflow, /steps\.physical_backup_list\.outcome == 'failure'/);
+assert.match(stagingWorkflow, /secret-scan\.mjs[\s\S]+stackr-backup-diagnostics/);
+assert.match(stagingWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-backup-diagnostics"/);
+assert.match(productionWorkflow, /id: physical_backup_list/);
+assert.match(productionWorkflow, /physical-backup-list\.stderr/);
+assert.match(productionWorkflow, /stackr-production-physical-backup-diagnostics-\$\{\{ github\.run_id \}\}/);
+assert.match(productionWorkflow, /steps\.physical_backup_list\.outcome == 'failure'/);
+assert.match(productionWorkflow, /secret-scan\.mjs[\s\S]+stackr-backup-diagnostics/);
+assert.match(productionWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-backup-diagnostics"/);
 assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all/);

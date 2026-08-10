@@ -222,12 +222,39 @@ jobs:
         if: inputs.release_scope == 'full_platform'
         run: npm run deploy:verify-model -- --require-active
 
-      - name: Verify latest physical backup and create ephemeral logical backups
+      - name: List the latest physical backup
+        id: physical_backup_list
         run: |
           mkdir -p "$RUNNER_TEMP/stackr-backup"
+          mkdir -p "$RUNNER_TEMP/stackr-backup-diagnostics"
           npx --yes supabase@2.110.0 backups list \
             --project-ref "$SUPABASE_PROJECT_REF" \
-            --output-format json > "$RUNNER_TEMP/stackr-backup/physical.json"
+            --output-format json \
+            > "$RUNNER_TEMP/stackr-backup-diagnostics/physical.json" \
+            2> "$RUNNER_TEMP/stackr-backup-diagnostics/physical-backup-list.stderr"
+          mv "$RUNNER_TEMP/stackr-backup-diagnostics/physical.json" "$RUNNER_TEMP/stackr-backup/physical.json"
+          rm -rf "$RUNNER_TEMP/stackr-backup-diagnostics"
+
+      - name: Reject secret-bearing physical-backup diagnostics
+        if: failure() && steps.physical_backup_list.outcome == 'failure'
+        id: scan_physical_backup_diagnostics
+        continue-on-error: true
+        run: >-
+          node scripts/deploy/secret-scan.mjs
+          --directory="$RUNNER_TEMP/stackr-backup-diagnostics"
+
+      - name: Upload non-secret physical-backup diagnostics
+        if: failure() && steps.physical_backup_list.outcome == 'failure' && steps.scan_physical_backup_diagnostics.outcome == 'success'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-physical-backup-diagnostics-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-backup-diagnostics
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 9
+
+      - name: Create ephemeral logical backups and verify backup coverage
+        run: |
           npx --yes supabase@2.110.0 db dump \
             --db-url "$SUPABASE_DB_URL" \
             --file "$RUNNER_TEMP/stackr-backup/schema.sql"
@@ -485,5 +512,6 @@ jobs:
         if: always()
         run: |
           rm -rf "$RUNNER_TEMP/stackr-backup"
+          rm -rf "$RUNNER_TEMP/stackr-backup-diagnostics"
           rm -rf "$RUNNER_TEMP/stackr-catalogue-promotion"
           rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"

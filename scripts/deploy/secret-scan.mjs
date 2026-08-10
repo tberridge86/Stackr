@@ -8,6 +8,7 @@ const binaryExtensions = new Set([
 ]);
 const rules = [
   ['supabase_secret_key', /sb_secret_[A-Za-z0-9_-]{20,}/g],
+  ['supabase_access_token', /sbp_[A-Za-z0-9_-]{20,}/g],
   ['private_key', /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g],
   ['github_token', /(?:github_pat_[A-Za-z0-9_]{40,}|ghp_[A-Za-z0-9]{36,})/g],
   ['aws_access_key', /AKIA[0-9A-Z]{16}/g],
