@@ -61,6 +61,9 @@ function main() {
   }
 
   if (sourceOnly) {
+    if (process.env.GITHUB_ENV) {
+      writeGitHubEnvironment('STACKR_SOURCE_DB_URL', source.normalized);
+    }
     process.stdout.write('Protected source database URL verified.\n');
     return;
   }
