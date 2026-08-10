@@ -36,7 +36,7 @@ const providerVariantRepairMigration = readFileSync(
   'utf8',
 );
 const publicationReadMigration = readFileSync(
-  'supabase/migrations/20260810170353_optimize_raw_source_publication_reads.sql',
+  'supabase/migrations/20260810170607_optimize_raw_source_publication_reads.sql',
   'utf8',
 );
 const stackrApiService = readFileSync('backend/lib/stackrApiV1.js', 'utf8');
