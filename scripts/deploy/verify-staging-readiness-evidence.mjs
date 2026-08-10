@@ -21,13 +21,13 @@ function readChecksumBoundJson(path, expectedSha256, errorPrefix) {
     errors.push(`${errorPrefix}_missing`);
     return null;
   }
-  const bytes = readFileSync(path);
-  const actualSha256 = createHash('sha256').update(bytes).digest('hex');
+  const contents = readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
+  const actualSha256 = createHash('sha256').update(contents).digest('hex');
   if (actualSha256 !== expectedSha256) {
     errors.push(`${errorPrefix}_checksum_mismatch`);
     return null;
   }
-  return JSON.parse(bytes.toString('utf8'));
+  return JSON.parse(contents);
 }
 
 if (evidence.schemaVersion !== 'stackr-staging-readiness-evidence-v1.0.0') {

@@ -112,11 +112,11 @@
     "realPhoneTestCaptureCount": 142,
     "approvedTrainingPixelSourceCount": 142,
     "captureReadinessEvidence": "deploy/evidence/dinov2-pilot-publication-approved-2026-08-06.json",
-    "captureReadinessEvidenceSha256": "9418dab68db8bee2304a6d43bedbddce4493a5786c98301dec9d20d9f327f1b5",
+    "captureReadinessEvidenceSha256": "cb4f67f079c96cfc3bda5502fd3608aa32677049a0dc91eb1bed02501c5b92d6",
     "benchmarkEvidence": "deploy/evidence/dinov2-pilot-publication-approved-2026-08-06.json",
-    "benchmarkEvidenceSha256": "9418dab68db8bee2304a6d43bedbddce4493a5786c98301dec9d20d9f327f1b5",
+    "benchmarkEvidenceSha256": "cb4f67f079c96cfc3bda5502fd3608aa32677049a0dc91eb1bed02501c5b92d6",
     "indexPlanEvidence": "ml/reports/embedding-index-regeneration-plan.json",
-    "indexPlanEvidenceSha256": "0d3d3ad1804dc93a3ba63d768ea84f3cb3b06d1d41b9be18d15c5e008b965d7b",
+    "indexPlanEvidenceSha256": "5b971385198a1860ca1c0c5a56ed2997dd9571185ee61e3282d488b00b55dd84",
     "missingProtectedEvaluationLanguages": [
       "zh-Hans",
       "ko"
