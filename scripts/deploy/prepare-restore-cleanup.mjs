@@ -8,6 +8,10 @@ function decodeIdentifier(value) {
   return value.replaceAll('""', '"');
 }
 
+function quoteLiteral(value) {
+  return `'${String(value).replaceAll("'", "''")}'`;
+}
+
 export function buildRestoreCleanupSql(dataDump) {
   return buildRestoreCleanupSqlWithRoles(dataDump, '');
 }
@@ -33,10 +37,27 @@ export function applicationRolesFromDump(roleDump) {
 
 function buildRestoreCleanupSqlForTables(internalTables, roleDump) {
   const applicationRoles = applicationRolesFromDump(roleDump);
+  const roleCleanupStatements = applicationRoles.flatMap((role) => {
+    const literal = quoteLiteral(role);
+    return [
+      `SELECT format('GRANT %I TO CURRENT_USER;', rolname)`,
+      `FROM pg_catalog.pg_roles WHERE rolname = ${literal}`,
+      '\\gexec',
+      `SELECT format('REASSIGN OWNED BY %I TO "postgres";', rolname)`,
+      `FROM pg_catalog.pg_roles WHERE rolname = ${literal}`,
+      '\\gexec',
+      `SELECT format('DROP OWNED BY %I;', rolname)`,
+      `FROM pg_catalog.pg_roles WHERE rolname = ${literal}`,
+      '\\gexec',
+      `SELECT format('DROP ROLE %I;', rolname)`,
+      `FROM pg_catalog.pg_roles WHERE rolname = ${literal}`,
+      '\\gexec',
+    ];
+  });
   const statements = [
     '\\set ON_ERROR_STOP on',
     ...APPLICATION_SCHEMAS.map((schema) => `DROP SCHEMA IF EXISTS "${schema}" CASCADE;`),
-    ...applicationRoles.map((role) => `DROP ROLE IF EXISTS "${role.replaceAll('"', '""')}";`),
+    ...roleCleanupStatements,
     'CREATE SCHEMA "public" AUTHORIZATION "postgres";',
     'GRANT USAGE ON SCHEMA "public" TO "anon", "authenticated", "service_role";',
     'DROP SCHEMA IF EXISTS "supabase_migrations" CASCADE;',
@@ -79,7 +100,7 @@ async function main() {
   );
   writeFileSync(outputPath, result.sql, 'utf8');
   console.log(JSON.stringify({
-    schemaVersion: 'stackr-restore-cleanup-v1.2.0',
+    schemaVersion: 'stackr-restore-cleanup-v1.3.0',
     droppedSchemaCount: result.droppedSchemaCount,
     droppedRoleCount: result.droppedRoleCount,
     truncatedTableCount: result.truncatedTableCount,

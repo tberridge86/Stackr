@@ -409,7 +409,10 @@ assert.equal(
   'sanitising a role dump must be idempotent',
 );
 
-const { buildRestoreCleanupSql } = await import('./deploy/prepare-restore-cleanup.mjs');
+const {
+  buildRestoreCleanupSql,
+  buildRestoreCleanupSqlWithRoles,
+} = await import('./deploy/prepare-restore-cleanup.mjs');
 const cleanup = buildRestoreCleanupSql([
   'COPY "public"."cards" ("id") FROM stdin;',
   'COPY "catalog"."sets" ("id") FROM stdin;',
@@ -423,6 +426,22 @@ assert.match(cleanup.sql, /CREATE SCHEMA "public" AUTHORIZATION "postgres";/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "storage"\."buckets" CASCADE;/);
 assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "public"\."cards"/);
+const cleanupWithRoles = buildRestoreCleanupSqlWithRoles('', [
+  'CREATE ROLE "stackr_recognition";',
+  "CREATE ROLE \"stackr_o'brien\";",
+].join('\n'));
+assert.equal(cleanupWithRoles.droppedRoleCount, 2);
+assert.match(
+  cleanupWithRoles.sql,
+  /GRANT %I TO CURRENT_USER;[\s\S]+REASSIGN OWNED BY %I TO "postgres";[\s\S]+DROP OWNED BY %I;[\s\S]+DROP ROLE %I;/,
+);
+assert.match(cleanupWithRoles.sql, /rolname = 'stackr_o''brien'/);
+assert.doesNotMatch(cleanupWithRoles.sql, /DROP ROLE IF EXISTS "stackr_recognition"/);
+assert.ok(
+  cleanupWithRoles.sql.indexOf('GRANT %I TO CURRENT_USER')
+    < cleanupWithRoles.sql.indexOf('CREATE SCHEMA "public"'),
+  'custom role ownership and grants must be cleared before the role is dropped',
+);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
