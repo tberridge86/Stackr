@@ -20,6 +20,44 @@ for (const filePath of [
   'app.json',
 ]) JSON.parse(readFileSync(filePath, 'utf8'));
 
+const backendRailwayConfig = JSON.parse(readFileSync('backend/railway.json', 'utf8'));
+for (const watchPattern of [
+  'backend/**',
+  'data/**',
+  'lib/**',
+  'routes/**',
+  'test/**',
+  'server.js',
+  'tsconfig.json',
+  'railway.json',
+  'scripts/**',
+  'package.json',
+  'package-lock.json',
+]) {
+  assert.ok(
+    backendRailwayConfig.build.watchPatterns.includes(watchPattern),
+    `backend Railway watch patterns must support ${watchPattern}`,
+  );
+}
+
+const recognitionRailwayConfig = JSON.parse(readFileSync('recognition-service/railway.json', 'utf8'));
+for (const watchPattern of [
+  'recognition-service/**',
+  'app/**',
+  'tests/**',
+  '.dockerignore',
+  'Dockerfile',
+  'railway.json',
+  'README.md',
+  'requirements-dev.txt',
+  'requirements.txt',
+]) {
+  assert.ok(
+    recognitionRailwayConfig.build.watchPatterns.includes(watchPattern),
+    `recognition Railway watch patterns must support ${watchPattern}`,
+  );
+}
+
 const releaseManifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
 const appConfig = JSON.parse(readFileSync('app.json', 'utf8'));
 assert.equal(

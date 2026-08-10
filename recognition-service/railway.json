@@ -4,7 +4,15 @@
     "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile",
     "watchPatterns": [
-      "recognition-service/**"
+      "recognition-service/**",
+      "app/**",
+      "tests/**",
+      ".dockerignore",
+      "Dockerfile",
+      "railway.json",
+      "README.md",
+      "requirements-dev.txt",
+      "requirements.txt"
     ]
   },
   "deploy": {

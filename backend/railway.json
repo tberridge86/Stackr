@@ -4,6 +4,13 @@
     "builder": "RAILPACK",
     "watchPatterns": [
       "backend/**",
+      "data/**",
+      "lib/**",
+      "routes/**",
+      "test/**",
+      "server.js",
+      "tsconfig.json",
+      "railway.json",
       "scripts/**",
       "package.json",
       "package-lock.json"
