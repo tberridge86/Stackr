@@ -336,6 +336,7 @@ paths:
         - name: variantId
           in: query
           schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/Cursor"
         - $ref: "#/components/parameters/Limit"
       responses:
         "200":

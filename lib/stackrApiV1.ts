@@ -791,6 +791,7 @@ export class StackrApiClient {
     setId?: string;
     printingId?: string;
     variantId?: string;
+    cursor?: string | null;
     limit?: number;
   } = {}) {
     return this.request<{ assets: StackrCatalogueAsset[] }>('/assets/manifest', query);

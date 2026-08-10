@@ -57,7 +57,7 @@ export const ROUTES = [
     pattern: /^\/v1\/assets\/manifest$/,
     ...publicGet,
     targetPath: '/api/assets/manifest',
-    query: query('assetType', 'setId', 'printingId', 'variantId', 'limit'),
+    query: query('assetType', 'setId', 'printingId', 'variantId', 'cursor', 'limit'),
   },
   {
     id: 'scan_presign',

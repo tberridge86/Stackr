@@ -1114,11 +1114,17 @@ function assertPublishRules() {
   assert.ok(readiness.blockers.includes('missing_exact_native_images'));
 
   const coverageLimitedReadiness = masterCatalogueInternals.coverageLimitedReadinessFromSummary(
-    incompleteSummary,
+    {
+      byLanguage: [{
+        ...incompleteSummary.byLanguage[0],
+        missingRequiredVariants: 3,
+      }],
+    },
     'ja',
   );
   assert.equal(coverageLimitedReadiness.ok, true);
   assert.ok(coverageLimitedReadiness.acknowledgedProviderGaps.includes('missing_exact_native_images'));
+  assert.ok(coverageLimitedReadiness.acknowledgedProviderGaps.includes('missing_required_variants'));
   const unsafeCoverageLimitedReadiness = masterCatalogueInternals.coverageLimitedReadinessFromSummary({
     byLanguage: [{
       ...incompleteSummary.byLanguage[0],

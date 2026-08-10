@@ -1206,6 +1206,8 @@ export interface operations {
                 setId?: string;
                 printingId?: string;
                 variantId?: string;
+                /** @description Opaque cursor returned by the previous page. */
+                cursor?: components["parameters"]["Cursor"];
                 limit?: components["parameters"]["Limit"];
             };
             header?: never;

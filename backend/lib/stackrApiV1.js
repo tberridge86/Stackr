@@ -856,17 +856,32 @@ export function createCatalogueV1Service(options) {
 
     async assetManifest(input = {}) {
       const limit = parseLimit(input.limit, 250, 1000);
+      const cursor = parseCursor(input.cursor);
       let query = table(supabase, 'api', 'asset_manifest')
         .select('*')
-        .order('updated_at', { ascending: false })
+        .order('catalogue_version_id', { ascending: true })
+        .order('asset_row_id', { ascending: true })
         .limit(limit + 1);
       if (clean(input.assetType)) query = query.eq('asset_type', clean(input.assetType));
       if (clean(input.setId)) query = query.eq('set_id', clean(input.setId));
       if (clean(input.printingId)) query = query.eq('printing_id', clean(input.printingId));
       if (clean(input.variantId)) query = query.eq('variant_id', clean(input.variantId));
+      if (cursor) {
+        const catalogueVersionId = clean(cursor.catalogueVersionId);
+        const assetRowId = clean(cursor.assetRowId);
+        if (!isUuid(catalogueVersionId) || !isUuid(assetRowId)) {
+          throw new ApiError(400, 'invalid_cursor', 'cursor is not a valid Stackr asset manifest cursor.');
+        }
+        query = query.or([
+          `catalogue_version_id.gt.${catalogueVersionId}`,
+          `and(catalogue_version_id.eq.${catalogueVersionId},asset_row_id.gt.${assetRowId})`,
+        ].join(','));
+      }
       const rows = await queryRows(query);
+      const page = rows.slice(0, limit);
+      const last = page[page.length - 1];
       return {
-        assets: rows.slice(0, limit).map((row) => ({
+        assets: page.map((row) => ({
           assetId: row.asset_id,
           assetType: row.asset_type,
           game: row.game_code ?? null,
@@ -892,7 +907,12 @@ export function createCatalogueV1Service(options) {
         })),
         pagination: {
           limit,
-          nextCursor: null,
+          nextCursor: rows.length > limit && last
+            ? encodeCursor({
+                catalogueVersionId: last.catalogue_version_id,
+                assetRowId: last.asset_row_id,
+              })
+            : null,
         },
       };
     },

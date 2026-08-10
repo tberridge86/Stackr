@@ -2514,7 +2514,7 @@ function buildPublishPlan(args: Args) {
     reason: controlledStaging
       ? 'Publish one explicitly incomplete, single-set staging snapshot for API verification; it is never production-release eligible.'
       : coverageLimited
-      ? 'Publish all approved imported records for one language with measured provider gaps; correctness and rights blockers still fail closed.'
+      ? 'Publish all approved imported records for one language with measured provider gaps; identity, validation, and rights blockers still fail closed.'
       : 'Publish one complete language snapshot; app-facing API views read published snapshots only.',
   };
 }
@@ -2554,6 +2554,7 @@ function coverageLimitedReadinessFromSummary(summary: any, language: SupportedCa
   const toleratedProviderGapBlockers = new Set([
     'language_has_incomplete_sets',
     'missing_card_records',
+    'missing_required_variants',
     'missing_exact_native_images',
     'release_blocking_missing_logo',
     'release_blocking_missing_symbol',

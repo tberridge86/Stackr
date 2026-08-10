@@ -4,7 +4,9 @@ import express from 'express';
 import createV1Router from '../backend/routes/v1.js';
 import {
   ApiError,
+  createCatalogueV1Service,
   normalizeSearchText,
+  parseCursor,
   searchFixtureCatalogue,
 } from '../backend/lib/stackrApiV1.js';
 
@@ -48,6 +50,65 @@ async function assertPublishedCatalogueSources() {
     source,
     /table\(supabase, 'ingest', 'external_identifiers'\)/,
     'v1 search must use published external identifier snapshots, not live ingest records',
+  );
+}
+
+async function assertAssetManifestCursorQuery() {
+  const catalogueVersionId = '66666666-6666-4666-8666-666666666666';
+  const firstAssetRowId = '77777777-7777-4777-8777-777777777777';
+  const secondAssetRowId = '88888888-8888-4888-8888-888888888888';
+  const operations = [];
+  const rows = [firstAssetRowId, secondAssetRowId].map((assetRowId) => ({
+    asset_id: assetRowId,
+    asset_type: 'card_image',
+    catalogue_version_id: catalogueVersionId,
+    asset_row_id: assetRowId,
+    permission_status: 'approved',
+    storage_key: `catalogue/${assetRowId}.webp`,
+  }));
+  const query = {
+    select(columns) { operations.push(['select', columns]); return this; },
+    order(column, options) { operations.push(['order', column, options]); return this; },
+    limit(value) { operations.push(['limit', value]); return this; },
+    eq(column, value) { operations.push(['eq', column, value]); return this; },
+    or(value) { operations.push(['or', value]); return this; },
+    then(resolve, reject) { return Promise.resolve({ data: rows, error: null }).then(resolve, reject); },
+  };
+  const supabase = {
+    schema(schema) {
+      assert.equal(schema, 'api');
+      return {
+        from(table) {
+          assert.equal(table, 'asset_manifest');
+          return query;
+        },
+      };
+    },
+  };
+  const catalogue = createCatalogueV1Service({
+    supabase,
+    assetBaseUrl: 'https://api.stackrtcg.com',
+  });
+  const first = await catalogue.assetManifest({ limit: 1 });
+  assert.equal(first.assets.length, 1);
+  assert.deepEqual(parseCursor(first.pagination.nextCursor), {
+    catalogueVersionId,
+    assetRowId: firstAssetRowId,
+  });
+  assert.deepEqual(operations.filter(([name]) => name === 'order'), [
+    ['order', 'catalogue_version_id', { ascending: true }],
+    ['order', 'asset_row_id', { ascending: true }],
+  ]);
+
+  operations.length = 0;
+  await catalogue.assetManifest({ limit: 1, cursor: first.pagination.nextCursor });
+  assert.deepEqual(operations.find(([name]) => name === 'or'), [
+    'or',
+    `catalogue_version_id.gt.${catalogueVersionId},and(catalogue_version_id.eq.${catalogueVersionId},asset_row_id.gt.${firstAssetRowId})`,
+  ]);
+  await assert.rejects(
+    () => catalogue.assetManifest({ cursor: Buffer.from('{}').toString('base64url') }),
+    (error) => error instanceof ApiError && error.code === 'invalid_cursor',
   );
 }
 
@@ -283,6 +344,8 @@ async function readJson(response) {
   return await response.json();
 }
 
+await assertAssetManifestCursorQuery();
+
 await withServer(async (baseUrl) => {
   const health = await fetch(`${baseUrl}/health`, {
     headers: { 'X-Request-Id': 'test-request-id' },
@@ -389,6 +452,7 @@ assert.match(openApi, /^openapi: 3\.1\.0/m);
 assert.doesNotMatch(openApi, /\/rest\/v1/);
 assert.match(openApi, /exact_set_code_collector_number/);
 assert.match(openApi, /If-None-Match/);
+assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/parameters\/Cursor/);
 
 const client = await readFile(new URL('../lib/stackrApiV1.ts', import.meta.url), 'utf8');
 for (const method of [
@@ -416,6 +480,7 @@ for (const method of [
 }
 assert.match(client, /'X-Stackr-Device-Id': deviceId/);
 assert.match(client, /Authorization: `Bearer \$\{accessToken\}`/);
+assert.match(client, /assetManifest\([\s\S]+cursor\?: string \| null/);
 assert.doesNotMatch(client, /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RECOGNITION_SERVICE_SECRET|BACKEND_ORIGIN_KEY/);
 
 console.log('Stackr API v1 integration tests passed.');
