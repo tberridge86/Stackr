@@ -262,6 +262,23 @@ test('asset manifests use the versioned API route and preserve cursor pagination
     limit: 1,
     nextCursor: 'asset-cursor-2',
   });
+
+  let invalidLimitForwarded = false;
+  const invalidLimit = await handleRequest(
+    request('/v1/assets/manifest?limit=501'),
+    environment(),
+    context(),
+    {
+      cache: new MemoryCache(),
+      fetchImpl: async () => {
+        invalidLimitForwarded = true;
+        return new Response('{}');
+      },
+    },
+  );
+  assert.equal(invalidLimit.status, 400);
+  assert.equal((await invalidLimit.json()).error.code, 'invalid_limit');
+  assert.equal(invalidLimitForwarded, false);
 });
 
 test('recognition requires user, device, idempotency, and a signed private hop', async () => {

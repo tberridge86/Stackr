@@ -455,6 +455,7 @@ assert.match(openApi, /If-None-Match/);
 assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/parameters\/Cursor/);
 
 const client = await readFile(new URL('../lib/stackrApiV1.ts', import.meta.url), 'utf8');
+const domainAdapter = await readFile(new URL('../lib/stackrDomainAdapter.ts', import.meta.url), 'utf8');
 for (const method of [
   'health',
   'ready',
@@ -482,5 +483,10 @@ assert.match(client, /'X-Stackr-Device-Id': deviceId/);
 assert.match(client, /Authorization: `Bearer \$\{accessToken\}`/);
 assert.match(client, /assetManifest\([\s\S]+cursor\?: string \| null/);
 assert.doesNotMatch(client, /SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RECOGNITION_SERVICE_SECRET|BACKEND_ORIGIN_KEY/);
+assert.match(domainAdapter, /client\.assetManifest\(\{ assetType, cursor, limit: 500 \}\)/);
+assert.match(domainAdapter, /client\.assetManifest\(\{ setId, cursor, limit: 500 \}\)/);
+assert.doesNotMatch(domainAdapter, /client\.assetManifest\(\{[^}]*limit:\s*1000/);
+assert.match(openApi, /\/assets\/manifest:[\s\S]+#\/components\/parameters\/Cursor[\s\S]+#\/components\/parameters\/Limit/);
+assert.match(openApi, /Limit:\s+[\s\S]*?name: limit[\s\S]*?maximum: 500/);
 
 console.log('Stackr API v1 integration tests passed.');

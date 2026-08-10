@@ -390,10 +390,13 @@ export async function fetchStackrSets(
     const response = await client.sets({ language: apiLanguage ?? undefined, cursor, limit: 250 });
     return { rows: response.data.sets, nextCursor: response.meta.pagination?.nextCursor ?? null };
   });
-  const assets = await allPages<StackrCatalogueAsset>(async (cursor) => {
-    const response = await client.assetManifest({ limit: 1000 });
-    return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
-  });
+  const setAssetTypes = ['set_logo', 'set_symbol', 'set_cover', 'set_artwork'] as const;
+  const assets = (await Promise.all(setAssetTypes.map((assetType) => (
+    allPages<StackrCatalogueAsset>(async (cursor) => {
+      const response = await client.assetManifest({ assetType, cursor, limit: 500 });
+      return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
+    })
+  )))).flat();
   return sets.map((set) => stackrSetToLegacySet(set, assets.filter((asset) => asset.setId === set.setId)));
 }
 
@@ -462,12 +465,15 @@ export async function fetchStackrCardsForSet(
     });
     return { rows: response.data.cards, nextCursor: response.meta.pagination?.nextCursor ?? null };
   });
-  const [assetResponse, setResponse] = await Promise.all([
-    client.assetManifest({ setId, limit: 1000 }),
+  const [assets, setResponse] = await Promise.all([
+    allPages<StackrCatalogueAsset>(async (cursor) => {
+      const response = await client.assetManifest({ setId, cursor, limit: 500 });
+      return { rows: response.data.assets, nextCursor: response.meta.pagination?.nextCursor ?? null };
+    }),
     client.set(setId),
   ]);
   return cards.map((card) => {
-    const mapped = stackrCardToLegacyCard(card, assetResponse.data.assets);
+    const mapped = stackrCardToLegacyCard(card, assets);
     const rawSet = mapped.raw_data.set as Record<string, unknown>;
     rawSet.printedTotal = setResponse.data.set.printedTotal;
     rawSet.total = setResponse.data.set.total;
