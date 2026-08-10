@@ -127,10 +127,10 @@ jobs:
             --project-ref "$SUPABASE_PROJECT_REF" \
             --output-format json > "$RUNNER_TEMP/stackr-backup/physical.json"
           npx --yes supabase@2.110.0 db dump \
-            --db-url "$SUPABASE_DB_URL" \
+            --db-url "$STACKR_SOURCE_DB_URL" \
             --file "$RUNNER_TEMP/stackr-backup/schema.sql"
           npx --yes supabase@2.110.0 db dump \
-            --db-url "$SUPABASE_DB_URL" \
+            --db-url "$STACKR_SOURCE_DB_URL" \
             --data-only \
             --use-copy \
             --file "$RUNNER_TEMP/stackr-backup/data.sql"

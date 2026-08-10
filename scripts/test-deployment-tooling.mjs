@@ -330,6 +330,11 @@ assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(stagingWorkflow, /deploy:preflight -- --catalogue-api-release/);
 assert.match(stagingWorkflow, /prepare-postgres-urls\.mjs --source-only/);
+assert.deepEqual(
+  [...stagingWorkflow.matchAll(/db dump\s*\\\s*\n\s*--db-url "([^"]+)"/g)].map((match) => match[1]),
+  ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
+  'staging logical backups must use the validated, normalized source URL',
+);
 assert.match(stagingWorkflow, /Deploy recognition container[\s\S]+if: inputs\.release_scope == 'full_platform'/);
 assert.match(stagingWorkflow, /RECOGNITION_REQUIRED:\$\{\{ inputs\.release_scope/);
 assert.match(stagingWorkflow, /--require-published-catalogue/);
