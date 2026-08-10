@@ -657,6 +657,7 @@ export function searchFixtureCatalogue(query, fixture, options = {}) {
 
 export function createCatalogueV1Service(options) {
   const supabase = options.supabase;
+  const assetSupabase = options.assetSupabase ?? supabase;
   const assetBaseUrl = String(options.assetBaseUrl ?? process.env.STACKR_ASSET_BASE_URL ?? '').replace(/\/$/, '');
   const modelIndexVersion = clean(options.modelIndexVersion)
     ?? clean(process.env.STACKR_MODEL_INDEX_VERSION)
@@ -857,7 +858,7 @@ export function createCatalogueV1Service(options) {
     async assetManifest(input = {}) {
       const limit = parseLimit(input.limit, 250, 1000);
       const cursor = parseCursor(input.cursor);
-      let query = table(supabase, 'api', 'asset_manifest')
+      let query = table(assetSupabase, 'api', 'asset_manifest')
         .select('*')
         .order('catalogue_version_id', { ascending: true })
         .order('asset_row_id', { ascending: true })

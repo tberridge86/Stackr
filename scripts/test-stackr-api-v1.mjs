@@ -53,6 +53,53 @@ async function assertPublishedCatalogueSources() {
   );
 }
 
+async function assertAssetManifestServerClientIsolation() {
+  const route = await readFile(new URL('../backend/routes/v1.js', import.meta.url), 'utf8');
+  const selectorStart = route.indexOf('function getSupabaseServerKeyCandidate()');
+  const selectorEnd = route.indexOf('\nfunction getSupabaseAdmin()', selectorStart);
+  assert.ok(selectorStart >= 0 && selectorEnd > selectorStart, 'server-only Supabase key selector is missing');
+  const selector = route.slice(selectorStart, selectorEnd);
+  assert.match(
+    selector,
+    /\['SUPABASE_SECRET_KEY',[\s\S]+\['SUPABASE_SERVICE_ROLE_KEY'/,
+    'the modern server secret must be preferred over the legacy service-role key',
+  );
+  assert.doesNotMatch(
+    selector,
+    /SUPABASE_PUBLISHABLE_KEY|SUPABASE_ANON_KEY/,
+    'the asset client must never fall back to a public Supabase key',
+  );
+
+  const defaultServiceStart = route.indexOf('function defaultService()');
+  const defaultServiceEnd = route.indexOf('\nfunction defaultPricingService()', defaultServiceStart);
+  assert.ok(defaultServiceStart >= 0 && defaultServiceEnd > defaultServiceStart, 'default v1 service wiring is missing');
+  const defaultService = route.slice(defaultServiceStart, defaultServiceEnd);
+  assert.match(
+    defaultService,
+    /createCatalogueV1Service\(\{\s*supabase: getCatalogueSupabase\(\),\s*assetSupabase: getAssetSupabase\(\),\s*\}\)/,
+    'the server-key client must be scoped to assetSupabase only',
+  );
+
+  const manifestView = await readFile(
+    new URL('../supabase/migrations/20260810071807_add_stable_asset_manifest_cursor.sql', import.meta.url),
+    'utf8',
+  );
+  for (const predicate of [
+    /with \(security_invoker = true\)/,
+    /cv\.status = 'published'/,
+    /cv\.deprecated_at is null/,
+    /a\.asset_visibility = 'public_catalogue'/,
+    /a\.publicly_servable/,
+    /a\.permission_status = 'approved'/,
+    /a\.rights_status = 'approved'/,
+    /a\.retention_status = 'active'/,
+    /a\.deleted_at is null/,
+    /a\.storage_provider <> 'unavailable'/,
+  ]) {
+    assert.match(manifestView, predicate, `asset manifest containment predicate is missing: ${predicate}`);
+  }
+}
+
 async function assertAssetManifestCursorQuery() {
   const catalogueVersionId = '66666666-6666-4666-8666-666666666666';
   const firstAssetRowId = '77777777-7777-4777-8777-777777777777';
@@ -74,7 +121,14 @@ async function assertAssetManifestCursorQuery() {
     or(value) { operations.push(['or', value]); return this; },
     then(resolve, reject) { return Promise.resolve({ data: rows, error: null }).then(resolve, reject); },
   };
+  let catalogueClientUsed = false;
   const supabase = {
+    schema() {
+      catalogueClientUsed = true;
+      throw new Error('The public catalogue client must not execute asset manifest reads.');
+    },
+  };
+  const assetSupabase = {
     schema(schema) {
       assert.equal(schema, 'api');
       return {
@@ -87,9 +141,11 @@ async function assertAssetManifestCursorQuery() {
   };
   const catalogue = createCatalogueV1Service({
     supabase,
+    assetSupabase,
     assetBaseUrl: 'https://api.stackrtcg.com',
   });
   const first = await catalogue.assetManifest({ limit: 1 });
+  assert.equal(catalogueClientUsed, false);
   assert.equal(first.assets.length, 1);
   assert.deepEqual(parseCursor(first.pagination.nextCursor), {
     catalogueVersionId,
@@ -345,6 +401,7 @@ async function readJson(response) {
 }
 
 await assertAssetManifestCursorQuery();
+await assertAssetManifestServerClientIsolation();
 
 await withServer(async (baseUrl) => {
   const health = await fetch(`${baseUrl}/health`, {

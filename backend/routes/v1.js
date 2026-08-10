@@ -19,11 +19,21 @@ import { createTracedFetch } from '../lib/traceContext.js';
 
 let supabaseAdmin = null;
 let catalogueSupabase = null;
+let assetSupabase = null;
 
 function getSupabaseKeyCandidate() {
   const candidates = [
     ['SUPABASE_PUBLISHABLE_KEY', process.env.SUPABASE_PUBLISHABLE_KEY],
     ['SUPABASE_ANON_KEY', process.env.SUPABASE_ANON_KEY],
+    ['SUPABASE_SECRET_KEY', process.env.SUPABASE_SECRET_KEY],
+    ['SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY],
+  ];
+  const selected = candidates.find(([, value]) => String(value ?? '').trim());
+  return selected ? { name: selected[0], value: selected[1] } : null;
+}
+
+function getSupabaseServerKeyCandidate() {
+  const candidates = [
     ['SUPABASE_SECRET_KEY', process.env.SUPABASE_SECRET_KEY],
     ['SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY],
   ];
@@ -75,9 +85,27 @@ function getCatalogueSupabase() {
   return catalogueSupabase;
 }
 
+function getAssetSupabase() {
+  if (assetSupabase) return assetSupabase;
+  const url = process.env.SUPABASE_URL;
+  const key = getSupabaseServerKeyCandidate();
+  if (!url || !key) {
+    throw new Error('Supabase server credentials are not configured on the backend.');
+  }
+  console.info(JSON.stringify({
+    level: 'info',
+    event: 'stackr_api_v1_asset_client',
+    supabaseKeyName: key.name,
+    forcedSchema: 'api',
+  }));
+  assetSupabase = createClient(url, key.value, { global: { fetch: createApiSchemaFetch() } });
+  return assetSupabase;
+}
+
 function defaultService() {
   return createCatalogueV1Service({
     supabase: getCatalogueSupabase(),
+    assetSupabase: getAssetSupabase(),
   });
 }
 
