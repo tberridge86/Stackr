@@ -13,6 +13,10 @@ const storagePromotion = readFileSync(
   'scripts/deploy/promote-catalogue-storage.mjs',
   'utf8',
 );
+const verifiedPostgres = readFileSync(
+  'scripts/deploy/verified-supabase-postgres.mjs',
+  'utf8',
+);
 const preservation = JSON.parse(
   readFileSync('deploy/staging-catalogue-preservation-tables.json', 'utf8'),
 );
@@ -42,6 +46,10 @@ assert.match(storagePromotion, /production_storage_source_guard_mismatch/);
 assert.match(storagePromotion, /production_storage_target_guard_mismatch/);
 assert.match(storagePromotion, /source_storage_content_hash_mismatch/);
 assert.match(storagePromotion, /providerRequestsPerformed: false/);
+assert.match(transfer, /createVerifiedSupabasePostgresClient/);
+assert.match(storagePromotion, /createVerifiedSupabasePostgresClient/);
+assert.match(verifiedPostgres, /rejectUnauthorized: true/);
+assert.doesNotMatch(verifiedPostgres, /rejectUnauthorized\s*:\s*false|sslmode=no-verify|NODE_TLS_REJECT_UNAUTHORIZED|uselibpqcompat/);
 
 assert.ok(
   preservation.tables.includes('ingest.data_conflicts'),

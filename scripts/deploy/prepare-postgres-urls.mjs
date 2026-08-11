@@ -1,5 +1,6 @@
 import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { assertNoPostgresConnectionOverrides } from './verified-supabase-postgres.mjs';
 
 function encodeComponent(value) {
   try {
@@ -31,6 +32,7 @@ export function normalizePostgresUrl(value, expectedProjectRef) {
   const password = encodeComponent(credentials.slice(passwordStart + 1));
   const normalized = `${schemeMatch[1].toLowerCase()}://${username}:${password}@${server}`;
   const parsed = new URL(normalized);
+  assertNoPostgresConnectionOverrides(parsed);
 
   if (!decodeURIComponent(parsed.username).includes(expectedProjectRef)) {
     throw new Error('database_url_project_mismatch');

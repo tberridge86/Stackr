@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import pg from 'pg';
+import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 
 const [component, action] = process.argv.slice(2, 4);
 const targetId = process.argv.find((value) => value.startsWith('--id='))?.slice(5);
@@ -19,11 +19,11 @@ const statement = statements[`${component}:${action}`];
 if (!statement) throw new Error('Use catalogue|index followed by activate|rollback.');
 
 const requestId = process.env.STACKR_RELEASE_REQUEST_ID || randomUUID();
-const client = new pg.Client({
-  connectionString: databaseUrl,
-  connectionTimeoutMillis: 10_000,
-  application_name: `stackr-release-${component}-${action}`,
-});
+const client = createVerifiedSupabasePostgresClient(
+  databaseUrl,
+  `stackr-release-${component}-${action}`,
+  { connectionTimeoutMillis: 10_000 },
+);
 
 await client.connect();
 try {

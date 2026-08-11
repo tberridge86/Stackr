@@ -1,9 +1,8 @@
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import pg from 'pg';
+import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 
-const { Client } = pg;
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
 const TARGET_PROJECT_REF = process.env.SUPABASE_RESTORE_PROJECT_REF;
 const PRODUCTION_PROJECT_REF = process.env.SUPABASE_PRODUCTION_PROJECT_REF;
@@ -124,7 +123,7 @@ function digestRows(rows) {
 }
 
 async function connect(connectionString, applicationName) {
-  const client = new Client({ connectionString, application_name: applicationName });
+  const client = createVerifiedSupabasePostgresClient(connectionString, applicationName);
   await client.connect();
   return client;
 }
