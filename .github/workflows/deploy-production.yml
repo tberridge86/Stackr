@@ -253,13 +253,16 @@ jobs:
           retention-days: 1
           compression-level: 9
 
+      - name: Prepare the normalized production database URL
+        run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
+
       - name: Create ephemeral logical backups and verify backup coverage
         run: |
           npx --yes supabase@2.110.0 db dump \
-            --db-url "$SUPABASE_DB_URL" \
+            --db-url "$STACKR_SOURCE_DB_URL" \
             --file "$RUNNER_TEMP/stackr-backup/schema.sql"
           npx --yes supabase@2.110.0 db dump \
-            --db-url "$SUPABASE_DB_URL" \
+            --db-url "$STACKR_SOURCE_DB_URL" \
             --data-only \
             --use-copy \
             --file "$RUNNER_TEMP/stackr-backup/data.sql"
@@ -270,11 +273,11 @@ jobs:
             --require-physical
 
       - name: Dry-run backward-compatible migrations
-        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all --dry-run
+        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all --dry-run
 
       - name: Apply backward-compatible migrations
         if: inputs.apply_migrations
-        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all
+        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all
 
       - name: Prepare protected catalogue promotion URLs
         if: inputs.release_scope == 'catalogue_api'
