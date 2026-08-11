@@ -337,8 +337,17 @@ assert.deepEqual(
   ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
   'staging migration dry-run and apply must use the validated, normalized source URL',
 );
-assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
-assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all/);
+assert.match(productionWorkflow, /prepare-postgres-urls\.mjs --source-only/);
+assert.deepEqual(
+  [...productionWorkflow.matchAll(/db dump\s*\\\s*\n\s*--db-url "([^"]+)"/g)].map((match) => match[1]),
+  ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
+  'production logical backups must use the validated, normalized source URL',
+);
+assert.deepEqual(
+  [...productionWorkflow.matchAll(/db push\s+--db-url "([^"]+)"/g)].map((match) => match[1]),
+  ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
+  'production migration dry-run and apply must use the validated, normalized source URL',
+);
 assert.match(productionWorkflow, /benchmark-public-api\.mjs/);
 assert.match(productionWorkflow, /--catalogue-p95-ms=150/);
 assert.match(productionWorkflow, /--search-p95-ms=300/);
