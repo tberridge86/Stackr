@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "stackr-staging-readiness-evidence-v1.0.0",
+  "capturedAt": "2026-08-11T16:53:22.266Z",
+  "sourceCommitHash": "61b070bac6a1c76c90e731a506278ddc6c4df11e",
+  "workingTreeChangesIncluded": false,
+  "supabase": {
+    "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+    "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+    "localMigrationFileCount": 104,
+    "productionMigrationHistoryCount": 41,
+    "stagingMigrationHistoryCount": 103,
+    "migrationHistoryStatus": "aligned",
+    "migrationReconciliationEvidence": "deploy/evidence/staging-migration-reconciliation-2026-08-11.json",
+    "migrationReconciliationEvidenceSha256": "e43675c9128b039c97ec26f26ece4168a8e030e65eb61ee34cf319f29fe9c78d",
+    "stagingSecurityAdvisorFindingCountAfterRollback": 24,
+    "productionPhysicalBackupCount": 7,
+    "stagingPhysicalBackupCount": 7,
+    "latestStagingPhysicalBackupId": "1309013249",
+    "latestStagingPhysicalBackupAt": "2026-08-07T03:51:07.875Z",
+    "latestStagingBackupIncludesCurrentChanges": false,
+    "pitrEnabled": false,
+    "walgEnabled": true
+  },
+  "databaseRecovery": {
+    "status": "verified",
+    "recoveryEvidence": "deploy/evidence/staging-recovery-2026-08-10.json",
+    "workflowRunId": 31416853579,
+    "workflowConclusion": "cancelled_after_database_verification_before_storage_completed",
+    "sourceArtifactSha256": "6a0108ffbd1817b182fbd1f386aad5b187852b0f775010a37066c1e4f0b37d06",
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-08-10T18:26:55.564Z",
+    "verifiedTableCount": 185,
+    "strictTableCount": 182,
+    "strictTableMismatchCount": 0,
+    "volatileTableCount": 3,
+    "volatileTableChecksAcceptable": true,
+    "verifiedMigrationCount": 103,
+    "schemaMatched": true,
+    "tableDataMatched": true,
+    "volatileTableSnapshotBoundsMatched": true,
+    "migrationHistoryMatched": true,
+    "extensionsMatched": true,
+    "blockers": []
+  },
+  "storageRecovery": {
+    "status": "verified",
+    "recoveryEvidence": "deploy/evidence/staging-recovery-2026-08-10.json",
+    "workflowRunId": 31424877755,
+    "sourceArtifactSha256": "d4e69d0568e8b72c02542e77e8139d9dd3b3646693a5e74205c7d2477a3d7438",
+    "stagingBucketCount": 8,
+    "stagingObjectCount": 190325,
+    "backedUpObjectCount": 190325,
+    "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+    "restoreTestedAt": "2026-08-10T21:01:36.454Z",
+    "restoredBucketCount": 8,
+    "restoredObjectCount": 512,
+    "restoredSampleObjectCount": 512,
+    "backupManifestSha256": "b2c2cd658f057a29c9992a3e1c6a92e715e15765fbeb922e9599ff128d2d0406",
+    "backupPackManifestSha256": "958823b5b62d37a8530692d8ffa3ca1d75b5e53dbd802912f26acfba8fd234f2",
+    "fullInventoryMetadataSha256": "33f6a96737aa7df61621c425337786470d536fee7c5eb1fcd2f36d59493b1959",
+    "checksumMismatchCount": 0,
+    "mimeTypeMismatchCount": 0,
+    "packChecksumMismatchCount": 0,
+    "packRecordMismatchCount": 0,
+    "sourceMimeTypeMismatchCount": 0,
+    "bucketPolicyMatches": true,
+    "fileSizeLimitCompatible": true,
+    "publicBucketReadVerifiedCount": 1,
+    "publicBucketAccessExpectedCount": 1,
+    "privateBucketReadDeniedCount": 1,
+    "privateBucketAccessExpectedCount": 1,
+    "targetCleanupVerified": true,
+    "blockers": []
+  },
+  "migrationCandidate": {
+    "status": "aligned_on_isolated_current_production_baseline",
+    "repositoryMigrationCount": 104,
+    "stagingMigrationHistoryCount": 103,
+    "isolatedCandidateMigrationHistoryCount": 104,
+    "exactVersionNameOrderMatch": true,
+    "securityAdvisorErrorCount": 0,
+    "promotionApproved": false,
+    "promotionBlockers": [
+      "model_index_and_calibration_not_ready"
+    ]
+  },
+  "stage6Rehearsal": {
+    "status": "rehearsed_and_rolled_back",
+    "migrationApplied": true,
+    "rollbackApplied": true,
+    "seededCandidateModelCount": 5,
+    "selectedOrActiveModelCount": 0,
+    "activeIndexCount": 0,
+    "anonymousOrAuthenticatedMlGrantCount": 0,
+    "allStage6TablesHadRls": true,
+    "securityAdvisorFindingCountAfterFixedMigration": 0,
+    "finalStage6ObjectCount": 0,
+    "vectorExtensionInstalledDuringRehearsal": false,
+    "currentVectorExtensionInstalled": true,
+    "currentVectorExtensionVersion": "0.8.2",
+    "activationGuardsVerified": [
+      "unselected_model_rejected",
+      "unknown_index_rejected"
+    ]
+  },
+  "modelAndIndex": {
+    "status": "blocked",
+    "candidateModelId": "dinov2_vits14",
+    "candidateArtifactSha256": "eb9447f288fe8225cc222d96177458c53d22ce6d794603e10b10a8905962b19a",
+    "selectedModelId": null,
+    "selectedEmbeddingDimensions": null,
+    "activeIndexVersion": null,
+    "realPhoneTestCaptureCount": 142,
+    "approvedTrainingPixelSourceCount": 142,
+    "captureReadinessEvidence": "deploy/evidence/dinov2-pilot-publication-approved-2026-08-06.json",
+    "captureReadinessEvidenceSha256": "cb4f67f079c96cfc3bda5502fd3608aa32677049a0dc91eb1bed02501c5b92d6",
+    "benchmarkEvidence": "deploy/evidence/dinov2-pilot-publication-approved-2026-08-06.json",
+    "benchmarkEvidenceSha256": "cb4f67f079c96cfc3bda5502fd3608aa32677049a0dc91eb1bed02501c5b92d6",
+    "indexPlanEvidence": "ml/reports/embedding-index-regeneration-plan.json",
+    "indexPlanEvidenceSha256": "5b971385198a1860ca1c0c5a56ed2997dd9571185ee61e3282d488b00b55dd84",
+    "missingProtectedEvaluationLanguages": [
+      "zh-Hans",
+      "ko"
+    ],
+    "blockers": [
+      "model_selection_and_protected_test_not_separated",
+      "one_physical_card_session_per_identity",
+      "six_identity_classes_only",
+      "single_language_only",
+      "variant_and_finish_hard_negatives_missing",
+      "mobile_latency_not_measured",
+      "active_database_index_not_built",
+      "calibration_not_completed"
+    ]
+  },
+  "catalogue": {
+    "releaseLabel": "api-launch-2026-08-09-v1",
+    "publishedVersions": 5,
+    "sets": 788,
+    "cardPrintings": 56963,
+    "cardVariants": 75586,
+    "publicApprovedAssets": 47579,
+    "releaseEligibleLanguages": [
+      "en",
+      "ja",
+      "zh-tw",
+      "zh-cn",
+      "ko"
+    ],
+    "publishedVersionIds": {
+      "en": "2a4a05d7-6e77-4bb9-ad09-83e627ea4538",
+      "ja": "6b399a06-19e1-460f-8150-2a96318d1dd2",
+      "zh-tw": "1728441d-42b3-47e6-9cf8-fb1b10096279",
+      "zh-cn": "79f43e8f-7062-4d29-8571-569eccb7c249",
+      "ko": "159eb902-143c-42ef-b682-93ba5f9e81f2"
+    }
+  },
+  "releaseReadiness": {
+    "status": "blocked",
+    "blockers": [
+      "model_index_and_calibration_not_ready",
+      "recognition_calibration_not_ready",
+      "production_dns_release_not_approved"
+    ]
+  }
+}
