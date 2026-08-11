@@ -14,6 +14,7 @@ const directory = argument('directory');
 const expectedSchemaSha256 = argument('expected-schema-sha256');
 const expectedHistoryVersion = argument('expected-history-version');
 const expectedHistoryName = argument('expected-history-name');
+const expectedHistoryCount = argument('expected-history-count');
 const errors = [];
 
 if (!directory || !expectedSchemaSha256) {
@@ -22,6 +23,12 @@ if (!directory || !expectedSchemaSha256) {
 }
 if (Boolean(expectedHistoryVersion) !== Boolean(expectedHistoryName)) {
   errors.push('baseline_expected_history_identity_incomplete');
+}
+if (Boolean(expectedHistoryVersion) !== Boolean(expectedHistoryCount)) {
+  errors.push('baseline_expected_history_count_incomplete');
+}
+if (expectedHistoryCount && (!/^\d+$/.test(expectedHistoryCount) || Number(expectedHistoryCount) < 1)) {
+  errors.push('baseline_expected_history_count_invalid');
 }
 
 function migrationHistoryRows(content) {
@@ -62,7 +69,7 @@ if (!errors.length) {
   }
   if (evidence.productionMutationPerformed !== false) errors.push('baseline_claims_production_mutation');
   if (evidence.customerTableDataIncluded !== false) errors.push('baseline_claims_customer_data');
-  const expectedHistoryRows = expectedHistoryVersion ? 1 : 0;
+  const expectedHistoryRows = expectedHistoryCount ? Number(expectedHistoryCount) : 0;
   if (evidence.inventory?.migrationHistorySchemaPresent !== Boolean(expectedHistoryVersion)) {
     errors.push('unexpected_production_migration_history_schema');
   }
@@ -73,7 +80,7 @@ if (!errors.length) {
   if (historyRows.length !== expectedHistoryRows) {
     errors.push('production_migration_history_copy_row_count_mismatch');
   } else if (expectedHistoryVersion) {
-    const [version, , name] = historyRows[0];
+    const [version, , name] = historyRows.at(-1);
     if (version !== expectedHistoryVersion || name !== expectedHistoryName) {
       errors.push('production_migration_history_identity_mismatch');
     }
@@ -97,6 +104,7 @@ console.log(JSON.stringify({
   ok: errors.length === 0,
   sourceProjectRef: 'oakdbbzdqwurpjnoqhmu',
   expectedSchemaSha256,
+  expectedHistoryCount: expectedHistoryCount ? Number(expectedHistoryCount) : null,
   expectedHistoryVersion: expectedHistoryVersion ?? null,
   expectedHistoryName: expectedHistoryName ?? null,
   errors,

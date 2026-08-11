@@ -7,6 +7,30 @@ on:
         description: Type REPLAY MIGRATIONS ON RESTORE TARGET
         required: true
         type: string
+      baseline_artifact_id:
+        description: Private production-schema baseline artifact ID
+        required: true
+        type: string
+      baseline_archive_sha256:
+        description: SHA-256 of the downloaded baseline archive
+        required: true
+        type: string
+      baseline_schema_sha256:
+        description: SHA-256 of production-schema.sql within the baseline
+        required: true
+        type: string
+      baseline_history_count:
+        description: Number of migration-history rows in the captured baseline
+        required: true
+        type: string
+      baseline_history_version:
+        description: Latest migration version in the captured baseline
+        required: true
+        type: string
+      baseline_history_name:
+        description: Latest migration name in the captured baseline
+        required: true
+        type: string
 
 permissions:
   actions: read
@@ -27,9 +51,12 @@ jobs:
       SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
       SUPABASE_STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
-      BASELINE_ARTIFACT_ID: '9072158961'
-      BASELINE_ARCHIVE_SHA256: ddd8c05b3595bf8a2035928f81dc56d24ce3a3f9ef9d13ad9850cbb9f6c428cb
-      BASELINE_SCHEMA_SHA256: 01a74817c0a3df96f1d44622877f358f6372a837aea521ff53de2511adbd0aee
+      BASELINE_ARTIFACT_ID: ${{ inputs.baseline_artifact_id }}
+      BASELINE_ARCHIVE_SHA256: ${{ inputs.baseline_archive_sha256 }}
+      BASELINE_SCHEMA_SHA256: ${{ inputs.baseline_schema_sha256 }}
+      BASELINE_HISTORY_COUNT: ${{ inputs.baseline_history_count }}
+      BASELINE_HISTORY_VERSION: ${{ inputs.baseline_history_version }}
+      BASELINE_HISTORY_NAME: ${{ inputs.baseline_history_name }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -76,8 +103,9 @@ jobs:
           node scripts/deploy/verify-production-schema-baseline.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact" \
             --expected-schema-sha256="$BASELINE_SCHEMA_SHA256" \
-            --expected-history-version=20260802160643 \
-            --expected-history-name=production_critical_rls_storage_containment_20260802
+            --expected-history-count="$BASELINE_HISTORY_COUNT" \
+            --expected-history-version="$BASELINE_HISTORY_VERSION" \
+            --expected-history-name="$BASELINE_HISTORY_NAME"
           node scripts/deploy/secret-scan.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact"
 
@@ -131,7 +159,10 @@ jobs:
             --restore-project-ref="$SUPABASE_RESTORE_PROJECT_REF" \
             --baseline-artifact-id="$BASELINE_ARTIFACT_ID" \
             --baseline-archive-sha256="$BASELINE_ARCHIVE_SHA256" \
-            --baseline-schema-sha256="$BASELINE_SCHEMA_SHA256"
+            --baseline-schema-sha256="$BASELINE_SCHEMA_SHA256" \
+            --baseline-history-count="$BASELINE_HISTORY_COUNT" \
+            --baseline-history-version="$BASELINE_HISTORY_VERSION" \
+            --baseline-history-name="$BASELINE_HISTORY_NAME"
 
       - name: Upload non-secret migration replay evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

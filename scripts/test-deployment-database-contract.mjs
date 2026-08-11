@@ -17,6 +17,14 @@ const curatedPromoMigration = readFileSync(
   'supabase/migrations/20260728110000_curated_corocoro_mew_promos.sql',
   'utf8',
 );
+const ownedMembershipMigration = readFileSync(
+  'supabase/migrations/20260702120000_owned_card_membership_model.sql',
+  'utf8',
+);
+const ownedMembershipRepairMigration = readFileSync(
+  'supabase/migrations/20260811165000_repair_owned_card_membership_legacy_identity.sql',
+  'utf8',
+);
 
 assert.match(config, /schemas = \["public", "api", "graphql_public"\]/);
 assert.doesNotMatch(config, /schemas\s*=\s*\[[^\]]*"(?:ingest|ml|audit|market|catalog)"/);
@@ -47,5 +55,20 @@ assert.match(mintyInsightMigration, /target_price_gbp = coalesce\(alerts\.target
 assert.match(mintyInsightMigration, /cards\.id = alerts\.card_id/);
 assert.match(mintyInsightMigration, /check \(direction in \('below', 'above', 'movement'\)\)/);
 assert.match(curatedPromoMigration, /alter table public\.pokemon_sets\s+add column if not exists raw_data jsonb/);
+for (const migration of [ownedMembershipMigration, ownedMembershipRepairMigration]) {
+  assert.match(migration, /constraint_record\.contype = 'u'/);
+  assert.match(migration, /array_agg\(attribute\.attname::text order by attribute\.attname\)/);
+  assert.match(migration, /array\['card_id', 'set_id', 'user_id', 'variant'\]::text\[\]/);
+  assert.match(migration, /alter table public\.user_card_variants drop constraint if exists %I/);
+  assert.match(migration, /not exists \([\s\S]*attached_constraint\.conindid = index_definition\.indexrelid/);
+}
+assert.match(
+  ownedMembershipMigration,
+  /create unique index if not exists user_card_variants_owned_identity_uidx[\s\S]*user_id, card_id, set_id, variant, condition, grade_company, grade/,
+);
+assert.match(
+  ownedMembershipRepairMigration,
+  /create unique index if not exists user_card_variants_owned_identity_uidx[\s\S]*user_id, card_id, set_id, variant, condition, grade_company, grade/,
+);
 
 console.log('Stage 13 database deployment contract tests passed.');
