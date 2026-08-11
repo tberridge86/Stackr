@@ -348,6 +348,11 @@ assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comme
 assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_SCOPE: \$\{\{ inputs\.release_scope \}\}/);
+assert.match(
+  stagingWorkflow,
+  /SUPABASE_ACCESS_TOKEN:\s+\$\{\{ secrets\.STACKR_GITHUB_STAGING_BACKUPS \|\| secrets\.SUPABASE_ACCESS_TOKEN \}\}/,
+  'staging must prefer the dedicated backup-read token without removing the standard token fallback',
+);
 assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[catalogue_api, full_platform\]/);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
