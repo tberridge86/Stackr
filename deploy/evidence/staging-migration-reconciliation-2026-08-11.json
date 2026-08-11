@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "stackr-migration-reconciliation-v1.1.0",
-  "capturedAt": "2026-08-11T16:53:22.266Z",
-  "sourceCommitHash": "61b070bac6a1c76c90e731a506278ddc6c4df11e",
+  "schemaVersion": "stackr-migration-reconciliation-v1.2.0",
+  "capturedAt": "2026-08-11T18:08:03.009Z",
+  "sourceCommitHash": "5a529700e4e45a4c3a6be9abd93239829a4e0813",
   "workingTreeChangesIncluded": false,
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
@@ -16,22 +16,26 @@
   "exactVersionNameOrderMatch": true,
   "orderedMigrationKeySha256": "aabaf944d9e745ac191972069006272de4e2ff23e8681914540048ecded4a119",
   "remoteOrderedMigrationKeySha256": "aabaf944d9e745ac191972069006272de4e2ff23e8681914540048ecded4a119",
-  "repositoryMigrationContentSha256": "2296fbc96daffcf0837013c7dfb62cc2882218522cbf1ca71b946a527ba51d98",
+  "repositoryMigrationContentSha256": "c7ea964233e11d6324a758185971380f0cb284eddb9f33cf32562916cb8a2486",
   "firstMigration": "20260513170000_card_fingerprint_regions",
   "latestMigration": "20260811165000_repair_owned_card_membership_legacy_identity",
   "baseline": {
-    "artifactId": "9109714673",
-    "archiveSha256": "61061608b6480f29d18e6a30c2eb0837d8709c67606ea008bb8bbeb720c0a516",
-    "schemaSha256": "9ecfb400383a5f01bb85f25557957562a4088712e204d13a3cf9721bc5ec42d2",
-    "expectedProductionHistoryCount": 41,
-    "expectedProductionHistoryVersion": "20260701195000",
-    "expectedProductionHistoryName": "marketplace_schema_repair"
+    "artifactId": "9112129060",
+    "archiveSha256": "32617189446306c0c220060a353707edd33fa980e2aef65c170f17fb3a60ceda",
+    "schemaSha256": "a2a4b3ffdaf0466d4f9a20f524bb9b23464db905739247c66fdbcd83ffd072ad",
+    "expectedProductionHistoryCount": 88,
+    "expectedProductionHistoryVersion": "20260806171907",
+    "expectedProductionHistoryName": "resolve_asset_manifest_catalogue_identity",
+    "migrationHistoryRestored": true,
+    "restoredMigrationHistoryCount": 88,
+    "exactRepositoryPrefixMatch": true,
+    "pendingRepositoryMigrationCount": 16
   },
   "workflow": {
     "repository": "tberridge86/Stackr",
-    "runId": "31514027901",
+    "runId": "31520722521",
     "runAttempt": "1",
-    "url": "https://github.com/tberridge86/Stackr/actions/runs/31514027901"
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/31520722521"
   },
   "isolatedCandidateUnverifiedRepositoryMigrationCount": 0,
   "isolatedCandidate": {
@@ -39,14 +43,17 @@
     "repositoryMigrationCount": 104,
     "migrationHistoryAligned": true,
     "productionBaselineRestored": true,
-    "repositoryMigrationsReplayed": true,
-    "storageFixtureSeeded": true
+    "baselineMigrationHistoryRestored": true,
+    "pendingRepositoryMigrationsApplied": true,
+    "pendingRepositoryMigrationCount": 16,
+    "storageFixtureSeeded": false
   },
   "actionsTaken": [
     "verified_private_production_schema_baseline_checksums",
     "restored_production_schema_to_isolated_target",
-    "seeded_empty_pre_containment_storage_fixture",
-    "replayed_all_repository_migrations_on_isolated_target",
+    "restored_captured_production_migration_history",
+    "verified_exact_captured_migration_history_prefix",
+    "applied_pending_repository_migrations_on_isolated_target",
     "verified_exact_migration_version_name_order",
     "verified_production_was_not_modified"
   ]
