@@ -25,6 +25,10 @@ const ownedMembershipRepairMigration = readFileSync(
   'supabase/migrations/20260811165000_repair_owned_card_membership_legacy_identity.sql',
   'utf8',
 );
+const dinov2EmbeddingMigration = readFileSync(
+  'supabase/migrations/20260806174020_materialize_dinov2_vits14_embedding_index.sql',
+  'utf8',
+);
 
 assert.match(config, /schemas = \["public", "api", "graphql_public"\]/);
 assert.doesNotMatch(config, /schemas\s*=\s*\[[^\]]*"(?:ingest|ml|audit|market|catalog)"/);
@@ -69,6 +73,10 @@ assert.match(
 assert.match(
   ownedMembershipRepairMigration,
   /create unique index if not exists user_card_variants_owned_identity_uidx[\s\S]*user_id, card_id, set_id, variant, condition, grade_company, grade/,
+);
+assert.match(
+  dinov2EmbeddingMigration,
+  /create extension if not exists vector with schema extensions;[\s\S]*create table if not exists ml\.card_embeddings_dinov2_vits14_384/i,
 );
 
 console.log('Stage 13 database deployment contract tests passed.');
