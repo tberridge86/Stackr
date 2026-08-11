@@ -34,8 +34,12 @@ export function normalizePostgresUrl(value, expectedProjectRef) {
   const parsed = new URL(normalized);
   assertNoPostgresConnectionOverrides(parsed);
 
-  if (!decodeURIComponent(parsed.username).includes(expectedProjectRef)) {
+  const decodedUsername = decodeURIComponent(parsed.username);
+  if (!decodedUsername.includes(expectedProjectRef)) {
     throw new Error('database_url_project_mismatch');
+  }
+  if (decodedUsername !== `postgres.${expectedProjectRef}`) {
+    throw new Error('database_url_role_mismatch');
   }
   if (!parsed.hostname.endsWith('.supabase.com')) {
     throw new Error('database_url_host_mismatch');
