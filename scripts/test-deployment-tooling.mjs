@@ -332,7 +332,11 @@ assert.match(productionWorkflow, /stackr-production-physical-backup-diagnostics-
 assert.match(productionWorkflow, /steps\.physical_backup_list\.outcome == 'failure'/);
 assert.match(productionWorkflow, /secret-scan\.mjs[\s\S]+stackr-backup-diagnostics/);
 assert.match(productionWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-backup-diagnostics"/);
-assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
+assert.deepEqual(
+  [...stagingWorkflow.matchAll(/db push\s+--db-url "([^"]+)"/g)].map((match) => match[1]),
+  ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
+  'staging migration dry-run and apply must use the validated, normalized source URL',
+);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all/);
 assert.match(productionWorkflow, /benchmark-public-api\.mjs/);

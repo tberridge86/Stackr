@@ -169,11 +169,11 @@ jobs:
 
       - name: Dry-run backward-compatible migrations
         if: inputs.release_candidate
-        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all --dry-run
+        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all --dry-run
 
       - name: Apply backward-compatible migrations
         if: inputs.apply_migrations
-        run: npx --yes supabase@2.110.0 db push --db-url "$SUPABASE_DB_URL" --include-all
+        run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all
 
       - name: Deploy catalogue API behind the staging gateway
         run: >-
