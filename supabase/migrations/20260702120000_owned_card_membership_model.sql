@@ -45,12 +45,12 @@ begin
     where constraint_record.conrelid = 'public.user_card_variants'::regclass
       and constraint_record.contype = 'u'
       and (
-        select array_agg(attribute.attname order by column_key.ordinality)
+        select array_agg(attribute.attname::text order by attribute.attname)
         from unnest(constraint_record.conkey) with ordinality as column_key(attnum, ordinality)
         join pg_attribute attribute
           on attribute.attrelid = constraint_record.conrelid
           and attribute.attnum = column_key.attnum
-      ) = array['user_id', 'card_id', 'set_id', 'variant']::text[]
+      ) = array['card_id', 'set_id', 'user_id', 'variant']::text[]
   loop
     execute format(
       'alter table public.user_card_variants drop constraint if exists %I',
@@ -73,12 +73,12 @@ begin
         where attached_constraint.conindid = index_definition.indexrelid
       )
       and (
-        select array_agg(attribute.attname order by column_key.ordinality)
+        select array_agg(attribute.attname::text order by attribute.attname)
         from unnest(index_definition.indkey) with ordinality as column_key(attnum, ordinality)
         join pg_attribute attribute
           on attribute.attrelid = table_relation.oid
           and attribute.attnum = column_key.attnum
-      ) = array['user_id', 'card_id', 'set_id', 'variant']::text[]
+      ) = array['card_id', 'set_id', 'user_id', 'variant']::text[]
   loop
     execute format('drop index if exists %I.%I', legacy_index.schema_name, legacy_index.index_name);
   end loop;

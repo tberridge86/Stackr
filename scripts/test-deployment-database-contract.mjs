@@ -57,7 +57,8 @@ assert.match(mintyInsightMigration, /check \(direction in \('below', 'above', 'm
 assert.match(curatedPromoMigration, /alter table public\.pokemon_sets\s+add column if not exists raw_data jsonb/);
 for (const migration of [ownedMembershipMigration, ownedMembershipRepairMigration]) {
   assert.match(migration, /constraint_record\.contype = 'u'/);
-  assert.match(migration, /array\['user_id', 'card_id', 'set_id', 'variant'\]::text\[\]/);
+  assert.match(migration, /array_agg\(attribute\.attname::text order by attribute\.attname\)/);
+  assert.match(migration, /array\['card_id', 'set_id', 'user_id', 'variant'\]::text\[\]/);
   assert.match(migration, /alter table public\.user_card_variants drop constraint if exists %I/);
   assert.match(migration, /not exists \([\s\S]*attached_constraint\.conindid = index_definition\.indexrelid/);
 }

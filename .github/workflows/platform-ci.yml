@@ -35,6 +35,18 @@ jobs:
   database-migration-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -43,6 +55,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database-migrations
+      - run: >-
+          node scripts/test-owned-card-membership-migration.mjs
+          --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres
       - name: Start and reset local Supabase
         if: vars.SUPABASE_LOCAL_BASELINE_READY == 'true'
         run: |
