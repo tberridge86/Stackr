@@ -32,15 +32,56 @@ alter table public.binder_cards
   add column if not exists owned_card_variant_id uuid null;
 
 do $$
+declare
+  legacy_constraint record;
+  legacy_index record;
 begin
-  if exists (
-    select 1
-    from pg_indexes
-    where schemaname = 'public'
-      and indexname = 'user_card_variants_user_card_set_variant_uidx'
-  ) then
-    drop index public.user_card_variants_user_card_set_variant_uidx;
-  end if;
+  -- Older installations used this four-column key as a table constraint, while
+  -- others used it as a standalone index. Both must be removed before records
+  -- that differ only by condition or grade can be backfilled.
+  for legacy_constraint in
+    select constraint_record.conname
+    from pg_constraint constraint_record
+    where constraint_record.conrelid = 'public.user_card_variants'::regclass
+      and constraint_record.contype = 'u'
+      and (
+        select array_agg(attribute.attname order by column_key.ordinality)
+        from unnest(constraint_record.conkey) with ordinality as column_key(attnum, ordinality)
+        join pg_attribute attribute
+          on attribute.attrelid = constraint_record.conrelid
+          and attribute.attnum = column_key.attnum
+      ) = array['user_id', 'card_id', 'set_id', 'variant']::text[]
+  loop
+    execute format(
+      'alter table public.user_card_variants drop constraint if exists %I',
+      legacy_constraint.conname
+    );
+  end loop;
+
+  for legacy_index in
+    select namespace.nspname as schema_name, index_relation.relname as index_name
+    from pg_index index_definition
+    join pg_class table_relation on table_relation.oid = index_definition.indrelid
+    join pg_class index_relation on index_relation.oid = index_definition.indexrelid
+    join pg_namespace namespace on namespace.oid = index_relation.relnamespace
+    where table_relation.oid = 'public.user_card_variants'::regclass
+      and index_definition.indisunique
+      and not index_definition.indisprimary
+      and not exists (
+        select 1
+        from pg_constraint attached_constraint
+        where attached_constraint.conindid = index_definition.indexrelid
+      )
+      and (
+        select array_agg(attribute.attname order by column_key.ordinality)
+        from unnest(index_definition.indkey) with ordinality as column_key(attnum, ordinality)
+        join pg_attribute attribute
+          on attribute.attrelid = table_relation.oid
+          and attribute.attnum = column_key.attnum
+      ) = array['user_id', 'card_id', 'set_id', 'variant']::text[]
+  loop
+    execute format('drop index if exists %I.%I', legacy_index.schema_name, legacy_index.index_name);
+  end loop;
 end $$;
 
 with binder_owned as (

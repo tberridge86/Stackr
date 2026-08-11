@@ -17,6 +17,9 @@ for (const name of [
   'baseline-artifact-id',
   'baseline-archive-sha256',
   'baseline-schema-sha256',
+  'baseline-history-count',
+  'baseline-history-version',
+  'baseline-history-name',
 ]) {
   if (!args[name]) throw new Error(`missing_argument:${name}`);
 }
@@ -72,8 +75,9 @@ const evidence = {
     artifactId: args['baseline-artifact-id'],
     archiveSha256: args['baseline-archive-sha256'],
     schemaSha256: args['baseline-schema-sha256'],
-    expectedProductionHistoryVersion: '20260802160643',
-    expectedProductionHistoryName: 'production_critical_rls_storage_containment_20260802',
+    expectedProductionHistoryCount: Number(args['baseline-history-count']),
+    expectedProductionHistoryVersion: args['baseline-history-version'],
+    expectedProductionHistoryName: args['baseline-history-name'],
   },
   workflow: {
     repository: process.env.GITHUB_REPOSITORY ?? null,

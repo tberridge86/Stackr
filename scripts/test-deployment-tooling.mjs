@@ -427,10 +427,17 @@ assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REHEARSE 
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
-assert.match(baselineMigrationTrialWorkflow, /--expected-history-version=20260802160643/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.baseline_artifact_id/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.baseline_archive_sha256/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.baseline_schema_sha256/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.baseline_history_count/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.baseline_history_version/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.baseline_history_name/);
+assert.match(baselineMigrationTrialWorkflow, /--expected-history-count="\$BASELINE_HISTORY_COUNT"/);
+assert.match(baselineMigrationTrialWorkflow, /--expected-history-version="\$BASELINE_HISTORY_VERSION"/);
 assert.match(
   baselineMigrationTrialWorkflow,
-  /--expected-history-name=production_critical_rls_storage_containment_20260802/,
+  /--expected-history-name="\$BASELINE_HISTORY_NAME"/,
 );
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --include-all --dry-run/);
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --include-all/);
