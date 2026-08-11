@@ -2,9 +2,8 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
-import pg from 'pg';
+import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 
-const { Client } = pg;
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
 const TARGET_PROJECT_REF = process.env.SUPABASE_RESTORE_PROJECT_REF;
 const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL;
@@ -84,7 +83,7 @@ async function expectData(operation, context) {
 }
 
 async function storageInventory(connectionString, applicationName) {
-  const database = new Client({ connectionString, application_name: applicationName });
+  const database = createVerifiedSupabasePostgresClient(connectionString, applicationName);
   await database.connect();
   try {
     const bucket = (await database.query(`

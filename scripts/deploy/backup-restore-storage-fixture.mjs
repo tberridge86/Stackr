@@ -3,7 +3,6 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
-import pg from 'pg';
 import {
   decodeStoragePack,
   encodeStoragePack,
@@ -11,8 +10,8 @@ import {
   selectRestoreSample,
   storageRecoveryPackInternals,
 } from './storage-recovery-pack.mjs';
+import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 
-const { Client } = pg;
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
 const TARGET_PROJECT_REF = process.env.SUPABASE_RESTORE_PROJECT_REF;
 const SOURCE_SECRET = process.env.SUPABASE_STAGING_SECRET_KEY;
@@ -168,10 +167,10 @@ async function emptyAndDeleteTargetBucket(bucketId) {
 }
 
 async function sourceInventory() {
-  const database = new Client({
-    connectionString: SOURCE_DB_URL,
-    application_name: 'stackr-storage-recovery-inventory',
-  });
+  const database = createVerifiedSupabasePostgresClient(
+    SOURCE_DB_URL,
+    'stackr-storage-recovery-inventory',
+  );
   await database.connect();
   try {
     const [buckets, objects] = await Promise.all([

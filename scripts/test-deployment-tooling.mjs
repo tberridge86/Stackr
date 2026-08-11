@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { X509Certificate } from 'node:crypto';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -500,6 +501,12 @@ assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.match(catalogueTransferScript, /targetCommitVerified/);
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
+const {
+  SUPABASE_ROOT_CA_FINGERPRINT256,
+  createVerifiedSupabasePostgresClient,
+  createVerifiedSupabasePostgresConfig,
+  stripPostgresTlsParameters,
+} = await import('./deploy/verified-supabase-postgres.mjs');
 const rawPasswordUrl = normalizePostgresUrl(
   'postgresql://postgres.exampleproject:p=a@#ss%word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
   'exampleproject',
@@ -525,6 +532,77 @@ assert.throws(
   /database_url_project_mismatch/,
   'a project ref outside the parsed database username must not satisfy the target guard',
 );
+
+const tlsConfiguredUrl = 'postgresql://postgres.exampleproject:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require&sslrootcert=%2Ftmp%2Funtrusted-ca.pem&sslcert=%2Ftmp%2Fclient.pem&sslkey=%2Ftmp%2Fclient.key&ssl=true&application_name=preserved';
+const verifiedPostgresConfig = createVerifiedSupabasePostgresConfig(
+  tlsConfiguredUrl,
+  'stackr-deployment-test',
+);
+const verifiedPostgresUrl = new URL(verifiedPostgresConfig.connectionString);
+for (const parameter of ['ssl', 'sslmode', 'sslrootcert', 'sslcert', 'sslkey']) {
+  assert.equal(verifiedPostgresUrl.searchParams.has(parameter), false, `TLS URL parameter ${parameter} must not override the pinned certificate`);
+}
+assert.equal(verifiedPostgresUrl.searchParams.get('application_name'), 'preserved');
+assert.equal(verifiedPostgresConfig.ssl.rejectUnauthorized, true);
+assert.equal(
+  new X509Certificate(verifiedPostgresConfig.ssl.ca).fingerprint256,
+  SUPABASE_ROOT_CA_FINGERPRINT256,
+  'deployment database clients must pin the published Supabase root certificate',
+);
+assert.throws(
+  () => stripPostgresTlsParameters('postgresql://postgres:password@db.example.invalid:5432/postgres'),
+  /untrusted_supabase_postgres_host/,
+);
+for (const [parameter, value] of [
+  ['host', 'db.example.invalid'],
+  ['port', '6543'],
+  ['user', 'postgres.anotherproject'],
+  ['password', 'another-password'],
+]) {
+  assert.throws(
+    () => createVerifiedSupabasePostgresClient(
+      `${tlsConfiguredUrl}&${parameter}=${encodeURIComponent(value)}`,
+      'stackr-deployment-test',
+    ),
+    new RegExp(`unsafe_postgres_connection_parameter:${parameter}`),
+    `query parameter ${parameter} must not override the verified database target`,
+  );
+}
+assert.throws(
+  () => normalizePostgresUrl(
+    'postgresql://postgres.exampleproject:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?host=db.example.invalid',
+    'exampleproject',
+  ),
+  /unsafe_postgres_connection_parameter:host/,
+  'CLI database URLs must reject host overrides too',
+);
+const verifiedPostgresClient = createVerifiedSupabasePostgresClient(
+  tlsConfiguredUrl,
+  'stackr-deployment-test',
+);
+assert.equal(verifiedPostgresClient.connectionParameters.ssl.rejectUnauthorized, true);
+assert.equal(
+  new X509Certificate(verifiedPostgresClient.connectionParameters.ssl.ca).fingerprint256,
+  SUPABASE_ROOT_CA_FINGERPRINT256,
+  'node-postgres must retain the pinned CA after parsing the connection URL',
+);
+assert.throws(
+  () => createVerifiedSupabasePostgresClient(tlsConfiguredUrl, 'stackr-deployment-test', {
+    ssl: { rejectUnauthorized: false },
+  }),
+  /unsafe_postgres_client_option:ssl/,
+);
+for (const clientScript of [
+  'scripts/deploy/promote-catalogue-storage.mjs',
+  'scripts/deploy/rehearse-staging-catalogue-transfer.mjs',
+  'scripts/deploy/backup-restore-storage-fixture.mjs',
+  'scripts/deploy/verify-postgres-restore.mjs',
+  'scripts/deploy/release-database.mjs',
+]) {
+  const source = readFileSync(clientScript, 'utf8');
+  assert.match(source, /createVerifiedSupabasePostgresClient/);
+  assert.doesNotMatch(source, /rejectUnauthorized\s*:\s*false|sslmode=no-verify|NODE_TLS_REJECT_UNAUTHORIZED|uselibpqcompat/);
+}
 
 const sourceOnlyValidation = run('scripts/deploy/prepare-postgres-urls.mjs', ['--source-only'], {
   SUPABASE_DB_URL: rawPasswordUrl.normalized,

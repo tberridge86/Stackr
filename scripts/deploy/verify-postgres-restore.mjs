@@ -1,9 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import pg from 'pg';
-
-const { Client } = pg;
+import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
 const TARGET_PROJECT_REF = process.env.SUPABASE_RESTORE_PROJECT_REF;
 const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL ?? process.env.SUPABASE_DB_URL;
@@ -104,7 +102,10 @@ function quoteIdentifier(value) {
 }
 
 async function connect(connectionString) {
-  const client = new Client({ connectionString, application_name: 'stackr-recovery-verifier' });
+  const client = createVerifiedSupabasePostgresClient(
+    connectionString,
+    'stackr-recovery-verifier',
+  );
   await client.connect();
   // Full-table recovery fingerprints intentionally exceed the normal API query limit.
   await client.query('set statement_timeout = 0');
