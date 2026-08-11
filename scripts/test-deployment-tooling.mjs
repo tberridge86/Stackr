@@ -132,6 +132,22 @@ try {
   );
   assert.notEqual(tamperedChecksum.status, 0, 'tampered benchmark evidence must fail closed');
   assert.match(tamperedChecksum.stdout, /model_benchmark_evidence_checksum_mismatch/);
+
+  const staleProductionHistoryPath = path.join(evidenceGuardTemp, 'stale-production-history.json');
+  const latestEvidence = JSON.parse(readFileSync('deploy/evidence/staging-readiness-2026-08-11.json', 'utf8'));
+  writeFileSync(staleProductionHistoryPath, JSON.stringify({
+    ...latestEvidence,
+    supabase: {
+      ...latestEvidence.supabase,
+      productionMigrationHistoryCount: latestEvidence.supabase.localMigrationFileCount - 1,
+    },
+  }));
+  const staleProductionHistory = run(
+    'scripts/deploy/verify-staging-readiness-evidence.mjs',
+    [`--evidence=${staleProductionHistoryPath}`],
+  );
+  assert.notEqual(staleProductionHistory.status, 0, 'stale production migration history must fail closed');
+  assert.match(staleProductionHistory.stdout, /production_migration_history_count_drift/);
 } finally {
   rmSync(evidenceGuardTemp, { recursive: true, force: true });
 }

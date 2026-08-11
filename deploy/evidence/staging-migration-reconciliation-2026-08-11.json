@@ -1,7 +1,7 @@
 {
   "schemaVersion": "stackr-migration-reconciliation-v1.2.0",
-  "capturedAt": "2026-08-11T18:08:03.009Z",
-  "sourceCommitHash": "5a529700e4e45a4c3a6be9abd93239829a4e0813",
+  "capturedAt": "2026-08-11T19:21:56.471Z",
+  "sourceCommitHash": "1263ec79ae8142daeaacb56fbf8deed5b654b67f",
   "workingTreeChangesIncluded": false,
   "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
   "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
@@ -20,22 +20,22 @@
   "firstMigration": "20260513170000_card_fingerprint_regions",
   "latestMigration": "20260811165000_repair_owned_card_membership_legacy_identity",
   "baseline": {
-    "artifactId": "9112129060",
-    "archiveSha256": "32617189446306c0c220060a353707edd33fa980e2aef65c170f17fb3a60ceda",
-    "schemaSha256": "a2a4b3ffdaf0466d4f9a20f524bb9b23464db905739247c66fdbcd83ffd072ad",
-    "expectedProductionHistoryCount": 88,
-    "expectedProductionHistoryVersion": "20260806171907",
-    "expectedProductionHistoryName": "resolve_asset_manifest_catalogue_identity",
+    "artifactId": "9115268031",
+    "archiveSha256": "590fc7f1fe500e2852e2c9e1f744934120dfd47cd72d477f2808953a5b18ff3a",
+    "schemaSha256": "01206d5f5d04274b623a99dd4424f4bc68f84534cc345fa75c667ec0057a0c29",
+    "expectedProductionHistoryCount": 104,
+    "expectedProductionHistoryVersion": "20260811165000",
+    "expectedProductionHistoryName": "repair_owned_card_membership_legacy_identity",
     "migrationHistoryRestored": true,
-    "restoredMigrationHistoryCount": 88,
+    "restoredMigrationHistoryCount": 104,
     "exactRepositoryPrefixMatch": true,
-    "pendingRepositoryMigrationCount": 16
+    "pendingRepositoryMigrationCount": 0
   },
   "workflow": {
     "repository": "tberridge86/Stackr",
-    "runId": "31520722521",
+    "runId": "31527088002",
     "runAttempt": "1",
-    "url": "https://github.com/tberridge86/Stackr/actions/runs/31520722521"
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/31527088002"
   },
   "isolatedCandidateUnverifiedRepositoryMigrationCount": 0,
   "isolatedCandidate": {
@@ -45,7 +45,7 @@
     "productionBaselineRestored": true,
     "baselineMigrationHistoryRestored": true,
     "pendingRepositoryMigrationsApplied": true,
-    "pendingRepositoryMigrationCount": 16,
+    "pendingRepositoryMigrationCount": 0,
     "storageFixtureSeeded": false
   },
   "actionsTaken": [
