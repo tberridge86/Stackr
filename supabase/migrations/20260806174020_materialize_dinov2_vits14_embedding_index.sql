@@ -1,5 +1,9 @@
 -- Materialise the selected DINOv2 embedding shape. Index rows remain runtime
 -- data and are activated only through ml.activate_embedding_index_version.
+-- Production may not have enabled pgvector before this first concrete vector
+-- table is materialised. Keep the prerequisite local to the first consumer.
+create extension if not exists vector with schema extensions;
+
 create table if not exists ml.card_embeddings_dinov2_vits14_384 (
   id uuid primary key default gen_random_uuid(),
   model_id text not null references ml.embedding_models(model_id) on delete restrict,
