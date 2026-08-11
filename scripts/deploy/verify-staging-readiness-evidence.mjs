@@ -56,6 +56,10 @@ for (const field of [
     errors.push(`invalid_evidence_count:${field}`);
   }
 }
+if (evidence.supabase?.productionMigrationHistoryCount
+  !== evidence.supabase?.localMigrationFileCount) {
+  errors.push('production_migration_history_count_drift');
+}
 if (evidence.stage6Rehearsal?.rollbackApplied !== true
   || evidence.stage6Rehearsal?.finalStage6ObjectCount !== 0) {
   errors.push('stage6_rehearsal_not_cleanly_rolled_back');
