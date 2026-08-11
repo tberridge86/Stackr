@@ -549,6 +549,14 @@ assert.throws(
   /database_url_project_mismatch/,
   'a project ref outside the parsed database username must not satisfy the target guard',
 );
+assert.throws(
+  () => normalizePostgresUrl(
+    'postgresql://stackr_recognition.exampleproject:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    'exampleproject',
+  ),
+  /database_url_role_mismatch/,
+  'deployment database URLs must use the project postgres role, not a restricted service login',
+);
 
 const tlsConfiguredUrl = 'postgresql://postgres.exampleproject:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require&sslrootcert=%2Ftmp%2Funtrusted-ca.pem&sslcert=%2Ftmp%2Fclient.pem&sslkey=%2Ftmp%2Fclient.key&ssl=true&application_name=preserved';
 const verifiedPostgresConfig = createVerifiedSupabasePostgresConfig(
