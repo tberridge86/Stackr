@@ -109,7 +109,7 @@ jobs:
           node scripts/deploy/secret-scan.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact"
 
-      - name: Restore production schema into isolated target
+      - name: Restore production schema and migration history into isolated target
         shell: bash
         env:
           POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
@@ -118,13 +118,40 @@ jobs:
           node scripts/deploy/prepare-restore-cleanup.mjs \
             "$RUNNER_TEMP/stackr-baseline-trial/artifact/migration-history-data.sql" \
             "$RUNNER_TEMP/stackr-baseline-trial/cleanup.sql"
-          cp scripts/deploy/isolated-production-storage-fixture.sql \
-            "$RUNNER_TEMP/stackr-baseline-trial/storage-fixture.sql"
           docker run --rm \
             --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
             --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
             "$POSTGRES_IMAGE" \
-            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-schema.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/storage-fixture.sql'
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-schema.sql --file /trial/artifact/migration-history-schema.sql --file /trial/artifact/migration-history-data.sql'
+
+      - name: Verify restored production migration history
+        shell: bash
+        env:
+          POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        run: |
+          set -euo pipefail
+          case "$BASELINE_HISTORY_COUNT" in
+            ''|*[!0-9]*) echo '::error::invalid_baseline_history_count'; exit 1 ;;
+          esac
+          restored_keys="$RUNNER_TEMP/stackr-baseline-trial/restored-baseline-migration-keys.txt"
+          if [ "$BASELINE_HISTORY_COUNT" = '0' ]; then
+            : > "$restored_keys"
+            exit 0
+          fi
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select concat(version, chr(95), name) from supabase_migrations.schema_migrations order by version, name"' \
+            > "$restored_keys"
+          test "$(wc -l < "$restored_keys" | tr -d '[:space:]')" = "$BASELINE_HISTORY_COUNT"
+          expected_keys="$RUNNER_TEMP/stackr-baseline-trial/expected-baseline-migration-keys.txt"
+          find supabase/migrations -maxdepth 1 -type f -name '*.sql' -printf '%f\n' \
+            | sed 's/\.sql$//' \
+            | LC_ALL=C sort \
+            | head -n "$BASELINE_HISTORY_COUNT" \
+            > "$expected_keys"
+          cmp --silent "$expected_keys" "$restored_keys"
+          test "$(tail -n 1 "$restored_keys")" = "${BASELINE_HISTORY_VERSION}_${BASELINE_HISTORY_NAME}"
 
       - name: Confirm full migration plan
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL" --include-all --dry-run
@@ -162,7 +189,8 @@ jobs:
             --baseline-schema-sha256="$BASELINE_SCHEMA_SHA256" \
             --baseline-history-count="$BASELINE_HISTORY_COUNT" \
             --baseline-history-version="$BASELINE_HISTORY_VERSION" \
-            --baseline-history-name="$BASELINE_HISTORY_NAME"
+            --baseline-history-name="$BASELINE_HISTORY_NAME" \
+            --baseline-actual-keys="$RUNNER_TEMP/stackr-baseline-trial/restored-baseline-migration-keys.txt"
 
       - name: Upload non-secret migration replay evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

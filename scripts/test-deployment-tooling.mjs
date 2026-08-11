@@ -439,6 +439,19 @@ assert.match(
   baselineMigrationTrialWorkflow,
   /--expected-history-name="\$BASELINE_HISTORY_NAME"/,
 );
+assert.match(
+  baselineMigrationTrialWorkflow,
+  /--file \/trial\/artifact\/production-schema\.sql --file \/trial\/artifact\/migration-history-schema\.sql --file \/trial\/artifact\/migration-history-data\.sql/,
+);
+assert.match(baselineMigrationTrialWorkflow, /Verify restored production migration history/);
+assert.match(baselineMigrationTrialWorkflow, /restored-baseline-migration-keys\.txt/);
+assert.match(baselineMigrationTrialWorkflow, /cmp --silent "\$expected_keys" "\$restored_keys"/);
+assert.match(baselineMigrationTrialWorkflow, /--baseline-actual-keys="\$RUNNER_TEMP\/stackr-baseline-trial\/restored-baseline-migration-keys\.txt"/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /isolated-production-storage-fixture\.sql/);
+assert.ok(
+  baselineMigrationTrialWorkflow.indexOf('/trial/artifact/migration-history-data.sql')
+    < baselineMigrationTrialWorkflow.indexOf('db push --db-url "$STACKR_RESTORE_DB_URL" --include-all --dry-run'),
+);
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --include-all --dry-run/);
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --include-all/);
 assert.match(baselineMigrationTrialWorkflow, /find supabase\/migrations[^\n]+wc -l/);

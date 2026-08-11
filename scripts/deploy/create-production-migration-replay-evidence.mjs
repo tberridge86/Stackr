@@ -20,6 +20,7 @@ for (const name of [
   'baseline-history-count',
   'baseline-history-version',
   'baseline-history-name',
+  'baseline-actual-keys',
 ]) {
   if (!args[name]) throw new Error(`missing_argument:${name}`);
 }
@@ -33,6 +34,28 @@ const actualKeys = readFileSync(args['actual-keys'], 'utf8')
   .split(/\r?\n/)
   .map((value) => value.trim())
   .filter(Boolean);
+const baselineActualKeys = readFileSync(args['baseline-actual-keys'], 'utf8')
+  .split(/\r?\n/)
+  .map((value) => value.trim())
+  .filter(Boolean);
+const baselineHistoryCount = Number(args['baseline-history-count']);
+
+if (!Number.isSafeInteger(baselineHistoryCount) || baselineHistoryCount < 0) {
+  throw new Error('invalid_baseline_history_count');
+}
+if (baselineHistoryCount > expectedKeys.length) {
+  throw new Error('baseline_history_exceeds_repository_migrations');
+}
+if (baselineActualKeys.length !== baselineHistoryCount) {
+  throw new Error('restored_baseline_history_count_mismatch');
+}
+if (JSON.stringify(baselineActualKeys) !== JSON.stringify(expectedKeys.slice(0, baselineHistoryCount))) {
+  throw new Error('restored_baseline_history_prefix_mismatch');
+}
+if (baselineHistoryCount > 0
+  && baselineActualKeys.at(-1) !== `${args['baseline-history-version']}_${args['baseline-history-name']}`) {
+  throw new Error('restored_baseline_history_latest_mismatch');
+}
 
 if (JSON.stringify(actualKeys) !== JSON.stringify(expectedKeys)) {
   const mismatch = expectedKeys.findIndex((key, index) => actualKeys[index] !== key);
@@ -40,6 +63,7 @@ if (JSON.stringify(actualKeys) !== JSON.stringify(expectedKeys)) {
 }
 
 const orderedKeyLedger = `${expectedKeys.join('\n')}\n`;
+const pendingRepositoryMigrationCount = expectedKeys.length - baselineHistoryCount;
 const contentLedger = migrationFiles.map((name) => {
   const sql = readFileSync(`supabase/migrations/${name}`, 'utf8').replace(/\r\n/g, '\n');
   return `${name.replace(/\.sql$/, '')}\n${sha256(sql)}\n`;
@@ -51,7 +75,7 @@ const runUrl = process.env.GITHUB_SERVER_URL
   : null;
 
 const evidence = {
-  schemaVersion: 'stackr-migration-reconciliation-v1.1.0',
+  schemaVersion: 'stackr-migration-reconciliation-v1.2.0',
   capturedAt: new Date().toISOString(),
   sourceCommitHash: process.env.GITHUB_SHA ?? null,
   workingTreeChangesIncluded: false,
@@ -75,9 +99,13 @@ const evidence = {
     artifactId: args['baseline-artifact-id'],
     archiveSha256: args['baseline-archive-sha256'],
     schemaSha256: args['baseline-schema-sha256'],
-    expectedProductionHistoryCount: Number(args['baseline-history-count']),
+    expectedProductionHistoryCount: baselineHistoryCount,
     expectedProductionHistoryVersion: args['baseline-history-version'],
     expectedProductionHistoryName: args['baseline-history-name'],
+    migrationHistoryRestored: true,
+    restoredMigrationHistoryCount: baselineActualKeys.length,
+    exactRepositoryPrefixMatch: true,
+    pendingRepositoryMigrationCount,
   },
   workflow: {
     repository: process.env.GITHUB_REPOSITORY ?? null,
@@ -91,14 +119,17 @@ const evidence = {
     repositoryMigrationCount: migrationFiles.length,
     migrationHistoryAligned: true,
     productionBaselineRestored: true,
-    repositoryMigrationsReplayed: true,
-    storageFixtureSeeded: true,
+    baselineMigrationHistoryRestored: true,
+    pendingRepositoryMigrationsApplied: true,
+    pendingRepositoryMigrationCount,
+    storageFixtureSeeded: false,
   },
   actionsTaken: [
     'verified_private_production_schema_baseline_checksums',
     'restored_production_schema_to_isolated_target',
-    'seeded_empty_pre_containment_storage_fixture',
-    'replayed_all_repository_migrations_on_isolated_target',
+    'restored_captured_production_migration_history',
+    'verified_exact_captured_migration_history_prefix',
+    'applied_pending_repository_migrations_on_isolated_target',
     'verified_exact_migration_version_name_order',
     'verified_production_was_not_modified',
   ],

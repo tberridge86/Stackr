@@ -37,6 +37,7 @@ const localMigrations = readdirSync('supabase/migrations')
 if (![
   'stackr-migration-reconciliation-v1.0.0',
   'stackr-migration-reconciliation-v1.1.0',
+  'stackr-migration-reconciliation-v1.2.0',
 ].includes(evidence.schemaVersion)) {
   errors.push('invalid_migration_reconciliation_version');
 }
@@ -48,7 +49,10 @@ if (evidence.stagingProjectRef !== manifest.components.database.stagingProjectRe
 }
 if (evidence.productionMutationPerformed !== false) errors.push('production_mutation_not_prohibited');
 
-if (evidence.schemaVersion === 'stackr-migration-reconciliation-v1.1.0') {
+if ([
+  'stackr-migration-reconciliation-v1.1.0',
+  'stackr-migration-reconciliation-v1.2.0',
+].includes(evidence.schemaVersion)) {
   const keyDigest = orderedMigrationKeySha256(localMigrations);
   const contentDigest = repositoryMigrationContentSha256(localMigrations);
   if (evidence.localMigrationFileCount !== localMigrations.length) {
@@ -66,6 +70,27 @@ if (evidence.schemaVersion === 'stackr-migration-reconciliation-v1.1.0') {
   }
   if (evidence.repositoryMigrationContentSha256 !== contentDigest) {
     errors.push('repository_migration_content_hash_drift');
+  }
+  if (evidence.schemaVersion === 'stackr-migration-reconciliation-v1.2.0') {
+    const baselineHistoryCount = evidence.baseline?.expectedProductionHistoryCount;
+    const pendingMigrationCount = localMigrations.length - baselineHistoryCount;
+    if (!Number.isInteger(baselineHistoryCount)
+      || baselineHistoryCount < 0
+      || baselineHistoryCount > localMigrations.length) {
+      errors.push('baseline_migration_history_count_invalid');
+    }
+    if (evidence.baseline?.migrationHistoryRestored !== true
+      || evidence.baseline?.restoredMigrationHistoryCount !== baselineHistoryCount
+      || evidence.baseline?.exactRepositoryPrefixMatch !== true
+      || evidence.baseline?.pendingRepositoryMigrationCount !== pendingMigrationCount) {
+      errors.push('baseline_migration_history_restore_not_verified');
+    }
+    if (evidence.isolatedCandidate?.baselineMigrationHistoryRestored !== true
+      || evidence.isolatedCandidate?.pendingRepositoryMigrationsApplied !== true
+      || evidence.isolatedCandidate?.pendingRepositoryMigrationCount !== pendingMigrationCount
+      || evidence.isolatedCandidate?.storageFixtureSeeded !== false) {
+      errors.push('isolated_candidate_delta_replay_not_verified');
+    }
   }
   if (requireAligned && evidence.status !== 'aligned') errors.push('migration_history_not_aligned');
 
