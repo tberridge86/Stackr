@@ -1,6 +1,6 @@
 import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { assertNoPostgresConnectionOverrides } from './verified-supabase-postgres.mjs';
+import { assertNoPostgresConnectionOverrides } from './postgres-url-guard.mjs';
 
 function encodeComponent(value) {
   try {

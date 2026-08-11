@@ -1,6 +1,7 @@
 import { X509Certificate } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import pg from 'pg';
+import { assertNoPostgresConnectionOverrides } from './postgres-url-guard.mjs';
 
 const { Client } = pg;
 const PINNED_ROOT_CERTIFICATE = new URL(
@@ -17,29 +18,10 @@ const TLS_QUERY_PARAMETERS = new Set([
   'sslpassword',
   'sslnegotiation',
 ]);
-const CONNECTION_OVERRIDE_PARAMETERS = new Set([
-  'host',
-  'hostaddr',
-  'port',
-  'user',
-  'password',
-  'dbname',
-  'database',
-  'service',
-  'options',
-]);
 
 function isSupabasePostgresHost(hostname) {
   return hostname.endsWith('.pooler.supabase.com')
     || hostname.endsWith('.supabase.co');
-}
-
-export function assertNoPostgresConnectionOverrides(parsed) {
-  for (const parameter of CONNECTION_OVERRIDE_PARAMETERS) {
-    if (parsed.searchParams.has(parameter)) {
-      throw new Error(`unsafe_postgres_connection_parameter:${parameter}`);
-    }
-  }
 }
 
 export function stripPostgresTlsParameters(connectionString) {

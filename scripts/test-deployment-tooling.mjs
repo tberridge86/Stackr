@@ -507,6 +507,7 @@ const {
   createVerifiedSupabasePostgresConfig,
   stripPostgresTlsParameters,
 } = await import('./deploy/verified-supabase-postgres.mjs');
+const { assertNoPostgresConnectionOverrides } = await import('./deploy/postgres-url-guard.mjs');
 const rawPasswordUrl = normalizePostgresUrl(
   'postgresql://postgres.exampleproject:p=a@#ss%word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
   'exampleproject',
@@ -575,6 +576,16 @@ assert.throws(
   ),
   /unsafe_postgres_connection_parameter:host/,
   'CLI database URLs must reject host overrides too',
+);
+assert.throws(
+  () => assertNoPostgresConnectionOverrides(new URL('postgresql://postgres:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?user=postgres.anotherproject')),
+  /unsafe_postgres_connection_parameter:user/,
+  'the dependency-free URL guard must protect non-Node deployment tools too',
+);
+assert.doesNotMatch(
+  readFileSync('scripts/deploy/prepare-postgres-urls.mjs', 'utf8'),
+  /verified-supabase-postgres/,
+  'URL normalization must remain usable in lightweight workflows without node-postgres installed',
 );
 const verifiedPostgresClient = createVerifiedSupabasePostgresClient(
   tlsConfiguredUrl,
