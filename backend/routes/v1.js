@@ -20,6 +20,7 @@ import { createTracedFetch } from '../lib/traceContext.js';
 let supabaseAdmin = null;
 let catalogueSupabase = null;
 let assetSupabase = null;
+let searchSupabase = null;
 
 function getSupabaseKeyCandidate() {
   const candidates = [
@@ -102,9 +103,27 @@ function getAssetSupabase() {
   return assetSupabase;
 }
 
+function getSearchSupabase() {
+  if (searchSupabase) return searchSupabase;
+  const url = process.env.SUPABASE_URL;
+  const key = getSupabaseServerKeyCandidate();
+  if (!url || !key) {
+    throw new Error('Supabase server credentials are not configured on the backend.');
+  }
+  console.info(JSON.stringify({
+    level: 'info',
+    event: 'stackr_api_v1_search_client',
+    supabaseKeyName: key.name,
+    forcedSchema: 'api',
+  }));
+  searchSupabase = createClient(url, key.value, { global: { fetch: createApiSchemaFetch() } });
+  return searchSupabase;
+}
+
 function defaultService() {
   return createCatalogueV1Service({
     supabase: getCatalogueSupabase(),
+    searchSupabase: getSearchSupabase(),
     assetSupabase: getAssetSupabase(),
   });
 }
