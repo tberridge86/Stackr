@@ -144,7 +144,12 @@ if (gatewayUrl) {
         },
       }));
     }
-    checks.push(await check(gatewayUrl, `/v1/search?q=${searchQuery}&limit=1`));
+    checks.push(await check(gatewayUrl, `/v1/search?q=${searchQuery}&limit=1`, {
+      // Public search is cached by the gateway. Bypass that cache here so a
+      // successful release smoke proves the newly deployed origin can answer.
+      // The public route does not forward this header to the backend.
+      headers: { Authorization: 'Bearer smoke-cache-bypass' },
+    }));
     let firstAssetDeliveryUrl = null;
     let firstAssetId = null;
     let assetManifestNextCursor = null;

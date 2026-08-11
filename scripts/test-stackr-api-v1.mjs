@@ -76,9 +76,23 @@ async function assertAssetManifestServerClientIsolation() {
   const defaultService = route.slice(defaultServiceStart, defaultServiceEnd);
   assert.match(
     defaultService,
-    /createCatalogueV1Service\(\{\s*supabase: getCatalogueSupabase\(\),\s*assetSupabase: getAssetSupabase\(\),\s*\}\)/,
-    'the server-key client must be scoped to assetSupabase only',
+    /createCatalogueV1Service\(\{\s*supabase: getCatalogueSupabase\(\),\s*searchSupabase: getSearchSupabase\(\),\s*assetSupabase: getAssetSupabase\(\),\s*\}\)/,
+    'server-key clients must be scoped to searchSupabase and assetSupabase only',
   );
+  assert.doesNotMatch(
+    defaultService,
+    /supabase:\s*get(?:Search|Asset)Supabase\(/,
+    'the default catalogue client must remain public-key scoped',
+  );
+
+  const searchService = await readFile(new URL('../backend/lib/stackrApiV1.js', import.meta.url), 'utf8');
+  assert.match(searchService, /const searchSupabase = options\.searchSupabase \?\? supabase;/);
+  const searchStart = searchService.indexOf('    async search(input = {}) {');
+  const searchEnd = searchService.indexOf('\n  };', searchStart);
+  assert.ok(searchStart >= 0 && searchEnd > searchStart, 'v1 search service is missing');
+  const search = searchService.slice(searchStart, searchEnd);
+  assert.match(search, /searchSetCodeCollector\(searchSupabase, parsed, limit, language\)/);
+  assert.doesNotMatch(search, /searchSetCodeCollector\(supabase, parsed, limit, language\)/);
 
   const manifestView = await readFile(
     new URL('../supabase/migrations/20260810071807_add_stable_asset_manifest_cursor.sql', import.meta.url),
@@ -98,6 +112,83 @@ async function assertAssetManifestServerClientIsolation() {
   ]) {
     assert.match(manifestView, predicate, `asset manifest containment predicate is missing: ${predicate}`);
   }
+}
+
+async function assertSearchServerClientIsolation() {
+  const publishedViews = await readFile(
+    new URL('../supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql', import.meta.url),
+    'utf8',
+  );
+  for (const predicate of [
+    /create or replace view api\.catalogue_cards[\s\S]*?where cv\.status = 'published'[\s\S]*?v\.deprecated_at is null[\s\S]*?p\.deprecated_at is null/,
+    /create or replace view api\.catalogue_card_names[\s\S]*?where n\.deprecated_at is null[\s\S]*?cv\.status = 'published'/,
+    /create or replace view api\.catalogue_external_identifiers[\s\S]*?where cv\.status = 'published'[\s\S]*?cv\.deprecated_at is null/,
+    /create or replace view api\.catalogue_sets[\s\S]*?where cv\.status = 'published'[\s\S]*?s\.deprecated_at is null/,
+  ]) {
+    assert.match(publishedViews, predicate, 'a server-key search view is missing its published-catalogue containment predicate');
+  }
+
+  const operations = [];
+  let catalogueClientUsed = false;
+  const supabase = {
+    schema() {
+      catalogueClientUsed = true;
+      throw new Error('The public catalogue client must not execute search reads.');
+    },
+  };
+  const row = {
+    variant_id: variantId,
+    canonical_key: 'pokemon:ja:11111111-1111-4111-8111-111111111111:157/165:normal',
+    game_code: 'pokemon',
+    language_code: 'ja',
+    language_english_name: 'Japanese',
+    language_native_name: '日本語',
+    set_id: setId,
+    set_code: 'SV2a',
+    set_native_name: 'ポケモンカード151',
+    set_english_display_name: 'Pokémon Card 151',
+    printing_id: cardId,
+    collector_number: '157/165',
+    collector_number_sort: 157,
+    collector_number_sort_key: '000000000157',
+    card_native_name: 'リザードンex',
+    card_english_display_name: 'Charizard ex',
+    variant_code: 'normal',
+  };
+  const searchSupabase = {
+    schema(schema) {
+      assert.equal(schema, 'api');
+      return {
+        from(table) {
+          const filters = [];
+          const query = {
+            select() { return this; },
+            eq(column, value) { filters.push(['eq', column, value]); return this; },
+            in(column, value) { filters.push(['in', column, value]); return this; },
+            ilike(column, value) { filters.push(['ilike', column, value]); return this; },
+            limit(value) { filters.push(['limit', value]); return this; },
+            then(resolve, reject) {
+              operations.push({ table, filters });
+              const data = table === 'catalogue_sets'
+                ? [{ set_id: setId, set_code: 'SV2a', language_code: 'ja' }]
+                : table === 'catalogue_cards'
+                  ? [row]
+                  : [];
+              return Promise.resolve({ data, error: null }).then(resolve, reject);
+            },
+          };
+          return query;
+        },
+      };
+    },
+  };
+  const catalogue = createCatalogueV1Service({ supabase, searchSupabase });
+  const result = await catalogue.search({ q: 'SV2a 157', language: 'ja', limit: 1 });
+  assert.equal(catalogueClientUsed, false);
+  assert.equal(result.results[0].reason, 'exact_set_code_collector_number');
+  const cardSearch = operations.find((operation) => operation.table === 'catalogue_cards');
+  assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'in' && column === 'set_id'), ['in', 'set_id', [setId]]);
+  assert.deepEqual(cardSearch?.filters.find(([name, column]) => name === 'ilike' && column === 'collector_number'), ['ilike', 'collector_number', '157%']);
 }
 
 async function assertAssetManifestCursorQuery() {
@@ -402,6 +493,7 @@ async function readJson(response) {
 
 await assertAssetManifestCursorQuery();
 await assertAssetManifestServerClientIsolation();
+await assertSearchServerClientIsolation();
 
 await withServer(async (baseUrl) => {
   const health = await fetch(`${baseUrl}/health`, {

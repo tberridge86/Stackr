@@ -57,6 +57,11 @@ export function isUuid(value) {
   return UUID_PATTERN.test(String(value ?? '').trim());
 }
 
+function isCanonicalCatalogueKey(value) {
+  const parts = String(value ?? '').trim().split(':');
+  return parts.length === 5 && parts.every(Boolean) && isUuid(parts[2]);
+}
+
 export function clean(value) {
   const trimmed = String(value ?? '').trim();
   return trimmed.length ? trimmed : null;
@@ -156,6 +161,10 @@ async function queryMaybeOne(query) {
 function applyLanguageFilter(query, language) {
   const value = clean(language);
   return value ? query.eq('language_code', value) : query;
+}
+
+function escapeLikePattern(value) {
+  return String(value ?? '').replace(/[\\%_]/g, '\\$&');
 }
 
 function applyIdCursor(query, idColumn, cursor) {
@@ -401,7 +410,7 @@ function sortCardsForDisplay(rows) {
 
 async function searchCanonicalId(supabase, parsed, limit) {
   const exact = [];
-  if (parsed.raw) {
+  if (isCanonicalCatalogueKey(parsed.raw)) {
     exact.push(...await queryRows(table(supabase, 'api', 'catalogue_cards')
       .select('*')
       .eq('canonical_key', parsed.raw.toLowerCase())
@@ -442,16 +451,22 @@ async function searchExternalId(supabase, parsed, limit, language) {
 
 async function searchSetCodeCollector(supabase, parsed, limit, language) {
   if (!parsed.setCode || !parsed.setCollectorNumber) return [];
+  const collector = normalizeCollectorNumber(parsed.setCollectorNumber);
+  if (!collector) return [];
   const setIds = await fetchSetIdsByCode(supabase, parsed.setCode, language);
   if (!setIds.length) return [];
   let query = table(supabase, 'api', 'catalogue_cards')
     .select('*')
     .in('set_id', setIds)
+    // A collector number may be recorded as either "157" or "157/165".
+    // Narrow the published view before mapping so a set-code lookup does not
+    // materialize an arbitrary first page of the entire set.
+    .ilike('collector_number', `${escapeLikePattern(collector)}%`)
     .limit(Math.max(limit * 8, 80));
   query = applyLanguageFilter(query, language);
   const rows = await queryRows(query);
   return dedupeByVariant(rows)
-    .filter((row) => collectorMatches(row.collector_number, parsed.setCollectorNumber))
+    .filter((row) => collectorMatches(row.collector_number, collector))
     .slice(0, limit)
     .map((row) => toSearchResult(row, 'exact_set_code_collector_number', { matchedSetCode: parsed.setCode }));
 }
@@ -657,6 +672,7 @@ export function searchFixtureCatalogue(query, fixture, options = {}) {
 
 export function createCatalogueV1Service(options) {
   const supabase = options.supabase;
+  const searchSupabase = options.searchSupabase ?? supabase;
   const assetSupabase = options.assetSupabase ?? supabase;
   const assetBaseUrl = String(options.assetBaseUrl ?? process.env.STACKR_ASSET_BASE_URL ?? '').replace(/\/$/, '');
   const modelIndexVersion = clean(options.modelIndexVersion)
@@ -932,14 +948,14 @@ export function createCatalogueV1Service(options) {
       const parsed = parseSearchQuery(q);
 
       const strategies = [
-        () => searchCanonicalId(supabase, parsed, limit),
-        () => searchExternalId(supabase, parsed, limit, language),
-        () => searchSetCodeCollector(supabase, parsed, limit, language),
-        () => searchCollectorNumber(supabase, parsed, limit, language, selectedSetId),
-        () => searchNameWithSetCode(supabase, parsed, limit, language),
-        () => searchNames(supabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
-        () => searchNames(supabase, parsed, limit, language, ALIAS_NAME_TYPES, (type) => type === 'alias' ? 'exact_alias' : 'exact_translated_name'),
-        () => searchFuzzyName(supabase, parsed, limit, language),
+        () => searchCanonicalId(searchSupabase, parsed, limit),
+        () => searchExternalId(searchSupabase, parsed, limit, language),
+        () => searchSetCodeCollector(searchSupabase, parsed, limit, language),
+        () => searchCollectorNumber(searchSupabase, parsed, limit, language, selectedSetId),
+        () => searchNameWithSetCode(searchSupabase, parsed, limit, language),
+        () => searchNames(searchSupabase, parsed, limit, language, EXACT_NAME_TYPES, () => 'exact_name'),
+        () => searchNames(searchSupabase, parsed, limit, language, ALIAS_NAME_TYPES, (type) => type === 'alias' ? 'exact_alias' : 'exact_translated_name'),
+        () => searchFuzzyName(searchSupabase, parsed, limit, language),
       ];
 
       for (const strategy of strategies) {

@@ -232,6 +232,28 @@ test('public catalogue reads use a versioned cache and preserve ETags', async ()
   assert.equal(second.headers.get('vary'), 'Origin');
 });
 
+test('an authorized public search bypasses the gateway cache without forwarding the header', async () => {
+  const env = environment();
+  const cache = new MemoryCache();
+  const downstreamAuthorizations = [];
+  const fetchImpl = async (_url, init) => {
+    downstreamAuthorizations.push(init.headers.get('authorization'));
+    return new Response(JSON.stringify({ data: { results: [] }, meta: { requestId: 'origin', apiVersion: '1' } }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+
+  await handleRequest(request('/v1/search?q=SV2a%20157&limit=1'), env, context(), { cache, fetchImpl });
+  const uncached = await handleRequest(request('/v1/search?q=SV2a%20157&limit=1', {
+    headers: { Authorization: 'Bearer smoke-cache-bypass' },
+  }), env, context(), { cache, fetchImpl });
+
+  assert.equal(uncached.status, 200);
+  assert.equal(uncached.headers.get('x-stackr-cache'), 'BYPASS');
+  assert.equal(uncached.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(downstreamAuthorizations, [null, null]);
+});
+
 test('asset manifests use the versioned API route and preserve cursor pagination', async () => {
   let downstreamUrl = null;
   const response = await handleRequest(
