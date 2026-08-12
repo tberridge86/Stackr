@@ -656,6 +656,38 @@ assert.equal(isRetryableStorageError({ status: 503, message: 'service unavailabl
 assert.equal(isRetryableStorageError({ code: 'ECONNRESET', message: 'socket closed' }), true);
 assert.equal(isRetryableStorageError({ statusCode: 401, message: 'invalid key' }), false);
 assert.equal(isRetryableStorageError({ statusCode: 404, message: 'object missing' }), false);
+const abortedUploadError = {
+  statusCode: 400,
+  message: 'upload_production_object:public/card_image/hash/original.png:Bad Request',
+};
+assert.equal(isRetryableStorageError(abortedUploadError), false);
+assert.equal(
+  isRetryableStorageError(abortedUploadError, { retryAbortedUploadBadRequest: true }),
+  true,
+);
+assert.equal(
+  isRetryableStorageError({
+    message: abortedUploadError.message,
+    status: 400,
+    cause: { message: 'Bad Request', status: 400, statusCode: '400' },
+  }, { retryAbortedUploadBadRequest: true }),
+  true,
+);
+assert.equal(
+  isRetryableStorageError({
+    message: abortedUploadError.message,
+    status: 400,
+    cause: { message: 'Bad Request', status: 400, statusCode: 'InvalidRequest' },
+  }, { retryAbortedUploadBadRequest: true }),
+  false,
+);
+assert.equal(
+  isRetryableStorageError(
+    { statusCode: 400, message: 'download_source_object:path:Bad Request' },
+    { retryAbortedUploadBadRequest: true },
+  ),
+  false,
+);
 const connectionLimitWaits = [];
 const connectionLimitRetries = [];
 let connectionLimitAttempts = 0;
@@ -729,6 +761,40 @@ await assert.rejects(
 assert.equal(cappedThrottleAttempts, 6);
 assert.ok(cappedThrottleWaits.every((milliseconds) => milliseconds <= 60_000));
 assert.equal(cappedThrottleWaits.at(-1), 60_000);
+const abortedUploadWaits = [];
+const abortedUploadRetries = [];
+let abortedUploadAttempts = 0;
+assert.equal(
+  await retryStorageOperation(async () => {
+    abortedUploadAttempts += 1;
+    if (abortedUploadAttempts === 1) throw abortedUploadError;
+    return 'uploaded';
+  }, {
+    attempts: 6,
+    retryAbortedUploadBadRequest: true,
+    random: () => 0,
+    wait: async (milliseconds) => abortedUploadWaits.push(milliseconds),
+    onRetry: (details) => abortedUploadRetries.push(details),
+  }),
+  'uploaded',
+);
+assert.equal(abortedUploadAttempts, 2);
+assert.deepEqual(abortedUploadWaits, [2_000]);
+assert.equal(abortedUploadRetries[0].abortedUpload, true);
+let exhaustedAbortedUploadAttempts = 0;
+await assert.rejects(
+  retryStorageOperation(async () => {
+    exhaustedAbortedUploadAttempts += 1;
+    throw abortedUploadError;
+  }, {
+    attempts: 3,
+    retryAbortedUploadBadRequest: true,
+    random: () => 0,
+    wait: async () => {},
+  }),
+  (error) => error === abortedUploadError,
+);
+assert.equal(exhaustedAbortedUploadAttempts, 3);
 
 const sourceOnlyValidation = run('scripts/deploy/prepare-postgres-urls.mjs', ['--source-only'], {
   SUPABASE_DB_URL: rawPasswordUrl.normalized,

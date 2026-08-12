@@ -30,7 +30,11 @@ function storageErrorStatus(error) {
 }
 
 function storageErrorCode(error) {
-  return errorValues(error, 'code').map(String).find(Boolean) ?? null;
+  const code = errorValues(error, 'code').map(String).find(Boolean);
+  if (code) return code;
+  return errorValues(error, 'statusCode')
+    .map(String)
+    .find((value) => !/^\d+$/.test(value.trim())) ?? null;
 }
 
 export function isStorageConnectionLimitError(error) {
@@ -43,8 +47,12 @@ export function isStorageThrottleError(error) {
     || THROTTLE_PATTERN.test(String(storageErrorCode(error) ?? ''));
 }
 
-export function isRetryableStorageError(error) {
+export function isRetryableStorageError(error, options = {}) {
   const status = storageErrorStatus(error);
+  if (status === 400 && options.retryAbortedUploadBadRequest === true) {
+    return storageErrorCode(error) == null
+      && /^upload_production_object:.+:Bad Request$/i.test(String(error?.message ?? ''));
+  }
   if (status != null) return TRANSIENT_STATUS_CODES.has(status);
   const code = storageErrorCode(error);
   if (code && TRANSIENT_ERROR_CODES.has(code.toUpperCase())) return true;
@@ -66,16 +74,18 @@ export async function retryStorageOperation(operation, options = {}) {
       return await operation();
     } catch (error) {
       lastError = error;
-      if (!isRetryableStorageError(error)) throw error;
+      if (!isRetryableStorageError(error, options)) throw error;
       if (attempt >= attempts) break;
 
       const throttled = isStorageThrottleError(error);
-      const baseDelay = throttled ? 5_000 : 500;
-      const maximumDelay = throttled ? 60_000 : 8_000;
+      const abortedUpload = storageErrorStatus(error) === 400
+        && options.retryAbortedUploadBadRequest === true;
+      const baseDelay = throttled ? 5_000 : abortedUpload ? 2_000 : 500;
+      const maximumDelay = throttled ? 60_000 : abortedUpload ? 15_000 : 8_000;
       const exponentialDelay = Math.min(maximumDelay, baseDelay * (2 ** (attempt - 1)));
       const jitter = Math.floor(exponentialDelay * 0.25 * random());
       const delayMilliseconds = Math.min(maximumDelay, exponentialDelay + jitter);
-      onRetry({ attempt, throttled, delayMilliseconds });
+      onRetry({ attempt, throttled, abortedUpload, delayMilliseconds });
       await wait(delayMilliseconds);
     }
   }
