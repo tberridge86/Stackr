@@ -1,6 +1,13 @@
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import {
+  planCatalogueSourceIdentityMerge,
+  remapCatalogueSourceForeignKeys,
+  rewriteProductionCatalogueAssetUrls,
+  stableCatalogueJson as stableJson,
+  verifyCatalogueRowsByPrimaryKey as verifySourceRows,
+} from './catalogue-source-identity.mjs';
 import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
@@ -17,6 +24,8 @@ const REQUIRED_CATALOGUE_LANGUAGES = String(
 ).split(',').map((value) => value.trim()).filter(Boolean);
 const TABLE_CONFIG_PATH = process.env.STACKR_TRANSFER_TABLE_CONFIG
   ?? 'deploy/staging-catalogue-preservation-tables.json';
+const SOURCE_IDENTITY_TABLE = 'ingest.sources';
+const ASSET_TABLE = 'catalog.assets';
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -92,22 +101,6 @@ function qualifiedName(value) {
   return `${quoteIdentifier(schema)}.${quoteIdentifier(table)}`;
 }
 
-function stableValue(value) {
-  if (value instanceof Date) return value.toISOString();
-  if (Buffer.isBuffer(value)) return { $bytea: value.toString('base64') };
-  if (Array.isArray(value)) return value.map(stableValue);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(
-      Object.keys(value).sort().map((key) => [key, stableValue(value[key])]),
-    );
-  }
-  return value;
-}
-
-function stableJson(value) {
-  return JSON.stringify(stableValue(value));
-}
-
 function databaseParameterValue(value, column) {
   if (value === null || value === undefined) return value;
   if (column.udt_name === 'json' || column.udt_name === 'jsonb') {
@@ -172,8 +165,8 @@ async function readRows(client, tableName, primaryKey, columns = null) {
   )).rows;
 }
 
-function keyForRow(row, primaryKey) {
-  return stableJson(primaryKey.map((column) => row[column]));
+function projectRow(row, columnNames) {
+  return Object.fromEntries(columnNames.map((column) => [column, row[column]]));
 }
 
 function compatibleTableContract(tableName, sourceMetadata, targetMetadata) {
@@ -260,10 +253,84 @@ async function insertRows(client, tableName, metadata, columnNames, rows) {
   }
 }
 
+async function upsertRows(client, tableName, metadata, columnNames, primaryKey, rows) {
+  if (!rows.length) return;
+  const columnSql = columnNames.map(quoteIdentifier).join(', ');
+  const conflictSql = primaryKey.map(quoteIdentifier).join(', ');
+  const primaryKeyColumns = new Set(primaryKey);
+  const updateColumns = columnNames.filter((column) => !primaryKeyColumns.has(column));
+  const updateSql = updateColumns.length
+    ? `do update set ${updateColumns.map((column) => (
+      `${quoteIdentifier(column)} = excluded.${quoteIdentifier(column)}`
+    )).join(', ')}`
+    : 'do nothing';
+  const selectedColumns = new Set(columnNames);
+  const metadataByName = new Map(
+    metadata.columns.map((column) => [column.column_name, column]),
+  );
+  const hasIdentity = metadata.columns.some((column) => (
+    selectedColumns.has(column.column_name) && column.is_identity === 'YES'
+  ));
+  const maxRowsPerBatch = Math.max(1, Math.floor(50000 / columnNames.length));
+
+  for (let offset = 0; offset < rows.length; offset += maxRowsPerBatch) {
+    const batch = rows.slice(offset, offset + maxRowsPerBatch);
+    const values = [];
+    const tuples = batch.map((row) => {
+      const placeholders = columnNames.map((column) => {
+        values.push(databaseParameterValue(row[column], metadataByName.get(column)));
+        return `$${values.length}`;
+      });
+      return `(${placeholders.join(', ')})`;
+    });
+    try {
+      await client.query(
+        `insert into ${qualifiedName(tableName)} (${columnSql})`
+        + `${hasIdentity ? ' overriding system value' : ''} `
+        + `values ${tuples.join(', ')} `
+        + `on conflict (${conflictSql}) ${updateSql}`,
+        values,
+      );
+    } catch (error) {
+      throw new Error(
+        `transfer_upsert_failed:${tableName}:batch_${offset}:postgres_${error.code ?? 'unknown'}`,
+      );
+    }
+  }
+}
+
 async function setUserTriggersEnabled(client, tableName, enabled) {
   await client.query(
     `alter table ${qualifiedName(tableName)} ${enabled ? 'enable' : 'disable'} trigger user`,
   );
+}
+
+async function foreignKeyColumnsReferencingSources(client, tableName) {
+  const { schema, table } = splitTableName(tableName);
+  const result = await client.query(`
+    select distinct child_attribute.attname as column_name
+    from pg_constraint constraint_record
+    join pg_class child_table on child_table.oid = constraint_record.conrelid
+    join pg_namespace child_namespace on child_namespace.oid = child_table.relnamespace
+    join pg_class parent_table on parent_table.oid = constraint_record.confrelid
+    join pg_namespace parent_namespace on parent_namespace.oid = parent_table.relnamespace
+    join lateral unnest(constraint_record.conkey, constraint_record.confkey)
+      with ordinality as key_columns(child_attnum, parent_attnum, ordinal) on true
+    join pg_attribute child_attribute
+      on child_attribute.attrelid = child_table.oid
+      and child_attribute.attnum = key_columns.child_attnum
+    join pg_attribute parent_attribute
+      on parent_attribute.attrelid = parent_table.oid
+      and parent_attribute.attnum = key_columns.parent_attnum
+    where constraint_record.contype = 'f'
+      and child_namespace.nspname = $1
+      and child_table.relname = $2
+      and parent_namespace.nspname = 'ingest'
+      and parent_table.relname = 'sources'
+      and parent_attribute.attname = 'id'
+    order by child_attribute.attname
+  `, [schema, table]);
+  return result.rows.map((row) => row.column_name);
 }
 
 async function ownedSequenceStates(client, tableName, metadata) {
@@ -365,21 +432,6 @@ function verifyReleaseCatalogueVersions(rows, context) {
   return eligibleRows;
 }
 
-function verifySourceRows(tableName, sourceRows, targetRows, primaryKey) {
-  const targetByKey = new Map(targetRows.map((row) => [keyForRow(row, primaryKey), row]));
-  const matched = [];
-  for (const sourceRow of sourceRows) {
-    const key = keyForRow(sourceRow, primaryKey);
-    const targetRow = targetByKey.get(key);
-    if (!targetRow) throw new Error(`transferred_row_missing:${tableName}:${key}`);
-    if (stableJson(sourceRow) !== stableJson(targetRow)) {
-      throw new Error(`transferred_row_mismatch:${tableName}:${key}`);
-    }
-    matched.push(targetRow);
-  }
-  return matched;
-}
-
 const source = await connect(SOURCE_DB_URL, 'stackr-staging-catalogue-source');
 const target = await connect(TARGET_DB_URL, 'stackr-staging-catalogue-rehearsal');
 const results = [];
@@ -388,6 +440,10 @@ const snapshots = new Map();
 let targetTransactionOpen = false;
 let sourceTransactionOpen = false;
 let sourceReleaseVersions = [];
+let sourceIdentityPlan = null;
+let targetReleaseVersions = [];
+let productionAssetUrlRewriteCount = 0;
+const productionAssetRewriteTimestamp = new Date().toISOString();
 
 try {
   await source.query('begin transaction isolation level repeatable read read only');
@@ -435,14 +491,61 @@ try {
     excludedChecks.push({ table: tableName, rowCount: count, reason: 'staging_only_regenerable_projection' });
   }
 
+  if (TRANSFER_MODE === 'promote') {
+    if (!tableConfig.tables.includes(SOURCE_IDENTITY_TABLE)) {
+      throw new Error('production_source_identity_table_missing');
+    }
+    const sourceMetadata = await tableMetadata(source, SOURCE_IDENTITY_TABLE);
+    const targetMetadata = await tableMetadata(target, SOURCE_IDENTITY_TABLE);
+    sourceIdentityPlan = planCatalogueSourceIdentityMerge(
+      await readRows(source, SOURCE_IDENTITY_TABLE, sourceMetadata.primaryKey),
+      await readRows(target, SOURCE_IDENTITY_TABLE, targetMetadata.primaryKey),
+    );
+  }
+
   for (const tableName of tableConfig.tables) {
     const sourceMetadata = await tableMetadata(source, tableName);
     const targetMetadata = await tableMetadata(target, tableName);
     const contract = compatibleTableContract(tableName, sourceMetadata, targetMetadata);
 
-    const sourceRows = await readRows(source, tableName, sourceMetadata.primaryKey);
+    let sourceRows = await readRows(source, tableName, sourceMetadata.primaryKey);
+    let sourceIdentityForeignKeyColumns = [];
+    let sourceIdentityForeignKeyRemappedRowCount = 0;
+    if (sourceIdentityPlan) {
+      if (tableName === SOURCE_IDENTITY_TABLE) {
+        sourceRows = sourceIdentityPlan.mappedSourceRows;
+      } else {
+        sourceIdentityForeignKeyColumns = await foreignKeyColumnsReferencingSources(
+          target,
+          tableName,
+        );
+        const remapped = remapCatalogueSourceForeignKeys(
+          sourceRows,
+          sourceIdentityForeignKeyColumns,
+          sourceIdentityPlan.sourceIdMap,
+          tableName,
+        );
+        sourceRows = remapped.rows;
+        sourceIdentityForeignKeyRemappedRowCount = remapped.remappedRowCount;
+      }
+    }
+    if (TRANSFER_MODE === 'promote' && tableName === ASSET_TABLE) {
+      const rewritten = rewriteProductionCatalogueAssetUrls(
+        sourceRows,
+        SOURCE_PROJECT_REF,
+        TARGET_PROJECT_REF,
+        productionAssetRewriteTimestamp,
+      );
+      sourceRows = rewritten.rows;
+      productionAssetUrlRewriteCount = rewritten.rewrittenRowCount;
+    }
     const targetRowsBefore = await readRows(target, tableName, targetMetadata.primaryKey);
     const targetSequencesBefore = await ownedSequenceStates(target, tableName, targetMetadata);
+    const preservedTargetRows = sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE
+      ? sourceIdentityPlan.preservedTargetOnlyRows.map((row) => (
+          projectRow(row, contract.transferColumns)
+        ))
+      : [];
     snapshots.set(tableName, {
       sourceMetadata,
       targetMetadata,
@@ -450,10 +553,14 @@ try {
       targetRowsBefore,
       targetSequencesBefore,
       contract,
+      sourceIdentityForeignKeyColumns,
+      sourceIdentityForeignKeyRemappedRowCount,
+      preservedTargetRows,
     });
   }
 
   for (const tableName of [...tableConfig.tables].reverse()) {
+    if (sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE) continue;
     await setUserTriggersEnabled(target, tableName, false);
     await target.query(`delete from ${qualifiedName(tableName)}`);
     await setUserTriggersEnabled(target, tableName, true);
@@ -468,12 +575,34 @@ try {
       targetRowsBefore,
       targetSequencesBefore,
       contract,
+      sourceIdentityForeignKeyColumns,
+      sourceIdentityForeignKeyRemappedRowCount,
+      preservedTargetRows,
     } = snapshot;
     const targetRowsAfterClear = await readRows(target, tableName, targetMetadata.primaryKey);
-    if (targetRowsAfterClear.length !== 0) throw new Error(`target_table_not_cleared:${tableName}`);
+    const sourceIdentityMerge = Boolean(
+      sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE,
+    );
+    if (!sourceIdentityMerge && targetRowsAfterClear.length !== 0) {
+      throw new Error(`target_table_not_cleared:${tableName}`);
+    }
+    if (sourceIdentityMerge && digestRows(targetRowsAfterClear) !== digestRows(targetRowsBefore)) {
+      throw new Error(`target_table_changed_before_merge:${tableName}`);
+    }
 
     await setUserTriggersEnabled(target, tableName, false);
-    await insertRows(target, tableName, targetMetadata, contract.transferColumns, sourceRows);
+    if (sourceIdentityMerge) {
+      await upsertRows(
+        target,
+        tableName,
+        targetMetadata,
+        contract.transferColumns,
+        targetMetadata.primaryKey,
+        sourceRows,
+      );
+    } else {
+      await insertRows(target, tableName, targetMetadata, contract.transferColumns, sourceRows);
+    }
     await restartOwnedSequences(target, tableName, targetMetadata, sourceRows);
     await setUserTriggersEnabled(target, tableName, true);
     const targetRowsAfter = await readRows(
@@ -489,6 +618,14 @@ try {
       targetRowsAfter,
       sourceMetadata.primaryKey,
     );
+    const matchedPreservedTargetRows = sourceIdentityMerge
+      ? verifySourceRows(
+          tableName,
+          preservedTargetRows,
+          targetRowsAfter,
+          targetMetadata.primaryKey,
+        )
+      : [];
 
     results.push({
       table: tableName,
@@ -502,10 +639,33 @@ try {
       matchedSourceRowCount: matchedRows.length,
       sourceSha256: digestRows(sourceRows),
       matchedTargetSha256: digestRows(matchedRows),
+      sourceIdentityMerge,
+      sourceIdentityForeignKeyColumns,
+      sourceIdentityForeignKeyRemappedRowCount,
+      preservedTargetRowCount: matchedPreservedTargetRows.length,
+      preservedTargetSha256: digestRows(matchedPreservedTargetRows),
       targetBeforeSha256: digestRows(targetRowsBefore),
       targetSequencesBefore,
       targetSequencesDuringRehearsal,
     });
+  }
+
+  if (TRANSFER_MODE === 'promote') {
+    targetReleaseVersions = verifyReleaseCatalogueVersions(
+      await releaseCatalogueVersions(target),
+      'target',
+    );
+    if (digestRows(targetReleaseVersions) !== digestRows(sourceReleaseVersions)) {
+      throw new Error('production_release_versions_mismatch');
+    }
+    const staleUrls = Number((await target.query(`
+      select count(*)::integer as count
+      from catalog.assets
+      where storage_provider = 'supabase_storage'
+        and storage_bucket = 'stackr-catalogue-public'
+        and url like '%' || $1 || '%'
+    `, [SOURCE_PROJECT_REF])).rows[0].count);
+    if (staleUrls !== 0) throw new Error('production_asset_url_rewrite_incomplete');
   }
 
   if (TRANSFER_MODE !== 'rehearse') await target.query('commit');
@@ -526,9 +686,32 @@ try {
       result.targetRowCountAfterCommit = rows.length;
       result.targetAfterCommitSha256 = digestRows(rows);
       result.targetSequencesAfterCommit = sequences;
-      result.commitMatched = rows.length === result.sourceRowCount
-        && result.targetAfterCommitSha256 === result.sourceSha256
-        && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
+      const matchedRows = verifySourceRows(
+        result.table,
+        snapshot.sourceRows,
+        rows,
+        metadata.primaryKey,
+      );
+      result.matchedTargetAfterCommitSha256 = digestRows(matchedRows);
+      if (result.sourceIdentityMerge) {
+        const preservedTargetRows = verifySourceRows(
+          result.table,
+          snapshot.preservedTargetRows,
+          rows,
+          metadata.primaryKey,
+        );
+        result.preservedTargetAfterCommitSha256 = digestRows(preservedTargetRows);
+        result.commitMatched = rows.length === (
+          result.sourceRowCount + result.preservedTargetRowCount
+        )
+          && result.matchedTargetAfterCommitSha256 === result.sourceSha256
+          && result.preservedTargetAfterCommitSha256 === result.preservedTargetSha256
+          && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
+      } else {
+        result.commitMatched = rows.length === result.sourceRowCount
+          && result.matchedTargetAfterCommitSha256 === result.sourceSha256
+          && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
+      }
       if (!result.commitMatched) throw new Error(`target_commit_mismatch:${result.table}`);
     } else {
       result.targetRowCountAfterRollback = rows.length;
@@ -541,40 +724,12 @@ try {
     }
   }
 
-  let targetReleaseVersions = [];
-  let productionAssetUrlRewriteCount = 0;
-  if (TRANSFER_MODE === 'promote') {
-    targetReleaseVersions = verifyReleaseCatalogueVersions(
-      await releaseCatalogueVersions(target),
-      'target',
-    );
-    if (digestRows(targetReleaseVersions) !== digestRows(sourceReleaseVersions)) {
-      throw new Error('production_release_versions_mismatch');
-    }
-    const rewritten = await target.query(`
-      update catalog.assets
-      set url = replace(url, $1, $2), updated_at = now()
-      where storage_provider = 'supabase_storage'
-        and storage_bucket = 'stackr-catalogue-public'
-        and url like '%' || $1 || '%'
-    `, [SOURCE_PROJECT_REF, TARGET_PROJECT_REF]);
-    productionAssetUrlRewriteCount = rewritten.rowCount;
-    const staleUrls = Number((await target.query(`
-      select count(*)::integer as count
-      from catalog.assets
-      where storage_provider = 'supabase_storage'
-        and storage_bucket = 'stackr-catalogue-public'
-        and url like '%' || $1 || '%'
-    `, [SOURCE_PROJECT_REF])).rows[0].count);
-    if (staleUrls !== 0) throw new Error('production_asset_url_rewrite_incomplete');
-  }
-
   await source.query('rollback');
   sourceTransactionOpen = false;
 
   const evidence = {
     schemaVersion: TRANSFER_MODE === 'promote'
-      ? 'stackr-production-catalogue-data-promotion-evidence-v1.0.0'
+      ? 'stackr-production-catalogue-data-promotion-evidence-v1.1.0'
       : 'stackr-staging-catalogue-transfer-evidence-v1.4.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
@@ -587,7 +742,7 @@ try {
     isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
     transferPolicy: TRANSFER_MODE === 'promote'
-      ? 'replace_allowlisted_production_catalogue_tables_with_verified_staging_release_rows'
+      ? 'replace_allowlisted_production_catalogue_rows_while_preserving_source_identity_by_code'
       : TRANSFER_MODE === 'commit'
       ? 'replace_allowlisted_isolated_candidate_tables_with_canonical_staging_rows'
       : 'replace_allowlisted_target_tables_with_source_rows_in_rollback_only_transaction',
@@ -604,6 +759,22 @@ try {
           sourceVersionIds: sourceReleaseVersions.map((row) => row.id),
           releaseVersionSha256: digestRows(sourceReleaseVersions),
           productionAssetUrlRewriteCount,
+        }
+      : null,
+    sourceIdentityPreservation: sourceIdentityPlan
+      ? {
+          table: SOURCE_IDENTITY_TABLE,
+          naturalKey: 'code',
+          sourceCount: sourceIdentityPlan.sourceCount,
+          preservedProductionSourceIdCount:
+            sourceIdentityPlan.preservedProductionSourceIdCount,
+          remappedSourceIdCount: sourceIdentityPlan.remappedSourceIdCount,
+          insertedSourceCount: sourceIdentityPlan.insertedSourceCount,
+          preservedTargetOnlySourceCount: sourceIdentityPlan.preservedTargetOnlyRows.length,
+          remappedForeignKeyRowCount: results.reduce(
+            (sum, result) => sum + result.sourceIdentityForeignKeyRemappedRowCount,
+            0,
+          ),
         }
       : null,
     selectedTableCount: results.length,
