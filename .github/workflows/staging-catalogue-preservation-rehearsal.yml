@@ -7,6 +7,14 @@ on:
         description: Type REHEARSE STAGING CATALOGUE TRANSFER
         required: true
         type: string
+      table_set:
+        description: Rehearse full staging preservation or the exact production catalogue table set
+        required: true
+        default: staging_preservation
+        type: choice
+        options:
+          - staging_preservation
+          - production_catalogue
 
 permissions:
   contents: read
@@ -54,6 +62,26 @@ jobs:
       - name: Prepare protected database URLs
         run: node scripts/deploy/prepare-postgres-urls.mjs
 
+      - name: Select rollback-only transfer table set
+        shell: bash
+        env:
+          STACKR_TRANSFER_TABLE_SET: ${{ inputs.table_set }}
+        run: |
+          set -euo pipefail
+          case "$STACKR_TRANSFER_TABLE_SET" in
+            staging_preservation)
+              table_config='deploy/staging-catalogue-preservation-tables.json'
+              ;;
+            production_catalogue)
+              table_config='deploy/production-catalogue-promotion-tables.json'
+              ;;
+            *)
+              echo '::error::invalid_transfer_table_set'
+              exit 1
+              ;;
+          esac
+          echo "STACKR_TRANSFER_TABLE_CONFIG=$table_config" >> "$GITHUB_ENV"
+
       - name: Install pinned dependencies
         run: npm ci
 
@@ -65,7 +93,7 @@ jobs:
       - name: Upload private non-record evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: staging-catalogue-transfer-evidence-${{ github.run_id }}
+          name: staging-catalogue-transfer-evidence-${{ inputs.table_set }}-${{ github.run_id }}
           path: ${{ runner.temp }}/stackr-catalogue-transfer/evidence.json
           if-no-files-found: error
           retention-days: 1
