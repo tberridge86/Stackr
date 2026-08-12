@@ -289,6 +289,7 @@ jobs:
         run: node scripts/deploy/prepare-postgres-urls.mjs
 
       - name: Promote verified catalogue snapshot into production
+        id: catalogue_promotion
         if: inputs.release_scope == 'catalogue_api'
         env:
           SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
@@ -307,6 +308,31 @@ jobs:
           node scripts/deploy/promote-catalogue-storage.mjs
           node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
           echo "STACKR_CATALOGUE_PROMOTED=true" >> "$GITHUB_ENV"
+
+      - name: Build non-secret catalogue promotion audit
+        id: catalogue_promotion_audit
+        if: ${{ !cancelled() && inputs.release_scope == 'catalogue_api' && steps.catalogue_promotion.outcome != 'skipped' }}
+        run: >-
+          node scripts/deploy/create-production-catalogue-promotion-audit.mjs
+          --storage="$RUNNER_TEMP/stackr-catalogue-promotion/storage-evidence.json"
+          --database="$RUNNER_TEMP/stackr-catalogue-promotion/evidence.json"
+          --output="$RUNNER_TEMP/stackr-catalogue-promotion-audit/audit-summary.json"
+          --promotion-outcome="${{ steps.catalogue_promotion.outcome }}"
+
+      - name: Scan catalogue promotion audit for secrets
+        id: scan_catalogue_promotion_audit
+        if: ${{ !cancelled() && steps.catalogue_promotion_audit.outcome == 'success' }}
+        run: node scripts/deploy/secret-scan.mjs --directory="$RUNNER_TEMP/stackr-catalogue-promotion-audit"
+
+      - name: Upload non-secret catalogue promotion audit
+        if: ${{ !cancelled() && steps.catalogue_promotion_audit.outcome == 'success' && steps.scan_catalogue_promotion_audit.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-catalogue-promotion-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/stackr-catalogue-promotion-audit/audit-summary.json
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 9
 
       - name: Deploy rolling catalogue API version
         run: |
@@ -518,4 +544,5 @@ jobs:
           rm -rf "$RUNNER_TEMP/stackr-backup"
           rm -rf "$RUNNER_TEMP/stackr-backup-diagnostics"
           rm -rf "$RUNNER_TEMP/stackr-catalogue-promotion"
+          rm -rf "$RUNNER_TEMP/stackr-catalogue-promotion-audit"
           rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"

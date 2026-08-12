@@ -588,8 +588,23 @@ assert.ok(
 assert.match(catalogueTransferScript, /nonstandard_user_trigger_state/);
 assert.match(catalogueTransferScript, /user_trigger_state_mismatch/);
 assert.match(catalogueTransferScript, /target_precommit_row_count_mismatch/);
-assert.match(catalogueTransferScript, /targetPreCommitVerified: true/);
+assert.match(catalogueTransferScript, /target_precommit_sequence_mismatch/);
+assert.match(catalogueTransferScript, /targetPreCommitVerified = true/);
+assert.match(catalogueTransferScript, /expectedCatalogueOwnedSequenceStates/);
+assert.match(catalogueTransferScript, /targetMismatchTables = \[\]/);
+assert.match(catalogueTransferScript, /targetAlreadyMatched = targetMismatchTables\.length === 0/);
+assert.match(catalogueTransferScript, /non_idempotent_production_transfer_requires_indexed_foreign_keys/);
+assert.match(catalogueTransferScript, /if \(!targetAlreadyMatched\) \{[\s\S]+delete from \$\{qualifiedName\(tableName\)\}/);
+assert.match(catalogueTransferScript, /productionMutationPerformed: TRANSFER_MODE === 'promote' && !targetAlreadyMatched/);
+assert.match(catalogueTransferScript, /targetAlreadyMatched: evidence\.targetAlreadyMatched/);
+assert.match(catalogueTransferScript, /productionMutationPerformed: evidence\.productionMutationPerformed/);
+assert.match(catalogueTransferScript, /transferPolicy: evidence\.transferPolicy/);
 assert.match(catalogueTransferScript, /postCommitObservationMatched/);
+assert.ok(
+  catalogueTransferScript.indexOf('non_idempotent_production_transfer_requires_indexed_foreign_keys')
+    < catalogueTransferScript.indexOf('delete from ${qualifiedName(tableName)}'),
+  'a non-idempotent production snapshot must fail before any target delete',
+);
 assert.doesNotMatch(catalogueTransferScript, /throw new Error\(`target_commit_mismatch/);
 assert.ok(
   catalogueTransferScript.indexOf('production_release_versions_mismatch')
@@ -602,8 +617,224 @@ assert.ok(
   'production asset URL verification must happen before the target transaction commits',
 );
 assert.doesNotMatch(catalogueTransferScript, /update catalog\.assets[\s\S]+set url/i);
+assert.match(
+  productionWorkflow,
+  /name: Promote verified catalogue snapshot into production\s+id: catalogue_promotion/,
+);
+assert.match(
+  productionWorkflow,
+  /name: Build non-secret catalogue promotion audit[\s\S]+!cancelled\(\)[\s\S]+steps\.catalogue_promotion\.outcome != 'skipped'/,
+);
+assert.match(
+  productionWorkflow,
+  /name: Scan catalogue promotion audit for secrets[\s\S]+secret-scan\.mjs --directory=/,
+);
+assert.match(
+  productionWorkflow,
+  /name: Upload non-secret catalogue promotion audit[\s\S]+uses: actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/,
+);
+assert.match(
+  productionWorkflow,
+  /stackr-production-catalogue-promotion-audit-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}[\s\S]+path: \$\{\{ runner\.temp \}\}\/stackr-catalogue-promotion-audit\/audit-summary\.json[\s\S]+if-no-files-found: error[\s\S]+retention-days: 1/,
+);
+assert.ok(
+  productionWorkflow.indexOf('Upload non-secret catalogue promotion audit')
+    < productionWorkflow.indexOf('Deploy rolling catalogue API version'),
+  'the catalogue audit must be uploaded before the backend deployment begins',
+);
+
+const promotionAuditDirectory = mkdtempSync(path.join(tmpdir(), 'stackr-promotion-audit-'));
+try {
+  const storageEvidencePath = path.join(promotionAuditDirectory, 'storage-evidence.json');
+  const databaseEvidencePath = path.join(promotionAuditDirectory, 'database-evidence.json');
+  const auditOutputPath = path.join(promotionAuditDirectory, 'audit-summary.json');
+  writeFileSync(storageEvidencePath, JSON.stringify({
+    schemaVersion: 'stackr-production-catalogue-storage-promotion-v1.0.0',
+    sourceProjectRef: 'internal-staging-ref',
+    targetProjectRef: 'internal-production-ref',
+    sourceInventorySha256: 'internal-storage-digest',
+    sourceObjectCount: 10,
+    targetObjectCountBefore: 10,
+    copiedObjectCount: 0,
+    copiedByteSize: 0,
+    copiedContentHashVerifiedCount: 0,
+    targetObjectCountAfter: 10,
+    verifiedSourceObjectCount: 10,
+    existingProductionObjectsRetained: true,
+    providerRequestsPerformed: false,
+    ok: true,
+  }));
+  writeFileSync(databaseEvidencePath, JSON.stringify({
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.4.0',
+    sourceProjectRef: 'internal-staging-ref',
+    targetProjectRef: 'internal-production-ref',
+    targetAlreadyMatched: true,
+    productionMutationPerformed: false,
+    targetTransactionCommitted: true,
+    targetCommitVerified: true,
+    transferPolicy: 'verify_allowlisted_production_catalogue_already_matches_without_mutation',
+    selectedTableCount: 1,
+    sourceRowCount: 2,
+    matchedSourceRowCount: 2,
+    catalogueRelease: {
+      sourceVersionIds: ['internal-release-uuid'],
+      releaseVersionSha256: 'internal-release-digest',
+      productionAssetUrlRewriteCount: 1,
+      productionAssetTimestampReuseCount: 1,
+    },
+    tables: [{
+      table: 'internal.schema_table',
+      sourceSha256: 'internal-row-digest',
+      targetPreCommitVerified: true,
+      transferSkippedAsAlreadyCurrent: true,
+      commitMatched: true,
+      postCommitObservationMatched: true,
+    }],
+  }));
+  const auditResult = run(
+    './scripts/deploy/create-production-catalogue-promotion-audit.mjs',
+    [
+      `--storage=${storageEvidencePath}`,
+      `--database=${databaseEvidencePath}`,
+      `--output=${auditOutputPath}`,
+      '--promotion-outcome=success',
+    ],
+    {
+      GITHUB_SHA: 'public-commit-sha',
+      GITHUB_RUN_ID: '123',
+      GITHUB_RUN_ATTEMPT: '2',
+    },
+  );
+  assert.equal(auditResult.status, 0, auditResult.stderr);
+  const publicAudit = JSON.parse(readFileSync(auditOutputPath, 'utf8'));
+  assert.equal(publicAudit.classification, 'public_non_secret_aggregate_only');
+  assert.equal(publicAudit.storage.copiedObjectCount, 0);
+  assert.equal(publicAudit.database.targetAlreadyMatched, true);
+  assert.equal(publicAudit.database.productionMutationPerformed, false);
+  assert.equal(publicAudit.database.skippedCurrentTableCount, 1);
+  assert.equal(publicAudit.workflowRunAttempt, '2');
+  const serializedPublicAudit = JSON.stringify(publicAudit);
+  for (const internalValue of [
+    'internal-staging-ref',
+    'internal-production-ref',
+    'internal-storage-digest',
+    'internal-release-uuid',
+    'internal-release-digest',
+    'internal.schema_table',
+    'internal-row-digest',
+  ]) assert.doesNotMatch(serializedPublicAudit, new RegExp(internalValue.replace('.', '\\.')));
+  for (const internalValue of [
+    'internal-staging-ref',
+    'internal-production-ref',
+    'internal-storage-digest',
+    'internal-release-uuid',
+    'internal-release-digest',
+    'internal.schema_table',
+    'internal-row-digest',
+  ]) assert.doesNotMatch(auditResult.stdout, new RegExp(internalValue.replace('.', '\\.')));
+
+  const postCommitMismatchEvidence = JSON.parse(readFileSync(databaseEvidencePath, 'utf8'));
+  postCommitMismatchEvidence.tables[0].postCommitObservationMatched = false;
+  const postCommitMismatchPath = path.join(
+    promotionAuditDirectory,
+    'postcommit-mismatch-evidence.json',
+  );
+  writeFileSync(postCommitMismatchPath, JSON.stringify(postCommitMismatchEvidence));
+  const postCommitMismatchAudit = run(
+    './scripts/deploy/create-production-catalogue-promotion-audit.mjs',
+    [
+      `--storage=${storageEvidencePath}`,
+      `--database=${postCommitMismatchPath}`,
+      `--output=${path.join(promotionAuditDirectory, 'postcommit-mismatch-audit.json')}`,
+      '--promotion-outcome=success',
+    ],
+  );
+  assert.notEqual(postCommitMismatchAudit.status, 0);
+  assert.match(postCommitMismatchAudit.stderr, /successful_database_no_op_not_verified/);
+
+  rmSync(databaseEvidencePath);
+  const partialAuditOutputPath = path.join(promotionAuditDirectory, 'partial-audit.json');
+  const partialAuditResult = run(
+    './scripts/deploy/create-production-catalogue-promotion-audit.mjs',
+    [
+      `--storage=${storageEvidencePath}`,
+      `--database=${databaseEvidencePath}`,
+      `--output=${partialAuditOutputPath}`,
+      '--promotion-outcome=failure',
+    ],
+  );
+  assert.equal(partialAuditResult.status, 0, partialAuditResult.stderr);
+  const partialAudit = JSON.parse(readFileSync(partialAuditOutputPath, 'utf8'));
+  assert.equal(partialAudit.storage.evidencePresent, true);
+  assert.equal(partialAudit.database.evidencePresent, false);
+  const invalidSuccessAudit = run(
+    './scripts/deploy/create-production-catalogue-promotion-audit.mjs',
+    [
+      `--storage=${storageEvidencePath}`,
+      `--database=${databaseEvidencePath}`,
+      `--output=${path.join(promotionAuditDirectory, 'invalid-success.json')}`,
+      '--promotion-outcome=success',
+    ],
+  );
+  assert.notEqual(invalidSuccessAudit.status, 0);
+  assert.match(invalidSuccessAudit.stderr, /successful_catalogue_promotion_evidence_missing/);
+
+  writeFileSync(databaseEvidencePath, JSON.stringify({
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.4.0',
+    targetAlreadyMatched: false,
+    productionMutationPerformed: true,
+    targetTransactionCommitted: false,
+    targetCommitVerified: false,
+    transferPolicy: 'verify_allowlisted_production_catalogue_already_matches_without_mutation',
+    selectedTableCount: 1,
+    sourceRowCount: 2,
+    matchedSourceRowCount: 2,
+    catalogueRelease: {
+      productionAssetUrlRewriteCount: 1,
+      productionAssetTimestampReuseCount: 1,
+    },
+    tables: [{
+      targetPreCommitVerified: false,
+      transferSkippedAsAlreadyCurrent: false,
+      commitMatched: false,
+      postCommitObservationMatched: false,
+    }],
+  }));
+  const contradictorySuccessAudit = run(
+    './scripts/deploy/create-production-catalogue-promotion-audit.mjs',
+    [
+      `--storage=${storageEvidencePath}`,
+      `--database=${databaseEvidencePath}`,
+      `--output=${path.join(promotionAuditDirectory, 'contradictory-success.json')}`,
+      '--promotion-outcome=success',
+    ],
+  );
+  assert.notEqual(contradictorySuccessAudit.status, 0);
+  assert.match(contradictorySuccessAudit.stderr, /successful_database_no_op_not_verified/);
+
+  const badStorageEvidence = JSON.parse(readFileSync(storageEvidencePath, 'utf8'));
+  badStorageEvidence.ok = false;
+  badStorageEvidence.providerRequestsPerformed = true;
+  const badStorageEvidencePath = path.join(promotionAuditDirectory, 'bad-storage-evidence.json');
+  writeFileSync(badStorageEvidencePath, JSON.stringify(badStorageEvidence));
+  const badStorageSuccessAudit = run(
+    './scripts/deploy/create-production-catalogue-promotion-audit.mjs',
+    [
+      `--storage=${badStorageEvidencePath}`,
+      `--database=${databaseEvidencePath}`,
+      `--output=${path.join(promotionAuditDirectory, 'bad-storage-success.json')}`,
+      '--promotion-outcome=success',
+    ],
+  );
+  assert.notEqual(badStorageSuccessAudit.status, 0);
+  assert.match(badStorageSuccessAudit.stderr, /successful_storage_no_op_not_verified/);
+} finally {
+  rmSync(promotionAuditDirectory, { recursive: true, force: true });
+}
 
 const {
+  catalogueTransferTargetMatch,
+  expectedCatalogueOwnedSequenceStates,
   planCatalogueSourceIdentityMerge,
   remapCatalogueSourceForeignKeys,
   rewriteProductionCatalogueAssetUrls,
@@ -946,6 +1177,7 @@ const assetRewrite = rewriteProductionCatalogueAssetUrls(
   assetRewriteTimestamp,
 );
 assert.equal(assetRewrite.rewrittenRowCount, 1);
+assert.equal(assetRewrite.reusedProductionTimestampCount, 0);
 assert.equal(
   assetRewrite.rows[0].url,
   'https://production-ref.supabase.co/storage/v1/object/public/example.webp',
@@ -956,6 +1188,150 @@ assert.equal(
   assetRewrite.rows[0].id,
   'asset-1',
   'rewriting a production Storage URL must preserve the catalogue asset identity',
+);
+
+const priorProductionAssetTimestamp = new Date('2026-08-12T18:14:40.182Z');
+const idempotentAssetRewrite = rewriteProductionCatalogueAssetUrls(
+  [{
+    id: 'asset-1',
+    storage_provider: 'supabase_storage',
+    storage_bucket: 'stackr-catalogue-public',
+    url: 'https://staging-ref.supabase.co/storage/v1/object/public/example.webp',
+    updated_at: '2026-08-11T00:00:00.000Z',
+  }],
+  'staging-ref',
+  'production-ref',
+  assetRewriteTimestamp,
+  [{
+    id: 'asset-1',
+    storage_provider: 'supabase_storage',
+    storage_bucket: 'stackr-catalogue-public',
+    url: 'https://production-ref.supabase.co/storage/v1/object/public/example.webp',
+    updated_at: priorProductionAssetTimestamp,
+  }],
+  ['id'],
+  ['id', 'storage_provider', 'storage_bucket', 'url', 'updated_at'],
+);
+assert.equal(idempotentAssetRewrite.rewrittenRowCount, 1);
+assert.equal(idempotentAssetRewrite.reusedProductionTimestampCount, 1);
+assert.equal(idempotentAssetRewrite.rows[0].updated_at, priorProductionAssetTimestamp);
+
+const changedAssetRewrite = rewriteProductionCatalogueAssetUrls(
+  [{
+    id: 'asset-1',
+    storage_provider: 'supabase_storage',
+    storage_bucket: 'stackr-catalogue-public',
+    url: 'https://staging-ref.supabase.co/storage/v1/object/public/changed.webp',
+    updated_at: '2026-08-11T00:00:00.000Z',
+  }],
+  'staging-ref',
+  'production-ref',
+  assetRewriteTimestamp,
+  idempotentAssetRewrite.rows,
+  ['id'],
+  ['id', 'storage_provider', 'storage_bucket', 'url', 'updated_at'],
+);
+assert.equal(changedAssetRewrite.reusedProductionTimestampCount, 0);
+assert.equal(changedAssetRewrite.rows[0].updated_at, assetRewriteTimestamp);
+
+const changedAssetMetadataRewrite = rewriteProductionCatalogueAssetUrls(
+  [{
+    id: 'asset-1',
+    storage_provider: 'supabase_storage',
+    storage_bucket: 'stackr-catalogue-public',
+    url: 'https://staging-ref.supabase.co/storage/v1/object/public/example.webp',
+    width: 100,
+    updated_at: '2026-08-11T00:00:00.000Z',
+  }],
+  'staging-ref',
+  'production-ref',
+  assetRewriteTimestamp,
+  [{
+    id: 'asset-1',
+    storage_provider: 'supabase_storage',
+    storage_bucket: 'stackr-catalogue-public',
+    url: 'https://production-ref.supabase.co/storage/v1/object/public/example.webp',
+    width: 99,
+    updated_at: priorProductionAssetTimestamp,
+  }],
+  ['id'],
+  ['id', 'storage_provider', 'storage_bucket', 'url', 'width', 'updated_at'],
+);
+assert.equal(changedAssetMetadataRewrite.reusedProductionTimestampCount, 0);
+assert.equal(changedAssetMetadataRewrite.rows[0].updated_at, assetRewriteTimestamp);
+
+const exactTargetMatchInput = {
+  tableName: 'catalog.example',
+  sourceRows: [{ id: 'source-1', value: 'canonical' }],
+  preservedTargetRows: [{ id: 'preserved-1', value: 'production-only' }],
+  targetRows: [
+    { id: 'preserved-1', value: 'production-only' },
+    { id: 'source-1', value: 'canonical' },
+  ],
+  primaryKey: ['id'],
+  targetSequenceStates: [],
+};
+assert.deepEqual(
+  catalogueTransferTargetMatch(exactTargetMatchInput),
+  { matches: true, reason: null },
+);
+assert.deepEqual(
+  catalogueTransferTargetMatch({
+    ...exactTargetMatchInput,
+    targetRows: exactTargetMatchInput.targetRows.slice(0, 1),
+  }),
+  { matches: false, reason: 'row_count' },
+);
+assert.deepEqual(
+  catalogueTransferTargetMatch({
+    ...exactTargetMatchInput,
+    targetRows: [...exactTargetMatchInput.targetRows, { id: 'extra-1', value: 'extra' }],
+  }),
+  { matches: false, reason: 'row_count' },
+);
+assert.deepEqual(
+  catalogueTransferTargetMatch({
+    ...exactTargetMatchInput,
+    targetRows: [
+      exactTargetMatchInput.targetRows[0],
+      { id: 'source-1', value: 'changed' },
+    ],
+  }),
+  { matches: false, reason: 'transferred_row_mismatch' },
+);
+assert.deepEqual(
+  catalogueTransferTargetMatch({
+    ...exactTargetMatchInput,
+    sourceRows: [{ id: 'shared-1', value: 'canonical' }],
+    preservedTargetRows: [{ id: 'shared-1', value: 'production-only' }],
+    targetRows: [
+      { id: 'shared-1', value: 'canonical' },
+      { id: 'other-1', value: 'production-only' },
+    ],
+  }),
+  { matches: false, reason: 'expected_primary_key_overlap' },
+);
+const sequenceStates = [{
+  column: 'id',
+  sequence: 'catalog.example_id_seq',
+  startValue: '1',
+  lastValue: '3',
+  isCalled: false,
+}];
+assert.deepEqual(
+  expectedCatalogueOwnedSequenceStates(sequenceStates, [{ id: 1 }, { id: 2 }]),
+  sequenceStates,
+);
+assert.deepEqual(
+  catalogueTransferTargetMatch({
+    tableName: 'catalog.example',
+    sourceRows: [{ id: 1 }, { id: 2 }],
+    preservedTargetRows: [],
+    targetRows: [{ id: 1 }, { id: 2 }],
+    primaryKey: ['id'],
+    targetSequenceStates: [{ ...sequenceStates[0], lastValue: '2', isCalled: true }],
+  }),
+  { matches: false, reason: 'sequence_state' },
 );
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');

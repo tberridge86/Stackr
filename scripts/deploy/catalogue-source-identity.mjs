@@ -42,6 +42,68 @@ export function verifyCatalogueRowsByPrimaryKey(
   return matched;
 }
 
+export function expectedCatalogueOwnedSequenceStates(sequenceStates, rows) {
+  if (!Array.isArray(sequenceStates) || !Array.isArray(rows)) {
+    throw new TypeError('invalid_catalogue_sequence_state_arguments');
+  }
+  return sequenceStates.map((sequence) => {
+    const values = rows
+      .map((row) => row[sequence.column])
+      .filter((value) => value !== null && value !== undefined)
+      .map((value) => BigInt(value));
+    const restartValue = values.length
+      ? values.reduce((left, right) => (left > right ? left : right)) + 1n
+      : BigInt(sequence.startValue);
+    return {
+      ...sequence,
+      lastValue: restartValue.toString(),
+      isCalled: false,
+    };
+  });
+}
+
+export function catalogueTransferTargetMatch({
+  tableName,
+  sourceRows,
+  preservedTargetRows,
+  targetRows,
+  primaryKey,
+  targetSequenceStates,
+}) {
+  if (typeof tableName !== 'string'
+    || !Array.isArray(sourceRows)
+    || !Array.isArray(preservedTargetRows)
+    || !Array.isArray(targetRows)
+    || !Array.isArray(primaryKey)
+    || primaryKey.length === 0
+    || !Array.isArray(targetSequenceStates)) {
+    throw new TypeError('invalid_catalogue_target_match_arguments');
+  }
+  const expectedRows = [...sourceRows, ...preservedTargetRows];
+  if (targetRows.length !== expectedRows.length) return { matches: false, reason: 'row_count' };
+  const expectedKeys = new Set(expectedRows.map((row) => catalogueRowKey(row, primaryKey)));
+  if (expectedKeys.size !== expectedRows.length) {
+    return { matches: false, reason: 'expected_primary_key_overlap' };
+  }
+  try {
+    verifyCatalogueRowsByPrimaryKey(tableName, sourceRows, targetRows, primaryKey);
+    verifyCatalogueRowsByPrimaryKey(tableName, preservedTargetRows, targetRows, primaryKey);
+  } catch (error) {
+    return {
+      matches: false,
+      reason: error instanceof Error ? error.message.split(':')[0] : 'verification_error',
+    };
+  }
+  const expectedSequenceStates = expectedCatalogueOwnedSequenceStates(
+    targetSequenceStates,
+    sourceRows,
+  );
+  if (stableCatalogueJson(targetSequenceStates) !== stableCatalogueJson(expectedSequenceStates)) {
+    return { matches: false, reason: 'sequence_state' };
+  }
+  return { matches: true, reason: null };
+}
+
 function requiredIdentityValue(row, column, context) {
   const value = row?.[column];
   if (value === null || value === undefined || String(value).length === 0) {
@@ -161,12 +223,29 @@ export function rewriteProductionCatalogueAssetUrls(
   sourceProjectRef,
   targetProjectRef,
   rewrittenAt,
+  targetRows = [],
+  primaryKey = ['id'],
+  transferColumns = null,
 ) {
   if (!Array.isArray(rows) || !sourceProjectRef || !targetProjectRef || !rewrittenAt) {
     throw new TypeError('invalid_production_catalogue_asset_rewrite_arguments');
   }
+  if (!Array.isArray(targetRows) || !Array.isArray(primaryKey) || primaryKey.length === 0) {
+    throw new TypeError('invalid_production_catalogue_asset_rewrite_target_arguments');
+  }
+
+  const comparableColumns = Array.isArray(transferColumns) && transferColumns.length > 0
+    ? transferColumns
+    : null;
+  const rowKey = (row) => stableCatalogueJson(primaryKey.map((column) => row[column]));
+  const comparableRow = (row) => Object.fromEntries(
+    (comparableColumns ?? Object.keys(row)).filter((column) => column !== 'updated_at')
+      .map((column) => [column, row[column]]),
+  );
+  const targetByKey = new Map(targetRows.map((row) => [rowKey(row), row]));
 
   let rewrittenRowCount = 0;
+  let reusedProductionTimestampCount = 0;
   const rewrittenRows = rows.map((row) => {
     const shouldRewrite = row.storage_provider === 'supabase_storage'
       && row.storage_bucket === 'stackr-catalogue-public'
@@ -174,12 +253,22 @@ export function rewriteProductionCatalogueAssetUrls(
       && row.url.includes(sourceProjectRef);
     if (!shouldRewrite) return row;
     rewrittenRowCount += 1;
-    return {
+    const rewrittenRow = {
       ...row,
       url: row.url.replaceAll(sourceProjectRef, targetProjectRef),
       updated_at: rewrittenAt,
     };
+    const matchingTarget = targetByKey.get(rowKey(row));
+    if (matchingTarget
+      && matchingTarget.updated_at !== null
+      && matchingTarget.updated_at !== undefined
+      && stableCatalogueJson(comparableRow(matchingTarget))
+        === stableCatalogueJson(comparableRow(rewrittenRow))) {
+      rewrittenRow.updated_at = matchingTarget.updated_at;
+      reusedProductionTimestampCount += 1;
+    }
+    return rewrittenRow;
   });
 
-  return { rows: rewrittenRows, rewrittenRowCount };
+  return { rows: rewrittenRows, rewrittenRowCount, reusedProductionTimestampCount };
 }

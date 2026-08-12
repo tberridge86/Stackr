@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import {
+  catalogueTransferTargetMatch,
+  expectedCatalogueOwnedSequenceStates,
   planCatalogueSourceIdentityMerge,
   remapCatalogueSourceForeignKeys,
   rewriteProductionCatalogueAssetUrls,
@@ -652,7 +654,9 @@ let sourceReleaseVersions = [];
 let sourceIdentityPlan = null;
 let targetReleaseVersions = [];
 let productionAssetUrlRewriteCount = 0;
+let productionAssetTimestampReuseCount = 0;
 let targetCommitSucceeded = false;
+let targetAlreadyMatched = false;
 const productionAssetRewriteTimestamp = new Date().toISOString();
 
 try {
@@ -718,6 +722,7 @@ try {
     const sourceMetadata = await tableMetadata(source, tableName);
     const targetMetadata = await tableMetadata(target, tableName);
     const contract = compatibleTableContract(tableName, sourceMetadata, targetMetadata);
+    const targetRowsBefore = await readRows(target, tableName, targetMetadata.primaryKey);
 
     let sourceRows = await readRows(source, tableName, sourceMetadata.primaryKey);
     let sourceIdentityForeignKeyColumns = [];
@@ -746,9 +751,13 @@ try {
         SOURCE_PROJECT_REF,
         TARGET_PROJECT_REF,
         productionAssetRewriteTimestamp,
+        targetRowsBefore,
+        targetMetadata.primaryKey,
+        contract.transferColumns,
       );
       sourceRows = rewritten.rows;
       productionAssetUrlRewriteCount = rewritten.rewrittenRowCount;
+      productionAssetTimestampReuseCount = rewritten.reusedProductionTimestampCount;
     }
     const sourceRowsBeforeExcludedParentProjection = sourceRows;
     const excludedParentReferenceForeignKeys = await excludedParentForeignKeys(
@@ -779,7 +788,6 @@ try {
       && selfReferenceForeignKeyColumns.length > 0) {
       throw new Error(`source_identity_self_reference_unsupported:${tableName}`);
     }
-    const targetRowsBefore = await readRows(target, tableName, targetMetadata.primaryKey);
     const targetSequencesBefore = await ownedSequenceStates(target, tableName, targetMetadata);
     const targetUserTriggerStates = await userTriggerStates(target, tableName);
     const nonstandardUserTriggers = targetUserTriggerStates.filter(
@@ -816,11 +824,43 @@ try {
     });
   }
 
-  for (const tableName of [...tableConfig.tables].reverse()) {
-    if (sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE) continue;
-    await setUserTriggersEnabled(target, tableName, false);
-    await target.query(`delete from ${qualifiedName(tableName)}`);
-    await setUserTriggersEnabled(target, tableName, true);
+  // A prior workflow may have committed the catalogue before a later deployment step failed.
+  // Only that exact state may bypass replacement; changed snapshots fail before target DML.
+  if (TRANSFER_MODE === 'promote') {
+    const targetMismatchTables = [];
+    for (const tableName of tableConfig.tables) {
+      const snapshot = snapshots.get(tableName);
+      const targetRows = snapshot.targetRowsBefore.map((row) => (
+        projectRow(row, snapshot.contract.transferColumns)
+      ));
+      const targetMatch = catalogueTransferTargetMatch({
+        tableName,
+        sourceRows: snapshot.sourceRows,
+        preservedTargetRows: snapshot.preservedTargetRows,
+        targetRows,
+        primaryKey: snapshot.sourceMetadata.primaryKey,
+        targetSequenceStates: snapshot.targetSequencesBefore,
+      });
+      if (!targetMatch.matches) {
+        targetMismatchTables.push(`${tableName}:${targetMatch.reason}`);
+      }
+    }
+    targetAlreadyMatched = targetMismatchTables.length === 0;
+    if (!targetAlreadyMatched) {
+      throw new Error(
+        'non_idempotent_production_transfer_requires_indexed_foreign_keys:'
+        + targetMismatchTables.join(','),
+      );
+    }
+  }
+
+  if (!targetAlreadyMatched) {
+    for (const tableName of [...tableConfig.tables].reverse()) {
+      if (sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE) continue;
+      await setUserTriggersEnabled(target, tableName, false);
+      await target.query(`delete from ${qualifiedName(tableName)}`);
+      await setUserTriggersEnabled(target, tableName, true);
+    }
   }
 
   for (const tableName of tableConfig.tables) {
@@ -842,47 +882,52 @@ try {
       targetUserTriggerStates,
       preservedTargetRows,
     } = snapshot;
-    const targetRowsAfterClear = await readRows(target, tableName, targetMetadata.primaryKey);
+    const targetRowsAfterClear = targetAlreadyMatched
+      ? targetRowsBefore
+      : await readRows(target, tableName, targetMetadata.primaryKey);
     const sourceIdentityMerge = Boolean(
       sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE,
     );
-    if (!sourceIdentityMerge && targetRowsAfterClear.length !== 0) {
+    if (!targetAlreadyMatched && !sourceIdentityMerge && targetRowsAfterClear.length !== 0) {
       throw new Error(`target_table_not_cleared:${tableName}`);
     }
-    if (sourceIdentityMerge && digestRows(targetRowsAfterClear) !== digestRows(targetRowsBefore)) {
+    if (!targetAlreadyMatched && sourceIdentityMerge
+      && digestRows(targetRowsAfterClear) !== digestRows(targetRowsBefore)) {
       throw new Error(`target_table_changed_before_merge:${tableName}`);
     }
 
-    await setUserTriggersEnabled(target, tableName, false);
-    if (sourceIdentityMerge) {
-      await upsertRows(
-        target,
-        tableName,
-        targetMetadata,
-        contract.transferColumns,
-        targetMetadata.primaryKey,
-        sourceRows,
-      );
-    } else {
-      await insertRows(
-        target,
-        tableName,
-        targetMetadata,
-        contract.transferColumns,
-        selfReferenceTransfer.initialRows,
-      );
-      await upsertRows(
-        target,
-        tableName,
-        targetMetadata,
-        contract.transferColumns,
-        targetMetadata.primaryKey,
-        selfReferenceTransfer.rowsToRestore,
-        selfReferenceForeignKeyColumns,
-      );
+    if (!targetAlreadyMatched) {
+      await setUserTriggersEnabled(target, tableName, false);
+      if (sourceIdentityMerge) {
+        await upsertRows(
+          target,
+          tableName,
+          targetMetadata,
+          contract.transferColumns,
+          targetMetadata.primaryKey,
+          sourceRows,
+        );
+      } else {
+        await insertRows(
+          target,
+          tableName,
+          targetMetadata,
+          contract.transferColumns,
+          selfReferenceTransfer.initialRows,
+        );
+        await upsertRows(
+          target,
+          tableName,
+          targetMetadata,
+          contract.transferColumns,
+          targetMetadata.primaryKey,
+          selfReferenceTransfer.rowsToRestore,
+          selfReferenceForeignKeyColumns,
+        );
+      }
+      await restartOwnedSequences(target, tableName, targetMetadata, sourceRows);
+      await setUserTriggersEnabled(target, tableName, true);
     }
-    await restartOwnedSequences(target, tableName, targetMetadata, sourceRows);
-    await setUserTriggersEnabled(target, tableName, true);
     const targetUserTriggerStatesDuringRehearsal = await userTriggerStates(target, tableName);
     if (stableJson(targetUserTriggerStatesDuringRehearsal) !== stableJson(targetUserTriggerStates)) {
       throw new Error(`user_trigger_state_mismatch:${tableName}`);
@@ -894,6 +939,14 @@ try {
       contract.transferColumns,
     );
     const targetSequencesDuringRehearsal = await ownedSequenceStates(target, tableName, targetMetadata);
+    const expectedTargetSequencesDuringRehearsal = expectedCatalogueOwnedSequenceStates(
+      targetSequencesBefore,
+      sourceRows,
+    );
+    if (stableJson(targetSequencesDuringRehearsal)
+      !== stableJson(expectedTargetSequencesDuringRehearsal)) {
+      throw new Error(`target_precommit_sequence_mismatch:${tableName}`);
+    }
     const matchedRows = verifySourceRows(
       tableName,
       sourceRows,
@@ -923,7 +976,7 @@ try {
       targetOnlyColumns: contract.targetOnlyColumns,
       sourceRowCount: sourceRows.length,
       targetRowCountBefore: targetRowsBefore.length,
-      targetRowCountAfterClear: targetRowsAfterClear.length,
+      targetRowCountAfterClear: targetAlreadyMatched ? null : targetRowsAfterClear.length,
       targetRowCountDuringRehearsal: targetRowsAfter.length,
       matchedSourceRowCount: matchedRows.length,
       sourceSha256: digestRows(sourceRows),
@@ -947,7 +1000,8 @@ try {
       targetUserTriggerStatesDuringRehearsal,
       preservedTargetRowCount: matchedPreservedTargetRows.length,
       preservedTargetSha256: digestRows(matchedPreservedTargetRows),
-      targetPreCommitVerified: true,
+      targetPreCommitVerified: false,
+      transferSkippedAsAlreadyCurrent: targetAlreadyMatched,
       targetBeforeSha256: digestRows(targetRowsBefore),
       targetSequencesBefore,
       targetSequencesDuringRehearsal,
@@ -972,6 +1026,22 @@ try {
     if (staleUrls !== 0) throw new Error('production_asset_url_rewrite_incomplete');
   }
 
+  for (const result of results) {
+    const snapshot = snapshots.get(result.table);
+    const sequencesAtPreCommit = result.targetSequencesBefore.length > 0
+      ? await ownedSequenceStates(target, result.table, snapshot.targetMetadata)
+      : [];
+    const expectedSequencesAtPreCommit = expectedCatalogueOwnedSequenceStates(
+      result.targetSequencesBefore,
+      snapshot.sourceRows,
+    );
+    if (stableJson(sequencesAtPreCommit) !== stableJson(expectedSequencesAtPreCommit)) {
+      throw new Error(`target_precommit_sequence_mismatch:${result.table}`);
+    }
+    result.targetSequencesAtPreCommit = sequencesAtPreCommit;
+    result.targetPreCommitVerified = true;
+  }
+
   if (TRANSFER_MODE !== 'rehearse') {
     await target.query('commit');
     targetCommitSucceeded = true;
@@ -994,6 +1064,12 @@ try {
         result.targetRowCountAfterCommit = rows.length;
         result.targetAfterCommitSha256 = digestRows(rows);
         result.targetSequencesAfterCommit = sequences;
+        const expectedRowCount = snapshot.sourceRows.length
+          + snapshot.preservedTargetRows.length;
+        const expectedSequences = expectedCatalogueOwnedSequenceStates(
+          result.targetSequencesBefore,
+          snapshot.sourceRows,
+        );
         const matchedRows = verifySourceRows(
           result.table,
           snapshot.sourceRows,
@@ -1014,7 +1090,10 @@ try {
             === result.preservedTargetSha256;
         }
         result.postCommitObservationMatched = result.matchedTargetAfterCommitSha256
-          === result.sourceSha256 && preservedRowsObserved;
+          === result.sourceSha256
+          && preservedRowsObserved
+          && rows.length === expectedRowCount
+          && stableJson(sequences) === stableJson(expectedSequences);
       } catch (error) {
         result.postCommitObservationMatched = false;
         result.postCommitObservationError = {
@@ -1041,7 +1120,7 @@ try {
 
   const evidence = {
     schemaVersion: TRANSFER_MODE === 'promote'
-      ? 'stackr-production-catalogue-data-promotion-evidence-v1.3.0'
+      ? 'stackr-production-catalogue-data-promotion-evidence-v1.4.0'
       : 'stackr-staging-catalogue-transfer-evidence-v1.6.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
@@ -1049,11 +1128,13 @@ try {
     targetProjectRef: TARGET_PROJECT_REF,
     productionProjectRef: PRODUCTION_PROJECT_REF,
     sourceReadOnly: true,
-    productionMutationPerformed: TRANSFER_MODE === 'promote',
+    productionMutationPerformed: TRANSFER_MODE === 'promote' && !targetAlreadyMatched,
     stagingMutationPerformed: false,
     isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
-    transferPolicy: TRANSFER_MODE === 'promote'
+    transferPolicy: TRANSFER_MODE === 'promote' && targetAlreadyMatched
+      ? 'verify_allowlisted_production_catalogue_already_matches_without_mutation'
+      : TRANSFER_MODE === 'promote'
       ? 'replace_allowlisted_production_catalogue_rows_preserve_source_identity_and_project_declared_private_provenance_references'
       : TRANSFER_MODE === 'commit'
       ? 'replace_allowlisted_isolated_candidate_tables_with_canonical_staging_rows'
@@ -1067,6 +1148,7 @@ try {
     targetCommitVerified: TRANSFER_MODE !== 'rehearse'
       ? targetCommitSucceeded && results.every((result) => result.targetPreCommitVerified)
       : null,
+    targetAlreadyMatched,
     catalogueRelease: TRANSFER_MODE === 'promote'
       ? {
           versionLabel: CATALOGUE_RELEASE_LABEL,
@@ -1074,6 +1156,7 @@ try {
           sourceVersionIds: sourceReleaseVersions.map((row) => row.id),
           releaseVersionSha256: digestRows(sourceReleaseVersions),
           productionAssetUrlRewriteCount,
+          productionAssetTimestampReuseCount,
         }
       : null,
     sourceIdentityPreservation: sourceIdentityPlan
@@ -1128,6 +1211,9 @@ try {
     matchedSourceRowCount: evidence.matchedSourceRowCount,
     targetRollbackVerified: evidence.targetRollbackVerified,
     targetCommitVerified: evidence.targetCommitVerified,
+    targetAlreadyMatched: evidence.targetAlreadyMatched,
+    productionMutationPerformed: evidence.productionMutationPerformed,
+    transferPolicy: evidence.transferPolicy,
   })}\n`);
 } finally {
   if (targetTransactionOpen) await target.query('rollback').catch(() => {});
