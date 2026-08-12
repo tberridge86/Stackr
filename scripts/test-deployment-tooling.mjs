@@ -492,6 +492,13 @@ assert.match(catalogueTransferWorkflow, /staging_preservation/);
 assert.match(catalogueTransferWorkflow, /production_catalogue/);
 assert.match(catalogueTransferWorkflow, /deploy\/production-catalogue-promotion-tables\.json/);
 assert.match(catalogueTransferWorkflow, /STACKR_TRANSFER_TABLE_CONFIG=\$table_config/);
+assert.match(catalogueTransferWorkflow, /STACKR_TRANSFER_MODE: rehearse/);
+assert.match(catalogueTransferWorkflow, /source_identity_policy='replace'/);
+assert.match(catalogueTransferWorkflow, /source_identity_policy='preserve_by_code'/);
+assert.match(
+  catalogueTransferWorkflow,
+  /STACKR_TRANSFER_SOURCE_IDENTITY_POLICY=\$source_identity_policy/,
+);
 assert.match(catalogueTransferWorkflow, /invalid_transfer_table_set/);
 assert.match(catalogueTransferWorkflow, /retention-days: 1/);
 assert.match(catalogueTransferWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
@@ -520,6 +527,11 @@ assert.match(catalogueTransferScript, /importRunIdentityIndexPresent/);
 assert.match(catalogueTransferScript, /if \(TRANSFER_MODE !== 'rehearse'\) \{[\s\S]+await target\.query\('commit'\);[\s\S]+targetCommitSucceeded = true/);
 assert.match(catalogueTransferScript, /PROMOTE VERIFIED CATALOGUE TO PRODUCTION/);
 assert.match(catalogueTransferScript, /production_promotion_target_guard_mismatch/);
+assert.match(catalogueTransferScript, /invalid_transfer_source_identity_policy/);
+assert.match(catalogueTransferScript, /production_source_identity_policy_mismatch/);
+assert.match(catalogueTransferScript, /committed_source_identity_policy_mismatch/);
+assert.match(catalogueTransferScript, /SOURCE_IDENTITY_POLICY === 'preserve_by_code'/);
+assert.match(catalogueTransferScript, /sourceIdentityPolicy: SOURCE_IDENTITY_POLICY/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.match(catalogueTransferScript, /targetCommitVerified/);
 assert.match(catalogueTransferScript, /planCatalogueSourceIdentityMerge/);

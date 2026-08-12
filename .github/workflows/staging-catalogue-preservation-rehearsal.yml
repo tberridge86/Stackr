@@ -35,6 +35,7 @@ jobs:
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
       SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+      STACKR_TRANSFER_MODE: rehearse
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -71,9 +72,11 @@ jobs:
           case "$STACKR_TRANSFER_TABLE_SET" in
             staging_preservation)
               table_config='deploy/staging-catalogue-preservation-tables.json'
+              source_identity_policy='replace'
               ;;
             production_catalogue)
               table_config='deploy/production-catalogue-promotion-tables.json'
+              source_identity_policy='preserve_by_code'
               ;;
             *)
               echo '::error::invalid_transfer_table_set'
@@ -81,6 +84,7 @@ jobs:
               ;;
           esac
           echo "STACKR_TRANSFER_TABLE_CONFIG=$table_config" >> "$GITHUB_ENV"
+          echo "STACKR_TRANSFER_SOURCE_IDENTITY_POLICY=$source_identity_policy" >> "$GITHUB_ENV"
 
       - name: Install pinned dependencies
         run: npm ci

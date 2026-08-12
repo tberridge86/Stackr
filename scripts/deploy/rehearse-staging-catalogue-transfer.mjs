@@ -18,6 +18,8 @@ const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL;
 const TARGET_DB_URL = process.env.STACKR_RESTORE_DB_URL;
 const EVIDENCE_PATH = process.env.STACKR_TRANSFER_EVIDENCE_PATH;
 const TRANSFER_MODE = process.env.STACKR_TRANSFER_MODE ?? 'rehearse';
+const SOURCE_IDENTITY_POLICY = process.env.STACKR_TRANSFER_SOURCE_IDENTITY_POLICY
+  ?? (TRANSFER_MODE === 'promote' ? 'preserve_by_code' : 'replace');
 const TRANSFER_CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
 const CATALOGUE_RELEASE_LABEL = process.env.STACKR_CATALOGUE_RELEASE_LABEL ?? null;
 const REQUIRED_CATALOGUE_LANGUAGES = String(
@@ -43,6 +45,15 @@ if (SOURCE_PROJECT_REF === PRODUCTION_PROJECT_REF) throw new Error('production_s
 if (!SOURCE_DB_URL.includes(SOURCE_PROJECT_REF)) throw new Error('source_database_url_project_mismatch');
 if (!TARGET_DB_URL.includes(TARGET_PROJECT_REF)) throw new Error('target_database_url_project_mismatch');
 if (!['rehearse', 'commit', 'promote'].includes(TRANSFER_MODE)) throw new Error('invalid_transfer_mode');
+if (!['replace', 'preserve_by_code'].includes(SOURCE_IDENTITY_POLICY)) {
+  throw new Error('invalid_transfer_source_identity_policy');
+}
+if (TRANSFER_MODE === 'promote' && SOURCE_IDENTITY_POLICY !== 'preserve_by_code') {
+  throw new Error('production_source_identity_policy_mismatch');
+}
+if (TRANSFER_MODE === 'commit' && SOURCE_IDENTITY_POLICY !== 'replace') {
+  throw new Error('committed_source_identity_policy_mismatch');
+}
 if (TRANSFER_MODE !== 'promote' && TARGET_PROJECT_REF === PRODUCTION_PROJECT_REF) {
   throw new Error('production_target_prohibited');
 }
@@ -578,9 +589,9 @@ try {
     excludedChecks.push({ table: tableName, rowCount: count, reason: 'staging_only_regenerable_projection' });
   }
 
-  if (TRANSFER_MODE === 'promote') {
+  if (SOURCE_IDENTITY_POLICY === 'preserve_by_code') {
     if (!tableConfig.tables.includes(SOURCE_IDENTITY_TABLE)) {
-      throw new Error('production_source_identity_table_missing');
+      throw new Error('source_identity_table_missing');
     }
     const sourceMetadata = await tableMetadata(source, SOURCE_IDENTITY_TABLE);
     const targetMetadata = await tableMetadata(target, SOURCE_IDENTITY_TABLE);
@@ -903,7 +914,10 @@ try {
       ? 'replace_allowlisted_production_catalogue_rows_while_preserving_source_identity_by_code'
       : TRANSFER_MODE === 'commit'
       ? 'replace_allowlisted_isolated_candidate_tables_with_canonical_staging_rows'
+      : SOURCE_IDENTITY_POLICY === 'preserve_by_code'
+      ? 'rehearse_allowlisted_catalogue_rows_while_preserving_target_source_identity_by_code'
       : 'replace_allowlisted_target_tables_with_source_rows_in_rollback_only_transaction',
+    sourceIdentityPolicy: SOURCE_IDENTITY_POLICY,
     targetRollbackVerified: TRANSFER_MODE === 'rehearse'
       ? results.every((result) => result.rollbackMatched)
       : null,
