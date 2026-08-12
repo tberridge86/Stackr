@@ -301,7 +301,8 @@ jobs:
           STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn,ko
           STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/evidence.json
           STACKR_STORAGE_PROMOTION_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/storage-evidence.json
-          STACKR_STORAGE_PROMOTION_CONCURRENCY: 32
+          STACKR_STORAGE_PROMOTION_CONCURRENCY: 8
+          STACKR_STORAGE_PROMOTION_RETRY_ATTEMPTS: 6
         run: |
           node scripts/deploy/promote-catalogue-storage.mjs
           node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
