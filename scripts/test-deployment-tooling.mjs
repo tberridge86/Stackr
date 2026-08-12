@@ -368,6 +368,21 @@ assert.deepEqual(
   ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
   'production migration dry-run and apply must use the validated, normalized source URL',
 );
+assert.match(
+  productionWorkflow,
+  /@railway\/cli@5\.30\.1 up backend --ci \\/,
+  'production must preserve the repository archive root for the Railway service root directory',
+);
+assert.doesNotMatch(
+  productionWorkflow,
+  /up backend --path-as-root/,
+  'production must not strip the backend directory from the Railway upload',
+);
+assert.match(
+  stagingWorkflow,
+  /@railway\/cli@5\.30\.1 up backend --path-as-root --ci/,
+  'staging must keep uploading backend as the archive root for its rootless Railway service',
+);
 assert.match(productionWorkflow, /benchmark-public-api\.mjs/);
 assert.match(productionWorkflow, /--catalogue-p95-ms=150/);
 assert.match(productionWorkflow, /--search-p95-ms=300/);
