@@ -26,7 +26,5 @@
   "excludedStagingProjections": [
     "public.staging_api_external_identifiers"
   ],
-  "excludedEmptyStagingOnlyTables": [
-    "audit.catalogue_release_events"
-  ]
+  "excludedEmptyStagingOnlyTables": []
 }

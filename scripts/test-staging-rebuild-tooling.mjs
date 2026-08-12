@@ -36,7 +36,7 @@ assert.match(transfer, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
 assert.match(transfer, /committed_transfer_source_not_canonical_staging/);
 assert.match(transfer, /committed_transfer_target_not_isolated_candidate/);
 assert.match(transfer, /committed_transfer_production_guard_mismatch/);
-assert.match(transfer, /if \(TRANSFER_MODE !== 'rehearse'\) await target\.query\('commit'\)/);
+assert.match(transfer, /if \(TRANSFER_MODE !== 'rehearse'\) \{[\s\S]+await target\.query\('commit'\);[\s\S]+targetCommitSucceeded = true/);
 assert.match(transfer, /PROMOTE VERIFIED CATALOGUE TO PRODUCTION/);
 assert.match(transfer, /production_promotion_target_guard_mismatch/);
 assert.match(transfer, /else await target\.query\('rollback'\)/);
@@ -54,6 +54,11 @@ assert.doesNotMatch(verifiedPostgres, /rejectUnauthorized\s*:\s*false|sslmode=no
 assert.ok(
   preservation.tables.includes('ingest.data_conflicts'),
   'the staging conflict review queue must be preserved',
+);
+assert.deepEqual(
+  preservation.excludedEmptyStagingOnlyTables,
+  [],
+  'staging preservation must not claim nonexistent empty-table exclusions',
 );
 
 console.log('Staging rebuild tooling tests passed.');
