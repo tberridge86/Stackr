@@ -515,6 +515,166 @@ assert.match(catalogueTransferScript, /PROMOTE VERIFIED CATALOGUE TO PRODUCTION/
 assert.match(catalogueTransferScript, /production_promotion_target_guard_mismatch/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.match(catalogueTransferScript, /targetCommitVerified/);
+assert.match(catalogueTransferScript, /planCatalogueSourceIdentityMerge/);
+assert.match(catalogueTransferScript, /foreignKeyColumnsReferencingSources/);
+assert.match(catalogueTransferScript, /if \(sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE\) continue/);
+assert.match(catalogueTransferScript, /upsertRows/);
+assert.match(catalogueTransferScript, /preservedProductionSourceIdCount/);
+assert.ok(
+  catalogueTransferScript.indexOf('production_release_versions_mismatch')
+    < catalogueTransferScript.indexOf("await target.query('commit')"),
+  'production release verification must happen before the target transaction commits',
+);
+assert.ok(
+  catalogueTransferScript.indexOf('production_asset_url_rewrite_incomplete')
+    < catalogueTransferScript.indexOf("await target.query('commit')"),
+  'production asset URL verification must happen before the target transaction commits',
+);
+assert.doesNotMatch(catalogueTransferScript, /update catalog\.assets[\s\S]+set url/i);
+
+const {
+  planCatalogueSourceIdentityMerge,
+  remapCatalogueSourceForeignKeys,
+  rewriteProductionCatalogueAssetUrls,
+  stableCatalogueJson,
+  verifyCatalogueRowsByPrimaryKey,
+} = await import('./deploy/catalogue-source-identity.mjs');
+const sourceIdentityPlan = planCatalogueSourceIdentityMerge(
+  [
+    { id: 'staging-shared', code: 'shared', display_name: 'Staging shared' },
+    { id: 'staging-new', code: 'new', display_name: 'Staging new' },
+  ],
+  [
+    { id: 'production-shared', code: 'shared', display_name: 'Production shared' },
+    { id: 'production-only', code: 'legacy', display_name: 'Production only' },
+  ],
+);
+assert.equal(sourceIdentityPlan.sourceIdMap.get('staging-shared'), 'production-shared');
+assert.equal(sourceIdentityPlan.sourceIdMap.get('staging-new'), 'staging-new');
+assert.deepEqual(
+  sourceIdentityPlan.mappedSourceRows.map(({ id, code }) => ({ id, code })),
+  [
+    { id: 'production-shared', code: 'shared' },
+    { id: 'staging-new', code: 'new' },
+  ],
+);
+assert.deepEqual(
+  sourceIdentityPlan.preservedTargetOnlyRows.map(({ id, code }) => ({ id, code })),
+  [{ id: 'production-only', code: 'legacy' }],
+);
+assert.equal(sourceIdentityPlan.preservedProductionSourceIdCount, 1);
+assert.equal(sourceIdentityPlan.remappedSourceIdCount, 1);
+assert.equal(sourceIdentityPlan.insertedSourceCount, 1);
+const retainedProductionConflict = { source_id: 'production-shared' };
+assert.ok(
+  sourceIdentityPlan.mappedSourceRows.some(({ id }) => id === retainedProductionConflict.source_id),
+  'a retained production conflict must keep referencing the preserved production source UUID',
+);
+const rerunSourceIdentityPlan = planCatalogueSourceIdentityMerge(
+  [
+    { id: 'staging-shared', code: 'shared', display_name: 'Staging shared' },
+    { id: 'staging-new', code: 'new', display_name: 'Staging new' },
+  ],
+  [...sourceIdentityPlan.mappedSourceRows, ...sourceIdentityPlan.preservedTargetOnlyRows],
+);
+assert.deepEqual(
+  [...rerunSourceIdentityPlan.sourceIdMap.entries()],
+  [...sourceIdentityPlan.sourceIdMap.entries()],
+  'rerunning the promotion must preserve the same source identity mapping',
+);
+assert.equal(rerunSourceIdentityPlan.insertedSourceCount, 0);
+
+const sourceForeignKeyRows = [
+  { id: 'row-1', source_id: 'staging-shared' },
+  { id: 'row-2', source_id: 'staging-new' },
+  { id: 'row-3', source_id: null },
+];
+const remappedSourceForeignKeys = remapCatalogueSourceForeignKeys(
+  sourceForeignKeyRows,
+  ['source_id'],
+  sourceIdentityPlan.sourceIdMap,
+  'catalog.assets',
+);
+assert.deepEqual(
+  remappedSourceForeignKeys.rows.map(({ id, source_id: sourceId }) => ({ id, sourceId })),
+  [
+    { id: 'row-1', sourceId: 'production-shared' },
+    { id: 'row-2', sourceId: 'staging-new' },
+    { id: 'row-3', sourceId: null },
+  ],
+);
+assert.equal(remappedSourceForeignKeys.remappedRowCount, 1);
+assert.equal(sourceForeignKeyRows[0].source_id, 'staging-shared');
+const reorderedCompositeKeySourceRows = [
+  { catalogue_version_id: 'version-1', source_id: 'z-source', external_id: 'one' },
+  { catalogue_version_id: 'version-1', source_id: 'a-source', external_id: 'two' },
+];
+const reorderedCompositeKeyTargetRows = [
+  reorderedCompositeKeySourceRows[1],
+  reorderedCompositeKeySourceRows[0],
+];
+const reorderedCompositeKeyMatches = verifyCatalogueRowsByPrimaryKey(
+  'catalog.catalogue_version_external_identifiers',
+  reorderedCompositeKeySourceRows,
+  reorderedCompositeKeyTargetRows,
+  ['catalogue_version_id', 'source_id', 'external_id'],
+);
+assert.equal(
+  stableCatalogueJson(reorderedCompositeKeyMatches),
+  stableCatalogueJson(reorderedCompositeKeySourceRows),
+  'post-commit verification must canonicalize target rows to transformed source order',
+);
+assert.throws(
+  () => remapCatalogueSourceForeignKeys(
+    [{ id: 'row-missing', source_id: 'missing-source' }],
+    ['source_id'],
+    sourceIdentityPlan.sourceIdMap,
+    'ingest.external_identifiers',
+  ),
+  /catalogue_source_identity_mapping_missing:ingest\.external_identifiers:source_id:missing-source/,
+);
+assert.throws(
+  () => planCatalogueSourceIdentityMerge(
+    [{ id: 'production-only', code: 'new-code' }],
+    [{ id: 'production-only', code: 'legacy-code' }],
+  ),
+  /catalogue_source_identity_id_collision:production-only:legacy-code:new-code/,
+);
+
+const assetRewriteTimestamp = '2026-08-12T16:30:00.000Z';
+const assetRewrite = rewriteProductionCatalogueAssetUrls(
+  [
+    {
+      id: 'asset-1',
+      storage_provider: 'supabase_storage',
+      storage_bucket: 'stackr-catalogue-public',
+      url: 'https://staging-ref.supabase.co/storage/v1/object/public/example.webp',
+      updated_at: '2026-08-11T00:00:00.000Z',
+    },
+    {
+      id: 'asset-2',
+      storage_provider: 'remote',
+      storage_bucket: null,
+      url: 'https://staging-ref.example/remote.webp',
+      updated_at: '2026-08-11T00:00:00.000Z',
+    },
+  ],
+  'staging-ref',
+  'production-ref',
+  assetRewriteTimestamp,
+);
+assert.equal(assetRewrite.rewrittenRowCount, 1);
+assert.equal(
+  assetRewrite.rows[0].url,
+  'https://production-ref.supabase.co/storage/v1/object/public/example.webp',
+);
+assert.equal(assetRewrite.rows[0].updated_at, assetRewriteTimestamp);
+assert.equal(assetRewrite.rows[1].url, 'https://staging-ref.example/remote.webp');
+assert.equal(
+  assetRewrite.rows[0].id,
+  'asset-1',
+  'rewriting a production Storage URL must preserve the catalogue asset identity',
+);
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
 const {
