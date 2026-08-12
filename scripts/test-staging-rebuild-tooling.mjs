@@ -65,5 +65,10 @@ assert.deepEqual(
   [],
   'staging preservation must not claim nonexistent regenerable projections',
 );
+assert.deepEqual(
+  preservation.excludedParentReferenceProjections,
+  [],
+  'full staging preservation must not project references to deliberately omitted parents',
+);
 
 console.log('Staging rebuild tooling tests passed.');

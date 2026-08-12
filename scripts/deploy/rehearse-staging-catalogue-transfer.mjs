@@ -8,6 +8,10 @@ import {
   stableCatalogueJson as stableJson,
   verifyCatalogueRowsByPrimaryKey as verifySourceRows,
 } from './catalogue-source-identity.mjs';
+import {
+  projectCatalogueExcludedParentReferences,
+  validateCatalogueExcludedParentForeignKeys,
+} from './catalogue-excluded-parent-transfer.mjs';
 import { prepareCatalogueSelfReferenceTransfer } from './catalogue-self-reference-transfer.mjs';
 import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 
@@ -94,6 +98,54 @@ if (![
   'stackr-production-catalogue-promotion-v1.0.0',
 ].includes(tableConfig.schemaVersion)) {
   throw new Error('invalid_table_config_version');
+}
+for (const property of [
+  'tables',
+  'excludedParentReferenceProjections',
+  'excludedStagingProjections',
+  'excludedEmptyStagingOnlyTables',
+]) {
+  if (!Array.isArray(tableConfig[property])) throw new Error(`invalid_table_config_property:${property}`);
+}
+const declaredExcludedParentReferenceProjections = tableConfig.excludedParentReferenceProjections.map(
+  (declaration) => {
+    const valid = declaration && typeof declaration === 'object'
+      && typeof declaration.table === 'string'
+      && typeof declaration.constraint === 'string'
+      && typeof declaration.parentTable === 'string'
+      && Array.isArray(declaration.columns)
+      && declaration.columns.length > 0
+      && declaration.columns.every((column) => typeof column === 'string')
+      && declaration.action === 'set_null'
+      && typeof declaration.reason === 'string'
+      && declaration.reason.length > 0;
+    if (!valid) throw new Error('invalid_excluded_parent_reference_projection_declaration');
+    return {
+      table: declaration.table,
+      constraintName: declaration.constraint,
+      parentTable: declaration.parentTable,
+      columnNames: declaration.columns,
+      action: declaration.action,
+      reason: declaration.reason,
+    };
+  },
+);
+const declaredProjectionKeys = new Set();
+for (const declaration of declaredExcludedParentReferenceProjections) {
+  splitTableName(declaration.table);
+  splitTableName(declaration.parentTable);
+  if (!tableConfig.tables.includes(declaration.table)) {
+    throw new Error(`excluded_parent_reference_projection_table_not_selected:${declaration.table}`);
+  }
+  if (!/^[a-z_][a-z0-9_]*$/.test(declaration.constraintName)
+    || declaration.columnNames.some((column) => !/^[a-z_][a-z0-9_]*$/.test(column))) {
+    throw new Error('invalid_excluded_parent_reference_projection_identifier');
+  }
+  const declarationKey = `${declaration.table}:${declaration.constraintName}`;
+  if (declaredProjectionKeys.has(declarationKey)) {
+    throw new Error(`duplicate_excluded_parent_reference_projection:${declarationKey}`);
+  }
+  declaredProjectionKeys.add(declarationKey);
 }
 
 function quoteIdentifier(value) {
@@ -385,6 +437,67 @@ async function foreignKeyColumnsReferencingSources(client, tableName) {
   return result.rows.map((row) => row.column_name);
 }
 
+async function excludedParentForeignKeys(
+  client,
+  tableName,
+  transferColumns,
+  selectedTables,
+  rows,
+  declaredProjections,
+) {
+  const { schema, table } = splitTableName(tableName);
+  const result = await client.query(`
+    select
+      constraint_record.conname as constraint_name,
+      parent_namespace.nspname || '.' || parent_table.relname as parent_table,
+      jsonb_agg(child_attribute.attname::text order by key_columns.ordinal) as column_names,
+      bool_and(not child_attribute.attnotnull) as all_columns_nullable,
+      case constraint_record.confdeltype
+        when 'a' then 'NO ACTION'
+        when 'r' then 'RESTRICT'
+        when 'c' then 'CASCADE'
+        when 'n' then 'SET NULL'
+        when 'd' then 'SET DEFAULT'
+        else 'UNKNOWN'
+      end as delete_action
+    from pg_constraint constraint_record
+    join pg_class child_table on child_table.oid = constraint_record.conrelid
+    join pg_namespace child_namespace on child_namespace.oid = child_table.relnamespace
+    join pg_class parent_table on parent_table.oid = constraint_record.confrelid
+    join pg_namespace parent_namespace on parent_namespace.oid = parent_table.relnamespace
+    join unnest(constraint_record.conkey)
+      with ordinality as key_columns(child_attnum, ordinal) on true
+    join pg_attribute child_attribute
+      on child_attribute.attrelid = child_table.oid
+      and child_attribute.attnum = key_columns.child_attnum
+    where constraint_record.contype = 'f'
+      and child_namespace.nspname = $1
+      and child_table.relname = $2
+    group by
+      constraint_record.oid,
+      constraint_record.conname,
+      parent_namespace.nspname,
+      parent_table.relname,
+      constraint_record.confdeltype
+    order by constraint_record.conname
+  `, [schema, table]);
+
+  return validateCatalogueExcludedParentForeignKeys({
+    foreignKeys: result.rows.map((row) => ({
+      constraintName: row.constraint_name,
+      parentTable: row.parent_table,
+      columnNames: row.column_names,
+      allColumnsNullable: row.all_columns_nullable,
+      deleteAction: row.delete_action,
+    })),
+    transferColumns,
+    selectedTables,
+    tableName,
+    rows,
+    declaredProjections,
+  });
+}
+
 async function selfReferentialForeignKeyColumns(client, tableName, transferColumns) {
   const { schema, table } = splitTableName(tableName);
   const result = await client.query(`
@@ -637,6 +750,21 @@ try {
       sourceRows = rewritten.rows;
       productionAssetUrlRewriteCount = rewritten.rewrittenRowCount;
     }
+    const sourceRowsBeforeExcludedParentProjection = sourceRows;
+    const excludedParentReferenceForeignKeys = await excludedParentForeignKeys(
+      target,
+      tableName,
+      contract.transferColumns,
+      tableConfig.tables,
+      sourceRows,
+      declaredExcludedParentReferenceProjections,
+    );
+    const excludedParentReferenceProjection = projectCatalogueExcludedParentReferences(
+      sourceRows,
+      excludedParentReferenceForeignKeys,
+      tableName,
+    );
+    sourceRows = excludedParentReferenceProjection.rows;
     const selfReferenceForeignKeyColumns = await selfReferentialForeignKeyColumns(
       target,
       tableName,
@@ -673,11 +801,14 @@ try {
       sourceMetadata,
       targetMetadata,
       sourceRows,
+      sourceRowsBeforeExcludedParentProjection,
       targetRowsBefore,
       targetSequencesBefore,
       contract,
       sourceIdentityForeignKeyColumns,
       sourceIdentityForeignKeyRemappedRowCount,
+      excludedParentReferenceForeignKeys,
+      excludedParentReferenceProjection,
       selfReferenceForeignKeyColumns,
       selfReferenceTransfer,
       targetUserTriggerStates,
@@ -698,11 +829,14 @@ try {
       sourceMetadata,
       targetMetadata,
       sourceRows,
+      sourceRowsBeforeExcludedParentProjection,
       targetRowsBefore,
       targetSequencesBefore,
       contract,
       sourceIdentityForeignKeyColumns,
       sourceIdentityForeignKeyRemappedRowCount,
+      excludedParentReferenceForeignKeys,
+      excludedParentReferenceProjection,
       selfReferenceForeignKeyColumns,
       selfReferenceTransfer,
       targetUserTriggerStates,
@@ -793,10 +927,19 @@ try {
       targetRowCountDuringRehearsal: targetRowsAfter.length,
       matchedSourceRowCount: matchedRows.length,
       sourceSha256: digestRows(sourceRows),
+      sourceBeforeExcludedParentProjectionSha256:
+        digestRows(sourceRowsBeforeExcludedParentProjection),
       matchedTargetSha256: digestRows(matchedRows),
       sourceIdentityMerge,
       sourceIdentityForeignKeyColumns,
       sourceIdentityForeignKeyRemappedRowCount,
+      excludedParentReferenceForeignKeys,
+      excludedParentReferenceProjectedColumns:
+        excludedParentReferenceProjection.projectedColumns,
+      excludedParentReferenceProjectedRowCount:
+        excludedParentReferenceProjection.projectedRowCount,
+      excludedParentReferenceProjectedValueCount:
+        excludedParentReferenceProjection.projectedValueCount,
       selfReferenceForeignKeyColumns,
       deferredSelfReferenceRowCount: selfReferenceTransfer.deferredRowCount,
       deferredSelfReferenceValueCount: selfReferenceTransfer.deferredValueCount,
@@ -898,8 +1041,8 @@ try {
 
   const evidence = {
     schemaVersion: TRANSFER_MODE === 'promote'
-      ? 'stackr-production-catalogue-data-promotion-evidence-v1.2.0'
-      : 'stackr-staging-catalogue-transfer-evidence-v1.5.0',
+      ? 'stackr-production-catalogue-data-promotion-evidence-v1.3.0'
+      : 'stackr-staging-catalogue-transfer-evidence-v1.6.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
     sourceProjectRef: SOURCE_PROJECT_REF,
@@ -911,11 +1054,11 @@ try {
     isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
     transferPolicy: TRANSFER_MODE === 'promote'
-      ? 'replace_allowlisted_production_catalogue_rows_while_preserving_source_identity_by_code'
+      ? 'replace_allowlisted_production_catalogue_rows_preserve_source_identity_and_project_declared_private_provenance_references'
       : TRANSFER_MODE === 'commit'
       ? 'replace_allowlisted_isolated_candidate_tables_with_canonical_staging_rows'
       : SOURCE_IDENTITY_POLICY === 'preserve_by_code'
-      ? 'rehearse_allowlisted_catalogue_rows_while_preserving_target_source_identity_by_code'
+      ? 'rehearse_allowlisted_catalogue_rows_preserve_target_source_identity_and_project_declared_private_provenance_references'
       : 'replace_allowlisted_target_tables_with_source_rows_in_rollback_only_transaction',
     sourceIdentityPolicy: SOURCE_IDENTITY_POLICY,
     targetRollbackVerified: TRANSFER_MODE === 'rehearse'
@@ -949,6 +1092,20 @@ try {
           ),
         }
       : null,
+    excludedParentReferenceProjection: {
+      foreignKeyCount: results.reduce(
+        (sum, result) => sum + result.excludedParentReferenceForeignKeys.length,
+        0,
+      ),
+      projectedRowCount: results.reduce(
+        (sum, result) => sum + result.excludedParentReferenceProjectedRowCount,
+        0,
+      ),
+      projectedValueCount: results.reduce(
+        (sum, result) => sum + result.excludedParentReferenceProjectedValueCount,
+        0,
+      ),
+    },
     selectedTableCount: results.length,
     sourceRowCount: results.reduce((sum, result) => sum + result.sourceRowCount, 0),
     matchedSourceRowCount: results.reduce((sum, result) => sum + result.matchedSourceRowCount, 0),

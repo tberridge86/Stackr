@@ -23,6 +23,7 @@
     "catalog.catalogue_change_log",
     "audit.ingest_merge_decisions"
   ],
+  "excludedParentReferenceProjections": [],
   "excludedStagingProjections": [],
   "excludedEmptyStagingOnlyTables": []
 }

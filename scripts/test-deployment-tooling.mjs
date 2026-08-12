@@ -331,6 +331,9 @@ const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
+const productionCataloguePromotion = JSON.parse(
+  readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
+);
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
@@ -503,6 +506,14 @@ assert.match(catalogueTransferWorkflow, /invalid_transfer_table_set/);
 assert.match(catalogueTransferWorkflow, /retention-days: 1/);
 assert.match(catalogueTransferWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
 assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACCESS_TOKEN|db push|migration repair/);
+assert.deepEqual(productionCataloguePromotion.excludedParentReferenceProjections, [{
+  table: 'ingest.external_identifiers',
+  constraint: 'external_identifiers_raw_record_id_fkey',
+  parentTable: 'ingest.raw_source_records',
+  columns: ['raw_record_id'],
+  action: 'set_null',
+  reason: 'parent_table_deliberately_excluded_private_provenance',
+}]);
 
 const catalogueTransferScript = readFileSync('scripts/deploy/rehearse-staging-catalogue-transfer.mjs', 'utf8');
 assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
@@ -546,6 +557,10 @@ assert.match(catalogueTransferScript, /self_reference_transfer_requires_nullable
 assert.match(catalogueTransferScript, /source_identity_self_reference_unsupported/);
 assert.match(catalogueTransferScript, /selfReferenceTransfer\.initialRows/);
 assert.match(catalogueTransferScript, /selfReferenceTransfer\.rowsToRestore/);
+assert.match(catalogueTransferScript, /excludedParentForeignKeys/);
+assert.match(catalogueTransferScript, /excludedParentReferenceProjection/);
+assert.match(catalogueTransferScript, /declaredExcludedParentReferenceProjections/);
+assert.match(catalogueTransferScript, /excludedParentReferenceProjectedValueCount/);
 assert.doesNotMatch(catalogueTransferScript, /disable trigger all/i);
 assert.match(catalogueTransferScript, /lockTransferTables\(target, tableConfig\.tables\)/);
 assert.match(catalogueTransferScript, /in exclusive mode/);
@@ -583,6 +598,123 @@ const {
 const {
   prepareCatalogueSelfReferenceTransfer,
 } = await import('./deploy/catalogue-self-reference-transfer.mjs');
+const {
+  projectCatalogueExcludedParentReferences,
+  validateCatalogueExcludedParentForeignKeys,
+} = await import('./deploy/catalogue-excluded-parent-transfer.mjs');
+
+const externalIdentifierSourceRows = [
+  { id: 'identifier-1', source_id: 'source-1', raw_record_id: 'raw-1' },
+  { id: 'identifier-2', source_id: 'source-1', raw_record_id: null },
+];
+const excludedParentForeignKeys = validateCatalogueExcludedParentForeignKeys({
+  foreignKeys: [
+    {
+      constraintName: 'external_identifiers_raw_record_id_fkey',
+      parentTable: 'ingest.raw_source_records',
+      columnNames: ['raw_record_id'],
+      allColumnsNullable: true,
+      deleteAction: 'SET NULL',
+    },
+    {
+      constraintName: 'external_identifiers_source_id_fkey',
+      parentTable: 'ingest.sources',
+      columnNames: ['source_id'],
+      allColumnsNullable: false,
+      deleteAction: 'RESTRICT',
+    },
+  ],
+  transferColumns: ['id', 'source_id', 'raw_record_id'],
+  selectedTables: ['ingest.sources', 'ingest.external_identifiers'],
+  tableName: 'ingest.external_identifiers',
+  rows: externalIdentifierSourceRows,
+  declaredProjections: [{
+    table: 'ingest.external_identifiers',
+    constraintName: 'external_identifiers_raw_record_id_fkey',
+    parentTable: 'ingest.raw_source_records',
+    columnNames: ['raw_record_id'],
+    action: 'set_null',
+    reason: 'parent_table_deliberately_excluded_private_provenance',
+  }],
+});
+assert.equal(excludedParentForeignKeys.length, 1);
+const projectedExcludedParentReferences = projectCatalogueExcludedParentReferences(
+  externalIdentifierSourceRows,
+  excludedParentForeignKeys,
+  'ingest.external_identifiers',
+);
+assert.deepEqual(projectedExcludedParentReferences.rows, [
+  { id: 'identifier-1', source_id: 'source-1', raw_record_id: null },
+  { id: 'identifier-2', source_id: 'source-1', raw_record_id: null },
+]);
+assert.deepEqual(projectedExcludedParentReferences.projectedColumns, ['raw_record_id']);
+assert.equal(projectedExcludedParentReferences.projectedRowCount, 1);
+assert.equal(projectedExcludedParentReferences.projectedValueCount, 1);
+assert.equal(externalIdentifierSourceRows[0].raw_record_id, 'raw-1');
+assert.throws(
+  () => validateCatalogueExcludedParentForeignKeys({
+    foreignKeys: [{
+      constraintName: 'unsafe_parent_fkey',
+      parentTable: 'ingest.unselected_parent',
+      columnNames: ['parent_id'],
+      allColumnsNullable: true,
+      deleteAction: 'RESTRICT',
+    }],
+    transferColumns: ['id', 'parent_id'],
+    selectedTables: ['catalog.test_rows'],
+    tableName: 'catalog.test_rows',
+    rows: [{ id: 'test-row', parent_id: 'parent-row' }],
+    declaredProjections: [],
+  }),
+  /undeclared_excluded_parent_reference_projection/,
+);
+for (const [foreignKeyPatch, expectedError] of [
+  [{ allColumnsNullable: false }, /excluded_parent_reference_requires_nullable_columns/],
+  [{ deleteAction: 'RESTRICT' }, /excluded_parent_reference_requires_on_delete_set_null/],
+]) {
+  assert.throws(
+    () => validateCatalogueExcludedParentForeignKeys({
+      foreignKeys: [{
+        constraintName: 'external_identifiers_raw_record_id_fkey',
+        parentTable: 'ingest.raw_source_records',
+        columnNames: ['raw_record_id'],
+        allColumnsNullable: true,
+        deleteAction: 'SET NULL',
+        ...foreignKeyPatch,
+      }],
+      transferColumns: ['id', 'raw_record_id'],
+      selectedTables: ['ingest.external_identifiers'],
+      tableName: 'ingest.external_identifiers',
+      rows: externalIdentifierSourceRows,
+      declaredProjections: [{
+        table: 'ingest.external_identifiers',
+        constraintName: 'external_identifiers_raw_record_id_fkey',
+        parentTable: 'ingest.raw_source_records',
+        columnNames: ['raw_record_id'],
+        action: 'set_null',
+        reason: 'parent_table_deliberately_excluded_private_provenance',
+      }],
+    }),
+    expectedError,
+  );
+}
+assert.deepEqual(
+  validateCatalogueExcludedParentForeignKeys({
+    foreignKeys: [{
+      constraintName: 'unused_null_parent_fkey',
+      parentTable: 'auth.users',
+      columnNames: ['requested_by'],
+      allColumnsNullable: true,
+      deleteAction: 'NO ACTION',
+    }],
+    transferColumns: ['id', 'requested_by'],
+    selectedTables: ['ingest.import_runs'],
+    tableName: 'ingest.import_runs',
+    rows: [{ id: 'run-1', requested_by: null }],
+    declaredProjections: [],
+  }),
+  [],
+);
 
 const forwardAndCyclicSelfReferences = [
   {

@@ -25,6 +25,16 @@
     "catalog.catalogue_version_assets",
     "catalog.catalogue_version_external_identifiers"
   ],
+  "excludedParentReferenceProjections": [
+    {
+      "table": "ingest.external_identifiers",
+      "constraint": "external_identifiers_raw_record_id_fkey",
+      "parentTable": "ingest.raw_source_records",
+      "columns": ["raw_record_id"],
+      "action": "set_null",
+      "reason": "parent_table_deliberately_excluded_private_provenance"
+    }
+  ],
   "excludedStagingProjections": [],
   "excludedEmptyStagingOnlyTables": []
 }
