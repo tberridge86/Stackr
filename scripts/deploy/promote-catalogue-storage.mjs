@@ -60,14 +60,16 @@ const targetStorage = createClient(`https://${TARGET_PROJECT_REF}.supabase.co`, 
   global: { fetch: boundedFetch },
 });
 
-async function retry(operation) {
+async function retry(operation, options = {}) {
   return retryStorageOperation(operation, {
     attempts: RETRY_ATTEMPTS,
-    onRetry: ({ attempt, throttled, delayMilliseconds }) => {
+    ...options,
+    onRetry: ({ attempt, throttled, abortedUpload, delayMilliseconds }) => {
       process.stdout.write(`${JSON.stringify({
         phase: 'retry_catalogue_storage_operation',
         attempt,
         throttled,
+        abortedUpload,
         delayMilliseconds,
       })}\n`);
     },
@@ -208,7 +210,7 @@ const transferResults = await mapWithConcurrency(missing, async (object) => {
   await retry(() => expectData(
     targetStorage.storage.from(BUCKET).upload(object.name, bytes, uploadOptions(object)),
     `upload_production_object:${object.name}`,
-  ));
+  ), { retryAbortedUploadBadRequest: true });
   return { name: object.name, bytes: bytes.length, contentHashVerified: true };
 });
 
