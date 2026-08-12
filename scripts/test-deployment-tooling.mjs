@@ -331,6 +331,9 @@ const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
+const productionCataloguePromotion = JSON.parse(
+  readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
+);
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
@@ -486,9 +489,31 @@ assert.match(catalogueTransferWorkflow, /krjttpmthxkfsbqksxci/);
 assert.match(catalogueTransferWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(catalogueTransferWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(catalogueTransferWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
+assert.match(catalogueTransferWorkflow, /table_set:/);
+assert.match(catalogueTransferWorkflow, /default: staging_preservation/);
+assert.match(catalogueTransferWorkflow, /staging_preservation/);
+assert.match(catalogueTransferWorkflow, /production_catalogue/);
+assert.match(catalogueTransferWorkflow, /deploy\/production-catalogue-promotion-tables\.json/);
+assert.match(catalogueTransferWorkflow, /STACKR_TRANSFER_TABLE_CONFIG=\$table_config/);
+assert.match(catalogueTransferWorkflow, /STACKR_TRANSFER_MODE: rehearse/);
+assert.match(catalogueTransferWorkflow, /source_identity_policy='replace'/);
+assert.match(catalogueTransferWorkflow, /source_identity_policy='preserve_by_code'/);
+assert.match(
+  catalogueTransferWorkflow,
+  /STACKR_TRANSFER_SOURCE_IDENTITY_POLICY=\$source_identity_policy/,
+);
+assert.match(catalogueTransferWorkflow, /invalid_transfer_table_set/);
 assert.match(catalogueTransferWorkflow, /retention-days: 1/);
 assert.match(catalogueTransferWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
 assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACCESS_TOKEN|db push|migration repair/);
+assert.deepEqual(productionCataloguePromotion.excludedParentReferenceProjections, [{
+  table: 'ingest.external_identifiers',
+  constraint: 'external_identifiers_raw_record_id_fkey',
+  parentTable: 'ingest.raw_source_records',
+  columns: ['raw_record_id'],
+  action: 'set_null',
+  reason: 'parent_table_deliberately_excluded_private_provenance',
+}]);
 
 const catalogueTransferScript = readFileSync('scripts/deploy/rehearse-staging-catalogue-transfer.mjs', 'utf8');
 assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
@@ -510,9 +535,14 @@ assert.match(catalogueTransferScript, /source_unique_constraint_conflict:ingest\
 assert.match(catalogueTransferScript, /count\(distinct payload_hash\)/);
 assert.match(catalogueTransferScript, /legacyRawRecordIdentityIndexPresent/);
 assert.match(catalogueTransferScript, /importRunIdentityIndexPresent/);
-assert.match(catalogueTransferScript, /if \(TRANSFER_MODE !== 'rehearse'\) await target\.query\('commit'\)/);
+assert.match(catalogueTransferScript, /if \(TRANSFER_MODE !== 'rehearse'\) \{[\s\S]+await target\.query\('commit'\);[\s\S]+targetCommitSucceeded = true/);
 assert.match(catalogueTransferScript, /PROMOTE VERIFIED CATALOGUE TO PRODUCTION/);
 assert.match(catalogueTransferScript, /production_promotion_target_guard_mismatch/);
+assert.match(catalogueTransferScript, /invalid_transfer_source_identity_policy/);
+assert.match(catalogueTransferScript, /production_source_identity_policy_mismatch/);
+assert.match(catalogueTransferScript, /committed_source_identity_policy_mismatch/);
+assert.match(catalogueTransferScript, /SOURCE_IDENTITY_POLICY === 'preserve_by_code'/);
+assert.match(catalogueTransferScript, /sourceIdentityPolicy: SOURCE_IDENTITY_POLICY/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.match(catalogueTransferScript, /targetCommitVerified/);
 assert.match(catalogueTransferScript, /planCatalogueSourceIdentityMerge/);
@@ -520,6 +550,32 @@ assert.match(catalogueTransferScript, /foreignKeyColumnsReferencingSources/);
 assert.match(catalogueTransferScript, /if \(sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE\) continue/);
 assert.match(catalogueTransferScript, /upsertRows/);
 assert.match(catalogueTransferScript, /preservedProductionSourceIdCount/);
+assert.match(catalogueTransferScript, /selfReferentialForeignKeyColumns/);
+assert.match(catalogueTransferScript, /jsonb_agg\(child_attribute\.attname::text/);
+assert.doesNotMatch(catalogueTransferScript, /array_agg\(child_attribute\.attname/);
+assert.match(catalogueTransferScript, /self_reference_transfer_requires_nullable_columns/);
+assert.match(catalogueTransferScript, /source_identity_self_reference_unsupported/);
+assert.match(catalogueTransferScript, /selfReferenceTransfer\.initialRows/);
+assert.match(catalogueTransferScript, /selfReferenceTransfer\.rowsToRestore/);
+assert.match(catalogueTransferScript, /excludedParentForeignKeys/);
+assert.match(catalogueTransferScript, /excludedParentReferenceProjection/);
+assert.match(catalogueTransferScript, /declaredExcludedParentReferenceProjections/);
+assert.match(catalogueTransferScript, /excludedParentReferenceProjectedValueCount/);
+assert.doesNotMatch(catalogueTransferScript, /disable trigger all/i);
+assert.match(catalogueTransferScript, /lockTransferTables\(target, tableConfig\.tables\)/);
+assert.match(catalogueTransferScript, /in exclusive mode/);
+assert.match(catalogueTransferScript, /set local lock_timeout = '30s'/);
+assert.ok(
+  catalogueTransferScript.indexOf('lockTransferTables(target, tableConfig.tables)')
+    < catalogueTransferScript.indexOf("'ingest.raw_source_records_identity_uidx'"),
+  'the target tables must be write-locked before the repeatable-read target snapshot is established',
+);
+assert.match(catalogueTransferScript, /nonstandard_user_trigger_state/);
+assert.match(catalogueTransferScript, /user_trigger_state_mismatch/);
+assert.match(catalogueTransferScript, /target_precommit_row_count_mismatch/);
+assert.match(catalogueTransferScript, /targetPreCommitVerified: true/);
+assert.match(catalogueTransferScript, /postCommitObservationMatched/);
+assert.doesNotMatch(catalogueTransferScript, /throw new Error\(`target_commit_mismatch/);
 assert.ok(
   catalogueTransferScript.indexOf('production_release_versions_mismatch')
     < catalogueTransferScript.indexOf("await target.query('commit')"),
@@ -539,6 +595,217 @@ const {
   stableCatalogueJson,
   verifyCatalogueRowsByPrimaryKey,
 } = await import('./deploy/catalogue-source-identity.mjs');
+const {
+  prepareCatalogueSelfReferenceTransfer,
+} = await import('./deploy/catalogue-self-reference-transfer.mjs');
+const {
+  projectCatalogueExcludedParentReferences,
+  validateCatalogueExcludedParentForeignKeys,
+} = await import('./deploy/catalogue-excluded-parent-transfer.mjs');
+
+const externalIdentifierSourceRows = [
+  { id: 'identifier-1', source_id: 'source-1', raw_record_id: 'raw-1' },
+  { id: 'identifier-2', source_id: 'source-1', raw_record_id: null },
+];
+const excludedParentForeignKeys = validateCatalogueExcludedParentForeignKeys({
+  foreignKeys: [
+    {
+      constraintName: 'external_identifiers_raw_record_id_fkey',
+      parentTable: 'ingest.raw_source_records',
+      columnNames: ['raw_record_id'],
+      allColumnsNullable: true,
+      deleteAction: 'SET NULL',
+    },
+    {
+      constraintName: 'external_identifiers_source_id_fkey',
+      parentTable: 'ingest.sources',
+      columnNames: ['source_id'],
+      allColumnsNullable: false,
+      deleteAction: 'RESTRICT',
+    },
+  ],
+  transferColumns: ['id', 'source_id', 'raw_record_id'],
+  selectedTables: ['ingest.sources', 'ingest.external_identifiers'],
+  tableName: 'ingest.external_identifiers',
+  rows: externalIdentifierSourceRows,
+  declaredProjections: [{
+    table: 'ingest.external_identifiers',
+    constraintName: 'external_identifiers_raw_record_id_fkey',
+    parentTable: 'ingest.raw_source_records',
+    columnNames: ['raw_record_id'],
+    action: 'set_null',
+    reason: 'parent_table_deliberately_excluded_private_provenance',
+  }],
+});
+assert.equal(excludedParentForeignKeys.length, 1);
+const projectedExcludedParentReferences = projectCatalogueExcludedParentReferences(
+  externalIdentifierSourceRows,
+  excludedParentForeignKeys,
+  'ingest.external_identifiers',
+);
+assert.deepEqual(projectedExcludedParentReferences.rows, [
+  { id: 'identifier-1', source_id: 'source-1', raw_record_id: null },
+  { id: 'identifier-2', source_id: 'source-1', raw_record_id: null },
+]);
+assert.deepEqual(projectedExcludedParentReferences.projectedColumns, ['raw_record_id']);
+assert.equal(projectedExcludedParentReferences.projectedRowCount, 1);
+assert.equal(projectedExcludedParentReferences.projectedValueCount, 1);
+assert.equal(externalIdentifierSourceRows[0].raw_record_id, 'raw-1');
+assert.throws(
+  () => validateCatalogueExcludedParentForeignKeys({
+    foreignKeys: [{
+      constraintName: 'unsafe_parent_fkey',
+      parentTable: 'ingest.unselected_parent',
+      columnNames: ['parent_id'],
+      allColumnsNullable: true,
+      deleteAction: 'RESTRICT',
+    }],
+    transferColumns: ['id', 'parent_id'],
+    selectedTables: ['catalog.test_rows'],
+    tableName: 'catalog.test_rows',
+    rows: [{ id: 'test-row', parent_id: 'parent-row' }],
+    declaredProjections: [],
+  }),
+  /undeclared_excluded_parent_reference_projection/,
+);
+for (const [foreignKeyPatch, expectedError] of [
+  [{ allColumnsNullable: false }, /excluded_parent_reference_requires_nullable_columns/],
+  [{ deleteAction: 'RESTRICT' }, /excluded_parent_reference_requires_on_delete_set_null/],
+]) {
+  assert.throws(
+    () => validateCatalogueExcludedParentForeignKeys({
+      foreignKeys: [{
+        constraintName: 'external_identifiers_raw_record_id_fkey',
+        parentTable: 'ingest.raw_source_records',
+        columnNames: ['raw_record_id'],
+        allColumnsNullable: true,
+        deleteAction: 'SET NULL',
+        ...foreignKeyPatch,
+      }],
+      transferColumns: ['id', 'raw_record_id'],
+      selectedTables: ['ingest.external_identifiers'],
+      tableName: 'ingest.external_identifiers',
+      rows: externalIdentifierSourceRows,
+      declaredProjections: [{
+        table: 'ingest.external_identifiers',
+        constraintName: 'external_identifiers_raw_record_id_fkey',
+        parentTable: 'ingest.raw_source_records',
+        columnNames: ['raw_record_id'],
+        action: 'set_null',
+        reason: 'parent_table_deliberately_excluded_private_provenance',
+      }],
+    }),
+    expectedError,
+  );
+}
+assert.deepEqual(
+  validateCatalogueExcludedParentForeignKeys({
+    foreignKeys: [{
+      constraintName: 'unused_null_parent_fkey',
+      parentTable: 'auth.users',
+      columnNames: ['requested_by'],
+      allColumnsNullable: true,
+      deleteAction: 'NO ACTION',
+    }],
+    transferColumns: ['id', 'requested_by'],
+    selectedTables: ['ingest.import_runs'],
+    tableName: 'ingest.import_runs',
+    rows: [{ id: 'run-1', requested_by: null }],
+    declaredProjections: [],
+  }),
+  [],
+);
+
+const forwardAndCyclicSelfReferences = [
+  {
+    id: 'batch-two-child',
+    corrected_by_id: 'later-batch-parent',
+    related_by_id: null,
+    composite_parent_id: 'later-batch-parent',
+    composite_parent_language: 'en',
+  },
+  {
+    id: 'later-batch-parent',
+    corrected_by_id: null,
+    related_by_id: null,
+    composite_parent_id: null,
+    composite_parent_language: null,
+  },
+  {
+    id: 'cycle-a',
+    corrected_by_id: 'cycle-b',
+    related_by_id: 'later-batch-parent',
+    composite_parent_id: null,
+    composite_parent_language: null,
+  },
+  {
+    id: 'cycle-b',
+    corrected_by_id: 'cycle-a',
+    related_by_id: null,
+    composite_parent_id: null,
+    composite_parent_language: 'partially-populated-fixture',
+  },
+];
+const preparedSelfReferences = prepareCatalogueSelfReferenceTransfer(
+  forwardAndCyclicSelfReferences,
+  [
+    'corrected_by_id',
+    'related_by_id',
+    'composite_parent_id',
+    'composite_parent_language',
+  ],
+  'catalog.test_rows',
+);
+assert.deepEqual(
+  preparedSelfReferences.initialRows,
+  [
+    {
+      id: 'batch-two-child',
+      corrected_by_id: null,
+      related_by_id: null,
+      composite_parent_id: null,
+      composite_parent_language: null,
+    },
+    {
+      id: 'later-batch-parent',
+      corrected_by_id: null,
+      related_by_id: null,
+      composite_parent_id: null,
+      composite_parent_language: null,
+    },
+    {
+      id: 'cycle-a',
+      corrected_by_id: null,
+      related_by_id: null,
+      composite_parent_id: null,
+      composite_parent_language: null,
+    },
+    {
+      id: 'cycle-b',
+      corrected_by_id: null,
+      related_by_id: null,
+      composite_parent_id: null,
+      composite_parent_language: null,
+    },
+  ],
+  'the initial insert must not depend on self-referenced rows being in an earlier batch',
+);
+assert.deepEqual(
+  preparedSelfReferences.rowsToRestore,
+  [
+    forwardAndCyclicSelfReferences[0],
+    forwardAndCyclicSelfReferences[2],
+    forwardAndCyclicSelfReferences[3],
+  ],
+  'only rows with populated self references need the exact-value restoration pass',
+);
+assert.equal(preparedSelfReferences.deferredRowCount, 3);
+assert.equal(preparedSelfReferences.deferredValueCount, 7);
+assert.equal(
+  forwardAndCyclicSelfReferences[0].corrected_by_id,
+  'later-batch-parent',
+  'preparing the initial insert must not mutate the verified source snapshot',
+);
 const sourceIdentityPlan = planCatalogueSourceIdentityMerge(
   [
     { id: 'staging-shared', code: 'shared', display_name: 'Staging shared' },
