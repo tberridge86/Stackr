@@ -60,5 +60,10 @@ assert.deepEqual(
   [],
   'staging preservation must not claim nonexistent empty-table exclusions',
 );
+assert.deepEqual(
+  preservation.excludedStagingProjections,
+  [],
+  'staging preservation must not claim nonexistent regenerable projections',
+);
 
 console.log('Staging rebuild tooling tests passed.');

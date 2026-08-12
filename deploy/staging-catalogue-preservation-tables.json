@@ -23,8 +23,6 @@
     "catalog.catalogue_change_log",
     "audit.ingest_merge_decisions"
   ],
-  "excludedStagingProjections": [
-    "public.staging_api_external_identifiers"
-  ],
+  "excludedStagingProjections": [],
   "excludedEmptyStagingOnlyTables": []
 }
