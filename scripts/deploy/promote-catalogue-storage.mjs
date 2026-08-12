@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
+import { retryStorageOperation } from './storage-operation-retry.mjs';
 import { createVerifiedSupabasePostgresClient } from './verified-supabase-postgres.mjs';
 
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
@@ -13,8 +14,8 @@ const TARGET_SECRET = process.env.SUPABASE_PRODUCTION_SECRET_KEY;
 const EVIDENCE_PATH = process.env.STACKR_STORAGE_PROMOTION_EVIDENCE_PATH;
 const CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
 const BUCKET = 'stackr-catalogue-public';
-const CONCURRENCY = Number(process.env.STACKR_STORAGE_PROMOTION_CONCURRENCY ?? 32);
-const RETRY_ATTEMPTS = Number(process.env.STACKR_STORAGE_PROMOTION_RETRY_ATTEMPTS ?? 4);
+const CONCURRENCY = Number(process.env.STACKR_STORAGE_PROMOTION_CONCURRENCY ?? 8);
+const RETRY_ATTEMPTS = Number(process.env.STACKR_STORAGE_PROMOTION_RETRY_ATTEMPTS ?? 6);
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -59,26 +60,29 @@ const targetStorage = createClient(`https://${TARGET_PROJECT_REF}.supabase.co`, 
   global: { fetch: boundedFetch },
 });
 
-function wait(milliseconds) {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
-}
-
 async function retry(operation) {
-  let lastError;
-  for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt += 1) {
-    try {
-      return await operation();
-    } catch (error) {
-      lastError = error;
-      if (attempt < RETRY_ATTEMPTS) await wait(250 * (2 ** (attempt - 1)));
-    }
-  }
-  throw lastError;
+  return retryStorageOperation(operation, {
+    attempts: RETRY_ATTEMPTS,
+    onRetry: ({ attempt, throttled, delayMilliseconds }) => {
+      process.stdout.write(`${JSON.stringify({
+        phase: 'retry_catalogue_storage_operation',
+        attempt,
+        throttled,
+        delayMilliseconds,
+      })}\n`);
+    },
+  });
 }
 
 async function expectData(operation, context) {
   const result = await operation;
-  if (result.error) throw new Error(`${context}:${result.error.message}`);
+  if (result.error) {
+    const error = new Error(`${context}:${result.error.message}`, { cause: result.error });
+    for (const property of ['code', 'status', 'statusCode']) {
+      if (result.error[property] != null) error[property] = result.error[property];
+    }
+    throw error;
+  }
   return result.data;
 }
 

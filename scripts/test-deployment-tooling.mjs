@@ -639,6 +639,97 @@ for (const clientScript of [
   assert.doesNotMatch(source, /rejectUnauthorized\s*:\s*false|sslmode=no-verify|NODE_TLS_REJECT_UNAUTHORIZED|uselibpqcompat/);
 }
 
+const {
+  isStorageConnectionLimitError,
+  isRetryableStorageError,
+  isStorageThrottleError,
+  retryStorageOperation,
+} = await import('./deploy/storage-operation-retry.mjs');
+assert.equal(
+  isStorageConnectionLimitError(new Error('Too many connections issued to the database')),
+  true,
+);
+assert.equal(isStorageConnectionLimitError(new Error('temporary network error')), false);
+assert.equal(isStorageThrottleError({ statusCode: 429, message: 'SlowDown' }), true);
+assert.equal(isStorageThrottleError({ cause: { code: 'too_many_connections' } }), true);
+assert.equal(isRetryableStorageError({ status: 503, message: 'service unavailable' }), true);
+assert.equal(isRetryableStorageError({ code: 'ECONNRESET', message: 'socket closed' }), true);
+assert.equal(isRetryableStorageError({ statusCode: 401, message: 'invalid key' }), false);
+assert.equal(isRetryableStorageError({ statusCode: 404, message: 'object missing' }), false);
+const connectionLimitWaits = [];
+const connectionLimitRetries = [];
+let connectionLimitAttempts = 0;
+assert.equal(
+  await retryStorageOperation(async () => {
+    connectionLimitAttempts += 1;
+    if (connectionLimitAttempts < 3) {
+      throw new Error('Too many connections issued to the database');
+    }
+    return 'recovered';
+  }, {
+    attempts: 6,
+    random: () => 0,
+    wait: async (milliseconds) => connectionLimitWaits.push(milliseconds),
+    onRetry: (details) => connectionLimitRetries.push(details),
+  }),
+  'recovered',
+);
+assert.equal(connectionLimitAttempts, 3);
+assert.deepEqual(connectionLimitWaits, [5_000, 10_000]);
+assert.deepEqual(
+  connectionLimitRetries.map(({ throttled }) => throttled),
+  [true, true],
+);
+const ordinaryWaits = [];
+let ordinaryAttempts = 0;
+await assert.rejects(
+  retryStorageOperation(async () => {
+    ordinaryAttempts += 1;
+    const error = new Error('service temporarily unavailable');
+    error.statusCode = 503;
+    throw error;
+  }, {
+    attempts: 3,
+    random: () => 0,
+    wait: async (milliseconds) => ordinaryWaits.push(milliseconds),
+  }),
+  /service temporarily unavailable/,
+);
+assert.equal(ordinaryAttempts, 3);
+assert.deepEqual(ordinaryWaits, [500, 1_000]);
+let fatalAttempts = 0;
+await assert.rejects(
+  retryStorageOperation(async () => {
+    fatalAttempts += 1;
+    const error = new Error('invalid service key');
+    error.statusCode = 401;
+    throw error;
+  }, {
+    attempts: 6,
+    wait: async () => assert.fail('fatal Storage errors must not be delayed or retried'),
+  }),
+  /invalid service key/,
+);
+assert.equal(fatalAttempts, 1);
+const cappedThrottleWaits = [];
+let cappedThrottleAttempts = 0;
+await assert.rejects(
+  retryStorageOperation(async () => {
+    cappedThrottleAttempts += 1;
+    const error = new Error('SlowDown: Too many connections issued to the database');
+    error.statusCode = 429;
+    throw error;
+  }, {
+    attempts: 6,
+    random: () => 0.999,
+    wait: async (milliseconds) => cappedThrottleWaits.push(milliseconds),
+  }),
+  /Too many connections/,
+);
+assert.equal(cappedThrottleAttempts, 6);
+assert.ok(cappedThrottleWaits.every((milliseconds) => milliseconds <= 60_000));
+assert.equal(cappedThrottleWaits.at(-1), 60_000);
+
 const sourceOnlyValidation = run('scripts/deploy/prepare-postgres-urls.mjs', ['--source-only'], {
   SUPABASE_DB_URL: rawPasswordUrl.normalized,
   SUPABASE_PROJECT_REF: 'exampleproject',
@@ -811,6 +902,8 @@ assert.match(productionWorkflow, /Catalogue API promotion currently supports the
 assert.match(productionWorkflow, /Catalogue API bootstrap does not publish a mobile update/);
 assert.match(productionWorkflow, /Remove a failed first production gateway[\s\S]+wrangler --cwd gateway delete --env production --force/);
 assert.match(productionWorkflow, /promote-catalogue-storage\.mjs/);
+assert.match(productionWorkflow, /STACKR_STORAGE_PROMOTION_CONCURRENCY: 8/);
+assert.match(productionWorkflow, /STACKR_STORAGE_PROMOTION_RETRY_ATTEMPTS: 6/);
 assert.doesNotMatch(productionWorkflow, /update:rollback/);
 assert.match(rollbackWorkflow, /release-database\.mjs index rollback/);
 assert.match(rollbackWorkflow, /update:revert-update-rollout/);
