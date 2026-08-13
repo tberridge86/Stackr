@@ -29,7 +29,7 @@
       "projectRef": "oakdbbzdqwurpjnoqhmu",
       "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
       "exposedSchemas": ["public", "api", "graphql_public"],
-      "privateSchemas": ["catalog", "ingest", "market", "ml", "audit"]
+      "privateSchemas": ["catalog", "ingest", "market", "ml", "audit", "private"]
     },
     "mobile": {
       "easProjectId": "22048198-a309-41d2-a2bf-aa354c76be3a",

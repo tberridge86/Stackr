@@ -325,6 +325,12 @@ assert.match(
   /mutation deploymentRollback\(\$id: String!\) \{ deploymentRollback\(id: \$id\) \}/,
   'Railway rollback must treat deploymentRollback as the Boolean scalar in the live schema',
 );
+for (const schema of releaseManifest.components.database.privateSchemas) {
+  assert.ok(
+    !releaseManifest.components.database.exposedSchemas.includes(schema),
+    `private database schema ${schema} must not be exposed`,
+  );
+}
 assert.doesNotMatch(
   rollbackTool,
   /deploymentRollback\(id: \$id\) \{ id status \}/,
@@ -340,6 +346,7 @@ const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
+const sellerMigrationWorkflow = readFileSync('.github/workflows/deploy-seller-inventory-migration.yml', 'utf8');
 const productionCataloguePromotion = JSON.parse(
   readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
 );
@@ -570,6 +577,26 @@ assert.match(catalogueTransferWorkflow, /invalid_transfer_table_set/);
 assert.match(catalogueTransferWorkflow, /retention-days: 1/);
 assert.match(catalogueTransferWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
 assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACCESS_TOKEN|db push|migration repair/);
+assert.match(sellerMigrationWorkflow, /inputs\.confirmation == 'APPLY SELLER INVENTORY MIGRATION'/);
+assert.match(sellerMigrationWorkflow, /github\.ref == 'refs\/heads\/main'/);
+assert.match(sellerMigrationWorkflow, /inputs\.expected_commit_sha == github\.sha/);
+assert.match(sellerMigrationWorkflow, /environment: production/);
+assert.match(sellerMigrationWorkflow, /group: stackr-production-deployment/);
+assert.match(sellerMigrationWorkflow, /STACKR_MIGRATION_BASELINE_APPROVED/);
+assert.match(sellerMigrationWorkflow, /prepare-postgres-urls\.mjs --source-only/);
+assert.match(sellerMigrationWorkflow, /verify-seller-inventory-production-migration\.mjs --before/);
+assert.match(sellerMigrationWorkflow, /verify-seller-inventory-production-migration\.mjs --after/);
+assert.match(sellerMigrationWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
+assert.match(sellerMigrationWorkflow, /backups list/);
+assert.match(sellerMigrationWorkflow, /verify-backup\.mjs/);
+assert.match(sellerMigrationWorkflow, /20260813093320_atomic_seller_inventory_batches\.sql/);
+assert.deepEqual(
+  [...sellerMigrationWorkflow.matchAll(/db push\s*[\\\s\n]+--db-url "([^"]+)"/g)].map((match) => match[1]),
+  ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
+  'seller migration dry-run and apply must use the validated production URL',
+);
+assert.doesNotMatch(sellerMigrationWorkflow, /railway|wrangler|eas-cli|rehearse-staging-catalogue-transfer/);
+assert.ok(releaseManifest.components.database.privateSchemas.includes('private'));
 assert.deepEqual(productionCataloguePromotion.excludedParentReferenceProjections, [{
   table: 'ingest.external_identifiers',
   constraint: 'external_identifiers_raw_record_id_fkey',

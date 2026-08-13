@@ -1,0 +1,116 @@
+name: Deploy Seller Inventory Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type APPLY SELLER INVENTORY MIGRATION
+        required: true
+        type: string
+      expected_commit_sha:
+        description: Exact reviewed main commit to deploy
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-production-deployment
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      inputs.confirmation == 'APPLY SELLER INVENTORY MIGRATION' &&
+      inputs.expected_commit_sha == github.sha
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.STACKR_GITHUB_PRODUCTION_BACKUPS || secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+      STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Re-run migration safety checks
+        run: |
+          test "$STACKR_MIGRATION_BASELINE_APPROVED" = "true"
+          npm run test:database-migrations
+          npm run test:deployment
+          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
+
+      - name: Prepare the normalized production database URL
+        run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
+
+      - name: Verify exact production pre-state
+        run: node scripts/deploy/verify-seller-inventory-production-migration.mjs --before
+
+      - name: List the latest physical backup
+        run: |
+          mkdir -p "$RUNNER_TEMP/stackr-seller-migration-backup"
+          npx --yes supabase@2.110.0 backups list \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --output-format json \
+            > "$RUNNER_TEMP/stackr-seller-migration-backup/physical.json"
+
+      - name: Create and verify ephemeral logical backups
+        run: |
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-seller-migration-backup/schema.sql"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --data-only \
+            --use-copy \
+            --file "$RUNNER_TEMP/stackr-seller-migration-backup/data.sql"
+          node scripts/deploy/verify-backup.mjs \
+            --physical="$RUNNER_TEMP/stackr-seller-migration-backup/physical.json" \
+            --schema="$RUNNER_TEMP/stackr-seller-migration-backup/schema.sql" \
+            --data="$RUNNER_TEMP/stackr-seller-migration-backup/data.sql" \
+            --require-physical
+
+      - name: Confirm the exact pending migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes supabase@2.110.0 db push \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --include-all \
+            --dry-run 2>&1 | tee "$RUNNER_TEMP/stackr-seller-migration-plan.txt"
+          node - <<'NODE'
+          const { readFileSync } = require('node:fs');
+          const plan = readFileSync(process.env.RUNNER_TEMP + '/stackr-seller-migration-plan.txt', 'utf8');
+          const migrations = [...plan.matchAll(/\b(\d{14}_[A-Za-z0-9_]+\.sql)\b/g)].map((match) => match[1]);
+          const unique = [...new Set(migrations)];
+          const expected = ['20260813093320_atomic_seller_inventory_batches.sql'];
+          if (JSON.stringify(unique) !== JSON.stringify(expected)) {
+            throw new Error(`unexpected_pending_migrations:${unique.join(',')}`);
+          }
+          NODE
+
+      - name: Apply the exact seller inventory migration
+        run: >-
+          npx --yes supabase@2.110.0 db push
+          --db-url "$STACKR_SOURCE_DB_URL"
+          --include-all
+          --yes
+
+      - name: Verify production post-state
+        run: node scripts/deploy/verify-seller-inventory-production-migration.mjs --after
+
+      - name: Remove ephemeral logical backups
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/stackr-seller-migration-backup" "$RUNNER_TEMP/stackr-seller-migration-plan.txt"
