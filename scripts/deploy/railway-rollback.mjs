@@ -31,7 +31,8 @@ const current = await graphql(
 if (!current.deployment?.canRollback) throw new Error('The selected Railway deployment is not rollback-eligible.');
 
 const result = await graphql(
-  'mutation deploymentRollback($id: String!) { deploymentRollback(id: $id) { id status } }',
+  'mutation deploymentRollback($id: String!) { deploymentRollback(id: $id) }',
   { id: deploymentId },
 );
-console.log(JSON.stringify({ ok: true, deployment: result.deploymentRollback }, null, 2));
+if (result.deploymentRollback !== true) throw new Error('Railway did not confirm the rollback.');
+console.log(JSON.stringify({ ok: true, deploymentRollback: true }, null, 2));
