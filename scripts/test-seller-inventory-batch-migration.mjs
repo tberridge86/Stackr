@@ -269,7 +269,9 @@ function binderDelta(quantityDelta) {
   };
 }
 
-async function authenticate(client, userId, { entitlement = true, userMetadataEntitlement } = {}) {
+async function authenticate(client, userId, options = {}) {
+  const entitlement = Object.hasOwn(options, 'entitlement') ? options.entitlement : true;
+  const { userMetadataEntitlement } = options;
   await client.query('set role authenticated');
   await client.query("select set_config('request.jwt.claim.sub', $1, false)", [userId]);
   await client.query("select set_config('request.jwt.claims', $1, false)", [JSON.stringify({
