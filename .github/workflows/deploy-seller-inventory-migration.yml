@@ -84,6 +84,8 @@ jobs:
 
       - name: Confirm the exact pending migration
         shell: bash
+        env:
+          NO_COLOR: 1
         run: |
           set -euo pipefail
           npx --yes supabase@2.110.0 db push \
@@ -93,7 +95,9 @@ jobs:
           node - <<'NODE'
           const { readFileSync } = require('node:fs');
           const plan = readFileSync(process.env.RUNNER_TEMP + '/stackr-seller-migration-plan.txt', 'utf8');
-          const migrations = [...plan.matchAll(/\b(\d{14}_[A-Za-z0-9_]+\.sql)\b/g)].map((match) => match[1]);
+          const cleanPlan = plan.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '');
+          const migrations = [...cleanPlan.matchAll(/\b(\d{14}_[A-Za-z0-9_]+\.sql)\b/g)]
+            .map((match) => match[1]);
           const unique = [...new Set(migrations)];
           const expected = ['20260813093320_atomic_seller_inventory_batches.sql'];
           if (JSON.stringify(unique) !== JSON.stringify(expected)) {

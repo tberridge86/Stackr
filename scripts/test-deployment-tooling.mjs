@@ -590,6 +590,15 @@ assert.match(sellerMigrationWorkflow, /verify-staging-migration-reconciliation\.
 assert.match(sellerMigrationWorkflow, /backups list/);
 assert.match(sellerMigrationWorkflow, /verify-backup\.mjs/);
 assert.match(sellerMigrationWorkflow, /20260813093320_atomic_seller_inventory_batches\.sql/);
+assert.match(sellerMigrationWorkflow, /NO_COLOR: 1/);
+assert.match(sellerMigrationWorkflow, /plan\.replace\(\/\\x1b/);
+const ansiMigrationPlan = '\u001b[1m20260813093320_atomic_seller_inventory_batches.sql\u001b[22m';
+const cleanMigrationPlan = ansiMigrationPlan.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '');
+assert.deepEqual(
+  [...cleanMigrationPlan.matchAll(/\b(\d{14}_[A-Za-z0-9_]+\.sql)\b/g)].map((match) => match[1]),
+  ['20260813093320_atomic_seller_inventory_batches.sql'],
+  'seller migration plan parsing must tolerate ANSI-formatted Supabase CLI output',
+);
 assert.deepEqual(
   [...sellerMigrationWorkflow.matchAll(/db push\s*[\\\s\n]+--db-url "([^"]+)"/g)].map((match) => match[1]),
   ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
