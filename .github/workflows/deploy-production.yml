@@ -354,9 +354,9 @@ jobs:
       - name: Verify service readiness before activation
         run: |
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
-            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
+            npm run deploy:smoke -- --gateway= --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
           else
-            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL"
+            npm run deploy:smoke -- --gateway= --backend="$STACKR_BACKEND_URL"
           fi
 
       - name: Atomically activate validated catalogue version

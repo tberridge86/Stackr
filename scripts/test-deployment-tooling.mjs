@@ -320,7 +320,16 @@ const backendServer = readFileSync('backend/server.js', 'utf8');
 assert.match(backendServer, /res\.setHeader\('X-Request-Id', requestId\)/);
 
 const rollbackTool = readFileSync('scripts/deploy/railway-rollback.mjs', 'utf8');
-assert.match(rollbackTool, /deploymentRollback/);
+assert.match(
+  rollbackTool,
+  /mutation deploymentRollback\(\$id: String!\) \{ deploymentRollback\(id: \$id\) \}/,
+  'Railway rollback must treat deploymentRollback as the Boolean scalar in the live schema',
+);
+assert.doesNotMatch(
+  rollbackTool,
+  /deploymentRollback\(id: \$id\) \{ id status \}/,
+  'Railway rollback must not select fields from a Boolean scalar',
+);
 assert.doesNotMatch(rollbackTool, /console\.log\([^\n]*(?:RAILWAY_TOKEN|RAILWAY_API_TOKEN)/);
 
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
@@ -372,6 +381,11 @@ assert.match(
   productionWorkflow,
   /@railway\/cli@5\.30\.1 up "\$GITHUB_WORKSPACE\/backend" --ci \\/,
   'production must use an absolute backend path while preserving the repository archive root for Railway',
+);
+assert.match(
+  productionWorkflow,
+  /npm run deploy:smoke -- --gateway= --backend="\$STACKR_BACKEND_URL"/,
+  'pre-activation readiness must not probe the gateway before gateway bootstrap',
 );
 assert.doesNotMatch(
   productionWorkflow,
