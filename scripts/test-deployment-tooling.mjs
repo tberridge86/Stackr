@@ -370,12 +370,17 @@ assert.deepEqual(
 );
 assert.match(
   productionWorkflow,
-  /@railway\/cli@5\.30\.1 up backend --ci \\/,
-  'production must preserve the repository archive root for the Railway service root directory',
+  /@railway\/cli@5\.30\.1 up "\$GITHUB_WORKSPACE\/backend" --ci \\/,
+  'production must use an absolute backend path while preserving the repository archive root for Railway',
 );
 assert.doesNotMatch(
   productionWorkflow,
-  /up backend --path-as-root/,
+  /@railway\/cli@5\.30\.1 up (?:backend|\.\/backend) --ci/,
+  'production must not pass Railway a relative backend path with explicit project selection',
+);
+assert.doesNotMatch(
+  productionWorkflow,
+  /up "\$GITHUB_WORKSPACE\/backend" --path-as-root/,
   'production must not strip the backend directory from the Railway upload',
 );
 assert.match(
