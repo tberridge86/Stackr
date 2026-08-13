@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { assertSellerAtomicWritesEnabled } from './sellerAtomicWrites';
 import { supabase } from './supabase';
 
 export type InventoryCondition =
@@ -41,6 +42,8 @@ export type InventoryCardSnapshot = {
   product_price_count?: number | null;
   product_price_query?: string | null;
   product_price_source?: string | null;
+  inventory_binder_id?: string | null;
+  inventory_binder_name?: string | null;
 };
 
 export type InventoryItem = {
@@ -53,6 +56,7 @@ export type InventoryItem = {
   buy_price: number | null;
   notes: string | null;
   card: InventoryCardSnapshot;
+  persisted_card_snapshot?: InventoryCardSnapshot;
   created_at: string;
   updated_at: string;
 };
@@ -76,8 +80,106 @@ export type InventorySaleTransaction = {
   created_at: string;
 };
 
+export type InventoryMovementAction = 'scan_in' | 'scan_out';
+
+export type InventoryMovementReason =
+  | 'Added to Collection'
+  | 'Added to Binder'
+  | 'Added as Duplicate'
+  | 'Added to Sell/Trade'
+  | 'Sold'
+  | 'Traded'
+  | 'Shipped'
+  | 'Lost/Damaged'
+  | 'Removed from Collection'
+  | 'Other';
+
+export type InventoryMovement = {
+  id: string;
+  inventory_item_id: string;
+  action_type: InventoryMovementAction;
+  card_id: string;
+  set_id: string | null;
+  card_name: string;
+  quantity: number;
+  reason: InventoryMovementReason;
+  binder_id?: string | null;
+  binder_name?: string | null;
+  collection_id?: string | null;
+  value_at_time?: number | null;
+  image_small?: string | null;
+  created_at: string;
+};
+
+export type InventoryMovementDraft = Omit<InventoryMovement, 'id' | 'created_at'> & {
+  id?: string;
+  created_at?: string;
+};
+
+export type SellerBinderDelta = {
+  binder_id: string;
+  card_id: string;
+  set_id: string;
+  quantity_delta: number;
+  card_name?: string | null;
+  card_number?: string | null;
+  image_url?: string | null;
+  set_name?: string | null;
+};
+
+export type SellerInventoryBatchResult = {
+  requestId: string;
+  inventoryItemCount: number;
+  movementCount: number;
+  binderDeltaCount: number;
+  saleRecorded: boolean;
+  replayed: boolean;
+};
+
 const STORAGE_KEY = 'stackr:inventory-items:v1';
 const SALES_STORAGE_KEY = 'stackr:inventory-sales:v1';
+const MOVEMENTS_STORAGE_KEY = 'stackr:inventory-movements:v1';
+
+function createBatchId(prefix: string) {
+  return `${prefix}:${Date.now()}:${Math.random().toString(36).slice(2, 12)}`;
+}
+
+function parseCachedArray<T>(raw: string | null): T[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function inventoryPayload(items: InventoryItem[], usePersistedSnapshot: boolean) {
+  return items.map(({ persisted_card_snapshot: persistedCardSnapshot, ...item }) => ({
+    ...item,
+    card: usePersistedSnapshot && persistedCardSnapshot
+      ? persistedCardSnapshot
+      : item.card,
+  }));
+}
+
+function isRetryableSellerBatchError(error: any) {
+  const code = String(error?.code ?? '');
+  const message = String(error?.message ?? '').toLowerCase();
+  return code === 'PGRST000'
+    || code === 'PGRST001'
+    || code === 'PGRST002'
+    || code === 'PGRST003'
+    || message.includes('failed to fetch')
+    || message.includes('network request failed')
+    || message.includes('networkerror')
+    || message.includes('connection')
+    || message.includes('timeout');
+}
+
+async function waitForRetry(milliseconds: number) {
+  await new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
 
 async function hydrateProductInventoryPrices(items: InventoryItem[]): Promise<InventoryItem[]> {
   const productIds = items
@@ -156,6 +258,7 @@ export async function loadInventoryItems(): Promise<InventoryItem[]> {
       buy_price: row.buy_price == null ? null : Number(row.buy_price),
       notes: row.notes,
       card: row.card_snapshot,
+      persisted_card_snapshot: row.card_snapshot,
       created_at: row.created_at,
       updated_at: row.updated_at,
     }));
@@ -178,42 +281,81 @@ export async function loadInventoryItems(): Promise<InventoryItem[]> {
   }
 }
 
-export async function saveInventoryItems(items: InventoryItem[]) {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+export async function commitSellerInventoryBatch(input: {
+  expectedItems: InventoryItem[];
+  items: InventoryItem[];
+  movements?: InventoryMovementDraft[];
+  sale?: InventorySaleTransaction | null;
+  binderDeltas?: SellerBinderDelta[];
+  requestId?: string;
+}) {
+  assertSellerAtomicWritesEnabled();
 
-    const { error: deleteError } = await supabase
-      .from('seller_inventory_items')
-      .delete()
-      .eq('user_id', user.id);
-    if (deleteError) throw deleteError;
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw userError;
+  if (!user) throw new Error('Sign in before changing seller inventory.');
 
-    if (!items.length) return;
+  const requestId = input.requestId ?? createBatchId('seller-batch');
+  const movements = (input.movements ?? []).map((movement): InventoryMovement => ({
+    ...movement,
+    id: movement.id ?? createBatchId('movement'),
+    created_at: movement.created_at ?? new Date().toISOString(),
+  }));
 
-    const rows = items.map((item) => ({
-      id: item.id,
-      user_id: user.id,
-      card_id: item.card_id,
-      set_id: item.set_id,
-      condition: item.condition,
-      quantity: item.quantity,
-      asking_price: item.asking_price,
-      buy_price: item.buy_price,
-      notes: item.notes,
-      card_snapshot: item.card,
-      created_at: item.created_at,
-      updated_at: item.updated_at,
-    }));
+  const rpcInput = {
+    p_request_id: requestId,
+    p_expected_inventory: inventoryPayload(input.expectedItems, true),
+    p_inventory: inventoryPayload(input.items, false),
+    p_movements: movements,
+    p_sale: input.sale ?? null,
+    p_binder_deltas: input.binderDeltas ?? [],
+  };
 
-    const { error: insertError } = await supabase
-      .from('seller_inventory_items')
-      .insert(rows);
-    if (insertError) throw insertError;
-  } catch (error) {
-    console.log('Seller inventory Supabase save failed', error);
+  let result: SellerInventoryBatchResult | null = null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const { data, error } = await supabase.rpc('commit_seller_inventory_batch', rpcInput);
+    if (!error) {
+      result = data as SellerInventoryBatchResult;
+      break;
+    }
+    if (attempt === 1 || !isRetryableSellerBatchError(error)) throw error;
+    await waitForRetry(250);
   }
+
+  if (!result) throw new Error('Seller inventory commit returned no result.');
+
+  const committedItems = input.items.map((item) => ({
+    ...item,
+    persisted_card_snapshot: item.card,
+  }));
+
+  // The live database is authoritative. Cache only after the complete remote
+  // transaction succeeds so a failed batch cannot appear successful locally.
+  try {
+    const [cachedMovementsRaw, cachedSalesRaw] = await Promise.all([
+      AsyncStorage.getItem(MOVEMENTS_STORAGE_KEY),
+      AsyncStorage.getItem(SALES_STORAGE_KEY),
+    ]);
+    const cachedMovements = parseCachedArray<InventoryMovement>(cachedMovementsRaw);
+    const movementIds = new Set(movements.map((movement) => movement.id));
+    const nextMovements = [
+      ...movements,
+      ...cachedMovements.filter((movement) => !movementIds.has(movement.id)),
+    ].slice(0, 100);
+    const cachedSales = parseCachedArray<InventorySaleTransaction>(cachedSalesRaw);
+    const nextSales = input.sale
+      ? [input.sale, ...cachedSales.filter((sale) => sale.id !== input.sale?.id)]
+      : cachedSales;
+    await Promise.all([
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(committedItems)),
+      AsyncStorage.setItem(MOVEMENTS_STORAGE_KEY, JSON.stringify(nextMovements)),
+      AsyncStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(nextSales)),
+    ]);
+  } catch (error) {
+    console.log('Seller inventory local cache update failed', error);
+  }
+
+  return { result, movements, items: committedItems };
 }
 
 export async function loadInventorySales(): Promise<InventorySaleTransaction[]> {
@@ -228,44 +370,8 @@ export async function loadInventorySales(): Promise<InventorySaleTransaction[]> 
 }
 
 export async function saveInventorySales(sales: InventorySaleTransaction[]) {
+  assertSellerAtomicWritesEnabled();
   await AsyncStorage.setItem(SALES_STORAGE_KEY, JSON.stringify(sales));
-}
-
-export async function addInventorySale(sale: InventorySaleTransaction) {
-  const current = await loadInventorySales();
-  await saveInventorySales([sale, ...current]);
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error: saleError } = await supabase.from('seller_sale_transactions').insert({
-      id: sale.id,
-      user_id: user.id,
-      sold_price: sale.sold_price,
-      estimated_value: sale.estimated_value,
-      created_at: sale.created_at,
-    });
-    if (saleError) throw saleError;
-
-    if (!sale.lines.length) return;
-    const { error: lineError } = await supabase.from('seller_sale_transaction_items').insert(
-      sale.lines.map((line) => ({
-        transaction_id: sale.id,
-        user_id: user.id,
-        inventory_item_id: line.inventory_item_id,
-        card_id: line.card_id,
-        card_name: line.card_name,
-        set_name: line.set_name,
-        condition: line.condition,
-        quantity: line.quantity,
-        estimated_unit_price: line.estimated_unit_price,
-        image_small: line.image_small,
-      }))
-    );
-    if (lineError) throw lineError;
-  } catch (error) {
-    console.log('Seller sale Supabase save failed', error);
-  }
 }
 
 export function createInventoryItem(

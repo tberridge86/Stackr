@@ -18,7 +18,9 @@
     "sync-community-news": "tsx scripts/sync-community-news.ts",
     "fingerprint-cards": "npm --prefix scripts/card-fingerprinter start",
     "clip-embed-cards": "npm --prefix scripts/card-clip-embedder start",
-    "build-scanner-pack": "tsx scripts/build-scanner-pack.ts"
+    "build-scanner-pack": "tsx scripts/build-scanner-pack.ts",
+    "test:seller-atomic-write-gate": "tsx scripts/test-seller-atomic-write-gate.ts",
+    "test:seller-stock-out-routing": "tsx scripts/test-seller-stock-out-routing.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
