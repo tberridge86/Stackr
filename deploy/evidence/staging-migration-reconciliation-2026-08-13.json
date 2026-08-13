@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "stackr-migration-reconciliation-v1.2.0",
+  "capturedAt": "2026-08-13T10:00:39.132Z",
+  "sourceCommitHash": "be92cf6d17cd6f28a39f032458e60503ec4b08b3",
+  "workingTreeChangesIncluded": false,
+  "productionProjectRef": "oakdbbzdqwurpjnoqhmu",
+  "stagingProjectRef": "lmwfhvexfcoyeuoyrlco",
+  "restoreTargetProjectRef": "krjttpmthxkfsbqksxci",
+  "status": "aligned",
+  "reconciliationComplete": true,
+  "productionMutationPerformed": false,
+  "stagingMutationPerformed": false,
+  "isolatedBranchMutationPerformed": true,
+  "localMigrationFileCount": 105,
+  "stagingMigrationHistoryCountAfter": 105,
+  "exactVersionNameOrderMatch": true,
+  "orderedMigrationKeySha256": "85b992187cf000948a0f0f41b164af842ea6d85d6a967a1c64f992f6d591f4ea",
+  "remoteOrderedMigrationKeySha256": "85b992187cf000948a0f0f41b164af842ea6d85d6a967a1c64f992f6d591f4ea",
+  "repositoryMigrationContentSha256": "ff62419c8ffb57a9ecdd4d940c7e3470bfa54f1acd1dd918c4446a3720ae4cfc",
+  "firstMigration": "20260513170000_card_fingerprint_regions",
+  "latestMigration": "20260813093320_atomic_seller_inventory_batches",
+  "baseline": {
+    "artifactId": "9176407131",
+    "archiveSha256": "a4d64a9f69149108aeb5e03fd4072079fe99efaf3ca49103659d43578e61993a",
+    "schemaSha256": "01206d5f5d04274b623a99dd4424f4bc68f84534cc345fa75c667ec0057a0c29",
+    "expectedProductionHistoryCount": 104,
+    "expectedProductionHistoryVersion": "20260811165000",
+    "expectedProductionHistoryName": "repair_owned_card_membership_legacy_identity",
+    "migrationHistoryRestored": true,
+    "restoredMigrationHistoryCount": 104,
+    "exactRepositoryPrefixMatch": true,
+    "pendingRepositoryMigrationCount": 1
+  },
+  "workflow": {
+    "repository": "tberridge86/Stackr",
+    "runId": "31688626077",
+    "runAttempt": "1",
+    "url": "https://github.com/tberridge86/Stackr/actions/runs/31688626077"
+  },
+  "isolatedCandidateUnverifiedRepositoryMigrationCount": 0,
+  "isolatedCandidate": {
+    "projectRef": "krjttpmthxkfsbqksxci",
+    "repositoryMigrationCount": 105,
+    "migrationHistoryAligned": true,
+    "productionBaselineRestored": true,
+    "baselineMigrationHistoryRestored": true,
+    "pendingRepositoryMigrationsApplied": true,
+    "pendingRepositoryMigrationCount": 1,
+    "storageFixtureSeeded": false
+  },
+  "actionsTaken": [
+    "verified_private_production_schema_baseline_checksums",
+    "restored_production_schema_to_isolated_target",
+    "restored_captured_production_migration_history",
+    "verified_exact_captured_migration_history_prefix",
+    "applied_pending_repository_migrations_on_isolated_target",
+    "verified_exact_migration_version_name_order",
+    "verified_production_was_not_modified"
+  ]
+}

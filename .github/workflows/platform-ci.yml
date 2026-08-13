@@ -58,6 +58,9 @@ jobs:
       - run: >-
           node scripts/test-owned-card-membership-migration.mjs
           --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres
+      - run: >-
+          node scripts/test-seller-inventory-batch-migration.mjs
+          --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres
       - name: Start and reset local Supabase
         if: vars.SUPABASE_LOCAL_BASELINE_READY == 'true'
         run: |
