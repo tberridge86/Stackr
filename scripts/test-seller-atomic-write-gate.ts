@@ -10,14 +10,10 @@ import {
 
 assert.equal(
   SELLER_ATOMIC_WRITES_ENABLED,
-  false,
-  'The store bridge must embed seller atomic writes as default-off'
+  true,
+  'The canary OTA must enable atomic seller writes'
 );
-assert.throws(
-  () => assertSellerAtomicWritesEnabled(),
-  (error: unknown) => error instanceof Error
-    && error.message === SELLER_ATOMIC_WRITES_DISABLED_MESSAGE
-);
+assert.doesNotThrow(() => assertSellerAtomicWritesEnabled());
 assert.equal(
   isSellerAtomicWritesDisabledError(new Error(SELLER_ATOMIC_WRITES_DISABLED_MESSAGE)),
   true

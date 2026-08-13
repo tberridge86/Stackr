@@ -1,4 +1,4 @@
-export const SELLER_ATOMIC_WRITES_ENABLED: boolean = false;
+export const SELLER_ATOMIC_WRITES_ENABLED: boolean = true;
 
 export const SELLER_ATOMIC_WRITES_DISABLED_MESSAGE =
   'Seller inventory updates are disabled in this bridge release.';
