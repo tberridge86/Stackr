@@ -384,6 +384,21 @@ assert.match(
 );
 assert.match(
   productionWorkflow,
+  /if \[ "\$railway_latest_status" = "SKIPPED" \]; then[\s\S]+deployment redeploy --yes --json/,
+  'a Railway upload skipped for unchanged watched files must redeploy the staged backend configuration',
+);
+assert.match(
+  productionWorkflow,
+  /RAILWAY_DEPLOYMENT_ID="\$railway_redeploy_id"[\s\S]+rows\.find\(item => item\?\.id === process\.env\.RAILWAY_DEPLOYMENT_ID\)/,
+  'production must wait for the exact fallback Railway deployment',
+);
+assert.match(
+  productionWorkflow,
+  /FAILED\|CRASHED\|REMOVED\|REMOVING\|SKIPPED\|SLEEPING\|NEEDS_APPROVAL\|CANCELED\|CANCELLED[\s\S]+did not become healthy within 15 minutes/,
+  'production must fail closed when the fallback Railway deployment fails or times out',
+);
+assert.match(
+  productionWorkflow,
   /npm run deploy:smoke -- --gateway= --backend="\$STACKR_BACKEND_URL"/,
   'pre-activation readiness must not probe the gateway before gateway bootstrap',
 );
