@@ -96,6 +96,7 @@ export function resolvePremiumSellerQaIdentityRequest({
   action,
   confirmation,
   releaseSha,
+  workflowSha,
   expectedCommitSha,
 }) {
   const normalizedAction = String(action ?? '').trim();
@@ -105,7 +106,8 @@ export function resolvePremiumSellerQaIdentityRequest({
     fail('premium_seller_qa_confirmation_mismatch');
   }
   if (!SHA_PATTERN.test(String(releaseSha ?? ''))) fail('premium_seller_qa_release_sha_invalid');
-  if (String(expectedCommitSha ?? '') !== releaseSha) {
+  if (!SHA_PATTERN.test(String(workflowSha ?? ''))) fail('premium_seller_qa_workflow_sha_invalid');
+  if (String(expectedCommitSha ?? '') !== workflowSha) {
     fail('premium_seller_qa_expected_commit_mismatch');
   }
   return { action: normalizedAction, releaseSha, ...contract };
@@ -586,7 +588,10 @@ export async function managePremiumSellerQaIdentity({
     auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false },
     global: { fetch: boundedFetch },
   });
-  const existingUser = await findQaIdentity(adminClient.auth.admin, normalizedEmail);
+  const existingCandidate = await findQaIdentity(adminClient.auth.admin, normalizedEmail);
+  const existingUser = existingCandidate
+    ? await getQaIdentityById(adminClient.auth.admin, existingCandidate.id)
+    : null;
   if (existingUser) {
     assertManagedPremiumSellerQaIdentity(existingUser, {
       email: normalizedEmail,
@@ -604,10 +609,11 @@ export async function managePremiumSellerQaIdentity({
         releaseSha: request.releaseSha,
         existingUser,
       });
-      const globallyVerified = await findQaIdentity(adminClient.auth.admin, normalizedEmail);
-      if (!globallyVerified || globallyVerified.id !== provisioned.id) {
+      const globalCandidate = await findQaIdentity(adminClient.auth.admin, normalizedEmail);
+      if (!globalCandidate || globalCandidate.id !== provisioned.id) {
         fail('premium_seller_qa_identity_readback_failed');
       }
+      const globallyVerified = await getQaIdentityById(adminClient.auth.admin, globalCandidate.id);
       assertManagedPremiumSellerQaIdentity(globallyVerified, {
         email: normalizedEmail,
         releaseSha: request.releaseSha,
@@ -630,6 +636,7 @@ async function main() {
     action: process.env.STACKR_PREMIUM_SELLER_QA_ACTION,
     confirmation: process.env.STACKR_PREMIUM_SELLER_QA_CONFIRMATION,
     releaseSha: process.env.STACKR_RELEASE_SHA,
+    workflowSha: process.env.STACKR_WORKFLOW_SHA,
     expectedCommitSha: process.env.STACKR_EXPECTED_COMMIT_SHA,
   });
   if (process.argv.includes('--validate-request')) {

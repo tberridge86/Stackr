@@ -672,8 +672,15 @@ assert.doesNotMatch(
   'QA identity work must not queue the independent runtime kill switch',
 );
 assert.match(premiumSellerQaIdentityWorkflow, /cancel-in-progress: false/);
-assert.match(premiumSellerQaIdentityWorkflow, /STACKR_RELEASE_SHA: \$\{\{ github\.sha \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /STACKR_WORKFLOW_SHA: \$\{\{ github\.sha \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /STACKR_RELEASE_SHA: \$\{\{ inputs\.release_commit_sha \}\}/);
 assert.match(premiumSellerQaIdentityWorkflow, /STACKR_EXPECTED_COMMIT_SHA: \$\{\{ inputs\.expected_commit_sha \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /fetch-depth: 0/);
+assert.match(premiumSellerQaIdentityWorkflow, /git merge-base --is-ancestor/);
+assert.match(premiumSellerQaIdentityWorkflow, /git diff --name-only/);
+assert.match(premiumSellerQaIdentityWorkflow, /:!\.github\/workflows\/manage-premium-seller-qa-identity\.yml/);
+assert.match(premiumSellerQaIdentityWorkflow, /:!scripts\/deploy\/manage-premium-seller-qa-identity\.mjs/);
+assert.match(premiumSellerQaIdentityWorkflow, /:!scripts\/test-deployment-tooling\.mjs/);
 assert.match(premiumSellerQaIdentityWorkflow, /PREMIUM_SELLER_QA_EMAIL: \$\{\{ secrets\.PREMIUM_SELLER_QA_EMAIL \}\}/);
 assert.match(premiumSellerQaIdentityWorkflow, /SUPABASE_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/);
 assert.match(premiumSellerQaIdentityWorkflow, /SUPABASE_PRODUCTION_SECRET_KEY: \$\{\{ secrets\.SUPABASE_PRODUCTION_SECRET_KEY \}\}/);
@@ -710,6 +717,7 @@ const {
   sendPremiumSellerQaMagicLink,
 } = await import('./deploy/manage-premium-seller-qa-identity.mjs');
 const qaReleaseSha = '1234567890abcdef1234567890abcdef12345678';
+const qaWorkflowSha = 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
 const qaPreviousReleaseSha = 'abcdef1234567890abcdef1234567890abcdef12';
 const qaEmail = 'release-qa@example.test';
 const qaUserId = '11111111-1111-4111-8111-111111111111';
@@ -741,7 +749,8 @@ assert.deepEqual(
     action: 'preflight',
     confirmation: 'PREFLIGHT PREMIUM SELLER QA IDENTITY',
     releaseSha: qaReleaseSha,
-    expectedCommitSha: qaReleaseSha,
+    workflowSha: qaWorkflowSha,
+    expectedCommitSha: qaWorkflowSha,
   }).action,
   'preflight',
 );
@@ -750,7 +759,8 @@ assert.deepEqual(
     action: 'provision',
     confirmation: 'PROVISION PREMIUM SELLER QA IDENTITY',
     releaseSha: qaReleaseSha,
-    expectedCommitSha: qaReleaseSha,
+    workflowSha: qaWorkflowSha,
+    expectedCommitSha: qaWorkflowSha,
   }).action,
   'provision',
 );
@@ -759,7 +769,8 @@ assert.deepEqual(
     action: 'send_magic_link',
     confirmation: 'SEND PREMIUM SELLER QA MAGIC LINK',
     releaseSha: qaReleaseSha,
-    expectedCommitSha: qaReleaseSha,
+    workflowSha: qaWorkflowSha,
+    expectedCommitSha: qaWorkflowSha,
   }).action,
   'send_magic_link',
 );
@@ -768,6 +779,7 @@ assert.throws(
     action: 'send_magic_link',
     confirmation: 'SEND PREMIUM SELLER QA MAGIC LINK',
     releaseSha: qaReleaseSha,
+    workflowSha: qaWorkflowSha,
     expectedCommitSha: qaPreviousReleaseSha,
   }),
   /premium_seller_qa_expected_commit_mismatch/,
@@ -1005,6 +1017,16 @@ assert.match(qaIdentityToolSource, /seller_ledgers_empty !== true/);
 assert.match(qaIdentityToolSource, /AbortSignal\.timeout\(15_000\)/);
 assert.match(qaIdentityToolSource, /shouldCreateUser: false/);
 assert.match(qaIdentityToolSource, /emailRedirectTo: PREMIUM_SELLER_QA_REDIRECT_URL/);
+assert.match(
+  qaIdentityToolSource,
+  /existingCandidate[\s\S]+getQaIdentityById\(adminClient\.auth\.admin, existingCandidate\.id\)[\s\S]+assertManagedPremiumSellerQaIdentity\(existingUser/,
+  'abbreviated listUsers rows must be refreshed before identity-shape validation',
+);
+assert.match(
+  qaIdentityToolSource,
+  /globalCandidate[\s\S]+getQaIdentityById\(adminClient\.auth\.admin, globalCandidate\.id\)[\s\S]+assertManagedPremiumSellerQaIdentity\(globallyVerified/,
+  'post-provision global scans must refresh the exact account before validation',
+);
 assert.doesNotMatch(qaIdentityToolSource, /allowPreviousRelease|updateUserById|deleteUser/);
 assert.doesNotMatch(qaIdentityToolSource, /console\.(?:log|error)\([^\n]*(?:email|user\.id|link|token|secretKey|publishableKey|accessToken)/i);
 const qaSentinelEmail = 'never-print-qa-address@example.test';
@@ -1016,7 +1038,8 @@ const rejectedQaRequest = run(
     STACKR_PREMIUM_SELLER_QA_ACTION: 'send_magic_link',
     STACKR_PREMIUM_SELLER_QA_CONFIRMATION: 'wrong confirmation',
     STACKR_RELEASE_SHA: qaReleaseSha,
-    STACKR_EXPECTED_COMMIT_SHA: qaReleaseSha,
+    STACKR_WORKFLOW_SHA: qaWorkflowSha,
+    STACKR_EXPECTED_COMMIT_SHA: qaWorkflowSha,
     PREMIUM_SELLER_QA_EMAIL: qaSentinelEmail,
     SUPABASE_ACCESS_TOKEN: qaSentinelSecret,
     SUPABASE_PRODUCTION_SECRET_KEY: qaSentinelSecret,
