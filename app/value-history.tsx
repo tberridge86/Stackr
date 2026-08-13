@@ -20,17 +20,10 @@ import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
 import { StackrPageTitle } from '../components/StackrScreen';
 import { fetchBinderCards, fetchBinders, type BinderCardRecord } from '../lib/binders';
-import {
-  loadInventoryMovements,
-  loadInventorySales,
-  type InventoryMovement,
-  type InventorySaleTransaction,
-} from '../lib/inventory';
 import { getPokemonSetLogoUrl } from '../lib/pokemonTcg';
 import { getPreferredSetDisplayName } from '../lib/pokemonDisplayNames';
 import { stackrIcons } from '../lib/stackrIcons';
 import { stackrTabContentPadding } from '../lib/stackrSizing';
-import { supabase } from '../lib/supabase';
 import { tabularNumberStyle, typeScale } from '../lib/typography';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../lib/stackrDomainAdapter';
 import { stackrApiClient } from '../lib/stackrApiV1';
@@ -41,17 +34,6 @@ type AsyncStatus = 'idle' | 'loading' | 'ready' | 'empty' | 'single' | 'unchange
 type HistoryPoint = { day: string; value: number };
 type ChartCoord = HistoryPoint & { x: number; y: number };
 type CardPreview = { name: string; setId: string | null; setName: string | null; imageUrl: string | null };
-type SellerModeSummary = {
-  scanInQuantity: number;
-  scanOutQuantity: number;
-  scanInValue: number;
-  scanOutValue: number;
-  salesCount: number;
-  soldQuantity: number;
-  revenue: number;
-  estimatedSoldValue: number;
-  profit: number;
-};
 type Mover = {
   cardId: string;
   name: string;
@@ -80,29 +62,12 @@ const RANGES: { key: RangeKey; label: string; days: number }[] = [
   { key: '12M', label: '12 Months', days: 365 },
 ];
 
-const PRICE_COLUMNS_LEGACY = 'card_id, ebay_average, tcg_mid, tcg_low, cardmarket_trend, snapshot_at';
-const PRICE_COLUMNS_TCGDEX = 'card_id, ebay_average, tcg_mid, tcg_low, cardmarket_trend, tcgdex_price, snapshot_at';
-const PRICE_FILTER_LEGACY = 'ebay_average.not.is.null,tcg_mid.not.is.null,tcg_low.not.is.null,cardmarket_trend.not.is.null';
-const PRICE_FILTER_TCGDEX = 'tcgdex_price.not.is.null,ebay_average.not.is.null,tcg_mid.not.is.null,tcg_low.not.is.null,cardmarket_trend.not.is.null';
 const MONEY_PREFIX = '\u00A3';
 const MEANINGFUL_CHANGE_GBP = 0.1;
 const MEANINGFUL_CHANGE_PERCENT = 0.5;
-const SELLER_SUMMARY_DAYS = 30;
 const MOVER_DISPLAY_LIMIT = 10;
 const MOVER_VISIBLE_LIMIT = 5;
-let tcgdexSnapshotColumnSupported: boolean | null = null;
 
-const EMPTY_SELLER_SUMMARY: SellerModeSummary = {
-  scanInQuantity: 0,
-  scanOutQuantity: 0,
-  scanInValue: 0,
-  scanOutValue: 0,
-  salesCount: 0,
-  soldQuantity: 0,
-  revenue: 0,
-  estimatedSoldValue: 0,
-  profit: 0,
-};
 
 const formatMoney = (value: number, fallback = `${MONEY_PREFIX}0.00`) => {
   if (!Number.isFinite(value)) return fallback;
@@ -118,38 +83,6 @@ const formatSignedMoney = (value: number) =>
 
 const formatPercent = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
 
-const getMovementValue = (movement: InventoryMovement) =>
-  (Number.isFinite(movement.value_at_time ?? NaN) ? movement.value_at_time ?? 0 : 0) *
-  Math.max(1, Number(movement.quantity ?? 1));
-
-const buildSellerModeSummary = (
-  movements: InventoryMovement[],
-  sales: InventorySaleTransaction[]
-): SellerModeSummary => {
-  const since = Date.now() - SELLER_SUMMARY_DAYS * 24 * 60 * 60 * 1000;
-  const recentMovements = movements.filter((movement) => new Date(movement.created_at).getTime() >= since);
-  const recentSales = sales.filter((sale) => new Date(sale.created_at).getTime() >= since);
-
-  const scanInMovements = recentMovements.filter((movement) => movement.action_type === 'scan_in');
-  const scanOutMovements = recentMovements.filter((movement) => movement.action_type === 'scan_out');
-  const revenue = recentSales.reduce((total, sale) => total + (Number.isFinite(sale.sold_price ?? NaN) ? sale.sold_price ?? 0 : 0), 0);
-  const estimatedSoldValue = recentSales.reduce((total, sale) => total + (Number.isFinite(sale.estimated_value) ? sale.estimated_value : 0), 0);
-
-  return {
-    scanInQuantity: scanInMovements.reduce((total, movement) => total + Math.max(1, Number(movement.quantity ?? 1)), 0),
-    scanOutQuantity: scanOutMovements.reduce((total, movement) => total + Math.max(1, Number(movement.quantity ?? 1)), 0),
-    scanInValue: scanInMovements.reduce((total, movement) => total + getMovementValue(movement), 0),
-    scanOutValue: scanOutMovements.reduce((total, movement) => total + getMovementValue(movement), 0),
-    salesCount: recentSales.length,
-    soldQuantity: recentSales.reduce(
-      (total, sale) => total + sale.lines.reduce((lineTotal, line) => lineTotal + Math.max(1, Number(line.quantity ?? 1)), 0),
-      0
-    ),
-    revenue,
-    estimatedSoldValue,
-    profit: revenue - estimatedSoldValue,
-  };
-};
 
 const toDayKey = (value: Date | string) => {
   const date = typeof value === 'string' ? new Date(value) : value;
@@ -296,17 +229,6 @@ async function fetchPreviews(cardIds: string[]) {
 
   return previews;
 }
-
-const isMissingTcgdexSnapshotColumn = (error: unknown) => {
-  const message = String((error as any)?.message ?? error ?? '');
-  const code = String((error as any)?.code ?? '');
-  return (
-    code === '42703' ||
-    code === 'PGRST204' ||
-    /tcgdex_price/i.test(message) ||
-    /schema cache/i.test(message)
-  );
-};
 
 async function executeMarketSnapshotRowsQuery({
   since,
@@ -826,101 +748,6 @@ function MoverColumn({
   );
 }
 
-function SellerMetric({
-  label,
-  value,
-  sub,
-  tone = 'neutral',
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  tone?: 'neutral' | 'up' | 'down' | 'profit';
-}) {
-  const { theme } = useTheme();
-  const toneColor =
-    tone === 'up' ? '#10B981' :
-      tone === 'down' ? '#EF4444' :
-        tone === 'profit' ? '#4B22A2' :
-          theme.colors.text;
-
-  return (
-    <View style={[styles.sellerMetric, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-      <Text style={[styles.sellerMetricLabel, { color: theme.colors.textSoft }]}>{label}</Text>
-      <Text style={[styles.sellerMetricValue, { color: toneColor }]} numberOfLines={1}>{value}</Text>
-      <Text style={[styles.sellerMetricSub, { color: theme.colors.textSoft }]} numberOfLines={1}>{sub}</Text>
-    </View>
-  );
-}
-
-function SellerModeSummaryPanel({ summary }: { summary: SellerModeSummary }) {
-  const { theme } = useTheme();
-  const hasActivity =
-    summary.scanInQuantity > 0 ||
-    summary.scanOutQuantity > 0 ||
-    summary.salesCount > 0;
-  const profitPositive = summary.profit >= 0;
-
-  if (!hasActivity) {
-    return (
-      <View style={[styles.sellerEmpty, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-        <StackrAssetIcon source={stackrIcons.sellerMode} label="Seller Mode" size={40} />
-        <Text style={[styles.sellerEmptyTitle, { color: theme.colors.text }]}>No seller activity yet</Text>
-        <Text style={[styles.emptyText, { color: theme.colors.textSoft }]}>
-          Stock moves and completed sales will appear here.
-        </Text>
-        <TouchableOpacity
-          activeOpacity={0.82}
-          onPress={() => router.push('/(tabs)/inventory' as any)}
-          style={[styles.sellerAction, { backgroundColor: `${theme.colors.primary}10`, borderColor: `${theme.colors.primary}22` }]}
-        >
-          <Text style={[styles.sellerActionText, { color: theme.colors.primary }]}>Open Seller Mode</Text>
-          <Ionicons name="chevron-forward" size={15} color={theme.colors.primary} />
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  return (
-    <View>
-      <View style={styles.sellerGrid}>
-        <SellerMetric
-          label="Stock in"
-          value={`${summary.scanInQuantity}`}
-          sub={`${formatMoney(summary.scanInValue)} added`}
-          tone="up"
-        />
-        <SellerMetric
-          label="Stock out"
-          value={`${summary.scanOutQuantity}`}
-          sub={`${formatMoney(summary.scanOutValue)} removed`}
-          tone="down"
-        />
-        <SellerMetric
-          label="Sales"
-          value={formatMoney(summary.revenue)}
-          sub={`${summary.salesCount} sale${summary.salesCount === 1 ? '' : 's'} · ${summary.soldQuantity} item${summary.soldQuantity === 1 ? '' : 's'}`}
-          tone="neutral"
-        />
-        <SellerMetric
-          label="Profit"
-          value={formatSignedMoney(summary.profit)}
-          sub={`vs ${formatMoney(summary.estimatedSoldValue)} est.`}
-          tone={profitPositive ? 'profit' : 'down'}
-        />
-      </View>
-      <TouchableOpacity
-        activeOpacity={0.82}
-        onPress={() => router.push('/(tabs)/inventory' as any)}
-        style={[styles.sellerAction, { backgroundColor: `${theme.colors.primary}10`, borderColor: `${theme.colors.primary}22` }]}
-      >
-        <Text style={[styles.sellerActionText, { color: theme.colors.primary }]}>Open Seller Mode</Text>
-        <Ionicons name="chevron-forward" size={15} color={theme.colors.primary} />
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 function SectionCard({
   eyebrow,
   title,
@@ -977,7 +804,6 @@ export default function ValueHistoryScreen() {
   const [moverDisplayMode, setMoverDisplayMode] = useState<MoverDisplayMode>('money');
   const [generalMovers, setGeneralMovers] = useState<Mover[]>([]);
   const [personalMovers, setPersonalMovers] = useState<Mover[]>([]);
-  const [sellerSummary, setSellerSummary] = useState<SellerModeSummary>(EMPTY_SELLER_SUMMARY);
   const [trackedMarketCount, setTrackedMarketCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -1052,14 +878,10 @@ export default function ValueHistoryScreen() {
       const marketSince = new Date();
       marketSince.setDate(marketSince.getDate() - 21);
 
-      const [marketRows, binders, inventoryMovements, inventorySales] = await Promise.all([
+      const [marketRows, binders] = await Promise.all([
         fetchGeneralMarketSnapshotRows(marketSince.toISOString()),
         fetchBinders(),
-        loadInventoryMovements(),
-        loadInventorySales(),
       ]);
-
-      setSellerSummary(buildSellerModeSummary(inventoryMovements, inventorySales));
 
       const groupedMarket = groupLatestTwoSnapshots(marketRows);
       const marketCardIds = [...groupedMarket.keys()];
@@ -1263,14 +1085,6 @@ export default function ValueHistoryScreen() {
           </View>
         ) : (
           <>
-            <SectionCard
-              eyebrow="SELLER MODE"
-              title="Seller Mode"
-              subtitle={`Stock in, stock out, revenue and profit from the last ${SELLER_SUMMARY_DAYS} days.`}
-            >
-              <SellerModeSummaryPanel summary={sellerSummary} />
-            </SectionCard>
-
             <SectionCard
               eyebrow="GENERAL MARKET"
               title="General market"
@@ -1552,73 +1366,6 @@ const styles = StyleSheet.create({
     ...tabularNumberStyle,
     fontSize: 11.5,
     lineHeight: 14,
-  },
-  sellerGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  sellerMetric: {
-    flexGrow: 1,
-    flexBasis: '47%',
-    minWidth: 132,
-    minHeight: 68,
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    justifyContent: 'center',
-  },
-  sellerMetricLabel: {
-    ...typeScale.caption,
-    fontSize: 10,
-    lineHeight: 12,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  sellerMetricValue: {
-    ...typeScale.numericStrong,
-    ...tabularNumberStyle,
-    fontSize: 18,
-    lineHeight: 22,
-    marginTop: 4,
-  },
-  sellerMetricSub: {
-    ...typeScale.caption,
-    ...tabularNumberStyle,
-    fontSize: 10,
-    lineHeight: 13,
-    marginTop: 2,
-  },
-  sellerEmpty: {
-    minHeight: 108,
-    borderRadius: 16,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    padding: 12,
-  },
-  sellerEmptyTitle: {
-    ...typeScale.cardTitle,
-    textAlign: 'center',
-  },
-  sellerAction: {
-    alignSelf: 'flex-start',
-    minHeight: 36,
-    borderRadius: 999,
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 12,
-    marginTop: 10,
-  },
-  sellerActionText: {
-    ...typeScale.buttonSecondary,
-    fontSize: 12,
-    lineHeight: 15,
   },
   moverColumns: {
     gap: 16,

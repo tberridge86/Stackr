@@ -126,6 +126,7 @@ import {
   isListingScanIntent,
   resolveScanIntent,
 } from '../../lib/scanIntent';
+import { isPremiumSellerInventoryScan } from '../../lib/sellerScanAccess';
 import { scanStore } from '../../lib/scanStore';
 import { supabase } from '../../lib/supabase';
 import { stackrApiClient } from '../../lib/stackrApiV1';
@@ -1330,7 +1331,7 @@ export default function ScanScreen() {
   const mode = getParamValue(params.mode) ?? scanIntentConfig.legacyMode;
   const isListingFlow = isListingScanIntent(scanIntent) || mode === 'listing' || flow === 'listing';
   const isBinderPageScan = isBinderScanIntent(scanIntent);
-  const isInventoryFlow = !isListingFlow && (mode === 'inventory' || Boolean(flow));
+  const isInventoryFlow = !isListingFlow && isPremiumSellerInventoryScan({ mode, flow });
   const localQuickScanExperienceEnabled = recognitionFeatureFlags.localRecognitionEnabled && !isBinderPageScan;
   const inlineManualSearchEnabled = localQuickScanExperienceEnabled && !isInventoryFlow;
 

@@ -11,6 +11,7 @@
       "channel": "development",
       "env": {
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
         "APP_VARIANT": "development",
         "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
@@ -24,6 +25,7 @@
         "buildType": "apk"
       },
       "env": {
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
         "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
@@ -37,7 +39,23 @@
         "buildType": "apk"
       },
       "env": {
-        "APP_VARIANT": "staging"
+        "APP_VARIANT": "staging",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false"
+      }
+    },
+    "seller-canary": {
+      "distribution": "internal",
+      "environment": "preview",
+      "channel": "seller-canary",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_VARIANT": "staging",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "true",
+        "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
       }
     },
     "production": {
@@ -46,6 +64,7 @@
       "channel": "production",
       "env": {
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
         "EXPO_PUBLIC_SCAN_PROVIDER": "local-ai",
         "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"

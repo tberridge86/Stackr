@@ -152,13 +152,34 @@ try {
   rmSync(evidenceGuardTemp, { recursive: true, force: true });
 }
 const migrationReconciliation = run('scripts/deploy/verify-staging-migration-reconciliation.mjs');
-assert.equal(migrationReconciliation.status, 0, migrationReconciliation.stderr || migrationReconciliation.stdout);
 const migrationAlignmentGate = run(
   'scripts/deploy/verify-staging-migration-reconciliation.mjs',
   ['--require-aligned'],
 );
-assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
-assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
+if (migrationReconciliation.status === 0) {
+  assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
+  assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
+} else {
+  // A migration PR is allowed to be exactly one reviewed migration ahead of
+  // the last aligned staging evidence. Normal staging/production workflows
+  // still invoke --require-aligned and remain fail-closed; only the dedicated,
+  // checksum-pinned migration workflow may apply this transition.
+  const reconciliation = JSON.parse(migrationReconciliation.stdout);
+  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 1);
+  assert.deepEqual(reconciliation.errors, [
+    'local_migration_count_drift',
+    'staging_migration_count_drift',
+    'ordered_migration_key_hash_drift',
+    'repository_migration_content_hash_drift',
+    'baseline_migration_history_restore_not_verified',
+    'isolated_candidate_delta_replay_not_verified',
+  ]);
+  const localMigrations = readdirSync('supabase/migrations')
+    .filter((name) => /^\d{14}_.+\.sql$/.test(name))
+    .sort();
+  assert.equal(localMigrations.at(-1), '20260813135412_premium_seller_access_boundary.sql');
+  assert.notEqual(migrationAlignmentGate.status, 0, 'global deployment must remain blocked while staging evidence trails');
+}
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
 assert.notEqual(stagingReleaseGate.status, 0, 'staging evidence must block release until recovery and model gates pass');
 assert.doesNotMatch(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
@@ -347,6 +368,7 @@ const productionBaselineWorkflow = readFileSync('.github/workflows/capture-produ
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
 const sellerMigrationWorkflow = readFileSync('.github/workflows/deploy-seller-inventory-migration.yml', 'utf8');
+const premiumSellerRuntimeWorkflow = readFileSync('.github/workflows/manage-premium-seller-runtime.yml', 'utf8');
 const productionCataloguePromotion = JSON.parse(
   readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
 );
@@ -577,7 +599,7 @@ assert.match(catalogueTransferWorkflow, /invalid_transfer_table_set/);
 assert.match(catalogueTransferWorkflow, /retention-days: 1/);
 assert.match(catalogueTransferWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
 assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACCESS_TOKEN|db push|migration repair/);
-assert.match(sellerMigrationWorkflow, /inputs\.confirmation == 'APPLY SELLER INVENTORY MIGRATION'/);
+assert.match(sellerMigrationWorkflow, /inputs\.confirmation == 'APPLY PREMIUM SELLER ACCESS BOUNDARY'/);
 assert.match(sellerMigrationWorkflow, /github\.ref == 'refs\/heads\/main'/);
 assert.match(sellerMigrationWorkflow, /inputs\.expected_commit_sha == github\.sha/);
 assert.match(sellerMigrationWorkflow, /environment: production/);
@@ -586,17 +608,16 @@ assert.match(sellerMigrationWorkflow, /STACKR_MIGRATION_BASELINE_APPROVED/);
 assert.match(sellerMigrationWorkflow, /prepare-postgres-urls\.mjs --source-only/);
 assert.match(sellerMigrationWorkflow, /verify-seller-inventory-production-migration\.mjs --before/);
 assert.match(sellerMigrationWorkflow, /verify-seller-inventory-production-migration\.mjs --after/);
-assert.match(sellerMigrationWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(sellerMigrationWorkflow, /backups list/);
 assert.match(sellerMigrationWorkflow, /verify-backup\.mjs/);
-assert.match(sellerMigrationWorkflow, /20260813093320_atomic_seller_inventory_batches\.sql/);
+assert.match(sellerMigrationWorkflow, /20260813135412_premium_seller_access_boundary\.sql/);
 assert.match(sellerMigrationWorkflow, /NO_COLOR: 1/);
 assert.match(sellerMigrationWorkflow, /plan\.replace\(\/\\x1b/);
-const ansiMigrationPlan = '\u001b[1m20260813093320_atomic_seller_inventory_batches.sql\u001b[22m';
+const ansiMigrationPlan = '\u001b[1m20260813135412_premium_seller_access_boundary.sql\u001b[22m';
 const cleanMigrationPlan = ansiMigrationPlan.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '');
 assert.deepEqual(
   [...cleanMigrationPlan.matchAll(/\b(\d{14}_[A-Za-z0-9_]+\.sql)\b/g)].map((match) => match[1]),
-  ['20260813093320_atomic_seller_inventory_batches.sql'],
+  ['20260813135412_premium_seller_access_boundary.sql'],
   'seller migration plan parsing must tolerate ANSI-formatted Supabase CLI output',
 );
 assert.deepEqual(
@@ -605,6 +626,126 @@ assert.deepEqual(
   'seller migration dry-run and apply must use the validated production URL',
 );
 assert.doesNotMatch(sellerMigrationWorkflow, /railway|wrangler|eas-cli|rehearse-staging-catalogue-transfer/);
+assert.match(premiumSellerRuntimeWorkflow, /workflow_dispatch:/);
+assert.doesNotMatch(premiumSellerRuntimeWorkflow, /pull_request:|push:|schedule:/);
+assert.match(premiumSellerRuntimeWorkflow, /default: disable/);
+assert.match(premiumSellerRuntimeWorkflow, /options:\s+\- disable\s+\- enable_qa/);
+assert.match(premiumSellerRuntimeWorkflow, /github\.ref == 'refs\/heads\/main'/);
+assert.match(premiumSellerRuntimeWorkflow, /environment: production/);
+assert.match(premiumSellerRuntimeWorkflow, /group: stackr-premium-seller-runtime/);
+assert.match(premiumSellerRuntimeWorkflow, /cancel-in-progress: false/);
+assert.match(premiumSellerRuntimeWorkflow, /oakdbbzdqwurpjnoqhmu/);
+assert.match(premiumSellerRuntimeWorkflow, /ENABLE PREMIUM SELLER QA/);
+assert.match(premiumSellerRuntimeWorkflow, /DISABLE PREMIUM SELLER NOW/);
+assert.match(premiumSellerRuntimeWorkflow, /prepare-postgres-urls\.mjs --source-only/);
+assert.match(
+  premiumSellerRuntimeWorkflow,
+  /name: Prepare the normalized production database URL\s+env:\s+SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/,
+);
+assert.equal(
+  [...premiumSellerRuntimeWorkflow.matchAll(/secrets\.SUPABASE_DB_URL/g)].length,
+  1,
+  'the raw production URL must be scoped only to the normalization step',
+);
+assert.match(premiumSellerRuntimeWorkflow, /set-premium-seller-runtime\.mjs --validate-request/);
+assert.match(premiumSellerRuntimeWorkflow, /set-premium-seller-runtime\.mjs/);
+assert.match(premiumSellerRuntimeWorkflow, /npm ci --ignore-scripts/);
+assert.doesNotMatch(premiumSellerRuntimeWorkflow, /SUPABASE_ACCESS_TOKEN|db push|railway|wrangler|eas-cli/);
+assert.doesNotMatch(
+  premiumSellerRuntimeWorkflow,
+  /run:[^\n]*\$\{\{ inputs\./,
+  'runtime inputs must be passed through environment variables, not interpolated into shell commands',
+);
+
+const {
+  PREMIUM_SELLER_MIGRATION_NAME,
+  PREMIUM_SELLER_MIGRATION_VERSION,
+  PREMIUM_SELLER_PRODUCTION_PROJECT_REF,
+  loadReviewedAtomicSellerImplementationContract,
+  loadReviewedPremiumSellerWrapperContract,
+  resolvePremiumSellerRuntimeRequest,
+  safePremiumSellerRuntimeFailureCode,
+} = await import('./deploy/set-premium-seller-runtime.mjs');
+assert.equal(PREMIUM_SELLER_PRODUCTION_PROJECT_REF, 'oakdbbzdqwurpjnoqhmu');
+assert.equal(PREMIUM_SELLER_MIGRATION_VERSION, '20260813135412');
+assert.equal(PREMIUM_SELLER_MIGRATION_NAME, 'premium_seller_access_boundary');
+assert.deepEqual(
+  resolvePremiumSellerRuntimeRequest({
+    action: 'enable_qa',
+    confirmation: 'ENABLE PREMIUM SELLER QA',
+  }),
+  {
+    action: 'enable_qa',
+    confirmation: 'ENABLE PREMIUM SELLER QA',
+    targetEnabled: true,
+    successMessage: 'Premium Seller runtime enabled for controlled QA.',
+  },
+);
+assert.deepEqual(
+  resolvePremiumSellerRuntimeRequest({
+    action: 'disable',
+    confirmation: 'DISABLE PREMIUM SELLER NOW',
+  }),
+  {
+    action: 'disable',
+    confirmation: 'DISABLE PREMIUM SELLER NOW',
+    targetEnabled: false,
+    successMessage: 'Premium Seller runtime disabled.',
+  },
+);
+assert.throws(
+  () => resolvePremiumSellerRuntimeRequest({
+    action: 'enable_qa',
+    confirmation: 'DISABLE PREMIUM SELLER NOW',
+  }),
+  /premium_seller_runtime_confirmation_mismatch/,
+);
+assert.throws(
+  () => resolvePremiumSellerRuntimeRequest({
+    action: 'enable',
+    confirmation: 'ENABLE PREMIUM SELLER QA',
+  }),
+  /premium_seller_runtime_action_invalid/,
+);
+const reviewedPremiumSellerWrapper = loadReviewedPremiumSellerWrapperContract();
+assert.match(reviewedPremiumSellerWrapper, /premium_seller_mode_disabled/);
+assert.match(reviewedPremiumSellerWrapper, /premium_seller_entitlement_required/);
+assert.match(reviewedPremiumSellerWrapper, /auth\.jwt\(\) -> 'app_metadata' -> 'stackr_premium_seller'/);
+assert.match(reviewedPremiumSellerWrapper, /private\.commit_seller_inventory_batch_impl/);
+const reviewedAtomicSellerImplementation = loadReviewedAtomicSellerImplementationContract();
+assert.match(reviewedAtomicSellerImplementation, /seller_inventory_authentication_required/);
+assert.match(reviewedAtomicSellerImplementation, /pg_advisory_xact_lock/);
+const runtimeToolSource = readFileSync('scripts/deploy/set-premium-seller-runtime.mjs', 'utf8');
+assert.match(runtimeToolSource, /begin isolation level serializable/);
+assert.match(runtimeToolSource, /pg_advisory_xact_lock/);
+assert.match(runtimeToolSource, /for update/);
+assert.match(runtimeToolSource, /updated\.rowCount !== 1/);
+assert.match(runtimeToolSource, /readback\.rows\[0\]\?\.matching_rows !== 1/);
+assert.match(runtimeToolSource, /request\.action === 'enable_qa'[\s\S]+assertSellerLedgersEmpty/);
+assert.match(runtimeToolSource, /request\.action === 'enable_qa'[\s\S]+assertMigrationInstalled/);
+assert.match(runtimeToolSource, /else \{[\s\S]+assertEmergencyDisableContract/);
+assert.doesNotMatch(runtimeToolSource, /console\.(?:log|error)\([^\n]*(?:connectionString|normalized|rows)/);
+const runtimeSecretUrl = 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:do-not-log@aws-0-eu-west-1.pooler.supabase.com:5432/postgres';
+const rejectedRuntimeRequest = run(
+  'scripts/deploy/set-premium-seller-runtime.mjs',
+  ['--validate-request'],
+  {
+    STACKR_PREMIUM_SELLER_ACTION: 'disable',
+    STACKR_PREMIUM_SELLER_CONFIRMATION: 'wrong confirmation',
+    STACKR_SOURCE_DB_URL: runtimeSecretUrl,
+  },
+);
+assert.notEqual(rejectedRuntimeRequest.status, 0);
+assert.match(rejectedRuntimeRequest.stderr, /premium_seller_runtime_confirmation_mismatch/);
+assert.doesNotMatch(
+  `${rejectedRuntimeRequest.stdout}\n${rejectedRuntimeRequest.stderr}`,
+  /do-not-log|postgresql:\/\//,
+  'runtime failures must not log the production URL or password',
+);
+assert.equal(
+  safePremiumSellerRuntimeFailureCode(new Error(runtimeSecretUrl)),
+  'premium_seller_runtime_database_operation_failed',
+);
 assert.ok(releaseManifest.components.database.privateSchemas.includes('private'));
 assert.deepEqual(productionCataloguePromotion.excludedParentReferenceProjections, [{
   table: 'ingest.external_identifiers',

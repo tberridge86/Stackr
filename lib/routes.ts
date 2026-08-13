@@ -51,7 +51,7 @@ export const LEGACY_ROUTE_REDIRECTS = {
 } as const;
 
 export type CollectorTabKey = 'home' | 'collection' | 'scan' | 'market' | 'search';
-export type SellerTabKey = 'dashboard' | 'inventory' | 'scan' | 'listings' | 'orders';
+export type SellerTabKey = 'dashboard' | 'inventory' | 'scan' | 'listings';
 
 export const COLLECTOR_TABS: Array<{ key: CollectorTabKey; label: string; route: Href }> = [
   { key: 'home', label: 'Home', route: ROUTES.home },
@@ -62,9 +62,8 @@ export const COLLECTOR_TABS: Array<{ key: CollectorTabKey; label: string; route:
 ];
 
 export const SELLER_TABS: Array<{ key: SellerTabKey; label: string; route: Href }> = [
-  { key: 'dashboard', label: 'Home', route: ROUTES.home },
+  { key: 'dashboard', label: 'Home', route: ROUTES.sellerDashboard },
   { key: 'inventory', label: 'Inventory', route: ROUTES.sellerInventory },
   { key: 'scan', label: 'Scan', route: ROUTES.scanSellerIn },
   { key: 'listings', label: 'The Market', route: ROUTES.sellerListings },
-  { key: 'orders', label: 'Orders', route: ROUTES.sellerOrders },
 ];

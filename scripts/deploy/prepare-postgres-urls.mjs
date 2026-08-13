@@ -88,7 +88,7 @@ function main() {
   process.stdout.write('Protected database URLs prepared.\n');
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     main();
   } catch (error) {

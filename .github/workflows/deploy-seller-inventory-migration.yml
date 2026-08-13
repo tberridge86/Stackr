@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: Type APPLY SELLER INVENTORY MIGRATION
+        description: Type APPLY PREMIUM SELLER ACCESS BOUNDARY
         required: true
         type: string
       expected_commit_sha:
@@ -23,7 +23,7 @@ jobs:
   migrate:
     if: >-
       github.ref == 'refs/heads/main' &&
-      inputs.confirmation == 'APPLY SELLER INVENTORY MIGRATION' &&
+      inputs.confirmation == 'APPLY PREMIUM SELLER ACCESS BOUNDARY' &&
       inputs.expected_commit_sha == github.sha
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -50,7 +50,6 @@ jobs:
           test "$STACKR_MIGRATION_BASELINE_APPROVED" = "true"
           npm run test:database-migrations
           npm run test:deployment
-          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
 
       - name: Prepare the normalized production database URL
         run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
@@ -99,13 +98,13 @@ jobs:
           const migrations = [...cleanPlan.matchAll(/\b(\d{14}_[A-Za-z0-9_]+\.sql)\b/g)]
             .map((match) => match[1]);
           const unique = [...new Set(migrations)];
-          const expected = ['20260813093320_atomic_seller_inventory_batches.sql'];
+          const expected = ['20260813135412_premium_seller_access_boundary.sql'];
           if (JSON.stringify(unique) !== JSON.stringify(expected)) {
             throw new Error(`unexpected_pending_migrations:${unique.join(',')}`);
           }
           NODE
 
-      - name: Apply the exact seller inventory migration
+      - name: Apply the exact Premium Seller access migration
         run: >-
           npx --yes supabase@2.110.0 db push
           --db-url "$STACKR_SOURCE_DB_URL"

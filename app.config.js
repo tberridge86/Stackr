@@ -22,6 +22,10 @@ module.exports = ({ config }) => ({
   },
   android: {
     ...config.android,
+    // Internal variants use isolated package IDs and deliberately skip the
+    // production-only Firebase file. Push registration already fails safely,
+    // while seller canary testing does not require notifications.
+    googleServicesFile: variantSuffix ? undefined : config.android.googleServicesFile,
     package: variantSuffix
       ? `${config.android.package}${variantSuffix}`
       : config.android.package,
