@@ -369,6 +369,10 @@ const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-pro
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
 const sellerMigrationWorkflow = readFileSync('.github/workflows/deploy-seller-inventory-migration.yml', 'utf8');
 const premiumSellerRuntimeWorkflow = readFileSync('.github/workflows/manage-premium-seller-runtime.yml', 'utf8');
+const premiumSellerQaIdentityWorkflow = readFileSync(
+  '.github/workflows/manage-premium-seller-qa-identity.yml',
+  'utf8',
+);
 const productionCataloguePromotion = JSON.parse(
   readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
 );
@@ -656,6 +660,379 @@ assert.doesNotMatch(
   /run:[^\n]*\$\{\{ inputs\./,
   'runtime inputs must be passed through environment variables, not interpolated into shell commands',
 );
+assert.match(premiumSellerQaIdentityWorkflow, /workflow_dispatch:/);
+assert.doesNotMatch(premiumSellerQaIdentityWorkflow, /pull_request:|push:|schedule:/);
+assert.match(premiumSellerQaIdentityWorkflow, /options:\s+\- preflight\s+\- provision\s+\- send_magic_link/);
+assert.match(premiumSellerQaIdentityWorkflow, /github\.ref == 'refs\/heads\/main'/);
+assert.match(premiumSellerQaIdentityWorkflow, /environment: production/);
+assert.match(premiumSellerQaIdentityWorkflow, /group: stackr-premium-seller-qa-identity/);
+assert.doesNotMatch(
+  premiumSellerQaIdentityWorkflow,
+  /group: stackr-premium-seller-runtime/,
+  'QA identity work must not queue the independent runtime kill switch',
+);
+assert.match(premiumSellerQaIdentityWorkflow, /cancel-in-progress: false/);
+assert.match(premiumSellerQaIdentityWorkflow, /STACKR_RELEASE_SHA: \$\{\{ github\.sha \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /STACKR_EXPECTED_COMMIT_SHA: \$\{\{ inputs\.expected_commit_sha \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /PREMIUM_SELLER_QA_EMAIL: \$\{\{ secrets\.PREMIUM_SELLER_QA_EMAIL \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /SUPABASE_ACCESS_TOKEN: \$\{\{ secrets\.SUPABASE_ACCESS_TOKEN \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /SUPABASE_PRODUCTION_SECRET_KEY: \$\{\{ secrets\.SUPABASE_PRODUCTION_SECRET_KEY \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /STACKR_SUPABASE_PUBLISHABLE_KEY: \$\{\{ secrets\.STACKR_SUPABASE_PUBLISHABLE_KEY \}\}/);
+assert.match(premiumSellerQaIdentityWorkflow, /prepare-postgres-urls\.mjs --source-only/);
+assert.equal(
+  [...premiumSellerQaIdentityWorkflow.matchAll(/secrets\.SUPABASE_DB_URL/g)].length,
+  1,
+  'the raw production URL must only be scoped to normalization',
+);
+assert.match(premiumSellerQaIdentityWorkflow, /manage-premium-seller-qa-identity\.mjs --validate-request/);
+assert.match(premiumSellerQaIdentityWorkflow, /manage-premium-seller-qa-identity\.mjs/);
+assert.match(premiumSellerQaIdentityWorkflow, /npm ci --ignore-scripts/);
+assert.doesNotMatch(premiumSellerQaIdentityWorkflow, /db push|migration repair|railway|wrangler|eas-cli/);
+assert.doesNotMatch(
+  premiumSellerQaIdentityWorkflow,
+  /run:[^\n]*\$\{\{ inputs\./,
+  'QA identity inputs must be passed through environment variables',
+);
+
+const {
+  PREMIUM_SELLER_QA_MARKER,
+  PREMIUM_SELLER_QA_PROJECT_REF,
+  PREMIUM_SELLER_QA_REDIRECT_URL,
+  assertHostedPremiumSellerQaAuthConfig,
+  assertManagedPremiumSellerQaIdentity,
+  assertPublicPremiumSellerQaAuthSettings,
+  expectedPremiumSellerQaAppMetadata,
+  normalizeQaEmail,
+  provisionPremiumSellerQaIdentity,
+  resolvePremiumSellerQaIdentityRequest,
+  safePremiumSellerQaIdentityFailureCode,
+  selectSolePremiumSellerQaIdentity,
+  sendPremiumSellerQaMagicLink,
+} = await import('./deploy/manage-premium-seller-qa-identity.mjs');
+const qaReleaseSha = '1234567890abcdef1234567890abcdef12345678';
+const qaPreviousReleaseSha = 'abcdef1234567890abcdef1234567890abcdef12';
+const qaEmail = 'release-qa@example.test';
+const qaUserId = '11111111-1111-4111-8111-111111111111';
+const qaProviderMetadata = { provider: 'email', providers: ['email'] };
+const qaAppMetadata = expectedPremiumSellerQaAppMetadata(qaReleaseSha, qaProviderMetadata);
+assert.equal(PREMIUM_SELLER_QA_PROJECT_REF, 'oakdbbzdqwurpjnoqhmu');
+assert.equal(PREMIUM_SELLER_QA_REDIRECT_URL, 'stackr-staging://auth/callback');
+const stagingAppConfig = run(
+  'node_modules/expo/bin/cli',
+  ['config', '--type', 'public', '--json'],
+  { APP_VARIANT: 'staging' },
+);
+assert.equal(stagingAppConfig.status, 0, stagingAppConfig.stderr || stagingAppConfig.stdout);
+assert.equal(
+  PREMIUM_SELLER_QA_REDIRECT_URL,
+  `${JSON.parse(stagingAppConfig.stdout).scheme}://auth/callback`,
+  'the QA redirect must exactly match the seller-canary native URL scheme',
+);
+assert.deepEqual(PREMIUM_SELLER_QA_MARKER, {
+  managed: true,
+  purpose: 'premium_seller_release_smoke',
+  environment: 'production',
+  schema_version: 1,
+});
+assert.equal(normalizeQaEmail('Release-QA@Example.Test'), qaEmail);
+assert.throws(() => normalizeQaEmail(' release-qa@example.test'), /premium_seller_qa_email_invalid/);
+assert.deepEqual(
+  resolvePremiumSellerQaIdentityRequest({
+    action: 'preflight',
+    confirmation: 'PREFLIGHT PREMIUM SELLER QA IDENTITY',
+    releaseSha: qaReleaseSha,
+    expectedCommitSha: qaReleaseSha,
+  }).action,
+  'preflight',
+);
+assert.deepEqual(
+  resolvePremiumSellerQaIdentityRequest({
+    action: 'provision',
+    confirmation: 'PROVISION PREMIUM SELLER QA IDENTITY',
+    releaseSha: qaReleaseSha,
+    expectedCommitSha: qaReleaseSha,
+  }).action,
+  'provision',
+);
+assert.deepEqual(
+  resolvePremiumSellerQaIdentityRequest({
+    action: 'send_magic_link',
+    confirmation: 'SEND PREMIUM SELLER QA MAGIC LINK',
+    releaseSha: qaReleaseSha,
+    expectedCommitSha: qaReleaseSha,
+  }).action,
+  'send_magic_link',
+);
+assert.throws(
+  () => resolvePremiumSellerQaIdentityRequest({
+    action: 'send_magic_link',
+    confirmation: 'SEND PREMIUM SELLER QA MAGIC LINK',
+    releaseSha: qaReleaseSha,
+    expectedCommitSha: qaPreviousReleaseSha,
+  }),
+  /premium_seller_qa_expected_commit_mismatch/,
+);
+assert.doesNotThrow(() => assertHostedPremiumSellerQaAuthConfig({
+  external_email_enabled: true,
+  uri_allow_list: `https://stackr.example/auth, ${PREMIUM_SELLER_QA_REDIRECT_URL}`,
+}));
+assert.throws(
+  () => assertHostedPremiumSellerQaAuthConfig({
+    external_email_enabled: true,
+    uri_allow_list: 'https://stackr.example/auth',
+  }),
+  /premium_seller_qa_redirect_not_allowed/,
+);
+assert.throws(
+  () => assertHostedPremiumSellerQaAuthConfig({
+    external_email_enabled: false,
+    uri_allow_list: PREMIUM_SELLER_QA_REDIRECT_URL,
+  }),
+  /premium_seller_qa_hosted_auth_config_invalid/,
+);
+assert.doesNotThrow(() => assertPublicPremiumSellerQaAuthSettings({ external: { email: true } }));
+assert.throws(
+  () => assertPublicPremiumSellerQaAuthSettings({ external: { email: false } }),
+  /premium_seller_qa_public_auth_settings_invalid/,
+);
+const managedQaUser = {
+  id: qaUserId,
+  email: qaEmail,
+  aud: 'authenticated',
+  role: 'authenticated',
+  email_confirmed_at: '2026-08-13T12:00:00.000Z',
+  app_metadata: qaAppMetadata,
+  identities: [{
+    identity_id: '22222222-2222-4222-8222-222222222222',
+    user_id: qaUserId,
+    provider: 'email',
+  }],
+};
+assert.deepEqual(
+  assertManagedPremiumSellerQaIdentity(managedQaUser, {
+    email: qaEmail,
+    releaseSha: qaReleaseSha,
+    requireConfirmed: true,
+  }),
+  qaProviderMetadata,
+);
+assert.throws(
+  () => assertManagedPremiumSellerQaIdentity({
+    ...managedQaUser,
+    app_metadata: { ...qaAppMetadata, role: 'admin' },
+  }, { email: qaEmail, releaseSha: qaReleaseSha }),
+  /premium_seller_qa_identity_unmanaged/,
+  'unexpected authorization metadata must make a QA identity ineligible',
+);
+assert.throws(
+  () => assertManagedPremiumSellerQaIdentity({
+    ...managedQaUser,
+    app_metadata: { ...qaAppMetadata, stackr_release_qa: { ...PREMIUM_SELLER_QA_MARKER, schema_version: 2 } },
+  }, { email: qaEmail, releaseSha: qaReleaseSha }),
+  /premium_seller_qa_identity_unmanaged/,
+);
+assert.throws(
+  () => assertManagedPremiumSellerQaIdentity({ ...managedQaUser, role: 'service_role' }, {
+    email: qaEmail,
+    releaseSha: qaReleaseSha,
+  }),
+  /premium_seller_qa_identity_role_invalid/,
+);
+assert.throws(
+  () => assertManagedPremiumSellerQaIdentity({
+    ...managedQaUser,
+    identities: [
+      ...managedQaUser.identities,
+      { user_id: qaUserId, provider: 'google' },
+    ],
+  }, { email: qaEmail, releaseSha: qaReleaseSha }),
+  /premium_seller_qa_identity_provider_invalid/,
+);
+assert.throws(
+  () => assertManagedPremiumSellerQaIdentity({ ...managedQaUser, is_sso_user: true }, {
+    email: qaEmail,
+    releaseSha: qaReleaseSha,
+  }),
+  /premium_seller_qa_identity_provider_invalid/,
+);
+assert.throws(
+  () => expectedPremiumSellerQaAppMetadata(qaReleaseSha, {
+    provider: 'google',
+    providers: ['google'],
+  }),
+  /premium_seller_qa_provider_metadata_invalid/,
+);
+assert.throws(
+  () => assertManagedPremiumSellerQaIdentity({
+    ...managedQaUser,
+    app_metadata: { ...qaAppMetadata, stackr_release_sha: qaPreviousReleaseSha },
+  }, { email: qaEmail, releaseSha: qaReleaseSha }),
+  /premium_seller_qa_identity_release_mismatch/,
+  'a QA identity must never be rebound across releases while older sessions may exist',
+);
+assert.equal(selectSolePremiumSellerQaIdentity([managedQaUser], qaEmail)?.id, qaUserId);
+assert.equal(selectSolePremiumSellerQaIdentity([], qaEmail), null);
+assert.throws(
+  () => selectSolePremiumSellerQaIdentity([
+    managedQaUser,
+    {
+      ...managedQaUser,
+      id: '33333333-3333-4333-8333-333333333333',
+      email: 'another-release-qa@example.test',
+      app_metadata: { provider: 'email', providers: ['email'], stackr_premium_seller: true },
+    },
+  ], qaEmail),
+  /premium_seller_qa_global_identity_collision/,
+  'another Premium entitlement must stop controlled single-user QA',
+);
+assert.throws(
+  () => selectSolePremiumSellerQaIdentity([
+    managedQaUser,
+    {
+      ...managedQaUser,
+      id: '44444444-4444-4444-8444-444444444444',
+      email: 'stale-release-qa@example.test',
+      app_metadata: {
+        provider: 'email',
+        providers: ['email'],
+        stackr_release_qa: { ...PREMIUM_SELLER_QA_MARKER },
+      },
+    },
+  ], qaEmail),
+  /premium_seller_qa_global_identity_collision/,
+  'another managed QA marker must stop identity provisioning',
+);
+
+let updateCalled = false;
+const provisionAdmin = {
+  async getUserById() {
+    return { data: { user: managedQaUser }, error: null };
+  },
+  async updateUserById() {
+    updateCalled = true;
+    throw new Error('existing QA identity must not be rebound');
+  },
+};
+await provisionPremiumSellerQaIdentity({
+  admin: provisionAdmin,
+  email: qaEmail,
+  releaseSha: qaReleaseSha,
+  existingUser: managedQaUser,
+});
+assert.equal(updateCalled, false);
+
+let createRequest;
+const createAdmin = {
+  async createUser(attributes) {
+    createRequest = attributes;
+    return { data: { user: managedQaUser }, error: null };
+  },
+  async getUserById() {
+    return { data: { user: managedQaUser }, error: null };
+  },
+};
+await provisionPremiumSellerQaIdentity({
+  admin: createAdmin,
+  email: qaEmail,
+  releaseSha: qaReleaseSha,
+  existingUser: null,
+});
+assert.deepEqual(createRequest, {
+  email: qaEmail,
+  email_confirm: true,
+  app_metadata: {
+    stackr_premium_seller: true,
+    stackr_release_qa: { ...PREMIUM_SELLER_QA_MARKER },
+    stackr_release_sha: qaReleaseSha,
+  },
+});
+
+let magicLinkRequest;
+const magicLinkAdmin = {
+  async getUserById() {
+    return { data: { user: managedQaUser }, error: null };
+  },
+};
+const magicLinkPublicClient = {
+  auth: {
+    async signInWithOtp(request) {
+      magicLinkRequest = request;
+      return { data: {}, error: null };
+    },
+  },
+};
+await sendPremiumSellerQaMagicLink({
+  publicClient: magicLinkPublicClient,
+  admin: magicLinkAdmin,
+  email: qaEmail,
+  releaseSha: qaReleaseSha,
+  existingUser: managedQaUser,
+});
+assert.deepEqual(magicLinkRequest, {
+  email: qaEmail,
+  options: {
+    shouldCreateUser: false,
+    emailRedirectTo: 'stackr-staging://auth/callback',
+  },
+});
+await assert.rejects(
+  () => sendPremiumSellerQaMagicLink({
+    publicClient: magicLinkPublicClient,
+    admin: magicLinkAdmin,
+    email: qaEmail,
+    releaseSha: qaReleaseSha,
+    existingUser: null,
+  }),
+  /premium_seller_qa_identity_missing/,
+  'sending a link must never create a missing identity',
+);
+const qaIdentityToolSource = readFileSync(
+  'scripts/deploy/manage-premium-seller-qa-identity.mjs',
+  'utf8',
+);
+assert.match(qaIdentityToolSource, /external_email_enabled !== true/);
+assert.match(qaIdentityToolSource, /assertPremiumSellerMigrationInstalled/);
+assert.match(qaIdentityToolSource, /assertPremiumSellerRuntimeContract/);
+assert.match(qaIdentityToolSource, /loadReviewedPremiumSellerWrapperContract/);
+assert.match(qaIdentityToolSource, /loadReviewedAtomicSellerImplementationContract/);
+assert.match(qaIdentityToolSource, /pg_advisory_xact_lock\(hashtext\('stackr\.premium_seller_runtime_control'\)\)/);
+assert.match(qaIdentityToolSource, /where singleton\s+for update/);
+assert.match(qaIdentityToolSource, /inventory_owner_read_only !== true/);
+assert.match(qaIdentityToolSource, /receipts_have_only_read_policy !== true/);
+assert.match(qaIdentityToolSource, /runtime_row_count !== 1/);
+assert.match(qaIdentityToolSource, /disabled_singleton_count !== 1/);
+assert.match(qaIdentityToolSource, /seller_ledgers_empty !== true/);
+assert.match(qaIdentityToolSource, /AbortSignal\.timeout\(15_000\)/);
+assert.match(qaIdentityToolSource, /shouldCreateUser: false/);
+assert.match(qaIdentityToolSource, /emailRedirectTo: PREMIUM_SELLER_QA_REDIRECT_URL/);
+assert.doesNotMatch(qaIdentityToolSource, /allowPreviousRelease|updateUserById|deleteUser/);
+assert.doesNotMatch(qaIdentityToolSource, /console\.(?:log|error)\([^\n]*(?:email|user\.id|link|token|secretKey|publishableKey|accessToken)/i);
+const qaSentinelEmail = 'never-print-qa-address@example.test';
+const qaSentinelSecret = 'never-print-qa-secret';
+const rejectedQaRequest = run(
+  'scripts/deploy/manage-premium-seller-qa-identity.mjs',
+  ['--validate-request'],
+  {
+    STACKR_PREMIUM_SELLER_QA_ACTION: 'send_magic_link',
+    STACKR_PREMIUM_SELLER_QA_CONFIRMATION: 'wrong confirmation',
+    STACKR_RELEASE_SHA: qaReleaseSha,
+    STACKR_EXPECTED_COMMIT_SHA: qaReleaseSha,
+    PREMIUM_SELLER_QA_EMAIL: qaSentinelEmail,
+    SUPABASE_ACCESS_TOKEN: qaSentinelSecret,
+    SUPABASE_PRODUCTION_SECRET_KEY: qaSentinelSecret,
+    STACKR_SUPABASE_PUBLISHABLE_KEY: qaSentinelSecret,
+  },
+);
+assert.notEqual(rejectedQaRequest.status, 0);
+assert.match(rejectedQaRequest.stderr, /premium_seller_qa_confirmation_mismatch/);
+assert.doesNotMatch(
+  `${rejectedQaRequest.stdout}\n${rejectedQaRequest.stderr}`,
+  /never-print-qa-address|never-print-qa-secret/,
+);
+assert.equal(
+  safePremiumSellerQaIdentityFailureCode(new Error(`${qaSentinelEmail}:${qaSentinelSecret}`)),
+  'premium_seller_qa_identity_operation_failed',
+);
 
 const {
   PREMIUM_SELLER_MIGRATION_NAME,
@@ -722,7 +1099,7 @@ assert.match(runtimeToolSource, /for update/);
 assert.match(runtimeToolSource, /updated\.rowCount !== 1/);
 assert.match(runtimeToolSource, /readback\.rows\[0\]\?\.matching_rows !== 1/);
 assert.match(runtimeToolSource, /request\.action === 'enable_qa'[\s\S]+assertSellerLedgersEmpty/);
-assert.match(runtimeToolSource, /request\.action === 'enable_qa'[\s\S]+assertMigrationInstalled/);
+assert.match(runtimeToolSource, /request\.action === 'enable_qa'[\s\S]+assertPremiumSellerMigrationInstalled/);
 assert.match(runtimeToolSource, /else \{[\s\S]+assertEmergencyDisableContract/);
 assert.doesNotMatch(runtimeToolSource, /console\.(?:log|error)\([^\n]*(?:connectionString|normalized|rows)/);
 const runtimeSecretUrl = 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:do-not-log@aws-0-eu-west-1.pooler.supabase.com:5432/postgres';
