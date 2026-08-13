@@ -348,6 +348,56 @@ jobs:
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --service "$RAILWAY_BACKEND_SERVICE_ID"
+
+          railway_latest_status="$(
+            npx --yes @railway/cli@5.30.1 deployment list \
+              --project "$RAILWAY_PROJECT_ID" \
+              --environment "$RAILWAY_ENVIRONMENT_ID" \
+              --service "$RAILWAY_BACKEND_SERVICE_ID" \
+              --limit 1 \
+              --json | \
+              node -e 'let value = ""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const rows = JSON.parse(value); if (!Array.isArray(rows) || typeof rows[0]?.status !== "string") throw new Error("Railway did not return a latest deployment status."); process.stdout.write(rows[0].status); });'
+          )"
+
+          if [ "$railway_latest_status" = "SKIPPED" ]; then
+            railway_redeploy_id="$(
+              npx --yes @railway/cli@5.30.1 deployment redeploy --yes --json \
+                --project "$RAILWAY_PROJECT_ID" \
+                --environment "$RAILWAY_ENVIRONMENT_ID" \
+                --service "$RAILWAY_BACKEND_SERVICE_ID" | \
+                node -e 'let value = ""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const result = JSON.parse(value); if (typeof result.id !== "string" || result.id.length === 0) throw new Error("Railway did not return a redeployment ID."); process.stdout.write(result.id); });'
+            )"
+
+            railway_redeploy_deadline=$((SECONDS + 900))
+            while true; do
+              railway_redeploy_status="$(
+                npx --yes @railway/cli@5.30.1 deployment list \
+                  --project "$RAILWAY_PROJECT_ID" \
+                  --environment "$RAILWAY_ENVIRONMENT_ID" \
+                  --service "$RAILWAY_BACKEND_SERVICE_ID" \
+                  --limit 20 \
+                  --json | \
+                  RAILWAY_DEPLOYMENT_ID="$railway_redeploy_id" node -e 'let value = ""; process.stdin.setEncoding("utf8"); process.stdin.on("data", chunk => value += chunk); process.stdin.on("end", () => { const rows = JSON.parse(value); if (!Array.isArray(rows)) throw new Error("Railway did not return a deployment list."); const row = rows.find(item => item?.id === process.env.RAILWAY_DEPLOYMENT_ID); process.stdout.write(typeof row?.status === "string" ? row.status : "NOT_FOUND"); });'
+              )"
+
+              case "$railway_redeploy_status" in
+                SUCCESS)
+                  break
+                  ;;
+                FAILED|CRASHED|REMOVED|REMOVING|SKIPPED|SLEEPING|NEEDS_APPROVAL|CANCELED|CANCELLED)
+                  echo "Railway redeployment $railway_redeploy_id ended with status $railway_redeploy_status." >&2
+                  exit 1
+                  ;;
+              esac
+
+              if [ "$SECONDS" -ge "$railway_redeploy_deadline" ]; then
+                echo "Railway redeployment $railway_redeploy_id did not become healthy within 15 minutes." >&2
+                exit 1
+              fi
+              sleep 10
+            done
+          fi
+
           echo "STACKR_BACKEND_DEPLOYED=true" >> "$GITHUB_ENV"
 
       - name: Deploy rolling recognition version
