@@ -25,13 +25,14 @@ import {
   InventoryItem,
   PRODUCT_INVENTORY_CONDITIONS,
   InventoryMovement,
+  InventoryMovementDraft,
   InventoryMovementReason,
-  addInventorySale,
-  addInventoryMovement,
+  InventorySaleTransaction,
+  SellerBinderDelta,
+  commitSellerInventoryBatch,
   createInventoryItem,
   loadInventoryMovements,
   loadInventoryItems,
-  saveInventoryItems,
 } from '../../lib/inventory';
 import { BinderRecord, fetchBinders } from '../../lib/binders';
 import { getPriceFromPokemonCard } from '../../lib/pricing';
@@ -48,6 +49,8 @@ import {
   searchMarketProducts,
 } from '../../lib/productSearch';
 import type { ProductLookupType } from '../../lib/productSearch';
+import { isSellerAtomicWritesDisabledError } from '../../lib/sellerAtomicWrites';
+import { getSellerStockOutRoute } from '../../lib/sellerStockOutRouting';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -66,6 +69,29 @@ const conditionShort: Record<InventoryCondition, string> = {
   Damaged: 'DMG',
   Sealed: 'SEA',
 };
+
+function mergeSellerBinderDeltas(deltas: SellerBinderDelta[]) {
+  const merged = new Map<string, SellerBinderDelta>();
+  for (const delta of deltas) {
+    const key = `${delta.binder_id}:${delta.card_id}`;
+    const current = merged.get(key);
+    merged.set(key, current
+      ? { ...current, quantity_delta: current.quantity_delta + delta.quantity_delta }
+      : delta);
+  }
+  return [...merged.values()].filter((delta) => delta.quantity_delta !== 0);
+}
+
+function alertSellerMutationFailure(error: unknown, title: string, message: string) {
+  if (isSellerAtomicWritesDisabledError(error)) {
+    Alert.alert(
+      'Seller changes paused',
+      'This bridge release is read-only while seller updates are verified. Your inventory was not changed.'
+    );
+    return;
+  }
+  Alert.alert(title, message);
+}
 
 type InventoryLookupType = 'raw_card' | ProductLookupType;
 
@@ -238,11 +264,6 @@ export default function InventoryScreen() {
   const [productAskingPrice, setProductAskingPrice] = useState('');
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const persist = useCallback(async (nextItems: InventoryItem[]) => {
-    setItems(nextItems);
-    await saveInventoryItems(nextItems);
-  }, []);
-
   const load = useCallback(async () => {
     const [stored, binderRows, movementRows] = await Promise.all([
       loadInventoryItems(),
@@ -274,80 +295,36 @@ export default function InventoryScreen() {
     setMovements(movementRows);
   }, []);
 
-  const recordMovement = useCallback(async (movement: Omit<InventoryMovement, 'id' | 'created_at'>) => {
-    const saved = await addInventoryMovement(movement);
-    setMovements((prev) => [saved, ...prev].slice(0, 100));
-    return saved;
-  }, []);
-
-  const syncBinderScanIn = useCallback(async (card: InventoryCardSnapshot, quantity: number) => {
-    if (scanInDestination !== 'binder' || !selectedBinder) return;
-    if (!card.set_id) {
-      Alert.alert('Binder not updated', 'This card does not have a set id, so it was added to Inventory only.');
-      return;
+  const commitInventoryChange = useCallback(async (input: {
+    nextItems: InventoryItem[];
+    movements?: InventoryMovementDraft[];
+    sale?: InventorySaleTransaction | null;
+    binderDeltas?: SellerBinderDelta[];
+  }) => {
+    if (
+      input.sale == null
+      && input.movements?.some((movement) => getSellerStockOutRoute(movement.reason) === 'sale-cart')
+    ) {
+      throw new Error('Sold stock-out must be completed through the sale cart.');
     }
 
-    const { data: existing, error: existingError } = await supabase
-      .from('binder_cards')
-      .select('owned_quantity')
-      .eq('binder_id', selectedBinder.id)
-      .eq('card_id', card.id)
-      .maybeSingle();
-
-    if (existingError) throw existingError;
-
-    const ownedQuantity = Math.max(1, Number(existing?.owned_quantity ?? 0) + quantity);
-
-    const { error } = await supabase
-      .from('binder_cards')
-      .upsert(
-        {
-          binder_id: selectedBinder.id,
-          card_id: card.id,
-          set_id: card.set_id,
-          owned: true,
-          owned_quantity: ownedQuantity,
-          notes: '',
-          card_name: card.name,
-          card_number: card.number,
-          image_url: card.image_small,
-          set_name: card.set_name,
-        },
-        {
-          onConflict: 'binder_id,card_id',
-          ignoreDuplicates: false,
-        }
-      );
-
-    if (error) throw error;
-  }, [scanInDestination, selectedBinder]);
-
-  const syncBinderScanOut = useCallback(async (item: InventoryItem, quantityToRemove: number, nextQuantity: number) => {
-    const binderId = item.card.inventory_binder_id;
-    if (!binderId || item.card.is_product) return;
-
-    const { data, error } = await supabase
-      .from('binder_cards')
-      .select('id, owned_quantity')
-      .eq('binder_id', binderId)
-      .eq('card_id', item.card_id)
-      .maybeSingle();
-
-    if (error) throw error;
-    if (!data?.id) return;
-
-    const currentBinderQuantity = Math.max(1, Number(data.owned_quantity ?? item.quantity));
-    const nextBinderQuantity = Math.max(0, Math.min(nextQuantity, currentBinderQuantity - quantityToRemove));
-    const { error: updateError } = await supabase
-      .from('binder_cards')
-      .update({
-        owned: nextBinderQuantity > 0,
-        owned_quantity: nextBinderQuantity > 0 ? nextBinderQuantity : 1,
-      })
-      .eq('id', data.id);
-
-    if (updateError) throw updateError;
-  }, []);
+    const committed = await commitSellerInventoryBatch({
+      expectedItems: items,
+      items: input.nextItems,
+      movements: input.movements,
+      sale: input.sale,
+      binderDeltas: mergeSellerBinderDeltas(input.binderDeltas ?? []),
+    });
+    setItems(committed.items);
+    if (committed.movements.length) {
+      const committedIds = new Set(committed.movements.map((movement) => movement.id));
+      setMovements((previous) => [
+        ...committed.movements,
+        ...previous.filter((movement) => !committedIds.has(movement.id)),
+      ].slice(0, 100));
+    }
+    return committed;
+  }, [items]);
 
   const searchCards = useCallback(async (text: string) => {
     const trimmed = text.trim();
@@ -568,21 +545,34 @@ export default function InventoryScreen() {
       inventory_binder_name: askingPrice != null ? 'Sell/Trade inventory' : null,
     };
     const next = addStockLine(items, productForInventory, 'Sealed', quantity, askingPrice);
-    await persist(next);
-    await recordMovement({
-      action_type: 'scan_in',
-      card_id: selectedProduct.id,
-      set_id: selectedProduct.set_id,
-      card_name: selectedProduct.name,
-      quantity,
-      reason: askingPrice != null ? 'Added to Sell/Trade' : 'Added to Collection',
-      value_at_time: getPreferredPrice(selectedProduct),
-      image_small: selectedProduct.image_small,
-    });
-    setSelectedProduct(null);
-    setProductQuantity('1');
-    setProductAskingPrice('');
-  }, [addStockLine, items, persist, productAskingPrice, productQuantity, recordMovement, selectedProduct]);
+    const addedItem = next.find((item) => (
+      item.card_id === selectedProduct.id && item.condition === 'Sealed'
+    ));
+    if (!addedItem) return;
+
+    try {
+      await commitInventoryChange({
+        nextItems: next,
+        movements: [{
+          inventory_item_id: addedItem.id,
+          action_type: 'scan_in',
+          card_id: selectedProduct.id,
+          set_id: selectedProduct.set_id,
+          card_name: selectedProduct.name,
+          quantity,
+          reason: askingPrice != null ? 'Added to Sell/Trade' : 'Added to Collection',
+          value_at_time: getPreferredPrice(selectedProduct),
+          image_small: selectedProduct.image_small,
+        }],
+      });
+      setSelectedProduct(null);
+      setProductQuantity('1');
+      setProductAskingPrice('');
+    } catch (error) {
+      console.log('Product inventory commit failed', error);
+      alertSellerMutationFailure(error, 'Could not add product', 'Inventory was not changed. Check your connection and try again.');
+    }
+  }, [addStockLine, commitInventoryChange, items, productAskingPrice, productQuantity, selectedProduct]);
 
   const addAllDrafts = useCallback(async () => {
     if (scanInDestination === 'binder' && !selectedBinder) {
@@ -600,54 +590,86 @@ export default function InventoryScreen() {
     }
 
     let next = items;
+    const movements: InventoryMovementDraft[] = [];
+    const binderDeltas: SellerBinderDelta[] = [];
     for (const draft of drafts) {
       const parsedAskingPrice = Number.parseFloat(draft.askingPrice);
       const askingPrice = Number.isFinite(parsedAskingPrice) ? parsedAskingPrice : null;
       const draftTotal = getDraftConditions(draft.card).reduce((sum, condition) => sum + (draft.quantities[condition] ?? 0), 0);
+      const canUseBinder = scanInDestination === 'binder'
+        && Boolean(selectedBinder)
+        && Boolean(draft.card.set_id);
+      if (scanInDestination === 'binder' && !draft.card.set_id) {
+        Alert.alert('Binder not updated', `${draft.card.name} has no set id, so it will be added to Inventory only.`);
+      }
       const cardForInventory: InventoryCardSnapshot = {
         ...draft.card,
-        inventory_binder_id: scanInDestination === 'binder' ? selectedBinder?.id ?? null : null,
-        inventory_binder_name: scanInDestination === 'binder'
+        inventory_binder_id: canUseBinder ? selectedBinder?.id ?? null : null,
+        inventory_binder_name: canUseBinder
           ? selectedBinder?.name ?? null
           : scanInDestination === 'sell_trade'
             ? 'Sell/Trade inventory'
             : null,
       };
 
-      if (scanInDestination === 'binder' && draftTotal > 0) {
-        await syncBinderScanIn(draft.card, draftTotal);
-      }
-
       for (const condition of getDraftConditions(draft.card)) {
         const quantity = draft.quantities[condition] ?? 0;
-        if (quantity > 0) next = addStockLine(next, cardForInventory, condition, quantity, askingPrice);
-      }
-
-      if (draftTotal > 0) {
+        if (quantity <= 0) continue;
+        next = addStockLine(next, cardForInventory, condition, quantity, askingPrice);
+        const inventoryItem = next.find((item) => (
+          item.card_id === draft.card.id
+          && item.condition === condition
+          && (item.card.inventory_binder_id ?? null) === (cardForInventory.inventory_binder_id ?? null)
+        ));
+        if (!inventoryItem) continue;
         const destination = scanInDestinations.find((item) => item.key === scanInDestination);
-        await recordMovement({
+        movements.push({
+          inventory_item_id: inventoryItem.id,
           action_type: 'scan_in',
           card_id: draft.card.id,
           set_id: draft.card.set_id,
           card_name: draft.card.name,
-          quantity: draftTotal,
-          reason: destination?.reason ?? 'Added to Collection',
-          binder_id: scanInDestination === 'binder' ? selectedBinder?.id ?? null : null,
-          binder_name: scanInDestination === 'binder' ? selectedBinder?.name ?? null : null,
+          quantity,
+          reason: canUseBinder ? 'Added to Binder' : destination?.reason ?? 'Added to Collection',
+          binder_id: canUseBinder ? selectedBinder?.id ?? null : null,
+          binder_name: canUseBinder ? selectedBinder?.name ?? null : null,
           value_at_time: getPreferredPrice(draft.card),
           image_small: draft.card.image_small,
         });
       }
+
+      if (canUseBinder && draftTotal > 0 && draft.card.set_id) {
+        binderDeltas.push({
+          binder_id: selectedBinder!.id,
+          card_id: draft.card.id,
+          set_id: draft.card.set_id,
+          quantity_delta: draftTotal,
+          card_name: draft.card.name,
+          card_number: draft.card.number,
+          image_url: draft.card.image_small,
+          set_name: draft.card.set_name,
+        });
+      }
     }
-    await persist(next);
-    setQuery('');
-    setResults([]);
-    setDrafts([]);
-    setWorkspaceOpen(false);
-    Alert.alert('Scan In complete', `${totalQuantity} item${totalQuantity !== 1 ? 's' : ''} added.`);
-  }, [addStockLine, drafts, items, persist, recordMovement, scanInDestination, selectedBinder, syncBinderScanIn]);
+    try {
+      await commitInventoryChange({ nextItems: next, movements, binderDeltas });
+      setQuery('');
+      setResults([]);
+      setDrafts([]);
+      setWorkspaceOpen(false);
+      Alert.alert('Scan In complete', `${totalQuantity} item${totalQuantity !== 1 ? 's' : ''} added.`);
+    } catch (error) {
+      console.log('Inventory scan-in batch failed', error);
+      alertSellerMutationFailure(error, 'Could not add batch', 'Nothing was changed. Check your connection and try again.');
+    }
+  }, [addStockLine, commitInventoryChange, drafts, items, scanInDestination, selectedBinder]);
 
   const updateQuantity = useCallback(async (id: string, change: number) => {
+    const current = items.find((item) => item.id === id);
+    if (!current) return;
+    const nextQuantity = Math.max(0, current.quantity + change);
+    const actualChange = nextQuantity - current.quantity;
+    if (actualChange === 0) return;
     const next = items
       .map((item) =>
         item.id === id
@@ -655,8 +677,41 @@ export default function InventoryScreen() {
           : item
       )
       .filter((item) => item.quantity > 0);
-    await persist(next);
-  }, [items, persist]);
+    const binderId = current.card.is_product || !current.set_id
+      ? null
+      : current.card.inventory_binder_id ?? null;
+    try {
+      await commitInventoryChange({
+        nextItems: next,
+        movements: [{
+          inventory_item_id: current.id,
+          action_type: actualChange > 0 ? 'scan_in' : 'scan_out',
+          card_id: current.card_id,
+          set_id: current.set_id,
+          card_name: current.card.name,
+          quantity: Math.abs(actualChange),
+          reason: 'Other',
+          binder_id: binderId,
+          binder_name: binderId ? current.card.inventory_binder_name ?? null : null,
+          value_at_time: getPreferredPrice(current.card),
+          image_small: current.card.image_small,
+        }],
+        binderDeltas: binderId && current.set_id ? [{
+          binder_id: binderId,
+          card_id: current.card_id,
+          set_id: current.set_id,
+          quantity_delta: actualChange,
+          card_name: current.card.name,
+          card_number: current.card.number,
+          image_url: current.card.image_small,
+          set_name: current.card.set_name,
+        }] : [],
+      });
+    } catch (error) {
+      console.log('Inventory quantity update failed', error);
+      alertSellerMutationFailure(error, 'Could not update quantity', 'Inventory was not changed. Refresh and try again.');
+    }
+  }, [commitInventoryChange, items]);
 
   const updateAskingPrice = useCallback(async (id: string, value: string) => {
     const parsed = Number.parseFloat(value.replace(/[^0-9.]/g, ''));
@@ -665,8 +720,29 @@ export default function InventoryScreen() {
         ? { ...item, asking_price: Number.isFinite(parsed) ? parsed : null, updated_at: new Date().toISOString() }
         : item
     );
-    await persist(next);
-  }, [items, persist]);
+    try {
+      await commitInventoryChange({ nextItems: next });
+    } catch (error) {
+      console.log('Inventory price update failed', error);
+      alertSellerMutationFailure(error, 'Could not update price', 'Inventory was not changed. Refresh and try again.');
+    }
+  }, [commitInventoryChange, items]);
+
+  const addItemToSale = useCallback((item: InventoryItem, quantity = 1) => {
+    const quantityToAdd = Math.max(1, Math.min(item.quantity, quantity));
+    setSaleCart((prev) => {
+      const existing = prev.find((line) => line.item.id === item.id);
+      if (existing) {
+        return prev.map((line) =>
+          line.item.id === item.id
+            ? { ...line, quantity: Math.min(item.quantity, line.quantity + quantityToAdd) }
+            : line
+        );
+      }
+      return [...prev, { item, quantity: quantityToAdd }];
+    });
+    setSaleOpen(true);
+  }, []);
 
   const openScanOutConfirm = useCallback((item: InventoryItem) => {
     setPendingStockOut({
@@ -695,9 +771,14 @@ export default function InventoryScreen() {
       return;
     }
 
+    if (getSellerStockOutRoute(reason) === 'sale-cart') {
+      addItemToSale(item, quantity);
+      setPendingStockOut(null);
+      return;
+    }
+
     const nextQuantity = Math.max(0, item.quantity - quantity);
     try {
-      await syncBinderScanOut(item, quantity, nextQuantity);
       const now = new Date().toISOString();
       const next = items
         .map((current) =>
@@ -707,26 +788,42 @@ export default function InventoryScreen() {
         )
         .filter((current) => current.quantity > 0);
 
-      await persist(next);
-      await recordMovement({
-        action_type: 'scan_out',
-        card_id: item.card_id,
-        set_id: item.set_id,
-        card_name: item.card.name,
-        quantity,
-        reason,
-        binder_id: item.card.inventory_binder_id ?? null,
-        binder_name: item.card.inventory_binder_name ?? null,
-        value_at_time: getPreferredPrice(item.card),
-        image_small: item.card.image_small,
+      const binderId = item.card.is_product || !item.set_id
+        ? null
+        : item.card.inventory_binder_id ?? null;
+      await commitInventoryChange({
+        nextItems: next,
+        movements: [{
+          inventory_item_id: item.id,
+          action_type: 'scan_out',
+          card_id: item.card_id,
+          set_id: item.set_id,
+          card_name: item.card.name,
+          quantity,
+          reason,
+          binder_id: binderId,
+          binder_name: binderId ? item.card.inventory_binder_name ?? null : null,
+          value_at_time: getPreferredPrice(item.card),
+          image_small: item.card.image_small,
+        }],
+        binderDeltas: binderId && item.set_id ? [{
+          binder_id: binderId,
+          card_id: item.card_id,
+          set_id: item.set_id,
+          quantity_delta: -quantity,
+          card_name: item.card.name,
+          card_number: item.card.number,
+          image_url: item.card.image_small,
+          set_name: item.card.set_name,
+        }] : [],
       });
       setPendingStockOut(null);
       Alert.alert('Scan Out complete', `${item.card.name} was removed from your current ownership.`);
     } catch (error) {
       console.log('Inventory scan out failed', error);
-      Alert.alert('Could not remove item', 'Inventory was not changed. Check your connection and try again.');
+      alertSellerMutationFailure(error, 'Could not remove item', 'Inventory was not changed. Check your connection and try again.');
     }
-  }, [items, pendingStockOut, persist, recordMovement, syncBinderScanOut]);
+  }, [addItemToSale, commitInventoryChange, items, pendingStockOut]);
 
   const identifyScannedCard = useCallback(async (base64Image: string) => {
     const response = await fetch(`${PRICE_API_URL}/api/cardsight/identify`, {
@@ -888,21 +985,6 @@ export default function InventoryScreen() {
     setSaleOpen(true);
   }, []);
 
-  const addItemToSale = useCallback((item: InventoryItem) => {
-    setSaleCart((prev) => {
-      const existing = prev.find((line) => line.item.id === item.id);
-      if (existing) {
-        return prev.map((line) =>
-          line.item.id === item.id
-            ? { ...line, quantity: Math.min(item.quantity, line.quantity + 1) }
-            : line
-        );
-      }
-      return [...prev, { item, quantity: 1 }];
-    });
-    setSaleOpen(true);
-  }, []);
-
   const updateSaleQuantity = useCallback((itemId: string, change: number) => {
     setSaleCart((prev) =>
       prev
@@ -970,11 +1052,7 @@ export default function InventoryScreen() {
       })
       .filter((item) => item.quantity > 0);
 
-    for (const line of saleCart) {
-      await syncBinderScanOut(line.item, line.quantity, Math.max(0, line.item.quantity - line.quantity));
-    }
-
-    await addInventorySale({
+    const sale: InventorySaleTransaction = {
       id: `sale:${Date.now()}`,
       sold_price: Number.isFinite(soldPrice) ? soldPrice : null,
       estimated_value: saleEstimatedValue,
@@ -989,27 +1067,53 @@ export default function InventoryScreen() {
         estimated_unit_price: getPreferredPrice(line.item.card),
         image_small: line.item.card.image_small,
       })),
-    });
-    for (const line of saleCart) {
-      await recordMovement({
+    };
+    const movements: InventoryMovementDraft[] = saleCart.map((line) => {
+      const binderId = line.item.card.is_product || !line.item.set_id
+        ? null
+        : line.item.card.inventory_binder_id ?? null;
+      return {
+        inventory_item_id: line.item.id,
         action_type: 'scan_out',
         card_id: line.item.card_id,
         set_id: line.item.set_id,
         card_name: line.item.card.name,
         quantity: line.quantity,
         reason: 'Sold',
-        binder_id: line.item.card.inventory_binder_id ?? null,
-        binder_name: line.item.card.inventory_binder_name ?? null,
+        binder_id: binderId,
+        binder_name: binderId ? line.item.card.inventory_binder_name ?? null : null,
         value_at_time: getPreferredPrice(line.item.card),
         image_small: line.item.card.image_small,
-      });
+      };
+    });
+    const binderDeltas: SellerBinderDelta[] = saleCart.flatMap((line) => {
+      const binderId = line.item.card.is_product
+        ? null
+        : line.item.card.inventory_binder_id ?? null;
+      if (!binderId || !line.item.set_id) return [];
+      return [{
+        binder_id: binderId,
+        card_id: line.item.card_id,
+        set_id: line.item.set_id,
+        quantity_delta: -line.quantity,
+        card_name: line.item.card.name,
+        card_number: line.item.card.number,
+        image_url: line.item.card.image_small,
+        set_name: line.item.card.set_name,
+      }];
+    });
+
+    try {
+      await commitInventoryChange({ nextItems, movements, sale, binderDeltas });
+      setSaleOpen(false);
+      setSaleCart([]);
+      setSalePrice('');
+      Alert.alert('Sale completed', 'Inventory and the sale report were saved together.');
+    } catch (error) {
+      console.log('Seller sale commit failed', error);
+      alertSellerMutationFailure(error, 'Could not complete sale', 'Nothing was changed. Refresh and try again.');
     }
-    await persist(nextItems);
-    setSaleOpen(false);
-    setSaleCart([]);
-    setSalePrice('');
-    Alert.alert('Sale completed', 'Inventory has been updated and the sale report has been saved.');
-  }, [items, persist, recordMovement, saleCart, saleEstimatedValue, salePrice, syncBinderScanOut]);
+  }, [commitInventoryChange, items, saleCart, saleEstimatedValue, salePrice]);
 
   const renderInventoryItem = ({ item }: { item: InventoryItem }) => {
     const price = getPreferredPrice(item.card);
@@ -1862,8 +1966,16 @@ export default function InventoryScreen() {
               <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                   <View>
-                    <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>Confirm Scan Out</Text>
-                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 3 }}>Nothing is removed until you confirm.</Text>
+                    <Text style={{ color: theme.colors.text, fontSize: 22, fontWeight: '900' }}>
+                      {getSellerStockOutRoute(pendingStockOut.reason) === 'sale-cart'
+                        ? 'Add to sale'
+                        : 'Confirm Scan Out'}
+                    </Text>
+                    <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '700', marginTop: 3 }}>
+                      {getSellerStockOutRoute(pendingStockOut.reason) === 'sale-cart'
+                        ? 'Inventory changes only when you complete the sale.'
+                        : 'Nothing is removed until you confirm.'}
+                    </Text>
                   </View>
                   <TouchableOpacity onPress={() => setPendingStockOut(null)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center' }}>
                     <Ionicons name="close" size={20} color={theme.colors.text} />
@@ -1894,7 +2006,8 @@ export default function InventoryScreen() {
                   </View>
                 </View>
 
-                {pendingStockOut.item.card.inventory_binder_name && (
+                {getSellerStockOutRoute(pendingStockOut.reason) === 'direct'
+                  && pendingStockOut.item.card.inventory_binder_name && (
                   <View style={{ marginTop: 14, backgroundColor: '#FFFBEB', borderRadius: 14, borderWidth: 1, borderColor: '#FDE68A', padding: 12 }}>
                     <Text style={{ color: '#92400E', fontWeight: '900', fontSize: 13 }}>Binder completion may change</Text>
                     <Text style={{ color: '#92400E', fontWeight: '700', fontSize: 12, marginTop: 3 }}>
@@ -1924,7 +2037,11 @@ export default function InventoryScreen() {
                 <View style={{ marginTop: 16, backgroundColor: theme.colors.surface, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, padding: 12 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <View>
-                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>Quantity to remove</Text>
+                      <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 13 }}>
+                        {getSellerStockOutRoute(pendingStockOut.reason) === 'sale-cart'
+                          ? 'Quantity to add'
+                          : 'Quantity to remove'}
+                      </Text>
                       <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 11, marginTop: 2 }}>Current quantity: {pendingStockOut.item.quantity}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -1939,9 +2056,14 @@ export default function InventoryScreen() {
                   </View>
                   <View style={{ height: 1, backgroundColor: theme.colors.border, marginVertical: 12 }} />
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>Value impact</Text>
+                    <Text style={{ color: theme.colors.textSoft, fontWeight: '900', fontSize: 12 }}>
+                      {getSellerStockOutRoute(pendingStockOut.reason) === 'sale-cart'
+                        ? 'Estimated sale value'
+                        : 'Value impact'}
+                    </Text>
                     <Text style={{ color: '#C2410C', fontWeight: '900', fontSize: 13 }}>
-                      -{money((getPreferredPrice(pendingStockOut.item.card) ?? 0) * pendingStockOut.quantity)}
+                      {getSellerStockOutRoute(pendingStockOut.reason) === 'sale-cart' ? '' : '-'}
+                      {money((getPreferredPrice(pendingStockOut.item.card) ?? 0) * pendingStockOut.quantity)}
                     </Text>
                   </View>
                 </View>
@@ -1955,7 +2077,11 @@ export default function InventoryScreen() {
                   </TouchableOpacity>
                 </View>
                 <TouchableOpacity onPress={confirmScanOut} style={{ marginTop: 10, borderRadius: 16, backgroundColor: '#DC2626', paddingVertical: 15, alignItems: 'center' }}>
-                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Confirm Remove</Text>
+                  <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>
+                    {getSellerStockOutRoute(pendingStockOut.reason) === 'sale-cart'
+                      ? 'Add to sale'
+                      : 'Confirm Remove'}
+                  </Text>
                 </TouchableOpacity>
               </ScrollView>
             )}
