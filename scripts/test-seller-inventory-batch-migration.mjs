@@ -410,6 +410,27 @@ try {
     binder_quantity: 1,
   });
 
+  const beforeSoldWithoutSale = await inspectCounts(client);
+  await authenticate(client, userOne);
+  await assert.rejects(
+    callBatch(client, {
+      requestId: 'seller-request:sold-without-sale:001',
+      expectedInventory: [soldInventory],
+      inventory: [],
+      movements: [movement({
+        id: 'movement:sold-without-sale:001',
+        actionType: 'scan_out',
+        quantity: 1,
+        reason: 'Sold',
+        binderId: binderOne,
+      })],
+      sale: null,
+      binderDeltas: [binderDelta(-1)],
+    }),
+    (error) => error?.code === '22023' && /sale_required_for_sold_movement/.test(error?.message),
+  );
+  assert.deepEqual(await inspectCounts(client), beforeSoldWithoutSale);
+
   await authenticate(client, userOne);
   await assert.rejects(
     callBatch(client, {
