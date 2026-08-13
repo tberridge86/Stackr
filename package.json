@@ -28,6 +28,7 @@
     "pricing-v2:refresh": "tsx scripts/pricing-v2-refresh-worker.ts",
     "pricing-v2:compare": "tsx scripts/pricing-v2-compare.ts",
     "test:pricing-v2": "tsx scripts/test-pricing-v2.ts",
+    "test:seller-stock-out-routing": "tsx scripts/test-seller-stock-out-routing.ts",
     "sync-market-products-tcgcsv": "tsx scripts/sync-market-products-tcgcsv.ts",
     "sync-japanese-catalogue": "tsx scripts/catalogue-ingest.ts run-language --source=tcgdex --language=ja --target=staging",
     "sync-tcgdex-english": "tsx scripts/catalogue-ingest.ts run-language --source=tcgdex --language=en --target=staging",

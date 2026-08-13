@@ -28,6 +28,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run typecheck:backend
+      - run: npm run test:seller-stock-out-routing
       - run: npm run test:asset-pipeline
       - run: npm run test:recognition-orchestrator
       - run: npx tsx scripts/test-stackr-quality-evaluation.ts

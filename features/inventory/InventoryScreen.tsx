@@ -59,6 +59,7 @@ import {
 } from '../../lib/productSearch';
 import type { ProductLookupType } from '../../lib/productSearch';
 import { fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
+import { getSellerStockOutRoute } from '../../lib/sellerStockOutRouting';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -1196,6 +1197,13 @@ export default function InventoryScreen() {
     sale?: InventorySaleTransaction | null;
     binderDeltas?: SellerBinderDelta[];
   }) => {
+    if (
+      input.sale == null
+      && input.movements?.some((movement) => getSellerStockOutRoute(movement.reason) === 'sale-cart')
+    ) {
+      throw new Error('Sold stock-out must be completed through the sale cart.');
+    }
+
     const committed = await commitSellerInventoryBatch({
       expectedItems: items,
       items: input.nextItems,
@@ -1624,13 +1632,37 @@ export default function InventoryScreen() {
     }
   }, [commitInventoryChange, items]);
 
-  const openScanOutConfirm = useCallback((item: InventoryItem) => {
+  const addItemToSale = useCallback((item: InventoryItem, quantity = 1) => {
+    const quantityToAdd = Math.max(1, Math.min(item.quantity, quantity));
+    setSaleCart((prev) => {
+      const existing = prev.find((line) => line.item.id === item.id);
+      if (existing) {
+        return prev.map((line) =>
+          line.item.id === item.id
+            ? { ...line, quantity: Math.min(item.quantity, line.quantity + quantityToAdd) }
+            : line
+        );
+      }
+      return [...prev, { item, quantity: quantityToAdd }];
+    });
+    setSaleOpen(true);
+  }, []);
+
+  const routeStockOutItem = useCallback((
+    item: InventoryItem,
+    reason: InventoryMovementReason = stockOutReason,
+    quantity = 1
+  ) => {
+    if (getSellerStockOutRoute(reason) === 'sale-cart') {
+      addItemToSale(item, quantity);
+      return;
+    }
     setPendingStockOut({
       item,
-      quantity: 1,
-      reason: stockOutReason,
+      quantity,
+      reason,
     });
-  }, [stockOutReason]);
+  }, [addItemToSale, stockOutReason]);
 
   const updatePendingStockOutQuantity = useCallback((change: number) => {
     setPendingStockOut((current) => {
@@ -1648,6 +1680,12 @@ export default function InventoryScreen() {
     const { item, quantity, reason } = pendingStockOut;
     if (quantity > item.quantity) {
       Alert.alert('Quantity too high', `You only own ${item.quantity} of this item.`);
+      return;
+    }
+
+    if (getSellerStockOutRoute(reason) === 'sale-cart') {
+      addItemToSale(item, quantity);
+      setPendingStockOut(null);
       return;
     }
 
@@ -1696,7 +1734,7 @@ export default function InventoryScreen() {
       console.log('Inventory scan out failed', error);
       Alert.alert('Could not remove item', 'Inventory was not changed. Check your connection and try again.');
     }
-  }, [commitInventoryChange, items, pendingStockOut]);
+  }, [addItemToSale, commitInventoryChange, items, pendingStockOut]);
 
   const identifyScannedCard = useCallback(async (base64Image: string) => {
     const { identifyCardsDetailed } = await import('../../lib/recognition/orchestrator');
@@ -1947,21 +1985,6 @@ export default function InventoryScreen() {
     scanToInventory(vaultMode === 'inbound' ? 'add' : 'remove');
   }, [scanToInventory, totalStock, vaultMode]);
 
-  const addItemToSale = useCallback((item: InventoryItem) => {
-    setSaleCart((prev) => {
-      const existing = prev.find((line) => line.item.id === item.id);
-      if (existing) {
-        return prev.map((line) =>
-          line.item.id === item.id
-            ? { ...line, quantity: Math.min(item.quantity, line.quantity + 1) }
-            : line
-        );
-      }
-      return [...prev, { item, quantity: 1 }];
-    });
-    setSaleOpen(true);
-  }, []);
-
   const updateSaleQuantity = useCallback((itemId: string, change: number) => {
     setSaleCart((prev) =>
       prev
@@ -1981,8 +2004,8 @@ export default function InventoryScreen() {
       setSaleOpen(true);
       return;
     }
-    openScanOutConfirm(item);
-  }, [addItemToSale, openScanOutConfirm, stockOutContext]);
+    routeStockOutItem(item);
+  }, [addItemToSale, routeStockOutItem, stockOutContext]);
 
   const scanToSale = useCallback(() => {
     setVaultMode('outbound');
@@ -2170,7 +2193,7 @@ export default function InventoryScreen() {
           </View>
 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 }}>
-            <TouchableOpacity onPress={() => openScanOutConfirm(item)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FED7AA' }}>
+            <TouchableOpacity onPress={() => routeStockOutItem(item)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FED7AA' }}>
               <Ionicons name="remove" size={18} color={theme.colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => updateQuantity(item.id, 1)} style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}>
@@ -2255,7 +2278,7 @@ export default function InventoryScreen() {
           </View>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 9 }}>
-          <TouchableOpacity onPress={() => openScanOutConfirm(item)} style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FED7AA' }}>
+          <TouchableOpacity onPress={() => routeStockOutItem(item)} style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FED7AA' }}>
             <Ionicons name="remove" size={18} color={theme.colors.text} />
           </TouchableOpacity>
           <Text style={{ color: theme.colors.text, fontSize: 18, fontWeight: '900' }}>{item.quantity}</Text>
@@ -3105,7 +3128,9 @@ export default function InventoryScreen() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity onPress={confirmScanOut} style={{ borderRadius: 16, backgroundColor: '#DC2626', paddingVertical: 15, alignItems: 'center' }}>
-              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>Confirm Remove</Text>
+              <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 15 }}>
+                {getSellerStockOutRoute(pendingStockOut.reason) === 'sale-cart' ? 'Add to Out Cart' : 'Confirm Remove'}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : null}
