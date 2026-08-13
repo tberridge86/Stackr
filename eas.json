@@ -16,6 +16,8 @@
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
+      "channel": "staging",
       "android": {
         "buildType": "apk"
       },
@@ -27,6 +29,8 @@
     },
     "production": {
       "autoIncrement": true,
+      "environment": "production",
+      "channel": "production",
       "env": {
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
         "EXPO_PUBLIC_SCAN_PROVIDER": "local-ai",
