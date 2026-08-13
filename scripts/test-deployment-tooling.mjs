@@ -387,6 +387,21 @@ assert.match(
   /npm run deploy:smoke -- --gateway= --backend="\$STACKR_BACKEND_URL"/,
   'pre-activation readiness must not probe the gateway before gateway bootstrap',
 );
+assert.match(
+  productionWorkflow,
+  /variable set STACKR_GATEWAY_ORIGIN_KEY --stdin --skip-deploys/,
+  'production must synchronize the backend origin key before deploying the matching gateway',
+);
+assert.doesNotMatch(
+  productionWorkflow,
+  /variable set STACKR_GATEWAY_ORIGIN_KEY=/,
+  'production must never expose the backend origin key as a command-line value',
+);
+assert.match(
+  productionWorkflow,
+  /--allowed-origin=https:\/\/stackrtcg\.com/,
+  'production full-gateway smoke must use an allowlisted production browser origin',
+);
 assert.doesNotMatch(
   productionWorkflow,
   /@railway\/cli@5\.30\.1 up (?:backend|\.\/backend) --ci/,
