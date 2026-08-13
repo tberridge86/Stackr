@@ -115,7 +115,7 @@ function exactContract(actual, expected) {
   return actual && Object.entries(expected).every(([key, value]) => actual[key] === value);
 }
 
-async function assertMigrationInstalled(client) {
+export async function assertPremiumSellerMigrationInstalled(client) {
   const result = await client.query(`
     select count(*)::int as matching_migrations
     from supabase_migrations.schema_migrations
@@ -166,7 +166,11 @@ async function assertEmergencyDisableContract(client) {
   }
 }
 
-async function assertRuntimeContract(client, expectedWrapperSource, expectedImplementationSource) {
+export async function assertPremiumSellerRuntimeContract(
+  client,
+  expectedWrapperSource,
+  expectedImplementationSource,
+) {
   const result = await client.query(`
     with public_function as (
       select
@@ -385,8 +389,12 @@ export async function setPremiumSellerRuntime({ connectionString, request }) {
     await client.query("set local lock_timeout = '10s'");
     await client.query("select pg_advisory_xact_lock(hashtext('stackr.premium_seller_runtime_control'))");
     if (request.action === 'enable_qa') {
-      await assertMigrationInstalled(client);
-      await assertRuntimeContract(client, expectedWrapperSource, expectedImplementationSource);
+      await assertPremiumSellerMigrationInstalled(client);
+      await assertPremiumSellerRuntimeContract(
+        client,
+        expectedWrapperSource,
+        expectedImplementationSource,
+      );
     } else {
       await assertEmergencyDisableContract(client);
     }
