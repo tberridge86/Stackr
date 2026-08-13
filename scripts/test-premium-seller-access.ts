@@ -241,6 +241,8 @@ for (const [profileName, profile] of Object.entries(easConfig.build)) {
 }
 const appConfigSource = fs.readFileSync('app.config.js', 'utf8');
 assert.match(appConfigSource, /googleServicesFile: variantSuffix \? undefined/);
+assert.match(appConfigSource, /slug: config\.slug/);
+assert.doesNotMatch(appConfigSource, /slug: isDevApp|slug: isStagingApp/);
 
 console.log('Premium Seller access tests passed.');
 }
