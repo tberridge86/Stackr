@@ -334,6 +334,14 @@ jobs:
           retention-days: 1
           compression-level: 9
 
+      - name: Synchronize backend gateway origin authentication
+        run: |
+          node -e "process.stdout.write(String(process.env.BACKEND_ORIGIN_KEY ?? '').trim())" | \
+            npx --yes @railway/cli@5.30.1 variable set STACKR_GATEWAY_ORIGIN_KEY --stdin --skip-deploys \
+              --project "$RAILWAY_PROJECT_ID" \
+              --environment "$RAILWAY_ENVIRONMENT_ID" \
+              --service "$RAILWAY_BACKEND_SERVICE_ID"
+
       - name: Deploy rolling catalogue API version
         run: |
           npx --yes @railway/cli@5.30.1 up "$GITHUB_WORKSPACE/backend" --ci \
@@ -463,6 +471,7 @@ jobs:
           smoke_args=(
             --gateway="$STACKR_GATEWAY_URL"
             --backend="$STACKR_BACKEND_URL"
+            --allowed-origin=https://stackrtcg.com
             --full-gateway
             --require-published-catalogue
           )
