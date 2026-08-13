@@ -2,7 +2,13 @@
   "expo": {
     "name": "Stackr",
     "slug": "Stackr",
-    "version": "1.0.0",
+    "version": "1.0.1",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/22048198-a309-41d2-a2bf-aa354c76be3a"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "stackr",
