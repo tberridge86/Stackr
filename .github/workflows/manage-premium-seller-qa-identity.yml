@@ -13,7 +13,11 @@ on:
           - provision
           - send_magic_link
       expected_commit_sha:
-        description: Exact main commit SHA this QA identity will be bound to
+        description: Exact main commit SHA containing this guarded workflow
+        required: true
+        type: string
+      release_commit_sha:
+        description: Exact internal canary commit SHA this QA identity is bound to
         required: true
         type: string
       confirmation:
@@ -39,10 +43,12 @@ jobs:
       STACKR_PREMIUM_SELLER_QA_ACTION: ${{ inputs.action }}
       STACKR_PREMIUM_SELLER_QA_CONFIRMATION: ${{ inputs.confirmation }}
       STACKR_EXPECTED_COMMIT_SHA: ${{ inputs.expected_commit_sha }}
-      STACKR_RELEASE_SHA: ${{ github.sha }}
+      STACKR_WORKFLOW_SHA: ${{ github.sha }}
+      STACKR_RELEASE_SHA: ${{ inputs.release_commit_sha }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -52,7 +58,15 @@ jobs:
       - name: Validate the exact typed request and checked-out release
         shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "$STACKR_RELEASE_SHA"
+          test "$(git rev-parse HEAD)" = "$STACKR_WORKFLOW_SHA"
+          git merge-base --is-ancestor "$STACKR_RELEASE_SHA" "$STACKR_WORKFLOW_SHA"
+          unexpected_paths="$(
+            git diff --name-only "$STACKR_RELEASE_SHA" "$STACKR_WORKFLOW_SHA" -- \
+              . ':!.github/workflows/manage-premium-seller-qa-identity.yml' \
+              ':!scripts/deploy/manage-premium-seller-qa-identity.mjs' \
+              ':!scripts/test-deployment-tooling.mjs'
+          )"
+          test -z "$unexpected_paths"
           node scripts/deploy/manage-premium-seller-qa-identity.mjs --validate-request
 
       - name: Install pinned dependencies
