@@ -6,17 +6,14 @@ import {
   assertSellerAtomicWritesEnabled,
 } from '../lib/sellerAtomicWrites';
 
-assert.equal(SELLER_ATOMIC_WRITES_ENABLED, false);
+assert.equal(SELLER_ATOMIC_WRITES_ENABLED, true);
 
 let mutationAttempted = false;
-assert.throws(
-  () => {
-    assertSellerAtomicWritesEnabled();
-    mutationAttempted = true;
-  },
-  /Seller inventory writes are disabled/
-);
-assert.equal(mutationAttempted, false, 'the gate must fail before a seller mutation starts');
+assert.doesNotThrow(() => {
+  assertSellerAtomicWritesEnabled();
+  mutationAttempted = true;
+});
+assert.equal(mutationAttempted, true, 'the canary OTA must enable the atomic seller path');
 
 const inventorySource = readFileSync(join(process.cwd(), 'lib', 'inventory.ts'), 'utf8');
 const guardIndex = inventorySource.indexOf('assertSellerAtomicWritesEnabled();');

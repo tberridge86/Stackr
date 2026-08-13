@@ -1,4 +1,4 @@
-export const SELLER_ATOMIC_WRITES_ENABLED: boolean = false;
+export const SELLER_ATOMIC_WRITES_ENABLED: boolean = true;
 
 export class SellerAtomicWritesDisabledError extends Error {
   readonly code = 'SELLER_ATOMIC_WRITES_DISABLED';
