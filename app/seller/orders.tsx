@@ -3,6 +3,7 @@ import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
+import { PremiumSellerGate } from '../../components/PremiumSellerGate';
 import { StackrPageTitle } from '../../components/StackrScreen';
 import { StackrButton } from '../../components/StackrControls';
 import { StackrStateBlock } from '../../components/StackrStates';
@@ -19,7 +20,7 @@ const requiredServices = [
   'Buyer confirmation and seller action queues',
 ];
 
-export default function SellerOrdersScreen() {
+function SellerOrdersContent() {
   const { theme } = useTheme();
 
   return (
@@ -60,5 +61,13 @@ export default function SellerOrdersScreen() {
         </View>
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+export default function SellerOrdersScreen() {
+  return (
+    <PremiumSellerGate>
+      <SellerOrdersContent />
+    </PremiumSellerGate>
   );
 }

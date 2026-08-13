@@ -667,6 +667,8 @@ function AchievementBadge({
 
 function SellerModule({
   enabled,
+  available,
+  unavailableCopy,
   stats,
   onSetup,
   onOpen,
@@ -674,6 +676,8 @@ function SellerModule({
   onExit,
 }: {
   enabled: boolean;
+  available: boolean;
+  unavailableCopy: string;
   stats: ProfileStats;
   onSetup: () => void;
   onOpen: () => void;
@@ -717,10 +721,14 @@ function SellerModule({
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900' }}>
-            Seller Profile
+            Premium Seller Mode
           </Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 2 }}>
-            {enabled ? 'Seller workspace active' : 'Manage stock, listings and sales with Stackr Seller Mode.'}
+            {enabled
+              ? 'Professional stock workspace active'
+              : available
+                ? 'Open the professional inventory and sales workspace.'
+                : unavailableCopy}
           </Text>
         </View>
       </View>
@@ -735,7 +743,7 @@ function SellerModule({
           </View>
           <View style={{ marginTop: 12, borderRadius: 18, backgroundColor: '#F7F3FF', borderWidth: 1, borderColor: '#E8E1FF', padding: 12 }}>
             <Text style={{ color: theme.colors.text, fontSize: 12.5, lineHeight: 16, fontWeight: '900' }}>
-              Current tier: Starter Seller
+              Premium Seller Mode active
             </Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 16, fontWeight: '700', marginTop: 4 }}>
               {dataUnavailable
@@ -750,19 +758,19 @@ function SellerModule({
               onPress={onOpen}
               activeOpacity={0.84}
               accessibilityRole="button"
-              accessibilityLabel="Open Seller Mode"
+              accessibilityLabel="Open Premium Seller Mode"
               style={{ flex: 1, minHeight: 44, borderRadius: 16, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 16, fontWeight: '900' }}>Open Seller Mode</Text>
+              <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 16, fontWeight: '900' }}>Open Premium Seller Mode</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={onSettings}
               activeOpacity={0.84}
               accessibilityRole="button"
-              accessibilityLabel="Open seller settings"
+              accessibilityLabel="Open The Market"
               style={{ flex: 1, minHeight: 44, borderRadius: 16, backgroundColor: '#F7F3FF', borderWidth: 1, borderColor: '#E8E1FF', alignItems: 'center', justifyContent: 'center' }}
             >
-              <Text style={{ color: theme.colors.primary, fontSize: 13, lineHeight: 16, fontWeight: '900' }}>Seller settings</Text>
+              <Text style={{ color: theme.colors.primary, fontSize: 13, lineHeight: 16, fontWeight: '900' }}>The Market</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity
@@ -781,11 +789,11 @@ function SellerModule({
           onPress={onSetup}
           activeOpacity={0.84}
           accessibilityRole="button"
-          accessibilityLabel="Set up Seller Mode"
+          accessibilityLabel="Learn about Premium Seller Mode"
           style={{ marginTop: 14, minHeight: 46, borderRadius: 17, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}
         >
           <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 16, fontWeight: '900' }}>
-            Set up Seller Mode
+            {available ? 'Open Premium Seller Mode' : 'Learn about Premium Seller Mode'}
           </Text>
         </TouchableOpacity>
       ) : null}
@@ -1183,7 +1191,7 @@ function IdentityFlowModal({
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
-  const { mode, setMode } = useAppMode();
+  const { mode, premiumSellerAccess, setMode } = useAppMode();
   const { profile, loading, refreshProfile, updateProfile } = useProfile();
   const { unlocks, refreshAchievements } = useAchievements();
 
@@ -1479,6 +1487,11 @@ export default function ProfileScreen() {
     router.replace(ROUTES.home as any);
   }, [setMode]);
 
+  const openPremiumSellerMode = useCallback(async () => {
+    await setMode('seller');
+    router.push(ROUTES.sellerDashboard as any);
+  }, [setMode]);
+
   const confirmLogout = useCallback(() => {
     Alert.alert('Log out', 'Are you sure you want to log out?', [
       { text: 'Cancel', style: 'cancel' },
@@ -1771,13 +1784,17 @@ export default function ProfileScreen() {
         </View>
 
         <View style={{ marginBottom: 24 }}>
-          <SectionHeader title="Seller Identity" />
+          <SectionHeader title="Seller tools" />
           <SellerModule
-            enabled={mode === 'seller'}
+            enabled={mode === 'seller' && premiumSellerAccess.allowed}
+            available={premiumSellerAccess.allowed}
+            unavailableCopy={premiumSellerAccess.reason === 'disabled'
+              ? 'Coming after the controlled stock and sales reliability release.'
+              : 'Premium access is required for the professional inventory workspace.'}
             stats={stats}
-            onSetup={() => setMode('seller')}
-            onOpen={() => router.push(ROUTES.sellerDashboard as any)}
-            onSettings={() => router.push(ROUTES.settings as any)}
+            onSetup={openPremiumSellerMode}
+            onOpen={openPremiumSellerMode}
+            onSettings={() => router.push(ROUTES.market as any)}
             onExit={exitSellerMode}
           />
         </View>

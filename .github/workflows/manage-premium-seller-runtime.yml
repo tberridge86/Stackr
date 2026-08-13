@@ -1,0 +1,57 @@
+name: Manage Premium Seller Runtime
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Runtime action (disable is the emergency kill switch)
+        required: true
+        default: disable
+        type: choice
+        options:
+          - disable
+          - enable_qa
+      confirmation:
+        description: Type ENABLE PREMIUM SELLER QA or DISABLE PREMIUM SELLER NOW
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-premium-seller-runtime
+  cancel-in-progress: false
+
+jobs:
+  manage:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    env:
+      SUPABASE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+      STACKR_PREMIUM_SELLER_ACTION: ${{ inputs.action }}
+      STACKR_PREMIUM_SELLER_CONFIRMATION: ${{ inputs.confirmation }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate the exact typed request
+        run: node scripts/deploy/set-premium-seller-runtime.mjs --validate-request
+
+      - name: Install pinned dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Prepare the normalized production database URL
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
+
+      - name: Apply and verify the guarded runtime action
+        run: node scripts/deploy/set-premium-seller-runtime.mjs

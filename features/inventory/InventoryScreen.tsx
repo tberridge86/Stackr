@@ -21,6 +21,7 @@ import { StackrImage } from '../../components/StackrImage';
 import { StackrBottomSheet } from '../../components/StackrModalSystem';
 import { Text } from '../../components/Text';
 import { useAppMode } from '../../components/app-mode-context';
+import { useAuth } from '../../components/auth-context';
 import { StackrCardActionIcon, StackrPageTitle } from '../../components/StackrScreen';
 import { useTheme } from '../../components/theme-context';
 import {
@@ -60,6 +61,12 @@ import {
 import type { ProductLookupType } from '../../lib/productSearch';
 import { fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 import { getSellerStockOutRoute } from '../../lib/sellerStockOutRouting';
+import {
+  canStartSellerInventoryCommit,
+  isSellerInventoryCommitAccountChanged,
+  isSellerInventoryCommitReconciliationRequired,
+  SellerInventoryCommitReconciliationRequiredError,
+} from '../../lib/sellerBatchCommit';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -68,6 +75,24 @@ const cardShadow = {
   shadowOffset: { width: 0, height: 4 },
   elevation: 3,
 };
+
+function alertSellerCommitFailure(error: unknown, title: string, fallback: string) {
+  if (isSellerInventoryCommitReconciliationRequired(error)) {
+    Alert.alert(
+      'Save status unconfirmed',
+      'The save may have completed, but Stackr could not confirm it. Further seller changes are paused. Pull down to refresh live stock before retrying.',
+    );
+    return;
+  }
+  if (isSellerInventoryCommitAccountChanged(error)) {
+    Alert.alert(
+      'Seller account changed',
+      'No new save was sent after the account changed. Reopen Premium Seller Mode for the active account.',
+    );
+    return;
+  }
+  Alert.alert(title, fallback);
+}
 
 const conditionShort: Record<InventoryCondition, string> = {
   Mint: 'M',
@@ -753,13 +778,13 @@ const inventoryParsedFromResolvedCard = (resolvedCard?: any) => {
 function SellerSessionCard({
   totalStock,
   inventoryValue,
-  scannedToday,
+  recentScans,
   pendingCount,
   onNewSession,
 }: {
   totalStock: number;
   inventoryValue: number;
-  scannedToday: number;
+  recentScans: number;
   pendingCount: number;
   onNewSession: () => void;
 }) {
@@ -784,8 +809,8 @@ function SellerSessionCard({
       </View>
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 9 }}>
         <View style={{ flex: 1, borderRadius: 13, padding: 9, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
-          <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700' }}>Scanned today</Text>
-          <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900', marginTop: 1 }}>{scannedToday}</Text>
+          <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700' }}>Recent scans</Text>
+          <Text style={{ color: theme.colors.text, fontSize: 16, lineHeight: 21, fontWeight: '900', marginTop: 1 }}>{recentScans}</Text>
         </View>
         <View style={{ flex: 1, borderRadius: 13, padding: 9, backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border }}>
           <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, fontWeight: '700' }}>Needs review</Text>
@@ -1084,6 +1109,9 @@ const toCardSnapshot = (row: any, snapshot?: any): InventoryCardSnapshot => {
 };
 
 export default function InventoryScreen() {
+  const { user } = useAuth();
+  const currentUserIdRef = useRef<string | null>(user?.id ?? null);
+  currentUserIdRef.current = user?.id ?? null;
   const { theme } = useTheme();
   const { setMode } = useAppMode();
   const { width } = useWindowDimensions();
@@ -1128,29 +1156,71 @@ export default function InventoryScreen() {
   const [productQuantity, setProductQuantity] = useState('1');
   const [productAskingPrice, setProductAskingPrice] = useState('');
   const [scanFeedback, setScanFeedback] = useState<{ mode: VaultModeKey; text: string } | null>(null);
+  const [inventoryDataStale, setInventoryDataStale] = useState(false);
+  const [inventoryLoadError, setInventoryLoadError] = useState<string | null>('Verifying live seller inventory before changes are allowed.');
+  const reconciliationRequiredRef = useRef(false);
+  const unconfirmedRequestIdRef = useRef<string | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inventoryResultLongPressRef = useRef<string | null>(null);
   const feedbackAnim = useRef(new Animated.Value(0)).current;
 
   const load = useCallback(async () => {
-    const [stored, binderRows, movementRows] = await Promise.all([
-      loadInventoryItems(),
-      fetchBinders().catch((error) => {
-        console.log('Inventory binders load failed', error);
-        return [] as BinderRecord[];
-      }),
-      loadInventoryMovements().catch((error) => {
-        console.log('Inventory movements load failed', error);
-        return [] as InventoryMovement[];
-      }),
+    const reconciliationWasRequired = reconciliationRequiredRef.current;
+    let sellerDataWasStale = false;
+    setInventoryDataStale(false);
+    setInventoryLoadError('Verifying live seller inventory before changes are allowed.');
+    const [inventoryResult, binderResult, movementResult] = await Promise.allSettled([
+      loadInventoryItems({ onStale: () => { sellerDataWasStale = true; } }),
+      fetchBinders(),
+      loadInventoryMovements({ onStale: () => { sellerDataWasStale = true; } }),
     ]);
-    setItems(stored);
-    setBinders(binderRows);
-    setMovements(movementRows);
+
+    let nextLoadError: string | null = null;
+
+    if (inventoryResult.status === 'fulfilled') {
+      setItems(inventoryResult.value);
+    } else {
+      console.log('Seller inventory load failed', inventoryResult.reason);
+      nextLoadError = 'Seller inventory could not be verified. Refresh before changing stock.';
+    }
+    if (binderResult.status === 'fulfilled') {
+      setBinders(binderResult.value);
+    } else {
+      console.log('Inventory binders load failed', binderResult.reason);
+      nextLoadError ??= 'Binder links could not be verified. Refresh before changing stock.';
+    }
+    if (movementResult.status === 'fulfilled') {
+      setMovements(movementResult.value);
+    } else {
+      console.log('Inventory movements load failed', movementResult.reason);
+      nextLoadError ??= 'Seller history could not be verified. Refresh before changing stock.';
+    }
+
+    setInventoryDataStale(sellerDataWasStale);
+    if (sellerDataWasStale) {
+      nextLoadError ??= 'Live seller data could not be verified. Cached stock is read-only until a refresh succeeds.';
+    }
+    const liveSellerStateVerified = inventoryResult.status === 'fulfilled'
+      && movementResult.status === 'fulfilled'
+      && !sellerDataWasStale;
+    if (reconciliationWasRequired && liveSellerStateVerified) {
+      reconciliationRequiredRef.current = false;
+      unconfirmedRequestIdRef.current = null;
+      setDrafts([]);
+      setSaleCart([]);
+      setPendingStockOut(null);
+      setSelectedProduct(null);
+      setWorkspaceOpen(false);
+      setSaleOpen(false);
+      setStockOutPickerOpen(false);
+    } else if (reconciliationWasRequired) {
+      nextLoadError = 'A previous save remains unconfirmed. Connect and refresh live stock before making another change.';
+    }
+    setInventoryLoadError(nextLoadError);
   }, []);
 
   useFocusEffect(useCallback(() => {
-    load();
+    void load();
   }, [load]));
 
   const selectedBinder = useMemo(
@@ -1159,8 +1229,13 @@ export default function InventoryScreen() {
   );
 
   const refreshMovements = useCallback(async () => {
-    const movementRows = await loadInventoryMovements();
-    setMovements(movementRows);
+    try {
+      const movementRows = await loadInventoryMovements({ onStale: () => setInventoryDataStale(true) });
+      setMovements(movementRows);
+    } catch (error) {
+      console.log('Inventory movement refresh failed', error);
+      setInventoryLoadError('Seller history could not be verified. Refresh the inventory before changing stock.');
+    }
   }, []);
 
   const exitSellerMode = useCallback(async () => {
@@ -1197,6 +1272,12 @@ export default function InventoryScreen() {
     sale?: InventorySaleTransaction | null;
     binderDeltas?: SellerBinderDelta[];
   }) => {
+    if (!canStartSellerInventoryCommit({
+      reconciliationRequired: reconciliationRequiredRef.current,
+      loadError: inventoryLoadError,
+    })) {
+      throw new Error('Refresh Premium Seller Mode before changing stock.');
+    }
     if (
       input.sale == null
       && input.movements?.some((movement) => getSellerStockOutRoute(movement.reason) === 'sale-cart')
@@ -1204,13 +1285,34 @@ export default function InventoryScreen() {
       throw new Error('Sold stock-out must be completed through the sale cart.');
     }
 
-    const committed = await commitSellerInventoryBatch({
-      expectedItems: items,
-      items: input.nextItems,
-      movements: input.movements,
-      sale: input.sale,
-      binderDeltas: mergeSellerBinderDeltas(input.binderDeltas ?? []),
-    });
+    let committed: Awaited<ReturnType<typeof commitSellerInventoryBatch>>;
+    try {
+      committed = await commitSellerInventoryBatch({
+        expectedItems: items,
+        items: input.nextItems,
+        movements: input.movements,
+        sale: input.sale,
+        binderDeltas: mergeSellerBinderDeltas(input.binderDeltas ?? []),
+      });
+    } catch (error) {
+      if (isSellerInventoryCommitReconciliationRequired(error)) {
+        reconciliationRequiredRef.current = true;
+        unconfirmedRequestIdRef.current = error instanceof SellerInventoryCommitReconciliationRequiredError
+          ? error.requestId
+          : null;
+        setInventoryLoadError('A save may have completed but is not confirmed. Refresh live stock before making another change.');
+      }
+      throw error;
+    }
+    if (currentUserIdRef.current !== committed.userId) {
+      reconciliationRequiredRef.current = true;
+      unconfirmedRequestIdRef.current = committed.result.requestId;
+      setInventoryLoadError('The active seller account changed while saving. Refresh live stock before making another change.');
+      throw new SellerInventoryCommitReconciliationRequiredError(
+        committed.result.requestId,
+        'committed_identity_unverified',
+      );
+    }
     setItems(committed.items);
     if (committed.movements.length) {
       const committedIds = new Set(committed.movements.map((movement) => movement.id));
@@ -1223,7 +1325,7 @@ export default function InventoryScreen() {
       );
     }
     return committed;
-  }, [items, showScanFeedback]);
+  }, [inventoryLoadError, items, showScanFeedback]);
 
   const searchCards = useCallback(async (text: string) => {
     const trimmed = text.trim();
@@ -1475,7 +1577,7 @@ export default function InventoryScreen() {
       setProductAskingPrice('');
     } catch (error) {
       console.log('Product inventory commit failed', error);
-      Alert.alert('Could not add product', 'Inventory was not changed. Check your connection and try again.');
+      alertSellerCommitFailure(error, 'Could not add product', 'The change was rejected. Refresh and try again.');
     }
   }, [addStockLine, commitInventoryChange, items, productAskingPrice, productQuantity, selectedProduct]);
 
@@ -1564,7 +1666,7 @@ export default function InventoryScreen() {
       setWorkspaceOpen(false);
     } catch (error) {
       console.log('Inventory scan-in batch failed', error);
-      Alert.alert('Could not add batch', 'Nothing was changed. Check your connection and try again.');
+      alertSellerCommitFailure(error, 'Could not add batch', 'The batch was rejected. Refresh and try again.');
     }
   }, [addStockLine, commitInventoryChange, drafts, items, scanInDestination, selectedBinder]);
 
@@ -1613,7 +1715,7 @@ export default function InventoryScreen() {
       });
     } catch (error) {
       console.log('Inventory quantity update failed', error);
-      Alert.alert('Could not update quantity', 'Inventory was not changed. Refresh and try again.');
+      alertSellerCommitFailure(error, 'Could not update quantity', 'The quantity change was rejected. Refresh and try again.');
     }
   }, [commitInventoryChange, items]);
 
@@ -1628,7 +1730,7 @@ export default function InventoryScreen() {
       await commitInventoryChange({ nextItems: next });
     } catch (error) {
       console.log('Inventory price update failed', error);
-      Alert.alert('Could not update price', 'Inventory was not changed. Refresh and try again.');
+      alertSellerCommitFailure(error, 'Could not update price', 'The price change was rejected. Refresh and try again.');
     }
   }, [commitInventoryChange, items]);
 
@@ -1732,7 +1834,7 @@ export default function InventoryScreen() {
       setPendingStockOut(null);
     } catch (error) {
       console.log('Inventory scan out failed', error);
-      Alert.alert('Could not remove item', 'Inventory was not changed. Check your connection and try again.');
+      alertSellerCommitFailure(error, 'Could not remove item', 'The stock change was rejected. Refresh and try again.');
     }
   }, [addItemToSale, commitInventoryChange, items, pendingStockOut]);
 
@@ -1903,14 +2005,7 @@ export default function InventoryScreen() {
   const selectedVaultModeOption =
     vaultModeOptions.find((option) => option.key === vaultMode) ?? vaultModeOptions[0];
   const selectedVaultModeIcon = vaultMode === 'inbound' ? stackrIcons.inbound : stackrIcons.outbound;
-  const todayStart = useMemo(() => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    return start.getTime();
-  }, []);
-  const scannedTodayTotal = movements
-    .filter((movement) => new Date(movement.created_at).getTime() >= todayStart)
-    .reduce((sum, movement) => sum + movement.quantity, 0);
+  const recentScanTotal = movements.reduce((sum, movement) => sum + movement.quantity, 0);
   const selectedSellerReasonLabel = vaultMode === 'inbound'
     ? stockInReasonLabel
     : stockOutReasonOptions.find((option) => option.reason === stockOutReason)?.label ?? 'Customer purchase';
@@ -2121,7 +2216,7 @@ export default function InventoryScreen() {
       Alert.alert('Sale completed', 'Inventory and the sale report were saved together.');
     } catch (error) {
       console.log('Seller sale commit failed', error);
-      Alert.alert('Could not complete sale', 'Nothing was changed. Refresh and try again.');
+      alertSellerCommitFailure(error, 'Could not complete sale', 'The sale was rejected. Refresh and try again.');
     }
   }, [commitInventoryChange, items, saleCart, saleEstimatedValue, salePrice]);
 
@@ -2357,11 +2452,25 @@ export default function InventoryScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        {inventoryDataStale ? (
+          <View style={{ borderRadius: 14, borderWidth: 1, borderColor: theme.colors.semantic.warning, backgroundColor: `${theme.colors.semantic.warning}12`, padding: 10, marginBottom: 10 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 12, lineHeight: 17, fontWeight: '800' }}>
+              Offline seller data — showing this account&apos;s last verified cache in read-only mode. Refresh online before changing stock.
+            </Text>
+          </View>
+        ) : null}
+        {inventoryLoadError ? (
+          <View style={{ borderRadius: 14, borderWidth: 1, borderColor: '#EF4444', backgroundColor: '#EF444412', padding: 10, marginBottom: 10 }}>
+            <Text style={{ color: theme.colors.text, fontSize: 12, lineHeight: 17, fontWeight: '800' }}>
+              {inventoryLoadError}
+            </Text>
+          </View>
+        ) : null}
 
         <SellerSessionCard
           totalStock={totalStock}
           inventoryValue={inventoryValue}
-          scannedToday={scannedTodayTotal}
+          recentScans={recentScanTotal}
           pendingCount={sellerReviewCount}
           onNewSession={() => setSessionInfoOpen(true)}
         />
@@ -2942,7 +3051,14 @@ export default function InventoryScreen() {
           columnWrapperStyle={columns > 1 ? { gap: itemGap } : undefined}
           {...stackrListPerformance.cardGrid(columns)}
           contentContainerStyle={{ paddingBottom: stackrTabContentPadding.standard }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} tintColor={theme.colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => {
+            setRefreshing(true);
+            try {
+              await load();
+            } finally {
+              setRefreshing(false);
+            }
+          }} tintColor={theme.colors.primary} />}
           ListEmptyComponent={
             <View style={{ alignItems: 'center', paddingTop: 24, paddingHorizontal: 24 }}>
               <Ionicons name="file-tray-full-outline" size={34} color={theme.colors.primary} />

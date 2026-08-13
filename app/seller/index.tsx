@@ -13,14 +13,13 @@ import { useTheme } from '../../components/theme-context';
 import {
   InventoryItem,
   InventoryMovement,
-  InventorySaleTransaction,
   loadInventoryItems,
   loadInventoryMovements,
-  loadInventorySales,
 } from '../../lib/inventory';
 import { ROUTES } from '../../lib/routes';
 import { SELLER_WORKSPACE_ITEMS, getSellerWorkspaceSummary, type SellerCapabilityStatus } from '../../lib/sellerWorkspace';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
+import { PremiumSellerGate } from '../../components/PremiumSellerGate';
 
 const money = (value: number) => `£${value.toFixed(2)}`;
 
@@ -30,12 +29,11 @@ const statusCopy: Record<SellerCapabilityStatus, { label: string; icon: keyof ty
   backend_required: { label: 'Backend required', icon: 'construct-outline' },
 };
 
-export default function SellerDashboardScreen() {
+function SellerDashboardContent() {
   const { theme } = useTheme();
   const { setMode } = useAppMode();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
-  const [sales, setSales] = useState<InventorySaleTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dashboardErrors, setDashboardErrors] = useState<string[]>([]);
@@ -48,10 +46,11 @@ export default function SellerDashboardScreen() {
         setLoading(true);
       }
       setDashboardErrors([]);
-      const [inventoryItems, inventoryMovements, inventorySales] = await Promise.allSettled([
-        loadInventoryItems(),
-        loadInventoryMovements(),
-        loadInventorySales(),
+      let usedStaleCache = false;
+      const noteStaleCache = () => { usedStaleCache = true; };
+      const [inventoryItems, inventoryMovements] = await Promise.allSettled([
+        loadInventoryItems({ onStale: noteStaleCache }),
+        loadInventoryMovements({ onStale: noteStaleCache }),
       ]);
       const nextErrors: string[] = [];
 
@@ -67,11 +66,7 @@ export default function SellerDashboardScreen() {
         nextErrors.push('Movement history could not be loaded.');
       }
 
-      if (inventorySales.status === 'fulfilled') {
-        setSales(inventorySales.value);
-      } else {
-        nextErrors.push('Sales history could not be loaded.');
-      }
+      if (usedStaleCache) nextErrors.push('Offline data is from this account\'s last verified cache.');
 
       setDashboardErrors(nextErrors);
     } catch {
@@ -93,8 +88,8 @@ export default function SellerDashboardScreen() {
       return sum + price * Math.max(0, Number(item.quantity ?? 0));
     }, 0);
     const awaitingAction = movements.filter((movement) => movement.action_type === 'scan_out').length;
-    return { stock, value, awaitingAction, sales: sales.length };
-  }, [items, movements, sales]);
+    return { stock, value, awaitingAction };
+  }, [items, movements]);
 
   const workspaceSummary = getSellerWorkspaceSummary();
 
@@ -145,8 +140,8 @@ export default function SellerDashboardScreen() {
               {[
                 ['Stock', String(summary.stock)],
                 ['Inventory value', money(summary.value)],
-                ['Movements', String(movements.length)],
-                ['Sales records', String(summary.sales)],
+                ['Recent movements', String(movements.length)],
+                ['Recent stock-outs', String(summary.awaitingAction)],
               ].map(([label, value]) => (
                 <View key={label} style={{ flexGrow: 1, flexBasis: '47%', minHeight: 64, borderRadius: 15, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border, padding: 10 }}>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '800' }}>{label}</Text>
@@ -154,6 +149,9 @@ export default function SellerDashboardScreen() {
                 </View>
               ))}
             </View>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 16, fontWeight: '700' }}>
+              Activity totals cover up to the 50 most recent movements.
+            </Text>
 
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <StackrButton label="Scan In" icon="archive-outline" variant="primary" onPress={() => router.push(ROUTES.scanSellerIn as any)} style={{ flex: 1 }} />
@@ -187,7 +185,7 @@ export default function SellerDashboardScreen() {
         }
         renderItem={({ item }) => {
           const status = statusCopy[item.status];
-          const disabled = item.status === 'backend_required' && !item.route;
+          const disabled = item.status === 'backend_required';
           const statusColor =
             item.status === 'available'
               ? theme.colors.semantic.success
@@ -230,5 +228,13 @@ export default function SellerDashboardScreen() {
         }}
       />
     </SafeAreaView>
+  );
+}
+
+export default function SellerDashboardScreen() {
+  return (
+    <PremiumSellerGate>
+      <SellerDashboardContent />
+    </PremiumSellerGate>
   );
 }

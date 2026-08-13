@@ -4,9 +4,18 @@ import pg from 'pg';
 
 const databaseUrl = process.argv.find((value) => value.startsWith('--db-url='))?.slice(9);
 if (!databaseUrl) throw new Error('database_url_required');
+const parsedDatabaseUrl = new URL(databaseUrl);
+const allowedTestHosts = new Set(['127.0.0.1', 'localhost', '::1']);
+if (!allowedTestHosts.has(parsedDatabaseUrl.hostname)) {
+  throw new Error('seller_inventory_test_requires_local_disposable_database');
+}
 
 const migration = readFileSync(
   'supabase/migrations/20260813093320_atomic_seller_inventory_batches.sql',
+  'utf8',
+);
+const premiumAccessMigration = readFileSync(
+  'supabase/migrations/20260813135412_premium_seller_access_boundary.sql',
   'utf8',
 );
 
@@ -45,6 +54,17 @@ async function resetFixture(client) {
     stable
     as $$
       select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+    $$;
+
+    create function auth.jwt()
+    returns jsonb
+    language sql
+    stable
+    as $$
+      select coalesce(
+        nullif(current_setting('request.jwt.claims', true), '')::jsonb,
+        '{}'::jsonb
+      )
     $$;
 
     grant usage on schema auth to authenticated, service_role;
@@ -139,19 +159,19 @@ async function resetFixture(client) {
     alter table public.binders enable row level security;
     alter table public.binder_cards enable row level security;
 
-    create policy seller_inventory_own on public.seller_inventory_items
+    create policy "Seller inventory is private" on public.seller_inventory_items
       for all to authenticated
       using ((select auth.uid()) = user_id)
       with check ((select auth.uid()) = user_id);
-    create policy seller_sales_own on public.seller_sale_transactions
+    create policy "Seller sale transactions are private" on public.seller_sale_transactions
       for all to authenticated
       using ((select auth.uid()) = user_id)
       with check ((select auth.uid()) = user_id);
-    create policy seller_sale_items_own on public.seller_sale_transaction_items
+    create policy "Seller sale transaction items are private" on public.seller_sale_transaction_items
       for all to authenticated
       using ((select auth.uid()) = user_id)
       with check ((select auth.uid()) = user_id);
-    create policy inventory_movements_own on public.inventory_movements
+    create policy "Inventory movements are private" on public.inventory_movements
       for all to authenticated
       using ((select auth.uid()) = user_id)
       with check ((select auth.uid()) = user_id);
@@ -184,6 +204,7 @@ async function resetFixture(client) {
     insert into public.binders (id, user_id) values ('${binderOne}', '${userOne}');
   `);
   await client.query(migration);
+  await client.query(premiumAccessMigration);
 }
 
 function inventoryItem(quantity, updatedAt = createdAt) {
@@ -248,12 +269,27 @@ function binderDelta(quantityDelta) {
   };
 }
 
-async function authenticate(client, userId) {
+async function authenticate(client, userId, { entitlement = true, userMetadataEntitlement } = {}) {
   await client.query('set role authenticated');
   await client.query("select set_config('request.jwt.claim.sub', $1, false)", [userId]);
+  await client.query("select set_config('request.jwt.claims', $1, false)", [JSON.stringify({
+    sub: userId,
+    role: 'authenticated',
+    app_metadata: entitlement === undefined ? {} : { stackr_premium_seller: entitlement },
+    user_metadata: userMetadataEntitlement === undefined
+      ? {}
+      : { stackr_premium_seller: userMetadataEntitlement },
+  })]);
 }
 
 async function callBatch(client, input) {
+  const identityResult = await client.query(
+    "select nullif(current_setting('request.jwt.claim.sub', true), '') as user_id",
+  );
+  const requestUserId = identityResult.rows[0]?.user_id ?? userOne;
+  const requestId = input.rawRequestId
+    ? input.requestId
+    : `seller-batch:${requestUserId}:${input.requestId}`;
   const result = await client.query(
     `select public.commit_seller_inventory_batch(
       $1::text,
@@ -264,7 +300,7 @@ async function callBatch(client, input) {
       $6::jsonb
     ) as result`,
     [
-      input.requestId,
+      requestId,
       JSON.stringify(input.expectedInventory),
       JSON.stringify(input.inventory),
       JSON.stringify(input.movements ?? []),
@@ -309,18 +345,149 @@ try {
         'authenticated',
         'public.commit_seller_inventory_batch(text,jsonb,jsonb,jsonb,jsonb,jsonb)',
         'execute'
-      ) as authenticated_can_execute
+      ) as authenticated_can_execute,
+      has_function_privilege(
+        'authenticated',
+        'private.commit_seller_inventory_batch_impl(text,jsonb,jsonb,jsonb,jsonb,jsonb)',
+        'execute'
+      ) as authenticated_can_execute_internal,
+      has_function_privilege(
+        'service_role',
+        'public.commit_seller_inventory_batch(text,jsonb,jsonb,jsonb,jsonb,jsonb)',
+        'execute'
+      ) as service_can_execute,
+      has_table_privilege('authenticated', 'public.seller_inventory_items', 'select')
+        as authenticated_can_read_inventory,
+      has_table_privilege('authenticated', 'public.seller_inventory_items', 'insert')
+        as authenticated_can_insert_inventory,
+      has_table_privilege('authenticated', 'public.seller_inventory_items', 'truncate')
+        as authenticated_can_truncate_inventory,
+      has_table_privilege('authenticated', 'public.inventory_movements', 'insert')
+        as authenticated_can_insert_movement,
+      has_table_privilege('authenticated', 'public.seller_sale_transactions', 'insert')
+        as authenticated_can_insert_sale,
+      has_table_privilege('authenticated', 'private.seller_inventory_batch_commits', 'insert')
+        as authenticated_can_insert_receipt
     from pg_proc routine
     where routine.oid = 'public.commit_seller_inventory_batch(text,jsonb,jsonb,jsonb,jsonb,jsonb)'::regprocedure
   `);
   assert.deepEqual(functionGuard.rows[0], {
-    security_definer: false,
+    security_definer: true,
     proconfig: ['search_path=""'],
     anon_can_execute: false,
     authenticated_can_execute: true,
+    authenticated_can_execute_internal: false,
+    service_can_execute: false,
+    authenticated_can_read_inventory: true,
+    authenticated_can_insert_inventory: false,
+    authenticated_can_truncate_inventory: false,
+    authenticated_can_insert_movement: false,
+    authenticated_can_insert_sale: false,
+    authenticated_can_insert_receipt: false,
+  });
+
+  const policyGuard = await client.query(`
+    select
+      count(*)::int as policy_count,
+      count(*) filter (where policy.polcmd = 'r')::int as select_policy_count
+    from pg_policy policy
+    join pg_class table_row on table_row.oid = policy.polrelid
+    join pg_namespace schema_row on schema_row.oid = table_row.relnamespace
+    where schema_row.nspname = 'public'
+      and table_row.relname in (
+        'seller_inventory_items',
+        'inventory_movements',
+        'seller_sale_transactions',
+        'seller_sale_transaction_items'
+      )
+  `);
+  assert.deepEqual(policyGuard.rows[0], {
+    policy_count: 4,
+    select_policy_count: 4,
   });
 
   await authenticate(client, userOne);
+  await assert.rejects(
+    callBatch(client, {
+      requestId: 'seller-request:disabled:001',
+      expectedInventory: [],
+      inventory: [],
+    }),
+    (error) => error?.code === '42501' && /premium_seller_mode_disabled/.test(error?.message),
+  );
+  assert.deepEqual(await inspectCounts(client), {
+    inventory_count: 0,
+    inventory_quantity: 0,
+    movement_count: 0,
+    sale_count: 0,
+    sale_line_count: 0,
+    commit_count: 0,
+    binder_quantity: 0,
+  });
+
+  await client.query(`
+    update private.premium_seller_runtime_control
+    set writes_enabled = true,
+        updated_at = now()
+    where singleton
+  `);
+
+  await authenticate(client, userOne, { entitlement: false });
+  await assert.rejects(
+    callBatch(client, {
+      requestId: 'seller-request:unentitled:001',
+      expectedInventory: [],
+      inventory: [],
+    }),
+    (error) => error?.code === '42501' && /premium_seller_entitlement_required/.test(error?.message),
+  );
+  assert.deepEqual(await inspectCounts(client), {
+    inventory_count: 0,
+    inventory_quantity: 0,
+    movement_count: 0,
+    sale_count: 0,
+    sale_line_count: 0,
+    commit_count: 0,
+    binder_quantity: 0,
+  });
+
+  await authenticate(client, userOne, { entitlement: 'true' });
+  await assert.rejects(
+    callBatch(client, {
+      requestId: 'seller-request:string-entitlement:001',
+      expectedInventory: [],
+      inventory: [],
+    }),
+    (error) => error?.code === '42501' && /premium_seller_entitlement_required/.test(error?.message),
+  );
+  assert.equal((await inspectCounts(client)).commit_count, 0);
+
+  await authenticate(client, userOne, {
+    entitlement: undefined,
+    userMetadataEntitlement: true,
+  });
+  await assert.rejects(
+    callBatch(client, {
+      requestId: 'seller-request:forged-user-metadata:001',
+      expectedInventory: [],
+      inventory: [],
+    }),
+    (error) => error?.code === '42501' && /premium_seller_entitlement_required/.test(error?.message),
+  );
+  assert.equal((await inspectCounts(client)).commit_count, 0);
+
+  await authenticate(client, userOne);
+  await assert.rejects(
+    callBatch(client, {
+      requestId: `seller-batch:${userTwo}:wrong-user:001`,
+      rawRequestId: true,
+      expectedInventory: [],
+      inventory: [],
+    }),
+    (error) => error?.code === '42501' && /request_identity_mismatch/.test(error?.message),
+  );
+  assert.equal((await inspectCounts(client)).commit_count, 0);
+
   const scanInInput = {
     requestId: 'seller-request:scan-in:001',
     expectedInventory: [],
@@ -355,6 +522,34 @@ try {
   const replayResult = await callBatch(client, scanInInput);
   assert.equal(replayResult.replayed, true);
   assert.equal((await inspectCounts(client)).movement_count, 1);
+
+  const countsBeforeKillSwitch = await inspectCounts(client);
+  await client.query('reset role');
+  await client.query(`
+    update private.premium_seller_runtime_control
+    set writes_enabled = false,
+        updated_at = now()
+    where singleton
+  `);
+  await authenticate(client, userOne);
+  await assert.rejects(
+    callBatch(client, scanInInput),
+    (error) => error?.code === '42501' && /premium_seller_mode_disabled/.test(error?.message),
+  );
+  await assert.rejects(
+    callBatch(client, {
+      ...scanInInput,
+      requestId: 'seller-request:disabled-after-success:001',
+    }),
+    (error) => error?.code === '42501' && /premium_seller_mode_disabled/.test(error?.message),
+  );
+  assert.deepEqual(await inspectCounts(client), countsBeforeKillSwitch);
+  await client.query(`
+    update private.premium_seller_runtime_control
+    set writes_enabled = true,
+        updated_at = now()
+    where singleton
+  `);
 
   await authenticate(client, userOne);
   await assert.rejects(
@@ -488,6 +683,7 @@ try {
 
   await client.query('reset role');
   await client.query("select set_config('request.jwt.claim.sub', '', false)");
+  await client.query("select set_config('request.jwt.claims', '', false)");
   await client.query('set role authenticated');
   await assert.rejects(
     callBatch(client, {

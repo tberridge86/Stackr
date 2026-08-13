@@ -53,7 +53,6 @@ import {
   type HomeDuplicateItem,
   type HomeDuplicateSummary,
 } from '../../components/HomeCommandCenter';
-import { loadInventoryMovements, type InventoryMovement } from '../../lib/inventory';
 import {
   DEFAULT_MINTY_FEEDBACK_PROFILE,
   DEFAULT_MINTY_PERSONALISATION_SETTINGS,
@@ -540,28 +539,6 @@ const activityTypeForFeedType = (type?: string | null): HomeActivityItem['activi
   return 'generic';
 };
 
-const inventoryMovementToActivity = (movement: InventoryMovement): HomeActivityItem => {
-  const isOut = movement.action_type === 'scan_out';
-  const duplicate = movement.reason === 'Added as Duplicate';
-  return {
-    id: `movement:${movement.id}`,
-    title: duplicate
-      ? `Added duplicate: ${movement.card_name}`
-      : `${isOut ? 'Scanned out' : 'Scanned in'}: ${movement.card_name}`,
-    subtitle: movement.binder_name ?? movement.reason,
-    createdAt: movement.created_at,
-    valueChange: movement.value_at_time == null
-      ? null
-      : movement.value_at_time * movement.quantity * (isOut ? -1 : 1),
-    isPositive: !isOut,
-    icon: isOut ? 'log-out-outline' : duplicate ? 'copy-outline' : 'scan-outline',
-    cardId: movement.card_id,
-    setId: movement.set_id,
-    imageUrl: movement.image_small ?? null,
-    activityType: isOut ? 'removed' : duplicate ? 'duplicate' : 'added',
-  };
-};
-
 const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Promise<HomeActivityItem[]> => {
   const cardIds = [
     ...new Set(
@@ -626,7 +603,7 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 
 export default function HubScreen() {
   const { theme, isDark } = useTheme();
-  const { hasChosenMode, setMode } = useAppMode();
+  const { hasChosenMode, hydrated: appModeHydrated, premiumSellerAccess, setMode } = useAppMode();
   const { profile: myProfile } = useProfile();
   const { width: screenWidth } = useWindowDimensions();
   const homeScreenPadding = screenWidth < 360
@@ -1608,15 +1585,12 @@ export default function HubScreen() {
         return;
       }
 
-      const [feedResult, movements] = await Promise.all([
-        supabase
-          .from('activity_feed')
-          .select('id, type, title, subtitle, card_id, set_id, value_change, is_positive, created_at')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(20),
-        loadInventoryMovements(),
-      ]);
+      const feedResult = await supabase
+        .from('activity_feed')
+        .select('id, type, title, subtitle, card_id, set_id, value_change, is_positive, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
 
       if (feedResult.error) throw feedResult.error;
 
@@ -1634,8 +1608,7 @@ export default function HubScreen() {
         activityType: activityTypeForFeedType(post.type),
       }));
 
-      const movementItems = movements.slice(0, 12).map(inventoryMovementToActivity);
-      const combined = [...feedItems, ...movementItems]
+      const combined = feedItems
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 10);
 
@@ -1697,12 +1670,13 @@ export default function HubScreen() {
   }, [applyCachedHomeCollection, loadAll, loadChaseCards, loadRecentActivity]));
 
   useEffect(() => {
-    if (!hasChosenMode) {
+    if (appModeHydrated && premiumSellerAccess.allowed && !hasChosenMode) {
       setRoleModalOpen(true);
       return;
     }
+    if (!appModeHydrated) return;
     checkHubTip();
-  }, [checkHubTip, hasChosenMode]);
+  }, [appModeHydrated, checkHubTip, hasChosenMode, premiumSellerAccess.allowed]);
   useEffect(() => {
     loadMintyPreferences();
   }, [loadMintyPreferences]);
@@ -2198,16 +2172,16 @@ export default function HubScreen() {
                 </View>
               </View>
 
-              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', textAlign: 'center' }}>Seller mode</Text>
+              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', textAlign: 'center' }}>Premium Seller Mode</Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 14, fontWeight: '700', textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
-                If you&apos;re selling, trading, or running a business, use Seller mode to manage inventory. Scan sold cards to remove them from your collection and keep stock accurate at conventions, events, or in-store.
+                Keep using Stackr to collect, scan, trade and create ordinary listings. Premium Seller Mode adds a separate professional workspace for repeated stock and sales operations.
               </Text>
             </View>
 
             {[
               { icon: 'scan-outline' as const, text: 'Scan sold cards to remove them from your collection' },
               { icon: 'bar-chart-outline' as const, text: 'Keep inventory accurate on the go' },
-              { icon: 'storefront-outline' as const, text: 'Perfect for conventions, events, and stores' },
+              { icon: 'storefront-outline' as const, text: 'Built for conventions, events and higher-volume sellers' },
             ].map((item) => (
               <View key={item.text} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: `${theme.colors.primary}12`, alignItems: 'center', justifyContent: 'center' }}>
@@ -2220,16 +2194,20 @@ export default function HubScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: `${theme.colors.primary}12`, borderRadius: 14, padding: 12, marginTop: 2, marginBottom: 12 }}>
               <Ionicons name="sparkles-outline" size={18} color={theme.colors.primary} />
               <Text style={{ flex: 1, color: theme.colors.text, fontSize: 12, fontWeight: '800' }}>
-                Default scan mode adds cards to your binder.
+                Collecting and ordinary Market listings remain available outside Premium Seller Mode.
               </Text>
             </View>
 
             <TouchableOpacity
-              onPress={async () => { await setMode('seller'); setRoleModalOpen(false); }}
+              onPress={async () => {
+                const opened = await setMode('seller');
+                setRoleModalOpen(false);
+                if (opened) router.push('/seller' as any);
+              }}
               style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10 }}
               activeOpacity={0.86}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>Got it</Text>
+              <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>Open Premium Seller Mode</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

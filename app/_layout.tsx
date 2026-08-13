@@ -191,7 +191,7 @@ const PersistentTabBar = memo(function PersistentTabBar() {
           ? CENTER_SCAN_ICON_SIZE
           : isHome
           ? HOME_TAB_ICON_SIZE
-          : tab.key === 'market' || tab.key === 'search' || tab.key === 'listings' || tab.key === 'orders'
+          : tab.key === 'market' || tab.key === 'search' || tab.key === 'listings'
             ? MARKET_COMMUNITY_TAB_ICON_SIZE
             : tab.key === 'collection' || tab.key === 'inventory' || tab.key === 'dashboard'
               ? BINDERS_VAULT_TAB_ICON_SIZE
