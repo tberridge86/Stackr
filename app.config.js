@@ -6,7 +6,10 @@ const variantSuffix = isDevApp ? '.dev' : isStagingApp ? '.staging' : '';
 module.exports = ({ config }) => ({
   ...config,
   name: isDevApp ? 'Stackr Dev' : isStagingApp ? 'Stackr Staging' : config.name,
-  slug: isDevApp ? 'stackr-dev' : isStagingApp ? 'stackr-staging' : config.slug,
+  // Every binary belongs to the existing EAS project. Native package IDs and
+  // update channels isolate internal variants; changing the slug breaks the
+  // projectId-to-slug association before EAS can build them.
+  slug: config.slug,
   scheme: isDevApp ? 'stackr-dev' : isStagingApp ? 'stackr-staging' : config.scheme,
   plugins: [
     ...(config.plugins ?? []),
