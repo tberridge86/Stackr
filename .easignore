@@ -4,6 +4,7 @@
 
 # dependencies
 node_modules/
+.git
 
 # Expo
 .expo/
@@ -72,6 +73,44 @@ assets/**/ChatGPT Images 2.0 _ AI Image Generator*
 # Backend Android build
 backend/android/
 backend/app.json
+
+# Server, database, release and development tooling are not part of the native
+# application archive. Keeping them out also prevents EAS from uploading large
+# scanner packs that are deployed with the backend instead.
+backend/
+gateway/
+recognition-service/
+supabase/
+deploy/
+docs/
+scripts/
+.github/
+ml/
+data/
+ios-swiftui/
+rotate_binders.py
+new.sh
+TODO.md
+README.md
+
+# Retired source artwork and duplicate pre-rev2 exports. The mobile code uses
+# the curated equivalents under assets/rev2 (plus assets/catalogue/models).
+assets/achievements/
+assets/03. Profile Pictures/
+assets/binders/
+assets/Custom Binder Name Art/
+assets/images/
+assets/profile-avatars/
+assets/rev2/teams/
+assets/rev2/01. Logo/
+assets/rev2/category to sell/
+assets/rev2/impecccable/
+assets/rev2/Rarity Symbols/
+assets/rev2/GRADE_MASTERSET/
+assets/rev2/Slab Stickers/
+assets/rev2/Places/
+assets/rev2/Tiered Trades/
+assets/rev2/mascot/
 
 # Firebase admin service account files are server-side only.
 stackr-*-firebase-adminsdk-*.json
