@@ -110,18 +110,46 @@ jobs:
 
   repair-en-ja-assets:
     if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
-    name: Repair ${{ matrix.language_name }} catalogue assets
+    name: Repair ${{ matrix.language_name }} assets batch ${{ matrix.batch }}
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 4
       matrix:
         include:
           - language: en
             language_name: English
+            batch: 1
+            offset: 0
+          - language: en
+            language_name: English
+            batch: 2
+            offset: 5000
+          - language: en
+            language_name: English
+            batch: 3
+            offset: 10000
+          - language: en
+            language_name: English
+            batch: 4
+            offset: 15000
           - language: ja
             language_name: Japanese
+            batch: 1
+            offset: 0
+          - language: ja
+            language_name: Japanese
+            batch: 2
+            offset: 5000
+          - language: ja
+            language_name: Japanese
+            batch: 3
+            offset: 10000
+          - language: ja
+            language_name: Japanese
+            batch: 4
+            offset: 15000
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 180
     environment: ingestion
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -139,10 +167,16 @@ jobs:
         run: npx --no-install tsx scripts/repair-tcgdex-language-assets.ts --help
 
       - name: Repair ${{ matrix.language_name }} card fronts, logos and symbols
+        id: repair
         run: >-
           npx --no-install tsx scripts/repair-tcgdex-language-assets.ts
           --language=${{ matrix.language }}
+          --offset=${{ matrix.offset }}
+          --limit=5000
+          --runKey=github-${{ github.run_id }}-${{ matrix.language }}-${{ matrix.batch }}
+          --requestId=github-actions:${{ github.run_id }}:${{ matrix.language }}:${{ matrix.batch }}
           --writeConcurrency=8
 
       - name: Verify ${{ matrix.language_name }} catalogue quality
+        if: always()
         run: npm run catalogue:quality-report -- --language=${{ matrix.language }}
