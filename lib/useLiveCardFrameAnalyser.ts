@@ -26,6 +26,7 @@ import {
   isStableCornerMovement,
   type LiveCardGuidance,
 } from './liveCardGuidance';
+import { stackrHaptics } from './haptics';
 import { runAtTargetFps, useFrameProcessor, type FrameProcessor } from './visionCamera';
 
 export type CaptureSource = 'auto' | 'manual';
@@ -139,9 +140,10 @@ export function useLiveCardFrameAnalyser({
       if (event.scanId && event.scanId !== scanId) return;
 
       const result = event.result ?? null;
+      const previousStableFrameCount = stableFrameCountRef.current;
       const cornerMovement = calculateCornerMovement(previousCornersRef.current, result?.corners ?? null);
       const nextStableFrameCount = getNextStableFrameCount({
-        currentStableFrameCount: stableFrameCountRef.current,
+        currentStableFrameCount: previousStableFrameCount,
         result,
         cornerMovement,
       });
@@ -161,6 +163,15 @@ export function useLiveCardFrameAnalyser({
         ...eventInstrumentation,
         scanId: event.scanId ?? scanId,
       }));
+
+      if (
+        result?.qualityAccepted
+        && movementStable
+        && previousStableFrameCount < requiredStableFrames
+        && nextStableFrameCount >= requiredStableFrames
+      ) {
+        void stackrHaptics.scannerFrameReady();
+      }
 
       if (
         result?.qualityAccepted &&
@@ -226,6 +237,7 @@ export function useLiveCardFrameAnalyser({
   }, [scanId]);
 
   const recordCapture = useCallback((source: CaptureSource) => {
+    void stackrHaptics.scannerCaptureLocked();
     setInstrumentation((previous) => ({
       ...previous,
       scanId: previous.scanId ?? scanId,
