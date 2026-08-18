@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 import { CatalogueIngestionRunner } from './catalogue-ingestion/pipeline';
+import { fetchCatalogueQualityReport } from './catalogue-ingestion/qualityReport';
 import {
   TcgdexSourceAdapter,
   tcgdexAdapterInternals,
@@ -33,6 +34,14 @@ function printHelp() {
 Usage:
   npx tsx scripts/repair-tcgdex-language-assets.ts --language=en --writeConcurrency=8
   npx tsx scripts/repair-tcgdex-language-assets.ts --language=ja --writeConcurrency=8
+
+Options:
+  --language=en|ja
+  --writeConcurrency=1..16
+  --offset=<non-negative integer>
+  --limit=<positive integer>
+  --runKey=<stable key for a resumable batch>
+  --requestId=<audit request id>
 
 Only English and Japanese are accepted by this controlled repair worker.
 The worker is staging-only and marks imported TCGdex assets approved based on
@@ -97,10 +106,12 @@ export function createApprovedTcgdexRepairAdapter(languageCode: string): SourceA
       const providerAssets = await collectRecords(base.fetchAssets(scope));
       if (scope.setId) return providerAssets;
 
-      // TCGdex's language-wide /sets response already contains the logo and
-      // symbol bases. The core adapter only emits set art for run-set, so add
-      // the language-wide set assets here without hundreds of per-set runs.
-      const sets = await collectRecords(base.fetchSets(scope));
+      // The language-wide TCGdex set list contains logo/symbol bases, while the
+      // core adapter only emits set art for run-set. Add the set art here so a
+      // language repair covers fronts + logos + symbols in one controlled run.
+      // Do not apply the card offset/limit to the set-art list: each batch is
+      // idempotent and retaining all set art prevents a partial repair.
+      const sets = await collectRecords(base.fetchSets({}));
       const setAssets = buildSetAssetRecords(sets, languageCode);
       return [...setAssets, ...providerAssets];
     },
@@ -126,6 +137,20 @@ function stagingClient() {
   return createClient(url, key);
 }
 
+function nonNegativeInteger(name: string, fallback: string) {
+  const value = Number(arg(name, fallback));
+  if (!Number.isInteger(value) || value < 0) throw new Error(`--${name} must be a non-negative integer.`);
+  return value;
+}
+
+function optionalPositiveInteger(name: string) {
+  const raw = arg(name);
+  if (!raw) return undefined;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1) throw new Error(`--${name} must be a positive integer.`);
+  return value;
+}
+
 async function main() {
   if (hasFlag('help')) {
     printHelp();
@@ -141,30 +166,43 @@ async function main() {
   if (!Number.isInteger(writeConcurrency) || writeConcurrency < 1 || writeConcurrency > 16) {
     throw new Error('--writeConcurrency must be an integer from 1 to 16.');
   }
+  const offset = nonNegativeInteger('offset', '0');
+  const limit = optionalPositiveInteger('limit');
 
+  const db = stagingClient();
+  const before = await fetchCatalogueQualityReport(db, { language: languageCode, limit: 1000 });
   const runIdentity = [
     process.env.GITHUB_RUN_ID ?? new Date().toISOString(),
     process.env.GITHUB_RUN_ATTEMPT ?? '1',
   ].join(':');
-  const runKey = `repair-en-ja-assets:${languageCode}:${runIdentity}`;
-  const requestId = process.env.GITHUB_RUN_ID
-    ? `github-actions:${process.env.GITHUB_RUN_ID}:${languageCode}`
-    : `manual:${runIdentity}:${languageCode}`;
+  const runKey = arg('runKey') || `repair-en-ja-assets:${languageCode}:${runIdentity}:${offset}:${limit ?? 'all'}`;
+  const requestId = arg('requestId') || (process.env.GITHUB_RUN_ID
+    ? `github-actions:${process.env.GITHUB_RUN_ID}:${languageCode}:${offset}`
+    : `manual:${runIdentity}:${languageCode}:${offset}`);
 
   const runner = new CatalogueIngestionRunner(
-    stagingClient(),
+    db,
     createApprovedTcgdexRepairAdapter(languageCode),
   );
   const result = await runner.run({
     command: 'run_language',
     importType: 'repair',
     language: languageCode,
+    cursor: { offset },
+    limit,
     runKey,
     requestId,
     allowImageAssets: true,
     approvedOnlyAssets: true,
     writeConcurrency,
   });
+  const after = await fetchCatalogueQualityReport(db, { language: languageCode, limit: 1000 });
+
+  const beforeMissing = Number(before.summary.cardsMissingImages ?? 0);
+  const afterMissing = Number(after.summary.cardsMissingImages ?? 0);
+  const recoveredFronts = Math.max(0, beforeMissing - afterMissing);
+  const beforeMissingLogos = Number(before.summary.setsMissingLogos ?? 0);
+  const afterMissingLogos = Number(after.summary.setsMissingLogos ?? 0);
 
   console.log(JSON.stringify({
     ok: true,
@@ -172,6 +210,15 @@ async function main() {
     language: languageCode,
     approval: 'approved',
     includes: ['card_image', 'set_logo', 'set_symbol'],
+    batch: { offset, limit: limit ?? null, runKey, requestId },
+    progress: {
+      before: before.summary,
+      after: after.summary,
+      recoveredFronts,
+      recoveredLogos: Math.max(0, beforeMissingLogos - afterMissingLogos),
+      remainingMissingFronts: afterMissing,
+      remainingMissingLogos: afterMissingLogos,
+    },
     result,
   }, null, 2));
 }
