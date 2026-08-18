@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import { getScannerClientContext } from './scannerClientContext';
 
-type ScanLearningEventType =
+export type ScanLearningEventType =
   | 'attempt'
   | 'candidate_selected'
   | 'match_incorrect'
@@ -12,6 +12,13 @@ type ScanLearningEventType =
   | 'rescan'
   | 'cancellation'
   | 'duplicate_prevented';
+
+export type ScanLearningHapticEvent =
+  | 'selection'
+  | 'scanner_ambiguous'
+  | 'card_added'
+  | 'duplicate_prevented'
+  | null;
 
 type ScanLearningCandidate = {
   id?: string | null;
@@ -49,6 +56,40 @@ type ScanLearningInput = {
 
 const SCAN_LEARNING_QUEUE_KEY = 'stackr.scanLearning.offlineQueue.v1';
 const MAX_QUEUED_SCAN_EVENTS = 50;
+
+/**
+ * Maps confirmed scanner/result actions to StackR's tactile vocabulary.
+ * Frame-by-frame and passive analytics events deliberately return null so the
+ * camera never buzzes continuously while it is analysing a card.
+ */
+export function hapticEventForScanLearningEvent(
+  eventType: ScanLearningEventType
+): ScanLearningHapticEvent {
+  switch (eventType) {
+    case 'candidate_selected':
+      return 'selection';
+    case 'match_incorrect':
+    case 'none_correct':
+      return 'scanner_ambiguous';
+    case 'added_to_binder':
+      return 'card_added';
+    case 'duplicate_prevented':
+      return 'duplicate_prevented';
+    default:
+      return null;
+  }
+}
+
+function playScanLearningHaptic(eventType: ScanLearningEventType) {
+  const event = hapticEventForScanLearningEvent(eventType);
+  if (!event) return;
+
+  // Lazy loading keeps analytics usable in Node tests, web builds and any
+  // environment where native haptics are unavailable.
+  void import('./haptics')
+    .then(({ haptic }) => haptic(event))
+    .catch(() => undefined);
+}
 
 function compactCandidate(candidate: ScanLearningCandidate) {
   return {
@@ -166,6 +207,10 @@ async function queueScanLearningEvent(
 }
 
 export async function logScanLearningEvent(input: ScanLearningInput) {
+  // Tactile confirmation belongs to the local user action and must not depend
+  // on authentication, connectivity or the analytics insert succeeding.
+  playScanLearningHaptic(input.eventType);
+
   let payload: ReturnType<typeof buildPayload> | null = buildPayload(input, null);
 
   try {
