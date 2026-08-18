@@ -38,8 +38,9 @@ concurrency:
 jobs:
   ingest:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (vars.STACKR_CATALOGUE_INGESTION_SCHEDULED == 'true' &&
+      (github.event_name == 'workflow_dispatch' && inputs.command != 'repair-en-ja-assets') ||
+      (github.event_name == 'schedule' &&
+      vars.STACKR_CATALOGUE_INGESTION_SCHEDULED == 'true' &&
       vars.STACKR_CATALOGUE_INGESTION_AUTOMATION_APPROVED == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -74,8 +75,6 @@ jobs:
           npm run catalogue:ingest -- run-source
           --source="$STACKR_INGEST_SOURCE"
           --target=staging
-          --allowImageAssets
-          --approvedOnlyAssets
 
       - name: Run one language
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'ingest-language'
@@ -84,8 +83,6 @@ jobs:
           --source="$STACKR_INGEST_SOURCE"
           --language="$STACKR_INGEST_LANGUAGE"
           --target=staging
-          --allowImageAssets
-          --approvedOnlyAssets
 
       - name: Run one set
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'ingest-set'
@@ -94,8 +91,6 @@ jobs:
           --source="$STACKR_INGEST_SOURCE"
           --setId="$STACKR_INGEST_SET"
           --target=staging
-          --allowImageAssets
-          --approvedOnlyAssets
 
       - name: Resume interrupted import
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'resume-import'
@@ -104,8 +99,6 @@ jobs:
           --source="$STACKR_INGEST_SOURCE"
           --runKey="$STACKR_INGEST_ID"
           --target=staging
-          --allowImageAssets
-          --approvedOnlyAssets
 
       - name: Rebuild canonical record
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'rebuild-record'
@@ -114,35 +107,42 @@ jobs:
           --source="$STACKR_INGEST_SOURCE"
           --providerRecordId="$STACKR_INGEST_ID"
           --target=staging
-          --allowImageAssets
-          --approvedOnlyAssets
 
-      - name: Repair English catalogue assets from TCGdex
-        if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
+  repair-en-ja-assets:
+    if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
+    name: Repair ${{ matrix.language_name }} catalogue assets
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - language: en
+            language_name: English
+          - language: ja
+            language_name: Japanese
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: ingestion
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Validate controlled repair worker
+        run: npx --no-install tsx scripts/repair-tcgdex-language-assets.ts --help
+
+      - name: Repair ${{ matrix.language_name }} card fronts, logos and symbols
         run: >-
-          npm run catalogue:ingest -- run-language
-          --source=tcgdex
-          --language=en
-          --target=staging
-          --allowImageAssets
-          --approvedOnlyAssets
+          npx --no-install tsx scripts/repair-tcgdex-language-assets.ts
+          --language=${{ matrix.language }}
           --writeConcurrency=8
 
-      - name: Repair Japanese catalogue assets from TCGdex
-        if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
-        run: >-
-          npm run catalogue:ingest -- run-language
-          --source=tcgdex
-          --language=ja
-          --target=staging
-          --allowImageAssets
-          --approvedOnlyAssets
-          --writeConcurrency=8
-
-      - name: Verify English catalogue after repair
-        if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
-        run: npm run catalogue:quality-report -- --language=en
-
-      - name: Verify Japanese catalogue after repair
-        if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
-        run: npm run catalogue:quality-report -- --language=ja
+      - name: Verify ${{ matrix.language_name }} catalogue quality
+        run: npm run catalogue:quality-report -- --language=${{ matrix.language }}
