@@ -8,7 +8,7 @@ on:
         required: true
         default: quality-report
         type: choice
-        options: [quality-report, ingest-source, ingest-language, ingest-set, resume-import, rebuild-record]
+        options: [quality-report, ingest-source, ingest-language, ingest-set, resume-import, rebuild-record, repair-en-ja-assets]
       source:
         description: Source code for ingest-source
         required: false
@@ -47,6 +47,7 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
       STACKR_INGEST_SOURCE: ${{ inputs.source }}
       STACKR_INGEST_LANGUAGE: ${{ inputs.language }}
       STACKR_INGEST_SET: ${{ inputs.set }}
@@ -69,7 +70,12 @@ jobs:
 
       - name: Run one source
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'ingest-source'
-        run: npm run catalogue:ingest -- run-source --source="$STACKR_INGEST_SOURCE"
+        run: >-
+          npm run catalogue:ingest -- run-source
+          --source="$STACKR_INGEST_SOURCE"
+          --target=staging
+          --allowImageAssets
+          --approvedOnlyAssets
 
       - name: Run one language
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'ingest-language'
@@ -77,6 +83,9 @@ jobs:
           npm run catalogue:ingest -- run-language
           --source="$STACKR_INGEST_SOURCE"
           --language="$STACKR_INGEST_LANGUAGE"
+          --target=staging
+          --allowImageAssets
+          --approvedOnlyAssets
 
       - name: Run one set
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'ingest-set'
@@ -84,6 +93,9 @@ jobs:
           npm run catalogue:ingest -- run-set
           --source="$STACKR_INGEST_SOURCE"
           --setId="$STACKR_INGEST_SET"
+          --target=staging
+          --allowImageAssets
+          --approvedOnlyAssets
 
       - name: Resume interrupted import
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'resume-import'
@@ -91,6 +103,9 @@ jobs:
           npm run catalogue:ingest -- resume-import
           --source="$STACKR_INGEST_SOURCE"
           --runKey="$STACKR_INGEST_ID"
+          --target=staging
+          --allowImageAssets
+          --approvedOnlyAssets
 
       - name: Rebuild canonical record
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'rebuild-record'
@@ -98,3 +113,36 @@ jobs:
           npm run catalogue:ingest -- rebuild-record
           --source="$STACKR_INGEST_SOURCE"
           --providerRecordId="$STACKR_INGEST_ID"
+          --target=staging
+          --allowImageAssets
+          --approvedOnlyAssets
+
+      - name: Repair English catalogue assets from TCGdex
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
+        run: >-
+          npm run catalogue:ingest -- run-language
+          --source=tcgdex
+          --language=en
+          --target=staging
+          --allowImageAssets
+          --approvedOnlyAssets
+          --writeConcurrency=8
+
+      - name: Repair Japanese catalogue assets from TCGdex
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
+        run: >-
+          npm run catalogue:ingest -- run-language
+          --source=tcgdex
+          --language=ja
+          --target=staging
+          --allowImageAssets
+          --approvedOnlyAssets
+          --writeConcurrency=8
+
+      - name: Verify English catalogue after repair
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
+        run: npm run catalogue:quality-report -- --language=en
+
+      - name: Verify Japanese catalogue after repair
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'repair-en-ja-assets'
+        run: npm run catalogue:quality-report -- --language=ja
