@@ -10,6 +10,7 @@ import {
   requireMatchingAuthenticatedUser,
   sendRequestError,
 } from '../lib/requestAuth.js';
+import { createStripeWebhookHandler } from './stripeWebhook.js';
 
 const stripeSecretKey = String(process.env.STRIPE_SECRET_KEY ?? '').trim();
 const defaultStripe = stripeSecretKey
@@ -26,7 +27,7 @@ const defaultSupabase = supabaseUrl && supabaseServiceKey
 
 const DEFAULT_BASE_URL = (process.env.API_BASE_URL || 'http://localhost:3001').replace(/\/$/, '');
 const DEFAULT_PLATFORM_FEE_PERCENT = Number(process.env.PLATFORM_FEE_PERCENT || '0.05');
-const DEFAULT_BETA_TRADE_DEMO_MODE = process.env.BETA_TRADE_DEMO_MODE !== 'false';
+const DEFAULT_MARKET_RESERVATION_MINUTES = Number(process.env.MARKET_RESERVATION_MINUTES || '30');
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9._:-]{1,160}$/;
 const IDEMPOTENCY_INPUT_PATTERN = /^[A-Za-z0-9._:+\-/]{8,200}$/;
 
@@ -135,6 +136,26 @@ function handleRouteError(logger, req, res, event, error) {
   );
 }
 
+function mapReservationError(error) {
+  const message = String(error?.message ?? error ?? '');
+  if (/marketplace_listing_not_found/i.test(message)) {
+    return new PaymentRouteError(404, 'listing_not_found', 'Listing was not found.');
+  }
+  if (/marketplace_self_purchase_not_allowed/i.test(message)) {
+    return new PaymentRouteError(409, 'self_purchase_not_allowed', 'You cannot purchase your own listing.');
+  }
+  if (/marketplace_listing_amount_mismatch/i.test(message)) {
+    return new PaymentRouteError(409, 'listing_price_changed', 'The listing price changed before checkout.');
+  }
+  if (/marketplace_listing_has_no_payable_price/i.test(message)) {
+    return new PaymentRouteError(409, 'listing_not_payable', 'This listing does not have a payable price.');
+  }
+  if (/marketplace_listing_unavailable|marketplace_payment_idempotency_conflict/i.test(message)) {
+    return new PaymentRouteError(409, 'listing_reservation_conflict', 'Another buyer reserved this listing first.');
+  }
+  return error;
+}
+
 async function loadProfile(supabase, userId, columns = 'id, stripe_account_id') {
   const { data, error } = await supabase
     .from('profiles')
@@ -182,33 +203,72 @@ async function retrieveExistingPaymentIntent(stripe, paymentIntentId) {
   return paymentIntent;
 }
 
+function reservationExpiry(minutes) {
+  const numeric = Number(minutes);
+  if (!Number.isFinite(numeric) || numeric < 2 || numeric > 1440) {
+    throw new PaymentRouteError(503, 'invalid_reservation_window', 'Payments are temporarily unavailable.');
+  }
+  return new Date(Date.now() + Math.round(numeric * 60_000)).toISOString();
+}
+
+async function reserveMarketplacePayment({
+  supabase,
+  req,
+  listingId,
+  paymentIntentId,
+  buyerId,
+  amountMinor,
+  currency,
+  expiresAt,
+}) {
+  const requestId = requestIdFrom(req)
+    ?? buildStripeIdempotencyKey('reservation-request', listingId, buyerId, paymentIntentId);
+  const { data, error } = await supabase.rpc('reserve_marketplace_listing_payment', {
+    p_listing_id: listingId,
+    p_payment_intent_id: paymentIntentId,
+    p_request_id: requestId,
+    p_buyer_id: buyerId,
+    p_amount_minor: amountMinor,
+    p_currency: currency,
+    p_reservation_expires_at: expiresAt,
+  });
+  if (error) throw mapReservationError(error);
+  if (!data?.transactionId || data?.paymentIntentId !== paymentIntentId) {
+    throw new Error('Payment reservation returned an incomplete result.');
+  }
+  return data;
+}
+
 export function createStripeRouter({
   stripeClient = defaultStripe,
   supabaseClient = defaultSupabase,
   baseUrl = DEFAULT_BASE_URL,
   platformFeePercent = DEFAULT_PLATFORM_FEE_PERCENT,
-  betaTradeDemoMode = DEFAULT_BETA_TRADE_DEMO_MODE,
+  marketReservationMinutes = DEFAULT_MARKET_RESERVATION_MINUTES,
   logger = console,
 } = {}) {
   const router = express.Router();
   const requireDependencies = (_req, res, next) => {
     if (!stripeClient || !supabaseClient) {
-      return res.status(503).json({
-        error: 'Payments are temporarily unavailable.',
-      });
+      return res.status(503).json({ error: 'Payments are temporarily unavailable.' });
     }
     try {
       calculatePlatformFee(100, platformFeePercent);
+      reservationExpiry(marketReservationMinutes);
     } catch {
-      return res.status(503).json({
-        error: 'Payments are temporarily unavailable.',
-      });
+      return res.status(503).json({ error: 'Payments are temporarily unavailable.' });
     }
     return next();
   };
   const requireAuthenticatedUser = supabaseClient
     ? createRequireAuthenticatedUser({ supabase: supabaseClient, logger })
     : (_req, res) => res.status(503).json({ error: 'Payments are temporarily unavailable.' });
+
+  router.post('/webhook', createStripeWebhookHandler({
+    stripeClient,
+    supabaseClient,
+    logger,
+  }));
 
   router.post(
     '/create-connect-account',
@@ -392,7 +452,10 @@ export function createStripeRouter({
           if (listing.listing_status === 'reserved' && listing.payment_intent_id) {
             const existing = await retrieveExistingPaymentIntent(stripeClient, listing.payment_intent_id);
             if (existing?.metadata?.buyerId === buyerId) {
-              return res.json(paymentIntentResponse(req, existing, { listingId, idempotentReplay: true }));
+              return res.json(paymentIntentResponse(req, existing, {
+                listingId,
+                idempotentReplay: true,
+              }));
             }
           }
           throw new PaymentRouteError(409, 'listing_unavailable', 'Listing is no longer available.');
@@ -409,9 +472,10 @@ export function createStripeRouter({
 
         const amountPence = amountToMinorUnits(listing.asking_price);
         const platformFeePence = calculatePlatformFee(amountPence, platformFeePercent);
+        const currency = 'gbp';
         const paymentIntent = await stripeClient.paymentIntents.create({
           amount: amountPence,
-          currency: 'gbp',
+          currency,
           automatic_payment_methods: { enabled: true },
           application_fee_amount: platformFeePence,
           transfer_data: { destination: sellerAccountId },
@@ -430,50 +494,34 @@ export function createStripeRouter({
           ),
         });
 
-        const { data: reservedListing, error: reserveError } = await supabaseClient
-          .from('user_card_flags')
-          .update({ listing_status: 'reserved', payment_intent_id: paymentIntent.id })
-          .eq('id', listingId)
-          .eq('listing_status', 'active')
-          .select('id, listing_status, payment_intent_id')
-          .maybeSingle();
-
-        if (reserveError) {
-          await safeCancelPaymentIntent(stripeClient, paymentIntent, logger, req, 'listing_reservation_failed');
-          throw reserveError;
-        }
-
-        if (!reservedListing) {
-          const { data: currentListing, error: currentError } = await supabaseClient
-            .from('user_card_flags')
-            .select('id, listing_status, payment_intent_id')
-            .eq('id', listingId)
-            .maybeSingle();
-          if (currentError) {
-            await safeCancelPaymentIntent(stripeClient, paymentIntent, logger, req, 'listing_conflict_lookup_failed');
-            throw currentError;
-          }
-          if (
-            currentListing?.listing_status === 'reserved'
-            && currentListing?.payment_intent_id === paymentIntent.id
-          ) {
-            return res.json(paymentIntentResponse(req, paymentIntent, {
-              listingId,
-              idempotentReplay: true,
-            }));
-          }
-
-          await safeCancelPaymentIntent(stripeClient, paymentIntent, logger, req, 'listing_reservation_lost');
-          throw new PaymentRouteError(
-            409,
-            'listing_reservation_conflict',
-            'Another buyer reserved this listing first.',
+        let reservation;
+        try {
+          reservation = await reserveMarketplacePayment({
+            supabase: supabaseClient,
+            req,
+            listingId,
+            paymentIntentId: paymentIntent.id,
+            buyerId,
+            amountMinor: amountPence,
+            currency,
+            expiresAt: reservationExpiry(marketReservationMinutes),
+          });
+        } catch (error) {
+          await safeCancelPaymentIntent(
+            stripeClient,
+            paymentIntent,
+            logger,
+            req,
+            'marketplace_reservation_failed',
           );
+          throw error;
         }
 
         return res.json(paymentIntentResponse(req, paymentIntent, {
           listingId,
-          idempotentReplay: false,
+          transactionId: reservation.transactionId,
+          reservationExpiresAt: reservation.reservationExpiresAt,
+          idempotentReplay: Boolean(reservation.replayed),
         }));
       } catch (error) {
         return handleRouteError(logger, req, res, 'stripe_market_payment_failed', error);
@@ -486,140 +534,14 @@ export function createStripeRouter({
     requireDependencies,
     requireAuthenticatedUser,
     async (req, res) => {
-      if (betaTradeDemoMode) {
-        return sendRequestError(
-          req,
-          res,
-          403,
-          'trade_payments_disabled',
-          'Demo trade mode is enabled. Real trade cash payments are disabled during beta.',
-        );
-      }
       if (!requireMatchingAuthenticatedUser(req, res, req.body?.payerId, 'payerId')) return;
-      const payerId = authenticatedUserId(req);
-
-      try {
-        const offerId = requiredIdentifier(req.body?.offerId, 'offer_id');
-        const { data: cashTerm, error: cashTermError } = await supabaseClient
-          .from('trade_cash_terms')
-          .select('*')
-          .eq('offer_id', offerId)
-          .maybeSingle();
-        if (cashTermError) throw cashTermError;
-        if (!cashTerm) {
-          throw new PaymentRouteError(404, 'trade_cash_terms_not_found', 'Trade cash terms were not found.');
-        }
-        if (clean(cashTerm.payer_id) !== payerId) {
-          throw new PaymentRouteError(
-            403,
-            'trade_payer_mismatch',
-            'Only the designated payer can initiate this payment.',
-          );
-        }
-        if (clean(cashTerm.recipient_id) === payerId) {
-          throw new PaymentRouteError(409, 'self_payment_not_allowed', 'You cannot pay yourself.');
-        }
-
-        const amountPence = amountToMinorUnits(cashTerm.amount);
-        const currency = normalisePaymentCurrency(cashTerm.currency ?? 'GBP');
-        const platformFeePence = calculatePlatformFee(amountPence, platformFeePercent);
-
-        const existing = await retrieveExistingPaymentIntent(stripeClient, cashTerm.payment_intent_id);
-        if (existing) {
-          if (existing.metadata?.payerId !== payerId) {
-            throw new PaymentRouteError(409, 'trade_payment_conflict', 'Trade payment belongs to another payer.');
-          }
-          return res.json(paymentIntentResponse(req, existing, {
-            offerId,
-            idempotentReplay: true,
-          }));
-        }
-
-        const recipientProfile = await loadProfile(supabaseClient, cashTerm.recipient_id);
-        const recipientStripeAccountId = clean(recipientProfile?.stripe_account_id);
-        if (!recipientStripeAccountId) {
-          throw new PaymentRouteError(
-            409,
-            'recipient_payouts_unavailable',
-            'Recipient has not completed payout setup.',
-          );
-        }
-
-        const paymentIntent = await stripeClient.paymentIntents.create({
-          amount: amountPence,
-          currency,
-          automatic_payment_methods: { enabled: true },
-          application_fee_amount: platformFeePence,
-          transfer_data: { destination: recipientStripeAccountId },
-          metadata: {
-            offerId,
-            payerId,
-            recipientId: String(cashTerm.recipient_id),
-            type: 'trade_cash',
-          },
-        }, {
-          idempotencyKey: buildStripeIdempotencyKey(
-            'trade-cash',
-            offerId,
-            payerId,
-            amountPence,
-            currency,
-          ),
-        });
-
-        const { data: updatedCashTerm, error: updateError } = await supabaseClient
-          .from('trade_cash_terms')
-          .update({
-            payment_intent_id: paymentIntent.id,
-            payment_status: 'required',
-            updated_at: new Date().toISOString(),
-          })
-          .eq('offer_id', offerId)
-          .eq('payer_id', payerId)
-          .is('payment_intent_id', null)
-          .select('offer_id, payment_intent_id, payment_status')
-          .maybeSingle();
-
-        if (updateError) {
-          await safeCancelPaymentIntent(stripeClient, paymentIntent, logger, req, 'trade_cash_link_failed');
-          throw updateError;
-        }
-
-        if (!updatedCashTerm) {
-          const { data: currentCashTerm, error: currentError } = await supabaseClient
-            .from('trade_cash_terms')
-            .select('offer_id, payer_id, payment_intent_id, payment_status')
-            .eq('offer_id', offerId)
-            .maybeSingle();
-          if (currentError) {
-            await safeCancelPaymentIntent(stripeClient, paymentIntent, logger, req, 'trade_cash_conflict_lookup_failed');
-            throw currentError;
-          }
-          const concurrentIntent = await retrieveExistingPaymentIntent(
-            stripeClient,
-            currentCashTerm?.payment_intent_id,
-          );
-          await safeCancelPaymentIntent(stripeClient, paymentIntent, logger, req, 'trade_cash_reservation_lost');
-          if (concurrentIntent?.metadata?.payerId === payerId) {
-            return res.json(paymentIntentResponse(req, concurrentIntent, {
-              offerId,
-              idempotentReplay: true,
-            }));
-          }
-          throw new PaymentRouteError(
-            409,
-            'trade_payment_conflict',
-            'A payment session already exists for this trade.',
-          );
-        }
-
-        return res.json(paymentIntentResponse(req, paymentIntent, {
-          offerId,
-          idempotentReplay: false,
-        }));
-      } catch (error) {
-        return handleRouteError(logger, req, res, 'stripe_trade_cash_payment_failed', error);
-      }
+      return sendRequestError(
+        req,
+        res,
+        403,
+        'trade_payments_disabled',
+        'Real trade cash payments remain disabled until their settlement and dispute contract is release-approved.',
+      );
     },
   );
 
@@ -672,7 +594,10 @@ export function createStripeRouter({
 export const stripeRouteInternals = {
   clean,
   clientOperationKey,
+  mapReservationError,
   requiredIdentifier,
+  reservationExpiry,
+  reserveMarketplacePayment,
   stripeAccountIdFromListing,
 };
 
