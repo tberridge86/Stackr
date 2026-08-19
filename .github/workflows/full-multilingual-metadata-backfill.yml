@@ -1,0 +1,322 @@
+name: StackR Full Multilingual Metadata Backfill
+
+on:
+  push:
+    branches: [backend/release-hardening-2026-08-19]
+    paths:
+      - .github/workflows/full-multilingual-metadata-backfill.yml
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: Canonical writes per resumable batch
+        required: true
+        default: '1000'
+        type: choice
+        options: ['500', '750', '1000', '1500']
+      include_pokemon_tcg_reconciliation:
+        description: Reconcile English metadata through the Pokemon TCG Developers API
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-full-multilingual-metadata-backfill
+  cancel-in-progress: false
+
+jobs:
+  prepare-snapshot:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.message, '[run metadata backfill]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    outputs:
+      source_version: ${{ steps.source.outputs.version }}
+      batch_size: ${{ steps.options.outputs.batch_size }}
+    steps:
+      - name: Checkout StackR
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Checkout TCGdex cards database
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: tcgdex/cards-database
+          path: vendor/tcgdex-cards-database
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install pinned snapshot parser
+        run: python -m pip install PyYAML==6.0.2
+
+      - name: Record pinned source and options
+        id: source
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(git -C vendor/tcgdex-cards-database rev-parse HEAD)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "TCGdex snapshot commit: $VERSION"
+
+      - name: Resolve batch size
+        id: options
+        shell: bash
+        env:
+          REQUESTED_BATCH_SIZE: ${{ inputs.batch_size }}
+        run: |
+          set -euo pipefail
+          BATCH_SIZE="${REQUESTED_BATCH_SIZE:-1000}"
+          case "$BATCH_SIZE" in
+            500|750|1000|1500) ;;
+            *) echo "Unsupported batch size: $BATCH_SIZE" >&2; exit 2 ;;
+          esac
+          echo "batch_size=$BATCH_SIZE" >> "$GITHUB_OUTPUT"
+
+      - name: Build all five language snapshots
+        run: >-
+          python scripts/build-tcgdex-database-snapshot.py
+          --database-root=vendor/tcgdex-cards-database
+          --output-root=reports/tcgdex-metadata-snapshot
+          --languages=en,ja,zh-tw,zh-cn,ko
+          --source-version=${{ steps.source.outputs.version }}
+          --batch-size=${{ steps.options.outputs.batch_size }}
+          --minimum-cards=500
+          --maximum-orphan-ratio=0.10
+
+      - name: Validate expected language scale
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('reports/tcgdex-metadata-snapshot/snapshot-manifest.json').read_text())
+          minimums = {
+              'en': 10000,
+              'ja': 5000,
+              'zh-tw': 500,
+              'zh-cn': 500,
+              'ko': 500,
+          }
+          for language, minimum in minimums.items():
+              actual = int(manifest['languages'][language]['cards'])
+              if actual < minimum:
+                  raise SystemExit(f'{language} snapshot contains {actual} cards; expected at least {minimum}')
+          print(json.dumps({
+              language: {
+                  'sets': manifest['languages'][language]['sets'],
+                  'cards': manifest['languages'][language]['cards'],
+                  'orphans': manifest['languages'][language]['orphanCards'],
+              }
+              for language in minimums
+          }, indent=2))
+          PY
+
+      - name: Upload pinned multilingual snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tcgdex-metadata-snapshot-${{ steps.source.outputs.version }}
+          path: reports/tcgdex-metadata-snapshot
+          if-no-files-found: error
+          retention-days: 14
+
+  import-tcgdex-metadata:
+    needs: prepare-snapshot
+    name: Import TCGdex ${{ matrix.language_name }} metadata
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - language: en
+            language_name: English
+          - language: ja
+            language_name: Japanese
+          - language: zh-tw
+            language_name: Traditional Chinese
+          - language: zh-cn
+            language_name: Simplified Chinese
+          - language: ko
+            language_name: Korean
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: ingestion
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      SNAPSHOT_VERSION: ${{ needs.prepare-snapshot.outputs.source_version }}
+      BATCH_SIZE: ${{ needs.prepare-snapshot.outputs.batch_size }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Download pinned multilingual snapshot
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: tcgdex-metadata-snapshot-${{ needs.prepare-snapshot.outputs.source_version }}
+          path: reports/tcgdex-metadata-snapshot
+
+      - name: Import every ${{ matrix.language_name }} metadata record
+        shell: bash
+        run: |
+          set -euo pipefail
+          LANGUAGE='${{ matrix.language }}'
+          TOTAL="$(node -e "const m=require('./reports/tcgdex-metadata-snapshot/snapshot-manifest.json'); process.stdout.write(String(m.languages['$LANGUAGE'].cards));")"
+          echo "Importing $TOTAL $LANGUAGE card records from pinned TCGdex snapshot $SNAPSHOT_VERSION"
+
+          OFFSET=0
+          while [ "$OFFSET" -lt "$TOTAL" ]; do
+            LIMIT="$BATCH_SIZE"
+            REMAINING=$((TOTAL - OFFSET))
+            if [ "$REMAINING" -lt "$LIMIT" ]; then LIMIT="$REMAINING"; fi
+            echo "TCGdex $LANGUAGE batch offset=$OFFSET limit=$LIMIT total=$TOTAL"
+            npx --no-install tsx scripts/catalogue-ingest.ts run-language \
+              --source=tcgdex \
+              --language="$LANGUAGE" \
+              --snapshotRoot=reports/tcgdex-metadata-snapshot \
+              --snapshotVersion="$SNAPSHOT_VERSION" \
+              --offset="$OFFSET" \
+              --limit="$LIMIT" \
+              --runKey="full-metadata:$SNAPSHOT_VERSION:tcgdex:$LANGUAGE:$OFFSET" \
+              --requestId="github:${{ github.run_id }}:tcgdex:$LANGUAGE:$OFFSET" \
+              --licenceStatus=approved \
+              --assetLicenceStatus=approved \
+              --writeConcurrency=6 \
+              --target=staging
+            OFFSET=$((OFFSET + LIMIT))
+          done
+
+      - name: Capture ${{ matrix.language_name }} residual quality report
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p reports/catalogue-metadata
+          npm run catalogue:quality-report -- --language=${{ matrix.language }} \
+            > reports/catalogue-metadata/${{ matrix.language }}.json
+
+      - name: Upload ${{ matrix.language_name }} residual report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: catalogue-metadata-${{ matrix.language }}-${{ github.run_id }}
+          path: reports/catalogue-metadata/${{ matrix.language }}.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  reconcile-english-pokemon-tcg:
+    needs: [prepare-snapshot, import-tcgdex-metadata]
+    if: >-
+      needs.import-tcgdex-metadata.result == 'success' &&
+      (github.event_name == 'push' || inputs.include_pokemon_tcg_reconciliation == true)
+    name: Reconcile English through Pokemon TCG API
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: ingestion
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      SNAPSHOT_VERSION: ${{ needs.prepare-snapshot.outputs.source_version }}
+      BATCH_SIZE: ${{ needs.prepare-snapshot.outputs.batch_size }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix backend
+
+      - name: Read provider total safely
+        id: total
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOTAL="$(node --input-type=module - <<'NODE'
+          import { createPokemonTcgApiClient } from './backend/lib/pokemonTcgApi.js';
+          const client = createPokemonTcgApiClient();
+          const first = await client.fetchPage('cards', { page: 1, pageSize: 1 });
+          if (!Number.isInteger(first.totalCount) || first.totalCount < 1) {
+            throw new Error(`Pokemon TCG API did not provide a usable totalCount: ${first.totalCount}`);
+          }
+          process.stdout.write(String(first.totalCount));
+          NODE
+          )"
+          echo "total=$TOTAL" >> "$GITHUB_OUTPUT"
+          echo "Pokemon TCG Developers API reports $TOTAL English cards"
+
+      - name: Reconcile all English metadata
+        shell: bash
+        env:
+          TOTAL: ${{ steps.total.outputs.total }}
+        run: |
+          set -euo pipefail
+          OFFSET=0
+          while [ "$OFFSET" -lt "$TOTAL" ]; do
+            LIMIT="$BATCH_SIZE"
+            REMAINING=$((TOTAL - OFFSET))
+            if [ "$REMAINING" -lt "$LIMIT" ]; then LIMIT="$REMAINING"; fi
+            echo "Pokemon TCG API English batch offset=$OFFSET limit=$LIMIT total=$TOTAL"
+            npx --no-install tsx scripts/catalogue-ingest.ts run-language \
+              --source=pokemon-tcg-api \
+              --language=en \
+              --offset="$OFFSET" \
+              --limit="$LIMIT" \
+              --runKey="full-metadata:$SNAPSHOT_VERSION:pokemon-tcg-api:en:$OFFSET" \
+              --requestId="github:${{ github.run_id }}:pokemon-tcg-api:en:$OFFSET" \
+              --licenceStatus=approved \
+              --assetLicenceStatus=approved \
+              --writeConcurrency=6 \
+              --target=staging
+            OFFSET=$((OFFSET + LIMIT))
+          done
+
+      - name: Capture reconciled English quality report
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p reports/catalogue-metadata
+          npm run catalogue:quality-report -- --language=en \
+            > reports/catalogue-metadata/en-after-pokemon-tcg.json
+
+      - name: Upload reconciled English report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: catalogue-metadata-en-reconciled-${{ github.run_id }}
+          path: reports/catalogue-metadata/en-after-pokemon-tcg.json
+          if-no-files-found: warn
+          retention-days: 30
+
+  final-status:
+    needs: [prepare-snapshot, import-tcgdex-metadata, reconcile-english-pokemon-tcg]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish run status
+        shell: bash
+        run: |
+          cat <<EOF
+          TCGdex snapshot: ${{ needs.prepare-snapshot.outputs.source_version }}
+          Snapshot preparation: ${{ needs.prepare-snapshot.result }}
+          Five-language TCGdex import: ${{ needs.import-tcgdex-metadata.result }}
+          English Pokemon TCG reconciliation: ${{ needs.reconcile-english-pokemon-tcg.result }}
+          Images were deliberately excluded; this run is metadata-only.
+          EOF
+          test '${{ needs.prepare-snapshot.result }}' = 'success'
+          test '${{ needs.import-tcgdex-metadata.result }}' = 'success'
+          test '${{ needs.reconcile-english-pokemon-tcg.result }}' = 'success'
