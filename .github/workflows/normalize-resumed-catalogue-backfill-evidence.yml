@@ -1,0 +1,170 @@
+name: Run StackR Full Catalogue Metadata Backfill
+
+on:
+  workflow_run:
+    workflows: [Resume StackR Full Catalogue Metadata Backfill]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-normalize-catalogue-evidence-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+env:
+  EXPECTED_VERSION: tcgdex-796afd47e430-full-primary-2026-08-19
+  EXPECTED_SOURCE: tcgdex/server@sha256:796afd47e430f2b537a46aa70b674efe00175ca0b03872e10fb7faeff9e10bc5
+
+jobs:
+  normalize:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'issue_comment' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.actor.login == 'tberridge86'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+    steps:
+      - name: Announce evidence normalisation
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="StackR is normalising and independently validating the five lane artifacts from resumable run **${SOURCE_RUN_ID}** into production-controller evidence run **${GITHUB_RUN_ID}**."
+
+      - name: Download all immutable language lane reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/languages
+          gh run download "$SOURCE_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "stackr-full-catalogue-lane-${SOURCE_RUN_ID}-*" \
+            --dir reports/catalogue/languages
+          find reports/catalogue/languages -maxdepth 4 -type f -print
+
+      - name: Build and enforce the canonical combined report
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const required = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
+          const root = 'reports/catalogue/languages';
+          const expectedVersion = process.env.EXPECTED_VERSION;
+          function walk(directory) {
+            if (!fs.existsSync(directory)) return [];
+            return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+              const item = path.join(directory, entry.name);
+              return entry.isDirectory() ? walk(item) : [item];
+            });
+          }
+          const files = walk(root).filter((file) => file.endsWith('.json'));
+          const parsed = [];
+          const failures = [];
+          for (const file of files) {
+            try {
+              parsed.push({ file, report: JSON.parse(fs.readFileSync(file, 'utf8')) });
+            } catch (error) {
+              failures.push(`invalid_json:${file}:${error.message}`);
+            }
+          }
+          const lanes = [];
+          for (const language of required) {
+            const matches = parsed.filter(({ report }) => (
+              report.version === expectedVersion &&
+              report.stagingProjectRef === 'lmwfhvexfcoyeuoyrlco' &&
+              Array.isArray(report.sources) && report.sources.length === 1 && report.sources[0] === 'tcgdex' &&
+              Array.isArray(report.lanes) &&
+              report.lanes.some((lane) => lane.source === 'tcgdex' && lane.language === language)
+            ));
+            if (matches.length !== 1) {
+              failures.push(`report_count:${language}:${matches.length}`);
+              continue;
+            }
+            const report = matches[0].report;
+            const laneMatches = report.lanes.filter((lane) => lane.source === 'tcgdex' && lane.language === language);
+            if (laneMatches.length !== 1) {
+              failures.push(`lane_count:${language}:${laneMatches.length}`);
+              continue;
+            }
+            const lane = laneMatches[0];
+            if (report.ok !== true) failures.push(`report_not_ok:${language}`);
+            if (Number(report.summary?.failures ?? -1) !== 0) failures.push(`summary_failures:${language}`);
+            if (lane.status !== 'completed') failures.push(`lane_not_completed:${language}`);
+            if (Number(lane.batchesFailed ?? -1) !== 0) failures.push(`failed_batches:${language}`);
+            if (Number(lane.providerTotal ?? 0) <= 0) failures.push(`empty_provider:${language}`);
+            if (Number(lane.recordsCovered ?? -1) !== Number(lane.plannedRecords ?? -2)) {
+              failures.push(`coverage_mismatch:${language}:${lane.recordsCovered}:${lane.plannedRecords}`);
+            }
+            if (Number(lane.batchesCompleted ?? 0) + Number(lane.batchesSkipped ?? 0) !== Number(lane.batchesPlanned ?? -1)) {
+              failures.push(`batch_accounting_mismatch:${language}`);
+            }
+            lanes.push(lane);
+          }
+          const sum = (field) => lanes.reduce((total, lane) => total + Number(lane[field] ?? 0), 0);
+          const combined = {
+            schemaVersion: 1,
+            job: 'stackr-full-catalogue-metadata-backfill',
+            sourceWorkflowRunId: process.env.SOURCE_RUN_ID,
+            evidenceWorkflowRunId: process.env.GITHUB_RUN_ID,
+            startedAt: parsed.map(({ report }) => report.startedAt).filter(Boolean).sort()[0] ?? null,
+            finishedAt: new Date().toISOString(),
+            version: expectedVersion,
+            stagingProjectRef: 'lmwfhvexfcoyeuoyrlco',
+            sources: ['tcgdex'],
+            languages: required,
+            metadataOnly: true,
+            pokemonApiKeyConfigured: false,
+            immutableSource: process.env.EXPECTED_SOURCE,
+            lanes,
+            ok: failures.length === 0,
+            failures,
+            summary: {
+              lanes: lanes.length,
+              failures: failures.length,
+              batchesCompleted: sum('batchesCompleted'),
+              batchesSkipped: sum('batchesSkipped'),
+              batchesFailed: sum('batchesFailed'),
+              recordsCovered: sum('recordsCovered'),
+              providerRecords: sum('providerTotal'),
+            },
+          };
+          fs.writeFileSync('reports/catalogue/full-metadata-backfill.json', JSON.stringify(combined, null, 2) + '\n');
+          console.log(JSON.stringify(combined, null, 2));
+          if (!combined.ok) process.exit(1);
+          NODE
+
+      - name: Upload the production-controller evidence artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-full-catalogue-metadata-${{ github.run_id }}
+          path: reports/catalogue/full-metadata-backfill.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Dispatch guarded staging finalisation and production promotion
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run promote-catalogue-data-production.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            --field confirmation='PROMOTE VERIFIED CATALOGUE TO PRODUCTION' \
+            --field staging_run_id="$GITHUB_RUN_ID"
+
+      - name: Record the immutable evidence handoff
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Five-language catalogue evidence from resumable run **${SOURCE_RUN_ID}** passed independent normalisation in accepted run **${GITHUB_RUN_ID}**. The guarded production controller has been dispatched against that exact evidence artifact."
