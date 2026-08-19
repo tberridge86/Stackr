@@ -1,5 +1,6 @@
 import { ManualCsvSourceAdapter, ManualJsonSourceAdapter } from './manualAdapters';
 import { PikaQianApiSourceAdapter } from './pikaqianAdapter';
+import { PokemonTcgApiSourceAdapter } from './pokemonTcgApiAdapter';
 import { PikaQianSourceAdapter, XimilarResidualScanSourceAdapter } from './providerFileAdapters';
 import { TcgdexSourceAdapter } from './tcgdexAdapter';
 import type { SourceAdapter } from './sourceAdapter';
@@ -42,6 +43,14 @@ export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
       assetLicenceStatus: options.assetLicenceStatus ?? 'under_review',
     });
   }
+  if (source === 'pokemon-tcg-api' || source === 'pokemontcg' || source === 'pokemon-tcg') {
+    return new PokemonTcgApiSourceAdapter({
+      language: options.language ?? 'en',
+      baseUrl: options.baseUrl,
+      licenceStatus: options.licenceStatus ?? 'under_review',
+      assetLicenceStatus: options.assetLicenceStatus ?? 'under_review',
+    });
+  }
   if (source === 'pikaqian') {
     if (!options.file) {
       return new PikaQianApiSourceAdapter({
@@ -65,4 +74,11 @@ export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
   throw new Error(`Unsupported source adapter: ${options.source}`);
 }
 
-export const supportedSourceAdapters = ['manual-csv', 'manual-json', 'tcgdex', 'pikaqian', 'ximilar-residual-scans'];
+export const supportedSourceAdapters = [
+  'manual-csv',
+  'manual-json',
+  'tcgdex',
+  'pokemon-tcg-api',
+  'pikaqian',
+  'ximilar-residual-scans',
+];
