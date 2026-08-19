@@ -44,7 +44,7 @@ jobs:
       RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
       RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
       STACKR_CATALOGUE_IMPORT_TARGET: staging
-      TCGDEX_RELEASE: v2.47.0
+      TCGDEX_IMAGE: tcgdex/server:branch-master
       DO_NOT_TRACK: '1'
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -103,29 +103,35 @@ jobs:
           echo "usable=$usable" >> "$GITHUB_OUTPUT"
           echo "Railway provider context available: $usable"
 
-      - name: Fetch the pinned TCGdex bulk database
-        run: >-
-          git clone
-          --depth 1
-          --branch "$TCGDEX_RELEASE"
-          https://github.com/tcgdex/cards-database.git
-          "$RUNNER_TEMP/tcgdex-cards-database"
+      - name: Pull the official TCGdex server image and lock its digest
+        id: tcgdex_image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull "$TCGDEX_IMAGE"
+          image_ref="$(docker image inspect "$TCGDEX_IMAGE" --format '{{index .RepoDigests 0}}')"
+          if [ -z "$image_ref" ] || [[ "$image_ref" != *@sha256:* ]]; then
+            echo "Unable to resolve an immutable TCGdex image digest." >&2
+            exit 1
+          fi
+          digest="${image_ref##*@}"
+          digest_short="${digest#sha256:}"
+          digest_short="${digest_short:0:12}"
+          version="tcgdex-${digest_short}-pokemon-live-2026-08-19"
+          echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "TCGdex image locked to $image_ref"
 
-      - name: Build the pinned local TCGdex API
-        run: >-
-          docker build
-          --pull
-          --tag stackr-tcgdex-source:${{ github.sha }}
-          "$RUNNER_TEMP/tcgdex-cards-database"
-
-      - name: Start the pinned local TCGdex API
+      - name: Start the immutable local TCGdex API
         run: >-
           docker run
           --detach
           --rm
           --name stackr-tcgdex-source
+          --env MAX_WORKERS=2
           --publish 127.0.0.1:3300:3000
-          stackr-tcgdex-source:${{ github.sha }}
+          "${{ steps.tcgdex_image.outputs.image_ref }}"
 
       - name: Verify the local multilingual source
         shell: bash
@@ -148,6 +154,7 @@ jobs:
           FORCE_FLAG: ${{ inputs.force && '--force' || '' }}
           MAX_RECORDS_VALUE: ${{ inputs.max_records || '' }}
           USE_RAILWAY_CONTEXT: ${{ steps.railway_context.outputs.usable }}
+          CATALOGUE_VERSION: ${{ steps.tcgdex_image.outputs.version }}
         run: |
           set -euo pipefail
           mkdir -p reports/catalogue
@@ -165,7 +172,7 @@ jobs:
             --writeConcurrency=8
             --maxAttempts=3
             --batchPauseMs=250
-            --version=tcgdex-v2.47.0-pokemon-live-2026-08-19
+            "--version=$CATALOGUE_VERSION"
             --output=reports/catalogue/full-metadata-backfill.json
             "${extra_args[@]}"
           )
