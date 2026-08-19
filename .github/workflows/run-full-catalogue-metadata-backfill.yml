@@ -17,6 +17,8 @@ on:
 
 permissions:
   contents: read
+  issues: write
+  pull-requests: write
 
 concurrency:
   group: stackr-railway-full-catalogue-metadata-backfill
@@ -43,6 +45,14 @@ jobs:
       STACKR_BACKFILL_SOURCE_SHA: a65c495fefa6d41e6bda501d2c7ab307bd43bf8c
       DO_NOT_TRACK: '1'
     steps:
+      - name: Announce the trusted operations run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="StackR full metadata backfill run **${GITHUB_RUN_ID}** started from trusted main context against hard-pinned commit \`${STACKR_BACKFILL_SOURCE_SHA}\`."
+
       - name: Check out the hard-pinned reviewed backend commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -197,3 +207,13 @@ jobs:
       - name: Stop the local provider service
         if: always()
         run: docker stop stackr-tcgdex-source || true
+
+      - name: Report the trusted operations result
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="StackR full metadata backfill run **${GITHUB_RUN_ID}** finished with status **${JOB_STATUS}**."
