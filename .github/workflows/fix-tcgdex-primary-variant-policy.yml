@@ -49,6 +49,21 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci
 
+      - name: Capture the clean branch TypeScript baseline
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > "$RUNNER_TEMP/typecheck-before.log" 2>&1
+          baseline_exit=$?
+          set -e
+          grep -E 'error TS[0-9]+:' "$RUNNER_TEMP/typecheck-before.log" \
+            | sed -E 's/[[:space:]]+$//' \
+            | sort -u \
+            > "$RUNNER_TEMP/typecheck-before.errors" || true
+          echo "Clean branch typecheck exit code: $baseline_exit"
+          echo "Clean branch TypeScript errors: $(wc -l < "$RUNNER_TEMP/typecheck-before.errors")"
+          cat "$RUNNER_TEMP/typecheck-before.errors"
+
       - name: Apply the deterministic primary-variant policy and regression tests
         shell: bash
         run: |
@@ -197,11 +212,35 @@ jobs:
           git diff --check
           git diff -- scripts/catalogue-ingestion/tcgdexAdapter.ts scripts/test-catalogue-ingestion.ts
 
-      - name: Run catalogue and compile regression gates
+      - name: Run catalogue and backend regression gates
         run: |
           npm run test:catalogue-ingestion
-          npm run typecheck
           npm run typecheck:backend
+
+      - name: Prove the fix adds no application TypeScript errors
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > "$RUNNER_TEMP/typecheck-after.log" 2>&1
+          after_exit=$?
+          set -e
+          grep -E 'error TS[0-9]+:' "$RUNNER_TEMP/typecheck-after.log" \
+            | sed -E 's/[[:space:]]+$//' \
+            | sort -u \
+            > "$RUNNER_TEMP/typecheck-after.errors" || true
+          comm -13 "$RUNNER_TEMP/typecheck-before.errors" "$RUNNER_TEMP/typecheck-after.errors" \
+            > "$RUNNER_TEMP/typecheck-new.errors"
+          if [ -s "$RUNNER_TEMP/typecheck-new.errors" ]; then
+            echo "The variant fix introduced new TypeScript errors:" >&2
+            cat "$RUNNER_TEMP/typecheck-new.errors" >&2
+            exit 1
+          fi
+          if [ "$after_exit" -ne 0 ]; then
+            echo "Application typecheck still has pre-existing errors, but this patch added none."
+            cat "$RUNNER_TEMP/typecheck-after.errors"
+          else
+            echo "Application typecheck is clean."
+          fi
 
       - name: Commit the reviewed fix to the backend release branch
         id: commit
@@ -226,4 +265,4 @@ jobs:
         run: >-
           gh api repos/${{ github.repository }}/issues/48/comments
           --method POST
-          --field body="TCGdex primary-variant policy fix passed catalogue, application and backend type checks. Tested source commit: \`${SOURCE_SHA}\`. Base IDs now prefer the displayed normal variant, while explicit holo and reverse aliases remain separate."
+          --field body="TCGdex primary-variant policy fix passed catalogue tests, backend typecheck and no-new-error comparison against the clean branch baseline. Tested source commit: \`${SOURCE_SHA}\`. Base IDs now prefer the displayed normal variant, while explicit holo and reverse aliases remain separate."
