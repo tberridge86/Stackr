@@ -22,7 +22,7 @@ permissions:
 
 concurrency:
   group: stackr-railway-full-catalogue-metadata-backfill
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   backfill:
