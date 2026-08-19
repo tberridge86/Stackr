@@ -41,6 +41,7 @@ const startedAt = new Date();
 const checks = [
   command('Root application typecheck', ['run', 'typecheck'], { category: 'compile' }),
   command('Backend typecheck', ['run', 'typecheck:backend'], { category: 'compile' }),
+  command('Backend HTTP and unit tests', ['test', '--prefix', 'backend'], { category: 'api' }),
   command('API contract consistency', ['run', 'check:api-contract'], { category: 'api' }),
   command('StackR API v1 contract tests', ['run', 'test:stackr-api-v1'], { category: 'api' }),
   command('Seller stock-out routing', ['run', 'test:seller-stock-out-routing'], { category: 'commerce' }),
@@ -48,6 +49,7 @@ const checks = [
   command('Catalogue asset pipeline', ['run', 'test:asset-pipeline'], { category: 'catalogue' }),
   command('Catalogue schema', ['run', 'test:catalogue-schema'], { category: 'catalogue' }),
   command('Catalogue ingestion', ['run', 'test:catalogue-ingestion'], { category: 'catalogue' }),
+  command('Pokemon TCG API mirror adapter', ['exec', '--', 'tsx', 'scripts/test-pokemon-tcg-api-adapter.ts'], { category: 'catalogue' }),
   command('Master catalogue importer', ['run', 'test:master-catalogue-importer'], { category: 'catalogue' }),
   command('Recognition orchestrator', ['run', 'test:recognition-orchestrator'], { category: 'recognition' }),
   command('Gateway tests', ['test', '--prefix', 'gateway'], { category: 'gateway' }),
