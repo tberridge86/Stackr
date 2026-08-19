@@ -10,26 +10,19 @@ on:
         required: true
         default: false
         type: boolean
-      max_records:
-        description: Optional per-source/language cap; blank means complete catalogue
-        required: false
-        type: string
 
 permissions:
+  actions: write
   contents: read
   issues: write
   pull-requests: write
 
 concurrency:
-  group: >-
-    ${{ github.event_name == 'issue_comment' &&
-    github.event.comment.body == '/status-stackr-full-metadata-backfill-2026-08-19' &&
-    'stackr-full-catalogue-metadata-status' ||
-    'stackr-railway-full-catalogue-metadata-backfill' }}
-  cancel-in-progress: true
+  group: stackr-legacy-catalogue-command-${{ github.run_id }}
+  cancel-in-progress: false
 
 jobs:
-  backfill:
+  redirect:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
@@ -38,188 +31,22 @@ jobs:
       github.actor == 'tberridge86' &&
       github.event.comment.body == '/run-stackr-full-metadata-backfill-2026-08-19')
     runs-on: ubuntu-latest
-    timeout-minutes: 360
-    environment: staging
-    env:
-      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
-      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
-      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
-      TCGDEX_IMAGE: tcgdex/server:branch-master
-      STACKR_BACKFILL_SOURCE_SHA: a65c495fefa6d41e6bda501d2c7ab307bd43bf8c
-      DO_NOT_TRACK: '1'
+    timeout-minutes: 15
     steps:
-      - name: Announce the trusted operations run
+      - name: Redirect to the immutable resumable workflow
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >-
-          gh api repos/${{ github.repository }}/issues/48/comments
-          --method POST
-          --field body="StackR full primary multilingual metadata backfill run **${GITHUB_RUN_ID}** started against hard-pinned commit \`${STACKR_BACKFILL_SOURCE_SHA}\`."
-
-      - name: Check out the hard-pinned reviewed backend commit
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ env.STACKR_BACKFILL_SOURCE_SHA }}
-          persist-credentials: false
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Confirm the reviewed source identity
-        run: test "$(git rev-parse HEAD)" = "$STACKR_BACKFILL_SOURCE_SHA"
-
-      - name: Install StackR dependencies
-        run: npm ci
-
-      - name: Validate the multilingual plan and promotion rights gate
-        run: npx --no-install tsx scripts/test-full-catalogue-metadata-backfill.ts
-
-      - name: Require the Railway staging backend context
+          FORCE_VALUE: ${{ inputs.force || 'false' }}
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$RAILWAY_API_TOKEN"
-          test -n "$RAILWAY_PROJECT_ID"
-          test -n "$RAILWAY_ENVIRONMENT_ID"
-          test -n "$RAILWAY_BACKEND_SERVICE_ID"
-
-          npx --yes @railway/cli@5.30.1 run \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_BACKEND_SERVICE_ID" \
-            --no-local \
-            node -e '
-              const url = String(process.env.SUPABASE_URL || "");
-              const result = {
-                stagingSupabase: url.includes("lmwfhvexfcoyeuoyrlco"),
-                serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
-                pokemonTcgApiKeyVisibleToRailwayRun: Boolean(process.env.POKEMON_TCG_API_KEY),
-              };
-              console.log(JSON.stringify(result));
-              if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
-            '
-
-      - name: Pull the official TCGdex server image and lock its digest
-        id: tcgdex_image
-        shell: bash
-        run: |
-          set -euo pipefail
-          docker pull "$TCGDEX_IMAGE"
-          image_ref="$(docker image inspect "$TCGDEX_IMAGE" --format '{{index .RepoDigests 0}}')"
-          if [ -z "$image_ref" ] || [[ "$image_ref" != *@sha256:* ]]; then
-            echo "Unable to resolve an immutable TCGdex image digest." >&2
-            exit 1
-          fi
-          digest="${image_ref##*@}"
-          digest_short="${digest#sha256:}"
-          digest_short="${digest_short:0:12}"
-          version="tcgdex-${digest_short}-full-primary-2026-08-19"
-          echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "TCGdex source locked to $image_ref"
-
-      - name: Start the immutable local TCGdex API
-        run: >-
-          docker run
-          --detach
-          --rm
-          --name stackr-tcgdex-source
-          --env MAX_WORKERS=2
-          --env TCGCSV_USER_AGENT=StackR-catalogue-metadata-backfill/1.0
-          --publish 127.0.0.1:3300:3000
-          "${{ steps.tcgdex_image.outputs.image_ref }}"
-
-      - name: Verify all five TCGdex language lanes
-        shell: bash
-        run: |
-          set -euo pipefail
-          for attempt in $(seq 1 360); do
-            if curl --fail --silent http://127.0.0.1:3300/v2/en/cards/swsh3-136 >/dev/null; then
-              break
-            fi
-            if [ "$attempt" = "360" ]; then
-              docker logs stackr-tcgdex-source
-              exit 1
-            fi
-            sleep 2
-          done
-
-          for language in en ja zh-tw zh-cn ko; do
-            count="$(curl --fail --silent "http://127.0.0.1:3300/v2/$language/cards" | node -e '
-              let body="";
-              process.stdin.on("data", chunk => body += chunk);
-              process.stdin.on("end", () => {
-                const value = JSON.parse(body);
-                const rows = Array.isArray(value) ? value : value.data;
-                if (!Array.isArray(rows)) process.exit(1);
-                process.stdout.write(String(rows.length));
-              });
-            ')"
-            echo "$language provider records: $count"
-            test "$count" -gt 0
-          done
-
-      - name: Pull all primary catalogue metadata through Railway staging
-        shell: bash
-        env:
-          FORCE_FLAG: ${{ inputs.force && '--force' || '' }}
-          MAX_RECORDS_VALUE: ${{ inputs.max_records || '' }}
-          CATALOGUE_VERSION: ${{ steps.tcgdex_image.outputs.version }}
-        run: |
-          set -euo pipefail
-          mkdir -p reports/catalogue
-          extra_args=()
-          if [ -n "$FORCE_FLAG" ]; then extra_args+=("$FORCE_FLAG"); fi
-          if [ -n "$MAX_RECORDS_VALUE" ]; then extra_args+=("--maxRecords=$MAX_RECORDS_VALUE"); fi
-
-          npx --yes @railway/cli@5.30.1 run \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_BACKEND_SERVICE_ID" \
-            --no-local \
-            env STACKR_CATALOGUE_IMPORT_TARGET=staging \
-            npx --no-install tsx scripts/full-catalogue-metadata-backfill.ts \
-              --sources=tcgdex \
-              --languages=en,ja,zh-tw,zh-cn,ko \
-              --tcgdexBaseUrl=http://127.0.0.1:3300/v2 \
-              --batchSize=1000 \
-              --writeConcurrency=8 \
-              --maxAttempts=3 \
-              --batchPauseMs=250 \
-              "--version=$CATALOGUE_VERSION" \
-              --output=reports/catalogue/full-metadata-backfill.json \
-              "${extra_args[@]}"
-
-      - name: Upload the complete progress and residual report
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: stackr-full-catalogue-metadata-${{ github.run_id }}
-          path: reports/catalogue/full-metadata-backfill.json
-          if-no-files-found: warn
-          retention-days: 30
-          compression-level: 9
-
-      - name: Print TCGdex diagnostics after a failure
-        if: failure()
-        run: docker logs stackr-tcgdex-source || true
-
-      - name: Stop the local provider service
-        if: always()
-        run: docker stop stackr-tcgdex-source || true
-
-      - name: Report the trusted operations result
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-          JOB_STATUS: ${{ job.status }}
-        run: >-
-          gh api repos/${{ github.repository }}/issues/48/comments
-          --method POST
-          --field body="StackR full primary multilingual metadata backfill run **${GITHUB_RUN_ID}** finished with status **${JOB_STATUS}**."
+          gh workflow run resume-full-catalogue-metadata-backfill.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            --field force="$FORCE_VALUE"
+          gh api repos/${GITHUB_REPOSITORY}/issues/48/comments \
+            --method POST \
+            --field body="The legacy catalogue command was redirected to the immutable resumable workflow. It no longer shares a cancelling concurrency group with unrelated PR comments."
 
   status:
     if: >-
@@ -237,77 +64,46 @@ jobs:
       RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
       RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
       GH_TOKEN: ${{ github.token }}
-      DO_NOT_TRACK: '1'
     steps:
-      - name: Query current staging import progress through Railway
+      - name: Query the pinned staging batch ledger
         shell: bash
         run: |
           set -euo pipefail
           cat > "$RUNNER_TEMP/stackr-metadata-status.mjs" <<'NODE'
-          const url = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
+          import { createClient } from '@supabase/supabase-js';
+          const url = String(process.env.SUPABASE_URL || '');
           const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '');
-          if (!url.includes('lmwfhvexfcoyeuoyrlco') || !key) {
-            throw new Error('Railway staging catalogue credentials are unavailable.');
-          }
-
-          async function rest(schema, table, query) {
-            const headers = { apikey: key, 'Accept-Profile': schema };
-            if (key.split('.').length === 3) headers.Authorization = `Bearer ${key}`;
-            const response = await fetch(`${url}/rest/v1/${table}?${query}`, { headers });
-            const text = await response.text();
-            if (!response.ok) throw new Error(`${schema}.${table} returned ${response.status}: ${text.slice(0, 300)}`);
-            return text ? JSON.parse(text) : [];
-          }
-
-          const sources = await rest('ingest', 'sources', 'select=id,code&code=eq.tcgdex&limit=1');
-          const sourceId = sources[0]?.id;
+          if (!url.includes('lmwfhvexfcoyeuoyrlco') || !key) throw new Error('staging_catalogue_credentials_unavailable');
+          const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+          const { data: sources, error: sourceError } = await db.schema('ingest').from('sources').select('id,code').eq('code', 'tcgdex').limit(1);
+          if (sourceError) throw sourceError;
+          const sourceId = sources?.[0]?.id;
           if (!sourceId) {
-            console.log(JSON.stringify({ expectedBatches: 47, observedBatches: 0, status: 'not_started' }));
+            console.log(JSON.stringify({ expectedBatches: 47, observedBatches: 0, statuses: {}, byLanguage: {} }));
             process.exit(0);
           }
-
-          const fields = [
-            'run_key', 'status', 'records_requested', 'records_retrieved',
-            'records_inserted', 'records_updated', 'records_skipped',
-            'records_conflicted', 'started_at', 'finished_at', 'error_message'
-          ].join(',');
-          const query = new URLSearchParams({
-            select: fields,
-            source_id: `eq.${sourceId}`,
-            run_key: 'ilike.*full-primary-2026-08-19*',
-            order: 'started_at.asc',
-          });
-          const runs = await rest('ingest', 'import_runs', query.toString());
-          const byLanguage = {};
-          const totals = {
-            requested: 0, retrieved: 0, inserted: 0, updated: 0,
-            skipped: 0, conflicted: 0,
-          };
+          const { data: runs, error } = await db.schema('ingest').from('import_runs')
+            .select('run_key,status,records_requested,records_retrieved,records_inserted,records_updated,records_skipped,records_conflicted,error_message')
+            .eq('source_id', sourceId)
+            .ilike('run_key', '%tcgdex-796afd47e430-full-primary-2026-08-19%')
+            .order('started_at', { ascending: true });
+          if (error) throw error;
           const statuses = { completed: 0, running: 0, failed: 0, other: 0 };
+          const totals = { requested: 0, retrieved: 0, inserted: 0, updated: 0, skipped: 0, conflicted: 0 };
+          const byLanguage = {};
           const errors = [];
-          for (const run of runs) {
+          for (const run of runs || []) {
             const language = String(run.run_key || '').split(':')[2] || 'unknown';
-            byLanguage[language] ??= { completed: 0, running: 0, failed: 0, recordsRetrieved: 0 };
-            if (run.status in statuses) statuses[run.status] += 1;
-            else statuses.other += 1;
-            if (run.status in byLanguage[language]) byLanguage[language][run.status] += 1;
+            byLanguage[language] ??= { completed: 0, running: 0, failed: 0, other: 0, recordsRetrieved: 0, conflicts: 0 };
+            const state = Object.prototype.hasOwnProperty.call(statuses, run.status) ? run.status : 'other';
+            statuses[state] += 1;
+            byLanguage[language][state] += 1;
             byLanguage[language].recordsRetrieved += Number(run.records_retrieved || 0);
-            totals.requested += Number(run.records_requested || 0);
-            totals.retrieved += Number(run.records_retrieved || 0);
-            totals.inserted += Number(run.records_inserted || 0);
-            totals.updated += Number(run.records_updated || 0);
-            totals.skipped += Number(run.records_skipped || 0);
-            totals.conflicted += Number(run.records_conflicted || 0);
+            byLanguage[language].conflicts += Number(run.records_conflicted || 0);
+            for (const field of Object.keys(totals)) totals[field] += Number(run[`records_${field}`] || 0);
             if (run.error_message) errors.push(String(run.error_message).slice(0, 240));
           }
-          console.log(JSON.stringify({
-            expectedBatches: 47,
-            observedBatches: runs.length,
-            statuses,
-            totals,
-            byLanguage,
-            recentErrors: errors.slice(-3),
-          }));
+          console.log(JSON.stringify({ expectedBatches: 47, observedBatches: (runs || []).length, statuses, totals, byLanguage, recentErrors: errors.slice(-3) }));
           NODE
 
           status_json="$(
@@ -316,27 +112,23 @@ jobs:
               --environment "$RAILWAY_ENVIRONMENT_ID" \
               --service "$RAILWAY_BACKEND_SERVICE_ID" \
               --no-local \
-              node "$RUNNER_TEMP/stackr-metadata-status.mjs" \
+              npx --yes --package=@supabase/supabase-js@2.105.1 node "$RUNNER_TEMP/stackr-metadata-status.mjs" \
               | tail -n 1
           )"
           body="$(STATUS_JSON="$status_json" node - <<'NODE'
           const status = JSON.parse(process.env.STATUS_JSON);
-          const states = status.statuses || {};
-          const totals = status.totals || {};
           const lanes = Object.entries(status.byLanguage || {})
-            .map(([language, value]) => `- ${language}: ${value.completed || 0} completed, ${value.running || 0} running, ${value.failed || 0} failed; ${value.recordsRetrieved || 0} records retrieved`)
+            .map(([language, value]) => `- ${language}: ${value.completed || 0} completed, ${value.running || 0} running, ${value.failed || 0} failed; retrieved ${value.recordsRetrieved || 0}; conflicts ${value.conflicts || 0}`)
             .join('\n');
-          const errors = (status.recentErrors || []).map((error) => `- ${error}`).join('\n');
           console.log([
-            `### StackR metadata backfill status`,
+            '### StackR pinned metadata backfill status',
             `- Batches observed: **${status.observedBatches || 0} / ${status.expectedBatches || 47}**`,
-            `- Completed: **${states.completed || 0}**; running: **${states.running || 0}**; failed: **${states.failed || 0}**`,
-            `- Records retrieved: **${totals.retrieved || 0}**; inserted: **${totals.inserted || 0}**; updated: **${totals.updated || 0}**; conflicts: **${totals.conflicted || 0}**`,
-            lanes ? `\n${lanes}` : '',
-            errors ? `\nRecent errors:\n${errors}` : '',
-          ].filter(Boolean).join('\n');
+            `- Completed: **${status.statuses?.completed || 0}**; running: **${status.statuses?.running || 0}**; failed: **${status.statuses?.failed || 0}**`,
+            `- Records retrieved: **${status.totals?.retrieved || 0}**; conflicts: **${status.totals?.conflicted || 0}**`,
+            lanes,
+          ].filter(Boolean).join('\n'));
           NODE
           )"
-          gh api repos/${{ github.repository }}/issues/48/comments \
+          gh api repos/${GITHUB_REPOSITORY}/issues/48/comments \
             --method POST \
             --field body="$body"
