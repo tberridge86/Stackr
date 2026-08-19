@@ -8,6 +8,13 @@ on:
       - scripts/full-catalogue-metadata-backfill.ts
       - scripts/test-full-catalogue-metadata-backfill.ts
       - scripts/catalogue-ingestion/**
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/full-catalogue-metadata-backfill.yml
+      - scripts/full-catalogue-metadata-backfill.ts
+      - scripts/test-full-catalogue-metadata-backfill.ts
+      - scripts/catalogue-ingestion/**
   workflow_dispatch:
     inputs:
       force:
@@ -29,6 +36,9 @@ concurrency:
 
 jobs:
   backfill:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.head_ref == 'backend/release-hardening-2026-08-19'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: staging
