@@ -73,7 +73,7 @@ jobs:
       - name: Validate the multilingual plan and promotion rights gate
         run: npx --no-install tsx scripts/test-full-catalogue-metadata-backfill.ts
 
-      - name: Require the Railway staging backend context and provider key
+      - name: Require the Railway staging backend context
         shell: bash
         run: |
           set -euo pipefail
@@ -89,13 +89,15 @@ jobs:
             --no-local \
             node -e '
               const url = String(process.env.SUPABASE_URL || "");
+              const pokemonTcgApiKey = Boolean(process.env.POKEMON_TCG_API_KEY);
               const result = {
                 stagingSupabase: url.includes("lmwfhvexfcoyeuoyrlco"),
                 serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
-                pokemonTcgApiKey: Boolean(process.env.POKEMON_TCG_API_KEY),
+                pokemonTcgApiKey,
+                englishReconciliationMode: pokemonTcgApiKey ? "authenticated" : "bounded-anonymous",
               };
               console.log(JSON.stringify(result));
-              if (!result.stagingSupabase || !result.serviceCredential || !result.pokemonTcgApiKey) process.exit(1);
+              if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
             '
 
       - name: Pull the official TCGdex server image and lock its digest
