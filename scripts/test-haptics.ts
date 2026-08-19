@@ -45,11 +45,19 @@ async function main() {
 
   assert.match(
     mainScanner,
-    /(?:stackrHaptics\.|Haptics\.(?:impactAsync|notificationAsync|selectionAsync))/, 
+    /(?:stackrHaptics\.|Haptics\.(?:impactAsync|notificationAsync|selectionAsync))/,
     'the routed main scanner must retain tactile feedback',
   );
-  assert.match(scanResult, /eventType:\s*'added_to_binder'/);
-  assert.match(scanResult, /eventType:\s*'duplicate_prevented'/);
+  assert.match(
+    mainScanner,
+    /logScannerLifecycleEvent\(\s*'duplicate_prevented'/,
+    'duplicate capture prevention must remain connected to the distinct rigid haptic mapping',
+  );
+  assert.match(
+    scanResult,
+    /logResultFeedback\(\s*'added_to_binder'/,
+    'adding a confirmed scan result to a binder must remain connected to the card-added haptic mapping',
+  );
 
   console.log('StackR haptic vocabulary and scanner/result embedding checks passed.');
 }
