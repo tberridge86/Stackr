@@ -1,0 +1,40 @@
+name: Stackr Catalogue Repair Worker CI
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/repair-tcgdex-language-assets.ts'
+      - 'scripts/test-repair-tcgdex-language-assets.ts'
+      - 'scripts/catalogue-ingestion/**'
+      - '.github/workflows/catalogue-repair-worker-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/repair-tcgdex-language-assets.ts'
+      - 'scripts/test-repair-tcgdex-language-assets.ts'
+      - 'scripts/catalogue-ingestion/**'
+      - '.github/workflows/catalogue-repair-worker-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-catalogue-repair-worker-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck worker and catalogue interfaces
+        run: npm run typecheck
+      - name: Run repair-worker regression tests
+        run: npx --no-install tsx scripts/test-repair-tcgdex-language-assets.ts
