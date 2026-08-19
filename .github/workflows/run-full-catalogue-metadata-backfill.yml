@@ -1,10 +1,9 @@
 name: Run StackR Full Catalogue Metadata Backfill
 
 on:
-  push:
+  pull_request_target:
     branches: [main]
-    paths:
-      - .github/workflows/run-full-catalogue-metadata-backfill.yml
+    types: [synchronize]
   workflow_dispatch:
     inputs:
       force:
@@ -26,7 +25,12 @@ concurrency:
 
 jobs:
   backfill:
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request_target' &&
+      github.actor == 'tberridge86' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'backend/release-hardening-2026-08-19')
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: staging
@@ -36,18 +40,22 @@ jobs:
       RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
       RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
       TCGDEX_IMAGE: tcgdex/server:branch-master
-      STACKR_BACKFILL_SOURCE_BRANCH: backend/release-hardening-2026-08-19
+      STACKR_BACKFILL_SOURCE_SHA: a65c495fefa6d41e6bda501d2c7ab307bd43bf8c
       DO_NOT_TRACK: '1'
     steps:
-      - name: Check out the reviewed backend backfill branch
+      - name: Check out the hard-pinned reviewed backend commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: ${{ env.STACKR_BACKFILL_SOURCE_BRANCH }}
+          ref: ${{ env.STACKR_BACKFILL_SOURCE_SHA }}
+          persist-credentials: false
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: 22
           cache: npm
+
+      - name: Confirm the reviewed source identity
+        run: test "$(git rev-parse HEAD)" = "$STACKR_BACKFILL_SOURCE_SHA"
 
       - name: Install StackR dependencies
         run: npm ci
