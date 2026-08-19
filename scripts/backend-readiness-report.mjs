@@ -51,6 +51,7 @@ const checks = [
   command('Catalogue ingestion', ['run', 'test:catalogue-ingestion'], { category: 'catalogue' }),
   command('Pokemon TCG API mirror adapter', ['exec', '--', 'tsx', 'scripts/test-pokemon-tcg-api-adapter.ts'], { category: 'catalogue' }),
   command('Catalogue mirror queue worker', ['exec', '--', 'tsx', 'scripts/test-catalogue-mirror-queue-worker.ts'], { category: 'catalogue' }),
+  command('Full multilingual metadata backfill plan', ['exec', '--', 'tsx', 'scripts/test-full-catalogue-metadata-backfill.ts'], { category: 'catalogue' }),
   command('Master catalogue importer', ['run', 'test:master-catalogue-importer'], { category: 'catalogue' }),
   command('Recognition orchestrator', ['run', 'test:recognition-orchestrator'], { category: 'recognition' }),
   command('Gateway tests', ['test', '--prefix', 'gateway'], { category: 'gateway' }),
