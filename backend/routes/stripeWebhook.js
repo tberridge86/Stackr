@@ -40,6 +40,12 @@ function stripeSignature(req) {
   return clean(Array.isArray(value) ? value[0] : value);
 }
 
+function rawWebhookBody(req) {
+  if (Buffer.isBuffer(req.body)) return req.body;
+  if (Buffer.isBuffer(req.stackrRawBody)) return req.stackrRawBody;
+  return null;
+}
+
 function boundedMetadata(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
   const metadata = {};
@@ -103,7 +109,8 @@ export function createStripeWebhookHandler({
         'Stripe-Signature is required.',
       );
     }
-    if (!Buffer.isBuffer(req.body)) {
+    const rawBody = rawWebhookBody(req);
+    if (!rawBody) {
       logger.error?.({
         event: 'stripe_webhook_raw_body_missing',
         requestId: requestIdFrom(req),
@@ -119,7 +126,7 @@ export function createStripeWebhookHandler({
 
     let event;
     try {
-      event = stripeClient.webhooks.constructEvent(req.body, signature, webhookSecret);
+      event = stripeClient.webhooks.constructEvent(rawBody, signature, webhookSecret);
     } catch (error) {
       logger.warn?.({
         event: 'stripe_webhook_signature_rejected',
@@ -207,6 +214,7 @@ export const stripeWebhookInternals = {
   boundedMetadata,
   eventCreatedAt,
   paymentFailureCode,
+  rawWebhookBody,
   stripeSignature,
 };
 
