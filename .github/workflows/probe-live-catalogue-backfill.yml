@@ -1,0 +1,180 @@
+name: Probe StackR Catalogue Backfill Ledger
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-catalogue-ledger-probe-${{ github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.number == 48 &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/probe-stackr-catalogue-ledger-2026-08-19')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      CATALOGUE_VERSION: tcgdex-796afd47e430-full-primary-2026-08-19
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Announce the read-only probe
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Read-only staging catalogue ledger probe **${GITHUB_RUN_ID}** started. No catalogue or production rows will be changed."
+
+      - name: Check out the reviewed dependency lock
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: a65c495fefa6d41e6bda501d2c7ab307bd43bf8c
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install the pinned Supabase client
+        run: npm ci
+
+      - name: Read the exact pinned batch ledger through Railway staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          cat > "$RUNNER_TEMP/probe-catalogue-ledger.mjs" <<'NODE'
+          import { writeFileSync } from 'node:fs';
+          import { createClient } from '@supabase/supabase-js';
+
+          const url = String(process.env.SUPABASE_URL || '');
+          const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '');
+          const version = process.env.CATALOGUE_VERSION;
+          if (!url.includes('lmwfhvexfcoyeuoyrlco') || !key) {
+            throw new Error('canonical_staging_credentials_unavailable');
+          }
+          const db = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+          const { data: sources, error: sourceError } = await db
+            .schema('ingest').from('sources').select('id,code').eq('code', 'tcgdex').limit(1);
+          if (sourceError) throw sourceError;
+          const sourceId = sources?.[0]?.id;
+          if (!sourceId) throw new Error('tcgdex_source_missing');
+
+          const { data: runs, error: runError } = await db
+            .schema('ingest').from('import_runs')
+            .select('id,run_key,status,records_requested,records_retrieved,records_inserted,records_updated,records_skipped,records_conflicted,started_at,finished_at,error_message')
+            .eq('source_id', sourceId)
+            .ilike('run_key', `%${version}%`)
+            .order('started_at', { ascending: true });
+          if (runError) throw runError;
+
+          const expected = { en: 24, ja: 13, 'zh-tw': 8, 'zh-cn': 1, ko: 1 };
+          const byLanguage = Object.fromEntries(Object.keys(expected).map((language) => [language, {
+            expectedBatches: expected[language], observedBatches: 0, completed: 0, running: 0,
+            failed: 0, other: 0, retrieved: 0, inserted: 0, updated: 0, skipped: 0,
+            conflicted: 0, latestStartedAt: null, latestFinishedAt: null,
+          }]));
+          const recentErrors = [];
+          for (const run of runs || []) {
+            const parts = String(run.run_key || '').split(':');
+            const language = parts[3] || parts[2] || 'unknown';
+            const lane = byLanguage[language] ??= {
+              expectedBatches: 0, observedBatches: 0, completed: 0, running: 0,
+              failed: 0, other: 0, retrieved: 0, inserted: 0, updated: 0, skipped: 0,
+              conflicted: 0, latestStartedAt: null, latestFinishedAt: null,
+            };
+            lane.observedBatches += 1;
+            const state = ['completed', 'running', 'failed'].includes(run.status) ? run.status : 'other';
+            lane[state] += 1;
+            lane.retrieved += Number(run.records_retrieved || 0);
+            lane.inserted += Number(run.records_inserted || 0);
+            lane.updated += Number(run.records_updated || 0);
+            lane.skipped += Number(run.records_skipped || 0);
+            lane.conflicted += Number(run.records_conflicted || 0);
+            if (run.started_at && (!lane.latestStartedAt || run.started_at > lane.latestStartedAt)) lane.latestStartedAt = run.started_at;
+            if (run.finished_at && (!lane.latestFinishedAt || run.finished_at > lane.latestFinishedAt)) lane.latestFinishedAt = run.finished_at;
+            if (run.error_message) recentErrors.push({ language, runKey: run.run_key, error: String(run.error_message).slice(0, 400) });
+          }
+          const totals = Object.values(byLanguage).reduce((acc, lane) => {
+            for (const field of ['expectedBatches','observedBatches','completed','running','failed','other','retrieved','inserted','updated','skipped','conflicted']) {
+              acc[field] += Number(lane[field] || 0);
+            }
+            return acc;
+          }, { expectedBatches: 0, observedBatches: 0, completed: 0, running: 0, failed: 0, other: 0, retrieved: 0, inserted: 0, updated: 0, skipped: 0, conflicted: 0 });
+          const report = {
+            schemaVersion: 1,
+            probedAt: new Date().toISOString(),
+            projectRef: 'lmwfhvexfcoyeuoyrlco',
+            version,
+            readOnly: true,
+            totals,
+            byLanguage,
+            recentErrors: recentErrors.slice(-10),
+          };
+          writeFileSync('reports/catalogue/live-ledger.json', JSON.stringify(report, null, 2) + '\n');
+          console.log(JSON.stringify(report));
+          NODE
+
+          ledger_json="$(
+            npx --yes @railway/cli@5.30.1 run \
+              --project "$RAILWAY_PROJECT_ID" \
+              --environment "$RAILWAY_ENVIRONMENT_ID" \
+              --service "$RAILWAY_BACKEND_SERVICE_ID" \
+              --no-local \
+              env CATALOGUE_VERSION="$CATALOGUE_VERSION" \
+              node "$RUNNER_TEMP/probe-catalogue-ledger.mjs" \
+              | tail -n 1
+          )"
+          echo "$ledger_json" > reports/catalogue/live-ledger-compact.json
+
+          body="$(LEDGER_JSON="$ledger_json" node <<'NODE'
+          const report = JSON.parse(process.env.LEDGER_JSON);
+          const t = report.totals;
+          const lanes = Object.entries(report.byLanguage).map(([language, lane]) => (
+            `- **${language}**: ${lane.completed}/${lane.expectedBatches} completed, ${lane.running} running, ${lane.failed} failed; ` +
+            `${lane.retrieved} retrieved, ${lane.inserted} inserted, ${lane.updated} updated, ${lane.conflicted} conflicts`
+          )).join('\n');
+          const errors = report.recentErrors.length
+            ? `\nRecent errors:\n${report.recentErrors.map((item) => `- ${item.language}: ${item.error}`).join('\n')}`
+            : '';
+          process.stdout.write([
+            '### StackR staging catalogue ledger',
+            `- Version: \`${report.version}\``,
+            `- Batches: **${t.completed}/${t.expectedBatches} completed**, ${t.running} running, ${t.failed} failed`,
+            `- Records: **${t.retrieved} retrieved**, ${t.inserted} inserted, ${t.updated} updated`,
+            `- Recorded conflicts: **${t.conflicted}**`,
+            '',
+            lanes,
+            errors,
+          ].join('\n'));
+          NODE
+          )"
+          gh api repos/${GITHUB_REPOSITORY}/issues/48/comments \
+            --method POST \
+            --field body="$body"
+
+      - name: Upload the read-only ledger evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-catalogue-live-ledger-${{ github.run_id }}
+          path: reports/catalogue/live-ledger*.json
+          if-no-files-found: warn
+          retention-days: 7
+          compression-level: 9
