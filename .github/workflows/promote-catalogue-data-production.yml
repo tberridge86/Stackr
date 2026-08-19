@@ -1,0 +1,528 @@
+name: Finalize and Promote StackR Catalogue Data
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type PROMOTE VERIFIED CATALOGUE TO PRODUCTION
+        required: true
+        type: string
+      staging_run_id:
+        description: Successful full multilingual staging backfill run ID
+        required: true
+        default: '32295826189'
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-production-catalogue-data-promotion
+  cancel-in-progress: false
+
+env:
+  EXPECTED_STAGING_RUN_ID: '32295826189'
+  STACKR_BACKFILL_SOURCE_SHA: a65c495fefa6d41e6bda501d2c7ab307bd43bf8c
+  STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+  PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+  DO_NOT_TRACK: '1'
+
+jobs:
+  finalize_staging:
+    if: >-
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.number == 48 &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/promote-stackr-catalogue-production-2026-08-19') ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'PROMOTE VERIFIED CATALOGUE TO PRODUCTION')
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: staging
+    outputs:
+      catalogue_release_label: ${{ steps.verify_report.outputs.catalogue_release_label }}
+      staging_run_id: ${{ steps.resolve_run.outputs.staging_run_id }}
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+    steps:
+      - name: Announce the guarded staging finalisation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="StackR catalogue production controller run **${GITHUB_RUN_ID}** has started. It will not touch production unless staging backfill **${EXPECTED_STAGING_RUN_ID}** completes successfully and all five release snapshots publish cleanly."
+
+      - name: Resolve the exact staging backfill run
+        id: resolve_run
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_id="$EXPECTED_STAGING_RUN_ID"
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            run_id="${{ inputs.staging_run_id }}"
+          fi
+          if ! [[ "$run_id" =~ ^[0-9]+$ ]]; then
+            echo "Invalid staging workflow run ID." >&2
+            exit 1
+          fi
+          echo "staging_run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "STAGING_RUN_ID=$run_id" >> "$GITHUB_ENV"
+
+      - name: Wait for and verify the full staging backfill
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 600); do
+            run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STAGING_RUN_ID}")"
+            status="$(jq -r '.status' <<<"$run_json")"
+            conclusion="$(jq -r '.conclusion // ""' <<<"$run_json")"
+            workflow_name="$(jq -r '.name' <<<"$run_json")"
+            if [ "$workflow_name" != "Run StackR Full Catalogue Metadata Backfill" ]; then
+              echo "Run $STAGING_RUN_ID belongs to the wrong workflow: $workflow_name" >&2
+              exit 1
+            fi
+            if [ "$status" = "completed" ]; then
+              if [ "$conclusion" != "success" ]; then
+                echo "Staging backfill $STAGING_RUN_ID completed with $conclusion." >&2
+                exit 1
+              fi
+              echo "Staging backfill $STAGING_RUN_ID completed successfully."
+              exit 0
+            fi
+            if [ $((attempt % 10)) -eq 0 ]; then
+              echo "Staging backfill remains $status after $attempt checks."
+            fi
+            sleep 30
+          done
+          echo "Staging backfill did not complete inside the guarded controller window." >&2
+          exit 1
+
+      - name: Download the immutable staging backfill report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/staging-backfill"
+          gh run download "$STAGING_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "stackr-full-catalogue-metadata-$STAGING_RUN_ID" \
+            --dir "$RUNNER_TEMP/staging-backfill"
+          report_path="$(find "$RUNNER_TEMP/staging-backfill" -type f -name full-metadata-backfill.json -print -quit)"
+          test -n "$report_path"
+          echo "BACKFILL_REPORT_PATH=$report_path" >> "$GITHUB_ENV"
+
+      - name: Verify complete five-language coverage and release identity
+        id: verify_report
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync(process.env.BACKFILL_REPORT_PATH, 'utf8'));
+          const required = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
+          const failures = [];
+          if (report.ok !== true) failures.push('report_not_ok');
+          if (Number(report.summary?.failures ?? -1) !== 0) failures.push('reported_failures');
+          const lanes = Array.isArray(report.lanes)
+            ? report.lanes.filter((lane) => lane.source === 'tcgdex')
+            : [];
+          for (const language of required) {
+            const matches = lanes.filter((lane) => lane.language === language);
+            if (matches.length !== 1) {
+              failures.push(`lane_count_${language}_${matches.length}`);
+              continue;
+            }
+            const lane = matches[0];
+            if (lane.status !== 'completed') failures.push(`lane_not_completed_${language}`);
+            if (Number(lane.batchesFailed ?? 0) !== 0) failures.push(`failed_batches_${language}`);
+            if (Number(lane.providerTotal ?? 0) <= 0) failures.push(`empty_provider_${language}`);
+            if (Number(lane.recordsCovered ?? -1) !== Number(lane.plannedRecords ?? -2)) {
+              failures.push(`coverage_mismatch_${language}`);
+            }
+          }
+          const label = String(report.version ?? '').trim();
+          if (!/^[0-9A-Za-z._:-]+$/.test(label)) failures.push('invalid_release_label');
+          if (failures.length) {
+            console.error(JSON.stringify({ ok: false, failures }, null, 2));
+            process.exit(1);
+          }
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `catalogue_release_label=${label}\n`);
+          fs.appendFileSync(process.env.GITHUB_ENV, `CATALOGUE_RELEASE_LABEL=${label}\n`);
+          console.log(JSON.stringify({
+            ok: true,
+            releaseLabel: label,
+            languages: required,
+            providerTotals: Object.fromEntries(lanes.map((lane) => [lane.language, lane.providerTotal])),
+          }, null, 2));
+          NODE
+
+      - name: Check out the reviewed catalogue implementation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.STACKR_BACKFILL_SOURCE_SHA }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Confirm reviewed source and install dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$STACKR_BACKFILL_SOURCE_SHA"
+          npm ci
+
+      - name: Re-run catalogue publication tests
+        run: |
+          npx --no-install tsx scripts/test-full-catalogue-metadata-backfill.ts
+          npm run test:catalogue-ingestion
+          npm run test:master-catalogue-importer
+
+      - name: Verify the Railway staging database context
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RAILWAY_API_TOKEN"
+          test -n "$RAILWAY_PROJECT_ID"
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_BACKEND_SERVICE_ID"
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            node -e '
+              const url = String(process.env.SUPABASE_URL || "");
+              const result = {
+                stagingSupabase: url.includes("lmwfhvexfcoyeuoyrlco"),
+                serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
+              };
+              console.log(JSON.stringify(result));
+              if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
+            '
+
+      - name: Publish the five staging release snapshots in guarded order
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/finalized
+          for language in en ja zh-tw zh-cn ko; do
+            echo "Publishing $language release snapshot $CATALOGUE_RELEASE_LABEL"
+            npx --yes @railway/cli@5.30.1 run \
+              --project "$RAILWAY_PROJECT_ID" \
+              --environment "$RAILWAY_ENVIRONMENT_ID" \
+              --service "$RAILWAY_BACKEND_SERVICE_ID" \
+              --no-local \
+              env STACKR_CATALOGUE_IMPORT_TARGET=staging \
+              npx --no-install tsx scripts/catalogue-master.ts publish \
+                --target=staging \
+                "--language=$language" \
+                "--version=$CATALOGUE_RELEASE_LABEL" \
+                --coverage-limited \
+                "--reportDir=reports/catalogue/finalized/$language" \
+              | tee "reports/catalogue/finalized/publish-$language.log"
+          done
+
+      - name: Generate the post-publication staging catalogue report
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            env STACKR_CATALOGUE_IMPORT_TARGET=staging \
+            npx --no-install tsx scripts/catalogue-master.ts report \
+              --target=staging \
+              --languages=en,ja,zh-tw,zh-cn,ko \
+              --reportDir=reports/catalogue/finalized
+
+      - name: Upload staging finalisation evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-staging-catalogue-finalized-${{ github.run_id }}
+          path: reports/catalogue/finalized
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+  promote_production:
+    needs: finalize_staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: production
+    env:
+      CATALOGUE_RELEASE_LABEL: ${{ needs.finalize_staging.outputs.catalogue_release_label }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.STACKR_GITHUB_PRODUCTION_BACKUPS || secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_STAGING_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+      SUPABASE_STAGING_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      SUPABASE_PRODUCTION_SECRET_KEY: ${{ secrets.SUPABASE_PRODUCTION_SECRET_KEY }}
+      SUPABASE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+      STACKR_MIGRATION_BASELINE_APPROVED: ${{ vars.STACKR_MIGRATION_BASELINE_APPROVED }}
+      STACKR_STORAGE_BACKUP_APPROVED: ${{ vars.STACKR_STORAGE_BACKUP_APPROVED }}
+    steps:
+      - name: Announce production promotion entry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Five staging catalogue snapshots for release \`${CATALOGUE_RELEASE_LABEL}\` passed publication. Production data promotion run **${GITHUB_RUN_ID}** is entering backup, migration and exact-transfer gates."
+
+      - name: Check out the reviewed catalogue implementation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.STACKR_BACKFILL_SOURCE_SHA }}
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Re-run production data release checks
+        run: |
+          npm run typecheck
+          npm run test:catalogue-schema
+          npm run test:catalogue-ingestion
+          npm run test:master-catalogue-importer
+          npm run test:database-migrations
+          npm run test:deployment
+          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
+
+      - name: Verify project-specific database and storage credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CATALOGUE_RELEASE_LABEL"
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          test -n "$SUPABASE_DB_URL"
+          test -n "$SUPABASE_STAGING_DB_URL"
+          test -n "$SUPABASE_STAGING_SECRET_KEY"
+          test -n "$SUPABASE_PRODUCTION_SECRET_KEY"
+          node --input-type=module <<'NODE'
+          import { createClient } from '@supabase/supabase-js';
+          const projects = [
+            ['staging', 'lmwfhvexfcoyeuoyrlco', process.env.SUPABASE_STAGING_SECRET_KEY],
+            ['production', 'oakdbbzdqwurpjnoqhmu', process.env.SUPABASE_PRODUCTION_SECRET_KEY],
+          ];
+          for (const [name, ref, key] of projects) {
+            const client = createClient(`https://${ref}.supabase.co`, key, {
+              auth: { persistSession: false, autoRefreshToken: false },
+            });
+            const { error } = await client.storage.listBuckets();
+            if (error) throw new Error(`${name}_supabase_secret_key_rejected:${error.message}`);
+            console.log(JSON.stringify({ project: name, ref, credentialAccepted: true }));
+          }
+          NODE
+
+      - name: List the latest production physical backup
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stackr-backup"
+          npx --yes supabase@2.110.0 backups list \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --output-format json \
+            > "$RUNNER_TEMP/stackr-backup/physical.json"
+
+      - name: Prepare the normalized production database URL
+        run: node scripts/deploy/prepare-postgres-urls.mjs --source-only
+
+      - name: Create and verify ephemeral logical production backups
+        run: |
+          set -euo pipefail
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --file "$RUNNER_TEMP/stackr-backup/schema.sql"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --data-only \
+            --use-copy \
+            --file "$RUNNER_TEMP/stackr-backup/data.sql"
+          node scripts/deploy/verify-backup.mjs \
+            --physical="$RUNNER_TEMP/stackr-backup/physical.json" \
+            --schema="$RUNNER_TEMP/stackr-backup/schema.sql" \
+            --data="$RUNNER_TEMP/stackr-backup/data.sql" \
+            --require-physical
+
+      - name: Dry-run all unapplied production migrations
+        run: >-
+          npx --yes supabase@2.110.0 db push
+          --db-url "$STACKR_SOURCE_DB_URL"
+          --include-all
+          --dry-run
+
+      - name: Apply backward-compatible production migrations
+        run: >-
+          npx --yes supabase@2.110.0 db push
+          --db-url "$STACKR_SOURCE_DB_URL"
+          --include-all
+
+      - name: Prepare protected staging-to-production database URLs
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+          SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+          SUPABASE_RESTORE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+        run: node scripts/deploy/prepare-postgres-urls.mjs
+
+      - name: Promote approved catalogue storage objects
+        env:
+          SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+          SUPABASE_RESTORE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+          STACKR_TRANSFER_CONFIRMATION: PROMOTE VERIFIED CATALOGUE TO PRODUCTION
+          STACKR_STORAGE_PROMOTION_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/storage-evidence.json
+          STACKR_STORAGE_PROMOTION_CONCURRENCY: 8
+          STACKR_STORAGE_PROMOTION_RETRY_ATTEMPTS: 6
+        run: node scripts/deploy/promote-catalogue-storage.mjs
+
+      - name: Promote the verified catalogue database snapshot
+        env:
+          SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+          SUPABASE_RESTORE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+          SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+          STACKR_TRANSFER_MODE: promote
+          STACKR_TRANSFER_CONFIRMATION: PROMOTE VERIFIED CATALOGUE TO PRODUCTION
+          STACKR_TRANSFER_TABLE_CONFIG: deploy/production-catalogue-promotion-tables.json
+          STACKR_CATALOGUE_RELEASE_LABEL: ${{ needs.finalize_staging.outputs.catalogue_release_label }}
+          STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn,ko
+          STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/database-evidence.json
+        run: node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
+
+      - name: Build and verify non-secret production promotion evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/create-production-catalogue-promotion-audit.mjs \
+            --storage="$RUNNER_TEMP/stackr-catalogue-promotion/storage-evidence.json" \
+            --database="$RUNNER_TEMP/stackr-catalogue-promotion/database-evidence.json" \
+            --output="$RUNNER_TEMP/stackr-catalogue-promotion/audit-summary.json" \
+            --promotion-outcome=success
+
+          node --input-type=module <<'NODE'
+          import { mkdirSync, writeFileSync } from 'node:fs';
+          import { createClient } from '@supabase/supabase-js';
+          const label = process.env.CATALOGUE_RELEASE_LABEL;
+          const required = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
+          const client = createClient(
+            'https://oakdbbzdqwurpjnoqhmu.supabase.co',
+            process.env.SUPABASE_PRODUCTION_SECRET_KEY,
+            { auth: { persistSession: false, autoRefreshToken: false } },
+          );
+          const { data: versions, error: versionError } = await client
+            .schema('catalog')
+            .from('catalogue_versions')
+            .select('id,version_key,version_label,language_code,status,coverage_summary,published_at,deprecated_at')
+            .eq('version_label', label)
+            .eq('status', 'published')
+            .is('deprecated_at', null);
+          if (versionError) throw versionError;
+          const byLanguage = new Map((versions ?? []).map((row) => [row.language_code, row]));
+          const missing = required.filter((language) => !byLanguage.has(language));
+          if (missing.length || (versions ?? []).length !== required.length) {
+            throw new Error(`production_release_versions_incomplete:${missing.join(',')}`);
+          }
+          const membership = [];
+          for (const language of required) {
+            const version = byLanguage.get(language);
+            if (version.coverage_summary?.releaseEligible !== true) {
+              throw new Error(`production_release_not_eligible:${language}`);
+            }
+            const counts = {};
+            for (const table of ['catalogue_version_sets', 'catalogue_version_printings', 'catalogue_version_variants']) {
+              const { count, error } = await client
+                .schema('catalog')
+                .from(table)
+                .select('*', { count: 'exact', head: true })
+                .eq('catalogue_version_id', version.id);
+              if (error) throw error;
+              counts[table] = count ?? 0;
+            }
+            if (counts.catalogue_version_sets <= 0 || counts.catalogue_version_printings <= 0 || counts.catalogue_version_variants <= 0) {
+              throw new Error(`production_release_membership_empty:${language}`);
+            }
+            membership.push({ language, versionId: version.id, ...counts });
+          }
+          const evidence = {
+            schemaVersion: 'stackr-production-catalogue-data-verification-v1.0.0',
+            verifiedAt: new Date().toISOString(),
+            projectRef: 'oakdbbzdqwurpjnoqhmu',
+            releaseLabel: label,
+            languages: required,
+            versions: versions.map((row) => ({
+              id: row.id,
+              versionKey: row.version_key,
+              language: row.language_code,
+              status: row.status,
+              publishedAt: row.published_at,
+              publicationPolicy: row.coverage_summary?.publicationPolicy ?? null,
+              acknowledgedPublicationBlockers: row.coverage_summary?.acknowledgedPublicationBlockers ?? [],
+            })),
+            membership,
+            ok: true,
+          };
+          mkdirSync(process.env.RUNNER_TEMP + '/stackr-catalogue-promotion', { recursive: true });
+          writeFileSync(
+            process.env.RUNNER_TEMP + '/stackr-catalogue-promotion/production-verification.json',
+            JSON.stringify(evidence, null, 2) + '\n',
+            { mode: 0o600 },
+          );
+          console.log(JSON.stringify(evidence, null, 2));
+          NODE
+
+          node scripts/deploy/secret-scan.mjs \
+            --directory="$RUNNER_TEMP/stackr-catalogue-promotion"
+
+      - name: Upload production catalogue promotion evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-production-catalogue-data-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/stackr-catalogue-promotion/audit-summary.json
+            ${{ runner.temp }}/stackr-catalogue-promotion/production-verification.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Remove ephemeral production backups
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/stackr-backup"
+
+      - name: Report the production data promotion result
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [ "$JOB_STATUS" = "success" ]; then
+            body="StackR catalogue release \`${CATALOGUE_RELEASE_LABEL}\` was promoted and verified in production Supabase \`${PRODUCTION_PROJECT_REF}\`. Evidence run: ${run_url}"
+          else
+            body="StackR production catalogue data promotion run **${GITHUB_RUN_ID}** finished with status **${JOB_STATUS}**. No completion claim has been made; inspect the guarded run: ${run_url}"
+          fi
+          gh api repos/${GITHUB_REPOSITORY}/issues/48/comments \
+            --method POST \
+            --field body="$body"
