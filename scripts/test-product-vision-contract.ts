@@ -5,6 +5,22 @@ import path from 'node:path';
 const root = process.cwd();
 const read = (file: string) => readFile(path.join(root, file), 'utf8');
 
+function extractExportedArray(source: string, exportName: string, nextExportName?: string) {
+  const startMarker = `export const ${exportName}`;
+  const start = source.indexOf(startMarker);
+  assert.ok(start >= 0, `${exportName} export is missing`);
+  const end = nextExportName
+    ? source.indexOf(`export const ${nextExportName}`, start + startMarker.length)
+    : source.length;
+  assert.ok(end > start, `${exportName} export could not be isolated`);
+  return source.slice(start, end);
+}
+
+function tabLabels(arraySource: string) {
+  return [...arraySource.matchAll(/\{ key: '[^']+', label: '([^']+)'/g)]
+    .map((match) => match[1]);
+}
+
 async function main() {
   const [
     theme,
@@ -40,7 +56,7 @@ async function main() {
     '#FFBE35',
   ];
   for (const token of requiredTokens) {
-    assert.match(theme, new RegExp(token.replace('#', '\\#'), 'i'), `Missing approved StackR colour token ${token}`);
+    assert.ok(theme.toUpperCase().includes(token), `Missing approved StackR colour token ${token}`);
   }
 
   const config = JSON.parse(appConfig);
@@ -50,16 +66,16 @@ async function main() {
   assert.match(String(config.expo?.icon ?? ''), /assets\/rev2\/01-brand\/app\/icon\.png$/);
   assert.match(JSON.stringify(config.expo?.plugins ?? []), /splash-ultra-hd\.png/);
 
-  const collectorLabels = [...routes.matchAll(/\{ key: '(home|collection|scan|market|search)', label: '([^']+)'/g)]
-    .map((match) => match[2]);
+  const collectorArray = extractExportedArray(routes, 'COLLECTOR_TABS', 'SELLER_TABS');
+  const sellerArray = extractExportedArray(routes, 'SELLER_TABS');
+  const collectorLabels = tabLabels(collectorArray);
+  const sellerLabels = tabLabels(sellerArray);
+
   assert.deepEqual(
     collectorLabels,
     ['Home', 'Collection', 'Scan', 'The Market', 'Search'],
     'Collector navigation changed from the approved five-item order',
   );
-
-  const sellerLabels = [...routes.matchAll(/\{ key: '(dashboard|inventory|scan|listings)', label: '([^']+)'/g)]
-    .map((match) => match[2]);
   assert.deepEqual(
     sellerLabels,
     ['Home', 'Inventory', 'Scan', 'The Market'],
@@ -89,11 +105,11 @@ async function main() {
 
   assert.match(collection, /BinderArtwork/, 'Collection must remain binder-artwork led');
   assert.match(collection, /Discover Sets/, 'Collection set-discovery shortcut disappeared');
-  assert.match(collection, /Pok\\u00E9dex/, 'Collection Pokédex shortcut disappeared');
+  assert.match(collection, /Pok(?:\\u00E9|é)dex/, 'Collection Pokédex shortcut disappeared');
   assert.match(collection, /Duplicates/, 'Collection duplicate shortcut disappeared');
   assert.match(collection, /getBinderProgressPercent/, 'Collection lost binder completion logic');
 
-  assert.match(scanner, /one central card guide|CARD_ASPECT_RATIO|cardFrame/i, 'Scanner lost the card-first capture guide');
+  assert.match(scanner, /CARD_ASPECT_RATIO|cardFrame/i, 'Scanner lost the card-first capture guide');
   assert.match(scanner, /scannerFrameReady/, 'Scanner ready-state haptic is not embedded');
   assert.match(scanner, /scannerCaptureLocked/, 'Scanner capture-lock haptic is not embedded');
   assert.match(scanner, /scannerExactMatch/, 'Scanner exact-match haptic is not embedded');
