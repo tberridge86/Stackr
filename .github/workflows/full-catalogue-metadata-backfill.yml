@@ -25,7 +25,7 @@ permissions:
 
 concurrency:
   group: stackr-full-catalogue-metadata-backfill
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   backfill:
