@@ -1,13 +1,6 @@
 name: StackR Full Catalogue Metadata Backfill
 
 on:
-  push:
-    branches: [backend/release-hardening-2026-08-19]
-    paths:
-      - .github/workflows/full-catalogue-metadata-backfill.yml
-      - scripts/full-catalogue-metadata-backfill.ts
-      - scripts/test-full-catalogue-metadata-backfill.ts
-      - scripts/catalogue-ingestion/**
   pull_request:
     branches: [main]
     paths:
