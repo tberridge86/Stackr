@@ -59,7 +59,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p reports/catalogue
-          cat > "$RUNNER_TEMP/probe-catalogue-ledger.mjs" <<'NODE'
+          probe_path="$GITHUB_WORKSPACE/.stackr-probe-catalogue-ledger.mjs"
+          cat > "$probe_path" <<'NODE'
           import { writeFileSync } from 'node:fs';
           import { createClient } from '@supabase/supabase-js';
 
@@ -93,7 +94,7 @@ jobs:
           const recentErrors = [];
           for (const run of runs || []) {
             const parts = String(run.run_key || '').split(':');
-            const language = parts[3] || parts[2] || 'unknown';
+            const language = parts[2] || 'unknown';
             const lane = byLanguage[language] ??= {
               expectedBatches: 0, observedBatches: 0, completed: 0, running: 0,
               failed: 0, other: 0, retrieved: 0, inserted: 0, updated: 0, skipped: 0,
@@ -138,10 +139,11 @@ jobs:
               --service "$RAILWAY_BACKEND_SERVICE_ID" \
               --no-local \
               env CATALOGUE_VERSION="$CATALOGUE_VERSION" \
-              node "$RUNNER_TEMP/probe-catalogue-ledger.mjs" \
+              node "$probe_path" \
               | tail -n 1
           )"
           echo "$ledger_json" > reports/catalogue/live-ledger-compact.json
+          rm -f "$probe_path"
 
           body="$(LEDGER_JSON="$ledger_json" node <<'NODE'
           const report = JSON.parse(process.env.LEDGER_JSON);
