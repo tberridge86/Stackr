@@ -345,9 +345,47 @@ async function assertStrictForeignLanguageSafety() {
   assert.deepEqual(tcgdexAdapterInternals.variantCandidates({
     variants: { normal: true, holo: false, reverse: true, firstEdition: true, wPromo: true },
   }), ['normal', 'reverse_holo', 'first_edition', 'promo']);
+  assert.deepEqual(tcgdexAdapterInternals.variantCandidates({
+    variants: { holo: true, normal: true, wPromo: false, reverse: true, firstEdition: false },
+  }), ['normal', 'holo', 'reverse_holo'], 'provider key order must never change the base card identity');
   assert.deepEqual(tcgdexAdapterInternals.variantCandidates({ variants: [] }), ['normal']);
   assert.equal(tcgdexAdapterInternals.imageVariantCandidate({ variants: { normal: true, reverse: true } }), 'normal');
   assert.equal(tcgdexAdapterInternals.imageVariantCandidate({ variants: { normal: false, holo: true } }), 'holo');
+  const variantPolicyAdapter = new TcgdexSourceAdapter({ language: 'en', licenceStatus: 'approved' });
+  const baseVariantRecord = variantPolicyAdapter.normaliseRecord({
+    provider: 'tcgdex',
+    providerRecordId: 'sv03-016',
+    recordType: 'card',
+    languageCode: 'en',
+    licenceStatus: 'approved',
+    payload: {
+      id: 'sv03-016',
+      name: 'Bounsweet',
+      localId: '016',
+      set: { id: 'sv03', name: 'Obsidian Flames' },
+      variant: 'holo',
+      image_variant: 'normal',
+      variants: { holo: true, normal: true, reverse: true },
+    },
+  });
+  assert.equal(baseVariantRecord.variantCode, 'normal', 'the base TCGdex card ID must follow the displayed normal image');
+  const explicitHoloRecord = variantPolicyAdapter.normaliseRecord({
+    provider: 'tcgdex',
+    providerRecordId: 'sv03-016:holo',
+    recordType: 'variant',
+    languageCode: 'en',
+    licenceStatus: 'approved',
+    payload: {
+      id: 'sv03-016',
+      name: 'Bounsweet',
+      localId: '016',
+      set: { id: 'sv03', name: 'Obsidian Flames' },
+      variant: 'holo',
+      image_variant: 'normal',
+      variants: { holo: true, normal: true, reverse: true },
+    },
+  });
+  assert.equal(explicitHoloRecord.variantCode, 'holo', 'an explicit holo alias must remain holo');
   assert.equal(
     tcgdexAdapterInternals.imageVariantCandidate({ variants: { firstEdition: true, holo: true, normal: false } }),
     null,
