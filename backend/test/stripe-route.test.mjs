@@ -15,7 +15,11 @@ async function startApp(router) {
     res.setHeader('X-Request-Id', req.stackrRequestId);
     next();
   });
-  app.use(express.json());
+  app.use(express.json({
+    verify(req, _res, buffer) {
+      if (req.path === '/api/stripe/webhook') req.stackrRawBody = Buffer.from(buffer);
+    },
+  }));
   app.use('/api/stripe', router);
 
   const server = await new Promise((resolve) => {
@@ -27,22 +31,6 @@ async function startApp(router) {
     baseUrl: `http://127.0.0.1:${port}`,
     close: () => new Promise((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
-    }),
-  };
-}
-
-function authenticatedSupabase({
-  user = { id: 'buyer-1', email: 'buyer@example.com' },
-  from,
-} = {}) {
-  return {
-    auth: {
-      getUser: async (token) => token === 'valid-token'
-        ? { data: { user }, error: null }
-        : { data: { user: null }, error: new Error('invalid token') },
-    },
-    from: from ?? (() => {
-      throw new Error('Database should not be called by this test.');
     }),
   };
 }
@@ -59,6 +47,11 @@ function fakeStripe() {
 
   return {
     calls,
+    webhooks: {
+      constructEvent: () => {
+        throw new Error('Webhook verification is covered separately.');
+      },
+    },
     accounts: {
       create: async (payload, options) => {
         calls.accountCreates.push({ payload, options });
@@ -106,51 +99,56 @@ function fakeStripe() {
   };
 }
 
-function listingDatabase({ listing, reserveSucceeds = true }) {
+function listingQuery(listing) {
   return (table) => {
     assert.equal(table, 'user_card_flags');
-    const state = {
-      operation: 'select',
-      payload: null,
-      filters: [],
-    };
     const builder = {
       select() {
         return builder;
       },
-      update(payload) {
-        state.operation = 'update';
-        state.payload = payload;
-        return builder;
-      },
-      eq(column, value) {
-        state.filters.push([column, value]);
+      eq() {
         return builder;
       },
       async maybeSingle() {
-        if (state.operation === 'update') {
-          const guardedActive = state.filters.some(([column, value]) => (
-            column === 'listing_status' && value === 'active'
-          ));
-          if (reserveSucceeds && guardedActive && listing.listing_status === 'active') {
-            Object.assign(listing, state.payload);
-            return {
-              data: {
-                id: listing.id,
-                listing_status: listing.listing_status,
-                payment_intent_id: listing.payment_intent_id,
-              },
-              error: null,
-            };
-          }
-          listing.listing_status = 'reserved';
-          listing.payment_intent_id = 'pi_other_buyer';
-          return { data: null, error: null };
-        }
-        return { data: { ...listing }, error: null };
+        return { data: listing ? { ...listing } : null, error: null };
       },
     };
     return builder;
+  };
+}
+
+function authenticatedSupabase({
+  user = { id: 'buyer-1', email: 'buyer@example.com' },
+  listing = null,
+  reservationError = null,
+} = {}) {
+  const rpcCalls = [];
+  return {
+    rpcCalls,
+    auth: {
+      getUser: async (token) => token === 'valid-token'
+        ? { data: { user }, error: null }
+        : { data: { user: null }, error: new Error('invalid token') },
+    },
+    from: listingQuery(listing),
+    rpc: async (name, args) => {
+      rpcCalls.push({ name, args });
+      if (name !== 'reserve_marketplace_listing_payment') {
+        return { data: null, error: new Error(`Unexpected RPC: ${name}`) };
+      }
+      if (reservationError) return { data: null, error: reservationError };
+      return {
+        data: {
+          transactionId: '00000000-0000-0000-0000-000000000099',
+          listingId: args.p_listing_id,
+          paymentIntentId: args.p_payment_intent_id,
+          status: 'requires_payment_method',
+          reservationExpiresAt: args.p_reservation_expires_at,
+          replayed: false,
+        },
+        error: null,
+      };
+    },
   };
 }
 
@@ -217,15 +215,10 @@ test('configured payment routes require a validated Supabase access token', asyn
 test('client-supplied user ids cannot impersonate another account', async () => {
   const { createStripeRouter } = await configuredModule();
   const stripe = fakeStripe();
-  let databaseCalls = 0;
+  const supabase = authenticatedSupabase();
   const app = await startApp(createStripeRouter({
     stripeClient: stripe,
-    supabaseClient: authenticatedSupabase({
-      from: () => {
-        databaseCalls += 1;
-        throw new Error('Database should not be reached after identity mismatch.');
-      },
-    }),
+    supabaseClient: supabase,
     logger: { warn: () => {}, error: () => {} },
   }));
 
@@ -240,7 +233,7 @@ test('client-supplied user ids cannot impersonate another account', async () => 
     });
     assert.equal(response.status, 403);
     assert.equal((await response.json()).code, 'identity_mismatch');
-    assert.equal(databaseCalls, 0);
+    assert.equal(supabase.rpcCalls.length, 0);
     assert.equal(stripe.calls.paymentIntentCreates.length, 0);
   } finally {
     await app.close();
@@ -259,7 +252,7 @@ test('buyers cannot purchase their own listing', async () => {
   };
   const app = await startApp(createStripeRouter({
     stripeClient: stripe,
-    supabaseClient: authenticatedSupabase({ from: listingDatabase({ listing }) }),
+    supabaseClient: authenticatedSupabase({ listing }),
     logger: { warn: () => {}, error: () => {} },
   }));
 
@@ -280,7 +273,7 @@ test('buyers cannot purchase their own listing', async () => {
   }
 });
 
-test('a listing is reserved conditionally and Stripe receives a deterministic idempotency key', async () => {
+test('a payable listing uses the atomic reservation RPC and deterministic Stripe idempotency', async () => {
   const { createStripeRouter, buildStripeIdempotencyKey } = await configuredModule();
   const stripe = fakeStripe();
   const listing = {
@@ -290,10 +283,12 @@ test('a listing is reserved conditionally and Stripe receives a deterministic id
     asking_price: 19.99,
     profiles: { stripe_account_id: 'acct_seller' },
   };
+  const supabase = authenticatedSupabase({ listing });
   const app = await startApp(createStripeRouter({
     stripeClient: stripe,
-    supabaseClient: authenticatedSupabase({ from: listingDatabase({ listing }) }),
+    supabaseClient: supabase,
     platformFeePercent: 0.05,
+    marketReservationMinutes: 30,
     logger: { warn: () => {}, error: () => {} },
   }));
 
@@ -311,9 +306,8 @@ test('a listing is reserved conditionally and Stripe receives a deterministic id
     const body = await response.json();
     assert.equal(body.paymentIntentId, 'pi_1');
     assert.equal(body.listingId, listing.id);
+    assert.equal(body.transactionId, '00000000-0000-0000-0000-000000000099');
     assert.equal(body.idempotentReplay, false);
-    assert.equal(listing.listing_status, 'reserved');
-    assert.equal(listing.payment_intent_id, 'pi_1');
 
     const createCall = stripe.calls.paymentIntentCreates[0];
     assert.equal(createCall.payload.amount, 1999);
@@ -323,6 +317,17 @@ test('a listing is reserved conditionally and Stripe receives a deterministic id
       createCall.options.idempotencyKey,
       buildStripeIdempotencyKey('market-purchase', listing.id, 'buyer-1', 1999),
     );
+
+    assert.equal(supabase.rpcCalls.length, 1);
+    const reservation = supabase.rpcCalls[0];
+    assert.equal(reservation.name, 'reserve_marketplace_listing_payment');
+    assert.equal(reservation.args.p_listing_id, listing.id);
+    assert.equal(reservation.args.p_payment_intent_id, 'pi_1');
+    assert.equal(reservation.args.p_request_id, 'buy-listing-success');
+    assert.equal(reservation.args.p_buyer_id, 'buyer-1');
+    assert.equal(reservation.args.p_amount_minor, 1999);
+    assert.equal(reservation.args.p_currency, 'gbp');
+    assert.ok(Date.parse(reservation.args.p_reservation_expires_at) > Date.now());
   } finally {
     await app.close();
   }
@@ -338,11 +343,13 @@ test('a losing concurrent buyer has its unused PaymentIntent cancelled', async (
     asking_price: 25,
     profiles: { stripe_account_id: 'acct_seller' },
   };
+  const supabase = authenticatedSupabase({
+    listing,
+    reservationError: new Error('marketplace_listing_unavailable'),
+  });
   const app = await startApp(createStripeRouter({
     stripeClient: stripe,
-    supabaseClient: authenticatedSupabase({
-      from: listingDatabase({ listing, reserveSucceeds: false }),
-    }),
+    supabaseClient: supabase,
     logger: { warn: () => {}, error: () => {} },
   }));
 
@@ -363,10 +370,37 @@ test('a losing concurrent buyer has its unused PaymentIntent cancelled', async (
   }
 });
 
+test('real trade cash payments remain disabled behind the backend boundary', async () => {
+  const { createStripeRouter } = await configuredModule();
+  const stripe = fakeStripe();
+  const app = await startApp(createStripeRouter({
+    stripeClient: stripe,
+    supabaseClient: authenticatedSupabase(),
+    logger: { warn: () => {}, error: () => {} },
+  }));
+
+  try {
+    const response = await fetch(`${app.baseUrl}/api/stripe/create-trade-cash-payment-intent`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer valid-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ payerId: 'buyer-1', offerId: 'offer-1' }),
+    });
+    assert.equal(response.status, 403);
+    assert.equal((await response.json()).code, 'trade_payments_disabled');
+    assert.equal(stripe.calls.paymentIntentCreates.length, 0);
+  } finally {
+    await app.close();
+  }
+});
+
 test('internal database errors are logged but not exposed to payment clients', async () => {
   const { createStripeRouter } = await configuredModule();
   const errors = [];
-  const failingFrom = () => {
+  const supabase = authenticatedSupabase();
+  supabase.from = () => {
     const builder = {
       select: () => builder,
       eq: () => builder,
@@ -376,7 +410,7 @@ test('internal database errors are logged but not exposed to payment clients', a
   };
   const app = await startApp(createStripeRouter({
     stripeClient: fakeStripe(),
-    supabaseClient: authenticatedSupabase({ from: failingFrom }),
+    supabaseClient: supabase,
     logger: { warn: () => {}, error: (entry) => errors.push(entry) },
   }));
 
