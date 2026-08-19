@@ -51,7 +51,7 @@ jobs:
         run: >-
           gh api repos/${{ github.repository }}/issues/48/comments
           --method POST
-          --field body="StackR full metadata backfill run **${GITHUB_RUN_ID}** started from trusted main context against hard-pinned commit \`${STACKR_BACKFILL_SOURCE_SHA}\`."
+          --field body="StackR full primary multilingual metadata backfill run **${GITHUB_RUN_ID}** started against hard-pinned commit \`${STACKR_BACKFILL_SOURCE_SHA}\`."
 
       - name: Check out the hard-pinned reviewed backend commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -89,12 +89,10 @@ jobs:
             --no-local \
             node -e '
               const url = String(process.env.SUPABASE_URL || "");
-              const pokemonTcgApiKey = Boolean(process.env.POKEMON_TCG_API_KEY);
               const result = {
                 stagingSupabase: url.includes("lmwfhvexfcoyeuoyrlco"),
                 serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
-                pokemonTcgApiKey,
-                englishReconciliationMode: pokemonTcgApiKey ? "authenticated" : "bounded-anonymous",
+                pokemonTcgApiKeyVisibleToRailwayRun: Boolean(process.env.POKEMON_TCG_API_KEY),
               };
               console.log(JSON.stringify(result));
               if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
@@ -114,7 +112,7 @@ jobs:
           digest="${image_ref##*@}"
           digest_short="${digest#sha256:}"
           digest_short="${digest_short:0:12}"
-          version="tcgdex-${digest_short}-pokemon-railway-2026-08-19"
+          version="tcgdex-${digest_short}-full-primary-2026-08-19"
           echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "TCGdex source locked to $image_ref"
@@ -160,7 +158,7 @@ jobs:
             test "$count" -gt 0
           done
 
-      - name: Pull all catalogue metadata through Railway staging
+      - name: Pull all primary catalogue metadata through Railway staging
         shell: bash
         env:
           FORCE_FLAG: ${{ inputs.force && '--force' || '' }}
@@ -180,10 +178,9 @@ jobs:
             --no-local \
             env STACKR_CATALOGUE_IMPORT_TARGET=staging \
             npx --no-install tsx scripts/full-catalogue-metadata-backfill.ts \
-              --sources=tcgdex,pokemon-tcg-api \
+              --sources=tcgdex \
               --languages=en,ja,zh-tw,zh-cn,ko \
               --tcgdexBaseUrl=http://127.0.0.1:3300/v2 \
-              --pokemonBaseUrl=https://api.pokemontcg.io/v2 \
               --batchSize=1000 \
               --writeConcurrency=8 \
               --maxAttempts=3 \
@@ -218,4 +215,4 @@ jobs:
         run: >-
           gh api repos/${{ github.repository }}/issues/48/comments
           --method POST
-          --field body="StackR full metadata backfill run **${GITHUB_RUN_ID}** finished with status **${JOB_STATUS}**."
+          --field body="StackR full primary multilingual metadata backfill run **${GITHUB_RUN_ID}** finished with status **${JOB_STATUS}**."
