@@ -1,0 +1,193 @@
+name: StackR Complete Catalogue Metadata Backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Re-run sets already completed by the deterministic backfill
+        required: true
+        default: false
+        type: boolean
+      max_sets_per_shard:
+        description: Optional canary limit; leave blank for the complete provider catalogue
+        required: false
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - .github/catalogue-metadata-backfill.trigger
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-catalogue-ingestion
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx --no-install tsx scripts/sync-provider-metadata-shard.ts --help
+
+  metadata-backfill:
+    needs: validate
+    name: ${{ matrix.provider_name }} ${{ matrix.language_name }} shard ${{ matrix.shard_index }} of 3
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - source: tcgdex
+            provider_name: TCGdex
+            language: en
+            language_name: English
+            shard_index: 0
+          - source: tcgdex
+            provider_name: TCGdex
+            language: en
+            language_name: English
+            shard_index: 1
+          - source: tcgdex
+            provider_name: TCGdex
+            language: en
+            language_name: English
+            shard_index: 2
+          - source: tcgdex
+            provider_name: TCGdex
+            language: ja
+            language_name: Japanese
+            shard_index: 0
+          - source: tcgdex
+            provider_name: TCGdex
+            language: ja
+            language_name: Japanese
+            shard_index: 1
+          - source: tcgdex
+            provider_name: TCGdex
+            language: ja
+            language_name: Japanese
+            shard_index: 2
+          - source: tcgdex
+            provider_name: TCGdex
+            language: zh-cn
+            language_name: Simplified Chinese
+            shard_index: 0
+          - source: tcgdex
+            provider_name: TCGdex
+            language: zh-cn
+            language_name: Simplified Chinese
+            shard_index: 1
+          - source: tcgdex
+            provider_name: TCGdex
+            language: zh-cn
+            language_name: Simplified Chinese
+            shard_index: 2
+          - source: tcgdex
+            provider_name: TCGdex
+            language: zh-tw
+            language_name: Traditional Chinese
+            shard_index: 0
+          - source: tcgdex
+            provider_name: TCGdex
+            language: zh-tw
+            language_name: Traditional Chinese
+            shard_index: 1
+          - source: tcgdex
+            provider_name: TCGdex
+            language: zh-tw
+            language_name: Traditional Chinese
+            shard_index: 2
+          - source: tcgdex
+            provider_name: TCGdex
+            language: ko
+            language_name: Korean
+            shard_index: 0
+          - source: tcgdex
+            provider_name: TCGdex
+            language: ko
+            language_name: Korean
+            shard_index: 1
+          - source: tcgdex
+            provider_name: TCGdex
+            language: ko
+            language_name: Korean
+            shard_index: 2
+          - source: pokemon-tcg-api
+            provider_name: Pokemon TCG Developers API
+            language: en
+            language_name: English reconciliation
+            shard_index: 0
+          - source: pokemon-tcg-api
+            provider_name: Pokemon TCG Developers API
+            language: en
+            language_name: English reconciliation
+            shard_index: 1
+          - source: pokemon-tcg-api
+            provider_name: Pokemon TCG Developers API
+            language: en
+            language_name: English reconciliation
+            shard_index: 2
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    environment: ingestion
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_METADATA_SOURCE: ${{ matrix.source }}
+      STACKR_METADATA_LANGUAGE: ${{ matrix.language }}
+      STACKR_METADATA_SHARD: ${{ matrix.shard_index }}
+      STACKR_METADATA_FORCE: ${{ inputs.force || 'false' }}
+      STACKR_METADATA_MAX_SETS: ${{ inputs.max_sets_per_shard || '' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Record provider credential mode
+        shell: bash
+        run: |
+          if [ "$STACKR_METADATA_SOURCE" = "pokemon-tcg-api" ] && [ -z "$POKEMON_TCG_API_KEY" ]; then
+            echo "POKEMON_TCG_API_KEY is not present in the GitHub ingestion environment; the provider's anonymous limits will be used."
+          else
+            echo "Provider credential path is configured or not required."
+          fi
+
+      - name: Import complete metadata shard
+        shell: bash
+        run: |
+          args=(
+            "--source=$STACKR_METADATA_SOURCE"
+            "--language=$STACKR_METADATA_LANGUAGE"
+            "--shardIndex=$STACKR_METADATA_SHARD"
+            "--shardCount=3"
+            "--writeConcurrency=4"
+            "--maxAttempts=3"
+            "--output=reports/catalogue/metadata-backfill/$STACKR_METADATA_SOURCE-$STACKR_METADATA_LANGUAGE-shard-$STACKR_METADATA_SHARD-of-3.json"
+          )
+          if [ "$STACKR_METADATA_FORCE" = "true" ]; then args+=("--force"); fi
+          if [ -n "$STACKR_METADATA_MAX_SETS" ]; then args+=("--maxSets=$STACKR_METADATA_MAX_SETS"); fi
+          npx --no-install tsx scripts/sync-provider-metadata-shard.ts "${args[@]}"
+
+      - name: Upload shard report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: metadata-${{ matrix.source }}-${{ matrix.language }}-shard-${{ matrix.shard_index }}-${{ github.run_id }}
+          path: reports/catalogue/metadata-backfill/*.json
+          if-no-files-found: warn
+          retention-days: 30
