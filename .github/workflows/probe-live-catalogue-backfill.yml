@@ -112,6 +112,48 @@ jobs:
             if (run.finished_at && (!lane.latestFinishedAt || run.finished_at > lane.latestFinishedAt)) lane.latestFinishedAt = run.finished_at;
             if (run.error_message) recentErrors.push({ language, runKey: run.run_key, error: String(run.error_message).slice(0, 400) });
           }
+
+          const runIds = (runs || []).map((run) => run.id);
+          let conflicts = [];
+          if (runIds.length) {
+            const { data: conflictRows, error: conflictError } = await db
+              .schema('ingest').from('data_conflicts')
+              .select('id,import_run_id,raw_record_id,conflict_type,severity,status,canonical_key,internal_notes,created_at')
+              .in('import_run_id', runIds)
+              .order('created_at', { ascending: true });
+            if (conflictError) throw conflictError;
+            const rawIds = [...new Set((conflictRows || []).map((row) => row.raw_record_id).filter(Boolean))];
+            let rawById = new Map();
+            if (rawIds.length) {
+              const { data: rawRows, error: rawError } = await db
+                .schema('ingest').from('raw_source_records')
+                .select('id,external_id,record_type,language_code,source_url,validation_status')
+                .in('id', rawIds);
+              if (rawError) throw rawError;
+              rawById = new Map((rawRows || []).map((row) => [row.id, row]));
+            }
+            const runById = new Map((runs || []).map((run) => [run.id, run]));
+            conflicts = (conflictRows || []).map((row) => {
+              const raw = rawById.get(row.raw_record_id) || {};
+              const run = runById.get(row.import_run_id) || {};
+              return {
+                id: row.id,
+                type: row.conflict_type,
+                severity: row.severity,
+                status: row.status,
+                canonicalKey: row.canonical_key,
+                notes: row.internal_notes,
+                createdAt: row.created_at,
+                runKey: run.run_key || null,
+                externalId: raw.external_id || null,
+                recordType: raw.record_type || null,
+                language: raw.language_code || null,
+                sourceUrl: raw.source_url || null,
+                validationStatus: raw.validation_status || null,
+              };
+            });
+          }
+
           const totals = Object.values(byLanguage).reduce((acc, lane) => {
             for (const field of ['expectedBatches','observedBatches','completed','running','failed','other','retrieved','inserted','updated','skipped','conflicted']) {
               acc[field] += Number(lane[field] || 0);
@@ -119,7 +161,7 @@ jobs:
             return acc;
           }, { expectedBatches: 0, observedBatches: 0, completed: 0, running: 0, failed: 0, other: 0, retrieved: 0, inserted: 0, updated: 0, skipped: 0, conflicted: 0 });
           const report = {
-            schemaVersion: 1,
+            schemaVersion: 2,
             probedAt: new Date().toISOString(),
             projectRef: 'lmwfhvexfcoyeuoyrlco',
             version,
@@ -127,6 +169,7 @@ jobs:
             totals,
             byLanguage,
             recentErrors: recentErrors.slice(-10),
+            conflictRows: conflicts,
           };
           writeFileSync('reports/catalogue/live-ledger.json', JSON.stringify(report, null, 2) + '\n');
           console.log(JSON.stringify(report));
@@ -155,15 +198,22 @@ jobs:
           const errors = report.recentErrors.length
             ? `\nRecent errors:\n${report.recentErrors.map((item) => `- ${item.language}: ${item.error}`).join('\n')}`
             : '';
+          const conflicts = report.conflictRows.length
+            ? `\nConflict rows:\n${report.conflictRows.map((item) => (
+                `- **${item.severity}/${item.type}** — ${item.language || 'unknown'} ${item.recordType || 'record'} ` +
+                `\`${item.externalId || 'unknown'}\`; status ${item.status || 'open'}; ${item.notes || 'no note'}`
+              )).join('\n')}`
+            : '\nConflict rows: none.';
           process.stdout.write([
             '### StackR staging catalogue ledger',
             `- Version: \`${report.version}\``,
             `- Batches: **${t.completed}/${t.expectedBatches} completed**, ${t.running} running, ${t.failed} failed`,
             `- Records: **${t.retrieved} retrieved**, ${t.inserted} inserted, ${t.updated} updated`,
-            `- Recorded conflicts: **${t.conflicted}**`,
+            `- Recorded batch conflicts: **${t.conflicted}**; retained conflict rows: **${report.conflictRows.length}**`,
             '',
             lanes,
             errors,
+            conflicts,
           ].join('\n'));
           NODE
           )"
