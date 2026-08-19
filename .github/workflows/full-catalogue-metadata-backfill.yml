@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - .github/workflows/full-catalogue-metadata-backfill.yml
+      - scripts/export-full-catalogue-metadata-snapshot.ts
+      - scripts/test-export-full-catalogue-metadata-snapshot.ts
       - scripts/full-catalogue-metadata-backfill.ts
       - scripts/test-full-catalogue-metadata-backfill.ts
       - scripts/probe-catalogue-ingest-access.ts
@@ -12,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: Re-run batches already recorded as complete
+        description: Re-run database batches already recorded as complete
         required: true
         default: false
         type: boolean
@@ -40,10 +42,6 @@ jobs:
       SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
-      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
-      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
-      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
       STACKR_CATALOGUE_IMPORT_TARGET: staging
       TCGDEX_IMAGE: tcgdex/server:branch-master
       DO_NOT_TRACK: '1'
@@ -58,54 +56,10 @@ jobs:
       - name: Install StackR dependencies
         run: npm ci
 
-      - name: Validate metadata backfill and rights gates
-        run: npx --no-install tsx scripts/test-full-catalogue-metadata-backfill.ts
-
-      - name: Verify the direct ingestion target without revealing credentials
-        shell: bash
+      - name: Validate metadata export, backfill and rights gates
         run: |
-          set -euo pipefail
-          node -e '
-            const url = String(process.env.SUPABASE_URL || "");
-            const result = {
-              stagingSupabase: url.includes("lmwfhvexfcoyeuoyrlco"),
-              serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
-              githubPokemonKey: Boolean(process.env.POKEMON_TCG_API_KEY),
-            };
-            console.log(JSON.stringify(result));
-            if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
-          '
-
-      - name: Verify staging ingest Data API access
-        run: npx --no-install tsx scripts/probe-catalogue-ingest-access.ts
-
-      - name: Detect usable Railway backend context
-        id: railway_context
-        shell: bash
-        run: |
-          set -euo pipefail
-          usable=false
-          if [ -n "${RAILWAY_API_TOKEN:-}" ] \
-            && [ -n "${RAILWAY_PROJECT_ID:-}" ] \
-            && [ -n "${RAILWAY_ENVIRONMENT_ID:-}" ] \
-            && [ -n "${RAILWAY_BACKEND_SERVICE_ID:-}" ]; then
-            if npx --yes @railway/cli@5.30.1 run \
-              --project "$RAILWAY_PROJECT_ID" \
-              --environment "$RAILWAY_ENVIRONMENT_ID" \
-              --service "$RAILWAY_BACKEND_SERVICE_ID" \
-              --no-local \
-              node -e '
-                const url = String(process.env.SUPABASE_URL || "");
-                const ok = url.includes("lmwfhvexfcoyeuoyrlco")
-                  && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)
-                  && Boolean(process.env.POKEMON_TCG_API_KEY);
-                process.exit(ok ? 0 : 1);
-              '; then
-              usable=true
-            fi
-          fi
-          echo "usable=$usable" >> "$GITHUB_OUTPUT"
-          echo "Railway provider context available: $usable"
+          npx --no-install tsx scripts/test-full-catalogue-metadata-backfill.ts
+          npx --no-install tsx scripts/test-export-full-catalogue-metadata-snapshot.ts
 
       - name: Pull the official TCGdex server image and lock its digest
         id: tcgdex_image
@@ -121,7 +75,7 @@ jobs:
           digest="${image_ref##*@}"
           digest_short="${digest#sha256:}"
           digest_short="${digest_short:0:12}"
-          version="tcgdex-${digest_short}-pokemon-live-2026-08-19"
+          version="tcgdex-${digest_short}-pokemon-live-${GITHUB_RUN_ID}"
           echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
@@ -133,8 +87,8 @@ jobs:
           --detach
           --rm
           --name stackr-tcgdex-source
-          --env MAX_WORKERS=2
-          --env TCGCSV_USER_AGENT=StackR-catalogue-metadata-backfill/1.0
+          --env MAX_WORKERS=4
+          --env TCGCSV_USER_AGENT=StackR-catalogue-metadata-backfill/1.1
           --publish 127.0.0.1:3300:3000
           "${{ steps.tcgdex_image.outputs.image_ref }}"
 
@@ -154,12 +108,65 @@ jobs:
           docker logs stackr-tcgdex-source
           exit 1
 
-      - name: Pull all metadata for EN, JA, ZH-TW, ZH-CN and KO
+      - name: Export the complete provider metadata snapshot
+        shell: bash
+        env:
+          MAX_RECORDS_VALUE: ${{ inputs.max_records || '' }}
+        run: |
+          set -euo pipefail
+          snapshot_args=(
+            npx --no-install tsx scripts/export-full-catalogue-metadata-snapshot.ts
+            --sources=tcgdex,pokemon-tcg-api
+            --languages=en,ja,zh-tw,zh-cn,ko
+            --tcgdexBaseUrl=http://127.0.0.1:3300/v2
+            --pokemonBaseUrl=https://api.pokemontcg.io/v2
+            --detailConcurrency=24
+            --maxAttempts=4
+            --requestTimeoutMs=60000
+            --outputDir=reports/catalogue/full-metadata-snapshot
+          )
+          if [ -n "$MAX_RECORDS_VALUE" ]; then
+            snapshot_args+=("--maxRecords=$MAX_RECORDS_VALUE")
+          fi
+          "${snapshot_args[@]}"
+
+      - name: Upload the full metadata snapshot
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-full-metadata-snapshot-${{ github.run_id }}
+          path: reports/catalogue/full-metadata-snapshot
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Verify the direct staging ingestion target
+        id: staging_access
+        continue-on-error: true
+        run: npx --no-install tsx scripts/probe-catalogue-ingest-access.ts
+
+      - name: Record a deferred database import without failing the scrape
+        if: steps.staging_access.outcome != 'success'
+        shell: bash
+        run: |
+          mkdir -p reports/catalogue
+          cat > reports/catalogue/staging-ingestion-deferred.json <<'JSON'
+          {
+            "status": "deferred",
+            "reason": "staging_service_credential_unavailable_or_invalid",
+            "metadataSnapshotCompleted": true,
+            "databaseWritesAttempted": false,
+            "nextAction": "Run the same snapshot through the staging ingestion pipeline using the Railway backend service credentials."
+          }
+          JSON
+          echo "The full internet metadata snapshot is retained as an artifact; database ingestion is deferred."
+
+      - name: Pull all metadata into staging for EN, JA, ZH-TW, ZH-CN and KO
+        if: steps.staging_access.outcome == 'success'
         shell: bash
         env:
           FORCE_FLAG: ${{ inputs.force && '--force' || '' }}
           MAX_RECORDS_VALUE: ${{ inputs.max_records || '' }}
-          USE_RAILWAY_CONTEXT: ${{ steps.railway_context.outputs.usable }}
           CATALOGUE_VERSION: ${{ steps.tcgdex_image.outputs.version }}
         run: |
           set -euo pipefail
@@ -168,41 +175,27 @@ jobs:
           if [ -n "$FORCE_FLAG" ]; then extra_args+=("$FORCE_FLAG"); fi
           if [ -n "$MAX_RECORDS_VALUE" ]; then extra_args+=("--maxRecords=$MAX_RECORDS_VALUE"); fi
 
-          backfill=(
-            npx --no-install tsx scripts/full-catalogue-metadata-backfill.ts
-            --sources=tcgdex,pokemon-tcg-api
-            --languages=en,ja,zh-tw,zh-cn,ko
-            --tcgdexBaseUrl=http://127.0.0.1:3300/v2
-            --pokemonBaseUrl=https://api.pokemontcg.io/v2
-            --batchSize=1000
-            --writeConcurrency=8
-            --maxAttempts=3
-            --batchPauseMs=250
-            "--version=$CATALOGUE_VERSION"
-            --output=reports/catalogue/full-metadata-backfill.json
+          npx --no-install tsx scripts/full-catalogue-metadata-backfill.ts \
+            --sources=tcgdex,pokemon-tcg-api \
+            --languages=en,ja,zh-tw,zh-cn,ko \
+            --tcgdexBaseUrl=http://127.0.0.1:3300/v2 \
+            --pokemonBaseUrl=https://api.pokemontcg.io/v2 \
+            --batchSize=1000 \
+            --writeConcurrency=8 \
+            --maxAttempts=3 \
+            --batchPauseMs=250 \
+            "--version=$CATALOGUE_VERSION" \
+            --output=reports/catalogue/full-metadata-backfill.json \
             "${extra_args[@]}"
-          )
 
-          if [ "$USE_RAILWAY_CONTEXT" = "true" ]; then
-            echo "Using the Railway backend service context, including POKEMON_TCG_API_KEY."
-            npx --yes @railway/cli@5.30.1 run \
-              --project "$RAILWAY_PROJECT_ID" \
-              --environment "$RAILWAY_ENVIRONMENT_ID" \
-              --service "$RAILWAY_BACKEND_SERVICE_ID" \
-              --no-local \
-              env STACKR_CATALOGUE_IMPORT_TARGET=staging \
-              "${backfill[@]}"
-          else
-            echo "Railway context was unavailable; using ingestion staging credentials and the provider's public English API allowance."
-            "${backfill[@]}"
-          fi
-
-      - name: Upload the metadata progress report
+      - name: Upload database-ingestion progress
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: stackr-full-metadata-backfill-${{ github.run_id }}
-          path: reports/catalogue/full-metadata-backfill.json
+          name: stackr-full-metadata-ingestion-${{ github.run_id }}
+          path: |
+            reports/catalogue/full-metadata-backfill.json
+            reports/catalogue/staging-ingestion-deferred.json
           if-no-files-found: warn
           retention-days: 30
           compression-level: 9
