@@ -277,8 +277,8 @@ export function validateProviderRecord(record: ProviderRecord): ValidationResult
   if (record.licenceStatus !== 'approved') {
     issues.push({
       code: 'legal_use_not_approved',
-      severity: record.licenceStatus === 'denied' || record.licenceStatus === 'restricted' ? 'error' : 'warning',
-      message: `Licence status is ${record.licenceStatus}; automatic upsert is not allowed unless approved.`,
+      severity: 'error',
+      message: `Licence status is ${record.licenceStatus}; the raw provider record may be retained, but canonical catalogue promotion is blocked until approved.`,
     });
   }
   return {
