@@ -130,6 +130,7 @@ jobs:
           --rm
           --name stackr-tcgdex-source
           --env MAX_WORKERS=2
+          --env TCGCSV_USER_AGENT=StackR-catalogue-metadata-backfill/1.0
           --publish 127.0.0.1:3300:3000
           "${{ steps.tcgdex_image.outputs.image_ref }}"
 
@@ -137,10 +138,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 120); do
+          for attempt in $(seq 1 360); do
             if curl --fail --silent --show-error \
               http://127.0.0.1:3300/v2/en/cards/swsh3-136 \
               > /dev/null; then
+              echo "TCGdex metadata source is ready after attempt $attempt."
               exit 0
             fi
             sleep 2
