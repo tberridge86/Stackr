@@ -7,6 +7,7 @@ on:
       - .github/workflows/full-catalogue-metadata-backfill.yml
       - scripts/full-catalogue-metadata-backfill.ts
       - scripts/test-full-catalogue-metadata-backfill.ts
+      - scripts/probe-catalogue-ingest-access.ts
       - scripts/catalogue-ingestion/**
   workflow_dispatch:
     inputs:
@@ -74,6 +75,9 @@ jobs:
             console.log(JSON.stringify(result));
             if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
           '
+
+      - name: Verify staging ingest Data API access
+        run: npx --no-install tsx scripts/probe-catalogue-ingest-access.ts
 
       - name: Detect usable Railway backend context
         id: railway_context
