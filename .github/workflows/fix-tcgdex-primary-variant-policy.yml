@@ -1,0 +1,214 @@
+name: Fix StackR TCGdex Primary Variant Policy
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-fix-tcgdex-primary-variant-policy
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.number == 48 &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/fix-stackr-tcgdex-primary-variant-policy-2026-08-19')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Announce the guarded source fix
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Guarded TCGdex primary-variant policy fix **${GITHUB_RUN_ID}** started. It changes source normalisation and tests only; it does not write catalogue or production data."
+
+      - name: Check out the active backend release branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Apply the deterministic primary-variant policy and regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python <<'PY'
+          from pathlib import Path
+
+          adapter_path = Path('scripts/catalogue-ingestion/tcgdexAdapter.ts')
+          adapter = adapter_path.read_text()
+
+          old_return = """  if (variants.size === 0) variants.add('normal');
+          return [...variants];
+          }"""
+          new_return = """  if (variants.size === 0) variants.add('normal');
+          const priority = ['normal', 'holo', 'reverse_holo', 'first_edition', 'promo'];
+          return [...variants].sort((left, right) => {
+            const leftIndex = priority.indexOf(left);
+            const rightIndex = priority.indexOf(right);
+            if (leftIndex >= 0 || rightIndex >= 0) {
+              if (leftIndex < 0) return 1;
+              if (rightIndex < 0) return -1;
+              if (leftIndex !== rightIndex) return leftIndex - rightIndex;
+            }
+            return left.localeCompare(right);
+          });
+          }"""
+          if old_return not in adapter:
+              raise SystemExit('Expected variantCandidates return block was not found; refusing an unreviewed patch.')
+          adapter = adapter.replace(old_return, new_return, 1)
+
+          old_card = """      const card = cardResult.value as Record<string, unknown> | null;
+                if (!card) return null;
+                return {
+          """
+          new_card = """      const card = cardResult.value as Record<string, unknown> | null;
+                if (!card) return null;
+                const cardVariants = variantCandidates(card);
+                const imageVariant = imageVariantCandidate(card);
+                return {
+          """
+          if old_card not in adapter:
+              raise SystemExit('Expected TCGdex card construction block was not found; refusing an unreviewed patch.')
+          adapter = adapter.replace(old_card, new_card, 1)
+
+          old_variant = """          variant: variantCandidates(card)[0],
+                    image_variant: imageVariantCandidate(card),
+          """
+          new_variant = """          variant: imageVariant ?? cardVariants[0],
+                    image_variant: imageVariant,
+          """
+          if old_variant not in adapter:
+              raise SystemExit('Expected base variant assignment was not found; refusing an unreviewed patch.')
+          adapter = adapter.replace(old_variant, new_variant, 1)
+
+          old_normalise = """    const recordVariant = payload.variant ?? 'normal';
+          """
+          new_normalise = """    const recordVariant = record.recordType === 'card'
+                ? payload.image_variant ?? payload.variant ?? 'normal'
+                : payload.variant ?? payload.image_variant ?? 'normal';
+          """
+          if old_normalise not in adapter:
+              raise SystemExit('Expected normaliseRecord variant line was not found; refusing an unreviewed patch.')
+          adapter = adapter.replace(old_normalise, new_normalise, 1)
+          adapter_path.write_text(adapter)
+
+          test_path = Path('scripts/test-catalogue-ingestion.ts')
+          tests = test_path.read_text()
+          anchor = """  assert.deepEqual(tcgdexAdapterInternals.variantCandidates({
+              variants: { normal: true, holo: false, reverse: true, firstEdition: true, wPromo: true },
+            }), ['normal', 'reverse_holo', 'first_edition', 'promo']);
+          """
+          addition = anchor + """  assert.deepEqual(tcgdexAdapterInternals.variantCandidates({
+              variants: { holo: true, normal: true, wPromo: false, reverse: true, firstEdition: false },
+            }), ['normal', 'holo', 'reverse_holo'], 'provider key order must never change the base card identity');
+          """
+          if anchor not in tests:
+              raise SystemExit('Expected TCGdex variant test anchor was not found; refusing an unreviewed patch.')
+          tests = tests.replace(anchor, addition, 1)
+
+          normalise_anchor = """  assert.equal(
+              tcgdexAdapterInternals.imageVariantCandidate({ variants: { firstEdition: true, holo: true, normal: false } }),
+              null,
+          """
+          # Insert the record-type regression test immediately before the existing ambiguous-image assertion.
+          regression = """  const variantPolicyAdapter = new TcgdexSourceAdapter({ language: 'en', licenceStatus: 'approved' });
+            const baseVariantRecord = variantPolicyAdapter.normaliseRecord({
+              provider: 'tcgdex',
+              providerRecordId: 'sv03-016',
+              recordType: 'card',
+              languageCode: 'en',
+              licenceStatus: 'approved',
+              payload: {
+                id: 'sv03-016',
+                name: 'Bounsweet',
+                localId: '016',
+                set: { id: 'sv03', name: 'Obsidian Flames' },
+                variant: 'holo',
+                image_variant: 'normal',
+                variants: { holo: true, normal: true, reverse: true },
+              },
+            });
+            assert.equal(baseVariantRecord.variantCode, 'normal', 'the base TCGdex card ID must follow the displayed normal image');
+            const explicitHoloRecord = variantPolicyAdapter.normaliseRecord({
+              provider: 'tcgdex',
+              providerRecordId: 'sv03-016:holo',
+              recordType: 'variant',
+              languageCode: 'en',
+              licenceStatus: 'approved',
+              payload: {
+                id: 'sv03-016',
+                name: 'Bounsweet',
+                localId: '016',
+                set: { id: 'sv03', name: 'Obsidian Flames' },
+                variant: 'holo',
+                image_variant: 'normal',
+                variants: { holo: true, normal: true, reverse: true },
+              },
+            });
+            assert.equal(explicitHoloRecord.variantCode, 'holo', 'an explicit holo alias must remain holo');
+          """
+          if normalise_anchor not in tests:
+              raise SystemExit('Expected image variant test anchor was not found; refusing an unreviewed patch.')
+          tests = tests.replace(normalise_anchor, regression + normalise_anchor, 1)
+          test_path.write_text(tests)
+          PY
+
+      - name: Review the exact patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git diff -- scripts/catalogue-ingestion/tcgdexAdapter.ts scripts/test-catalogue-ingestion.ts
+
+      - name: Run catalogue and compile regression gates
+        run: |
+          npm run test:catalogue-ingestion
+          npm run typecheck
+          npm run typecheck:backend
+
+      - name: Commit the reviewed fix to the backend release branch
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No changes were required."
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add scripts/catalogue-ingestion/tcgdexAdapter.ts scripts/test-catalogue-ingestion.ts
+            git commit -m 'Stabilize TCGdex primary variant identity'
+            git push origin HEAD:backend/release-hardening-2026-08-19
+          fi
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Report the tested source commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ steps.commit.outputs.source_sha }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="TCGdex primary-variant policy fix passed catalogue, application and backend type checks. Tested source commit: \`${SOURCE_SHA}\`. Base IDs now prefer the displayed normal variant, while explicit holo and reverse aliases remain separate."
