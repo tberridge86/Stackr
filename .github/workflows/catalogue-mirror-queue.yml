@@ -1,0 +1,56 @@
+name: StackR Catalogue Mirror Queue
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_items:
+        description: Maximum queued mirror jobs to process
+        required: true
+        default: '1'
+        type: choice
+        options: ['1', '2', '3', '5', '10']
+  schedule:
+    - cron: '17,47 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-catalogue-ingestion
+  cancel-in-progress: false
+
+jobs:
+  process-queue:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' &&
+      vars.STACKR_CATALOGUE_INGESTION_SCHEDULED == 'true' &&
+      vars.STACKR_CATALOGUE_INGESTION_AUTOMATION_APPROVED == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: ingestion
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_QUEUE_MAX_ITEMS: ${{ inputs.max_items || '3' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Validate queue command construction
+        run: npx --no-install tsx scripts/test-catalogue-mirror-queue-worker.ts
+
+      - name: Process controlled catalogue mirror queue
+        run: >-
+          npx --no-install tsx scripts/process-catalogue-ingestion-queue.ts
+          --maxItems="$STACKR_QUEUE_MAX_ITEMS"
+          --workerId="github:${{ github.run_id }}:${{ github.run_attempt }}"
+          --staleAfterMinutes=120
+          --itemTimeoutMinutes=70
+          --failOnRetry
