@@ -123,8 +123,10 @@ async function main() {
   ]) {
     assert.match(market, new RegExp(`\\b${marketContract}\\b`), `Market lost required component ${marketContract}`);
   }
-  assert.match(market, /Seller photo/, 'Market must distinguish seller imagery from catalogue imagery');
-  assert.match(market, /Catalogue image/, 'Market must retain explicit catalogue-image labelling');
+  assert.match(market, /function hasSellerPhotos\(/, 'Market lost seller-photo detection');
+  assert.match(market, /function getSellerPhotoUris\(/, 'Market lost seller-photo retrieval');
+  assert.match(market, /function getCatalogueImage\(/, 'Market lost separate catalogue-image selection');
+  assert.match(market, /item\.role === 'stock'|item\.slot === 'stock'/, 'Market no longer distinguishes catalogue stock media from seller evidence');
 
   console.log(JSON.stringify({
     ok: true,
