@@ -21,7 +21,11 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: stackr-railway-full-catalogue-metadata-backfill
+  group: >-
+    ${{ github.event_name == 'issue_comment' &&
+    github.event.comment.body == '/status-stackr-full-metadata-backfill-2026-08-19' &&
+    'stackr-full-catalogue-metadata-status' ||
+    'stackr-railway-full-catalogue-metadata-backfill' }}
   cancel-in-progress: true
 
 jobs:
@@ -216,3 +220,123 @@ jobs:
           gh api repos/${{ github.repository }}/issues/48/comments
           --method POST
           --field body="StackR full primary multilingual metadata backfill run **${GITHUB_RUN_ID}** finished with status **${JOB_STATUS}**."
+
+  status:
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.number == 48 &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/status-stackr-full-metadata-backfill-2026-08-19'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      GH_TOKEN: ${{ github.token }}
+      DO_NOT_TRACK: '1'
+    steps:
+      - name: Query current staging import progress through Railway
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/stackr-metadata-status.mjs" <<'NODE'
+          const url = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
+          const key = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '');
+          if (!url.includes('lmwfhvexfcoyeuoyrlco') || !key) {
+            throw new Error('Railway staging catalogue credentials are unavailable.');
+          }
+
+          async function rest(schema, table, query) {
+            const headers = { apikey: key, 'Accept-Profile': schema };
+            if (key.split('.').length === 3) headers.Authorization = `Bearer ${key}`;
+            const response = await fetch(`${url}/rest/v1/${table}?${query}`, { headers });
+            const text = await response.text();
+            if (!response.ok) throw new Error(`${schema}.${table} returned ${response.status}: ${text.slice(0, 300)}`);
+            return text ? JSON.parse(text) : [];
+          }
+
+          const sources = await rest('ingest', 'sources', 'select=id,code&code=eq.tcgdex&limit=1');
+          const sourceId = sources[0]?.id;
+          if (!sourceId) {
+            console.log(JSON.stringify({ expectedBatches: 47, observedBatches: 0, status: 'not_started' }));
+            process.exit(0);
+          }
+
+          const fields = [
+            'run_key', 'status', 'records_requested', 'records_retrieved',
+            'records_inserted', 'records_updated', 'records_skipped',
+            'records_conflicted', 'started_at', 'finished_at', 'error_message'
+          ].join(',');
+          const query = new URLSearchParams({
+            select: fields,
+            source_id: `eq.${sourceId}`,
+            run_key: 'ilike.*full-primary-2026-08-19*',
+            order: 'started_at.asc',
+          });
+          const runs = await rest('ingest', 'import_runs', query.toString());
+          const byLanguage = {};
+          const totals = {
+            requested: 0, retrieved: 0, inserted: 0, updated: 0,
+            skipped: 0, conflicted: 0,
+          };
+          const statuses = { completed: 0, running: 0, failed: 0, other: 0 };
+          const errors = [];
+          for (const run of runs) {
+            const language = String(run.run_key || '').split(':')[2] || 'unknown';
+            byLanguage[language] ??= { completed: 0, running: 0, failed: 0, recordsRetrieved: 0 };
+            if (run.status in statuses) statuses[run.status] += 1;
+            else statuses.other += 1;
+            if (run.status in byLanguage[language]) byLanguage[language][run.status] += 1;
+            byLanguage[language].recordsRetrieved += Number(run.records_retrieved || 0);
+            totals.requested += Number(run.records_requested || 0);
+            totals.retrieved += Number(run.records_retrieved || 0);
+            totals.inserted += Number(run.records_inserted || 0);
+            totals.updated += Number(run.records_updated || 0);
+            totals.skipped += Number(run.records_skipped || 0);
+            totals.conflicted += Number(run.records_conflicted || 0);
+            if (run.error_message) errors.push(String(run.error_message).slice(0, 240));
+          }
+          console.log(JSON.stringify({
+            expectedBatches: 47,
+            observedBatches: runs.length,
+            statuses,
+            totals,
+            byLanguage,
+            recentErrors: errors.slice(-3),
+          }));
+          NODE
+
+          status_json="$(
+            npx --yes @railway/cli@5.30.1 run \
+              --project "$RAILWAY_PROJECT_ID" \
+              --environment "$RAILWAY_ENVIRONMENT_ID" \
+              --service "$RAILWAY_BACKEND_SERVICE_ID" \
+              --no-local \
+              node "$RUNNER_TEMP/stackr-metadata-status.mjs" \
+              | tail -n 1
+          )"
+          body="$(STATUS_JSON="$status_json" node - <<'NODE'
+          const status = JSON.parse(process.env.STATUS_JSON);
+          const states = status.statuses || {};
+          const totals = status.totals || {};
+          const lanes = Object.entries(status.byLanguage || {})
+            .map(([language, value]) => `- ${language}: ${value.completed || 0} completed, ${value.running || 0} running, ${value.failed || 0} failed; ${value.recordsRetrieved || 0} records retrieved`)
+            .join('\n');
+          const errors = (status.recentErrors || []).map((error) => `- ${error}`).join('\n');
+          console.log([
+            `### StackR metadata backfill status`,
+            `- Batches observed: **${status.observedBatches || 0} / ${status.expectedBatches || 47}**`,
+            `- Completed: **${states.completed || 0}**; running: **${states.running || 0}**; failed: **${states.failed || 0}**`,
+            `- Records retrieved: **${totals.retrieved || 0}**; inserted: **${totals.inserted || 0}**; updated: **${totals.updated || 0}**; conflicts: **${totals.conflicted || 0}**`,
+            lanes ? `\n${lanes}` : '',
+            errors ? `\nRecent errors:\n${errors}` : '',
+          ].filter(Boolean).join('\n');
+          NODE
+          )"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
