@@ -54,9 +54,18 @@ assert.match(exporter, /'en', 'ja', 'zh-tw', 'zh-cn', 'ko'/);
 assert.match(exporter, /pokemon-tcg-api/);
 assert.match(exporter, /X-Api-Key/);
 assert.match(exporter, /sha256/);
-assert.match(exporter, /cards\.json/);
-assert.match(exporter, /sets\.json/);
+assert.match(
+  exporter,
+  /path\.join\(options\.outputDir, 'tcgdex', language, `\$\{resource\}\.json`\)/,
+  'TCGdex card and set snapshots must use deterministic per-resource JSON paths',
+);
+assert.match(
+  exporter,
+  /path\.join\(options\.outputDir, 'pokemon-tcg-api', 'en', `\$\{resource\}\.json`\)/,
+  'Pokémon TCG API card and set snapshots must use deterministic per-resource JSON paths',
+);
 assert.match(exporter, /series\.json/);
+assert.match(exporter, /fields\.json/);
 assert.doesNotMatch(exporter, /createClient|SUPABASE_SERVICE_ROLE_KEY|allowImageAssets/);
 
 assert.match(workflow, /Export the complete provider metadata snapshot/);
