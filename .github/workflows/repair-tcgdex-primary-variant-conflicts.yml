@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  REPAIR_SOURCE_SHA: 20ca4678fb62547c6172be3eea27e1bb5aac35d4
+  REPAIR_SOURCE_SHA: a2320cba976ea6cb50bde9afcc202f1e982ade5f
   TCGDEX_IMAGE: tcgdex/server@sha256:796afd47e430f2b537a46aa70b674efe00175ca0b03872e10fb7faeff9e10bc5
   TCGDEX_BASE_URL: http://127.0.0.1:3300/v2
   STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
@@ -46,7 +46,7 @@ jobs:
           --method POST
           --field body="Exact staging variant repair **${GITHUB_RUN_ID}** started for Bounsweet \`sv03-016\` and Steenee \`sv03-017\`. Scope is two base IDs plus explicit holo and reverse aliases; production is untouched."
 
-      - name: Check out the tested variant-policy source
+      - name: Check out the pinned repair implementation
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ env.REPAIR_SOURCE_SHA }}
@@ -57,7 +57,7 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Confirm source identity and install pinned dependencies
+      - name: Confirm source identity and run regression gates
         shell: bash
         run: |
           set -euo pipefail
@@ -89,25 +89,21 @@ jobs:
               if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
             '
 
-      - name: Pull the exact immutable TCGdex source
+      - name: Pull and start the exact immutable TCGdex source
         shell: bash
         run: |
           set -euo pipefail
           docker pull "$TCGDEX_IMAGE"
           resolved="$(docker image inspect "$TCGDEX_IMAGE" --format '{{index .RepoDigests 0}}')"
           test "$resolved" = "$TCGDEX_IMAGE"
-          echo "Resolved immutable source: $resolved"
-
-      - name: Start the isolated TCGdex source
-        run: >-
-          docker run
-          --detach
-          --rm
-          --name stackr-tcgdex-variant-repair
-          --env MAX_WORKERS=2
-          --env TCGCSV_USER_AGENT=StackR-catalogue-variant-repair/1.0
-          --publish 127.0.0.1:3300:3000
-          "$TCGDEX_IMAGE"
+          docker run \
+            --detach \
+            --rm \
+            --name stackr-tcgdex-variant-repair \
+            --env MAX_WORKERS=2 \
+            --env TCGCSV_USER_AGENT=StackR-catalogue-variant-repair/2.0 \
+            --publish 127.0.0.1:3300:3000 \
+            "$TCGDEX_IMAGE"
 
       - name: Verify both exact provider records
         shell: bash
@@ -125,321 +121,11 @@ jobs:
             sleep 2
           done
 
-      - name: Reconcile only the two affected cards and their explicit variants
+      - name: Reconcile and verify only the two affected cards
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p reports/catalogue
-          repair_script="$GITHUB_WORKSPACE/.stackr-repair-primary-variants.ts"
-          cat > "$repair_script" <<'TS'
-          import { writeFile } from 'node:fs/promises';
-          import { createClient } from '@supabase/supabase-js';
-          import { CatalogueIngestionRunner } from './scripts/catalogue-ingestion/pipeline';
-          import { TcgdexSourceAdapter, tcgdexAdapterInternals } from './scripts/catalogue-ingestion/tcgdexAdapter';
-          import type {
-            FetchScope,
-            ProviderRecord,
-            SourceAdapter,
-          } from './scripts/catalogue-ingestion/sourceAdapter';
-
-          const STAGING_REF = 'lmwfhvexfcoyeuoyrlco';
-          const TARGET_IDS = ['sv03-016', 'sv03-017'] as const;
-          const OLD_CONFLICT_IDS = [
-            'ee9f37ab-5fb3-422c-9313-3cfb7cdb88e3',
-            '0b27bb73-dd33-454e-9dc3-9c7085cc94d9',
-          ] as const;
-          const baseUrl = String(process.env.TCGDEX_BASE_URL || 'http://127.0.0.1:3300/v2').replace(/\/$/, '');
-          const supabaseUrl = String(process.env.SUPABASE_URL || '').trim();
-          const supabaseKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '').trim();
-          if (!supabaseUrl.includes(STAGING_REF) || !supabaseKey) {
-            throw new Error('Refusing variant repair outside canonical staging Supabase.');
-          }
-
-          const db = createClient(supabaseUrl, supabaseKey, {
-            auth: { persistSession: false, autoRefreshToken: false },
-          });
-          const delegate = new TcgdexSourceAdapter({
-            language: 'en',
-            baseUrl,
-            licenceStatus: 'approved',
-            assetLicenceStatus: 'under_review',
-          });
-
-          async function exactCardRecord(id: string): Promise<ProviderRecord> {
-            const endpoint = `${baseUrl}/en/cards/${encodeURIComponent(id)}`;
-            const response = await fetch(endpoint, {
-              headers: { Accept: 'application/json' },
-              signal: AbortSignal.timeout(30_000),
-            });
-            const text = await response.text();
-            if (!response.ok) {
-              throw new Error(`TCGdex exact repair fetch failed (${response.status}) for ${id}: ${text.slice(0, 240)}`);
-            }
-            const card = JSON.parse(text) as Record<string, unknown>;
-            const candidates = tcgdexAdapterInternals.variantCandidates(card);
-            const imageVariant = tcgdexAdapterInternals.imageVariantCandidate(card);
-            if (!candidates.includes('normal') || !candidates.includes('holo') || !candidates.includes('reverse_holo')) {
-              throw new Error(`Unexpected TCGdex variants for ${id}: ${JSON.stringify(candidates)}`);
-            }
-            if (imageVariant !== 'normal') {
-              throw new Error(`Expected ${id} displayed image variant to be normal; received ${String(imageVariant)}`);
-            }
-            return {
-              provider: 'tcgdex',
-              providerRecordId: id,
-              recordType: 'card',
-              languageCode: 'en',
-              sourceUrl: endpoint,
-              sourceEndpoint: endpoint,
-              providerUpdatedAt: String(card.updatedAt ?? card.updated_at ?? '').trim() || null,
-              licenceStatus: 'approved',
-              attributionText: 'TCGdex',
-              httpMetadata: {
-                status: response.status,
-                endpoint,
-                source: 'pinned_immutable_provider_container',
-                imageDigest: process.env.TCGDEX_IMAGE,
-              },
-              payload: {
-                ...card,
-                variant: imageVariant ?? candidates[0],
-                image_variant: imageVariant,
-              },
-            };
-          }
-
-          let cardCache: Promise<ProviderRecord[]> | null = null;
-          const exactCards = () => {
-            cardCache ??= Promise.all(TARGET_IDS.map((id) => exactCardRecord(id)));
-            return cardCache;
-          };
-
-          const adapter: SourceAdapter = {
-            identifySource: () => delegate.identifySource(),
-            healthCheck: (scope?: FetchScope) => delegate.healthCheck(scope),
-            fetchSets: async () => [],
-            fetchCards: async () => exactCards(),
-            fetchVariants: async () => {
-              const cards = await exactCards();
-              return cards.flatMap((card) => {
-                const baseVariant = String(card.payload.image_variant ?? card.payload.variant ?? 'normal');
-                return tcgdexAdapterInternals.variantCandidates(card.payload)
-                  .filter((variant) => variant !== baseVariant)
-                  .map((variant) => ({
-                    ...card,
-                    providerRecordId: `${card.providerRecordId}:${variant}`,
-                    recordType: 'variant' as const,
-                    payload: {
-                      ...card.payload,
-                      variant,
-                      parent_card_id: card.providerRecordId,
-                    },
-                  }));
-              });
-            },
-            fetchAssets: async () => [],
-            normaliseRecord: (record) => delegate.normaliseRecord(record),
-            validateRecord: (record) => delegate.validateRecord(record),
-          };
-
-          const { data: conflictsBefore, error: beforeError } = await db
-            .schema('ingest')
-            .from('data_conflicts')
-            .select('*')
-            .in('id', [...OLD_CONFLICT_IDS])
-            .order('created_at', { ascending: true });
-          if (beforeError) throw beforeError;
-          if ((conflictsBefore ?? []).length !== OLD_CONFLICT_IDS.length) {
-            throw new Error(`Expected exactly ${OLD_CONFLICT_IDS.length} historic conflicts; found ${(conflictsBefore ?? []).length}.`);
-          }
-          if ((conflictsBefore ?? []).some((row) => row.conflict_type !== 'identity_collision')) {
-            throw new Error('Historic repair target contains an unexpected conflict type.');
-          }
-
-          const runner = new CatalogueIngestionRunner(db, adapter);
-          const result = await runner.run({
-            command: 'run_source',
-            importType: 'repair',
-            language: 'en',
-            providerRecordId: 'sv03-016,sv03-017',
-            runKey: 'tcgdex-primary-variant-policy-repair-2026-08-19-v1',
-            requestId: `github:${process.env.GITHUB_RUN_ID || 'manual'}:tcgdex-primary-variant-policy-repair`,
-            allowImageAssets: false,
-            approvedOnlyAssets: true,
-            writeConcurrency: 2,
-          });
-          if (!result.ok || !result.importRunId) {
-            throw new Error(`Targeted catalogue repair did not complete: ${JSON.stringify(result)}`);
-          }
-          if (Number(result.stats?.recordsConflicted ?? -1) !== 0) {
-            throw new Error(`Targeted catalogue repair created conflicts: ${JSON.stringify(result.stats)}`);
-          }
-          if (Number(result.stats?.recordsRetrieved ?? -1) !== 6) {
-            throw new Error(`Targeted repair expected exactly six provider records; received ${JSON.stringify(result.stats)}`);
-          }
-
-          const { data: repairConflicts, error: repairConflictError } = await db
-            .schema('ingest')
-            .from('data_conflicts')
-            .select('id,conflict_type,severity,status,canonical_key,internal_notes')
-            .eq('import_run_id', result.importRunId)
-            .in('status', ['open', 'in_review']);
-          if (repairConflictError) throw repairConflictError;
-          if ((repairConflicts ?? []).length) {
-            throw new Error(`Repair run retained unresolved conflicts: ${JSON.stringify(repairConflicts)}`);
-          }
-
-          const expectedExternalIds = TARGET_IDS.flatMap((id) => [id, `${id}:holo`, `${id}:reverse_holo`]);
-          const { data: sourceRows, error: sourceError } = await db
-            .schema('ingest')
-            .from('sources')
-            .select('id,code')
-            .eq('code', 'tcgdex')
-            .limit(1);
-          if (sourceError) throw sourceError;
-          const sourceId = sourceRows?.[0]?.id;
-          if (!sourceId) throw new Error('TCGdex ingest source row is missing.');
-
-          const { data: identifiers, error: identifierError } = await db
-            .schema('ingest')
-            .from('external_identifiers')
-            .select('id,external_id,language_code,variant_id,is_current,deprecated_at')
-            .eq('source_id', sourceId)
-            .eq('source_entity_type', 'card')
-            .eq('language_code', 'en')
-            .in('external_id', expectedExternalIds)
-            .eq('is_current', true)
-            .is('deprecated_at', null)
-            .order('external_id', { ascending: true });
-          if (identifierError) throw identifierError;
-          const currentIdentifiers = identifiers ?? [];
-          const byExternalId = new Map(currentIdentifiers.map((row) => [row.external_id, row]));
-          const missingIdentifiers = expectedExternalIds.filter((id) => !byExternalId.has(id));
-          if (missingIdentifiers.length || currentIdentifiers.length !== expectedExternalIds.length) {
-            throw new Error(`Exact current identifier verification failed: missing ${missingIdentifiers.join(', ') || 'none'}; rows ${currentIdentifiers.length}.`);
-          }
-
-          const variantIds = [...new Set(currentIdentifiers.map((row) => row.variant_id).filter(Boolean))];
-          const { data: variants, error: variantError } = await db
-            .schema('catalog')
-            .from('card_variants')
-            .select('id,printing_id,variant_code,finish_code,canonical_key,is_default,deprecated_at')
-            .in('id', variantIds)
-            .is('deprecated_at', null);
-          if (variantError) throw variantError;
-          const variantById = new Map((variants ?? []).map((row) => [row.id, row]));
-
-          const verifiedCards = TARGET_IDS.map((id) => {
-            const expected = new Map([
-              [id, 'normal'],
-              [`${id}:holo`, 'holo'],
-              [`${id}:reverse_holo`, 'reverse_holo'],
-            ]);
-            const rows = [...expected.entries()].map(([externalId, expectedVariant]) => {
-              const identifier = byExternalId.get(externalId);
-              const variant = identifier ? variantById.get(identifier.variant_id) : null;
-              if (!identifier || !variant) throw new Error(`Missing linked variant for ${externalId}.`);
-              if (variant.variant_code !== expectedVariant) {
-                throw new Error(`${externalId} points to ${variant.variant_code}; expected ${expectedVariant}.`);
-              }
-              if (variant.finish_code !== expectedVariant) {
-                throw new Error(`${externalId} finish is ${variant.finish_code}; expected ${expectedVariant}.`);
-              }
-              return {
-                externalId,
-                identifierId: identifier.id,
-                variantId: variant.id,
-                printingId: variant.printing_id,
-                variantCode: variant.variant_code,
-                finishCode: variant.finish_code,
-                canonicalKey: variant.canonical_key,
-                isDefault: variant.is_default,
-              };
-            });
-            if (new Set(rows.map((row) => row.printingId)).size !== 1) {
-              throw new Error(`${id} variants do not share one canonical printing.`);
-            }
-            if (rows.find((row) => row.externalId === id)?.isDefault !== true) {
-              throw new Error(`${id} normal base variant is not the default variant.`);
-            }
-            return { providerRecordId: id, variants: rows };
-          });
-
-          const resolvedAt = new Date().toISOString();
-          const resolutionNotes = [
-            'Resolved by exact TCGdex primary-variant policy repair.',
-            'Pinned provider payload declares normal, holo and reverse finishes while image_variant is normal.',
-            'Base provider IDs were verified against normal; explicit :holo and :reverse_holo aliases were verified against their own canonical variants.',
-            `Repair import run ${result.importRunId}.`,
-            `Source commit ${process.env.REPAIR_SOURCE_SHA}.`,
-          ].join(' ');
-          const conflictSample = conflictsBefore?.[0] ?? {};
-          const resolutionPatch: Record<string, unknown> = {};
-          if (Object.prototype.hasOwnProperty.call(conflictSample, 'status')) resolutionPatch.status = 'resolved';
-          if (Object.prototype.hasOwnProperty.call(conflictSample, 'resolved_at')) resolutionPatch.resolved_at = resolvedAt;
-          if (Object.prototype.hasOwnProperty.call(conflictSample, 'resolution_notes')) resolutionPatch.resolution_notes = resolutionNotes;
-          if (Object.prototype.hasOwnProperty.call(conflictSample, 'resolved_by')) {
-            resolutionPatch.resolved_by = 'stackr_tcgdex_primary_variant_policy_repair';
-          }
-          if (!('status' in resolutionPatch) || !('resolved_at' in resolutionPatch) || !('resolution_notes' in resolutionPatch)) {
-            throw new Error(`Conflict schema lacks required resolution columns: ${JSON.stringify(Object.keys(conflictSample).sort())}`);
-          }
-
-          const { data: resolvedRows, error: resolveError } = await db
-            .schema('ingest')
-            .from('data_conflicts')
-            .update(resolutionPatch)
-            .in('id', [...OLD_CONFLICT_IDS])
-            .in('status', ['open', 'in_review'])
-            .select('*');
-          if (resolveError) throw resolveError;
-          if ((resolvedRows ?? []).length !== OLD_CONFLICT_IDS.length) {
-            throw new Error(`Expected to resolve ${OLD_CONFLICT_IDS.length} historic conflicts; updated ${(resolvedRows ?? []).length}.`);
-          }
-
-          const { data: conflictsAfter, error: afterError } = await db
-            .schema('ingest')
-            .from('data_conflicts')
-            .select('id,status,resolved_at,resolution_notes,conflict_type,severity,canonical_key')
-            .in('id', [...OLD_CONFLICT_IDS])
-            .order('id', { ascending: true });
-          if (afterError) throw afterError;
-          if ((conflictsAfter ?? []).some((row) => row.status !== 'resolved' || !row.resolved_at || !row.resolution_notes)) {
-            throw new Error(`Historic conflict resolution verification failed: ${JSON.stringify(conflictsAfter)}`);
-          }
-
-          const evidence = {
-            schemaVersion: 'stackr-tcgdex-primary-variant-repair-v1.0.0',
-            repairedAt: resolvedAt,
-            projectRef: STAGING_REF,
-            productionTouched: false,
-            sourceCommit: process.env.REPAIR_SOURCE_SHA,
-            providerImage: process.env.TCGDEX_IMAGE,
-            importRunId: result.importRunId,
-            importStats: result.stats,
-            targetProviderRecordIds: TARGET_IDS,
-            verifiedCards,
-            conflictsBefore: (conflictsBefore ?? []).map((row) => ({
-              id: row.id,
-              status: row.status,
-              conflictType: row.conflict_type,
-              severity: row.severity,
-              canonicalKey: row.canonical_key,
-              internalNotes: row.internal_notes,
-            })),
-            conflictsAfter,
-            ok: true,
-          };
-          await writeFile('reports/catalogue/tcgdex-primary-variant-repair.json', `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
-          console.log(JSON.stringify({
-            ok: true,
-            importRunId: result.importRunId,
-            stats: result.stats,
-            resolvedConflictIds: conflictsAfter?.map((row) => row.id),
-            verifiedCards,
-          }, null, 2));
-          TS
-
           npx --yes @railway/cli@5.30.1 run \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
@@ -450,14 +136,15 @@ jobs:
               TCGDEX_BASE_URL="$TCGDEX_BASE_URL" \
               TCGDEX_IMAGE="$TCGDEX_IMAGE" \
               REPAIR_SOURCE_SHA="$REPAIR_SOURCE_SHA" \
-              npx --no-install tsx "$repair_script"
-          rm -f "$repair_script"
+              npx --no-install tsx scripts/repair-tcgdex-primary-variant-conflicts.mts
 
-      - name: Secret-scan the repair evidence
-        run: node scripts/deploy/secret-scan.mjs --directory=reports/catalogue
+      - name: Secret-scan and upload the repair evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/deploy/secret-scan.mjs --directory=reports/catalogue
 
-      - name: Upload exact staging repair evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: stackr-tcgdex-primary-variant-repair-${{ github.run_id }}
           path: reports/catalogue/tcgdex-primary-variant-repair.json
