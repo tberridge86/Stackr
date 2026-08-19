@@ -1,0 +1,360 @@
+name: Resume StackR Full Catalogue Metadata Backfill
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Re-run batches already recorded as completed
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: >-
+    ${{ github.event_name == 'issue_comment' &&
+    github.event.comment.body == '/resume-stackr-full-metadata-backfill-2026-08-19' &&
+    'stackr-resumable-full-catalogue-metadata-backfill' ||
+    format('stackr-resumable-catalogue-passive-{0}', github.run_id) }}
+  cancel-in-progress: false
+
+env:
+  STACKR_BACKFILL_SOURCE_SHA: a65c495fefa6d41e6bda501d2c7ab307bd43bf8c
+  TCGDEX_IMAGE: tcgdex/server@sha256:796afd47e430f2b537a46aa70b674efe00175ca0b03872e10fb7faeff9e10bc5
+  CATALOGUE_VERSION: tcgdex-796afd47e430-full-primary-2026-08-19
+  DO_NOT_TRACK: '1'
+
+jobs:
+  validate:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.number == 48 &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/resume-stackr-full-metadata-backfill-2026-08-19')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+    steps:
+      - name: Announce the immutable resumable run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="StackR resumable multilingual metadata backfill run **${GITHUB_RUN_ID}** started. It is pinned to TCGdex digest \`796afd47e430…\`, reuses the eight completed English batches, and runs isolated language lanes."
+
+      - name: Check out the reviewed ingestion implementation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.STACKR_BACKFILL_SOURCE_SHA }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install and validate the exact ingestion code
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$STACKR_BACKFILL_SOURCE_SHA"
+          npm ci
+          npx --no-install tsx scripts/test-full-catalogue-metadata-backfill.ts
+          npm run test:catalogue-ingestion
+
+      - name: Verify the Railway staging Supabase context
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RAILWAY_API_TOKEN"
+          test -n "$RAILWAY_PROJECT_ID"
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_BACKEND_SERVICE_ID"
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            node -e '
+              const url = String(process.env.SUPABASE_URL || "");
+              const result = {
+                stagingSupabase: url.includes("lmwfhvexfcoyeuoyrlco"),
+                serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
+              };
+              console.log(JSON.stringify(result));
+              if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
+            '
+
+  ingest:
+    needs: validate
+    name: ingest-${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: staging
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        language: [en, ja, zh-tw, zh-cn, ko]
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      FORCE_FLAG: ${{ inputs.force && '--force' || '' }}
+    steps:
+      - name: Check out the reviewed ingestion implementation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.STACKR_BACKFILL_SOURCE_SHA }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install StackR dependencies
+        run: npm ci
+
+      - name: Pull the exact immutable TCGdex source
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull "$TCGDEX_IMAGE"
+          resolved="$(docker image inspect "$TCGDEX_IMAGE" --format '{{index .RepoDigests 0}}')"
+          test "$resolved" = "$TCGDEX_IMAGE"
+          echo "Resolved immutable source: $resolved"
+
+      - name: Start the isolated TCGdex source for ${{ matrix.language }}
+        run: >-
+          docker run
+          --detach
+          --rm
+          --name stackr-tcgdex-source
+          --env MAX_WORKERS=2
+          --env TCGCSV_USER_AGENT=StackR-catalogue-metadata-backfill/1.0
+          --publish 127.0.0.1:3300:3000
+          "$TCGDEX_IMAGE"
+
+      - name: Verify the exact language universe
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 360); do
+            if curl --fail --silent "http://127.0.0.1:3300/v2/${{ matrix.language }}/cards" > "$RUNNER_TEMP/cards.json"; then
+              break
+            fi
+            if [ "$attempt" = "360" ]; then
+              docker logs stackr-tcgdex-source
+              exit 1
+            fi
+            sleep 2
+          done
+          count="$(node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); const r=Array.isArray(p)?p:p.data; if(!Array.isArray(r)||r.length===0)process.exit(1); process.stdout.write(String(r.length));' "$RUNNER_TEMP/cards.json")"
+          echo "${{ matrix.language }} provider records: $count"
+
+      - name: Resume all ${{ matrix.language }} metadata batches
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          extra_args=()
+          if [ -n "$FORCE_FLAG" ]; then extra_args+=("$FORCE_FLAG"); fi
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            env STACKR_CATALOGUE_IMPORT_TARGET=staging \
+            npx --no-install tsx scripts/full-catalogue-metadata-backfill.ts \
+              --sources=tcgdex \
+              "--languages=${{ matrix.language }}" \
+              --tcgdexBaseUrl=http://127.0.0.1:3300/v2 \
+              --batchSize=1000 \
+              --writeConcurrency=16 \
+              --maxAttempts=3 \
+              --batchPauseMs=100 \
+              "--version=$CATALOGUE_VERSION" \
+              "--output=reports/catalogue/full-metadata-backfill-${{ matrix.language }}.json" \
+              "${extra_args[@]}"
+
+      - name: Upload the ${{ matrix.language }} progress report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-full-catalogue-lane-${{ github.run_id }}-${{ matrix.language }}
+          path: reports/catalogue/full-metadata-backfill-${{ matrix.language }}.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Print provider diagnostics after a failure
+        if: failure()
+        run: docker logs stackr-tcgdex-source || true
+
+      - name: Stop the isolated provider service
+        if: always()
+        run: docker stop stackr-tcgdex-source || true
+
+  aggregate:
+    needs: ingest
+    if: always() && needs.validate.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      MATRIX_RESULT: ${{ needs.ingest.result }}
+    steps:
+      - name: Download all completed language reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/languages
+          gh run download "$GITHUB_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --pattern "stackr-full-catalogue-lane-${GITHUB_RUN_ID}-*" \
+            --dir reports/catalogue/languages || true
+          find reports/catalogue/languages -type f -maxdepth 4 -print || true
+
+      - name: Build the combined immutable completion report
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const required = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
+          const expectedVersion = 'tcgdex-796afd47e430-full-primary-2026-08-19';
+          const root = 'reports/catalogue/languages';
+          function walk(directory) {
+            if (!fs.existsSync(directory)) return [];
+            return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+              const item = path.join(directory, entry.name);
+              return entry.isDirectory() ? walk(item) : [item];
+            });
+          }
+          const files = walk(root).filter((file) => file.endsWith('.json'));
+          const reports = [];
+          const parseFailures = [];
+          for (const file of files) {
+            try {
+              reports.push({ file, report: JSON.parse(fs.readFileSync(file, 'utf8')) });
+            } catch (error) {
+              parseFailures.push(`${file}:${error.message}`);
+            }
+          }
+          const failures = [...parseFailures];
+          const lanes = [];
+          for (const language of required) {
+            const matches = reports.filter(({ report }) => (
+              report.version === expectedVersion
+              && Array.isArray(report.lanes)
+              && report.lanes.some((lane) => lane.source === 'tcgdex' && lane.language === language)
+            ));
+            if (matches.length !== 1) {
+              failures.push(`report_count_${language}_${matches.length}`);
+              continue;
+            }
+            const report = matches[0].report;
+            const laneMatches = report.lanes.filter((lane) => lane.source === 'tcgdex' && lane.language === language);
+            if (laneMatches.length !== 1) {
+              failures.push(`lane_count_${language}_${laneMatches.length}`);
+              continue;
+            }
+            const lane = laneMatches[0];
+            if (report.ok !== true) failures.push(`report_not_ok_${language}`);
+            if (Number(report.summary?.failures ?? -1) !== 0) failures.push(`summary_failures_${language}`);
+            if (lane.status !== 'completed') failures.push(`lane_not_completed_${language}`);
+            if (Number(lane.batchesFailed ?? -1) !== 0) failures.push(`failed_batches_${language}`);
+            if (Number(lane.providerTotal ?? 0) <= 0) failures.push(`empty_provider_${language}`);
+            if (Number(lane.recordsCovered ?? -1) !== Number(lane.plannedRecords ?? -2)) {
+              failures.push(`coverage_mismatch_${language}`);
+            }
+            lanes.push(lane);
+          }
+          const sum = (field) => lanes.reduce((total, lane) => total + Number(lane[field] ?? 0), 0);
+          const combined = {
+            schemaVersion: 1,
+            job: 'stackr-full-catalogue-metadata-backfill',
+            startedAt: reports.map(({ report }) => report.startedAt).filter(Boolean).sort()[0] ?? null,
+            finishedAt: new Date().toISOString(),
+            version: expectedVersion,
+            stagingProjectRef: 'lmwfhvexfcoyeuoyrlco',
+            sources: ['tcgdex'],
+            languages: required,
+            metadataOnly: true,
+            pokemonApiKeyConfigured: false,
+            immutableSource: 'tcgdex/server@sha256:796afd47e430f2b537a46aa70b674efe00175ca0b03872e10fb7faeff9e10bc5',
+            matrixResult: process.env.MATRIX_RESULT,
+            lanes,
+            ok: failures.length === 0 && process.env.MATRIX_RESULT === 'success',
+            failures,
+            summary: {
+              lanes: lanes.length,
+              failures: failures.length,
+              batchesCompleted: sum('batchesCompleted'),
+              batchesSkipped: sum('batchesSkipped'),
+              batchesFailed: sum('batchesFailed'),
+              recordsCovered: sum('recordsCovered'),
+              providerRecords: sum('providerTotal'),
+            },
+          };
+          fs.writeFileSync('reports/catalogue/full-metadata-backfill.json', JSON.stringify(combined, null, 2) + '\n');
+          console.log(JSON.stringify(combined.summary, null, 2));
+          NODE
+
+      - name: Upload the combined five-language report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-full-catalogue-metadata-${{ github.run_id }}
+          path: reports/catalogue/full-metadata-backfill.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+
+      - name: Enforce complete five-language success
+        shell: bash
+        run: |
+          node -e '
+            const report = JSON.parse(require("fs").readFileSync("reports/catalogue/full-metadata-backfill.json", "utf8"));
+            if (report.ok !== true) {
+              console.error(JSON.stringify({ ok: false, failures: report.failures }, null, 2));
+              process.exit(1);
+            }
+            console.log(JSON.stringify({ ok: true, version: report.version, summary: report.summary }, null, 2));
+          '
+
+      - name: Report the resumable backfill result
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [ "$JOB_STATUS" = "success" ]; then
+            body="StackR resumable multilingual metadata backfill run **${GITHUB_RUN_ID}** completed all five pinned TCGdex lanes successfully. Combined evidence: ${run_url}"
+          else
+            body="StackR resumable multilingual metadata backfill run **${GITHUB_RUN_ID}** finished with status **${JOB_STATUS}**. The combined report records every missing or failed lane: ${run_url}"
+          fi
+          gh api repos/${GITHUB_REPOSITORY}/issues/48/comments \
+            --method POST \
+            --field body="$body"
