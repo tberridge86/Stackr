@@ -1,62 +1,15 @@
 name: Continue StackR Catalogue Production After Resume
 
 on:
-  workflow_run:
-    workflows: [Resume StackR Full Catalogue Metadata Backfill]
-    types: [completed]
+  workflow_dispatch:
 
 permissions:
-  actions: write
   contents: read
-  issues: write
-  pull-requests: write
-
-concurrency:
-  group: stackr-catalogue-production-continuation-${{ github.event.workflow_run.id }}
-  cancel-in-progress: false
 
 jobs:
-  dispatch:
-    if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'issue_comment' &&
-      github.event.workflow_run.head_branch == 'main' &&
-      github.event.workflow_run.head_repository.full_name == github.repository &&
-      github.event.workflow_run.actor.login == 'tberridge86'
+  retired:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - name: Verify the combined completion artifact exists
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          artifact_count="$(
-            gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}/artifacts" \
-              --jq '[.artifacts[] | select(.name == "stackr-full-catalogue-metadata-'"${SOURCE_RUN_ID}"'")] | length'
-          )"
-          test "$artifact_count" = "1"
-
-      - name: Dispatch the exact guarded production controller
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          gh workflow run promote-catalogue-data-production.yml \
-            --repo "$GITHUB_REPOSITORY" \
-            --ref main \
-            --field confirmation='PROMOTE VERIFIED CATALOGUE TO PRODUCTION' \
-            --field staging_run_id="$SOURCE_RUN_ID"
-
-      - name: Record the continuation on PR 48
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+      - name: Explain the replacement
         run: >-
-          gh api repos/${{ github.repository }}/issues/48/comments
-          --method POST
-          --field body="Resumable catalogue backfill run **${SOURCE_RUN_ID}** passed its combined five-language gate. The guarded staging-finalisation and production-promotion controller has been dispatched using that exact run as immutable evidence."
+          echo "Retired: normalize-resumed-catalogue-backfill-evidence.yml now independently validates the five language artifacts and dispatches the guarded production controller."
