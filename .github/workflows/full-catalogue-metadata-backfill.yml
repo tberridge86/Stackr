@@ -1,0 +1,162 @@
+name: StackR Full Catalogue Metadata Backfill
+
+on:
+  push:
+    branches: [backend/release-hardening-2026-08-19]
+    paths:
+      - .github/workflows/full-catalogue-metadata-backfill.yml
+      - scripts/full-catalogue-metadata-backfill.ts
+      - scripts/test-full-catalogue-metadata-backfill.ts
+      - scripts/catalogue-ingestion/**
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Re-run batches already recorded as complete
+        required: true
+        default: false
+        type: boolean
+      max_records:
+        description: Optional per-provider/language cap; blank means the full universe
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-full-catalogue-metadata-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: staging
+    env:
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+      TCGDEX_RELEASE: v2.47.0
+      DO_NOT_TRACK: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install StackR dependencies
+        run: npm ci
+
+      - name: Validate metadata backfill and rights gates
+        run: npx --no-install tsx scripts/test-full-catalogue-metadata-backfill.ts
+
+      - name: Fetch the pinned TCGdex bulk database
+        run: >-
+          git clone
+          --depth 1
+          --branch "$TCGDEX_RELEASE"
+          https://github.com/tcgdex/cards-database.git
+          "$RUNNER_TEMP/tcgdex-cards-database"
+
+      - name: Build the pinned local TCGdex API
+        run: >-
+          docker build
+          --pull
+          --tag stackr-tcgdex-source:${{ github.sha }}
+          "$RUNNER_TEMP/tcgdex-cards-database"
+
+      - name: Start the pinned local TCGdex API
+        run: >-
+          docker run
+          --detach
+          --rm
+          --name stackr-tcgdex-source
+          --publish 127.0.0.1:3300:3000
+          stackr-tcgdex-source:${{ github.sha }}
+
+      - name: Verify the local multilingual source
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 120); do
+            if curl --fail --silent --show-error \
+              http://127.0.0.1:3300/v2/en/cards/swsh3-136 \
+              > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs stackr-tcgdex-source
+          exit 1
+
+      - name: Verify Railway staging variables without revealing values
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            node -e '
+              const url = String(process.env.SUPABASE_URL || "");
+              const result = {
+                stagingSupabase: url.includes("lmwfhvexfcoyeuoyrlco"),
+                serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
+                pokemonTcgApiKey: Boolean(process.env.POKEMON_TCG_API_KEY),
+              };
+              console.log(JSON.stringify(result));
+              if (!result.stagingSupabase || !result.serviceCredential) process.exit(1);
+            '
+
+      - name: Pull all metadata for EN, JA, ZH-TW, ZH-CN and KO
+        shell: bash
+        env:
+          FORCE_FLAG: ${{ inputs.force && '--force' || '' }}
+          MAX_RECORDS_VALUE: ${{ inputs.max_records || '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          extra_args=()
+          if [ -n "$FORCE_FLAG" ]; then extra_args+=("$FORCE_FLAG"); fi
+          if [ -n "$MAX_RECORDS_VALUE" ]; then extra_args+=("--maxRecords=$MAX_RECORDS_VALUE"); fi
+
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            env STACKR_CATALOGUE_IMPORT_TARGET=staging \
+            npx --no-install tsx scripts/full-catalogue-metadata-backfill.ts \
+              --sources=tcgdex,pokemon-tcg-api \
+              --languages=en,ja,zh-tw,zh-cn,ko \
+              --tcgdexBaseUrl=http://127.0.0.1:3300/v2 \
+              --pokemonBaseUrl=https://api.pokemontcg.io/v2 \
+              --batchSize=1000 \
+              --writeConcurrency=8 \
+              --maxAttempts=3 \
+              --batchPauseMs=250 \
+              --version=tcgdex-v2.47.0-pokemon-live-2026-08-19 \
+              --output=reports/catalogue/full-metadata-backfill.json \
+              "${extra_args[@]}"
+
+      - name: Upload the metadata progress report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-full-metadata-backfill-${{ github.run_id }}
+          path: reports/catalogue/full-metadata-backfill.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Print local TCGdex logs after a failure
+        if: failure()
+        run: docker logs stackr-tcgdex-source || true
+
+      - name: Stop the local TCGdex API
+        if: always()
+        run: docker stop stackr-tcgdex-source || true
