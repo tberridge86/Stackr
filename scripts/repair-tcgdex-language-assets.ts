@@ -98,7 +98,7 @@ export function createApprovedTcgdexRepairAdapter(languageCode: string): SourceA
 
   return {
     identifySource: () => base.identifySource(),
-    healthCheck: (scope?: FetchScope) => base.healthCheck(scope),
+    healthCheck: () => base.healthCheck(),
     fetchSets: (scope?: FetchScope) => base.fetchSets(scope),
     fetchCards: (scope?: FetchScope) => base.fetchCards(scope),
     fetchVariants: (scope?: FetchScope) => base.fetchVariants(scope),
@@ -111,7 +111,7 @@ export function createApprovedTcgdexRepairAdapter(languageCode: string): SourceA
       // language repair covers fronts + logos + symbols in one controlled run.
       // Do not apply the card offset/limit to the set-art list: each batch is
       // idempotent and retaining all set art prevents a partial repair.
-      const sets = await collectRecords(base.fetchSets({}));
+      const sets = await collectRecords(base.fetchSets());
       const setAssets = buildSetAssetRecords(sets, languageCode);
       return [...setAssets, ...providerAssets];
     },
