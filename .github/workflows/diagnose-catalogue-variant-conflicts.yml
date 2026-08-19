@@ -85,7 +85,7 @@ jobs:
 
           const { data: rawRows, error: rawError } = await db
             .schema('ingest').from('raw_source_records')
-            .select('id,import_run_id,external_id,record_type,language_code,validation_status,validation_errors,raw_payload,source_url,retrieved_at')
+            .select('*')
             .eq('source_id', sourceId)
             .eq('language_code', 'en')
             .in('external_id', targetIds)
@@ -96,7 +96,7 @@ jobs:
           let conflicts = [];
           if (runIds.length && rawIds.length) {
             const { data, error } = await db.schema('ingest').from('data_conflicts')
-              .select('id,import_run_id,raw_record_id,conflict_type,severity,status,canonical_key,proposed_payload,existing_payload,internal_notes,created_at,resolved_at,resolution_notes')
+              .select('*')
               .in('import_run_id', runIds)
               .in('raw_record_id', rawIds)
               .order('created_at', { ascending: true });
@@ -108,13 +108,14 @@ jobs:
             id,
             `${id}:normal`,
             `${id}:reverse_holo`,
+            `${id}:reverse`,
             `${id}:holo`,
             `${id}:cosmos_holo`,
             `${id}:promo_holo`,
           ]);
           const { data: identifiers, error: identifierError } = await db
             .schema('ingest').from('external_identifiers')
-            .select('id,source_id,source_entity_type,external_id,language_code,set_id,variant_id,asset_id,confidence,is_current,deprecated_at,deprecated_reason,source_updated_at,raw_record_id')
+            .select('*')
             .eq('source_id', sourceId)
             .eq('source_entity_type', 'card')
             .eq('language_code', 'en')
@@ -126,7 +127,7 @@ jobs:
           let variants = [];
           if (variantIds.length) {
             const { data, error } = await db.schema('catalog').from('card_variants')
-              .select('id,printing_id,variant_code,finish,canonical_key,source_updated_at,deprecated_at,deprecated_reason')
+              .select('*')
               .in('id', variantIds)
               .order('variant_code', { ascending: true });
             if (error) throw error;
@@ -138,7 +139,7 @@ jobs:
           let printings = [];
           if (printingIds.length) {
             const variantQuery = await db.schema('catalog').from('card_variants')
-              .select('id,printing_id,variant_code,finish,canonical_key,source_updated_at,deprecated_at,deprecated_reason')
+              .select('*')
               .in('printing_id', printingIds)
               .order('printing_id', { ascending: true })
               .order('variant_code', { ascending: true });
@@ -146,14 +147,14 @@ jobs:
             printingVariants = variantQuery.data || [];
 
             const printingQuery = await db.schema('catalog').from('card_printings')
-              .select('id,set_id,card_id,collector_number,rarity,canonical_key,source_updated_at,deprecated_at,deprecated_reason')
+              .select('*')
               .in('id', printingIds);
             if (printingQuery.error) throw printingQuery.error;
             printings = printingQuery.data || [];
           }
 
           const report = {
-            schemaVersion: 1,
+            schemaVersion: 2,
             diagnosedAt: new Date().toISOString(),
             projectRef: 'lmwfhvexfcoyeuoyrlco',
             version: process.env.CATALOGUE_VERSION,
@@ -164,36 +165,69 @@ jobs:
             conflicts,
             identifiers,
             linkedVariants: variants,
-            allActiveAndDeprecatedPrintingVariants: printingVariants,
+            allPrintingVariants: printingVariants,
             printings,
           };
           writeFileSync('reports/catalogue/variant-conflict-diagnostics.json', JSON.stringify(report, null, 2) + '\n');
 
+          const rawById = new Map((rawRows || []).map((row) => [row.id, row]));
+          const variantById = new Map(variants.map((row) => [row.id, row]));
           const summaries = targetIds.map((externalId) => {
             const ids = (identifiers || []).filter((row) => row.external_id === externalId || row.external_id.startsWith(`${externalId}:`));
-            const linked = new Map(variants.map((row) => [row.id, row]));
+            const printingIdSet = new Set(ids.map((row) => variantById.get(row.variant_id)?.printing_id).filter(Boolean));
+            const relatedPrintingVariants = printingVariants.filter((row) => printingIdSet.has(row.printing_id));
             return {
               externalId,
               sourceVariants: (rawRows || [])
                 .filter((row) => row.external_id === externalId)
                 .map((row) => row.raw_payload?.variants ?? null),
-              identifiers: ids.map((row) => ({
-                externalId: row.external_id,
-                current: row.is_current,
-                variantId: row.variant_id,
-                variantCode: linked.get(row.variant_id)?.variant_code ?? null,
-                finish: linked.get(row.variant_id)?.finish ?? null,
-                deprecatedReason: row.deprecated_reason,
+              rawPayloads: (rawRows || [])
+                .filter((row) => row.external_id === externalId)
+                .map((row) => ({
+                  rawRecordId: row.id,
+                  validationStatus: row.validation_status,
+                  variants: row.raw_payload?.variants ?? null,
+                  image: row.raw_payload?.image ?? null,
+                  category: row.raw_payload?.category ?? null,
+                  rarity: row.raw_payload?.rarity ?? null,
+                  updated: row.raw_payload?.updated ?? row.raw_payload?.updatedAt ?? null,
+                })),
+              identifiers: ids.map((row) => {
+                const variant = variantById.get(row.variant_id);
+                return {
+                  externalId: row.external_id,
+                  current: row.is_current,
+                  variantId: row.variant_id,
+                  variantCode: variant?.variant_code ?? null,
+                  printingId: variant?.printing_id ?? null,
+                  confidence: row.confidence ?? null,
+                  sourceUpdatedAt: row.source_updated_at ?? null,
+                  deprecatedAt: row.deprecated_at ?? null,
+                  deprecatedReason: row.deprecated_reason ?? null,
+                };
+              }),
+              printingVariants: relatedPrintingVariants.map((row) => ({
+                id: row.id,
+                printingId: row.printing_id,
+                variantCode: row.variant_code,
+                canonicalKey: row.canonical_key ?? null,
+                sourceUpdatedAt: row.source_updated_at ?? null,
+                deprecatedAt: row.deprecated_at ?? null,
+                deprecatedReason: row.deprecated_reason ?? null,
               })),
               conflicts: conflicts
-                .filter((row) => (rawRows || []).some((raw) => raw.id === row.raw_record_id && raw.external_id === externalId))
+                .filter((row) => rawById.get(row.raw_record_id)?.external_id === externalId)
                 .map((row) => ({
+                  id: row.id,
                   type: row.conflict_type,
                   severity: row.severity,
                   status: row.status,
-                  notes: row.internal_notes,
-                  proposed: row.proposed_payload,
-                  existing: row.existing_payload,
+                  canonicalKey: row.canonical_key ?? null,
+                  notes: row.internal_notes ?? null,
+                  proposed: row.proposed_payload ?? null,
+                  existing: row.existing_payload ?? null,
+                  resolvedAt: row.resolved_at ?? null,
+                  resolutionNotes: row.resolution_notes ?? null,
                 })),
             };
           });
@@ -218,16 +252,21 @@ jobs:
           const sections = data.summaries.map((item) => {
             const sourceVariants = [...new Set(item.sourceVariants.map((value) => JSON.stringify(value)))].join(', ');
             const identifiers = item.identifiers.length
-              ? item.identifiers.map((row) => `  - \`${row.externalId}\` → ${row.variantCode || 'unknown'} / ${row.finish || 'unknown'} (${row.current ? 'current' : `deprecated: ${row.deprecatedReason || 'unspecified'}`})`).join('\n')
+              ? item.identifiers.map((row) => `  - \`${row.externalId}\` → \`${row.variantCode || 'unknown'}\` (${row.current ? 'current' : `not current${row.deprecatedReason ? `: ${row.deprecatedReason}` : ''}`})`).join('\n')
+              : '  - none';
+            const variants = item.printingVariants.length
+              ? item.printingVariants.map((row) => `  - \`${row.variantCode || 'unknown'}\` — ${row.deprecatedAt ? `deprecated${row.deprecatedReason ? `: ${row.deprecatedReason}` : ''}` : 'active'}`).join('\n')
               : '  - none';
             const conflictNotes = item.conflicts.length
-              ? item.conflicts.map((row) => `  - ${row.severity}/${row.type}: ${row.notes || 'no note'}`).join('\n')
+              ? item.conflicts.map((row) => `  - ${row.severity}/${row.type}: ${row.notes || 'no note'}; proposed \`${JSON.stringify(row.proposed)}\`; existing \`${JSON.stringify(row.existing)}\``).join('\n')
               : '  - none';
             return [
               `#### ${item.externalId}`,
               `- Provider variants payload: \`${sourceVariants || 'not found'}\``,
               '- Current and historical identifiers:',
               identifiers,
+              '- Variants on the linked printing:',
+              variants,
               '- Conflicts:',
               conflictNotes,
             ].join('\n');
