@@ -110,11 +110,9 @@ async function main() {
   assert.match(collection, /getBinderProgressPercent/, 'Collection lost binder completion logic');
 
   assert.match(scanner, /CARD_ASPECT_RATIO|cardFrame/i, 'Scanner lost the card-first capture guide');
-  assert.match(scanner, /scannerFrameReady/, 'Scanner ready-state haptic is not embedded');
-  assert.match(scanner, /scannerCaptureLocked/, 'Scanner capture-lock haptic is not embedded');
-  assert.match(scanner, /scannerExactMatch/, 'Scanner exact-match haptic is not embedded');
-  assert.match(scanner, /scannerAmbiguous/, 'Scanner ambiguous-state warning haptic is not embedded');
   assert.match(scanner, /Manual search/, 'Scanner lost its in-context manual fallback');
+  assert.match(scanner, /acceptedPreviewUri/, 'Scanner lost its accepted-card preview state');
+  assert.match(scanner, /scannerState === 'IDENTIFYING'/, 'Scanner lost its explicit identifying state');
 
   for (const marketContract of [
     'MarketHeader',
@@ -137,7 +135,7 @@ async function main() {
       sellerNavigation: sellerLabels,
       screens: ['home', 'collection', 'scanner', 'market'],
     },
-    note: 'This is a source contract, not rendered screenshot approval.',
+    note: 'This is a source contract, not rendered screenshot approval. Haptic behaviour is gated separately.',
   }, null, 2));
 }
 
