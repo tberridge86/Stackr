@@ -1,0 +1,162 @@
+name: Fix StackR Catalogue Release Typecheck
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-fix-catalogue-release-typecheck
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.number == 48 &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/fix-stackr-catalogue-release-typecheck-2026-08-19')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Announce the guarded compile repair
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Guarded catalogue release typecheck repair **${GITHUB_RUN_ID}** started. Scope is the three existing metadata-script compile failures; no database is accessed."
+
+      - name: Check out the active backend release branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Confirm the current failures before changing source
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > "$RUNNER_TEMP/typecheck-before.log" 2>&1
+          before_exit=$?
+          set -e
+          cat "$RUNNER_TEMP/typecheck-before.log"
+          if [ "$before_exit" -eq 0 ]; then
+            echo "The branch is already clean; no repair is needed."
+          fi
+
+      - name: Apply minimal Supabase and header typing fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path: str, old: str, new: str, expected: int = 1):
+              file = Path(path)
+              text = file.read_text()
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f'{path}: expected {expected} occurrences of {old!r}, found {count}')
+              file.write_text(text.replace(old, new))
+
+          audit = Path('scripts/audit-complete-metadata-backfill.ts')
+          text = audit.read_text()
+          old = 'db: ReturnType<typeof createClient>,'
+          count = text.count(old)
+          if count != 4:
+              raise SystemExit(f'audit script: expected 4 Supabase helper parameters, found {count}')
+          text = text.replace(old, 'db: any,')
+          if text.count('  const db = stagingClient();') != 1:
+              raise SystemExit('audit script: expected one staging client declaration')
+          text = text.replace('  const db = stagingClient();', '  const db: any = stagingClient();', 1)
+          audit.write_text(text)
+
+          shard = Path('scripts/sync-provider-metadata-shard.ts')
+          text = shard.read_text()
+          if text.count(old) != 1:
+              raise SystemExit(f'shard script: expected one Supabase helper parameter, found {text.count(old)}')
+          text = text.replace(old, 'db: any,', 1)
+          if text.count('  const db = stagingClient();') != 1:
+              raise SystemExit('shard script: expected one staging client declaration')
+          text = text.replace('  const db = stagingClient();', '  const db: any = stagingClient();', 1)
+          shard.write_text(text)
+
+          snapshot = Path('scripts/export-full-catalogue-metadata-snapshot.ts')
+          text = snapshot.read_text()
+          old_headers = """function pokemonHeaders() {
+            const key = clean(process.env.POKEMON_TCG_API_KEY);
+            return key ? { 'X-Api-Key': key } : {};
+          }"""
+          new_headers = """function pokemonHeaders(): Record<string, string> {
+            const headers: Record<string, string> = {};
+            const key = clean(process.env.POKEMON_TCG_API_KEY);
+            if (key) headers['X-Api-Key'] = key;
+            return headers;
+          }"""
+          if text.count(old_headers) != 1:
+              raise SystemExit('snapshot script: expected pokemonHeaders block was not found')
+          snapshot.write_text(text.replace(old_headers, new_headers, 1))
+          PY
+
+      - name: Review the exact source changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          git diff -- \
+            scripts/audit-complete-metadata-backfill.ts \
+            scripts/export-full-catalogue-metadata-snapshot.ts \
+            scripts/sync-provider-metadata-shard.ts
+
+      - name: Require all compile and catalogue gates
+        run: |
+          npm run typecheck
+          npm run typecheck:backend
+          npm run test:catalogue-ingestion
+          npm run test:catalogue-schema
+          npm run test:master-catalogue-importer
+
+      - name: Commit the clean release branch
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No source changes were required."
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add \
+              scripts/audit-complete-metadata-backfill.ts \
+              scripts/export-full-catalogue-metadata-snapshot.ts \
+              scripts/sync-provider-metadata-shard.ts
+            git commit -m 'Fix catalogue release script typing'
+            git push origin HEAD:backend/release-hardening-2026-08-19
+          fi
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Report the clean source commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ steps.commit.outputs.source_sha }}
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Catalogue release branch passed root typecheck, backend typecheck and catalogue regression gates. Clean source commit: \`${SOURCE_SHA}\`."
