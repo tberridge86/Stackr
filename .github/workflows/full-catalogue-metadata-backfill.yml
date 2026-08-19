@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 360
     environment: ingestion
     env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
       RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
