@@ -2,9 +2,9 @@
   "name": "pocketvault-backend",
   "version": "1.0.0",
   "type": "module",
-  "main": "server.js",
+  "main": "bootstrap.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node bootstrap.js",
     "test": "node --test test/*.test.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "daily-market-snapshot": "tsx ../scripts/daily-market-snapshot.ts"
