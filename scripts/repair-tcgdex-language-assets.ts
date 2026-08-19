@@ -111,7 +111,7 @@ export function createApprovedTcgdexRepairAdapter(languageCode: string): SourceA
       // language repair covers fronts + logos + symbols in one controlled run.
       // Do not apply the card offset/limit to the set-art list: each batch is
       // idempotent and retaining all set art prevents a partial repair.
-      const sets = await collectRecords(base.fetchSets({}));
+      const sets = await collectRecords(base.fetchSets());
       const setAssets = buildSetAssetRecords(sets, languageCode);
       return [...setAssets, ...providerAssets];
     },
