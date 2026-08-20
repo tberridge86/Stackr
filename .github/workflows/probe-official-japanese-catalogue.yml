@@ -1,0 +1,194 @@
+name: Probe Official Japanese Catalogue API
+
+on:
+  workflow_dispatch:
+    inputs:
+      probes:
+        description: Comma-separated official Japanese catalogue pg values to test
+        required: true
+        default: '436,S4a'
+        type: string
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-official-japanese-catalogue-api-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.issue.number == 48 &&
+      github.actor == 'tberridge86' &&
+      github.event.comment.body == '/probe-official-japanese-catalogue')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      STACKR_JP_PROBES: ${{ inputs.probes || '436,S4a' }}
+    steps:
+      - name: Announce read-only probe
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Official Japanese catalogue API probe **${GITHUB_RUN_ID}** started. Scope is read-only: page-one metadata for \`${STACKR_JP_PROBES}\`; no card images, database writes, secrets or production services are used."
+
+      - name: Probe the official Japanese catalogue JSON endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue/official-japanese-api-probe
+          python3 - <<'PY'
+          import json
+          import os
+          import time
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+
+          endpoint = 'https://www.pokemon-card.com/card-search/resultAPI.php'
+          tokens = [item.strip() for item in os.environ['STACKR_JP_PROBES'].split(',') if item.strip()]
+          report = {
+              'generated_at': datetime.now(timezone.utc).isoformat(),
+              'endpoint': endpoint,
+              'read_only': True,
+              'images_downloaded': False,
+              'probes': [],
+          }
+
+          headers = {
+              'User-Agent': 'StackR-Catalogue-Audit/1.0 (+https://stackrtcg.com)',
+              'Accept': 'application/json, text/javascript, */*; q=0.01',
+              'Accept-Language': 'ja,en-GB;q=0.8,en;q=0.7',
+              'Referer': 'https://www.pokemon-card.com/card-search/',
+              'X-Requested-With': 'XMLHttpRequest',
+          }
+
+          for index, token in enumerate(tokens):
+              params = {
+                  'keyword': '',
+                  'se_ta': '',
+                  'regulation_sidebar_form': 'all',
+                  'illust': '',
+                  'sm_and_keyword': 'true',
+                  'pg': token,
+                  'page': '1',
+              }
+              url = f'{endpoint}?{urlencode(params)}'
+              result = {
+                  'probe': token,
+                  'request_url': url,
+                  'http_status': None,
+                  'ok': False,
+                  'hit_count': 0,
+                  'max_page': 0,
+                  'cards_on_page': 0,
+                  'top_level_keys': [],
+                  'card_field_keys': [],
+                  'sample_cards': [],
+                  'error': None,
+              }
+              try:
+                  request = Request(url, headers=headers)
+                  with urlopen(request, timeout=30) as response:
+                      result['http_status'] = getattr(response, 'status', 200)
+                      payload = json.load(response)
+                  cards = payload.get('cardList') if isinstance(payload, dict) else None
+                  cards = cards if isinstance(cards, list) else []
+                  result['top_level_keys'] = sorted(payload.keys()) if isinstance(payload, dict) else []
+                  result['hit_count'] = int(payload.get('hitCnt') or 0) if isinstance(payload, dict) else 0
+                  result['max_page'] = int(payload.get('maxPage') or 0) if isinstance(payload, dict) else 0
+                  result['cards_on_page'] = len(cards)
+                  result['card_field_keys'] = sorted(cards[0].keys()) if cards and isinstance(cards[0], dict) else []
+                  result['sample_cards'] = [
+                      {
+                          'card_id': card.get('cardID'),
+                          'native_name': card.get('cardNameAltText'),
+                          'thumbnail_path': card.get('cardThumbFile'),
+                      }
+                      for card in cards[:3]
+                      if isinstance(card, dict)
+                  ]
+                  result['ok'] = result['http_status'] == 200 and (result['hit_count'] > 0 or len(cards) > 0)
+              except HTTPError as error:
+                  result['http_status'] = error.code
+                  result['error'] = f'HTTPError: {error.reason}'
+              except URLError as error:
+                  result['error'] = f'URLError: {error.reason}'
+              except Exception as error:  # Evidence capture must retain unexpected response failures.
+                  result['error'] = f'{type(error).__name__}: {error}'
+              report['probes'].append(result)
+              if index + 1 < len(tokens):
+                  time.sleep(1.5)
+
+          report['successful_probes'] = sum(1 for item in report['probes'] if item['ok'])
+          report['failed_probes'] = len(report['probes']) - report['successful_probes']
+
+          output_dir = Path('reports/catalogue/official-japanese-api-probe')
+          report_path = output_dir / 'probe.json'
+          report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          lines = [
+              f'### Official Japanese catalogue API probe `{os.environ.get("GITHUB_RUN_ID", "unknown")}`',
+              '',
+              'Read-only endpoint verification; no images or database writes were performed.',
+              '',
+              '| Probe | HTTP | Hits | Pages | Cards on page 1 | Result |',
+              '|---|---:|---:|---:|---:|---|',
+          ]
+          for item in report['probes']:
+              result_text = 'PASS' if item['ok'] else f'FAIL — {item["error"] or "no cards returned"}'
+              lines.append(
+                  f'| `{item["probe"]}` | {item["http_status"] or "—"} | '
+                  f'{item["hit_count"]} | {item["max_page"]} | {item["cards_on_page"]} | {result_text} |'
+              )
+              if item['sample_cards']:
+                  sample = '; '.join(
+                      f'{card.get("card_id")}: {card.get("native_name")}'
+                      for card in item['sample_cards']
+                  )
+                  lines.append(f'\nSample `{item["probe"]}` cards: {sample}')
+          lines.extend([
+              '',
+              f'**Successful probes:** {report["successful_probes"]}/{len(report["probes"])}.',
+              'The attached JSON artifact records response keys and three sample identities only; it does not contain downloaded images.',
+          ])
+          (output_dir / 'summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+          print(json.dumps(report, ensure_ascii=False, indent=2))
+          if report['successful_probes'] == 0:
+              raise SystemExit('No official Japanese catalogue probe returned card data.')
+          PY
+
+      - name: Upload immutable probe evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-official-japanese-api-probe-${{ github.run_id }}
+          path: reports/catalogue/official-japanese-api-probe
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report probe result to the catalogue review
+        if: always()
+        shell: bash
+        run: |
+          if [ -s reports/catalogue/official-japanese-api-probe/summary.md ]; then
+            body="$(cat reports/catalogue/official-japanese-api-probe/summary.md)"
+          else
+            body="Official Japanese catalogue API probe **${GITHUB_RUN_ID}** failed before it could create evidence. Inspect the workflow logs; no database or production service was touched."
+          fi
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
