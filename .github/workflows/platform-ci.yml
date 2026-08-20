@@ -28,6 +28,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run typecheck:backend
+      - run: npm test --prefix backend
       - run: npm run test:seller-stock-out-routing
       - run: npm run test:premium-seller-access
       - run: npm run test:asset-pipeline
@@ -75,6 +76,9 @@ jobs:
           --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres
       - run: >-
           node scripts/test-seller-inventory-batch-migration.mjs
+          --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres
+      - run: >-
+          node scripts/test-marketplace-payment-settlement-migration.mjs
           --db-url=postgresql://postgres:postgres@127.0.0.1:5432/postgres
       - name: Start and reset local Supabase
         if: vars.SUPABASE_LOCAL_BASELINE_READY == 'true'
