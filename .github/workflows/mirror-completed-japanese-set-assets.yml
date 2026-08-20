@@ -1,0 +1,155 @@
+name: Mirror Completed Japanese Set Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type MIRROR JAPANESE SET ASSETS TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/mirror-completed-japanese-set-assets.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-mirror-completed-japanese-set-assets
+  cancel-in-progress: false
+
+jobs:
+  mirror-assets:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'MIRROR JAPANESE SET ASSETS TO STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_SET_CODES: S4a,PCG10,S2,S3,S4,CP4,XY3,XY4,CP6,XY7,ADV5
+      STACKR_REPORT_DIR: reports/catalogue/japanese-completed-set-assets
+
+    steps:
+      - name: Announce Japanese set-asset completion
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Japanese set-asset mirror **${GITHUB_RUN_ID}** started for 11 completed sets. It will validate distinct PokéCardex logo and symbol files, mirror them into StackR staging storage, verify public delivery and reject placeholders or duplicate hashes. Production is excluded."
+
+      - name: Check out reviewed set-asset worker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing set-asset mirror.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Syntax-check set-asset worker
+        run: node --check scripts/mirror-pokecardex-japanese-set-assets.mjs
+
+      - name: Mirror and publicly verify logos and symbols
+        run: >-
+          node scripts/mirror-pokecardex-japanese-set-assets.mjs
+          --set-codes="$STACKR_SET_CODES"
+          --delay-ms=750
+          --target=staging
+          --apply
+          --verify-public
+          --report="$STACKR_REPORT_DIR/report.json"
+
+      - name: Verify 22 distinct public set assets
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and (.requested_sets | length) == 11
+            and (.completed_sets | length) == 11
+            and (.failed_sets | length) == 0
+            and (.duplicate_content_hashes | length) == 0
+            and ([.results[].assets[]] | length) == 22
+            and ([.results[].assets[] | select(.assetType == "set_logo")] | length) == 11
+            and ([.results[].assets[] | select(.assetType == "set_symbol")] | length) == 11
+            and ([.results[].assets[] | select(.action != "already_ready") | .publicVerified] | all(. == true))
+          ' "$STACKR_REPORT_DIR/report.json"
+
+      - name: Build set-asset summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/report.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const rows = report?.results ?? [];
+          const lines = [
+            '### Japanese set logo and symbol completion',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok ? 'PASS' : 'FAILED/INCOMPLETE'}**.`,
+            '',
+            '| Set | Logo | Symbol | Result |',
+            '|---|---:|---:|---|',
+            ...rows.map((row) => {
+              const logo = row.assets.find((asset) => asset.assetType === 'set_logo');
+              const symbol = row.assets.find((asset) => asset.assetType === 'set_symbol');
+              return `| ${row.setCode} | ${logo ? 'yes' : 'no'} | ${symbol ? 'yes' : 'no'} | ${row.ok ? 'PASS' : 'FAIL'} |`;
+            }),
+            '',
+            `Duplicate or placeholder hashes: **${report?.duplicate_content_hashes?.length ?? '—'}**.`,
+            `Production modified: **${report?.production_modified ?? false}**.`,
+            '',
+            'Every new asset is content-addressed, rights-approved and publicly verified before the set is marked complete.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable set-asset evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-completed-set-assets-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report set-asset outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          if [ -s "$STACKR_REPORT_DIR/summary.md" ]; then
+            body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          else
+            body="Japanese set-asset mirror **${GITHUB_RUN_ID}** failed before a summary was created. Production was not targeted."
+          fi
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
