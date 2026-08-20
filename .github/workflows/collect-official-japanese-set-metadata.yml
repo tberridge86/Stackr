@@ -1,0 +1,303 @@
+name: Collect Official Japanese Set Metadata
+
+on:
+  workflow_dispatch:
+    inputs:
+      set_code:
+        description: Official Japanese set code passed to the card-search pg filter
+        required: true
+        default: 'S4a'
+        type: string
+      max_results:
+        description: Hard safety ceiling for official card IDs
+        required: true
+        default: '400'
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/collect-official-japanese-set-metadata.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-official-japanese-set-metadata-collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ github.token }}
+      STACKR_JP_SET_CODE: ${{ inputs.set_code || 'S4a' }}
+      STACKR_JP_MAX_RESULTS: ${{ inputs.max_results || '400' }}
+    steps:
+      - name: Announce bounded read-only collection
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Official Japanese set collection **${GITHUB_RUN_ID}** started for \`${STACKR_JP_SET_CODE}\`. It is metadata-only, read-only, capped at ${STACKR_JP_MAX_RESULTS} official card IDs and downloads no card images."
+
+      - name: Install pinned HTML parser
+        run: python3 -m pip install --disable-pip-version-check --no-input beautifulsoup4==4.13.4
+
+      - name: Collect and reconcile the official set checklist
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$STACKR_JP_SET_CODE" =~ ^[A-Za-z0-9+._:-]+$ ]] || exit 1
+          [[ "$STACKR_JP_MAX_RESULTS" =~ ^[0-9]+$ ]] || exit 1
+          (( STACKR_JP_MAX_RESULTS >= 1 && STACKR_JP_MAX_RESULTS <= 600 )) || exit 1
+          mkdir -p reports/catalogue/official-japanese-set
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import time
+          from collections import defaultdict
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+
+          from bs4 import BeautifulSoup
+
+          base = 'https://www.pokemon-card.com'
+          api = f'{base}/card-search/resultAPI.php'
+          set_code_requested = os.environ['STACKR_JP_SET_CODE']
+          max_results = int(os.environ['STACKR_JP_MAX_RESULTS'])
+          output_dir = Path('reports/catalogue/official-japanese-set')
+          headers = {
+              'User-Agent': 'StackR-Catalogue-Audit/1.0 (+https://stackrtcg.com)',
+              'Accept-Language': 'ja,en-GB;q=0.8,en;q=0.7',
+              'Referer': f'{base}/card-search/',
+          }
+
+          def request_bytes(url, accept, ajax=False, attempts=3):
+              error = None
+              for attempt in range(1, attempts + 1):
+                  request_headers = {**headers, 'Accept': accept}
+                  if ajax:
+                      request_headers['X-Requested-With'] = 'XMLHttpRequest'
+                  try:
+                      request = Request(url, headers=request_headers)
+                      with urlopen(request, timeout=40) as response:
+                          return response.read()
+                  except (HTTPError, URLError, TimeoutError) as exc:
+                      error = exc
+                      if attempt < attempts:
+                          time.sleep(attempt * 1.5)
+              raise RuntimeError(f'Failed after {attempts} attempts: {url}: {error}')
+
+          def fetch_api_page(page):
+              params = {
+                  'keyword': '',
+                  'se_ta': '',
+                  'regulation_sidebar_form': 'all',
+                  'illust': '',
+                  'sm_and_keyword': 'true',
+                  'pg': set_code_requested,
+                  'page': str(page),
+              }
+              url = f'{api}?{urlencode(params)}'
+              return json.loads(request_bytes(url, 'application/json, text/javascript, */*; q=0.01', ajax=True))
+
+          first_page = fetch_api_page(1)
+          hit_count = int(first_page.get('hitCnt') or 0)
+          max_page = int(first_page.get('maxPage') or 0)
+          if hit_count <= 0 or max_page <= 0:
+              raise SystemExit(f'Official API returned no cards for {set_code_requested}.')
+          if hit_count > max_results:
+              raise SystemExit(f'Official API returned {hit_count} cards, exceeding hard ceiling {max_results}.')
+
+          api_cards = []
+          for page in range(1, max_page + 1):
+              payload = first_page if page == 1 else fetch_api_page(page)
+              page_cards = payload.get('cardList') or []
+              api_cards.extend(card for card in page_cards if isinstance(card, dict))
+              if page < max_page:
+                  time.sleep(0.7)
+
+          unique_api_cards = {}
+          for card in api_cards:
+              card_id = str(card.get('cardID') or '').strip()
+              if card_id:
+                  unique_api_cards[card_id] = card
+          if len(unique_api_cards) != hit_count:
+              raise SystemExit(f'API identity mismatch: hitCnt={hit_count}, unique card IDs={len(unique_api_cards)}.')
+
+          detail_rows = []
+          errors = []
+          number_pattern = re.compile(r'^([0-9A-Za-z+._-]+)\s*/\s*([0-9A-Za-z+._-]+)$')
+
+          for position, (card_id, card) in enumerate(unique_api_cards.items(), 1):
+              detail_url = f'{base}/card-search/details.php/card/{card_id}/regu/all'
+              try:
+                  html = request_bytes(detail_url, 'text/html,application/xhtml+xml').decode('utf-8', errors='replace')
+                  soup = BeautifulSoup(html, 'html.parser')
+                  text_lines = [line.strip() for line in soup.get_text('\n').splitlines() if line.strip()]
+                  title_node = soup.select_one('section.Section h1.Heading1.mt20') or soup.find('h1')
+                  native_name = title_node.get_text(' ', strip=True) if title_node else str(card.get('cardNameAltText') or '').strip()
+
+                  number_line = next((line for line in text_lines if number_pattern.fullmatch(line.replace('\u00a0', ' '))), None)
+                  number_match = number_pattern.fullmatch(number_line.replace('\u00a0', ' ')) if number_line else None
+                  collector_number = number_match.group(1) if number_match else None
+                  denominator = number_match.group(2) if number_match else None
+
+                  regulation_image = soup.select_one('img.img-regulation')
+                  official_set_code = (regulation_image.get('alt') or '').strip() if regulation_image else None
+
+                  artist = None
+                  for line_index, line in enumerate(text_lines):
+                      if line == 'イラストレーター' and line_index + 1 < len(text_lines):
+                          artist = text_lines[line_index + 1]
+                          break
+
+                  thumbnail_path = str(card.get('cardThumbFile') or '').strip()
+                  marker_match = re.search(r'_[PTE]_', thumbnail_path.rsplit('/', 1)[-1])
+                  type_marker = marker_match.group(0).strip('_') if marker_match else None
+                  supertype = {'P': 'Pokémon', 'T': 'Trainer', 'E': 'Energy'}.get(type_marker)
+
+                  row = {
+                      'card_id': card_id,
+                      'detail_url': detail_url,
+                      'native_name': native_name,
+                      'official_set_code': official_set_code,
+                      'collector_number': collector_number,
+                      'denominator': denominator,
+                      'artist': artist,
+                      'type_marker': type_marker,
+                      'supertype': supertype,
+                      'thumbnail_path': thumbnail_path,
+                  }
+                  required_missing = [field for field in ('native_name', 'official_set_code', 'collector_number', 'denominator', 'supertype') if not row.get(field)]
+                  if required_missing:
+                      errors.append({'card_id': card_id, 'detail_url': detail_url, 'missing_fields': required_missing})
+                  detail_rows.append(row)
+              except Exception as exc:
+                  errors.append({'card_id': card_id, 'detail_url': detail_url, 'error': f'{type(exc).__name__}: {exc}'})
+              if position < len(unique_api_cards):
+                  time.sleep(0.65)
+
+          grouped = defaultdict(list)
+          for row in detail_rows:
+              if row.get('collector_number'):
+                  grouped[(row.get('official_set_code'), row['collector_number'])].append(row)
+
+          printings = []
+          conflicts = []
+          for (official_set_code, collector_number), variants in sorted(
+              grouped.items(),
+              key=lambda item: (
+                  item[0][0] or '',
+                  int(item[0][1]) if str(item[0][1]).isdigit() else 10**9,
+                  str(item[0][1]),
+              ),
+          ):
+              names = sorted({item['native_name'] for item in variants if item.get('native_name')})
+              denominators = sorted({item['denominator'] for item in variants if item.get('denominator')})
+              supertypes = sorted({item['supertype'] for item in variants if item.get('supertype')})
+              artists = sorted({item['artist'] for item in variants if item.get('artist')})
+              if len(names) != 1 or len(denominators) != 1 or len(supertypes) != 1:
+                  conflicts.append({
+                      'official_set_code': official_set_code,
+                      'collector_number': collector_number,
+                      'names': names,
+                      'denominators': denominators,
+                      'supertypes': supertypes,
+                      'artists': artists,
+                      'official_card_ids': [item['card_id'] for item in variants],
+                  })
+                  continue
+              printings.append({
+                  'language_code': 'ja',
+                  'official_set_code': official_set_code,
+                  'collector_number': collector_number,
+                  'denominator': denominators[0],
+                  'native_name': names[0],
+                  'supertype': supertypes[0],
+                  'artist': artists[0] if len(artists) == 1 else None,
+                  'artist_candidates': artists,
+                  'rarity_code': None,
+                  'finish_status': 'pending_review',
+                  'official_variant_count': len(variants),
+                  'official_card_ids': [item['card_id'] for item in variants],
+                  'detail_urls': [item['detail_url'] for item in variants],
+                  'thumbnail_paths': [item['thumbnail_path'] for item in variants],
+              })
+
+          denominators = sorted({item['denominator'] for item in printings if item.get('denominator')})
+          official_codes = sorted({item['official_set_code'] for item in printings if item.get('official_set_code')})
+          report = {
+              'generated_at': datetime.now(timezone.utc).isoformat(),
+              'source': 'pokemon_card_jp_official',
+              'set_code_requested': set_code_requested,
+              'official_set_codes': official_codes,
+              'api_hit_count': hit_count,
+              'api_max_page': max_page,
+              'api_card_ids_collected': len(unique_api_cards),
+              'detail_rows_collected': len(detail_rows),
+              'unique_printings': len(printings),
+              'denominators': denominators,
+              'duplicate_official_variants': len(detail_rows) - len(printings),
+              'parser_errors': errors,
+              'identity_conflicts': conflicts,
+              'read_only': True,
+              'images_downloaded': False,
+              'rarity_populated': False,
+              'finish_populated': False,
+              'printings': printings,
+          }
+          (output_dir / 'catalogue.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          lines = [
+              f'### Official Japanese set collection `{os.environ.get("GITHUB_RUN_ID", "unknown")}`',
+              '',
+              f'Requested: `{set_code_requested}` — official codes: `{", ".join(official_codes) or "none"}`.',
+              '',
+              '| Measure | Result |',
+              '|---|---:|',
+              f'| Official card IDs | {len(unique_api_cards)} |',
+              f'| Unique collector-number printings | {len(printings)} |',
+              f'| Additional official physical variants | {len(detail_rows) - len(printings)} |',
+              f'| Denominator values | {", ".join(denominators) or "none"} |',
+              f'| Parser errors | {len(errors)} |',
+              f'| Identity conflicts | {len(conflicts)} |',
+              '',
+              'Rarity and finish remain deliberately unset. Official card IDs and thumbnail paths are retained as evidence, but no images were downloaded or approved for use.',
+          ]
+          (output_dir / 'summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          print(json.dumps({key: value for key, value in report.items() if key != 'printings'}, ensure_ascii=False, indent=2))
+
+          if errors or conflicts:
+              raise SystemExit(f'Collection completed with {len(errors)} parser errors and {len(conflicts)} identity conflicts.')
+          if len(printings) == 0:
+              raise SystemExit('No reconciled printings were produced.')
+          PY
+
+      - name: Upload immutable official-set evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-official-japanese-set-${{ env.STACKR_JP_SET_CODE }}-${{ github.run_id }}
+          path: reports/catalogue/official-japanese-set
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report collector result to PR 48
+        if: always()
+        shell: bash
+        run: |
+          if [ -s reports/catalogue/official-japanese-set/summary.md ]; then
+            body="$(cat reports/catalogue/official-japanese-set/summary.md)"
+          else
+            body="Official Japanese set collection **${GITHUB_RUN_ID}** failed before evidence was created. No database or production service was touched."
+          fi
+          gh api repos/${{ github.repository }}/issues/48/comments --method POST --field body="$body"
