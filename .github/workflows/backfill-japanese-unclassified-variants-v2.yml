@@ -1,0 +1,139 @@
+name: Backfill Japanese Unclassified Variants V2
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RUN JAPANESE VARIANT BACKFILL V2
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/backfill-japanese-unclassified-variants-v2.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  backfill-set:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'RUN JAPANESE VARIANT BACKFILL V2')
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        set_code: [S4a, PCG10, S2, S3, S4]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: staging
+    concurrency:
+      group: stackr-japanese-placeholder-variant-v2-${{ matrix.set_code }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_JP_SET_CODE: ${{ matrix.set_code }}
+      STACKR_REPORT_DIR: reports/catalogue/japanese-variant-backfill-v2/${{ matrix.set_code }}
+
+    steps:
+      - name: Check out corrected variant worker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Verify corrected source-link implementation
+        run: |
+          node --check scripts/ensure-unclassified-japanese-variants.mjs
+          grep -q 'printing_id: null' scripts/ensure-unclassified-japanese-variants.mjs
+          grep -q 'variant_id: variant.id' scripts/ensure-unclassified-japanese-variants.mjs
+
+      - name: Complete variant coverage and move source links
+        run: >-
+          node scripts/ensure-unclassified-japanese-variants.mjs
+          --set-code="$STACKR_JP_SET_CODE"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/report.json"
+
+      - name: Verify per-set result
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .active_printings > 0
+            and .printings_with_variant == .active_printings
+            and .official_identifiers_linked_to_variant >= .active_printings
+          ' "$STACKR_REPORT_DIR/report.json"
+
+      - name: Build summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/report.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const lines = [
+            `### Japanese variant backfill V2 — ${process.env.STACKR_JP_SET_CODE}`,
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok ? 'PASS' : 'FAILED'}**.`,
+            '',
+            `- Active printings: **${report?.active_printings ?? '—'}**`,
+            `- Active variants: **${report?.active_variants ?? '—'}**`,
+            `- Printings with a variant: **${report?.printings_with_variant ?? '—'}**`,
+            `- Official IDs moved to variants: **${report?.writes?.identifier_variant_links_updated ?? '—'}**`,
+            `- Official IDs linked to variants: **${report?.official_identifiers_linked_to_variant ?? '—'}**`,
+            '',
+            'The source identifier now points to exactly one canonical entity—the variant—so the database entity constraint is satisfied. Finish remains explicitly unclassified.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-variant-backfill-v2-${{ matrix.set_code }}-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
