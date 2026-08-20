@@ -1,0 +1,282 @@
+name: Complete Japanese ADV5 Catalogue and Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type COMPLETE ADV5 IN STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/complete-japanese-adv5.yml'
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-complete-japanese-adv5
+  cancel-in-progress: false
+
+jobs:
+  complete-adv5:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'COMPLETE ADV5 IN STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_RUNTIME_RUN_ID: '32420857748'
+      STACKR_REPORT_DIR: reports/catalogue/japanese-adv5-complete
+
+    steps:
+      - name: Announce complete ADV5 route
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Japanese ADV5 completion **${GITHUB_RUN_ID}** started. It will cross-verify all 83 cards from Bulbapedia metadata and rendered PokéCardex scans, import names/artists/rarity/identities to staging, mirror 83 card images plus logo and symbol, verify public delivery and leave production untouched."
+
+      - name: Check out reviewed catalogue automation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate the hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing ADV5 completion.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR/runtime" "$STACKR_REPORT_DIR/bulbapedia-cache"
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          python3 -m pip install --disable-pip-version-check --no-input requests==2.32.4 beautifulsoup4==4.13.4 lxml==6.0.0
+
+      - name: Syntax-check all ADV5 programs
+        run: |
+          python3 -m py_compile scripts/collect-japanese-adv5-composite.py
+          node --check scripts/import-japanese-adv5-composite.mjs
+          node --check scripts/mirror-japanese-adv5-assets.mjs
+
+      - name: Verify and download immutable rendered PokéCardex evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STACKR_RUNTIME_RUN_ID}")"
+          test "$(jq -r .status <<<"$run_json")" = completed
+          test "$(jq -r .conclusion <<<"$run_json")" = success
+          test "$(jq -r .name <<<"$run_json")" = 'Probe Rendered PokéCardex ADV5 Catalogue'
+          gh run download "$STACKR_RUNTIME_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "stackr-pokecardex-adv5-runtime-${STACKR_RUNTIME_RUN_ID}" \
+            --dir "$STACKR_REPORT_DIR/runtime"
+          test -s "$STACKR_REPORT_DIR/runtime/runtime.json"
+
+      - name: Validate rendered image coverage before collection
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          runtime = json.loads((Path(os.environ['STACKR_REPORT_DIR']) / 'runtime' / 'runtime.json').read_text(encoding='utf-8'))
+          assert runtime['read_only'] is True
+          assert runtime['database_modified'] is False
+          assert runtime['navigation']['http_status'] == 200
+          assert runtime['navigation']['title'] == 'Pokemon Japonaise ADV5 - Pokécardex'
+          numbers = []
+          for image in runtime.get('relevant_images', []):
+              match = re.search(r'/card/ADV5-(\d+)$', image.get('parent_href') or '')
+              if match:
+                  numbers.append(int(match.group(1)))
+          assert sorted(set(numbers)) == list(range(1, 84)), sorted(set(numbers))
+          PY
+
+      - name: Build the cross-verified 83-card manifest
+        run: >-
+          python3 scripts/collect-japanese-adv5-composite.py
+          --pokecardex-json="$STACKR_REPORT_DIR/runtime/runtime.json"
+          --page-cache-dir="$STACKR_REPORT_DIR/bulbapedia-cache"
+          --output="$STACKR_REPORT_DIR/catalogue.json"
+          --minimum-delay-ms=700
+
+      - name: Validate every ADV5 manifest field
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          manifest = json.loads((Path(os.environ['STACKR_REPORT_DIR']) / 'catalogue.json').read_text(encoding='utf-8'))
+          assert manifest['source'] == 'stackr_adv5_composite'
+          assert manifest['language_code'] == 'ja'
+          assert manifest['canonical_set_code'] == 'ADV5'
+          assert manifest['native_set_name'] == 'とかれた封印'
+          assert manifest['english_set_name'] == 'Undone Seal'
+          assert manifest['release_date'] == '2004-01-16'
+          assert manifest['printed_total'] == 83
+          assert manifest['full_total'] == 83
+          assert manifest['rights_status'] == 'approved_by_stackr_owner'
+          assert manifest['read_only'] is True
+          assert manifest['database_modified'] is False
+          cards = manifest['cards']
+          assert len(cards) == 83
+          assert [card['collector_number'] for card in cards] == [f'{number:03d}' for number in range(1, 84)]
+          assert len({card['native_name'] for card in cards}) == 83
+          assert len({card['image_url'] for card in cards}) == 83
+          assert all(card['artist'] for card in cards)
+          assert all(card['rarity_label'] for card in cards)
+          assert all(card['bulbapedia_card_url'] for card in cards)
+          assert all(card['pokecardex_card_url'] for card in cards)
+          assert all(card['image_url'] for card in cards)
+          assert '/sets/logos/ADV5.' in manifest['logo_url']
+          assert '/sets/symbols/ADV5.' in manifest['symbol_url']
+          PY
+
+      - name: Import complete ADV5 metadata to staging
+        run: >-
+          node scripts/import-japanese-adv5-composite.mjs
+          --input="$STACKR_REPORT_DIR/catalogue.json"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Verify zero metadata and identity gaps
+        run: |
+          jq -e '
+            .ok == true
+            and .target == "staging"
+            and .production_modified == false
+            and .printed_total == 83
+            and .full_total == 83
+            and .verification.active_printings == 83
+            and .verification.distinct_collector_numbers == 83
+            and (.verification.duplicate_collector_numbers | length) == 0
+            and .verification.unresolved_concepts == 0
+            and .verification.missing_native_names == 0
+            and .verification.missing_english_names == 0
+            and .verification.missing_rarity == 0
+            and .verification.missing_artist == 0
+            and .verification.missing_supertype == 0
+            and .verification.printings_with_variant == 83
+            and (.verification.duplicate_variant_keys | length) == 0
+            and .verification.bulbapedia_card_identifiers == 83
+            and .verification.pokecardex_card_identifiers == 83
+            and .verification.invalid_dual_identifiers == 0
+          ' "$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Mirror 83 scans, logo and symbol to StackR storage
+        run: >-
+          node scripts/mirror-japanese-adv5-assets.mjs
+          --set-code=ADV5
+          --concurrency=2
+          --delay-ms=750
+          --target=staging
+          --apply
+          --verify-public
+          --report="$STACKR_REPORT_DIR/asset-report.json"
+
+      - name: Verify zero visual-asset gaps
+        run: |
+          jq -e '
+            .ok == true
+            and .target == "staging"
+            and .production_modified == false
+            and .failed == 0
+            and .card_image_assets == 83
+            and .variants_available == 83
+            and .set_logo_available == true
+            and .set_symbol_available == true
+            and .public_urls_verified == .processed_successfully
+          ' "$STACKR_REPORT_DIR/asset-report.json"
+
+      - name: Build complete ADV5 evidence summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const read = (name) => fs.existsSync(`${dir}/${name}`) ? JSON.parse(fs.readFileSync(`${dir}/${name}`, 'utf8')) : null;
+          const catalogue = read('catalogue.json');
+          const imported = read('import-report.json');
+          const assets = read('asset-report.json');
+          const complete = Boolean(imported?.ok && assets?.ok);
+          const lines = [
+            '### Japanese catalogue completion — ADV5',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${complete ? 'PASS' : 'FAILED/INCOMPLETE'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Cross-verified manifest cards | ${catalogue?.cards?.length ?? '—'} |`,
+            `| Canonical printings | ${imported?.verification?.active_printings ?? '—'} |`,
+            `| Distinct collector numbers | ${imported?.verification?.distinct_collector_numbers ?? '—'} |`,
+            `| Unresolved concepts | ${imported?.verification?.unresolved_concepts ?? '—'} |`,
+            `| Missing native names | ${imported?.verification?.missing_native_names ?? '—'} |`,
+            `| Missing English names | ${imported?.verification?.missing_english_names ?? '—'} |`,
+            `| Missing rarity | ${imported?.verification?.missing_rarity ?? '—'} |`,
+            `| Missing artists | ${imported?.verification?.missing_artist ?? '—'} |`,
+            `| Exact public card images | ${assets?.card_image_assets ?? '—'} |`,
+            `| Set logo | ${assets?.set_logo_available ? 'available' : 'missing'} |`,
+            `| Set symbol | ${assets?.set_symbol_available ? 'available' : 'missing'} |`,
+            `| Asset failures | ${assets?.failed ?? '—'} |`,
+            `| Production modified | ${imported?.production_modified ?? false} |`,
+            '',
+            'Bulbapedia and PokéCardex remain separate source records on every card. English `ex5` is used only as the exact concept/rarity reference; the Japanese name, artist and scan are retained from the Japanese catalogue sources.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable completion evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-adv5-complete-${{ github.run_id }}
+          path: |
+            ${{ env.STACKR_REPORT_DIR }}/catalogue.json
+            ${{ env.STACKR_REPORT_DIR }}/import-report.json
+            ${{ env.STACKR_REPORT_DIR }}/asset-report.json
+            ${{ env.STACKR_REPORT_DIR }}/summary.md
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report ADV5 outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          if [ -s "$STACKR_REPORT_DIR/summary.md" ]; then
+            body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          else
+            body="ADV5 completion **${GITHUB_RUN_ID}** failed before a summary was created. Inspect the evidence artifact. Production was not targeted."
+          fi
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
