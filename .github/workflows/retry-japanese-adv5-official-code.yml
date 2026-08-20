@@ -1,0 +1,193 @@
+name: Retry Japanese ADV5 Official Code
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RETRY ADV5 TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/retry-japanese-adv5-official-code.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-retry-japanese-adv5
+  cancel-in-progress: false
+
+jobs:
+  import-adv5:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'RETRY ADV5 TO STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      CANONICAL_SET_CODE: ADV5
+      OFFICIAL_SET_CODE: ADV5
+      RELEASE_DATE: '2004-01-16'
+      ENGLISH_NAME: 'Undone Seal'
+      STACKR_REPORT_DIR: reports/catalogue/japanese-adv5-retry
+
+    steps:
+      - name: Announce corrected official-code probe and import
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="ADV5 retry **${GITHUB_RUN_ID}** started using official database filter \`ADV5\`. The earlier \`ADV4\` attempt correctly returned no cards and made no database write. This run remains staging-only and will import only after a complete official identity check."
+
+      - name: Check out reviewed complete-set automation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing ADV5 retry.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          python3 -m pip install --disable-pip-version-check --no-input beautifulsoup4==4.13.4
+
+      - name: Syntax-check collector and complete importer
+        run: |
+          python3 -m py_compile scripts/collect-official-japanese-set-metadata-v2.py
+          node --check scripts/import-complete-official-japanese-set.mjs
+
+      - name: Collect official ADV5 result
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/collect-official-japanese-set-metadata-v2.py \
+            --set-code="$OFFICIAL_SET_CODE" \
+            --output="$STACKR_REPORT_DIR/source-catalogue.json" \
+            --max-results=1000 \
+            --minimum-delay-ms=650
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            exit "$status"
+          fi
+          test -s "$STACKR_REPORT_DIR/source-catalogue.json"
+
+      - name: Validate safe one-ID-per-printing evidence
+        run: |
+          jq -e '
+            .source == "pokemon_card_jp_official"
+            and .collector_version == 2
+            and .set_code_requested == "ADV5"
+            and .official_set_codes == ["ADV5"]
+            and .api_card_ids_collected > 0
+            and .detail_rows_collected == .api_card_ids_collected
+            and .unique_printings == .api_card_ids_collected
+            and .duplicate_official_variants == 0
+            and .unnumbered_detail_rows == 0
+            and (.unresolved_unnumbered_variants | length) == 0
+            and (.parser_errors | length) == 0
+            and (.identity_conflicts | length) == 0
+          ' "$STACKR_REPORT_DIR/source-catalogue.json"
+
+      - name: Import complete ADV5 catalogue to staging
+        run: >-
+          node scripts/import-complete-official-japanese-set.mjs
+          --input="$STACKR_REPORT_DIR/source-catalogue.json"
+          --canonical-set-code="$CANONICAL_SET_CODE"
+          --official-set-code="$OFFICIAL_SET_CODE"
+          --release-date="$RELEASE_DATE"
+          --english-name="$ENGLISH_NAME"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Verify zero structural gaps
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .full_total > 0
+            and .verification.active_printings == .full_total
+            and .verification.distinct_collector_numbers == .full_total
+            and .verification.printings_with_variant == .full_total
+            and .verification.official_ids_verified == .full_total
+            and .verification.unresolved_concepts == 0
+            and (.verification.duplicate_collector_numbers | length) == 0
+            and (.verification.duplicate_variant_keys | length) == 0
+            and (.verification.official_ids_missing | length) == 0
+          ' "$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Build retry summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const read = (name) => fs.existsSync(`${dir}/${name}`) ? JSON.parse(fs.readFileSync(`${dir}/${name}`, 'utf8')) : null;
+          const source = read('source-catalogue.json');
+          const report = read('import-report.json');
+          const verification = report?.verification ?? {};
+          const lines = [
+            '### Japanese catalogue — ADV5 retry',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok ? 'PASS' : 'FAILED/REVIEW REQUIRED'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Official source code | ${process.env.OFFICIAL_SET_CODE} |`,
+            `| Official source entries | ${source?.api_card_ids_collected ?? '—'} |`,
+            `| Full canonical total | ${report?.full_total ?? '—'} |`,
+            `| Printed denominator | ${report?.printed_total ?? source?.denominators?.join(', ') ?? '—'} |`,
+            `| Printings with a variant | ${verification.printings_with_variant ?? '—'} |`,
+            `| Official IDs verified | ${verification.official_ids_verified ?? '—'} |`,
+            `| Unresolved concepts | ${verification.unresolved_concepts ?? '—'} |`,
+            `| Production modified | ${report?.production_modified ?? false} |`,
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable retry evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-adv5-retry-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report retry outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
