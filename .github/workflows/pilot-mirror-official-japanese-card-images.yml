@@ -1,0 +1,155 @@
+name: Pilot Official Japanese Card Image Mirror
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type MIRROR FIVE CP4 IMAGES TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/pilot-mirror-official-japanese-card-images.yml'
+      - 'scripts/mirror-official-japanese-card-images.mjs'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-pilot-official-japanese-image-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror-pilot:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'MIRROR FIVE CP4 IMAGES TO STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_REPORT_DIR: reports/catalogue/japanese-image-mirror-pilot
+
+    steps:
+      - name: Announce five-image staging pilot
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Official Japanese image mirror pilot **${GITHUB_RUN_ID}** started. It will mirror five CP4 originals into the public staging catalogue bucket, register content-addressed assets, verify every public URL and leave production untouched."
+
+      - name: Check out reviewed mirror worker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing image pilot.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Syntax-check mirror worker
+        run: node --check scripts/mirror-official-japanese-card-images.mjs
+
+      - name: Mirror and publicly verify five CP4 originals
+        run: >-
+          node scripts/mirror-official-japanese-card-images.mjs
+          --set-codes=CP4
+          --limit=5
+          --concurrency=2
+          --delay-ms=750
+          --target=staging
+          --apply
+          --verify-public
+          --report="$STACKR_REPORT_DIR/report.json"
+
+      - name: Verify the pilot evidence
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .selected_for_run == 5
+            and .processed_successfully == 5
+            and .failed == 0
+            and .unverified_successes == []
+            and .public_verification_requested == true
+            and .public_urls_verified == 5
+            and ([.successes[] | .mimeType] | all(. == "image/jpeg" or . == "image/png" or . == "image/webp"))
+            and ([.successes[] | .contentSha256] | all(test("^[a-f0-9]{64}$")))
+            and ([.successes[] | .storageKey] | all(startswith("public/card_image/")))
+          ' "$STACKR_REPORT_DIR/report.json"
+
+      - name: Build pilot summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/report.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const examples = (report?.successes ?? []).slice(0, 5);
+          const lines = [
+            '### Official Japanese image mirror pilot',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok ? 'PASS' : 'FAILED'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Candidate CP4 variants | ${report?.candidate_variants ?? '—'} |`,
+            `| Images selected | ${report?.selected_for_run ?? '—'} |`,
+            `| Mirrored successfully | ${report?.processed_successfully ?? '—'} |`,
+            `| Public URLs verified | ${report?.public_urls_verified ?? '—'} |`,
+            `| Failed | ${report?.failed ?? '—'} |`,
+            `| Bytes mirrored | ${report?.total_bytes_mirrored ?? '—'} |`,
+            `| Production modified | ${report?.production_modified ?? false} |`,
+            '',
+            ...examples.map((item) => `- CP4 ${item.collectorNumber}: ${item.width ?? '?'}×${item.height ?? '?'} ${item.mimeType ?? 'unknown'} — \`${item.contentSha256 ?? 'no hash'}\``),
+            '',
+            'A successful pilot proves the official URL, download validation, SHA-256 storage key, Supabase upload, catalogue asset row, public delivery URL and variant availability update as one end-to-end path.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable pilot evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-image-mirror-pilot-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report pilot outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
