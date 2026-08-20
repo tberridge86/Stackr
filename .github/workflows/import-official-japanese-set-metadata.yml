@@ -176,6 +176,6 @@ jobs:
         shell: bash
         run: |
           body="$(cat reports/catalogue/official-japanese-set/import-summary.md)"
-          gh api repos/${{ github.repository}/issues/48/comments \
+          gh api repos/${{ github.repository }}/issues/48/comments \
             --method POST \
             --field body="$body"
