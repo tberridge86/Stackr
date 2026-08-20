@@ -1,0 +1,206 @@
+name: Retry Japanese CP4 with Variant Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RETRY CP4 TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/retry-japanese-cp4-variant-evidence.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-retry-japanese-cp4-variant-evidence
+  cancel-in-progress: false
+
+jobs:
+  import-cp4:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'RETRY CP4 TO STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_JP_SET_CODE: CP4
+      STACKR_JP_RELEASE_DATE: '2016-04-16'
+      STACKR_JP_ENGLISH_NAME: 'Premium Champion Pack EX × M × BREAK'
+      STACKR_REPORT_DIR: reports/catalogue/japanese-cp4-retry
+
+    steps:
+      - name: Announce evidence-preserving retry
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="CP4 retry **${GITHUB_RUN_ID}** started. The first run found 131 numbered printings plus nine official unnumbered alternate entries. This retry will import 131 canonical printings and preserve all 140 official IDs and image URLs without guessing finish."
+
+      - name: Check out reviewed automation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          python3 -m pip install --disable-pip-version-check --no-input beautifulsoup4==4.13.4
+
+      - name: Syntax-check programs
+        run: |
+          python3 -m py_compile scripts/collect-official-japanese-set-metadata-v2.py
+          python3 -m py_compile scripts/normalise-official-japanese-import-report.py
+          node --check scripts/import-official-japanese-set-metadata.mjs
+          node --check scripts/reconcile-official-japanese-set-import.mjs
+          node --check scripts/persist-official-japanese-variant-evidence.mjs
+          node --check scripts/ensure-unclassified-japanese-variants.mjs
+
+      - name: Collect every official CP4 entry
+        run: >-
+          python3 scripts/collect-official-japanese-set-metadata-v2.py
+          --set-code="$STACKR_JP_SET_CODE"
+          --output="$STACKR_REPORT_DIR/source-catalogue.json"
+          --max-results=600
+          --minimum-delay-ms=650
+
+      - name: Validate the complete source evidence
+        run: |
+          jq -e '
+            .collector_version == 2
+            and .set_code_requested == "CP4"
+            and .official_set_codes == ["CP4"]
+            and .api_card_ids_collected == 140
+            and .unique_printings == 131
+            and .duplicate_official_variants == 9
+            and .unnumbered_detail_rows == 9
+            and (.additional_official_variants | length) == 9
+            and (.unresolved_unnumbered_variants | length) == 0
+            and (.parser_errors | length) == 0
+            and (.identity_conflicts | length) == 0
+          ' "$STACKR_REPORT_DIR/source-catalogue.json"
+
+      - name: Create a printing-only canonical import manifest
+        run: >-
+          python3 scripts/normalise-official-japanese-import-report.py
+          --input="$STACKR_REPORT_DIR/source-catalogue.json"
+          --output="$STACKR_REPORT_DIR/catalogue.json"
+
+      - name: Import 131 canonical printings to staging
+        run: >-
+          node scripts/import-official-japanese-set-metadata.mjs
+          --input="$STACKR_REPORT_DIR/catalogue.json"
+          --set-code="$STACKR_JP_SET_CODE"
+          --release-date="$STACKR_JP_RELEASE_DATE"
+          --english-name="$STACKR_JP_ENGLISH_NAME"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Reconcile concepts without null-candidate conflicts
+        run: >-
+          node scripts/reconcile-official-japanese-set-import.mjs
+          --set-code="$STACKR_JP_SET_CODE"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/reconciliation-report.json"
+
+      - name: Persist all 140 official IDs and image URLs
+        run: >-
+          node scripts/persist-official-japanese-variant-evidence.mjs
+          --input="$STACKR_REPORT_DIR/source-catalogue.json"
+          --set-code="$STACKR_JP_SET_CODE"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/variant-evidence-report.json"
+
+      - name: Create truthful temporary variants
+        run: >-
+          node scripts/ensure-unclassified-japanese-variants.mjs
+          --set-code="$STACKR_JP_SET_CODE"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/variant-coverage-report.json"
+
+      - name: Create completion summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const read = (name) => fs.existsSync(`${dir}/${name}`) ? JSON.parse(fs.readFileSync(`${dir}/${name}`, 'utf8')) : null;
+          const source = read('source-catalogue.json');
+          const imported = read('import-report.json');
+          const reconciled = read('reconciliation-report.json');
+          const evidence = read('variant-evidence-report.json');
+          const variants = read('variant-coverage-report.json');
+          const ok = Boolean(source && imported?.ok && reconciled?.ok && evidence?.ok && variants?.ok);
+          const lines = [
+            '### Japanese batch 1 — CP4 retry',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${ok ? 'PASS' : 'INCOMPLETE/FAILED'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Official entries preserved | ${source?.api_card_ids_collected ?? '—'} |`,
+            `| Canonical numbered printings | ${source?.unique_printings ?? '—'} |`,
+            `| Unnumbered alternate entries | ${source?.additional_official_variants?.length ?? '—'} |`,
+            `| Imported printings | ${imported?.verification?.active_printings ?? '—'} |`,
+            `| Unresolved concepts | ${reconciled?.final?.unresolved_concepts ?? '—'} |`,
+            `| Official identifiers verified | ${evidence?.official_ids_verified ?? '—'} |`,
+            `| Printings with a temporary variant | ${variants?.printings_with_variant ?? '—'} |`,
+            `| Production modified | false |`,
+            '',
+            'The temporary `unclassified` variant is deliberate: it makes each card usable without falsely claiming normal, holo, reverse, edition or stamp treatment. Exact finish classification remains a separate enrichment gate.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable retry evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-cp4-retry-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
