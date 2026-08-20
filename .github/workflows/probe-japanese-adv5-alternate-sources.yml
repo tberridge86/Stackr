@@ -1,0 +1,288 @@
+name: Probe Japanese ADV5 Alternate Sources
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type PROBE ADV5 SOURCES
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/probe-japanese-adv5-alternate-sources.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-probe-japanese-adv5-sources
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'PROBE ADV5 SOURCES')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+      STACKR_REPORT_DIR: reports/catalogue/japanese-adv5-source-probe
+
+    steps:
+      - name: Announce read-only alternate-source probe
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="ADV5 alternate-source probe **${GITHUB_RUN_ID}** started. The official Japanese card-search filters \`ADV4\` and \`ADV5\` returned no cards, so this read-only probe will compare Bulbapedia's 83-card Undone Seal checklist with PokéCardex's Japanese ADV5 catalogue and imagery. No database or production service is touched."
+
+      - name: Install pinned parser dependencies
+        run: python3 -m pip install --disable-pip-version-check --no-input requests==2.32.4 beautifulsoup4==4.13.4 lxml==6.0.0
+
+      - name: Probe page structures and catalogue evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$STACKR_REPORT_DIR"
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import re
+          import time
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from urllib.parse import urljoin
+
+          import requests
+          from bs4 import BeautifulSoup
+
+          report_dir = Path(os.environ['STACKR_REPORT_DIR'])
+          session = requests.Session()
+          session.headers.update({
+              'User-Agent': 'StackR-Catalogue-Audit/1.0 (+https://stackrtcg.com)',
+              'Accept-Language': 'ja,en-GB;q=0.8,en;q=0.7',
+          })
+
+          urls = {
+              'bulbapedia': 'https://bulbapedia.bulbagarden.net/wiki/Undone_Seal_(TCG)',
+              'pokecardex': 'https://www.pokecardex.com/series/jp/ADV5',
+          }
+          pages = {}
+          for key, url in urls.items():
+              response = session.get(url, timeout=45)
+              response.raise_for_status()
+              html = response.text
+              pages[key] = {
+                  'url': url,
+                  'http_status': response.status_code,
+                  'content_type': response.headers.get('content-type'),
+                  'byte_size': len(response.content),
+                  'sha256': hashlib.sha256(response.content).hexdigest(),
+                  'html': html,
+              }
+              (report_dir / f'{key}.html').write_text(html, encoding='utf-8')
+              time.sleep(1.0)
+
+          # Bulbapedia: extract every table row with a numeric Japanese set number.
+          bulb_soup = BeautifulSoup(pages['bulbapedia']['html'], 'lxml')
+          bulb_cards = []
+          table_summaries = []
+          for table_index, table in enumerate(bulb_soup.find_all('table')):
+              headers = [cell.get_text(' ', strip=True) for cell in table.find_all('th')[:10]]
+              rows = table.find_all('tr')
+              numeric_rows = 0
+              for row in rows:
+                  cells = row.find_all(['td', 'th'])
+                  values = [cell.get_text(' ', strip=True) for cell in cells]
+                  number_index = next((idx for idx, value in enumerate(values) if re.fullmatch(r'\d{1,3}', value)), None)
+                  if number_index is None:
+                      continue
+                  number = values[number_index]
+                  numeric = int(number)
+                  if not 1 <= numeric <= 200:
+                      continue
+                  links = [
+                      {
+                          'text': link.get_text(' ', strip=True),
+                          'url': urljoin(pages['bulbapedia']['url'], link.get('href')),
+                      }
+                      for link in row.find_all('a', href=True)
+                  ]
+                  images = [
+                      urljoin(pages['bulbapedia']['url'], image.get('src'))
+                      for image in row.find_all('img', src=True)
+                  ]
+                  bulb_cards.append({
+                      'table_index': table_index,
+                      'row_values': values,
+                      'number': number.zfill(3),
+                      'links': links,
+                      'images': images,
+                  })
+                  numeric_rows += 1
+              if numeric_rows:
+                  table_summaries.append({
+                      'table_index': table_index,
+                      'headers': headers,
+                      'numeric_rows': numeric_rows,
+                  })
+
+          # Keep the best 83-card table and preserve its raw rows.
+          table_counts = {}
+          for card in bulb_cards:
+              table_counts[card['table_index']] = table_counts.get(card['table_index'], 0) + 1
+          best_table_index = None
+          if table_counts:
+              best_table_index = min(
+                  table_counts,
+                  key=lambda index: (abs(table_counts[index] - 83), -table_counts[index], index),
+              )
+          bulb_best_rows = [card for card in bulb_cards if card['table_index'] == best_table_index]
+
+          # PokéCardex: inspect embedded application data, links, images and useful data attributes.
+          poke_soup = BeautifulSoup(pages['pokecardex']['html'], 'lxml')
+          script_records = []
+          embedded_json = []
+          for script in poke_soup.find_all('script'):
+              src = script.get('src')
+              text = script.string or script.get_text() or ''
+              record = {
+                  'src': urljoin(pages['pokecardex']['url'], src) if src else None,
+                  'type': script.get('type'),
+                  'id': script.get('id'),
+                  'text_length': len(text),
+                  'text_prefix': text[:500] if text else None,
+              }
+              script_records.append(record)
+              stripped = text.strip()
+              if stripped.startswith(('{', '[')) and len(stripped) > 2:
+                  try:
+                      payload = json.loads(stripped)
+                      embedded_json.append({
+                          'id': script.get('id'),
+                          'type': script.get('type'),
+                          'top_level_type': type(payload).__name__,
+                          'top_level_keys': sorted(payload.keys()) if isinstance(payload, dict) else None,
+                          'payload': payload,
+                      })
+                  except json.JSONDecodeError:
+                      pass
+
+          poke_links = []
+          for link in poke_soup.find_all('a', href=True):
+              href = urljoin(pages['pokecardex']['url'], link.get('href'))
+              text = link.get_text(' ', strip=True)
+              if any(token in href.lower() for token in ('adv5', '/carte/', '/card/', '/cards/')):
+                  poke_links.append({'text': text, 'url': href})
+
+          poke_images = []
+          for image in poke_soup.find_all('img'):
+              candidates = [image.get('src'), image.get('data-src'), image.get('data-lazy-src'), image.get('srcset')]
+              for candidate in candidates:
+                  if not candidate:
+                      continue
+                  poke_images.append({
+                      'url': urljoin(pages['pokecardex']['url'], candidate.split(',')[0].strip().split(' ')[0]),
+                      'alt': image.get('alt'),
+                      'classes': image.get('class') or [],
+                  })
+
+          data_attributes = []
+          for node in poke_soup.find_all(True):
+              attrs = {
+                  key: value
+                  for key, value in node.attrs.items()
+                  if key.startswith('data-') and any(token in str(value).lower() for token in ('adv5', 'card', 'carte', 'series'))
+              }
+              if attrs:
+                  data_attributes.append({
+                      'tag': node.name,
+                      'attrs': attrs,
+                      'text': node.get_text(' ', strip=True)[:200],
+                  })
+
+          report = {
+              'generated_at': datetime.now(timezone.utc).isoformat(),
+              'read_only': True,
+              'database_modified': False,
+              'pages': {
+                  key: {field: value for field, value in page.items() if field != 'html'}
+                  for key, page in pages.items()
+              },
+              'bulbapedia': {
+                  'title': bulb_soup.title.get_text(' ', strip=True) if bulb_soup.title else None,
+                  'table_summaries': table_summaries,
+                  'best_table_index': best_table_index,
+                  'best_table_row_count': len(bulb_best_rows),
+                  'best_table_numbers': [row['number'] for row in bulb_best_rows],
+                  'best_table_rows': bulb_best_rows,
+              },
+              'pokecardex': {
+                  'title': poke_soup.title.get_text(' ', strip=True) if poke_soup.title else None,
+                  'script_records': script_records,
+                  'embedded_json': embedded_json,
+                  'relevant_links': poke_links,
+                  'relevant_images': poke_images,
+                  'data_attributes': data_attributes,
+                  'body_text_prefix': poke_soup.get_text('\n', strip=True)[:10000],
+              },
+          }
+          (report_dir / 'probe.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          lines = [
+              f'### ADV5 alternate-source probe `{os.environ.get("GITHUB_RUN_ID", "unknown")}`',
+              '',
+              'Read-only comparison; no database or production service was touched.',
+              '',
+              '| Evidence | Result |',
+              '|---|---:|',
+              f'| Bulbapedia best checklist rows | {len(bulb_best_rows)} |',
+              f'| Bulbapedia first/last number | {(bulb_best_rows[0]["number"] if bulb_best_rows else "—")} / {(bulb_best_rows[-1]["number"] if bulb_best_rows else "—")} |',
+              f'| PokéCardex relevant links | {len(poke_links)} |',
+              f'| PokéCardex relevant image elements | {len(poke_images)} |',
+              f'| PokéCardex embedded JSON blocks | {len(embedded_json)} |',
+              f'| PokéCardex data-bearing elements | {len(data_attributes)} |',
+              '',
+              'The artifact retains page hashes, the complete best Bulbapedia table, embedded application data, relevant links and image references for parser design.',
+          ]
+          (report_dir / 'summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          print(json.dumps({
+              'bulbapedia_rows': len(bulb_best_rows),
+              'pokecardex_links': len(poke_links),
+              'pokecardex_images': len(poke_images),
+              'pokecardex_embedded_json': len(embedded_json),
+              'pokecardex_data_attributes': len(data_attributes),
+          }, indent=2))
+
+          if len(bulb_best_rows) != 83:
+              raise SystemExit(f'Expected 83 Bulbapedia checklist rows, found {len(bulb_best_rows)}.')
+          PY
+
+      - name: Upload immutable source-probe evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-adv5-source-probe-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report probe result to PR 48
+        if: always()
+        shell: bash
+        run: |
+          if [ -s "$STACKR_REPORT_DIR/summary.md" ]; then
+            body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          else
+            body="ADV5 source probe **${GITHUB_RUN_ID}** failed before evidence was created. No database or production service was touched."
+          fi
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
