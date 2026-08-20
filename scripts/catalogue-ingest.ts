@@ -90,8 +90,13 @@ Examples:
   npm run catalogue:ingest -- run-set --source=tcgdex --language=ja --setId=sv2a --target=staging
   npm run catalogue:ingest -- run-language --source=tcgdex --language=zh-cn --dryRun
   npm run catalogue:ingest -- run-language --source=tcgdex --language=en --offset=500 --limit=500 --target=staging
+  npm run catalogue:ingest -- run-language --source=tcgdex --language=ja --snapshotRoot=./snapshot --snapshotVersion=<sha> --target=staging
   npm run catalogue:ingest -- run-set --source=tcgdex --language=ja --setId=sv2a --target=staging --allowImageAssets
   npm run catalogue:quality-report -- --language=ja
+
+Pinned snapshots:
+  --snapshotRoot points to a directory containing <language>/sets.json and
+  <language>/cards.json. --snapshotVersion is retained in source provenance.
 
 Image assets:
   Off by default. Use --allowImageAssets only after each imported record has
@@ -176,7 +181,7 @@ async function main() {
   }
 
   const source = arg('source');
-  if (!source) throw new Error('Missing --source. Use --source=manual-csv, --source=manual-json or --source=tcgdex.');
+  if (!source) throw new Error(`Missing --source. Use one of: ${supportedSourceAdapters.join(', ')}.`);
 
   const dryRun = hasFlag('dryRun');
   if (!dryRun) requireStagingTarget();
@@ -185,6 +190,9 @@ async function main() {
     source,
     file: arg('file') || undefined,
     language,
+    baseUrl: arg('baseUrl') || undefined,
+    snapshotRoot: arg('snapshotRoot') || undefined,
+    snapshotVersion: arg('snapshotVersion') || undefined,
     licenceStatus: arg('licenceStatus') as 'approved' | 'under_review' | 'restricted' | 'denied' | 'unknown' || undefined,
     assetLicenceStatus: (arg('assetLicenceStatus') || arg('asset-licence-status')) as 'approved' | 'under_review' | 'restricted' | 'denied' | 'unknown' || undefined,
   });

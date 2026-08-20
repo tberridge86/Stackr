@@ -169,13 +169,18 @@ export function normaliseVariantCode(value: unknown): string {
   const aliases: Record<string, string> = {
     standard: 'normal',
     regular: 'normal',
+    nonholo: 'normal',
     non_holo: 'normal',
+    nonholofoil: 'normal',
     non_holofoil: 'normal',
     reverse: 'reverse_holo',
-    reverse_holofoil: 'reverse_holo',
+    reverseholo: 'reverse_holo',
     reverse_holo: 'reverse_holo',
+    reverseholofoil: 'reverse_holo',
+    reverse_holofoil: 'reverse_holo',
     holofoil: 'holo',
     holographic: 'holo',
+    firstedition: 'first_edition',
     first_edition: 'first_edition',
     first: 'first_edition',
     unlimited: 'unlimited',
@@ -272,8 +277,8 @@ export function validateProviderRecord(record: ProviderRecord): ValidationResult
   if (record.licenceStatus !== 'approved') {
     issues.push({
       code: 'legal_use_not_approved',
-      severity: record.licenceStatus === 'denied' || record.licenceStatus === 'restricted' ? 'error' : 'warning',
-      message: `Licence status is ${record.licenceStatus}; automatic upsert is not allowed unless approved.`,
+      severity: 'error',
+      message: `Licence status is ${record.licenceStatus}; the raw provider record may be retained, but canonical catalogue promotion is blocked until approved.`,
     });
   }
   return {

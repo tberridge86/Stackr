@@ -1,0 +1,80 @@
+name: StackR Verify Multilingual Metadata Backfill
+
+on:
+  push:
+    branches: [backend/release-hardening-2026-08-19]
+    paths:
+      - .github/workflows/verify-multilingual-metadata-backfill.yml
+  workflow_dispatch:
+    inputs:
+      since_hours:
+        description: Import history window to audit
+        required: true
+        default: '48'
+        type: choice
+        options: ['24', '48', '72', '168']
+
+permissions:
+  contents: read
+
+# Share the backfill lock. A verification push queues behind any active import
+# instead of reading a catalogue while batches are still mutating it.
+concurrency:
+  group: stackr-full-multilingual-metadata-backfill
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.message, '[audit metadata backfill]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: ingestion
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      SINCE_HOURS: ${{ inputs.since_hours || '48' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: Typecheck metadata audit
+        run: npm run typecheck
+
+      - name: Audit all five languages and both providers
+        run: >-
+          npx --no-install tsx scripts/audit-multilingual-metadata-backfill.ts
+          --sinceHours="$SINCE_HOURS"
+          --outputRoot=reports/catalogue-metadata-audit
+
+      - name: Summarise exact residual queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          const report = JSON.parse(await readFile('reports/catalogue-metadata-audit/metadata-audit.json', 'utf8'));
+          console.log(JSON.stringify({
+            generatedAt: report.generatedAt,
+            residualSummary: report.residualSummary,
+            canonical: Object.fromEntries(Object.entries(report.languages).map(([language, value]) => [
+              language,
+              value.canonical,
+            ])),
+            sha256: report.sha256,
+          }, null, 2));
+          NODE
+
+      - name: Upload field coverage and residual records
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: multilingual-metadata-audit-${{ github.run_id }}
+          path: reports/catalogue-metadata-audit
+          if-no-files-found: error
+          retention-days: 30

@@ -1,0 +1,38 @@
+{
+  "基本草エネルギー": {
+    "collector_number": "GRA",
+    "english_name": "Basic Grass Energy"
+  },
+  "基本炎エネルギー": {
+    "collector_number": "FIR",
+    "english_name": "Basic Fire Energy"
+  },
+  "基本水エネルギー": {
+    "collector_number": "WAT",
+    "english_name": "Basic Water Energy"
+  },
+  "基本雷エネルギー": {
+    "collector_number": "LIG",
+    "english_name": "Basic Lightning Energy"
+  },
+  "基本超エネルギー": {
+    "collector_number": "PSY",
+    "english_name": "Basic Psychic Energy"
+  },
+  "基本闘エネルギー": {
+    "collector_number": "FIG",
+    "english_name": "Basic Fighting Energy"
+  },
+  "基本悪エネルギー": {
+    "collector_number": "DAR",
+    "english_name": "Basic Darkness Energy"
+  },
+  "基本鋼エネルギー": {
+    "collector_number": "MET",
+    "english_name": "Basic Metal Energy"
+  },
+  "基本フェアリーエネルギー": {
+    "collector_number": "FAI",
+    "english_name": "Basic Fairy Energy"
+  }
+}

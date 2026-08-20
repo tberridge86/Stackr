@@ -1,0 +1,58 @@
+name: StackR Catalogue Metadata Completion Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      strict:
+        description: Fail when provider coverage or canonical metadata remains incomplete
+        required: true
+        default: true
+        type: boolean
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - .github/catalogue-metadata-audit.trigger
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-catalogue-ingestion
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: ingestion
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_METADATA_AUDIT_STRICT: ${{ inputs.strict || 'true' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+      - name: Audit complete provider metadata and canonical catalogue
+        shell: bash
+        run: |
+          args=("--output=reports/catalogue/metadata-backfill/complete-metadata-audit.json")
+          if [ "$STACKR_METADATA_AUDIT_STRICT" = "true" ]; then args+=("--strict"); fi
+          npx --no-install tsx scripts/audit-complete-metadata-backfill.ts "${args[@]}"
+
+      - name: Upload metadata audit
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: complete-metadata-audit-${{ github.run_id }}
+          path: reports/catalogue/metadata-backfill/complete-metadata-audit.json
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,0 +1,222 @@
+name: Pilot Official Japanese Set Metadata
+
+on:
+  workflow_dispatch:
+    inputs:
+      set_code:
+        description: Official Japanese set code passed to the card-search pg filter
+        required: true
+        default: 'S4a'
+        type: string
+      max_cards:
+        description: Maximum detail pages to inspect in this read-only pilot
+        required: true
+        default: '6'
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/pilot-official-japanese-set-metadata.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-official-japanese-set-metadata-pilot
+  cancel-in-progress: false
+
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      STACKR_JP_SET_CODE: ${{ inputs.set_code || 'S4a' }}
+      STACKR_JP_MAX_CARDS: ${{ inputs.max_cards || '6' }}
+    steps:
+      - name: Announce the read-only parser pilot
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Official Japanese detail-page parser pilot **${GITHUB_RUN_ID}** started for \`${STACKR_JP_SET_CODE}\` (maximum ${STACKR_JP_MAX_CARDS} cards). It is read-only and downloads no card images."
+
+      - name: Install pinned HTML parser
+        run: python3 -m pip install --disable-pip-version-check --no-input beautifulsoup4==4.13.4
+
+      - name: Collect bounded official metadata and HTML structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$STACKR_JP_SET_CODE" =~ ^[A-Za-z0-9+._:-]+$ ]] || exit 1
+          [[ "$STACKR_JP_MAX_CARDS" =~ ^[0-9]+$ ]] || exit 1
+          (( STACKR_JP_MAX_CARDS >= 1 && STACKR_JP_MAX_CARDS <= 12 )) || exit 1
+          mkdir -p reports/catalogue/official-japanese-set-pilot
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          import time
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+
+          from bs4 import BeautifulSoup
+
+          base = 'https://www.pokemon-card.com'
+          api = f'{base}/card-search/resultAPI.php'
+          set_code = os.environ['STACKR_JP_SET_CODE']
+          max_cards = int(os.environ['STACKR_JP_MAX_CARDS'])
+          output_dir = Path('reports/catalogue/official-japanese-set-pilot')
+          headers = {
+              'User-Agent': 'StackR-Catalogue-Audit/1.0 (+https://stackrtcg.com)',
+              'Accept-Language': 'ja,en-GB;q=0.8,en;q=0.7',
+              'Referer': f'{base}/card-search/',
+          }
+
+          def fetch_json(url):
+              request = Request(url, headers={**headers, 'Accept': 'application/json, text/javascript, */*; q=0.01', 'X-Requested-With': 'XMLHttpRequest'})
+              with urlopen(request, timeout=30) as response:
+                  return json.load(response)
+
+          def fetch_text(url):
+              request = Request(url, headers={**headers, 'Accept': 'text/html,application/xhtml+xml'})
+              with urlopen(request, timeout=30) as response:
+                  return response.read().decode('utf-8', errors='replace')
+
+          params = {
+              'keyword': '',
+              'se_ta': '',
+              'regulation_sidebar_form': 'all',
+              'illust': '',
+              'sm_and_keyword': 'true',
+              'pg': set_code,
+              'page': '1',
+          }
+          payload = fetch_json(f'{api}?{urlencode(params)}')
+          card_list = payload.get('cardList') or []
+          selected = card_list[:max_cards]
+
+          report = {
+              'generated_at': datetime.now(timezone.utc).isoformat(),
+              'set_code': set_code,
+              'api_hit_count': payload.get('hitCnt'),
+              'api_max_page': payload.get('maxPage'),
+              'api_cards_on_page': len(card_list),
+              'read_only': True,
+              'images_downloaded': False,
+              'cards': [],
+          }
+
+          number_pattern = re.compile(r'(?<![A-Za-z0-9])([A-Za-z0-9+._-]+)\s+([0-9A-Za-z+._-]+)\s*/\s*([0-9A-Za-z+._-]+)')
+
+          for index, card in enumerate(selected):
+              card_id = str(card.get('cardID') or '').strip()
+              detail_url = f'{base}/card-search/details.php/card/{card_id}/regu/all'
+              html = fetch_text(detail_url)
+              soup = BeautifulSoup(html, 'html.parser')
+              text_lines = [line.strip() for line in soup.get_text('\n').splitlines() if line.strip()]
+              title_node = soup.select_one('section.Section h1.Heading1.mt20') or soup.find('h1')
+              name = title_node.get_text(' ', strip=True) if title_node else card.get('cardNameAltText')
+
+              images = []
+              for image in soup.find_all('img'):
+                  src = image.get('src') or ''
+                  alt = image.get('alt') or ''
+                  classes = image.get('class') or []
+                  if set_code.lower() in f'{src} {alt}'.lower() or 'card_images' in src or alt.strip():
+                      images.append({'src': src, 'alt': alt, 'class': classes})
+
+              headings = [
+                  {'tag': node.name, 'text': node.get_text(' ', strip=True), 'class': node.get('class') or []}
+                  for node in soup.find_all(['h1', 'h2', 'h3', 'h4'])
+              ]
+
+              visible = ' '.join(text_lines)
+              number_matches = [
+                  {'set_code': match.group(1), 'collector_number': match.group(2), 'denominator': match.group(3)}
+                  for match in number_pattern.finditer(visible)
+              ]
+
+              artist = None
+              for line_index, line in enumerate(text_lines):
+                  if line == 'イラストレーター' and line_index + 1 < len(text_lines):
+                      artist = text_lines[line_index + 1]
+                      break
+
+              card_image = next((item for item in images if '/card_images/' in item['src']), None)
+              image_basename = (card_image or {}).get('src', '').rsplit('/', 1)[-1]
+              type_marker = None
+              marker_match = re.search(r'_[PTE]_', image_basename)
+              if marker_match:
+                  type_marker = marker_match.group(0).strip('_')
+
+              report['cards'].append({
+                  'position': index + 1,
+                  'card_id': card_id,
+                  'api_name': card.get('cardNameAltText'),
+                  'api_name_view_text': card.get('cardNameViewText'),
+                  'api_thumbnail_path': card.get('cardThumbFile'),
+                  'detail_url': detail_url,
+                  'parsed_name': name,
+                  'parsed_artist': artist,
+                  'parsed_type_marker': type_marker,
+                  'number_matches': number_matches[:10],
+                  'heading_nodes': headings[:40],
+                  'relevant_images': images[:40],
+                  'text_lines': text_lines[:220],
+              })
+              if index + 1 < len(selected):
+                  time.sleep(1.25)
+
+          (output_dir / 'pilot.json').write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          lines = [
+              f'### Official Japanese set parser pilot `{os.environ.get("GITHUB_RUN_ID", "unknown")}`',
+              '',
+              f'Set: `{set_code}` — API hits: **{report["api_hit_count"]}**; inspected: **{len(report["cards"])}**.',
+              '',
+              '| Position | Card ID | Name | Artist | Type marker | Number candidates |',
+              '|---:|---:|---|---|---|---|',
+          ]
+          for card in report['cards']:
+              numbers = '; '.join(
+                  f'{item["set_code"]} {item["collector_number"]}/{item["denominator"]}'
+                  for item in card['number_matches'][:3]
+              ) or '—'
+              lines.append(
+                  f'| {card["position"]} | {card["card_id"]} | {card["parsed_name"] or "—"} | '
+                  f'{card["parsed_artist"] or "—"} | {card["parsed_type_marker"] or "—"} | {numbers} |'
+              )
+          lines.extend([
+              '',
+              'The JSON artifact includes bounded heading, image-attribute and visible-text evidence so the bulk parser can be fixed before any database write.',
+          ])
+          (output_dir / 'summary.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          print(json.dumps(report, ensure_ascii=False, indent=2))
+          if not report['cards']:
+              raise SystemExit('The official API returned no pilot cards.')
+          PY
+
+      - name: Upload parser-pilot evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-official-japanese-set-pilot-${{ github.run_id }}
+          path: reports/catalogue/official-japanese-set-pilot
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report pilot result to PR 48
+        if: always()
+        shell: bash
+        run: |
+          if [ -s reports/catalogue/official-japanese-set-pilot/summary.md ]; then
+            body="$(cat reports/catalogue/official-japanese-set-pilot/summary.md)"
+          else
+            body="Official Japanese parser pilot **${GITHUB_RUN_ID}** failed before evidence was created. No database or production service was touched."
+          fi
+          gh api repos/${{ github.repository }}/issues/48/comments --method POST --field body="$body"

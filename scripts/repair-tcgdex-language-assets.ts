@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { pathToFileURL } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import { CatalogueIngestionRunner } from './catalogue-ingestion/pipeline';
 import { fetchCatalogueQualityReport } from './catalogue-ingestion/qualityReport';
@@ -98,7 +99,7 @@ export function createApprovedTcgdexRepairAdapter(languageCode: string): SourceA
 
   return {
     identifySource: () => base.identifySource(),
-    healthCheck: (scope?: FetchScope) => base.healthCheck(scope),
+    healthCheck: () => base.healthCheck(),
     fetchSets: (scope?: FetchScope) => base.fetchSets(scope),
     fetchCards: (scope?: FetchScope) => base.fetchCards(scope),
     fetchVariants: (scope?: FetchScope) => base.fetchVariants(scope),
@@ -111,7 +112,7 @@ export function createApprovedTcgdexRepairAdapter(languageCode: string): SourceA
       // language repair covers fronts + logos + symbols in one controlled run.
       // Do not apply the card offset/limit to the set-art list: each batch is
       // idempotent and retaining all set art prevents a partial repair.
-      const sets = await collectRecords(base.fetchSets({}));
+      const sets = await collectRecords(base.fetchSets());
       const setAssets = buildSetAssetRecords(sets, languageCode);
       return [...setAssets, ...providerAssets];
     },
@@ -151,7 +152,7 @@ function optionalPositiveInteger(name: string) {
   return value;
 }
 
-async function main() {
+export async function runTcgdexLanguageAssetRepair() {
   if (hasFlag('help')) {
     printHelp();
     return;
@@ -223,11 +224,17 @@ async function main() {
   }, null, 2));
 }
 
-main().catch((error) => {
-  console.error(JSON.stringify({
-    ok: false,
-    repair: 'tcgdex-language-assets',
-    error: error instanceof Error ? error.message : String(error),
-  }, null, 2));
-  process.exitCode = 1;
-});
+const isDirectExecution = process.argv[1]
+  ? import.meta.url === pathToFileURL(process.argv[1]).href
+  : false;
+
+if (isDirectExecution) {
+  runTcgdexLanguageAssetRepair().catch((error) => {
+    console.error(JSON.stringify({
+      ok: false,
+      repair: 'tcgdex-language-assets',
+      error: error instanceof Error ? error.message : String(error),
+    }, null, 2));
+    process.exitCode = 1;
+  });
+}

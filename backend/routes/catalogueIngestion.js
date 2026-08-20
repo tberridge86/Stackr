@@ -5,10 +5,12 @@ import {
   enqueueCatalogueIngestionCommand,
   getCatalogueQualityReport,
   listQuarantinedConflicts,
+  normaliseCatalogueSource,
 } from '../lib/catalogueIngestionAdmin.js';
+import { getCatalogueProviderHealth } from '../lib/catalogueProviderHealth.js';
 
 const router = express.Router();
-const ROUTE_VERSION = 'stackr-catalogue-ingestion-admin-v1.0.0';
+const ROUTE_VERSION = 'stackr-catalogue-ingestion-admin-v1.1.0';
 
 let supabaseAdmin = null;
 
@@ -64,9 +66,63 @@ function fail(res, error) {
   res.status(status).json({
     ok: false,
     routeVersion: ROUTE_VERSION,
+    code: error?.code ?? 'catalogue_ingestion_failed',
     error: error instanceof Error ? error.message : String(error),
   });
 }
+
+router.get('/providers/health', async (req, res) => {
+  if (!requireAdminAccess(req, res)) return;
+
+  try {
+    const health = await getCatalogueProviderHealth({
+      language: bodyAndQuery(req).language ?? 'en',
+    });
+    res.status(health.ok ? 200 : 503).json({
+      routeVersion: ROUTE_VERSION,
+      ...health,
+    });
+  } catch (error) {
+    fail(res, error);
+  }
+});
+
+router.post('/mirror/:provider', async (req, res) => {
+  if (!requireAdminAccess(req, res)) return;
+
+  try {
+    const input = bodyAndQuery(req);
+    const source = normaliseCatalogueSource(req.params.provider);
+    if (source !== 'tcgdex' && source !== 'pokemon-tcg-api') {
+      const error = new Error('The mirror endpoint supports tcgdex and pokemon-tcg-api only.');
+      error.status = 400;
+      error.code = 'unsupported_mirror_provider';
+      throw error;
+    }
+    const command = input.setId ? 'run-set' : 'run-language';
+    const result = await enqueueCatalogueIngestionCommand(
+      getSupabaseAdmin(),
+      command,
+      {
+        ...input,
+        source,
+        language: source === 'pokemon-tcg-api' ? 'en' : (input.language ?? 'en'),
+        approvedOnlyAssets: input.approvedOnlyAssets ?? true,
+      },
+    );
+    res.json({
+      ok: true,
+      routeVersion: ROUTE_VERSION,
+      mode: 'queued',
+      mirrorPolicy: source === 'tcgdex'
+        ? 'primary_multilingual_catalogue'
+        : 'english_reconciliation_fallback',
+      ...result,
+    });
+  } catch (error) {
+    fail(res, error);
+  }
+});
 
 router.post('/:command(run-source|run-language|run-set|resume-import|rebuild-record)', async (req, res) => {
   if (!requireAdminAccess(req, res)) return;

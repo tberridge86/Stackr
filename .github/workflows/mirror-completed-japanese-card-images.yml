@@ -1,0 +1,158 @@
+name: Mirror Completed Japanese Card Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type MIRROR COMPLETED JAPANESE IMAGES TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/mirror-completed-japanese-card-images.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  mirror-set:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'MIRROR COMPLETED JAPANESE IMAGES TO STAGING')
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        set_code: [S4a, PCG10, S2, S3, S4, CP4, XY3, XY4, CP6, XY7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    environment: staging
+    concurrency:
+      group: stackr-mirror-japanese-images-${{ matrix.set_code }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_JP_SET_CODE: ${{ matrix.set_code }}
+      STACKR_REPORT_DIR: reports/catalogue/japanese-image-mirror/${{ matrix.set_code }}
+
+    steps:
+      - name: Announce set image mirror
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Japanese image mirror **${GITHUB_RUN_ID}** started for \`${STACKR_JP_SET_CODE}\`. Every official original will be validated, content-addressed, stored in the public staging catalogue bucket, registered as an approved asset and publicly verified. Production is excluded."
+
+      - name: Check out reviewed mirror worker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$STACKR_JP_SET_CODE" =~ ^[A-Za-z0-9+._:-]+$ ]]
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing image mirror.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Syntax-check image mirror worker
+        run: node --check scripts/mirror-official-japanese-card-images.mjs
+
+      - name: Mirror every pending original and verify delivery
+        run: >-
+          node scripts/mirror-official-japanese-card-images.mjs
+          --set-codes="$STACKR_JP_SET_CODE"
+          --concurrency=2
+          --delay-ms=750
+          --target=staging
+          --apply
+          --verify-public
+          --report="$STACKR_REPORT_DIR/report.json"
+
+      - name: Verify zero image gaps for the requested set
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .candidate_variants > 0
+            and .failed == 0
+            and .unverified_successes == []
+            and .remaining_after_run == 0
+            and .complete_for_requested_sets == true
+            and (.ready_before + .processed_successfully) == .candidate_variants
+            and .public_urls_verified == .processed_successfully
+          ' "$STACKR_REPORT_DIR/report.json"
+
+      - name: Build set image-completion summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/report.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const examples = (report?.successes ?? []).slice(0, 3);
+          const lines = [
+            `### Japanese image completion — ${process.env.STACKR_JP_SET_CODE}`,
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok && report?.complete_for_requested_sets ? 'PASS' : 'FAILED/INCOMPLETE'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Exact candidate variants | ${report?.candidate_variants ?? '—'} |`,
+            `| Already mirrored | ${report?.ready_before ?? '—'} |`,
+            `| Mirrored in this run | ${report?.processed_successfully ?? '—'} |`,
+            `| Public URLs verified in this run | ${report?.public_urls_verified ?? '—'} |`,
+            `| Remaining | ${report?.remaining_after_run ?? '—'} |`,
+            `| Failed | ${report?.failed ?? '—'} |`,
+            `| Bytes mirrored in this run | ${report?.total_bytes_mirrored ?? '—'} |`,
+            `| Production modified | ${report?.production_modified ?? false} |`,
+            '',
+            ...examples.map((item) => `- ${process.env.STACKR_JP_SET_CODE} ${item.collectorNumber}: ${item.width ?? '?'}×${item.height ?? '?'} ${item.mimeType ?? 'unknown'} — \`${item.contentSha256 ?? 'no hash'}\``),
+            '',
+            'PASS means every official source-linked variant in this set has an approved, publicly servable, content-addressed StackR asset. Exact finish classification remains separate from image availability.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable image evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-images-${{ matrix.set_code }}-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report set image outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"

@@ -1,0 +1,53 @@
+name: Stackr Backend Runtime Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-backend-runtime-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    if: github.event_name == 'workflow_dispatch' || vars.STACKR_RUNTIME_SMOKE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: staging
+    env:
+      STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL }}
+      STACKR_RECOGNITION_URL: ${{ vars.STACKR_RECOGNITION_URL }}
+      STACKR_GATEWAY_URL: ${{ vars.STACKR_GATEWAY_URL }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate configured staging endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$STACKR_BACKEND_URL"
+          test -n "$STACKR_RECOGNITION_URL"
+          test -n "$STACKR_GATEWAY_URL"
+          case "$STACKR_BACKEND_URL $STACKR_RECOGNITION_URL $STACKR_GATEWAY_URL" in
+            *localhost*|*127.0.0.1*) echo 'Runtime smoke must target deployed staging services.'; exit 1 ;;
+          esac
+      - name: Smoke-test private backend and recognition services
+        run: >-
+          npm run deploy:smoke --
+          --backend="$STACKR_BACKEND_URL"
+          --recognition="$STACKR_RECOGNITION_URL"
+      - name: Smoke-test public staging gateway and catalogue languages
+        run: >-
+          npm run deploy:smoke --
+          --gateway="$STACKR_GATEWAY_URL"
+          --full-gateway
+          --require-published-catalogue
+          --required-catalogue-languages=en,ja,zh-tw,zh-cn,ko

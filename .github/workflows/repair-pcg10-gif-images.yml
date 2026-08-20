@@ -1,0 +1,153 @@
+name: Repair PCG10 GIF Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type CONVERT PCG10 GIFS TO PNG IN STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/repair-pcg10-gif-images.yml'
+      - 'scripts/mirror-official-japanese-gif-card-images.mjs'
+      - 'scripts/convert-gif-first-frame-to-png.py'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-repair-pcg10-gif-images
+  cancel-in-progress: false
+
+jobs:
+  convert-and-mirror:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'CONVERT PCG10 GIFS TO PNG IN STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_REPORT_DIR: reports/catalogue/pcg10-gif-repair
+
+    steps:
+      - name: Announce deterministic conversion repair
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="PCG10 image repair **${GITHUB_RUN_ID}** started. The 16 residual official files are valid GIFs; they will be converted deterministically to first-frame PNGs, content-addressed, publicly verified and registered without weakening StackR's JPEG/PNG/WebP bucket policy. Production is excluded."
+
+      - name: Check out reviewed converter and mirror worker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing GIF repair.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          python3 -m pip install --disable-pip-version-check --no-input Pillow==11.3.0
+
+      - name: Syntax-check converter and mirror worker
+        run: |
+          python3 -m py_compile scripts/convert-gif-first-frame-to-png.py
+          node --check scripts/mirror-official-japanese-gif-card-images.mjs
+
+      - name: Convert and mirror every residual PCG10 GIF
+        run: >-
+          node scripts/mirror-official-japanese-gif-card-images.mjs
+          --set-code=PCG10
+          --delay-ms=750
+          --target=staging
+          --apply
+          --verify-public
+          --report="$STACKR_REPORT_DIR/report.json"
+
+      - name: Verify PCG10 is image-complete
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .gif_candidates_selected == 16
+            and .converted_successfully == 16
+            and .failed == 0
+            and .public_urls_verified == 16
+            and .total_approved_set_assets_after_run == 108
+            and ([.successes[].contentSha256] | all(test("^[a-f0-9]{64}$")))
+            and ([.successes[].sourceSha256] | all(test("^[a-f0-9]{64}$")))
+            and ([.successes[].storageKey] | all(endswith("/original.png")))
+          ' "$STACKR_REPORT_DIR/report.json"
+
+      - name: Build repair summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/report.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const lines = [
+            '### PCG10 official GIF image repair',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok && report?.total_approved_set_assets_after_run === 108 ? 'PASS' : 'FAILED/INCOMPLETE'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Residual official GIFs | ${report?.gif_candidates_selected ?? '—'} |`,
+            `| Converted to PNG | ${report?.converted_successfully ?? '—'} |`,
+            `| Public URLs verified | ${report?.public_urls_verified ?? '—'} |`,
+            `| PCG10 approved image assets after repair | ${report?.total_approved_set_assets_after_run ?? '—'} |`,
+            `| Failures | ${report?.failed ?? '—'} |`,
+            `| Production modified | ${report?.production_modified ?? false} |`,
+            '',
+            'The original GIF URL and original-file SHA-256 remain in asset provenance; the public StackR asset is a deterministic first-frame PNG.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable repair evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-pcg10-gif-repair-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report repair outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"

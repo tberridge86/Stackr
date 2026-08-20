@@ -9,10 +9,52 @@ const COMMANDS = new Map([
 ]);
 const SUPPORTED_CATALOGUE_LANGUAGE_CODES = new Set(['en', 'ja', 'zh-tw', 'zh-cn', 'ko']);
 const PRODUCTION_SUPABASE_REFS = new Set(['oakdbbzdqwurpjnoqhmu']);
+const SOURCE_ALIASES = new Map([
+  ['pokemon-tcg', 'pokemon-tcg-api'],
+  ['pokemontcg', 'pokemon-tcg-api'],
+  ['pokemon_tcg_api', 'pokemon-tcg-api'],
+  ['tcg-dex', 'tcgdex'],
+]);
+const SUPPORTED_SOURCE_CODES = new Set([
+  'manual-csv',
+  'manual-json',
+  'tcgdex',
+  'pokemon-tcg-api',
+  'pikaqian',
+  'ximilar-residual-scans',
+]);
 
 function clean(value) {
   const trimmed = String(value ?? '').trim();
   return trimmed.length ? trimmed : null;
+}
+
+function booleanValue(value) {
+  return value === true || String(value ?? '').trim().toLowerCase() === 'true';
+}
+
+function boundedInteger(value, fallback, minimum, maximum, fieldName) {
+  if (value == null || value === '') return fallback;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) {
+    const error = new Error(`${fieldName} must be an integer from ${minimum} to ${maximum}.`);
+    error.status = 400;
+    throw error;
+  }
+  return parsed;
+}
+
+export function normaliseCatalogueSource(value) {
+  const raw = clean(value);
+  if (!raw) return null;
+  const compact = raw.toLowerCase().replace(/_/g, '-');
+  const source = SOURCE_ALIASES.get(compact) ?? compact;
+  if (SUPPORTED_SOURCE_CODES.has(source)) return source;
+  const error = new Error(`Unsupported catalogue source: ${raw}. Use one of: ${[...SUPPORTED_SOURCE_CODES].join(', ')}.`);
+  error.status = 400;
+  error.code = 'unsupported_catalogue_source';
+  error.fatal = true;
+  throw error;
 }
 
 function normaliseCatalogueLanguage(value) {
@@ -78,10 +120,23 @@ export async function enqueueCatalogueIngestionCommand(supabase, commandSlug, in
   }
 
   requireStagingTarget();
-  const source = clean(input.source);
-  const language = normaliseCatalogueLanguage(input.language);
+  const source = normaliseCatalogueSource(input.source);
+  let language = normaliseCatalogueLanguage(input.language);
+  if (source === 'pokemon-tcg-api') {
+    language = language ?? 'en';
+    if (language !== 'en') {
+      const error = new Error('Pokemon TCG API may only reconcile the English catalogue. Use TCGdex for multilingual imports.');
+      error.status = 400;
+      error.code = 'pokemon_tcg_api_english_only';
+      throw error;
+    }
+  }
+
   const sourceId = await sourceIdForCode(supabase, source);
-  const normalizedInput = { ...input, language };
+  const offset = boundedInteger(input.offset, 0, 0, 10_000_000, 'offset');
+  const limit = boundedInteger(input.limit, null, 1, 100_000, 'limit');
+  const writeConcurrency = boundedInteger(input.writeConcurrency, 1, 1, 16, 'writeConcurrency');
+  const normalizedInput = { ...input, source, language };
   const idempotencyKey = clean(input.idempotencyKey) ?? queueKey(command, normalizedInput);
   const requestId = clean(input.requestId) ?? randomUUID();
   const row = {
@@ -89,7 +144,7 @@ export async function enqueueCatalogueIngestionCommand(supabase, commandSlug, in
     source_id: sourceId,
     command,
     idempotency_key: idempotencyKey,
-    priority: Number(input.priority ?? 60),
+    priority: boundedInteger(input.priority, 60, 1, 100, 'priority'),
     run_after: clean(input.runAfter) ?? new Date().toISOString(),
     payload: {
       source,
@@ -97,8 +152,14 @@ export async function enqueueCatalogueIngestionCommand(supabase, commandSlug, in
       setId: clean(input.setId),
       providerRecordId: clean(input.providerRecordId),
       runKey: clean(input.runKey),
-      dryRun: input.dryRun === true,
-      allowImageAssets: input.allowImageAssets === true,
+      dryRun: booleanValue(input.dryRun),
+      allowImageAssets: booleanValue(input.allowImageAssets),
+      approvedOnlyAssets: booleanValue(input.approvedOnlyAssets),
+      offset,
+      limit,
+      writeConcurrency,
+      licenceStatus: clean(input.licenceStatus),
+      assetLicenceStatus: clean(input.assetLicenceStatus),
     },
     request_id: requestId,
     status: 'pending',
@@ -119,7 +180,7 @@ export async function enqueueCatalogueIngestionCommand(supabase, commandSlug, in
       .update(row)
       .eq('id', existing.id);
     if (error) throw error;
-    return { id: existing.id, status: 'updated', idempotencyKey, requestId, command };
+    return { id: existing.id, status: 'updated', idempotencyKey, requestId, command, source, language };
   }
 
   const { data, error } = await supabase
@@ -129,7 +190,7 @@ export async function enqueueCatalogueIngestionCommand(supabase, commandSlug, in
     .select('id')
     .maybeSingle();
   if (error) throw error;
-  return { id: data.id, status: 'inserted', idempotencyKey, requestId, command };
+  return { id: data.id, status: 'inserted', idempotencyKey, requestId, command, source, language };
 }
 
 export async function listQuarantinedConflicts(supabase, input = {}) {

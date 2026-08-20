@@ -1,0 +1,209 @@
+name: StackR Full Catalogue Metadata Backfill
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/full-catalogue-metadata-backfill.yml
+      - scripts/export-full-catalogue-metadata-snapshot.ts
+      - scripts/test-export-full-catalogue-metadata-snapshot.ts
+      - scripts/full-catalogue-metadata-backfill.ts
+      - scripts/test-full-catalogue-metadata-backfill.ts
+      - scripts/probe-catalogue-ingest-access.ts
+      - scripts/catalogue-ingestion/**
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Re-run database batches already recorded as complete
+        required: true
+        default: false
+        type: boolean
+      max_records:
+        description: Optional per-provider/language cap; blank means the full universe
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-full-catalogue-metadata-backfill
+  cancel-in-progress: true
+
+jobs:
+  backfill:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.head_ref == 'backend/release-hardening-2026-08-19'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    environment: ingestion
+    env:
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      POKEMON_TCG_API_KEY: ${{ secrets.POKEMON_TCG_API_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      TCGDEX_IMAGE: tcgdex/server:branch-master
+      DO_NOT_TRACK: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install StackR dependencies
+        run: npm ci
+
+      - name: Validate metadata export, backfill and rights gates
+        run: |
+          npx --no-install tsx scripts/test-full-catalogue-metadata-backfill.ts
+          npx --no-install tsx scripts/test-export-full-catalogue-metadata-snapshot.ts
+
+      - name: Pull the official TCGdex server image and lock its digest
+        id: tcgdex_image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull "$TCGDEX_IMAGE"
+          image_ref="$(docker image inspect "$TCGDEX_IMAGE" --format '{{index .RepoDigests 0}}')"
+          if [ -z "$image_ref" ] || [[ "$image_ref" != *@sha256:* ]]; then
+            echo "Unable to resolve an immutable TCGdex image digest." >&2
+            exit 1
+          fi
+          digest="${image_ref##*@}"
+          digest_short="${digest#sha256:}"
+          digest_short="${digest_short:0:12}"
+          version="tcgdex-${digest_short}-pokemon-live-${GITHUB_RUN_ID}"
+          echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "TCGdex image locked to $image_ref"
+
+      - name: Start the immutable local TCGdex API
+        run: >-
+          docker run
+          --detach
+          --rm
+          --name stackr-tcgdex-source
+          --env MAX_WORKERS=4
+          --env TCGCSV_USER_AGENT=StackR-catalogue-metadata-backfill/1.1
+          --publish 127.0.0.1:3300:3000
+          "${{ steps.tcgdex_image.outputs.image_ref }}"
+
+      - name: Verify the local multilingual source
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 360); do
+            if curl --fail --silent --show-error \
+              http://127.0.0.1:3300/v2/en/cards/swsh3-136 \
+              > /dev/null; then
+              echo "TCGdex metadata source is ready after attempt $attempt."
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs stackr-tcgdex-source
+          exit 1
+
+      - name: Export the complete provider metadata snapshot
+        shell: bash
+        env:
+          MAX_RECORDS_VALUE: ${{ inputs.max_records || '' }}
+        run: |
+          set -euo pipefail
+          snapshot_args=(
+            npx --no-install tsx scripts/export-full-catalogue-metadata-snapshot.ts
+            --sources=tcgdex,pokemon-tcg-api
+            --languages=en,ja,zh-tw,zh-cn,ko
+            --tcgdexBaseUrl=http://127.0.0.1:3300/v2
+            --pokemonBaseUrl=https://api.pokemontcg.io/v2
+            --detailConcurrency=24
+            --maxAttempts=4
+            --requestTimeoutMs=60000
+            --outputDir=reports/catalogue/full-metadata-snapshot
+          )
+          if [ -n "$MAX_RECORDS_VALUE" ]; then
+            snapshot_args+=("--maxRecords=$MAX_RECORDS_VALUE")
+          fi
+          "${snapshot_args[@]}"
+
+      - name: Upload the full metadata snapshot
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-full-metadata-snapshot-${{ github.run_id }}
+          path: reports/catalogue/full-metadata-snapshot
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Verify the direct staging ingestion target
+        id: staging_access
+        continue-on-error: true
+        run: npx --no-install tsx scripts/probe-catalogue-ingest-access.ts
+
+      - name: Record a deferred database import without failing the scrape
+        if: steps.staging_access.outcome != 'success'
+        shell: bash
+        run: |
+          mkdir -p reports/catalogue
+          cat > reports/catalogue/staging-ingestion-deferred.json <<'JSON'
+          {
+            "status": "deferred",
+            "reason": "staging_service_credential_unavailable_or_invalid",
+            "metadataSnapshotCompleted": true,
+            "databaseWritesAttempted": false,
+            "nextAction": "Run the same snapshot through the staging ingestion pipeline using the Railway backend service credentials."
+          }
+          JSON
+          echo "The full internet metadata snapshot is retained as an artifact; database ingestion is deferred."
+
+      - name: Pull all metadata into staging for EN, JA, ZH-TW, ZH-CN and KO
+        if: steps.staging_access.outcome == 'success'
+        shell: bash
+        env:
+          FORCE_FLAG: ${{ inputs.force && '--force' || '' }}
+          MAX_RECORDS_VALUE: ${{ inputs.max_records || '' }}
+          CATALOGUE_VERSION: ${{ steps.tcgdex_image.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p reports/catalogue
+          extra_args=()
+          if [ -n "$FORCE_FLAG" ]; then extra_args+=("$FORCE_FLAG"); fi
+          if [ -n "$MAX_RECORDS_VALUE" ]; then extra_args+=("--maxRecords=$MAX_RECORDS_VALUE"); fi
+
+          npx --no-install tsx scripts/full-catalogue-metadata-backfill.ts \
+            --sources=tcgdex,pokemon-tcg-api \
+            --languages=en,ja,zh-tw,zh-cn,ko \
+            --tcgdexBaseUrl=http://127.0.0.1:3300/v2 \
+            --pokemonBaseUrl=https://api.pokemontcg.io/v2 \
+            --batchSize=1000 \
+            --writeConcurrency=8 \
+            --maxAttempts=3 \
+            --batchPauseMs=250 \
+            "--version=$CATALOGUE_VERSION" \
+            --output=reports/catalogue/full-metadata-backfill.json \
+            "${extra_args[@]}"
+
+      - name: Upload database-ingestion progress
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-full-metadata-ingestion-${{ github.run_id }}
+          path: |
+            reports/catalogue/full-metadata-backfill.json
+            reports/catalogue/staging-ingestion-deferred.json
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Print local TCGdex logs after a failure
+        if: failure()
+        run: docker logs stackr-tcgdex-source || true
+
+      - name: Stop the local TCGdex API
+        if: always()
+        run: docker stop stackr-tcgdex-source || true

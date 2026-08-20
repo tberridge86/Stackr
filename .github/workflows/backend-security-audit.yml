@@ -1,0 +1,53 @@
+name: Stackr Backend Security Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 4 * * 2'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-backend-security-audit
+  cancel-in-progress: false
+
+jobs:
+  staging-rls-audit:
+    if: github.event_name == 'workflow_dispatch' || vars.STACKR_BACKEND_SECURITY_AUDIT_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      EXPECTED_STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Validate staging database target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SUPABASE_DB_URL"
+          case "$SUPABASE_DB_URL" in
+            *"$EXPECTED_STAGING_PROJECT_REF"*) ;;
+            *) echo 'RLS audit refused: database URL is not the approved StackR staging project.'; exit 1 ;;
+          esac
+      - name: Audit client-exposed user-owned tables
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports/backend
+          psql "$SUPABASE_DB_URL" --set=sslmode=require --file=scripts/security/audit-core-rls.sql
+      - name: Upload RLS audit evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-core-rls-audit-${{ github.sha }}
+          path: reports/backend/core-rls-audit.csv
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9

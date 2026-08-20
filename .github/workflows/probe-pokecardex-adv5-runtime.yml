@@ -1,0 +1,286 @@
+name: Probe Rendered PokéCardex ADV5 Catalogue
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RENDER POKECARDEX ADV5
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/probe-pokecardex-adv5-runtime.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-probe-pokecardex-adv5-runtime
+  cancel-in-progress: false
+
+jobs:
+  render:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'RENDER POKECARDEX ADV5')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+      STACKR_REPORT_DIR: reports/catalogue/pokecardex-adv5-runtime
+
+    steps:
+      - name: Announce read-only browser probe
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="PokéCardex ADV5 runtime probe **${GITHUB_RUN_ID}** started. It will allow the site's own browser code to decrypt and render the Japanese catalogue, capture rendered card/image metadata and network evidence, and make no database or production changes."
+
+      - name: Install pinned Playwright runtime
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Render ADV5 and capture structured evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$STACKR_REPORT_DIR"
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const { chromium } = require('playwright');
+
+          const outputDir = process.env.STACKR_REPORT_DIR;
+          const targetUrl = 'https://www.pokecardex.com/series/jp/ADV5';
+          const network = [];
+          const jsonResponses = [];
+          const consoleMessages = [];
+          const pageErrors = [];
+
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const context = await browser.newContext({
+              locale: 'fr-FR',
+              userAgent: 'StackR-Catalogue-Audit/1.0 (+https://stackrtcg.com)',
+              viewport: { width: 1440, height: 2200 },
+              deviceScaleFactor: 1,
+            });
+            const page = await context.newPage();
+
+            page.on('console', (message) => {
+              consoleMessages.push({ type: message.type(), text: message.text() });
+            });
+            page.on('pageerror', (error) => pageErrors.push(String(error)));
+            page.on('response', async (response) => {
+              const request = response.request();
+              const contentType = response.headers()['content-type'] || '';
+              const record = {
+                url: response.url(),
+                status: response.status(),
+                method: request.method(),
+                resource_type: request.resourceType(),
+                content_type: contentType,
+              };
+              network.push(record);
+              if (/json/i.test(contentType) || /\/api\//i.test(response.url())) {
+                try {
+                  const text = await response.text();
+                  jsonResponses.push({ ...record, body_prefix: text.slice(0, 200000) });
+                } catch (error) {
+                  jsonResponses.push({ ...record, body_error: String(error) });
+                }
+              }
+            });
+
+            const response = await page.goto(targetUrl, {
+              waitUntil: 'domcontentloaded',
+              timeout: 90000,
+            });
+            await page.waitForTimeout(15000);
+            await page.evaluate(async () => {
+              const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+              for (let position = 0; position < document.body.scrollHeight; position += 1000) {
+                window.scrollTo(0, position);
+                await delay(150);
+              }
+              window.scrollTo(0, 0);
+            });
+            await page.waitForTimeout(5000);
+
+            const rendered = await page.evaluate(() => {
+              const absolute = (value) => {
+                if (!value) return null;
+                try { return new URL(value, location.href).href; } catch { return value; }
+              };
+              const visible = (element) => {
+                const style = getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+              };
+              const images = [...document.querySelectorAll('img')].map((image) => ({
+                src: absolute(image.currentSrc || image.src),
+                raw_src: image.getAttribute('src'),
+                data_src: image.getAttribute('data-src'),
+                alt: image.alt || null,
+                title: image.title || null,
+                width: image.naturalWidth || image.width || null,
+                height: image.naturalHeight || image.height || null,
+                classes: [...image.classList],
+                visible: visible(image),
+                parent_href: image.closest('a') ? absolute(image.closest('a').getAttribute('href')) : null,
+                parent_text: image.closest('a')?.textContent?.trim()?.slice(0, 300) || null,
+              }));
+              const links = [...document.querySelectorAll('a[href]')].map((link) => ({
+                href: absolute(link.getAttribute('href')),
+                text: link.textContent.trim().replace(/\s+/g, ' ').slice(0, 500),
+                classes: [...link.classList],
+                visible: visible(link),
+              }));
+              const dataNodes = [...document.querySelectorAll('*')]
+                .map((node) => ({
+                  tag: node.tagName.toLowerCase(),
+                  text: node.textContent.trim().replace(/\s+/g, ' ').slice(0, 500),
+                  attributes: Object.fromEntries(
+                    [...node.attributes]
+                      .filter((attribute) => attribute.name.startsWith('data-'))
+                      .map((attribute) => [attribute.name, attribute.value]),
+                  ),
+                }))
+                .filter((node) => Object.keys(node.attributes).length > 0);
+              const cardCandidates = [...document.querySelectorAll('[class*="card" i], [class*="carte" i], [data-card], article, li')]
+                .filter(visible)
+                .map((node) => ({
+                  tag: node.tagName.toLowerCase(),
+                  classes: [...node.classList],
+                  text: node.textContent.trim().replace(/\s+/g, ' ').slice(0, 1000),
+                  links: [...node.querySelectorAll('a[href]')].slice(0, 5).map((link) => absolute(link.getAttribute('href'))),
+                  images: [...node.querySelectorAll('img')].slice(0, 5).map((image) => absolute(image.currentSrc || image.src)),
+                  data: Object.fromEntries([...node.attributes].filter((attribute) => attribute.name.startsWith('data-')).map((attribute) => [attribute.name, attribute.value])),
+                }));
+              return {
+                url: location.href,
+                title: document.title,
+                body_text: document.body.innerText,
+                html: document.documentElement.outerHTML,
+                images,
+                links,
+                data_nodes: dataNodes,
+                card_candidates: cardCandidates,
+                globals: Object.keys(window).filter((key) => /card|series|set|initial|encrypt|decrypt|pokemon/i.test(key)).sort(),
+                initial_data_type: typeof window.INITIAL_DATA,
+                encrypted_data_present: typeof window.INITIAL_DATA_ENCRYPTED !== 'undefined',
+              };
+            });
+
+            await page.screenshot({
+              path: path.join(outputDir, 'rendered-page.png'),
+              fullPage: true,
+            });
+            fs.writeFileSync(path.join(outputDir, 'rendered.html'), rendered.html);
+            delete rendered.html;
+
+            const relevantImages = rendered.images.filter((image) => (
+              /adv5|card|carte|scan|pokemon/i.test(`${image.src || ''} ${image.alt || ''} ${image.parent_href || ''}`)
+            ));
+            const relevantLinks = rendered.links.filter((link) => (
+              /adv5|card|carte|scan|pokemon/i.test(`${link.href || ''} ${link.text || ''}`)
+            ));
+            const result = {
+              generated_at: new Date().toISOString(),
+              read_only: true,
+              database_modified: false,
+              navigation: {
+                requested_url: targetUrl,
+                final_url: rendered.url,
+                http_status: response?.status() ?? null,
+                title: rendered.title,
+              },
+              body_text: rendered.body_text,
+              image_count: rendered.images.length,
+              relevant_images: relevantImages,
+              link_count: rendered.links.length,
+              relevant_links: relevantLinks,
+              data_nodes: rendered.data_nodes,
+              card_candidates: rendered.card_candidates,
+              globals: rendered.globals,
+              initial_data_type: rendered.initial_data_type,
+              encrypted_data_present_after_render: rendered.encrypted_data_present,
+              network,
+              json_responses: jsonResponses,
+              console_messages: consoleMessages,
+              page_errors: pageErrors,
+            };
+            fs.writeFileSync(path.join(outputDir, 'runtime.json'), `${JSON.stringify(result, null, 2)}\n`);
+
+            const likelyCardImages = relevantImages.filter((image) => (
+              /adv5/i.test(`${image.src || ''} ${image.parent_href || ''}`)
+              || /\/cards?\//i.test(image.src || '')
+            ));
+            const lines = [
+              `### PokéCardex ADV5 runtime probe \`${process.env.GITHUB_RUN_ID || 'unknown'}\``,
+              '',
+              'Read-only browser execution; no database or production service was touched.',
+              '',
+              '| Measure | Result |',
+              '|---|---:|',
+              `| Navigation HTTP status | ${response?.status() ?? '—'} |`,
+              `| Rendered page title | ${rendered.title || '—'} |`,
+              `| All rendered images | ${rendered.images.length} |`,
+              `| Relevant card/set images | ${relevantImages.length} |`,
+              `| Likely ADV5 card images | ${likelyCardImages.length} |`,
+              `| Relevant links | ${relevantLinks.length} |`,
+              `| Data-bearing DOM nodes | ${rendered.data_nodes.length} |`,
+              `| Candidate card containers | ${rendered.card_candidates.length} |`,
+              `| JSON/API responses captured | ${jsonResponses.length} |`,
+              `| Browser page errors | ${pageErrors.length} |`,
+              '',
+              'The artifact includes the fully rendered HTML, screenshot, visible text, image/link metadata, candidate card containers and captured JSON/API responses.',
+            ];
+            fs.writeFileSync(path.join(outputDir, 'summary.md'), `${lines.join('\n')}\n`);
+            console.log(JSON.stringify({
+              status: response?.status() ?? null,
+              title: rendered.title,
+              relevant_images: relevantImages.length,
+              likely_adv5_images: likelyCardImages.length,
+              relevant_links: relevantLinks.length,
+              card_candidates: rendered.card_candidates.length,
+              json_responses: jsonResponses.length,
+              page_errors: pageErrors.length,
+            }, null, 2));
+            await browser.close();
+            if ((response?.status() ?? 0) >= 400) process.exit(2);
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload immutable runtime evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-pokecardex-adv5-runtime-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report runtime result to PR 48
+        if: always()
+        shell: bash
+        run: |
+          if [ -s "$STACKR_REPORT_DIR/summary.md" ]; then
+            body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          else
+            body="PokéCardex ADV5 runtime probe **${GITHUB_RUN_ID}** failed before evidence was created. No database or production service was touched."
+          fi
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"

@@ -1,0 +1,150 @@
+name: Retry XY3 Residual Card Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RETRY XY3 IMAGE IN STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/retry-xy3-residual-card-image.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-retry-xy3-residual-card-image
+  cancel-in-progress: false
+
+jobs:
+  retry-xy3:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'RETRY XY3 IMAGE IN STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_REPORT_DIR: reports/catalogue/xy3-image-retry
+
+    steps:
+      - name: Announce isolated official-host retry
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="XY3 residual image retry **${GITHUB_RUN_ID}** started. The first run stored and publicly verified 102/103 assets; only Breloom 048 remains after the official image host returned HTTP 503 three times. This staging-only retry skips the 102 completed assets."
+
+      - name: Check out reviewed image worker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing XY3 retry.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Syntax-check image mirror worker
+        run: node --check scripts/mirror-official-japanese-card-images.mjs
+
+      - name: Process only the residual XY3 image
+        run: >-
+          node scripts/mirror-official-japanese-card-images.mjs
+          --set-codes=XY3
+          --concurrency=1
+          --delay-ms=1500
+          --target=staging
+          --apply
+          --verify-public
+          --report="$STACKR_REPORT_DIR/report.json"
+
+      - name: Verify XY3 image completion
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .candidate_variants == 103
+            and .ready_before == 102
+            and .pending_before == 1
+            and .selected_for_run == 1
+            and .processed_successfully == 1
+            and .public_urls_verified == 1
+            and .failed == 0
+            and .remaining_after_run == 0
+            and .complete_for_requested_sets == true
+            and .successes[0].collectorNumber == "048"
+            and .successes[0].externalId == "30423"
+          ' "$STACKR_REPORT_DIR/report.json"
+
+      - name: Build retry summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/report.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const success = report?.successes?.[0];
+          const lines = [
+            '### XY3 residual image retry',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok && report?.remaining_after_run === 0 ? 'PASS' : 'FAILED/INCOMPLETE'}**.`,
+            '',
+            `- Already complete before retry: **${report?.ready_before ?? '—'}**`,
+            `- Residual images before retry: **${report?.pending_before ?? '—'}**`,
+            `- Publicly verified in retry: **${report?.public_urls_verified ?? '—'}**`,
+            `- Remaining after retry: **${report?.remaining_after_run ?? '—'}**`,
+            `- Retried identity: **${success ? `${success.collectorNumber} / ${success.externalId}` : '—'}**`,
+            `- Production modified: **${report?.production_modified ?? false}**`,
+            '',
+            'No completed XY3 asset was downloaded or rewritten.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable retry evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-xy3-image-retry-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report retry outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"

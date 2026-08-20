@@ -1,0 +1,151 @@
+name: Retry S3 Residual Card Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RETRY S3 IMAGE IN STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/retry-s3-residual-card-image.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-retry-s3-residual-card-image
+  cancel-in-progress: false
+
+jobs:
+  retry-s3:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'RETRY S3 IMAGE IN STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_REPORT_DIR: reports/catalogue/s3-image-retry
+
+    steps:
+      - name: Announce isolated residual retry
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="S3 residual image retry **${GITHUB_RUN_ID}** started. The first mirror stored and verified 109/110 assets; only Crobat V 053 remains after a storage upload collision. This isolated retry will skip the 109 completed assets and process the one residual item in staging only."
+
+      - name: Check out reviewed image worker
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing S3 retry.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Syntax-check image mirror worker
+        run: node --check scripts/mirror-official-japanese-card-images.mjs
+
+      - name: Process only the residual S3 image
+        run: >-
+          node scripts/mirror-official-japanese-card-images.mjs
+          --set-codes=S3
+          --concurrency=1
+          --delay-ms=1000
+          --target=staging
+          --apply
+          --verify-public
+          --report="$STACKR_REPORT_DIR/report.json"
+
+      - name: Verify S3 image completion
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .candidate_variants == 110
+            and .ready_before == 109
+            and .pending_before == 1
+            and .selected_for_run == 1
+            and .processed_successfully == 1
+            and .public_urls_verified == 1
+            and .failed == 0
+            and .remaining_after_run == 0
+            and .complete_for_requested_sets == true
+          ' "$STACKR_REPORT_DIR/report.json"
+
+      - name: Build retry summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/report.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const success = report?.successes?.[0];
+          const lines = [
+            '### S3 residual image retry',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok && report?.remaining_after_run === 0 ? 'PASS' : 'FAILED/INCOMPLETE'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Already complete before retry | ${report?.ready_before ?? '—'} |`,
+            `| Residual images before retry | ${report?.pending_before ?? '—'} |`,
+            `| Mirrored and publicly verified | ${report?.processed_successfully ?? '—'} |`,
+            `| Remaining after retry | ${report?.remaining_after_run ?? '—'} |`,
+            `| Failure count | ${report?.failed ?? '—'} |`,
+            `| Retried identity | ${success ? `${success.collectorNumber} / ${success.externalId}` : '—'} |`,
+            `| Production modified | ${report?.production_modified ?? false} |`,
+            '',
+            'The retry is deliberately single-threaded to remove a content-addressed storage race. Completed assets were not downloaded or rewritten.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable retry evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-s3-image-retry-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report retry outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
