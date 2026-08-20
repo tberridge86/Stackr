@@ -1,0 +1,208 @@
+name: Retry Japanese PCG10 via WCP
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RETRY PCG10 WCP TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/retry-japanese-pcg10-wcp.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-retry-japanese-pcg10-wcp
+  cancel-in-progress: false
+
+jobs:
+  import-pcg10:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'RETRY PCG10 WCP TO STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_REPORT_DIR: reports/catalogue/japanese-pcg10-wcp
+      CANONICAL_SET_CODE: PCG10
+      OFFICIAL_SET_CODE: WCP
+      RELEASE_DATE: '2007-07-05'
+      ENGLISH_NAME: 'World Champions Pack'
+
+    steps:
+      - name: Announce official-code retry
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="PCG10 retry **${GITHUB_RUN_ID}** started using the official Japanese database code \`WCP\`. The first attempt correctly made no database write because \`PCG10\` is StackR/TCGdex identity, not the official search filter."
+
+      - name: Check out reviewed automation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          python3 -m pip install --disable-pip-version-check --no-input beautifulsoup4==4.13.4
+
+      - name: Syntax-check programs
+        run: |
+          python3 -m py_compile scripts/collect-official-japanese-set-metadata.py
+          node --check scripts/import-official-japanese-set-metadata.mjs
+          node --check scripts/reconcile-official-japanese-set-import.mjs
+          node --check scripts/reconcile-official-japanese-set-alias.mjs
+
+      - name: Collect the official WCP checklist
+        run: >-
+          python3 scripts/collect-official-japanese-set-metadata.py
+          --set-code="$OFFICIAL_SET_CODE"
+          --output="$STACKR_REPORT_DIR/source-catalogue.json"
+          --max-results=600
+          --minimum-delay-ms=650
+
+      - name: Preserve the official alias and normalize for canonical import
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const source = JSON.parse(fs.readFileSync(`${dir}/source-catalogue.json`, 'utf8'));
+          if (source.set_code_requested !== process.env.OFFICIAL_SET_CODE) throw new Error('Unexpected source filter code.');
+          if (JSON.stringify(source.official_set_codes) !== JSON.stringify([process.env.OFFICIAL_SET_CODE])) {
+            throw new Error(`Unexpected official set codes: ${JSON.stringify(source.official_set_codes)}`);
+          }
+          const normalized = {
+            ...source,
+            canonical_set_code: process.env.CANONICAL_SET_CODE,
+            source_set_code_requested: source.set_code_requested,
+            source_official_set_codes: source.official_set_codes,
+            set_code_requested: process.env.CANONICAL_SET_CODE,
+            official_set_codes: [process.env.CANONICAL_SET_CODE],
+            printings: source.printings.map((printing) => ({
+              ...printing,
+              source_official_set_code: printing.official_set_code,
+              official_set_code: process.env.CANONICAL_SET_CODE,
+            })),
+          };
+          fs.writeFileSync(`${dir}/catalogue.json`, `${JSON.stringify(normalized, null, 2)}\n`);
+          NODE
+          jq -e --arg canonical "$CANONICAL_SET_CODE" --arg official "$OFFICIAL_SET_CODE" '
+            .set_code_requested == $canonical
+            and .source_set_code_requested == $official
+            and .official_set_codes == [$canonical]
+            and .source_official_set_codes == [$official]
+            and (.parser_errors | length) == 0
+            and (.identity_conflicts | length) == 0
+            and .duplicate_official_variants == 0
+            and .unique_printings == 108
+          ' "$STACKR_REPORT_DIR/catalogue.json"
+
+      - name: Import PCG10 to staging
+        run: >-
+          node scripts/import-official-japanese-set-metadata.mjs
+          --input="$STACKR_REPORT_DIR/catalogue.json"
+          --set-code="$CANONICAL_SET_CODE"
+          --release-date="$RELEASE_DATE"
+          --english-name="$ENGLISH_NAME"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Reconcile concepts
+        run: >-
+          node scripts/reconcile-official-japanese-set-import.mjs
+          --set-code="$CANONICAL_SET_CODE"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/reconciliation-report.json"
+
+      - name: Restore official WCP provenance
+        run: >-
+          node scripts/reconcile-official-japanese-set-alias.mjs
+          --canonical-set-code="$CANONICAL_SET_CODE"
+          --official-set-code="$OFFICIAL_SET_CODE"
+          --target=staging
+          --report="$STACKR_REPORT_DIR/alias-report.json"
+
+      - name: Create retry summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const read = (name) => fs.existsSync(`${dir}/${name}`) ? JSON.parse(fs.readFileSync(`${dir}/${name}`, 'utf8')) : null;
+          const source = read('source-catalogue.json');
+          const imported = read('import-report.json');
+          const reconciled = read('reconciliation-report.json');
+          const alias = read('alias-report.json');
+          const ok = Boolean(source && imported?.ok && reconciled?.ok && alias?.ok);
+          const lines = [
+            '### Japanese batch 1 — PCG10 / WCP retry',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${ok ? 'PASS' : 'INCOMPLETE/FAILED'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Official filter code | ${process.env.OFFICIAL_SET_CODE} |`,
+            `| Canonical StackR code | ${process.env.CANONICAL_SET_CODE} |`,
+            `| Official card IDs | ${source?.api_card_ids_collected ?? '—'} |`,
+            `| Unique printings | ${source?.unique_printings ?? '—'} |`,
+            `| Imported printings | ${imported?.verification?.active_printings ?? '—'} |`,
+            `| Unresolved concepts | ${reconciled?.final?.unresolved_concepts ?? '—'} |`,
+            `| Official identifiers | ${alias?.official_card_identifiers ?? '—'} |`,
+            `| Production modified | false |`,
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload retry evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-pcg10-wcp-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report retry outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
