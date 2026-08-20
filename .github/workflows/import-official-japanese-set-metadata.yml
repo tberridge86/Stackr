@@ -23,6 +23,7 @@ on:
     paths:
       - '.github/workflows/import-official-japanese-set-metadata.yml'
       - 'scripts/import-official-japanese-set-metadata.mjs'
+      - 'scripts/reconcile-official-japanese-concepts.mjs'
 
 permissions:
   actions: read
@@ -85,8 +86,10 @@ jobs:
       - name: Install pinned StackR dependencies
         run: npm ci
 
-      - name: Syntax-check the importer before any database access
-        run: node --check scripts/import-official-japanese-set-metadata.mjs
+      - name: Syntax-check the import and reconciliation scripts
+        run: |
+          node --check scripts/import-official-japanese-set-metadata.mjs
+          node --check scripts/reconcile-official-japanese-concepts.mjs
 
       - name: Verify the collector run and download its immutable artifact
         shell: bash
@@ -114,23 +117,33 @@ jobs:
           --apply
           --report=reports/catalogue/official-japanese-set/import-report.json
 
+      - name: Reconcile non-null concepts and remove false ambiguity
+        run: >-
+          node scripts/reconcile-official-japanese-concepts.mjs
+          --set-code="$STACKR_JP_SET_CODE"
+          --report=reports/catalogue/official-japanese-set/concept-reconciliation.json
+
       - name: Build human-readable import evidence
         if: always()
         shell: bash
         run: |
           node <<'NODE'
           const fs = require('node:fs');
-          const path = 'reports/catalogue/official-japanese-set/import-report.json';
+          const importPath = 'reports/catalogue/official-japanese-set/import-report.json';
+          const reconciliationPath = 'reports/catalogue/official-japanese-set/concept-reconciliation.json';
           const runId = process.env.GITHUB_RUN_ID;
           let lines;
-          if (!fs.existsSync(path)) {
+          if (!fs.existsSync(importPath)) {
             lines = [
               `### Official Japanese staging import \`${runId}\``,
               '',
               'The import failed before a verified report was written. No production service was targeted. Inspect the workflow logs.',
             ];
           } else {
-            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const report = JSON.parse(fs.readFileSync(importPath, 'utf8'));
+            const reconciliation = fs.existsSync(reconciliationPath)
+              ? JSON.parse(fs.readFileSync(reconciliationPath, 'utf8'))
+              : null;
             const verification = report.verification || {};
             const writes = report.writes || {};
             lines = [
@@ -147,7 +160,9 @@ jobs:
               `| New canonical printings | ${writes.printings_inserted ?? 0} |`,
               `| Reused/updated printings | ${writes.printings_updated ?? 0} |`,
               `| New concepts | ${writes.concepts_inserted ?? 0} |`,
-              `| Concept-name ambiguities | ${verification.unresolved_concepts ?? 0} |`,
+              `| Concepts reconciled after import | ${reconciliation?.uniquely_resolved ?? 0} |`,
+              `| Unresolved concepts after reconciliation | ${reconciliation?.unresolved_after ?? verification.unresolved_concepts ?? '—'} |`,
+              `| Genuine concept ambiguities after reconciliation | ${reconciliation?.real_ambiguity ?? '—'} |`,
               `| Missing English card names | ${verification.missing_english_names ?? 0} |`,
               `| Rarity deliberately pending | ${verification.missing_rarity ?? 0} |`,
               `| Artist deliberately unavailable | ${verification.missing_artist ?? 0} |`,
@@ -166,6 +181,7 @@ jobs:
           name: stackr-official-japanese-import-${{ env.STACKR_JP_SET_CODE }}-${{ github.run_id }}
           path: |
             reports/catalogue/official-japanese-set/import-report.json
+            reports/catalogue/official-japanese-set/concept-reconciliation.json
             reports/catalogue/official-japanese-set/import-summary.md
           if-no-files-found: warn
           retention-days: 30
