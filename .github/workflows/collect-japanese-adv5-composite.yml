@@ -1,0 +1,168 @@
+name: Collect Japanese ADV5 Composite Catalogue
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type COLLECT ADV5 COMPOSITE
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/collect-japanese-adv5-composite.yml'
+      - 'scripts/collect-japanese-adv5-composite.py'
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-collect-japanese-adv5-composite
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'COLLECT ADV5 COMPOSITE')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      STACKR_RUNTIME_RUN_ID: '32420857748'
+      STACKR_REPORT_DIR: reports/catalogue/japanese-adv5-composite
+
+    steps:
+      - name: Announce cross-verified collection
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="ADV5 composite collection **${GITHUB_RUN_ID}** started. Bulbapedia will provide the 001–083 checklist, Japanese names, artist, type and rarity; the successful rendered PokéCardex evidence run **${STACKR_RUNTIME_RUN_ID}** will provide the 83 Japanese scan URLs plus logo and symbol. This is read-only and touches no database."
+
+      - name: Check out reviewed collector
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - name: Verify and download immutable PokéCardex runtime evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STACKR_RUNTIME_RUN_ID}")"
+          test "$(jq -r .status <<<"$run_json")" = completed
+          test "$(jq -r .conclusion <<<"$run_json")" = success
+          test "$(jq -r .name <<<"$run_json")" = 'Probe Rendered PokéCardex ADV5 Catalogue'
+          mkdir -p "$STACKR_REPORT_DIR/runtime"
+          gh run download "$STACKR_RUNTIME_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "stackr-pokecardex-adv5-runtime-${STACKR_RUNTIME_RUN_ID}" \
+            --dir "$STACKR_REPORT_DIR/runtime"
+          test -s "$STACKR_REPORT_DIR/runtime/runtime.json"
+          jq -e '
+            .read_only == true
+            and .database_modified == false
+            and .navigation.http_status == 200
+            and .navigation.title == "Pokemon Japonaise ADV5 - Pokécardex"
+            and ([.relevant_images[] | select(.parent_href | test("/card/ADV5-[0-9]+$")) | .parent_href] | unique | length) == 83
+          ' "$STACKR_REPORT_DIR/runtime/runtime.json"
+
+      - name: Install pinned metadata parser dependencies
+        run: python3 -m pip install --disable-pip-version-check --no-input requests==2.32.4 beautifulsoup4==4.13.4 lxml==6.0.0
+
+      - name: Syntax-check composite collector
+        run: python3 -m py_compile scripts/collect-japanese-adv5-composite.py
+
+      - name: Collect and cross-verify all 83 cards
+        run: >-
+          python3 scripts/collect-japanese-adv5-composite.py
+          --pokecardex-json="$STACKR_REPORT_DIR/runtime/runtime.json"
+          --page-cache-dir="$STACKR_REPORT_DIR/bulbapedia-cache"
+          --output="$STACKR_REPORT_DIR/catalogue.json"
+          --minimum-delay-ms=700
+
+      - name: Validate the complete ADV5 manifest
+        run: |
+          jq -e '
+            .source == "stackr_adv5_composite"
+            and .language_code == "ja"
+            and .canonical_set_code == "ADV5"
+            and .native_set_name == "とかれた封印"
+            and .english_set_name == "Undone Seal"
+            and .release_date == "2004-01-16"
+            and .printed_total == 83
+            and .full_total == 83
+            and .rights_status == "approved_by_stackr_owner"
+            and .read_only == true
+            and .database_modified == false
+            and (.cards | length) == 83
+            and ([.cards[].collector_number] | unique | sort) == ([range(1;84) | tostring | lpad(3; "0")] | sort)
+            and ([.cards[].native_name] | unique | length) == 83
+            and ([.cards[].image_url] | unique | length) == 83
+            and ([.cards[].artist] | all(type == "string" and length > 0))
+            and ([.cards[].rarity_label] | all(type == "string" and length > 0))
+            and (.logo_url | contains("/sets/logos/ADV5."))
+            and (.symbol_url | contains("/sets/symbols/ADV5."))
+          ' "$STACKR_REPORT_DIR/catalogue.json"
+
+      - name: Build collection summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/catalogue.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const cards = report?.cards ?? [];
+          const lines = [
+            '### Japanese ADV5 composite catalogue',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${cards.length === 83 ? 'PASS' : 'FAILED/INCOMPLETE'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Card identities | ${cards.length || '—'} |`,
+            `| Distinct Japanese names | ${new Set(cards.map((card) => card.native_name)).size || '—'} |`,
+            `| Artist fields | ${cards.filter((card) => card.artist).length || '—'} |`,
+            `| Rarity fields | ${cards.filter((card) => card.rarity_label).length || '—'} |`,
+            `| Japanese scan URLs | ${new Set(cards.map((card) => card.image_url)).size || '—'} |`,
+            `| Set logo URL | ${report?.logo_url ? 'present' : 'missing'} |`,
+            `| Set symbol URL | ${report?.symbol_url ? 'present' : 'missing'} |`,
+            `| Database modified | ${report?.database_modified ?? false} |`,
+            '',
+            'The manifest preserves both sources per card. It is ready for a separate staging import only if all 83 rows pass the zero-gap checks above.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable composite evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-adv5-composite-${{ github.run_id }}
+          path: |
+            ${{ env.STACKR_REPORT_DIR }}/catalogue.json
+            ${{ env.STACKR_REPORT_DIR }}/summary.md
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report collection outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          if [ -s "$STACKR_REPORT_DIR/summary.md" ]; then
+            body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          else
+            body="ADV5 composite collection **${GITHUB_RUN_ID}** failed before a validated manifest was created. No database or production service was touched."
+          fi
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
