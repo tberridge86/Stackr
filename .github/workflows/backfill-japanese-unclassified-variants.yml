@@ -1,0 +1,125 @@
+name: Backfill Japanese Unclassified Variants
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type BACKFILL JAPANESE VARIANTS TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/backfill-japanese-unclassified-variants.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  backfill-set:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'BACKFILL JAPANESE VARIANTS TO STAGING')
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        set_code: [S4a, PCG10, S2, S3, S4]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    concurrency:
+      group: stackr-japanese-placeholder-variant-${{ matrix.set_code }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_JP_SET_CODE: ${{ matrix.set_code }}
+      STACKR_REPORT_DIR: reports/catalogue/japanese-variant-backfill/${{ matrix.set_code }}
+
+    steps:
+      - name: Check out reviewed automation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: npm ci
+
+      - name: Syntax-check variant worker
+        run: node --check scripts/ensure-unclassified-japanese-variants.mjs
+
+      - name: Create truthful placeholder variants
+        run: >-
+          node scripts/ensure-unclassified-japanese-variants.mjs
+          --set-code="$STACKR_JP_SET_CODE"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/report.json"
+
+      - name: Build summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const file = `${dir}/report.json`;
+          const report = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+          const lines = [
+            `### Japanese variant backfill — ${process.env.STACKR_JP_SET_CODE}`,
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok ? 'PASS' : 'FAILED'}**.`,
+            '',
+            `- Active printings: **${report?.active_printings ?? '—'}**`,
+            `- Printings with a variant: **${report?.printings_with_variant ?? '—'}**`,
+            `- Official IDs linked to a variant: **${report?.official_identifiers_linked_to_variant ?? '—'}**`,
+            `- New unclassified variants: **${report?.writes?.unclassified_variants_inserted ?? '—'}**`,
+            '',
+            'These variants intentionally assert no finish. Exact holo, reverse, edition, stamp and parallel classification remains pending.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-variant-backfill-${{ matrix.set_code }}-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
