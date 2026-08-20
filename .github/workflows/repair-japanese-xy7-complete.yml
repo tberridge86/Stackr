@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: Type REPAIR XY7 TO 92 CARDS IN STAGING
+        description: Type REPAIR XY7 TO 95 CARDS IN STAGING
         required: true
         type: string
   push:
@@ -27,7 +27,7 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' &&
-      inputs.confirmation == 'REPAIR XY7 TO 92 CARDS IN STAGING')
+      inputs.confirmation == 'REPAIR XY7 TO 95 CARDS IN STAGING')
     runs-on: ubuntu-latest
     timeout-minutes: 180
     environment: staging
@@ -46,7 +46,7 @@ jobs:
         run: >-
           gh api repos/${{ github.repository }}/issues/48/comments
           --method POST
-          --field body="XY7 correction **${GITHUB_RUN_ID}** started. The earlier green run contained only secret cards 082–092 because the official site splits Bandit Ring across \`XY7-B\` (001–081) and \`XY7\` (082–092). This run will merge both filters into a truthful **92-card** canonical set, preserve both source codes, mirror all images and leave production untouched."
+          --field body="XY7 correction **${GITHUB_RUN_ID}** started. The earlier green run contained only 082–092. The official site actually splits Bandit Ring across \`XY7-B\` (001–081 plus 093–095) and \`XY7\` (082–092). This run will merge both filters into the truthful **95-card** canonical set, preserve both source codes, mirror every image and leave production untouched."
 
       - name: Check out reviewed catalogue automation
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -83,7 +83,7 @@ jobs:
           node --check scripts/persist-official-japanese-multi-code-provenance.mjs
           node --check scripts/mirror-official-japanese-card-images.mjs
 
-      - name: Collect the 81-card base filter
+      - name: Collect the XY7-B official partition
         run: >-
           python3 scripts/collect-official-japanese-set-metadata-v2.py
           --set-code=XY7-B
@@ -91,7 +91,7 @@ jobs:
           --max-results=200
           --minimum-delay-ms=650
 
-      - name: Collect the 11-card secret filter
+      - name: Collect the XY7 official partition
         run: >-
           python3 scripts/collect-official-japanese-set-metadata-v2.py
           --set-code=XY7
@@ -104,9 +104,10 @@ jobs:
           jq -e '
             .set_code_requested == "XY7-B"
             and .official_set_codes == ["XY7-B"]
-            and .api_card_ids_collected == 81
-            and .unique_printings == 81
+            and .api_card_ids_collected == 84
+            and .unique_printings == 84
             and .denominators == ["081"]
+            and ([.printings[].collector_number | tonumber] | sort) == (([range(1;82)] + [93,94,95]) | sort)
             and (.parser_errors | length) == 0
             and (.identity_conflicts | length) == 0
           ' "$STACKR_REPORT_DIR/xy7-base.json"
@@ -116,8 +117,7 @@ jobs:
             and .api_card_ids_collected == 11
             and .unique_printings == 11
             and .denominators == ["081"]
-            and ([.printings[].collector_number | tonumber] | min) == 82
-            and ([.printings[].collector_number | tonumber] | max) == 92
+            and ([.printings[].collector_number | tonumber] | sort) == [range(82;93)]
             and (.parser_errors | length) == 0
             and (.identity_conflicts | length) == 0
           ' "$STACKR_REPORT_DIR/xy7-secret.json"
@@ -135,15 +135,14 @@ jobs:
           jq -e '
             .set_code_requested == "XY7"
             and .official_set_codes == ["XY7", "XY7-B"]
-            and .api_card_ids_collected == 92
-            and .unique_printings == 92
+            and .api_card_ids_collected == 95
+            and .unique_printings == 95
             and .denominators == ["081"]
-            and ([.printings[].collector_number | tonumber] | min) == 1
-            and ([.printings[].collector_number | tonumber] | max) == 92
-            and ([.printings[].collector_number] | unique | length) == 92
+            and ([.printings[].collector_number | tonumber] | sort) == [range(1;96)]
+            and ([.printings[].collector_number] | unique | length) == 95
           ' "$STACKR_REPORT_DIR/catalogue.json"
 
-      - name: Replace the false 11-card result with all 92 printings
+      - name: Replace the false 11-card result with all 95 printings
         run: >-
           node scripts/import-complete-official-japanese-set.mjs
           --input="$STACKR_REPORT_DIR/catalogue.json"
@@ -164,7 +163,7 @@ jobs:
           --apply
           --report="$STACKR_REPORT_DIR/provenance-report.json"
 
-      - name: Mirror and verify all 92 official images
+      - name: Mirror and verify all 95 official images
         run: >-
           node scripts/mirror-official-japanese-card-images.mjs
           --set-codes="$CANONICAL_SET_CODE"
@@ -180,24 +179,24 @@ jobs:
           jq -e '
             .ok == true
             and .printed_total == 81
-            and .full_total == 92
-            and .verification.active_printings == 92
-            and .verification.distinct_collector_numbers == 92
-            and .verification.printings_with_variant == 92
-            and .verification.official_ids_verified == 92
+            and .full_total == 95
+            and .verification.active_printings == 95
+            and .verification.distinct_collector_numbers == 95
+            and .verification.printings_with_variant == 95
+            and .verification.official_ids_verified == 95
             and .verification.unresolved_concepts == 0
           ' "$STACKR_REPORT_DIR/import-report.json"
           jq -e '
             .ok == true
             and .official_set_codes == ["XY7", "XY7-B"]
             and .set_identifiers_verified == ["XY7", "XY7-B"]
-            and .card_provenance_rows_updated == 92
+            and .card_provenance_rows_updated == 95
           ' "$STACKR_REPORT_DIR/provenance-report.json"
           jq -e '
             .ok == true
-            and .candidate_variants == 92
+            and .candidate_variants == 95
             and .remaining_after_run == 0
-            and (.ready_before + .processed_successfully) == 92
+            and (.ready_before + .processed_successfully) == 95
             and .failed == 0
           ' "$STACKR_REPORT_DIR/image-report.json"
 
@@ -230,7 +229,7 @@ jobs:
             `| Image failures | ${images?.failed ?? '—'} |`,
             `| Production modified | ${imported?.production_modified ?? false} |`,
             '',
-            'The false green result has been replaced, not hidden. `XY7-B` remains the provenance for cards 001–081 and `XY7` remains the provenance for cards 082–092.',
+            'The false green result has been replaced, not hidden. `XY7-B` remains provenance for 001–081 and 093–095; `XY7` remains provenance for 082–092.',
           ];
           fs.mkdirSync(dir, { recursive: true });
           fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
