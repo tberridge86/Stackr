@@ -1,0 +1,209 @@
+name: Import Japanese CP4 Complete Catalogue
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type IMPORT ALL 140 CP4 CARDS TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/import-japanese-cp4-complete.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-import-japanese-cp4-complete
+  cancel-in-progress: false
+
+jobs:
+  import-cp4:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'IMPORT ALL 140 CP4 CARDS TO STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_REPORT_DIR: reports/catalogue/japanese-cp4-complete
+      CANONICAL_SET_CODE: CP4
+      OFFICIAL_SET_CODE: CP4
+      RELEASE_DATE: '2016-04-16'
+      ENGLISH_NAME: 'Premium Champion Pack EX × M × BREAK'
+
+    steps:
+      - name: Announce corrected CP4 model
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Corrected CP4 import **${GITHUB_RUN_ID}** started. Scope is **131 numbered cards plus nine genuinely unnumbered Basic Energy printings = 140 canonical printings**. Stable energy identities follow StackR's existing GRA/FIR/WAT/LIG/PSY/FIG/DAR/MET convention, extended with FAI for Fairy Energy. Production is excluded."
+
+      - name: Check out reviewed catalogue automation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing CP4 import.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          python3 -m pip install --disable-pip-version-check --no-input beautifulsoup4==4.13.4
+
+      - name: Syntax-check collection and import code
+        run: |
+          python3 -m py_compile scripts/collect-official-japanese-set-metadata-v2.py
+          node --check scripts/import-complete-official-japanese-set.mjs
+
+      - name: Collect all official CP4 entries
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/collect-official-japanese-set-metadata-v2.py \
+            --set-code="$OFFICIAL_SET_CODE" \
+            --output="$STACKR_REPORT_DIR/source-catalogue.json" \
+            --max-results=600 \
+            --minimum-delay-ms=650
+          status=$?
+          set -e
+          # Collector v2 returns 2 when unnumbered entries require an explicit canonical policy.
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            exit "$status"
+          fi
+          test -s "$STACKR_REPORT_DIR/source-catalogue.json"
+
+      - name: Validate the 140-entry official manifest
+        run: |
+          jq -e '
+            .source == "pokemon_card_jp_official"
+            and .collector_version == 2
+            and .set_code_requested == "CP4"
+            and .official_set_codes == ["CP4"]
+            and .api_card_ids_collected == 140
+            and .detail_rows_collected == 140
+            and .unique_printings == 131
+            and .numbered_detail_rows == 131
+            and .unnumbered_detail_rows == 9
+            and (.unresolved_unnumbered_variants | length) == 9
+            and (.parser_errors | length) == 0
+            and (.identity_conflicts | length) == 0
+            and .denominators == ["131"]
+          ' "$STACKR_REPORT_DIR/source-catalogue.json"
+          jq -e 'length == 9 and .["基本草エネルギー"].collector_number == "GRA" and .["基本フェアリーエネルギー"].collector_number == "FAI"' \
+            data/catalogue/japanese/CP4-unnumbered-energy-map.json
+
+      - name: Import 140 verified CP4 printings, variants and identifiers
+        run: >-
+          node scripts/import-complete-official-japanese-set.mjs
+          --input="$STACKR_REPORT_DIR/source-catalogue.json"
+          --unnumbered-map=data/catalogue/japanese/CP4-unnumbered-energy-map.json
+          --canonical-set-code="$CANONICAL_SET_CODE"
+          --official-set-code="$OFFICIAL_SET_CODE"
+          --release-date="$RELEASE_DATE"
+          --english-name="$ENGLISH_NAME"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Verify zero-gap CP4 result
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .printed_total == 131
+            and .full_total == 140
+            and .unnumbered_printings == 9
+            and .verification.active_printings == 140
+            and .verification.distinct_collector_numbers == 140
+            and .verification.printings_with_variant == 140
+            and .verification.official_ids_expected == 140
+            and .verification.official_ids_verified == 140
+            and .verification.unresolved_concepts == 0
+            and (.verification.duplicate_collector_numbers | length) == 0
+            and (.verification.duplicate_variant_keys | length) == 0
+            and (.verification.official_ids_missing | length) == 0
+            and .verification.identifiers_with_both_printing_and_variant == 0
+          ' "$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Build completion summary
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const sourcePath = `${dir}/source-catalogue.json`;
+          const reportPath = `${dir}/import-report.json`;
+          const source = fs.existsSync(sourcePath) ? JSON.parse(fs.readFileSync(sourcePath, 'utf8')) : null;
+          const report = fs.existsSync(reportPath) ? JSON.parse(fs.readFileSync(reportPath, 'utf8')) : null;
+          const verification = report?.verification ?? {};
+          const lines = [
+            '### Japanese batch 1 — CP4 corrected import',
+            '',
+            `Workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok ? 'PASS' : 'FAILED/INCOMPLETE'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Official source entries | ${source?.api_card_ids_collected ?? '—'} |`,
+            `| Numbered printings | ${source?.numbered_detail_rows ?? '—'} |`,
+            `| Unnumbered Basic Energy printings | ${report?.unnumbered_printings ?? source?.unnumbered_detail_rows ?? '—'} |`,
+            `| Full canonical total | ${report?.full_total ?? '—'} |`,
+            `| Distinct collector identities | ${verification.distinct_collector_numbers ?? '—'} |`,
+            `| Printings with a usable variant | ${verification.printings_with_variant ?? '—'} |`,
+            `| Official IDs verified | ${verification.official_ids_verified ?? '—'} |`,
+            `| Unresolved concepts | ${verification.unresolved_concepts ?? '—'} |`,
+            `| Missing English card names | ${verification.missing_english_names ?? '—'} |`,
+            `| Missing rarity | ${verification.missing_rarity ?? '—'} |`,
+            `| Missing artist | ${verification.missing_artist ?? '—'} |`,
+            `| Production modified | ${report?.production_modified ?? false} |`,
+            '',
+            'The nine Energy identifiers are canonical StackR identities for physically unnumbered cards; their raw provenance still records `source_collector_number = null`. Exact finish classification and image mirroring remain enrichment work, not card-list gaps.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable CP4 evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-cp4-complete-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report CP4 outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
