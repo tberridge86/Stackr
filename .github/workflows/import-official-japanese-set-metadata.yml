@@ -1,0 +1,181 @@
+name: Import Official Japanese Set Metadata
+
+on:
+  workflow_dispatch:
+    inputs:
+      collector_run_id:
+        description: Successful official Japanese collector run ID
+        required: true
+        default: '32403530567'
+        type: string
+      set_code:
+        description: Exact Japanese set code
+        required: true
+        default: 'S4a'
+        type: string
+      confirmation:
+        description: Type IMPORT VERIFIED JAPANESE METADATA TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/import-official-japanese-set-metadata.yml'
+      - 'scripts/import-official-japanese-set-metadata.mjs'
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: stackr-official-japanese-metadata-staging-import
+  cancel-in-progress: false
+
+jobs:
+  import-staging:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'IMPORT VERIFIED JAPANESE METADATA TO STAGING')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: staging
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      STACKR_COLLECTOR_RUN_ID: ${{ inputs.collector_run_id || '32403530567' }}
+      STACKR_JP_SET_CODE: ${{ inputs.set_code || 'S4a' }}
+      STACKR_JP_RELEASE_DATE: '2020-11-20'
+      STACKR_JP_ENGLISH_NAME: 'Shiny Star V'
+    steps:
+      - name: Announce guarded staging import
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Guarded official Japanese metadata import **${GITHUB_RUN_ID}** started for \`${STACKR_JP_SET_CODE}\` from immutable collector run **${STACKR_COLLECTOR_RUN_ID}**. Target is the hard-pinned staging project only; rarity, finish and card images will remain unset."
+
+      - name: Validate immutable inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$STACKR_COLLECTOR_RUN_ID" =~ ^[0-9]+$ ]] || exit 1
+          [[ "$STACKR_JP_SET_CODE" =~ ^[A-Za-z0-9+._:-]+$ ]] || exit 1
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing import.'; exit 1 ;;
+          esac
+
+      - name: Check out the reviewed importer
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install pinned StackR dependencies
+        run: npm ci
+
+      - name: Syntax-check the importer before any database access
+        run: node --check scripts/import-official-japanese-set-metadata.mjs
+
+      - name: Verify the collector run and download its immutable artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STACKR_COLLECTOR_RUN_ID}")"
+          test "$(jq -r .status <<<"$run_json")" = completed
+          test "$(jq -r .conclusion <<<"$run_json")" = success
+          test "$(jq -r .name <<<"$run_json")" = 'Collect Official Japanese Set Metadata'
+          mkdir -p reports/catalogue/official-japanese-set
+          gh run download "$STACKR_COLLECTOR_RUN_ID" \
+            --repo "$GITHUB_REPOSITORY" \
+            --name "stackr-official-japanese-set-${STACKR_JP_SET_CODE}-${STACKR_COLLECTOR_RUN_ID}" \
+            --dir reports/catalogue/official-japanese-set
+          test -s reports/catalogue/official-japanese-set/catalogue.json
+
+      - name: Import verified printing metadata to staging
+        run: >-
+          node scripts/import-official-japanese-set-metadata.mjs
+          --input=reports/catalogue/official-japanese-set/catalogue.json
+          --set-code="$STACKR_JP_SET_CODE"
+          --release-date="$STACKR_JP_RELEASE_DATE"
+          --english-name="$STACKR_JP_ENGLISH_NAME"
+          --target=staging
+          --apply
+          --report=reports/catalogue/official-japanese-set/import-report.json
+
+      - name: Build human-readable import evidence
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = 'reports/catalogue/official-japanese-set/import-report.json';
+          const runId = process.env.GITHUB_RUN_ID;
+          let lines;
+          if (!fs.existsSync(path)) {
+            lines = [
+              `### Official Japanese staging import \`${runId}\``,
+              '',
+              'The import failed before a verified report was written. No production service was targeted. Inspect the workflow logs.',
+            ];
+          } else {
+            const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const verification = report.verification || {};
+            const writes = report.writes || {};
+            lines = [
+              `### Official Japanese staging import \`${runId}\``,
+              '',
+              `Set: **${report.official_set_code}** — staging only; production modified: **${report.production_modified}**.`,
+              '',
+              '| Measure | Result |',
+              '|---|---:|',
+              `| Official printings | ${verification.active_printings} |`,
+              `| Distinct collector numbers | ${verification.distinct_collector_numbers} |`,
+              `| Printed denominator | ${verification.set?.printed_total ?? '—'} |`,
+              `| Full checklist total | ${verification.set?.total ?? '—'} |`,
+              `| New canonical printings | ${writes.printings_inserted ?? 0} |`,
+              `| Reused/updated printings | ${writes.printings_updated ?? 0} |`,
+              `| New concepts | ${writes.concepts_inserted ?? 0} |`,
+              `| Concept-name ambiguities | ${verification.unresolved_concepts ?? 0} |`,
+              `| Missing English card names | ${verification.missing_english_names ?? 0} |`,
+              `| Rarity deliberately pending | ${verification.missing_rarity ?? 0} |`,
+              `| Artist deliberately unavailable | ${verification.missing_artist ?? 0} |`,
+              `| Card images downloaded | ${verification.images_downloaded} |`,
+              '',
+              'Finish and rarity were not inferred. Official identifiers link to printings; image paths remain non-served source evidence only.',
+            ];
+          }
+          fs.writeFileSync('reports/catalogue/official-japanese-set/import-summary.md', `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable staging import evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-official-japanese-import-${{ env.STACKR_JP_SET_CODE }}-${{ github.run_id }}
+          path: |
+            reports/catalogue/official-japanese-set/import-report.json
+            reports/catalogue/official-japanese-set/import-summary.md
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report staging import result to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat reports/catalogue/official-japanese-set/import-summary.md)"
+          gh api repos/${{ github.repository}/issues/48/comments \
+            --method POST \
+            --field body="$body"
