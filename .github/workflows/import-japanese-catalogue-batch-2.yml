@@ -1,0 +1,230 @@
+name: Import Japanese Catalogue Batch 2
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type RUN JAPANESE BATCH 2 TO STAGING
+        required: true
+        type: string
+  push:
+    branches:
+      - backend/release-hardening-2026-08-19
+    paths:
+      - '.github/workflows/import-japanese-catalogue-batch-2.yml'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  import-set:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+      inputs.confirmation == 'RUN JAPANESE BATCH 2 TO STAGING')
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - canonical_set_code: XY3
+            official_set_code: XY3
+            release_date: '2014-06-14'
+            english_name: 'Rising Fist'
+          - canonical_set_code: XY4
+            official_set_code: XY4
+            release_date: '2014-09-13'
+            english_name: 'Phantom Gate'
+          - canonical_set_code: CP6
+            official_set_code: CP6
+            release_date: '2016-09-16'
+            english_name: '20th Anniversary'
+          - canonical_set_code: ADV5
+            official_set_code: ADV4
+            release_date: '2004-01-16'
+            english_name: 'Undone Seal'
+          - canonical_set_code: XY7
+            official_set_code: XY7
+            release_date: '2015-06-20'
+            english_name: 'Bandit Ring'
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    environment: staging
+    concurrency:
+      group: stackr-japanese-batch-2-${{ matrix.canonical_set_code }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
+      STACKR_CATALOGUE_IMPORT_TARGET: staging
+      CANONICAL_SET_CODE: ${{ matrix.canonical_set_code }}
+      OFFICIAL_SET_CODE: ${{ matrix.official_set_code }}
+      RELEASE_DATE: ${{ matrix.release_date }}
+      ENGLISH_NAME: ${{ matrix.english_name }}
+      STACKR_REPORT_DIR: reports/catalogue/japanese-batch-2/${{ matrix.canonical_set_code }}
+
+    steps:
+      - name: Announce set collection and import
+        run: >-
+          gh api repos/${{ github.repository }}/issues/48/comments
+          --method POST
+          --field body="Japanese batch 2 run **${GITHUB_RUN_ID}** started for canonical \`${CANONICAL_SET_CODE}\` using official Japanese filter \`${OFFICIAL_SET_CODE}\`. It will collect the full official result, create truthful placeholder variants, preserve image URLs and write to staging only."
+
+      - name: Check out reviewed complete-set automation
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: backend/release-hardening-2026-08-19
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate hard-pinned staging target
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$CANONICAL_SET_CODE" =~ ^[A-Za-z0-9+._:-]+$ ]]
+          [[ "$OFFICIAL_SET_CODE" =~ ^[A-Za-z0-9+._:-]+$ ]]
+          [[ "$RELEASE_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]
+          test -n "$ENGLISH_NAME"
+          test "$SUPABASE_URL" = 'https://lmwfhvexfcoyeuoyrlco.supabase.co'
+          test -n "$SUPABASE_SECRET_KEY"
+          case "$SUPABASE_URL" in
+            *oakdbbzdqwurpjnoqhmu*) echo 'Production target detected; refusing batch 2 import.'; exit 1 ;;
+          esac
+          mkdir -p "$STACKR_REPORT_DIR"
+
+      - name: Install pinned dependencies
+        run: |
+          npm ci
+          python3 -m pip install --disable-pip-version-check --no-input beautifulsoup4==4.13.4
+
+      - name: Syntax-check collector and complete importer
+        run: |
+          python3 -m py_compile scripts/collect-official-japanese-set-metadata-v2.py
+          node --check scripts/import-complete-official-japanese-set.mjs
+
+      - name: Collect the complete official Japanese result
+        shell: bash
+        run: |
+          set +e
+          python3 scripts/collect-official-japanese-set-metadata-v2.py \
+            --set-code="$OFFICIAL_SET_CODE" \
+            --output="$STACKR_REPORT_DIR/source-catalogue.json" \
+            --max-results=1000 \
+            --minimum-delay-ms=650
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            exit "$status"
+          fi
+          test -s "$STACKR_REPORT_DIR/source-catalogue.json"
+
+      - name: Validate safe one-ID-per-printing source evidence
+        run: |
+          jq -e --arg official "$OFFICIAL_SET_CODE" '
+            .source == "pokemon_card_jp_official"
+            and .collector_version == 2
+            and .set_code_requested == $official
+            and .read_only == true
+            and .images_downloaded == false
+            and .api_card_ids_collected > 0
+            and .detail_rows_collected == .api_card_ids_collected
+            and .unique_printings == .api_card_ids_collected
+            and .duplicate_official_variants == 0
+            and .unnumbered_detail_rows == 0
+            and (.unresolved_unnumbered_variants | length) == 0
+            and (.parser_errors | length) == 0
+            and (.identity_conflicts | length) == 0
+            and ([.printings[] | (.official_card_ids | length)] | all(. == 1))
+          ' "$STACKR_REPORT_DIR/source-catalogue.json"
+
+      - name: Import complete canonical set to staging
+        run: >-
+          node scripts/import-complete-official-japanese-set.mjs
+          --input="$STACKR_REPORT_DIR/source-catalogue.json"
+          --canonical-set-code="$CANONICAL_SET_CODE"
+          --official-set-code="$OFFICIAL_SET_CODE"
+          --release-date="$RELEASE_DATE"
+          --english-name="$ENGLISH_NAME"
+          --target=staging
+          --apply
+          --report="$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Verify zero structural gaps
+        run: |
+          jq -e '
+            .ok == true
+            and .production_modified == false
+            and .full_total > 0
+            and .verification.active_printings == .full_total
+            and .verification.distinct_collector_numbers == .full_total
+            and .verification.printings_with_variant == .full_total
+            and .verification.official_ids_expected == .full_total
+            and .verification.official_ids_verified == .full_total
+            and .verification.unresolved_concepts == 0
+            and (.verification.duplicate_collector_numbers | length) == 0
+            and (.verification.duplicate_variant_keys | length) == 0
+            and (.verification.official_ids_missing | length) == 0
+            and .verification.identifiers_with_both_printing_and_variant == 0
+          ' "$STACKR_REPORT_DIR/import-report.json"
+
+      - name: Create per-set completion report
+        if: always()
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const dir = process.env.STACKR_REPORT_DIR;
+          const read = (name) => fs.existsSync(`${dir}/${name}`) ? JSON.parse(fs.readFileSync(`${dir}/${name}`, 'utf8')) : null;
+          const source = read('source-catalogue.json');
+          const report = read('import-report.json');
+          const verification = report?.verification ?? {};
+          const lines = [
+            `### Japanese batch 2 — ${process.env.CANONICAL_SET_CODE}`,
+            '',
+            `Official source code: \`${process.env.OFFICIAL_SET_CODE}\`; workflow run: **${process.env.GITHUB_RUN_ID}** — **${report?.ok ? 'PASS' : 'FAILED/REVIEW REQUIRED'}**.`,
+            '',
+            '| Measure | Result |',
+            '|---|---:|',
+            `| Official source entries | ${source?.api_card_ids_collected ?? '—'} |`,
+            `| Full canonical total | ${report?.full_total ?? '—'} |`,
+            `| Printed denominator | ${report?.printed_total ?? source?.denominators?.join(', ') ?? '—'} |`,
+            `| Distinct collector identities | ${verification.distinct_collector_numbers ?? '—'} |`,
+            `| Printings with a variant | ${verification.printings_with_variant ?? '—'} |`,
+            `| Official IDs verified | ${verification.official_ids_verified ?? '—'} |`,
+            `| Unresolved concepts | ${verification.unresolved_concepts ?? '—'} |`,
+            `| Missing English card names | ${verification.missing_english_names ?? '—'} |`,
+            `| Missing rarity | ${verification.missing_rarity ?? '—'} |`,
+            `| Missing artist | ${verification.missing_artist ?? '—'} |`,
+            `| Production modified | ${report?.production_modified ?? false} |`,
+            '',
+            'A failure before `import-report.json` means the collector found an identity edge case and no database write was made. Successful sets retain official image URLs for the asset-mirroring lane.',
+          ];
+          fs.mkdirSync(dir, { recursive: true });
+          fs.writeFileSync(`${dir}/summary.md`, `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload immutable set evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-japanese-batch-2-${{ matrix.canonical_set_code }}-${{ github.run_id }}
+          path: ${{ env.STACKR_REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 30
+          compression-level: 9
+
+      - name: Report set outcome to PR 48
+        if: always()
+        shell: bash
+        run: |
+          body="$(cat "$STACKR_REPORT_DIR/summary.md")"
+          gh api repos/${{ github.repository }}/issues/48/comments \
+            --method POST \
+            --field body="$body"
