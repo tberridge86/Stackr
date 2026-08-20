@@ -138,7 +138,7 @@ async function main() {
   const allVariants = [];
   for (const batch of chunks(printingIds)) {
     const { data, error } = await catalog.from('card_variants')
-      .select('id,printing_id,variant_code')
+      .select('id,printing_id,variant_code,native_image_status')
       .in('printing_id', batch)
       .is('deprecated_at', null);
     requireNoError(error, 'reload variants');
@@ -151,6 +151,7 @@ async function main() {
       preferredVariantByPrinting.set(variant.printing_id, variant);
     }
   }
+  const variantIds = allVariants.map((row) => row.id);
 
   const { data: source, error: sourceError } = await ingest.from('sources')
     .select('id')
@@ -160,71 +161,62 @@ async function main() {
     .single();
   requireNoError(sourceError, 'load official source');
 
-  const identifiers = [];
+  const printingLinkedIdentifiers = [];
   for (const batch of chunks(printingIds)) {
     const { data, error } = await ingest.from('external_identifiers')
-      .select('id,printing_id,variant_id')
+      .select('id,external_id,printing_id,variant_id')
       .eq('source_id', source.id)
       .eq('source_entity_type', 'card')
       .eq('language_code', 'ja')
       .eq('is_current', true)
       .in('printing_id', batch)
       .is('deprecated_at', null);
-    requireNoError(error, 'load official identifiers');
-    identifiers.push(...(data ?? []));
+    requireNoError(error, 'load printing-linked official identifiers');
+    printingLinkedIdentifiers.push(...(data ?? []));
   }
 
   let identifierLinksUpdated = 0;
-  for (const identifier of identifiers) {
-    if (identifier.variant_id) continue;
+  for (const identifier of printingLinkedIdentifiers) {
     const variant = preferredVariantByPrinting.get(identifier.printing_id);
     requireCondition(variant?.id, `No variant exists for printing ${identifier.printing_id}.`);
     const { error } = await ingest.from('external_identifiers')
       .update({
+        printing_id: null,
         variant_id: variant.id,
         updated_at: new Date().toISOString(),
       })
       .eq('id', identifier.id);
-    requireNoError(error, 'link official identifier to variant');
+    requireNoError(error, 'move official identifier from printing to variant');
     identifierLinksUpdated += 1;
   }
 
-  const finalVariants = [];
-  for (const batch of chunks(printingIds)) {
-    const { data, error } = await catalog.from('card_variants')
-      .select('id,printing_id,variant_code,native_image_status')
-      .in('printing_id', batch)
-      .is('deprecated_at', null);
-    requireNoError(error, 'verify variants');
-    finalVariants.push(...(data ?? []));
-  }
-  const coveredPrintingIds = new Set(finalVariants.map((row) => row.printing_id));
-
+  const coveredPrintingIds = new Set(allVariants.map((row) => row.printing_id));
   const finalIdentifiers = [];
-  for (const batch of chunks(printingIds)) {
+  for (const batch of chunks(variantIds)) {
     const { data, error } = await ingest.from('external_identifiers')
-      .select('id,printing_id,variant_id')
+      .select('id,external_id,printing_id,variant_id')
       .eq('source_id', source.id)
       .eq('source_entity_type', 'card')
       .eq('language_code', 'ja')
       .eq('is_current', true)
-      .in('printing_id', batch)
+      .in('variant_id', batch)
       .is('deprecated_at', null);
-    requireNoError(error, 'verify identifier links');
+    requireNoError(error, 'verify variant-linked official identifiers');
     finalIdentifiers.push(...(data ?? []));
   }
 
   const report = {
     ok: coveredPrintingIds.size === printingIds.length
-      && finalIdentifiers.every((row) => Boolean(row.variant_id)),
+      && finalIdentifiers.length >= printingIds.length
+      && finalIdentifiers.every((row) => Boolean(row.variant_id) && !row.printing_id),
     target: 'staging',
     production_modified: false,
     set_code: setCode,
     active_printings: printingIds.length,
-    active_variants: finalVariants.length,
+    active_variants: allVariants.length,
     printings_with_variant: coveredPrintingIds.size,
     official_identifiers: finalIdentifiers.length,
-    official_identifiers_linked_to_variant: finalIdentifiers.filter((row) => row.variant_id).length,
+    official_identifiers_linked_to_variant: finalIdentifiers.length,
     writes: {
       unclassified_variants_inserted: inserted,
       identifier_variant_links_updated: identifierLinksUpdated,
