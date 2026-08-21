@@ -138,6 +138,89 @@ function uniqueRowsBy(rows, column, context) {
   return byValue;
 }
 
+function optionalIdentityValue(row, column) {
+  const value = row?.[column];
+  if (value === null || value === undefined || String(value).length === 0) return null;
+  return String(value);
+}
+
+function uniqueRowsByOptionalIdentity(rows, column, context) {
+  const byValue = new Map();
+  for (const row of rows) {
+    const value = optionalIdentityValue(row, column);
+    if (value === null) continue;
+    if (byValue.has(value)) {
+      throw new Error(`catalogue_asset_identity_duplicate:${context}:${column}:${value}`);
+    }
+    byValue.set(value, row);
+  }
+  return byValue;
+}
+
+export function planCatalogueAssetIdentityMerge(sourceRows, targetRows) {
+  if (!Array.isArray(sourceRows) || !Array.isArray(targetRows)) {
+    throw new TypeError('catalogue_asset_identity_rows_must_be_arrays');
+  }
+  const sourceById = uniqueRowsBy(sourceRows, 'id', 'asset_source');
+  const targetById = uniqueRowsBy(targetRows, 'id', 'asset_target');
+  const sourceByAssetId = uniqueRowsByOptionalIdentity(sourceRows, 'asset_id', 'source');
+  const targetByAssetId = uniqueRowsByOptionalIdentity(targetRows, 'asset_id', 'target');
+  const sourceIdMap = new Map();
+  const mappedSourceRows = [];
+  let preservedProductionAssetIdCount = 0;
+  let insertedAssetCount = 0;
+
+  for (const sourceRow of sourceRows) {
+    const sourceId = requiredIdentityValue(sourceRow, 'id', 'asset_source');
+    const assetId = optionalIdentityValue(sourceRow, 'asset_id');
+    const matchingTarget = assetId === null
+      ? targetById.get(sourceId)
+      : targetByAssetId.get(assetId);
+    let targetId = sourceId;
+
+    if (matchingTarget) {
+      targetId = requiredIdentityValue(matchingTarget, 'id', 'asset_target');
+      if (assetId === null && optionalIdentityValue(matchingTarget, 'asset_id') !== null) {
+        throw new Error(`catalogue_asset_identity_missing_collision:${sourceId}`);
+      }
+      preservedProductionAssetIdCount += 1;
+    } else {
+      const collidingTarget = targetById.get(sourceId);
+      if (collidingTarget) {
+        throw new Error(
+          `catalogue_asset_identity_id_collision:${sourceId}`
+          + `:${optionalIdentityValue(collidingTarget, 'asset_id') ?? 'null'}`
+          + `:${assetId ?? 'null'}`,
+        );
+      }
+      insertedAssetCount += 1;
+    }
+
+    sourceIdMap.set(sourceId, targetId);
+    mappedSourceRows.push(targetId === sourceId ? sourceRow : { ...sourceRow, id: targetId });
+  }
+
+  const preservedTargetOnlyRows = targetRows.filter((targetRow) => {
+    const assetId = optionalIdentityValue(targetRow, 'asset_id');
+    return assetId === null
+      ? !sourceById.has(requiredIdentityValue(targetRow, 'id', 'asset_target'))
+      : !sourceByAssetId.has(assetId);
+  });
+
+  return {
+    sourceIdMap,
+    mappedSourceRows,
+    preservedTargetOnlyRows,
+    sourceCount: sourceRows.length,
+    sourceStableAssetIdCount: sourceByAssetId.size,
+    preservedProductionAssetIdCount,
+    remappedAssetIdCount: [...sourceIdMap.entries()].filter(([sourceId, targetId]) => (
+      sourceId !== targetId
+    )).length,
+    insertedAssetCount,
+  };
+}
+
 export function planCatalogueSourceIdentityMerge(sourceRows, targetRows) {
   if (!Array.isArray(sourceRows) || !Array.isArray(targetRows)) {
     throw new TypeError('catalogue_source_identity_rows_must_be_arrays');
@@ -193,14 +276,15 @@ export function planCatalogueSourceIdentityMerge(sourceRows, targetRows) {
   };
 }
 
-export function remapCatalogueSourceForeignKeys(
+export function remapCatalogueIdentityForeignKeys(
   rows,
   foreignKeyColumns,
   sourceIdMap,
   tableName,
+  identityKind = 'source',
 ) {
   if (!Array.isArray(rows) || !Array.isArray(foreignKeyColumns) || !(sourceIdMap instanceof Map)) {
-    throw new TypeError('invalid_catalogue_source_foreign_key_remap_arguments');
+    throw new TypeError('invalid_catalogue_identity_foreign_key_remap_arguments');
   }
   if (foreignKeyColumns.length === 0 || rows.length === 0) {
     return { rows, remappedRowCount: 0 };
@@ -216,7 +300,7 @@ export function remapCatalogueSourceForeignKeys(
       const sourceId = String(value);
       if (!sourceIdMap.has(sourceId)) {
         throw new Error(
-          `catalogue_source_identity_mapping_missing:${tableName}:${column}:${sourceId}`,
+          `catalogue_${identityKind}_identity_mapping_missing:${tableName}:${column}:${sourceId}`,
         );
       }
       const targetId = sourceIdMap.get(sourceId);
@@ -230,6 +314,21 @@ export function remapCatalogueSourceForeignKeys(
   });
 
   return { rows: mappedRows, remappedRowCount };
+}
+
+export function remapCatalogueSourceForeignKeys(
+  rows,
+  foreignKeyColumns,
+  sourceIdMap,
+  tableName,
+) {
+  return remapCatalogueIdentityForeignKeys(
+    rows,
+    foreignKeyColumns,
+    sourceIdMap,
+    tableName,
+    'source',
+  );
 }
 
 export function rewriteProductionCatalogueAssetUrls(

@@ -1215,7 +1215,9 @@ assert.match(catalogueTransferScript, /sourceIdentityPolicy: SOURCE_IDENTITY_POL
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.match(catalogueTransferScript, /targetCommitVerified/);
 assert.match(catalogueTransferScript, /planCatalogueSourceIdentityMerge/);
+assert.match(catalogueTransferScript, /planCatalogueAssetIdentityMerge/);
 assert.match(catalogueTransferScript, /foreignKeyColumnsReferencingSources/);
+assert.match(catalogueTransferScript, /foreignKeyColumnsReferencingTable/);
 assert.match(catalogueTransferScript, /if \(sourceIdentityPlan && tableName === SOURCE_IDENTITY_TABLE\) continue/);
 assert.match(catalogueTransferScript, /upsertRows/);
 assert.match(catalogueTransferScript, /preservedProductionSourceIdCount/);
@@ -1322,7 +1324,7 @@ try {
     ok: true,
   }));
   writeFileSync(databaseEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.5.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.6.0',
     sourceProjectRef: 'internal-staging-ref',
     targetProjectRef: 'internal-production-ref',
     targetAlreadyMatched: true,
@@ -1339,6 +1341,17 @@ try {
       releaseVersionSha256: 'internal-release-digest',
       productionAssetUrlRewriteCount: 1,
       productionAssetTimestampReuseCount: 1,
+    },
+    assetIdentityPreservation: {
+      table: 'catalog.assets',
+      naturalKey: 'asset_id',
+      sourceCount: 2,
+      sourceStableAssetIdCount: 2,
+      preservedProductionAssetIdCount: 2,
+      remappedAssetIdCount: 1,
+      insertedAssetCount: 0,
+      preservedTargetOnlyAssetCount: 1,
+      remappedForeignKeyRowCount: 1,
     },
     tables: [{
       table: 'internal.schema_table',
@@ -1437,7 +1450,7 @@ try {
     'database-mutation-evidence.json',
   );
   writeFileSync(databaseMutationEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.5.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.6.0',
     targetAlreadyMatched: false,
     productionMutationPerformed: true,
     targetTransactionCommitted: true,
@@ -1450,6 +1463,17 @@ try {
     catalogueRelease: {
       productionAssetUrlRewriteCount: 3,
       productionAssetTimestampReuseCount: 3,
+    },
+    assetIdentityPreservation: {
+      table: 'catalog.assets',
+      naturalKey: 'asset_id',
+      sourceCount: 12,
+      sourceStableAssetIdCount: 10,
+      preservedProductionAssetIdCount: 9,
+      remappedAssetIdCount: 3,
+      insertedAssetCount: 3,
+      preservedTargetOnlyAssetCount: 3,
+      remappedForeignKeyRowCount: 4,
     },
     tables: [{
       targetPreCommitVerified: true,
@@ -1507,7 +1531,7 @@ try {
   assert.match(invalidSuccessAudit.stderr, /successful_catalogue_promotion_evidence_missing/);
 
   writeFileSync(databaseEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.5.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.6.0',
     targetAlreadyMatched: false,
     productionMutationPerformed: true,
     targetTransactionCommitted: false,
@@ -1520,6 +1544,17 @@ try {
     catalogueRelease: {
       productionAssetUrlRewriteCount: 1,
       productionAssetTimestampReuseCount: 1,
+    },
+    assetIdentityPreservation: {
+      table: 'catalog.assets',
+      naturalKey: 'asset_id',
+      sourceCount: 2,
+      sourceStableAssetIdCount: 2,
+      preservedProductionAssetIdCount: 2,
+      remappedAssetIdCount: 0,
+      insertedAssetCount: 0,
+      preservedTargetOnlyAssetCount: 0,
+      remappedForeignKeyRowCount: 0,
     },
     tables: [{
       targetPreCommitVerified: false,
@@ -1567,7 +1602,9 @@ const {
   catalogueTargetOnlyRows,
   catalogueTransferTargetMatch,
   expectedCatalogueOwnedSequenceStates,
+  planCatalogueAssetIdentityMerge,
   planCatalogueSourceIdentityMerge,
+  remapCatalogueIdentityForeignKeys,
   remapCatalogueSourceForeignKeys,
   rewriteProductionCatalogueAssetUrls,
   stableCatalogueJson,
@@ -1828,6 +1865,86 @@ assert.deepEqual(
   'rerunning the promotion must preserve the same source identity mapping',
 );
 assert.equal(rerunSourceIdentityPlan.insertedSourceCount, 0);
+
+const assetIdentityPlan = planCatalogueAssetIdentityMerge(
+  [
+    { id: 'staging-asset-shared', asset_id: 'card-image:shared', value: 'canonical' },
+    { id: 'staging-asset-new', asset_id: 'card-image:new', value: 'new' },
+    { id: 'stable-null-asset', asset_id: null, value: 'canonical-null' },
+  ],
+  [
+    { id: 'production-asset-shared', asset_id: 'card-image:shared', value: 'old' },
+    { id: 'production-asset-only', asset_id: 'card-image:legacy', value: 'legacy' },
+    { id: 'stable-null-asset', asset_id: null, value: 'old-null' },
+  ],
+);
+assert.equal(
+  assetIdentityPlan.sourceIdMap.get('staging-asset-shared'),
+  'production-asset-shared',
+);
+assert.equal(assetIdentityPlan.sourceIdMap.get('staging-asset-new'), 'staging-asset-new');
+assert.equal(assetIdentityPlan.sourceIdMap.get('stable-null-asset'), 'stable-null-asset');
+assert.deepEqual(
+  assetIdentityPlan.mappedSourceRows.map(({ id, asset_id: assetId }) => ({ id, assetId })),
+  [
+    { id: 'production-asset-shared', assetId: 'card-image:shared' },
+    { id: 'staging-asset-new', assetId: 'card-image:new' },
+    { id: 'stable-null-asset', assetId: null },
+  ],
+);
+assert.deepEqual(
+  assetIdentityPlan.preservedTargetOnlyRows.map(({ id }) => id),
+  ['production-asset-only'],
+);
+assert.equal(assetIdentityPlan.preservedProductionAssetIdCount, 2);
+assert.equal(assetIdentityPlan.remappedAssetIdCount, 1);
+assert.equal(assetIdentityPlan.insertedAssetCount, 1);
+const remappedAssetForeignKeys = remapCatalogueIdentityForeignKeys(
+  [
+    { id: 'version-asset-1', asset_id: 'staging-asset-shared' },
+    { id: 'version-asset-2', asset_id: 'staging-asset-new' },
+  ],
+  ['asset_id'],
+  assetIdentityPlan.sourceIdMap,
+  'catalog.catalogue_version_assets',
+  'asset',
+);
+assert.deepEqual(
+  remappedAssetForeignKeys.rows.map(({ asset_id: assetId }) => assetId),
+  ['production-asset-shared', 'staging-asset-new'],
+);
+assert.equal(remappedAssetForeignKeys.remappedRowCount, 1);
+const rerunAssetIdentityPlan = planCatalogueAssetIdentityMerge(
+  [
+    { id: 'staging-asset-shared', asset_id: 'card-image:shared', value: 'canonical' },
+    { id: 'staging-asset-new', asset_id: 'card-image:new', value: 'new' },
+    { id: 'stable-null-asset', asset_id: null, value: 'canonical-null' },
+  ],
+  [...assetIdentityPlan.mappedSourceRows, ...assetIdentityPlan.preservedTargetOnlyRows],
+);
+assert.deepEqual(
+  [...rerunAssetIdentityPlan.sourceIdMap.entries()],
+  [...assetIdentityPlan.sourceIdMap.entries()],
+  'rerunning production asset promotion must preserve the same stable asset UUID mapping',
+);
+assert.equal(rerunAssetIdentityPlan.insertedAssetCount, 0);
+assert.throws(
+  () => planCatalogueAssetIdentityMerge(
+    [{ id: 'asset-collision', asset_id: 'card-image:new' }],
+    [{ id: 'asset-collision', asset_id: 'card-image:legacy' }],
+  ),
+  /catalogue_asset_identity_id_collision/,
+);
+assert.throws(
+  () => planCatalogueAssetIdentityMerge(
+    [
+      { id: 'asset-a', asset_id: 'card-image:duplicate' },
+      { id: 'asset-b', asset_id: 'card-image:duplicate' },
+    ],
+    [],
+  ),
+  /catalogue_asset_identity_duplicate:source:asset_id/,
+);
 
 const sourceForeignKeyRows = [
   { id: 'row-1', source_id: 'staging-shared' },
