@@ -7,6 +7,7 @@ import {
   expectedCatalogueOwnedSequenceStates,
   planCatalogueAssetIdentityMerge,
   planCatalogueSourceIdentityMerge,
+  projectCatalogueAssetAliasReferences,
   remapCatalogueIdentityForeignKeys,
   remapCatalogueSourceForeignKeys,
   rewriteProductionCatalogueAssetUrls,
@@ -750,6 +751,8 @@ try {
     let sourceIdentityForeignKeyRemappedRowCount = 0;
     let assetIdentityForeignKeyColumns = [];
     let assetIdentityForeignKeyRemappedRowCount = 0;
+    let assetIdentityAliasProjectedRowCount = 0;
+    let assetIdentityAliasProjectedValueCount = 0;
     if (sourceIdentityPlan) {
       if (tableName === SOURCE_IDENTITY_TABLE) {
         sourceRows = sourceIdentityPlan.mappedSourceRows;
@@ -774,6 +777,15 @@ try {
         tableName,
         ASSET_TABLE,
       );
+      const aliasProjection = projectCatalogueAssetAliasReferences(
+        sourceRows,
+        assetIdentityForeignKeyColumns,
+        assetIdentityPlan.sourceAliasIds,
+        tableName,
+      );
+      sourceRows = aliasProjection.rows;
+      assetIdentityAliasProjectedRowCount = aliasProjection.projectedRowCount;
+      assetIdentityAliasProjectedValueCount = aliasProjection.projectedValueCount;
       const remapped = remapCatalogueIdentityForeignKeys(
         sourceRows,
         assetIdentityForeignKeyColumns,
@@ -864,6 +876,8 @@ try {
       sourceIdentityForeignKeyRemappedRowCount,
       assetIdentityForeignKeyColumns,
       assetIdentityForeignKeyRemappedRowCount,
+      assetIdentityAliasProjectedRowCount,
+      assetIdentityAliasProjectedValueCount,
       excludedParentReferenceForeignKeys,
       excludedParentReferenceProjection,
       selfReferenceForeignKeyColumns,
@@ -920,6 +934,8 @@ try {
       sourceIdentityForeignKeyRemappedRowCount,
       assetIdentityForeignKeyColumns,
       assetIdentityForeignKeyRemappedRowCount,
+      assetIdentityAliasProjectedRowCount,
+      assetIdentityAliasProjectedValueCount,
       excludedParentReferenceForeignKeys,
       excludedParentReferenceProjection,
       selfReferenceForeignKeyColumns,
@@ -1050,6 +1066,8 @@ try {
       sourceIdentityForeignKeyRemappedRowCount,
       assetIdentityForeignKeyColumns,
       assetIdentityForeignKeyRemappedRowCount,
+      assetIdentityAliasProjectedRowCount,
+      assetIdentityAliasProjectedValueCount,
       excludedParentReferenceForeignKeys,
       excludedParentReferenceProjectedColumns:
         excludedParentReferenceProjection.projectedColumns,
@@ -1187,8 +1205,8 @@ try {
 
   const evidence = {
     schemaVersion: TRANSFER_MODE === 'promote'
-      ? 'stackr-production-catalogue-data-promotion-evidence-v1.6.0'
-      : 'stackr-staging-catalogue-transfer-evidence-v1.6.0',
+      ? 'stackr-production-catalogue-data-promotion-evidence-v1.7.0'
+      : 'stackr-staging-catalogue-transfer-evidence-v1.7.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
     sourceProjectRef: SOURCE_PROJECT_REF,
@@ -1202,7 +1220,7 @@ try {
     transferPolicy: TRANSFER_MODE === 'promote' && targetAlreadyMatched
       ? 'verify_allowlisted_production_catalogue_already_matches_without_mutation'
       : TRANSFER_MODE === 'promote'
-      ? 'upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows_source_identity_and_project_declared_private_provenance_references'
+      ? 'upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows_source_and_asset_storage_identity_project_exact_storage_aliases_and_private_provenance_references'
       : TRANSFER_MODE === 'commit'
       ? 'replace_allowlisted_isolated_candidate_tables_with_canonical_staging_rows'
       : SOURCE_IDENTITY_POLICY === 'preserve_by_code'
@@ -1269,14 +1287,27 @@ try {
           table: ASSET_TABLE,
           naturalKey: 'asset_id',
           sourceCount: assetIdentityPlan.sourceCount,
+          canonicalSourceCount: assetIdentityPlan.canonicalSourceCount,
+          sourceStorageAliasCount: assetIdentityPlan.sourceStorageAliasCount,
           sourceStableAssetIdCount: assetIdentityPlan.sourceStableAssetIdCount,
           preservedProductionAssetIdCount:
             assetIdentityPlan.preservedProductionAssetIdCount,
           remappedAssetIdCount: assetIdentityPlan.remappedAssetIdCount,
+          storageObjectMatchedAssetCount: assetIdentityPlan.storageObjectMatchedAssetCount,
+          preservedProductionStableAssetIdCount:
+            assetIdentityPlan.preservedProductionStableAssetIdCount,
           insertedAssetCount: assetIdentityPlan.insertedAssetCount,
           preservedTargetOnlyAssetCount: assetIdentityPlan.preservedTargetOnlyRows.length,
           remappedForeignKeyRowCount: results.reduce(
             (sum, result) => sum + result.assetIdentityForeignKeyRemappedRowCount,
+            0,
+          ),
+          projectedStorageAliasForeignKeyRowCount: results.reduce(
+            (sum, result) => sum + result.assetIdentityAliasProjectedRowCount,
+            0,
+          ),
+          projectedStorageAliasForeignKeyValueCount: results.reduce(
+            (sum, result) => sum + result.assetIdentityAliasProjectedValueCount,
             0,
           ),
         }

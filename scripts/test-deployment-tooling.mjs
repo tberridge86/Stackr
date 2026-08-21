@@ -1324,7 +1324,7 @@ try {
     ok: true,
   }));
   writeFileSync(databaseEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.6.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.7.0',
     sourceProjectRef: 'internal-staging-ref',
     targetProjectRef: 'internal-production-ref',
     targetAlreadyMatched: true,
@@ -1346,12 +1346,18 @@ try {
       table: 'catalog.assets',
       naturalKey: 'asset_id',
       sourceCount: 2,
+      canonicalSourceCount: 2,
+      sourceStorageAliasCount: 0,
       sourceStableAssetIdCount: 2,
       preservedProductionAssetIdCount: 2,
       remappedAssetIdCount: 1,
+      storageObjectMatchedAssetCount: 0,
+      preservedProductionStableAssetIdCount: 0,
       insertedAssetCount: 0,
       preservedTargetOnlyAssetCount: 1,
       remappedForeignKeyRowCount: 1,
+      projectedStorageAliasForeignKeyRowCount: 0,
+      projectedStorageAliasForeignKeyValueCount: 0,
     },
     tables: [{
       table: 'internal.schema_table',
@@ -1450,12 +1456,12 @@ try {
     'database-mutation-evidence.json',
   );
   writeFileSync(databaseMutationEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.6.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.7.0',
     targetAlreadyMatched: false,
     productionMutationPerformed: true,
     targetTransactionCommitted: true,
     targetCommitVerified: true,
-    transferPolicy: 'upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows_source_identity_and_project_declared_private_provenance_references',
+    transferPolicy: 'upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows_source_and_asset_storage_identity_project_exact_storage_aliases_and_private_provenance_references',
     selectedTableCount: 1,
     sourceRowCount: 12,
     matchedSourceRowCount: 12,
@@ -1468,12 +1474,18 @@ try {
       table: 'catalog.assets',
       naturalKey: 'asset_id',
       sourceCount: 12,
+      canonicalSourceCount: 10,
+      sourceStorageAliasCount: 2,
       sourceStableAssetIdCount: 10,
-      preservedProductionAssetIdCount: 9,
+      preservedProductionAssetIdCount: 7,
       remappedAssetIdCount: 3,
+      storageObjectMatchedAssetCount: 2,
+      preservedProductionStableAssetIdCount: 1,
       insertedAssetCount: 3,
       preservedTargetOnlyAssetCount: 3,
       remappedForeignKeyRowCount: 4,
+      projectedStorageAliasForeignKeyRowCount: 2,
+      projectedStorageAliasForeignKeyValueCount: 2,
     },
     tables: [{
       targetPreCommitVerified: true,
@@ -1531,7 +1543,7 @@ try {
   assert.match(invalidSuccessAudit.stderr, /successful_catalogue_promotion_evidence_missing/);
 
   writeFileSync(databaseEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.6.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.7.0',
     targetAlreadyMatched: false,
     productionMutationPerformed: true,
     targetTransactionCommitted: false,
@@ -1549,12 +1561,18 @@ try {
       table: 'catalog.assets',
       naturalKey: 'asset_id',
       sourceCount: 2,
+      canonicalSourceCount: 2,
+      sourceStorageAliasCount: 0,
       sourceStableAssetIdCount: 2,
       preservedProductionAssetIdCount: 2,
       remappedAssetIdCount: 0,
+      storageObjectMatchedAssetCount: 0,
+      preservedProductionStableAssetIdCount: 0,
       insertedAssetCount: 0,
       preservedTargetOnlyAssetCount: 0,
       remappedForeignKeyRowCount: 0,
+      projectedStorageAliasForeignKeyRowCount: 0,
+      projectedStorageAliasForeignKeyValueCount: 0,
     },
     tables: [{
       targetPreCommitVerified: false,
@@ -1604,6 +1622,7 @@ const {
   expectedCatalogueOwnedSequenceStates,
   planCatalogueAssetIdentityMerge,
   planCatalogueSourceIdentityMerge,
+  projectCatalogueAssetAliasReferences,
   remapCatalogueIdentityForeignKeys,
   remapCatalogueSourceForeignKeys,
   rewriteProductionCatalogueAssetUrls,
@@ -1897,6 +1916,10 @@ assert.deepEqual(
   ['production-asset-only'],
 );
 assert.equal(assetIdentityPlan.preservedProductionAssetIdCount, 2);
+assert.equal(assetIdentityPlan.canonicalSourceCount, 3);
+assert.equal(assetIdentityPlan.sourceStorageAliasCount, 0);
+assert.equal(assetIdentityPlan.storageObjectMatchedAssetCount, 0);
+assert.equal(assetIdentityPlan.preservedProductionStableAssetIdCount, 0);
 assert.equal(assetIdentityPlan.remappedAssetIdCount, 1);
 assert.equal(assetIdentityPlan.insertedAssetCount, 1);
 const remappedAssetForeignKeys = remapCatalogueIdentityForeignKeys(
@@ -1944,6 +1967,194 @@ assert.throws(
     [],
   ),
   /catalogue_asset_identity_duplicate:source:asset_id/,
+);
+
+const storageIdentityPlan = planCatalogueAssetIdentityMerge(
+  [
+    {
+      id: 'source-storage-canonical',
+      asset_id: 'card-image:storage-canonical',
+      storage_provider: 'supabase_storage',
+      storage_bucket: 'stackr-catalogue-public',
+      storage_key: 'public/card_image/aa/canonical.jpg',
+      deleted_at: null,
+    },
+    {
+      id: 'source-storage-alias',
+      asset_id: null,
+      storage_provider: 'supabase_storage',
+      storage_bucket: 'stackr-catalogue-public',
+      storage_key: 'public/card_image/aa/canonical.jpg',
+      deleted_at: null,
+    },
+    {
+      id: 'source-legacy-null',
+      asset_id: null,
+      storage_provider: 'supabase_storage',
+      storage_bucket: 'stackr-catalogue-public',
+      storage_key: 'public/card_image/bb/legacy.jpg',
+      deleted_at: null,
+    },
+    { id: 'source-new-storage', asset_id: 'card-image:new-storage' },
+  ],
+  [
+    {
+      id: 'production-storage-canonical',
+      asset_id: 'card-image:storage-canonical',
+      storage_provider: 'supabase_storage',
+      storage_bucket: 'stackr-catalogue-public',
+      storage_key: 'public/card_image/aa/canonical.jpg',
+      deleted_at: null,
+    },
+    {
+      id: 'production-legacy-storage',
+      asset_id: 'card-image:production-legacy',
+      storage_provider: 'supabase_storage',
+      storage_bucket: 'stackr-catalogue-public',
+      storage_key: 'public/card_image/bb/legacy.jpg',
+      deleted_at: null,
+    },
+  ],
+);
+assert.equal(storageIdentityPlan.sourceCount, 4);
+assert.equal(storageIdentityPlan.canonicalSourceCount, 3);
+assert.equal(storageIdentityPlan.sourceStorageAliasCount, 1);
+assert.equal(storageIdentityPlan.preservedProductionAssetIdCount, 2);
+assert.equal(storageIdentityPlan.storageObjectMatchedAssetCount, 1);
+assert.equal(storageIdentityPlan.preservedProductionStableAssetIdCount, 1);
+assert.equal(storageIdentityPlan.insertedAssetCount, 1);
+assert.equal(
+  storageIdentityPlan.sourceIdMap.get('source-storage-alias'),
+  'production-storage-canonical',
+);
+assert.equal(
+  storageIdentityPlan.sourceIdMap.get('source-legacy-null'),
+  'production-legacy-storage',
+);
+assert.deepEqual(
+  storageIdentityPlan.mappedSourceRows.map(({ id, asset_id: assetId }) => ({ id, assetId })),
+  [
+    { id: 'production-storage-canonical', assetId: 'card-image:storage-canonical' },
+    { id: 'production-legacy-storage', assetId: 'card-image:production-legacy' },
+    { id: 'source-new-storage', assetId: 'card-image:new-storage' },
+  ],
+);
+const storageAliasProjection = projectCatalogueAssetAliasReferences(
+  [
+    { catalogue_version_id: 'v1', asset_id: 'source-storage-canonical' },
+    { catalogue_version_id: 'v1', asset_id: 'source-storage-alias' },
+    { catalogue_version_id: 'v1', asset_id: 'source-new-storage' },
+  ],
+  ['asset_id'],
+  storageIdentityPlan.sourceAliasIds,
+  'catalog.catalogue_version_assets',
+);
+assert.deepEqual(
+  storageAliasProjection.rows.map(({ asset_id: assetId }) => assetId),
+  ['source-storage-canonical', 'source-new-storage'],
+);
+assert.equal(storageAliasProjection.projectedRowCount, 1);
+assert.equal(storageAliasProjection.projectedValueCount, 1);
+assert.throws(
+  () => planCatalogueAssetIdentityMerge(
+    [
+      {
+        id: 'source-storage-conflict',
+        asset_id: 'card-image:source-conflict',
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'public/card_image/cc/conflict.jpg',
+        deleted_at: null,
+      },
+    ],
+    [
+      {
+        id: 'target-storage-conflict',
+        asset_id: 'card-image:target-conflict',
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'public/card_image/cc/conflict.jpg',
+        deleted_at: null,
+      },
+    ],
+  ),
+  /catalogue_asset_storage_stable_identity_conflict/,
+);
+assert.throws(
+  () => planCatalogueAssetIdentityMerge(
+    [
+      {
+        id: 'source-ambiguous-a',
+        asset_id: null,
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'public/card_image/dd/ambiguous.jpg',
+        deleted_at: null,
+      },
+      {
+        id: 'source-ambiguous-b',
+        asset_id: null,
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'public/card_image/dd/ambiguous.jpg',
+        deleted_at: null,
+      },
+    ],
+    [],
+  ),
+  /catalogue_asset_storage_identity_ambiguous_source/,
+);
+assert.throws(
+  () => planCatalogueAssetIdentityMerge(
+    [
+      {
+        id: 'source-card-canonical',
+        asset_id: 'card-image:canonical-card',
+        variant_id: 'variant-a',
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'public/card_image/ee/shared.jpg',
+        deleted_at: null,
+      },
+      {
+        id: 'source-card-alias',
+        asset_id: null,
+        variant_id: 'variant-b',
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'public/card_image/ee/shared.jpg',
+        deleted_at: null,
+      },
+    ],
+    [],
+  ),
+  /catalogue_asset_storage_identity_card_identity_conflict/,
+);
+assert.throws(
+  () => planCatalogueAssetIdentityMerge(
+    [
+      {
+        id: 'source-metadata-canonical',
+        asset_id: 'set-logo:canonical',
+        sha256: 'a'.repeat(64),
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'public/set_logo/ff/shared.jpg',
+        deleted_at: null,
+      },
+      {
+        id: 'source-metadata-alias',
+        asset_id: null,
+        sha256: 'b'.repeat(64),
+        storage_provider: 'supabase_storage',
+        storage_bucket: 'stackr-catalogue-public',
+        storage_key: 'public/set_logo/ff/shared.jpg',
+        deleted_at: null,
+      },
+    ],
+    [],
+  ),
+  /catalogue_asset_storage_identity_metadata_conflict/,
 );
 
 const sourceForeignKeyRows = [
