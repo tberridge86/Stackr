@@ -80,7 +80,7 @@ function storageAudit(evidence) {
 
 function databaseAudit(evidence) {
   if (!evidence) return { evidencePresent: false };
-  if (evidence.schemaVersion !== 'stackr-production-catalogue-data-promotion-evidence-v1.5.0') {
+  if (evidence.schemaVersion !== 'stackr-production-catalogue-data-promotion-evidence-v1.6.0') {
     throw new Error('invalid_database_promotion_evidence_version');
   }
   if (!Array.isArray(evidence.tables)) throw new Error('invalid_database_evidence_tables');
@@ -118,6 +118,53 @@ function databaseAudit(evidence) {
   );
   if (tables.length !== selectedTableCount) {
     throw new Error('database_evidence_table_count_mismatch');
+  }
+  if (evidence.assetIdentityPreservation?.table !== 'catalog.assets'
+    || evidence.assetIdentityPreservation?.naturalKey !== 'asset_id') {
+    throw new Error('invalid_database_asset_identity_evidence');
+  }
+  const assetIdentity = {
+    sourceCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'sourceCount',
+      'database_asset_identity_evidence',
+    ),
+    sourceStableAssetIdCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'sourceStableAssetIdCount',
+      'database_asset_identity_evidence',
+    ),
+    preservedProductionAssetIdCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'preservedProductionAssetIdCount',
+      'database_asset_identity_evidence',
+    ),
+    remappedAssetIdCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'remappedAssetIdCount',
+      'database_asset_identity_evidence',
+    ),
+    insertedAssetCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'insertedAssetCount',
+      'database_asset_identity_evidence',
+    ),
+    preservedTargetOnlyAssetCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'preservedTargetOnlyAssetCount',
+      'database_asset_identity_evidence',
+    ),
+    remappedForeignKeyRowCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'remappedForeignKeyRowCount',
+      'database_asset_identity_evidence',
+    ),
+  };
+  if (assetIdentity.sourceStableAssetIdCount > assetIdentity.sourceCount
+    || assetIdentity.preservedProductionAssetIdCount + assetIdentity.insertedAssetCount
+      !== assetIdentity.sourceCount
+    || assetIdentity.remappedAssetIdCount > assetIdentity.preservedProductionAssetIdCount) {
+    throw new Error('database_asset_identity_evidence_count_mismatch');
   }
   const transferPolicy = requiredString(evidence, 'transferPolicy', 'database_evidence');
   if (![NO_OP_TRANSFER_POLICY, MUTATION_TRANSFER_POLICY].includes(transferPolicy)) {
@@ -163,6 +210,7 @@ function databaseAudit(evidence) {
     tablePreservedTargetOnlyRowCount: tables.reduce((sum, table) => (
       sum + table.productionTargetOnlyRowCountPreserved
     ), 0),
+    assetIdentity,
   };
 }
 

@@ -5,7 +5,9 @@ import {
   catalogueTargetOnlyRows,
   catalogueTransferTargetMatch,
   expectedCatalogueOwnedSequenceStates,
+  planCatalogueAssetIdentityMerge,
   planCatalogueSourceIdentityMerge,
+  remapCatalogueIdentityForeignKeys,
   remapCatalogueSourceForeignKeys,
   rewriteProductionCatalogueAssetUrls,
   stableCatalogueJson as stableJson,
@@ -385,8 +387,13 @@ async function upsertRows(
         values,
       );
     } catch (error) {
+      const constraint = typeof error?.constraint === 'string'
+        && /^[a-z_][a-z0-9_]*$/.test(error.constraint)
+        ? `:constraint_${error.constraint}`
+        : '';
       throw new Error(
-        `transfer_upsert_failed:${tableName}:batch_${offset}:postgres_${error.code ?? 'unknown'}`,
+        `transfer_upsert_failed:${tableName}:batch_${offset}:postgres_${error.code ?? 'unknown'}`
+        + constraint,
       );
     }
   }
@@ -419,8 +426,9 @@ async function lockTransferTables(client, tableNames) {
   }
 }
 
-async function foreignKeyColumnsReferencingSources(client, tableName) {
+async function foreignKeyColumnsReferencingTable(client, tableName, parentTableName) {
   const { schema, table } = splitTableName(tableName);
+  const parent = splitTableName(parentTableName);
   const result = await client.query(`
     select distinct child_attribute.attname as column_name
     from pg_constraint constraint_record
@@ -439,12 +447,16 @@ async function foreignKeyColumnsReferencingSources(client, tableName) {
     where constraint_record.contype = 'f'
       and child_namespace.nspname = $1
       and child_table.relname = $2
-      and parent_namespace.nspname = 'ingest'
-      and parent_table.relname = 'sources'
+      and parent_namespace.nspname = $3
+      and parent_table.relname = $4
       and parent_attribute.attname = 'id'
     order by child_attribute.attname
-  `, [schema, table]);
+  `, [schema, table, parent.schema, parent.table]);
   return result.rows.map((row) => row.column_name);
+}
+
+async function foreignKeyColumnsReferencingSources(client, tableName) {
+  return foreignKeyColumnsReferencingTable(client, tableName, SOURCE_IDENTITY_TABLE);
 }
 
 async function excludedParentForeignKeys(
@@ -665,6 +677,7 @@ let productionAssetUrlRewriteCount = 0;
 let productionAssetTimestampReuseCount = 0;
 let targetCommitSucceeded = false;
 let targetAlreadyMatched = false;
+let assetIdentityPlan = null;
 const productionAssetRewriteTimestamp = new Date().toISOString();
 
 try {
@@ -735,6 +748,8 @@ try {
     let sourceRows = await readRows(source, tableName, sourceMetadata.primaryKey);
     let sourceIdentityForeignKeyColumns = [];
     let sourceIdentityForeignKeyRemappedRowCount = 0;
+    let assetIdentityForeignKeyColumns = [];
+    let assetIdentityForeignKeyRemappedRowCount = 0;
     if (sourceIdentityPlan) {
       if (tableName === SOURCE_IDENTITY_TABLE) {
         sourceRows = sourceIdentityPlan.mappedSourceRows;
@@ -753,6 +768,22 @@ try {
         sourceIdentityForeignKeyRemappedRowCount = remapped.remappedRowCount;
       }
     }
+    if (assetIdentityPlan && tableName !== ASSET_TABLE) {
+      assetIdentityForeignKeyColumns = await foreignKeyColumnsReferencingTable(
+        target,
+        tableName,
+        ASSET_TABLE,
+      );
+      const remapped = remapCatalogueIdentityForeignKeys(
+        sourceRows,
+        assetIdentityForeignKeyColumns,
+        assetIdentityPlan.sourceIdMap,
+        tableName,
+        'asset',
+      );
+      sourceRows = remapped.rows;
+      assetIdentityForeignKeyRemappedRowCount = remapped.remappedRowCount;
+    }
     if (TRANSFER_MODE === 'promote' && tableName === ASSET_TABLE) {
       const rewritten = rewriteProductionCatalogueAssetUrls(
         sourceRows,
@@ -766,6 +797,8 @@ try {
       sourceRows = rewritten.rows;
       productionAssetUrlRewriteCount = rewritten.rewrittenRowCount;
       productionAssetTimestampReuseCount = rewritten.reusedProductionTimestampCount;
+      assetIdentityPlan = planCatalogueAssetIdentityMerge(sourceRows, targetRowsBefore);
+      sourceRows = assetIdentityPlan.mappedSourceRows;
     }
     const sourceRowsBeforeExcludedParentProjection = sourceRows;
     const excludedParentReferenceForeignKeys = await excludedParentForeignKeys(
@@ -829,6 +862,8 @@ try {
       contract,
       sourceIdentityForeignKeyColumns,
       sourceIdentityForeignKeyRemappedRowCount,
+      assetIdentityForeignKeyColumns,
+      assetIdentityForeignKeyRemappedRowCount,
       excludedParentReferenceForeignKeys,
       excludedParentReferenceProjection,
       selfReferenceForeignKeyColumns,
@@ -883,6 +918,8 @@ try {
       contract,
       sourceIdentityForeignKeyColumns,
       sourceIdentityForeignKeyRemappedRowCount,
+      assetIdentityForeignKeyColumns,
+      assetIdentityForeignKeyRemappedRowCount,
       excludedParentReferenceForeignKeys,
       excludedParentReferenceProjection,
       selfReferenceForeignKeyColumns,
@@ -976,7 +1013,7 @@ try {
       targetRowsAfter,
       sourceMetadata.primaryKey,
     );
-    const matchedPreservedTargetRows = sourceIdentityMerge
+    const matchedPreservedTargetRows = preservedTargetRows.length > 0
       ? verifySourceRows(
           tableName,
           preservedTargetRows,
@@ -1011,6 +1048,8 @@ try {
       sourceIdentityMerge,
       sourceIdentityForeignKeyColumns,
       sourceIdentityForeignKeyRemappedRowCount,
+      assetIdentityForeignKeyColumns,
+      assetIdentityForeignKeyRemappedRowCount,
       excludedParentReferenceForeignKeys,
       excludedParentReferenceProjectedColumns:
         excludedParentReferenceProjection.projectedColumns,
@@ -1148,7 +1187,7 @@ try {
 
   const evidence = {
     schemaVersion: TRANSFER_MODE === 'promote'
-      ? 'stackr-production-catalogue-data-promotion-evidence-v1.5.0'
+      ? 'stackr-production-catalogue-data-promotion-evidence-v1.6.0'
       : 'stackr-staging-catalogue-transfer-evidence-v1.6.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
@@ -1224,6 +1263,23 @@ try {
       ? results.reduce((sum, result) => (
           sum + result.productionTargetOnlyRowCountPreserved
         ), 0)
+      : null,
+    assetIdentityPreservation: assetIdentityPlan
+      ? {
+          table: ASSET_TABLE,
+          naturalKey: 'asset_id',
+          sourceCount: assetIdentityPlan.sourceCount,
+          sourceStableAssetIdCount: assetIdentityPlan.sourceStableAssetIdCount,
+          preservedProductionAssetIdCount:
+            assetIdentityPlan.preservedProductionAssetIdCount,
+          remappedAssetIdCount: assetIdentityPlan.remappedAssetIdCount,
+          insertedAssetCount: assetIdentityPlan.insertedAssetCount,
+          preservedTargetOnlyAssetCount: assetIdentityPlan.preservedTargetOnlyRows.length,
+          remappedForeignKeyRowCount: results.reduce(
+            (sum, result) => sum + result.assetIdentityForeignKeyRemappedRowCount,
+            0,
+          ),
+        }
       : null,
     tables: results,
     excludedChecks,
