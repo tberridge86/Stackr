@@ -11,7 +11,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((argument) => {
 const NO_OP_TRANSFER_POLICY =
   'verify_allowlisted_production_catalogue_already_matches_without_mutation';
 const MUTATION_TRANSFER_POLICY =
-  'upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows_source_identity_and_project_declared_private_provenance_references';
+  'upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows_source_and_asset_storage_identity_project_exact_storage_aliases_and_private_provenance_references';
 
 for (const name of ['storage', 'database', 'output', 'promotion-outcome']) {
   if (!args[name]) throw new Error(`missing_audit_argument:${name}`);
@@ -80,7 +80,7 @@ function storageAudit(evidence) {
 
 function databaseAudit(evidence) {
   if (!evidence) return { evidencePresent: false };
-  if (evidence.schemaVersion !== 'stackr-production-catalogue-data-promotion-evidence-v1.6.0') {
+  if (evidence.schemaVersion !== 'stackr-production-catalogue-data-promotion-evidence-v1.7.0') {
     throw new Error('invalid_database_promotion_evidence_version');
   }
   if (!Array.isArray(evidence.tables)) throw new Error('invalid_database_evidence_tables');
@@ -129,6 +129,16 @@ function databaseAudit(evidence) {
       'sourceCount',
       'database_asset_identity_evidence',
     ),
+    canonicalSourceCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'canonicalSourceCount',
+      'database_asset_identity_evidence',
+    ),
+    sourceStorageAliasCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'sourceStorageAliasCount',
+      'database_asset_identity_evidence',
+    ),
     sourceStableAssetIdCount: requiredNonnegativeInteger(
       evidence.assetIdentityPreservation,
       'sourceStableAssetIdCount',
@@ -142,6 +152,16 @@ function databaseAudit(evidence) {
     remappedAssetIdCount: requiredNonnegativeInteger(
       evidence.assetIdentityPreservation,
       'remappedAssetIdCount',
+      'database_asset_identity_evidence',
+    ),
+    storageObjectMatchedAssetCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'storageObjectMatchedAssetCount',
+      'database_asset_identity_evidence',
+    ),
+    preservedProductionStableAssetIdCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'preservedProductionStableAssetIdCount',
       'database_asset_identity_evidence',
     ),
     insertedAssetCount: requiredNonnegativeInteger(
@@ -159,11 +179,29 @@ function databaseAudit(evidence) {
       'remappedForeignKeyRowCount',
       'database_asset_identity_evidence',
     ),
+    projectedStorageAliasForeignKeyRowCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'projectedStorageAliasForeignKeyRowCount',
+      'database_asset_identity_evidence',
+    ),
+    projectedStorageAliasForeignKeyValueCount: requiredNonnegativeInteger(
+      evidence.assetIdentityPreservation,
+      'projectedStorageAliasForeignKeyValueCount',
+      'database_asset_identity_evidence',
+    ),
   };
   if (assetIdentity.sourceStableAssetIdCount > assetIdentity.sourceCount
-    || assetIdentity.preservedProductionAssetIdCount + assetIdentity.insertedAssetCount
+    || assetIdentity.canonicalSourceCount + assetIdentity.sourceStorageAliasCount
       !== assetIdentity.sourceCount
-    || assetIdentity.remappedAssetIdCount > assetIdentity.preservedProductionAssetIdCount) {
+    || assetIdentity.preservedProductionAssetIdCount + assetIdentity.insertedAssetCount
+      !== assetIdentity.canonicalSourceCount
+    || assetIdentity.remappedAssetIdCount > assetIdentity.sourceCount
+    || assetIdentity.storageObjectMatchedAssetCount
+      > assetIdentity.preservedProductionAssetIdCount
+    || assetIdentity.preservedProductionStableAssetIdCount
+      > assetIdentity.storageObjectMatchedAssetCount
+    || assetIdentity.projectedStorageAliasForeignKeyValueCount
+      < assetIdentity.projectedStorageAliasForeignKeyRowCount) {
     throw new Error('database_asset_identity_evidence_count_mismatch');
   }
   const transferPolicy = requiredString(evidence, 'transferPolicy', 'database_evidence');

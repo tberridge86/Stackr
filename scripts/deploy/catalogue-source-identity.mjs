@@ -157,31 +157,155 @@ function uniqueRowsByOptionalIdentity(rows, column, context) {
   return byValue;
 }
 
+function activeStorageObjectKey(row) {
+  if (row?.deleted_at !== null && row?.deleted_at !== undefined) return null;
+  const provider = optionalIdentityValue(row, 'storage_provider');
+  const bucket = optionalIdentityValue(row, 'storage_bucket');
+  const key = optionalIdentityValue(row, 'storage_key');
+  if (provider === null || bucket === null || key === null) return null;
+  return stableCatalogueJson([provider, bucket, key]);
+}
+
+function uniqueRowsByActiveStorageObject(rows, context) {
+  const byValue = new Map();
+  for (const row of rows) {
+    const value = activeStorageObjectKey(row);
+    if (value === null) continue;
+    if (byValue.has(value)) {
+      throw new Error(`catalogue_asset_storage_identity_duplicate:${context}:${value}`);
+    }
+    byValue.set(value, row);
+  }
+  return byValue;
+}
+
+function sourceRowsByActiveStorageObject(rows) {
+  const byValue = new Map();
+  for (const row of rows) {
+    const value = activeStorageObjectKey(row);
+    if (value === null) continue;
+    const group = byValue.get(value) ?? [];
+    group.push(row);
+    byValue.set(value, group);
+  }
+  return byValue;
+}
+
+function canonicalSourceAssetRows(sourceRows) {
+  const groups = sourceRowsByActiveStorageObject(sourceRows);
+  const aliases = new Map();
+  const canonicalIds = new Set();
+
+  for (const [storageKey, rows] of groups) {
+    if (rows.length === 1) {
+      canonicalIds.add(requiredIdentityValue(rows[0], 'id', 'asset_source'));
+      continue;
+    }
+    const stableRows = rows.filter((row) => optionalIdentityValue(row, 'asset_id') !== null);
+    if (stableRows.length !== 1) {
+      throw new Error(
+        `catalogue_asset_storage_identity_ambiguous_source:${storageKey}:${rows.length}`,
+      );
+    }
+    if (rows.some((row) => optionalIdentityValue(row, 'variant_id') !== null
+      || optionalIdentityValue(row, 'printing_id') !== null)) {
+      throw new Error(
+        `catalogue_asset_storage_identity_card_identity_conflict:${storageKey}:${rows.length}`,
+      );
+    }
+    for (const column of [
+      'asset_type',
+      'sha256',
+      'content_sha256',
+      'mime_type',
+      'width',
+      'height',
+      'byte_size',
+    ]) {
+      const values = new Set(rows.map((row) => optionalIdentityValue(row, column))
+        .filter((value) => value !== null));
+      if (values.size > 1) {
+        throw new Error(
+          `catalogue_asset_storage_identity_metadata_conflict:${storageKey}:${column}`,
+        );
+      }
+    }
+    const canonicalRow = stableRows[0];
+    const canonicalId = requiredIdentityValue(canonicalRow, 'id', 'asset_source');
+    canonicalIds.add(canonicalId);
+    for (const row of rows) {
+      const sourceId = requiredIdentityValue(row, 'id', 'asset_source');
+      if (sourceId !== canonicalId) aliases.set(sourceId, canonicalId);
+    }
+  }
+
+  for (const row of sourceRows) {
+    const sourceId = requiredIdentityValue(row, 'id', 'asset_source');
+    if (!aliases.has(sourceId)) canonicalIds.add(sourceId);
+  }
+  return {
+    canonicalRows: sourceRows.filter((row) => canonicalIds.has(String(row.id))),
+    aliases,
+  };
+}
+
 export function planCatalogueAssetIdentityMerge(sourceRows, targetRows) {
   if (!Array.isArray(sourceRows) || !Array.isArray(targetRows)) {
     throw new TypeError('catalogue_asset_identity_rows_must_be_arrays');
   }
-  const sourceById = uniqueRowsBy(sourceRows, 'id', 'asset_source');
+  uniqueRowsBy(sourceRows, 'id', 'asset_source');
   const targetById = uniqueRowsBy(targetRows, 'id', 'asset_target');
   const sourceByAssetId = uniqueRowsByOptionalIdentity(sourceRows, 'asset_id', 'source');
   const targetByAssetId = uniqueRowsByOptionalIdentity(targetRows, 'asset_id', 'target');
+  const targetByStorageObject = uniqueRowsByActiveStorageObject(targetRows, 'target');
+  const sourceCanonicalization = canonicalSourceAssetRows(sourceRows);
   const sourceIdMap = new Map();
   const mappedSourceRows = [];
+  const sourceAliasIds = new Set(sourceCanonicalization.aliases.keys());
   let preservedProductionAssetIdCount = 0;
   let insertedAssetCount = 0;
+  let storageObjectMatchedAssetCount = 0;
+  let preservedProductionStableAssetIdCount = 0;
 
-  for (const sourceRow of sourceRows) {
+  for (const sourceRow of sourceCanonicalization.canonicalRows) {
     const sourceId = requiredIdentityValue(sourceRow, 'id', 'asset_source');
     const assetId = optionalIdentityValue(sourceRow, 'asset_id');
-    const matchingTarget = assetId === null
-      ? targetById.get(sourceId)
-      : targetByAssetId.get(assetId);
+    const matchingTargetByAssetId = assetId === null ? null : targetByAssetId.get(assetId);
+    const storageObjectKey = activeStorageObjectKey(sourceRow);
+    const matchingTargetByStorage = storageObjectKey === null
+      ? null
+      : targetByStorageObject.get(storageObjectKey);
+    if (matchingTargetByAssetId && matchingTargetByStorage
+      && String(matchingTargetByAssetId.id) !== String(matchingTargetByStorage.id)) {
+      throw new Error(
+        `catalogue_asset_identity_storage_conflict:${sourceId}`
+        + `:${matchingTargetByAssetId.id}:${matchingTargetByStorage.id}`,
+      );
+    }
+    if (assetId !== null && matchingTargetByStorage) {
+      const targetAssetId = optionalIdentityValue(matchingTargetByStorage, 'asset_id');
+      if (targetAssetId !== null && targetAssetId !== assetId) {
+        throw new Error(
+          `catalogue_asset_storage_stable_identity_conflict:${sourceId}`
+          + `:${assetId}:${targetAssetId}`,
+        );
+      }
+    }
+    const matchingTarget = matchingTargetByAssetId
+      ?? matchingTargetByStorage
+      ?? (assetId === null ? targetById.get(sourceId) : null);
     let targetId = sourceId;
+    let mappedSourceRow = sourceRow;
 
     if (matchingTarget) {
       targetId = requiredIdentityValue(matchingTarget, 'id', 'asset_target');
-      if (assetId === null && optionalIdentityValue(matchingTarget, 'asset_id') !== null) {
-        throw new Error(`catalogue_asset_identity_missing_collision:${sourceId}`);
+      if (matchingTargetByStorage && !matchingTargetByAssetId) {
+        storageObjectMatchedAssetCount += 1;
+      }
+      const targetAssetId = optionalIdentityValue(matchingTarget, 'asset_id');
+      if (assetId === null && targetAssetId !== null) {
+        mappedSourceRow = { ...mappedSourceRow, asset_id: targetAssetId };
+        preservedProductionStableAssetIdCount += 1;
       }
       preservedProductionAssetIdCount += 1;
     } else {
@@ -197,28 +321,73 @@ export function planCatalogueAssetIdentityMerge(sourceRows, targetRows) {
     }
 
     sourceIdMap.set(sourceId, targetId);
-    mappedSourceRows.push(targetId === sourceId ? sourceRow : { ...sourceRow, id: targetId });
+    mappedSourceRows.push(targetId === sourceId
+      ? mappedSourceRow
+      : { ...mappedSourceRow, id: targetId });
   }
 
-  const preservedTargetOnlyRows = targetRows.filter((targetRow) => {
-    const assetId = optionalIdentityValue(targetRow, 'asset_id');
-    return assetId === null
-      ? !sourceById.has(requiredIdentityValue(targetRow, 'id', 'asset_target'))
-      : !sourceByAssetId.has(assetId);
-  });
+  for (const [aliasId, canonicalId] of sourceCanonicalization.aliases) {
+    const targetId = sourceIdMap.get(canonicalId);
+    if (!targetId) {
+      throw new Error(`catalogue_asset_storage_alias_target_missing:${aliasId}:${canonicalId}`);
+    }
+    sourceIdMap.set(aliasId, targetId);
+  }
+
+  const representedTargetIds = new Set(sourceIdMap.values());
+  const preservedTargetOnlyRows = targetRows.filter((targetRow) => (
+    !representedTargetIds.has(requiredIdentityValue(targetRow, 'id', 'asset_target'))
+  ));
 
   return {
     sourceIdMap,
+    sourceAliasIds,
     mappedSourceRows,
     preservedTargetOnlyRows,
     sourceCount: sourceRows.length,
+    canonicalSourceCount: mappedSourceRows.length,
+    sourceStorageAliasCount: sourceAliasIds.size,
     sourceStableAssetIdCount: sourceByAssetId.size,
     preservedProductionAssetIdCount,
+    storageObjectMatchedAssetCount,
+    preservedProductionStableAssetIdCount,
     remappedAssetIdCount: [...sourceIdMap.entries()].filter(([sourceId, targetId]) => (
       sourceId !== targetId
     )).length,
     insertedAssetCount,
   };
+}
+
+export function projectCatalogueAssetAliasReferences(
+  rows,
+  foreignKeyColumns,
+  sourceAliasIds,
+  tableName,
+) {
+  if (!Array.isArray(rows)
+    || !Array.isArray(foreignKeyColumns)
+    || !(sourceAliasIds instanceof Set)) {
+    throw new TypeError('invalid_catalogue_asset_alias_projection_arguments');
+  }
+  if (foreignKeyColumns.length === 0 || sourceAliasIds.size === 0 || rows.length === 0) {
+    return { rows, projectedRowCount: 0, projectedValueCount: 0 };
+  }
+  let projectedRowCount = 0;
+  let projectedValueCount = 0;
+  const projectedRows = rows.filter((row) => {
+    const matches = foreignKeyColumns.filter((column) => {
+      const value = row[column];
+      return value !== null && value !== undefined && sourceAliasIds.has(String(value));
+    });
+    if (matches.length === 0) return true;
+    projectedRowCount += 1;
+    projectedValueCount += matches.length;
+    return false;
+  });
+  if (projectedRows.length + projectedRowCount !== rows.length) {
+    throw new Error(`catalogue_asset_alias_projection_mismatch:${tableName}`);
+  }
+  return { rows: projectedRows, projectedRowCount, projectedValueCount };
 }
 
 export function planCatalogueSourceIdentityMerge(sourceRows, targetRows) {
