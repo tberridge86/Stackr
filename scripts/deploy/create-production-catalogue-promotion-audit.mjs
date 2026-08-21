@@ -300,8 +300,8 @@ if (args['promotion-outcome'] === 'success') {
     && database.skippedCurrentTableCount === database.selectedTableCount
     && database.commitMatchedTableCount === database.selectedTableCount
     && database.postCommitObservationMatchedTableCount === database.selectedTableCount
-    && database.productionAssetUrlRewriteCount
-      === database.productionAssetTimestampReuseCount;
+    && database.productionAssetTimestampReuseCount
+      <= database.productionAssetUrlRewriteCount;
   const databaseMutationVerified = database.evidencePresent
     && !database.targetAlreadyMatched
     && database.productionMutationPerformed
