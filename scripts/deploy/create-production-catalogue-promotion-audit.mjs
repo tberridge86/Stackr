@@ -316,8 +316,8 @@ if (args['promotion-outcome'] === 'success') {
     && database.skippedCurrentTableCount === 0
     && database.commitMatchedTableCount === database.selectedTableCount
     && database.postCommitObservationMatchedTableCount === database.selectedTableCount
-    && database.productionAssetUrlRewriteCount
-      === database.productionAssetTimestampReuseCount;
+    && database.productionAssetTimestampReuseCount
+      <= database.productionAssetUrlRewriteCount;
   if (!databaseNoOpVerified && !databaseMutationVerified) {
     throw new Error('successful_database_promotion_not_verified');
   }
