@@ -8,11 +8,11 @@ on:
         required: true
         type: string
       release_scope:
-        description: Launch the catalogue API now, or the full platform after recognition approval
+        description: Promote catalogue assets only, launch the catalogue API, or release the full platform after recognition approval
         required: true
-        default: catalogue_api
+        default: catalogue_assets
         type: choice
-        options: [catalogue_api, full_platform]
+        options: [catalogue_assets, catalogue_api, full_platform]
       gateway_bootstrap:
         description: First release only - create the production Worker at 100 percent
         required: true
@@ -43,7 +43,7 @@ on:
         required: false
         type: string
       catalogue_release_label:
-        description: Shared five-language staging catalogue release label
+        description: Comma-separated published staging labels that together cover every required catalogue language
         required: false
         type: string
       index_version_id:
@@ -150,11 +150,15 @@ jobs:
           npm run test:database-migrations
           npm run test:deployment
           npm test --prefix gateway
-          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
-          if [ "${{ inputs.release_scope }}" = "catalogue_api" ]; then
+          if [ "${{ inputs.release_scope }}" = "catalogue_assets" ]; then
+            node scripts/deploy/verify-staging-readiness-evidence.mjs --require-catalogue-api-ready
+            npm run deploy:preflight -- --catalogue-assets-release
+          elif [ "${{ inputs.release_scope }}" = "catalogue_api" ]; then
+            node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
             node scripts/deploy/verify-staging-readiness-evidence.mjs --require-catalogue-api-ready
             npm run deploy:preflight -- --catalogue-api-release
           else
+            node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
             node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
             npm run deploy:preflight -- --release
           fi
@@ -171,9 +175,20 @@ jobs:
             echo "Full-platform releases require CATALOGUE_VERSION_ID."
             exit 1
           fi
-          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ -z "$CATALOGUE_RELEASE_LABEL" ]; then
-            echo "Catalogue API releases require CATALOGUE_RELEASE_LABEL."
+          if { [ "${{ inputs.release_scope }}" = "catalogue_api" ] || [ "${{ inputs.release_scope }}" = "catalogue_assets" ]; } && [ -z "$CATALOGUE_RELEASE_LABEL" ]; then
+            echo "Catalogue promotions require CATALOGUE_RELEASE_LABEL."
             exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "catalogue_assets" ]; then
+            if [ "$GATEWAY_BOOTSTRAP" = "true" ] || [ "${{ inputs.apply_migrations }}" = "true" ] || [ "${{ inputs.publish_mobile_update }}" = "true" ] || [ "${{ inputs.promote_gateway }}" = "true" ]; then
+              echo "Catalogue-assets-only promotion forbids gateway, migration, mobile, and gateway-promotion changes."
+              exit 1
+            fi
+            if [ -n "$INDEX_VERSION_ID" ] || [ -n "$CATALOGUE_VERSION_ID" ]; then
+              echo "Catalogue-assets-only promotion forbids catalogue or recognition index activation IDs."
+              exit 1
+            fi
+            exit 0
           fi
           if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ "$GATEWAY_BOOTSTRAP" != "true" ]; then
             echo "Catalogue API promotion currently supports the guarded first-release bootstrap only."
@@ -214,6 +229,7 @@ jobs:
           fi
 
       - name: Prepare gateway runtime configuration
+        if: inputs.release_scope != 'catalogue_assets'
         run: >-
           node scripts/deploy/write-worker-secrets.mjs
           --output="$RUNNER_TEMP/stackr-worker-secrets.json"
@@ -273,14 +289,15 @@ jobs:
             --require-physical
 
       - name: Dry-run backward-compatible migrations
+        if: inputs.release_scope != 'catalogue_assets'
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all --dry-run
 
       - name: Apply backward-compatible migrations
-        if: inputs.apply_migrations
+        if: inputs.release_scope != 'catalogue_assets' && inputs.apply_migrations
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all
 
       - name: Prepare protected catalogue promotion URLs
-        if: inputs.release_scope == 'catalogue_api'
+        if: inputs.release_scope == 'catalogue_api' || inputs.release_scope == 'catalogue_assets'
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_STAGING_DB_URL }}
           SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
@@ -290,7 +307,7 @@ jobs:
 
       - name: Promote verified catalogue snapshot into production
         id: catalogue_promotion
-        if: inputs.release_scope == 'catalogue_api'
+        if: inputs.release_scope == 'catalogue_api' || inputs.release_scope == 'catalogue_assets'
         env:
           SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
           SUPABASE_RESTORE_PROJECT_REF: oakdbbzdqwurpjnoqhmu
@@ -311,7 +328,7 @@ jobs:
 
       - name: Build non-secret catalogue promotion audit
         id: catalogue_promotion_audit
-        if: ${{ !cancelled() && inputs.release_scope == 'catalogue_api' && steps.catalogue_promotion.outcome != 'skipped' }}
+        if: ${{ !cancelled() && (inputs.release_scope == 'catalogue_api' || inputs.release_scope == 'catalogue_assets') && steps.catalogue_promotion.outcome != 'skipped' }}
         run: >-
           node scripts/deploy/create-production-catalogue-promotion-audit.mjs
           --storage="$RUNNER_TEMP/stackr-catalogue-promotion/storage-evidence.json"
@@ -335,6 +352,7 @@ jobs:
           compression-level: 9
 
       - name: Synchronize backend gateway origin authentication
+        if: inputs.release_scope != 'catalogue_assets'
         run: |
           node -e "process.stdout.write(String(process.env.BACKEND_ORIGIN_KEY ?? '').trim())" | \
             npx --yes @railway/cli@5.30.1 variable set STACKR_GATEWAY_ORIGIN_KEY --stdin --skip-deploys \
@@ -343,6 +361,7 @@ jobs:
               --service "$RAILWAY_BACKEND_SERVICE_ID"
 
       - name: Deploy rolling catalogue API version
+        if: inputs.release_scope != 'catalogue_assets'
         run: |
           npx --yes @railway/cli@5.30.1 up "$GITHUB_WORKSPACE/backend" --ci \
             --project "$RAILWAY_PROJECT_ID" \
@@ -410,6 +429,7 @@ jobs:
           echo "STACKR_RECOGNITION_DEPLOYED=true" >> "$GITHUB_ENV"
 
       - name: Verify service readiness before activation
+        if: inputs.release_scope != 'catalogue_assets'
         run: |
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
             npm run deploy:smoke -- --gateway= --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
@@ -432,7 +452,7 @@ jobs:
           echo "STACKR_INDEX_ACTIVATED=true" >> "$GITHUB_ENV"
 
       - name: Upload gateway version
-        if: ${{ !inputs.gateway_bootstrap }}
+        if: ${{ inputs.release_scope != 'catalogue_assets' && !inputs.gateway_bootstrap }}
         env:
           RELEASE_TAG: production-${{ github.sha }}
         run: |
@@ -452,7 +472,7 @@ jobs:
             "${runtime_args[@]}"
 
       - name: Start gateway canary
-        if: ${{ !inputs.gateway_bootstrap }}
+        if: ${{ inputs.release_scope != 'catalogue_assets' && !inputs.gateway_bootstrap }}
         env:
           RELEASE_TAG: production-${{ github.sha }}
           CANARY_PERCENT: ${{ inputs.canary_percent }}
@@ -471,7 +491,7 @@ jobs:
           echo "STACKR_GATEWAY_CANARY_STARTED=true" >> "$GITHUB_ENV"
 
       - name: Create first production gateway deployment
-        if: inputs.gateway_bootstrap
+        if: inputs.release_scope != 'catalogue_assets' && inputs.gateway_bootstrap
         env:
           RELEASE_TAG: production-${{ github.sha }}
         run: |
@@ -492,7 +512,7 @@ jobs:
           echo "STACKR_GATEWAY_BOOTSTRAPPED=true" >> "$GITHUB_ENV"
 
       - name: Publish matching mobile canary
-        if: inputs.publish_mobile_update
+        if: inputs.release_scope != 'catalogue_assets' && inputs.publish_mobile_update
         env:
           CANARY_PERCENT: ${{ inputs.canary_percent }}
         run: |
@@ -510,6 +530,7 @@ jobs:
           echo "STACKR_MOBILE_UPDATE_PUBLISHED=true" >> "$GITHUB_ENV"
 
       - name: Observe and smoke-test canary
+        if: inputs.release_scope != 'catalogue_assets'
         env:
           MONITOR_MINUTES: ${{ inputs.monitor_minutes }}
         run: |
@@ -531,6 +552,7 @@ jobs:
           npm run deploy:smoke -- "${smoke_args[@]}"
 
       - name: Enforce public API latency thresholds
+        if: inputs.release_scope != 'catalogue_assets'
         run: >-
           node scripts/deploy/benchmark-public-api.mjs
           --gateway="$STACKR_GATEWAY_URL"
@@ -542,7 +564,7 @@ jobs:
           --assets-p95-ms=300
 
       - name: Promote gateway after successful observation
-        if: ${{ !inputs.gateway_bootstrap && inputs.promote_gateway }}
+        if: ${{ inputs.release_scope != 'catalogue_assets' && !inputs.gateway_bootstrap && inputs.promote_gateway }}
         env:
           RELEASE_TAG: production-${{ github.sha }}
         run: >-

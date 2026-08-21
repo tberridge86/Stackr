@@ -27,7 +27,9 @@ const TRANSFER_MODE = process.env.STACKR_TRANSFER_MODE ?? 'rehearse';
 const SOURCE_IDENTITY_POLICY = process.env.STACKR_TRANSFER_SOURCE_IDENTITY_POLICY
   ?? (TRANSFER_MODE === 'promote' ? 'preserve_by_code' : 'replace');
 const TRANSFER_CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
-const CATALOGUE_RELEASE_LABEL = process.env.STACKR_CATALOGUE_RELEASE_LABEL ?? null;
+const CATALOGUE_RELEASE_LABELS = String(
+  process.env.STACKR_CATALOGUE_RELEASE_LABEL ?? '',
+).split(',').map((value) => value.trim()).filter(Boolean);
 const REQUIRED_CATALOGUE_LANGUAGES = String(
   process.env.STACKR_REQUIRED_CATALOGUE_LANGUAGES ?? 'en,ja,zh-tw,zh-cn,ko',
 ).split(',').map((value) => value.trim()).filter(Boolean);
@@ -88,7 +90,12 @@ if (TRANSFER_MODE === 'promote') {
     || TARGET_PROJECT_REF !== PRODUCTION_PROJECT_REF) {
     throw new Error('production_promotion_target_guard_mismatch');
   }
-  if (!CATALOGUE_RELEASE_LABEL) throw new Error('catalogue_release_label_missing');
+  if (CATALOGUE_RELEASE_LABELS.length === 0) throw new Error('catalogue_release_label_missing');
+  if (CATALOGUE_RELEASE_LABELS.length > 10
+    || new Set(CATALOGUE_RELEASE_LABELS).size !== CATALOGUE_RELEASE_LABELS.length
+    || CATALOGUE_RELEASE_LABELS.some((label) => !/^[A-Za-z0-9][A-Za-z0-9._:-]{2,159}$/.test(label))) {
+    throw new Error('catalogue_release_labels_invalid');
+  }
   if (REQUIRED_CATALOGUE_LANGUAGES.length === 0) {
     throw new Error('required_catalogue_languages_missing');
   }
@@ -617,13 +624,13 @@ async function indexExists(client, qualifiedIndexName) {
 }
 
 async function releaseCatalogueVersions(client) {
-  if (!CATALOGUE_RELEASE_LABEL) return [];
+  if (CATALOGUE_RELEASE_LABELS.length === 0) return [];
   return (await client.query(`
     select id, version_key, version_label, language_code, status, coverage_summary
     from catalog.catalogue_versions
-    where version_label = $1
+    where version_label = any($1::text[])
     order by language_code, id
-  `, [CATALOGUE_RELEASE_LABEL])).rows;
+  `, [CATALOGUE_RELEASE_LABELS])).rows;
 }
 
 function verifyReleaseCatalogueVersions(rows, context) {
@@ -1151,7 +1158,7 @@ try {
     targetAlreadyMatched,
     catalogueRelease: TRANSFER_MODE === 'promote'
       ? {
-          versionLabel: CATALOGUE_RELEASE_LABEL,
+          versionLabels: CATALOGUE_RELEASE_LABELS,
           requiredLanguages: REQUIRED_CATALOGUE_LANGUAGES,
           sourceVersionIds: sourceReleaseVersions.map((row) => row.id),
           releaseVersionSha256: digestRows(sourceReleaseVersions),
