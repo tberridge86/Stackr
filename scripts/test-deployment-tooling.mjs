@@ -310,6 +310,31 @@ assert.doesNotMatch(
   /missing_release_variable:(?:RAILWAY_RECOGNITION_SERVICE_ID|STACKR_RECOGNITION_URL|RECOGNITION_SERVICE_SECRET|EXPO_TOKEN)/,
   'production catalogue releases must not require recognition or mobile credentials',
 );
+const catalogueAssetsProductionPreflight = run(
+  'scripts/deploy/preflight.mjs',
+  ['--catalogue-assets-release'],
+  {
+    STACKR_DEPLOYMENT_ENVIRONMENT: 'production',
+    STACKR_DEPLOYMENT_SCOPE: 'catalogue_assets',
+    STACKR_STORAGE_BACKUP_APPROVED: 'true',
+    SUPABASE_ACCESS_TOKEN: 'test-only',
+    SUPABASE_DB_URL: 'postgresql://test-only',
+    SUPABASE_PROJECT_REF: releaseManifest.components.database.projectRef,
+    SUPABASE_STAGING_DB_URL: 'postgresql://test-only-staging',
+    SUPABASE_STAGING_SECRET_KEY: 'test-only-staging-key',
+    SUPABASE_PRODUCTION_SECRET_KEY: 'test-only-production-key',
+  },
+);
+assert.equal(
+  catalogueAssetsProductionPreflight.status,
+  0,
+  catalogueAssetsProductionPreflight.stderr || catalogueAssetsProductionPreflight.stdout,
+);
+assert.doesNotMatch(
+  catalogueAssetsProductionPreflight.stdout,
+  /missing_release_variable:(?:RAILWAY|CLOUDFLARE|BACKEND|EXPO|STACKR_GATEWAY)/,
+  'assets-only production promotion must not require unrelated application deployment credentials',
+);
 
 const modelReport = run('scripts/deploy/verify-model-release.mjs');
 assert.equal(modelReport.status, 0, modelReport.stderr || modelReport.stdout);
@@ -1157,6 +1182,9 @@ assert.deepEqual(productionCataloguePromotion.excludedParentReferenceProjections
 }]);
 
 const catalogueTransferScript = readFileSync('scripts/deploy/rehearse-staging-catalogue-transfer.mjs', 'utf8');
+assert.match(catalogueTransferScript, /CATALOGUE_RELEASE_LABELS[\s\S]+split\(','\)/);
+assert.match(catalogueTransferScript, /where version_label = any\(\$1::text\[\]\)/);
+assert.match(catalogueTransferScript, /versionLabels: CATALOGUE_RELEASE_LABELS/);
 assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
 assert.match(catalogueTransferScript, /for \(const tableName of \[\.\.\.tableConfig\.tables\]\.reverse\(\)\)/);
 assert.match(catalogueTransferScript, /delete from \$\{qualifiedName\(tableName\)\}/);
@@ -1338,6 +1366,8 @@ try {
   assert.equal(publicAudit.database.targetAlreadyMatched, true);
   assert.equal(publicAudit.database.productionMutationPerformed, false);
   assert.equal(publicAudit.database.skippedCurrentTableCount, 1);
+  assert.equal(publicAudit.verification.databaseMutationPerformed, false);
+  assert.equal(publicAudit.verification.exactPostCommitVerificationPassed, true);
   assert.equal(publicAudit.workflowRunAttempt, '2');
   const serializedPublicAudit = JSON.stringify(publicAudit);
   for (const internalValue of [
@@ -1376,7 +1406,67 @@ try {
     ],
   );
   assert.notEqual(postCommitMismatchAudit.status, 0);
-  assert.match(postCommitMismatchAudit.stderr, /successful_database_no_op_not_verified/);
+  assert.match(postCommitMismatchAudit.stderr, /successful_database_promotion_not_verified/);
+
+  const storageMutationEvidencePath = path.join(
+    promotionAuditDirectory,
+    'storage-mutation-evidence.json',
+  );
+  writeFileSync(storageMutationEvidencePath, JSON.stringify({
+    schemaVersion: 'stackr-production-catalogue-storage-promotion-v1.0.0',
+    sourceObjectCount: 12,
+    targetObjectCountBefore: 10,
+    copiedObjectCount: 2,
+    copiedByteSize: 4096,
+    copiedContentHashVerifiedCount: 2,
+    targetObjectCountAfter: 12,
+    verifiedSourceObjectCount: 12,
+    existingProductionObjectsRetained: true,
+    providerRequestsPerformed: false,
+    ok: true,
+  }));
+  const databaseMutationEvidencePath = path.join(
+    promotionAuditDirectory,
+    'database-mutation-evidence.json',
+  );
+  writeFileSync(databaseMutationEvidencePath, JSON.stringify({
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.4.0',
+    targetAlreadyMatched: false,
+    productionMutationPerformed: true,
+    targetTransactionCommitted: true,
+    targetCommitVerified: true,
+    transferPolicy: 'replace_allowlisted_production_catalogue_rows_preserve_source_identity_and_project_declared_private_provenance_references',
+    selectedTableCount: 1,
+    sourceRowCount: 12,
+    matchedSourceRowCount: 12,
+    catalogueRelease: {
+      productionAssetUrlRewriteCount: 3,
+      productionAssetTimestampReuseCount: 3,
+    },
+    tables: [{
+      targetPreCommitVerified: true,
+      transferSkippedAsAlreadyCurrent: false,
+      commitMatched: true,
+      postCommitObservationMatched: true,
+    }],
+  }));
+  const mutationAuditOutputPath = path.join(promotionAuditDirectory, 'mutation-audit.json');
+  const mutationAuditResult = run(
+    './scripts/deploy/create-production-catalogue-promotion-audit.mjs',
+    [
+      `--storage=${storageMutationEvidencePath}`,
+      `--database=${databaseMutationEvidencePath}`,
+      `--output=${mutationAuditOutputPath}`,
+      '--promotion-outcome=success',
+    ],
+  );
+  assert.equal(mutationAuditResult.status, 0, mutationAuditResult.stderr);
+  const mutationAudit = JSON.parse(readFileSync(mutationAuditOutputPath, 'utf8'));
+  assert.equal(mutationAudit.storage.copiedObjectCount, 2);
+  assert.equal(mutationAudit.database.productionMutationPerformed, true);
+  assert.equal(mutationAudit.verification.storageMutationPerformed, true);
+  assert.equal(mutationAudit.verification.databaseMutationPerformed, true);
+  assert.equal(mutationAudit.verification.exactPostCommitVerificationPassed, true);
 
   rmSync(databaseEvidencePath);
   const partialAuditOutputPath = path.join(promotionAuditDirectory, 'partial-audit.json');
@@ -1436,7 +1526,7 @@ try {
     ],
   );
   assert.notEqual(contradictorySuccessAudit.status, 0);
-  assert.match(contradictorySuccessAudit.stderr, /successful_database_no_op_not_verified/);
+  assert.match(contradictorySuccessAudit.stderr, /successful_database_promotion_not_verified/);
 
   const badStorageEvidence = JSON.parse(readFileSync(storageEvidencePath, 'utf8'));
   badStorageEvidence.ok = false;
@@ -1453,7 +1543,7 @@ try {
     ],
   );
   assert.notEqual(badStorageSuccessAudit.status, 0);
-  assert.match(badStorageSuccessAudit.stderr, /successful_storage_no_op_not_verified/);
+  assert.match(badStorageSuccessAudit.stderr, /successful_storage_promotion_not_verified/);
 } finally {
   rmSync(promotionAuditDirectory, { recursive: true, force: true });
 }
@@ -2406,8 +2496,50 @@ assert.match(productionWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
-assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[catalogue_assets, catalogue_api, full_platform\]/);
 assert.match(productionWorkflow, /--require-catalogue-api-ready/);
+assert.match(
+  productionWorkflow,
+  /Catalogue-assets-only promotion forbids gateway, migration, mobile, and gateway-promotion changes\./,
+);
+assert.match(
+  productionWorkflow,
+  /Catalogue-assets-only promotion forbids catalogue or recognition index activation IDs\./,
+);
+assert.match(
+  productionWorkflow,
+  /name: Dry-run backward-compatible migrations\s+if: inputs\.release_scope != 'catalogue_assets'/,
+);
+assert.match(
+  productionWorkflow,
+  /name: Apply backward-compatible migrations\s+if: inputs\.release_scope != 'catalogue_assets' && inputs\.apply_migrations/,
+);
+for (const stepName of [
+  'Prepare gateway runtime configuration',
+  'Synchronize backend gateway origin authentication',
+  'Deploy rolling catalogue API version',
+  'Verify service readiness before activation',
+  'Observe and smoke-test canary',
+  'Enforce public API latency thresholds',
+]) {
+  assert.match(
+    productionWorkflow,
+    new RegExp(`name: ${stepName}\\s+if: inputs\\.release_scope != 'catalogue_assets'`),
+    `${stepName} must be skipped during catalogue-assets-only promotion`,
+  );
+}
+assert.match(
+  productionWorkflow,
+  /name: Promote verified catalogue snapshot into production[\s\S]+if: inputs\.release_scope == 'catalogue_api' \|\| inputs\.release_scope == 'catalogue_assets'/,
+);
+assert.match(
+  productionWorkflow,
+  /name: Upload gateway version\s+if: \$\{\{ inputs\.release_scope != 'catalogue_assets' && !inputs\.gateway_bootstrap \}\}/,
+);
+assert.match(
+  productionWorkflow,
+  /name: Create first production gateway deployment\s+if: inputs\.release_scope != 'catalogue_assets' && inputs\.gateway_bootstrap/,
+);
 assert.match(productionWorkflow, /Catalogue API promotion currently supports the guarded first-release bootstrap only/);
 assert.match(productionWorkflow, /Catalogue API bootstrap does not publish a mobile update/);
 assert.match(productionWorkflow, /Remove a failed first production gateway[\s\S]+wrangler --cwd gateway delete --env production --force/);

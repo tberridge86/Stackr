@@ -10,6 +10,8 @@ const args = Object.fromEntries(process.argv.slice(2).map((argument) => {
 }));
 const NO_OP_TRANSFER_POLICY =
   'verify_allowlisted_production_catalogue_already_matches_without_mutation';
+const MUTATION_TRANSFER_POLICY =
+  'replace_allowlisted_production_catalogue_rows_preserve_source_identity_and_project_declared_private_provenance_references';
 
 for (const name of ['storage', 'database', 'output', 'promotion-outcome']) {
   if (!args[name]) throw new Error(`missing_audit_argument:${name}`);
@@ -100,7 +102,7 @@ function databaseAudit(evidence) {
     throw new Error('database_evidence_table_count_mismatch');
   }
   const transferPolicy = requiredString(evidence, 'transferPolicy', 'database_evidence');
-  if (transferPolicy !== NO_OP_TRANSFER_POLICY) {
+  if (![NO_OP_TRANSFER_POLICY, MUTATION_TRANSFER_POLICY].includes(transferPolicy)) {
     throw new Error('invalid_database_evidence_transfer_policy');
   }
   return {
@@ -162,17 +164,15 @@ const audit = {
 if (args['promotion-outcome'] === 'success') {
   const storage = audit.storage;
   const database = audit.database;
-  const storageNoOpVerified = storage.evidencePresent
+  const storageVerified = storage.evidencePresent
     && storage.ok
-    && storage.sourceObjectCount === storage.targetObjectCountBefore
-    && storage.sourceObjectCount === storage.targetObjectCountAfter
     && storage.sourceObjectCount === storage.verifiedSourceObjectCount
-    && storage.copiedObjectCount === 0
-    && storage.copiedByteSize === 0
-    && storage.copiedContentHashVerifiedCount === 0
+    && storage.copiedObjectCount === storage.copiedContentHashVerifiedCount
+    && storage.targetObjectCountAfter
+      === storage.targetObjectCountBefore + storage.copiedObjectCount
     && storage.existingProductionObjectsRetained
     && !storage.providerRequestsPerformed;
-  if (!storageNoOpVerified) throw new Error('successful_storage_no_op_not_verified');
+  if (!storageVerified) throw new Error('successful_storage_promotion_not_verified');
 
   const databaseNoOpVerified = database.evidencePresent
     && database.targetAlreadyMatched
@@ -189,7 +189,29 @@ if (args['promotion-outcome'] === 'success') {
     && database.postCommitObservationMatchedTableCount === database.selectedTableCount
     && database.productionAssetUrlRewriteCount
       === database.productionAssetTimestampReuseCount;
-  if (!databaseNoOpVerified) throw new Error('successful_database_no_op_not_verified');
+  const databaseMutationVerified = database.evidencePresent
+    && !database.targetAlreadyMatched
+    && database.productionMutationPerformed
+    && database.targetTransactionCommitted
+    && database.targetCommitVerified
+    && database.transferPolicy === MUTATION_TRANSFER_POLICY
+    && database.selectedTableCount > 0
+    && database.sourceRowCount > 0
+    && database.sourceRowCount === database.matchedSourceRowCount
+    && database.verifiedTableCount === database.selectedTableCount
+    && database.skippedCurrentTableCount === 0
+    && database.commitMatchedTableCount === database.selectedTableCount
+    && database.postCommitObservationMatchedTableCount === database.selectedTableCount
+    && database.productionAssetUrlRewriteCount
+      === database.productionAssetTimestampReuseCount;
+  if (!databaseNoOpVerified && !databaseMutationVerified) {
+    throw new Error('successful_database_promotion_not_verified');
+  }
+  audit.verification = {
+    storageMutationPerformed: storage.copiedObjectCount > 0,
+    databaseMutationPerformed: database.productionMutationPerformed,
+    exactPostCommitVerificationPassed: true,
+  };
 }
 
 mkdirSync(path.dirname(args.output), { recursive: true });

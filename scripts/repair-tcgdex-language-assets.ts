@@ -98,7 +98,7 @@ export function createApprovedTcgdexRepairAdapter(languageCode: string): SourceA
 
   return {
     identifySource: () => base.identifySource(),
-    healthCheck: (scope?: FetchScope) => base.healthCheck(scope),
+    healthCheck: () => base.healthCheck(),
     fetchSets: (scope?: FetchScope) => base.fetchSets(scope),
     fetchCards: (scope?: FetchScope) => base.fetchCards(scope),
     fetchVariants: (scope?: FetchScope) => base.fetchVariants(scope),

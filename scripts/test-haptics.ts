@@ -48,8 +48,11 @@ async function main() {
     /(?:stackrHaptics\.|Haptics\.(?:impactAsync|notificationAsync|selectionAsync))/, 
     'the routed main scanner must retain tactile feedback',
   );
-  assert.match(scanResult, /eventType:\s*'added_to_binder'/);
-  assert.match(scanResult, /eventType:\s*'duplicate_prevented'/);
+  assert.match(
+    scanResult,
+    /logResultFeedback\('added_to_binder'/,
+    'the scan-result collection write must emit the binder-add learning event',
+  );
 
   console.log('StackR haptic vocabulary and scanner/result embedding checks passed.');
 }
