@@ -1247,17 +1247,20 @@ assert.match(catalogueTransferScript, /targetPreCommitVerified = true/);
 assert.match(catalogueTransferScript, /expectedCatalogueOwnedSequenceStates/);
 assert.match(catalogueTransferScript, /targetMismatchTables = \[\]/);
 assert.match(catalogueTransferScript, /targetAlreadyMatched = targetMismatchTables\.length === 0/);
-assert.match(catalogueTransferScript, /non_idempotent_production_transfer_requires_indexed_foreign_keys/);
-assert.match(catalogueTransferScript, /if \(!targetAlreadyMatched\) \{[\s\S]+delete from \$\{qualifiedName\(tableName\)\}/);
+assert.doesNotMatch(catalogueTransferScript, /non_idempotent_production_transfer_requires_indexed_foreign_keys/);
+assert.match(catalogueTransferScript, /if \(!targetAlreadyMatched && TRANSFER_MODE !== 'promote'\) \{[\s\S]+delete from \$\{qualifiedName\(tableName\)\}/);
+assert.match(catalogueTransferScript, /sourceIdentityMerge \|\| TRANSFER_MODE === 'promote'/);
+assert.match(catalogueTransferScript, /productionTargetOnlyRowCountPreserved/);
+assert.match(catalogueTransferScript, /upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows/);
 assert.match(catalogueTransferScript, /productionMutationPerformed: TRANSFER_MODE === 'promote' && !targetAlreadyMatched/);
 assert.match(catalogueTransferScript, /targetAlreadyMatched: evidence\.targetAlreadyMatched/);
 assert.match(catalogueTransferScript, /productionMutationPerformed: evidence\.productionMutationPerformed/);
 assert.match(catalogueTransferScript, /transferPolicy: evidence\.transferPolicy/);
 assert.match(catalogueTransferScript, /postCommitObservationMatched/);
 assert.ok(
-  catalogueTransferScript.indexOf('non_idempotent_production_transfer_requires_indexed_foreign_keys')
+  catalogueTransferScript.indexOf("TRANSFER_MODE !== 'promote'")
     < catalogueTransferScript.indexOf('delete from ${qualifiedName(tableName)}'),
-  'a non-idempotent production snapshot must fail before any target delete',
+  'production promotion must never enter the destructive replacement path',
 );
 assert.doesNotMatch(catalogueTransferScript, /throw new Error\(`target_commit_mismatch/);
 assert.ok(
@@ -1319,7 +1322,7 @@ try {
     ok: true,
   }));
   writeFileSync(databaseEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.4.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.5.0',
     sourceProjectRef: 'internal-staging-ref',
     targetProjectRef: 'internal-production-ref',
     targetAlreadyMatched: true,
@@ -1330,6 +1333,7 @@ try {
     selectedTableCount: 1,
     sourceRowCount: 2,
     matchedSourceRowCount: 2,
+    preservedTargetOnlyRowCount: 1,
     catalogueRelease: {
       sourceVersionIds: ['internal-release-uuid'],
       releaseVersionSha256: 'internal-release-digest',
@@ -1343,6 +1347,9 @@ try {
       transferSkippedAsAlreadyCurrent: true,
       commitMatched: true,
       postCommitObservationMatched: true,
+      sourceRowCount: 2,
+      productionTargetOnlyRowCountPreserved: 1,
+      targetRowCountDuringRehearsal: 3,
     }],
   }));
   const auditResult = run(
@@ -1430,15 +1437,16 @@ try {
     'database-mutation-evidence.json',
   );
   writeFileSync(databaseMutationEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.4.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.5.0',
     targetAlreadyMatched: false,
     productionMutationPerformed: true,
     targetTransactionCommitted: true,
     targetCommitVerified: true,
-    transferPolicy: 'replace_allowlisted_production_catalogue_rows_preserve_source_identity_and_project_declared_private_provenance_references',
+    transferPolicy: 'upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows_source_identity_and_project_declared_private_provenance_references',
     selectedTableCount: 1,
     sourceRowCount: 12,
     matchedSourceRowCount: 12,
+    preservedTargetOnlyRowCount: 3,
     catalogueRelease: {
       productionAssetUrlRewriteCount: 3,
       productionAssetTimestampReuseCount: 3,
@@ -1448,6 +1456,9 @@ try {
       transferSkippedAsAlreadyCurrent: false,
       commitMatched: true,
       postCommitObservationMatched: true,
+      sourceRowCount: 12,
+      productionTargetOnlyRowCountPreserved: 3,
+      targetRowCountDuringRehearsal: 15,
     }],
   }));
   const mutationAuditOutputPath = path.join(promotionAuditDirectory, 'mutation-audit.json');
@@ -1496,7 +1507,7 @@ try {
   assert.match(invalidSuccessAudit.stderr, /successful_catalogue_promotion_evidence_missing/);
 
   writeFileSync(databaseEvidencePath, JSON.stringify({
-    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.4.0',
+    schemaVersion: 'stackr-production-catalogue-data-promotion-evidence-v1.5.0',
     targetAlreadyMatched: false,
     productionMutationPerformed: true,
     targetTransactionCommitted: false,
@@ -1505,6 +1516,7 @@ try {
     selectedTableCount: 1,
     sourceRowCount: 2,
     matchedSourceRowCount: 2,
+    preservedTargetOnlyRowCount: 0,
     catalogueRelease: {
       productionAssetUrlRewriteCount: 1,
       productionAssetTimestampReuseCount: 1,
@@ -1514,6 +1526,9 @@ try {
       transferSkippedAsAlreadyCurrent: false,
       commitMatched: false,
       postCommitObservationMatched: false,
+      sourceRowCount: 2,
+      productionTargetOnlyRowCountPreserved: 0,
+      targetRowCountDuringRehearsal: 2,
     }],
   }));
   const contradictorySuccessAudit = run(
@@ -1549,6 +1564,7 @@ try {
 }
 
 const {
+  catalogueTargetOnlyRows,
   catalogueTransferTargetMatch,
   expectedCatalogueOwnedSequenceStates,
   planCatalogueSourceIdentityMerge,
@@ -1988,6 +2004,23 @@ const exactTargetMatchInput = {
   targetSequenceStates: [],
 };
 assert.deepEqual(
+  catalogueTargetOnlyRows(
+    exactTargetMatchInput.sourceRows,
+    exactTargetMatchInput.targetRows,
+    exactTargetMatchInput.primaryKey,
+  ),
+  exactTargetMatchInput.preservedTargetRows,
+  'production-preserving promotion must retain only rows whose primary keys are absent from staging',
+);
+assert.throws(
+  () => catalogueTargetOnlyRows(
+    [{ id: 'duplicate' }, { id: 'duplicate' }],
+    [],
+    ['id'],
+  ),
+  /catalogue_source_primary_key_overlap/,
+);
+assert.deepEqual(
   catalogueTransferTargetMatch(exactTargetMatchInput),
   { matches: true, reason: null },
 );
@@ -2048,6 +2081,18 @@ assert.deepEqual(
     targetSequenceStates: [{ ...sequenceStates[0], lastValue: '2', isCalled: true }],
   }),
   { matches: false, reason: 'sequence_state' },
+);
+assert.deepEqual(
+  catalogueTransferTargetMatch({
+    tableName: 'catalog.example',
+    sourceRows: [{ id: 1 }, { id: 2 }],
+    preservedTargetRows: [{ id: 3 }],
+    targetRows: [{ id: 1 }, { id: 2 }, { id: 3 }],
+    primaryKey: ['id'],
+    targetSequenceStates: [{ ...sequenceStates[0], lastValue: '4' }],
+  }),
+  { matches: true, reason: null },
+  'sequence safety must include retained production-only rows',
 );
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');

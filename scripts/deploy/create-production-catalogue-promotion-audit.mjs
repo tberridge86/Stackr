@@ -11,7 +11,7 @@ const args = Object.fromEntries(process.argv.slice(2).map((argument) => {
 const NO_OP_TRANSFER_POLICY =
   'verify_allowlisted_production_catalogue_already_matches_without_mutation';
 const MUTATION_TRANSFER_POLICY =
-  'replace_allowlisted_production_catalogue_rows_preserve_source_identity_and_project_declared_private_provenance_references';
+  'upsert_allowlisted_production_catalogue_rows_preserve_target_only_rows_source_identity_and_project_declared_private_provenance_references';
 
 for (const name of ['storage', 'database', 'output', 'promotion-outcome']) {
   if (!args[name]) throw new Error(`missing_audit_argument:${name}`);
@@ -80,7 +80,7 @@ function storageAudit(evidence) {
 
 function databaseAudit(evidence) {
   if (!evidence) return { evidencePresent: false };
-  if (evidence.schemaVersion !== 'stackr-production-catalogue-data-promotion-evidence-v1.4.0') {
+  if (evidence.schemaVersion !== 'stackr-production-catalogue-data-promotion-evidence-v1.5.0') {
     throw new Error('invalid_database_promotion_evidence_version');
   }
   if (!Array.isArray(evidence.tables)) throw new Error('invalid_database_evidence_tables');
@@ -92,6 +92,24 @@ function databaseAudit(evidence) {
       'commitMatched',
       'postCommitObservationMatched',
     ]) requiredBoolean(table, property, 'database_table_evidence');
+    const sourceRowCount = requiredNonnegativeInteger(
+      table,
+      'sourceRowCount',
+      'database_table_evidence',
+    );
+    const retainedRowCount = requiredNonnegativeInteger(
+      table,
+      'productionTargetOnlyRowCountPreserved',
+      'database_table_evidence',
+    );
+    const observedRowCount = requiredNonnegativeInteger(
+      table,
+      'targetRowCountDuringRehearsal',
+      'database_table_evidence',
+    );
+    if (observedRowCount !== sourceRowCount + retainedRowCount) {
+      throw new Error('database_table_evidence_preserved_row_count_mismatch');
+    }
   }
   const selectedTableCount = requiredNonnegativeInteger(
     evidence,
@@ -121,6 +139,11 @@ function databaseAudit(evidence) {
       requiredNonnegativeInteger(evidence, 'sourceRowCount', 'database_evidence'),
     matchedSourceRowCount:
       requiredNonnegativeInteger(evidence, 'matchedSourceRowCount', 'database_evidence'),
+    preservedTargetOnlyRowCount: requiredNonnegativeInteger(
+      evidence,
+      'preservedTargetOnlyRowCount',
+      'database_evidence',
+    ),
     productionAssetUrlRewriteCount: requiredNonnegativeInteger(
       evidence.catalogueRelease,
       'productionAssetUrlRewriteCount',
@@ -137,6 +160,9 @@ function databaseAudit(evidence) {
     commitMatchedTableCount: tables.filter((table) => table.commitMatched === true).length,
     postCommitObservationMatchedTableCount:
       tables.filter((table) => table.postCommitObservationMatched === true).length,
+    tablePreservedTargetOnlyRowCount: tables.reduce((sum, table) => (
+      sum + table.productionTargetOnlyRowCountPreserved
+    ), 0),
   };
 }
 
@@ -183,6 +209,7 @@ if (args['promotion-outcome'] === 'success') {
     && database.selectedTableCount > 0
     && database.sourceRowCount > 0
     && database.sourceRowCount === database.matchedSourceRowCount
+    && database.preservedTargetOnlyRowCount === database.tablePreservedTargetOnlyRowCount
     && database.verifiedTableCount === database.selectedTableCount
     && database.skippedCurrentTableCount === database.selectedTableCount
     && database.commitMatchedTableCount === database.selectedTableCount
@@ -198,6 +225,7 @@ if (args['promotion-outcome'] === 'success') {
     && database.selectedTableCount > 0
     && database.sourceRowCount > 0
     && database.sourceRowCount === database.matchedSourceRowCount
+    && database.preservedTargetOnlyRowCount === database.tablePreservedTargetOnlyRowCount
     && database.verifiedTableCount === database.selectedTableCount
     && database.skippedCurrentTableCount === 0
     && database.commitMatchedTableCount === database.selectedTableCount
