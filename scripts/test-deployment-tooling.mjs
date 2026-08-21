@@ -1468,7 +1468,7 @@ try {
     preservedTargetOnlyRowCount: 3,
     catalogueRelease: {
       productionAssetUrlRewriteCount: 3,
-      productionAssetTimestampReuseCount: 3,
+      productionAssetTimestampReuseCount: 1,
     },
     assetIdentityPreservation: {
       table: 'catalog.assets',
@@ -1514,6 +1514,35 @@ try {
   assert.equal(mutationAudit.verification.storageMutationPerformed, true);
   assert.equal(mutationAudit.verification.databaseMutationPerformed, true);
   assert.equal(mutationAudit.verification.exactPostCommitVerificationPassed, true);
+
+  const impossibleTimestampReuseEvidencePath = path.join(
+    promotionAuditDirectory,
+    'impossible-timestamp-reuse-evidence.json',
+  );
+  writeFileSync(impossibleTimestampReuseEvidencePath, JSON.stringify({
+    ...JSON.parse(readFileSync(databaseMutationEvidencePath, 'utf8')),
+    catalogueRelease: {
+      productionAssetUrlRewriteCount: 3,
+      productionAssetTimestampReuseCount: 4,
+    },
+  }));
+  const impossibleTimestampReuseAudit = run(
+    './scripts/deploy/create-production-catalogue-promotion-audit.mjs',
+    [
+      `--storage=${storageMutationEvidencePath}`,
+      `--database=${impossibleTimestampReuseEvidencePath}`,
+      `--output=${path.join(
+        promotionAuditDirectory,
+        'impossible-timestamp-reuse-audit.json',
+      )}`,
+      '--promotion-outcome=success',
+    ],
+  );
+  assert.notEqual(impossibleTimestampReuseAudit.status, 0);
+  assert.match(
+    impossibleTimestampReuseAudit.stderr,
+    /successful_database_promotion_not_verified/,
+  );
 
   rmSync(databaseEvidencePath);
   const partialAuditOutputPath = path.join(promotionAuditDirectory, 'partial-audit.json');
