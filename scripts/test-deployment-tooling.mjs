@@ -2055,6 +2055,86 @@ assert.deepEqual(
 );
 assert.equal(storageAliasProjection.projectedRowCount, 1);
 assert.equal(storageAliasProjection.projectedValueCount, 1);
+
+const reassignedStorageIdentityPlan = planCatalogueAssetIdentityMerge(
+  [
+    {
+      id: 'source-corrected-active',
+      asset_id: null,
+      variant_id: 'variant-corrected',
+      asset_type: 'card_image',
+      sha256: 'c'.repeat(64),
+      content_sha256: 'c'.repeat(64),
+      storage_provider: 'supabase_storage',
+      storage_bucket: 'stackr-catalogue-public',
+      storage_key: 'public/card_image/cc/corrected.jpg',
+      deleted_at: null,
+      deprecated_at: null,
+      retention_status: 'active',
+    },
+    {
+      id: 'production-stable-id',
+      asset_id: 'card-image:stable',
+      variant_id: 'variant-deprecated',
+      asset_type: 'card_image',
+      sha256: 'c'.repeat(64),
+      content_sha256: 'c'.repeat(64),
+      storage_provider: 'unavailable',
+      storage_bucket: null,
+      storage_key: null,
+      archival_storage_key: 'public/card_image/cc/corrected.jpg',
+      deleted_at: null,
+      deprecated_at: '2026-08-19T22:40:41.443Z',
+      retention_status: 'unavailable',
+    },
+  ],
+  [
+    {
+      id: 'production-stable-id',
+      asset_id: 'card-image:stable',
+      variant_id: 'variant-deprecated',
+      asset_type: 'card_image',
+      sha256: 'c'.repeat(64),
+      content_sha256: 'c'.repeat(64),
+      storage_provider: 'supabase_storage',
+      storage_bucket: 'stackr-catalogue-public',
+      storage_key: 'public/card_image/cc/corrected.jpg',
+      deleted_at: null,
+      deprecated_at: null,
+      retention_status: 'active',
+    },
+  ],
+);
+assert.deepEqual(
+  reassignedStorageIdentityPlan.mappedSourceRows.map((row) => ({
+    id: row.id,
+    assetId: row.asset_id,
+    variantId: row.variant_id,
+    retentionStatus: row.retention_status,
+  })),
+  [
+    {
+      id: 'production-stable-id',
+      assetId: 'card-image:stable',
+      variantId: 'variant-deprecated',
+      retentionStatus: 'unavailable',
+    },
+    {
+      id: 'source-corrected-active',
+      assetId: null,
+      variantId: 'variant-corrected',
+      retentionStatus: 'active',
+    },
+  ],
+  'stable production identity must be vacated before the corrected variant claims its storage',
+);
+assert.equal(reassignedStorageIdentityPlan.preservedProductionAssetIdCount, 1);
+assert.equal(reassignedStorageIdentityPlan.storageObjectMatchedAssetCount, 0);
+assert.equal(reassignedStorageIdentityPlan.insertedAssetCount, 1);
+assert.equal(
+  new Set(reassignedStorageIdentityPlan.mappedSourceRows.map(({ id }) => id)).size,
+  reassignedStorageIdentityPlan.mappedSourceRows.length,
+);
 assert.throws(
   () => planCatalogueAssetIdentityMerge(
     [

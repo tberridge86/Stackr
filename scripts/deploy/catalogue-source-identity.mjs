@@ -260,8 +260,9 @@ export function planCatalogueAssetIdentityMerge(sourceRows, targetRows) {
   const targetByStorageObject = uniqueRowsByActiveStorageObject(targetRows, 'target');
   const sourceCanonicalization = canonicalSourceAssetRows(sourceRows);
   const sourceIdMap = new Map();
-  const mappedSourceRows = [];
+  const mappedSourceRowEntries = [];
   const sourceAliasIds = new Set(sourceCanonicalization.aliases.keys());
+  const sourceIdsThatMustReleaseStorageFirst = new Set();
   let preservedProductionAssetIdCount = 0;
   let insertedAssetCount = 0;
   let storageObjectMatchedAssetCount = 0;
@@ -269,12 +270,45 @@ export function planCatalogueAssetIdentityMerge(sourceRows, targetRows) {
 
   for (const sourceRow of sourceCanonicalization.canonicalRows) {
     const sourceId = requiredIdentityValue(sourceRow, 'id', 'asset_source');
-    const assetId = optionalIdentityValue(sourceRow, 'asset_id');
-    const matchingTargetByAssetId = assetId === null ? null : targetByAssetId.get(assetId);
     const storageObjectKey = activeStorageObjectKey(sourceRow);
     const matchingTargetByStorage = storageObjectKey === null
       ? null
       : targetByStorageObject.get(storageObjectKey);
+    const storageTargetAssetId = matchingTargetByStorage === null
+      ? null
+      : optionalIdentityValue(matchingTargetByStorage, 'asset_id');
+    const stableSourceRow = storageTargetAssetId === null
+      ? null
+      : sourceByAssetId.get(storageTargetAssetId);
+    if (stableSourceRow
+      && requiredIdentityValue(stableSourceRow, 'id', 'asset_source') !== sourceId) {
+      sourceIdsThatMustReleaseStorageFirst.add(
+        requiredIdentityValue(stableSourceRow, 'id', 'asset_source'),
+      );
+    }
+  }
+
+  for (const [sourceIndex, sourceRow] of sourceCanonicalization.canonicalRows.entries()) {
+    const sourceId = requiredIdentityValue(sourceRow, 'id', 'asset_source');
+    const assetId = optionalIdentityValue(sourceRow, 'asset_id');
+    const matchingTargetByAssetId = assetId === null ? null : targetByAssetId.get(assetId);
+    const storageObjectKey = activeStorageObjectKey(sourceRow);
+    const rawMatchingTargetByStorage = storageObjectKey === null
+      ? null
+      : targetByStorageObject.get(storageObjectKey);
+    const storageTargetAssetId = rawMatchingTargetByStorage === null
+      ? null
+      : optionalIdentityValue(rawMatchingTargetByStorage, 'asset_id');
+    const storageTargetClaimedByAnotherSource = storageTargetAssetId !== null
+      && sourceByAssetId.has(storageTargetAssetId)
+      && requiredIdentityValue(
+        sourceByAssetId.get(storageTargetAssetId),
+        'id',
+        'asset_source',
+      ) !== sourceId;
+    const matchingTargetByStorage = storageTargetClaimedByAnotherSource
+      ? null
+      : rawMatchingTargetByStorage;
     if (matchingTargetByAssetId && matchingTargetByStorage
       && String(matchingTargetByAssetId.id) !== String(matchingTargetByStorage.id)) {
       throw new Error(
@@ -321,9 +355,15 @@ export function planCatalogueAssetIdentityMerge(sourceRows, targetRows) {
     }
 
     sourceIdMap.set(sourceId, targetId);
-    mappedSourceRows.push(targetId === sourceId
-      ? mappedSourceRow
-      : { ...mappedSourceRow, id: targetId });
+    mappedSourceRowEntries.push({
+      row: targetId === sourceId
+        ? mappedSourceRow
+        : { ...mappedSourceRow, id: targetId },
+      // A stable row that deprecates/releases an old storage assignment must be
+      // updated before a corrected variant claims that same storage object.
+      priority: sourceIdsThatMustReleaseStorageFirst.has(sourceId) ? -1 : 0,
+      sourceIndex,
+    });
   }
 
   for (const [aliasId, canonicalId] of sourceCanonicalization.aliases) {
@@ -338,6 +378,10 @@ export function planCatalogueAssetIdentityMerge(sourceRows, targetRows) {
   const preservedTargetOnlyRows = targetRows.filter((targetRow) => (
     !representedTargetIds.has(requiredIdentityValue(targetRow, 'id', 'asset_target'))
   ));
+
+  const mappedSourceRows = mappedSourceRowEntries
+    .sort((left, right) => left.priority - right.priority || left.sourceIndex - right.sourceIndex)
+    .map(({ row }) => row);
 
   return {
     sourceIdMap,
