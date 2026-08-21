@@ -1340,7 +1340,7 @@ try {
       sourceVersionIds: ['internal-release-uuid'],
       releaseVersionSha256: 'internal-release-digest',
       productionAssetUrlRewriteCount: 1,
-      productionAssetTimestampReuseCount: 1,
+      productionAssetTimestampReuseCount: 0,
     },
     assetIdentityPreservation: {
       table: 'catalog.assets',
