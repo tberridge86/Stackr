@@ -20,6 +20,20 @@ function catalogueRowKey(row, primaryKey) {
   return stableCatalogueJson(primaryKey.map((column) => row[column]));
 }
 
+export function catalogueTargetOnlyRows(sourceRows, targetRows, primaryKey) {
+  if (!Array.isArray(sourceRows)
+    || !Array.isArray(targetRows)
+    || !Array.isArray(primaryKey)
+    || primaryKey.length === 0) {
+    throw new TypeError('invalid_catalogue_target_only_row_arguments');
+  }
+  const sourceKeys = new Set(sourceRows.map((row) => catalogueRowKey(row, primaryKey)));
+  if (sourceKeys.size !== sourceRows.length) {
+    throw new Error('catalogue_source_primary_key_overlap');
+  }
+  return targetRows.filter((row) => !sourceKeys.has(catalogueRowKey(row, primaryKey)));
+}
+
 export function verifyCatalogueRowsByPrimaryKey(
   tableName,
   sourceRows,
@@ -96,7 +110,7 @@ export function catalogueTransferTargetMatch({
   }
   const expectedSequenceStates = expectedCatalogueOwnedSequenceStates(
     targetSequenceStates,
-    sourceRows,
+    expectedRows,
   );
   if (stableCatalogueJson(targetSequenceStates) !== stableCatalogueJson(expectedSequenceStates)) {
     return { matches: false, reason: 'sequence_state' };
