@@ -186,6 +186,8 @@ if (recognitionUrl) {
           ));
           return {
             ok: vectorCandidates.length > 0 && payload?.autoAddAllowed === false,
+            errorCode: payload?.error?.code ?? null,
+            exceptionType: payload?.error?.details?.exceptionType ?? null,
             matchStatus: payload?.matchStatus ?? null,
             candidateCount: candidates.length,
             vectorCandidateCount: vectorCandidates.length,

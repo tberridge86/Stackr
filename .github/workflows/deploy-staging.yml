@@ -23,6 +23,11 @@ on:
         required: true
         default: false
         type: boolean
+      verify_only:
+        description: Verify the currently deployed recognition service without redeploying it
+        required: true
+        default: false
+        type: boolean
       publish_mobile_update:
         description: Publish an EAS update to the staging channel
         required: true
@@ -99,6 +104,10 @@ jobs:
           fi
           if [ "${{ inputs.release_scope }}" = "recognition_service" ] && [ "${{ inputs.apply_migrations }}" = "true" ]; then
             echo "Recognition-service-only deployments do not apply database migrations."
+            exit 1
+          fi
+          if [ "${{ inputs.verify_only }}" = "true" ] && [ "${{ inputs.release_scope }}" != "recognition_service" ]; then
+            echo "Verify-only mode is limited to the recognition service."
             exit 1
           fi
 
@@ -250,7 +259,7 @@ jobs:
           --service "$RAILWAY_BACKEND_SERVICE_ID"
 
       - name: Deploy recognition container behind the staging gateway
-        if: inputs.release_scope != 'catalogue_api'
+        if: inputs.release_scope != 'catalogue_api' && !inputs.verify_only
         run: >-
           npx --yes @railway/cli@5.30.1 up recognition-service --path-as-root --ci
           --project "$RAILWAY_PROJECT_ID"
@@ -283,7 +292,8 @@ jobs:
           set -euo pipefail
           diagnostics_dir="$RUNNER_TEMP/stackr-recognition-diagnostics"
           mkdir -p "$diagnostics_dir"
-          npx --yes @railway/cli@5.30.1 logs --latest --lines 160 --json \
+          sleep 5
+          npx --yes @railway/cli@5.30.1 logs --latest --since 5m --lines 400 --json \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --service "$RAILWAY_RECOGNITION_SERVICE_ID" \
@@ -307,7 +317,7 @@ jobs:
           NODE
           rm -f "$diagnostics_dir/raw.jsonl"
           node scripts/deploy/secret-scan.mjs --directory="$diagnostics_dir"
-          sed -n '1,160p' "$diagnostics_dir/safe.jsonl"
+          tail -n 240 "$diagnostics_dir/safe.jsonl"
           rm -rf "$diagnostics_dir"
 
       - name: Upload and activate the staging gateway version

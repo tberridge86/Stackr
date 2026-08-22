@@ -502,14 +502,16 @@ assert.deepEqual(
 );
 assert.match(stagingWorkflow, /Deploy recognition container[\s\S]+if: inputs\.release_scope != 'catalogue_api'/);
 assert.match(stagingWorkflow, /Recognition-service-only deployments do not apply database migrations/);
+assert.match(stagingWorkflow, /verify_only:[\s\S]+Verify the currently deployed recognition service without redeploying it/);
+assert.match(stagingWorkflow, /if: inputs\.release_scope != 'catalogue_api' && !inputs\.verify_only/);
 assert.match(stagingWorkflow, /Load the recognition smoke credential from Railway/);
 assert.match(stagingWorkflow, /variable list --json[\s\S]+STACKR_RECOGNITION_GATEWAY_SERVICE_SECRET/);
 assert.match(stagingWorkflow, /::add-mask::\$runtime_secret/);
 assert.match(stagingWorkflow, /npm run deploy:smoke -- --gateway= --backend= --recognition="\$STACKR_RECOGNITION_URL" --signed-recognition/);
 assert.match(stagingWorkflow, /Print redacted recognition failure diagnostics/);
-assert.match(stagingWorkflow, /logs --latest --lines 160 --json/);
+assert.match(stagingWorkflow, /logs --latest --since 5m --lines 400 --json/);
 assert.match(stagingWorkflow, /secret-scan\.mjs --directory="\$diagnostics_dir"/);
-assert.match(readFileSync('scripts/deploy/smoke.mjs', 'utf8'), /recognition_signed_vector_lookup/);
+assert.match(readFileSync('scripts/deploy/smoke.mjs', 'utf8'), /recognition_signed_vector_lookup[\s\S]+exceptionType/);
 assert.match(stagingWorkflow, /RECOGNITION_REQUIRED:\$\{\{ inputs\.release_scope/);
 assert.match(stagingWorkflow, /--require-published-catalogue/);
 assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);
