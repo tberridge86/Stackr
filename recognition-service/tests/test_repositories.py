@@ -114,6 +114,44 @@ def test_vector_literal_rejects_non_finite_values():
         _vector_literal([float("nan")])
 
 
+def test_exact_lookup_maps_detected_chinese_language_to_catalogue_code(monkeypatch):
+    captured = {}
+
+    class FakeResponse:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"data": {"results": []}}
+
+    class FakeClient:
+        def __init__(self, **_options):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, exc_type, exc, traceback):
+            return False
+
+        async def get(self, url, *, params, headers):
+            captured.update({"url": url, "params": params, "headers": headers})
+            return FakeResponse()
+
+    monkeypatch.setattr("app.repositories.httpx.AsyncClient", FakeClient)
+
+    result = asyncio.run(repository().exact_lookup(
+        collector_number="035/151",
+        set_code="151c",
+        card_name=None,
+        language="zh-Hans",
+        limit=12,
+    ))
+
+    assert result == []
+    assert captured["params"]["language"] == "zh-cn"
+
+
 def test_model_stays_inactive_without_explicit_index_selection():
     repo = StackrApiRepository(Settings(
         model_version="model-v1",

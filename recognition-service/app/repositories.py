@@ -380,8 +380,9 @@ class StackrApiRepository(CandidateRepository):
             "q": " ".join(query_parts),
             "limit": str(limit),
         }
-        if language and language != "unknown":
-            params["language"] = language
+        language_code = _catalogue_language_code(language)
+        if language_code:
+            params["language"] = language_code
         headers = {}
         if self.settings.catalogue_api_secret:
             headers["Authorization"] = f"Bearer {self.settings.catalogue_api_secret}"
