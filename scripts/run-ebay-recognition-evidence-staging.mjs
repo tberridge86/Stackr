@@ -188,7 +188,7 @@ Options:
       'scripts/export-recognition-internet-evidence-manifest.ts',
       `--output=${manifestPath}`,
       `--maxVariants=${selectedVariants}`,
-      '--pageSize=500',
+      '--pageSize=100',
     ]);
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
     receipt.manifestSha256 = manifest.manifestSha256 ?? null;
