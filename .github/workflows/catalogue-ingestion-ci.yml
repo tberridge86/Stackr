@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Snapshot provider data, mirror approved images, or publish one validated language shard
+        description: Snapshot provider data, mirror approved images, publish one shard, or retain bounded eBay recognition evidence
         required: true
         default: snapshot
         type: choice
-        options: [snapshot, mirror, publish]
+        options: [snapshot, mirror, publish, ebay_evidence]
       provider:
         description: One-time catalogue snapshot provider
         required: true
@@ -109,6 +109,10 @@ jobs:
       CATALOGUE_COVERAGE_LIMITED: ${{ inputs.coverage_limited }}
       CATALOGUE_PUBLISH_VERSION: ${{ inputs.publish_version }}
       TCGDEX_SNAPSHOT_COMMIT: 771a8381c57c73182b9776657a15cd1166c66d36
+      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -164,6 +168,37 @@ jobs:
               exit 1
             fi
           fi
+      - name: Run quota-bounded eBay recognition evidence against staging
+        if: inputs.operation == 'ebay_evidence'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RAILWAY_API_TOKEN"
+          test -n "$RAILWAY_PROJECT_ID"
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_BACKEND_SERVICE_ID"
+          maximum_variants=$((CATALOGUE_BATCH_LIMIT * CATALOGUE_BATCH_COUNT))
+          output_dir="$RUNNER_TEMP/stackr-ebay-recognition-evidence"
+          mkdir -p "$output_dir"
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            node scripts/run-ebay-recognition-evidence-staging.mjs \
+              --maxVariants="$maximum_variants" \
+              --batchSize="$CATALOGUE_BATCH_LIMIT" \
+              --reserveCalls=50 \
+              --outputDir="$output_dir"
+      - name: Upload eBay recognition evidence receipt
+        if: always() && inputs.operation == 'ebay_evidence'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-ebay-recognition-evidence-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-ebay-recognition-evidence
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
       - name: Scope the pinned TCGdex compiler
         if: inputs.operation == 'snapshot' && inputs.provider == 'tcgdex'
         shell: bash
