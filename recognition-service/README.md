@@ -1,6 +1,6 @@
 # Stackr Private Recognition Service
 
-Stage 7 adds a private FastAPI service for Stackr card recognition. It is designed to sit behind `api.stackr.app` or another private edge gateway, not to be called directly from public clients.
+Stage 7 adds a private FastAPI service for Stackr card recognition. It is designed to sit behind `api.stackrtcg.com` or another private edge gateway, not to be called directly from public clients.
 
 ## Endpoints
 
@@ -42,6 +42,9 @@ Important variables:
 
 - `STACKR_RECOGNITION_MODEL_VERSION`
 - `STACKR_RECOGNITION_MODEL_PATH`
+- `STACKR_RECOGNITION_MODEL_URL`
+- `STACKR_RECOGNITION_MODEL_SHA256`
+- `STACKR_RECOGNITION_MODEL_CACHE_PATH`
 - `STACKR_RECOGNITION_MODEL_EMBEDDING_DIMENSIONS`
 - `STACKR_RECOGNITION_ACTIVE_INDEX_VERSION`
 - `STACKR_RECOGNITION_DATABASE_URL`
@@ -57,6 +60,8 @@ Important variables:
 - `STACKR_RECOGNITION_GATEWAY_SIGNATURE_MAX_AGE_SECONDS`
 
 Do not expose database URLs, service-role keys, gateway service secrets or metrics tokens in the Expo app.
+
+When `MODEL_URL` is configured, the service accepts HTTPS only, verifies `MODEL_SHA256`, enforces a size limit, and atomically caches the model before ONNX Runtime loads it. A local `MODEL_PATH` remains available for offline containers.
 
 ## Scoring
 

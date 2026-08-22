@@ -12,7 +12,7 @@ class StorageError(RuntimeError):
 
 
 class StorageClient:
-    async def read_private_object(self, key: str) -> bytes:
+    async def read_private_object(self, key: str, *, bucket: str | None = None) -> bytes:
         raise NotImplementedError
 
 
@@ -20,7 +20,7 @@ class LocalStorageClient(StorageClient):
     def __init__(self, root: Path):
         self.root = root.resolve()
 
-    async def read_private_object(self, key: str) -> bytes:
+    async def read_private_object(self, key: str, *, bucket: str | None = None) -> bytes:
         candidate = (self.root / key).resolve()
         if not str(candidate).startswith(str(self.root)):
             raise StorageError("image key escapes local storage root")
@@ -35,17 +35,21 @@ class SupabaseStorageClient(StorageClient):
             raise StorageError("Supabase storage credentials are not configured")
         self.settings = settings
 
-    async def read_private_object(self, key: str) -> bytes:
+    async def read_private_object(self, key: str, *, bucket: str | None = None) -> bytes:
+        storage_bucket = bucket or self.settings.fallback_storage_bucket
         url = (
             f"{self.settings.supabase_url.rstrip('/')}/storage/v1/object/"
-            f"{self.settings.fallback_storage_bucket}/{key.lstrip('/')}"
+            f"{storage_bucket}/{key.lstrip('/')}"
         )
         headers = {
             "apikey": self.settings.service_role_secret or "",
             "Authorization": f"Bearer {self.settings.service_role_secret or ''}",
         }
-        async with httpx.AsyncClient(timeout=10) as client:
-            response = await client.get(url, headers=headers)
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                response = await client.get(url, headers=headers)
+        except httpx.HTTPError as exc:
+            raise StorageError("private storage request failed") from exc
         if response.status_code == 404:
             raise StorageError("private image key not found")
         if response.status_code >= 400:
@@ -54,7 +58,7 @@ class SupabaseStorageClient(StorageClient):
 
 
 class NullStorageClient(StorageClient):
-    async def read_private_object(self, key: str) -> bytes:
+    async def read_private_object(self, key: str, *, bucket: str | None = None) -> bytes:
         raise StorageError("storage client is not configured")
 
 

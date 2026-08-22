@@ -78,6 +78,7 @@ class IdentifyRequest(StrictModel):
     detectedScript: ScriptCode = "unknown"
     captureQuality: CaptureQualityMetrics
     privateImageKey: str | None = Field(default=None, min_length=1, max_length=900)
+    privateImageKeys: list[str] | None = Field(default=None, min_length=1, max_length=2)
     imageMimeType: str | None = Field(default=None, max_length=80)
     corners: ImageCorners | None = None
     consent: ConsentState = Field(default_factory=ConsentState)
@@ -96,10 +97,25 @@ class IdentifyRequest(StrictModel):
             raise ValueError("embedding must be L2-normalised")
         return [float(item) for item in value]
 
+    @field_validator("privateImageKeys")
+    @classmethod
+    def private_image_keys_must_be_unique(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        if len(set(value)) != len(value):
+            raise ValueError("privateImageKeys must not contain duplicates")
+        return value
+
+    def resolved_private_image_keys(self) -> list[str]:
+        keys = [*(self.privateImageKeys or [])]
+        if self.privateImageKey and self.privateImageKey not in keys:
+            keys.insert(0, self.privateImageKey)
+        return keys[:2]
+
     @model_validator(mode="after")
     def either_embedding_or_image_key(self) -> "IdentifyRequest":
-        if not self.embedding and not self.privateImageKey:
-            raise ValueError("either embedding or privateImageKey is required")
+        if not self.embedding and not self.resolved_private_image_keys():
+            raise ValueError("either embedding or a private image key is required")
         return self
 
 

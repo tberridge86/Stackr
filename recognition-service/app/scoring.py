@@ -102,26 +102,52 @@ def score_candidate(
     capture_quality: CaptureQualityMetrics,
 ) -> ScoredCandidate:
     image = clamp01(candidate.image_similarity, fallback=0.0)
-    collector = 1.0 if collector_matches(candidate.collector_number, collector_hint) else 0.0
-    set_code = 1.0 if normalize_text(candidate.set_code) and normalize_text(candidate.set_code) == normalize_text(set_code_hint) else 0.0
+    collector_available = bool(collector_hint and candidate.collector_number)
+    collector = 1.0 if collector_available and collector_matches(candidate.collector_number, collector_hint) else 0.0
+    set_code_available = bool(set_code_hint and candidate.set_code)
+    set_code = 1.0 if set_code_available and normalize_text(candidate.set_code) == normalize_text(set_code_hint) else 0.0
     set_number = max(collector, (collector + set_code) / 2 if collector or set_code else 0.0)
-    name_hint = card_name_hint or ocr_text
+    name_hint = card_name_hint
+    name_available = bool(name_hint and candidate.card_name)
     name = text_similarity(candidate.card_name, name_hint)
+    language_available = bool(candidate.language_code and language_hint and language_hint != "unknown")
     language = language_score(candidate.language_code, language_hint)
     rarity_variant = 0.5
     phash = clamp01(candidate.perceptual_hash_similarity, fallback=0.5)
-    ocr = max(set_number, name, language * 0.6)
+    ocr_components = [
+        value for value, available in (
+            (set_number, collector_available or set_code_available),
+            (name, name_available),
+            (language, language_available),
+        ) if available
+    ]
+    ocr = max(ocr_components, default=0.0)
 
     weights = config.weights
+    weighted_evidence = [
+        (image, weights["image"], candidate.image_similarity is not None),
+        (collector, weights["collectorNumber"], collector_available),
+        (set_code, weights["setCode"], set_code_available),
+        (name, weights["cardName"], name_available),
+        (language, weights["language"], language_available),
+        (rarity_variant, weights["rarityVariant"], candidate.rarity_variant_hint is not None),
+        (phash, weights["perceptualHash"], candidate.perceptual_hash_similarity is not None),
+    ]
+    available_weight = sum(weight for _, weight, available in weighted_evidence if available)
     overall = (
-        image * weights["image"]
-        + collector * weights["collectorNumber"]
-        + set_code * weights["setCode"]
-        + name * weights["cardName"]
-        + language * weights["language"]
-        + rarity_variant * weights["rarityVariant"]
-        + phash * weights["perceptualHash"]
+        sum(value * weight for value, weight, available in weighted_evidence if available) / available_weight
+        if available_weight > 0
+        else 0.0
     )
+
+    # Exact printed identifiers should break visual ties, while a noisy OCR read must not
+    # erase otherwise useful image candidates from the confirmation list.
+    if collector_available and not collector:
+        overall *= 0.72
+    if set_code_available and not set_code:
+        overall *= 0.82
+    if language_available and language == 0:
+        overall *= 0.9
 
     reasons = list(candidate.reasons or [])
     if image > 0:
@@ -134,6 +160,8 @@ def score_candidate(
         reasons.append("card_name_agreement")
     if language >= 1:
         reasons.append("language_agreement")
+    if available_weight > 0:
+        reasons.append("available_evidence_normalised")
 
     uncertainty_flags: list[str] = []
     if candidate.image_similarity is None:
@@ -144,6 +172,8 @@ def score_candidate(
         uncertainty_flags.append("set_code_conflict")
     if language == 0:
         uncertainty_flags.append("language_conflict")
+    if candidate.image_similarity is not None and image < config.thresholds["minimumImageSimilarity"]:
+        uncertainty_flags.append("image_similarity_below_floor")
     if not config.calibration_ready:
         uncertainty_flags.append("confidence_not_calibrated")
 
@@ -173,6 +203,14 @@ def choose_match_status(candidates: list[ScoredCandidate], config: ScoringConfig
     probable_threshold = config.thresholds["probable"]
     margin_threshold = config.thresholds["ambiguousMargin"]
     margin = best.overall - second.overall if second else best.overall
+
+    if (
+        best.record.image_similarity is not None
+        and best.image < config.thresholds["minimumImageSimilarity"]
+        and best.set_number < 1.0
+        and best.card_name < 0.85
+    ):
+        return "no_match", ["image_similarity_below_floor"], "rescan", False
 
     if second and margin < margin_threshold:
         return "ambiguous", ["top_candidates_too_close"], "confirm_candidate", False

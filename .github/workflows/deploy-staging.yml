@@ -8,11 +8,11 @@ on:
         required: true
         type: string
       release_scope:
-        description: Rehearse the catalogue API now, or the full platform after recognition approval
+        description: Deploy the catalogue API, recognition service, or full platform
         required: true
         default: catalogue_api
         type: choice
-        options: [catalogue_api, full_platform]
+        options: [catalogue_api, recognition_service, full_platform]
       apply_migrations:
         description: Apply migrations after the dry run
         required: true
@@ -40,7 +40,9 @@ jobs:
   deploy:
     if: >-
       inputs.confirmation == 'DEPLOY STAGING' &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/chore/api-gateway-v1')
+      (github.ref == 'refs/heads/main' ||
+       github.ref == 'refs/heads/chore/api-gateway-v1' ||
+       github.ref == 'refs/heads/backend/release-hardening-2026-08-19')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: staging
@@ -91,36 +93,58 @@ jobs:
             echo "Staging migrations require release_candidate=true and reviewed evidence."
             exit 1
           fi
-          if [ "${{ inputs.release_scope }}" = "catalogue_api" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
-            echo "Catalogue API rehearsals do not publish a mobile update."
+          if [ "${{ inputs.release_scope }}" != "full_platform" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
+            echo "Component-only staging deployments do not publish a mobile update."
+            exit 1
+          fi
+          if [ "${{ inputs.release_scope }}" = "recognition_service" ] && [ "${{ inputs.apply_migrations }}" = "true" ]; then
+            echo "Recognition-service-only deployments do not apply database migrations."
             exit 1
           fi
 
       - name: Require scoped production-candidate evidence
         if: inputs.release_candidate
         run: |
-          node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
           if [ "${{ inputs.release_scope }}" = "catalogue_api" ]; then
+            node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
             node scripts/deploy/verify-staging-readiness-evidence.mjs --require-catalogue-api-ready
             npm run deploy:preflight -- --catalogue-api-release
-          else
+          elif [ "${{ inputs.release_scope }}" = "full_platform" ]; then
+            node scripts/deploy/verify-staging-migration-reconciliation.mjs --require-aligned
             node scripts/deploy/verify-staging-readiness-evidence.mjs --require-release-ready
             npm run deploy:preflight -- --release
+          else
+            npm run deploy:verify-model -- --require-active
           fi
 
       - name: Prepare gateway runtime configuration
+        if: inputs.release_scope != 'recognition_service'
         run: >-
           node scripts/deploy/write-worker-secrets.mjs
           --output="$RUNNER_TEMP/stackr-worker-secrets.json"
 
-      - name: Validate the staging database target
+      - name: Validate the staging target identity
         shell: bash
         run: |
           set -euo pipefail
           test "$SUPABASE_PROJECT_REF" = "lmwfhvexfcoyeuoyrlco"
+          test -n "$RAILWAY_PROJECT_ID"
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_RECOGNITION_SERVICE_ID"
+          case "$STACKR_RECOGNITION_URL" in
+            https://stackr-recognition-staging-staging.up.railway.app) ;;
+            *) echo "Unexpected staging recognition URL." >&2; exit 1 ;;
+          esac
+
+      - name: Prepare the staging database connection
+        if: inputs.release_scope != 'recognition_service'
+        shell: bash
+        run: |
+          set -euo pipefail
           node scripts/deploy/prepare-postgres-urls.mjs --source-only
 
       - name: List the latest physical backup
+        if: inputs.release_scope != 'recognition_service'
         id: physical_backup_list
         run: |
           mkdir -p "$RUNNER_TEMP/stackr-backup"
@@ -134,7 +158,7 @@ jobs:
           rm -rf "$RUNNER_TEMP/stackr-backup-diagnostics"
 
       - name: Reject secret-bearing physical-backup diagnostics
-        if: failure() && steps.physical_backup_list.outcome == 'failure'
+        if: inputs.release_scope != 'recognition_service' && failure() && steps.physical_backup_list.outcome == 'failure'
         id: scan_physical_backup_diagnostics
         continue-on-error: true
         run: >-
@@ -142,7 +166,7 @@ jobs:
           --directory="$RUNNER_TEMP/stackr-backup-diagnostics"
 
       - name: Upload non-secret physical-backup diagnostics
-        if: failure() && steps.physical_backup_list.outcome == 'failure' && steps.scan_physical_backup_diagnostics.outcome == 'success'
+        if: inputs.release_scope != 'recognition_service' && failure() && steps.physical_backup_list.outcome == 'failure' && steps.scan_physical_backup_diagnostics.outcome == 'success'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: stackr-staging-physical-backup-diagnostics-${{ github.run_id }}
@@ -152,6 +176,7 @@ jobs:
           compression-level: 9
 
       - name: Create ephemeral logical backups and verify backup coverage
+        if: inputs.release_scope != 'recognition_service'
         run: |
           npx --yes supabase@2.110.0 db dump \
             --db-url "$STACKR_SOURCE_DB_URL" \
@@ -168,14 +193,15 @@ jobs:
             --require-physical
 
       - name: Dry-run backward-compatible migrations
-        if: inputs.release_candidate
+        if: inputs.release_candidate && inputs.release_scope != 'recognition_service'
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all --dry-run
 
       - name: Apply backward-compatible migrations
-        if: inputs.apply_migrations
+        if: inputs.apply_migrations && inputs.release_scope != 'recognition_service'
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_SOURCE_DB_URL" --include-all
 
       - name: Deploy catalogue API behind the staging gateway
+        if: inputs.release_scope != 'recognition_service'
         run: >-
           npx --yes @railway/cli@5.30.1 up backend --path-as-root --ci
           --project "$RAILWAY_PROJECT_ID"
@@ -183,7 +209,7 @@ jobs:
           --service "$RAILWAY_BACKEND_SERVICE_ID"
 
       - name: Deploy recognition container behind the staging gateway
-        if: inputs.release_scope == 'full_platform'
+        if: inputs.release_scope != 'catalogue_api'
         run: >-
           npx --yes @railway/cli@5.30.1 up recognition-service --path-as-root --ci
           --project "$RAILWAY_PROJECT_ID"
@@ -191,22 +217,25 @@ jobs:
           --service "$RAILWAY_RECOGNITION_SERVICE_ID"
 
       - name: Inspect model and index evidence
-        if: inputs.release_scope == 'full_platform'
+        if: inputs.release_scope != 'catalogue_api'
         run: npm run deploy:verify-model
 
       - name: Require an approved model and complete inactive index
-        if: inputs.release_candidate && inputs.release_scope == 'full_platform'
+        if: inputs.release_candidate && inputs.release_scope != 'catalogue_api'
         run: npm run deploy:verify-model -- --require-active
 
       - name: Verify private service readiness
         run: |
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
             npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
+          elif [ "${{ inputs.release_scope }}" = "recognition_service" ]; then
+            npm run deploy:smoke -- --recognition="$STACKR_RECOGNITION_URL" --signed-recognition
           else
             npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL"
           fi
 
       - name: Upload and activate the staging gateway version
+        if: inputs.release_scope != 'recognition_service'
         env:
           RELEASE_TAG: staging-${{ github.sha }}
         run: |
@@ -228,6 +257,7 @@ jobs:
             --env staging --version-tag "$RELEASE_TAG@100" --yes
 
       - name: Smoke-test the public staging contract
+        if: inputs.release_scope != 'recognition_service'
         run: >-
           npm run deploy:smoke --
           --gateway="$STACKR_GATEWAY_URL"

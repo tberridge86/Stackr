@@ -126,21 +126,25 @@ def create_app(
             diagnostics=diagnostics,
             model=model,
         )
-        logger.info(json.dumps({
-            "event": "recognition_service_started",
-            "service_version": service_settings.service_version,
-            "model_version": service_settings.model_version,
-            "index_version": service_settings.active_index_version,
-            "concurrency_hint": service_settings.concurrency_hint,
-        }))
         try:
+            await app.state.pipeline.repository.open()
+            logger.info(json.dumps({
+                "event": "recognition_service_started",
+                "service_version": service_settings.service_version,
+                "model_version": service_settings.model_version,
+                "index_version": service_settings.active_index_version,
+                "concurrency_hint": service_settings.concurrency_hint,
+            }))
             yield
         finally:
-            app.state.pipeline.model.close()
-            logger.info(json.dumps({
-                "event": "recognition_service_stopped",
-                "service_version": service_settings.service_version,
-            }))
+            try:
+                await app.state.pipeline.repository.close()
+            finally:
+                app.state.pipeline.model.close()
+                logger.info(json.dumps({
+                    "event": "recognition_service_stopped",
+                    "service_version": service_settings.service_version,
+                }))
 
     app = FastAPI(
         title="Stackr Private Recognition Service",
@@ -266,16 +270,23 @@ def create_app(
 
     @app.post("/v1/recognition/identify", response_model=IdentifyResponse)
     async def identify(payload: IdentifyRequest, request: Request, pipeline: RecognitionPipeline = Depends(pipeline)):
-        result = await pipeline.identify(payload, request.state.request_id)
-        path_kind = "fallback" if payload.privateImageKey else "fast"
+        actor = getattr(request.state, "gateway_actor", None)
+        result = await pipeline.identify(
+            payload,
+            request.state.request_id,
+            actor_user_id=actor.user_id if actor else None,
+        )
+        used_image_fallback = not payload.embedding and bool(payload.resolved_private_image_keys())
+        path_kind = "fallback" if used_image_fallback else "fast"
         OUTCOME_COUNTER.labels(path_kind, result.matchStatus).inc()
         AUTO_CONFIRM_COUNTER.labels("true" if result.autoAddAllowed else "false").inc()
-        IMAGE_FALLBACK_COUNTER.labels("true" if payload.privateImageKey else "false").inc()
+        IMAGE_FALLBACK_COUNTER.labels("true" if used_image_fallback else "false").inc()
         return result
 
     @app.post("/v1/recognition/embed", response_model=EmbedResponse)
-    async def embed(payload: EmbedRequest, pipeline: RecognitionPipeline = Depends(pipeline)):
-        return await pipeline.embed(payload)
+    async def embed(payload: EmbedRequest, request: Request, pipeline: RecognitionPipeline = Depends(pipeline)):
+        actor = getattr(request.state, "gateway_actor", None)
+        return await pipeline.embed(payload, actor_user_id=actor.user_id if actor else None)
 
     @app.post("/v1/recognition/feedback", response_model=FeedbackResponse)
     async def feedback(payload: FeedbackRequest, pipeline: RecognitionPipeline = Depends(pipeline)):

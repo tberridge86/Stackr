@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, createHmac, randomUUID } from 'node:crypto';
 
 const DEFAULT_REQUIRED_CATALOGUE_LANGUAGES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 
@@ -15,6 +15,7 @@ async function check(baseUrl, path, options = {}) {
     const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
       method: options.method ?? 'GET',
       headers: { 'x-request-id': requestId, ...(options.headers ?? {}) },
+      body: options.body,
       signal: controller.signal,
     });
     const returnedRequestId = response.headers.get('x-request-id');
@@ -87,6 +88,7 @@ function manifestPublishedCheck(body) {
 const gatewayUrl = argument('gateway', process.env.STACKR_GATEWAY_URL);
 const backendUrl = argument('backend', process.env.STACKR_BACKEND_URL);
 const recognitionUrl = argument('recognition', process.env.STACKR_RECOGNITION_URL);
+const signedRecognition = process.argv.includes('--signed-recognition');
 const allowRecognitionNotReady = process.argv.includes('--allow-recognition-not-ready');
 const allowMissingRequestId = process.argv.includes('--allow-missing-request-id');
 const fullGateway = process.argv.includes('--full-gateway');
@@ -110,6 +112,90 @@ if (backendUrl && fullGateway) {
 if (recognitionUrl) {
   checks.push(await check(recognitionUrl, '/health'));
   checks.push(await check(recognitionUrl, '/ready', { accept: allowRecognitionNotReady ? [200, 503] : [200] }));
+  if (signedRecognition) {
+    const serviceSecret = process.env.RECOGNITION_SERVICE_SECRET;
+    if (!serviceSecret) {
+      checks.push({
+        name: 'recognition_signed_vector_lookup',
+        path: '/v1/recognition/identify',
+        status: null,
+        ok: false,
+        requestIdPropagated: false,
+        requestIdRequired: false,
+        error: 'recognition_service_secret_missing',
+      });
+    } else {
+      const path = '/v1/recognition/identify';
+      const body = JSON.stringify({
+        modelVersion: 'dinov2_vits14',
+        embedding: [1, ...Array(383).fill(0)],
+        ocrText: '151c 035/151',
+        possibleCollectorNumber: '035/151',
+        possibleSetCode: '151c',
+        detectedLanguage: 'zh-Hans',
+        detectedScript: 'chinese_simplified',
+        captureQuality: {
+          score: 0.95,
+          focusScore: 0.95,
+          glareScore: 0.95,
+          exposureScore: 0.95,
+          framingScore: 0.95,
+          stabilityScore: 0.95,
+          cardCoverage: 0.95,
+          failureReasons: [],
+        },
+        client: { platform: 'android', appVersion: 'staging-smoke' },
+      });
+      const timestamp = String(Math.floor(Date.now() / 1000));
+      const nonce = randomUUID();
+      const userId = randomUUID();
+      const deviceId = 'stackr-staging-smoke';
+      const serviceId = 'stackr-public-gateway';
+      const bodyHash = createHash('sha256').update(body).digest('hex');
+      const canonical = [
+        serviceId,
+        timestamp,
+        nonce,
+        'POST',
+        path,
+        bodyHash,
+        userId,
+        deviceId,
+      ].join('\n');
+      const signature = createHmac('sha256', serviceSecret).update(canonical).digest('base64url');
+      checks.push(await check(recognitionUrl, path, {
+        name: 'recognition_signed_vector_lookup',
+        method: 'POST',
+        body,
+        headers: {
+          'content-type': 'application/json',
+          'x-stackr-service-id': serviceId,
+          'x-stackr-service-timestamp': timestamp,
+          'x-stackr-service-nonce': nonce,
+          'x-stackr-service-signature': signature,
+          'x-stackr-body-sha256': bodyHash,
+          'x-stackr-user-id': userId,
+          'x-stackr-device-id': deviceId,
+        },
+        inspectJson(payload) {
+          const candidates = Array.isArray(payload?.topCandidates) ? payload.topCandidates : [];
+          const vectorCandidates = candidates.filter((candidate) => (
+            Array.isArray(candidate?.reasons)
+            && candidate.reasons.includes('vector_candidate')
+            && candidate.reasons.some((reason) => String(reason).startsWith('index:'))
+          ));
+          return {
+            ok: vectorCandidates.length > 0 && payload?.autoAddAllowed === false,
+            matchStatus: payload?.matchStatus ?? null,
+            candidateCount: candidates.length,
+            vectorCandidateCount: vectorCandidates.length,
+            indexVersion: payload?.indexVersion ?? null,
+            autoAddAllowed: payload?.autoAddAllowed ?? null,
+          };
+        },
+      }));
+    }
+  }
 }
 if (gatewayUrl) {
   checks.push(await check(gatewayUrl, '/v1/health'));

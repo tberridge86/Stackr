@@ -488,7 +488,7 @@ assert.match(
   /SUPABASE_ACCESS_TOKEN:\s+\$\{\{ secrets\.STACKR_GITHUB_PRODUCTION_BACKUPS \|\| secrets\.SUPABASE_ACCESS_TOKEN \}\}/,
   'production must prefer the dedicated backup-read token without removing the standard token fallback',
 );
-assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[catalogue_api, full_platform\]/);
+assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[catalogue_api, recognition_service, full_platform\]/);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-catalogue-api-ready/);
@@ -500,7 +500,10 @@ assert.deepEqual(
   ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
   'staging logical backups must use the validated, normalized source URL',
 );
-assert.match(stagingWorkflow, /Deploy recognition container[\s\S]+if: inputs\.release_scope == 'full_platform'/);
+assert.match(stagingWorkflow, /Deploy recognition container[\s\S]+if: inputs\.release_scope != 'catalogue_api'/);
+assert.match(stagingWorkflow, /Recognition-service-only deployments do not apply database migrations/);
+assert.match(stagingWorkflow, /npm run deploy:smoke -- --recognition="\$STACKR_RECOGNITION_URL" --signed-recognition/);
+assert.match(readFileSync('scripts/deploy/smoke.mjs', 'utf8'), /recognition_signed_vector_lookup/);
 assert.match(stagingWorkflow, /RECOGNITION_REQUIRED:\$\{\{ inputs\.release_scope/);
 assert.match(stagingWorkflow, /--require-published-catalogue/);
 assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);

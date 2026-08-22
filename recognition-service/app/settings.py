@@ -2,8 +2,15 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _clean_secret(value: SecretStr | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = value.get_secret_value().lstrip("\ufeff").strip()
+    return cleaned or None
 
 
 class Settings(BaseSettings):
@@ -46,7 +53,7 @@ class Settings(BaseSettings):
     database_url: SecretStr | None = None
     supabase_url: str | None = None
     supabase_service_role_key: SecretStr | None = None
-    fallback_storage_bucket: str = "private-scan-uploads"
+    fallback_storage_bucket: str = "stackr-scan-temp"
     local_storage_root: Path | None = None
 
     metrics_token: SecretStr | None = None
@@ -60,25 +67,33 @@ class Settings(BaseSettings):
 
     concurrency_hint: int = Field(default=1, ge=1, le=64)
 
+    @field_validator("catalogue_api_url", "model_url", "supabase_url", mode="before")
+    @classmethod
+    def clean_url_setting(cls, value):
+        if value is None:
+            return None
+        cleaned = str(value).lstrip("\ufeff").strip()
+        return cleaned or None
+
     @property
     def metrics_secret(self) -> str | None:
-        return self.metrics_token.get_secret_value() if self.metrics_token else None
+        return _clean_secret(self.metrics_token)
 
     @property
     def gateway_service_secret_value(self) -> str | None:
-        return self.gateway_service_secret.get_secret_value() if self.gateway_service_secret else None
+        return _clean_secret(self.gateway_service_secret)
 
     @property
     def service_role_secret(self) -> str | None:
-        return self.supabase_service_role_key.get_secret_value() if self.supabase_service_role_key else None
+        return _clean_secret(self.supabase_service_role_key)
 
     @property
     def database_url_secret(self) -> str | None:
-        return self.database_url.get_secret_value() if self.database_url else None
+        return _clean_secret(self.database_url)
 
     @property
     def catalogue_api_secret(self) -> str | None:
-        return self.catalogue_api_key.get_secret_value() if self.catalogue_api_key else None
+        return _clean_secret(self.catalogue_api_key)
 
 
 @lru_cache(maxsize=1)

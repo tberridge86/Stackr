@@ -39,6 +39,35 @@ def candidate(
     )
 
 
+class RecordingRepository(InMemoryRepository):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.vector_scope: dict[str, str | None] | None = None
+
+    async def vector_lookup(
+        self,
+        *,
+        embedding: list[float],
+        model_version: str,
+        language: str | None,
+        limit: int,
+        collector_number: str | None = None,
+        set_code: str | None = None,
+    ) -> list[CandidateRecord]:
+        self.vector_scope = {
+            "collector_number": collector_number,
+            "set_code": set_code,
+        }
+        return await super().vector_lookup(
+            embedding=embedding,
+            model_version=model_version,
+            language=language,
+            limit=limit,
+            collector_number=collector_number,
+            set_code=set_code,
+        )
+
+
 def settings(tmp_path: Path | None = None) -> Settings:
     return Settings(
         model_version="test-model-v1",
@@ -144,6 +173,31 @@ def test_fast_path_identify_returns_component_scores_and_no_auto_add(tmp_path):
     assert diagnostics.records[0].ocr_summary["hasText"] is True
 
 
+def test_identify_pushes_normalised_ocr_scope_into_vector_lookup(tmp_path):
+    service_settings = settings(tmp_path)
+    repository = RecordingRepository(
+        model=ModelRegistryEntry("test-model-v1", "test-index-v1", 4, True),
+        structured_candidates=[candidate(image_similarity=None)],
+        vector_candidates=[candidate()],
+    )
+    app = create_app(
+        settings=service_settings,
+        repository=repository,
+        storage=LocalStorageClient(tmp_path),
+        diagnostics=MemoryDiagnosticSink(),
+        model=EmbeddingModel(service_settings),
+    )
+
+    with TestClient(app) as client:
+        response = client.post("/v1/recognition/identify", json=identify_payload())
+
+    assert response.status_code == 200
+    assert repository.vector_scope == {
+        "collector_number": "157/165",
+        "set_code": "SV2a",
+    }
+
+
 def test_trace_context_continues_without_recording_request_payload(tmp_path):
     client, _, _ = make_client(tmp_path)
     incoming = "00-11111111111111111111111111111111-2222222222222222-01"
@@ -221,6 +275,47 @@ def test_fallback_path_uses_private_key_and_hashes_key(tmp_path):
     assert embed_response.status_code == 200
     assert embed_response.json()["embeddingDimensions"] == 4
     assert model.load_count == 1
+
+
+def test_fallback_path_averages_two_private_frames(tmp_path):
+    image_dir = tmp_path / "scans"
+    image_dir.mkdir()
+    Image.new("RGB", (320, 448), color=(180, 40, 30)).save(image_dir / "card-1.jpg")
+    Image.new("RGB", (320, 448), color=(170, 55, 35)).save(image_dir / "card-2.jpg")
+    client, diagnostics, model = make_client(tmp_path)
+    payload = identify_payload(
+        embedding=None,
+        privateImageKeys=["scans/card-1.jpg", "scans/card-2.jpg"],
+    )
+
+    with client:
+        response = client.post("/v1/recognition/identify", json=payload)
+
+    assert response.status_code == 200
+    assert "multi_frame_consensus_used" in response.json()["reasons"]
+    assert diagnostics.records[0].source_type == "private_image_consensus"
+    assert diagnostics.records[0].image_storage_key_hash is not None
+    assert diagnostics.records[0].diagnostic_payload["fallbackImageCount"] == 2
+    assert model.load_count == 1
+
+
+def test_private_frame_consensus_rejects_duplicate_or_excessive_keys(tmp_path):
+    client, _, _ = make_client(tmp_path)
+    duplicate = identify_payload(
+        embedding=None,
+        privateImageKeys=["scans/card.jpg", "scans/card.jpg"],
+    )
+    excessive = identify_payload(
+        embedding=None,
+        privateImageKeys=["scans/1.jpg", "scans/2.jpg", "scans/3.jpg"],
+    )
+
+    with client:
+        duplicate_response = client.post("/v1/recognition/identify", json=duplicate)
+        excessive_response = client.post("/v1/recognition/identify", json=excessive)
+
+    assert duplicate_response.status_code == 422
+    assert excessive_response.status_code == 422
 
 
 def test_feedback_records_minimised_event(tmp_path):

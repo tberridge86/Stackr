@@ -5,11 +5,12 @@ import time
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
+from PIL import Image
 
 from app.diagnostics import MemoryDiagnosticSink
 from app.main import create_app
 from app.model import EmbeddingModel
-from app.repositories import InMemoryRepository, ModelRegistryEntry
+from app.repositories import InMemoryRepository, ModelRegistryEntry, PrivateScanAsset
 from app.service_auth import sign_service_request
 from app.settings import Settings
 from test_contract import candidate, identify_payload
@@ -21,7 +22,7 @@ USER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 DEVICE_ID = "stackr-test-device-0001"
 
 
-def protected_client(tmp_path):
+def protected_client(tmp_path, *, private_scan_assets=()):
     settings = Settings(
         model_version="test-model-v1",
         model_embedding_dimensions=4,
@@ -37,6 +38,7 @@ def protected_client(tmp_path):
         model=ModelRegistryEntry("test-model-v1", "test-index-v1", 4, True),
         structured_candidates=[candidate(image_similarity=None)],
         vector_candidates=[candidate()],
+        private_scan_assets=private_scan_assets,
         ready_ok=True,
     )
     model = EmbeddingModel(settings)
@@ -49,7 +51,14 @@ def protected_client(tmp_path):
     return TestClient(app)
 
 
-def signed_headers(path: str, body: bytes, *, nonce: str | None = None, timestamp: str | None = None):
+def signed_headers(
+    path: str,
+    body: bytes,
+    *,
+    nonce: str | None = None,
+    timestamp: str | None = None,
+    user_id: str = USER_ID,
+):
     return sign_service_request(
         SECRET,
         service_id=SERVICE_ID,
@@ -58,7 +67,7 @@ def signed_headers(path: str, body: bytes, *, nonce: str | None = None, timestam
         method="POST",
         path=path,
         body=body,
-        user_id=USER_ID,
+        user_id=user_id,
         device_id=DEVICE_ID,
     )
 
@@ -106,3 +115,40 @@ def test_gateway_nonce_replay_and_expired_signatures_are_rejected(tmp_path):
     assert replay.json()["error"]["code"] == "service_replay_detected"
     assert old.status_code == 401
     assert old.json()["error"]["code"] == "service_signature_expired"
+
+
+def test_private_fallback_asset_is_bound_to_signed_gateway_user(tmp_path):
+    image_dir = tmp_path / "scans"
+    image_dir.mkdir()
+    Image.new("RGB", (320, 448), color=(180, 40, 30)).save(image_dir / "card.jpg")
+    asset_id = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+    asset = PrivateScanAsset(
+        asset_id=asset_id,
+        user_id=USER_ID,
+        storage_bucket="stackr-scan-temp",
+        storage_key="scans/card.jpg",
+    )
+    client = protected_client(tmp_path, private_scan_assets=[asset])
+    payload = identify_payload(embedding=None, privateImageKey=asset_id)
+    body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+    owner_headers = {
+        "content-type": "application/json",
+        **signed_headers("/v1/recognition/identify", body),
+    }
+    other_headers = {
+        "content-type": "application/json",
+        **signed_headers(
+            "/v1/recognition/identify",
+            body,
+            user_id="cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        ),
+    }
+
+    with client:
+        owner = client.post("/v1/recognition/identify", content=body, headers=owner_headers)
+        other = client.post("/v1/recognition/identify", content=body, headers=other_headers)
+
+    assert owner.status_code == 200
+    assert "fallback_image_used" in owner.json()["uncertaintyFlags"]
+    assert other.status_code == 404
+    assert other.json()["error"]["code"] == "private_image_unavailable"
