@@ -236,6 +236,31 @@ def create_app(
             ),
         )
 
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        exception_type = exc.__class__.__name__
+        logger.error(
+            json.dumps({
+                "event": "recognition_unhandled_exception",
+                "request_id": request_id,
+                "path": request.url.path,
+                "exception_type": exception_type,
+            }),
+            exc_info=(type(exc), exc, exc.__traceback__),
+        )
+        details = {"exceptionType": exception_type} if service_settings.environment != "production" else None
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content=error_envelope(
+                "internal_error",
+                "Recognition request failed unexpectedly.",
+                request_id,
+                details,
+            ),
+            headers={"X-Request-Id": request_id, "Cache-Control": "no-store"},
+        )
+
     def pipeline(request: Request) -> RecognitionPipeline:
         return request.app.state.pipeline
 

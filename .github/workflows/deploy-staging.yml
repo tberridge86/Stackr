@@ -283,7 +283,7 @@ jobs:
           set -euo pipefail
           diagnostics_dir="$RUNNER_TEMP/stackr-recognition-diagnostics"
           mkdir -p "$diagnostics_dir"
-          npx --yes @railway/cli@5.30.1 logs --latest --lines 160 --filter "@level:error" --json \
+          npx --yes @railway/cli@5.30.1 logs --latest --lines 160 --json \
             --project "$RAILWAY_PROJECT_ID" \
             --environment "$RAILWAY_ENVIRONMENT_ID" \
             --service "$RAILWAY_RECOGNITION_SERVICE_ID" \

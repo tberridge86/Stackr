@@ -68,6 +68,11 @@ class RecordingRepository(InMemoryRepository):
         )
 
 
+class FailingVectorRepository(InMemoryRepository):
+    async def vector_lookup(self, **_kwargs) -> list[CandidateRecord]:
+        raise RuntimeError("test-only vector failure")
+
+
 def settings(tmp_path: Path | None = None) -> Settings:
     return Settings(
         model_version="test-model-v1",
@@ -195,6 +200,34 @@ def test_identify_pushes_normalised_ocr_scope_into_vector_lookup(tmp_path):
     assert repository.vector_scope == {
         "collector_number": "157/165",
         "set_code": "SV2a",
+    }
+
+
+def test_unhandled_failures_return_a_bounded_staging_error(tmp_path):
+    service_settings = settings(tmp_path)
+    repository = FailingVectorRepository(
+        model=ModelRegistryEntry("test-model-v1", "test-index-v1", 4, True),
+        structured_candidates=[],
+        vector_candidates=[],
+    )
+    app = create_app(
+        settings=service_settings,
+        repository=repository,
+        storage=LocalStorageClient(tmp_path),
+        diagnostics=MemoryDiagnosticSink(),
+        model=EmbeddingModel(service_settings),
+    )
+
+    with TestClient(app, raise_server_exceptions=False) as client:
+        response = client.post("/v1/recognition/identify", json=identify_payload())
+
+    assert response.status_code == 500
+    assert response.headers["x-request-id"]
+    assert response.json()["error"] == {
+        "code": "internal_error",
+        "message": "Recognition request failed unexpectedly.",
+        "requestId": response.headers["x-request-id"],
+        "details": {"exceptionType": "RuntimeError"},
     }
 
 
