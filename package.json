@@ -90,6 +90,8 @@
     "test:application-migration": "tsx scripts/test-stackr-application-migration.ts",
     "report:provider-retirement": "tsx scripts/evaluate-provider-retirement.ts",
     "export:recognition-feedback-dataset": "tsx scripts/export-recognition-feedback-dataset.ts",
+    "recognition:export-internet-fingerprints": "tsx scripts/export-recognition-internet-evidence-manifest.ts",
+    "test:internet-listing-evidence": "tsx scripts/test-internet-listing-evidence.ts",
     "fit:evidence-fusion": "tsx scripts/fit-evidence-fusion-calibration.ts",
     "test:evidence-fusion": "tsx scripts/test-evidence-fusion.ts",
     "report:variant-resolver": "tsx scripts/report-variant-resolver-accuracy.ts",

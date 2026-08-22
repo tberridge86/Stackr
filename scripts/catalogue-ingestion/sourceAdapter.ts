@@ -117,6 +117,7 @@ export type NormalisedRecord = {
   sourceConfidence: number;
   sourceUpdatedAt?: string | null;
   licenceStatus: LicenceStatus;
+  evidenceOnly?: boolean;
   raw: Record<string, unknown>;
 };
 

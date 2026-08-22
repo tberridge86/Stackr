@@ -1,4 +1,5 @@
 import { ManualCsvSourceAdapter, ManualJsonSourceAdapter } from './manualAdapters';
+import { EbayListingEvidenceSourceAdapter } from './ebayListingEvidenceAdapter';
 import { PikaQianApiSourceAdapter } from './pikaqianAdapter';
 import { PokemonTcgApiSourceAdapter } from './pokemonTcgApiAdapter';
 import { PikaQianSourceAdapter, XimilarResidualScanSourceAdapter } from './providerFileAdapters';
@@ -51,6 +52,14 @@ export function createSourceAdapter(options: AdapterOptions): SourceAdapter {
       assetLicenceStatus: options.assetLicenceStatus ?? 'under_review',
     });
   }
+  if (source === 'ebay-listing-evidence' || source === 'ebay-recognition-evidence') {
+    if (!options.file) {
+      throw new Error('eBay recognition evidence requires --file=path/to/recognition-fingerprints.json');
+    }
+    return new EbayListingEvidenceSourceAdapter({
+      manifestPath: options.file,
+    });
+  }
   if (source === 'pikaqian') {
     if (!options.file) {
       return new PikaQianApiSourceAdapter({
@@ -79,6 +88,7 @@ export const supportedSourceAdapters = [
   'manual-json',
   'tcgdex',
   'pokemon-tcg-api',
+  'ebay-listing-evidence',
   'pikaqian',
   'ximilar-residual-scans',
 ];

@@ -44,6 +44,7 @@ jobs:
       - run: npm run test:variant-resolver
       - run: npm run test:catalogue-schema
       - run: npm run test:catalogue-ingestion
+      - run: npm run test:internet-listing-evidence
       - run: npm run test:master-catalogue-importer
       - run: npx tsx scripts/test-stackr-quality-evaluation.ts
 

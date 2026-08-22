@@ -8,10 +8,19 @@ const STRICT_FOREIGN_IMPORT_PATH =
   'supabase/migrations/20260801090000_strict_foreign_catalogue_import_safety.sql';
 const PUBLICATION_SNAPSHOT_PATH =
   'supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql';
+const RECOGNITION_FINGERPRINT_ASSET_PATH =
+  'supabase/migrations/20260822183000_add_bounded_recognition_fingerprint_asset_lookup.sql';
+const RECOGNITION_FINGERPRINT_CONTEXT_PATH =
+  'supabase/migrations/20260822184500_add_paged_recognition_fingerprint_context.sql';
+const RECOGNITION_FINGERPRINT_SECURITY_PATH =
+  'supabase/migrations/20260822191000_restore_bounded_definer_fingerprint_reads.sql';
 const sql = readFileSync(MIGRATION_PATH, 'utf8');
 const reconciliationSql = readFileSync(RECONCILIATION_PATH, 'utf8');
 const strictForeignImportSql = readFileSync(STRICT_FOREIGN_IMPORT_PATH, 'utf8');
 const publicationSnapshotSql = readFileSync(PUBLICATION_SNAPSHOT_PATH, 'utf8');
+const recognitionFingerprintAssetSql = readFileSync(RECOGNITION_FINGERPRINT_ASSET_PATH, 'utf8');
+const recognitionFingerprintContextSql = readFileSync(RECOGNITION_FINGERPRINT_CONTEXT_PATH, 'utf8');
+const recognitionFingerprintSecuritySql = readFileSync(RECOGNITION_FINGERPRINT_SECURITY_PATH, 'utf8');
 
 function expectSql(pattern: RegExp, message: string) {
   assert.match(sql, pattern, message);
@@ -346,6 +355,21 @@ function assertLanguagePublicationSnapshots() {
   }
 }
 
+function assertRecognitionFingerprintReadsAreBoundedAndPublicOnly() {
+  assert.match(recognitionFingerprintAssetSql, /cardinality\(p_variant_ids\) > 500/);
+  assert.match(recognitionFingerprintAssetSql, /a\.recognition_reference_eligible/);
+  assert.match(recognitionFingerprintAssetSql, /a\.asset_visibility = 'public_catalogue'/);
+  assert.match(recognitionFingerprintAssetSql, /a\.storage_provider = 'supabase_storage'/);
+  assert.match(recognitionFingerprintContextSql, /p_limit > 500/);
+  assert.match(recognitionFingerprintContextSql, /p_language_code not in \('en', 'ja', 'zh-cn', 'zh-tw'\)/);
+  assert.match(recognitionFingerprintContextSql, /cv\.status = 'published'/);
+  assert.match(recognitionFingerprintContextSql, /a\.rights_status = 'approved'/);
+  assert.doesNotMatch(recognitionFingerprintContextSql, /seller|price|user_id/i);
+  assert.match(recognitionFingerprintSecuritySql, /security definer/g);
+  assert.match(recognitionFingerprintSecuritySql, /revoke all on function api\.list_recognition_fingerprint_context[\s\S]+from public/);
+  assert.match(recognitionFingerprintSecuritySql, /grant execute on function api\.list_recognition_fingerprint_context[\s\S]+to anon, authenticated, service_role/);
+}
+
 assertMigrationStructure();
 assertSupportedLanguagesSeeded();
 assertVariantTaxonomySeeded();
@@ -357,5 +381,6 @@ assertPublicSafeProjection();
 assertCatalogueSeedReconciliation();
 assertSuspiciousLegacyRowsAreQuarantined();
 assertLanguagePublicationSnapshots();
+assertRecognitionFingerprintReadsAreBoundedAndPublicOnly();
 
 console.log('Canonical catalogue schema migration tests passed.');

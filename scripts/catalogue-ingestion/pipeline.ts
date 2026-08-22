@@ -1905,6 +1905,23 @@ async function reconcileRecord(
     return { status: 'conflicted' as const };
   }
 
+  if (normalised.evidenceOnly) {
+    await auditDecision(db, {
+      sourceId,
+      importRunId,
+      rawRecordId,
+      requestId,
+      decisionType: 'created',
+      entitySchema: 'ingest',
+      entityTable: 'raw_source_records',
+      entityId: rawRecordId,
+      confidence: normalised.sourceConfidence,
+      reason: 'recognition_internet_evidence_retained_without_catalogue_mutation',
+      proposed: normalised.raw,
+    });
+    return { status: 'inserted' as const, rawRecordId };
+  }
+
   if (normalised.recordType === 'set') {
     return upsertSet(db, sourceId, importRunId, rawRecordId, normalised, requestId);
   }

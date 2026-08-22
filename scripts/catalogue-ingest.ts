@@ -92,6 +92,7 @@ Examples:
   npm run catalogue:ingest -- run-language --source=tcgdex --language=en --offset=500 --limit=500 --target=staging
   npm run catalogue:ingest -- run-language --source=tcgdex --language=ja --snapshotRoot=./snapshot --snapshotVersion=<sha> --target=staging
   npm run catalogue:ingest -- run-set --source=tcgdex --language=ja --setId=sv2a --target=staging --allowImageAssets
+  npm run catalogue:ingest -- run-source --source=ebay-listing-evidence --file=recognition-fingerprints.json --limit=100 --target=staging
   npm run catalogue:quality-report -- --language=ja
 
 Pinned snapshots:
@@ -101,6 +102,10 @@ Pinned snapshots:
 Image assets:
   Off by default. Use --allowImageAssets only after each imported record has
   language + set_code + collector_number + variant + finish.
+
+Internet recognition evidence:
+  eBay listing evidence is retained in ingest.raw_source_records with provenance.
+  It cannot mutate catalogue identities or publish assets automatically.
 `);
 }
 
