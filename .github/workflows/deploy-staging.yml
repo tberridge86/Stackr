@@ -266,6 +266,7 @@ jobs:
         run: npm run deploy:verify-model -- --require-active
 
       - name: Verify private service readiness
+        id: private_service_readiness
         run: |
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
             npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
@@ -274,6 +275,40 @@ jobs:
           else
             npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL"
           fi
+
+      - name: Print redacted recognition failure diagnostics
+        if: failure() && steps.private_service_readiness.outcome == 'failure' && inputs.release_scope == 'recognition_service'
+        shell: bash
+        run: |
+          set -euo pipefail
+          diagnostics_dir="$RUNNER_TEMP/stackr-recognition-diagnostics"
+          mkdir -p "$diagnostics_dir"
+          npx --yes @railway/cli@5.30.1 logs --latest --lines 160 --filter "@level:error" --json \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_RECOGNITION_SERVICE_ID" \
+            > "$diagnostics_dir/raw.jsonl"
+          node - "$diagnostics_dir/raw.jsonl" "$diagnostics_dir/safe.jsonl" <<'NODE'
+          const { readFileSync, writeFileSync } = require('node:fs');
+          const [source, target] = process.argv.slice(2);
+          const secretValues = [
+            process.env.RAILWAY_API_TOKEN,
+            process.env.RECOGNITION_SERVICE_SECRET,
+            process.env.SUPABASE_DB_URL,
+            process.env.BACKEND_ORIGIN_KEY,
+            process.env.BACKEND_ADMIN_KEY,
+          ].filter((value) => typeof value === 'string' && value.length >= 8);
+          let safe = readFileSync(source, 'utf8');
+          for (const value of secretValues) safe = safe.split(value).join('[REDACTED]');
+          safe = safe
+            .replace(/postgres(?:ql)?:\/\/[^\s"']+@/gi, 'postgresql://[REDACTED]@')
+            .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, '[REDACTED_JWT]');
+          writeFileSync(target, safe);
+          NODE
+          rm -f "$diagnostics_dir/raw.jsonl"
+          node scripts/deploy/secret-scan.mjs --directory="$diagnostics_dir"
+          sed -n '1,160p' "$diagnostics_dir/safe.jsonl"
+          rm -rf "$diagnostics_dir"
 
       - name: Upload and activate the staging gateway version
         if: inputs.release_scope != 'recognition_service'
@@ -321,4 +356,5 @@ jobs:
         run: |
           rm -rf "$RUNNER_TEMP/stackr-backup"
           rm -rf "$RUNNER_TEMP/stackr-backup-diagnostics"
+          rm -rf "$RUNNER_TEMP/stackr-recognition-diagnostics"
           rm -f "$RUNNER_TEMP/stackr-worker-secrets.json"
