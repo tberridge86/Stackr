@@ -502,7 +502,10 @@ assert.deepEqual(
 );
 assert.match(stagingWorkflow, /Deploy recognition container[\s\S]+if: inputs\.release_scope != 'catalogue_api'/);
 assert.match(stagingWorkflow, /Recognition-service-only deployments do not apply database migrations/);
-assert.match(stagingWorkflow, /npm run deploy:smoke -- --recognition="\$STACKR_RECOGNITION_URL" --signed-recognition/);
+assert.match(stagingWorkflow, /Load the recognition smoke credential from Railway/);
+assert.match(stagingWorkflow, /variable list --json[\s\S]+STACKR_RECOGNITION_GATEWAY_SERVICE_SECRET/);
+assert.match(stagingWorkflow, /::add-mask::\$runtime_secret/);
+assert.match(stagingWorkflow, /npm run deploy:smoke -- --gateway= --backend= --recognition="\$STACKR_RECOGNITION_URL" --signed-recognition/);
 assert.match(readFileSync('scripts/deploy/smoke.mjs', 'utf8'), /recognition_signed_vector_lookup/);
 assert.match(stagingWorkflow, /RECOGNITION_REQUIRED:\$\{\{ inputs\.release_scope/);
 assert.match(stagingWorkflow, /--require-published-catalogue/);

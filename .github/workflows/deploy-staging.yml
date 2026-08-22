@@ -136,6 +136,47 @@ jobs:
             *) echo "Unexpected staging recognition URL." >&2; exit 1 ;;
           esac
 
+      - name: Load the recognition smoke credential from Railway
+        if: inputs.release_scope == 'recognition_service'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "$RECOGNITION_SERVICE_SECRET" ]; then
+            echo "Using the configured GitHub staging recognition credential."
+            exit 0
+          fi
+
+          runtime_secret="$(
+            npx --yes @railway/cli@5.30.1 variable list --json \
+              --project "$RAILWAY_PROJECT_ID" \
+              --environment "$RAILWAY_ENVIRONMENT_ID" \
+              --service "$RAILWAY_RECOGNITION_SERVICE_ID" |
+              node -e '
+                let input = "";
+                process.stdin.setEncoding("utf8");
+                process.stdin.on("data", (chunk) => { input += chunk; });
+                process.stdin.on("end", () => {
+                  const key = "STACKR_RECOGNITION_GATEWAY_SERVICE_SECRET";
+                  const payload = JSON.parse(input);
+                  const row = Array.isArray(payload)
+                    ? payload.find((item) => item?.name === key || item?.key === key)
+                    : null;
+                  const value = row?.value
+                    ?? payload?.[key]
+                    ?? payload?.variables?.[key]
+                    ?? null;
+                  if (typeof value !== "string" || value.length === 0 || /[\r\n]/.test(value)) {
+                    process.exit(1);
+                  }
+                  process.stdout.write(value);
+                });
+              '
+          )"
+          test -n "$runtime_secret"
+          echo "::add-mask::$runtime_secret"
+          printf 'RECOGNITION_SERVICE_SECRET=%s\n' "$runtime_secret" >> "$GITHUB_ENV"
+          unset runtime_secret
+
       - name: Prepare the staging database connection
         if: inputs.release_scope != 'recognition_service'
         shell: bash
@@ -229,7 +270,7 @@ jobs:
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
             npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
           elif [ "${{ inputs.release_scope }}" = "recognition_service" ]; then
-            npm run deploy:smoke -- --recognition="$STACKR_RECOGNITION_URL" --signed-recognition
+            npm run deploy:smoke -- --gateway= --backend= --recognition="$STACKR_RECOGNITION_URL" --signed-recognition
           else
             npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL"
           fi
