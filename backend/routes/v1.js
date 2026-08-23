@@ -45,9 +45,9 @@ function getSupabaseServerKeyCandidate() {
 function getSupabaseAdmin() {
   if (supabaseAdmin) return supabaseAdmin;
   const url = process.env.SUPABASE_URL;
-  const key = getSupabaseKeyCandidate();
+  const key = getSupabaseServerKeyCandidate();
   if (!url || !key) {
-    throw new Error('Supabase credentials are not configured on the backend.');
+    throw new Error('Supabase server credentials are not configured on the backend.');
   }
   console.info(JSON.stringify({
     level: 'info',
