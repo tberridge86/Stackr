@@ -211,6 +211,21 @@ async function downloadImage(url) {
   return body;
 }
 
+function quadrilateralHasInteriorMargin(quadrilateral, width, height, marginRatio = 0.006) {
+  const points = [
+    quadrilateral.topLeft,
+    quadrilateral.topRight,
+    quadrilateral.bottomRight,
+    quadrilateral.bottomLeft,
+  ];
+  const minimumX = width * marginRatio;
+  const maximumX = width * (1 - marginRatio);
+  const minimumY = height * marginRatio;
+  const maximumY = height * (1 - marginRatio);
+  return points.every((point) => point.x >= minimumX && point.x <= maximumX
+    && point.y >= minimumY && point.y <= maximumY);
+}
+
 async function prepareListingImage(entry, outputDir, maximumImages) {
   const failures = [];
   for (const originalUrl of entry.assessment.imageUrls.slice(0, maximumImages)) {
@@ -226,17 +241,22 @@ async function prepareListingImage(entry, outputDir, maximumImages) {
         .jpeg({ quality: 95, mozjpeg: true })
         .toBuffer();
       const localisation = localiseCardFromJpegBase64(jpeg.toString('base64'), {
-        minFrameCoverage: 0.08,
-        maxFrameCoverage: 0.98,
-        minEdgeCompleteness: 0.12,
-        safetyMarginRatio: 0.02,
+        minFrameCoverage: 0.28,
+        maxFrameCoverage: 0.96,
+        minEdgeCompleteness: 0.18,
+        safetyMarginRatio: 0.14,
       });
       if (
         localisation.status !== 'confident'
         || !localisation.quadrilateral
-        || localisation.confidence.score < 0.72
-        || localisation.confidence.aspectScore < 0.62
+        || localisation.confidence.score < 0.78
+        || localisation.confidence.aspectScore < 0.78
         || !localisation.confidence.cornersDetected
+        || !quadrilateralHasInteriorMargin(
+          localisation.quadrilateral,
+          sourceMetadata.width,
+          sourceMetadata.height,
+        )
       ) {
         throw new Error(`card_localisation_${localisation.status}`);
       }
@@ -345,8 +365,12 @@ async function prepare() {
       conflicts: 0,
       riskyListingTitlesExcluded: true,
       cardLocalisationStatus: 'confident',
-      minimumLocalisationScore: 0.72,
-      minimumAspectScore: 0.62,
+      minimumLocalisationScore: 0.78,
+      minimumAspectScore: 0.78,
+      minimumFrameCoverage: 0.28,
+      minimumEdgeCompleteness: 0.18,
+      cardCropExpansionRatio: 0.14,
+      expandedCardMustRemainInsideSourceFrame: true,
     },
     highEvidenceRowsRead: evidence.length,
     strictEvidenceRows: strict.length,
@@ -419,10 +443,6 @@ async function commit() {
   );
   const results = [];
   for (const promotion of promotions) {
-    if (eligibleBefore.has(promotion.variantId)) {
-      results.push({ variantId: promotion.variantId, status: 'already_eligible' });
-      continue;
-    }
     const stableAssetId = `ebay-recognition-v1:${promotion.variantId}`;
     const { data: existing, error: existingError } = await supabase.schema('catalog').from('assets')
       .select('id,asset_id,variant_id,content_sha256,storage_bucket,storage_key,recognition_reference_eligible')
@@ -430,7 +450,20 @@ async function commit() {
       .maybeSingle();
     if (existingError) throw existingError;
     if (existing?.recognition_reference_eligible && existing.variant_id === promotion.variantId) {
-      results.push({ ...existing, variantId: promotion.variantId, status: 'reused_committed' });
+      results.push({
+        ...existing,
+        variantId: promotion.variantId,
+        languageCode: promotion.fingerprint.languageCode,
+        status: 'reused_committed',
+      });
+      continue;
+    }
+    if (eligibleBefore.has(promotion.variantId)) {
+      results.push({
+        variantId: promotion.variantId,
+        languageCode: promotion.fingerprint.languageCode,
+        status: 'already_eligible',
+      });
       continue;
     }
     if (existing) throw new Error(`Existing staged asset ${stableAssetId} is not safely reusable.`);
