@@ -34,6 +34,19 @@ function formatDate(value?: string | null) {
   }
 }
 
+function formatSoldDate(value?: string | null) {
+  if (!value) return null;
+  try {
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    }).format(new Date(value));
+  } catch {
+    return value;
+  }
+}
+
 function getStateCopy(data: PricingV2Response | null) {
   if (!data) {
     return {
@@ -133,6 +146,28 @@ export default function PricingV2Summary(props: Props) {
 
       <Text style={styles.body}>{error ?? copy.body}</Text>
 
+      <View style={styles.lastSoldBox}>
+        <Text style={styles.lastSoldEyebrow}>eBay last sold</Text>
+        {data?.ebayLastSold ? (
+          <>
+            <Text style={styles.lastSoldValue}>
+              {formatMoney(data.ebayLastSold.deliveredPrice)} delivered
+            </Text>
+            <Text style={styles.lastSoldMeta}>
+              Sold {formatSoldDate(data.ebayLastSold.soldAt)}
+              {data.ebayLastSold.shippingPrice ? ` · includes ${formatMoney(data.ebayLastSold.shippingPrice)} delivery` : ''}
+            </Text>
+            {data.ebayLastSold.sourceTitle ? (
+              <Text style={styles.lastSoldTitle} numberOfLines={2}>{data.ebayLastSold.sourceTitle}</Text>
+            ) : null}
+          </>
+        ) : (
+          <Text style={styles.lastSoldUnavailable}>
+            No verified eBay sold transaction is stored for this exact variant yet.
+          </Text>
+        )}
+      </View>
+
       <View style={styles.metaRow}>
         <View style={[styles.confidencePill, { borderColor: confidenceColor, backgroundColor: confidenceColor + '14' }]}>
           <Text style={[styles.confidenceText, { color: confidenceColor }]}>
@@ -215,6 +250,48 @@ const makeStyles = (theme: any) => StyleSheet.create({
     lineHeight: 19,
     fontWeight: '700',
     marginTop: 8,
+  },
+  lastSoldBox: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 12,
+    backgroundColor: theme.colors.card,
+    padding: 12,
+  },
+  lastSoldEyebrow: {
+    color: theme.colors.textSoft,
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  lastSoldValue: {
+    color: theme.colors.text,
+    fontSize: 18,
+    lineHeight: 23,
+    fontWeight: '900',
+    marginTop: 3,
+  },
+  lastSoldMeta: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '800',
+    marginTop: 3,
+  },
+  lastSoldTitle: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '700',
+    marginTop: 6,
+  },
+  lastSoldUnavailable: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '700',
+    marginTop: 4,
   },
   metaRow: {
     flexDirection: 'row',

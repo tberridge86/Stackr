@@ -43,6 +43,7 @@
         "EXPO_PUBLIC_APP_VARIANT": "staging",
         "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
         "EXPO_PUBLIC_STACKR_API_ENABLED": "true",
+        "EXPO_PUBLIC_PRICING_ENGINE_V2_ENABLED": "true",
         "EXPO_PUBLIC_STACKR_API_URL": "https://stackr-api-gateway-staging.berridge14.workers.dev",
         "EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY": "true",
         "EXPO_PUBLIC_STACKR_RECOGNITION_MODEL_VERSION": "dinov2_vits14",

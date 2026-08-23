@@ -227,7 +227,9 @@ async function assertRoutes() {
         estimateVersion: 'market-pricing-v1.0.0',
       };
     },
-    async priceHistory(id) {
+    async priceHistory(id, input) {
+      assert.equal(input.observationType, 'sold_observation');
+      assert.equal(input.providerCode, 'ebay_sold_authorised');
       return {
         variantId: id,
         observations: [
@@ -285,7 +287,7 @@ async function assertRoutes() {
     assert.equal(priceBody.data.status, 'recent_sold_value');
     assert.equal(priceBody.data.sample.sold, 5);
 
-    const history = await fetch(`${baseUrl}/cards/${variantId}/price-history`);
+    const history = await fetch(`${baseUrl}/cards/${variantId}/price-history?observationType=sold_observation&providerCode=ebay_sold_authorised`);
     assert.equal(history.status, 200);
     const historyBody = await history.json();
     assert.equal(historyBody.data.observations[0].observationType, 'sold_observation');

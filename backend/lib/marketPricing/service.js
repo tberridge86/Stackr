@@ -178,6 +178,7 @@ function applyHistoryFilters(query, input = {}) {
   const currency = normalizeCurrency(input.currency);
   query = query.eq('product_kind', productType).eq('currency_code', currency);
   if (clean(input.observationType)) query = query.eq('observation_type', clean(input.observationType));
+  if (clean(input.providerCode)) query = query.eq('provider_code', clean(input.providerCode));
   if (clean(input.condition)) query = query.eq('condition_code', clean(input.condition));
   if (clean(input.grader)) query = query.eq('grader_code', clean(input.grader).toUpperCase());
   return query;

@@ -47,7 +47,7 @@ export const ROUTES = [
     ...publicGet,
     cache: 'market',
     rate: 'pricing',
-    query: query('productType', 'currency', 'condition', 'grader', 'grade', 'observationType', 'cursor', 'limit'),
+    query: query('productType', 'currency', 'condition', 'grader', 'grade', 'observationType', 'providerCode', 'cursor', 'limit'),
   },
   { id: 'market_movers', pattern: /^\/v1\/market\/movers$/, ...publicGet, cache: 'market', rate: 'pricing', query: query('productType', 'currency', 'limit') },
   { id: 'market_opportunities', pattern: /^\/v1\/market\/opportunities$/, ...publicGet, cache: 'market', rate: 'pricing', query: query('productType', 'currency', 'limit') },

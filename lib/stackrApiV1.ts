@@ -814,6 +814,7 @@ export class StackrApiClient {
     grader?: string;
     grade?: string;
     observationType?: 'sold_observation' | 'active_listing';
+    providerCode?: string;
     cursor?: string | null;
     limit?: number;
   } = {}) {
