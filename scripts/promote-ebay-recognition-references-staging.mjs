@@ -116,17 +116,27 @@ async function sourceId(supabase) {
 
 async function readHighEvidence(supabase, source) {
   const rows = [];
-  const pageSize = 750;
+  const pageSize = 250;
   for (let offset = 0;; offset += pageSize) {
-    const { data, error } = await supabase.schema('ingest').from('raw_source_records')
-      .select('id,external_id,source_url,retrieved_at,raw_payload')
-      .eq('source_id', source)
-      .eq('validation_status', 'valid')
-      .is('deprecated_at', null)
-      .eq('raw_payload->assessment->>confidenceBand', 'high')
-      .order('id', { ascending: true })
-      .range(offset, offset + pageSize - 1);
-    if (error) throw error;
+    let data = null;
+    let finalError = null;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const result = await supabase.schema('ingest').from('raw_source_records')
+        .select('id,external_id,source_url,retrieved_at,raw_payload')
+        .eq('source_id', source)
+        .eq('validation_status', 'valid')
+        .is('deprecated_at', null)
+        .eq('raw_payload->assessment->>confidenceBand', 'high')
+        .order('id', { ascending: true })
+        .range(offset, offset + pageSize - 1);
+      data = result.data;
+      finalError = result.error;
+      if (!finalError) break;
+      if (attempt < 4) {
+        await new Promise((resolve) => setTimeout(resolve, 500 * (2 ** attempt)));
+      }
+    }
+    if (finalError) throw finalError;
     rows.push(...(data ?? []));
     if ((data ?? []).length < pageSize) break;
   }
@@ -600,9 +610,12 @@ async function main() {
 }
 
 main().catch((error) => {
+  const detail = error instanceof Error
+    ? error.message
+    : (error && typeof error === 'object' ? JSON.stringify(error) : String(error));
   console.error(JSON.stringify({
     ok: false,
-    error: error instanceof Error ? error.message : String(error),
+    error: detail,
     productionModified: false,
   }, null, 2));
   process.exitCode = 1;
