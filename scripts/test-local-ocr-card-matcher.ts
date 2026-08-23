@@ -1,5 +1,6 @@
 import {
   extractLocalOcrSignals,
+  getLocalOcrLanguageConstraint,
   hasIndependentLocalOcrConfirmationEvidence,
   parseLocalOcrPrintedNumber,
   rankLocalOcrCandidates,
@@ -63,6 +64,64 @@ function testJapaneseFullWidthNumberNormalisation() {
   const signals = extractLocalOcrSignals(regions);
   assert(signals.language === 'ja', 'Expected Japanese language signal');
 }
+
+function testKoreanNameAndLanguageScoring() {
+  const regions: LocalOcrRegionText[] = [
+    { role: 'name', text: '리자몽ex' },
+    { role: 'collector-number', text: '007/165' },
+  ];
+  const signals = extractLocalOcrSignals(regions);
+  const candidate = scoreLocalOcrCandidate(makeCard({
+    id: 'korean-charizard',
+    name: '리자몽ex',
+    language: 'ko',
+    number: '007',
+    number_denominator: 165,
+    set_printed_total: 165,
+  }), signals);
+
+  assert(signals.language === 'ko', 'Expected Korean language signal');
+  assert(candidate.reasons.includes('language:ko'), 'Expected Korean language to match');
+  assert(
+    candidate.reasons.some((reason) => reason.startsWith('name')),
+    'Expected Hangul card name to score'
+  );
+}
+
+function testChineseRegionLanguageAliases() {
+  const signals = extractLocalOcrSignals([
+    { role: 'name', text: '喷火龙ex' },
+    { role: 'collector-number', text: '007/151' },
+  ]);
+  const simplified = scoreLocalOcrCandidate(makeCard({
+    id: 'simplified-charizard',
+    name: '喷火龙ex',
+    language: 'zh-cn',
+    number: '007',
+    number_denominator: 151,
+    set_printed_total: 151,
+  }), signals);
+  const traditional = scoreLocalOcrCandidate(makeCard({
+    id: 'traditional-charizard',
+    name: '噴火龍ex',
+    language: 'zh-tw',
+    number: '007',
+    number_denominator: 151,
+    set_printed_total: 151,
+  }), signals);
+
+  assert(signals.language === 'zh', 'Expected Chinese language signal');
+  assert(simplified.reasons.includes('language:zh'), 'Expected zh-cn to match Chinese OCR');
+  assert(traditional.reasons.includes('language:zh'), 'Expected zh-tw to match Chinese OCR');
+  assert(!simplified.reasons.includes('language-mismatch'), 'Expected no zh-cn language mismatch');
+  assert(!traditional.reasons.includes('language-mismatch'), 'Expected no zh-tw language mismatch');
+  assert(getLocalOcrLanguageConstraint(signals.language) === null, 'Generic Han OCR must not force zh-tw downstream.');
+}
+
+assert(getLocalOcrLanguageConstraint('en') === 'en', 'English OCR must keep its language constraint.');
+assert(getLocalOcrLanguageConstraint('ja') === 'ja', 'Japanese OCR must keep its language constraint.');
+assert(getLocalOcrLanguageConstraint('ko') === 'ko', 'Korean OCR must keep its language constraint.');
+assert(getLocalOcrLanguageConstraint('unknown') === null, 'Unknown OCR must not constrain language.');
 
 function testAmbiguousVariantIsNotStrong() {
   const regions: LocalOcrRegionText[] = [
@@ -136,6 +195,8 @@ function testOcrOnlyEvidenceCannotAutoConfirm() {
 
 testEnglishNumberAndSetScoring();
 testJapaneseFullWidthNumberNormalisation();
+testKoreanNameAndLanguageScoring();
+testChineseRegionLanguageAliases();
 testAmbiguousVariantIsNotStrong();
 testOcrOnlyEvidenceCannotAutoConfirm();
 

@@ -82,6 +82,7 @@ export type ScanIdentifyHints = {
   remoteConditionAnalysis?: boolean | null;
   requestedXimilarEndpoint?: XimilarRecognitionEndpoint | null;
   rectifiedImageUri?: string | null;
+  rectifiedImageUris?: string[] | null;
   privateImageKey?: string | null;
 };
 

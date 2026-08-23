@@ -1,4 +1,6 @@
-const DEFAULT_PRICE_API_URL = 'https://pocketvault-production.up.railway.app';
+const APP_VARIANT = process.env.EXPO_PUBLIC_APP_VARIANT ?? process.env.APP_VARIANT ?? 'production';
+const IS_STAGING_APP = APP_VARIANT === 'staging';
+const DEFAULT_PRICE_API_URL = IS_STAGING_APP ? '' : 'https://pocketvault-production.up.railway.app';
 
 export const PRICE_API_URL = (
   process.env.PRICE_API_URL
@@ -8,7 +10,7 @@ export const PRICE_API_URL = (
 export const STACKR_API_URL = (
   process.env.EXPO_PUBLIC_STACKR_API_URL
   ?? process.env.STACKR_API_URL
-  ?? PRICE_API_URL
+  ?? (IS_STAGING_APP ? '' : PRICE_API_URL)
 ).replace(/\/$/, '');
 export const BETA_TRADE_DEMO_MODE = process.env.EXPO_PUBLIC_BETA_TRADE_DEMO_MODE !== 'false';
 export const CAPTURE_GEOMETRY_V2_ENABLED = process.env.EXPO_PUBLIC_CAPTURE_GEOMETRY_V2 !== 'false';
@@ -20,6 +22,7 @@ export const SCAN_QUALITY_DEVICE_PROFILE = process.env.EXPO_PUBLIC_SCAN_QUALITY_
 export const SCAN_QUALITY_DIAGNOSTICS_ENABLED = process.env.EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS === 'true';
 export const SCAN_AUTO_CAPTURE_V2_ENABLED = process.env.EXPO_PUBLIC_SCAN_AUTO_CAPTURE_V2 !== 'false';
 export const SCAN_AUTO_CAPTURE_STABLE_FRAMES = Number(process.env.EXPO_PUBLIC_SCAN_AUTO_CAPTURE_STABLE_FRAMES ?? 2);
+export const SCAN_FRAME_CONSENSUS_ENABLED = process.env.EXPO_PUBLIC_SCAN_FRAME_CONSENSUS !== 'false';
 export const SCAN_LOCAL_OCR_MATCHER_ENABLED = process.env.EXPO_PUBLIC_SCAN_LOCAL_OCR_MATCHER !== 'false';
 export const SCAN_LOCAL_OCR_STRONG_CONFIDENCE = Number(process.env.EXPO_PUBLIC_SCAN_LOCAL_OCR_STRONG_CONFIDENCE ?? 0.84);
 export const SCAN_XIMILAR_FALLBACK_ENABLED = process.env.EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK !== 'false';

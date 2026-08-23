@@ -40,7 +40,16 @@
       },
       "env": {
         "APP_VARIANT": "staging",
-        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false"
+        "EXPO_PUBLIC_APP_VARIANT": "staging",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
+        "EXPO_PUBLIC_STACKR_API_ENABLED": "true",
+        "EXPO_PUBLIC_STACKR_API_URL": "https://stackr-api-gateway-staging.berridge14.workers.dev",
+        "EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY": "true",
+        "EXPO_PUBLIC_STACKR_RECOGNITION_MODEL_VERSION": "dinov2_vits14",
+        "EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED": "true",
+        "EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK": "true",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://lmwfhvexfcoyeuoyrlco.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5qRlv9bSq5vaz3zgDSpwIA_JayaHJGU"
       }
     },
     "seller-canary": {

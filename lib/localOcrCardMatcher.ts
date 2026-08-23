@@ -27,7 +27,7 @@ export type LocalOcrPrintedNumber = {
 
 export type LocalOcrSignals = {
   text: string;
-  language: 'en' | 'ja' | 'zh' | 'unknown';
+  language: 'en' | 'ja' | 'ko' | 'zh' | 'unknown';
   nameText: string;
   printedNumber: LocalOcrPrintedNumber | null;
   setCode: string | null;
@@ -36,6 +36,12 @@ export type LocalOcrSignals = {
   rarityHints: string[];
   variantHints: string[];
 };
+
+export function getLocalOcrLanguageConstraint(
+  language: LocalOcrSignals['language']
+): 'en' | 'ja' | 'ko' | null {
+  return language === 'unknown' || language === 'zh' ? null : language;
+}
 
 export type LocalOcrCandidateMatch = {
   card: LocalScanCard;
@@ -95,7 +101,7 @@ const RARITY_HINTS: Record<string, string[]> = {
 };
 
 function stripDiacritics(value: string) {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').normalize('NFC');
 }
 
 export function normaliseOcrText(value?: string | null) {
@@ -112,7 +118,7 @@ function normaliseForCompare(value?: string | null) {
   return normaliseOcrText(value)
     .toLowerCase()
     .replace(/pok[eé]mon/g, 'pokemon')
-    .replace(/[^a-z0-9\u3040-\u30ff\u3400-\u9fff]+/g, ' ')
+    .replace(/[^a-z0-9\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -129,10 +135,12 @@ function normaliseSetCode(value?: string | null) {
 }
 
 function languageMatches(cardLanguage: string | null | undefined, detectedLanguage: LocalOcrSignals['language']) {
-  const language = String(cardLanguage ?? '').toLowerCase();
+  const language = String(cardLanguage ?? '').toLowerCase().replace(/_/g, '-');
   if (detectedLanguage === 'unknown') return true;
-  if (detectedLanguage === 'zh') return language === 'zh' || language === 'zh-hans' || language === 'zh-hant';
-  return language === detectedLanguage;
+  if (detectedLanguage === 'zh') {
+    return ['zh', 'zh-cn', 'zh-tw', 'zh-hans', 'zh-hant'].includes(language);
+  }
+  return language === detectedLanguage || language.startsWith(`${detectedLanguage}-`);
 }
 
 function normaliseNumberGlyphs(value?: string | null) {
@@ -206,6 +214,7 @@ export function parseLocalOcrPrintedNumber(
 }
 
 function detectLanguage(text: string): LocalOcrSignals['language'] {
+  if (/[\uac00-\ud7af]/.test(text)) return 'ko';
   if (/[\u3040-\u30ff]/.test(text)) return 'ja';
   if (/[\u3400-\u9fff]/.test(text)) return 'zh';
   if (/[a-zA-Z]/.test(text)) return 'en';

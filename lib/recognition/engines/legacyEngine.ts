@@ -111,13 +111,17 @@ export function buildLegacyRecognitionRequest(
   hints?: ScanIdentifyHints
 ): RecognitionRequest {
   const anonymousScanId = hints?.scanSessionId ?? createAnonymousScanId();
+  const rectifiedImageUris = (hints?.rectifiedImageUris ?? [])
+    .filter((uri): uri is string => Boolean(uri))
+    .slice(0, 2);
   return {
     anonymousScanId,
     requestedAt: new Date().toISOString(),
     cards: images.map((base64, index) => ({
       id: `${anonymousScanId}:image-${index}`,
       base64,
-      uri: index === 0 ? hints?.rectifiedImageUri ?? null : null,
+      uri: rectifiedImageUris[index]
+        ?? (index === 0 ? hints?.rectifiedImageUri ?? null : null),
       sourceRole: index === 0 ? 'primary' : 'alternate',
     })),
     binderId: binderId ?? null,

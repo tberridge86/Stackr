@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation, usePreventRemove } from '@react-navigation/native';
 import { Buffer } from 'buffer';
 import { CameraView, useCameraPermissions, type CameraType } from 'expo-camera';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -23,7 +24,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { Text } from '../../components/Text';
 import { useTheme } from '../../components/theme-context';
 import { identifyCardsDetailed, type IdentifiedCard, type ScanIdentifyDiagnostics } from '../../lib/recognition/orchestrator';
@@ -52,6 +52,7 @@ import {
   SCAN_AUTO_CAPTURE_V2_ENABLED,
   SCAN_BINDER_PAGE_REMOTE_CONCURRENCY,
   SCAN_BINDER_PAGE_V2_ENABLED,
+  SCAN_FRAME_CONSENSUS_ENABLED,
   SCAN_LOCAL_OCR_MATCHER_ENABLED,
   SCAN_QUALITY_DEVICE_PROFILE,
   SCAN_QUALITY_DIAGNOSTICS_ENABLED,
@@ -77,12 +78,20 @@ import {
 } from '../../lib/scannerCalibration';
 import {
   extractLocalOcrSignals,
+  getLocalOcrLanguageConstraint,
   matchLocalOcrCandidates,
   type LocalOcrCandidateMatch,
   type LocalOcrMatchResult,
   type LocalOcrRegionRole,
   type LocalOcrRegionText,
 } from '../../lib/localOcrCardMatcher';
+import {
+  runBoundedMultilingualOcrFallback,
+  recognizeRegionWithMlKit,
+  selectMultilingualOcrFallbackScripts,
+  shouldRunMultilingualOcrFallback,
+} from '../../lib/ocrEvidence';
+import type { OcrScript } from '../../lib/recognition/types';
 import {
   evaluateStableAutoCapture,
   transitionScannerCaptureState,
@@ -121,6 +130,25 @@ import {
 } from '../../lib/binderPageScan';
 import { saveBinderPageScanSession, updateBinderPageScanSession } from '../../lib/binderPageScanStore';
 import {
+  addSweepScanCandidates,
+  addUnresolvedSweepScan,
+  createSweepScanSession,
+  ensureSweepScanSession,
+  getSweepScanSession,
+  getSweepScanSummary,
+  hydrateSweepScanSession,
+  type SweepScanSummary,
+} from '../../lib/sweepScanSession';
+import {
+  MOBILE_FLOW_CONTROL_DIMENSIONS,
+  MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS,
+  canApplyScanAsyncContinuation,
+  deriveScanNavigationGuard,
+  deriveSweepCaptureUxState,
+  releaseMobileFlowMutex,
+  tryAcquireMobileFlowMutex,
+} from '../../lib/mobileFlowUx';
+import {
   getScanIntentConfig,
   isBinderScanIntent,
   isListingScanIntent,
@@ -128,7 +156,6 @@ import {
 } from '../../lib/scanIntent';
 import { isPremiumSellerInventoryScan } from '../../lib/sellerScanAccess';
 import { scanStore } from '../../lib/scanStore';
-import { supabase } from '../../lib/supabase';
 import { stackrApiClient } from '../../lib/stackrApiV1';
 import { fetchStackrCardRows } from '../../lib/stackrDomainAdapter';
 import {
@@ -202,6 +229,8 @@ type TargetedOcrResult = {
   sourceRole: string;
   regions: LocalOcrRegionText[];
   text: string;
+  titleImageUri: string | null;
+  scriptsAttempted: Exclude<OcrScript, 'unknown'>[];
 };
 
 type BinderPagePocketImage = {
@@ -240,6 +269,7 @@ type ScanRouteParams = {
   layout?: string | string[];
   parentSessionId?: string | string[];
   replacePocketIndex?: string | string[];
+  sweepSessionId?: string | string[];
 };
 
 type ScanResultCard = {
@@ -1139,6 +1169,7 @@ function expandPhotoCrop(
 
 export default function ScanScreen() {
   const { theme } = useTheme();
+  const navigation = useNavigation();
   const pathname = usePathname();
   const params = useLocalSearchParams<ScanRouteParams>();
   const insets = useSafeAreaInsets();
@@ -1161,6 +1192,12 @@ export default function ScanScreen() {
   const appStateRef = useRef(AppState.currentState);
   const captureInFlightRef = useRef(false);
   const navigatingAwayRef = useRef(false);
+  const scanRouteMountedRef = useRef(true);
+  const sweepSessionIdRef = useRef(
+    getParamValue(params.sweepSessionId)
+      ?? `sweep-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  );
+  const sweepAwaitingClearRef = useRef(false);
   renderCount.current += 1;
 
   const [permission, requestPermission] = useCameraPermissions();
@@ -1180,6 +1217,7 @@ export default function ScanScreen() {
   const [scanMode, setScanMode] = useState<ScanMode>(initialScanMode);
   const [binderPageLayout, setBinderPageLayout] = useState<BinderPageLayout>(DEFAULT_BINDER_PAGE_LAYOUT);
   const [binderPageProgress, setBinderPageProgress] = useState<{ processed: number; total: number } | null>(null);
+  const [sweepSummary, setSweepSummary] = useState<SweepScanSummary>(() => getSweepScanSummary(null));
   const [scanMessage, setScanMessage] = useState(
     returnedFromRejectedMatches
       ? 'No worries. Centre the right card and scan again.'
@@ -1199,6 +1237,19 @@ export default function ScanScreen() {
   const scannerClientContext = useMemo(() => getScannerClientContext(), []);
   const scannerFeatureFlags = useMemo(() => getScannerFeatureFlags(), []);
   const recognitionFeatureFlags = useMemo(() => getRecognitionFeatureFlags(), []);
+
+  const scanContinuationActive = useCallback(() => canApplyScanAsyncContinuation({
+    routeMounted: scanRouteMountedRef.current,
+    navigatingAway: navigatingAwayRef.current,
+  }), []);
+
+  useEffect(() => {
+    scanRouteMountedRef.current = true;
+    return () => {
+      scanRouteMountedRef.current = false;
+      navigatingAwayRef.current = true;
+    };
+  }, []);
   const inlineManualSearchRequestRef = useRef(0);
   const autoCaptureThresholds = useMemo(() => getAutoCaptureThresholds(scannerThresholdSet), [scannerThresholdSet]);
   const autoCaptureReadyFrames = useMemo(
@@ -1279,32 +1330,37 @@ export default function ScanScreen() {
   }, []);
 
   const setScannerState = useCallback((event: Parameters<typeof transitionScannerCaptureState>[1]) => {
+    if (!scanContinuationActive()) return;
     setScannerStateValue((current) => {
       const next = transitionScannerCaptureState(current, event);
       scannerStateRef.current = next;
       return next;
     });
-  }, []);
+  }, [scanContinuationActive]);
 
   const setScannerStateDirect = useCallback((next: ScannerCaptureState) => {
+    if (!scanContinuationActive()) return;
     scannerStateRef.current = next;
     setScannerStateValue(next);
-  }, []);
+  }, [scanContinuationActive]);
 
   const applyFrameAssessment = useCallback((assessment: FrameAssessment | null) => {
+    if (!scanContinuationActive()) return;
     frameAssessmentRef.current = assessment;
     setFrameAssessment(assessment);
-  }, []);
+  }, [scanContinuationActive]);
 
   const applyLocalisationResult = useCallback((localisation: CardLocalisationResult | null) => {
+    if (!scanContinuationActive()) return;
     localisationRef.current = localisation;
     setLocalisationResult(localisation);
-  }, []);
+  }, [scanContinuationActive]);
 
   const applyScanQualityResult = useCallback((quality: ScanQualityResult | null) => {
+    if (!scanContinuationActive()) return;
     scanQualityRef.current = quality;
     setScanQualityResult(quality);
-  }, []);
+  }, [scanContinuationActive]);
 
   const permissionStatus = permission?.status ?? 'loading';
   const permissionGranted = Boolean(permission?.granted);
@@ -1313,6 +1369,7 @@ export default function ScanScreen() {
     || scannerState === 'CAPTURED'
     || scannerState === 'IDENTIFYING'
     || scannerState === 'CONFIRMING';
+  const scanControlsLocked = captureBusy || captureInFlightRef.current;
   const binderId = getParamValue(params.binderId) ?? null;
   const parentBinderPageSessionId = getParamValue(params.parentSessionId) ?? null;
   const replaceBinderPocketIndex = Number(getParamValue(params.replacePocketIndex));
@@ -1331,13 +1388,68 @@ export default function ScanScreen() {
   const mode = getParamValue(params.mode) ?? scanIntentConfig.legacyMode;
   const isListingFlow = isListingScanIntent(scanIntent) || mode === 'listing' || flow === 'listing';
   const isBinderPageScan = isBinderScanIntent(scanIntent);
-  const isInventoryFlow = !isListingFlow && isPremiumSellerInventoryScan({ mode, flow });
+  const isSweepScan = scanIntent === 'sweep_collection';
+  const isCollectionCaptureFlow = scanIntent === 'quick_collection' || isSweepScan || isBinderPageScan;
+  const showCollectionCaptureModes = isCollectionCaptureFlow && !shouldReplaceBinderPocket;
+  const isInventoryFlow = !isListingFlow
+    && !isSweepScan
+    && isPremiumSellerInventoryScan({ mode, flow });
   const localQuickScanExperienceEnabled = recognitionFeatureFlags.localRecognitionEnabled && !isBinderPageScan;
-  const inlineManualSearchEnabled = localQuickScanExperienceEnabled && !isInventoryFlow;
+  const inlineManualSearchEnabled = (localQuickScanExperienceEnabled || isSweepScan) && !isInventoryFlow;
+  const sweepCaptureUx = useMemo(() => deriveSweepCaptureUxState({
+    capturedCopies: sweepSummary.totalCopies,
+    captureBusy: scanControlsLocked,
+  }), [scanControlsLocked, sweepSummary.totalCopies]);
+  const guardScanNavigation = useCallback(() => {
+    const guard = deriveScanNavigationGuard({
+      captureInFlight: captureInFlightRef.current,
+      scannerState: scannerStateRef.current,
+    });
+    if (!guard.blocked) return true;
+    setScanMessage(guard.message);
+    Alert.alert(guard.title, guard.message, [{ text: 'Keep scanning' }]);
+    return false;
+  }, []);
+  const scanRouteRemovalGuard = deriveScanNavigationGuard({
+    captureInFlight: captureInFlightRef.current,
+    scannerState,
+  });
+  usePreventRemove(scanRouteRemovalGuard.blocked, ({ data }) => {
+    if (navigatingAwayRef.current) {
+      navigation.dispatch(data.action);
+      return;
+    }
+    setScanMessage(scanRouteRemovalGuard.message);
+    Alert.alert(
+      scanRouteRemovalGuard.title,
+      scanRouteRemovalGuard.message,
+      [{ text: 'Keep scanning' }],
+    );
+  });
+
+  useEffect(() => {
+    if (!isSweepScan) return;
+    const requestedSessionId = getParamValue(params.sweepSessionId);
+    if (requestedSessionId) sweepSessionIdRef.current = requestedSessionId;
+    let cancelled = false;
+    void hydrateSweepScanSession(sweepSessionIdRef.current).then((restored) => {
+      if (cancelled) return;
+      const active = restored ?? ensureSweepScanSession({
+        scanSessionId: sweepSessionIdRef.current,
+        binderId,
+      });
+      setSweepSummary(getSweepScanSummary(active));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [binderId, isSweepScan, params.sweepSessionId]);
 
   const frame = useMemo(() => {
     const topControls = insets.top + (isBinderPageScan ? 138 : 110);
-    const bottomControls = insets.bottom + (isBinderPageScan ? 218 : 174);
+    const bottomControls = insets.bottom
+      + (isBinderPageScan ? 218 : 174)
+      + (showCollectionCaptureModes ? 48 : 0);
     const availableHeight = Math.max(240, height - topControls - bottomControls);
     const sideInset = width < 380 ? SCAN_FRAME_SIDE_INSET_COMPACT : SCAN_FRAME_SIDE_INSET;
     const availableWidth = Math.max(220, width - sideInset * 2);
@@ -1357,7 +1469,7 @@ export default function ScanScreen() {
       width: frameWidth,
       height: frameHeight,
     };
-  }, [binderPageLayout, height, insets.bottom, insets.top, isBinderPageScan, localQuickScanExperienceEnabled, width]);
+  }, [binderPageLayout, height, insets.bottom, insets.top, isBinderPageScan, localQuickScanExperienceEnabled, showCollectionCaptureModes, width]);
 
   const frameTone = frameAssessment?.ready
     ? '#22C55E'
@@ -1433,9 +1545,13 @@ export default function ScanScreen() {
     : captureBusy
       ? binderPageProgress
         ? `Page ${binderPageProgress.processed}/${binderPageProgress.total}`
-        : scannerState === 'IDENTIFYING' ? 'Identifying' : 'Scanning'
+      : scannerState === 'IDENTIFYING' ? 'Identifying' : 'Scanning'
       : cameraReady
-        ? isBinderPageScan ? `${binderPageLayout}x${binderPageLayout} page` : scanMode === 'auto' ? 'Auto scan' : 'Manual capture'
+        ? isBinderPageScan
+          ? `${binderPageLayout}x${binderPageLayout} page`
+          : isSweepScan
+            ? `${sweepSummary.totalCopies} swept`
+            : scanMode === 'auto' ? 'Auto scan' : 'Manual capture'
         : permissionGranted ? 'Warming up' : 'Camera needed';
 
   const routeParams = useMemo(() => {
@@ -1495,6 +1611,7 @@ export default function ScanScreen() {
   }, [isBinderPageScan, params.layout]);
 
   const setRememberedBinderPageLayout = useCallback((layout: BinderPageLayout) => {
+    if (!guardScanNavigation()) return;
     setBinderPageLayout(layout);
     AsyncStorage.setItem(BINDER_PAGE_LAYOUT_STORAGE_KEY, String(layout)).catch((error) => {
       logCameraDiagnostic('binder page layout save failed', {
@@ -1503,7 +1620,7 @@ export default function ScanScreen() {
         error: error instanceof Error ? error.message : String(error),
       });
     });
-  }, []);
+  }, [guardScanNavigation]);
 
   useEffect(() => () => {
     if (autoCheckTimer.current) {
@@ -1590,13 +1707,21 @@ export default function ScanScreen() {
     setFacing((current) => current === 'back' ? 'front' : 'back');
   }, [setScannerState]);
 
-  const runOcrFallback = useCallback(async (imageUri: string) => {
+  const runOcrFallback = useCallback(async (
+    imageUri: string,
+    recognizerScript: Exclude<OcrScript, 'unknown'> = 'latin'
+  ) => {
     try {
-      const result = await TextRecognition.recognize(imageUri);
+      const result = await recognizeRegionWithMlKit({
+        uri: imageUri,
+        sourceRegion: 'ocrSource',
+        recognizerScript,
+      });
       const text = result?.text?.trim() ?? '';
       if (text) {
         logCameraDiagnostic('ocr fallback text found', {
           routeInstanceId: routeInstanceId.current,
+          recognizerScript,
           preview: text.slice(0, 160),
         });
       }
@@ -1604,6 +1729,7 @@ export default function ScanScreen() {
     } catch (error) {
       logCameraDiagnostic('ocr fallback unavailable', {
         routeInstanceId: routeInstanceId.current,
+        recognizerScript,
         error: error instanceof Error ? error.message : String(error),
       });
       return '';
@@ -1611,12 +1737,20 @@ export default function ScanScreen() {
   }, []);
 
   const runTargetedCardOcr = useCallback(async (image: RecognitionImage | null): Promise<TargetedOcrResult> => {
-    if (!image) return { sourceRole: 'none', regions: [], text: '' };
+    if (!image) {
+      return {
+        sourceRole: 'none',
+        regions: [],
+        text: '',
+        titleImageUri: null,
+        scriptsAttempted: [],
+      };
+    }
 
-    const regions = await Promise.all(OCR_REGION_SPECS.map(async (spec) => {
+    const regionResults = await Promise.all(OCR_REGION_SPECS.map(async (spec) => {
       try {
         const crop = getOcrRegionCrop(image, spec);
-        if (!crop) return { role: spec.role, text: '' };
+        if (!crop) return { region: { role: spec.role, text: '' }, imageUri: null };
 
         const cropped = await ImageManipulator.manipulateAsync(
           image.uri,
@@ -1630,18 +1764,20 @@ export default function ScanScreen() {
             base64: false,
           }
         );
-        const text = await runOcrFallback(cropped.uri);
-        return { role: spec.role, text };
+        const text = await runOcrFallback(cropped.uri, 'latin');
+        return { region: { role: spec.role, text }, imageUri: cropped.uri };
       } catch (error) {
         logCameraDiagnostic('targeted ocr region failed', {
           routeInstanceId: routeInstanceId.current,
           role: spec.role,
           error: error instanceof Error ? error.message : String(error),
         });
-        return { role: spec.role, text: '' };
+        return { region: { role: spec.role, text: '' }, imageUri: null };
       }
     }));
 
+    const titleImageUri = regionResults.find((result) => result.region.role === 'name')?.imageUri ?? null;
+    const regions = regionResults.map((result) => result.region);
     const usefulRegions = regions.filter((region) => region.text.trim());
     const text = combineOcrRegions(usefulRegions);
     const signals = extractLocalOcrSignals(usefulRegions);
@@ -1659,6 +1795,48 @@ export default function ScanScreen() {
       sourceRole: image.role,
       regions: usefulRegions,
       text,
+      titleImageUri,
+      scriptsAttempted: ['latin'],
+    };
+  }, [runOcrFallback]);
+
+  const runMultilingualOcrFallback = useCallback(async (
+    initial: TargetedOcrResult,
+    candidateLanguages: readonly (string | null | undefined)[] = []
+  ): Promise<TargetedOcrResult> => {
+    if (!initial.titleImageUri) return initial;
+    const scripts = selectMultilingualOcrFallbackScripts({
+      attemptedScripts: initial.scriptsAttempted,
+      candidateLanguages,
+    });
+    if (!scripts.length) return initial;
+
+    const fallback = await runBoundedMultilingualOcrFallback({
+      scripts,
+      recognize: (recognizerScript) => runOcrFallback(initial.titleImageUri!, recognizerScript),
+    });
+    const scriptsAttempted = [...initial.scriptsAttempted, ...fallback.attemptedScripts];
+    const extraRegions: LocalOcrRegionText[] = fallback.accepted
+      ? [{ role: 'name', text: fallback.accepted.text }]
+      : [];
+    if (!extraRegions.length) {
+      return { ...initial, scriptsAttempted };
+    }
+
+    const regions = [...initial.regions, ...extraRegions];
+    const text = combineOcrRegions(regions);
+    logCameraDiagnostic('multilingual ocr fallback complete', {
+      routeInstanceId: routeInstanceId.current,
+      scriptsAttempted: fallback.attemptedScripts,
+      acceptedRegionCount: extraRegions.length,
+      language: extractLocalOcrSignals(regions).language,
+      preview: text.slice(0, 180),
+    });
+    return {
+      ...initial,
+      regions,
+      text,
+      scriptsAttempted,
     };
   }, [runOcrFallback]);
 
@@ -1835,9 +2013,9 @@ export default function ScanScreen() {
 
   useEffect(() => {
     if (!isBinderPageScan) return;
+    if (captureBusy || captureInFlightRef.current) return;
     stopAutoScanner();
     setScanMode('manual');
-    if (captureBusy) return;
     setScanMessage(binderPageLayout === 1
       ? 'Centre one pocket card, then capture.'
       : `Line up the ${binderPageLayout}x${binderPageLayout} pocket area inside the guide.`
@@ -1865,16 +2043,44 @@ export default function ScanScreen() {
       if (!wasActive && isActive && permissionGranted && cameraReady && !mountError && !navigatingAwayRef.current) {
         setScannerState({ type: 'search' });
         setScanMessage(scanMode === 'auto'
-          ? 'Centre one card. Keep other cards in the dim area.'
+          ? isSweepScan
+            ? 'Sweep a card into the frame and hold briefly.'
+            : 'Centre one card. Keep other cards in the dim area.'
           : 'Manual mode. Centre one card in the window, then tap scan.'
         );
       }
     });
 
     return () => subscription.remove();
-  }, [cameraReady, mountError, permissionGranted, scanMode, setScannerState, stopAutoScanner]);
+  }, [cameraReady, isSweepScan, mountError, permissionGranted, scanMode, setScannerState, stopAutoScanner]);
 
   const closeScanner = useCallback(() => {
+    if (!guardScanNavigation()) return;
+    const activeSweep = isSweepScan ? getSweepScanSession(sweepSessionIdRef.current) : null;
+    if (activeSweep?.items.length) {
+      Alert.alert(
+        'Review this scan batch?',
+        `${getSweepScanSummary(activeSweep).totalCopies} card${getSweepScanSummary(activeSweep).totalCopies === 1 ? '' : 's'} are waiting.`,
+        [
+          { text: 'Keep scanning', style: 'cancel' },
+          {
+            text: 'Review batch',
+            onPress: () => {
+              navigatingAwayRef.current = true;
+              stopAutoScanner();
+              router.replace({
+                pathname: '/scan/sweep-result',
+                params: {
+                  sweepSessionId: activeSweep.scanSessionId,
+                  ...(binderId ? { binderId } : {}),
+                },
+              } as any);
+            },
+          },
+        ]
+      );
+      return;
+    }
     logScannerLifecycleEvent('cancellation', 'closed_scanner', { source: 'close-button' });
     navigatingAwayRef.current = true;
     stopAutoScanner();
@@ -1904,7 +2110,7 @@ export default function ScanScreen() {
     }
 
     router.replace('/(tabs)' as any);
-  }, [binderId, isInventoryFlow, isListingFlow, logScannerLifecycleEvent, mode, stopAutoScanner]);
+  }, [binderId, guardScanNavigation, isInventoryFlow, isListingFlow, isSweepScan, logScannerLifecycleEvent, mode, stopAutoScanner]);
 
   const runInlineManualSearch = useCallback(async (query: string) => {
     const trimmed = query.trim();
@@ -1942,6 +2148,7 @@ export default function ScanScreen() {
   }, []);
 
   const closeInlineManualSearch = useCallback(() => {
+    if (!guardScanNavigation()) return;
     setInlineManualSearchOpen(false);
     setInlineManualSearchResults([]);
     setInlineManualSearchLoading(false);
@@ -1949,10 +2156,24 @@ export default function ScanScreen() {
     if (scanMode === 'auto' && cameraReady && permissionGranted && !captureBusy && !mountError) {
       setScannerState({ type: 'search' });
     }
-  }, [cameraReady, captureBusy, mountError, permissionGranted, scanMode, setScannerState]);
+  }, [cameraReady, captureBusy, guardScanNavigation, mountError, permissionGranted, scanMode, setScannerState]);
 
   const handleInlineManualSearchSelect = useCallback((card: ScanResultCard) => {
+    if (!guardScanNavigation()) return;
     setLastQuery(`${card.name} ${card.set_name} ${card.number}`.trim());
+    if (isSweepScan) {
+      const result = addSweepScanCandidates(sweepSessionIdRef.current, [card], {
+        source: 'manual',
+        preventRapidDuplicate: false,
+      });
+      setSweepSummary(getSweepScanSummary(result.session));
+      setInlineManualSearchOpen(false);
+      setInlineManualSearchResults([]);
+      setAcceptedPreviewUri(null);
+      setScannerState({ type: 'search' });
+      setScanMessage(`${getSweepScanSummary(result.session).totalCopies} captured. Ready for the next card.`);
+      return;
+    }
     navigatingAwayRef.current = true;
     stopAutoScanner();
     router.replace({
@@ -1968,7 +2189,7 @@ export default function ScanScreen() {
         q: `${card.name} ${card.set_name} ${card.number}`.trim(),
       },
     });
-  }, [binderId, flow, mode, scanIntent, scanIntentConfig.itemType, stopAutoScanner]);
+  }, [binderId, flow, guardScanNavigation, isSweepScan, mode, scanIntent, scanIntentConfig.itemType, setScannerState, stopAutoScanner]);
 
   useEffect(() => {
     if (!inlineManualSearchOpen) return;
@@ -1979,6 +2200,7 @@ export default function ScanScreen() {
   }, [inlineManualSearchOpen, inlineManualSearchQuery, runInlineManualSearch]);
 
   const openManualSearch = useCallback(() => {
+    if (!guardScanNavigation()) return;
     logScannerLifecycleEvent('manual_search', 'manual_search_opened', { source: 'scanner' });
     if (inlineManualSearchEnabled) {
       stopAutoScanner();
@@ -2008,6 +2230,7 @@ export default function ScanScreen() {
     } as any);
   }, [
     inlineManualSearchEnabled,
+    guardScanNavigation,
     isListingFlow,
     lastQuery,
     logScannerLifecycleEvent,
@@ -2264,10 +2487,12 @@ export default function ScanScreen() {
 
   const evaluateCapturedPhotoQuality = useCallback(async (
     photo: CapturedPhoto,
-    capturedFrame?: CapturedFrame | null
+    capturedFrame?: CapturedFrame | null,
+    options: { applyResult?: boolean } = {}
   ) => {
+    const applyResult = options.applyResult !== false;
     if (!SCAN_QUALITY_ENABLED) {
-      applyScanQualityResult(null);
+      if (applyResult) applyScanQualityResult(null);
       return {
         quality: null as ScanQualityResult | null,
         localisation: localisationRef.current,
@@ -2296,12 +2521,15 @@ export default function ScanScreen() {
     });
     const assessment = frameAssessmentFromScanQuality(quality);
 
-    applyLocalisationResult(localisation);
-    applyScanQualityResult(quality);
-    applyFrameAssessment(assessment);
+    if (applyResult) {
+      applyLocalisationResult(localisation);
+      applyScanQualityResult(quality);
+      applyFrameAssessment(assessment);
+    }
 
     logCameraDiagnostic('capture quality assessment', {
       routeInstanceId: routeInstanceId.current,
+      applied: applyResult,
       passed: quality.passed,
       instruction: quality.instruction,
       failures: quality.failures.map((failure) => failure.code),
@@ -2352,7 +2580,7 @@ export default function ScanScreen() {
         || String(localOcrMatch.signals.printedNumber.number);
       const matches = await cache.findExactIdentities({
         game: 'pokemon',
-        languageCode: localOcrMatch.signals.language === 'unknown' ? null : localOcrMatch.signals.language,
+        languageCode: getLocalOcrLanguageConstraint(localOcrMatch.signals.language),
         setCode: localOcrMatch.signals.setCode,
         collectorNumber: printedNumber,
         limit: MAX_RESULT_CARDS,
@@ -2448,16 +2676,39 @@ export default function ScanScreen() {
       role: 'binder-pocket-crop',
     };
 
-    const targetedOcr = await runTargetedCardOcr(recognitionImage);
+    let targetedOcr = await runTargetedCardOcr(recognitionImage);
     let localOcrMatch: LocalOcrMatchResult | null = null;
     let localIdentified: IdentifiedCard[] = [];
 
-    if (SCAN_LOCAL_OCR_MATCHER_ENABLED && targetedOcr.regions.length > 0) {
-      localOcrMatch = await matchLocalOcrCandidates(targetedOcr.regions, {
-        maxCandidates: MAX_RESULT_CARDS,
-        scanImageBase64: pocket.base64,
-        strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
-      });
+    if (SCAN_LOCAL_OCR_MATCHER_ENABLED) {
+      if (targetedOcr.regions.length > 0) {
+        localOcrMatch = await matchLocalOcrCandidates(targetedOcr.regions, {
+          maxCandidates: MAX_RESULT_CARDS,
+          scanImageBase64: pocket.base64,
+          strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
+        });
+      }
+      if (shouldRunMultilingualOcrFallback({
+        matcherEnabled: true,
+        titleImageUri: targetedOcr.titleImageUri,
+        localMatchStatus: localOcrMatch?.status ?? null,
+      })) {
+        const multilingualOcr = await runMultilingualOcrFallback(
+          targetedOcr,
+          localOcrMatch?.candidates.map((candidate) => candidate.card.language) ?? []
+        );
+        if (multilingualOcr.regions.length > targetedOcr.regions.length) {
+          targetedOcr = multilingualOcr;
+          localOcrMatch = await matchLocalOcrCandidates(targetedOcr.regions, {
+            maxCandidates: MAX_RESULT_CARDS,
+            scanImageBase64: pocket.base64,
+            strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
+          });
+        }
+      }
+    }
+
+    if (localOcrMatch) {
       localIdentified = localOcrMatch.candidates
         .slice(0, MAX_RESULT_CARDS)
         .map(localOcrCandidateToIdentifiedCard);
@@ -2502,7 +2753,7 @@ export default function ScanScreen() {
     try {
       const detailed = await identifyCardsDetailed([pocket.base64], binderId ?? undefined, {
         ocrText: targetedOcr.text,
-        language: localOcrMatch?.signals.language === 'unknown' ? null : localOcrMatch?.signals.language,
+        language: localOcrMatch ? getLocalOcrLanguageConstraint(localOcrMatch.signals.language) : null,
         printedNumber: localOcrMatch?.signals.printedNumber?.number && localOcrMatch.signals.printedNumber.denominator
           ? {
               number: localOcrMatch.signals.printedNumber.number,
@@ -2544,6 +2795,7 @@ export default function ScanScreen() {
     binderId,
     resolveMatches,
     lookupStackrCachedIdentities,
+    runMultilingualOcrFallback,
     runTargetedCardOcr,
     scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
     toBinderPocketCandidate,
@@ -2566,6 +2818,7 @@ export default function ScanScreen() {
 
     const cropStartedAt = Date.now();
     const { pageUri, pockets } = await prepareBinderPagePocketImages(photo, capturedFrame);
+    if (!scanContinuationActive()) return;
     perspectiveCropMs = Date.now() - cropStartedAt;
     const initialResults = pockets.map((pocket): BinderPagePocketResult => {
       const quality = assessBinderPocketImage(pocket.base64);
@@ -2592,6 +2845,7 @@ export default function ScanScreen() {
     const localStartedAt = Date.now();
     for (const pocket of workable) {
       const result = await identifyBinderPagePocket(pocket, false);
+      if (!scanContinuationActive()) return;
       localByIndex.set(pocket.cell.index, result);
       localResults.push(result);
       processed += 1;
@@ -2615,11 +2869,13 @@ export default function ScanScreen() {
       Math.max(1, Math.min(4, Math.floor(SCAN_BINDER_PAGE_REMOTE_CONCURRENCY) || 2)),
       async (pocket) => {
         const result = await identifyBinderPagePocket(pocket, true);
+        if (!scanContinuationActive()) return result;
         processed += 1;
         setBinderPageProgress({ processed: Math.min(pockets.length, processed), total: pockets.length });
         return result;
       }
     );
+    if (!scanContinuationActive()) return;
     remoteRequestMs = unresolved.length ? Date.now() - remoteStartedAt : null;
 
     const remoteByIndex = new Map(remoteResults.map((result) => [result.index, result]));
@@ -2740,6 +2996,7 @@ export default function ScanScreen() {
             })),
             outcome: replacement.candidates.length ? 'candidates_returned' : 'no_match',
           });
+          if (!scanContinuationActive()) return;
           setScannerState({ type: 'confirm' });
           navigatingAwayRef.current = true;
           stopAutoScanner();
@@ -2795,6 +3052,7 @@ export default function ScanScreen() {
       }))),
       outcome: finalPockets.some((pocket) => pocket.candidates.length) ? 'candidates_returned' : 'no_match',
     });
+    if (!scanContinuationActive()) return;
 
     setScannerState({ type: 'confirm' });
     navigatingAwayRef.current = true;
@@ -2818,6 +3076,7 @@ export default function ScanScreen() {
     replaceBinderPocketIndex,
     scanIntent,
     scanMode,
+    scanContinuationActive,
     scannerClientContext,
     scannerFeatureFlags,
     setScannerState,
@@ -2825,20 +3084,22 @@ export default function ScanScreen() {
     stopAutoScanner,
   ]);
 
-  const handleCapture = useCallback(async (source: 'manual' | 'auto' = 'manual', capturedPhoto?: CapturedPhoto) => {
+  const handleCapture = useCallback(async (
+    source: 'manual' | 'auto' = 'manual',
+    capturedPhoto?: CapturedPhoto,
+    supportingPhoto?: CapturedPhoto
+  ) => {
     if (!cameraReady || navigatingAwayRef.current) return;
-    if (captureInFlightRef.current) {
-      logScannerLifecycleEvent('duplicate_prevented', 'duplicate_capture_blocked', { source });
-      return;
-    }
-
     const camera = cameraRef.current;
     if (!camera) {
       setScanMessage('Camera is not ready yet.');
       return;
     }
+    if (!tryAcquireMobileFlowMutex(captureInFlightRef)) {
+      logScannerLifecycleEvent('duplicate_prevented', 'duplicate_capture_blocked', { source });
+      return;
+    }
 
-    captureInFlightRef.current = true;
     setScannerState({ type: 'capture_start' });
     setAcceptedPreviewUri(null);
     setScanMessage('Capturing card...');
@@ -2989,13 +3250,15 @@ export default function ScanScreen() {
     try {
       if (source === 'manual') {
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        if (!scanContinuationActive()) return;
       }
       const captureStartedAt = Date.now();
       const photo = capturedPhoto ?? await camera.takePictureAsync({
-        quality: 0.7,
+        quality: isBinderPageScan ? 0.92 : 0.82,
         base64: false,
         exif: false,
       });
+      if (!scanContinuationActive()) return;
       timings.captureMs = capturedPhoto ? 0 : Date.now() - captureStartedAt;
       photoForDiagnostics = photo;
       const capturedFrame = createScanCapturedFrame(photo);
@@ -3006,10 +3269,30 @@ export default function ScanScreen() {
         return;
       }
 
+      let consensusPhoto = supportingPhoto ?? null;
+      if (SCAN_FRAME_CONSENSUS_ENABLED && !consensusPhoto) {
+        try {
+          setScanMessage('Hold steady for a second view...');
+          consensusPhoto = await camera.takePictureAsync({
+            quality: 0.7,
+            base64: false,
+            exif: false,
+          });
+          timings.captureMs = Date.now() - captureStartedAt;
+        } catch (error) {
+          logCameraDiagnostic('supporting frame capture failed', {
+            routeInstanceId: routeInstanceId.current,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+      if (!scanContinuationActive()) return;
+
       setScanMessage('Checking image quality...');
       setScannerState({ type: 'quality_check' });
       const qualityStartedAt = Date.now();
       const { quality, localisation } = await evaluateCapturedPhotoQuality(photo, capturedFrame);
+      if (!scanContinuationActive()) return;
       timings.qualityMs = Date.now() - qualityStartedAt;
       qualityForDiagnostics = quality;
       const frameValidation = validateScannerFrame({ quality, localisation });
@@ -3053,6 +3336,7 @@ export default function ScanScreen() {
             ...quality.failures.map((failure) => `${failure.code}:${failure.score}`),
           ].join(', '),
         });
+        if (!scanContinuationActive()) return;
         setScannerState({ type: 'search' });
         Alert.alert(
           isNoTradingCard ? 'No trading card detected' : 'Scan needs a clearer photo',
@@ -3072,12 +3356,45 @@ export default function ScanScreen() {
       setScanMessage('Preparing scan...');
       const recognitionImageStartedAt = Date.now();
       const recognitionImages = await preparePhotosForRecognition(photo, capturedFrame);
-      timings.recognitionImageMs = Date.now() - recognitionImageStartedAt;
+      if (!scanContinuationActive()) return;
       recognitionImageForDiagnostics = recognitionImages[0] ?? null;
       const resultRectifiedImage = recognitionImages.find((image) => image.role === 'localised-card-crop')
         ?? recognitionImages.find((image) => image.role === 'target-crop')
         ?? recognitionImages[0]
         ?? null;
+      let consensusRectifiedImage: RecognitionImage | null = null;
+      if (
+        SCAN_FRAME_CONSENSUS_ENABLED
+        && consensusPhoto
+        && consensusPhoto.uri !== photo.uri
+      ) {
+        const consensusFrame = createScanCapturedFrame(consensusPhoto);
+        const consensusAssessment = await evaluateCapturedPhotoQuality(
+          consensusPhoto,
+          consensusFrame,
+          { applyResult: false }
+        );
+        if (!scanContinuationActive()) return;
+        const consensusValidation = validateScannerFrame(consensusAssessment);
+        const consensusQualityPassed = !SCAN_QUALITY_ENABLED
+          || !consensusAssessment.quality
+          || (consensusAssessment.quality.passed && consensusValidation.canContinue);
+        if (consensusQualityPassed) {
+          const consensusImages = await preparePhotosForRecognition(consensusPhoto, consensusFrame);
+          if (!scanContinuationActive()) return;
+          consensusRectifiedImage = consensusImages.find(
+            (image) => image.role === 'localised-card-crop'
+          ) ?? null;
+        }
+        logCameraDiagnostic('supporting recognition frame assessed', {
+          routeInstanceId: routeInstanceId.current,
+          included: Boolean(consensusRectifiedImage),
+          qualityPassed: consensusQualityPassed,
+          frameValidation: consensusValidation.rejectionReason,
+          localisation: compactLocalisationDiagnostics(consensusAssessment.localisation),
+        });
+      }
+      timings.recognitionImageMs = Date.now() - recognitionImageStartedAt;
       setAcceptedPreviewUri(resultRectifiedImage?.uri ?? photo.uri);
       setScannerState({ type: 'captured' });
 
@@ -3085,47 +3402,82 @@ export default function ScanScreen() {
         .map((image) => image.base64 ?? '')
         .filter((base64) => base64.trim().length > 0);
       if (!base64Images.length) throw new Error('Camera did not return image data.');
+      const recognitionFrameImages = [resultRectifiedImage, consensusRectifiedImage]
+        .filter((image): image is RecognitionImage => Boolean(image?.base64 && image.uri));
+      const recognitionFrameBase64 = recognitionFrameImages.map((image) => image.base64 as string);
+      const recognitionFrameUris = recognitionFrameImages.map((image) => image.uri);
+      if (!recognitionFrameBase64.length) recognitionFrameBase64.push(base64Images[0]);
 
       setScannerState({ type: 'identify_start' });
       const ocrStartedAt = Date.now();
       setScanMessage('Reading card text...');
       const ocrSourceImage = getOcrSourceImage(recognitionImages);
-      const targetedOcr = await runTargetedCardOcr(ocrSourceImage);
-      timings.ocrMs = Date.now() - ocrStartedAt;
-      const ocrText = targetedOcr.text;
+      let targetedOcr = await runTargetedCardOcr(ocrSourceImage);
+      if (!scanContinuationActive()) return;
+      let ocrText = targetedOcr.text;
 
       let localOcrMatch: LocalOcrMatchResult | null = null;
       let localOcrDiagnostics: ScanIdentifyDiagnostics | null = null;
       let localIdentified: IdentifiedCard[] = [];
-      if (SCAN_LOCAL_OCR_MATCHER_ENABLED && targetedOcr.regions.length > 0) {
+      if (SCAN_LOCAL_OCR_MATCHER_ENABLED) {
         const localStartedAt = Date.now();
         setScanMessage('Checking local catalogue...');
-        localOcrMatch = await matchLocalOcrCandidates(targetedOcr.regions, {
-          maxCandidates: MAX_RESULT_CARDS,
-          scanImageBase64: ocrSourceImage?.base64 ?? base64Images[0] ?? null,
-          strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
-        });
-        localOcrMatchForAnalytics = localOcrMatch;
+        if (targetedOcr.regions.length > 0) {
+          localOcrMatch = await matchLocalOcrCandidates(targetedOcr.regions, {
+            maxCandidates: MAX_RESULT_CARDS,
+            scanImageBase64: ocrSourceImage?.base64 ?? base64Images[0] ?? null,
+            strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
+          });
+          if (!scanContinuationActive()) return;
+        }
+        if (shouldRunMultilingualOcrFallback({
+          matcherEnabled: true,
+          titleImageUri: targetedOcr.titleImageUri,
+          localMatchStatus: localOcrMatch?.status ?? null,
+        })) {
+          const multilingualOcr = await runMultilingualOcrFallback(
+            targetedOcr,
+            localOcrMatch?.candidates.map((candidate) => candidate.card.language) ?? []
+          );
+          if (!scanContinuationActive()) return;
+          if (multilingualOcr.regions.length > targetedOcr.regions.length) {
+            targetedOcr = multilingualOcr;
+            ocrText = multilingualOcr.text;
+            localOcrMatch = await matchLocalOcrCandidates(targetedOcr.regions, {
+              maxCandidates: MAX_RESULT_CARDS,
+              scanImageBase64: ocrSourceImage?.base64 ?? base64Images[0] ?? null,
+              strongConfidence: scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
+            });
+            if (!scanContinuationActive()) return;
+          }
+        }
+        timings.ocrMs = Date.now() - ocrStartedAt;
         timings.localOcrMatchMs = Date.now() - localStartedAt;
-        localOcrDiagnostics = buildLocalOcrDiagnostics(localOcrMatch, recognitionImages.length);
-        localIdentified = localOcrMatch.candidates
-          .slice(0, MAX_RESULT_CARDS)
-          .map(localOcrCandidateToIdentifiedCard);
-        const cachedLookupStartedAt = Date.now();
-        const cachedIdentified = await lookupStackrCachedIdentities(localOcrMatch);
-        timings.localCatalogueLookupMs = Date.now() - cachedLookupStartedAt;
-        localIdentified = mergeIdentifiedCards(cachedIdentified, localIdentified).slice(0, MAX_RESULT_CARDS);
+        if (localOcrMatch) {
+          localOcrMatchForAnalytics = localOcrMatch;
+          localOcrDiagnostics = buildLocalOcrDiagnostics(localOcrMatch, recognitionFrameBase64.length);
+          localIdentified = localOcrMatch.candidates
+            .slice(0, MAX_RESULT_CARDS)
+            .map(localOcrCandidateToIdentifiedCard);
+          const cachedLookupStartedAt = Date.now();
+          const cachedIdentified = await lookupStackrCachedIdentities(localOcrMatch);
+          if (!scanContinuationActive()) return;
+          timings.localCatalogueLookupMs = Date.now() - cachedLookupStartedAt;
+          localIdentified = mergeIdentifiedCards(cachedIdentified, localIdentified).slice(0, MAX_RESULT_CARDS);
 
-        logCameraDiagnostic('local ocr match complete', {
-          routeInstanceId: routeInstanceId.current,
-          status: localOcrMatch.status,
-          confidence: localOcrMatch.confidence,
-          best: localOcrMatch.bestMatch?.card.name ?? null,
-          reasons: localOcrMatch.bestMatch?.reasons ?? [],
-          candidates: localOcrMatch.candidates.length,
-          cachedCandidates: cachedIdentified.length,
-        });
+          logCameraDiagnostic('local ocr match complete', {
+            routeInstanceId: routeInstanceId.current,
+            status: localOcrMatch.status,
+            confidence: localOcrMatch.confidence,
+            best: localOcrMatch.bestMatch?.card.name ?? null,
+            reasons: localOcrMatch.bestMatch?.reasons ?? [],
+            candidates: localOcrMatch.candidates.length,
+            cachedCandidates: cachedIdentified.length,
+            ocrScriptsAttempted: targetedOcr.scriptsAttempted,
+          });
+        }
       }
+      if (timings.ocrMs == null) timings.ocrMs = Date.now() - ocrStartedAt;
 
       let identified: IdentifiedCard[] = [];
       if (localOcrMatch?.status === 'strong' && localIdentified.length) {
@@ -3139,9 +3491,9 @@ export default function ScanScreen() {
         try {
           setScanMessage('Matching artwork...');
           const localPrintedNumber = localOcrMatch?.signals.printedNumber;
-          const detailedResult = await identifyCardsDetailed(base64Images, binderId ?? undefined, {
+          const detailedResult = await identifyCardsDetailed(recognitionFrameBase64, binderId ?? undefined, {
             ocrText,
-            language: localOcrMatch?.signals.language === 'unknown' ? null : localOcrMatch?.signals.language,
+            language: localOcrMatch ? getLocalOcrLanguageConstraint(localOcrMatch.signals.language) : null,
             printedNumber: localPrintedNumber?.number && localPrintedNumber.denominator
               ? { number: localPrintedNumber.number, total: localPrintedNumber.denominator }
               : null,
@@ -3156,7 +3508,9 @@ export default function ScanScreen() {
             itemType: scanIntentConfig.itemType,
             isSlab: scanIntent === 'graded_slab',
             rectifiedImageUri: resultRectifiedImage?.uri ?? ocrSourceImage?.uri ?? null,
+            rectifiedImageUris: recognitionFrameUris,
           });
+          if (!scanContinuationActive()) return;
           timings.identifyMs = Date.now() - identifyStartedAt;
           identified = detailedResult.cards;
           remoteDiagnostics = detailedResult.diagnostics;
@@ -3167,6 +3521,7 @@ export default function ScanScreen() {
             error: error instanceof Error ? error.message : String(error),
           });
         }
+        if (!scanContinuationActive()) return;
 
         const useAmbiguousLocalCandidates = !isInventoryFlow && localIdentified.length > 0;
         identified = mergeIdentifiedCards(
@@ -3174,7 +3529,11 @@ export default function ScanScreen() {
           useAmbiguousLocalCandidates ? localIdentified : []
         ).slice(0, MAX_RESULT_CARDS);
         identified = rankIdentifiedCardsWithPipeline(identified, localOcrMatch?.signals ?? null).slice(0, MAX_RESULT_CARDS);
-        identifyDiagnostics = mergeIdentifyDiagnostics(localOcrDiagnostics, remoteDiagnostics, recognitionImages.length);
+        identifyDiagnostics = mergeIdentifyDiagnostics(
+          localOcrDiagnostics,
+          remoteDiagnostics,
+          recognitionFrameBase64.length
+        );
       }
 
       const identifiedQuery = buildIdentifySearchQuery(identified[0]);
@@ -3187,10 +3546,11 @@ export default function ScanScreen() {
 
       const resolveStartedAt = Date.now();
       const cards = await resolveMatches(identified, ocrText);
+      if (!scanContinuationActive()) return;
       timings.resolveMatchesMs = Date.now() - resolveStartedAt;
       cardsForDiagnostics = cards;
       const learningStartedAt = Date.now();
-      await logScanLearningEvent({
+      const learningEvent = logScanLearningEvent({
         scanSessionId: routeInstanceId.current,
         eventType: 'attempt',
         scanMode,
@@ -3269,15 +3629,52 @@ export default function ScanScreen() {
         candidates: buildLearningCandidates(cards.length ? cards : identified),
         outcome: cards.length ? 'candidates_returned' : 'no_match',
       });
-      timings.learningLogMs = Date.now() - learningStartedAt;
+      if (isSweepScan) {
+        void learningEvent.catch((error) => {
+          logCameraDiagnostic('sweep learning event failed', {
+            routeInstanceId: routeInstanceId.current,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+        timings.learningLogMs = 0;
+      } else {
+        await learningEvent;
+        if (!scanContinuationActive()) return;
+        timings.learningLogMs = Date.now() - learningStartedAt;
+      }
+      if (!scanContinuationActive()) return;
       const resolvedCard = cards[0] ?? identified[0] ?? null;
 
       if (isInventoryFlow) {
         saveDiagnostics('inventory_callback');
         await scanStore.triggerCallback(base64Images[0] ?? '', resolvedCard);
+        if (!scanContinuationActive()) return;
         navigatingAwayRef.current = true;
         stopAutoScanner();
         router.back();
+        return;
+      }
+
+      if (isSweepScan && !cards.length) {
+        const result = addUnresolvedSweepScan(sweepSessionIdRef.current, {
+          captureUri: resultRectifiedImage?.uri ?? photo.uri,
+          source,
+        });
+        setSweepSummary(getSweepScanSummary(result.session));
+        saveDiagnostics('no_match', ['sweep-unresolved']);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+        if (!scanContinuationActive()) return;
+        sweepAwaitingClearRef.current = source === 'auto';
+        autoReadyFrames.current = 0;
+        applyFrameAssessment(null);
+        applyLocalisationResult(null);
+        applyScanQualityResult(null);
+        setAcceptedPreviewUri(null);
+        setScannerState({ type: 'search' });
+        setScanMessage(source === 'auto'
+          ? 'Saved for review. Move this card out, then show the next one.'
+          : 'Saved for review. Ready for the next card.'
+        );
         return;
       }
 
@@ -3304,8 +3701,38 @@ export default function ScanScreen() {
         return;
       }
 
+      if (isSweepScan) {
+        const result = addSweepScanCandidates(sweepSessionIdRef.current, cards, {
+          captureUri: resultRectifiedImage?.uri ?? photo.uri,
+          source,
+          preventRapidDuplicate: source === 'auto',
+        });
+        setSweepSummary(getSweepScanSummary(result.session));
+        saveDiagnostics('candidates_returned', [
+          `sweep:${result.action}`,
+          `sweep-copies:${getSweepScanSummary(result.session).totalCopies}`,
+        ]);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+        if (!scanContinuationActive()) return;
+        sweepAwaitingClearRef.current = source === 'auto';
+        autoReadyFrames.current = 0;
+        applyFrameAssessment(null);
+        applyLocalisationResult(null);
+        applyScanQualityResult(null);
+        setAcceptedPreviewUri(null);
+        setScannerState({ type: 'search' });
+        setScanMessage(result.action === 'duplicate_ignored'
+          ? 'Already captured. Move this card out, then show the next one.'
+          : source === 'auto'
+            ? `${getSweepScanSummary(result.session).totalCopies} captured. Move this card out for the next scan.`
+            : `${getSweepScanSummary(result.session).totalCopies} captured. Ready for the next card.`
+        );
+        return;
+      }
+
       setScanMessage(cards.length === 1 ? 'Card found.' : `${cards.length} possible matches found.`);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      if (!scanContinuationActive()) return;
       saveDiagnostics('candidates_returned');
       setScannerState({ type: 'confirm' });
       navigatingAwayRef.current = true;
@@ -3327,6 +3754,7 @@ export default function ScanScreen() {
         },
       });
     } catch (error) {
+      if (!scanContinuationActive()) return;
       const message = error instanceof Error ? error.message : 'Something went wrong while scanning.';
       setScanMessage('Scan failed. Try again or search manually.');
       saveDiagnostics('failed', [message]);
@@ -3353,6 +3781,7 @@ export default function ScanScreen() {
         outcome: 'failed',
         notes: message,
       });
+      if (!scanContinuationActive()) return;
       setScannerState({ type: 'error' });
       logCameraDiagnostic('capture failed', {
         routeInstanceId: routeInstanceId.current,
@@ -3372,7 +3801,7 @@ export default function ScanScreen() {
         { text: isListingFlow ? 'Add manually' : 'Search manually', onPress: openManualSearch },
       ]);
     } finally {
-      captureInFlightRef.current = false;
+      releaseMobileFlowMutex(captureInFlightRef);
       if (source === 'auto') lastAutoCaptureAt.current = Date.now();
     }
   }, [
@@ -3384,6 +3813,7 @@ export default function ScanScreen() {
     isBinderPageScan,
     isInventoryFlow,
     isListingFlow,
+    isSweepScan,
     lookupStackrCachedIdentities,
     logScannerLifecycleEvent,
     mode,
@@ -3393,10 +3823,12 @@ export default function ScanScreen() {
     preparePhotosForRecognition,
     resolveMatches,
     returnReason,
+    runMultilingualOcrFallback,
     runTargetedCardOcr,
     scanIntent,
     scanIntentConfig.itemType,
     scanMode,
+    scanContinuationActive,
     scannerClientContext,
     scannerFeatureFlags,
     scannerThresholdSet.thresholds.recognition.localAutoConfirmConfidence,
@@ -3405,9 +3837,13 @@ export default function ScanScreen() {
     stopAutoScanner,
     flow,
     lastQuery,
+    applyFrameAssessment,
+    applyLocalisationResult,
+    applyScanQualityResult,
   ]);
 
   const setScanModePreference = useCallback((next: ScanMode) => {
+    if (!guardScanNavigation()) return;
     stopAutoScanner();
     applyFrameAssessment(null);
     applyLocalisationResult(null);
@@ -3422,7 +3858,65 @@ export default function ScanScreen() {
       );
       return next;
     });
-  }, [applyFrameAssessment, applyLocalisationResult, applyScanQualityResult, setScannerState, stopAutoScanner]);
+  }, [applyFrameAssessment, applyLocalisationResult, applyScanQualityResult, guardScanNavigation, setScannerState, stopAutoScanner]);
+
+  const finishSweepScan = useCallback(() => {
+    if (!guardScanNavigation()) return;
+    const session = getSweepScanSession(sweepSessionIdRef.current);
+    if (!session?.items.length) {
+      Alert.alert('No cards captured yet', 'Sweep at least one card into the frame before reviewing the batch.');
+      return;
+    }
+    navigatingAwayRef.current = true;
+    stopAutoScanner();
+    router.replace({
+      pathname: '/scan/sweep-result',
+      params: {
+        sweepSessionId: session.scanSessionId,
+        ...(binderId ? { binderId } : {}),
+      },
+    } as any);
+  }, [binderId, guardScanNavigation, stopAutoScanner]);
+
+  const setCollectionCaptureMode = useCallback((next: 'single' | 'sweep' | 'binder') => {
+    if (!guardScanNavigation()) return;
+    if (isSweepScan && next !== 'sweep') {
+      const active = getSweepScanSession(sweepSessionIdRef.current);
+      if (active?.items.length) {
+        finishSweepScan();
+        return;
+      }
+    }
+    if (next === 'sweep') {
+      const active = getSweepScanSession(sweepSessionIdRef.current)
+        ?? createSweepScanSession({ binderId });
+      sweepSessionIdRef.current = active.scanSessionId;
+      navigatingAwayRef.current = true;
+      stopAutoScanner();
+      router.replace({
+        pathname: '/scan',
+        params: {
+          intent: 'sweep_collection',
+          mode: 'market',
+          scanMode,
+          sweepSessionId: active.scanSessionId,
+          ...(binderId ? { binderId } : {}),
+        },
+      } as any);
+      return;
+    }
+    navigatingAwayRef.current = true;
+    stopAutoScanner();
+    router.replace({
+      pathname: '/scan',
+      params: {
+        intent: next === 'binder' ? 'binder_page' : 'quick_collection',
+        mode: next === 'binder' ? 'binder' : 'market',
+        scanMode: next === 'binder' ? 'manual' : scanMode,
+        ...(binderId ? { binderId } : {}),
+      },
+    } as any);
+  }, [binderId, finishSweepScan, guardScanNavigation, isSweepScan, scanMode, stopAutoScanner]);
 
   const runAutoFrameCheck = useCallback(async () => {
     if (
@@ -3453,11 +3947,13 @@ export default function ScanScreen() {
         base64: false,
         exif: false,
       });
+      if (!scanContinuationActive()) return;
       const capturedFrame = createScanCapturedFrame(photo);
       const preview = await preparePhotoForFrameCheck(photo, capturedFrame, CARD_LOCALISATION_ENABLED
         ? { paddingRatio: 0, width: LOCALISATION_FRAME_CHECK_WIDTH, compress: 0.48 }
         : undefined
       );
+      if (!scanContinuationActive()) return;
       const previousLocalisation = localisationRef.current;
       const rawLocalisation = CARD_LOCALISATION_ENABLED && preview.base64
         ? localiseCardFromJpegBase64(preview.base64, {
@@ -3504,11 +4000,20 @@ export default function ScanScreen() {
         localisation: compactLocalisationDiagnostics(localisation),
       });
 
-      const detectedCard = Boolean(
-        localisation?.status === 'confident'
-        || localisation?.status === 'uncertain'
-        || assessment.ready
-      );
+      const detectedCard = CARD_LOCALISATION_ENABLED
+        ? Boolean(localisation?.status === 'confident' || localisation?.status === 'uncertain')
+        : assessment.ready;
+      if (isSweepScan && sweepAwaitingClearRef.current) {
+        autoReadyFrames.current = 0;
+        setScannerStateDirect('SEARCHING');
+        if (detectedCard) {
+          setScanMessage('Move the scanned card out, then show the next one.');
+          return;
+        }
+        sweepAwaitingClearRef.current = false;
+        setScanMessage('Ready. Sweep the next card into the frame.');
+        return;
+      }
       if (detectedCard && firstCardDetectionMsRef.current == null) {
         firstCardDetectionMsRef.current = Date.now() - scannerMountedAt.current;
       }
@@ -3542,7 +4047,10 @@ export default function ScanScreen() {
 
         if (decision.reason === 'searching') {
           stableCaptureStartedAtRef.current = null;
-          setScanMessage('Centre one card. Keep other cards in the dim area.');
+          setScanMessage(isSweepScan
+            ? 'Sweep a card into the frame and hold briefly.'
+            : 'Centre one card. Keep other cards in the dim area.'
+          );
           return;
         }
 
@@ -3559,8 +4067,9 @@ export default function ScanScreen() {
         if (stableCaptureStartedAtRef.current == null) stableCaptureStartedAtRef.current = Date.now();
         setScanMessage('Hold steady.');
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        if (!scanContinuationActive()) return;
         setScanMessage('Card locked. Scanning...');
-        await handleCapture('auto');
+        await handleCapture('auto', undefined, photo);
         return;
       }
 
@@ -3588,16 +4097,23 @@ export default function ScanScreen() {
       autoReadyFrames.current = 0;
       setScanMessage('Card locked. Scanning...');
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      if (!scanContinuationActive()) return;
       await handleCapture('auto', photo);
     } catch (error) {
+      if (!scanContinuationActive()) return;
       autoReadyFrames.current = 0;
       applyLocalisationResult(null);
       applyScanQualityResult(null);
       applyFrameAssessment(buildFrameAssessment({
-        message: 'Centre one card. Keep other cards in the dim area.',
+        message: isSweepScan
+          ? 'Sweep a card into the frame and hold briefly.'
+          : 'Centre one card. Keep other cards in the dim area.',
         reason: 'frame-check-failed',
       }));
-      setScanMessage('Centre one card. Keep other cards in the dim area.');
+      setScanMessage(isSweepScan
+        ? 'Sweep a card into the frame and hold briefly.'
+        : 'Centre one card. Keep other cards in the dim area.'
+      );
       logCameraDiagnostic('auto frame check failed', {
         routeInstanceId: routeInstanceId.current,
         error: error instanceof Error ? error.message : String(error),
@@ -3618,10 +4134,12 @@ export default function ScanScreen() {
     createScanCapturedFrame,
     handleCapture,
     inlineManualSearchOpen,
+    isSweepScan,
     mountError,
     permissionGranted,
     preparePhotoForFrameCheck,
     scanMode,
+    scanContinuationActive,
     scanQualityCalibration,
     setScannerStateDirect,
   ]);
@@ -3669,7 +4187,12 @@ export default function ScanScreen() {
       }, delay);
     };
 
-    setScanMessage('Centre one card. Keep other cards in the dim area.');
+    setScanMessage(isSweepScan
+      ? sweepAwaitingClearRef.current
+        ? 'Move the scanned card out, then show the next one.'
+        : 'Sweep a card into the frame and hold briefly.'
+      : 'Centre one card. Keep other cards in the dim area.'
+    );
     setScannerState({ type: 'search' });
     schedule();
 
@@ -3689,6 +4212,7 @@ export default function ScanScreen() {
     returnedFromRejectedMatches,
     runAutoFrameCheck,
     scanMode,
+    isSweepScan,
     setScannerState,
   ]);
 
@@ -3702,6 +4226,7 @@ export default function ScanScreen() {
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
           facing={facing}
+          autofocus="on"
           active={appActive && shouldRenderCamera && !navigatingAwayRef.current}
           enableTorch={torchEnabled && facing === 'back'}
           animateShutter={false}
@@ -3796,7 +4321,12 @@ export default function ScanScreen() {
             <Ionicons name="chevron-back" size={30} color="#FFFFFF" />
           </TouchableOpacity>
 
-          <View style={styles.statusPill}>
+          <View
+            style={styles.statusPill}
+            accessibilityRole="text"
+            accessibilityLabel={isSweepScan ? sweepCaptureUx.statusAnnouncement : activeStatusText}
+            accessibilityLiveRegion="polite"
+          >
             <View style={[styles.readyDot, { backgroundColor: cameraReady ? '#22C55E' : '#FBBF24' }]} />
             <Text style={styles.statusText} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.75}>
               {activeStatusText}
@@ -3831,6 +4361,7 @@ export default function ScanScreen() {
           style={[styles.instructionWrap, { top: Math.max(insets.top + 86, frame.top - 64) }]}
           accessibilityRole="text"
           accessibilityLabel={activeGuidanceAccessibilityLabel}
+          accessibilityLiveRegion="polite"
         >
           <View style={styles.instructionPill}>
             <View style={[styles.guidanceIcon, { backgroundColor: `${activeGuidanceTone}24` }]}>
@@ -3910,9 +4441,15 @@ export default function ScanScreen() {
               </View>
               <TouchableOpacity
                 onPress={closeInlineManualSearch}
-                style={styles.inlineManualSearchClose}
+                disabled={scanControlsLocked}
+                style={[
+                  styles.inlineManualSearchClose,
+                  scanControlsLocked && styles.disabledButton,
+                  MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS.sweepCapture.manualSearchCloseButton[1],
+                ]}
                 accessibilityRole="button"
                 accessibilityLabel="Close manual search"
+                accessibilityState={{ disabled: scanControlsLocked }}
               >
                 <Ionicons name="close" size={18} color="#FFFFFF" />
               </TouchableOpacity>
@@ -3922,6 +4459,7 @@ export default function ScanScreen() {
               <TextInput
                 value={inlineManualSearchQuery}
                 onChangeText={setInlineManualSearchQuery}
+                editable={!scanControlsLocked}
                 placeholder="Card name, set, or number"
                 placeholderTextColor="rgba(221,214,254,0.58)"
                 autoCapitalize="words"
@@ -3929,7 +4467,9 @@ export default function ScanScreen() {
                 style={styles.inlineManualSearchInput}
                 accessibilityLabel="Manual card search"
                 returnKeyType="search"
-                onSubmitEditing={() => runInlineManualSearch(inlineManualSearchQuery)}
+                onSubmitEditing={() => {
+                  if (!scanControlsLocked) void runInlineManualSearch(inlineManualSearchQuery);
+                }}
               />
               {inlineManualSearchLoading ? <ActivityIndicator size="small" color="#DDD6FE" /> : null}
             </View>
@@ -3943,9 +4483,11 @@ export default function ScanScreen() {
                 <TouchableOpacity
                   key={card.id}
                   onPress={() => handleInlineManualSearchSelect(card)}
-                  style={styles.inlineManualSearchResult}
+                  disabled={scanControlsLocked}
+                  style={[styles.inlineManualSearchResult, scanControlsLocked && styles.disabledButton]}
                   accessibilityRole="button"
                   accessibilityLabel={`Choose ${card.name}, ${card.set_name}, number ${card.number}`}
+                  accessibilityState={{ disabled: scanControlsLocked }}
                 >
                   {card.image_small ? (
                     <Image source={{ uri: card.image_small }} style={styles.inlineManualSearchThumb} resizeMode="contain" />
@@ -3973,6 +4515,31 @@ export default function ScanScreen() {
         ) : null}
 
         <View style={[styles.bottomPanel, { paddingBottom: Math.max(18, insets.bottom + 10) }]}>
+          {showCollectionCaptureModes ? (
+            <View style={styles.captureTypeToggle} accessibilityRole="tablist">
+              {([
+                { key: 'single', label: 'Single', icon: 'scan-outline', active: scanIntent === 'quick_collection' },
+                { key: 'sweep', label: 'Sweep', icon: 'layers-outline', active: isSweepScan },
+                { key: 'binder', label: 'Page', icon: 'grid-outline', active: isBinderPageScan },
+              ] as const).map((option) => (
+                <TouchableOpacity
+                  key={option.key}
+                  onPress={() => setCollectionCaptureMode(option.key)}
+                  disabled={scanControlsLocked}
+                  style={[styles.captureTypeSegment, option.active && styles.captureTypeSegmentActive, scanControlsLocked && styles.disabledButton]}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: option.active, disabled: scanControlsLocked }}
+                  accessibilityLabel={`${option.label} capture mode`}
+                >
+                  <Ionicons name={option.icon} size={16} color={option.active ? '#FFFFFF' : '#DDD6FE'} />
+                  <Text style={[styles.captureTypeText, option.active && styles.modeSegmentTextActive]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : null}
+
           {isBinderPageScan ? (
             <View style={styles.layoutSelector}>
               <Text style={styles.layoutSelectorLabel}>Binder page layout</Text>
@@ -3983,10 +4550,16 @@ export default function ScanScreen() {
                     <TouchableOpacity
                       key={layout}
                       onPress={() => setRememberedBinderPageLayout(layout)}
+                      disabled={scanControlsLocked}
                       activeOpacity={0.82}
-                      style={[styles.layoutChip, active && styles.layoutChipActive]}
+                      style={[
+                        styles.layoutChip,
+                        active && styles.layoutChipActive,
+                        scanControlsLocked && styles.disabledButton,
+                        MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS.sweepCapture.binderLayoutChip[1],
+                      ]}
                       accessibilityRole="button"
-                      accessibilityState={{ selected: active }}
+                      accessibilityState={{ selected: active, disabled: scanControlsLocked }}
                       accessibilityLabel={`${layout} by ${layout} binder page layout`}
                     >
                       <Text style={[styles.layoutChipText, active && styles.layoutChipTextActive]}>
@@ -4003,10 +4576,16 @@ export default function ScanScreen() {
             <View style={styles.modeToggle}>
               <TouchableOpacity
                 onPress={() => setScanModePreference('auto')}
+                disabled={scanControlsLocked}
                 activeOpacity={0.82}
-                style={[styles.modeSegment, scanMode === 'auto' && styles.modeSegmentActive]}
+                style={[
+                  styles.modeSegment,
+                  scanMode === 'auto' && styles.modeSegmentActive,
+                  scanControlsLocked && styles.disabledButton,
+                  MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS.sweepCapture.scanModeTab[1],
+                ]}
                 accessibilityRole="button"
-                accessibilityState={{ selected: scanMode === 'auto' }}
+                accessibilityState={{ selected: scanMode === 'auto', disabled: scanControlsLocked }}
                 accessibilityLabel="Use auto scan"
               >
                 <Ionicons name="sparkles-outline" size={17} color={scanMode === 'auto' ? '#FFFFFF' : '#DDD6FE'} />
@@ -4021,10 +4600,16 @@ export default function ScanScreen() {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setScanModePreference('manual')}
+                disabled={scanControlsLocked}
                 activeOpacity={0.82}
-                style={[styles.modeSegment, scanMode === 'manual' && styles.modeSegmentActive]}
+                style={[
+                  styles.modeSegment,
+                  scanMode === 'manual' && styles.modeSegmentActive,
+                  scanControlsLocked && styles.disabledButton,
+                  MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS.sweepCapture.scanModeTab[1],
+                ]}
                 accessibilityRole="button"
-                accessibilityState={{ selected: scanMode === 'manual' }}
+                accessibilityState={{ selected: scanMode === 'manual', disabled: scanControlsLocked }}
                 accessibilityLabel="Use manual capture"
               >
                 <Ionicons name="hand-left-outline" size={17} color={scanMode === 'manual' ? '#FFFFFF' : '#DDD6FE'} />
@@ -4043,11 +4628,13 @@ export default function ScanScreen() {
           <View style={styles.bottomControls}>
             <TouchableOpacity
               onPress={openManualSearch}
-              style={styles.secondaryAction}
+              disabled={scanControlsLocked}
+              style={[styles.secondaryAction, scanControlsLocked && styles.disabledButton]}
               activeOpacity={0.82}
               accessibilityRole="button"
               accessibilityLabel={isListingFlow ? 'Add manually' : 'Search manually without scanning'}
               accessibilityHint={localQuickScanExperienceEnabled ? 'Keeps the scan context so you can choose a card manually.' : undefined}
+              accessibilityState={{ disabled: scanControlsLocked }}
             >
               <Ionicons name="search-outline" size={20} color="#FFFFFF" />
               <Text style={styles.secondaryActionText} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.76}>
@@ -4057,15 +4644,19 @@ export default function ScanScreen() {
 
             <TouchableOpacity
               onPress={() => handleCapture('manual')}
-              disabled={!cameraReady || captureBusy || !permissionGranted}
+              disabled={!cameraReady || scanControlsLocked || !permissionGranted}
               activeOpacity={0.82}
               style={[
                 styles.captureButton,
-                (!cameraReady || captureBusy || !permissionGranted) && styles.captureDisabled,
+                (!cameraReady || scanControlsLocked || !permissionGranted) && styles.captureDisabled,
               ]}
               accessibilityRole="button"
               accessibilityLabel="Capture card"
               accessibilityHint="Takes a full-resolution photo of the centred card."
+              accessibilityState={{
+                disabled: !cameraReady || scanControlsLocked || !permissionGranted,
+                busy: scanControlsLocked,
+              }}
             >
               {captureBusy ? (
                 <ActivityIndicator color={theme.colors.primary} />
@@ -4074,16 +4665,39 @@ export default function ScanScreen() {
               )}
             </TouchableOpacity>
 
-            <View style={styles.modeNote}>
-              <Text style={styles.modeNoteTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>
-                {isBinderPageScan ? 'Page' : scanMode === 'auto' ? 'Hover' : 'Tap'}
-              </Text>
-              <Text style={styles.modeNoteText} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.72}>
-                {isBinderPageScan
-                  ? 'Each pocket is checked separately'
-                  : scanMode === 'auto' ? 'Scans the centred card' : 'Capture the centred card'}
-              </Text>
-            </View>
+            {isSweepScan ? (
+              <TouchableOpacity
+                onPress={finishSweepScan}
+                disabled={sweepCaptureUx.reviewAction.disabled}
+                style={[
+                  styles.finishSweepButton,
+                  sweepCaptureUx.reviewAction.disabled && styles.disabledButton,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel={sweepCaptureUx.reviewAction.label}
+                accessibilityHint={sweepCaptureUx.reviewAction.hint}
+                accessibilityState={{
+                  disabled: sweepCaptureUx.reviewAction.disabled,
+                  busy: sweepCaptureUx.reviewAction.busy,
+                }}
+              >
+                <Ionicons name="checkmark-done-outline" size={19} color="#FFFFFF" />
+                <Text style={styles.modeNoteTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>
+                  Review {sweepSummary.totalCopies}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.modeNote}>
+                <Text style={styles.modeNoteTitle} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.76}>
+                  {isBinderPageScan ? 'Page' : scanMode === 'auto' ? 'Hover' : 'Tap'}
+                </Text>
+                <Text style={styles.modeNoteText} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.72}>
+                  {isBinderPageScan
+                    ? 'Each pocket is checked separately'
+                    : scanMode === 'auto' ? 'Scans the centred card' : 'Capture the centred card'}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </SafeAreaView>
@@ -4169,8 +4783,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconButton: {
-    width: 46,
-    height: 46,
+    ...MOBILE_FLOW_CONTROL_DIMENSIONS.sweepCapture.navigationButton,
     borderRadius: 23,
     backgroundColor: 'rgba(0,0,0,0.48)',
     borderWidth: 1,
@@ -4393,9 +5006,8 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   inlineManualSearchClose: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    ...MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS.sweepCapture.manualSearchCloseButton[0],
+    borderRadius: 22,
     backgroundColor: 'rgba(255,255,255,0.12)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.16)',
@@ -4472,6 +5084,35 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.12)',
     gap: 12,
   },
+  captureTypeToggle: {
+    minHeight: 40,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    padding: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  captureTypeSegment: {
+    ...MOBILE_FLOW_CONTROL_DIMENSIONS.sweepCapture.captureModeTab,
+    flex: 1,
+    borderRadius: 11,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+  },
+  captureTypeSegmentActive: {
+    backgroundColor: 'rgba(16,185,129,0.9)',
+  },
+  captureTypeText: {
+    color: '#DDD6FE',
+    fontSize: 11,
+    lineHeight: 14,
+    fontWeight: '900',
+  },
   layoutSelector: {
     gap: 8,
   },
@@ -4488,8 +5129,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   layoutChip: {
+    ...MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS.sweepCapture.binderLayoutChip[0],
     flex: 1,
-    minHeight: 36,
     borderRadius: 14,
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderWidth: 1,
@@ -4522,8 +5163,8 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   modeSegment: {
+    ...MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS.sweepCapture.scanModeTab[0],
     flex: 1,
-    minHeight: 36,
     borderRadius: 14,
     flexDirection: 'row',
     alignItems: 'center',
@@ -4600,6 +5241,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
+  },
+  finishSweepButton: {
+    ...MOBILE_FLOW_CONTROL_DIMENSIONS.sweepCapture.reviewButton,
+    borderRadius: 16,
+    backgroundColor: 'rgba(16,185,129,0.92)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+    gap: 2,
   },
   modeNoteTitle: {
     color: '#FFFFFF',

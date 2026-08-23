@@ -167,12 +167,13 @@ const SCRIPT_TO_NATIVE_SCRIPT: Record<Exclude<OcrScript, 'unknown'>, 'Latin' | '
   korean: 'Korean',
 };
 
-const RECOGNIZER_IMPORT_CACHE = new Map<string, Promise<typeof import('@react-native-ml-kit/text-recognition')>>();
+const RECOGNIZER_IMPORT_CACHE = new Map<string, Promise<unknown>>();
 
 function stripDiacritics(value: string) {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  // Recompose after removing Latin combining marks. Leaving the text in NFD
+  // decomposes Hangul syllables into Jamo and breaks Korean script detection.
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').normalize('NFC');
 }
-
 function unique<T>(values: readonly T[]) {
   return [...new Set(values)];
 }
@@ -325,6 +326,93 @@ export function selectOcrScriptsForCard(input: {
   return unique(scripts);
 }
 
+const MULTILINGUAL_TITLE_FALLBACK_SCRIPTS = Object.freeze([
+  'japanese',
+  'korean',
+  // ML Kit exposes one Chinese recognizer. Simplified versus Traditional is
+  // resolved later from the returned characters and catalogue candidates.
+  'chinese_simplified',
+] as const satisfies readonly Exclude<OcrScript, 'unknown' | 'latin'>[]);
+
+function recognizerFamily(script: OcrScript) {
+  return script === 'chinese_simplified' || script === 'chinese_traditional'
+    ? 'chinese'
+    : script;
+}
+
+/**
+ * Selects a bounded second-pass script list for a scan that Latin OCR could
+ * not resolve. Candidate language hints keep the retry narrow; without hints,
+ * each non-Latin Pokemon catalogue script is attempted once.
+ */
+export function selectMultilingualOcrFallbackScripts(input: {
+  attemptedScripts?: readonly OcrScript[];
+  candidateLanguages?: readonly (string | null | undefined)[];
+}) {
+  const attemptedFamilies = new Set((input.attemptedScripts ?? []).map(recognizerFamily));
+  const meaningfulCandidateLanguages = (input.candidateLanguages ?? [])
+    .map((language) => String(language ?? '').trim())
+    .filter((language) => language && language.toLowerCase() !== 'unknown');
+  const hinted = selectOcrScriptsForCard({
+    visualCandidates: meaningfulCandidateLanguages.map((language) => ({ language })),
+  }).filter((script): script is Exclude<OcrScript, 'unknown' | 'latin'> => script !== 'latin');
+  // A Latin-only candidate set is a real hint, not the same thing as having no
+  // language evidence. Avoid three expensive native OCR passes in that case.
+  const planned = hinted.length
+    ? hinted
+    : meaningfulCandidateLanguages.length
+      ? []
+      : [...MULTILINGUAL_TITLE_FALLBACK_SCRIPTS];
+
+  return unique(planned).filter((script) => !attemptedFamilies.has(recognizerFamily(script)));
+}
+
+/**
+ * Rejects Latin/digit-only output from a non-Latin fallback recognizer. This
+ * prevents a second-pass recognizer from adding noisy duplicate evidence.
+ */
+export function hasDistinctiveOcrScriptText(text: string, script: OcrScript) {
+  if (!String(text ?? '').trim()) return false;
+  switch (script) {
+    case 'japanese':
+      return /[\u3040-\u30ff]/u.test(text);
+    case 'korean':
+      return /[\uac00-\ud7af]/u.test(text);
+    case 'chinese_simplified':
+    case 'chinese_traditional':
+      return /[\u3400-\u9fff]/u.test(text);
+    case 'latin':
+      return /[a-z0-9]/iu.test(text);
+    default:
+      return false;
+  }
+}
+
+export async function runBoundedMultilingualOcrFallback(input: {
+  scripts: readonly Exclude<OcrScript, 'unknown' | 'latin'>[];
+  recognize: (script: Exclude<OcrScript, 'unknown' | 'latin'>) => Promise<string>;
+}) {
+  const attemptedScripts: Exclude<OcrScript, 'unknown' | 'latin'>[] = [];
+  for (const script of input.scripts) {
+    attemptedScripts.push(script);
+    const text = await input.recognize(script);
+    if (hasDistinctiveOcrScriptText(text, script)) {
+      return { attemptedScripts, accepted: { script, text } };
+    }
+  }
+  return { attemptedScripts, accepted: null };
+}
+
+export function shouldRunMultilingualOcrFallback(input: {
+  matcherEnabled: boolean;
+  titleImageUri: string | null | undefined;
+  localMatchStatus: 'strong' | 'ambiguous' | 'weak' | 'no-candidates' | 'no-text' | 'disabled' | null;
+}) {
+  return input.matcherEnabled
+    && Boolean(input.titleImageUri)
+    && input.localMatchStatus !== 'strong';
+}
+
 export function parseCollectorNumberEvidence(
   value?: string | null,
   sourceRegion?: OcrSourceRegion
@@ -473,7 +561,7 @@ async function getMlKitTextRecognitionModule() {
     pending = import('@react-native-ml-kit/text-recognition');
     RECOGNIZER_IMPORT_CACHE.set(cacheKey, pending);
   }
-  return pending;
+  return pending as Promise<typeof import('@react-native-ml-kit/text-recognition')>;
 }
 
 function mlKitScriptFor(script: OcrScript) {
@@ -486,8 +574,8 @@ export async function recognizeRegionWithMlKit(
 ): Promise<TextRecognitionResult> {
   const module = await getMlKitTextRecognitionModule();
   const scriptName = mlKitScriptFor(request.recognizerScript);
-  const script = module.TextRecognitionScript?.[scriptName.toUpperCase() as keyof typeof module.TextRecognitionScript]
-    ?? scriptName;
+  const script = module.TextRecognitionScript[scriptName.toUpperCase() as keyof typeof module.TextRecognitionScript]
+    ?? module.TextRecognitionScript.LATIN;
   return module.default.recognize(request.uri, script);
 }
 

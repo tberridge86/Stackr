@@ -5,9 +5,13 @@ import {
   canOcrEvidenceDriveAutomaticExactMatch,
   collectOcrEvidence,
   collectorEvidenceConfidenceScore,
+  hasDistinctiveOcrScriptText,
   normaliseCollectorNumberText,
   normaliseOcrEvidenceText,
   parseCollectorNumberEvidence,
+  selectMultilingualOcrFallbackScripts,
+  runBoundedMultilingualOcrFallback,
+  shouldRunMultilingualOcrFallback,
   selectOcrScriptsForCard,
   shouldReadCardNameRegion,
   type OcrRegionRecognitionRequest,
@@ -88,6 +92,47 @@ assert.deepEqual(selectOcrScriptsForCard({
   firstPassText: '099/165',
 }), ['latin', 'chinese_traditional']);
 
+assert.deepEqual(selectMultilingualOcrFallbackScripts({
+  attemptedScripts: ['latin'],
+  candidateLanguages: ['ja'],
+}), ['japanese']);
+
+assert.deepEqual(selectMultilingualOcrFallbackScripts({
+  attemptedScripts: ['latin'],
+  candidateLanguages: ['en'],
+}), [], 'Latin-only candidate evidence must not trigger three non-Latin OCR passes.');
+
+assert.deepEqual(selectMultilingualOcrFallbackScripts({
+  attemptedScripts: ['latin'],
+  candidateLanguages: [null, undefined, 'unknown'],
+}), ['japanese', 'korean', 'chinese_simplified'], 'Missing language evidence still needs the bounded multilingual fallback.');
+
+assert.deepEqual(selectMultilingualOcrFallbackScripts({
+  attemptedScripts: ['latin'],
+  candidateLanguages: [],
+}), ['japanese', 'korean', 'chinese_simplified']);
+
+assert.deepEqual(selectMultilingualOcrFallbackScripts({
+  attemptedScripts: ['latin', 'chinese_traditional'],
+  candidateLanguages: [],
+}), ['japanese', 'korean']);
+
+assert.equal(hasDistinctiveOcrScriptText('リザードンex', 'japanese'), true);
+assert.equal(hasDistinctiveOcrScriptText('리자몽ex', 'korean'), true);
+assert.equal(hasDistinctiveOcrScriptText('喷火龙ex', 'chinese_simplified'), true);
+assert.equal(hasDistinctiveOcrScriptText('007/165', 'japanese'), false);
+
+assert.equal(shouldRunMultilingualOcrFallback({
+  matcherEnabled: true,
+  titleImageUri: 'file:///title.jpg',
+  localMatchStatus: null,
+}), true, 'An empty Latin first pass must still trigger multilingual OCR.');
+assert.equal(shouldRunMultilingualOcrFallback({
+  matcherEnabled: true,
+  titleImageUri: 'file:///title.jpg',
+  localMatchStatus: 'strong',
+}), false);
+
 const strongCollectorItem: OcrEvidenceItem = {
   rawText: '099/165',
   normalisedText: '099/165',
@@ -115,6 +160,24 @@ assert.equal(shouldReadCardNameRegion({
 }), true);
 
 async function runAsyncOcrEvidenceTests() {
+  const fallbackCalls: string[] = [];
+  const boundedFallback = await runBoundedMultilingualOcrFallback({
+    scripts: ['japanese', 'korean', 'chinese_simplified'],
+    recognize: async (script) => {
+      fallbackCalls.push(script);
+      return script === 'korean' ? '\ud30c\uc774\ub9ac' : '007/165';
+    },
+  });
+  assert.deepEqual(fallbackCalls, ['japanese', 'korean'], 'Fallback must stop after the first distinctive script result.');
+  assert.deepEqual(boundedFallback.attemptedScripts, ['japanese', 'korean']);
+  assert.equal(boundedFallback.accepted?.script, 'korean');
+
+  const emptyFallback = await runBoundedMultilingualOcrFallback({
+    scripts: ['japanese'],
+    recognize: async () => '007/165',
+  });
+  assert.equal(emptyFallback.accepted, null);
+
   const calls: OcrRegionRecognitionRequest[] = [];
   const regions = {
     collectorNumber: { sourceRegion: 'collectorNumber' as const, uri: 'mock://collector' },
@@ -141,7 +204,6 @@ async function runAsyncOcrEvidenceTests() {
       return textResult('2023 Pokemon');
     },
   });
-
   assert.equal(evidence.strategyVersion, 'stackr-ocr-evidence-v1.0.0');
   assert.equal(evidence.soleExactMatchAllowed, false);
   assert.equal(evidence.printedNumber?.number, 99);

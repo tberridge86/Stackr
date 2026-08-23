@@ -353,6 +353,18 @@ jobs:
 
       - name: Publish staging mobile configuration
         if: inputs.publish_mobile_update && inputs.release_scope == 'full_platform'
+        env:
+          APP_VARIANT: staging
+          EXPO_PUBLIC_APP_VARIANT: staging
+          EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: "false"
+          EXPO_PUBLIC_STACKR_API_ENABLED: "true"
+          EXPO_PUBLIC_STACKR_API_URL: ${{ vars.STACKR_GATEWAY_URL }}
+          EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY: "true"
+          EXPO_PUBLIC_STACKR_RECOGNITION_MODEL_VERSION: dinov2_vits14
+          EXPO_PUBLIC_IMAGE_FALLBACK_ENABLED: "true"
+          EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK: "true"
+          EXPO_PUBLIC_SUPABASE_URL: ${{ vars.STACKR_SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}
         run: >-
           npx --yes eas-cli@21.4.0 update
           --channel staging

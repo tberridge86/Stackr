@@ -4,6 +4,7 @@ import { assertPremiumSellerWriteAccess } from './premiumSellerAccess';
 import { isVerifiedSellerSessionIdentity, sellerBatchRequestId, sellerCacheKey } from './sellerCache';
 import {
   executeSellerBatchWithIdentity,
+  SellerInventoryCommitAccountChangedError,
   SellerInventoryCommitReconciliationRequiredError,
 } from './sellerBatchCommit';
 import { loadRemoteWithCache } from './sellerRemoteCache';
@@ -315,7 +316,54 @@ export async function loadInventoryItems(options: SellerInventoryLoadOptions = {
   }
 }
 
+/**
+ * Loads the authenticated seller's current inventory directly from Supabase.
+ * Sweep planning fails closed if the session and verified user do not match,
+ * so a batch can never be prepared from another account or a stale device cache.
+ */
+export async function loadVerifiedSellerInventorySnapshot(): Promise<{
+  userId: string;
+  items: InventoryItem[];
+}> {
+  const [{ data: sessionData, error: sessionError }, { data: { user }, error: userError }] = await Promise.all([
+    supabase.auth.getSession(),
+    supabase.auth.getUser(),
+  ]);
+  if (sessionError) throw sessionError;
+  if (userError) throw userError;
+  if (!user || !isVerifiedSellerSessionIdentity(sessionData.session?.user?.id, user.id)) {
+    throw new Error('Sign in again before preparing a seller inventory batch.');
+  }
+
+  const { data, error } = await supabase
+    .from('seller_inventory_items')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('updated_at', { ascending: false });
+  if (error) throw error;
+
+  const items = (data ?? []).map((row: any): InventoryItem => ({
+    id: row.id,
+    card_id: row.card_id,
+    set_id: row.set_id,
+    condition: row.condition,
+    quantity: row.quantity,
+    asking_price: row.asking_price == null ? null : Number(row.asking_price),
+    buy_price: row.buy_price == null ? null : Number(row.buy_price),
+    notes: row.notes,
+    card: row.card_snapshot,
+    persisted_card_snapshot: row.card_snapshot,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  }));
+  if (!await currentSellerCommitIdentityMatches(user.id)) {
+    throw new Error('Seller account changed while live inventory was loading.');
+  }
+  return { userId: user.id, items };
+}
+
 export async function commitSellerInventoryBatch(input: {
+  expectedUserId?: string;
   expectedItems: InventoryItem[];
   items: InventoryItem[];
   movements?: InventoryMovementDraft[];
@@ -326,6 +374,9 @@ export async function commitSellerInventoryBatch(input: {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
   if (!user) throw new Error('Sign in before changing seller inventory.');
+  if (input.expectedUserId && user.id !== input.expectedUserId) {
+    throw new SellerInventoryCommitAccountChangedError();
+  }
   assertPremiumSellerWriteAccess(user);
 
   const requestToken = input.requestId ?? createBatchId('request');

@@ -1,5 +1,6 @@
 export type ScanIntent =
   | 'quick_collection'
+  | 'sweep_collection'
   | 'binder_page'
   | 'raw_listing'
   | 'graded_slab'
@@ -48,6 +49,15 @@ export const SCAN_INTENT_CONFIG: Record<ScanIntent, ScanIntentConfig> = {
     label: 'Quick scan',
     resultTitle: 'Card found',
     resultHelp: 'Review the card match before saving it to your collection.',
+    legacyMode: 'market',
+    itemType: 'raw_card',
+    requirements: BASE_REQUIREMENTS,
+  },
+  sweep_collection: {
+    intent: 'sweep_collection',
+    label: 'Sweep scan',
+    resultTitle: 'Sweep review',
+    resultHelp: 'Keep scanning cards, then review the batch once before adding it to your collection.',
     legacyMode: 'market',
     itemType: 'raw_card',
     requirements: BASE_REQUIREMENTS,
@@ -152,6 +162,7 @@ export function resolveScanIntent(input: {
   }
   if (mode === 'condition_check' || flow === 'condition_check') return 'condition_check';
   if (mode === 'full_pregrade' || mode === 'pregrade' || flow === 'full_pregrade') return 'full_pregrade';
+  if (mode === 'sweep' || flow === 'sweep') return 'sweep_collection';
   if (mode === 'listing' || flow === 'listing') return 'raw_listing';
   if (mode === 'binder' || hasBinder) return 'binder_page';
   return 'quick_collection';
@@ -170,7 +181,7 @@ export function isBinderScanIntent(intent: ScanIntent) {
 }
 
 export function isCollectionScanIntent(intent: ScanIntent) {
-  return intent === 'quick_collection' || intent === 'binder_page';
+  return intent === 'quick_collection' || intent === 'sweep_collection' || intent === 'binder_page';
 }
 
 export function buildScanRouteParamsForIntent(
