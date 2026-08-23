@@ -122,6 +122,14 @@ function compact(value: unknown): string {
     .replace(/[^a-z0-9\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]+/g, '');
 }
 
+export function evidenceSetCodeMatches(text: unknown, setCode: unknown): boolean {
+  const haystack = String(text ?? '').normalize('NFKC').toLowerCase();
+  const expected = String(setCode ?? '').normalize('NFKC').trim().toLowerCase();
+  if (!haystack || !expected) return false;
+  const escaped = expected.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(?:^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, 'iu').test(haystack);
+}
+
 export function normaliseEvidenceCollectorNumber(value: unknown): string {
   const raw = String(value ?? '').normalize('NFKC').trim().toLowerCase().replace(/^#/, '');
   return raw
@@ -288,7 +296,7 @@ export function assessInternetListingEvidence(
   const numbers = collectorNumbers(text);
   const numberMatch = numbers.some((number) => collectorMatches(number, fingerprint.collectorNumber));
   const collectorConflict = numbers.length > 0 && !numberMatch;
-  const setCodeMatch = compactText.includes(compact(fingerprint.setCode));
+  const setCodeMatch = evidenceSetCodeMatches(text, fingerprint.setCode);
   const matchedName = fingerprint.names.find((name) => compactText.includes(compact(name))) ?? null;
   const nameMatch = Boolean(matchedName);
   const detectedLanguage = explicitLanguage(text);

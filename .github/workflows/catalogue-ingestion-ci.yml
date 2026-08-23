@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Snapshot provider data, mirror approved images, publish one shard, or retain bounded eBay recognition evidence
+        description: Snapshot, mirror, publish, retain eBay evidence, or validate/promote eBay recognition references
         required: true
         default: snapshot
         type: choice
-        options: [snapshot, mirror, publish, ebay_evidence]
+        options: [snapshot, mirror, publish, ebay_evidence, ebay_promote_validate, ebay_promote]
       provider:
         description: One-time catalogue snapshot provider
         required: true
@@ -134,7 +134,7 @@ jobs:
           bun-version: 1.2.22
       - run: npm ci
       - name: Install catalogue image pipeline dependencies
-        if: inputs.operation == 'mirror'
+        if: inputs.operation == 'mirror' || inputs.operation == 'ebay_promote_validate' || inputs.operation == 'ebay_promote'
         run: npm ci --prefix backend
       - name: Validate bounded batch inputs
         shell: bash
@@ -196,6 +196,91 @@ jobs:
         with:
           name: stackr-ebay-recognition-evidence-${{ github.run_id }}
           path: ${{ runner.temp }}/stackr-ebay-recognition-evidence
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 9
+      - name: Prepare strict eBay recognition reference candidates
+        if: inputs.operation == 'ebay_promote_validate' || inputs.operation == 'ebay_promote'
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$RAILWAY_API_TOKEN"
+          test -n "$RAILWAY_PROJECT_ID"
+          test -n "$RAILWAY_ENVIRONMENT_ID"
+          test -n "$RAILWAY_BACKEND_SERVICE_ID"
+          output_dir="$RUNNER_TEMP/stackr-ebay-recognition-promotion"
+          mkdir -p "$output_dir"
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            npx tsx scripts/promote-ebay-recognition-references-staging.mjs \
+              --phase=prepare \
+              --maxVariants=940 \
+              --maxListingsPerVariant=5 \
+              --maxImagesPerListing=3 \
+              --downloadConcurrency=6 \
+              --outputDir="$output_dir"
+      - name: Set up Python for eBay visual consensus
+        if: inputs.operation == 'ebay_promote_validate' || inputs.operation == 'ebay_promote'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Validate independent eBay listing images with pinned DINOv2
+        if: inputs.operation == 'ebay_promote_validate' || inputs.operation == 'ebay_promote'
+        shell: bash
+        env:
+          DINOV2_REPOSITORY_COMMIT: 7764ea0f912e53c92e82eb78a2a1631e92725fc8
+          DINOV2_CHECKPOINT_SHA256: b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check \
+            --index-url https://download.pytorch.org/whl/cpu \
+            torch==2.8.0
+          python -m pip install --disable-pip-version-check \
+            numpy==2.2.6 \
+            pillow==11.3.0
+          model_dir="$RUNNER_TEMP/stackr-dinov2"
+          git clone --filter=blob:none https://github.com/facebookresearch/dinov2.git "$model_dir/repository"
+          git -C "$model_dir/repository" checkout --detach "$DINOV2_REPOSITORY_COMMIT"
+          curl --fail --location --retry 4 \
+            --output "$model_dir/dinov2_vits14_pretrain.pth" \
+            https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth
+          echo "$DINOV2_CHECKPOINT_SHA256  $model_dir/dinov2_vits14_pretrain.pth" | sha256sum --check --strict
+          output_dir="$RUNNER_TEMP/stackr-ebay-recognition-promotion"
+          python scripts/validate-ebay-recognition-reference-candidates.py \
+            --prepared="$output_dir/prepared-manifest.json" \
+            --output="$output_dir/approved-manifest.json" \
+            --torch-hub-repo="$model_dir/repository" \
+            --model-checkpoint="$model_dir/dinov2_vits14_pretrain.pth" \
+            --model-sha256="$DINOV2_CHECKPOINT_SHA256" \
+            --device=cpu \
+            --batch-size=24 \
+            --similarity-threshold=0.90 \
+            --perceptual-hash-distance-floor=4
+      - name: Commit independently validated eBay references to staging
+        if: inputs.operation == 'ebay_promote'
+        shell: bash
+        run: |
+          set -euo pipefail
+          output_dir="$RUNNER_TEMP/stackr-ebay-recognition-promotion"
+          npx --yes @railway/cli@5.30.1 run \
+            --project "$RAILWAY_PROJECT_ID" \
+            --environment "$RAILWAY_ENVIRONMENT_ID" \
+            --service "$RAILWAY_BACKEND_SERVICE_ID" \
+            --no-local \
+            npx tsx scripts/promote-ebay-recognition-references-staging.mjs \
+              --phase=commit \
+              --manifest="$output_dir/approved-manifest.json" \
+              --output="$output_dir/committed-manifest.json"
+      - name: Upload eBay recognition promotion evidence
+        if: always() && (inputs.operation == 'ebay_promote_validate' || inputs.operation == 'ebay_promote')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-ebay-recognition-promotion-${{ github.run_id }}
+          path: ${{ runner.temp }}/stackr-ebay-recognition-promotion
           if-no-files-found: error
           retention-days: 30
           compression-level: 9
