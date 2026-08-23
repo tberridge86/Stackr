@@ -114,21 +114,20 @@ async function sourceId(supabase) {
   return data.id;
 }
 
-async function readHighEvidence(supabase, source) {
+async function readHighEvidence(supabase) {
   const rows = [];
-  const pageSize = 250;
-  for (let offset = 0;; offset += pageSize) {
+  const pageSize = 500;
+  let afterRetrievedAt = null;
+  let afterId = null;
+  for (;;) {
     let data = null;
     let finalError = null;
     for (let attempt = 0; attempt < 5; attempt += 1) {
-      const result = await supabase.schema('ingest').from('raw_source_records')
-        .select('id,external_id,source_url,retrieved_at,raw_payload')
-        .eq('source_id', source)
-        .eq('validation_status', 'valid')
-        .is('deprecated_at', null)
-        .eq('raw_payload->assessment->>confidenceBand', 'high')
-        .order('id', { ascending: true })
-        .range(offset, offset + pageSize - 1);
+      const result = await supabase.schema('api').rpc('list_ebay_recognition_evidence_rows', {
+        p_after_retrieved_at: afterRetrievedAt,
+        p_after_id: afterId,
+        p_limit: pageSize,
+      });
       data = result.data;
       finalError = result.error;
       if (!finalError) break;
@@ -137,8 +136,13 @@ async function readHighEvidence(supabase, source) {
       }
     }
     if (finalError) throw finalError;
-    rows.push(...(data ?? []));
-    if ((data ?? []).length < pageSize) break;
+    const page = data ?? [];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+    const last = page.at(-1);
+    if (!last?.retrieved_at || !last?.id) throw new Error('Evidence pagination cursor is incomplete.');
+    afterRetrievedAt = last.retrieved_at;
+    afterId = last.id;
   }
   return rows;
 }
@@ -327,7 +331,7 @@ async function prepare() {
   await mkdir(path.join(outputDir, 'images'), { recursive: true });
   const supabase = adminClient();
   const source = await sourceId(supabase);
-  const evidence = await readHighEvidence(supabase, source);
+  const evidence = await readHighEvidence(supabase);
   const strict = evidence.map(strictListing).filter(Boolean);
   const variants = [...new Set(strict.map((item) => item.fingerprint.variantId))].sort();
   const alreadyEligible = await existingEligibleVariants(supabase, variants);
