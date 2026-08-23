@@ -9,6 +9,7 @@ import time
 import urllib.parse
 from collections import Counter
 from datetime import datetime, timezone
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 from uuid import UUID
@@ -325,10 +326,10 @@ class Dinov2Embedder:
             batch = promotions[offset : offset + batch_size]
             arrays = []
             for promotion in batch:
-                image_path = Path(promotion["image_path"])
-                if sha256_file(image_path) != promotion["source_image_checksum_sha256"]:
-                    raise RuntimeError(f"promoted image checksum changed: {image_path}")
-                with Image.open(image_path) as opened:
+                image_bytes = promotion["image_bytes"]
+                if sha256_bytes(image_bytes) != promotion["source_image_checksum_sha256"]:
+                    raise RuntimeError(f"stored promoted image checksum changed: {promotion['reference_asset_id']}")
+                with Image.open(BytesIO(image_bytes)) as opened:
                     fitted = ImageOps.fit(
                         ImageOps.exif_transpose(opened).convert("RGB"),
                         (224, 224),
@@ -355,6 +356,35 @@ class Dinov2Embedder:
                     "sourceImageSha256": promotion["source_image_checksum_sha256"],
                 })
         return output
+
+
+def download_stored_image(client: SupabaseClient, promotion: dict[str, Any], retries: int) -> bytes:
+    import httpx
+
+    bucket = urllib.parse.quote(str(promotion["storage_bucket"]), safe="")
+    key = urllib.parse.quote(str(promotion["storage_key"]), safe="/")
+    url = f"{client.base_url}/storage/v1/object/public/{bucket}/{key}"
+    for attempt in range(retries + 1):
+        try:
+            response = client.http.get(url, timeout=45.0)
+            if not 200 <= response.status_code < 300:
+                raise httpx.HTTPStatusError(
+                    f"HTTP {response.status_code}", request=response.request, response=response
+                )
+            body = response.content
+            if len(body) < 8_000 or len(body) > 12 * 1024 * 1024:
+                raise RuntimeError("stored promoted image has an invalid byte size")
+            if sha256_bytes(body) != promotion["source_image_checksum_sha256"]:
+                raise RuntimeError("stored promoted image failed checksum verification")
+            return body
+        except httpx.HTTPStatusError as error:
+            if error.response.status_code not in (408, 425, 429, 500, 502, 503, 504) or attempt == retries:
+                raise RuntimeError(f"stored promoted image returned HTTP {error.response.status_code}") from error
+        except httpx.TransportError as error:
+            if attempt == retries:
+                raise RuntimeError(f"stored promoted image download failed: {error}") from error
+        time.sleep(retry_delay(attempt))
+    raise AssertionError("unreachable")
 
 
 def build(args: argparse.Namespace) -> dict[str, Any]:
@@ -409,14 +439,16 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
 
     incremental: list[dict[str, Any]] = []
     for asset in new_assets:
-        variant_id = str(UUID(str(asset["variantId"])))
+        variant_id = str(UUID(str(asset.get("variantId") or asset.get("variant_id"))))
         approval = approved_by_variant.get(variant_id)
         if approval is None:
             raise RuntimeError(f"committed asset was not approved: {variant_id}")
         selected = approval["selectedCandidate"]
         checksum = str(asset.get("content_sha256") or "")
-        if checksum != selected.get("rectifiedSha256"):
-            raise RuntimeError(f"stored and approved image checksums disagree: {variant_id}")
+        if asset.get("rectifiedSha256") != selected.get("rectifiedSha256"):
+            raise RuntimeError(f"committed asset provenance does not match approval: {variant_id}")
+        if len(checksum) != 64:
+            raise RuntimeError(f"stored promoted image checksum is invalid: {variant_id}")
         if variant_id in source_variants:
             raise RuntimeError(f"new reference duplicates a source-index variant: {variant_id}")
         language = str(approval["fingerprint"]["languageCode"])
@@ -428,7 +460,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
             "source_image_id": str(asset["asset_id"]),
             "language_code": language,
             "source_image_checksum_sha256": checksum,
-            "image_path": selected["imagePath"],
+            "storage_bucket": str(asset["storage_bucket"]),
+            "storage_key": str(asset["storage_key"]),
         })
     if len({item["variant_id"] for item in incremental}) != len(incremental):
         raise RuntimeError("committed manifest contains duplicate variants")
@@ -511,6 +544,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     if reused != len(source_rows):
         raise RuntimeError(f"reused embedding count mismatch: {reused} != {len(source_rows)}")
 
+    for promotion in incremental:
+        promotion["image_bytes"] = download_stored_image(client, promotion, args.retries)
     embedder = Dinov2Embedder(args.torch_hub_repo, args.model_checkpoint, args.model_sha256, args.device)
     new_embedding_rows = embedder.embed(incremental, args.embedding_batch_size)
     inserted_new = 0
@@ -646,8 +681,9 @@ def preflight(args: argparse.Namespace) -> dict[str, Any]:
         or len(source_variants) != len(source_rows)
     ):
         raise RuntimeError("source recognition index failed the incremental-build preflight")
-    if source_variants != eligible_variants:
-        raise RuntimeError("source recognition index no longer reconciles to staging recognition eligibility")
+    if not source_variants.issubset(eligible_variants):
+        raise RuntimeError("one or more source-index references are no longer recognition eligible")
+    eligible_additions = eligible_variants - source_variants
     body = {
         "schemaVersion": "stackr-ebay-incremental-recognition-index-preflight-v1.0.0",
         "generatedAt": utc_now(),
@@ -657,6 +693,7 @@ def preflight(args: argparse.Namespace) -> dict[str, Any]:
         "sourceIndexVersion": source_index["index_version"],
         "sourceEmbeddingCount": len(source_rows),
         "eligibleVariantCount": len(eligible_variants),
+        "eligibleVariantAdditionsAfterSourceIndex": len(eligible_additions),
         "activeIndexes": active_indexes,
         "preprocessingSha256": PREPROCESSING_SHA256,
         "stagingModified": False,

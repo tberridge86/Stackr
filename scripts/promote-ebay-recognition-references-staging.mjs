@@ -571,6 +571,7 @@ async function commit() {
     if (variantError) throw variantError;
     results.push({
       ...inserted,
+      variantId: promotion.variantId,
       languageCode: promotion.fingerprint.languageCode,
       status: 'committed',
       sourceItemId: selected.sourceItemId,
