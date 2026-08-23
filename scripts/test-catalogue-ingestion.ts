@@ -68,7 +68,10 @@ function assertBoundedCatalogueWrites() {
   assert.match(catalogueWorkflow, /TCGDEX_COMPILE_LANGS: \$\{\{ inputs\.language \}\}/);
   assert.match(catalogueWorkflow, /--setIds="\$CATALOGUE_SET_ID"/);
   assert.match(catalogueWorkflow, /--tcgdexSnapshotRoot="\$GITHUB_WORKSPACE\/\.tcgdex-source\/server\/generated"/);
-  assert.match(catalogueWorkflow, /options: \[snapshot, mirror, publish\]/);
+  assert.match(
+    catalogueWorkflow,
+    /options: \[snapshot, mirror, publish, ebay_evidence, ebay_promote_validate, ebay_promote, ebay_index_resume, ebay_index_verify, ebay_index_benchmark\]/,
+  );
   assert.match(catalogueWorkflow, /Publish validated language shard[\s\S]+catalogue-master\.ts publish/);
   assert.match(catalogueWorkflow, /--version="\$CATALOGUE_PUBLISH_VERSION"/);
   assert.match(catalogueWorkflow, /controlled_staging:/);
