@@ -676,8 +676,8 @@ def verify_existing(args: argparse.Namespace) -> dict[str, Any]:
         raise RuntimeError("preflight receipt is not a production-isolated passing receipt")
 
     client = SupabaseClient(
-        required_env("SUPABASE_URL"),
-        required_env("SUPABASE_SECRET_KEY"),
+        required_environment("SUPABASE_URL"),
+        required_environment("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY"),
         args.rpc_timeout,
         args.retries,
     )
