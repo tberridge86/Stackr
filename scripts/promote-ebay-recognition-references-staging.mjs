@@ -252,13 +252,15 @@ async function prepareListingImage(entry, outputDir, maximumImages) {
         || localisation.confidence.score < 0.78
         || localisation.confidence.aspectScore < 0.78
         || !localisation.confidence.cornersDetected
-        || !quadrilateralHasInteriorMargin(
-          localisation.quadrilateral,
-          sourceMetadata.width,
-          sourceMetadata.height,
-        )
       ) {
         throw new Error(`card_localisation_${localisation.status}`);
+      }
+      if (!quadrilateralHasInteriorMargin(
+        localisation.quadrilateral,
+        sourceMetadata.width,
+        sourceMetadata.height,
+      )) {
+        throw new Error('expanded_card_boundary_clipped');
       }
       const rectified = perspectiveCorrectCardJpegBase64(
         jpeg.toString('base64'),

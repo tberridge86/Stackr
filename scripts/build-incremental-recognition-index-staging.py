@@ -178,18 +178,26 @@ def one_row(payload: Any, label: str) -> dict[str, Any]:
 
 
 def index_row(client: SupabaseClient, index_id: str) -> dict[str, Any]:
-    return one_row(
-        client.get(
-            "embedding_index_versions",
-            schema="ml",
-            params=[
-                ("select", "id,model_id,index_version,embedding_dimensions,status,checksum_sha256,reference_embedding_count,missing_embedding_count,completeness_report,health_report"),
-                ("id", f"eq.{index_id}"),
-                ("limit", "1"),
-            ],
-        ),
-        "embedding index lookup",
+    payload = client.rpc(
+        "get_recognition_embedding_index_status",
+        {"p_index_version_id": index_id},
     )
+    if not isinstance(payload, dict) or not payload.get("indexVersionId"):
+        raise RuntimeError("controlled embedding index lookup returned an invalid payload")
+    return {
+        "id": payload.get("indexVersionId"),
+        "model_id": payload.get("modelId"),
+        "index_version": payload.get("indexVersion"),
+        "embedding_dimensions": payload.get("embeddingDimensions"),
+        "status": payload.get("status"),
+        "checksum_sha256": payload.get("checksumSha256"),
+        "reference_embedding_count": payload.get("referenceEmbeddingCount"),
+        "missing_embedding_count": payload.get("missingEmbeddingCount"),
+        "completeness_report": payload.get("completenessReport") or {},
+        "health_report": payload.get("healthReport") or {},
+        "activated_at": payload.get("activatedAt"),
+        "updated_at": payload.get("updatedAt"),
+    }
 
 
 def active_index_snapshot(client: SupabaseClient) -> list[dict[str, Any]]:
@@ -204,23 +212,17 @@ def active_index_snapshot(client: SupabaseClient) -> list[dict[str, Any]]:
 
 
 def source_embedding_rows(client: SupabaseClient, source_index_id: str, page_size: int) -> list[dict[str, Any]]:
-    fields = (
-        "variant_id,reference_asset_id,source_image_id,language_code,source_image_checksum_sha256,"
-        "preprocessing_checksum_sha256,embedding_norm"
-    )
     rows: list[dict[str, Any]] = []
     after: str | None = None
     while True:
-        params = [
-            ("select", fields),
-            ("index_version_id", f"eq.{source_index_id}"),
-            ("deprecated_at", "is.null"),
-            ("order", "variant_id.asc,reference_asset_id.asc"),
-            ("limit", str(page_size)),
-        ]
-        if after:
-            params.append(("variant_id", f"gt.{after}"))
-        payload = client.get("card_embeddings_dinov2_vits14_384", schema="ml", params=params)
+        payload = client.rpc(
+            "list_recognition_embedding_manifest_rows",
+            {
+                "p_index_version_id": source_index_id,
+                "p_after_variant_id": after,
+                "p_limit": page_size,
+            },
+        )
         if not isinstance(payload, list):
             raise RuntimeError("source embedding listing returned an invalid payload")
         page = [dict(item) for item in payload]
