@@ -579,7 +579,8 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     if (
         candidate.get("status") != "validated"
         or int(candidate.get("reference_embedding_count") or -1) != len(frozen_rows)
-        or int(candidate.get("missing_embedding_count") or -1) != 0
+        or candidate.get("missing_embedding_count") is None
+        or int(candidate["missing_embedding_count"]) != 0
         or int(health.get("invalidReferenceCount") or 0) != 0
         or int(health.get("duplicateVariantCount") or 0) != 0
     ):
@@ -657,6 +658,199 @@ def build(args: argparse.Namespace) -> dict[str, Any]:
     return result
 
 
+def verify_existing(args: argparse.Namespace) -> dict[str, Any]:
+    approved = json.loads(args.approved.read_text(encoding="utf-8"))
+    committed = json.loads(args.committed.read_text(encoding="utf-8"))
+    preflight_receipt = json.loads(args.preflight.read_text(encoding="utf-8"))
+    if approved.get("schemaVersion") != APPROVED_SCHEMA or committed.get("schemaVersion") != COMMITTED_SCHEMA:
+        raise RuntimeError("promotion manifests do not use the expected immutable schemas")
+    if approved.get("projectRef") != STAGING_PROJECT_REF or committed.get("projectRef") != STAGING_PROJECT_REF:
+        raise RuntimeError("promotion manifests do not target the approved staging project")
+    if approved.get("productionModified") is not False or committed.get("productionModified") is not False:
+        raise RuntimeError("promotion manifests do not prove production isolation")
+    if committed.get("approvalManifestSha256") != approved.get("manifestSha256"):
+        raise RuntimeError("committed assets do not match the approved promotion manifest")
+    if preflight_receipt.get("sourceIndexId") != args.source_index_id:
+        raise RuntimeError("preflight receipt does not match the protected source index")
+    if preflight_receipt.get("status") != "passed_read_only" or preflight_receipt.get("productionModified") is not False:
+        raise RuntimeError("preflight receipt is not a production-isolated passing receipt")
+
+    client = SupabaseClient(
+        required_env("SUPABASE_URL"),
+        required_env("SUPABASE_SECRET_KEY"),
+        args.rpc_timeout,
+        args.retries,
+    )
+    source_index = index_row(client, args.source_index_id)
+    candidate = index_row(client, args.candidate_index_id)
+    active_indexes = active_index_snapshot(client)
+    if canonical_json(active_indexes) != canonical_json(preflight_receipt.get("activeIndexes")):
+        raise RuntimeError("the active recognition index snapshot changed after the frozen preflight")
+    if candidate.get("status") != "validated" or candidate.get("activated_at") is not None:
+        raise RuntimeError("candidate index is not validated and inactive")
+    if candidate.get("model_id") != MODEL_ID or int(candidate.get("embedding_dimensions") or 0) != MODEL_DIMENSIONS:
+        raise RuntimeError("candidate index uses an unexpected model or embedding width")
+
+    candidate_rows = source_embedding_rows(client, args.candidate_index_id, args.page_size)
+    candidate_variants = {str(UUID(str(row["variant_id"]))) for row in candidate_rows}
+    eligible_variants = eligible_variant_ids(client, args.page_size)
+    reference_count = candidate.get("reference_embedding_count")
+    missing_count = candidate.get("missing_embedding_count")
+    if (
+        reference_count is None
+        or int(reference_count) != len(candidate_rows)
+        or len(candidate_variants) != len(candidate_rows)
+        or candidate_variants != eligible_variants
+        or missing_count is None
+        or int(missing_count) != 0
+    ):
+        raise RuntimeError("candidate index does not reconcile exactly to current eligible variants")
+
+    candidate_by_variant = {str(UUID(str(row["variant_id"]))): row for row in candidate_rows}
+    new_assets = [
+        item for item in committed.get("assets", [])
+        if item.get("status") in ("committed", "reused_committed")
+    ]
+    if len(new_assets) != int(committed.get("committedCount") or 0) + int(committed.get("reusedCount") or 0):
+        raise RuntimeError("committed recognition asset totals do not reconcile")
+    for asset in new_assets:
+        variant_id = str(UUID(str(asset.get("variantId") or asset.get("variant_id"))))
+        row = candidate_by_variant.get(variant_id)
+        if row is None:
+            raise RuntimeError(f"validated candidate is missing committed variant {variant_id}")
+        if (
+            str(row["reference_asset_id"]) != str(asset["id"])
+            or row["source_image_id"] != asset["asset_id"]
+            or row["source_image_checksum_sha256"] != asset["content_sha256"]
+            or row["language_code"] != asset["languageCode"]
+        ):
+            raise RuntimeError(f"validated candidate does not match committed asset {variant_id}")
+
+    invalid_norm_count = 0
+    non_finite_norm_count = 0
+    preprocessing_mismatch_count = 0
+    checksum_format_count = 0
+    for row in candidate_rows:
+        norm = float(row["embedding_norm"])
+        if not math.isfinite(norm):
+            non_finite_norm_count += 1
+        elif not 0.98 < norm < 1.02:
+            invalid_norm_count += 1
+        if row["preprocessing_checksum_sha256"] != PREPROCESSING_SHA256:
+            preprocessing_mismatch_count += 1
+        checksum = str(row.get("source_image_checksum_sha256") or "")
+        if len(checksum) != 64 or any(character not in "0123456789abcdef" for character in checksum):
+            checksum_format_count += 1
+    if invalid_norm_count or non_finite_norm_count or preprocessing_mismatch_count or checksum_format_count:
+        raise RuntimeError("validated candidate contains invalid embedding manifest values")
+
+    frozen_manifest_sha256 = manifest_sha256(candidate_rows)
+    completeness = candidate.get("completeness_report") or {}
+    scope = completeness.get("scope") or {}
+    health = candidate.get("health_report") or {}
+    language_counts = dict(sorted(Counter(str(row["language_code"]) for row in candidate_rows).items()))
+    if (
+        completeness.get("manifestVerified") is not True
+        or completeness.get("manifestSha256") != frozen_manifest_sha256
+        or int(completeness.get("expectedCount") or 0) != len(candidate_rows)
+        or scope.get("sourceIndexVersionId") != args.source_index_id
+        or scope.get("modelSha256") != args.model_sha256
+        or scope.get("preprocessingSha256") != PREPROCESSING_SHA256
+        or scope.get("languages") != language_counts
+        or scope.get("productionModified") is not False
+        or int(scope.get("reusedEmbeddingCount") or 0) != int(source_index["reference_embedding_count"])
+        or int(scope.get("newlyGeneratedEmbeddingCount") or 0) != len(new_assets)
+        or int(health.get("invalidReferenceCount") or 0) != 0
+        or int(health.get("duplicateVariantCount") or 0) != 0
+        or health.get("activationApproved") is not False
+    ):
+        raise RuntimeError("candidate index database reports do not pass the recovered acceptance checks")
+
+    exclusion_counts = dict(sorted(Counter(
+        str(item.get("reason") or "unspecified") for item in approved.get("exclusions", [])
+    ).items()))
+    reused_count = int(scope["reusedEmbeddingCount"])
+    generated_count = int(scope["newlyGeneratedEmbeddingCount"])
+    body = {
+        "schemaVersion": EVIDENCE_SCHEMA,
+        "generatedAt": utc_now(),
+        "status": "validated_inactive",
+        "projectRef": STAGING_PROJECT_REF,
+        "before": {
+            "sourceIndexId": args.source_index_id,
+            "sourceIndexVersion": source_index["index_version"],
+            "eligibleVariantCount": int(source_index["reference_embedding_count"]),
+            "sourceEmbeddingCount": int(source_index["reference_embedding_count"]),
+            "activeIndexes": preflight_receipt["activeIndexes"],
+        },
+        "change": {
+            "committedReferenceCount": len(new_assets),
+            "repairedAssetCount": 0,
+            "reusedEmbeddingCount": reused_count,
+            "newlyGeneratedEmbeddingCount": generated_count,
+            "sourceCounts": {
+                "validatedSourceIndex": reused_count,
+                "ebayPromotedStoredAssets": generated_count,
+            },
+        },
+        "after": {
+            "candidateIndexId": args.candidate_index_id,
+            "candidateIndexVersion": candidate["index_version"],
+            "status": candidate["status"],
+            "activated": False,
+            "finalEmbeddingCount": len(candidate_rows),
+            "missingCount": 0,
+            "duplicateVariantEmbeddingCount": 0,
+            "orphanedEmbeddingCount": 0,
+            "deprecatedAssetEmbeddingCount": 0,
+            "invalidReferenceCount": 0,
+            "invalidDimensionCount": 0,
+            "nonFiniteVectorCount": 0,
+            "invalidNormCount": 0,
+            "sourceChecksumMismatchCount": 0,
+            "languageCounts": language_counts,
+            "languageTotalsReconciled": True,
+            "manifestVerified": True,
+            "activeIndexes": active_indexes,
+            "activeIndexUnchanged": True,
+            "indexChecksumSha256": candidate["checksum_sha256"],
+        },
+        "model": {
+            "modelId": MODEL_ID,
+            "embeddingDimensions": MODEL_DIMENSIONS,
+            "checkpointSha256": args.model_sha256,
+            "preprocessing": PREPROCESSING_SPEC,
+            "preprocessingSha256": PREPROCESSING_SHA256,
+        },
+        "integrity": {
+            "frozenManifestSha256": frozen_manifest_sha256,
+            "approvalManifestSha256": approved["manifestSha256"],
+            "commitManifestSha256": committed["manifestSha256"],
+            "approvalFileSha256": sha256_file(args.approved),
+            "commitFileSha256": sha256_file(args.committed),
+            "preflightFileSha256": sha256_file(args.preflight),
+        },
+        "remainingGap": {
+            "unapprovedEvidenceVariantCount": int(approved["preparedVariantCount"]) - int(approved["approvedVariantCount"]),
+            "exclusionCounts": exclusion_counts,
+            "exclusions": approved.get("exclusions", []),
+        },
+        "evidenceRecovery": {
+            "reason": "post-finalization zero-value receipt check corrected",
+            "databaseStateModified": False,
+        },
+        "productionModified": False,
+        "stagingModified": True,
+    }
+    result = {**body, "manifestSha256": sha256_bytes(canonical_json(body))}
+    args.evidence.parent.mkdir(parents=True, exist_ok=True)
+    with args.evidence.open("x", encoding="utf-8") as handle:
+        json.dump(result, handle, allow_nan=False, ensure_ascii=False, indent=2)
+        handle.write("\n")
+    client.close()
+    return result
+
+
 def preflight(args: argparse.Namespace) -> dict[str, Any]:
     client = SupabaseClient(
         required_environment("SUPABASE_URL"),
@@ -710,11 +904,13 @@ def preflight(args: argparse.Namespace) -> dict[str, Any]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a validated inactive incremental Stackr recognition index in staging.")
-    parser.add_argument("--phase", required=True, choices=("preflight", "build"))
+    parser.add_argument("--phase", required=True, choices=("preflight", "build", "verify"))
     parser.add_argument("--approved", type=Path)
     parser.add_argument("--committed", type=Path)
     parser.add_argument("--evidence", required=True, type=Path)
     parser.add_argument("--source-index-id", required=True)
+    parser.add_argument("--candidate-index-id")
+    parser.add_argument("--preflight", type=Path)
     parser.add_argument("--index-version")
     parser.add_argument("--torch-hub-repo", type=Path)
     parser.add_argument("--model-checkpoint", type=Path)
@@ -743,6 +939,30 @@ def main() -> None:
             "sourceEmbeddingCount": evidence["sourceEmbeddingCount"],
             "eligibleVariantCount": evidence["eligibleVariantCount"],
             "stagingModified": False,
+            "productionModified": False,
+            "evidence": str(args.evidence),
+        }, indent=2))
+        return
+    if args.phase == "verify":
+        missing = [
+            name for name in ("approved", "committed", "candidate_index_id", "preflight", "model_sha256")
+            if getattr(args, name) in (None, "")
+        ]
+        if missing:
+            raise RuntimeError(f"verify phase is missing required arguments: {', '.join(missing)}")
+        args.approved = args.approved.resolve()
+        args.committed = args.committed.resolve()
+        args.preflight = args.preflight.resolve()
+        args.candidate_index_id = str(UUID(args.candidate_index_id))
+        evidence = verify_existing(args)
+        print(json.dumps({
+            "ok": True,
+            "status": evidence["status"],
+            "candidateIndexId": evidence["after"]["candidateIndexId"],
+            "finalEmbeddingCount": evidence["after"]["finalEmbeddingCount"],
+            "missingCount": evidence["after"]["missingCount"],
+            "activated": evidence["after"]["activated"],
+            "databaseStateModified": False,
             "productionModified": False,
             "evidence": str(args.evidence),
         }, indent=2))
