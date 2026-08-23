@@ -557,7 +557,7 @@ async function commit() {
       unavailable_reason: null,
       last_verified_at: stored.last_verified_at,
       retention_status: 'active',
-      acquisition_source: 'ebay_browse_rectified_listing',
+      acquisition_source: 'approved_commercial_provider',
       recognition_reference_eligible: true,
     };
     const { data: inserted, error: insertError } = await supabase.schema('catalog').from('assets')
