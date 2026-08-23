@@ -10,6 +10,10 @@ const SALE_TYPES = new Set([
   'manual_verified_sale',
   'provider_sold_observation',
 ]);
+const SOURCE_ENDPOINTS = new Set([
+  'ebay_completed_listing',
+  'ebay_seller_hub_product_research',
+]);
 const REQUIRED_HEADERS = [
   'variant_id',
   'product_kind',
@@ -152,6 +156,22 @@ export function normalizeSoldRows(records, { now = new Date() } = {}) {
     if (confidence < 0.9 || confidence > 1) throw new Error(`Row ${rowNumber}: parsed_match_confidence must be between 0.9 and 1.`);
     const saleType = clean(record.sale_type)?.toLowerCase() ?? 'manual_verified_sale';
     if (!SALE_TYPES.has(saleType)) throw new Error(`Row ${rowNumber}: sale_type is unsupported.`);
+    const sourceEndpoint = clean(record.source_endpoint)?.toLowerCase() ?? 'ebay_completed_listing';
+    if (!SOURCE_ENDPOINTS.has(sourceEndpoint)) throw new Error(`Row ${rowNumber}: source_endpoint is unsupported.`);
+    const soldPrice = parseNumber(record.sold_price, 'sold_price', rowNumber);
+    const buyerProtectionFee = parseNumber(record.buyer_protection_fee, 'buyer_protection_fee', rowNumber, { nullable: true });
+    const displayedPriceIncludingBuyerFee = parseNumber(
+      record.displayed_price_including_buyer_fee,
+      'displayed_price_including_buyer_fee',
+      rowNumber,
+      { nullable: true },
+    );
+    if ((buyerProtectionFee == null) !== (displayedPriceIncludingBuyerFee == null)) {
+      throw new Error(`Row ${rowNumber}: buyer_protection_fee and displayed_price_including_buyer_fee must be supplied together.`);
+    }
+    if (buyerProtectionFee != null && Math.abs(soldPrice + buyerProtectionFee - displayedPriceIncludingBuyerFee) > 0.011) {
+      throw new Error(`Row ${rowNumber}: sold_price plus buyer_protection_fee must equal displayed_price_including_buyer_fee.`);
+    }
     const normalized = {
       rowNumber,
       variantId,
@@ -159,8 +179,10 @@ export function normalizeSoldRows(records, { now = new Date() } = {}) {
       sourceItemId,
       sourceUrl: validateEbayUrl(record.source_url, rowNumber),
       rawTitle,
-      soldPrice: parseNumber(record.sold_price, 'sold_price', rowNumber),
+      soldPrice,
       shippingPrice: parseNumber(record.shipping_price, 'shipping_price', rowNumber, { nullable: true }),
+      buyerProtectionFee,
+      displayedPriceIncludingBuyerFee,
       currencyCode,
       soldAt,
       observedAt,
@@ -168,6 +190,7 @@ export function normalizeSoldRows(records, { now = new Date() } = {}) {
       graderCode,
       gradeValue,
       saleType,
+      sourceEndpoint,
       parsedMatchConfidence: confidence,
       attributionText: clean(record.attribution_text) ?? 'eBay sold listing / Product Research',
     };
@@ -335,7 +358,7 @@ export async function importStagingRows(supabase, rows, validation, { manifestSh
           provider_record_id: row.sourceItemId,
           language_code: variant.language_code,
           source_url: row.sourceUrl,
-          source_endpoint: 'ebay_seller_hub_product_research',
+          source_endpoint: row.sourceEndpoint,
           retrieved_at: row.observedAt,
           source_updated_at: row.soldAt,
           licence_status: 'approved',

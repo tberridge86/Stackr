@@ -37,7 +37,9 @@ function usage() {
 
 Dry-run is the default. Writes are limited to Supabase project ${APPROVED_STAGING_PROJECT_REF}.
 Required CSV headers:
-  variant_id,product_kind,source_item_id,source_url,raw_title,sold_price,shipping_price,currency_code,sold_at,observed_at,condition_code,grader_code,grade_value,sale_type,parsed_match_confidence,attribution_text`;
+  variant_id,product_kind,source_item_id,source_url,raw_title,sold_price,shipping_price,currency_code,sold_at,observed_at,condition_code,grader_code,grade_value,sale_type,parsed_match_confidence,attribution_text
+Optional audit headers:
+  buyer_protection_fee,displayed_price_including_buyer_fee,source_endpoint`;
 }
 
 export async function run(argv = process.argv.slice(2), env = process.env) {

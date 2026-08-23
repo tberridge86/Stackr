@@ -9,8 +9,8 @@ import {
 } from './lib/ebay-sold-import.mjs';
 import { APPROVED_STAGING_PROJECT_REF, run } from './import-ebay-sold-observations.mjs';
 
-const csv = `variant_id,product_kind,source_item_id,source_url,raw_title,sold_price,shipping_price,currency_code,sold_at,observed_at,condition_code,grader_code,grade_value,sale_type,parsed_match_confidence,attribution_text
-354c315a-6be7-467e-baeb-26403e3280e0,raw_card,123456789012,https://www.ebay.co.uk/itm/123456789012,"Radiant Charizard, Crown Zenith 020",6.50,1.25,gbp,2026-08-20T18:30:00Z,2026-08-21T09:00:00Z,raw_near_mint,,,manual_verified_sale,0.99,eBay Product Research`;
+const csv = `variant_id,product_kind,source_item_id,source_url,raw_title,sold_price,shipping_price,buyer_protection_fee,displayed_price_including_buyer_fee,currency_code,sold_at,observed_at,condition_code,grader_code,grade_value,sale_type,source_endpoint,parsed_match_confidence,attribution_text
+354c315a-6be7-467e-baeb-26403e3280e0,raw_card,123456789012,https://www.ebay.co.uk/itm/123456789012,"Radiant Charizard, Crown Zenith 020",6.50,1.25,0.50,7.00,gbp,2026-08-20T18:30:00Z,2026-08-21T09:00:00Z,raw_near_mint,,,manual_verified_sale,ebay_completed_listing,0.99,eBay completed listing`;
 
 const parsed = parseCsv(csv);
 assert.equal(parsed.length, 1);
@@ -19,7 +19,10 @@ assert.equal(parsed[0].raw_title, 'Radiant Charizard, Crown Zenith 020');
 const rows = normalizeSoldRows(parsed, { now: new Date('2026-08-23T12:00:00Z') });
 assert.equal(rows[0].currencyCode, 'GBP');
 assert.equal(rows[0].shippingPrice, 1.25);
+assert.equal(rows[0].buyerProtectionFee, 0.5);
+assert.equal(rows[0].displayedPriceIncludingBuyerFee, 7);
 assert.equal(rows[0].saleType, 'manual_verified_sale');
+assert.equal(rows[0].sourceEndpoint, 'ebay_completed_listing');
 assert.equal(rows[0].payloadHash.length, 64);
 assert.match(buildMarketIdentityKey(rows[0]), /^stackr-market-v1\|raw_card\|/);
 
@@ -40,6 +43,10 @@ assert.throws(
 assert.throws(
   () => normalizeSoldRows([{ ...parsed[0], parsed_match_confidence: '0.5' }], { now: new Date('2026-08-23T12:00:00Z') }),
   /between 0.9 and 1/,
+);
+assert.throws(
+  () => normalizeSoldRows([{ ...parsed[0], displayed_price_including_buyer_fee: '7.02' }], { now: new Date('2026-08-23T12:00:00Z') }),
+  /must equal/,
 );
 assert.throws(
   () => normalizeSoldRows([{ ...parsed[0], product_kind: 'graded_card', condition_code: 'graded' }], { now: new Date('2026-08-23T12:00:00Z') }),
