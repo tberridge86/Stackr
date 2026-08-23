@@ -101,7 +101,14 @@ def select_heldout_cases(
     return output
 
 
-def retrieval_summary(rows: Any, expected_variant_id: str, latency_ms: float) -> dict[str, Any]:
+def retrieval_summary(
+    rows: Any,
+    expected_variant_id: str,
+    expected_set_code: str | None,
+    expected_collector_number: str | None,
+    expected_language_code: str,
+    latency_ms: float,
+) -> dict[str, Any]:
     if not isinstance(rows, list) or not rows or any(not isinstance(row, dict) for row in rows):
         raise RuntimeError("candidate search returned an invalid result set")
     expected_index = next(
@@ -115,10 +122,16 @@ def retrieval_summary(rows: Any, expected_variant_id: str, latency_ms: float) ->
         else None
     )
     top = rows[0]
+    top1_card_identity_correct = (
+        str(top.get("set_code") or "") == str(expected_set_code or "")
+        and str(top.get("collector_number") or "") == str(expected_collector_number or "")
+        and str(top.get("language_code") or "") == expected_language_code
+    )
     return {
         "rank": rank,
         "foundWithinLimit": rank is not None,
         "top1Correct": rank == 1,
+        "top1CardIdentityCorrect": top1_card_identity_correct,
         "top3Correct": rank is not None and rank <= 3,
         "top5Correct": rank is not None and rank <= 5,
         "expectedSimilarity": expected_similarity,
@@ -126,6 +139,7 @@ def retrieval_summary(rows: Any, expected_variant_id: str, latency_ms: float) ->
         "top1Similarity": float(top["cosine_similarity"]),
         "top1SetCode": top.get("set_code"),
         "top1CollectorNumber": top.get("collector_number"),
+        "top1VariantCode": top.get("variant_code"),
         "latencyMs": round(latency_ms, 3),
     }
 
@@ -139,6 +153,7 @@ def metric_summary(results: list[dict[str, Any]], key: str) -> dict[str, Any]:
     return {
         "queryCount": count,
         "top1": sum(bool(row["top1Correct"]) for row in rows) / count,
+        "cardIdentityTop1": sum(bool(row["top1CardIdentityCorrect"]) for row in rows) / count,
         "top3": sum(bool(row["top3Correct"]) for row in rows) / count,
         "top5": sum(bool(row["top5Correct"]) for row in rows) / count,
         "meanReciprocalRankAt50": sum(1.0 / rank for rank in ranks) / count,
@@ -222,6 +237,9 @@ def main() -> None:
             searches[label] = retrieval_summary(
                 rows,
                 case["variant_id"],
+                case["setCode"],
+                case["collectorNumber"],
+                case["language_code"],
                 (time.perf_counter() - started) * 1000.0,
             )
         results.append({
@@ -248,8 +266,10 @@ def main() -> None:
     gate_passed = (
         len(results) == int(approved.get("approvedVariantCount") or 0)
         and global_metrics["top1"] >= 0.90
+        and global_metrics["cardIdentityTop1"] == 1.0
         and global_metrics["top3"] == 1.0
         and language_metrics["top1"] >= 0.90
+        and language_metrics["cardIdentityTop1"] == 1.0
         and language_metrics["top3"] == 1.0
         and global_metrics["missCountAt50"] == 0
         and language_metrics["missCountAt50"] == 0
@@ -294,8 +314,10 @@ def main() -> None:
         "acceptanceGate": {
             "passed": gate_passed,
             "minimumGlobalTop1": 0.90,
+            "requiredGlobalCardIdentityTop1": 1.0,
             "requiredGlobalTop3": 1.0,
             "minimumLanguageFilteredTop1": 0.90,
+            "requiredLanguageFilteredCardIdentityTop1": 1.0,
             "requiredLanguageFilteredTop3": 1.0,
             "requiredMissCountAt50": 0,
             "activationEligible": False,
@@ -321,6 +343,7 @@ def main() -> None:
         "candidateIndexId": candidate_index_id,
         "queryImageCount": len(results),
         "globalTop1": global_metrics["top1"],
+        "globalCardIdentityTop1": global_metrics["cardIdentityTop1"],
         "globalTop3": global_metrics["top3"],
         "languageFilteredTop1": language_metrics["top1"],
         "gatePassed": gate_passed,
