@@ -98,8 +98,8 @@ jobs:
             echo "Staging migrations require release_candidate=true and reviewed evidence."
             exit 1
           fi
-          if [ "${{ inputs.release_scope }}" != "full_platform" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
-            echo "Component-only staging deployments do not publish a mobile update."
+          if [ "${{ inputs.release_scope }}" = "recognition_service" ] && [ "${{ inputs.publish_mobile_update }}" = "true" ]; then
+            echo "Recognition-service-only staging deployments do not publish a mobile update."
             exit 1
           fi
           if [ "${{ inputs.release_scope }}" = "recognition_service" ] && [ "${{ inputs.apply_migrations }}" = "true" ]; then
