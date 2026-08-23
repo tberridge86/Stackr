@@ -29,8 +29,18 @@ from .schemas import (
     IdentifyRequest,
     IdentifyResponse,
     RecognitionCandidateResponse,
+    RecognitionVariantOption,
 )
-from .scoring import CandidateRecord, ScoredCandidate, ScoringConfig, choose_match_status, score_candidate
+from .scoring import (
+    CandidateRecord,
+    CardIdentityGroup,
+    ScoredCandidate,
+    ScoringConfig,
+    card_identity_key,
+    choose_match_status,
+    group_card_identities,
+    score_candidate,
+)
 from .settings import Settings
 from .storage import StorageClient, StorageError
 
@@ -158,7 +168,17 @@ class RecognitionPipeline:
             collector_hint=collector_hint,
             set_code_hint=set_code_hint,
         )
-        match_status, reasons, next_action, auto_allowed = choose_match_status(scored, self.scoring_config)
+        identity_groups = group_card_identities(scored)
+        match_status, reasons, next_action, auto_allowed = choose_match_status(
+            [group.primary for group in identity_groups],
+            self.scoring_config,
+        )
+        top_identity = identity_groups[0] if identity_groups else None
+        variant_unresolved = bool(top_identity and top_identity.has_sibling_variants)
+        if variant_unresolved:
+            reasons = sorted(set([*reasons, "card_identity_resolved_variant_unresolved"]))
+            next_action = "confirm_candidate"
+            auto_allowed = False
         global_flags: list[str] = []
         if not model_entry.active:
             global_flags.append("active_index_unavailable")
@@ -172,7 +192,7 @@ class RecognitionPipeline:
             scan_id=scan_id,
             request=request,
             model_entry=model_entry,
-            scored=scored,
+            identity_groups=identity_groups,
             match_status=match_status,
             reasons=sorted(set([*reasons, *global_flags, *evidence_reasons])),
             global_flags=global_flags,
@@ -357,7 +377,7 @@ class RecognitionPipeline:
             for candidate in candidates
         ]
         scored.sort(key=lambda item: (-item.overall, item.record.variant_id or "", item.record.canonical_card_id or ""))
-        return [replace(item, rank=index + 1) for index, item in enumerate(scored[:10])]
+        return [replace(item, rank=index + 1) for index, item in enumerate(scored)]
 
     def _response_from_scored(
         self,
@@ -365,21 +385,50 @@ class RecognitionPipeline:
         scan_id: UUID,
         request: IdentifyRequest,
         model_entry: ModelRegistryEntry,
-        scored: list[ScoredCandidate],
+        identity_groups: list[CardIdentityGroup],
         match_status: str,
         reasons: list[str],
         global_flags: list[str],
         requested_next_action: str,
         auto_add_allowed: bool,
     ) -> IdentifyResponse:
-        candidates = [candidate_response(item, global_flags) for item in scored]
+        candidates = [
+            candidate_response(
+                replace(group.primary, rank=index + 1),
+                global_flags,
+                card_identity=group.key,
+                variant_unresolved=group.has_sibling_variants,
+            )
+            for index, group in enumerate(identity_groups[:10])
+        ]
         best = candidates[0] if candidates else None
+        top_identity = identity_groups[0] if identity_groups else None
+        variant_unresolved = bool(top_identity and top_identity.has_sibling_variants)
+        variant_options = [
+            RecognitionVariantOption(
+                canonicalCardId=member.record.canonical_card_id,
+                variantId=member.record.variant_id,
+                variantCode=member.record.variant_code,
+                confidence=member.overall,
+            )
+            for member in (top_identity.members if top_identity else ())
+        ]
+        if not top_identity:
+            variant_status = "not_applicable"
+        elif variant_unresolved:
+            variant_status = "unresolved"
+        else:
+            variant_status = "resolved" if top_identity.primary.record.variant_id else "not_applicable"
         return IdentifyResponse(
             scanId=scan_id,
             matchStatus=match_status,
             topCandidates=candidates,
+            cardIdentityKey=top_identity.key if top_identity else None,
+            cardIdentityConfidence=top_identity.primary.overall if top_identity else 0.0,
             canonicalCardId=best.canonicalCardId if best else None,
-            variantId=best.variantId if best else None,
+            variantId=None if variant_unresolved else (best.variantId if best else None),
+            variantResolutionStatus=variant_status,
+            variantOptions=variant_options,
             overallConfidence=best.overallConfidence if best else 0.0,
             imageScore=best.imageScore if best else 0.0,
             ocrScore=best.ocrScore if best else 0.0,
@@ -407,8 +456,12 @@ class RecognitionPipeline:
             scanId=scan_id,
             matchStatus=match_status,
             topCandidates=[],
+            cardIdentityKey=None,
+            cardIdentityConfidence=0.0,
             canonicalCardId=None,
             variantId=None,
+            variantResolutionStatus="not_applicable",
+            variantOptions=[],
             overallConfidence=0.0,
             imageScore=0.0,
             ocrScore=0.0,
@@ -505,7 +558,13 @@ def normalise_mean_embedding(embeddings: list[list[float]]) -> list[float]:
     return [value / norm for value in mean]
 
 
-def candidate_response(item: ScoredCandidate, global_flags: list[str]) -> RecognitionCandidateResponse:
+def candidate_response(
+    item: ScoredCandidate,
+    global_flags: list[str],
+    *,
+    card_identity: str | None = None,
+    variant_unresolved: bool = False,
+) -> RecognitionCandidateResponse:
     scores = ComponentScores(
         image=item.image,
         ocr=item.ocr,
@@ -517,21 +576,26 @@ def candidate_response(item: ScoredCandidate, global_flags: list[str]) -> Recogn
     )
     return RecognitionCandidateResponse(
         rank=item.rank,
+        cardIdentityKey=card_identity or card_identity_key(item.record),
         canonicalCardId=item.record.canonical_card_id,
-        variantId=item.record.variant_id,
+        variantId=None if variant_unresolved else item.record.variant_id,
         setId=item.record.set_id,
         setCode=item.record.set_code,
         collectorNumber=item.record.collector_number,
         languageCode=item.record.language_code,
-        variantCode=item.record.variant_code,
+        variantCode=None if variant_unresolved else item.record.variant_code,
         cardName=item.record.card_name,
         overallConfidence=item.overall,
         imageScore=item.image,
         ocrScore=item.ocr,
         setAndNumberScore=item.set_number,
         componentScores=scores,
-        reasons=item.reasons,
-        uncertaintyFlags=sorted(set([*global_flags, *item.uncertainty_flags])),
+        reasons=sorted(set([*item.reasons, *(["sibling_variants_grouped"] if variant_unresolved else [])])),
+        uncertaintyFlags=sorted(set([
+            *global_flags,
+            *item.uncertainty_flags,
+            *(["variant_unresolved"] if variant_unresolved else []),
+        ])),
     )
 
 

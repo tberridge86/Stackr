@@ -157,6 +157,7 @@ class ComponentScores(StrictModel):
 
 class RecognitionCandidateResponse(StrictModel):
     rank: int = Field(ge=1)
+    cardIdentityKey: str
     canonicalCardId: str | None = None
     variantId: str | None = None
     setId: str | None = None
@@ -174,12 +175,23 @@ class RecognitionCandidateResponse(StrictModel):
     uncertaintyFlags: list[str]
 
 
+class RecognitionVariantOption(StrictModel):
+    canonicalCardId: str | None = None
+    variantId: str | None = None
+    variantCode: str | None = None
+    confidence: float = Field(ge=0, le=1)
+
+
 class IdentifyResponse(StrictModel):
     scanId: UUID
     matchStatus: MatchStatus
     topCandidates: list[RecognitionCandidateResponse]
+    cardIdentityKey: str | None
+    cardIdentityConfidence: float = Field(ge=0, le=1)
     canonicalCardId: str | None
     variantId: str | None
+    variantResolutionStatus: Literal["resolved", "unresolved", "not_applicable"]
+    variantOptions: list[RecognitionVariantOption]
     overallConfidence: float = Field(ge=0, le=1)
     imageScore: float = Field(ge=0, le=1)
     ocrScore: float = Field(ge=0, le=1)

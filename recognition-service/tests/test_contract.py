@@ -22,15 +22,17 @@ def candidate(
     *,
     variant_id: str = "11111111-1111-4111-8111-111111111111",
     image_similarity: float | None = 0.96,
+    canonical_card_id: str = "22222222-2222-4222-8222-222222222222",
+    variant_code: str = "holo",
 ) -> CandidateRecord:
     return CandidateRecord(
-        canonical_card_id="22222222-2222-4222-8222-222222222222",
+        canonical_card_id=canonical_card_id,
         variant_id=variant_id,
         set_id="33333333-3333-4333-8333-333333333333",
         set_code="SV2a",
         collector_number="157/165",
         language_code="ja",
-        variant_code="holo",
+        variant_code=variant_code,
         card_name="リザードンex",
         image_similarity=image_similarity,
         perceptual_hash_similarity=0.8,
@@ -201,6 +203,54 @@ def test_identify_pushes_normalised_ocr_scope_into_vector_lookup(tmp_path):
         "collector_number": "157/165",
         "set_code": "SV2a",
     }
+
+
+def test_identify_groups_finish_siblings_and_does_not_claim_an_exact_variant(tmp_path):
+    service_settings = settings(tmp_path)
+    repository = InMemoryRepository(
+        model=ModelRegistryEntry("test-model-v1", "test-index-v1", 4, True),
+        structured_candidates=[],
+        vector_candidates=[
+            candidate(
+                variant_id="11111111-1111-4111-8111-111111111111",
+                canonical_card_id="pokemon:ja:sv2a:157:normal",
+                variant_code="normal",
+                image_similarity=0.916,
+            ),
+            candidate(
+                variant_id="44444444-4444-4444-8444-444444444444",
+                canonical_card_id="pokemon:ja:sv2a:157:reverse_holo",
+                variant_code="reverse_holo",
+                image_similarity=0.913,
+            ),
+        ],
+    )
+    app = create_app(
+        settings=service_settings,
+        repository=repository,
+        storage=LocalStorageClient(tmp_path),
+        diagnostics=MemoryDiagnosticSink(),
+        model=EmbeddingModel(service_settings),
+    )
+
+    with TestClient(app) as client:
+        response = client.post("/v1/recognition/identify", json=identify_payload())
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["matchStatus"] == "probable"
+    assert body["cardIdentityKey"].startswith("card:ja:")
+    assert body["cardIdentityConfidence"] > 0.9
+    assert body["variantResolutionStatus"] == "unresolved"
+    assert body["variantId"] is None
+    assert body["autoAddAllowed"] is False
+    assert body["requestedNextAction"] == "confirm_candidate"
+    assert body["reasons"] == ["card_identity_resolved_variant_unresolved", "confidence_not_calibrated"]
+    assert len(body["topCandidates"]) == 1
+    assert body["topCandidates"][0]["variantId"] is None
+    assert body["topCandidates"][0]["variantCode"] is None
+    assert "variant_unresolved" in body["topCandidates"][0]["uncertaintyFlags"]
+    assert {option["variantCode"] for option in body["variantOptions"]} == {"normal", "reverse_holo"}
 
 
 def test_unhandled_failures_return_a_bounded_staging_error(tmp_path):

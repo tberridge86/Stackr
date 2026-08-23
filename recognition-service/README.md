@@ -71,6 +71,13 @@ Weights and thresholds live in:
 
 The initial config is intentionally marked blocked because Stage 6 has not selected a calibrated production embedding model. The service returns candidates for user confirmation and does not auto-add cards while confidence is uncalibrated.
 
+Recognition decisions are identity-first. Candidates that share language, set and
+collector number are ranked as one printed-card identity, so normal, reverse-holo
+and other finish siblings do not create a false card-level ambiguity. Exact variant
+IDs remain available in `variantOptions`. When finish evidence is insufficient, the
+response sets `variantResolutionStatus` to `unresolved`, leaves the top-level
+`variantId` empty and disables automatic collection changes.
+
 ## Diagnostics
 
 Diagnostics are written to `ml.recognition_scan_diagnostics` when `STACKR_RECOGNITION_DATABASE_URL` is configured.
