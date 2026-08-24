@@ -344,6 +344,12 @@ assert.match(baselineMigrationTrialWorkflow, /--terminate-client-sessions/);
 assert.match(baselineMigrationTrialWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--file \/trial\/artifact\/production-reference-data\.sql/);
+assert.match(baselineMigrationTrialWorkflow, /migration_count=.*supabase_migrations\.schema_migrations/s);
+assert.ok(
+  baselineMigrationTrialWorkflow.indexOf('--file /trial/artifact/production-reference-data.sql')
+    < baselineMigrationTrialWorkflow.indexOf('--file /trial/artifact/migration-history-schema.sql'),
+  'the isolated restore must reload migration history after the large reference-data import',
+);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /isolated-production-reference-fixture\.sql/);
 assert.match(baselineMigrationTrialWorkflow, /--expected-history-count=106/);
 assert.match(baselineMigrationTrialWorkflow, /--expected-history-version=20260813135412/);
@@ -439,6 +445,23 @@ assert.ok(
     < catalogueTransferScript.indexOf("await target.query('commit')"),
   'all mutable transfer acceptance checks must pass before commit',
 );
+
+const catalogueStoragePromotionScript = readFileSync('scripts/deploy/promote-catalogue-storage.mjs', 'utf8');
+assert.match(catalogueStoragePromotionScript, /STACKR_STORAGE_PROMOTION_MODE/);
+assert.match(catalogueStoragePromotionScript, /\['copy', 'compensate'\]/);
+assert.match(catalogueStoragePromotionScript, /PRE_DATABASE_COMMIT_FAILURE/);
+assert.match(catalogueStoragePromotionScript, /upsert: false/);
+assert.doesNotMatch(catalogueStoragePromotionScript, /upsert: true/);
+assert.match(catalogueStoragePromotionScript, /preCopyDatabaseReferenceCount/);
+assert.match(catalogueStoragePromotionScript, /createdByThisRun: true/);
+assert.match(catalogueStoragePromotionScript, /writeEvidence\(evidence\);/);
+assert.match(catalogueStoragePromotionScript, /production_storage_compensation_journal_missing/);
+assert.match(catalogueStoragePromotionScript, /production_storage_compensation_failure_signal_missing/);
+assert.match(catalogueStoragePromotionScript, /catalogueStorageReferenceCount\(/);
+assert.match(catalogueStoragePromotionScript, /object_hash_no_longer_matches_journal/);
+assert.match(catalogueStoragePromotionScript, /currently_referenced_by_catalogue/);
+assert.match(catalogueStoragePromotionScript, /remove_compensated_production_object/);
+assert.match(catalogueStoragePromotionScript, /if \(PROMOTION_MODE === 'compensate'\)/);
 
 const cataloguePreservationTables = JSON.parse(
   readFileSync('deploy/staging-catalogue-preservation-tables.json', 'utf8'),
