@@ -48,6 +48,102 @@ create index if not exists inventory_movements_user_item_idx
 comment on column public.inventory_movements.inventory_item_id is
   'Seller inventory row changed by this movement. Kept as text after stock reaches zero.';
 
+create or replace function private.lock_seller_inventory_statement_actor()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_user_id uuid := (select auth.uid());
+begin
+  -- Authenticated Data API writes, including statements that match no rows,
+  -- cooperate with the batch RPC before row processing begins. Privileged
+  -- null-identity maintenance falls through to the row trigger, which locks
+  -- each actual OLD/NEW owner before that row is changed.
+  if v_user_id is not null then
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtext('stackr_seller_inventory_batch'),
+      pg_catalog.hashtext(v_user_id::text)
+    );
+  end if;
+  return null;
+end;
+$$;
+
+create or replace function private.lock_seller_inventory_item_owner()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_old_user_id uuid;
+  v_new_user_id uuid;
+  v_lock_user_id uuid;
+begin
+  if tg_op in ('UPDATE', 'DELETE') then
+    v_old_user_id := old.user_id;
+  end if;
+  if tg_op in ('INSERT', 'UPDATE') then
+    v_new_user_id := new.user_id;
+  end if;
+
+  -- UPDATE can move a row between owners when invoked by a privileged role.
+  -- Acquire both owner locks in UUID order so opposing transfers cannot
+  -- deadlock. Ordinary authenticated writes acquire only their own key.
+  for v_lock_user_id in
+    select candidate.user_id
+    from (values (v_old_user_id), (v_new_user_id)) as candidate(user_id)
+    where candidate.user_id is not null
+    group by candidate.user_id
+    order by candidate.user_id
+  loop
+    perform pg_catalog.pg_advisory_xact_lock(
+      pg_catalog.hashtext('stackr_seller_inventory_batch'),
+      pg_catalog.hashtext(v_lock_user_id::text)
+    );
+  end loop;
+
+  if tg_op = 'DELETE' then
+    return old;
+  end if;
+  return new;
+end;
+$$;
+
+revoke all on function private.lock_seller_inventory_item_owner()
+  from public, anon, authenticated, service_role;
+revoke all on function private.lock_seller_inventory_statement_actor()
+  from public, anon, authenticated, service_role;
+
+drop trigger if exists lock_seller_inventory_statement_actor
+  on public.seller_inventory_items;
+create trigger lock_seller_inventory_statement_actor
+  before insert or update or delete
+  on public.seller_inventory_items
+  for each statement
+  execute function private.lock_seller_inventory_statement_actor();
+
+drop trigger if exists lock_seller_inventory_item_owner
+  on public.seller_inventory_items;
+create trigger lock_seller_inventory_item_owner
+  before insert or update or delete
+  on public.seller_inventory_items
+  for each row
+  execute function private.lock_seller_inventory_item_owner();
+
+comment on function private.lock_seller_inventory_item_owner() is
+  'Serialises legacy direct seller inventory writes on the same per-user advisory key as atomic batch commits.';
+comment on function private.lock_seller_inventory_statement_actor() is
+  'Acquires the authenticated actor advisory key before every legacy direct seller inventory statement, including empty writes.';
+comment on trigger lock_seller_inventory_statement_actor
+  on public.seller_inventory_items is
+  'Makes authenticated legacy direct statements cooperate with atomic seller batches before row processing.';
+comment on trigger lock_seller_inventory_item_owner
+  on public.seller_inventory_items is
+  'Prevents direct owner writes from racing an atomic seller inventory snapshot replacement.';
+
 create or replace function public.commit_seller_inventory_batch(
   p_request_id text,
   p_expected_inventory jsonb,
@@ -89,6 +185,13 @@ begin
   if p_request_id is null
     or p_request_id !~ '^[A-Za-z0-9:_-]{16,128}$' then
     raise exception 'invalid_seller_inventory_request_id' using errcode = '22023';
+  end if;
+
+  if not pg_catalog.starts_with(
+    p_request_id,
+    'seller-batch:' || v_user_id::text || ':'
+  ) then
+    raise exception 'seller_inventory_request_identity_mismatch' using errcode = '42501';
   end if;
 
   if p_expected_inventory is null or jsonb_typeof(p_expected_inventory) <> 'array'

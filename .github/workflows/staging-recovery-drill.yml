@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Every mode reads staging and mutates the same isolated restore project.
-  group: stackr-isolated-recovery-target-krjttpmthxkfsbqksxci
+  # Serialise every staging or isolated-recovery database writer.
+  group: stackr-staging-database-maintenance
   cancel-in-progress: false
 
 jobs:
@@ -216,7 +216,7 @@ jobs:
           node scripts/deploy/verify-staging-migration-plan.mjs \
             --plan="$RUNNER_TEMP/stackr-recovery/evidence/isolated-migration-plan.txt" \
             --before-keys="$RUNNER_TEMP/stackr-recovery/evidence/staging-before-migration-keys.txt" \
-            --expected-count=7 \
+            --expected-count=1 \
             --target-project-ref="$SUPABASE_RESTORE_PROJECT_REF" \
             --output="$RUNNER_TEMP/stackr-recovery/evidence/isolated-migration-plan.json"
 
@@ -279,7 +279,7 @@ jobs:
           node scripts/deploy/verify-staging-migration-plan.mjs \
             --plan="$RUNNER_TEMP/stackr-recovery/evidence/staging-migration-plan.txt" \
             --before-keys="$RUNNER_TEMP/stackr-recovery/evidence/staging-before-migration-keys.txt" \
-            --expected-count=7 \
+            --expected-count=1 \
             --target-project-ref="$SUPABASE_PROJECT_REF" \
             --output="$RUNNER_TEMP/stackr-recovery/evidence/staging-migration-plan.json"
           npx --yes supabase@2.110.0 db push \

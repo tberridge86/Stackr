@@ -9,11 +9,11 @@ const STRICT_FOREIGN_IMPORT_PATH =
 const PUBLICATION_SNAPSHOT_PATH =
   'supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql';
 const RECOGNITION_FINGERPRINT_ASSET_PATH =
-  'supabase/migrations/20260822183000_add_bounded_recognition_fingerprint_asset_lookup.sql';
+  'supabase/migrations/20260822223752_add_bounded_recognition_fingerprint_asset_lookup.sql';
 const RECOGNITION_FINGERPRINT_CONTEXT_PATH =
-  'supabase/migrations/20260822184500_add_paged_recognition_fingerprint_context.sql';
+  'supabase/migrations/20260822223756_add_paged_recognition_fingerprint_context.sql';
 const RECOGNITION_FINGERPRINT_SECURITY_PATH =
-  'supabase/migrations/20260822191000_restore_bounded_definer_fingerprint_reads.sql';
+  'supabase/migrations/20260822223802_restore_bounded_definer_fingerprint_reads.sql';
 const sql = readFileSync(MIGRATION_PATH, 'utf8');
 const reconciliationSql = readFileSync(RECONCILIATION_PATH, 'utf8');
 const strictForeignImportSql = readFileSync(STRICT_FOREIGN_IMPORT_PATH, 'utf8');

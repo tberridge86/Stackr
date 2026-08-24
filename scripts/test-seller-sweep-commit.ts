@@ -288,7 +288,7 @@ assert.match(inventorySource, /user\.id !== input\.expectedUserId/);
 assert.match(inventorySource, /return \{ userId: user\.id, items \}/);
 
 const migrationSource = readFileSync(
-  'supabase/migrations/20260813093320_atomic_seller_inventory_batches.sql',
+  'supabase/migrations/20260822223828_atomic_seller_inventory_batches.sql',
   'utf8',
 );
 assert.match(migrationSource, /security invoker/i);

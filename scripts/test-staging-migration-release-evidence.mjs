@@ -31,12 +31,13 @@ try {
   const migrationFiles = readdirSync("supabase/migrations")
     .filter((name) => /^\d{14}_.+\.sql$/.test(name))
     .sort();
-  assert.ok(migrationFiles.length > 7);
+  const pendingCount = 1;
+  assert.ok(migrationFiles.length > pendingCount);
   const migrationKeys = migrationFiles.map((name) =>
     name.replace(/\.sql$/, ""),
   );
-  const beforeKeys = migrationKeys.slice(0, -7);
-  const pendingMigrations = migrationFiles.slice(-7);
+  const beforeKeys = migrationKeys.slice(0, -pendingCount);
+  const pendingMigrations = migrationFiles.slice(-pendingCount);
   const beforePath = join(temporaryDirectory, "before-keys.txt");
   const allPath = join(temporaryDirectory, "all-keys.txt");
   const rollbackPath = join(temporaryDirectory, "rollback-keys.txt");
@@ -79,7 +80,7 @@ try {
     const planResult = run("scripts/deploy/verify-staging-migration-plan.mjs", [
       `--plan=${planPath}`,
       `--before-keys=${beforePath}`,
-      "--expected-count=7",
+      `--expected-count=${pendingCount}`,
       `--target-project-ref=${target}`,
       `--output=${output}`,
     ]);

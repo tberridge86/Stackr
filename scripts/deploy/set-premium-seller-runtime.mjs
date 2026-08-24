@@ -11,7 +11,7 @@ export const PREMIUM_SELLER_MIGRATION_SHA256 = 'b106db75951d1c1600f640cd1e64ac80
 const PUBLIC_FUNCTION = 'public.commit_seller_inventory_batch(text,jsonb,jsonb,jsonb,jsonb,jsonb)';
 const INTERNAL_FUNCTION = 'private.commit_seller_inventory_batch_impl(text,jsonb,jsonb,jsonb,jsonb,jsonb)';
 const MIGRATION_PATH = `supabase/migrations/${PREMIUM_SELLER_MIGRATION_VERSION}_${PREMIUM_SELLER_MIGRATION_NAME}.sql`;
-const ATOMIC_MIGRATION_PATH = 'supabase/migrations/20260813093320_atomic_seller_inventory_batches.sql';
+const ATOMIC_MIGRATION_PATH = 'supabase/migrations/20260822223828_atomic_seller_inventory_batches.sql';
 const ATOMIC_MIGRATION_SHA256 = '8e4ea98ef3d5f5e7882a8ad3edf98b68b9d2af65638c1541a0d91e1c353199e1';
 const ACTIONS = Object.freeze({
   enable_qa: Object.freeze({

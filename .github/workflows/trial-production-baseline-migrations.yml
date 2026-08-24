@@ -37,8 +37,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Serialise every writer that shares the isolated recovery project.
-  group: stackr-isolated-recovery-target-krjttpmthxkfsbqksxci
+  # Serialise every staging or isolated-recovery database writer.
+  group: stackr-staging-database-maintenance
   cancel-in-progress: false
 
 jobs:
