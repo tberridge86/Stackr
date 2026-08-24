@@ -314,6 +314,9 @@ assert.match(productionBaselineWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(productionBaselineWorkflow, /inputs\.confirmation == 'CAPTURE PRODUCTION SCHEMA'/);
 assert.doesNotMatch(productionBaselineWorkflow, /pull_request:/);
 assert.match(productionBaselineWorkflow, /db dump/);
+assert.match(productionBaselineWorkflow, /--schema catalog,ingest/);
+assert.match(productionBaselineWorkflow, /production-reference-data\.sql/);
+assert.match(productionBaselineWorkflow, /--reference-data=/);
 assert.match(productionBaselineWorkflow, /no matching schemas were found/);
 assert.match(productionBaselineWorkflow, /supabase_migrations schema absent on source/);
 assert.match(productionBaselineWorkflow, /secret-scan\.mjs/);
@@ -332,6 +335,8 @@ assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'APPROVE D
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /--file \/trial\/artifact\/production-reference-data\.sql/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /isolated-production-reference-fixture\.sql/);
 assert.match(baselineMigrationTrialWorkflow, /--expected-history-count=106/);
 assert.match(baselineMigrationTrialWorkflow, /--expected-history-version=20260813135412/);
 assert.match(
@@ -476,27 +481,72 @@ const baselineEvidence = createSchemaBaselineEvidence({
   schema: 'CREATE SCHEMA catalog;\nCREATE TABLE catalog.cards (id uuid);\nCREATE POLICY read_cards ON catalog.cards FOR SELECT USING (true);\n',
   historySchema: 'CREATE SCHEMA supabase_migrations;\n',
   historyData: 'COPY supabase_migrations.schema_migrations (version) FROM stdin;\n20260513170000\n\\.\n',
+  referenceData: 'COPY catalog.cards (id) FROM stdin;\n00000000-0000-0000-0000-000000000001\n\\.\nCOPY ingest.sources (id) FROM stdin;\nsource-1\n\\.\n',
 });
+assert.equal(baselineEvidence.schemaVersion, 'stackr-production-schema-baseline-v1.1.0');
 assert.equal(baselineEvidence.productionMutationPerformed, false);
 assert.equal(baselineEvidence.customerTableDataIncluded, false);
+assert.equal(baselineEvidence.catalogueReferenceDataIncluded, true);
+assert.deepEqual(baselineEvidence.referenceDataSchemas, ['catalog', 'ingest']);
 assert.equal(baselineEvidence.inventory.tables, 1);
 assert.equal(baselineEvidence.inventory.policies, 1);
 assert.equal(baselineEvidence.inventory.migrationHistorySchemaPresent, true);
 assert.equal(baselineEvidence.inventory.migrationHistoryRows, 1);
+assert.equal(baselineEvidence.inventory.referenceDataRows, 2);
 const absentHistoryEvidence = createSchemaBaselineEvidence({
   schema: 'CREATE TABLE public.cards (id uuid);\n',
   historySchema: '-- stackr: supabase_migrations schema absent on source\n',
   historyData: '-- stackr: no migration history rows because schema is absent\n',
+  referenceData: 'COPY catalog.games (code) FROM stdin;\npokemon\n\\.\n',
 });
 assert.equal(absentHistoryEvidence.inventory.migrationHistorySchemaPresent, false);
 assert.equal(absentHistoryEvidence.inventory.migrationHistoryRows, 0);
+const baselineVerificationRoot = mkdtempSync(path.join(tmpdir(), 'stackr-production-baseline-test-'));
+try {
+  const schema = 'CREATE TABLE public.cards (id uuid);\n';
+  const historySchema = '-- stackr: supabase_migrations schema absent on source\n';
+  const historyData = '-- stackr: no migration history rows because schema is absent\n';
+  const referenceData = 'COPY catalog.games (code) FROM stdin;\npokemon\n\\.\n';
+  const evidence = createSchemaBaselineEvidence({
+    schema,
+    historySchema,
+    historyData,
+    referenceData,
+  });
+  writeFileSync(path.join(baselineVerificationRoot, 'production-schema.sql'), schema);
+  writeFileSync(path.join(baselineVerificationRoot, 'migration-history-schema.sql'), historySchema);
+  writeFileSync(path.join(baselineVerificationRoot, 'migration-history-data.sql'), historyData);
+  writeFileSync(path.join(baselineVerificationRoot, 'production-reference-data.sql'), referenceData);
+  writeFileSync(path.join(baselineVerificationRoot, 'baseline-evidence.json'), JSON.stringify({
+    ...evidence,
+    sourceProjectRef: 'oakdbbzdqwurpjnoqhmu',
+  }));
+  const verification = run('scripts/deploy/verify-production-schema-baseline.mjs', [
+    `--directory=${baselineVerificationRoot}`,
+    `--expected-schema-sha256=${evidence.files.schema.sha256}`,
+  ]);
+  assert.equal(verification.status, 0, verification.stderr || verification.stdout);
+  assert.equal(JSON.parse(verification.stdout).ok, true);
+} finally {
+  rmSync(baselineVerificationRoot, { recursive: true, force: true });
+}
 assert.throws(
   () => createSchemaBaselineEvidence({
     schema: 'COPY public.cards (id) FROM stdin;\nsecret-user-row\n\\.\n',
     historySchema: 'CREATE SCHEMA supabase_migrations;\n',
     historyData: '-- no migration rows\n',
+    referenceData: 'COPY catalog.games (code) FROM stdin;\npokemon\n\\.\n',
   }),
   /schema_dump_contains_copy_data/,
+);
+assert.throws(
+  () => createSchemaBaselineEvidence({
+    schema: 'CREATE TABLE public.cards (id uuid);\n',
+    historySchema: 'CREATE SCHEMA supabase_migrations;\n',
+    historyData: '-- no migration rows\n',
+    referenceData: 'COPY public.cards (id) FROM stdin;\nsecret-user-row\n\\.\n',
+  }),
+  /reference_data_copy_target_outside_catalog_or_ingest/,
 );
 
 const { sanitizeRoleDumpText } = await import('./deploy/sanitize-supabase-role-dump.mjs');

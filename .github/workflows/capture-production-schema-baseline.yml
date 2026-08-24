@@ -19,7 +19,7 @@ jobs:
   capture:
     if: inputs.confirmation == 'CAPTURE PRODUCTION SCHEMA'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     environment: migration-baseline
     env:
       SUPABASE_PRODUCTION_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }}
@@ -43,7 +43,7 @@ jobs:
           esac
           node scripts/deploy/prepare-production-baseline-url.mjs
 
-      - name: Capture schema-only baseline
+      - name: Capture schema and non-customer catalogue reference baseline
         shell: bash
         run: |
           set -euo pipefail
@@ -72,6 +72,11 @@ jobs:
             exit 1
           fi
           rm -f "$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.stderr"
+          npx --yes supabase@2.110.0 db dump \
+            --db-url "$STACKR_PRODUCTION_DB_URL" \
+            --schema catalog,ingest \
+            --data-only --use-copy \
+            --file "$RUNNER_TEMP/stackr-production-baseline/production-reference-data.sql"
 
       - name: Reject secret-bearing baseline artifacts
         run: >-
@@ -84,6 +89,7 @@ jobs:
           --schema="$RUNNER_TEMP/stackr-production-baseline/production-schema.sql"
           --history-schema="$RUNNER_TEMP/stackr-production-baseline/migration-history-schema.sql"
           --history-data="$RUNNER_TEMP/stackr-production-baseline/migration-history-data.sql"
+          --reference-data="$RUNNER_TEMP/stackr-production-baseline/production-reference-data.sql"
           --output="$RUNNER_TEMP/stackr-production-baseline/baseline-evidence.json"
 
       - name: Upload short-lived private baseline artifact

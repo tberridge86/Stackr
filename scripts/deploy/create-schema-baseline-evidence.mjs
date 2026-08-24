@@ -40,19 +40,51 @@ function copyRowCount(content) {
   return count;
 }
 
-export function createSchemaBaselineEvidence({ schema, historySchema, historyData }) {
+function referenceDataInventory(content) {
+  const targetTables = [];
+  let inCopy = false;
+  let rows = 0;
+
+  for (const line of content.split(/\r?\n/)) {
+    const copy = line.match(/^COPY\s+(?:ONLY\s+)?(?:(?:"([^"]+)"|([A-Za-z_][\w$]*))\.)?(?:"([^"]+)"|([A-Za-z_][\w$]*))\s+\(/i);
+    if (copy) {
+      const schema = copy[1] ?? copy[2];
+      const table = copy[3] ?? copy[4];
+      if (!schema || !['catalog', 'ingest'].includes(schema)) {
+        throw new Error('reference_data_copy_target_outside_catalog_or_ingest');
+      }
+      targetTables.push(`${schema}.${table}`);
+      inCopy = true;
+      continue;
+    }
+    if (inCopy && line === '\\.') {
+      inCopy = false;
+      continue;
+    }
+    if (inCopy && line) rows += 1;
+  }
+
+  if (rows === 0) throw new Error('reference_data_rows_missing');
+  return { rows, targetTables: Array.from(new Set(targetTables)).sort() };
+}
+
+export function createSchemaBaselineEvidence({ schema, historySchema, historyData, referenceData }) {
   if (/^COPY\s+/im.test(schema)) throw new Error('schema_dump_contains_copy_data');
+  if (!referenceData?.trim()) throw new Error('reference_data_empty');
 
   const schemas = Array.from(schema.matchAll(/^CREATE SCHEMA\s+"?([^";\s]+)"?/gim))
     .map((match) => match[1])
     .sort();
+  const referenceInventory = referenceDataInventory(referenceData);
 
   return {
-    schemaVersion: 'stackr-production-schema-baseline-v1.0.0',
+    schemaVersion: 'stackr-production-schema-baseline-v1.1.0',
     generatedAt: new Date().toISOString(),
     sourceProjectRef: process.env.SUPABASE_PRODUCTION_PROJECT_REF ?? null,
     productionMutationPerformed: false,
     customerTableDataIncluded: false,
+    catalogueReferenceDataIncluded: true,
+    referenceDataSchemas: ['catalog', 'ingest'],
     files: {
       schema: { bytes: Buffer.byteLength(schema), sha256: sha256(schema) },
       migrationHistorySchema: {
@@ -62,6 +94,10 @@ export function createSchemaBaselineEvidence({ schema, historySchema, historyDat
       migrationHistoryData: {
         bytes: Buffer.byteLength(historyData),
         sha256: sha256(historyData),
+      },
+      referenceData: {
+        bytes: Buffer.byteLength(referenceData),
+        sha256: sha256(referenceData),
       },
     },
     inventory: {
@@ -77,6 +113,8 @@ export function createSchemaBaselineEvidence({ schema, historySchema, historyDat
         'stackr: supabase_migrations schema absent on source',
       ),
       migrationHistoryRows: copyRowCount(historyData),
+      referenceDataRows: referenceInventory.rows,
+      referenceDataTargetTables: referenceInventory.targetTables,
     },
   };
 }
@@ -85,10 +123,11 @@ function main() {
   const schema = readRequired(argument('schema'), 'schema_dump');
   const historySchema = readRequired(argument('history-schema'), 'migration_history_schema');
   const historyData = readRequired(argument('history-data'), 'migration_history_data');
+  const referenceData = readRequired(argument('reference-data'), 'reference_data');
   const outputPath = argument('output');
   if (!outputPath) throw new Error('evidence_output_missing');
 
-  const evidence = createSchemaBaselineEvidence({ schema, historySchema, historyData });
+  const evidence = createSchemaBaselineEvidence({ schema, historySchema, historyData, referenceData });
   writeFileSync(outputPath, `${JSON.stringify(evidence, null, 2)}\n`, { encoding: 'utf8' });
   console.log(JSON.stringify(evidence, null, 2));
 }

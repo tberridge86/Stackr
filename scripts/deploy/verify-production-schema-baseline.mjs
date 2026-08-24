@@ -51,11 +51,38 @@ function migrationHistoryRows(content) {
   return rows;
 }
 
+function referenceDataInventory(content) {
+  const targetTables = [];
+  let inCopy = false;
+  let rows = 0;
+
+  for (const line of content.split(/\r?\n/)) {
+    const copy = line.match(/^COPY\s+(?:ONLY\s+)?(?:(?:"([^"]+)"|([A-Za-z_][\w$]*))\.)?(?:"([^"]+)"|([A-Za-z_][\w$]*))\s+\(/i);
+    if (copy) {
+      const schema = copy[1] ?? copy[2];
+      const table = copy[3] ?? copy[4];
+      if (!schema || !['catalog', 'ingest'].includes(schema)) {
+        throw new Error('reference_data_copy_target_outside_catalog_or_ingest');
+      }
+      targetTables.push(`${schema}.${table}`);
+      inCopy = true;
+      continue;
+    }
+    if (inCopy && line === '\\.') {
+      inCopy = false;
+      continue;
+    }
+    if (inCopy && line) rows += 1;
+  }
+  return { rows, targetTables: Array.from(new Set(targetTables)).sort() };
+}
+
 const paths = {
   evidence: path.join(directory, 'baseline-evidence.json'),
   schema: path.join(directory, 'production-schema.sql'),
   historySchema: path.join(directory, 'migration-history-schema.sql'),
   historyData: path.join(directory, 'migration-history-data.sql'),
+  referenceData: path.join(directory, 'production-reference-data.sql'),
 };
 for (const [label, filePath] of Object.entries(paths)) {
   if (!existsSync(filePath)) errors.push(`baseline_file_missing:${label}`);
@@ -66,8 +93,9 @@ if (!errors.length) {
   const schema = readFileSync(paths.schema, 'utf8');
   const historySchema = readFileSync(paths.historySchema, 'utf8');
   const historyData = readFileSync(paths.historyData, 'utf8');
+  const referenceData = readFileSync(paths.referenceData, 'utf8');
 
-  if (evidence.schemaVersion !== 'stackr-production-schema-baseline-v1.0.0') {
+  if (evidence.schemaVersion !== 'stackr-production-schema-baseline-v1.1.0') {
     errors.push('baseline_evidence_version_invalid');
   }
   if (evidence.sourceProjectRef !== 'oakdbbzdqwurpjnoqhmu') {
@@ -75,6 +103,13 @@ if (!errors.length) {
   }
   if (evidence.productionMutationPerformed !== false) errors.push('baseline_claims_production_mutation');
   if (evidence.customerTableDataIncluded !== false) errors.push('baseline_claims_customer_data');
+  if (evidence.catalogueReferenceDataIncluded !== true) errors.push('baseline_catalogue_reference_data_missing');
+  if (
+    !Array.isArray(evidence.referenceDataSchemas)
+    || evidence.referenceDataSchemas.length !== 2
+    || evidence.referenceDataSchemas[0] !== 'catalog'
+    || evidence.referenceDataSchemas[1] !== 'ingest'
+  ) errors.push('baseline_reference_data_schemas_invalid');
   const expectedHistoryRows = expectedHistoryCount;
   if (evidence.inventory?.migrationHistorySchemaPresent !== Boolean(expectedHistoryVersion)) {
     errors.push('unexpected_production_migration_history_schema');
@@ -97,15 +132,38 @@ if (!errors.length) {
   }
   if (/^COPY\s+/im.test(schema)) errors.push('baseline_schema_contains_table_data');
 
+  let referenceInventory;
+  try {
+    referenceInventory = referenceDataInventory(referenceData);
+    if (referenceInventory.rows === 0) errors.push('baseline_reference_data_rows_missing');
+    if (evidence.inventory?.referenceDataRows !== referenceInventory.rows) {
+      errors.push('baseline_reference_data_row_count_mismatch');
+    }
+    if (JSON.stringify(evidence.inventory?.referenceDataTargetTables) !== JSON.stringify(referenceInventory.targetTables)) {
+      errors.push('baseline_reference_data_targets_mismatch');
+    }
+  } catch (error) {
+    errors.push(error.message);
+  }
+
   const checksums = {
     schema: sha256(schema),
     migrationHistorySchema: sha256(historySchema),
     migrationHistoryData: sha256(historyData),
+    referenceData: sha256(referenceData),
   };
   if (checksums.schema !== expectedSchemaSha256) errors.push('baseline_expected_schema_checksum_mismatch');
   for (const [label, checksum] of Object.entries(checksums)) {
     if (checksum !== evidence.files?.[label]?.sha256) {
       errors.push(`baseline_evidence_checksum_mismatch:${label}`);
+    }
+    if (evidence.files?.[label]?.bytes !== Buffer.byteLength({
+      schema,
+      migrationHistorySchema: historySchema,
+      migrationHistoryData: historyData,
+      referenceData,
+    }[label])) {
+      errors.push(`baseline_evidence_bytes_mismatch:${label}`);
     }
   }
 }
