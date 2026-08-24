@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { createHash, X509Certificate } from 'node:crypto';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -248,6 +249,8 @@ const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
 const isolatedProductionRoleFixture = readFileSync('scripts/deploy/isolated-production-role-fixture.sql', 'utf8');
+const supabaseRootCaBytes = readFileSync('deploy/certificates/supabase-prod-ca-2021.crt');
+const supabaseRootCa = new X509Certificate(supabaseRootCaBytes);
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 function workflowJob(source, jobName, nextJobName = null) {
@@ -379,6 +382,15 @@ assert.match(baselineMigrationTrialWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--terminate-client-sessions/);
 assert.match(
   baselineReplayJob,
+  /NODE_EXTRA_CA_CERTS: \$\{\{ github\.workspace \}\}\/deploy\/certificates\/supabase-prod-ca-2021\.crt/,
+);
+assert.match(
+  baselineReplayJob,
+  /700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7[\s\S]{0,200}supabase-prod-ca-2021\.crt[\s\S]{0,200}sha256sum --check --strict/,
+);
+assert.doesNotMatch(baselineReplayJob, /NODE_TLS_REJECT_UNAUTHORIZED|rejectUnauthorized\s*:\s*false/);
+assert.match(
+  baselineReplayJob,
   /psql --dbname "\$TARGET_DB_URL" --single-transaction[\s\S]{0,500}--file \/trial\/cleanup\.sql[\s\S]{0,500}--file \/trial\/role-fixture\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-reference-data\.sql[\s\S]{0,500}--file \/trial\/storage-fixture\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-data\.sql/,
 );
 assert.match(
@@ -406,6 +418,17 @@ assert.match(isolatedProductionRoleFixture, /search_path = public, ml, api, audi
 assert.match(isolatedProductionRoleFixture, /grant connect on database postgres to stackr_recognition/);
 assert.match(isolatedProductionRoleFixture, /grant usage on schema extensions to stackr_recognition/);
 assert.doesNotMatch(isolatedProductionRoleFixture, /password/i);
+assert.equal(
+  createHash('sha256').update(supabaseRootCaBytes).digest('hex'),
+  '700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7',
+);
+assert.equal(supabaseRootCa.ca, true);
+assert.match(supabaseRootCa.subject, /O=Supabase Inc/);
+assert.equal(supabaseRootCa.subject, supabaseRootCa.issuer);
+assert.equal(
+  supabaseRootCa.fingerprint256.replaceAll(':', '').toLowerCase(),
+  '807025ad50d4ed219d2c9c7d299c004f824eb00cf7f65afef607d07b72e6cafa',
+);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_SECONDS: 90/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS: 420/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106/);

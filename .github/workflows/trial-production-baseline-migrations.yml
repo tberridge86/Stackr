@@ -116,6 +116,7 @@ jobs:
 
       - name: Commit canonical staging catalogue to isolated target
         env:
+          NODE_EXTRA_CA_CERTS: ${{ github.workspace }}/deploy/certificates/supabase-prod-ca-2021.crt
           STACKR_TRANSFER_MODE: commit
           STACKR_TRANSFER_CONFIRMATION: COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE
           STACKR_TRANSFER_TARGET_PROFILE: production-baseline-rehearsal
@@ -125,7 +126,13 @@ jobs:
           STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106
           STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn
           STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-baseline-trial/catalogue-transfer-evidence.json
-        run: node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            '700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7' \
+            'deploy/certificates/supabase-prod-ca-2021.crt' | sha256sum --check --strict
+          node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
 
       - name: Confirm full migration plan
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL" --include-all --dry-run
