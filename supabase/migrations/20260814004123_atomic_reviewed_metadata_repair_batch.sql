@@ -472,7 +472,9 @@ begin
     if not found
       or v_raw.source_id is distinct from p_source_id
       or v_raw.import_run_id is distinct from p_import_run_id
-      or v_raw.record_type is distinct from case when v_entity_table = 'sets' then 'set' else 'card' end
+      or v_raw.record_type is distinct from (
+        case when v_entity_table = 'sets' then 'set' else 'card' end
+      )
       or v_raw.provider_record_id is distinct from v_provider_record_id
       or v_raw.licence_status is distinct from 'approved'
       or v_raw.validation_status is distinct from 'valid'
