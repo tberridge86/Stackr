@@ -112,6 +112,7 @@ jobs:
         env:
           STACKR_TRANSFER_MODE: commit
           STACKR_TRANSFER_CONFIRMATION: COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE
+          STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 900000
           STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn
           STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-baseline-trial/catalogue-transfer-evidence.json
         run: node scripts/deploy/rehearse-staging-catalogue-transfer.mjs

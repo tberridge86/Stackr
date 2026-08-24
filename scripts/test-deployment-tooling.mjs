@@ -353,6 +353,7 @@ assert.doesNotMatch(baselineMigrationTrialWorkflow, /migration-count\.txt"\)" = 
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-baseline-trial"/);
 assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_MODE: commit/);
+assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 900000/);
 assert.match(baselineMigrationTrialWorkflow, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES:[^\n]*\bko\b/);
@@ -425,6 +426,8 @@ assert.match(catalogueTransferScript, /sharedStorageObjectDataInvariant/);
 assert.match(catalogueTransferScript, /staging_only_table_absent/);
 assert.match(catalogueTransferScript, /staging_projection_absent/);
 assert.match(catalogueTransferScript, /preCommitAcceptanceVerified/);
+assert.match(catalogueTransferScript, /invalid_transfer_statement_timeout/);
+assert.match(catalogueTransferScript, /set_config\('statement_timeout'/);
 assert.ok(
   catalogueTransferScript.indexOf('preCommitAcceptanceVerified = true')
     < catalogueTransferScript.indexOf("await target.query('commit')"),

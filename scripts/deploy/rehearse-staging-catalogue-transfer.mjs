@@ -12,6 +12,9 @@ const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL;
 const TARGET_DB_URL = process.env.STACKR_RESTORE_DB_URL;
 const EVIDENCE_PATH = process.env.STACKR_TRANSFER_EVIDENCE_PATH;
 const TRANSFER_MODE = process.env.STACKR_TRANSFER_MODE ?? 'rehearse';
+const TRANSFER_STATEMENT_TIMEOUT_MS = Number(
+  process.env.STACKR_TRANSFER_STATEMENT_TIMEOUT_MS ?? 900_000,
+);
 const TRANSFER_CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
 const CATALOGUE_RELEASE_LABEL = process.env.STACKR_CATALOGUE_RELEASE_LABEL ?? null;
 const REQUIRED_CATALOGUE_LANGUAGES = String(
@@ -139,6 +142,11 @@ try {
   throw new Error(`target_database_url_invalid:${error.message}`);
 }
 if (!['rehearse', 'commit', 'promote'].includes(TRANSFER_MODE)) throw new Error('invalid_transfer_mode');
+if (!Number.isInteger(TRANSFER_STATEMENT_TIMEOUT_MS)
+    || TRANSFER_STATEMENT_TIMEOUT_MS < 60_000
+    || TRANSFER_STATEMENT_TIMEOUT_MS > 1_200_000) {
+  throw new Error('invalid_transfer_statement_timeout');
+}
 if (TRANSFER_MODE !== 'promote' && TARGET_PROJECT_REF === PRODUCTION_PROJECT_REF) {
   throw new Error('production_target_prohibited');
 }
@@ -440,6 +448,10 @@ async function sharedStorageObjectDataInvariant(client, context) {
 async function connect(connectionString, applicationName) {
   const client = new Client({ connectionString, application_name: applicationName });
   await client.connect();
+  await client.query(
+    "select set_config('statement_timeout', $1, false)",
+    [String(TRANSFER_STATEMENT_TIMEOUT_MS)],
+  );
   return client;
 }
 
@@ -1089,6 +1101,7 @@ try {
     stagingMutationPerformed: false,
     isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
+    statementTimeoutMs: TRANSFER_STATEMENT_TIMEOUT_MS,
     preCommitAcceptanceVerified,
     transferPolicy: TRANSFER_MODE === 'promote'
       ? 'replace_allowlisted_production_catalogue_tables_with_verified_staging_release_rows'
