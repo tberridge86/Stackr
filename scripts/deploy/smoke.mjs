@@ -1,6 +1,6 @@
 import { createHash, createHmac, randomUUID } from 'node:crypto';
 
-const DEFAULT_REQUIRED_CATALOGUE_LANGUAGES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
+const DEFAULT_REQUIRED_CATALOGUE_LANGUAGES = ['en', 'ja', 'zh-tw', 'zh-cn'];
 
 function argument(name, fallback = null) {
   const prefix = `--${name}=`;

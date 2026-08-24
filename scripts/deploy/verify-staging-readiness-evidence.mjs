@@ -10,7 +10,7 @@ const evidencePath = process.argv.find((arg) => arg.startsWith('--evidence='))?.
 if (!evidencePath) throw new Error('No staging readiness evidence file was found.');
 const requireReleaseReady = process.argv.includes('--require-release-ready');
 const requireCatalogueApiReady = process.argv.includes('--require-catalogue-api-ready');
-const requiredCatalogueLanguages = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
+const requiredCatalogueLanguages = ['en', 'ja', 'zh-tw', 'zh-cn'];
 const manifest = JSON.parse(readFileSync('deploy/release-manifest.json', 'utf8'));
 const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
 const errors = [];

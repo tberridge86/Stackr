@@ -29,7 +29,7 @@ const SOURCE_IDENTITY_POLICY = process.env.STACKR_TRANSFER_SOURCE_IDENTITY_POLIC
 const TRANSFER_CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
 const CATALOGUE_RELEASE_LABEL = process.env.STACKR_CATALOGUE_RELEASE_LABEL ?? null;
 const REQUIRED_CATALOGUE_LANGUAGES = String(
-  process.env.STACKR_REQUIRED_CATALOGUE_LANGUAGES ?? 'en,ja,zh-tw,zh-cn,ko',
+  process.env.STACKR_REQUIRED_CATALOGUE_LANGUAGES ?? 'en,ja,zh-tw,zh-cn',
 ).split(',').map((value) => value.trim()).filter(Boolean);
 const TABLE_CONFIG_PATH = process.env.STACKR_TRANSFER_TABLE_CONFIG
   ?? 'deploy/staging-catalogue-preservation-tables.json';

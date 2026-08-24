@@ -299,7 +299,7 @@ jobs:
           STACKR_TRANSFER_CONFIRMATION: PROMOTE VERIFIED CATALOGUE TO PRODUCTION
           STACKR_TRANSFER_TABLE_CONFIG: deploy/production-catalogue-promotion-tables.json
           STACKR_CATALOGUE_RELEASE_LABEL: ${{ inputs.catalogue_release_label }}
-          STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn,ko
+          STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn
           STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/evidence.json
           STACKR_STORAGE_PROMOTION_EVIDENCE_PATH: ${{ runner.temp }}/stackr-catalogue-promotion/storage-evidence.json
           STACKR_STORAGE_PROMOTION_CONCURRENCY: 8

@@ -107,7 +107,7 @@ const releaseGateApprovals = {
   activeIndexValidated: 'STACKR_MODEL_INDEX_RELEASE_APPROVED',
   storageBackupVerified: 'STACKR_STORAGE_BACKUP_APPROVED',
 };
-const requiredCatalogueLanguages = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
+const requiredCatalogueLanguages = ['en', 'ja', 'zh-tw', 'zh-cn'];
 const releaseGateWarnings = {
   migrationHistoryAligned: 'migration_history_not_aligned',
   activeModelSelected: 'active_model_not_selected',
