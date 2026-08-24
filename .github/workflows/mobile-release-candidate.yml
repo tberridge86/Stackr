@@ -1,6 +1,9 @@
 name: Stackr Internal Android Release Candidate
 
 on:
+  push:
+    branches:
+      - codex/mobile-release-candidate-*
   workflow_dispatch:
 
 permissions:
