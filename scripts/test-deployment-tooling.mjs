@@ -389,9 +389,10 @@ assert.match(
   /700723581420dd1ac98fd7e9ac529f0ef210eadcaf87fc868a3ad7d114c2f3b7[\s\S]{0,200}supabase-prod-ca-2021\.crt[\s\S]{0,200}sha256sum --check --strict/,
 );
 assert.doesNotMatch(baselineReplayJob, /NODE_TLS_REJECT_UNAUTHORIZED|rejectUnauthorized\s*:\s*false/);
+assert.doesNotMatch(baselineReplayJob, /psql --dbname "\$TARGET_DB_URL" --single-transaction/);
 assert.match(
   baselineReplayJob,
-  /psql --dbname "\$TARGET_DB_URL" --single-transaction[\s\S]{0,500}--file \/trial\/cleanup\.sql[\s\S]{0,500}--file \/trial\/role-fixture\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-reference-data\.sql[\s\S]{0,500}--file \/trial\/storage-fixture\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-data\.sql/,
+  /psql --dbname "\$TARGET_DB_URL"[\s\S]*--command "begin"[\s\S]*--file \/trial\/cleanup\.sql[\s\S]*--command "commit"[\s\S]*--command "begin"[\s\S]*--file \/trial\/role-fixture\.sql[\s\S]*--file \/trial\/artifact\/production-schema\.sql[\s\S]*--file \/trial\/artifact\/production-reference-data\.sql[\s\S]*--file \/trial\/storage-fixture\.sql[\s\S]*--file \/trial\/artifact\/migration-history-schema\.sql[\s\S]*--file \/trial\/artifact\/migration-history-data\.sql[\s\S]*--command "select 1 \/ \(\(count\(\*\) = 106\)::integer\) from supabase_migrations\.schema_migrations"[\s\S]*--command "commit"/,
 );
 assert.match(
   baselineReplayJob,

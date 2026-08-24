@@ -102,16 +102,20 @@ jobs:
             --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
             "$POSTGRES_IMAGE" \
             sh -ceu '
-              psql --dbname "$TARGET_DB_URL" --single-transaction \
+              psql --dbname "$TARGET_DB_URL" \
                 --variable ON_ERROR_STOP=1 \
+                --command "begin" \
                 --file /trial/cleanup.sql \
+                --command "commit" \
+                --command "begin" \
                 --file /trial/role-fixture.sql \
                 --file /trial/artifact/production-schema.sql \
                 --file /trial/artifact/production-reference-data.sql \
                 --file /trial/storage-fixture.sql \
                 --file /trial/artifact/migration-history-schema.sql \
                 --file /trial/artifact/migration-history-data.sql \
-                --command "select 1 / ((count(*) = 106)::integer) from supabase_migrations.schema_migrations"
+                --command "select 1 / ((count(*) = 106)::integer) from supabase_migrations.schema_migrations" \
+                --command "commit"
             '
 
       - name: Commit canonical staging catalogue to isolated target
