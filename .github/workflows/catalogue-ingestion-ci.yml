@@ -314,7 +314,8 @@ jobs:
           python scripts/build-incremental-recognition-index-staging.py \
             --phase=preflight \
             --evidence="$output_dir/incremental-index-preflight.json" \
-            --source-index-id="$SOURCE_RECOGNITION_INDEX_ID"
+            --source-index-id="$SOURCE_RECOGNITION_INDEX_ID" \
+            --page-size=500
       - name: Commit independently validated eBay references to staging
         if: inputs.operation == 'ebay_promote'
         shell: bash
@@ -351,6 +352,7 @@ jobs:
             --model-checkpoint="$model_dir/dinov2_vits14_pretrain.pth" \
             --model-sha256="$DINOV2_CHECKPOINT_SHA256" \
             --device=cpu \
+            --page-size=500 \
             --copy-batch-size=2000 \
             --embedding-batch-size=24
       - name: Recover and verify the validated inactive index evidence
@@ -372,7 +374,8 @@ jobs:
             --evidence="$output_dir/incremental-index-evidence.json" \
             --source-index-id="$SOURCE_RECOGNITION_INDEX_ID" \
             --candidate-index-id="$CANDIDATE_RECOGNITION_INDEX_ID" \
-            --model-sha256="$DINOV2_CHECKPOINT_SHA256"
+            --model-sha256="$DINOV2_CHECKPOINT_SHA256" \
+            --page-size=500
       - name: Benchmark the inactive index with independent held-out listing images
         if: inputs.operation == 'ebay_index_benchmark'
         shell: bash
