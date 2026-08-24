@@ -24,9 +24,9 @@ jobs:
     environment: staging
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-      SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_RESTORE_DB_URL }}
+      SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_REHEARSAL_DB_URL }}
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
-      SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
+      SUPABASE_RESTORE_PROJECT_REF: isfybjkwvcuqpqtmkujo
       SUPABASE_STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
       BASELINE_ARTIFACT_ID: '9510107077'
@@ -124,7 +124,11 @@ jobs:
         env:
           STACKR_TRANSFER_MODE: commit
           STACKR_TRANSFER_CONFIRMATION: COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE
+          STACKR_TRANSFER_TARGET_PROFILE: production-baseline-rehearsal
           STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 900000
+          STACKR_TRANSFER_TARGET_STABILITY_SECONDS: 90
+          STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS: 420
+          STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106
           STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn
           STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-baseline-trial/catalogue-transfer-evidence.json
         run: node scripts/deploy/rehearse-staging-catalogue-transfer.mjs

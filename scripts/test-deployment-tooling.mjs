@@ -249,6 +249,29 @@ const productionBaselineWorkflow = readFileSync('.github/workflows/capture-produ
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
+function workflowJob(source, jobName, nextJobName = null) {
+  const start = source.indexOf(`  ${jobName}:`);
+  assert.notEqual(start, -1, `workflow job ${jobName} must exist`);
+  const end = nextJobName === null
+    ? source.length
+    : source.indexOf(`  ${nextJobName}:`, start + 1);
+  assert.notEqual(end, -1, `workflow job ${nextJobName} must exist after ${jobName}`);
+  return source.slice(start, end);
+}
+const baselineReplayJob = workflowJob(
+  baselineMigrationTrialWorkflow,
+  'replay',
+  'catalogue-transfer',
+);
+const baselineCatalogueTransferJob = workflowJob(
+  baselineMigrationTrialWorkflow,
+  'catalogue-transfer',
+  'rebuild-staging',
+);
+const baselineRebuildStagingJob = workflowJob(
+  baselineMigrationTrialWorkflow,
+  'rebuild-staging',
+);
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
   assert.doesNotMatch(workflow, /uses:\s+actions\/(?:checkout|setup-node|setup-python)@v\d/, `${workflowName} must pin first-party actions`);
@@ -330,8 +353,20 @@ assert.match(productionBaselineWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-producti
 assert.doesNotMatch(productionBaselineWorkflow, /db push|migration repair|psql|SUPABASE_ACCESS_TOKEN/);
 assert.doesNotMatch(productionBaselineWorkflow, /upload-artifact@v\d/);
 assert.match(baselineMigrationTrialWorkflow, /environment: staging/);
-assert.match(baselineMigrationTrialWorkflow, /secrets\.SUPABASE_RESTORE_DB_URL/);
-assert.match(baselineMigrationTrialWorkflow, /krjttpmthxkfsbqksxci/);
+assert.match(baselineReplayJob, /secrets\.SUPABASE_PRODUCTION_REHEARSAL_DB_URL/);
+assert.doesNotMatch(baselineReplayJob, /secrets\.SUPABASE_RESTORE_DB_URL/);
+assert.match(baselineReplayJob, /SUPABASE_RESTORE_PROJECT_REF: isfybjkwvcuqpqtmkujo/);
+assert.match(baselineReplayJob, /STACKR_TRANSFER_TARGET_PROFILE: production-baseline-rehearsal/);
+for (const stagingPreservationJob of [
+  baselineCatalogueTransferJob,
+  baselineRebuildStagingJob,
+]) {
+  assert.match(stagingPreservationJob, /secrets\.SUPABASE_RESTORE_DB_URL/);
+  assert.match(stagingPreservationJob, /SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci/);
+  assert.doesNotMatch(stagingPreservationJob, /SUPABASE_PRODUCTION_REHEARSAL_DB_URL/);
+  assert.doesNotMatch(stagingPreservationJob, /isfybjkwvcuqpqtmkujo/);
+  assert.doesNotMatch(stagingPreservationJob, /STACKR_TRANSFER_TARGET_PROFILE/);
+}
 assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
 assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
@@ -341,6 +376,9 @@ assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--terminate-client-sessions/);
+assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_SECONDS: 90/);
+assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS: 420/);
+assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106/);
 assert.match(baselineMigrationTrialWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--file \/trial\/artifact\/production-reference-data\.sql/);
@@ -422,6 +460,8 @@ assert.match(catalogueTransferScript, /targetRollbackVerified/);
 assert.match(catalogueTransferScript, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
 assert.match(catalogueTransferScript, /committed_transfer_source_not_canonical_staging/);
 assert.match(catalogueTransferScript, /committed_transfer_target_not_isolated_candidate/);
+assert.match(catalogueTransferScript, /committed_transfer_target_profile_invalid/);
+assert.match(catalogueTransferScript, /production-baseline-rehearsal': 'isfybjkwvcuqpqtmkujo'/);
 assert.match(catalogueTransferScript, /committed_transfer_production_guard_mismatch/);
 assert.match(catalogueTransferScript, /targetCommitVerified/);
 assert.match(catalogueTransferScript, /adoptedMigrationVersions/);
@@ -438,6 +478,8 @@ assert.match(catalogueTransferScript, /sharedStorageObjectDataInvariant/);
 assert.match(catalogueTransferScript, /staging_only_table_absent/);
 assert.match(catalogueTransferScript, /staging_projection_absent/);
 assert.match(catalogueTransferScript, /preCommitAcceptanceVerified/);
+assert.match(catalogueTransferScript, /target_schema_stability_timeout/);
+assert.match(catalogueTransferScript, /targetSchemaStability = await waitForTargetSchemaStability/);
 assert.match(catalogueTransferScript, /invalid_transfer_statement_timeout/);
 assert.match(catalogueTransferScript, /set_config\('statement_timeout'/);
 assert.ok(

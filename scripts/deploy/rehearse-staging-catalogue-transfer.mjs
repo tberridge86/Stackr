@@ -15,7 +15,18 @@ const TRANSFER_MODE = process.env.STACKR_TRANSFER_MODE ?? 'rehearse';
 const TRANSFER_STATEMENT_TIMEOUT_MS = Number(
   process.env.STACKR_TRANSFER_STATEMENT_TIMEOUT_MS ?? 900_000,
 );
+const TARGET_SCHEMA_STABILITY_SECONDS = Number(
+  process.env.STACKR_TRANSFER_TARGET_STABILITY_SECONDS ?? 0,
+);
+const TARGET_SCHEMA_STABILITY_MAX_WAIT_SECONDS = Number(
+  process.env.STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS ?? 300,
+);
+const TARGET_MINIMUM_MIGRATION_COUNT = Number(
+  process.env.STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT ?? 0,
+);
 const TRANSFER_CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
+const TRANSFER_TARGET_PROFILE = process.env.STACKR_TRANSFER_TARGET_PROFILE
+  ?? 'staging-preservation';
 const CATALOGUE_RELEASE_LABEL = process.env.STACKR_CATALOGUE_RELEASE_LABEL ?? null;
 const REQUIRED_CATALOGUE_LANGUAGES = String(
   process.env.STACKR_REQUIRED_CATALOGUE_LANGUAGES ?? 'en,ja,zh-tw,zh-cn',
@@ -147,6 +158,21 @@ if (!Number.isInteger(TRANSFER_STATEMENT_TIMEOUT_MS)
     || TRANSFER_STATEMENT_TIMEOUT_MS > 1_200_000) {
   throw new Error('invalid_transfer_statement_timeout');
 }
+if (!Number.isInteger(TARGET_SCHEMA_STABILITY_SECONDS)
+    || TARGET_SCHEMA_STABILITY_SECONDS < 0
+    || TARGET_SCHEMA_STABILITY_SECONDS > 300) {
+  throw new Error('invalid_target_schema_stability_seconds');
+}
+if (!Number.isInteger(TARGET_SCHEMA_STABILITY_MAX_WAIT_SECONDS)
+    || TARGET_SCHEMA_STABILITY_MAX_WAIT_SECONDS < TARGET_SCHEMA_STABILITY_SECONDS
+    || TARGET_SCHEMA_STABILITY_MAX_WAIT_SECONDS > 900) {
+  throw new Error('invalid_target_schema_stability_max_wait_seconds');
+}
+if (!Number.isInteger(TARGET_MINIMUM_MIGRATION_COUNT)
+    || TARGET_MINIMUM_MIGRATION_COUNT < 0
+    || TARGET_MINIMUM_MIGRATION_COUNT > 10_000) {
+  throw new Error('invalid_target_minimum_migration_count');
+}
 if (TRANSFER_MODE !== 'promote' && TARGET_PROJECT_REF === PRODUCTION_PROJECT_REF) {
   throw new Error('production_target_prohibited');
 }
@@ -157,7 +183,14 @@ if (TRANSFER_MODE === 'commit') {
   if (SOURCE_PROJECT_REF !== 'lmwfhvexfcoyeuoyrlco') {
     throw new Error('committed_transfer_source_not_canonical_staging');
   }
-  if (TARGET_PROJECT_REF !== 'krjttpmthxkfsbqksxci') {
+  const expectedCommitTarget = {
+    'staging-preservation': 'krjttpmthxkfsbqksxci',
+    'production-baseline-rehearsal': 'isfybjkwvcuqpqtmkujo',
+  }[TRANSFER_TARGET_PROFILE];
+  if (!expectedCommitTarget) {
+    throw new Error('committed_transfer_target_profile_invalid');
+  }
+  if (TARGET_PROJECT_REF !== expectedCommitTarget) {
     throw new Error('committed_transfer_target_not_isolated_candidate');
   }
   if (PRODUCTION_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu') {
@@ -234,6 +267,176 @@ function digestRows(rows) {
   const hash = createHash('sha256');
   for (const row of rows) hash.update(stableJson(row)).update('\n');
   return hash.digest('hex');
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function targetSchemaState(client, configuredTables) {
+  const requestedTables = [
+    ...configuredTables,
+    'supabase_migrations.schema_migrations',
+  ];
+  const rows = (await client.query(`
+    with requested(table_name) as (
+      select unnest($1::text[])
+    )
+    select
+      requested.table_name,
+      relation.oid::text as relation_oid,
+      relation.relfilenode::text as relation_file_node,
+      relation.relnatts::integer as relation_attribute_count,
+      relation.relchecks::integer as relation_check_count,
+      case when requested.table_name = 'supabase_migrations.schema_migrations'
+        then (select count(*)::integer from supabase_migrations.schema_migrations)
+        else null
+      end as migration_row_count,
+      coalesce((
+        select md5(string_agg(
+          attribute.attnum::text || ':'
+            || attribute.attname || ':'
+            || attribute.atttypid::text || ':'
+            || attribute.atttypmod::text || ':'
+            || attribute.attnotnull::text || ':'
+            || coalesce(pg_get_expr(default_value.adbin, default_value.adrelid), ''),
+          E'\\n' order by attribute.attnum
+        ))
+        from pg_attribute attribute
+        left join pg_attrdef default_value
+          on default_value.adrelid = attribute.attrelid
+         and default_value.adnum = attribute.attnum
+        where attribute.attrelid = relation.oid
+          and attribute.attnum > 0
+          and not attribute.attisdropped
+      ), '') as column_fingerprint,
+      coalesce((
+        select md5(string_agg(
+          pg_get_indexdef(index_entry.indexrelid),
+          E'\\n' order by index_entry.indexrelid
+        ))
+        from pg_index index_entry
+        where index_entry.indrelid = relation.oid
+      ), '') as index_fingerprint,
+      coalesce((
+        select md5(string_agg(
+          pg_get_constraintdef(constraint_entry.oid, true),
+          E'\\n' order by constraint_entry.oid
+        ))
+        from pg_constraint constraint_entry
+        where constraint_entry.conrelid = relation.oid
+      ), '') as constraint_fingerprint,
+      (
+        select count(*)::integer
+        from pg_stat_activity activity
+        where activity.datname = current_database()
+          and activity.pid <> pg_backend_pid()
+          and activity.state = 'active'
+          and activity.query ~* '^[[:space:]]*(create|alter|drop|truncate|reindex|cluster)[[:space:]]'
+      ) as active_ddl_count
+    from requested
+    left join pg_namespace namespace
+      on namespace.nspname = split_part(requested.table_name, '.', 1)
+    left join pg_class relation
+      on relation.relnamespace = namespace.oid
+     and relation.relname = split_part(requested.table_name, '.', 2)
+     and relation.relkind in ('r', 'p')
+    order by requested.table_name
+  `, [requestedTables])).rows;
+  const activeDdlCount = Number(rows[0]?.active_ddl_count ?? 0);
+  const migrationRow = rows.find((row) => (
+    row.table_name === 'supabase_migrations.schema_migrations'
+  ));
+  const fingerprintRows = rows.map(({ active_ddl_count: _activeDdlCount, ...row }) => row);
+  return {
+    ready: rows.length === requestedTables.length
+      && rows.every((row) => row.relation_oid !== null)
+      && Number(migrationRow?.migration_row_count ?? -1) >= TARGET_MINIMUM_MIGRATION_COUNT,
+    missingTables: rows
+      .filter((row) => row.relation_oid === null)
+      .map((row) => row.table_name),
+    migrationRowCount: Number(migrationRow?.migration_row_count ?? -1),
+    activeDdlCount,
+    fingerprint: digestRows(fingerprintRows),
+  };
+}
+
+async function waitForTargetSchemaStability(client, configuredTables) {
+  if (TARGET_SCHEMA_STABILITY_SECONDS === 0) {
+    return {
+      requiredStableSeconds: 0,
+      observedStableSeconds: 0,
+      samples: 0,
+      fingerprint: null,
+    };
+  }
+
+  const deadline = Date.now() + (TARGET_SCHEMA_STABILITY_MAX_WAIT_SECONDS * 1_000);
+  let stableSince = null;
+  let lastFingerprint = null;
+  let samples = 0;
+  while (Date.now() <= deadline) {
+    let state;
+    try {
+      state = await targetSchemaState(client, configuredTables);
+    } catch (error) {
+      if (!['42P01', '42704', '55000', 'XX000'].includes(error?.code)) throw error;
+      stableSince = null;
+      lastFingerprint = null;
+      samples += 1;
+      process.stdout.write(`${JSON.stringify({
+        phase: 'target_schema_stability',
+        sample: samples,
+        ready: false,
+        activeDdlCount: null,
+        missingTableCount: null,
+        transientSchemaReadFailure: true,
+        observedStableSeconds: 0,
+        requiredStableSeconds: TARGET_SCHEMA_STABILITY_SECONDS,
+      })}\n`);
+      await wait(15_000);
+      continue;
+    }
+    samples += 1;
+    if (state.ready && state.activeDdlCount === 0) {
+      if (state.fingerprint !== lastFingerprint) stableSince = Date.now();
+      lastFingerprint = state.fingerprint;
+      const observedStableSeconds = Math.floor((Date.now() - stableSince) / 1_000);
+      process.stdout.write(`${JSON.stringify({
+        phase: 'target_schema_stability',
+        sample: samples,
+        ready: true,
+        activeDdlCount: 0,
+        migrationRowCount: state.migrationRowCount,
+        observedStableSeconds,
+        requiredStableSeconds: TARGET_SCHEMA_STABILITY_SECONDS,
+      })}\n`);
+      if (observedStableSeconds >= TARGET_SCHEMA_STABILITY_SECONDS) {
+        return {
+          requiredStableSeconds: TARGET_SCHEMA_STABILITY_SECONDS,
+          observedStableSeconds,
+          samples,
+          fingerprint: state.fingerprint,
+        };
+      }
+    } else {
+      stableSince = null;
+      lastFingerprint = null;
+      process.stdout.write(`${JSON.stringify({
+        phase: 'target_schema_stability',
+        sample: samples,
+        ready: state.ready,
+        activeDdlCount: state.activeDdlCount,
+        missingTableCount: state.missingTables.length,
+        migrationRowCount: state.migrationRowCount,
+        minimumMigrationCount: TARGET_MINIMUM_MIGRATION_COUNT,
+        observedStableSeconds: 0,
+        requiredStableSeconds: TARGET_SCHEMA_STABILITY_SECONDS,
+      })}\n`);
+    }
+    await wait(15_000);
+  }
+  throw new Error('target_schema_stability_timeout');
 }
 
 function adoptedMigrationVersions() {
@@ -756,8 +959,10 @@ let targetReleaseVersions = [];
 let productionAssetUrlRewriteCount = 0;
 let productionAssetUrlRewriteAt = null;
 let preCommitAcceptanceVerified = false;
+let targetSchemaStability = null;
 
 try {
+  targetSchemaStability = await waitForTargetSchemaStability(target, tableConfig.tables);
   await source.query('begin transaction isolation level repeatable read read only');
   sourceTransactionOpen = true;
   await target.query('begin transaction isolation level repeatable read');
@@ -1102,6 +1307,7 @@ try {
     isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
     statementTimeoutMs: TRANSFER_STATEMENT_TIMEOUT_MS,
+    targetSchemaStability,
     preCommitAcceptanceVerified,
     transferPolicy: TRANSFER_MODE === 'promote'
       ? 'replace_allowlisted_production_catalogue_tables_with_verified_staging_release_rows'
