@@ -43,7 +43,7 @@ on:
         required: false
         type: string
       catalogue_release_label:
-        description: Shared five-language staging catalogue release label
+        description: Shared four-language staging catalogue release label
         required: false
         type: string
       index_version_id:
