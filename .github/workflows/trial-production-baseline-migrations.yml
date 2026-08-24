@@ -27,9 +27,9 @@ jobs:
       SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
       SUPABASE_STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
-      BASELINE_ARTIFACT_ID: '9038517225'
-      BASELINE_ARCHIVE_SHA256: 7cab24b9e78a921c1ff3bfde582a3ba7ae8466c5bc1d2a30d08044c9c06ba01d
-      BASELINE_SCHEMA_SHA256: 01a74817c0a3df96f1d44622877f358f6372a837aea521ff53de2511adbd0aee
+      BASELINE_ARTIFACT_ID: '9508660722'
+      BASELINE_ARCHIVE_SHA256: 032d5ac07fcaad4d599b8219108b1d0fe289869b3ab04cdefe8d81e878cad9b6
+      BASELINE_SCHEMA_SHA256: a15a08d1b82122fa19d5ad3bfd3a710ba19d23b7ea39ac52ffe757677664b09d
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -76,8 +76,8 @@ jobs:
           node scripts/deploy/verify-production-schema-baseline.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact" \
             --expected-schema-sha256="$BASELINE_SCHEMA_SHA256" \
-            --expected-history-version=20260802160643 \
-            --expected-history-name=production_critical_rls_storage_containment_20260802
+            --expected-history-version=20260813135412 \
+            --expected-history-name=premium_seller_access_boundary
           node scripts/deploy/secret-scan.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact"
 
