@@ -252,10 +252,17 @@ const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml'
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
   assert.doesNotMatch(workflow, /uses:\s+actions\/(?:checkout|setup-node|setup-python)@v\d/, `${workflowName} must pin first-party actions`);
+  assert.doesNotMatch(
+    workflow,
+    /case "\$SUPABASE[^\n]*DB_URL"[\s\S]{0,160}\$SUPABASE[^\n]*PROJECT_REF/,
+    `${workflowName} must use parsed Supabase endpoint validation instead of substring matching`,
+  );
 }
 assert.match(stagingWorkflow, /backups list/);
+assert.match(stagingWorkflow, /prepare-primary-postgres-url\.mjs/);
 assert.match(stagingWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --dry-run/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all --dry-run/);
+assert.match(productionWorkflow, /prepare-primary-postgres-url\.mjs/);
 assert.match(productionWorkflow, /db push --db-url "\$SUPABASE_DB_URL" --include-all/);
 assert.match(productionWorkflow, /benchmark-public-api\.mjs/);
 assert.match(productionWorkflow, /--catalogue-p95-ms=150/);
@@ -290,8 +297,6 @@ assert.doesNotMatch(recoveryWorkflow, /github\.event\.head_commit/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_PROJECT_REF/);
 assert.match(recoveryWorkflow, /krjttpmthxkfsbqksxci/);
-assert.match(recoveryWorkflow, /source_database_url_project_mismatch/);
-assert.match(recoveryWorkflow, /restore_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(recoveryWorkflow, /sanitize-supabase-role-dump\.mjs/);
 assert.match(recoveryWorkflow, /prepare-restore-cleanup\.mjs/);
@@ -335,6 +340,7 @@ assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'APPROVE D
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-postgres-urls\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /--terminate-client-sessions/);
 assert.match(baselineMigrationTrialWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--file \/trial\/artifact\/production-reference-data\.sql/);
@@ -476,22 +482,48 @@ for (const provenanceTable of [
 }
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
+const testProjectRef = 'abcdefghijklmnopqrst';
+const alternateProjectRef = 'bcdefghijklmnopqrstu';
 const rawPasswordUrl = normalizePostgresUrl(
-  'postgresql://postgres.exampleproject:p=a@#ss%word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
-  'exampleproject',
+  `postgresql://postgres.${testProjectRef}:p=a@#ss%word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`,
+  testProjectRef,
 );
 assert.equal(
   rawPasswordUrl.normalized,
-  'postgresql://postgres.exampleproject:p%3Da%40%23ss%25word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+  `postgresql://postgres.${testProjectRef}:p%3Da%40%23ss%25word@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`,
 );
+assert.equal(rawPasswordUrl.endpointKind, 'shared_session_pooler');
 assert.equal(
-  normalizePostgresUrl(rawPasswordUrl.normalized, 'exampleproject').normalized,
+  normalizePostgresUrl(rawPasswordUrl.normalized, testProjectRef).normalized,
   rawPasswordUrl.normalized,
   'normalising an encoded URL must be idempotent',
 );
+const directDatabaseUrl = normalizePostgresUrl(
+  `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/postgres?sslmode=require`,
+  testProjectRef,
+);
+assert.equal(directDatabaseUrl.endpointKind, 'direct');
 assert.throws(
-  () => normalizePostgresUrl(rawPasswordUrl.normalized, 'anotherproject'),
-  /database_url_project_mismatch/,
+  () => normalizePostgresUrl(rawPasswordUrl.normalized, alternateProjectRef),
+  /database_url_project_endpoint_mismatch/,
+);
+for (const rejectedUrl of [
+  `postgresql://postgres.${testProjectRef}:password@db.${alternateProjectRef}.supabase.co:5432/postgres`,
+  `postgresql://postgres.${alternateProjectRef}:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`,
+  `postgresql://postgres.${testProjectRef}:password@anything.supabase.com:5432/postgres`,
+  `postgresql://postgres.${testProjectRef}:password@aws-0-eu-west-1.pooler.supabase.com:6543/postgres`,
+  `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/not-postgres`,
+  `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/postgres?user=postgres.${testProjectRef}`,
+  `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/postgres#fragment`,
+]) {
+  assert.throws(() => normalizePostgresUrl(rejectedUrl, testProjectRef));
+}
+assert.throws(
+  () => normalizePostgresUrl(
+    `postgresql://postgres.${testProjectRef}:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`,
+    'shortref',
+  ),
+  /invalid_project_ref/,
 );
 
 const baselineUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-baseline-url-test-'));
@@ -499,8 +531,8 @@ try {
   const baselineEnvironmentPath = path.join(baselineUrlTemp, 'github.env');
   const { prepareProductionBaselineUrl } = await import('./deploy/prepare-production-baseline-url.mjs');
   const preparedBaseline = prepareProductionBaselineUrl({
-    connectionString: 'postgresql://postgres.productionref:p=a@#ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
-    projectRef: 'productionref',
+    connectionString: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:p=a@#ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    projectRef: 'oakdbbzdqwurpjnoqhmu',
     environmentPath: baselineEnvironmentPath,
   });
   assert.equal(
@@ -511,15 +543,33 @@ try {
   rmSync(baselineUrlTemp, { recursive: true, force: true });
 }
 
+const primaryUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-primary-url-test-'));
+try {
+  const primaryEnvironmentPath = path.join(primaryUrlTemp, 'github.env');
+  const { preparePrimaryPostgresUrl } = await import('./deploy/prepare-primary-postgres-url.mjs');
+  const preparedPrimary = preparePrimaryPostgresUrl({
+    connectionString: 'postgresql://postgres:password@db.oakdbbzdqwurpjnoqhmu.supabase.co:5432/postgres',
+    projectRef: 'oakdbbzdqwurpjnoqhmu',
+    environmentPath: primaryEnvironmentPath,
+  });
+  assert.equal(preparedPrimary.endpointKind, 'direct');
+  assert.equal(
+    readFileSync(primaryEnvironmentPath, 'utf8'),
+    `SUPABASE_DB_URL=${preparedPrimary.normalized}\n`,
+  );
+} finally {
+  rmSync(primaryUrlTemp, { recursive: true, force: true });
+}
+
 const reconciliationUrlTemp = mkdtempSync(path.join(tmpdir(), 'stackr-reconciliation-url-test-'));
 try {
   const reconciliationEnvironmentPath = path.join(reconciliationUrlTemp, 'github.env');
   const { prepareIsolatedReconciliationUrl } = await import('./deploy/prepare-isolated-reconciliation-url.mjs');
   const preparedReconciliation = prepareIsolatedReconciliationUrl({
-    connectionString: 'postgresql://postgres.restoreref:p=a@#ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
-    projectRef: 'restoreref',
-    productionProjectRef: 'productionref',
-    stagingProjectRef: 'stagingref',
+    connectionString: 'postgresql://postgres.krjttpmthxkfsbqksxci:p=a@#ss@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+    projectRef: 'krjttpmthxkfsbqksxci',
+    productionProjectRef: 'oakdbbzdqwurpjnoqhmu',
+    stagingProjectRef: 'lmwfhvexfcoyeuoyrlco',
     environmentPath: reconciliationEnvironmentPath,
   });
   assert.equal(
@@ -528,10 +578,10 @@ try {
   );
   assert.throws(
     () => prepareIsolatedReconciliationUrl({
-      connectionString: 'postgresql://postgres.productionref:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
-      projectRef: 'productionref',
-      productionProjectRef: 'productionref',
-      stagingProjectRef: 'stagingref',
+      connectionString: 'postgresql://postgres.oakdbbzdqwurpjnoqhmu:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres',
+      projectRef: 'oakdbbzdqwurpjnoqhmu',
+      productionProjectRef: 'oakdbbzdqwurpjnoqhmu',
+      stagingProjectRef: 'lmwfhvexfcoyeuoyrlco',
       environmentPath: reconciliationEnvironmentPath,
     }),
     /reconciliation_target_not_isolated/,
@@ -633,7 +683,11 @@ assert.equal(
   'sanitising a role dump must be idempotent',
 );
 
-const { buildRestoreCleanupSql, buildRestoreCleanupSqlFromFile } = await import('./deploy/prepare-restore-cleanup.mjs');
+const {
+  buildRestoreCleanupSql,
+  buildRestoreCleanupSqlFromFile,
+  buildRestoreCleanupSqlWithRoles,
+} = await import('./deploy/prepare-restore-cleanup.mjs');
 const cleanup = buildRestoreCleanupSql([
   'COPY "public"."cards" ("id") FROM stdin;',
   'COPY "catalog"."sets" ("id") FROM stdin;',
@@ -650,6 +704,11 @@ assert.match(cleanup.sql, /CREATE SCHEMA "public" AUTHORIZATION "postgres";/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "storage"\."buckets" CASCADE;/);
 assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "public"\."cards"/);
+const isolatedCleanup = buildRestoreCleanupSqlWithRoles('', '', {
+  terminateClientSessions: true,
+});
+assert.match(isolatedCleanup.sql, /SELECT pg_terminate_backend\(pid\)/);
+assert.equal(isolatedCleanup.terminateClientSessions, true);
 const streamingCleanupRoot = mkdtempSync(path.join(tmpdir(), 'stackr-restore-cleanup-'));
 try {
   const streamingDumpPath = path.join(streamingCleanupRoot, 'data.sql');

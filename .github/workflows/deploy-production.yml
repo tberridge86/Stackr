@@ -141,6 +141,10 @@ jobs:
           npm ci --prefix backend
           npm ci --prefix gateway
 
+      - name: Prepare protected production database URL
+        if: inputs.release_scope != 'mobile_only'
+        run: node scripts/deploy/prepare-primary-postgres-url.mjs
+
       - name: Re-run release-critical checks
         run: |
           npm run lint

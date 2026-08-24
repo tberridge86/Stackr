@@ -73,6 +73,9 @@ jobs:
           npm ci --prefix backend
           npm ci --prefix gateway
 
+      - name: Prepare protected staging database URL
+        run: node scripts/deploy/prepare-primary-postgres-url.mjs
+
       - name: Verify repository structure
         run: npm run deploy:preflight
 

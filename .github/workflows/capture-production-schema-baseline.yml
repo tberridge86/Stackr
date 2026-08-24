@@ -37,10 +37,6 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$SUPABASE_PRODUCTION_DB_URL"
-          case "$SUPABASE_PRODUCTION_DB_URL" in
-            *"$SUPABASE_PRODUCTION_PROJECT_REF"*) ;;
-            *) echo '::error::production_database_url_project_mismatch'; exit 1 ;;
-          esac
           node scripts/deploy/prepare-production-baseline-url.mjs
 
       - name: Capture schema and non-customer catalogue reference baseline

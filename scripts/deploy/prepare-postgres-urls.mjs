@@ -11,8 +11,12 @@ function encodeComponent(value) {
 
 export function normalizePostgresUrl(value, expectedProjectRef) {
   const connectionString = String(value ?? '').trim();
+  const projectRef = String(expectedProjectRef ?? '').trim();
   if (!connectionString || /[\r\n]/.test(connectionString)) {
     throw new Error('invalid_database_url');
+  }
+  if (!/^[a-z0-9]{20}$/.test(projectRef)) {
+    throw new Error('invalid_project_ref');
   }
 
   const schemeMatch = connectionString.match(/^(postgres(?:ql)?):\/\/(.+)$/i);
@@ -31,16 +35,39 @@ export function normalizePostgresUrl(value, expectedProjectRef) {
   const password = encodeComponent(credentials.slice(passwordStart + 1));
   const normalized = `${schemeMatch[1].toLowerCase()}://${username}:${password}@${server}`;
   const parsed = new URL(normalized);
+  const decodedUsername = decodeURIComponent(parsed.username);
+  const decodedPassword = decodeURIComponent(parsed.password);
+  const hostname = parsed.hostname.toLowerCase();
+  const directHost = `db.${projectRef}.supabase.co`;
+  const sharedPoolerHost = /^aws-[a-z0-9-]+\.pooler\.supabase\.com$/.test(hostname);
+  const isDirect = hostname === directHost
+    && decodedUsername === 'postgres'
+    && parsed.port === '5432';
+  const isSharedSessionPooler = sharedPoolerHost
+    && decodedUsername === `postgres.${projectRef}`
+    && parsed.port === '5432';
 
-  if (!decodeURIComponent(parsed.username).includes(expectedProjectRef)) {
-    throw new Error('database_url_project_mismatch');
+  if (!password || !decodedPassword || /[\u0000-\u001f\u007f]/.test(decodedPassword)) {
+    throw new Error('database_url_password_invalid');
   }
-  if (!parsed.hostname.endsWith('.supabase.com')) {
-    throw new Error('database_url_host_mismatch');
+  if (parsed.pathname !== '/postgres') throw new Error('database_url_name_mismatch');
+  if (parsed.hash) throw new Error('database_url_fragment_prohibited');
+  const queryEntries = [...parsed.searchParams.entries()];
+  if (queryEntries.length > 1
+      || (queryEntries.length === 1
+        && (queryEntries[0][0] !== 'sslmode'
+          || !['require', 'verify-ca', 'verify-full'].includes(queryEntries[0][1])))) {
+    throw new Error('database_url_query_prohibited');
   }
-  if (!password) throw new Error('database_url_password_missing');
+  if (!isDirect && !isSharedSessionPooler) {
+    throw new Error('database_url_project_endpoint_mismatch');
+  }
 
-  return { normalized, encodedPassword: password };
+  return {
+    normalized: parsed.toString(),
+    encodedPassword: password,
+    endpointKind: isDirect ? 'direct' : 'shared_session_pooler',
+  };
 }
 
 function writeGitHubEnvironment(name, value) {

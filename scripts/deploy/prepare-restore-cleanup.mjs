@@ -31,13 +31,26 @@ export function applicationRolesFromDump(roleDump) {
   return [...roles].sort();
 }
 
-function buildRestoreCleanupSqlForTables(internalTables, roleDump) {
+function buildRestoreCleanupSqlForTables(
+  internalTables,
+  roleDump,
+  { terminateClientSessions = false } = {},
+) {
   const applicationRoles = applicationRolesFromDump(roleDump);
+  const terminateSessionsSql = `SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname = current_database()
+  AND pid <> pg_backend_pid()
+  AND backend_type = 'client backend';`;
   const statements = [
     '\\set ON_ERROR_STOP on',
     "SET statement_timeout = 0;",
     "SET lock_timeout = '5min';",
-    ...APPLICATION_SCHEMAS.map((schema) => `DROP SCHEMA IF EXISTS "${schema}" CASCADE;`),
+    ...(terminateClientSessions ? [terminateSessionsSql] : []),
+    ...APPLICATION_SCHEMAS.flatMap((schema) => [
+      ...(terminateClientSessions ? [terminateSessionsSql] : []),
+      `DROP SCHEMA IF EXISTS "${schema}" CASCADE;`,
+    ]),
     ...applicationRoles.map((role) => `DROP ROLE IF EXISTS "${role.replaceAll('"', '""')}";`),
     'CREATE SCHEMA "public" AUTHORIZATION "postgres";',
     'GRANT USAGE ON SCHEMA "public" TO "anon", "authenticated", "service_role";',
@@ -51,40 +64,43 @@ function buildRestoreCleanupSqlForTables(internalTables, roleDump) {
     droppedSchemaCount: APPLICATION_SCHEMAS.length + 1,
     droppedRoleCount: applicationRoles.length,
     truncatedTableCount: internalTables.size,
+    terminateClientSessions,
   };
 }
 
-export function buildRestoreCleanupSqlWithRoles(dataDump, roleDump) {
+export function buildRestoreCleanupSqlWithRoles(dataDump, roleDump, options = {}) {
   const internalTables = new Set();
   for (const line of String(dataDump).split(/\r?\n/)) addInternalTable(line, internalTables);
-  return buildRestoreCleanupSqlForTables(internalTables, roleDump);
+  return buildRestoreCleanupSqlForTables(internalTables, roleDump, options);
 }
 
-export async function buildRestoreCleanupSqlFromFile(dataPath, roleDump = '') {
+export async function buildRestoreCleanupSqlFromFile(dataPath, roleDump = '', options = {}) {
   const internalTables = new Set();
   const lines = createInterface({
     input: createReadStream(dataPath, { encoding: 'utf8' }),
     crlfDelay: Infinity,
   });
   for await (const line of lines) addInternalTable(line, internalTables);
-  return buildRestoreCleanupSqlForTables(internalTables, roleDump);
+  return buildRestoreCleanupSqlForTables(internalTables, roleDump, options);
 }
 
 async function main() {
-  const dataPath = process.argv[2];
-  const outputPath = process.argv[3];
-  const rolesPath = process.argv[4];
+  const terminateClientSessions = process.argv.includes('--terminate-client-sessions');
+  const positional = process.argv.slice(2).filter((value) => value !== '--terminate-client-sessions');
+  const [dataPath, outputPath, rolesPath] = positional;
   if (!dataPath || !outputPath) throw new Error('data_and_output_paths_required');
   const result = await buildRestoreCleanupSqlFromFile(
     dataPath,
     rolesPath ? readFileSync(rolesPath, 'utf8') : '',
+    { terminateClientSessions },
   );
   writeFileSync(outputPath, result.sql, 'utf8');
   console.log(JSON.stringify({
-    schemaVersion: 'stackr-restore-cleanup-v1.2.0',
+    schemaVersion: 'stackr-restore-cleanup-v1.3.0',
     droppedSchemaCount: result.droppedSchemaCount,
     droppedRoleCount: result.droppedRoleCount,
     truncatedTableCount: result.truncatedTableCount,
+    terminateClientSessions: result.terminateClientSessions,
   }));
 }
 

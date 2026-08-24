@@ -48,8 +48,6 @@ jobs:
           test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
           test -n "$SUPABASE_DB_URL"
           test -n "$SUPABASE_RESTORE_DB_URL"
-          case "$SUPABASE_DB_URL" in *"$SUPABASE_PROJECT_REF"*) ;; *) exit 1 ;; esac
-          case "$SUPABASE_RESTORE_DB_URL" in *"$SUPABASE_RESTORE_PROJECT_REF"*) ;; *) exit 1 ;; esac
 
       - name: Prepare protected database URLs
         run: node scripts/deploy/prepare-postgres-urls.mjs

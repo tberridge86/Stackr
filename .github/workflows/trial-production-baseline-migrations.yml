@@ -50,14 +50,6 @@ jobs:
           test "$SUPABASE_PROJECT_REF" = "$SUPABASE_STAGING_PROJECT_REF"
           test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_STAGING_PROJECT_REF"
           test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
-          case "$SUPABASE_DB_URL" in
-            *"$SUPABASE_PROJECT_REF"*) ;;
-            *) echo '::error::source_database_url_project_mismatch'; exit 1 ;;
-          esac
-          case "$SUPABASE_RESTORE_DB_URL" in
-            *"$SUPABASE_RESTORE_PROJECT_REF"*) ;;
-            *) echo '::error::restore_database_url_project_mismatch'; exit 1 ;;
-          esac
           node scripts/deploy/prepare-isolated-reconciliation-url.mjs
           node scripts/deploy/prepare-postgres-urls.mjs
 
@@ -99,7 +91,8 @@ jobs:
           set -euo pipefail
           node scripts/deploy/prepare-restore-cleanup.mjs \
             "$RUNNER_TEMP/stackr-baseline-trial/artifact/migration-history-data.sql" \
-            "$RUNNER_TEMP/stackr-baseline-trial/cleanup.sql"
+            "$RUNNER_TEMP/stackr-baseline-trial/cleanup.sql" \
+            --terminate-client-sessions
           cp scripts/deploy/isolated-production-storage-fixture.sql \
             "$RUNNER_TEMP/stackr-baseline-trial/storage-fixture.sql"
           docker run --rm \
@@ -209,8 +202,6 @@ jobs:
           test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
           test -n "$SUPABASE_DB_URL"
           test -n "$SUPABASE_RESTORE_DB_URL"
-          case "$SUPABASE_DB_URL" in *"$SUPABASE_PROJECT_REF"*) ;; *) exit 1 ;; esac
-          case "$SUPABASE_RESTORE_DB_URL" in *"$SUPABASE_RESTORE_PROJECT_REF"*) ;; *) exit 1 ;; esac
 
       - name: Prepare protected database URLs
         run: node scripts/deploy/prepare-postgres-urls.mjs
@@ -268,8 +259,6 @@ jobs:
           test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
           test -n "$SUPABASE_DB_URL"
           test -n "$SUPABASE_RESTORE_DB_URL"
-          case "$SUPABASE_DB_URL" in *"$SUPABASE_PROJECT_REF"*) ;; *) exit 1 ;; esac
-          case "$SUPABASE_RESTORE_DB_URL" in *"$SUPABASE_RESTORE_PROJECT_REF"*) ;; *) exit 1 ;; esac
 
       - name: Prepare protected database URLs
         run: node scripts/deploy/prepare-postgres-urls.mjs
