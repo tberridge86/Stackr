@@ -95,6 +95,8 @@ jobs:
             --terminate-client-sessions
           cp scripts/deploy/isolated-production-storage-fixture.sql \
             "$RUNNER_TEMP/stackr-baseline-trial/storage-fixture.sql"
+          cp scripts/deploy/isolated-production-role-fixture.sql \
+            "$RUNNER_TEMP/stackr-baseline-trial/role-fixture.sql"
           docker run --rm \
             --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
             --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
@@ -103,6 +105,7 @@ jobs:
               psql --dbname "$TARGET_DB_URL" --single-transaction \
                 --variable ON_ERROR_STOP=1 \
                 --file /trial/cleanup.sql \
+                --file /trial/role-fixture.sql \
                 --file /trial/artifact/production-schema.sql \
                 --file /trial/artifact/production-reference-data.sql \
                 --file /trial/storage-fixture.sql \

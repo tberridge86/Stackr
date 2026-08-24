@@ -247,6 +247,7 @@ const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
+const isolatedProductionRoleFixture = readFileSync('scripts/deploy/isolated-production-role-fixture.sql', 'utf8');
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
 function workflowJob(source, jobName, nextJobName = null) {
@@ -378,12 +379,26 @@ assert.match(baselineMigrationTrialWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--terminate-client-sessions/);
 assert.match(
   baselineReplayJob,
-  /psql --dbname "\$TARGET_DB_URL" --single-transaction[\s\S]{0,500}--file \/trial\/cleanup\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-reference-data\.sql[\s\S]{0,500}--file \/trial\/storage-fixture\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-data\.sql/,
+  /psql --dbname "\$TARGET_DB_URL" --single-transaction[\s\S]{0,500}--file \/trial\/cleanup\.sql[\s\S]{0,500}--file \/trial\/role-fixture\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-reference-data\.sql[\s\S]{0,500}--file \/trial\/storage-fixture\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-data\.sql/,
 );
 assert.match(
   baselineReplayJob,
   /--command "select 1 \/ \(\(count\(\*\) = 106\)::integer\) from supabase_migrations\.schema_migrations"/,
 );
+assert.match(isolatedProductionRoleFixture, /create role stackr_recognition[\s\S]+nologin/);
+assert.match(isolatedProductionRoleFixture, /nosuperuser/);
+assert.match(isolatedProductionRoleFixture, /nocreatedb/);
+assert.match(isolatedProductionRoleFixture, /nocreaterole/);
+assert.match(isolatedProductionRoleFixture, /noinherit/);
+assert.match(isolatedProductionRoleFixture, /noreplication/);
+assert.match(isolatedProductionRoleFixture, /nobypassrls/);
+assert.match(isolatedProductionRoleFixture, /alter role stackr_recognition[\s\S]+nologin/);
+assert.match(isolatedProductionRoleFixture, /statement_timeout = '10s'/);
+assert.match(isolatedProductionRoleFixture, /idle_in_transaction_session_timeout = '10s'/);
+assert.match(isolatedProductionRoleFixture, /search_path = public, ml, api, audit, catalog, extensions/);
+assert.match(isolatedProductionRoleFixture, /grant connect on database postgres to stackr_recognition/);
+assert.match(isolatedProductionRoleFixture, /grant usage on schema extensions to stackr_recognition/);
+assert.doesNotMatch(isolatedProductionRoleFixture, /password/i);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_SECONDS: 90/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS: 420/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106/);
