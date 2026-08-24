@@ -653,6 +653,14 @@ async function indexExists(client, qualifiedIndexName) {
   )).rows[0].exists);
 }
 
+async function tableExists(client, tableName) {
+  splitTableName(tableName);
+  return Boolean((await client.query(
+    'select to_regclass($1) is not null as exists',
+    [tableName],
+  )).rows[0].exists);
+}
+
 async function releaseCatalogueVersions(client) {
   if (!CATALOGUE_RELEASE_LABEL) return [];
   return (await client.query(`
@@ -778,6 +786,10 @@ try {
   }
 
   for (const tableName of tableConfig.excludedEmptyStagingOnlyTables) {
+    if (!await tableExists(source, tableName)) {
+      excludedChecks.push({ table: tableName, rowCount: 0, reason: 'staging_only_table_absent' });
+      continue;
+    }
     const count = Number((await source.query(
       `select count(*)::integer as row_count from ${qualifiedName(tableName)}`,
     )).rows[0].row_count);
@@ -785,6 +797,10 @@ try {
     excludedChecks.push({ table: tableName, rowCount: count, reason: 'staging_only_and_empty' });
   }
   for (const tableName of tableConfig.excludedStagingProjections) {
+    if (!await tableExists(source, tableName)) {
+      excludedChecks.push({ table: tableName, rowCount: 0, reason: 'staging_projection_absent' });
+      continue;
+    }
     const count = Number((await source.query(
       `select count(*)::integer as row_count from ${qualifiedName(tableName)}`,
     )).rows[0].row_count);

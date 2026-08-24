@@ -422,6 +422,8 @@ assert.match(catalogueTransferScript, /target_shared_storage_object_contract_mis
 assert.match(catalogueTransferScript, /sharedStorageObjectSchemaContract/);
 assert.match(catalogueTransferScript, /normalizePostgresUrl/);
 assert.match(catalogueTransferScript, /sharedStorageObjectDataInvariant/);
+assert.match(catalogueTransferScript, /staging_only_table_absent/);
+assert.match(catalogueTransferScript, /staging_projection_absent/);
 assert.match(catalogueTransferScript, /preCommitAcceptanceVerified/);
 assert.ok(
   catalogueTransferScript.indexOf('preCommitAcceptanceVerified = true')
