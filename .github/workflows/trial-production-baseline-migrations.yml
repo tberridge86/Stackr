@@ -18,14 +18,13 @@ concurrency:
 
 jobs:
   replay:
-    if: >-
-      inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'
-      && github.ref == 'refs/tags/stackr-production-rehearsal-20260824-1'
+    if: inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: staging
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_PRODUCTION_REHEARSAL_DB_URL }}
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_RESTORE_PROJECT_REF: isfybjkwvcuqpqtmkujo
       SUPABASE_STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
@@ -41,12 +40,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-
-      - name: Create one-run rehearsal database connection
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          STACKR_REHEARSAL_POOLER_HOST: aws-0-eu-west-1.pooler.supabase.com
-        run: node scripts/deploy/configure-ephemeral-rehearsal-connection.mjs
 
       - name: Validate isolated restore target
         shell: bash
