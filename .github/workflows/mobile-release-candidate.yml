@@ -41,9 +41,18 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Generate production Android project
         run: npx expo prebuild --clean --platform android --no-install
+      - name: Allocate memory for the release dex merge
+        run: >-
+          sed -i
+          's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m/'
+          android/gradle.properties
       - name: Build installable internal release APK
         working-directory: android
-        run: ./gradlew :app:assembleRelease --no-daemon
+        run: >-
+          ./gradlew :app:assembleRelease
+          --no-daemon
+          --max-workers=2
+          -PreactNativeArchitectures=armeabi-v7a,arm64-v8a
       - name: Upload internal APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
