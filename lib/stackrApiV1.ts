@@ -423,6 +423,7 @@ export type StackrRecognitionComponentScores = {
 
 export type StackrRecognitionCandidate = {
   rank: number;
+  cardIdentityKey: string;
   canonicalCardId: string | null;
   variantId: string | null;
   setId: string | null;
@@ -440,12 +441,23 @@ export type StackrRecognitionCandidate = {
   uncertaintyFlags: string[];
 };
 
+export type StackrRecognitionVariantOption = {
+  canonicalCardId: string | null;
+  variantId: string | null;
+  variantCode: string | null;
+  confidence: number;
+};
+
 export type StackrRecognitionIdentifyResponse = {
   scanId: string;
   matchStatus: 'exact' | 'probable' | 'ambiguous' | 'no_match' | 'rejected';
   topCandidates: StackrRecognitionCandidate[];
+  cardIdentityKey: string | null;
+  cardIdentityConfidence: number;
   canonicalCardId: string | null;
   variantId: string | null;
+  variantResolutionStatus: 'resolved' | 'unresolved' | 'not_applicable';
+  variantOptions: StackrRecognitionVariantOption[];
   overallConfidence: number;
   imageScore: number;
   ocrScore: number;

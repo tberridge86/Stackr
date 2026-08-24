@@ -254,6 +254,8 @@ export const stackrApiV1RecognitionEngine: RecognitionEngine = {
           },
           notes: [
             `stackr-api:${data.matchStatus}`,
+            `cardIdentity:${data.cardIdentityKey ?? 'none'}`,
+            `variantResolution:${data.variantResolutionStatus}`,
             `requestedNextAction:${data.requestedNextAction}`,
             `scoringConfig:${data.scoringConfigVersion}`,
             ...data.reasons,

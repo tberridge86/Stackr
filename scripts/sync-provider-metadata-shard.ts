@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createSourceAdapter } from './catalogue-ingestion/adapters';
 import {
   CatalogueIngestionRunner,
@@ -127,7 +127,7 @@ function canonicalRunKey(source: string, language: string, setId: string) {
 }
 
 async function completedRunKeys(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient,
   sourceId: string,
   source: string,
   language: string,

@@ -3,7 +3,14 @@ from __future__ import annotations
 import pytest
 
 from app.schemas import CaptureQualityMetrics
-from app.scoring import CandidateRecord, ScoringConfig, choose_match_status, score_candidate
+from app.scoring import (
+    CandidateRecord,
+    ScoringConfig,
+    card_identity_key,
+    choose_match_status,
+    group_card_identities,
+    score_candidate,
+)
 
 
 def config() -> ScoringConfig:
@@ -105,3 +112,103 @@ def test_collector_number_breaks_a_close_visual_tie():
 
     assert correct.overall > decoy.overall
     assert "collector_number_conflict" in decoy.uncertainty_flags
+
+
+def test_finish_siblings_share_one_card_identity_but_other_numbers_do_not():
+    common = {
+        "set_id": "set-s10a",
+        "set_code": "S10a",
+        "collector_number": "038",
+        "language_code": "ja",
+        "card_name": "グライガー",
+    }
+    normal = CandidateRecord(
+        canonical_card_id="pokemon:ja:set-s10a:038:normal",
+        variant_id="variant-normal",
+        variant_code="normal",
+        image_similarity=0.916,
+        **common,
+    )
+    reverse = CandidateRecord(
+        canonical_card_id="pokemon:ja:set-s10a:038:reverse_holo",
+        variant_id="variant-reverse",
+        variant_code="reverse_holo",
+        image_similarity=0.913,
+        **common,
+    )
+    different_card = CandidateRecord(
+        canonical_card_id="pokemon:ja:set-s10a:039:normal",
+        variant_id="variant-other",
+        set_id="set-s10a",
+        set_code="S10a",
+        collector_number="039",
+        language_code="ja",
+        variant_code="normal",
+        card_name="別のカード",
+        image_similarity=0.90,
+    )
+    kwargs = {
+        "config": config(),
+        "collector_hint": "038",
+        "set_code_hint": "S10a",
+        "card_name_hint": None,
+        "ocr_text": "S10a 038",
+        "language_hint": "ja",
+        "capture_quality": quality(),
+    }
+    scored = sorted(
+        [score_candidate(item, **kwargs) for item in (normal, reverse, different_card)],
+        key=lambda item: -item.overall,
+    )
+    groups = group_card_identities(scored)
+
+    assert card_identity_key(normal) == card_identity_key(reverse)
+    assert card_identity_key(normal) != card_identity_key(different_card)
+    assert len(groups) == 2
+    assert groups[0].has_sibling_variants is True
+    assert {member.record.variant_code for member in groups[0].members} == {"normal", "reverse_holo"}
+
+
+def test_identity_status_ignores_finish_sibling_margin_but_keeps_true_identity_margin():
+    base = {
+        "set_id": "set-s10a",
+        "set_code": "S10a",
+        "collector_number": "038",
+        "language_code": "ja",
+        "card_name": "グライガー",
+    }
+    candidates = [
+        CandidateRecord(
+            canonical_card_id="pokemon:ja:set-s10a:038:normal",
+            variant_id="variant-normal",
+            variant_code="normal",
+            image_similarity=0.916,
+            **base,
+        ),
+        CandidateRecord(
+            canonical_card_id="pokemon:ja:set-s10a:038:reverse_holo",
+            variant_id="variant-reverse",
+            variant_code="reverse_holo",
+            image_similarity=0.913,
+            **base,
+        ),
+    ]
+    kwargs = {
+        "config": config(),
+        "collector_hint": "038",
+        "set_code_hint": "S10a",
+        "card_name_hint": "グライガー",
+        "ocr_text": "グライガー S10a 038",
+        "language_hint": "ja",
+        "capture_quality": quality(),
+    }
+    scored = sorted([score_candidate(item, **kwargs) for item in candidates], key=lambda item: -item.overall)
+
+    variant_status, _, _, _ = choose_match_status(scored, config())
+    groups = group_card_identities(scored)
+    identity_status, _, action, auto_add = choose_match_status([group.primary for group in groups], config())
+
+    assert variant_status == "ambiguous"
+    assert identity_status == "probable"
+    assert action == "confirm_candidate"
+    assert auto_add is False

@@ -412,7 +412,7 @@ export async function exportTcgdexLanguageSnapshot(
   };
 }
 
-function pokemonHeaders() {
+function pokemonHeaders(): Record<string, string> {
   const key = clean(process.env.POKEMON_TCG_API_KEY);
   return key ? { 'X-Api-Key': key } : {};
 }

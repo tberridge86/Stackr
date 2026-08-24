@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createSourceAdapter } from './catalogue-ingestion/adapters';
 import { fetchCatalogueQualityReport } from './catalogue-ingestion/qualityReport';
 import { cleanText, type ProviderRecord } from './catalogue-ingestion/sourceAdapter';
@@ -88,7 +88,7 @@ function metadataGapEntries(summary: Record<string, unknown>) {
     .map(([key, value]) => ({ key, count: numberValue(value) }));
 }
 
-async function sourceRow(db: ReturnType<typeof createClient>, sourceCode: string) {
+async function sourceRow(db: SupabaseClient, sourceCode: string) {
   const { data, error } = await db
     .schema('ingest')
     .from('sources')
@@ -100,7 +100,7 @@ async function sourceRow(db: ReturnType<typeof createClient>, sourceCode: string
 }
 
 async function importRuns(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient,
   sourceId: string,
   source: string,
   language: string,
@@ -117,7 +117,7 @@ async function importRuns(
 }
 
 async function countRawRecords(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient,
   sourceId: string,
   language: string,
   recordType: string,
@@ -134,7 +134,7 @@ async function countRawRecords(
 }
 
 async function countOpenConflicts(
-  db: ReturnType<typeof createClient>,
+  db: SupabaseClient,
   sourceId: string,
 ) {
   const { count, error } = await db

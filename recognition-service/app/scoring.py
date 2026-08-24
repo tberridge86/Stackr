@@ -5,7 +5,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .normalization import collector_matches, normalize_text, text_similarity
+from .normalization import (
+    collector_matches,
+    normalize_collector_number,
+    normalize_text,
+    text_similarity,
+)
 from .schemas import CaptureQualityMetrics
 
 
@@ -74,6 +79,22 @@ class ScoredCandidate:
     uncertainty_flags: list[str]
 
 
+@dataclass(frozen=True)
+class CardIdentityGroup:
+    key: str
+    primary: ScoredCandidate
+    members: tuple[ScoredCandidate, ...]
+
+    @property
+    def has_sibling_variants(self) -> bool:
+        variants = {
+            (member.record.variant_id or member.record.canonical_card_id or "").strip()
+            for member in self.members
+        }
+        variants.discard("")
+        return len(variants) > 1
+
+
 def clamp01(value: float | None, fallback: float = 0.0) -> float:
     if value is None:
         return fallback
@@ -88,6 +109,47 @@ def language_score(candidate: str | None, hint: str | None) -> float:
     if hint == "zh" and candidate in {"zh-Hans", "zh-Hant", "zh"}:
         return 1.0
     return 0.0
+
+
+def card_identity_key(candidate: CandidateRecord) -> str:
+    """Return a stable printed-card identity without collapsing different printings.
+
+    Finish siblings may have different canonical keys in the catalogue. Language,
+    set and collector number identify the printed card family while variant_id and
+    variant_code continue to identify the exact finish beneath that family.
+    """
+    language = normalize_text(candidate.language_code)
+    set_identity = normalize_text(candidate.set_id or candidate.set_code)
+    collector = normalize_collector_number(candidate.collector_number)
+    if language and set_identity and collector:
+        return f"card:{language}:{set_identity}:{collector}"
+
+    # Never collapse candidates when the structured identity is incomplete.
+    fallback = candidate.variant_id or candidate.canonical_card_id
+    return f"variant:{fallback}" if fallback else "variant:unknown"
+
+
+def group_card_identities(candidates: list[ScoredCandidate]) -> list[CardIdentityGroup]:
+    grouped: dict[str, list[ScoredCandidate]] = {}
+    order: list[str] = []
+    for candidate in candidates:
+        key = card_identity_key(candidate.record)
+        if key not in grouped:
+            grouped[key] = []
+            order.append(key)
+        grouped[key].append(candidate)
+
+    groups = [
+        CardIdentityGroup(key=key, primary=grouped[key][0], members=tuple(grouped[key]))
+        for key in order
+    ]
+    groups.sort(
+        key=lambda group: (
+            -group.primary.overall,
+            group.key,
+        )
+    )
+    return groups
 
 
 def score_candidate(

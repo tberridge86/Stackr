@@ -8,6 +8,7 @@ import {
   assessInternetListingEvidence,
   buildListingQueries,
   buildRecognitionMetadataFingerprint,
+  evidenceSetCodeMatches,
   selectIndependentListingImages,
 } from './catalogue-ingestion/internetEvidence';
 
@@ -79,6 +80,23 @@ const rejected = assessInternetListingEvidence(japaneseFingerprint, {
 assert.equal(rejected.identityStatus, 'rejected');
 assert.ok(rejected.conflicts.includes('collector_number_conflict'));
 assert.ok(rejected.conflicts.includes('language_conflict'));
+
+assert.equal(evidenceSetCodeMatches('Boltund VMAX 035/184 S8 Japanese', 'S8'), true);
+assert.equal(evidenceSetCodeMatches('Froslass 035/184 S8b Japanese', 'S8'), false);
+const adjacentSetCode = assessInternetListingEvidence(buildRecognitionMetadataFingerprint({
+  variantId: '44444444-4444-4444-8444-444444444444',
+  languageCode: 'zh-tw',
+  setCode: 'S8',
+  collectorNumber: '035',
+  nativeName: '逐電犬VMAX',
+  finishCode: 'holo',
+}), {
+  sourceItemId: 'v1|set-code-boundary|0',
+  title: 'Froslass 035/184 S8b Holo Traditional Chinese',
+  imageUrls: ['https://i.ebayimg.example/images/boundary.jpg'],
+});
+assert.equal(adjacentSetCode.setCodeMatch, false);
+assert.notEqual(adjacentSetCode.identityStatus, 'confirmed');
 
 const queries = buildListingQueries(japaneseFingerprint);
 assert.ok(queries.some((query) => query.includes('157/165') && query.includes('SV2a')));
