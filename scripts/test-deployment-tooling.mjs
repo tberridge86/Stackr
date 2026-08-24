@@ -3,6 +3,10 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import {
+  buildRehearsalDatabaseUrl,
+  configureEphemeralRehearsalConnection,
+} from './deploy/configure-ephemeral-rehearsal-connection.mjs';
 
 function run(script, args = [], env = {}) {
   return spawnSync(process.execPath, [script, ...args], {
@@ -353,7 +357,9 @@ assert.match(productionBaselineWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-producti
 assert.doesNotMatch(productionBaselineWorkflow, /db push|migration repair|psql|SUPABASE_ACCESS_TOKEN/);
 assert.doesNotMatch(productionBaselineWorkflow, /upload-artifact@v\d/);
 assert.match(baselineMigrationTrialWorkflow, /environment: staging/);
-assert.match(baselineReplayJob, /secrets\.SUPABASE_PRODUCTION_REHEARSAL_DB_URL/);
+assert.match(baselineReplayJob, /Create one-run rehearsal database connection/);
+assert.match(baselineReplayJob, /secrets\.SUPABASE_ACCESS_TOKEN/);
+assert.match(baselineReplayJob, /configure-ephemeral-rehearsal-connection\.mjs/);
 assert.doesNotMatch(baselineReplayJob, /secrets\.SUPABASE_RESTORE_DB_URL/);
 assert.match(baselineReplayJob, /SUPABASE_RESTORE_PROJECT_REF: isfybjkwvcuqpqtmkujo/);
 assert.match(baselineReplayJob, /STACKR_TRANSFER_TARGET_PROFILE: production-baseline-rehearsal/);
@@ -363,10 +369,67 @@ for (const stagingPreservationJob of [
 ]) {
   assert.match(stagingPreservationJob, /secrets\.SUPABASE_RESTORE_DB_URL/);
   assert.match(stagingPreservationJob, /SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci/);
-  assert.doesNotMatch(stagingPreservationJob, /SUPABASE_PRODUCTION_REHEARSAL_DB_URL/);
+  assert.doesNotMatch(stagingPreservationJob, /configure-ephemeral-rehearsal-connection\.mjs/);
+  assert.doesNotMatch(stagingPreservationJob, /SUPABASE_ACCESS_TOKEN/);
   assert.doesNotMatch(stagingPreservationJob, /isfybjkwvcuqpqtmkujo/);
   assert.doesNotMatch(stagingPreservationJob, /STACKR_TRANSFER_TARGET_PROFILE/);
 }
+
+const expectedEphemeralUrl = buildRehearsalDatabaseUrl({
+  projectRef: 'isfybjkwvcuqpqtmkujo',
+  password: 'StackrR1!test/password',
+  poolerHost: 'aws-0-eu-west-1.pooler.supabase.com',
+});
+assert.equal(
+  expectedEphemeralUrl,
+  'postgresql://postgres.isfybjkwvcuqpqtmkujo:StackrR1!test%2Fpassword@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require&connect_timeout=30',
+);
+const rehearsalFetches = [];
+const rehearsalEnvironmentWrites = [];
+const rehearsalMasks = [];
+const rehearsalConfiguration = await configureEphemeralRehearsalConnection({
+  env: {
+    SUPABASE_RESTORE_PROJECT_REF: 'isfybjkwvcuqpqtmkujo',
+    SUPABASE_STAGING_PROJECT_REF: 'lmwfhvexfcoyeuoyrlco',
+    SUPABASE_PRODUCTION_PROJECT_REF: 'oakdbbzdqwurpjnoqhmu',
+    SUPABASE_ACCESS_TOKEN: 'test-access-token',
+    GITHUB_ENV: '/tmp/test-github-env',
+    STACKR_REHEARSAL_POOLER_HOST: 'aws-0-eu-west-1.pooler.supabase.com',
+  },
+  randomBytesImpl: () => Buffer.alloc(48, 7),
+  fetchImpl: async (url, options) => {
+    rehearsalFetches.push({ url, options });
+    if (options.method === 'GET') {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: 'isfybjkwvcuqpqtmkujo',
+          ref: 'isfybjkwvcuqpqtmkujo',
+          region: 'eu-west-1',
+          status: 'ACTIVE_HEALTHY',
+        }),
+      };
+    }
+    return { ok: true, status: 200 };
+  },
+  appendEnvironment: (filePath, value) => {
+    rehearsalEnvironmentWrites.push({ filePath, value });
+  },
+  maskSecret: (value) => rehearsalMasks.push(value),
+});
+assert.deepEqual(rehearsalConfiguration, {
+  projectRef: 'isfybjkwvcuqpqtmkujo',
+  projectStatus: 'ACTIVE_HEALTHY',
+  databasePasswordReset: true,
+  ephemeralConnectionPrepared: true,
+});
+assert.equal(rehearsalFetches.length, 2);
+assert.equal(rehearsalFetches[1].options.method, 'PATCH');
+assert.deepEqual(Object.keys(JSON.parse(rehearsalFetches[1].options.body)), ['password']);
+assert.equal(rehearsalEnvironmentWrites.length, 1);
+assert.match(rehearsalEnvironmentWrites[0].value, /^SUPABASE_RESTORE_DB_URL=postgresql:\/\//);
+assert.equal(rehearsalMasks.length, 2);
 assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
 assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
@@ -411,7 +474,7 @@ assert.match(baselineMigrationTrialWorkflow, /catalogue-transfer-evidence\.json/
 assert.match(baselineMigrationTrialWorkflow, /Upload failed replay diagnostics/);
 assert.match(baselineMigrationTrialWorkflow, /if: failure\(\)/);
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
-assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|--linked/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /--linked/);
 assert.match(baselineMigrationTrialWorkflow, /Create ephemeral rollback backup/);
 assert.match(baselineMigrationTrialWorkflow, /Commit staging catalogue to isolated candidate/);
 assert.match(baselineMigrationTrialWorkflow, /Rebuild canonical staging database/);
