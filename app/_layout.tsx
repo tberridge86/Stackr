@@ -373,7 +373,7 @@ function AppNavigation() {
                   <Stack.Screen name="binder/[id]" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="binder/add-cards" options={{ title: '' }} />
                   <Stack.Screen name="binder/index" options={legacyRedirectScreenOptions} />
-                  <Stack.Screen name="scan" options={{ title: '' }} />
+                  <Stack.Screen name="scan/index" options={{ title: '' }} />
                   <Stack.Screen name="scan/camera" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="scan/result" options={{ title: '' }} />
                   <Stack.Screen name="scan/binder-page-result" options={{ headerShown: false, title: '' }} />
@@ -386,7 +386,6 @@ function AppNavigation() {
                   <Stack.Screen name="pokemon/[id]" options={{ title: '' }} />
                   <Stack.Screen name="trade/index" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="trade/[userId]" options={legacyRedirectScreenOptions} />
-                  <Stack.Screen name="(tabs)/trade" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="(auth)/login" options={{ title: '' }} />
                   <Stack.Screen name="(auth)/callback" options={{ title: '' }} />
                   <Stack.Screen name="(auth)/reset-password" options={{ title: '' }} />
