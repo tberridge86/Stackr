@@ -275,8 +275,8 @@ function assertProviderRules() {
   assert.match(tcgdexAdapter, /MAX_REQUEST_ATTEMPTS/, 'TCGdex transient failures must use bounded retries');
   assert.match(
     pipeline,
-    /command === 'run_set' && adapter\.identifySource\(\)\.code === 'tcgdex'/,
-    'TCGdex set jobs must upsert set metadata before importing cards',
+    /command === 'run_set'[\s\S]*sourceCapabilities\.includes\('sets'\)/,
+    'set-scoped jobs must upsert set metadata for every adapter that advertises set support',
   );
   assert.match(pipeline, /JSON\.stringify\(error\)/, 'non-Error database failures must be recorded with useful details');
   assert.match(
