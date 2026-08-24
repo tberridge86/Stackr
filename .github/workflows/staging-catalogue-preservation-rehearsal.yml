@@ -20,7 +20,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-staging-catalogue-preservation-rehearsal
+  # Serialise every writer that shares the isolated recovery project.
+  group: stackr-isolated-recovery-target-krjttpmthxkfsbqksxci
   cancel-in-progress: false
 
 jobs:

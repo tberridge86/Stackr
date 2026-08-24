@@ -14,19 +14,33 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",
-    "@supabase/supabase-js": "^2.105.0",
+    "@supabase/supabase-js": "^2.112.3",
     "cardsightai": "^3.5.1",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "4.22.2",
     "form-data": "4.0.6",
-    "jimp": "^0.22.12",
+    "jimp": "^1.6.1",
     "node-fetch": "^3.3.2",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.3",
     "stripe": "^17.7.0"
   },
   "devDependencies": {
     "tsx": "^4.21.0"
+  },
+  "overrides": {
+    "@huggingface/transformers": {
+      "sharp": "0.35.3"
+    },
+    "onnxruntime-node": {
+      "adm-zip": "0.6.0"
+    },
+    "onnxruntime-web": {
+      "protobufjs": "7.6.5"
+    },
+    "@supabase/realtime-js": {
+      "ws": "8.21.3"
+    }
   }
 }

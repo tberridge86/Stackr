@@ -8,7 +8,7 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import discordRoutes from './routes/discord.js';
 import sharp from 'sharp';
-import Jimp from 'jimp';
+import { Jimp } from 'jimp';
 import assetRoutes, { adminAssetsRouter } from './routes/assets.js';
 import cardsightRoutes from './routes/cardsight.js';
 import catalogueIngestionRoutes from './routes/catalogueIngestion.js';
@@ -3534,11 +3534,11 @@ function cropRegion(image, region) {
   const y = Math.max(0, Math.floor(height * region.y));
   const cropWidth = Math.max(1, Math.min(width - x, Math.floor(width * region.width)));
   const cropHeight = Math.max(1, Math.min(height - y, Math.floor(height * region.height)));
-  return image.clone().crop(x, y, cropWidth, cropHeight);
+  return image.clone().crop({ x, y, w: cropWidth, h: cropHeight });
 }
 
 function hashPreparedImage(image) {
-  image.resize(HASH_SIZE, HASH_SIZE).greyscale();
+  image.resize({ w: HASH_SIZE, h: HASH_SIZE }).greyscale();
 
   const pixels = [];
   image.scan(0, 0, HASH_SIZE, HASH_SIZE, (_x, _y, idx) => {

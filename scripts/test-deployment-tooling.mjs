@@ -524,6 +524,9 @@ assert.match(recoveryWorkflow, /restore_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(recoveryWorkflow, /sanitize-supabase-role-dump\.mjs/);
 assert.match(recoveryWorkflow, /prepare-restore-cleanup\.mjs/);
+assert.match(recoveryWorkflow, /group: stackr-isolated-recovery-target-krjttpmthxkfsbqksxci/);
+assert.match(baselineMigrationTrialWorkflow, /group: stackr-isolated-recovery-target-krjttpmthxkfsbqksxci/);
+assert.match(catalogueTransferWorkflow, /group: stackr-isolated-recovery-target-krjttpmthxkfsbqksxci/);
 assert.match(recoveryWorkflow, /STACKR_SOURCE_DB_URL/);
 assert.match(recoveryWorkflow, /STACKR_RESTORE_DB_URL/);
 assert.doesNotMatch(recoveryWorkflow, /secrets\.SUPABASE_ACCESS_TOKEN/);
@@ -2392,16 +2395,19 @@ const {
 const cleanup = buildRestoreCleanupSql([
   'COPY "public"."cards" ("id") FROM stdin;',
   'COPY "catalog"."sets" ("id") FROM stdin;',
+  'COPY "private"."seller_inventory_batch_commits" ("user_id", "request_id") FROM stdin;',
   'COPY "auth"."users" ("id") FROM stdin;',
   'COPY "storage"."buckets" ("id") FROM stdin;',
 ].join('\n'));
-assert.equal(cleanup.droppedSchemaCount, 8);
+assert.equal(cleanup.droppedSchemaCount, 9);
 assert.equal(cleanup.truncatedTableCount, 2);
 assert.match(cleanup.sql, /DROP SCHEMA IF EXISTS "public" CASCADE;/);
+assert.match(cleanup.sql, /DROP SCHEMA IF EXISTS "private" CASCADE;/);
 assert.match(cleanup.sql, /CREATE SCHEMA "public" AUTHORIZATION "postgres";/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "storage"\."buckets" CASCADE;/);
 assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "public"\."cards"/);
+assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "private"\."seller_inventory_batch_commits"/);
 const cleanupWithRoles = buildRestoreCleanupSqlWithRoles('', [
   'CREATE ROLE "stackr_recognition";',
   "CREATE ROLE \"stackr_o'brien\";",

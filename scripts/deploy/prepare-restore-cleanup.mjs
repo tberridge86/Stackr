@@ -2,7 +2,16 @@ import { createReadStream, readFileSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
 
-const APPLICATION_SCHEMAS = ['catalog', 'ingest', 'market', 'ml', 'api', 'audit', 'public'];
+const APPLICATION_SCHEMAS = [
+  'catalog',
+  'ingest',
+  'market',
+  'ml',
+  'api',
+  'audit',
+  'private',
+  'public',
+];
 
 function decodeIdentifier(value) {
   return value.replaceAll('""', '"');

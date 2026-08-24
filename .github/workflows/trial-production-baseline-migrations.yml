@@ -37,7 +37,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-production-baseline-migration-trial
+  # Serialise every writer that shares the isolated recovery project.
+  group: stackr-isolated-recovery-target-krjttpmthxkfsbqksxci
   cancel-in-progress: false
 
 jobs:
