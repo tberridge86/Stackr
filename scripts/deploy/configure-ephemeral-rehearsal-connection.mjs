@@ -7,6 +7,7 @@ const EXPECTED_REHEARSAL_PROJECT_REF = 'isfybjkwvcuqpqtmkujo';
 const EXPECTED_REHEARSAL_REGION = 'eu-west-1';
 const DEFAULT_POOLER_HOST = 'aws-0-eu-west-1.pooler.supabase.com';
 const MANAGEMENT_API_ORIGIN = 'https://api.supabase.com';
+const EXPECTED_GITHUB_REF = 'refs/tags/stackr-production-rehearsal-20260824-1';
 
 export function buildRehearsalDatabaseUrl({ projectRef, password, poolerHost }) {
   if (projectRef !== EXPECTED_REHEARSAL_PROJECT_REF) {
@@ -34,6 +35,9 @@ export async function configureEphemeralRehearsalConnection({
   const githubEnvironmentPath = env.GITHUB_ENV;
   const poolerHost = env.STACKR_REHEARSAL_POOLER_HOST ?? DEFAULT_POOLER_HOST;
 
+  if (env.GITHUB_REF !== EXPECTED_GITHUB_REF) {
+    throw new Error('rehearsal_git_ref_mismatch');
+  }
   if (projectRef !== EXPECTED_REHEARSAL_PROJECT_REF) {
     throw new Error('rehearsal_project_ref_mismatch');
   }
@@ -61,7 +65,7 @@ export async function configureEphemeralRehearsalConnection({
     throw new Error(`rehearsal_project_lookup_failed:${projectResponse.status}`);
   }
   const project = await projectResponse.json();
-  if (project.id !== projectRef || project.ref !== projectRef) {
+  if (project.ref !== projectRef) {
     throw new Error('rehearsal_project_identity_mismatch');
   }
   if (project.region !== EXPECTED_REHEARSAL_REGION) {

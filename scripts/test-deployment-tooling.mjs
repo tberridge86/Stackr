@@ -360,6 +360,10 @@ assert.match(baselineMigrationTrialWorkflow, /environment: staging/);
 assert.match(baselineReplayJob, /Create one-run rehearsal database connection/);
 assert.match(baselineReplayJob, /secrets\.SUPABASE_ACCESS_TOKEN/);
 assert.match(baselineReplayJob, /configure-ephemeral-rehearsal-connection\.mjs/);
+assert.match(
+  baselineReplayJob,
+  /github\.ref == 'refs\/tags\/stackr-production-rehearsal-20260824-1'/,
+);
 assert.doesNotMatch(baselineReplayJob, /secrets\.SUPABASE_RESTORE_DB_URL/);
 assert.match(baselineReplayJob, /SUPABASE_RESTORE_PROJECT_REF: isfybjkwvcuqpqtmkujo/);
 assert.match(baselineReplayJob, /STACKR_TRANSFER_TARGET_PROFILE: production-baseline-rehearsal/);
@@ -395,6 +399,7 @@ const rehearsalConfiguration = await configureEphemeralRehearsalConnection({
     SUPABASE_ACCESS_TOKEN: 'test-access-token',
     GITHUB_ENV: '/tmp/test-github-env',
     STACKR_REHEARSAL_POOLER_HOST: 'aws-0-eu-west-1.pooler.supabase.com',
+    GITHUB_REF: 'refs/tags/stackr-production-rehearsal-20260824-1',
   },
   randomBytesImpl: () => Buffer.alloc(48, 7),
   fetchImpl: async (url, options) => {
@@ -404,7 +409,7 @@ const rehearsalConfiguration = await configureEphemeralRehearsalConnection({
         ok: true,
         status: 200,
         json: async () => ({
-          id: 'isfybjkwvcuqpqtmkujo',
+          id: 'project-internal-id-is-distinct-from-ref',
           ref: 'isfybjkwvcuqpqtmkujo',
           region: 'eu-west-1',
           status: 'ACTIVE_HEALTHY',

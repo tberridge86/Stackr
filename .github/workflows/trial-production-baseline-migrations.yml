@@ -18,7 +18,9 @@ concurrency:
 
 jobs:
   replay:
-    if: inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'
+    if: >-
+      inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'
+      && github.ref == 'refs/tags/stackr-production-rehearsal-20260824-1'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: staging
