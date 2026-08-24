@@ -564,6 +564,25 @@ assert.match(catalogueTransferScript, /recordTransferPhase\('target_finalise_ret
 assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
 assert.match(catalogueTransferScript, /recordTransferPhase\('postfinalise_verification_snapshot_open'/);
 assert.match(catalogueTransferScript, /recordTransferPhase\('postfinalise_verification_snapshot_closed'/);
+assert.match(catalogueTransferScript, /async function prepareSelectedSelfReferentialForeignKeys/);
+assert.match(catalogueTransferScript, /constraint_entry\.condeferrable as constraint_deferrable/);
+assert.match(catalogueTransferScript, /constraint_entry\.condeferred as constraint_initially_deferred/);
+assert.match(catalogueTransferScript, /constraint_entry\.convalidated as constraint_validated/);
+assert.match(catalogueTransferScript, /alter constraint \$\{quoteIdentifier\(constraint\.constraintName\)\}/);
+assert.match(catalogueTransferScript, /deferrable initially immediate/);
+assert.match(catalogueTransferScript, /current\.map\(qualifiedConstraintName\).*deferred/);
+assert.match(catalogueTransferScript, /constraints\.map\(qualifiedConstraintName\).*immediate/);
+assert.doesNotMatch(catalogueTransferScript, /set constraints all/i);
+assert.match(catalogueTransferScript, /CATALOGUE_SELF_REFERENTIAL_FOREIGN_KEYS/);
+assert.match(catalogueTransferScript, /catalogue_self_foreign_key_contract_mismatch/);
+assert.match(catalogueTransferScript, /production_catalogue_self_foreign_keys_not_prepared/);
+assert.match(catalogueTransferScript, /set local lock_timeout = '5s'/);
+assert.match(catalogueTransferScript, /catalogue_self_foreign_key_postfinalise_mismatch/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('self_foreign_keys_prepared'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('self_foreign_keys_deferred'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('self_foreign_keys_validated'/);
+assert.match(catalogueTransferScript, /selfReferentialForeignKeySafety/);
+assert.doesNotMatch(catalogueTransferScript, /session_replication_role|disable trigger/i);
 assert.ok(
   catalogueTransferScript.indexOf('preCommitAcceptanceVerified = true')
     < catalogueTransferScript.indexOf("recordTransferPhase('target_finalise_started'"),
@@ -573,6 +592,14 @@ assert.ok(
   catalogueTransferScript.indexOf('foreignKeySafety = await prepareCatalogueForeignKeyIndexes')
     < catalogueTransferScript.indexOf("await source.query('begin transaction isolation level repeatable read read only')"),
   'foreign-key safety must pass before the source snapshot and any target data mutation',
+);
+assert.ok(
+  catalogueTransferScript.indexOf(
+    'selfReferentialForeignKeySafety = await prepareSelectedSelfReferentialForeignKeys',
+  ) < catalogueTransferScript.indexOf(
+    "await source.query('begin transaction isolation level repeatable read read only')",
+  ),
+  'self-referential FK schema preparation must finish before the long data transaction',
 );
 assert.ok(
   catalogueTransferScript.indexOf('foreignKeySafety.transactionGuard = await lockAndVerifyExternalCatalogueForeignKeys')
@@ -605,6 +632,38 @@ assert.match(
   /catalogue_transfer_fk_index_requires_online_preparation/,
 );
 assert.match(catalogueTransferForeignKeyMigration, /set local lock_timeout = '5s'/);
+
+const catalogueSelfForeignKeyMigration = readFileSync(
+  'supabase/migrations/20260824223500_defer_catalogue_self_referential_foreign_keys.sql',
+  'utf8',
+);
+const catalogueSelfForeignKeyConstraintNames = [
+  'series_corrected_by_series_id_fkey',
+  'sets_corrected_by_set_id_fkey',
+  'card_concepts_corrected_by_concept_id_fkey',
+  'card_printings_corrected_by_printing_id_fkey',
+  'card_variants_corrected_by_variant_id_fkey',
+  'card_variants_same_artwork_as_variant_id_fkey',
+  'sealed_products_corrected_by_product_id_fkey',
+  'sealed_product_variants_corrected_by_variant_id_fkey',
+  'catalogue_versions_superseded_by_version_id_fkey',
+];
+for (const constraintName of catalogueSelfForeignKeyConstraintNames) {
+  assert.match(catalogueSelfForeignKeyMigration, new RegExp(constraintName));
+  assert.match(catalogueTransferScript, new RegExp(constraintName));
+}
+assert.equal(
+  [...catalogueSelfForeignKeyMigration.matchAll(/'([a-z0-9_]+_fkey)'/g)].length,
+  catalogueSelfForeignKeyConstraintNames.length,
+);
+assert.match(catalogueSelfForeignKeyMigration, /deferrable initially immediate/);
+assert.match(catalogueSelfForeignKeyMigration, /constraint_entry\.convalidated/);
+assert.match(catalogueSelfForeignKeyMigration, /constraint_entry\.conrelid = constraint_entry\.confrelid/);
+assert.match(catalogueSelfForeignKeyMigration, /constraint_entry\.conkey/);
+assert.match(catalogueSelfForeignKeyMigration, /constraint_entry\.confdeltype::text/);
+assert.match(catalogueSelfForeignKeyMigration, /same_artwork_as_variant_id_fkey', 'same_artwork_as_variant_id', 'n'/);
+assert.match(catalogueSelfForeignKeyMigration, /set local lock_timeout = '5s'/);
+assert.doesNotMatch(catalogueSelfForeignKeyMigration, /drop constraint|not valid/i);
 
 const catalogueStoragePromotionScript = readFileSync('scripts/deploy/promote-catalogue-storage.mjs', 'utf8');
 assert.match(catalogueStoragePromotionScript, /STACKR_STORAGE_PROMOTION_MODE/);

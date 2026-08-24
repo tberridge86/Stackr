@@ -37,6 +37,62 @@ const REQUIRED_CATALOGUE_LANGUAGES = String(
 ).split(',').map((value) => value.trim()).filter(Boolean);
 const TABLE_CONFIG_PATH = process.env.STACKR_TRANSFER_TABLE_CONFIG
   ?? 'deploy/staging-catalogue-preservation-tables.json';
+const CATALOGUE_SELF_REFERENTIAL_FOREIGN_KEYS = [
+  {
+    childTable: 'catalog.series',
+    constraintName: 'series_corrected_by_series_id_fkey',
+    childColumns: ['corrected_by_series_id'],
+    deleteAction: 'no_action',
+  },
+  {
+    childTable: 'catalog.sets',
+    constraintName: 'sets_corrected_by_set_id_fkey',
+    childColumns: ['corrected_by_set_id'],
+    deleteAction: 'no_action',
+  },
+  {
+    childTable: 'catalog.card_concepts',
+    constraintName: 'card_concepts_corrected_by_concept_id_fkey',
+    childColumns: ['corrected_by_concept_id'],
+    deleteAction: 'no_action',
+  },
+  {
+    childTable: 'catalog.card_printings',
+    constraintName: 'card_printings_corrected_by_printing_id_fkey',
+    childColumns: ['corrected_by_printing_id'],
+    deleteAction: 'no_action',
+  },
+  {
+    childTable: 'catalog.card_variants',
+    constraintName: 'card_variants_corrected_by_variant_id_fkey',
+    childColumns: ['corrected_by_variant_id'],
+    deleteAction: 'no_action',
+  },
+  {
+    childTable: 'catalog.card_variants',
+    constraintName: 'card_variants_same_artwork_as_variant_id_fkey',
+    childColumns: ['same_artwork_as_variant_id'],
+    deleteAction: 'set_null',
+  },
+  {
+    childTable: 'catalog.sealed_products',
+    constraintName: 'sealed_products_corrected_by_product_id_fkey',
+    childColumns: ['corrected_by_product_id'],
+    deleteAction: 'no_action',
+  },
+  {
+    childTable: 'catalog.sealed_product_variants',
+    constraintName: 'sealed_product_variants_corrected_by_variant_id_fkey',
+    childColumns: ['corrected_by_variant_id'],
+    deleteAction: 'no_action',
+  },
+  {
+    childTable: 'catalog.catalogue_versions',
+    constraintName: 'catalogue_versions_superseded_by_version_id_fkey',
+    childColumns: ['superseded_by_version_id'],
+    deleteAction: 'no_action',
+  },
+];
 const SHARED_STORAGE_OBJECT_INDEX_SQL = `
 create index assets_storage_object_idx
   on catalog.assets(storage_provider, storage_bucket, storage_key)
@@ -777,6 +833,9 @@ async function catalogueForeignKeyRequirements(client, selectedTables) {
       select
         constraint_entry.oid::text as constraint_oid,
         constraint_entry.conname as constraint_name,
+        constraint_entry.condeferrable as constraint_deferrable,
+        constraint_entry.condeferred as constraint_initially_deferred,
+        constraint_entry.convalidated as constraint_validated,
         format('%I.%I', child_namespace.nspname, child_relation.relname) as child_table,
         child_namespace.nspname as child_schema,
         format('%I.%I', parent_namespace.nspname, parent_relation.relname) as parent_table,
@@ -809,6 +868,9 @@ async function catalogueForeignKeyRequirements(client, selectedTables) {
       group by
         constraint_entry.oid,
         constraint_entry.conname,
+        constraint_entry.condeferrable,
+        constraint_entry.condeferred,
+        constraint_entry.convalidated,
         child_namespace.nspname,
         child_relation.relname,
         parent_namespace.nspname,
@@ -855,6 +917,9 @@ async function catalogueForeignKeyRequirements(client, selectedTables) {
   return rows.map((row) => ({
     constraintOid: row.constraint_oid,
     constraintName: row.constraint_name,
+    constraintDeferrable: row.constraint_deferrable,
+    constraintInitiallyDeferred: row.constraint_initially_deferred,
+    constraintValidated: row.constraint_validated,
     childTable: row.child_table,
     childSchema: row.child_schema,
     parentTable: row.parent_table,
@@ -863,6 +928,176 @@ async function catalogueForeignKeyRequirements(client, selectedTables) {
     childSelected: selected.has(row.child_table),
     supportingIndexName: row.supporting_index_name,
   }));
+}
+
+function selectedSelfReferentialForeignKeys(requirements) {
+  return requirements
+    .filter((requirement) => (
+      requirement.childSelected && requirement.childTable === requirement.parentTable
+    ))
+    .map((requirement) => ({
+      constraintName: requirement.constraintName,
+      childTable: requirement.childTable,
+      childColumns: requirement.childColumns,
+      deleteAction: requirement.deleteAction,
+      constraintDeferrable: requirement.constraintDeferrable,
+      constraintInitiallyDeferred: requirement.constraintInitiallyDeferred,
+      constraintValidated: requirement.constraintValidated,
+    }))
+    .sort((left, right) => (
+      `${left.childTable}.${left.constraintName}`
+        .localeCompare(`${right.childTable}.${right.constraintName}`)
+    ));
+}
+
+function expectedSelectedSelfReferentialForeignKeys(selectedTables) {
+  const selected = new Set(selectedTables);
+  return CATALOGUE_SELF_REFERENTIAL_FOREIGN_KEYS
+    .filter(({ childTable }) => selected.has(childTable))
+    .sort((left, right) => (
+      `${left.childTable}.${left.constraintName}`
+        .localeCompare(`${right.childTable}.${right.constraintName}`)
+    ));
+}
+
+function selfReferentialForeignKeyContract(constraints) {
+  return constraints.map((constraint) => ({
+    childTable: constraint.childTable,
+    constraintName: constraint.constraintName,
+    childColumns: constraint.childColumns,
+    deleteAction: constraint.deleteAction,
+  }));
+}
+
+function assertExpectedSelfReferentialForeignKeys(constraints, selectedTables) {
+  const expected = expectedSelectedSelfReferentialForeignKeys(selectedTables);
+  if (stableJson(selfReferentialForeignKeyContract(constraints)) !== stableJson(expected)) {
+    throw new Error('catalogue_self_foreign_key_contract_mismatch');
+  }
+}
+
+async function prepareSelectedSelfReferentialForeignKeys(client, selectedTables) {
+  const before = selectedSelfReferentialForeignKeys(
+    await catalogueForeignKeyRequirements(client, selectedTables),
+  );
+  assertExpectedSelfReferentialForeignKeys(before, selectedTables);
+  const invalid = before.filter(({ constraintValidated }) => !constraintValidated);
+  if (invalid.length) {
+    throw new Error(
+      `catalogue_self_foreign_key_not_validated:${invalid.map(({ childTable, constraintName }) => (
+        `${childTable}.${constraintName}`
+      )).join(',')}`,
+    );
+  }
+
+  const requiringPreparation = before.filter((constraint) => (
+    !constraint.constraintDeferrable || constraint.constraintInitiallyDeferred
+  ));
+  if (TRANSFER_MODE === 'promote' && requiringPreparation.length) {
+    throw new Error('production_catalogue_self_foreign_keys_not_prepared');
+  }
+  if (TRANSFER_MODE === 'rehearse' && requiringPreparation.length) {
+    throw new Error('catalogue_self_foreign_keys_not_prepared');
+  }
+
+  const alteredConstraints = [];
+  if (requiringPreparation.length) {
+    await client.query('begin');
+    try {
+      await client.query("set local lock_timeout = '5s'");
+      await client.query("set local statement_timeout = '5min'");
+      for (const constraint of requiringPreparation) {
+        await client.query(
+          `alter table ${qualifiedName(constraint.childTable)}
+           alter constraint ${quoteIdentifier(constraint.constraintName)}
+           deferrable initially immediate`,
+        );
+        alteredConstraints.push({
+          childTable: constraint.childTable,
+          constraintName: constraint.constraintName,
+        });
+      }
+      await client.query('commit');
+    } catch (error) {
+      await client.query('rollback').catch(() => {});
+      throw new Error(
+        `catalogue_self_foreign_key_preparation_failed:postgres_${error.code ?? 'unknown'}`,
+      );
+    }
+  }
+
+  const prepared = selectedSelfReferentialForeignKeys(
+    await catalogueForeignKeyRequirements(client, selectedTables),
+  );
+  assertExpectedSelfReferentialForeignKeys(prepared, selectedTables);
+  if (prepared.length !== before.length
+      || prepared.some((constraint) => (
+        !constraint.constraintValidated
+        || !constraint.constraintDeferrable
+        || constraint.constraintInitiallyDeferred
+      ))) {
+    throw new Error('catalogue_self_foreign_key_deferral_preparation_failed');
+  }
+  return {
+    constraintCount: prepared.length,
+    alteredConstraintCount: alteredConstraints.length,
+    alteredConstraints,
+    before,
+    prepared,
+    preparedBeforeDataTransaction: true,
+    deferredDuringTransfer: false,
+    validation: null,
+    postFinalise: null,
+  };
+}
+
+function qualifiedConstraintName(constraint) {
+  const { schema } = splitTableName(constraint.childTable);
+  return `${quoteIdentifier(schema)}.${quoteIdentifier(constraint.constraintName)}`;
+}
+
+async function deferPreparedSelfReferentialForeignKeys(client, selectedTables, prepared) {
+  const current = selectedSelfReferentialForeignKeys(
+    await catalogueForeignKeyRequirements(client, selectedTables),
+  );
+  assertExpectedSelfReferentialForeignKeys(current, selectedTables);
+  if (stableJson(current) !== stableJson(prepared)) {
+    throw new Error('catalogue_self_foreign_key_transaction_guard_mismatch');
+  }
+  if (current.length === 0) return true;
+  await client.query(
+    `set constraints ${current.map(qualifiedConstraintName).join(', ')} deferred`,
+  );
+  return true;
+}
+
+async function validateDeferredSelfReferentialForeignKeys(client, constraints) {
+  await client.query(
+    `set constraints ${constraints.map(qualifiedConstraintName).join(', ')} immediate`,
+  );
+  return {
+    constraintsForcedImmediate: true,
+    validatedBeforePreCommit: true,
+  };
+}
+
+async function verifySelfReferentialForeignKeysAfterFinalise(
+  client,
+  selectedTables,
+  prepared,
+) {
+  const after = selectedSelfReferentialForeignKeys(
+    await catalogueForeignKeyRequirements(client, selectedTables),
+  );
+  assertExpectedSelfReferentialForeignKeys(after, selectedTables);
+  if (stableJson(after) !== stableJson(prepared)) {
+    throw new Error('catalogue_self_foreign_key_postfinalise_mismatch');
+  }
+  return {
+    schemaPreparationPersisted: true,
+    verified: true,
+    constraints: after,
+  };
 }
 
 async function externalCatalogueForeignKeyRows(client, requirements) {
@@ -1234,6 +1469,7 @@ let productionAssetUrlRewriteAt = null;
 let preCommitAcceptanceVerified = false;
 let targetSchemaStability = null;
 let foreignKeySafety = null;
+let selfReferentialForeignKeySafety = null;
 
 try {
   targetSchemaStability = await waitForTargetSchemaStability(target, tableConfig.tables);
@@ -1243,6 +1479,14 @@ try {
     createdIndexCount: foreignKeySafety.createdIndexCount,
     externalDependencyCount: foreignKeySafety.externalDependencyCount,
     populatedExternalDependencyCount: foreignKeySafety.populatedExternalDependencyCount,
+  });
+  selfReferentialForeignKeySafety = await prepareSelectedSelfReferentialForeignKeys(
+    target,
+    tableConfig.tables,
+  );
+  recordTransferPhase('self_foreign_keys_prepared', {
+    constraintCount: selfReferentialForeignKeySafety.constraintCount,
+    alteredConstraintCount: selfReferentialForeignKeySafety.alteredConstraintCount,
   });
   await source.query('begin transaction isolation level repeatable read read only');
   sourceTransactionOpen = true;
@@ -1259,6 +1503,15 @@ try {
       foreignKeySafety.transactionGuard.populatedExternalDependencyCount,
   });
   recordTransferPhase('transactions_open', { mode: TRANSFER_MODE });
+  selfReferentialForeignKeySafety.deferredDuringTransfer =
+    await deferPreparedSelfReferentialForeignKeys(
+      target,
+      tableConfig.tables,
+      selfReferentialForeignKeySafety.prepared,
+    );
+  recordTransferPhase('self_foreign_keys_deferred', {
+    constraintCount: selfReferentialForeignKeySafety.constraintCount,
+  });
 
   adoptedMigrations = adoptedMigrationVersions();
   sourceAdoptedMigrationRows = await migrationRows(source, adoptedMigrations);
@@ -1430,6 +1683,15 @@ try {
     });
   }
 
+  selfReferentialForeignKeySafety.validation =
+    await validateDeferredSelfReferentialForeignKeys(
+      target,
+      selfReferentialForeignKeySafety.prepared,
+    );
+  recordTransferPhase('self_foreign_keys_validated', {
+    constraintCount: selfReferentialForeignKeySafety.constraintCount,
+  });
+
   const sourceAdoptedByVersion = new Map(
     sourceAdoptedMigrationRows.map((row) => [row.version, row]),
   );
@@ -1541,6 +1803,13 @@ try {
   targetTransactionOpen = true;
   recordTransferPhase('postfinalise_verification_snapshot_open');
 
+  selfReferentialForeignKeySafety.postFinalise =
+    await verifySelfReferentialForeignKeysAfterFinalise(
+      target,
+      tableConfig.tables,
+      selfReferentialForeignKeySafety.prepared,
+    );
+
   for (const result of results) {
     const metadata = await tableMetadata(target, result.table);
     const plan = tablePlans.get(result.table);
@@ -1629,6 +1898,7 @@ try {
     rowBatchSize: TRANSFER_ROW_BATCH_SIZE,
     targetSchemaStability,
     foreignKeySafety,
+    selfReferentialForeignKeySafety,
     preCommitAcceptanceVerified,
     transferPolicy: TRANSFER_MODE === 'promote'
       ? 'replace_allowlisted_production_catalogue_tables_with_verified_staging_release_rows'
