@@ -319,9 +319,13 @@ function recordKindsForCommand(adapter: SourceAdapter, options: ImportOptions) {
     return options.allowImageAssets ? [adapter.fetchAssets(options)] : [];
   }
   const command = options.command ?? 'run_source';
+  const sourceCapabilities = adapter.identifySource().capabilities;
   const includeSetMetadata = command === 'run_source'
     || command === 'run_language'
-    || (command === 'run_set' && adapter.identifySource().code === 'tcgdex');
+    || (
+      command === 'run_set'
+      && sourceCapabilities.includes('sets')
+    );
   const batches = includeSetMetadata
     ? [adapter.fetchSets(options), adapter.fetchCards(options), adapter.fetchVariants(options)]
     : [adapter.fetchCards(options), adapter.fetchVariants(options)];
