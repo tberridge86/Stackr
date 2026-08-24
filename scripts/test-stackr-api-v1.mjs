@@ -8,12 +8,68 @@ import {
   normalizeSearchText,
   parseCursor,
   searchFixtureCatalogue,
+  toCardSummary,
 } from '../backend/lib/stackrApiV1.js';
 
 const setId = '11111111-1111-4111-8111-111111111111';
 const cardId = '22222222-2222-4222-8222-222222222222';
 const variantId = '33333333-3333-4333-8333-333333333333';
 const manifestEtag = '"stackr-v1-test-manifest"';
+
+async function assertEnglishPresentationProjection() {
+  const card = toCardSummary([{
+    variant_id: variantId,
+    canonical_key: 'pokemon:ja:11111111-1111-4111-8111-111111111111:157/165:normal',
+    game_code: 'pokemon',
+    language_code: 'ja',
+    language_english_name: 'Japanese',
+    language_native_name: '日本語',
+    set_id: setId,
+    set_code: 'SV2a',
+    set_native_name: 'ポケモンカード151',
+    set_english_display_name: 'Pokemon Card 151',
+    printing_id: cardId,
+    collector_number: '157/165',
+    collector_number_sort_key: '000157/000165',
+    card_native_name: 'リザードンex',
+    card_english_display_name: 'リザードンex',
+    concept_english_display_name: 'Charizard ex',
+    supertype: 'Pokemon',
+    subtypes: ['Stage 2', 'ex'],
+    artist: '5ban Graphics',
+    rarity_code: 'sr',
+    rarity_label: 'Super Rare',
+    variant_code: 'normal',
+    variant_label: 'Normal',
+    finish_code: 'normal',
+    finish_label: 'Normal',
+    artwork_key: 'sv2a-charizard-ex',
+  }]);
+  assert.equal(card.names.englishDisplay, 'Charizard ex');
+  assert.equal(card.names.englishDisplaySource, 'concept');
+  assert.equal(card.names.native, 'リザードンex');
+  assert.deepEqual(card.details, {
+    supertype: 'Pokemon',
+    subtypes: ['Stage 2', 'ex'],
+    artist: '5ban Graphics',
+  });
+
+  const migration = await readFile(
+    new URL('../supabase/manual/20260824073736_expose_english_card_presentation.sql', import.meta.url),
+    'utf8',
+  );
+  for (const predicate of [
+    /with \(security_invoker = true\)/,
+    /cv\.status = 'published'/,
+    /cv\.deprecated_at is null/,
+    /v\.deprecated_at is null/,
+    /p\.deprecated_at is null/,
+    /s\.deprecated_at is null/,
+    /cc\.default_english_name as concept_english_display_name/,
+  ]) {
+    assert.match(migration, predicate);
+  }
+}
 
 const fixture = {
   cards: [
@@ -494,6 +550,8 @@ async function readJson(response) {
 await assertAssetManifestCursorQuery();
 await assertAssetManifestServerClientIsolation();
 await assertSearchServerClientIsolation();
+
+await assertEnglishPresentationProjection();
 
 await withServer(async (baseUrl) => {
   const health = await fetch(`${baseUrl}/health`, {

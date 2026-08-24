@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PRICE_API_URL, STACKR_API_URL } from './config';
 import { supabase } from './supabase';
 
-export type StackrApiLanguageCode = 'en' | 'ja' | 'zh-Hans' | 'zh-Hant' | 'ko';
+export type StackrApiLanguageCode = 'en' | 'ja' | 'zh-cn' | 'zh-tw' | 'zh-Hans' | 'zh-Hant' | 'ko';
 
 export type StackrApiEnvelope<T> = {
   data: T;
@@ -101,6 +101,9 @@ export type StackrCardVariant = {
   finishCode: string | null;
   finishLabel: string | null;
   artworkKey: string | null;
+  nativeImageStatus?: string | null;
+  sameArtworkAsVariantId?: string | null;
+  imageVariantId?: string | null;
   updatedAt: string | null;
 };
 
@@ -128,6 +131,12 @@ export type StackrCard = {
   names: {
     native: string;
     englishDisplay: string | null;
+    englishDisplaySource?: 'printing' | 'concept' | null;
+  };
+  details?: {
+    supertype: string | null;
+    subtypes: string[];
+    artist: string | null;
   };
   rarity: {
     code: string | null;

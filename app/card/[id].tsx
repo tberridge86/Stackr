@@ -33,6 +33,7 @@ import { getDisplaySetLogoUrl } from '../../lib/setDisplay';
 import { getJapaneseSetLogoSourceForSet } from '../../lib/japaneseSetLogos';
 import { fetchPokeTraceCardPrice } from '../../lib/pricing';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
+import { buildForeignCardPresentation } from '../../lib/foreignCardPresentation';
 
 type PokemonCard = {
   id: string;
@@ -273,6 +274,10 @@ export default function CardDetailScreen() {
   }, [card, myListings]);
 
   const resolvedSetId = card?.set?.id ?? paramSetId ?? '';
+  const cardPresentation = useMemo(
+    () => card ? buildForeignCardPresentation(card) : null,
+    [card],
+  );
   const setLogoSource = getJapaneseSetLogoSourceForSet({
     id: resolvedSetId,
     language: card?.language ?? card?.raw_data?.language ?? card?.raw_data?.set?.language ?? null,
@@ -417,6 +422,8 @@ export default function CardDetailScreen() {
   }
 
   const isWishlisted = isWanted(card.id);
+  const presentation = cardPresentation ?? buildForeignCardPresentation(card);
+  const presentedDetails = presentation.details;
   const hasEbayValues = ebayPrice?.low != null || ebayPrice?.average != null || ebayPrice?.high != null;
   const hasTcgValues = resolvedTcgPrices?.low != null || resolvedTcgPrices?.mid != null || resolvedTcgPrices?.market != null;
 
@@ -472,12 +479,34 @@ export default function CardDetailScreen() {
       </View>
 
       <StackrCardIdentity
-        name={card.name ?? 'Unknown card'}
-        setName={card.set?.name ?? 'Unknown set'}
+        name={presentation.name}
+        setName={presentation.setName}
         number={card.number ?? null}
         size="hero"
         style={{ marginBottom: 10 }}
       />
+
+      {presentation.isForeign ? (
+        <View style={styles.translationPanel}>
+          <Text style={styles.translationStatusText}>
+            {presentation.languageLabel} card image · {
+              presentation.englishDisplayName
+                ? 'card identity shown in English'
+                : 'English title translation pending'
+            }
+          </Text>
+          {presentation.nativeName && presentation.nativeName !== presentation.englishDisplayName ? (
+            <Text style={styles.nativeNameText}>
+              Native name: {presentation.nativeName}
+            </Text>
+          ) : null}
+          {presentation.withheldNativeDetails ? (
+            <Text style={styles.translationPendingText}>
+              English rules and attack text are not verified yet, so native prose is not presented as English.
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
 
       {resolvedSetId ? (
         <TouchableOpacity
@@ -485,7 +514,7 @@ export default function CardDetailScreen() {
           activeOpacity={0.82}
           onPress={() => router.push({ pathname: '/set/[id]', params: { id: resolvedSetId } })}
           accessibilityRole="button"
-          accessibilityLabel={`Open set ${card.set?.name ?? resolvedSetId}`}
+          accessibilityLabel={`Open set ${presentation.setName ?? resolvedSetId}`}
         >
           {setLogoSource ? (
             <Image source={setLogoSource} style={styles.setLogoImage} resizeMode="contain" />
@@ -493,14 +522,14 @@ export default function CardDetailScreen() {
             <Image source={{ uri: setLogoUrl }} style={styles.setLogoImage} resizeMode="contain" />
           ) : null}
           <Text style={styles.setLinkText} numberOfLines={1}>
-            View {card.set?.name ?? 'set'}
+            View {presentation.setName ?? 'set'}
           </Text>
         </TouchableOpacity>
       ) : null}
 
       <View style={styles.metaRow}>
         {!!editionLabel && <Text style={styles.metaChip}>{editionLabel}</Text>}
-        {!!card.supertype && <Text style={styles.metaChip}>{card.supertype}</Text>}
+        {!!presentedDetails.supertype && <Text style={styles.metaChip}>{presentedDetails.supertype}</Text>}
         {!!card.hp && <Text style={styles.metaChip}>HP {card.hp}</Text>}
       </View>
 
@@ -769,38 +798,38 @@ export default function CardDetailScreen() {
       )}
 
       {/* Card Details */}
-      {!!card.types?.length && (
+      {!!presentedDetails.types?.length && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Types</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.infoLine}>{card.types.join(', ')}</Text>
+            <Text style={styles.infoLine}>{presentedDetails.types.join(', ')}</Text>
           </View>
         </View>
       )}
 
-      {!!card.subtypes?.length && (
+      {!!presentedDetails.subtypes?.length && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Subtypes</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.infoLine}>{card.subtypes.join(', ')}</Text>
+            <Text style={styles.infoLine}>{presentedDetails.subtypes.join(', ')}</Text>
           </View>
         </View>
       )}
 
-      {!!card.evolvesFrom && (
+      {!!presentedDetails.evolvesFrom && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Evolves From</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.infoLine}>{card.evolvesFrom}</Text>
+            <Text style={styles.infoLine}>{presentedDetails.evolvesFrom}</Text>
           </View>
         </View>
       )}
 
-      {!!card.rules?.length && (
+      {!!presentedDetails.rules?.length && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Rules</Text>
           <View style={styles.infoCard}>
-            {card.rules.map((rule, index) => (
+            {presentedDetails.rules.map((rule, index) => (
               <Text key={`${rule}-${index}`} style={styles.infoLine}>
                 - {rule}
               </Text>
@@ -809,11 +838,11 @@ export default function CardDetailScreen() {
         </View>
       )}
 
-      {!!card.attacks?.length && (
+      {!!presentedDetails.attacks?.length && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Attacks</Text>
           <View style={styles.infoCard}>
-            {card.attacks.map((attack, index) => (
+            {presentedDetails.attacks.map((attack, index) => (
               <View key={`${attack.name}-${index}`} style={styles.attackBlock}>
                 <Text style={styles.attackTitle}>
                   {attack.name ?? 'Attack'}
@@ -829,11 +858,11 @@ export default function CardDetailScreen() {
         </View>
       )}
 
-      {!!card.weaknesses?.length && (
+      {!!presentedDetails.weaknesses?.length && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Weaknesses</Text>
           <View style={styles.infoCard}>
-            {card.weaknesses.map((w, index) => (
+            {presentedDetails.weaknesses.map((w, index) => (
               <Text key={`${w.type}-${index}`} style={styles.infoLine}>
                 {w.type ?? 'Unknown'} {w.value ?? ''}
               </Text>
@@ -842,11 +871,11 @@ export default function CardDetailScreen() {
         </View>
       )}
 
-      {!!card.resistances?.length && (
+      {!!presentedDetails.resistances?.length && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Resistances</Text>
           <View style={styles.infoCard}>
-            {card.resistances.map((r, index) => (
+            {presentedDetails.resistances.map((r, index) => (
               <Text key={`${r.type}-${index}`} style={styles.infoLine}>
                 {r.type ?? 'Unknown'} {r.value ?? ''}
               </Text>
@@ -855,11 +884,11 @@ export default function CardDetailScreen() {
         </View>
       )}
 
-      {!!card.retreatCost?.length && (
+      {!!presentedDetails.retreatCost?.length && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Retreat Cost</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.infoLine}>{card.retreatCost.join(', ')}</Text>
+            <Text style={styles.infoLine}>{presentedDetails.retreatCost.join(', ')}</Text>
           </View>
         </View>
       )}
@@ -873,11 +902,11 @@ export default function CardDetailScreen() {
         </View>
       )}
 
-      {!!card.flavorText && (
+      {!!presentedDetails.flavorText && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Flavour Text</Text>
           <View style={styles.infoCard}>
-            <Text style={styles.infoLine}>{card.flavorText}</Text>
+            <Text style={styles.infoLine}>{presentedDetails.flavorText}</Text>
           </View>
         </View>
       )}
@@ -983,6 +1012,32 @@ function makeStyles(theme: any) {
     color: theme.colors.primary,
     fontSize: 12,
     fontWeight: '800',
+  },
+  translationPanel: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 12,
+    gap: 3,
+  },
+  translationStatusText: {
+    color: theme.colors.text,
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '800',
+  },
+  nativeNameText: {
+    color: theme.colors.textSoft,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  translationPendingText: {
+    color: theme.colors.textSoft,
+    fontSize: 11,
+    lineHeight: 16,
   },
   metaRow: {
     flexDirection: 'row',

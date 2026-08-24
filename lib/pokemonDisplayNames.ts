@@ -454,8 +454,19 @@ function clean(value: unknown) {
   return text.length ? text : null;
 }
 
-function containsJapaneseScript(value: string | null) {
-  return /[\u3040-\u30ff\u3400-\u9fff]/.test(value ?? '');
+function containsNonEnglishScript(value: string | null) {
+  return /[\u0400-\u052f\u0590-\u08ff\u0900-\u097f\u0e00-\u0e7f\u3040-\u30ff\u3100-\u312f\u3400-\u9fff\uac00-\ud7af]/.test(value ?? '');
+}
+
+function cleanEnglishDisplayCandidate(value: unknown) {
+  const candidate = clean(value);
+  return candidate && !containsNonEnglishScript(candidate) ? candidate : null;
+}
+
+function isKnownForeignLanguage(value: unknown) {
+  const language = String(value ?? '').trim().toLowerCase().replace(/_/g, '-');
+  if (!language || ['all', 'und', 'unknown'].includes(language)) return false;
+  return language !== 'en' && language !== 'english' && !language.startsWith('en-');
 }
 
 function isJapaneseCard(input: CardDisplayNameInput) {
@@ -473,11 +484,7 @@ function isNonEnglishCard(input: CardDisplayNameInput) {
   const region = String(input.region ?? input.raw?.region ?? '').trim().toLowerCase();
   const id = String(input.id ?? input.sourceId ?? '').toLowerCase();
   return isJapaneseCard(input)
-    || language === 'zh-tw'
-    || language === 'zh'
-    || language === 'zhtw'
-    || language === 'chinese'
-    || language === 'traditional-chinese'
+    || isKnownForeignLanguage(language)
     || region === 'tw'
     || region === 'taiwan'
     || id.startsWith('zh-tw:')
@@ -499,11 +506,7 @@ function isNonEnglishSet(input: SetDisplayNameInput) {
   const region = String(input.region ?? input.raw?.region ?? input.raw?.set?.region ?? '').trim().toLowerCase();
   const id = String(input.id ?? input.sourceId ?? input.setCode ?? '').toLowerCase();
   return isJapaneseSet(input)
-    || language === 'zh-tw'
-    || language === 'zh'
-    || language === 'zhtw'
-    || language === 'chinese'
-    || language === 'traditional-chinese'
+    || isKnownForeignLanguage(language)
     || region === 'tw'
     || region === 'taiwan'
     || id.startsWith('zh-tw:')
@@ -553,21 +556,29 @@ export function getLocalSetName(input: SetDisplayNameInput) {
 }
 
 export function getEnglishSetDisplayName(input: SetDisplayNameInput) {
-  const explicit = clean(input.englishDisplayName)
-    ?? clean(input.raw?.english_display_name)
-    ?? clean(input.raw?.englishDisplayName)
-    ?? clean(input.raw?.display_name)
-    ?? clean(input.raw?.displayName)
-    ?? clean(input.raw?.set?.english_display_name)
-    ?? clean(input.raw?.set?.englishDisplayName)
-    ?? clean(input.raw?.set?.display_name)
-    ?? clean(input.raw?.name_en)
-    ?? clean(input.raw?.nameEn);
+  const explicitlyEnglish = [
+    input.englishDisplayName,
+    input.raw?.english_display_name,
+    input.raw?.englishDisplayName,
+    input.raw?.set?.english_display_name,
+    input.raw?.set?.englishDisplayName,
+    input.raw?.name_en,
+    input.raw?.nameEn,
+    input.raw?.translations?.en?.name,
+    input.raw?.translations?.['en-GB']?.name,
+    input.raw?.translations?.['en-US']?.name,
+  ];
+  const genericDisplay = isNonEnglishSet(input)
+    ? []
+    : [input.raw?.display_name, input.raw?.displayName, input.raw?.set?.display_name];
+  const explicit = [...explicitlyEnglish, ...genericDisplay]
+    .map(cleanEnglishDisplayCandidate)
+    .find(Boolean) ?? null;
   if (explicit) return explicit;
 
   if (!isJapaneseSet(input)) {
     const localName = getLocalSetName(input) ?? clean(input.canonicalName) ?? clean(input.fallbackName);
-    return localName && !containsJapaneseScript(localName) ? localName : null;
+    return !isNonEnglishSet(input) && localName && !containsNonEnglishScript(localName) ? localName : null;
   }
 
   for (const key of getSetKeyCandidates(input)) {
@@ -575,8 +586,7 @@ export function getEnglishSetDisplayName(input: SetDisplayNameInput) {
     if (mapped) return mapped;
   }
 
-  const localName = getLocalSetName(input) ?? clean(input.canonicalName) ?? clean(input.fallbackName);
-  return localName && !containsJapaneseScript(localName) ? localName : null;
+  return null;
 }
 
 function readDexIds(value: unknown): number[] {
@@ -643,16 +653,21 @@ export function getLocalCardName(input: CardDisplayNameInput) {
 }
 
 export function getEnglishCardDisplayName(input: CardDisplayNameInput) {
-  const explicit = clean(input.englishDisplayName)
-    ?? clean(input.raw?.english_display_name)
-    ?? clean(input.raw?.englishDisplayName)
-    ?? clean(input.raw?.name_en)
-    ?? clean(input.raw?.nameEn);
+  const explicit = [
+    input.englishDisplayName,
+    input.raw?.english_display_name,
+    input.raw?.englishDisplayName,
+    input.raw?.name_en,
+    input.raw?.nameEn,
+    input.raw?.translations?.en?.name,
+    input.raw?.translations?.['en-GB']?.name,
+    input.raw?.translations?.['en-US']?.name,
+  ].map(cleanEnglishDisplayCandidate).find(Boolean) ?? null;
   if (explicit) return explicit;
 
   if (!isJapaneseCard(input)) {
     const localName = getLocalCardName(input) ?? clean(input.canonicalName) ?? clean(input.fallbackName);
-    return localName && !containsJapaneseScript(localName) ? localName : null;
+    return !isNonEnglishCard(input) && localName && !containsNonEnglishScript(localName) ? localName : null;
   }
 
   const localName = getLocalCardName(input) ?? clean(input.canonicalName) ?? clean(input.fallbackName);
