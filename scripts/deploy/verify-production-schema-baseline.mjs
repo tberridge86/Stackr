@@ -14,6 +14,10 @@ const directory = argument('directory');
 const expectedSchemaSha256 = argument('expected-schema-sha256');
 const expectedHistoryVersion = argument('expected-history-version');
 const expectedHistoryName = argument('expected-history-name');
+const expectedHistoryCountRaw = argument('expected-history-count');
+const expectedHistoryCount = expectedHistoryCountRaw == null
+  ? (expectedHistoryVersion ? 1 : 0)
+  : Number(expectedHistoryCountRaw);
 const errors = [];
 
 if (!directory || !expectedSchemaSha256) {
@@ -22,6 +26,15 @@ if (!directory || !expectedSchemaSha256) {
 }
 if (Boolean(expectedHistoryVersion) !== Boolean(expectedHistoryName)) {
   errors.push('baseline_expected_history_identity_incomplete');
+}
+if (!Number.isSafeInteger(expectedHistoryCount) || expectedHistoryCount < 0) {
+  errors.push('baseline_expected_history_count_invalid');
+}
+if (expectedHistoryCount > 0 && (!expectedHistoryVersion || !expectedHistoryName)) {
+  errors.push('baseline_expected_history_identity_required');
+}
+if (expectedHistoryCount === 0 && (expectedHistoryVersion || expectedHistoryName)) {
+  errors.push('baseline_expected_history_identity_unexpected');
 }
 
 function migrationHistoryRows(content) {
@@ -62,7 +75,7 @@ if (!errors.length) {
   }
   if (evidence.productionMutationPerformed !== false) errors.push('baseline_claims_production_mutation');
   if (evidence.customerTableDataIncluded !== false) errors.push('baseline_claims_customer_data');
-  const expectedHistoryRows = expectedHistoryVersion ? 1 : 0;
+  const expectedHistoryRows = expectedHistoryCount;
   if (evidence.inventory?.migrationHistorySchemaPresent !== Boolean(expectedHistoryVersion)) {
     errors.push('unexpected_production_migration_history_schema');
   }
@@ -73,7 +86,11 @@ if (!errors.length) {
   if (historyRows.length !== expectedHistoryRows) {
     errors.push('production_migration_history_copy_row_count_mismatch');
   } else if (expectedHistoryVersion) {
-    const [version, , name] = historyRows[0];
+    const [version, , name] = historyRows
+      .toSorted(([leftVersion, , leftName], [rightVersion, , rightName]) => (
+        leftVersion.localeCompare(rightVersion) || leftName.localeCompare(rightName)
+      ))
+      .at(-1);
     if (version !== expectedHistoryVersion || name !== expectedHistoryName) {
       errors.push('production_migration_history_identity_mismatch');
     }
@@ -97,6 +114,7 @@ console.log(JSON.stringify({
   ok: errors.length === 0,
   sourceProjectRef: 'oakdbbzdqwurpjnoqhmu',
   expectedSchemaSha256,
+  expectedHistoryCount,
   expectedHistoryVersion: expectedHistoryVersion ?? null,
   expectedHistoryName: expectedHistoryName ?? null,
   errors,

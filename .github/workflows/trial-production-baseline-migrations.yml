@@ -76,6 +76,7 @@ jobs:
           node scripts/deploy/verify-production-schema-baseline.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact" \
             --expected-schema-sha256="$BASELINE_SCHEMA_SHA256" \
+            --expected-history-count=106 \
             --expected-history-version=20260813135412 \
             --expected-history-name=premium_seller_access_boundary
           node scripts/deploy/secret-scan.mjs \
