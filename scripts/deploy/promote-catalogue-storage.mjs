@@ -3,6 +3,12 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import pg from 'pg';
+import {
+  comparableObject,
+  objectIdentity,
+  storageObjectPathHash,
+  verifyRetainedProductionObjects,
+} from './catalogue-storage-verification.mjs';
 
 const { Client } = pg;
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
@@ -115,21 +121,6 @@ async function storageInventory(connectionString, applicationName) {
   }
 }
 
-function comparableObject(object) {
-  return {
-    name: object.name,
-    size: Number(object.metadata?.size ?? 0),
-    mimetype: object.metadata?.mimetype ?? null,
-    etag: String(object.metadata?.eTag ?? '').replaceAll('"', '') || null,
-    cacheControl: object.metadata?.cacheControl ?? null,
-  };
-}
-
-function objectIdentity(object) {
-  const comparable = comparableObject(object);
-  return `${comparable.name}\0${comparable.size}\0${comparable.mimetype ?? ''}`;
-}
-
 function inventorySha256(objects) {
   const hash = createHash('sha256');
   for (const object of objects) hash.update(JSON.stringify(comparableObject(object))).update('\n');
@@ -150,10 +141,6 @@ function uploadOptions(object) {
 function writeEvidence(evidence) {
   mkdirSync(path.dirname(EVIDENCE_PATH), { recursive: true });
   writeFileSync(EVIDENCE_PATH, `${JSON.stringify(evidence, null, 2)}\n`, { mode: 0o600 });
-}
-
-function storageObjectPathHash(name) {
-  return name.match(/\/([0-9a-f]{64})\/[^/]+$/)?.[1] ?? null;
 }
 
 async function catalogueStorageReferenceCounts(connectionString, applicationName) {
@@ -398,6 +385,20 @@ async function copyCatalogueObjects() {
     ));
     if (missingAfter.length) throw new Error(`production_storage_verification_failed:${missingAfter.length}`);
 
+    // Existing production objects never pass merely because their metadata
+    // resembles staging.  Download every retained object and prove its byte
+    // length and digest against the content-addressed key and source inventory.
+    const missingNames = new Set(missing.map((object) => object.name));
+    const retainedVerification = await verifyRetainedProductionObjects({
+      sourceObjects: sourceInventory.objects.filter((object) => !missingNames.has(object.name)),
+      targetByName: targetAfterByName,
+      downloadTargetObject: (name) => retry(() => expectData(
+        targetStorage.storage.from(BUCKET).download(name),
+        `download_retained_production_object:${name}`,
+      )),
+      concurrency: CONCURRENCY,
+    });
+
     evidence.status = 'copy_complete';
     evidence.verifiedAt = new Date().toISOString();
     evidence.copiedObjectCount = evidence.copiedObjects.length;
@@ -405,7 +406,13 @@ async function copyCatalogueObjects() {
     evidence.copiedContentHashVerifiedCount = evidence.copiedObjects.length;
     evidence.targetObjectCountAfter = targetInventoryAfter.objects.length;
     evidence.inventoryMatchedSourceObjectCount = sourceInventory.objects.length - missingAfter.length;
-    evidence.existingProductionObjectsContentHashVerified = false;
+    evidence.existingProductionObjectsContentHashVerified = true;
+    evidence.retainedProductionObjectCount = retainedVerification.retainedObjectCount;
+    evidence.retainedProductionByteSize = retainedVerification.retainedByteSize;
+    evidence.retainedProductionContentHashVerifiedCount = retainedVerification.retainedContentHashVerifiedCount;
+    if (evidence.retainedProductionContentHashVerifiedCount !== evidence.retainedProductionObjectCount) {
+      throw new Error('retained_production_object_verification_count_mismatch');
+    }
     evidence.ok = true;
     writeEvidence(evidence);
     process.stdout.write(`${JSON.stringify({

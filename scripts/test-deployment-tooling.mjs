@@ -830,6 +830,101 @@ assert.match(productionWorkflow, /npm --prefix gateway exec -- wrangler --cwd ga
 assert.doesNotMatch(stagingWorkflow, /npm exec --prefix gateway -- wrangler/);
 assert.doesNotMatch(productionWorkflow, /npm exec --prefix gateway -- wrangler/);
 assert.doesNotMatch(productionWorkflow, /update:rollback/);
+assert.match(
+  productionWorkflow,
+  /Catalogue API releases require apply_migrations=true/,
+  'catalogue promotion must include the post-transfer migration gate',
+);
+assert.match(
+  productionWorkflow,
+  /STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn/,
+  'catalogue promotion must require exactly the four launch languages',
+);
+assert.doesNotMatch(
+  productionWorkflow,
+  /STACKR_REQUIRED_CATALOGUE_LANGUAGES:[^\n]*\bko\b/,
+  'Korean must remain outside the launch catalogue promotion',
+);
+for (const evidenceVariable of [
+  'STACKR_TRANSFER_EVIDENCE_PATH',
+  'STACKR_STORAGE_PROMOTION_EVIDENCE_PATH',
+  'STACKR_PRODUCTION_CATALOGUE_EVIDENCE_PATH',
+]) {
+  assert.match(
+    productionWorkflow,
+    new RegExp(`${evidenceVariable}:`),
+    `final catalogue verification must receive ${evidenceVariable}`,
+  );
+}
+const productionCatalogueSteps = [
+  'Verify latest physical backup and create ephemeral logical backups',
+  'Prepare protected catalogue promotion URLs',
+  'Arm bounded catalogue storage compensation',
+  'Copy verified catalogue storage into production',
+  'Promote catalogue data and adopt exact migration history',
+  'Dry-run backward-compatible migrations',
+  'Apply backward-compatible migrations',
+  'Verify final production catalogue after migrations',
+  'Deploy rolling catalogue API version',
+  'Compensate storage only when catalogue database promotion never started',
+  'Record an incomplete release after catalogue database promotion started',
+  'Upload catalogue promotion evidence',
+  'Remove ephemeral logical backups',
+];
+const productionCatalogueStepOffsets = productionCatalogueSteps.map((step) => {
+  const offset = productionWorkflow.indexOf(`- name: ${step}`);
+  assert.notEqual(offset, -1, `production workflow must contain the ${step} step`);
+  return offset;
+});
+for (let index = 1; index < productionCatalogueStepOffsets.length; index += 1) {
+  assert.ok(
+    productionCatalogueStepOffsets[index - 1] < productionCatalogueStepOffsets[index],
+    `${productionCatalogueSteps[index - 1]} must run before ${productionCatalogueSteps[index]}`,
+  );
+}
+assert.equal(
+  productionWorkflow.match(/STACKR_CATALOGUE_PROMOTED=true/g)?.length ?? 0,
+  1,
+  'only final production verification may mark the catalogue promoted',
+);
+assert.match(
+  productionWorkflow,
+  /Verify final production catalogue after migrations[\s\S]+verify-production-catalogue-promotion\.mjs[\s\S]+STACKR_CATALOGUE_PROMOTED=true/,
+);
+assert.match(
+  productionWorkflow,
+  /Promote catalogue data and adopt exact migration history[\s\S]+STACKR_CATALOGUE_DATABASE_PROMOTED=true/,
+);
+assert.match(
+  productionWorkflow,
+  /Promote catalogue data and adopt exact migration history[\s\S]+STACKR_CATALOGUE_DATABASE_PROMOTION_STARTED=true[\s\S]+rehearse-staging-catalogue-transfer\.mjs/,
+  'ambiguous transfer failures must be treated as potentially committed',
+);
+assert.match(
+  productionWorkflow,
+  /if: failure\(\) && inputs\.release_scope == 'catalogue_api' && env\.STACKR_STORAGE_COPY_ARMED == 'true' && env\.STACKR_CATALOGUE_DATABASE_PROMOTION_STARTED != 'true'/,
+  'automatic storage compensation is allowed only before database promotion starts',
+);
+assert.match(productionWorkflow, /STACKR_STORAGE_PROMOTION_COMPENSATE_FAILURE: PRE_DATABASE_COMMIT_FAILURE/);
+assert.match(
+  productionWorkflow,
+  /Record an incomplete release after catalogue database promotion started[\s\S]+if: failure\(\) && inputs\.release_scope == 'catalogue_api' && env\.STACKR_CATALOGUE_DATABASE_PROMOTION_STARTED == 'true'/,
+  'every failed or ambiguous database promotion must be recorded for forward recovery',
+);
+assert.match(
+  productionWorkflow,
+  /incomplete-release-verification\.json[\s\S]+recover forward without an automatic whole-database restore/,
+);
+assert.doesNotMatch(
+  productionWorkflow,
+  /Record an incomplete release after catalogue database promotion started[\s\S]{0,1500}(?:db reset|prepare-restore-cleanup|psql[^\n]*(?:schema\.sql|data\.sql))/,
+  'post-commit handling must never launch a broad automatic database restore',
+);
+assert.match(
+  productionWorkflow,
+  /Upload catalogue promotion evidence[\s\S]+uses: actions\/upload-artifact@[0-9a-f]{40}[\s\S]+retention-days: 90/,
+  'catalogue evidence must use a pinned uploader and be retained for 90 days',
+);
 assert.match(rollbackWorkflow, /release-database\.mjs index rollback/);
 assert.match(rollbackWorkflow, /update:revert-update-rollout/);
 assert.match(rollbackWorkflow, /update:republish/);
@@ -847,6 +942,18 @@ assert.doesNotMatch(rollbackWorkflow, /run:[^\n]*\$\{\{ inputs\.(?:target_id|rea
 const backupFailure = run('scripts/deploy/verify-backup.mjs');
 assert.notEqual(backupFailure.status, 0, 'backup verification must fail closed without backup files');
 assert.doesNotMatch(backupFailure.stderr, /ENOENT|TypeError/, 'backup verifier should report missing evidence cleanly');
+
+for (const criticalCataloguePromotionTest of [
+  'scripts/test-production-catalogue-storage-promotion.mjs',
+  'scripts/test-production-catalogue-promotion-verifier.mjs',
+]) {
+  const result = run(criticalCataloguePromotionTest);
+  assert.equal(
+    result.status,
+    0,
+    `${criticalCataloguePromotionTest} failed:\n${result.stderr || result.stdout}`,
+  );
+}
 
 const easTemp = mkdtempSync(path.join(tmpdir(), 'stackr-eas-test-'));
 try {
