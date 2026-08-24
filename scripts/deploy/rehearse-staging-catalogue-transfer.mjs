@@ -759,6 +759,247 @@ async function tableRowCount(client, tableName) {
   )).rows[0].row_count);
 }
 
+function transferForeignKeyIndexName(requirement) {
+  const { table } = splitTableName(requirement.childTable);
+  const suffix = createHash('sha256')
+    .update(`${requirement.childTable}:${requirement.childColumns.join(',')}`)
+    .digest('hex')
+    .slice(0, 12);
+  const readablePrefix = `${table}_${requirement.childColumns.join('_')}`
+    .replaceAll(/[^a-z0-9_]/g, '_')
+    .slice(0, 40);
+  return `${readablePrefix}_stackr_fk_${suffix}`;
+}
+
+async function catalogueForeignKeyRequirements(client, selectedTables) {
+  const rows = (await client.query(`
+    with foreign_keys as (
+      select
+        constraint_entry.oid::text as constraint_oid,
+        constraint_entry.conname as constraint_name,
+        format('%I.%I', child_namespace.nspname, child_relation.relname) as child_table,
+        child_namespace.nspname as child_schema,
+        format('%I.%I', parent_namespace.nspname, parent_relation.relname) as parent_table,
+        array_agg(child_attribute.attname order by key_entry.ordinality)::text[]
+          as child_columns,
+        case constraint_entry.confdeltype
+          when 'a' then 'no_action'
+          when 'r' then 'restrict'
+          when 'c' then 'cascade'
+          when 'n' then 'set_null'
+          when 'd' then 'set_default'
+          else constraint_entry.confdeltype::text
+        end as delete_action
+      from pg_constraint constraint_entry
+      join pg_class child_relation
+        on child_relation.oid = constraint_entry.conrelid
+      join pg_namespace child_namespace
+        on child_namespace.oid = child_relation.relnamespace
+      join pg_class parent_relation
+        on parent_relation.oid = constraint_entry.confrelid
+      join pg_namespace parent_namespace
+        on parent_namespace.oid = parent_relation.relnamespace
+      join lateral unnest(constraint_entry.conkey) with ordinality
+        as key_entry(child_attribute_number, ordinality) on true
+      join pg_attribute child_attribute
+        on child_attribute.attrelid = child_relation.oid
+       and child_attribute.attnum = key_entry.child_attribute_number
+      where constraint_entry.contype = 'f'
+        and format('%I.%I', parent_namespace.nspname, parent_relation.relname) = any($1::text[])
+      group by
+        constraint_entry.oid,
+        constraint_entry.conname,
+        child_namespace.nspname,
+        child_relation.relname,
+        parent_namespace.nspname,
+        parent_relation.relname,
+        constraint_entry.confdeltype
+    )
+    select
+      foreign_keys.*,
+      supporting_index.index_name as supporting_index_name
+    from foreign_keys
+    left join lateral (
+      select index_relation.relname as index_name
+      from pg_class child_relation
+      join pg_namespace child_namespace
+        on child_namespace.oid = child_relation.relnamespace
+      join pg_index index_entry
+        on index_entry.indrelid = child_relation.oid
+      join pg_class index_relation
+        on index_relation.oid = index_entry.indexrelid
+      join pg_am index_method
+        on index_method.oid = index_relation.relam
+      where format('%I.%I', child_namespace.nspname, child_relation.relname)
+          = foreign_keys.child_table
+        and index_method.amname = 'btree'
+        and index_entry.indisvalid
+        and index_entry.indisready
+        and index_entry.indpred is null
+        and (
+          select array_agg(index_attribute.attname order by index_key.ordinality)::text[]
+          from unnest(index_entry.indkey) with ordinality
+            as index_key(attribute_number, ordinality)
+          join pg_attribute index_attribute
+            on index_attribute.attrelid = child_relation.oid
+           and index_attribute.attnum = index_key.attribute_number
+          where index_key.ordinality <= cardinality(foreign_keys.child_columns)
+        ) = foreign_keys.child_columns
+      order by index_entry.indisunique desc, index_relation.relname
+      limit 1
+    ) supporting_index on true
+    order by foreign_keys.child_table, foreign_keys.constraint_name
+  `, [selectedTables])).rows;
+
+  const selected = new Set(selectedTables);
+  return rows.map((row) => ({
+    constraintOid: row.constraint_oid,
+    constraintName: row.constraint_name,
+    childTable: row.child_table,
+    childSchema: row.child_schema,
+    parentTable: row.parent_table,
+    childColumns: row.child_columns,
+    deleteAction: row.delete_action,
+    childSelected: selected.has(row.child_table),
+    supportingIndexName: row.supporting_index_name,
+  }));
+}
+
+async function externalCatalogueForeignKeyRows(client, requirements) {
+  const results = [];
+  for (const requirement of requirements.filter(({ childSelected }) => !childSelected)) {
+    const predicate = requirement.childColumns
+      .map((column) => `${quoteIdentifier(column)} is not null`)
+      .join(' and ');
+    const rowCount = Number((await client.query(
+      `select count(*)::integer as row_count
+       from ${qualifiedName(requirement.childTable)}
+       where ${predicate}`,
+    )).rows[0].row_count);
+    results.push({
+      constraintName: requirement.constraintName,
+      childTable: requirement.childTable,
+      parentTable: requirement.parentTable,
+      deleteAction: requirement.deleteAction,
+      rowCount,
+    });
+  }
+  return results;
+}
+
+function assertExternalCatalogueForeignKeysEmpty(externalDependencies) {
+  const populatedExternalDependencies = externalDependencies.filter(({ rowCount }) => rowCount > 0);
+  if (populatedExternalDependencies.length) {
+    const detail = populatedExternalDependencies
+      .map(({ childTable, constraintName, rowCount, deleteAction }) => (
+        `${childTable}.${constraintName}:${deleteAction}:${rowCount}`
+      ))
+      .join(',');
+    throw new Error(`external_catalogue_foreign_key_rows:${detail}`);
+  }
+  return populatedExternalDependencies;
+}
+
+async function lockAndVerifyExternalCatalogueForeignKeys(
+  client,
+  selectedTables,
+  preparedExternalDependencies,
+) {
+  const externalChildTables = preparedExternalDependencies.map(({ childTable }) => childTable);
+  const lockedTables = [...new Set([...selectedTables, ...externalChildTables])].sort();
+  await client.query(
+    `lock table ${lockedTables.map(qualifiedName).join(', ')} in share row exclusive mode`,
+  );
+  const requirements = await catalogueForeignKeyRequirements(client, selectedTables);
+  const unlockedExternalTables = [...new Set(
+    requirements
+      .filter(({ childSelected }) => !childSelected)
+      .map(({ childTable }) => childTable)
+      .filter((childTable) => !lockedTables.includes(childTable)),
+  )].sort();
+  if (unlockedExternalTables.length) {
+    throw new Error(
+      `external_catalogue_foreign_key_tables_unlocked:${unlockedExternalTables.join(',')}`,
+    );
+  }
+  const externalDependencies = await externalCatalogueForeignKeyRows(client, requirements);
+  const populatedExternalDependencies = assertExternalCatalogueForeignKeysEmpty(
+    externalDependencies,
+  );
+  return {
+    lockedTableCount: lockedTables.length,
+    populatedExternalDependencyCount: populatedExternalDependencies.length,
+    externalDependencies,
+  };
+}
+
+async function prepareCatalogueForeignKeyIndexes(client, selectedTables) {
+  const requirementsBefore = await catalogueForeignKeyRequirements(client, selectedTables);
+  const externalDependencies = await externalCatalogueForeignKeyRows(client, requirementsBefore);
+  const populatedExternalDependencies = assertExternalCatalogueForeignKeysEmpty(
+    externalDependencies,
+  );
+
+  const createdIndexes = [];
+  const missingSelectedIndexes = [...new Map(
+    requirementsBefore
+      .filter((requirement) => requirement.childSelected && !requirement.supportingIndexName)
+      .map((requirement) => [
+        `${requirement.childTable}:${requirement.childColumns.join(',')}`,
+        requirement,
+      ]),
+  ).values()];
+  if (TRANSFER_MODE === 'rehearse' && missingSelectedIndexes.length) {
+    throw new Error(
+      `catalogue_foreign_key_indexes_missing:${missingSelectedIndexes.map((requirement) => (
+        `${requirement.childTable}.${requirement.constraintName}`
+      )).join(',')}`,
+    );
+  }
+  for (const requirement of missingSelectedIndexes) {
+    const indexName = transferForeignKeyIndexName(requirement);
+    await client.query(
+      `create index concurrently if not exists
+         ${quoteIdentifier(indexName)}
+       on ${qualifiedName(requirement.childTable)}
+         (${requirement.childColumns.map(quoteIdentifier).join(', ')})`,
+    );
+    createdIndexes.push({
+      indexName,
+      childTable: requirement.childTable,
+      childColumns: requirement.childColumns,
+      constraintName: requirement.constraintName,
+      parentTable: requirement.parentTable,
+    });
+    recordTransferPhase('foreign_key_index_created', {
+      indexName,
+      childTable: requirement.childTable,
+      childColumns: requirement.childColumns,
+    });
+  }
+
+  const requirementsAfter = await catalogueForeignKeyRequirements(client, selectedTables);
+  const remainingMissing = requirementsAfter.filter((requirement) => (
+    requirement.childSelected && !requirement.supportingIndexName
+  ));
+  if (remainingMissing.length) {
+    throw new Error(
+      `catalogue_foreign_key_indexes_missing:${remainingMissing.map((requirement) => (
+        `${requirement.childTable}.${requirement.constraintName}`
+      )).join(',')}`,
+    );
+  }
+
+  return {
+    requirementCount: requirementsAfter.filter(({ childSelected }) => childSelected).length,
+    createdIndexCount: createdIndexes.length,
+    createdIndexes,
+    externalDependencyCount: externalDependencies.length,
+    populatedExternalDependencyCount: populatedExternalDependencies.length,
+    externalDependencies,
+  };
+}
+
 function compatibleTableContract(tableName, sourceMetadata, targetMetadata) {
   if (stableJson(sourceMetadata.primaryKey) !== stableJson(targetMetadata.primaryKey)) {
     throw new Error(`table_contract_mismatch:${tableName}:primary_key`);
@@ -992,19 +1233,39 @@ let promotionTimestamp = null;
 let productionAssetUrlRewriteAt = null;
 let preCommitAcceptanceVerified = false;
 let targetSchemaStability = null;
+let foreignKeySafety = null;
 
 try {
   targetSchemaStability = await waitForTargetSchemaStability(target, tableConfig.tables);
+  foreignKeySafety = await prepareCatalogueForeignKeyIndexes(target, tableConfig.tables);
+  recordTransferPhase('foreign_key_preflight_verified', {
+    requirementCount: foreignKeySafety.requirementCount,
+    createdIndexCount: foreignKeySafety.createdIndexCount,
+    externalDependencyCount: foreignKeySafety.externalDependencyCount,
+    populatedExternalDependencyCount: foreignKeySafety.populatedExternalDependencyCount,
+  });
   await source.query('begin transaction isolation level repeatable read read only');
   sourceTransactionOpen = true;
-  await target.query('begin transaction isolation level repeatable read');
+  await target.query('begin transaction isolation level read committed');
   targetTransactionOpen = true;
+  foreignKeySafety.transactionGuard = await lockAndVerifyExternalCatalogueForeignKeys(
+    target,
+    tableConfig.tables,
+    foreignKeySafety.externalDependencies,
+  );
+  recordTransferPhase('external_foreign_key_locks_verified', {
+    lockedTableCount: foreignKeySafety.transactionGuard.lockedTableCount,
+    populatedExternalDependencyCount:
+      foreignKeySafety.transactionGuard.populatedExternalDependencyCount,
+  });
   recordTransferPhase('transactions_open', { mode: TRANSFER_MODE });
 
   adoptedMigrations = adoptedMigrationVersions();
   sourceAdoptedMigrationRows = await migrationRows(source, adoptedMigrations);
   if (TRANSFER_MODE === 'promote') {
-    promotionTimestamp = new Date();
+    promotionTimestamp = (await target.query(
+      'select transaction_timestamp() as promotion_timestamp',
+    )).rows[0].promotion_timestamp;
     productionAssetUrlRewriteAt = promotionTimestamp.toISOString();
   }
   verifyAdoptedMigrationRows(sourceAdoptedMigrationRows, adoptedMigrations, 'source');
@@ -1085,7 +1346,9 @@ try {
         throw new Error('target_shared_storage_object_contract_mismatch');
       }
     }
+    recordTransferPhase('table_clear_started', { table: tableName });
     await target.query(`delete from ${qualifiedName(tableName)}`);
+    recordTransferPhase('table_cleared', { table: tableName });
   }
 
   for (const tableName of tableConfig.tables) {
@@ -1365,6 +1628,7 @@ try {
     statementTimeoutMs: TRANSFER_STATEMENT_TIMEOUT_MS,
     rowBatchSize: TRANSFER_ROW_BATCH_SIZE,
     targetSchemaStability,
+    foreignKeySafety,
     preCommitAcceptanceVerified,
     transferPolicy: TRANSFER_MODE === 'promote'
       ? 'replace_allowlisted_production_catalogue_tables_with_verified_staging_release_rows'

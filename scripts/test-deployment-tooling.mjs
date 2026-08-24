@@ -544,6 +544,19 @@ assert.match(catalogueTransferScript, /target_schema_stability_timeout/);
 assert.match(catalogueTransferScript, /targetSchemaStability = await waitForTargetSchemaStability/);
 assert.match(catalogueTransferScript, /invalid_transfer_statement_timeout/);
 assert.match(catalogueTransferScript, /set_config\('statement_timeout'/);
+assert.match(catalogueTransferScript, /catalogueForeignKeyRequirements/);
+assert.match(catalogueTransferScript, /create index concurrently if not exists/);
+assert.match(catalogueTransferScript, /index_method\.amname = 'btree'/);
+assert.match(catalogueTransferScript, /\.slice\(0, 40\)/);
+assert.match(catalogueTransferScript, /external_catalogue_foreign_key_rows/);
+assert.match(catalogueTransferScript, /external_catalogue_foreign_key_tables_unlocked/);
+assert.match(catalogueTransferScript, /catalogue_foreign_key_indexes_missing/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('foreign_key_preflight_verified'/);
+assert.match(catalogueTransferScript, /in share row exclusive mode/);
+assert.match(catalogueTransferScript, /begin transaction isolation level read committed/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('external_foreign_key_locks_verified'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('table_clear_started'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('table_cleared'/);
 assert.match(catalogueTransferScript, /recordTransferPhase\('transactions_open'/);
 assert.match(catalogueTransferScript, /recordTransferPhase\('precommit_verified'/);
 assert.match(catalogueTransferScript, /recordTransferPhase\('target_finalise_started'/);
@@ -557,15 +570,41 @@ assert.ok(
   'all mutable transfer acceptance checks must pass before commit',
 );
 assert.ok(
+  catalogueTransferScript.indexOf('foreignKeySafety = await prepareCatalogueForeignKeyIndexes')
+    < catalogueTransferScript.indexOf("await source.query('begin transaction isolation level repeatable read read only')"),
+  'foreign-key safety must pass before the source snapshot and any target data mutation',
+);
+assert.ok(
+  catalogueTransferScript.indexOf('foreignKeySafety.transactionGuard = await lockAndVerifyExternalCatalogueForeignKeys')
+    < catalogueTransferScript.indexOf("recordTransferPhase('transactions_open'"),
+  'external dependency tables must stay write-locked through the target transaction',
+);
+assert.ok(
   catalogueTransferScript.indexOf('sourceAdoptedMigrationRows = await migrationRows')
-    < catalogueTransferScript.indexOf('promotionTimestamp = new Date()'),
+    < catalogueTransferScript.indexOf('promotionTimestamp = (await target.query'),
   'the production rewrite timestamp must be captured after the source snapshot is established',
 );
+assert.match(catalogueTransferScript, /select transaction_timestamp\(\) as promotion_timestamp/);
 assert.ok(
   catalogueTransferScript.indexOf("recordTransferPhase('target_finalise_returned'")
     < catalogueTransferScript.indexOf("recordTransferPhase('postfinalise_verification_snapshot_open'"),
   'post-finalise checks must use a new consistent read-only snapshot',
 );
+
+const catalogueTransferForeignKeyMigration = readFileSync(
+  'supabase/migrations/20260824213500_index_catalogue_transfer_foreign_keys.sql',
+  'utf8',
+);
+assert.match(catalogueTransferForeignKeyMigration, /constraint_entry\.contype = 'f'/);
+assert.match(catalogueTransferForeignKeyMigration, /index_entry\.indpred is null/);
+assert.match(catalogueTransferForeignKeyMigration, /index_method\.amname = 'btree'/);
+assert.match(catalogueTransferForeignKeyMigration, /catalog\.catalogue_version_external_identifiers/);
+assert.match(catalogueTransferForeignKeyMigration, /create index if not exists/);
+assert.match(
+  catalogueTransferForeignKeyMigration,
+  /catalogue_transfer_fk_index_requires_online_preparation/,
+);
+assert.match(catalogueTransferForeignKeyMigration, /set local lock_timeout = '5s'/);
 
 const catalogueStoragePromotionScript = readFileSync('scripts/deploy/promote-catalogue-storage.mjs', 'utf8');
 assert.match(catalogueStoragePromotionScript, /STACKR_STORAGE_PROMOTION_MODE/);
