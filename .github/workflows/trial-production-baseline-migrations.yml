@@ -100,24 +100,15 @@ jobs:
             --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
             "$POSTGRES_IMAGE" \
             sh -ceu '
-              psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 \
-                --file /trial/cleanup.sql
               psql --dbname "$TARGET_DB_URL" --single-transaction \
                 --variable ON_ERROR_STOP=1 \
-                --file /trial/artifact/production-schema.sql
-              psql --dbname "$TARGET_DB_URL" --single-transaction \
-                --variable ON_ERROR_STOP=1 \
-                --file /trial/artifact/production-reference-data.sql
-              psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 \
-                --file /trial/storage-fixture.sql
-              psql --dbname "$TARGET_DB_URL" --single-transaction \
-                --variable ON_ERROR_STOP=1 \
+                --file /trial/cleanup.sql \
+                --file /trial/artifact/production-schema.sql \
+                --file /trial/artifact/production-reference-data.sql \
+                --file /trial/storage-fixture.sql \
                 --file /trial/artifact/migration-history-schema.sql \
-                --file /trial/artifact/migration-history-data.sql
-              migration_count="$(psql --dbname "$TARGET_DB_URL" \
-                --tuples-only --no-align --variable ON_ERROR_STOP=1 \
-                --command "select count(*) from supabase_migrations.schema_migrations")"
-              test "$migration_count" = "106"
+                --file /trial/artifact/migration-history-data.sql \
+                --command "select 1 / ((count(*) = 106)::integer) from supabase_migrations.schema_migrations"
             '
 
       - name: Commit canonical staging catalogue to isolated target

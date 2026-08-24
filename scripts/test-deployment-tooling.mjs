@@ -376,13 +376,20 @@ assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--terminate-client-sessions/);
+assert.match(
+  baselineReplayJob,
+  /psql --dbname "\$TARGET_DB_URL" --single-transaction[\s\S]{0,500}--file \/trial\/cleanup\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/production-reference-data\.sql[\s\S]{0,500}--file \/trial\/storage-fixture\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-schema\.sql[\s\S]{0,500}--file \/trial\/artifact\/migration-history-data\.sql/,
+);
+assert.match(
+  baselineReplayJob,
+  /--command "select 1 \/ \(\(count\(\*\) = 106\)::integer\) from supabase_migrations\.schema_migrations"/,
+);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_SECONDS: 90/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS: 420/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106/);
 assert.match(baselineMigrationTrialWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--file \/trial\/artifact\/production-reference-data\.sql/);
-assert.match(baselineMigrationTrialWorkflow, /migration_count=.*supabase_migrations\.schema_migrations/s);
 assert.ok(
   baselineMigrationTrialWorkflow.indexOf('--file /trial/artifact/production-reference-data.sql')
     < baselineMigrationTrialWorkflow.indexOf('--file /trial/artifact/migration-history-schema.sql'),
