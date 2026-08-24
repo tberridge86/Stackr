@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -14,6 +15,9 @@ const EVIDENCE_PATH = process.env.STACKR_TRANSFER_EVIDENCE_PATH;
 const TRANSFER_MODE = process.env.STACKR_TRANSFER_MODE ?? 'rehearse';
 const TRANSFER_STATEMENT_TIMEOUT_MS = Number(
   process.env.STACKR_TRANSFER_STATEMENT_TIMEOUT_MS ?? 900_000,
+);
+const TRANSFER_ROW_BATCH_SIZE = Number(
+  process.env.STACKR_TRANSFER_ROW_BATCH_SIZE ?? 250,
 );
 const TARGET_SCHEMA_STABILITY_SECONDS = Number(
   process.env.STACKR_TRANSFER_TARGET_STABILITY_SECONDS ?? 0,
@@ -158,6 +162,11 @@ if (!Number.isInteger(TRANSFER_STATEMENT_TIMEOUT_MS)
     || TRANSFER_STATEMENT_TIMEOUT_MS > 1_200_000) {
   throw new Error('invalid_transfer_statement_timeout');
 }
+if (!Number.isInteger(TRANSFER_ROW_BATCH_SIZE)
+    || TRANSFER_ROW_BATCH_SIZE < 1
+    || TRANSFER_ROW_BATCH_SIZE > 5_000) {
+  throw new Error('invalid_transfer_row_batch_size');
+}
 if (!Number.isInteger(TARGET_SCHEMA_STABILITY_SECONDS)
     || TARGET_SCHEMA_STABILITY_SECONDS < 0
     || TARGET_SCHEMA_STABILITY_SECONDS > 300) {
@@ -271,6 +280,10 @@ function digestRows(rows) {
 
 function wait(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+function recordTransferPhase(phase, details = {}) {
+  process.stdout.write(`${JSON.stringify({ transferPhase: phase, ...details })}\n`);
 }
 
 async function targetSchemaState(client, configuredTables) {
@@ -694,16 +707,56 @@ async function tableMetadata(client, tableName) {
   };
 }
 
-async function readRows(client, tableName, primaryKey, columns = null) {
+async function* readRowBatches(client, tableName, primaryKey, columns = null) {
   const order = primaryKey.map(quoteIdentifier).join(', ');
   const projection = columns?.length ? columns.map(quoteIdentifier).join(', ') : '*';
-  return (await client.query(
-    `select ${projection} from ${qualifiedName(tableName)} order by ${order}`,
-  )).rows;
+  if (columns?.length) {
+    const selectedColumns = new Set(columns);
+    const missingPrimaryKeyColumns = primaryKey.filter((column) => !selectedColumns.has(column));
+    if (missingPrimaryKeyColumns.length) {
+      throw new Error(
+        `transfer_projection_missing_primary_key:${tableName}:${missingPrimaryKeyColumns.join(',')}`,
+      );
+    }
+  }
+
+  let cursor = null;
+  while (true) {
+    const cursorSql = cursor
+      ? `where (${order}) > (${primaryKey.map((_, index) => `$${index + 1}`).join(', ')})`
+      : '';
+    const parameters = cursor ? [...cursor, TRANSFER_ROW_BATCH_SIZE] : [TRANSFER_ROW_BATCH_SIZE];
+    const limitParameter = `$${parameters.length}`;
+    const rows = (await client.query(
+      `select ${projection}
+       from ${qualifiedName(tableName)}
+       ${cursorSql}
+       order by ${order}
+       limit ${limitParameter}`,
+      parameters,
+    )).rows;
+    if (!rows.length) break;
+    yield rows;
+    const finalRow = rows.at(-1);
+    cursor = primaryKey.map((column) => finalRow[column]);
+    if (rows.length < TRANSFER_ROW_BATCH_SIZE) break;
+  }
 }
 
-function keyForRow(row, primaryKey) {
-  return stableJson(primaryKey.map((column) => row[column]));
+async function digestTable(client, tableName, primaryKey, columns = null) {
+  const hash = createHash('sha256');
+  let rowCount = 0;
+  for await (const rows of readRowBatches(client, tableName, primaryKey, columns)) {
+    for (const row of rows) hash.update(stableJson(row)).update('\n');
+    rowCount += rows.length;
+  }
+  return { rowCount, sha256: hash.digest('hex') };
+}
+
+async function tableRowCount(client, tableName) {
+  return Number((await client.query(
+    `select count(*)::integer as row_count from ${qualifiedName(tableName)}`,
+  )).rows[0].row_count);
 }
 
 function compatibleTableContract(tableName, sourceMetadata, targetMetadata) {
@@ -790,12 +843,6 @@ async function insertRows(client, tableName, metadata, columnNames, rows) {
   }
 }
 
-async function setUserTriggersEnabled(client, tableName, enabled) {
-  await client.query(
-    `alter table ${qualifiedName(tableName)} ${enabled ? 'enable' : 'disable'} trigger user`,
-  );
-}
-
 async function ownedSequenceStates(client, tableName, metadata) {
   const states = [];
   for (const column of metadata.columns) {
@@ -825,15 +872,15 @@ async function ownedSequenceStates(client, tableName, metadata) {
   return states;
 }
 
-async function restartOwnedSequences(client, tableName, metadata, rows) {
+async function restartOwnedSequences(client, tableName, metadata) {
   const sequenceStates = await ownedSequenceStates(client, tableName, metadata);
   for (const sequence of sequenceStates) {
-    const values = rows
-      .map((row) => row[sequence.column])
-      .filter((value) => value !== null && value !== undefined)
-      .map((value) => BigInt(value));
-    const restartValue = values.length
-      ? values.reduce((left, right) => (left > right ? left : right)) + 1n
+    const maximumValue = (await client.query(
+      `select max(${quoteIdentifier(sequence.column)})::text as maximum_value
+       from ${qualifiedName(tableName)}`,
+    )).rows[0].maximum_value;
+    const restartValue = maximumValue !== null
+      ? BigInt(maximumValue) + 1n
       : BigInt(sequence.startValue);
     await client.query(
       `alter sequence ${quoteIdentifier(sequence.schema)}.${quoteIdentifier(sequence.sequence)} restart with ${restartValue}`,
@@ -903,42 +950,26 @@ function verifyReleaseCatalogueVersions(rows, context) {
   return eligibleRows;
 }
 
-function verifySourceRows(tableName, sourceRows, targetRows, primaryKey) {
-  const targetByKey = new Map(targetRows.map((row) => [keyForRow(row, primaryKey), row]));
-  const matched = [];
-  for (const sourceRow of sourceRows) {
-    const key = keyForRow(sourceRow, primaryKey);
-    const targetRow = targetByKey.get(key);
-    if (!targetRow) throw new Error(`transferred_row_missing:${tableName}:${key}`);
-    if (stableJson(sourceRow) !== stableJson(targetRow)) {
-      throw new Error(`transferred_row_mismatch:${tableName}:${key}`);
-    }
-    matched.push(targetRow);
-  }
-  return matched;
-}
-
-function expectedFinalRows(tableName, sourceRows, promotionTimestamp) {
-  if (TRANSFER_MODE !== 'promote' || tableName !== 'catalog.assets') return sourceRows;
-  return sourceRows.map((row) => {
-    const shouldRewrite = row.storage_provider === 'supabase_storage'
-      && row.storage_bucket === 'stackr-catalogue-public'
-      && typeof row.url === 'string'
-      && row.url.includes(SOURCE_PROJECT_REF);
-    if (!shouldRewrite) return row;
-    return {
-      ...row,
-      url: row.url.replaceAll(SOURCE_PROJECT_REF, TARGET_PROJECT_REF),
-      updated_at: promotionTimestamp,
-    };
-  });
+function expectedFinalRow(tableName, sourceRow, promotionTimestamp) {
+  const shouldRewrite = TRANSFER_MODE === 'promote'
+    && tableName === 'catalog.assets'
+    && sourceRow.storage_provider === 'supabase_storage'
+    && sourceRow.storage_bucket === 'stackr-catalogue-public'
+    && typeof sourceRow.url === 'string'
+    && sourceRow.url.includes(SOURCE_PROJECT_REF);
+  if (!shouldRewrite) return sourceRow;
+  return {
+    ...sourceRow,
+    url: sourceRow.url.replaceAll(SOURCE_PROJECT_REF, TARGET_PROJECT_REF),
+    updated_at: promotionTimestamp,
+  };
 }
 
 const source = await connect(NORMALIZED_SOURCE_DB_URL, 'stackr-staging-catalogue-source');
 const target = await connect(NORMALIZED_TARGET_DB_URL, 'stackr-staging-catalogue-rehearsal');
 const results = [];
 const excludedChecks = [];
-const snapshots = new Map();
+const tablePlans = new Map();
 let targetTransactionOpen = false;
 let sourceTransactionOpen = false;
 let sourceReleaseVersions = [];
@@ -957,6 +988,7 @@ let sharedStorageObjectCommitVerified = null;
 let sharedStorageObjectRollbackVerified = null;
 let targetReleaseVersions = [];
 let productionAssetUrlRewriteCount = 0;
+let promotionTimestamp = null;
 let productionAssetUrlRewriteAt = null;
 let preCommitAcceptanceVerified = false;
 let targetSchemaStability = null;
@@ -967,9 +999,14 @@ try {
   sourceTransactionOpen = true;
   await target.query('begin transaction isolation level repeatable read');
   targetTransactionOpen = true;
+  recordTransferPhase('transactions_open', { mode: TRANSFER_MODE });
 
   adoptedMigrations = adoptedMigrationVersions();
   sourceAdoptedMigrationRows = await migrationRows(source, adoptedMigrations);
+  if (TRANSFER_MODE === 'promote') {
+    promotionTimestamp = new Date();
+    productionAssetUrlRewriteAt = promotionTimestamp.toISOString();
+  }
   verifyAdoptedMigrationRows(sourceAdoptedMigrationRows, adoptedMigrations, 'source');
   targetAdoptedMigrationRowsBefore = await migrationRows(target, adoptedMigrations);
   sourceSharedStorageObjectContract = await sharedStorageObjectContract(source, 'source');
@@ -1028,15 +1065,12 @@ try {
     const sourceMetadata = await tableMetadata(source, tableName);
     const targetMetadata = await tableMetadata(target, tableName);
     const contract = compatibleTableContract(tableName, sourceMetadata, targetMetadata);
-
-    const sourceRows = await readRows(source, tableName, sourceMetadata.primaryKey);
-    const targetRowsBefore = await readRows(target, tableName, targetMetadata.primaryKey);
+    const targetBefore = await digestTable(target, tableName, targetMetadata.primaryKey);
     const targetSequencesBefore = await ownedSequenceStates(target, tableName, targetMetadata);
-    snapshots.set(tableName, {
+    tablePlans.set(tableName, {
       sourceMetadata,
       targetMetadata,
-      sourceRows,
-      targetRowsBefore,
+      targetBefore,
       targetSequencesBefore,
       contract,
     });
@@ -1051,57 +1085,85 @@ try {
         throw new Error('target_shared_storage_object_contract_mismatch');
       }
     }
-    await setUserTriggersEnabled(target, tableName, false);
     await target.query(`delete from ${qualifiedName(tableName)}`);
-    await setUserTriggersEnabled(target, tableName, true);
   }
 
   for (const tableName of tableConfig.tables) {
-    const snapshot = snapshots.get(tableName);
+    const plan = tablePlans.get(tableName);
     const {
       sourceMetadata,
       targetMetadata,
-      sourceRows,
-      targetRowsBefore,
+      targetBefore,
       targetSequencesBefore,
       contract,
-    } = snapshot;
-    const targetRowsAfterClear = await readRows(target, tableName, targetMetadata.primaryKey);
-    if (targetRowsAfterClear.length !== 0) throw new Error(`target_table_not_cleared:${tableName}`);
+    } = plan;
+    const targetRowCountAfterClear = await tableRowCount(target, tableName);
+    if (targetRowCountAfterClear !== 0) throw new Error(`target_table_not_cleared:${tableName}`);
 
-    await setUserTriggersEnabled(target, tableName, false);
-    await insertRows(target, tableName, targetMetadata, contract.transferColumns, sourceRows);
-    await restartOwnedSequences(target, tableName, targetMetadata, sourceRows);
-    await setUserTriggersEnabled(target, tableName, true);
-    const targetRowsAfter = await readRows(
+    const sourceHash = createHash('sha256');
+    const expectedFinalHash = TRANSFER_MODE === 'promote' && tableName === 'catalog.assets'
+      ? createHash('sha256')
+      : null;
+    let sourceRowCount = 0;
+    let expectedProductionAssetUrlRewriteCount = 0;
+    for await (const sourceRows of readRowBatches(
+      source,
+      tableName,
+      sourceMetadata.primaryKey,
+      contract.transferColumns,
+    )) {
+      for (const sourceRow of sourceRows) {
+        sourceHash.update(stableJson(sourceRow)).update('\n');
+        if (expectedFinalHash) {
+          const expectedRow = expectedFinalRow(tableName, sourceRow, promotionTimestamp);
+          expectedFinalHash.update(stableJson(expectedRow)).update('\n');
+          if (expectedRow !== sourceRow) expectedProductionAssetUrlRewriteCount += 1;
+        }
+      }
+      sourceRowCount += sourceRows.length;
+      await insertRows(target, tableName, targetMetadata, contract.transferColumns, sourceRows);
+    }
+    await restartOwnedSequences(target, tableName, targetMetadata);
+    const sourceSha256 = sourceHash.digest('hex');
+    const expectedFinalSha256 = expectedFinalHash
+      ? expectedFinalHash.digest('hex')
+      : sourceSha256;
+    const targetDuringTransfer = await digestTable(
       target,
       tableName,
       targetMetadata.primaryKey,
       contract.transferColumns,
     );
     const targetSequencesDuringRehearsal = await ownedSequenceStates(target, tableName, targetMetadata);
-    const matchedRows = verifySourceRows(
-      tableName,
-      sourceRows,
-      targetRowsAfter,
-      sourceMetadata.primaryKey,
-    );
+    if (targetDuringTransfer.rowCount !== sourceRowCount
+        || targetDuringTransfer.sha256 !== sourceSha256) {
+      throw new Error(`target_transfer_mismatch:${tableName}`);
+    }
+
+    plan.expectedFinalRowCount = sourceRowCount;
+    plan.expectedFinalSha256 = expectedFinalSha256;
+    plan.expectedProductionAssetUrlRewriteCount = expectedProductionAssetUrlRewriteCount;
 
     results.push({
       table: tableName,
       primaryKey: sourceMetadata.primaryKey,
       transferColumns: contract.transferColumns,
       targetOnlyColumns: contract.targetOnlyColumns,
-      sourceRowCount: sourceRows.length,
-      targetRowCountBefore: targetRowsBefore.length,
-      targetRowCountAfterClear: targetRowsAfterClear.length,
-      targetRowCountDuringRehearsal: targetRowsAfter.length,
-      matchedSourceRowCount: matchedRows.length,
-      sourceSha256: digestRows(sourceRows),
-      matchedTargetSha256: digestRows(matchedRows),
-      targetBeforeSha256: digestRows(targetRowsBefore),
+      sourceRowCount,
+      targetRowCountBefore: targetBefore.rowCount,
+      targetRowCountAfterClear,
+      targetRowCountDuringRehearsal: targetDuringTransfer.rowCount,
+      matchedSourceRowCount: targetDuringTransfer.rowCount,
+      sourceSha256,
+      matchedTargetSha256: targetDuringTransfer.sha256,
+      targetBeforeSha256: targetBefore.sha256,
+      expectedFinalSha256,
       targetSequencesBefore,
       targetSequencesDuringRehearsal,
+    });
+    recordTransferPhase('table_transferred', {
+      table: tableName,
+      sourceRowCount,
     });
   }
 
@@ -1131,16 +1193,9 @@ try {
     throw new Error('target_adopted_migration_fingerprint_mismatch');
   }
 
-  let promotionTimestamp = null;
   if (TRANSFER_MODE === 'promote') {
-    promotionTimestamp = new Date();
-    productionAssetUrlRewriteAt = promotionTimestamp.toISOString();
-    const expectedRewriteCount = snapshots.get('catalog.assets').sourceRows.filter((row) => (
-      row.storage_provider === 'supabase_storage'
-      && row.storage_bucket === 'stackr-catalogue-public'
-      && typeof row.url === 'string'
-      && row.url.includes(SOURCE_PROJECT_REF)
-    )).length;
+    const expectedRewriteCount = tablePlans.get('catalog.assets')
+      .expectedProductionAssetUrlRewriteCount;
     const rewritten = await target.query(`
       update catalog.assets
       set url = replace(url, $1, $2), updated_at = $3
@@ -1158,28 +1213,18 @@ try {
   }
 
   for (const result of results) {
-    const snapshot = snapshots.get(result.table);
-    const expectedRows = expectedFinalRows(result.table, snapshot.sourceRows, promotionTimestamp);
-    snapshot.expectedFinalRows = expectedRows;
-    const rows = await readRows(
+    const plan = tablePlans.get(result.table);
+    const targetBeforeFinalise = await digestTable(
       target,
       result.table,
-      snapshot.targetMetadata.primaryKey,
-      snapshot.contract.transferColumns,
+      plan.targetMetadata.primaryKey,
+      plan.contract.transferColumns,
     );
-    const sequences = await ownedSequenceStates(target, result.table, snapshot.targetMetadata);
-    const matchedRows = verifySourceRows(
-      result.table,
-      expectedRows,
-      rows,
-      snapshot.sourceMetadata.primaryKey,
-    );
-    result.expectedFinalSha256 = digestRows(expectedRows);
-    result.targetRowCountBeforeFinalise = rows.length;
-    result.targetBeforeFinaliseSha256 = digestRows(rows);
+    const sequences = await ownedSequenceStates(target, result.table, plan.targetMetadata);
+    result.targetRowCountBeforeFinalise = targetBeforeFinalise.rowCount;
+    result.targetBeforeFinaliseSha256 = targetBeforeFinalise.sha256;
     result.targetSequencesBeforeFinalise = sequences;
-    result.preCommitMatched = rows.length === expectedRows.length
-      && matchedRows.length === expectedRows.length
+    result.preCommitMatched = targetBeforeFinalise.rowCount === plan.expectedFinalRowCount
       && result.targetBeforeFinaliseSha256 === result.expectedFinalSha256
       && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
     if (!result.preCommitMatched) throw new Error(`target_precommit_mismatch:${result.table}`);
@@ -1222,33 +1267,40 @@ try {
   }
 
   preCommitAcceptanceVerified = true;
+  recordTransferPhase('precommit_verified', { selectedTableCount: results.length });
+  recordTransferPhase('target_finalise_started', { action: TRANSFER_MODE !== 'rehearse' ? 'commit' : 'rollback' });
   if (TRANSFER_MODE !== 'rehearse') await target.query('commit');
   else await target.query('rollback');
   targetTransactionOpen = false;
+  recordTransferPhase('target_finalise_returned', { action: TRANSFER_MODE !== 'rehearse' ? 'commit' : 'rollback' });
+
+  await target.query('begin transaction isolation level repeatable read read only');
+  targetTransactionOpen = true;
+  recordTransferPhase('postfinalise_verification_snapshot_open');
 
   for (const result of results) {
     const metadata = await tableMetadata(target, result.table);
-    const snapshot = snapshots.get(result.table);
-    const rows = await readRows(
+    const plan = tablePlans.get(result.table);
+    const targetAfterFinalise = await digestTable(
       target,
       result.table,
       metadata.primaryKey,
-      TRANSFER_MODE !== 'rehearse' ? snapshot.contract.transferColumns : null,
+      TRANSFER_MODE !== 'rehearse' ? plan.contract.transferColumns : null,
     );
     const sequences = await ownedSequenceStates(target, result.table, metadata);
     if (TRANSFER_MODE !== 'rehearse') {
-      result.targetRowCountAfterCommit = rows.length;
-      result.targetAfterCommitSha256 = digestRows(rows);
+      result.targetRowCountAfterCommit = targetAfterFinalise.rowCount;
+      result.targetAfterCommitSha256 = targetAfterFinalise.sha256;
       result.targetSequencesAfterCommit = sequences;
-      result.commitMatched = rows.length === snapshot.expectedFinalRows.length
+      result.commitMatched = targetAfterFinalise.rowCount === plan.expectedFinalRowCount
         && result.targetAfterCommitSha256 === result.expectedFinalSha256
         && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
       if (!result.commitMatched) throw new Error(`target_postcommit_observation_mismatch:${result.table}`);
     } else {
-      result.targetRowCountAfterRollback = rows.length;
-      result.targetAfterRollbackSha256 = digestRows(rows);
+      result.targetRowCountAfterRollback = targetAfterFinalise.rowCount;
+      result.targetAfterRollbackSha256 = targetAfterFinalise.sha256;
       result.targetSequencesAfterRollback = sequences;
-      result.rollbackMatched = rows.length === result.targetRowCountBefore
+      result.rollbackMatched = targetAfterFinalise.rowCount === result.targetRowCountBefore
         && result.targetAfterRollbackSha256 === result.targetBeforeSha256
         && stableJson(sequences) === stableJson(result.targetSequencesBefore);
       if (!result.rollbackMatched) throw new Error(`target_rollback_mismatch:${result.table}`);
@@ -1289,6 +1341,10 @@ try {
     if (!sharedStorageObjectRollbackVerified) throw new Error('target_shared_storage_object_rollback_mismatch');
   }
 
+  await target.query('rollback');
+  targetTransactionOpen = false;
+  recordTransferPhase('postfinalise_verification_snapshot_closed');
+
   await source.query('rollback');
   sourceTransactionOpen = false;
 
@@ -1307,6 +1363,7 @@ try {
     isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
     statementTimeoutMs: TRANSFER_STATEMENT_TIMEOUT_MS,
+    rowBatchSize: TRANSFER_ROW_BATCH_SIZE,
     targetSchemaStability,
     preCommitAcceptanceVerified,
     transferPolicy: TRANSFER_MODE === 'promote'

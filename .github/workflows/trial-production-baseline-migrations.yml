@@ -128,6 +128,7 @@ jobs:
           STACKR_TRANSFER_TARGET_STABILITY_SECONDS: 90
           STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS: 420
           STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106
+          STACKR_TRANSFER_TABLE_CONFIG: deploy/production-catalogue-promotion-tables.json
           STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn
           STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-baseline-trial/catalogue-transfer-evidence.json
         shell: bash

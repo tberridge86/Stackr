@@ -433,6 +433,10 @@ assert.equal(
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_SECONDS: 90/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS: 420/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106/);
+assert.match(
+  baselineMigrationTrialWorkflow,
+  /STACKR_TRANSFER_TABLE_CONFIG: deploy\/production-catalogue-promotion-tables\.json/,
+);
 assert.match(baselineMigrationTrialWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--file \/trial\/artifact\/production-reference-data\.sql/);
@@ -488,14 +492,19 @@ assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACC
 
 const catalogueTransferScript = readFileSync('scripts/deploy/rehearse-staging-catalogue-transfer.mjs', 'utf8');
 assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
+assert.match(catalogueTransferScript, /STACKR_TRANSFER_ROW_BATCH_SIZE/);
+assert.match(catalogueTransferScript, /invalid_transfer_row_batch_size/);
+assert.match(catalogueTransferScript, /async function\* readRowBatches/);
+assert.match(catalogueTransferScript, /limit \$\{limitParameter\}/);
+assert.match(catalogueTransferScript, /async function digestTable/);
+assert.doesNotMatch(catalogueTransferScript, /const snapshots = new Map\(\)/);
+assert.doesNotMatch(catalogueTransferScript, /sourceRows = await readRows|targetRowsBefore = await readRows/);
 assert.match(catalogueTransferScript, /for \(const tableName of \[\.\.\.tableConfig\.tables\]\.reverse\(\)\)/);
 assert.match(catalogueTransferScript, /delete from \$\{qualifiedName\(tableName\)\}/);
 assert.doesNotMatch(catalogueTransferScript, /truncate[\s\S]+cascade/i);
 assert.doesNotMatch(catalogueTransferScript, /setval\(/i);
 assert.match(catalogueTransferScript, /alter sequence[\s\S]+restart with/i);
-assert.match(catalogueTransferScript, /disable'\} trigger user/);
-assert.match(catalogueTransferScript, /enable' : 'disable/);
-assert.match(catalogueTransferScript, /setUserTriggersEnabled\(target, tableName, true\)/);
+assert.doesNotMatch(catalogueTransferScript, /disable trigger user/i);
 assert.match(catalogueTransferScript, /targetSequencesAfterRollback/);
 assert.match(catalogueTransferScript, /compatibleTableContract/);
 assert.match(catalogueTransferScript, /required_target_columns/);
@@ -535,10 +544,27 @@ assert.match(catalogueTransferScript, /target_schema_stability_timeout/);
 assert.match(catalogueTransferScript, /targetSchemaStability = await waitForTargetSchemaStability/);
 assert.match(catalogueTransferScript, /invalid_transfer_statement_timeout/);
 assert.match(catalogueTransferScript, /set_config\('statement_timeout'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('transactions_open'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('precommit_verified'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('target_finalise_started'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('target_finalise_returned'/);
+assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('postfinalise_verification_snapshot_open'/);
+assert.match(catalogueTransferScript, /recordTransferPhase\('postfinalise_verification_snapshot_closed'/);
 assert.ok(
   catalogueTransferScript.indexOf('preCommitAcceptanceVerified = true')
-    < catalogueTransferScript.indexOf("await target.query('commit')"),
+    < catalogueTransferScript.indexOf("recordTransferPhase('target_finalise_started'"),
   'all mutable transfer acceptance checks must pass before commit',
+);
+assert.ok(
+  catalogueTransferScript.indexOf('sourceAdoptedMigrationRows = await migrationRows')
+    < catalogueTransferScript.indexOf('promotionTimestamp = new Date()'),
+  'the production rewrite timestamp must be captured after the source snapshot is established',
+);
+assert.ok(
+  catalogueTransferScript.indexOf("recordTransferPhase('target_finalise_returned'")
+    < catalogueTransferScript.indexOf("recordTransferPhase('postfinalise_verification_snapshot_open'"),
+  'post-finalise checks must use a new consistent read-only snapshot',
 );
 
 const catalogueStoragePromotionScript = readFileSync('scripts/deploy/promote-catalogue-storage.mjs', 'utf8');
@@ -581,6 +607,11 @@ assert.deepEqual(
 const productionCataloguePromotionTables = JSON.parse(
   readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
 );
+assert.equal(
+  productionCataloguePromotionTables.tables.length,
+  28,
+  'the production catalogue transfer manifest must cover all 28 reviewed tables',
+);
 assert.deepEqual(
   productionCataloguePromotionTables.adoptedMigrations,
   cataloguePreservationTables.adoptedMigrations,
@@ -596,6 +627,18 @@ for (const provenanceTable of [
   assert.ok(
     productionCataloguePromotionTables.tables.includes(provenanceTable),
     `production promotion must preserve ${provenanceTable}`,
+  );
+}
+for (const snapshotTable of [
+  'catalog.catalogue_version_sets',
+  'catalog.catalogue_version_printings',
+  'catalog.catalogue_version_variants',
+  'catalog.catalogue_version_assets',
+  'catalog.catalogue_version_external_identifiers',
+]) {
+  assert.ok(
+    productionCataloguePromotionTables.tables.includes(snapshotTable),
+    `production promotion must preserve ${snapshotTable}`,
   );
 }
 
