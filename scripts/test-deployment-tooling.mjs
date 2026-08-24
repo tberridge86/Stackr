@@ -716,6 +716,7 @@ const isolatedCleanup = buildRestoreCleanupSqlWithRoles('', '', {
   terminateClientSessions: true,
 });
 assert.match(isolatedCleanup.sql, /SELECT pg_terminate_backend\(pid\)/);
+assert.match(isolatedCleanup.sql, /COALESCE\(role_entry\.rolsuper, false\) = false/);
 assert.equal(isolatedCleanup.terminateClientSessions, true);
 const streamingCleanupRoot = mkdtempSync(path.join(tmpdir(), 'stackr-restore-cleanup-'));
 try {

@@ -38,10 +38,12 @@ function buildRestoreCleanupSqlForTables(
 ) {
   const applicationRoles = applicationRolesFromDump(roleDump);
   const terminateSessionsSql = `SELECT pg_terminate_backend(pid)
-FROM pg_stat_activity
-WHERE datname = current_database()
-  AND pid <> pg_backend_pid()
-  AND backend_type = 'client backend';`;
+FROM pg_stat_activity AS activity
+LEFT JOIN pg_roles AS role_entry ON role_entry.rolname = activity.usename
+WHERE activity.datname = current_database()
+  AND activity.pid <> pg_backend_pid()
+  AND activity.backend_type = 'client backend'
+  AND COALESCE(role_entry.rolsuper, false) = false;`;
   const statements = [
     '\\set ON_ERROR_STOP on',
     "SET statement_timeout = 0;",
