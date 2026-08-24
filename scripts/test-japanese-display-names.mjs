@@ -67,4 +67,46 @@ assert.equal(
   'Venusaur ex'
 );
 
+assert.equal(
+  getEnglishCardDisplayName({
+    id: 'ja:unknown:001',
+    language: 'ja',
+    localName: '謎のカード',
+    englishDisplayName: '謎のカード',
+  }),
+  null,
+  'native Japanese text must not be accepted from an English display field',
+);
+
+assert.equal(
+  getEnglishCardDisplayName({
+    id: 'zh-cn:test:025',
+    language: 'zh-cn',
+    localName: '皮卡丘',
+    englishDisplayName: 'Pikachu',
+  }),
+  'Pikachu',
+);
+
+assert.equal(
+  getEnglishCardDisplayName({
+    id: 'fr:test:004',
+    language: 'fr',
+    localName: 'Salamèche',
+  }),
+  null,
+  'a Latin-script foreign name must not be assumed to be English',
+);
+
+assert.equal(
+  getEnglishSetDisplayName({
+    id: 'zh-cn:test',
+    language: 'zh-cn',
+    localName: '朱&紫',
+    englishDisplayName: '朱&紫',
+  }),
+  null,
+  'native Chinese set text must not be accepted from an English display field',
+);
+
 console.log('Japanese display-name helpers passed');

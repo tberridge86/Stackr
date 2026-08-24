@@ -80,6 +80,7 @@
     "asset:migrate-existing": "node scripts/asset-migrate-existing.mjs",
     "test:asset-pipeline": "node scripts/test-asset-pipeline.mjs",
     "test:stackr-api-v1": "node scripts/test-stackr-api-v1.mjs",
+    "test:foreign-card-presentation": "tsx scripts/test-foreign-card-presentation.ts",
     "benchmark:search-v1": "node scripts/benchmark-stackr-search-v1.mjs",
     "test:card-identity-search": "tsx scripts/test-card-identity-search.ts",
     "benchmark:card-identity-search": "tsx scripts/benchmark-card-identity-native-search.ts",

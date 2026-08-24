@@ -8,6 +8,11 @@ import {
   type StackrSearchResult,
   type StackrSet,
 } from './stackrApiV1';
+import { buildForeignCardPresentation } from './foreignCardPresentation';
+import {
+  getEnglishSetDisplayName,
+  getLocalSetName,
+} from './pokemonDisplayNames';
 import { supabase } from './supabase';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -56,6 +61,20 @@ export type StackrLegacyCard = {
   images: { small?: string; large?: string };
   set: { id: string; name: string; series?: string };
   localName: string | null;
+  englishDisplayName: string | null;
+  translationStatus: 'not_required' | 'verified' | 'partial' | 'pending';
+  artist?: string;
+  supertype?: string;
+  subtypes?: string[];
+  hp?: string;
+  types?: string[];
+  evolvesFrom?: string;
+  flavorText?: string;
+  rules?: string[];
+  attacks?: Array<{ name?: string; damage?: string; text?: string; cost?: string[] }>;
+  weaknesses?: Array<{ type?: string; value?: string }>;
+  resistances?: Array<{ type?: string; value?: string }>;
+  retreatCost?: string[];
   raw_data: Record<string, unknown>;
 };
 
@@ -89,14 +108,47 @@ function legacyRowToCard(row: any): StackrLegacyCard {
   const raw = row.raw_data ?? row.raw_payload ?? {};
   const set = raw.set ?? {};
   const setId = String(row.set_id ?? set.id ?? 'unknown');
-  const name = String(row.english_display_name ?? row.canonical_name ?? row.name ?? raw.english_display_name ?? raw.name ?? row.id);
+  const language = legacyLanguage(row.language ?? raw.language);
+  const region = clean(row.region ?? raw.region);
+  const number = String(row.number ?? row.collector_number ?? raw.localId ?? raw.number ?? '');
   const localName = clean(row.local_name ?? raw.local_name ?? raw.name);
+  const presentation = buildForeignCardPresentation({
+    id: String(row.id ?? row.card_id ?? row.provider_card_id),
+    name: clean(row.name ?? row.canonical_name ?? raw.name ?? row.id),
+    localName,
+    number,
+    language,
+    region,
+    set: {
+      id: setId,
+      name: clean(row.set_name ?? set.name ?? setId),
+      localName: clean(set.local_name ?? set.native_name ?? set.name),
+      englishDisplayName: clean(set.english_display_name ?? set.englishDisplayName),
+    },
+    raw_data: {
+      ...raw,
+      english_display_name: row.english_display_name ?? raw.english_display_name ?? null,
+    },
+    artist: raw.artist,
+    supertype: raw.supertype,
+    subtypes: raw.subtypes,
+    hp: raw.hp,
+    types: raw.types,
+    evolvesFrom: raw.evolvesFrom ?? raw.evolves_from,
+    flavorText: raw.flavorText ?? raw.flavor_text,
+    rules: raw.rules,
+    attacks: raw.attacks,
+    weaknesses: raw.weaknesses,
+    resistances: raw.resistances,
+    retreatCost: raw.retreatCost ?? raw.retreat_cost,
+  });
+  const name = presentation.name;
   return {
     id: String(row.id ?? row.card_id ?? row.provider_card_id),
     name,
-    number: String(row.number ?? row.collector_number ?? raw.localId ?? raw.number ?? ''),
-    language: legacyLanguage(row.language ?? raw.language),
-    region: clean(row.region ?? raw.region),
+    number,
+    language,
+    region,
     externalIds: {
       ...(row.external_ids && typeof row.external_ids === 'object' ? row.external_ids : {}),
       legacy: String(row.provider_card_id ?? row.source_id ?? row.id ?? ''),
@@ -108,24 +160,52 @@ function legacyRowToCard(row: any): StackrLegacyCard {
     },
     set: {
       id: setId,
-      name: String(set.english_display_name ?? set.name ?? row.set_name ?? setId),
+      name: presentation.setName,
       series: clean(set.series) ?? undefined,
     },
     localName,
+    englishDisplayName: presentation.englishDisplayName,
+    translationStatus: presentation.translationStatus,
+    artist: clean(raw.artist) ?? undefined,
+    supertype: presentation.details.supertype,
+    subtypes: presentation.details.subtypes,
+    hp: clean(raw.hp) ?? undefined,
+    types: presentation.details.types,
+    evolvesFrom: presentation.details.evolvesFrom,
+    flavorText: presentation.details.flavorText,
+    rules: presentation.details.rules,
+    attacks: presentation.details.attacks,
+    weaknesses: presentation.details.weaknesses,
+    resistances: presentation.details.resistances,
+    retreatCost: presentation.details.retreatCost,
     raw_data: {
       ...raw,
       id: row.id,
       name,
       local_name: localName,
-      number: row.number ?? row.collector_number ?? raw.localId ?? raw.number ?? '',
-      language: legacyLanguage(row.language ?? raw.language),
+      english_display_name: presentation.englishDisplayName,
+      translation_status: presentation.translationStatus,
+      number,
+      language,
       rarity: row.rarity ?? raw.rarity ?? null,
       images: {
         ...(raw.images ?? {}),
         small: row.image_small ?? row.image_small_url ?? row.image_url ?? raw.images?.small ?? null,
         large: row.image_large ?? row.image_large_url ?? row.image_url ?? raw.images?.large ?? null,
       },
-      set: { ...set, id: setId, name: set.name ?? row.set_name ?? setId },
+      set: {
+        ...set,
+        id: setId,
+        name: presentation.setName,
+        local_name: presentation.nativeSetName,
+        english_display_name: presentation.englishSetDisplayName,
+      },
+      presentation: {
+        language: presentation.languageLabel,
+        native_image_retained: true,
+        english_details_only: presentation.isForeign,
+        withheld_native_details: presentation.withheldNativeDetails,
+      },
       stackrMigration: { source: 'legacy-read-adapter', quarantinedIdentity: true },
     },
   };
@@ -151,7 +231,7 @@ function legacyCardToStackrCard(card: StackrLegacyCard): StackrCard {
       suffix: null,
       sortKey: card.number,
     },
-    names: { native: card.localName ?? card.name, englishDisplay: card.name },
+    names: { native: card.localName ?? card.name, englishDisplay: card.englishDisplayName },
     rarity: { code: card.rarity ?? null, label: card.rarity ?? null },
     defaultVariantId: variantId,
     variants: [{
@@ -207,7 +287,28 @@ function legacySetRow(row: any): StackrLegacySet {
   const raw = row.raw_data ?? row.raw_payload ?? {};
   const language = legacyLanguage(row.language ?? raw.language);
   const id = String(row.id ?? row.source_id ?? row.provider_id);
-  const name = String(row.english_display_name ?? row.name ?? row.canonical_name ?? raw.english_display_name ?? raw.name ?? id);
+  const localName = getLocalSetName({
+    id,
+    sourceId: row.source_id ?? row.provider_id,
+    setCode: row.set_code ?? raw.set_code,
+    language,
+    region: row.region ?? raw.region,
+    localName: row.local_name ?? raw.local_name ?? raw.name,
+    fallbackName: row.name ?? row.canonical_name ?? id,
+    raw,
+  });
+  const englishDisplayName = getEnglishSetDisplayName({
+    id,
+    sourceId: row.source_id ?? row.provider_id,
+    setCode: row.set_code ?? raw.set_code,
+    language,
+    region: row.region ?? raw.region,
+    localName,
+    englishDisplayName: row.english_display_name ?? raw.english_display_name,
+    fallbackName: row.name ?? row.canonical_name ?? id,
+    raw,
+  });
+  const name = englishDisplayName ?? localName ?? id;
   return {
     id,
     name,
@@ -217,8 +318,8 @@ function legacySetRow(row: any): StackrLegacySet {
     releaseDate: String(row.release_date ?? raw.releaseDate ?? ''),
     language,
     region: clean(row.region ?? raw.region),
-    localName: clean(row.local_name ?? raw.local_name ?? raw.name),
-    englishDisplayName: clean(row.english_display_name ?? raw.english_display_name ?? name),
+    localName,
+    englishDisplayName,
     externalIds: {
       ...(row.external_ids && typeof row.external_ids === 'object' ? row.external_ids : {}),
       legacy: clean(row.source_id ?? row.provider_id ?? row.id),
@@ -254,16 +355,16 @@ export function toStackrApiLanguage(value?: string | null): StackrApiLanguageCod
   if (language === 'en' || language === 'english') return 'en';
   if (language === 'ja' || language === 'jp' || language === 'japanese') return 'ja';
   if (language === 'ko' || language === 'kr' || language === 'korean') return 'ko';
-  if (['zh-cn', 'zh-hans', 'chinese-simplified', 'simplified-chinese'].includes(language)) return 'zh-Hans';
-  if (['zh', 'zh-tw', 'zh-hant', 'chinese', 'traditional-chinese'].includes(language)) return 'zh-Hant';
+  if (['zh-cn', 'zh-hans', 'chinese-simplified', 'simplified-chinese'].includes(language)) return 'zh-cn';
+  if (['zh', 'zh-tw', 'zh-hant', 'chinese', 'traditional-chinese'].includes(language)) return 'zh-tw';
   return null;
 }
 
 export function toLegacyLanguage(value?: StackrApiLanguageCode | string | null): StackrLegacyLanguageCode {
   if (value === 'ja') return 'ja';
   if (value === 'ko') return 'ko';
-  if (value === 'zh-Hans') return 'zh-cn';
-  if (value === 'zh-Hant') return 'zh-tw';
+  if (value === 'zh-Hans' || value === 'zh-cn') return 'zh-cn';
+  if (value === 'zh-Hant' || value === 'zh-tw') return 'zh-tw';
   return 'en';
 }
 
@@ -285,11 +386,47 @@ function derivativeUrl(asset: StackrCatalogueAsset | undefined, hints: string[])
   return assetUrl(asset);
 }
 
+function primaryCardImageAsset(card: StackrCard, assets: StackrCatalogueAsset[]) {
+  const defaultVariant = card.variants.find((variant) => variant.variantId === card.defaultVariantId);
+  const preferredVariantIds = [
+    card.defaultVariantId,
+    defaultVariant?.imageVariantId,
+    defaultVariant?.sameArtworkAsVariantId,
+  ].filter((value): value is string => Boolean(value));
+  for (const variantId of preferredVariantIds) {
+    const asset = firstAsset(
+      assets.filter((candidate) => candidate.variantId === variantId),
+      ['card_image'],
+    );
+    if (asset) return asset;
+  }
+  return firstAsset(
+    assets.filter((asset) => asset.cardId === card.cardId),
+    ['card_image'],
+  );
+}
+
 export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsset[] = []): StackrLegacySet {
   const logo = firstAsset(assets, ['set_logo']);
   const symbol = firstAsset(assets, ['set_symbol']);
   const cover = firstAsset(assets, ['set_cover', 'set_artwork']);
-  const name = set.englishDisplayName ?? set.nativeName ?? set.setCode ?? set.setId;
+  const localName = getLocalSetName({
+    id: set.setId,
+    setCode: set.setCode,
+    language: set.languageCode,
+    region: set.regionCode,
+    localName: set.nativeName,
+    fallbackName: set.setCode ?? set.setId,
+  });
+  const englishDisplayName = getEnglishSetDisplayName({
+    id: set.setId,
+    setCode: set.setCode,
+    language: set.languageCode,
+    region: set.regionCode,
+    localName,
+    englishDisplayName: set.englishDisplayName,
+  });
+  const name = englishDisplayName ?? localName ?? set.setCode ?? set.setId;
   return {
     id: set.setId,
     name,
@@ -299,8 +436,8 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
     releaseDate: set.releaseDate ?? '',
     language: toLegacyLanguage(set.languageCode),
     region: set.regionCode,
-    localName: set.nativeName,
-    englishDisplayName: set.englishDisplayName,
+    localName,
+    englishDisplayName,
     externalIds: {
       stackr: set.setId,
       setCode: set.setCode,
@@ -316,11 +453,42 @@ export function stackrSetToLegacySet(set: StackrSet, assets: StackrCatalogueAsse
 
 export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogueAsset[] = []): StackrLegacyCard {
   const cardAssets = assets.filter((asset) => asset.cardId === card.cardId || card.variants.some((variant) => variant.variantId === asset.variantId));
-  const primary = firstAsset(cardAssets, ['card_image']);
-  const name = card.names.englishDisplay ?? card.names.native;
+  const primary = primaryCardImageAsset(card, cardAssets);
+  const raw = {
+    english_display_name: card.names.englishDisplay,
+    english_display_source: card.names.englishDisplaySource ?? null,
+    supertype: card.details?.supertype ?? null,
+    subtypes: card.details?.subtypes ?? [],
+    artist: card.details?.artist ?? null,
+    set: {
+      id: card.set.setId,
+      set_code: card.set.setCode,
+      name: card.set.nativeName,
+      local_name: card.set.nativeName,
+      english_display_name: card.set.englishDisplayName,
+    },
+  };
+  const presentation = buildForeignCardPresentation({
+    id: card.cardId,
+    name: card.names.englishDisplay ?? card.names.native,
+    localName: card.names.native,
+    number: card.collectorNumber.value,
+    language: card.languageCode,
+    set: {
+      id: card.set.setId,
+      name: card.set.englishDisplayName ?? card.set.nativeName,
+      localName: card.set.nativeName,
+      englishDisplayName: card.set.englishDisplayName,
+    },
+    raw_data: raw,
+    supertype: card.details?.supertype ?? undefined,
+    subtypes: card.details?.subtypes ?? undefined,
+  });
+  const smallImage = derivativeUrl(primary, ['card-grid', 'grid', 'search', 'small', 'thumb']);
+  const largeImage = derivativeUrl(primary, ['detail', 'large']);
   return {
     id: card.cardId,
-    name,
+    name: presentation.name,
     number: card.collectorNumber.value,
     language: toLegacyLanguage(card.languageCode),
     region: null,
@@ -331,14 +499,19 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
     },
     rarity: card.rarity.label ?? card.rarity.code ?? undefined,
     images: {
-      small: derivativeUrl(primary, ['card-grid', 'grid', 'search', 'small', 'thumb']),
-      large: derivativeUrl(primary, ['detail', 'large']),
+      small: smallImage,
+      large: largeImage,
     },
     set: {
       id: card.set.setId,
-      name: card.set.englishDisplayName ?? card.set.nativeName ?? card.set.setCode ?? card.set.setId,
+      name: presentation.setName,
     },
     localName: card.names.native,
+    englishDisplayName: presentation.englishDisplayName,
+    translationStatus: presentation.translationStatus,
+    artist: clean(card.details?.artist) ?? undefined,
+    supertype: presentation.details.supertype,
+    subtypes: presentation.details.subtypes,
     raw_data: {
       stackr: {
         cardId: card.cardId,
@@ -347,23 +520,35 @@ export function stackrCardToLegacyCard(card: StackrCard, assets: StackrCatalogue
         canonical: true,
       },
       id: card.cardId,
-      name,
+      name: presentation.name,
       local_name: card.names.native,
-      english_display_name: card.names.englishDisplay,
+      english_display_name: presentation.englishDisplayName,
+      english_display_source: card.names.englishDisplaySource ?? null,
+      translation_status: presentation.translationStatus,
       number: card.collectorNumber.value,
       localId: card.collectorNumber.value,
       language: toLegacyLanguage(card.languageCode),
       rarity: card.rarity.label ?? card.rarity.code,
       images: {
-        small: derivativeUrl(primary, ['card-grid', 'grid', 'search', 'small', 'thumb']),
-        large: derivativeUrl(primary, ['detail', 'large']),
+        small: smallImage,
+        large: largeImage,
       },
       set: {
         id: card.set.setId,
         set_code: card.set.setCode,
-        name: card.set.englishDisplayName ?? card.set.nativeName ?? card.set.setId,
+        name: presentation.setName,
         local_name: card.set.nativeName,
-        english_display_name: card.set.englishDisplayName,
+        english_display_name: presentation.englishSetDisplayName,
+      },
+      supertype: presentation.details.supertype ?? null,
+      subtypes: presentation.details.subtypes ?? [],
+      artist: card.details?.artist ?? null,
+      presentation: {
+        language: presentation.languageLabel,
+        native_image_retained: true,
+        selected_image_variant_id: primary?.variantId ?? null,
+        english_details_only: presentation.isForeign,
+        withheld_native_details: presentation.withheldNativeDetails,
       },
     },
   };

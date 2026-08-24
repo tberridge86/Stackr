@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { getEnglishCardDisplayName } from './cardDisplayNames.js';
 
 export const STACKR_API_V1 = '1';
 export const DEFAULT_CATALOGUE_CACHE_CONTROL = 'public, max-age=60, stale-while-revalidate=300';
@@ -266,9 +267,33 @@ export function toVariant(row) {
   };
 }
 
+function cardEnglishDisplay(row) {
+  const printing = getEnglishCardDisplayName({
+    id: row.printing_id,
+    setId: row.set_id,
+    collectorNumber: row.collector_number,
+    language: row.language_code,
+    localName: row.card_native_name,
+    englishDisplayName: row.card_english_display_name,
+  });
+  if (printing) return { value: printing, source: 'printing' };
+  const concept = getEnglishCardDisplayName({
+    id: row.printing_id,
+    setId: row.set_id,
+    collectorNumber: row.collector_number,
+    language: row.language_code,
+    localName: row.card_native_name,
+    englishDisplayName: row.concept_english_display_name,
+  });
+  return concept
+    ? { value: concept, source: 'concept' }
+    : { value: null, source: null };
+}
+
 export function toCardSummary(rows) {
   const row = rows[0];
   if (!row) return null;
+  const englishDisplay = cardEnglishDisplay(row);
   return {
     cardId: row.printing_id,
     game: row.game_code,
@@ -292,7 +317,13 @@ export function toCardSummary(rows) {
     },
     names: {
       native: row.card_native_name,
-      englishDisplay: row.card_english_display_name ?? null,
+      englishDisplay: englishDisplay.value,
+      englishDisplaySource: englishDisplay.source,
+    },
+    details: {
+      supertype: row.supertype ?? null,
+      subtypes: Array.isArray(row.subtypes) ? row.subtypes : [],
+      artist: row.artist ?? null,
     },
     rarity: {
       code: row.rarity_code ?? null,
@@ -327,6 +358,7 @@ function toDeltaChange(row) {
 }
 
 function toSearchResult(row, reason, extra = {}) {
+  const englishDisplay = cardEnglishDisplay(row);
   return {
     type: 'card',
     reason,
@@ -337,7 +369,8 @@ function toSearchResult(row, reason, extra = {}) {
     setCode: row.set_code ?? null,
     collectorNumber: row.collector_number,
     nativeName: row.card_native_name,
-    englishDisplayName: row.card_english_display_name ?? null,
+    englishDisplayName: englishDisplay.value,
+    englishDisplaySource: englishDisplay.source,
     languageCode: row.language_code,
     variantCode: row.variant_code,
     ...extra,
