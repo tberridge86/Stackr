@@ -36,7 +36,7 @@ function buildRestoreCleanupSqlForTables(internalTables, roleDump) {
   const statements = [
     '\\set ON_ERROR_STOP on',
     "SET statement_timeout = 0;",
-    "SET lock_timeout = '30s';",
+    "SET lock_timeout = '5min';",
     ...APPLICATION_SCHEMAS.map((schema) => `DROP SCHEMA IF EXISTS "${schema}" CASCADE;`),
     ...applicationRoles.map((role) => `DROP ROLE IF EXISTS "${role.replaceAll('"', '""')}";`),
     'CREATE SCHEMA "public" AUTHORIZATION "postgres";',
