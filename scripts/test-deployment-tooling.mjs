@@ -37,6 +37,29 @@ assert.notEqual(
   releaseManifest.components.database.stagingProjectRef,
   'staging and production Supabase refs must be isolated',
 );
+assert.equal(releaseManifest.components.gateway.productionHost, 'api.stackrtcg.com');
+
+const workerSecretsTemp = mkdtempSync(path.join(tmpdir(), 'stackr-worker-secrets-test-'));
+try {
+  const outputPath = path.join(workerSecretsTemp, 'worker-secrets.json');
+  const secretValues = {
+    BACKEND_ORIGIN_KEY: 'test-origin-key',
+    BACKEND_ADMIN_KEY: 'test-admin-key',
+    RECOGNITION_SERVICE_SECRET: 'test-recognition-secret',
+  };
+  const workerSecrets = run(
+    'scripts/deploy/write-worker-secrets.mjs',
+    [`--output=${outputPath}`],
+    secretValues,
+  );
+  assert.equal(workerSecrets.status, 0, workerSecrets.stderr || workerSecrets.stdout);
+  assert.deepEqual(JSON.parse(readFileSync(outputPath, 'utf8')), secretValues);
+  for (const value of Object.values(secretValues)) {
+    assert.doesNotMatch(workerSecrets.stdout, new RegExp(value), 'worker secret values must not be logged');
+  }
+} finally {
+  rmSync(workerSecretsTemp, { recursive: true, force: true });
+}
 
 const catalogueWorkerSecretsTemp = mkdtempSync(path.join(tmpdir(), 'stackr-catalogue-worker-secrets-test-'));
 try {
@@ -52,17 +75,34 @@ try {
   );
   assert.equal(workerSecrets.status, 0, workerSecrets.stderr || workerSecrets.stdout);
   assert.deepEqual(JSON.parse(readFileSync(outputPath, 'utf8')), catalogueSecrets);
-  for (const value of Object.values(catalogueSecrets)) {
-    assert.doesNotMatch(workerSecrets.stdout, new RegExp(value), 'worker secret values must not be logged');
-  }
 } finally {
   rmSync(catalogueWorkerSecretsTemp, { recursive: true, force: true });
 }
 
 const preflight = run('scripts/deploy/preflight.mjs');
 assert.equal(preflight.status, 0, preflight.stderr || preflight.stdout);
+const readinessStatus = run('scripts/deploy/status.mjs', ['--json']);
+assert.equal(readinessStatus.status, 0, readinessStatus.stderr || readinessStatus.stdout);
+assert.equal(JSON.parse(readinessStatus.stdout).productionHost, 'api.stackrtcg.com');
+const mobileReadinessStatus = run('scripts/deploy/status.mjs', ['--scope=mobile_only', '--json']);
+assert.equal(mobileReadinessStatus.status, 0, mobileReadinessStatus.stderr || mobileReadinessStatus.stdout);
+const mobileReadiness = JSON.parse(mobileReadinessStatus.stdout);
+assert.equal(mobileReadiness.releaseScope, 'mobile_only');
+assert.equal(mobileReadiness.ready, true);
+assert.equal(mobileReadiness.completionPercent, 100);
+assert.equal(mobileReadiness.blockers, 0);
+assert.ok(mobileReadiness.checks.some((check) => check.id === 'mobile_update_contract' && check.status === 'pass'));
+assert.ok(mobileReadiness.checks.some((check) => check.id === 'mobile_release_workflow' && check.status === 'pass'));
+const catalogueReadinessStatus = run('scripts/deploy/status.mjs', ['--scope=catalogue_api', '--json']);
+assert.equal(catalogueReadinessStatus.status, 0, catalogueReadinessStatus.stderr || catalogueReadinessStatus.stdout);
+const catalogueReadiness = JSON.parse(catalogueReadinessStatus.stdout);
+assert.equal(catalogueReadiness.releaseScope, 'catalogue_api');
+assert.ok(catalogueReadiness.completionPercent > 0 && catalogueReadiness.completionPercent < 100);
+assert.doesNotMatch(catalogueReadinessStatus.stdout, /release_gate:activeModelSelected/);
+assert.doesNotMatch(catalogueReadinessStatus.stdout, /release_gate:activeIndexValidated/);
 const stagingEvidence = run('scripts/deploy/verify-staging-readiness-evidence.mjs');
-assert.equal(stagingEvidence.status, 0, stagingEvidence.stderr || stagingEvidence.stdout);
+assert.notEqual(stagingEvidence.status, 0, 'stale or checksum-mismatched readiness evidence must fail closed');
+assert.match(stagingEvidence.stdout, /migration_reconciliation_evidence_checksum_mismatch/);
 const evidenceGuardTemp = mkdtempSync(path.join(tmpdir(), 'stackr-readiness-evidence-test-'));
 try {
   const sourceEvidence = JSON.parse(readFileSync('deploy/evidence/staging-readiness-2026-07-30.json', 'utf8'));
@@ -97,13 +137,15 @@ try {
   rmSync(evidenceGuardTemp, { recursive: true, force: true });
 }
 const migrationReconciliation = run('scripts/deploy/verify-staging-migration-reconciliation.mjs');
-assert.equal(migrationReconciliation.status, 0, migrationReconciliation.stderr || migrationReconciliation.stdout);
+assert.notEqual(migrationReconciliation.status, 0, 'migration reconciliation must reject evidence drift');
+assert.match(migrationReconciliation.stdout, /local_migration_count_drift/);
+assert.match(migrationReconciliation.stdout, /repository_migration_content_hash_drift/);
 const migrationAlignmentGate = run(
   'scripts/deploy/verify-staging-migration-reconciliation.mjs',
   ['--require-aligned'],
 );
-assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
-assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
+assert.notEqual(migrationAlignmentGate.status, 0, 'aligned historical evidence must not override current drift');
+assert.match(migrationAlignmentGate.stdout, /ordered_migration_key_hash_drift/);
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
 assert.notEqual(stagingReleaseGate.status, 0, 'staging evidence must block release until recovery and model gates pass');
 assert.match(stagingReleaseGate.stdout, /storage_recovery_not_verified/);
@@ -151,6 +193,29 @@ const crossedProjectPreflight = run('scripts/deploy/preflight.mjs', ['--release'
 });
 assert.match(crossedProjectPreflight.stdout, /supabase_project_ref_mismatch:staging/);
 
+const mobileOnlyPreflight = run(
+  'scripts/deploy/preflight.mjs',
+  ['--mobile-only-release'],
+  {
+    STACKR_DEPLOYMENT_ENVIRONMENT: 'production',
+    STACKR_DEPLOYMENT_SCOPE: 'mobile_only',
+    STACKR_MOBILE_RELEASE_APPROVED: 'true',
+    EXPO_TOKEN: 'test-only',
+  },
+);
+assert.equal(mobileOnlyPreflight.status, 0, mobileOnlyPreflight.stderr || mobileOnlyPreflight.stdout);
+const unapprovedMobileOnlyPreflight = run(
+  'scripts/deploy/preflight.mjs',
+  ['--mobile-only-release'],
+  {
+    STACKR_DEPLOYMENT_ENVIRONMENT: 'production',
+    STACKR_DEPLOYMENT_SCOPE: 'mobile_only',
+    EXPO_TOKEN: 'test-only',
+  },
+);
+assert.notEqual(unapprovedMobileOnlyPreflight.status, 0, 'mobile-only release must require protected approval');
+assert.match(unapprovedMobileOnlyPreflight.stdout, /release_approval_missing:STACKR_MOBILE_RELEASE_APPROVED/);
+
 const modelReport = run('scripts/deploy/verify-model-release.mjs');
 assert.equal(modelReport.status, 0, modelReport.stderr || modelReport.stdout);
 const modelGate = run('scripts/deploy/verify-model-release.mjs', ['--require-active']);
@@ -170,6 +235,10 @@ assert.match(backendServer, /res\.setHeader\('X-Request-Id', requestId\)/);
 const rollbackTool = readFileSync('scripts/deploy/railway-rollback.mjs', 'utf8');
 assert.match(rollbackTool, /deploymentRollback/);
 assert.doesNotMatch(rollbackTool, /console\.log\([^\n]*(?:RAILWAY_TOKEN|RAILWAY_API_TOKEN)/);
+
+const smokeScript = readFileSync('scripts/deploy/smoke.mjs', 'utf8');
+assert.match(smokeScript, /const requirePublishedCatalogue = process\.argv\.includes\('--require-published-catalogue'\)/);
+assert.doesNotMatch(smokeScript, /const requirePublishedCatalogue = fullGateway \|\|/);
 
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
@@ -195,14 +264,27 @@ assert.match(productionMonitorWorkflow, /cron: '\*\/10 \* \* \* \*'/);
 assert.match(productionMonitorWorkflow, /STACKR_PRODUCTION_MONITOR_ENABLED == 'true'/);
 assert.match(productionMonitorWorkflow, /--full-gateway/);
 assert.match(productionMonitorWorkflow, /--require-published-catalogue/);
-assert.match(productionMonitorWorkflow, /--required-catalogue-languages=en,ja,zh-tw,zh-cn,ko/);
+assert.match(productionMonitorWorkflow, /--required-catalogue-languages=en,ja,zh-tw,zh-cn/);
+assert.doesNotMatch(productionMonitorWorkflow, /--required-catalogue-languages=[^\n]*\bko\b/);
+assert.match(productionWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn/);
 assert.match(productionMonitorWorkflow, /issues: write/);
 assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comment|create)/);
 assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
 assert.match(stagingWorkflow, /STACKR_DEPLOYMENT_ENVIRONMENT: staging/);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
-assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
-assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
+assert.match(stagingWorkflow, /release_candidate:/);
+assert.match(stagingWorkflow, /Validate staging release mode[\s\S]+inputs\.apply_migrations && !inputs\.release_candidate/);
+assert.match(stagingWorkflow, /Require production-candidate evidence[\s\S]+if: inputs\.release_candidate/);
+assert.match(stagingWorkflow, /Require production-candidate evidence[\s\S]+verify-staging-migration-reconciliation\.mjs --require-aligned/);
+assert.match(stagingWorkflow, /Require production-candidate evidence[\s\S]+verify-staging-readiness-evidence\.mjs --require-release-ready/);
+assert.match(stagingWorkflow, /Require an approved model and complete inactive index[\s\S]+if: inputs\.release_candidate/);
+assert.match(stagingWorkflow, /Dry-run backward-compatible migrations[\s\S]+if: inputs\.release_candidate/);
+assert.match(stagingWorkflow, /deploy:smoke -- --gateway="\$STACKR_GATEWAY_URL" --full-gateway/);
+assert.match(stagingWorkflow, /write-worker-secrets\.mjs/);
+assert.match(stagingWorkflow, /--secrets-file "\$RUNNER_TEMP\/stackr-worker-secrets\.json"/);
+assert.match(stagingWorkflow, /--var "BACKEND_ORIGIN:\$STACKR_BACKEND_URL"/);
+assert.match(stagingWorkflow, /--var "SUPABASE_URL:\$STACKR_SUPABASE_URL"/);
+assert.match(stagingWorkflow, /npm --prefix gateway exec -- wrangler --cwd gateway versions upload/);
 assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);
 assert.doesNotMatch(recoveryWorkflow, /github\.event\.head_commit/);
 assert.match(recoveryWorkflow, /SUPABASE_RESTORE_DB_URL/);
@@ -213,6 +295,11 @@ assert.match(recoveryWorkflow, /restore_database_url_project_mismatch/);
 assert.match(recoveryWorkflow, /prepare-postgres-urls\.mjs/);
 assert.match(recoveryWorkflow, /sanitize-supabase-role-dump\.mjs/);
 assert.match(recoveryWorkflow, /prepare-restore-cleanup\.mjs/);
+assert.doesNotMatch(
+  recoveryWorkflow,
+  /--single-transaction/,
+  'large isolated restores must commit incrementally and rely on cleanup plus fingerprint verification',
+);
 assert.match(recoveryWorkflow, /STACKR_SOURCE_DB_URL/);
 assert.match(recoveryWorkflow, /STACKR_RESTORE_DB_URL/);
 assert.doesNotMatch(recoveryWorkflow, /secrets\.SUPABASE_ACCESS_TOKEN/);
@@ -241,13 +328,15 @@ assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
 assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'/);
+assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'APPROVE DESTRUCTIVE STAGING REBUILD'/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
-assert.match(baselineMigrationTrialWorkflow, /--expected-history-version=20260802160643/);
+assert.match(baselineMigrationTrialWorkflow, /--expected-history-count=106/);
+assert.match(baselineMigrationTrialWorkflow, /--expected-history-version=20260813135412/);
 assert.match(
   baselineMigrationTrialWorkflow,
-  /--expected-history-name=production_critical_rls_storage_containment_20260802/,
+  /--expected-history-name=premium_seller_access_boundary/,
 );
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --include-all --dry-run/);
 assert.match(baselineMigrationTrialWorkflow, /db push --db-url "\$STACKR_RESTORE_DB_URL" --include-all/);
@@ -258,6 +347,15 @@ assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-base
 assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|--linked/);
+assert.match(baselineMigrationTrialWorkflow, /Create ephemeral rollback backup/);
+assert.match(baselineMigrationTrialWorkflow, /Commit staging catalogue to isolated candidate/);
+assert.match(baselineMigrationTrialWorkflow, /Rebuild canonical staging database/);
+assert.match(baselineMigrationTrialWorkflow, /Restore rollback backup after a failed rebuild/);
+assert.match(baselineMigrationTrialWorkflow, /select count\(\*\) from auth\.users/);
+assert.match(baselineMigrationTrialWorkflow, /select count\(\*\) from storage\.objects/);
+assert.match(baselineMigrationTrialWorkflow, /expected_migrations=.*find supabase\/migrations/);
+assert.match(baselineMigrationTrialWorkflow, /select count\(\*\) from supabase_migrations\.schema_migrations/);
+assert.match(baselineMigrationTrialWorkflow, /actual_migrations=.*migration-count\.txt/);
 assert.match(catalogueTransferWorkflow, /inputs\.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'/);
 assert.match(catalogueTransferWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(catalogueTransferWorkflow, /SUPABASE_RESTORE_DB_URL: \$\{\{ secrets\.SUPABASE_RESTORE_DB_URL \}\}/);
@@ -292,9 +390,21 @@ assert.match(catalogueTransferScript, /legacyRawRecordIdentityIndexPresent/);
 assert.match(catalogueTransferScript, /importRunIdentityIndexPresent/);
 assert.match(catalogueTransferScript, /if \(TRANSFER_MODE !== 'rehearse'\) await target\.query\('commit'\)/);
 assert.match(catalogueTransferScript, /PROMOTE VERIFIED CATALOGUE TO PRODUCTION/);
-assert.match(catalogueTransferScript, /production_promotion_target_guard_mismatch/);
+assert.match(catalogueTransferScript, /else await target\.query\('rollback'\)/);
 assert.match(catalogueTransferScript, /targetRollbackVerified/);
+assert.match(catalogueTransferScript, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
+assert.match(catalogueTransferScript, /committed_transfer_source_not_canonical_staging/);
+assert.match(catalogueTransferScript, /committed_transfer_target_not_isolated_candidate/);
+assert.match(catalogueTransferScript, /committed_transfer_production_guard_mismatch/);
 assert.match(catalogueTransferScript, /targetCommitVerified/);
+
+const cataloguePreservationTables = JSON.parse(
+  readFileSync('deploy/staging-catalogue-preservation-tables.json', 'utf8'),
+);
+assert.ok(
+  cataloguePreservationTables.tables.includes('ingest.data_conflicts'),
+  'the staging rebuild must preserve the ingestion conflict review queue',
+);
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
 const rawPasswordUrl = normalizePostgresUrl(
@@ -409,20 +519,40 @@ assert.equal(
   'sanitising a role dump must be idempotent',
 );
 
-const { buildRestoreCleanupSql } = await import('./deploy/prepare-restore-cleanup.mjs');
+const { buildRestoreCleanupSql, buildRestoreCleanupSqlFromFile } = await import('./deploy/prepare-restore-cleanup.mjs');
 const cleanup = buildRestoreCleanupSql([
   'COPY "public"."cards" ("id") FROM stdin;',
   'COPY "catalog"."sets" ("id") FROM stdin;',
   'COPY "auth"."users" ("id") FROM stdin;',
   'COPY "storage"."buckets" ("id") FROM stdin;',
 ].join('\n'));
-assert.equal(cleanup.droppedSchemaCount, 8);
+assert.equal(cleanup.droppedSchemaCount, 9);
 assert.equal(cleanup.truncatedTableCount, 2);
 assert.match(cleanup.sql, /DROP SCHEMA IF EXISTS "public" CASCADE;/);
+assert.match(cleanup.sql, /DROP SCHEMA IF EXISTS "private" CASCADE;/);
 assert.match(cleanup.sql, /CREATE SCHEMA "public" AUTHORIZATION "postgres";/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "storage"\."buckets" CASCADE;/);
 assert.doesNotMatch(cleanup.sql, /TRUNCATE TABLE ONLY "public"\."cards"/);
+const streamingCleanupRoot = mkdtempSync(path.join(tmpdir(), 'stackr-restore-cleanup-'));
+try {
+  const streamingDumpPath = path.join(streamingCleanupRoot, 'data.sql');
+  writeFileSync(streamingDumpPath, [
+    '-- synthetic padding proves the file path uses the streaming implementation',
+    'COPY "auth"."users" ("id") FROM stdin;',
+    'COPY "public"."cards" ("id") FROM stdin;',
+    'COPY "storage"."objects" ("id") FROM stdin;',
+  ].join('\n'));
+  const streamingCleanup = await buildRestoreCleanupSqlFromFile(streamingDumpPath);
+  assert.equal(streamingCleanup.truncatedTableCount, 2);
+  assert.match(streamingCleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
+  assert.match(streamingCleanup.sql, /TRUNCATE TABLE ONLY "storage"\."objects" CASCADE;/);
+} finally {
+  rmSync(streamingCleanupRoot, { recursive: true, force: true });
+}
+const restoreCleanupScript = readFileSync('scripts/deploy/prepare-restore-cleanup.mjs', 'utf8');
+assert.match(restoreCleanupScript, /createReadStream\(dataPath/);
+assert.doesNotMatch(restoreCleanupScript, /readFileSync\(dataPath/);
 assert.match(productionWorkflow, /release-database\.mjs catalogue activate/);
 assert.match(productionWorkflow, /versions deploy/);
 assert.match(productionWorkflow, /rollout-percentage/);
@@ -431,12 +561,25 @@ assert.match(productionWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(productionWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(productionWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(productionWorkflow, /update:revert-update-rollout/);
-assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /--gateway="\$STACKR_GATEWAY_URL"[\s\S]+--full-gateway[\s\S]+--require-published-catalogue/);
+assert.match(productionWorkflow, /gateway_bootstrap:/);
+assert.match(productionWorkflow, /release_scope:[\s\S]+options: \[mobile_only, catalogue_api, full_platform\]/);
+assert.match(productionWorkflow, /--mobile-only-release/);
+assert.match(productionWorkflow, /STACKR_MOBILE_RELEASE_APPROVED/);
+assert.match(productionWorkflow, /npm run verify:mobile-release-config/);
+assert.match(productionWorkflow, /Mobile-only releases cannot apply database migrations/);
+assert.match(productionWorkflow, /inputs\.release_scope == 'mobile_only' \|\| inputs\.publish_mobile_update/);
 assert.match(productionWorkflow, /--require-catalogue-api-ready/);
-assert.match(productionWorkflow, /Catalogue API promotion currently supports the guarded first-release bootstrap only/);
-assert.match(productionWorkflow, /Catalogue API bootstrap does not publish a mobile update/);
-assert.match(productionWorkflow, /Remove a failed first production gateway[\s\S]+wrangler --cwd gateway delete --env production --force/);
-assert.match(productionWorkflow, /promote-catalogue-storage\.mjs/);
+assert.match(productionWorkflow, /inputs\.release_scope == 'full_platform'/);
+assert.match(productionWorkflow, /Create first production gateway deployment[\s\S]+wrangler --cwd gateway deploy/);
+assert.match(productionWorkflow, /write-worker-secrets\.mjs/);
+assert.match(productionWorkflow, /--secrets-file "\$RUNNER_TEMP\/stackr-worker-secrets\.json"/);
+assert.match(productionWorkflow, /Canary releases require rollback value \$variable/);
+assert.match(productionWorkflow, /Canary releases require PREVIOUS_GATEWAY_TAG/);
+assert.match(productionWorkflow, /PREVIOUS_INDEX_VERSION_ID != ''/);
+assert.match(productionWorkflow, /npm --prefix gateway exec -- wrangler --cwd gateway deploy/);
+assert.doesNotMatch(stagingWorkflow, /npm exec --prefix gateway -- wrangler/);
+assert.doesNotMatch(productionWorkflow, /npm exec --prefix gateway -- wrangler/);
 assert.doesNotMatch(productionWorkflow, /update:rollback/);
 assert.match(rollbackWorkflow, /release-database\.mjs index rollback/);
 assert.match(rollbackWorkflow, /update:revert-update-rollout/);
@@ -444,6 +587,9 @@ assert.match(rollbackWorkflow, /update:republish/);
 assert.match(rollbackWorkflow, /destination-channel/);
 assert.doesNotMatch(rollbackWorkflow, /update:rollback/);
 assert.match(ingestionWorkflow, /STACKR_CATALOGUE_INGESTION_AUTOMATION_APPROVED/);
+assert.match(ingestionWorkflow, /STACKR_CATALOGUE_IMPORT_TARGET: staging/);
+assert.match(ingestionWorkflow, /--target=staging/);
+assert.match(ingestionWorkflow, /--limit="\$STACKR_INGEST_LIMIT"/);
 assert.match(ingestionWorkflow, /--setId="\$STACKR_INGEST_SET"/);
 assert.match(ingestionWorkflow, /resume-import[\s\S]+--runKey="\$STACKR_INGEST_ID"/);
 assert.match(ingestionWorkflow, /rebuild-record[\s\S]+--providerRecordId="\$STACKR_INGEST_ID"/);

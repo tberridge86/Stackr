@@ -9,7 +9,7 @@ const TARGET_PROJECT_REF = process.env.SUPABASE_RESTORE_PROJECT_REF;
 const SOURCE_DB_URL = process.env.STACKR_SOURCE_DB_URL ?? process.env.SUPABASE_DB_URL;
 const TARGET_DB_URL = process.env.STACKR_RESTORE_DB_URL ?? process.env.SUPABASE_RESTORE_DB_URL;
 const EVIDENCE_DIR = process.env.STACKR_RECOVERY_EVIDENCE_DIR ?? process.cwd();
-const APPLICATION_SCHEMAS = ['public', 'catalog', 'ingest', 'market', 'ml', 'api', 'audit'];
+const APPLICATION_SCHEMAS = ['public', 'catalog', 'ingest', 'market', 'ml', 'api', 'audit', 'private'];
 const VOLATILE_TABLES = new Set([
   'audit.observability_events',
   'ml.embedding_activation_events',
