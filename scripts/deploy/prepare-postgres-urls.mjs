@@ -52,11 +52,19 @@ export function normalizePostgresUrl(value, expectedProjectRef) {
   }
   if (parsed.pathname !== '/postgres') throw new Error('database_url_name_mismatch');
   if (parsed.hash) throw new Error('database_url_fragment_prohibited');
-  const queryEntries = [...parsed.searchParams.entries()];
-  if (queryEntries.length > 1
-      || (queryEntries.length === 1
-        && (queryEntries[0][0] !== 'sslmode'
-          || !['require', 'verify-ca', 'verify-full'].includes(queryEntries[0][1])))) {
+  const queryKeys = [...new Set(parsed.searchParams.keys())];
+  const sslModes = parsed.searchParams.getAll('sslmode');
+  const connectTimeouts = parsed.searchParams.getAll('connect_timeout');
+  const sslModeValid = sslModes.length <= 1
+    && (sslModes.length === 0 || ['require', 'verify-ca', 'verify-full'].includes(sslModes[0]));
+  const connectTimeoutValid = connectTimeouts.length <= 1
+    && (connectTimeouts.length === 0
+      || (/^\d+$/.test(connectTimeouts[0])
+        && Number(connectTimeouts[0]) >= 1
+        && Number(connectTimeouts[0]) <= 60));
+  if (queryKeys.some((key) => !['sslmode', 'connect_timeout'].includes(key))
+      || !sslModeValid
+      || !connectTimeoutValid) {
     throw new Error('database_url_query_prohibited');
   }
   if (!isDirect && !isSharedSessionPooler) {

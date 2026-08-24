@@ -503,6 +503,11 @@ const directDatabaseUrl = normalizePostgresUrl(
   testProjectRef,
 );
 assert.equal(directDatabaseUrl.endpointKind, 'direct');
+const boundedConnectionTimeoutUrl = normalizePostgresUrl(
+  `postgresql://postgres.${testProjectRef}:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require&connect_timeout=10`,
+  testProjectRef,
+);
+assert.equal(boundedConnectionTimeoutUrl.endpointKind, 'shared_session_pooler');
 assert.throws(
   () => normalizePostgresUrl(rawPasswordUrl.normalized, alternateProjectRef),
   /database_url_project_endpoint_mismatch/,
@@ -514,6 +519,9 @@ for (const rejectedUrl of [
   `postgresql://postgres.${testProjectRef}:password@aws-0-eu-west-1.pooler.supabase.com:6543/postgres`,
   `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/not-postgres`,
   `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/postgres?user=postgres.${testProjectRef}`,
+  `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/postgres?connect_timeout=0`,
+  `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/postgres?connect_timeout=61`,
+  `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/postgres?sslmode=require&sslmode=verify-full`,
   `postgresql://postgres:password@db.${testProjectRef}.supabase.co:5432/postgres#fragment`,
 ]) {
   assert.throws(() => normalizePostgresUrl(rejectedUrl, testProjectRef));
