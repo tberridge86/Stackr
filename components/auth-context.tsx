@@ -67,14 +67,18 @@ async function registerPushToken(userId: string) {
     }
 
     // Save token to Supabase profile
-    await supabase
+    const { error } = await supabase
       .from('profiles')
       .update({ expo_push_token: token })
       .eq('id', userId);
 
-    console.log('Push token registered:', token);
-  } catch (err) {
-    console.log('Failed to register push token:', err);
+    if (error) {
+      throw error;
+    }
+
+    console.log('Push notifications registered.');
+  } catch {
+    console.log('Push notifications are unavailable for this build.');
   }
 }
 

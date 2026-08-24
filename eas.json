@@ -10,11 +10,12 @@
       "environment": "development",
       "channel": "development",
       "env": {
-        "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
+        "EXPO_PUBLIC_PRICE_API_URL": "https://stackr-api-gateway-staging.berridge14.workers.dev",
         "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
         "APP_VARIANT": "development",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
+        "EXPO_PUBLIC_APP_VARIANT": "development",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://lmwfhvexfcoyeuoyrlco.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5qRlv9bSq5vaz3zgDSpwIA_JayaHJGU"
       }
     },
     "preview": {
@@ -25,10 +26,12 @@
         "buildType": "apk"
       },
       "env": {
+        "APP_VARIANT": "staging",
+        "EXPO_PUBLIC_APP_VARIANT": "staging",
         "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
-        "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
-        "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
+        "EXPO_PUBLIC_PRICE_API_URL": "https://stackr-api-gateway-staging.berridge14.workers.dev",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://lmwfhvexfcoyeuoyrlco.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5qRlv9bSq5vaz3zgDSpwIA_JayaHJGU"
       }
     },
     "staging": {
@@ -62,8 +65,26 @@
       },
       "env": {
         "APP_VARIANT": "staging",
+        "EXPO_PUBLIC_APP_VARIANT": "staging",
         "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "true",
+        "EXPO_PUBLIC_PRICE_API_URL": "https://stackr-api-gateway-staging.berridge14.workers.dev",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://lmwfhvexfcoyeuoyrlco.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5qRlv9bSq5vaz3zgDSpwIA_JayaHJGU"
+      }
+    },
+    "release-candidate": {
+      "distribution": "internal",
+      "environment": "production",
+      "channel": "release-candidate",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_VARIANT": "production",
+        "EXPO_PUBLIC_APP_VARIANT": "production",
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
+        "EXPO_PUBLIC_SCAN_PROVIDER": "local-ai",
         "EXPO_PUBLIC_SUPABASE_URL": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt"
       }
@@ -73,6 +94,8 @@
       "environment": "production",
       "channel": "production",
       "env": {
+        "APP_VARIANT": "production",
+        "EXPO_PUBLIC_APP_VARIANT": "production",
         "EXPO_PUBLIC_PRICE_API_URL": "https://pocketvault-production.up.railway.app",
         "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
         "EXPO_PUBLIC_SCAN_PROVIDER": "local-ai",

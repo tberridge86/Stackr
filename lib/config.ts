@@ -1,6 +1,8 @@
 const APP_VARIANT = process.env.EXPO_PUBLIC_APP_VARIANT ?? process.env.APP_VARIANT ?? 'production';
-const IS_STAGING_APP = APP_VARIANT === 'staging';
-const DEFAULT_PRICE_API_URL = IS_STAGING_APP ? '' : 'https://pocketvault-production.up.railway.app';
+const IS_PRODUCTION_APP = APP_VARIANT === 'production';
+const IS_STAGING_APP = !IS_PRODUCTION_APP;
+const PRODUCTION_PRICE_API_URL = 'https://pocketvault-production.up.railway.app';
+const DEFAULT_PRICE_API_URL = IS_STAGING_APP ? '' : PRODUCTION_PRICE_API_URL;
 
 export const PRICE_API_URL = (
   process.env.PRICE_API_URL
@@ -12,6 +14,14 @@ export const STACKR_API_URL = (
   ?? process.env.STACKR_API_URL
   ?? (IS_STAGING_APP ? '' : PRICE_API_URL)
 ).replace(/\/$/, '');
+
+const configuredPublicApiUrls = [PRICE_API_URL, STACKR_API_URL].filter(Boolean);
+if (IS_PRODUCTION_APP && configuredPublicApiUrls.some((url) => /staging/i.test(url))) {
+  throw new Error('Production app build is configured with a staging API URL.');
+}
+if (IS_STAGING_APP && configuredPublicApiUrls.some((url) => url === PRODUCTION_PRICE_API_URL)) {
+  throw new Error(`${APP_VARIANT} app build is configured with the production API URL.`);
+}
 export const BETA_TRADE_DEMO_MODE = process.env.EXPO_PUBLIC_BETA_TRADE_DEMO_MODE !== 'false';
 export const CAPTURE_GEOMETRY_V2_ENABLED = process.env.EXPO_PUBLIC_CAPTURE_GEOMETRY_V2 !== 'false';
 export const CARD_LOCALISATION_ENABLED = process.env.EXPO_PUBLIC_CARD_LOCALISATION !== 'false';

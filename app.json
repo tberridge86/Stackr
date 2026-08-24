@@ -70,9 +70,11 @@
       }
     },
     "android": {
-      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.CAMERA"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/rev2/01-brand/app/adaptive-icon.png",

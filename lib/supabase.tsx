@@ -4,9 +4,11 @@ import { Platform } from 'react-native';
 import 'react-native-url-polyfill/auto';
 
 const appVariant = process.env.EXPO_PUBLIC_APP_VARIANT ?? process.env.APP_VARIANT ?? 'production';
-const isStagingApp = appVariant === 'staging';
+const isProductionApp = appVariant === 'production';
+const isStagingApp = !isProductionApp;
 const productionSupabaseUrl = 'https://oakdbbzdqwurpjnoqhmu.supabase.co';
 const productionSupabaseAnonKey = 'sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt';
+const stagingSupabaseProjectRef = 'lmwfhvexfcoyeuoyrlco';
 const supabaseUrl = (
   process.env.EXPO_PUBLIC_SUPABASE_URL
   ?? (isStagingApp ? '' : productionSupabaseUrl)
@@ -20,8 +22,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(`Missing public Supabase configuration for ${appVariant} app build.`);
 }
 
-if (isStagingApp && supabaseUrl.includes('oakdbbzdqwurpjnoqhmu')) {
-  throw new Error('Staging app build is configured with the production Supabase project.');
+if (!isProductionApp && supabaseUrl.includes('oakdbbzdqwurpjnoqhmu')) {
+  throw new Error(`${appVariant} app build is configured with the production Supabase project.`);
+}
+
+if (isProductionApp && supabaseUrl.includes(stagingSupabaseProjectRef)) {
+  throw new Error('Production app build is configured with the staging Supabase project.');
 }
 const isStaticWebRender = Platform.OS === 'web' && typeof window === 'undefined';
 const staticRenderStorage = {

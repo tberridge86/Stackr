@@ -1,0 +1,50 @@
+name: Stackr Internal Android Release Candidate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-mobile-release-candidate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-internal-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      APP_VARIANT: production
+      EXPO_PUBLIC_APP_VARIANT: production
+      EXPO_PUBLIC_PRICE_API_URL: https://pocketvault-production.up.railway.app
+      EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: "false"
+      EXPO_PUBLIC_SCAN_PROVIDER: local-ai
+      EXPO_PUBLIC_SUPABASE_URL: https://oakdbbzdqwurpjnoqhmu.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+      - name: Install JavaScript dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Generate production Android project
+        run: npx expo prebuild --clean --platform android --no-install
+      - name: Build installable internal release APK
+        working-directory: android
+        run: ./gradlew :app:assembleRelease --no-daemon
+      - name: Upload internal APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: stackr-android-release-candidate-${{ github.sha }}
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 7
