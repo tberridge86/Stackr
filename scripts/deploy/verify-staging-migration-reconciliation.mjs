@@ -39,6 +39,7 @@ if (![
   'stackr-migration-reconciliation-v1.1.0',
   'stackr-migration-reconciliation-v1.2.0',
   'stackr-migration-reconciliation-v1.3.0',
+  'stackr-migration-reconciliation-v1.4.0',
 ].includes(evidence.schemaVersion)) {
   errors.push('invalid_migration_reconciliation_version');
 }
@@ -54,6 +55,7 @@ if ([
   'stackr-migration-reconciliation-v1.1.0',
   'stackr-migration-reconciliation-v1.2.0',
   'stackr-migration-reconciliation-v1.3.0',
+  'stackr-migration-reconciliation-v1.4.0',
 ].includes(evidence.schemaVersion)) {
   const keyDigest = orderedMigrationKeySha256(localMigrations);
   const contentDigest = repositoryMigrationContentSha256(localMigrations);
@@ -76,11 +78,18 @@ if ([
   if ([
     'stackr-migration-reconciliation-v1.2.0',
     'stackr-migration-reconciliation-v1.3.0',
+    'stackr-migration-reconciliation-v1.4.0',
   ].includes(evidence.schemaVersion)) {
-    const baselineHistoryCount = evidence.schemaVersion === 'stackr-migration-reconciliation-v1.3.0'
+    const baselineHistoryCount = [
+      'stackr-migration-reconciliation-v1.3.0',
+      'stackr-migration-reconciliation-v1.4.0',
+    ].includes(evidence.schemaVersion)
       ? evidence.baseline?.expectedStagingHistoryCount
       : evidence.baseline?.expectedProductionHistoryCount;
     const pendingMigrationCount = localMigrations.length - baselineHistoryCount;
+    const baselineHistoryMatchesRepository = evidence.schemaVersion === 'stackr-migration-reconciliation-v1.4.0'
+      ? evidence.baseline?.exactRepositorySubsetMatch === true
+      : evidence.baseline?.exactRepositoryPrefixMatch === true;
     if (!Number.isInteger(baselineHistoryCount)
       || baselineHistoryCount < 0
       || baselineHistoryCount > localMigrations.length) {
@@ -88,7 +97,7 @@ if ([
     }
     if (evidence.baseline?.migrationHistoryRestored !== true
       || evidence.baseline?.restoredMigrationHistoryCount !== baselineHistoryCount
-      || evidence.baseline?.exactRepositoryPrefixMatch !== true
+      || !baselineHistoryMatchesRepository
       || evidence.baseline?.pendingRepositoryMigrationCount !== pendingMigrationCount) {
       errors.push('baseline_migration_history_restore_not_verified');
     }
@@ -98,7 +107,10 @@ if ([
       || evidence.isolatedCandidate?.storageFixtureSeeded !== false) {
       errors.push('isolated_candidate_delta_replay_not_verified');
     }
-    if (evidence.schemaVersion === 'stackr-migration-reconciliation-v1.3.0'
+    if ([
+      'stackr-migration-reconciliation-v1.3.0',
+      'stackr-migration-reconciliation-v1.4.0',
+    ].includes(evidence.schemaVersion)
       && (evidence.baseline?.source !== 'staging'
         || evidence.backup?.verified !== true
         || evidence.rollback?.verified !== true

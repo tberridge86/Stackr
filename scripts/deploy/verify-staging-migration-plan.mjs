@@ -39,15 +39,21 @@ const migrationFiles = readdirSync("supabase/migrations")
   .sort();
 const migrationKeys = migrationFiles.map((name) => name.replace(/\.sql$/, ""));
 const beforeKeys = readKeys(args["before-keys"]);
+const beforeKeySet = new Set(beforeKeys);
 
-if (
-  JSON.stringify(beforeKeys) !==
-  JSON.stringify(migrationKeys.slice(0, beforeKeys.length))
-) {
-  throw new Error("staging_history_is_not_an_exact_repository_prefix");
+if (beforeKeySet.size !== beforeKeys.length) {
+  throw new Error("staging_history_contains_duplicate_migration_keys");
+}
+const repositoryKeysAtBaseline = migrationKeys.filter((key) =>
+  beforeKeySet.has(key),
+);
+if (JSON.stringify(beforeKeys) !== JSON.stringify(repositoryKeysAtBaseline)) {
+  throw new Error("staging_history_is_not_an_exact_ordered_repository_subset");
 }
 
-const pendingMigrations = migrationFiles.slice(beforeKeys.length);
+const pendingMigrations = migrationFiles.filter(
+  (_name, index) => !beforeKeySet.has(migrationKeys[index]),
+);
 if (pendingMigrations.length !== expectedCount) {
   throw new Error(
     `unexpected_pending_migration_count:${pendingMigrations.length}`,

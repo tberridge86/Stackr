@@ -36,8 +36,15 @@ try {
   const migrationKeys = migrationFiles.map((name) =>
     name.replace(/\.sql$/, ""),
   );
-  const beforeKeys = migrationKeys.slice(0, -pendingCount);
-  const pendingMigrations = migrationFiles.slice(-pendingCount);
+  const pendingMigrations = [
+    "20260813135412_premium_seller_access_boundary.sql",
+  ];
+  assert.ok(migrationFiles.includes(pendingMigrations[0]));
+  assert.notEqual(migrationFiles.at(-1), pendingMigrations[0]);
+  const pendingKeySet = new Set(
+    pendingMigrations.map((name) => name.replace(/\.sql$/, "")),
+  );
+  const beforeKeys = migrationKeys.filter((key) => !pendingKeySet.has(key));
   const beforePath = join(temporaryDirectory, "before-keys.txt");
   const allPath = join(temporaryDirectory, "all-keys.txt");
   const rollbackPath = join(temporaryDirectory, "rollback-keys.txt");
@@ -115,7 +122,7 @@ try {
   const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
   assert.equal(
     evidence.schemaVersion,
-    "stackr-migration-reconciliation-v1.3.0",
+    "stackr-migration-reconciliation-v1.4.0",
   );
   assert.equal(evidence.status, "aligned");
   assert.equal(evidence.productionMutationPerformed, false);

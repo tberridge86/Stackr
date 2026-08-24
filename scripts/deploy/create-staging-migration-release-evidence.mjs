@@ -54,12 +54,16 @@ const beforeKeys = readKeys(args["before-keys"]);
 const isolatedAfterKeys = readKeys(args["isolated-after-keys"]);
 const rollbackAfterKeys = readKeys(args["rollback-after-keys"]);
 const stagingAfterKeys = readKeys(args["staging-after-keys"]);
+const beforeKeySet = new Set(beforeKeys);
 
+if (beforeKeySet.size !== beforeKeys.length) {
+  throw new Error("before_history_contains_duplicate_migration_keys");
+}
 if (
   JSON.stringify(beforeKeys) !==
-  JSON.stringify(expectedKeys.slice(0, beforeKeys.length))
+  JSON.stringify(expectedKeys.filter((key) => beforeKeySet.has(key)))
 ) {
-  throw new Error("before_history_is_not_an_exact_repository_prefix");
+  throw new Error("before_history_is_not_an_exact_ordered_repository_subset");
 }
 if (JSON.stringify(isolatedAfterKeys) !== JSON.stringify(expectedKeys)) {
   throw new Error("isolated_migration_history_not_aligned");
@@ -73,7 +77,9 @@ if (JSON.stringify(stagingAfterKeys) !== JSON.stringify(expectedKeys)) {
 
 const isolatedPlan = JSON.parse(readFileSync(args["isolated-plan"], "utf8"));
 const stagingPlan = JSON.parse(readFileSync(args["staging-plan"], "utf8"));
-const pendingMigrations = migrationFiles.slice(beforeKeys.length);
+const pendingMigrations = migrationFiles.filter(
+  (_name, index) => !beforeKeySet.has(expectedKeys[index]),
+);
 for (const [label, plan] of [
   ["isolated", isolatedPlan],
   ["staging", stagingPlan],
@@ -147,7 +153,7 @@ const runUrl =
     : null;
 
 const evidence = {
-  schemaVersion: "stackr-migration-reconciliation-v1.3.0",
+  schemaVersion: "stackr-migration-reconciliation-v1.4.0",
   capturedAt: new Date().toISOString(),
   sourceCommitHash: process.env.GITHUB_SHA ?? null,
   workingTreeChangesIncluded: false,
@@ -176,7 +182,7 @@ const evidence = {
       separator < 0 ? null : lastBeforeKey.slice(separator + 1),
     migrationHistoryRestored: true,
     restoredMigrationHistoryCount: rollbackAfterKeys.length,
-    exactRepositoryPrefixMatch: true,
+    exactRepositorySubsetMatch: true,
     pendingRepositoryMigrationCount: pendingMigrations.length,
   },
   backup: {
@@ -227,7 +233,7 @@ const evidence = {
   actionsTaken: [
     "verified_current_staging_logical_and_physical_backups",
     "restored_staging_backup_to_isolated_target",
-    "verified_exact_staging_migration_history_prefix",
+    "verified_current_staging_history_as_exact_ordered_repository_subset",
     "dry_ran_exact_pending_migrations_on_isolated_target",
     "applied_exact_pending_migrations_on_isolated_target",
     "linted_isolated_candidate_schema",
