@@ -307,7 +307,7 @@ jobs:
         if: inputs.operation == 'ebay_promote_validate' || inputs.operation == 'ebay_promote' || inputs.operation == 'ebay_index_resume'
         shell: bash
         env:
-          SOURCE_RECOGNITION_INDEX_ID: 7df40e64-cb85-4a5e-9aea-8e3ffee385e4
+          SOURCE_RECOGNITION_INDEX_ID: 003dec73-cb69-4ff2-a994-e559d9791a56
         run: |
           set -euo pipefail
           output_dir="$RUNNER_TEMP/stackr-ebay-recognition-promotion"
@@ -336,7 +336,7 @@ jobs:
         shell: bash
         env:
           DINOV2_CHECKPOINT_SHA256: b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9
-          SOURCE_RECOGNITION_INDEX_ID: 7df40e64-cb85-4a5e-9aea-8e3ffee385e4
+          SOURCE_RECOGNITION_INDEX_ID: 003dec73-cb69-4ff2-a994-e559d9791a56
         run: |
           set -euo pipefail
           output_dir="$RUNNER_TEMP/stackr-ebay-recognition-promotion"
@@ -360,7 +360,7 @@ jobs:
         shell: bash
         env:
           DINOV2_CHECKPOINT_SHA256: b938bf1bc15cd2ec0feacfe3a1bb553fe8ea9ca46a7e1d8d00217f29aef60cd9
-          SOURCE_RECOGNITION_INDEX_ID: 7df40e64-cb85-4a5e-9aea-8e3ffee385e4
+          SOURCE_RECOGNITION_INDEX_ID: 003dec73-cb69-4ff2-a994-e559d9791a56
           CANDIDATE_RECOGNITION_INDEX_ID: ${{ inputs.candidate_index_id }}
         run: |
           set -euo pipefail
