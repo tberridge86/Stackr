@@ -1101,6 +1101,8 @@ export interface operations {
                 grader?: components["parameters"]["Grader"];
                 grade?: components["parameters"]["Grade"];
                 observationType?: "sold_observation" | "active_listing";
+                /** @description Restrict evidence to one registered provider, for example ebay_sold_authorised. */
+                providerCode?: string;
                 /** @description Opaque cursor returned by the previous page. */
                 cursor?: components["parameters"]["Cursor"];
                 limit?: components["parameters"]["Limit"];
