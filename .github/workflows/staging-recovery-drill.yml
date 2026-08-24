@@ -339,7 +339,9 @@ jobs:
             {
               echo '## Staging recovery evidence'
               echo '```json'
-              for file in "$RUNNER_TEMP"/stackr-recovery/evidence/*-evidence.json; do
+              for file in \
+                "$RUNNER_TEMP"/stackr-recovery/evidence/*-evidence.json \
+                "$RUNNER_TEMP"/stackr-recovery/evidence/staging-migration-reconciliation.json; do
                 [ -f "$file" ] && cat "$file"
               done
               echo '```'
@@ -351,7 +353,9 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: staging-recovery-evidence-${{ github.run_id }}
-          path: ${{ runner.temp }}/stackr-recovery/evidence/*-evidence.json
+          path: |
+            ${{ runner.temp }}/stackr-recovery/evidence/*.json
+            ${{ runner.temp }}/stackr-recovery/evidence/*.txt
           if-no-files-found: warn
           retention-days: 1
 
