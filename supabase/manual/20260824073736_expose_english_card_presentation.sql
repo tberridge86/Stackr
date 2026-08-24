@@ -1,3 +1,6 @@
+-- STAGING-VALIDATED ONLY. Do not apply to production until the repository's
+-- existing premium-seller migration has completed migration reconciliation.
+--
 -- Preserve each published foreign-language printing and image identity while
 -- exposing its verified concept-level English name and language-neutral detail
 -- fields to the app. The API remains constrained to published catalogue rows.

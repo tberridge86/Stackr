@@ -55,7 +55,7 @@ async function assertEnglishPresentationProjection() {
   });
 
   const migration = await readFile(
-    new URL('../supabase/migrations/20260824073736_expose_english_card_presentation.sql', import.meta.url),
+    new URL('../supabase/manual/20260824073736_expose_english_card_presentation.sql', import.meta.url),
     'utf8',
   );
   for (const predicate of [
