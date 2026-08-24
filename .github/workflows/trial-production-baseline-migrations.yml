@@ -97,7 +97,7 @@ jobs:
             --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
             --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
             "$POSTGRES_IMAGE" \
-            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-schema.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/storage-fixture.sql'
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-schema.sql --file /trial/artifact/migration-history-schema.sql --file /trial/artifact/migration-history-data.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/storage-fixture.sql'
 
       - name: Confirm full migration plan
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL" --include-all --dry-run
