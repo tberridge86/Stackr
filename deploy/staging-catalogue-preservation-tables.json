@@ -23,6 +23,16 @@
     "catalog.catalogue_change_log",
     "audit.ingest_merge_decisions"
   ],
+  "adoptedMigrations": [
+    { "version": "20260820215422", "name": "expand_pokemon_rarity_taxonomy" },
+    { "version": "20260820222400", "name": "backfill_catalogue_set_release_dates" },
+    { "version": "20260820223027", "name": "backfill_chinese_catalogue_set_release_dates" },
+    { "version": "20260820224112", "name": "backfill_exact_english_tcgdex_rarities" },
+    { "version": "20260820231128", "name": "reuse_identical_catalogue_storage_objects" },
+    { "version": "20260820233514", "name": "backfill_exact_english_pokemontcg_metadata" },
+    { "version": "20260820234322", "name": "resolve_official_csm25_release_date" },
+    { "version": "20260821165027", "name": "backfill_exact_english_tcgcsv_rarities" }
+  ],
   "excludedStagingProjections": [
     "public.staging_api_external_identifiers"
   ],

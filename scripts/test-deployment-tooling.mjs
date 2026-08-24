@@ -334,6 +334,8 @@ assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REHEARSE 
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'APPROVE DESTRUCTIVE STAGING REBUILD'/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /prepare-postgres-urls\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /--file \/trial\/artifact\/production-reference-data\.sql/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /isolated-production-reference-fixture\.sql/);
@@ -350,6 +352,13 @@ assert.match(baselineMigrationTrialWorkflow, /test "\$actual_migrations" = "\$ex
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /migration-count\.txt"\)" = '\d+'/);
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-baseline-trial"/);
 assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
+assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_MODE: commit/);
+assert.match(baselineMigrationTrialWorkflow, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
+assert.match(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES:[^\n]*\bko\b/);
+assert.match(baselineMigrationTrialWorkflow, /catalogue-transfer-evidence\.json/);
+assert.match(baselineMigrationTrialWorkflow, /Upload failed replay diagnostics/);
+assert.match(baselineMigrationTrialWorkflow, /if: failure\(\)/);
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|--linked/);
 assert.match(baselineMigrationTrialWorkflow, /Create ephemeral rollback backup/);
@@ -402,6 +411,23 @@ assert.match(catalogueTransferScript, /committed_transfer_source_not_canonical_s
 assert.match(catalogueTransferScript, /committed_transfer_target_not_isolated_candidate/);
 assert.match(catalogueTransferScript, /committed_transfer_production_guard_mismatch/);
 assert.match(catalogueTransferScript, /targetCommitVerified/);
+assert.match(catalogueTransferScript, /adoptedMigrationVersions/);
+assert.match(catalogueTransferScript, /target_adopted_migration_fingerprint_mismatch/);
+assert.match(catalogueTransferScript, /sourceMigrationFingerprint/);
+assert.match(catalogueTransferScript, /replaceSharedStorageObjectContract/);
+assert.match(catalogueTransferScript, /assets_storage_object_uidx/);
+assert.match(catalogueTransferScript, /assets_storage_object_idx/);
+assert.match(catalogueTransferScript, /enforce_shared_asset_storage_object_identity/);
+assert.match(catalogueTransferScript, /target_shared_storage_object_contract_mismatch/);
+assert.match(catalogueTransferScript, /sharedStorageObjectSchemaContract/);
+assert.match(catalogueTransferScript, /normalizePostgresUrl/);
+assert.match(catalogueTransferScript, /sharedStorageObjectDataInvariant/);
+assert.match(catalogueTransferScript, /preCommitAcceptanceVerified/);
+assert.ok(
+  catalogueTransferScript.indexOf('preCommitAcceptanceVerified = true')
+    < catalogueTransferScript.indexOf("await target.query('commit')"),
+  'all mutable transfer acceptance checks must pass before commit',
+);
 
 const cataloguePreservationTables = JSON.parse(
   readFileSync('deploy/staging-catalogue-preservation-tables.json', 'utf8'),
@@ -410,6 +436,39 @@ assert.ok(
   cataloguePreservationTables.tables.includes('ingest.data_conflicts'),
   'the staging rebuild must preserve the ingestion conflict review queue',
 );
+assert.deepEqual(
+  cataloguePreservationTables.adoptedMigrations.map(({ version, name }) => `${version}_${name}`),
+  [
+    '20260820215422_expand_pokemon_rarity_taxonomy',
+    '20260820222400_backfill_catalogue_set_release_dates',
+    '20260820223027_backfill_chinese_catalogue_set_release_dates',
+    '20260820224112_backfill_exact_english_tcgdex_rarities',
+    '20260820231128_reuse_identical_catalogue_storage_objects',
+    '20260820233514_backfill_exact_english_pokemontcg_metadata',
+    '20260820234322_resolve_official_csm25_release_date',
+    '20260821165027_backfill_exact_english_tcgcsv_rarities',
+  ],
+);
+const productionCataloguePromotionTables = JSON.parse(
+  readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
+);
+assert.deepEqual(
+  productionCataloguePromotionTables.adoptedMigrations,
+  cataloguePreservationTables.adoptedMigrations,
+  'production promotion must carry the same reviewed catalogue migration provenance',
+);
+for (const provenanceTable of [
+  'ingest.import_runs',
+  'ingest.raw_source_records',
+  'ingest.data_conflicts',
+  'ingest.source_health_reports',
+  'audit.ingest_merge_decisions',
+]) {
+  assert.ok(
+    productionCataloguePromotionTables.tables.includes(provenanceTable),
+    `production promotion must preserve ${provenanceTable}`,
+  );
+}
 
 const { normalizePostgresUrl } = await import('./deploy/prepare-postgres-urls.mjs');
 const rawPasswordUrl = normalizePostgresUrl(

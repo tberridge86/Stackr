@@ -20,10 +20,12 @@ jobs:
   replay:
     if: inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     environment: staging
     env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_RESTORE_DB_URL }}
+      SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci
       SUPABASE_STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
       SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
@@ -43,14 +45,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          test -n "$SUPABASE_DB_URL"
           test -n "$SUPABASE_RESTORE_DB_URL"
+          test "$SUPABASE_PROJECT_REF" = "$SUPABASE_STAGING_PROJECT_REF"
           test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_STAGING_PROJECT_REF"
           test "$SUPABASE_RESTORE_PROJECT_REF" != "$SUPABASE_PRODUCTION_PROJECT_REF"
+          case "$SUPABASE_DB_URL" in
+            *"$SUPABASE_PROJECT_REF"*) ;;
+            *) echo '::error::source_database_url_project_mismatch'; exit 1 ;;
+          esac
           case "$SUPABASE_RESTORE_DB_URL" in
             *"$SUPABASE_RESTORE_PROJECT_REF"*) ;;
             *) echo '::error::restore_database_url_project_mismatch'; exit 1 ;;
           esac
           node scripts/deploy/prepare-isolated-reconciliation-url.mjs
+          node scripts/deploy/prepare-postgres-urls.mjs
 
       - name: Install pinned dependencies
         run: npm ci
@@ -99,6 +108,14 @@ jobs:
             "$POSTGRES_IMAGE" \
             sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/cleanup.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-schema.sql --file /trial/artifact/migration-history-schema.sql --file /trial/artifact/migration-history-data.sql; psql --dbname "$TARGET_DB_URL" --single-transaction --variable ON_ERROR_STOP=1 --file /trial/artifact/production-reference-data.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /trial/storage-fixture.sql'
 
+      - name: Commit canonical staging catalogue to isolated target
+        env:
+          STACKR_TRANSFER_MODE: commit
+          STACKR_TRANSFER_CONFIRMATION: COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE
+          STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn
+          STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-baseline-trial/catalogue-transfer-evidence.json
+        run: node scripts/deploy/rehearse-staging-catalogue-transfer.mjs
+
       - name: Confirm full migration plan
         run: npx --yes supabase@2.110.0 db push --db-url "$STACKR_RESTORE_DB_URL" --include-all --dry-run
 
@@ -138,8 +155,21 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: production-migration-replay-evidence-${{ github.run_id }}
-          path: ${{ runner.temp }}/stackr-baseline-trial/evidence.json
+          path: |
+            ${{ runner.temp }}/stackr-baseline-trial/evidence.json
+            ${{ runner.temp }}/stackr-baseline-trial/catalogue-transfer-evidence.json
           if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload failed replay diagnostics
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: production-migration-replay-failure-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/stackr-baseline-trial/evidence.json
+            ${{ runner.temp }}/stackr-baseline-trial/catalogue-transfer-evidence.json
+          if-no-files-found: warn
           retention-days: 1
 
       - name: Remove baseline and connection evidence

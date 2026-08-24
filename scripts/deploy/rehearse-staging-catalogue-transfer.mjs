@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import pg from 'pg';
+import { normalizePostgresUrl } from './prepare-postgres-urls.mjs';
 
 const { Client } = pg;
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
@@ -14,10 +15,104 @@ const TRANSFER_MODE = process.env.STACKR_TRANSFER_MODE ?? 'rehearse';
 const TRANSFER_CONFIRMATION = process.env.STACKR_TRANSFER_CONFIRMATION;
 const CATALOGUE_RELEASE_LABEL = process.env.STACKR_CATALOGUE_RELEASE_LABEL ?? null;
 const REQUIRED_CATALOGUE_LANGUAGES = String(
-  process.env.STACKR_REQUIRED_CATALOGUE_LANGUAGES ?? 'en,ja,zh-tw,zh-cn,ko',
+  process.env.STACKR_REQUIRED_CATALOGUE_LANGUAGES ?? 'en,ja,zh-tw,zh-cn',
 ).split(',').map((value) => value.trim()).filter(Boolean);
 const TABLE_CONFIG_PATH = process.env.STACKR_TRANSFER_TABLE_CONFIG
   ?? 'deploy/staging-catalogue-preservation-tables.json';
+const SHARED_STORAGE_OBJECT_INDEX_SQL = `
+create index assets_storage_object_idx
+  on catalog.assets(storage_provider, storage_bucket, storage_key)
+  where storage_key is not null and deleted_at is null;
+`;
+const SHARED_STORAGE_OBJECT_FUNCTION_SQL = `
+create or replace function catalog.enforce_shared_asset_storage_object_identity()
+returns trigger
+language plpgsql
+set search_path = ''
+as $function$
+declare
+  conflicting_asset_id uuid;
+begin
+  if new.storage_key is null or new.deleted_at is not null then
+    return new;
+  end if;
+
+  if new.storage_provider is null
+     or new.storage_bucket is null
+     or new.content_sha256 is null
+     or new.mime_type is null
+     or new.byte_size is null
+  then
+    raise exception using
+      errcode = '23514',
+      message = 'Active shared catalogue Storage references require provider, bucket, SHA-256, MIME type, and byte size.';
+  end if;
+
+  select existing.id
+  into conflicting_asset_id
+  from catalog.assets existing
+  where existing.id <> new.id
+    and existing.deleted_at is null
+    and existing.storage_provider = new.storage_provider
+    and existing.storage_bucket = new.storage_bucket
+    and existing.storage_key = new.storage_key
+    and (
+      existing.asset_type is distinct from new.asset_type
+      or existing.url is distinct from new.url
+      or existing.storage_path is distinct from new.storage_path
+      or existing.content_sha256 is distinct from new.content_sha256
+      or existing.sha256 is distinct from new.sha256
+      or existing.perceptual_hash is distinct from new.perceptual_hash
+      or existing.mime_type is distinct from new.mime_type
+      or existing.width is distinct from new.width
+      or existing.height is distinct from new.height
+      or existing.byte_size is distinct from new.byte_size
+      or existing.derivative_list is distinct from new.derivative_list
+      or existing.cache_control is distinct from new.cache_control
+      or existing.archival_storage_key is distinct from new.archival_storage_key
+    )
+  limit 1;
+
+  if conflicting_asset_id is not null then
+    raise exception using
+      errcode = '23514',
+      message = format(
+        'Catalogue asset %s conflicts with asset %s for shared Storage object %s/%s',
+        new.id,
+        conflicting_asset_id,
+        new.storage_bucket,
+        new.storage_key
+      );
+  end if;
+
+  return new;
+end
+$function$;
+`;
+const SHARED_STORAGE_OBJECT_TRIGGER_SQL = `
+create trigger enforce_shared_asset_storage_object_identity
+before insert or update of
+  asset_type,
+  url,
+  storage_provider,
+  storage_bucket,
+  storage_key,
+  storage_path,
+  content_sha256,
+  sha256,
+  perceptual_hash,
+  mime_type,
+  width,
+  height,
+  byte_size,
+  derivative_list,
+  cache_control,
+  archival_storage_key,
+  deleted_at
+on catalog.assets
+for each row
+execute function catalog.enforce_shared_asset_storage_object_identity();
+`;
 
 for (const [name, value] of Object.entries({
   SUPABASE_PROJECT_REF: SOURCE_PROJECT_REF,
@@ -31,8 +126,18 @@ for (const [name, value] of Object.entries({
 }
 if (SOURCE_PROJECT_REF === TARGET_PROJECT_REF) throw new Error('source_and_target_project_refs_match');
 if (SOURCE_PROJECT_REF === PRODUCTION_PROJECT_REF) throw new Error('production_source_prohibited');
-if (!SOURCE_DB_URL.includes(SOURCE_PROJECT_REF)) throw new Error('source_database_url_project_mismatch');
-if (!TARGET_DB_URL.includes(TARGET_PROJECT_REF)) throw new Error('target_database_url_project_mismatch');
+let NORMALIZED_SOURCE_DB_URL;
+let NORMALIZED_TARGET_DB_URL;
+try {
+  NORMALIZED_SOURCE_DB_URL = normalizePostgresUrl(SOURCE_DB_URL, SOURCE_PROJECT_REF).normalized;
+} catch (error) {
+  throw new Error(`source_database_url_invalid:${error.message}`);
+}
+try {
+  NORMALIZED_TARGET_DB_URL = normalizePostgresUrl(TARGET_DB_URL, TARGET_PROJECT_REF).normalized;
+} catch (error) {
+  throw new Error(`target_database_url_invalid:${error.message}`);
+}
 if (!['rehearse', 'commit', 'promote'].includes(TRANSFER_MODE)) throw new Error('invalid_transfer_mode');
 if (TRANSFER_MODE !== 'promote' && TARGET_PROJECT_REF === PRODUCTION_PROJECT_REF) {
   throw new Error('production_target_prohibited');
@@ -121,6 +226,215 @@ function digestRows(rows) {
   const hash = createHash('sha256');
   for (const row of rows) hash.update(stableJson(row)).update('\n');
   return hash.digest('hex');
+}
+
+function adoptedMigrationVersions() {
+  if (!Array.isArray(tableConfig.adoptedMigrations) || tableConfig.adoptedMigrations.length === 0) {
+    throw new Error('adopted_migrations_missing');
+  }
+  const versions = new Set();
+  for (const migration of tableConfig.adoptedMigrations) {
+    if (!/^\d{14}$/.test(migration?.version ?? '') || !/^[a-z0-9_]+$/.test(migration?.name ?? '')) {
+      throw new Error('adopted_migration_config_invalid');
+    }
+    if (versions.has(migration.version)) throw new Error(`adopted_migration_version_duplicate:${migration.version}`);
+    versions.add(migration.version);
+  }
+  return tableConfig.adoptedMigrations;
+}
+
+async function migrationRows(client, migrations) {
+  return (await client.query(`
+    select version::text as version, statements, name
+    from supabase_migrations.schema_migrations
+    where version::text = any($1::text[])
+    order by version, name
+  `, [migrations.map((migration) => migration.version)])).rows;
+}
+
+function verifyAdoptedMigrationRows(rows, migrations, context) {
+  if (rows.length !== migrations.length) throw new Error(`${context}_adopted_migration_count_mismatch`);
+  const expectedByVersion = new Map(migrations.map((migration) => [migration.version, migration]));
+  const seen = new Set();
+  for (const row of rows) {
+    const expected = expectedByVersion.get(row.version);
+    if (!expected || seen.has(row.version)) throw new Error(`${context}_adopted_migration_extra:${row.version}`);
+    if (row.name !== expected.name) throw new Error(`${context}_adopted_migration_name_mismatch:${row.version}`);
+    seen.add(row.version);
+  }
+  if (seen.size !== migrations.length) throw new Error(`${context}_adopted_migration_missing`);
+}
+
+function sameMigrationRows(left, right) {
+  return digestRows(left) === digestRows(right);
+}
+
+async function sharedStorageObjectContract(client, context) {
+  const index = await client.query(`
+    select pg_get_indexdef(index_class.oid) as definition
+    from pg_class index_class
+    join pg_namespace index_namespace on index_namespace.oid = index_class.relnamespace
+    join pg_index on pg_index.indexrelid = index_class.oid
+    where index_namespace.nspname = 'catalog'
+      and index_class.relname = 'assets_storage_object_idx'
+      and pg_index.indrelid = 'catalog.assets'::regclass
+      and pg_index.indisvalid
+  `);
+  const fn = await client.query(`
+    select
+      procedure.oid,
+      pg_get_functiondef(procedure.oid) as definition,
+      has_function_privilege('service_role', procedure.oid, 'EXECUTE') as service_role_execute,
+      coalesce((
+        select bool_or(acl.privilege_type = 'EXECUTE')
+        from aclexplode(coalesce(procedure.proacl, acldefault('f', procedure.proowner))) acl
+        where acl.grantee = 0
+      ), false) as public_execute,
+      has_function_privilege('anon', procedure.oid, 'EXECUTE') as anon_execute,
+      has_function_privilege('authenticated', procedure.oid, 'EXECUTE') as authenticated_execute
+    from pg_proc procedure
+    join pg_namespace namespace on namespace.oid = procedure.pronamespace
+    where namespace.nspname = 'catalog'
+      and procedure.proname = 'enforce_shared_asset_storage_object_identity'
+      and pg_get_function_identity_arguments(procedure.oid) = ''
+  `);
+  if (index.rowCount !== 1 || fn.rowCount !== 1) {
+    throw new Error(`${context}_shared_storage_object_identity_missing`);
+  }
+  const trigger = await client.query(`
+    select trigger.tgname as name, pg_get_triggerdef(trigger.oid) as definition
+    from pg_trigger trigger
+    where trigger.tgrelid = 'catalog.assets'::regclass
+      and trigger.tgfoid = $1
+      and not trigger.tgisinternal
+  `, [fn.rows[0].oid]);
+  if (trigger.rowCount !== 1 || trigger.rows[0].name !== 'enforce_shared_asset_storage_object_identity') {
+    throw new Error(`${context}_shared_storage_object_trigger_identity_invalid`);
+  }
+
+  const contract = {
+    indexDefinition: index.rows[0].definition,
+    functionDefinition: fn.rows[0].definition,
+    triggerName: trigger.rows[0].name,
+    triggerDefinition: trigger.rows[0].definition,
+    serviceRoleExecute: fn.rows[0].service_role_execute,
+    publicExecute: fn.rows[0].public_execute,
+    anonExecute: fn.rows[0].anon_execute,
+    authenticatedExecute: fn.rows[0].authenticated_execute,
+  };
+  if (!contract.serviceRoleExecute || contract.publicExecute || contract.anonExecute || contract.authenticatedExecute) {
+    throw new Error(`${context}_shared_storage_object_function_privileges_invalid`);
+  }
+  return contract;
+}
+
+async function sharedStorageObjectState(client) {
+  const indexes = await client.query(`
+    select index_class.relname as name, pg_get_indexdef(index_class.oid) as definition
+    from pg_class index_class
+    join pg_namespace index_namespace on index_namespace.oid = index_class.relnamespace
+    join pg_index on pg_index.indexrelid = index_class.oid
+    where index_namespace.nspname = 'catalog'
+      and pg_index.indrelid = 'catalog.assets'::regclass
+      and index_class.relname in ('assets_storage_object_uidx', 'assets_storage_object_idx')
+    order by index_class.relname
+  `);
+  const functions = await client.query(`
+    select
+      procedure.oid,
+      pg_get_functiondef(procedure.oid) as definition,
+      has_function_privilege('service_role', procedure.oid, 'EXECUTE') as service_role_execute,
+      coalesce((
+        select bool_or(acl.privilege_type = 'EXECUTE')
+        from aclexplode(coalesce(procedure.proacl, acldefault('f', procedure.proowner))) acl
+        where acl.grantee = 0
+      ), false) as public_execute,
+      has_function_privilege('anon', procedure.oid, 'EXECUTE') as anon_execute,
+      has_function_privilege('authenticated', procedure.oid, 'EXECUTE') as authenticated_execute
+    from pg_proc procedure
+    join pg_namespace namespace on namespace.oid = procedure.pronamespace
+    where namespace.nspname = 'catalog'
+      and procedure.proname = 'enforce_shared_asset_storage_object_identity'
+      and pg_get_function_identity_arguments(procedure.oid) = ''
+    order by procedure.oid
+  `);
+  const triggers = await client.query(`
+    select trigger.tgname as name, pg_get_triggerdef(trigger.oid) as definition
+    from pg_trigger trigger
+    join pg_proc procedure on procedure.oid = trigger.tgfoid
+    join pg_namespace namespace on namespace.oid = procedure.pronamespace
+    where trigger.tgrelid = 'catalog.assets'::regclass
+      and namespace.nspname = 'catalog'
+      and procedure.proname = 'enforce_shared_asset_storage_object_identity'
+      and pg_get_function_identity_arguments(procedure.oid) = ''
+      and not trigger.tgisinternal
+    order by trigger.tgname
+  `);
+  return { indexes: indexes.rows, functions: functions.rows, triggers: triggers.rows };
+}
+
+async function replaceSharedStorageObjectContract(client) {
+  await client.query('drop index if exists catalog.assets_storage_object_uidx');
+  await client.query('drop index if exists catalog.assets_storage_object_idx');
+  await client.query(SHARED_STORAGE_OBJECT_FUNCTION_SQL);
+  await client.query('drop trigger if exists enforce_shared_asset_storage_object_identity on catalog.assets');
+  await client.query(SHARED_STORAGE_OBJECT_INDEX_SQL);
+  await client.query(SHARED_STORAGE_OBJECT_TRIGGER_SQL);
+  await client.query('revoke all on function catalog.enforce_shared_asset_storage_object_identity() from public, anon, authenticated');
+  await client.query('grant execute on function catalog.enforce_shared_asset_storage_object_identity() to service_role');
+}
+
+async function sharedStorageObjectDataInvariant(client, context) {
+  const result = (await client.query(`
+    with active_storage_assets as (
+      select *
+      from catalog.assets
+      where storage_key is not null
+        and deleted_at is null
+    ), invalid_required_metadata as (
+      select count(*)::integer as row_count
+      from active_storage_assets
+      where storage_provider is null
+         or storage_bucket is null
+         or content_sha256 is null
+         or mime_type is null
+         or byte_size is null
+    ), conflicting_shared_objects as (
+      select count(*)::integer as group_count
+      from (
+        select storage_provider, storage_bucket, storage_key
+        from active_storage_assets
+        group by storage_provider, storage_bucket, storage_key
+        having count(distinct jsonb_build_array(
+          asset_type,
+          url,
+          storage_path,
+          content_sha256,
+          sha256,
+          perceptual_hash,
+          mime_type,
+          width,
+          height,
+          byte_size,
+          derivative_list,
+          cache_control,
+          archival_storage_key
+        )) > 1
+      ) conflicts
+    )
+    select
+      (select row_count from invalid_required_metadata) as invalid_required_metadata_count,
+      (select group_count from conflicting_shared_objects) as conflicting_shared_object_count
+  `)).rows[0];
+  if (result.invalid_required_metadata_count !== 0
+      || result.conflicting_shared_object_count !== 0) {
+    throw new Error(
+      `${context}_shared_storage_object_data_invalid`
+      + `:metadata_${result.invalid_required_metadata_count}`
+      + `:conflicts_${result.conflicting_shared_object_count}`,
+    );
+  }
+  return result;
 }
 
 async function connect(connectionString, applicationName) {
@@ -381,20 +695,61 @@ function verifySourceRows(tableName, sourceRows, targetRows, primaryKey) {
   return matched;
 }
 
-const source = await connect(SOURCE_DB_URL, 'stackr-staging-catalogue-source');
-const target = await connect(TARGET_DB_URL, 'stackr-staging-catalogue-rehearsal');
+function expectedFinalRows(tableName, sourceRows, promotionTimestamp) {
+  if (TRANSFER_MODE !== 'promote' || tableName !== 'catalog.assets') return sourceRows;
+  return sourceRows.map((row) => {
+    const shouldRewrite = row.storage_provider === 'supabase_storage'
+      && row.storage_bucket === 'stackr-catalogue-public'
+      && typeof row.url === 'string'
+      && row.url.includes(SOURCE_PROJECT_REF);
+    if (!shouldRewrite) return row;
+    return {
+      ...row,
+      url: row.url.replaceAll(SOURCE_PROJECT_REF, TARGET_PROJECT_REF),
+      updated_at: promotionTimestamp,
+    };
+  });
+}
+
+const source = await connect(NORMALIZED_SOURCE_DB_URL, 'stackr-staging-catalogue-source');
+const target = await connect(NORMALIZED_TARGET_DB_URL, 'stackr-staging-catalogue-rehearsal');
 const results = [];
 const excludedChecks = [];
 const snapshots = new Map();
 let targetTransactionOpen = false;
 let sourceTransactionOpen = false;
 let sourceReleaseVersions = [];
+let adoptedMigrations = [];
+let sourceAdoptedMigrationRows = [];
+let targetAdoptedMigrationRowsBefore = [];
+let adoptedMigrationInsertCount = 0;
+let adoptedMigrationCommitVerified = null;
+let adoptedMigrationRollbackVerified = null;
+let sourceSharedStorageObjectContract = null;
+let sourceSharedStorageObjectDataInvariant = null;
+let targetSharedStorageObjectStateBefore = null;
+let targetSharedStorageObjectDataInvariant = null;
+let sharedStorageObjectTransferFingerprint = null;
+let sharedStorageObjectCommitVerified = null;
+let sharedStorageObjectRollbackVerified = null;
+let targetReleaseVersions = [];
+let productionAssetUrlRewriteCount = 0;
+let productionAssetUrlRewriteAt = null;
+let preCommitAcceptanceVerified = false;
 
 try {
   await source.query('begin transaction isolation level repeatable read read only');
   sourceTransactionOpen = true;
   await target.query('begin transaction isolation level repeatable read');
   targetTransactionOpen = true;
+
+  adoptedMigrations = adoptedMigrationVersions();
+  sourceAdoptedMigrationRows = await migrationRows(source, adoptedMigrations);
+  verifyAdoptedMigrationRows(sourceAdoptedMigrationRows, adoptedMigrations, 'source');
+  targetAdoptedMigrationRowsBefore = await migrationRows(target, adoptedMigrations);
+  sourceSharedStorageObjectContract = await sharedStorageObjectContract(source, 'source');
+  sourceSharedStorageObjectDataInvariant = await sharedStorageObjectDataInvariant(source, 'source');
+  targetSharedStorageObjectStateBefore = await sharedStorageObjectState(target);
 
   if (TRANSFER_MODE === 'promote') {
     sourceReleaseVersions = verifyReleaseCatalogueVersions(
@@ -455,6 +810,14 @@ try {
   }
 
   for (const tableName of [...tableConfig.tables].reverse()) {
+    if (tableName === 'catalog.assets') {
+      await replaceSharedStorageObjectContract(target);
+      const targetContract = await sharedStorageObjectContract(target, 'target');
+      sharedStorageObjectTransferFingerprint = digestRows([targetContract]);
+      if (digestRows([targetContract]) !== digestRows([sourceSharedStorageObjectContract])) {
+        throw new Error('target_shared_storage_object_contract_mismatch');
+      }
+    }
     await setUserTriggersEnabled(target, tableName, false);
     await target.query(`delete from ${qualifiedName(tableName)}`);
     await setUserTriggersEnabled(target, tableName, true);
@@ -509,6 +872,123 @@ try {
     });
   }
 
+  const sourceAdoptedByVersion = new Map(
+    sourceAdoptedMigrationRows.map((row) => [row.version, row]),
+  );
+  for (const targetRow of targetAdoptedMigrationRowsBefore) {
+    const sourceRow = sourceAdoptedByVersion.get(targetRow.version);
+    if (!sourceRow || targetRow.name !== sourceRow.name
+      || stableJson(targetRow.statements) !== stableJson(sourceRow.statements)) {
+      throw new Error(`target_adopted_migration_conflict:${targetRow.version}`);
+    }
+  }
+  const targetAdoptedVersions = new Set(targetAdoptedMigrationRowsBefore.map((row) => row.version));
+  for (const sourceRow of sourceAdoptedMigrationRows) {
+    if (targetAdoptedVersions.has(sourceRow.version)) continue;
+    await target.query(
+      `insert into supabase_migrations.schema_migrations (version, statements, name)
+       values ($1, $2, $3)`,
+      [sourceRow.version, sourceRow.statements, sourceRow.name],
+    );
+    adoptedMigrationInsertCount += 1;
+  }
+  const targetAdoptedMigrationRowsDuringTransfer = await migrationRows(target, adoptedMigrations);
+  verifyAdoptedMigrationRows(targetAdoptedMigrationRowsDuringTransfer, adoptedMigrations, 'target');
+  if (!sameMigrationRows(targetAdoptedMigrationRowsDuringTransfer, sourceAdoptedMigrationRows)) {
+    throw new Error('target_adopted_migration_fingerprint_mismatch');
+  }
+
+  let promotionTimestamp = null;
+  if (TRANSFER_MODE === 'promote') {
+    promotionTimestamp = new Date();
+    productionAssetUrlRewriteAt = promotionTimestamp.toISOString();
+    const expectedRewriteCount = snapshots.get('catalog.assets').sourceRows.filter((row) => (
+      row.storage_provider === 'supabase_storage'
+      && row.storage_bucket === 'stackr-catalogue-public'
+      && typeof row.url === 'string'
+      && row.url.includes(SOURCE_PROJECT_REF)
+    )).length;
+    const rewritten = await target.query(`
+      update catalog.assets
+      set url = replace(url, $1, $2), updated_at = $3
+      where storage_provider = 'supabase_storage'
+        and storage_bucket = 'stackr-catalogue-public'
+        and url like '%' || $1 || '%'
+    `, [SOURCE_PROJECT_REF, TARGET_PROJECT_REF, promotionTimestamp]);
+    productionAssetUrlRewriteCount = rewritten.rowCount;
+    if (productionAssetUrlRewriteCount !== expectedRewriteCount) {
+      throw new Error(
+        `production_asset_url_rewrite_count_mismatch`
+        + `:expected_${expectedRewriteCount}:actual_${productionAssetUrlRewriteCount}`,
+      );
+    }
+  }
+
+  for (const result of results) {
+    const snapshot = snapshots.get(result.table);
+    const expectedRows = expectedFinalRows(result.table, snapshot.sourceRows, promotionTimestamp);
+    snapshot.expectedFinalRows = expectedRows;
+    const rows = await readRows(
+      target,
+      result.table,
+      snapshot.targetMetadata.primaryKey,
+      snapshot.contract.transferColumns,
+    );
+    const sequences = await ownedSequenceStates(target, result.table, snapshot.targetMetadata);
+    const matchedRows = verifySourceRows(
+      result.table,
+      expectedRows,
+      rows,
+      snapshot.sourceMetadata.primaryKey,
+    );
+    result.expectedFinalSha256 = digestRows(expectedRows);
+    result.targetRowCountBeforeFinalise = rows.length;
+    result.targetBeforeFinaliseSha256 = digestRows(rows);
+    result.targetSequencesBeforeFinalise = sequences;
+    result.preCommitMatched = rows.length === expectedRows.length
+      && matchedRows.length === expectedRows.length
+      && result.targetBeforeFinaliseSha256 === result.expectedFinalSha256
+      && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
+    if (!result.preCommitMatched) throw new Error(`target_precommit_mismatch:${result.table}`);
+  }
+
+  const targetAdoptedMigrationRowsBeforeFinalise = await migrationRows(target, adoptedMigrations);
+  verifyAdoptedMigrationRows(
+    targetAdoptedMigrationRowsBeforeFinalise,
+    adoptedMigrations,
+    'target_precommit',
+  );
+  if (!sameMigrationRows(targetAdoptedMigrationRowsBeforeFinalise, sourceAdoptedMigrationRows)) {
+    throw new Error('target_adopted_migration_precommit_mismatch');
+  }
+  const targetContractBeforeFinalise = await sharedStorageObjectContract(target, 'target_precommit');
+  if (digestRows([targetContractBeforeFinalise]) !== digestRows([sourceSharedStorageObjectContract])) {
+    throw new Error('target_shared_storage_object_precommit_mismatch');
+  }
+  targetSharedStorageObjectDataInvariant = await sharedStorageObjectDataInvariant(
+    target,
+    'target_precommit',
+  );
+
+  if (TRANSFER_MODE === 'promote') {
+    targetReleaseVersions = verifyReleaseCatalogueVersions(
+      await releaseCatalogueVersions(target),
+      'target_precommit',
+    );
+    if (digestRows(targetReleaseVersions) !== digestRows(sourceReleaseVersions)) {
+      throw new Error('production_release_versions_mismatch');
+    }
+    const staleUrls = Number((await target.query(`
+      select count(*)::integer as count
+      from catalog.assets
+      where storage_provider = 'supabase_storage'
+        and storage_bucket = 'stackr-catalogue-public'
+        and url like '%' || $1 || '%'
+    `, [SOURCE_PROJECT_REF])).rows[0].count);
+    if (staleUrls !== 0) throw new Error('production_asset_url_rewrite_incomplete');
+  }
+
+  preCommitAcceptanceVerified = true;
   if (TRANSFER_MODE !== 'rehearse') await target.query('commit');
   else await target.query('rollback');
   targetTransactionOpen = false;
@@ -527,10 +1007,10 @@ try {
       result.targetRowCountAfterCommit = rows.length;
       result.targetAfterCommitSha256 = digestRows(rows);
       result.targetSequencesAfterCommit = sequences;
-      result.commitMatched = rows.length === result.sourceRowCount
-        && result.targetAfterCommitSha256 === result.sourceSha256
+      result.commitMatched = rows.length === snapshot.expectedFinalRows.length
+        && result.targetAfterCommitSha256 === result.expectedFinalSha256
         && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
-      if (!result.commitMatched) throw new Error(`target_commit_mismatch:${result.table}`);
+      if (!result.commitMatched) throw new Error(`target_postcommit_observation_mismatch:${result.table}`);
     } else {
       result.targetRowCountAfterRollback = rows.length;
       result.targetAfterRollbackSha256 = digestRows(rows);
@@ -542,32 +1022,38 @@ try {
     }
   }
 
-  let targetReleaseVersions = [];
-  let productionAssetUrlRewriteCount = 0;
-  if (TRANSFER_MODE === 'promote') {
-    targetReleaseVersions = verifyReleaseCatalogueVersions(
-      await releaseCatalogueVersions(target),
-      'target',
+  const targetAdoptedMigrationRowsAfter = await migrationRows(target, adoptedMigrations);
+  if (TRANSFER_MODE !== 'rehearse') {
+    verifyAdoptedMigrationRows(targetAdoptedMigrationRowsAfter, adoptedMigrations, 'target_commit');
+    adoptedMigrationCommitVerified = sameMigrationRows(
+      targetAdoptedMigrationRowsAfter,
+      sourceAdoptedMigrationRows,
     );
-    if (digestRows(targetReleaseVersions) !== digestRows(sourceReleaseVersions)) {
-      throw new Error('production_release_versions_mismatch');
+    if (!adoptedMigrationCommitVerified) throw new Error('target_adopted_migration_commit_mismatch');
+    const targetContract = await sharedStorageObjectContract(target, 'target_commit');
+    sharedStorageObjectCommitVerified = digestRows([targetContract])
+      === digestRows([sourceSharedStorageObjectContract]);
+    if (!sharedStorageObjectCommitVerified) throw new Error('target_shared_storage_object_commit_mismatch');
+    await sharedStorageObjectDataInvariant(target, 'target_commit');
+    if (TRANSFER_MODE === 'promote') {
+      const committedReleaseVersions = verifyReleaseCatalogueVersions(
+        await releaseCatalogueVersions(target),
+        'target_commit',
+      );
+      if (digestRows(committedReleaseVersions) !== digestRows(sourceReleaseVersions)) {
+        throw new Error('production_release_versions_postcommit_mismatch');
+      }
     }
-    const rewritten = await target.query(`
-      update catalog.assets
-      set url = replace(url, $1, $2), updated_at = now()
-      where storage_provider = 'supabase_storage'
-        and storage_bucket = 'stackr-catalogue-public'
-        and url like '%' || $1 || '%'
-    `, [SOURCE_PROJECT_REF, TARGET_PROJECT_REF]);
-    productionAssetUrlRewriteCount = rewritten.rowCount;
-    const staleUrls = Number((await target.query(`
-      select count(*)::integer as count
-      from catalog.assets
-      where storage_provider = 'supabase_storage'
-        and storage_bucket = 'stackr-catalogue-public'
-        and url like '%' || $1 || '%'
-    `, [SOURCE_PROJECT_REF])).rows[0].count);
-    if (staleUrls !== 0) throw new Error('production_asset_url_rewrite_incomplete');
+  } else {
+    adoptedMigrationRollbackVerified = sameMigrationRows(
+      targetAdoptedMigrationRowsAfter,
+      targetAdoptedMigrationRowsBefore,
+    );
+    if (!adoptedMigrationRollbackVerified) throw new Error('target_adopted_migration_rollback_mismatch');
+    const targetState = await sharedStorageObjectState(target);
+    sharedStorageObjectRollbackVerified = digestRows([targetState])
+      === digestRows([targetSharedStorageObjectStateBefore]);
+    if (!sharedStorageObjectRollbackVerified) throw new Error('target_shared_storage_object_rollback_mismatch');
   }
 
   await source.query('rollback');
@@ -575,8 +1061,8 @@ try {
 
   const evidence = {
     schemaVersion: TRANSFER_MODE === 'promote'
-      ? 'stackr-production-catalogue-data-promotion-evidence-v1.0.0'
-      : 'stackr-staging-catalogue-transfer-evidence-v1.4.0',
+      ? 'stackr-production-catalogue-data-promotion-evidence-v1.1.0'
+      : 'stackr-staging-catalogue-transfer-evidence-v1.5.0',
     capturedAt: new Date().toISOString(),
     sourceCommitHash: process.env.GITHUB_SHA ?? null,
     sourceProjectRef: SOURCE_PROJECT_REF,
@@ -587,6 +1073,7 @@ try {
     stagingMutationPerformed: false,
     isolatedCandidateMutationPerformed: TRANSFER_MODE === 'commit',
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
+    preCommitAcceptanceVerified,
     transferPolicy: TRANSFER_MODE === 'promote'
       ? 'replace_allowlisted_production_catalogue_tables_with_verified_staging_release_rows'
       : TRANSFER_MODE === 'commit'
@@ -604,7 +1091,9 @@ try {
           requiredLanguages: REQUIRED_CATALOGUE_LANGUAGES,
           sourceVersionIds: sourceReleaseVersions.map((row) => row.id),
           releaseVersionSha256: digestRows(sourceReleaseVersions),
+          promotionScope: 'complete_allowlisted_catalogue_snapshot',
           productionAssetUrlRewriteCount,
+          productionAssetUrlRewriteAt,
         }
       : null,
     selectedTableCount: results.length,
@@ -618,6 +1107,27 @@ try {
       ...rawRecordDuplicates,
       legacyIdentityIndexPresent: legacyRawRecordIdentityIndexPresent,
       importRunIdentityIndexPresent: importRunRawRecordIdentityIndexPresent,
+    },
+    migrationProvenance: {
+      configuredCount: adoptedMigrations.length,
+      insertedCount: adoptedMigrationInsertCount,
+      sourceMigrationFingerprint: digestRows(sourceAdoptedMigrationRows),
+      sourceMigrations: sourceAdoptedMigrationRows.map((row) => ({
+        version: row.version,
+        name: row.name,
+        statementsSha256: digestRows([row.statements]),
+      })),
+      targetCommitVerified: adoptedMigrationCommitVerified,
+      targetRollbackVerified: adoptedMigrationRollbackVerified,
+    },
+    sharedStorageObjectSchemaContract: {
+      sourceFingerprint: digestRows([sourceSharedStorageObjectContract]),
+      targetBeforeFingerprint: digestRows([targetSharedStorageObjectStateBefore]),
+      targetTransferFingerprint: sharedStorageObjectTransferFingerprint,
+      targetCommitVerified: sharedStorageObjectCommitVerified,
+      targetRollbackVerified: sharedStorageObjectRollbackVerified,
+      sourceDataInvariant: sourceSharedStorageObjectDataInvariant,
+      targetDataInvariant: targetSharedStorageObjectDataInvariant,
     },
   };
   mkdirSync(path.dirname(EVIDENCE_PATH), { recursive: true });
