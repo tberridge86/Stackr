@@ -4,8 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: Type RESTORE STAGING BACKUP, RESTORE STAGING DATABASE, or RESTORE STAGING STORAGE
+        description: Type RESTORE STAGING BACKUP, RESTORE STAGING DATABASE, RESTORE STAGING STORAGE, or REHEARSE AND APPLY STAGING MIGRATIONS
         required: true
+        type: string
+      expected_commit_sha:
+        description: Exact reviewed commit required for a staging migration release
+        required: false
+        default: ""
         type: string
 
 permissions:
@@ -21,13 +26,16 @@ jobs:
     if: >-
       inputs.confirmation == 'RESTORE STAGING BACKUP' ||
       inputs.confirmation == 'RESTORE STAGING DATABASE' ||
-      inputs.confirmation == 'RESTORE STAGING STORAGE'
+      inputs.confirmation == 'RESTORE STAGING STORAGE' ||
+      (inputs.confirmation == 'REHEARSE AND APPLY STAGING MIGRATIONS' &&
+       inputs.expected_commit_sha == github.sha)
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     environment: staging
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       SUPABASE_RESTORE_DB_URL: ${{ secrets.SUPABASE_RESTORE_DB_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.STACKR_GITHUB_STAGING_BACKUPS }}
       SUPABASE_STAGING_SECRET_KEY: ${{ secrets.SUPABASE_STAGING_SECRET_KEY }}
       SUPABASE_RESTORE_SECRET_KEY: ${{ secrets.SUPABASE_RESTORE_SECRET_KEY }}
       SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco
@@ -61,12 +69,27 @@ jobs:
             *"$SUPABASE_RESTORE_PROJECT_REF"*) ;;
             *) echo '::error::restore_database_url_project_mismatch'; exit 1 ;;
           esac
+          if [ "${{ inputs.confirmation }}" = 'REHEARSE AND APPLY STAGING MIGRATIONS' ]; then
+            test "${{ inputs.expected_commit_sha }}" = "$GITHUB_SHA"
+            test -n "$SUPABASE_ACCESS_TOKEN"
+          fi
 
       - name: Prepare protected database URLs
         run: node scripts/deploy/prepare-postgres-urls.mjs
 
       - name: Install pinned dependencies
         run: npm ci
+
+      - name: List the latest physical staging backup
+        if: inputs.confirmation == 'REHEARSE AND APPLY STAGING MIGRATIONS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/stackr-recovery/backups"
+          npx --yes supabase@2.110.0 backups list \
+            --project-ref "$SUPABASE_PROJECT_REF" \
+            --output-format json \
+            > "$RUNNER_TEMP/stackr-recovery/backups/physical.json"
 
       - name: Create current ephemeral Postgres backups
         if: inputs.confirmation != 'RESTORE STAGING STORAGE'
@@ -114,13 +137,34 @@ jobs:
             --schema supabase_migrations
           retry_dump "$RUNNER_TEMP/stackr-recovery/backups/history-data.sql" \
             --use-copy --data-only --schema supabase_migrations
-          node scripts/deploy/verify-backup.mjs \
-            --schema="$RUNNER_TEMP/stackr-recovery/backups/schema.sql" \
+          backup_args=(
+            --schema="$RUNNER_TEMP/stackr-recovery/backups/schema.sql"
             --data="$RUNNER_TEMP/stackr-recovery/backups/data.sql"
+          )
+          if [ "${{ inputs.confirmation }}" = 'REHEARSE AND APPLY STAGING MIGRATIONS' ]; then
+            backup_args+=(
+              --physical="$RUNNER_TEMP/stackr-recovery/backups/physical.json"
+              --require-physical
+            )
+          fi
+          node scripts/deploy/verify-backup.mjs "${backup_args[@]}"
           node scripts/deploy/prepare-restore-cleanup.mjs \
             "$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
             "$RUNNER_TEMP/stackr-recovery/backups/cleanup.sql" \
             "$RUNNER_TEMP/stackr-recovery/backups/roles.sql"
+
+      - name: Capture exact staging pre-migration history
+        if: inputs.confirmation == 'REHEARSE AND APPLY STAGING MIGRATIONS'
+        shell: bash
+        env:
+          POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_SOURCE_DB_URL" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select concat(version, chr(95), name) from supabase_migrations.schema_migrations order by version, name"' \
+            > "$RUNNER_TEMP/stackr-recovery/evidence/staging-before-migration-keys.txt"
 
       - name: Restore Postgres backup into isolated project
         if: inputs.confirmation != 'RESTORE STAGING STORAGE'
@@ -157,8 +201,130 @@ jobs:
           export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
           node scripts/deploy/verify-postgres-restore.mjs
 
+      - name: Dry-run the exact pending migrations on the isolated restore
+        if: inputs.confirmation == 'REHEARSE AND APPLY STAGING MIGRATIONS'
+        shell: bash
+        env:
+          NO_COLOR: 1
+        run: |
+          set -euo pipefail
+          npx --yes supabase@2.110.0 db push \
+            --db-url "$STACKR_RESTORE_DB_URL" \
+            --include-all \
+            --dry-run 2>&1 \
+            | tee "$RUNNER_TEMP/stackr-recovery/evidence/isolated-migration-plan.txt"
+          node scripts/deploy/verify-staging-migration-plan.mjs \
+            --plan="$RUNNER_TEMP/stackr-recovery/evidence/isolated-migration-plan.txt" \
+            --before-keys="$RUNNER_TEMP/stackr-recovery/evidence/staging-before-migration-keys.txt" \
+            --expected-count=7 \
+            --target-project-ref="$SUPABASE_RESTORE_PROJECT_REF" \
+            --output="$RUNNER_TEMP/stackr-recovery/evidence/isolated-migration-plan.json"
+
+      - name: Apply and verify the pending migrations on the isolated restore
+        if: inputs.confirmation == 'REHEARSE AND APPLY STAGING MIGRATIONS'
+        shell: bash
+        env:
+          POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        run: |
+          set -euo pipefail
+          npx --yes supabase@2.110.0 db push \
+            --db-url "$STACKR_RESTORE_DB_URL" \
+            --include-all \
+            --yes
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select concat(version, chr(95), name) from supabase_migrations.schema_migrations order by version, name"' \
+            > "$RUNNER_TEMP/stackr-recovery/evidence/isolated-after-migration-keys.txt"
+          npx --yes supabase@2.110.0 db lint \
+            --db-url "$STACKR_RESTORE_DB_URL" \
+            --schema public,api,catalog,ingest,market,ml,audit,private \
+            --level error \
+            --fail-on error
+          npm run test:database-migrations
+
+      - name: Roll the isolated restore back to the staging backup
+        if: inputs.confirmation == 'REHEARSE AND APPLY STAGING MIGRATIONS'
+        shell: bash
+        env:
+          POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
+            --volume "$RUNNER_TEMP/stackr-recovery/backups:/backup:ro" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/cleanup.sql; psql --dbname "$TARGET_DB_URL" --variable ON_ERROR_STOP=1 --file /backup/roles.sql --file /backup/schema.sql --command "set session_replication_role = replica" --file /backup/data.sql --file /backup/history-schema.sql --file /backup/history-data.sql'
+          export STACKR_RECOVERY_EVIDENCE_DIR="$RUNNER_TEMP/stackr-recovery/evidence"
+          node scripts/deploy/verify-postgres-restore.mjs
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select concat(version, chr(95), name) from supabase_migrations.schema_migrations order by version, name"' \
+            > "$RUNNER_TEMP/stackr-recovery/evidence/isolated-after-rollback-keys.txt"
+
+      - name: Dry-run and apply the identical migration plan to staging
+        if: inputs.confirmation == 'REHEARSE AND APPLY STAGING MIGRATIONS'
+        id: apply_staging_migrations
+        shell: bash
+        env:
+          NO_COLOR: 1
+        run: |
+          set -euo pipefail
+          npx --yes supabase@2.110.0 db push \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --include-all \
+            --dry-run 2>&1 \
+            | tee "$RUNNER_TEMP/stackr-recovery/evidence/staging-migration-plan.txt"
+          node scripts/deploy/verify-staging-migration-plan.mjs \
+            --plan="$RUNNER_TEMP/stackr-recovery/evidence/staging-migration-plan.txt" \
+            --before-keys="$RUNNER_TEMP/stackr-recovery/evidence/staging-before-migration-keys.txt" \
+            --expected-count=7 \
+            --target-project-ref="$SUPABASE_PROJECT_REF" \
+            --output="$RUNNER_TEMP/stackr-recovery/evidence/staging-migration-plan.json"
+          npx --yes supabase@2.110.0 db push \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --include-all \
+            --yes
+
+      - name: Verify aligned staging and create reconciliation evidence
+        if: inputs.confirmation == 'REHEARSE AND APPLY STAGING MIGRATIONS'
+        shell: bash
+        env:
+          POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
+          SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            --env TARGET_DB_URL="$STACKR_SOURCE_DB_URL" \
+            "$POSTGRES_IMAGE" \
+            sh -ceu 'psql --dbname "$TARGET_DB_URL" --no-align --tuples-only --command "select concat(version, chr(95), name) from supabase_migrations.schema_migrations order by version, name"' \
+            > "$RUNNER_TEMP/stackr-recovery/evidence/staging-after-migration-keys.txt"
+          npx --yes supabase@2.110.0 db lint \
+            --db-url "$STACKR_SOURCE_DB_URL" \
+            --schema public,api,catalog,ingest,market,ml,audit,private \
+            --level error \
+            --fail-on error
+          node scripts/deploy/create-staging-migration-release-evidence.mjs \
+            --before-keys="$RUNNER_TEMP/stackr-recovery/evidence/staging-before-migration-keys.txt" \
+            --isolated-after-keys="$RUNNER_TEMP/stackr-recovery/evidence/isolated-after-migration-keys.txt" \
+            --rollback-after-keys="$RUNNER_TEMP/stackr-recovery/evidence/isolated-after-rollback-keys.txt" \
+            --staging-after-keys="$RUNNER_TEMP/stackr-recovery/evidence/staging-after-migration-keys.txt" \
+            --isolated-plan="$RUNNER_TEMP/stackr-recovery/evidence/isolated-migration-plan.json" \
+            --staging-plan="$RUNNER_TEMP/stackr-recovery/evidence/staging-migration-plan.json" \
+            --backup-schema="$RUNNER_TEMP/stackr-recovery/backups/schema.sql" \
+            --backup-data="$RUNNER_TEMP/stackr-recovery/backups/data.sql" \
+            --physical-backup="$RUNNER_TEMP/stackr-recovery/backups/physical.json" \
+            --restore-evidence-dir="$RUNNER_TEMP/stackr-recovery/evidence" \
+            --staging-project-ref="$SUPABASE_PROJECT_REF" \
+            --restore-project-ref="$SUPABASE_RESTORE_PROJECT_REF" \
+            --production-project-ref="$SUPABASE_PRODUCTION_PROJECT_REF" \
+            --output="$RUNNER_TEMP/stackr-recovery/evidence/staging-migration-reconciliation.json"
+
       - name: Backup and restore-test current Storage inventory
-        if: inputs.confirmation != 'RESTORE STAGING DATABASE'
+        if: >-
+          inputs.confirmation == 'RESTORE STAGING BACKUP' ||
+          inputs.confirmation == 'RESTORE STAGING STORAGE'
         shell: bash
         run: |
           set -euo pipefail
