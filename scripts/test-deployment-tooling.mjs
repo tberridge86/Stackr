@@ -639,6 +639,8 @@ assert.equal(cleanup.droppedSchemaCount, 9);
 assert.equal(cleanup.truncatedTableCount, 2);
 assert.match(cleanup.sql, /DROP SCHEMA IF EXISTS "public" CASCADE;/);
 assert.match(cleanup.sql, /DROP SCHEMA IF EXISTS "private" CASCADE;/);
+assert.match(cleanup.sql, /SET statement_timeout = 0;/);
+assert.match(cleanup.sql, /SET lock_timeout = '30s';/);
 assert.match(cleanup.sql, /CREATE SCHEMA "public" AUTHORIZATION "postgres";/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "auth"\."users" CASCADE;/);
 assert.match(cleanup.sql, /TRUNCATE TABLE ONLY "storage"\."buckets" CASCADE;/);
