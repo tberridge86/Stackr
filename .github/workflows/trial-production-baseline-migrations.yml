@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: Type REPLAY MIGRATIONS ON RESTORE TARGET
+        description: Type REPLAY MIGRATIONS ON RESTORE TARGET or RESUME MIGRATIONS ON VERIFIED RESTORE TARGET
         required: true
         type: string
 
@@ -18,7 +18,9 @@ concurrency:
 
 jobs:
   replay:
-    if: inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'
+    if: >-
+      inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET' ||
+      inputs.confirmation == 'RESUME MIGRATIONS ON VERIFIED RESTORE TARGET'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: staging
@@ -85,6 +87,7 @@ jobs:
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact"
 
       - name: Restore production schema into isolated target
+        if: inputs.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'
         shell: bash
         env:
           POSTGRES_IMAGE: postgres:17.6-bookworm@sha256:f3bd19c606e442c3d7bdfa8002e03fe260a1023351e0ea4598032022b68dd6e3
@@ -147,6 +150,11 @@ jobs:
           STACKR_TRANSFER_CONFIRMATION: COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE
           STACKR_TRANSFER_TARGET_PROFILE: production-baseline-rehearsal
           STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 900000
+          STACKR_TRANSFER_INITIAL_CONNECTION_ATTEMPTS: 6
+          STACKR_TRANSFER_INITIAL_CONNECTION_RETRY_DELAY_MS: 20000
+          STACKR_TRANSFER_REQUIRE_EMPTY_BASELINE_TARGET: 'true'
+          STACKR_TRANSFER_RESUME_FROM_VERIFIED_BASELINE: ${{ inputs.confirmation == 'RESUME MIGRATIONS ON VERIFIED RESTORE TARGET' }}
+          STACKR_TRANSFER_BASELINE_MIGRATION_HISTORY_PATH: ${{ runner.temp }}/stackr-baseline-trial/artifact/migration-history-data.sql
           STACKR_TRANSFER_TARGET_STABILITY_SECONDS: 90
           STACKR_TRANSFER_TARGET_STABILITY_MAX_WAIT_SECONDS: 420
           STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106

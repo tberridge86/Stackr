@@ -374,6 +374,14 @@ for (const stagingPreservationJob of [
 assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
 assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
+assert.match(
+  baselineReplayJob,
+  /inputs\.confirmation == 'RESUME MIGRATIONS ON VERIFIED RESTORE TARGET'/,
+);
+assert.match(
+  baselineReplayJob,
+  /Restore production schema into isolated target[\s\S]{0,160}if: inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/,
+);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'APPROVE DESTRUCTIVE STAGING REBUILD'/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
@@ -471,6 +479,17 @@ assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfe
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_MODE: commit/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 900000/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_ROW_BATCH_SIZE: 1000/);
+assert.match(baselineReplayJob, /STACKR_TRANSFER_INITIAL_CONNECTION_ATTEMPTS: 6/);
+assert.match(baselineReplayJob, /STACKR_TRANSFER_INITIAL_CONNECTION_RETRY_DELAY_MS: 20000/);
+assert.match(baselineReplayJob, /STACKR_TRANSFER_REQUIRE_EMPTY_BASELINE_TARGET: 'true'/);
+assert.match(
+  baselineReplayJob,
+  /STACKR_TRANSFER_BASELINE_MIGRATION_HISTORY_PATH:[^\n]+migration-history-data\.sql/,
+);
+assert.match(
+  baselineReplayJob,
+  /STACKR_TRANSFER_RESUME_FROM_VERIFIED_BASELINE:[^\n]+RESUME MIGRATIONS ON VERIFIED RESTORE TARGET/,
+);
 assert.match(
   baselineMigrationTrialWorkflow,
   /STACKR_TRANSFER_DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT: 'true'/,
@@ -505,9 +524,21 @@ assert.match(catalogueTransferWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue
 assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACCESS_TOKEN|db push|migration repair/);
 
 const catalogueTransferScript = readFileSync('scripts/deploy/rehearse-staging-catalogue-transfer.mjs', 'utf8');
+const postgresInitialConnection = readFileSync(
+  'scripts/deploy/postgres-initial-connection.mjs',
+  'utf8',
+);
 assert.match(catalogueTransferScript, /begin transaction isolation level repeatable read read only/);
 assert.match(catalogueTransferScript, /STACKR_TRANSFER_ROW_BATCH_SIZE/);
 assert.match(catalogueTransferScript, /invalid_transfer_row_batch_size/);
+assert.match(catalogueTransferScript, /baseline_resume_controls_not_isolated_rehearsal/);
+assert.match(catalogueTransferScript, /baseline_target_migration_history_mismatch/);
+assert.match(catalogueTransferScript, /baseline_target_not_empty/);
+assert.match(catalogueTransferScript, /baseline_target_adopted_migrations_present/);
+assert.match(catalogueTransferScript, /connectPostgresWithRetry/);
+assert.match(postgresInitialConnection, /ECHECKOUTTIMEOUT/);
+assert.match(postgresInitialConnection, /authentication did not complete within/);
+assert.doesNotMatch(postgresInitialConnection, /23503|42601/);
 assert.match(catalogueTransferScript, /async function\* readRowBatches/);
 assert.match(catalogueTransferScript, /limit \$\{limitParameter\}/);
 assert.match(catalogueTransferScript, /async function digestTable/);

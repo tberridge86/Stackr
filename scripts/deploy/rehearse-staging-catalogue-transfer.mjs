@@ -2,10 +2,9 @@ import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import pg from 'pg';
+import { connectPostgresWithRetry } from './postgres-initial-connection.mjs';
 import { normalizePostgresUrl } from './prepare-postgres-urls.mjs';
 
-const { Client } = pg;
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
 const TARGET_PROJECT_REF = process.env.SUPABASE_RESTORE_PROJECT_REF;
 const PRODUCTION_PROJECT_REF = process.env.SUPABASE_PRODUCTION_PROJECT_REF;
@@ -19,6 +18,20 @@ const TRANSFER_STATEMENT_TIMEOUT_MS = Number(
 const TRANSFER_ROW_BATCH_SIZE = Number(
   process.env.STACKR_TRANSFER_ROW_BATCH_SIZE ?? 250,
 );
+const INITIAL_CONNECTION_ATTEMPTS = Number(
+  process.env.STACKR_TRANSFER_INITIAL_CONNECTION_ATTEMPTS ?? 1,
+);
+const INITIAL_CONNECTION_RETRY_DELAY_MS = Number(
+  process.env.STACKR_TRANSFER_INITIAL_CONNECTION_RETRY_DELAY_MS ?? 0,
+);
+const REQUIRE_EMPTY_BASELINE_TARGET_RAW =
+  process.env.STACKR_TRANSFER_REQUIRE_EMPTY_BASELINE_TARGET ?? 'false';
+const REQUIRE_EMPTY_BASELINE_TARGET = REQUIRE_EMPTY_BASELINE_TARGET_RAW === 'true';
+const RESUME_FROM_VERIFIED_BASELINE_RAW =
+  process.env.STACKR_TRANSFER_RESUME_FROM_VERIFIED_BASELINE ?? 'false';
+const RESUME_FROM_VERIFIED_BASELINE = RESUME_FROM_VERIFIED_BASELINE_RAW === 'true';
+const BASELINE_MIGRATION_HISTORY_PATH =
+  process.env.STACKR_TRANSFER_BASELINE_MIGRATION_HISTORY_PATH ?? null;
 const DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW =
   process.env.STACKR_TRANSFER_DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT ?? 'false';
 const DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT =
@@ -227,6 +240,22 @@ if (!Number.isInteger(TRANSFER_ROW_BATCH_SIZE)
     || TRANSFER_ROW_BATCH_SIZE > 5_000) {
   throw new Error('invalid_transfer_row_batch_size');
 }
+if (!Number.isInteger(INITIAL_CONNECTION_ATTEMPTS)
+    || INITIAL_CONNECTION_ATTEMPTS < 1
+    || INITIAL_CONNECTION_ATTEMPTS > 6) {
+  throw new Error('invalid_initial_connection_attempts');
+}
+if (!Number.isInteger(INITIAL_CONNECTION_RETRY_DELAY_MS)
+    || INITIAL_CONNECTION_RETRY_DELAY_MS < 0
+    || INITIAL_CONNECTION_RETRY_DELAY_MS > 60_000) {
+  throw new Error('invalid_initial_connection_retry_delay');
+}
+if (!['true', 'false'].includes(REQUIRE_EMPTY_BASELINE_TARGET_RAW)) {
+  throw new Error('invalid_require_empty_baseline_target');
+}
+if (!['true', 'false'].includes(RESUME_FROM_VERIFIED_BASELINE_RAW)) {
+  throw new Error('invalid_resume_from_verified_baseline');
+}
 if (!['true', 'false'].includes(DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW)) {
   throw new Error('invalid_defer_target_digest_until_precommit');
 }
@@ -268,6 +297,23 @@ if (TRANSFER_MODE === 'commit') {
   if (PRODUCTION_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu') {
     throw new Error('committed_transfer_production_guard_mismatch');
   }
+}
+if (INITIAL_CONNECTION_ATTEMPTS > 1
+    || REQUIRE_EMPTY_BASELINE_TARGET
+    || RESUME_FROM_VERIFIED_BASELINE) {
+  if (TRANSFER_MODE !== 'commit'
+      || TRANSFER_TARGET_PROFILE !== 'production-baseline-rehearsal'
+      || SOURCE_PROJECT_REF !== 'lmwfhvexfcoyeuoyrlco'
+      || TARGET_PROJECT_REF !== 'isfybjkwvcuqpqtmkujo'
+      || PRODUCTION_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu') {
+    throw new Error('baseline_resume_controls_not_isolated_rehearsal');
+  }
+}
+if (RESUME_FROM_VERIFIED_BASELINE && !REQUIRE_EMPTY_BASELINE_TARGET) {
+  throw new Error('baseline_resume_requires_empty_target_guard');
+}
+if (REQUIRE_EMPTY_BASELINE_TARGET && !BASELINE_MIGRATION_HISTORY_PATH) {
+  throw new Error('baseline_migration_history_path_missing');
 }
 if (DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT
     && (TRANSFER_MODE !== 'commit'
@@ -730,14 +776,128 @@ async function sharedStorageObjectDataInvariant(client, context) {
   return result;
 }
 
+function frozenBaselineMigrationKeys(filePath) {
+  const content = readFileSync(filePath, 'utf8');
+  const keys = [];
+  let inMigrationCopy = false;
+  let copyClosed = false;
+  for (const line of content.split(/\r?\n/)) {
+    if (!inMigrationCopy) {
+      if (/^COPY\s+"?supabase_migrations"?\."?schema_migrations"?\s+/i.test(line)) {
+        inMigrationCopy = true;
+      }
+      continue;
+    }
+    if (line === '\\.') {
+      copyClosed = true;
+      break;
+    }
+    if (!line) continue;
+    const fields = line.split('\t');
+    const version = fields[0];
+    const name = fields[2];
+    if (fields.length < 3
+        || !/^\d{14}$/.test(version ?? '')
+        || !/^[a-z0-9_]+$/.test(name ?? '')) {
+      throw new Error('baseline_migration_history_row_invalid');
+    }
+    keys.push({ version, name });
+  }
+  if (!inMigrationCopy || !copyClosed || keys.length === 0) {
+    throw new Error('baseline_migration_history_copy_invalid');
+  }
+  const uniqueVersions = new Set(keys.map((row) => row.version));
+  if (uniqueVersions.size !== keys.length) {
+    throw new Error('baseline_migration_history_version_duplicate');
+  }
+  return keys.sort((left, right) => (
+    left.version.localeCompare(right.version) || left.name.localeCompare(right.name)
+  ));
+}
+
+async function verifyEmptyFrozenBaselineTarget(client) {
+  if (!REQUIRE_EMPTY_BASELINE_TARGET) return null;
+  const expectedMigrations = frozenBaselineMigrationKeys(BASELINE_MIGRATION_HISTORY_PATH);
+  if (expectedMigrations.length !== TARGET_MINIMUM_MIGRATION_COUNT) {
+    throw new Error(
+      `baseline_migration_history_count_mismatch:${expectedMigrations.length}`,
+    );
+  }
+  const actualMigrations = (await client.query(`
+    select version, name
+    from supabase_migrations.schema_migrations
+    order by version, name
+  `)).rows;
+  const expectedMigrationFingerprint = digestRows(expectedMigrations);
+  const actualMigrationFingerprint = digestRows(actualMigrations);
+  if (actualMigrations.length !== expectedMigrations.length
+      || actualMigrationFingerprint !== expectedMigrationFingerprint) {
+    throw new Error(
+      `baseline_target_migration_history_mismatch:expected_${expectedMigrations.length}`
+      + `:actual_${actualMigrations.length}`,
+    );
+  }
+
+  const tablePresence = (await client.query(`
+    with requested(table_name) as (
+      select unnest($1::text[])
+    )
+    select table_name, to_regclass(table_name) is not null as present
+    from requested
+    order by table_name
+  `, [tableConfig.tables])).rows;
+  const missingTables = tablePresence
+    .filter((row) => !row.present)
+    .map((row) => row.table_name);
+  if (missingTables.length) {
+    throw new Error(`baseline_target_tables_missing:${missingTables.join(',')}`);
+  }
+
+  const tableCounts = (await client.query(
+    tableConfig.tables.map((tableName) => `
+      select '${tableName}'::text as table_name,
+        count(*)::bigint::text as row_count
+      from ${qualifiedName(tableName)}
+    `).join('\nunion all\n'),
+  )).rows;
+  const nonEmptyTables = tableCounts
+    .filter((row) => BigInt(row.row_count) !== 0n)
+    .map((row) => `${row.table_name}:${row.row_count}`);
+  if (nonEmptyTables.length) {
+    throw new Error(`baseline_target_not_empty:${nonEmptyTables.join(',')}`);
+  }
+
+  const adoptedVersions = adoptedMigrationVersions();
+  const adoptedRows = await migrationRows(client, adoptedVersions);
+  if (adoptedRows.length) {
+    throw new Error(`baseline_target_adopted_migrations_present:${adoptedRows.length}`);
+  }
+  const verification = {
+    required: true,
+    resumeFromVerifiedBaseline: RESUME_FROM_VERIFIED_BASELINE,
+    migrationCount: actualMigrations.length,
+    migrationIdentitySha256: actualMigrationFingerprint,
+    emptyTableCount: tableCounts.length,
+    adoptedMigrationCount: adoptedRows.length,
+  };
+  recordTransferPhase('empty_frozen_baseline_verified', verification);
+  return verification;
+}
+
 async function connect(connectionString, applicationName) {
-  const client = new Client({ connectionString, application_name: applicationName });
-  await client.connect();
-  await client.query(
-    "select set_config('statement_timeout', $1, false)",
-    [String(TRANSFER_STATEMENT_TIMEOUT_MS)],
-  );
-  return client;
+  return connectPostgresWithRetry({
+    connectionString,
+    applicationName,
+    statementTimeoutMs: TRANSFER_STATEMENT_TIMEOUT_MS,
+    maxAttempts: INITIAL_CONNECTION_ATTEMPTS,
+    retryDelayMs: INITIAL_CONNECTION_RETRY_DELAY_MS,
+    onRetry: ({ attempt, maxAttempts }) => {
+      process.stderr.write(
+        `Transient ${applicationName} checkout failure on attempt ${attempt}`
+        + ` of ${maxAttempts}; retrying.\n`,
+      );
+    },
+  });
 }
 
 async function tableMetadata(client, tableName) {
@@ -1454,8 +1614,10 @@ function expectedFinalRow(tableName, sourceRow, promotionTimestamp) {
   };
 }
 
-const source = await connect(NORMALIZED_SOURCE_DB_URL, 'stackr-staging-catalogue-source');
-const target = await connect(NORMALIZED_TARGET_DB_URL, 'stackr-staging-catalogue-rehearsal');
+let source = null;
+let target = null;
+let sourceConnectionAttempts = 0;
+let targetConnectionAttempts = 0;
 const results = [];
 const excludedChecks = [];
 const tablePlans = new Map();
@@ -1483,8 +1645,22 @@ let preCommitAcceptanceVerified = false;
 let targetSchemaStability = null;
 let foreignKeySafety = null;
 let selfReferentialForeignKeySafety = null;
+let baselineTargetVerification = null;
 
 try {
+  const sourceConnection = await connect(
+    NORMALIZED_SOURCE_DB_URL,
+    'stackr-staging-catalogue-source',
+  );
+  source = sourceConnection.client;
+  sourceConnectionAttempts = sourceConnection.attemptsUsed;
+  const targetConnection = await connect(
+    NORMALIZED_TARGET_DB_URL,
+    'stackr-staging-catalogue-rehearsal',
+  );
+  target = targetConnection.client;
+  targetConnectionAttempts = targetConnection.attemptsUsed;
+  baselineTargetVerification = await verifyEmptyFrozenBaselineTarget(target);
   targetSchemaStability = await waitForTargetSchemaStability(target, tableConfig.tables);
   foreignKeySafety = await prepareCatalogueForeignKeyIndexes(target, tableConfig.tables);
   recordTransferPhase('foreign_key_preflight_verified', {
@@ -1919,6 +2095,13 @@ try {
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
     statementTimeoutMs: TRANSFER_STATEMENT_TIMEOUT_MS,
     rowBatchSize: TRANSFER_ROW_BATCH_SIZE,
+    initialConnection: {
+      configuredAttempts: INITIAL_CONNECTION_ATTEMPTS,
+      retryDelayMs: INITIAL_CONNECTION_RETRY_DELAY_MS,
+      sourceAttemptsUsed: sourceConnectionAttempts,
+      targetAttemptsUsed: targetConnectionAttempts,
+    },
+    baselineTargetVerification,
     targetDigestStrategy: DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT
       ? 'complete_precommit_and_postcommit'
       : 'per_table_transfer_then_complete_precommit_and_postcommit',
@@ -1993,7 +2176,10 @@ try {
     targetCommitVerified: evidence.targetCommitVerified,
   })}\n`);
 } finally {
-  if (targetTransactionOpen) await target.query('rollback').catch(() => {});
-  if (sourceTransactionOpen) await source.query('rollback').catch(() => {});
-  await Promise.allSettled([source.end(), target.end()]);
+  if (targetTransactionOpen && target) await target.query('rollback').catch(() => {});
+  if (sourceTransactionOpen && source) await source.query('rollback').catch(() => {});
+  await Promise.allSettled([
+    source?.end() ?? Promise.resolve(),
+    target?.end() ?? Promise.resolve(),
+  ]);
 }
