@@ -5,12 +5,12 @@ import path from 'node:path';
 import { connectPostgresWithRetry } from './postgres-initial-connection.mjs';
 import { normalizePostgresUrl } from './prepare-postgres-urls.mjs';
 import {
-  RAW_SOURCE_RECORD_JSON_BATCH_MAX_BYTES,
+  RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES,
   RAW_SOURCE_RECORD_TABLE,
   captureRawSourceRecordIndexes,
+  copyRawSourceRecordRows,
   dropRawSourceRecordIndexes,
-  rawSourceRecordInsertSql,
-  rawSourceRecordJsonBatches,
+  resetRawSourceRecordCopyStagePreparation,
   restoreRawSourceRecordIndexes,
   verifyRawSourceRecordIndexes,
 } from './raw-source-record-bulk-load.mjs';
@@ -975,9 +975,28 @@ async function tableMetadata(client, tableName) {
   };
 }
 
-async function* readRowBatches(client, tableName, primaryKey, columns = null) {
+async function* readRowBatches(
+  client,
+  tableName,
+  primaryKey,
+  columns = null,
+  { metadata = null, preserveJsonbText = false } = {},
+) {
   const order = primaryKey.map(quoteIdentifier).join(', ');
-  const projection = columns?.length ? columns.map(quoteIdentifier).join(', ') : '*';
+  const metadataByName = new Map(
+    metadata?.columns?.map((column) => [column.column_name, column]) ?? [],
+  );
+  if (preserveJsonbText && (!columns?.length || !metadata)) {
+    throw new Error(`jsonb_text_projection_metadata_missing:${tableName}`);
+  }
+  const projection = columns?.length
+    ? columns.map((columnName) => {
+      const columnSql = quoteIdentifier(columnName);
+      return preserveJsonbText && metadataByName.get(columnName)?.udt_name === 'jsonb'
+        ? `${columnSql}::text as ${columnSql}`
+        : columnSql;
+    }).join(', ')
+    : '*';
   if (columns?.length) {
     const selectedColumns = new Set(columns);
     const missingPrimaryKeyColumns = primaryKey.filter((column) => !selectedColumns.has(column));
@@ -1011,10 +1030,22 @@ async function* readRowBatches(client, tableName, primaryKey, columns = null) {
   }
 }
 
-async function digestTable(client, tableName, primaryKey, columns = null) {
+async function digestTable(
+  client,
+  tableName,
+  primaryKey,
+  columns = null,
+  options = {},
+) {
   const hash = createHash('sha256');
   let rowCount = 0;
-  for await (const rows of readRowBatches(client, tableName, primaryKey, columns)) {
+  for await (const rows of readRowBatches(
+    client,
+    tableName,
+    primaryKey,
+    columns,
+    options,
+  )) {
     for (const row of rows) hash.update(stableJson(row)).update('\n');
     rowCount += rows.length;
   }
@@ -1495,21 +1526,16 @@ function compatibleTableContract(tableName, sourceMetadata, targetMetadata) {
 }
 
 async function insertRows(client, tableName, metadata, columnNames, rows) {
-  if (!rows.length) return;
+  if (!rows.length) return null;
   if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD && tableName === RAW_SOURCE_RECORD_TABLE) {
-    const statement = rawSourceRecordInsertSql(metadata, columnNames);
-    const batches = rawSourceRecordJsonBatches(rows, columnNames);
-    for (const batch of batches) {
-      try {
-        await client.query(statement, [batch.payload]);
-      } catch (error) {
-        throw new Error(
-          `transfer_insert_failed:${tableName}:json_batch_${batch.startOffset}`
-          + `:postgres_${error.code ?? 'unknown'}`,
-        );
-      }
+    try {
+      return await copyRawSourceRecordRows(client, metadata, columnNames, rows);
+    } catch (error) {
+      throw new Error(
+        `transfer_insert_failed:${tableName}:${error.message}`,
+        { cause: error },
+      );
     }
-    return;
   }
   const columnSql = columnNames.map(quoteIdentifier).join(', ');
   const selectedColumns = new Set(columnNames);
@@ -1704,11 +1730,16 @@ let rawSourceRecordIndexSnapshot = null;
 const rawSourceRecordBulkLoad = {
   enabled: OPTIMIZE_RAW_SOURCE_RECORD_LOAD,
   insertStrategy: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
-    ? 'bounded_jsonb_recordset_with_transactional_index_rebuild'
+    ? 'bounded_copy_to_transactional_stage_then_insert_with_index_rebuild'
     : 'parameterized_values',
-  jsonBatchMaximumBytes: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
-    ? RAW_SOURCE_RECORD_JSON_BATCH_MAX_BYTES
+  copyBatchMaximumBytes: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+    ? RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES
     : null,
+  copiedRowCount: 0,
+  copyBatchCount: 0,
+  copyPayloadBytes: 0,
+  loadDurationMs: 0,
+  rawTransferDurationMs: null,
   before: null,
   afterDrop: null,
   preCommit: null,
@@ -1895,11 +1926,15 @@ try {
       : null;
     let sourceRowCount = 0;
     let expectedProductionAssetUrlRewriteCount = 0;
+    const rawCopyStartedAt = tableName === RAW_SOURCE_RECORD_TABLE ? Date.now() : null;
+    const preserveRawJsonbText = OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+      && tableName === RAW_SOURCE_RECORD_TABLE;
     for await (const sourceRows of readRowBatches(
       source,
       tableName,
       sourceMetadata.primaryKey,
       contract.transferColumns,
+      { metadata: sourceMetadata, preserveJsonbText: preserveRawJsonbText },
     )) {
       for (const sourceRow of sourceRows) {
         sourceHash.update(stableJson(sourceRow)).update('\n');
@@ -1910,7 +1945,30 @@ try {
         }
       }
       sourceRowCount += sourceRows.length;
-      await insertRows(target, tableName, targetMetadata, contract.transferColumns, sourceRows);
+      const loadStartedAt = tableName === RAW_SOURCE_RECORD_TABLE ? Date.now() : null;
+      const insertResult = await insertRows(
+        target,
+        tableName,
+        targetMetadata,
+        contract.transferColumns,
+        sourceRows,
+      );
+      if (tableName === RAW_SOURCE_RECORD_TABLE && insertResult) {
+        rawSourceRecordBulkLoad.loadDurationMs += Date.now() - loadStartedAt;
+        rawSourceRecordBulkLoad.copiedRowCount += insertResult.rowCount;
+        rawSourceRecordBulkLoad.copyBatchCount += insertResult.batchCount;
+        rawSourceRecordBulkLoad.copyPayloadBytes += insertResult.payloadBytes;
+        if (sourceRowCount === sourceRows.length || sourceRowCount % 25_000 === 0) {
+          recordTransferPhase('raw_source_record_copy_progress', {
+            copiedRowCount: rawSourceRecordBulkLoad.copiedRowCount,
+            copyBatchCount: rawSourceRecordBulkLoad.copyBatchCount,
+            copyPayloadBytes: rawSourceRecordBulkLoad.copyPayloadBytes,
+          });
+        }
+      }
+    }
+    if (rawCopyStartedAt !== null) {
+      rawSourceRecordBulkLoad.rawTransferDurationMs = Date.now() - rawCopyStartedAt;
     }
     await restartOwnedSequences(target, tableName, targetMetadata);
     if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD && tableName === RAW_SOURCE_RECORD_TABLE) {
@@ -1935,6 +1993,7 @@ try {
         tableName,
         targetMetadata.primaryKey,
         contract.transferColumns,
+        { metadata: targetMetadata, preserveJsonbText: preserveRawJsonbText },
       );
       if (targetDuringTransfer.rowCount !== sourceRowCount
           || targetDuringTransfer.sha256 !== sourceSha256) {
@@ -2033,6 +2092,11 @@ try {
       result.table,
       plan.targetMetadata.primaryKey,
       plan.contract.transferColumns,
+      {
+        metadata: plan.targetMetadata,
+        preserveJsonbText: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+          && result.table === RAW_SOURCE_RECORD_TABLE,
+      },
     );
     const sequences = await ownedSequenceStates(target, result.table, plan.targetMetadata);
     result.targetRowCountBeforeFinalise = targetBeforeFinalise.rowCount;
@@ -2091,6 +2155,7 @@ try {
   if (TRANSFER_MODE !== 'rehearse') await target.query('commit');
   else await target.query('rollback');
   targetTransactionOpen = false;
+  resetRawSourceRecordCopyStagePreparation(target);
   recordTransferPhase('target_finalise_returned', { action: TRANSFER_MODE !== 'rehearse' ? 'commit' : 'rollback' });
 
   await target.query('begin transaction isolation level repeatable read read only');
@@ -2125,6 +2190,12 @@ try {
       result.table,
       metadata.primaryKey,
       TRANSFER_MODE !== 'rehearse' ? plan.contract.transferColumns : null,
+      {
+        metadata,
+        preserveJsonbText: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+          && TRANSFER_MODE !== 'rehearse'
+          && result.table === RAW_SOURCE_RECORD_TABLE,
+      },
     );
     const sequences = await ownedSequenceStates(target, result.table, metadata);
     if (TRANSFER_MODE !== 'rehearse') {
@@ -2286,6 +2357,7 @@ try {
   })}\n`);
 } finally {
   if (targetTransactionOpen && target) await target.query('rollback').catch(() => {});
+  if (target) resetRawSourceRecordCopyStagePreparation(target);
   if (sourceTransactionOpen && source) await source.query('rollback').catch(() => {});
   await Promise.allSettled([
     source?.end() ?? Promise.resolve(),

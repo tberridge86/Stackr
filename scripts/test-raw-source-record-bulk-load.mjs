@@ -1,9 +1,22 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
+import { createRequire } from 'node:module';
+import { Writable } from 'node:stream';
+import { finished } from 'node:stream/promises';
+import { connectPostgresWithRetry } from './deploy/postgres-initial-connection.mjs';
+import { normalizePostgresUrl } from './deploy/prepare-postgres-urls.mjs';
 import {
   assertRawSourceRecordJsonContract,
+  assertRawSourceRecordCanonicalTableRlsEnabled,
   captureRawSourceRecordIndexes,
+  copyRawSourceRecordRows,
   dropRawSourceRecordIndexes,
+  rawSourceRecordCopyBatches,
+  rawSourceRecordCopySql,
+  rawSourceRecordCopyStageCreateSql,
+  rawSourceRecordCopyStageInsertSql,
+  rawSourceRecordCopyStageTruncateSql,
+  resetRawSourceRecordCopyStagePreparation,
   rawSourceRecordInsertSql,
   rawSourceRecordJsonBatches,
   restoreRawSourceRecordIndexes,
@@ -19,6 +32,8 @@ const columns = [
 ];
 const metadata = { columns };
 const columnNames = columns.map((column) => column.column_name);
+const require = createRequire(import.meta.url);
+assert.equal(typeof require('pg-copy-streams').from, 'function');
 
 assert.doesNotThrow(() => assertRawSourceRecordJsonContract(metadata, columnNames));
 assert.throws(
@@ -38,6 +53,22 @@ assert.match(
 );
 assert.equal(insertSql.match(/\$1/g)?.length, 1);
 assert.doesNotMatch(insertSql, /select \*/i);
+
+const copySql = rawSourceRecordCopySql(metadata, columnNames);
+assert.equal(
+  copySql,
+  'copy "stackr_raw_source_records_copy_stage" ("id", "external_id", "retrieved_at", "raw_payload", "internal_notes") from stdin with (format text)',
+);
+assert.doesNotMatch(copySql, /select \*/i);
+assert.equal(
+  rawSourceRecordCopyStageCreateSql(metadata, columnNames),
+  'create temporary table "stackr_raw_source_records_copy_stage" on commit drop as select "id", "external_id", "retrieved_at", "raw_payload", "internal_notes" from "ingest"."raw_source_records" where false',
+);
+assert.equal(
+  rawSourceRecordCopyStageInsertSql(metadata, columnNames),
+  'insert into "ingest"."raw_source_records" ("id", "external_id", "retrieved_at", "raw_payload", "internal_notes") select "id", "external_id", "retrieved_at", "raw_payload", "internal_notes" from "stackr_raw_source_records_copy_stage"',
+);
+assert.equal(rawSourceRecordCopyStageTruncateSql(), 'truncate "stackr_raw_source_records_copy_stage"');
 
 const rows = [
   {
@@ -77,6 +108,146 @@ assert.throws(
 assert.throws(
   () => rawSourceRecordJsonBatches([{ ...rows[0], raw_payload: { count: 1n } }], columnNames),
   /raw_source_record_json_bigint_unsupported/,
+);
+
+const copyRows = [{
+  ...rows[0],
+  external_id: 'ポケ\tmon\nline\rreturn\\slash\\N',
+  raw_payload: '{"nested":["one",{"quote":"O\'Brien","enabled":true}],"count":2}',
+}];
+const copyBatches = rawSourceRecordCopyBatches(copyRows, metadata, columnNames, 1_000);
+assert.equal(copyBatches.length, 1);
+assert.equal(copyBatches[0].rowCount, 1);
+assert.equal(
+  copyBatches[0].payload.toString('utf8'),
+  '11111111-1111-4111-8111-111111111111\tポケ\\tmon\\nline\\rreturn\\\\slash\\\\N\t2026-08-25T12:34:56.789Z\t{"nested":["one",{"quote":"O\'Brien","enabled":true}],"count":2}\t\\N\n',
+);
+const copyLineBytes = copyBatches[0].payloadBytes;
+const splitCopyBatches = rawSourceRecordCopyBatches(
+  [copyRows[0], { ...copyRows[0], id: '33333333-3333-4333-8333-333333333333' }],
+  metadata,
+  columnNames,
+  copyLineBytes,
+);
+assert.equal(splitCopyBatches.length, 2);
+assert.ok(splitCopyBatches.every((batch) => batch.payloadBytes <= copyLineBytes));
+assert.throws(
+  () => rawSourceRecordCopyBatches(copyRows, metadata, columnNames, 10),
+  /raw_source_record_copy_row_too_large/,
+);
+assert.throws(
+  () => rawSourceRecordCopyBatches([{ ...copyRows[0], raw_payload: { count: 2 } }], metadata, columnNames),
+  /raw_source_record_copy_jsonb_text_required:raw_payload/,
+);
+
+class FakeRlsClient {
+  constructor(rowSecurityEnabled) {
+    this.rowSecurityEnabled = rowSecurityEnabled;
+    this.queries = [];
+  }
+
+  async query(sql) {
+    this.queries.push(sql);
+    return { rows: [{ row_security_enabled: this.rowSecurityEnabled }] };
+  }
+}
+
+const rlsEnabledClient = new FakeRlsClient(true);
+assert.deepEqual(
+  await assertRawSourceRecordCanonicalTableRlsEnabled(rlsEnabledClient),
+  { rowSecurityEnabled: true },
+);
+assert.match(rlsEnabledClient.queries[0], /table_class\.relrowsecurity/);
+await assert.rejects(
+  () => assertRawSourceRecordCanonicalTableRlsEnabled(new FakeRlsClient(false)),
+  /raw_source_record_copy_rls_not_enabled/,
+);
+
+class FakeCopyClient {
+  constructor({ copyError = null } = {}) {
+    this.copyError = copyError;
+    this.rlsQueryCount = 0;
+    this.copyPayloads = [];
+    this.queries = [];
+  }
+
+  query(statement) {
+    this.queries.push(statement);
+    if (typeof statement === 'string') {
+      if (statement.includes('table_class.relrowsecurity')) {
+        this.rlsQueryCount += 1;
+        return Promise.resolve({ rows: [{ row_security_enabled: true }], rowCount: 1 });
+      }
+      if (statement.startsWith('insert into "ingest"."raw_source_records"')) {
+        return Promise.resolve({ rows: [], rowCount: 1 });
+      }
+      return Promise.resolve({ rows: [], rowCount: 0 });
+    }
+    const chunks = [];
+    const client = this;
+    return new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(Buffer.from(chunk));
+        if (client.copyError) callback(client.copyError);
+        else callback();
+      },
+      final(callback) {
+        client.copyPayloads.push(Buffer.concat(chunks));
+        callback();
+      },
+    });
+  }
+}
+
+const fakeCopyFrom = (sql) => ({ copySql: sql });
+const fakeCopyClient = new FakeCopyClient();
+const copyResult = await copyRawSourceRecordRows(
+  fakeCopyClient,
+  metadata,
+  columnNames,
+  copyRows,
+  { copyFrom: fakeCopyFrom },
+);
+assert.deepEqual(copyResult, {
+  batchCount: 1,
+  rowCount: 1,
+  payloadBytes: fakeCopyClient.copyPayloads[0].byteLength,
+});
+assert.equal(fakeCopyClient.rlsQueryCount, 1);
+assert.equal(fakeCopyClient.copyPayloads.length, 1);
+assert.match(fakeCopyClient.queries[1], /^create temporary table /);
+assert.equal(fakeCopyClient.queries[2].copySql, copySql);
+assert.match(fakeCopyClient.queries[3], /^insert into "ingest"/);
+assert.equal(fakeCopyClient.queries[4], 'truncate "stackr_raw_source_records_copy_stage"');
+await copyRawSourceRecordRows(
+  fakeCopyClient,
+  metadata,
+  columnNames,
+  copyRows,
+  { copyFrom: fakeCopyFrom },
+);
+assert.equal(fakeCopyClient.rlsQueryCount, 1);
+resetRawSourceRecordCopyStagePreparation(fakeCopyClient);
+await copyRawSourceRecordRows(
+  fakeCopyClient,
+  metadata,
+  columnNames,
+  copyRows,
+  { copyFrom: fakeCopyFrom },
+);
+assert.equal(fakeCopyClient.rlsQueryCount, 2);
+
+const copyDatabaseError = Object.assign(new Error('foreign key rejected'), { code: '23503' });
+await assert.rejects(
+  () => copyRawSourceRecordRows(
+    new FakeCopyClient({ copyError: copyDatabaseError }),
+    metadata,
+    columnNames,
+    copyRows,
+    { copyFrom: fakeCopyFrom },
+  ),
+  (error) => error.code === '23503'
+    && /raw_source_record_copy_failed:copy_batch_0:postgres_23503/.test(error.message),
 );
 
 const indexFixtures = [
@@ -195,5 +366,80 @@ await assert.rejects(
   () => restoreRawSourceRecordIndexes(failingClient, failingBefore),
   /raw_source_record_index_restore_failed:ingest\.raw_source_records_import_run_identity_uidx:postgres_XX000/,
 );
+
+async function runPostgresCopyIntegration() {
+  const targetProjectRef = process.env.SUPABASE_RESTORE_PROJECT_REF;
+  const productionProjectRef = process.env.SUPABASE_PRODUCTION_PROJECT_REF;
+  if (targetProjectRef !== 'isfybjkwvcuqpqtmkujo'
+      || productionProjectRef !== 'oakdbbzdqwurpjnoqhmu'
+      || targetProjectRef === productionProjectRef) {
+    throw new Error('raw_source_record_copy_integration_target_not_isolated');
+  }
+  const targetUrl = process.env.STACKR_RESTORE_DB_URL;
+  if (!targetUrl) throw new Error('raw_source_record_copy_integration_url_missing');
+  const normalizedTargetUrl = normalizePostgresUrl(targetUrl, targetProjectRef).normalized;
+  const { client } = await connectPostgresWithRetry({
+    connectionString: normalizedTargetUrl,
+    applicationName: 'stackr-raw-copy-integration',
+    statementTimeoutMs: 120_000,
+    maxAttempts: 6,
+    retryDelayMs: 20_000,
+  });
+  let transactionOpen = false;
+  try {
+    await client.query('begin');
+    transactionOpen = true;
+    await client.query("set local lock_timeout = '5s'");
+    await assertRawSourceRecordCanonicalTableRlsEnabled(client);
+    await client.query(rawSourceRecordCopyStageCreateSql(metadata, columnNames));
+
+    const payloadJson = '{"large_integer":900719925474099312345,"nested":{"enabled":true}}';
+    const integrationRow = {
+      id: '44444444-4444-4444-8444-444444444444',
+      external_id: '日本語\t繁體中文\n简体中文\\path',
+      retrieved_at: new Date('2026-08-25T14:34:56.789Z'),
+      raw_payload: payloadJson,
+      internal_notes: '\\N\rnot-null',
+    };
+    const [batch] = rawSourceRecordCopyBatches(
+      [integrationRow],
+      metadata,
+      columnNames,
+    );
+    const copyFrom = require('pg-copy-streams').from;
+    const stream = client.query(copyFrom(rawSourceRecordCopySql(metadata, columnNames)));
+    const completion = finished(stream);
+    stream.end(batch.payload);
+    await completion;
+
+    const result = await client.query(`
+      select
+        id::text,
+        external_id,
+        retrieved_at,
+        raw_payload = $1::jsonb as payload_matches,
+        raw_payload::text as payload_text,
+        internal_notes
+      from stackr_raw_source_records_copy_stage
+    `, [payloadJson]);
+    assert.equal(result.rowCount, 1);
+    assert.equal(result.rows[0].id, integrationRow.id);
+    assert.equal(result.rows[0].external_id, integrationRow.external_id);
+    assert.equal(result.rows[0].retrieved_at.toISOString(), integrationRow.retrieved_at.toISOString());
+    assert.equal(result.rows[0].payload_matches, true);
+    assert.match(result.rows[0].payload_text, /900719925474099312345/);
+    assert.equal(result.rows[0].internal_notes, integrationRow.internal_notes);
+    await client.query('rollback');
+    transactionOpen = false;
+  } finally {
+    if (transactionOpen) await client.query('rollback').catch(() => {});
+    await client.end();
+  }
+  process.stdout.write('Isolated PostgreSQL COPY round-trip passed and rolled back.\n');
+}
+
+if (process.argv.includes('--postgres-integration')) {
+  await runPostgresCopyIntegration();
+}
 
 process.stdout.write('Raw source record bulk-load tests passed.\n');

@@ -1,8 +1,16 @@
 import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { finished } from 'node:stream/promises';
 
 export const RAW_SOURCE_RECORD_TABLE = 'ingest.raw_source_records';
-export const RAW_SOURCE_RECORD_JSON_BATCH_MAX_BYTES = 8 * 1024 * 1024;
+export const RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES = 8 * 1024 * 1024;
+// Kept as an alias while the existing JSON helper remains available to callers.
+export const RAW_SOURCE_RECORD_JSON_BATCH_MAX_BYTES = RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES;
+
+const require = createRequire(import.meta.url);
+const rawSourceRecordCopyStagePreparedClients = new WeakSet();
+const RAW_SOURCE_RECORD_COPY_STAGE_TABLE = 'stackr_raw_source_records_copy_stage';
 
 function quoteIdentifier(value) {
   return `"${String(value).replaceAll('"', '""')}"`;
@@ -78,6 +86,189 @@ export function rawSourceRecordInsertSql(metadata, columnNames) {
     + `${hasIdentity ? ' overriding system value' : ''} `
     + `select ${columnSql} `
     + `from jsonb_populate_recordset(null::${tableSql}, $1::jsonb)`;
+}
+
+export function rawSourceRecordCopySql(metadata, columnNames) {
+  assertRawSourceRecordJsonContract(metadata, columnNames);
+  const columnSql = columnNames.map(quoteIdentifier).join(', ');
+  return `copy ${quoteIdentifier(RAW_SOURCE_RECORD_COPY_STAGE_TABLE)} (${columnSql}) from stdin with (format text)`;
+}
+
+function rawSourceRecordHasIdentity(metadata, columnNames) {
+  const selectedColumns = new Set(columnNames);
+  return metadata.columns.some((column) => (
+    selectedColumns.has(column.column_name) && column.is_identity === 'YES'
+  ));
+}
+
+export function rawSourceRecordCopyStageCreateSql(metadata, columnNames) {
+  assertRawSourceRecordJsonContract(metadata, columnNames);
+  const columnSql = columnNames.map(quoteIdentifier).join(', ');
+  return `create temporary table ${quoteIdentifier(RAW_SOURCE_RECORD_COPY_STAGE_TABLE)} on commit drop as `
+    + `select ${columnSql} from ${qualifiedName(RAW_SOURCE_RECORD_TABLE)} where false`;
+}
+
+export function rawSourceRecordCopyStageInsertSql(metadata, columnNames) {
+  assertRawSourceRecordJsonContract(metadata, columnNames);
+  const columnSql = columnNames.map(quoteIdentifier).join(', ');
+  return `insert into ${qualifiedName(RAW_SOURCE_RECORD_TABLE)} (${columnSql})`
+    + `${rawSourceRecordHasIdentity(metadata, columnNames) ? ' overriding system value' : ''} `
+    + `select ${columnSql} from ${quoteIdentifier(RAW_SOURCE_RECORD_COPY_STAGE_TABLE)}`;
+}
+
+export function rawSourceRecordCopyStageTruncateSql() {
+  return `truncate ${quoteIdentifier(RAW_SOURCE_RECORD_COPY_STAGE_TABLE)}`;
+}
+
+function rawSourceRecordCopyField(value, columnName, columnMetadata) {
+  if (value === null || value === undefined) return '\\N';
+  let serialized;
+  if (columnMetadata.udt_name === 'jsonb') {
+    if (typeof value !== 'string') {
+      throw new Error(`raw_source_record_copy_jsonb_text_required:${columnName}`);
+    }
+    serialized = value;
+  } else if (columnMetadata.udt_name === 'timestamptz' && value instanceof Date) {
+    serialized = value.toISOString();
+  } else {
+    serialized = String(value);
+  }
+  return serialized
+    .replaceAll('\\', '\\\\')
+    .replaceAll('\t', '\\t')
+    .replaceAll('\n', '\\n')
+    .replaceAll('\r', '\\r');
+}
+
+export function rawSourceRecordCopyBatches(
+  rows,
+  metadata,
+  columnNames,
+  maxBytes = RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES,
+) {
+  assertRawSourceRecordJsonContract(metadata, columnNames);
+  if (!Number.isInteger(maxBytes) || maxBytes < 1) {
+    throw new Error('raw_source_record_copy_batch_limit_invalid');
+  }
+  const metadataByName = new Map(
+    metadata.columns.map((column) => [column.column_name, column]),
+  );
+  const batches = [];
+  let lines = [];
+  let payloadBytes = 0;
+  let startOffset = 0;
+
+  const flush = () => {
+    if (!lines.length) return;
+    batches.push({
+      payload: Buffer.from(lines.join(''), 'utf8'),
+      rowCount: lines.length,
+      startOffset,
+      payloadBytes,
+    });
+    startOffset += lines.length;
+    lines = [];
+    payloadBytes = 0;
+  };
+
+  for (const row of rows) {
+    const line = `${columnNames.map((columnName) => rawSourceRecordCopyField(
+      row[columnName],
+      columnName,
+      metadataByName.get(columnName),
+    )).join('\t')}\n`;
+    const lineBytes = Buffer.byteLength(line, 'utf8');
+    if (lineBytes > maxBytes) {
+      throw new Error(`raw_source_record_copy_row_too_large:${lineBytes}`);
+    }
+    if (lines.length && payloadBytes + lineBytes > maxBytes) flush();
+    lines.push(line);
+    payloadBytes += lineBytes;
+  }
+  flush();
+  return batches;
+}
+
+export async function assertRawSourceRecordCanonicalTableRlsEnabled(client) {
+  const result = await client.query(`
+    select table_class.relrowsecurity as row_security_enabled
+    from pg_class table_class
+    join pg_namespace table_namespace
+      on table_namespace.oid = table_class.relnamespace
+    where table_namespace.nspname = 'ingest'
+      and table_class.relname = 'raw_source_records'
+      and table_class.relkind in ('r', 'p')
+  `);
+  if (result.rows.length !== 1) throw new Error('raw_source_record_copy_table_missing');
+  if (!Boolean(result.rows[0].row_security_enabled)) {
+    throw new Error('raw_source_record_copy_rls_not_enabled');
+  }
+  return { rowSecurityEnabled: true };
+}
+
+function copyFromFactory() {
+  try {
+    const copyFrom = require('pg-copy-streams').from;
+    if (typeof copyFrom !== 'function') throw new Error('copy_from_export_missing');
+    return copyFrom;
+  } catch (error) {
+    throw new Error('raw_source_record_copy_stream_dependency_missing', { cause: error });
+  }
+}
+
+async function prepareRawSourceRecordCopyStage(client, metadata, columnNames) {
+  if (rawSourceRecordCopyStagePreparedClients.has(client)) return;
+  await assertRawSourceRecordCanonicalTableRlsEnabled(client);
+  await client.query(rawSourceRecordCopyStageCreateSql(metadata, columnNames));
+  rawSourceRecordCopyStagePreparedClients.add(client);
+}
+
+export function resetRawSourceRecordCopyStagePreparation(client) {
+  rawSourceRecordCopyStagePreparedClients.delete(client);
+}
+
+export async function copyRawSourceRecordRows(client, metadata, columnNames, rows, options = {}) {
+  if (!rows.length) return { batchCount: 0, rowCount: 0, payloadBytes: 0 };
+  assertRawSourceRecordJsonContract(metadata, columnNames);
+  await prepareRawSourceRecordCopyStage(client, metadata, columnNames);
+  const copyFrom = options.copyFrom ?? copyFromFactory();
+  if (typeof copyFrom !== 'function') throw new Error('raw_source_record_copy_stream_factory_invalid');
+  const statement = rawSourceRecordCopySql(metadata, columnNames);
+  const insertStatement = rawSourceRecordCopyStageInsertSql(metadata, columnNames);
+  const truncateStatement = rawSourceRecordCopyStageTruncateSql();
+  const batches = rawSourceRecordCopyBatches(rows, metadata, columnNames);
+  let rowCount = 0;
+  let payloadBytes = 0;
+  for (const batch of batches) {
+    try {
+      const stream = client.query(copyFrom(statement));
+      if (!stream || typeof stream.end !== 'function') {
+        throw new Error('raw_source_record_copy_stream_invalid');
+      }
+      const completion = finished(stream);
+      stream.end(batch.payload);
+      await completion;
+      const insertResult = await client.query(insertStatement);
+      if (insertResult.rowCount !== batch.rowCount) {
+        throw new Error(
+          `raw_source_record_copy_insert_count_mismatch:expected_${batch.rowCount}`
+          + `:actual_${insertResult.rowCount}`,
+        );
+      }
+      await client.query(truncateStatement);
+    } catch (error) {
+      const failure = new Error(
+        `raw_source_record_copy_failed:copy_batch_${batch.startOffset}`
+        + `:postgres_${error.code ?? 'unknown'}`,
+        { cause: error },
+      );
+      failure.code = error.code;
+      throw failure;
+    }
+    rowCount += batch.rowCount;
+    payloadBytes += batch.payloadBytes;
+  }
+  return { batchCount: batches.length, rowCount, payloadBytes };
 }
 
 export function rawSourceRecordJsonBatches(

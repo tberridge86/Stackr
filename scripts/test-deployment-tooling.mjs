@@ -477,6 +477,10 @@ assert.doesNotMatch(baselineMigrationTrialWorkflow, /migration-count\.txt"\)" = 
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-baseline-trial"/);
 assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
 assert.match(baselineReplayJob, /node scripts\/test-raw-source-record-bulk-load\.mjs/);
+assert.match(
+  baselineReplayJob,
+  /node scripts\/test-raw-source-record-bulk-load\.mjs --postgres-integration/,
+);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_MODE: commit/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 1200000/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_ROW_BATCH_SIZE: 1000/);
@@ -554,13 +558,17 @@ assert.match(catalogueTransferScript, /async function digestTable/);
 assert.match(catalogueTransferScript, /DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT/);
 assert.match(catalogueTransferScript, /deferred_target_digest_not_isolated_baseline_rehearsal/);
 assert.match(catalogueTransferScript, /raw_source_record_optimization_not_isolated_baseline_rehearsal/);
-assert.match(catalogueTransferScript, /RAW_SOURCE_RECORD_JSON_BATCH_MAX_BYTES/);
-assert.match(catalogueTransferScript, /rawSourceRecordInsertSql/);
+assert.match(catalogueTransferScript, /RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES/);
+assert.match(catalogueTransferScript, /copyRawSourceRecordRows/);
+assert.match(catalogueTransferScript, /preserveJsonbText/);
+assert.match(catalogueTransferScript, /udt_name === 'jsonb'/);
 assert.match(catalogueTransferScript, /raw_source_record_indexes_deferred/);
 assert.match(catalogueTransferScript, /raw_source_record_indexes_restored/);
 assert.match(catalogueTransferScript, /raw_source_record_indexes_postcommit_verified/);
 assert.match(catalogueTransferScript, /rawSourceRecordBulkLoad/);
-assert.match(rawSourceRecordBulkLoad, /jsonb_populate_recordset/);
+assert.match(rawSourceRecordBulkLoad, /from stdin with \(format text\)/);
+assert.match(rawSourceRecordBulkLoad, /raw_source_record_copy_rls_not_enabled/);
+assert.match(rawSourceRecordBulkLoad, /create temporary table/);
 assert.match(rawSourceRecordBulkLoad, /not index_entry\.indisprimary/);
 assert.match(rawSourceRecordBulkLoad, /constraint_entry\.conindid = index_class\.oid/);
 assert.match(rawSourceRecordBulkLoad, /drop index/);
