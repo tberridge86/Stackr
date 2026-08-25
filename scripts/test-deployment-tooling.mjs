@@ -392,7 +392,7 @@ assert.doesNotMatch(baselineReplayJob, /NODE_TLS_REJECT_UNAUTHORIZED|rejectUnaut
 assert.doesNotMatch(baselineReplayJob, /psql --dbname "\$TARGET_DB_URL" --single-transaction/);
 assert.match(
   baselineReplayJob,
-  /psql --dbname "\$TARGET_DB_URL"[\s\S]*--command "begin"[\s\S]*--file \/trial\/cleanup\.sql[\s\S]*--command "commit"[\s\S]*--command "begin"[\s\S]*--file \/trial\/role-fixture\.sql[\s\S]*--file \/trial\/artifact\/production-schema\.sql[\s\S]*--file \/trial\/artifact\/production-reference-data\.sql[\s\S]*--file \/trial\/storage-fixture\.sql[\s\S]*--file \/trial\/artifact\/migration-history-schema\.sql[\s\S]*--file \/trial\/artifact\/migration-history-data\.sql[\s\S]*--command "select 1 \/ \(\(count\(\*\) = 106\)::integer\) from supabase_migrations\.schema_migrations"[\s\S]*--command "commit"/,
+  /psql --dbname "\$TARGET_DB_URL"[\s\S]*--command "begin"[\s\S]*--file \/trial\/cleanup\.sql[\s\S]*--command "commit"[\s\S]*--command "begin"[\s\S]*--file \/trial\/role-fixture\.sql[\s\S]*--file \/trial\/artifact\/production-schema\.sql[\s\S]*--file \/trial\/storage-fixture\.sql[\s\S]*--file \/trial\/artifact\/migration-history-schema\.sql[\s\S]*--file \/trial\/artifact\/migration-history-data\.sql[\s\S]*--command "select 1 \/ \(\(count\(\*\) = 106\)::integer\) from supabase_migrations\.schema_migrations"[\s\S]*--command "commit"/,
 );
 assert.match(
   baselineReplayJob,
@@ -439,11 +439,15 @@ assert.match(
 );
 assert.match(baselineMigrationTrialWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
-assert.match(baselineMigrationTrialWorkflow, /--file \/trial\/artifact\/production-reference-data\.sql/);
-assert.ok(
-  baselineMigrationTrialWorkflow.indexOf('--file /trial/artifact/production-reference-data.sql')
-    < baselineMigrationTrialWorkflow.indexOf('--file /trial/artifact/migration-history-schema.sql'),
-  'the isolated restore must reload migration history after the large reference-data import',
+assert.match(
+  baselineMigrationTrialWorkflow,
+  /--transfer-table-config=deploy\/production-catalogue-promotion-tables\.json/,
+);
+assert.doesNotMatch(baselineReplayJob, /--file \/trial\/artifact\/production-reference-data\.sql/);
+assert.match(baselineReplayJob, /every non-empty reference-data table/);
+assert.match(
+  readFileSync('scripts/deploy/verify-production-schema-baseline.mjs', 'utf8'),
+  /baseline_nonempty_reference_table_outside_transfer_allowlist/,
 );
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /isolated-production-reference-fixture\.sql/);
 assert.match(baselineMigrationTrialWorkflow, /--expected-history-count=106/);
@@ -914,6 +918,11 @@ try {
   writeFileSync(path.join(baselineVerificationRoot, 'migration-history-schema.sql'), historySchema);
   writeFileSync(path.join(baselineVerificationRoot, 'migration-history-data.sql'), historyData);
   writeFileSync(path.join(baselineVerificationRoot, 'production-reference-data.sql'), referenceData);
+  const transferTableConfigPath = path.join(baselineVerificationRoot, 'transfer-tables.json');
+  writeFileSync(transferTableConfigPath, JSON.stringify({
+    schemaVersion: 'stackr-production-catalogue-promotion-v1.0.0',
+    tables: ['catalog.games'],
+  }));
   writeFileSync(path.join(baselineVerificationRoot, 'baseline-evidence.json'), JSON.stringify({
     ...evidence,
     sourceProjectRef: 'oakdbbzdqwurpjnoqhmu',
@@ -921,9 +930,68 @@ try {
   const verification = run('scripts/deploy/verify-production-schema-baseline.mjs', [
     `--directory=${baselineVerificationRoot}`,
     `--expected-schema-sha256=${evidence.files.schema.sha256}`,
+    `--transfer-table-config=${transferTableConfigPath}`,
   ]);
   assert.equal(verification.status, 0, verification.stderr || verification.stdout);
-  assert.equal(JSON.parse(verification.stdout).ok, true);
+  const verificationResult = JSON.parse(verification.stdout);
+  assert.equal(verificationResult.ok, true);
+  assert.equal(verificationResult.transferTableCoverage.verified, true);
+  assert.deepEqual(verificationResult.referenceDataInventory.tableRows, { 'catalog.games': 1 });
+
+  writeFileSync(transferTableConfigPath, JSON.stringify({
+    schemaVersion: 'stackr-production-catalogue-promotion-v1.0.0',
+    tables: [],
+  }));
+  const uncoveredVerification = run('scripts/deploy/verify-production-schema-baseline.mjs', [
+    `--directory=${baselineVerificationRoot}`,
+    `--expected-schema-sha256=${evidence.files.schema.sha256}`,
+    `--transfer-table-config=${transferTableConfigPath}`,
+  ]);
+  assert.notEqual(uncoveredVerification.status, 0);
+  const uncoveredVerificationResult = JSON.parse(uncoveredVerification.stdout);
+  assert.deepEqual(uncoveredVerificationResult.errors, [
+    'baseline_nonempty_reference_table_outside_transfer_allowlist:catalog.games',
+  ]);
+
+  const emptyReferenceData = [
+    'COPY catalog.games (code) FROM stdin;',
+    'pokemon',
+    '\\.',
+    'COPY ingest.work_queue (id) FROM stdin;',
+    '\\.',
+    '',
+  ].join('\n');
+  const emptyReferenceEvidence = createSchemaBaselineEvidence({
+    schema,
+    historySchema,
+    historyData,
+    referenceData: emptyReferenceData,
+  });
+  writeFileSync(path.join(baselineVerificationRoot, 'production-reference-data.sql'), emptyReferenceData);
+  writeFileSync(path.join(baselineVerificationRoot, 'baseline-evidence.json'), JSON.stringify({
+    ...emptyReferenceEvidence,
+    sourceProjectRef: 'oakdbbzdqwurpjnoqhmu',
+  }));
+  writeFileSync(transferTableConfigPath, JSON.stringify({
+    schemaVersion: 'stackr-production-catalogue-promotion-v1.0.0',
+    tables: ['catalog.games'],
+  }));
+  const emptyUncoveredVerification = run('scripts/deploy/verify-production-schema-baseline.mjs', [
+    `--directory=${baselineVerificationRoot}`,
+    `--expected-schema-sha256=${emptyReferenceEvidence.files.schema.sha256}`,
+    `--transfer-table-config=${transferTableConfigPath}`,
+  ]);
+  assert.equal(
+    emptyUncoveredVerification.status,
+    0,
+    emptyUncoveredVerification.stderr || emptyUncoveredVerification.stdout,
+  );
+  const emptyUncoveredResult = JSON.parse(emptyUncoveredVerification.stdout);
+  assert.equal(emptyUncoveredResult.transferTableCoverage.verified, true);
+  assert.deepEqual(
+    emptyUncoveredResult.transferTableCoverage.uncoveredEmptyReferenceTables,
+    ['ingest.work_queue'],
+  );
 } finally {
   rmSync(baselineVerificationRoot, { recursive: true, force: true });
 }

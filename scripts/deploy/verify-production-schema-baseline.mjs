@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -15,6 +16,7 @@ const expectedSchemaSha256 = argument('expected-schema-sha256');
 const expectedHistoryVersion = argument('expected-history-version');
 const expectedHistoryName = argument('expected-history-name');
 const expectedHistoryCountRaw = argument('expected-history-count');
+const transferTableConfigPath = argument('transfer-table-config');
 const expectedHistoryCount = expectedHistoryCountRaw == null
   ? (expectedHistoryVersion ? 1 : 0)
   : Number(expectedHistoryCountRaw);
@@ -52,29 +54,65 @@ function migrationHistoryRows(content) {
 }
 
 function referenceDataInventory(content) {
-  const targetTables = [];
+  const tableRowCounts = new Map();
   let inCopy = false;
+  let currentTable = null;
   let rows = 0;
 
   for (const line of content.split(/\r?\n/)) {
     const copy = line.match(/^COPY\s+(?:ONLY\s+)?(?:(?:"([^"]+)"|([A-Za-z_][\w$]*))\.)?(?:"([^"]+)"|([A-Za-z_][\w$]*))\s+\(/i);
     if (copy) {
+      if (inCopy) throw new Error('reference_data_copy_nested');
       const schema = copy[1] ?? copy[2];
       const table = copy[3] ?? copy[4];
       if (!schema || !['catalog', 'ingest'].includes(schema)) {
         throw new Error('reference_data_copy_target_outside_catalog_or_ingest');
       }
-      targetTables.push(`${schema}.${table}`);
+      currentTable = `${schema}.${table}`;
+      if (!tableRowCounts.has(currentTable)) tableRowCounts.set(currentTable, 0);
       inCopy = true;
       continue;
     }
     if (inCopy && line === '\\.') {
       inCopy = false;
+      currentTable = null;
       continue;
     }
-    if (inCopy && line) rows += 1;
+    if (inCopy) {
+      rows += 1;
+      tableRowCounts.set(currentTable, tableRowCounts.get(currentTable) + 1);
+    }
   }
-  return { rows, targetTables: Array.from(new Set(targetTables)).sort() };
+  if (inCopy) throw new Error('reference_data_copy_unterminated');
+
+  const sortedTableRows = [...tableRowCounts.entries()]
+    .toSorted(([left], [right]) => left.localeCompare(right));
+  return {
+    rows,
+    targetTables: sortedTableRows.map(([table]) => table),
+    tableRows: Object.fromEntries(sortedTableRows),
+  };
+}
+
+function readTransferTableConfig(filePath) {
+  let config;
+  try {
+    config = JSON.parse(readFileSync(filePath, 'utf8'));
+  } catch {
+    throw new Error('baseline_transfer_table_config_unreadable');
+  }
+  if (
+    config === null
+    || typeof config !== 'object'
+    || Array.isArray(config)
+    || config.schemaVersion !== 'stackr-production-catalogue-promotion-v1.0.0'
+    || !Array.isArray(config.tables)
+    || new Set(config.tables).size !== config.tables.length
+    || !config.tables.every((table) => /^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*$/.test(table))
+  ) {
+    throw new Error('baseline_transfer_table_config_invalid');
+  }
+  return config;
 }
 
 const paths = {
@@ -87,6 +125,22 @@ const paths = {
 for (const [label, filePath] of Object.entries(paths)) {
   if (!existsSync(filePath)) errors.push(`baseline_file_missing:${label}`);
 }
+
+let transferTableConfig = null;
+if (transferTableConfigPath) {
+  if (!existsSync(transferTableConfigPath)) {
+    errors.push('baseline_transfer_table_config_missing');
+  } else {
+    try {
+      transferTableConfig = readTransferTableConfig(transferTableConfigPath);
+    } catch (error) {
+      errors.push(error.message);
+    }
+  }
+}
+
+let referenceInventory = null;
+let transferTableCoverage = null;
 
 if (!errors.length) {
   const evidence = JSON.parse(readFileSync(paths.evidence, 'utf8'));
@@ -132,7 +186,6 @@ if (!errors.length) {
   }
   if (/^COPY\s+/im.test(schema)) errors.push('baseline_schema_contains_table_data');
 
-  let referenceInventory;
   try {
     referenceInventory = referenceDataInventory(referenceData);
     if (referenceInventory.rows === 0) errors.push('baseline_reference_data_rows_missing');
@@ -141,6 +194,33 @@ if (!errors.length) {
     }
     if (JSON.stringify(evidence.inventory?.referenceDataTargetTables) !== JSON.stringify(referenceInventory.targetTables)) {
       errors.push('baseline_reference_data_targets_mismatch');
+    }
+    if (transferTableConfig) {
+      const transferTables = new Set(transferTableConfig.tables);
+      const nonEmptyReferenceTables = Object.entries(referenceInventory.tableRows)
+        .filter(([, rowCount]) => rowCount > 0)
+        .map(([table]) => table);
+      const coveredNonEmptyReferenceTables = nonEmptyReferenceTables
+        .filter((table) => transferTables.has(table));
+      const uncoveredNonEmptyReferenceTables = nonEmptyReferenceTables
+        .filter((table) => !transferTables.has(table));
+      const uncoveredEmptyReferenceTables = Object.entries(referenceInventory.tableRows)
+        .filter(([table, rowCount]) => rowCount === 0 && !transferTables.has(table))
+        .map(([table]) => table);
+      transferTableCoverage = {
+        configPath: transferTableConfigPath,
+        configSchemaVersion: transferTableConfig.schemaVersion,
+        verified: uncoveredNonEmptyReferenceTables.length === 0,
+        nonEmptyReferenceTables,
+        coveredNonEmptyReferenceTables,
+        uncoveredNonEmptyReferenceTables,
+        uncoveredEmptyReferenceTables,
+      };
+      if (uncoveredNonEmptyReferenceTables.length > 0) {
+        errors.push(
+          `baseline_nonempty_reference_table_outside_transfer_allowlist:${uncoveredNonEmptyReferenceTables.join(',')}`,
+        );
+      }
     }
   } catch (error) {
     errors.push(error.message);
@@ -175,6 +255,8 @@ console.log(JSON.stringify({
   expectedHistoryCount,
   expectedHistoryVersion: expectedHistoryVersion ?? null,
   expectedHistoryName: expectedHistoryName ?? null,
+  referenceDataInventory: referenceInventory,
+  transferTableCoverage,
   errors,
 }, null, 2));
 if (errors.length) process.exit(1);

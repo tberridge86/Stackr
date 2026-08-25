@@ -79,7 +79,8 @@ jobs:
             --expected-schema-sha256="$BASELINE_SCHEMA_SHA256" \
             --expected-history-count=106 \
             --expected-history-version=20260813135412 \
-            --expected-history-name=premium_seller_access_boundary
+            --expected-history-name=premium_seller_access_boundary \
+            --transfer-table-config=deploy/production-catalogue-promotion-tables.json
           node scripts/deploy/secret-scan.mjs \
             --directory="$RUNNER_TEMP/stackr-baseline-trial/artifact"
 
@@ -97,6 +98,8 @@ jobs:
             "$RUNNER_TEMP/stackr-baseline-trial/storage-fixture.sql"
           cp scripts/deploy/isolated-production-role-fixture.sql \
             "$RUNNER_TEMP/stackr-baseline-trial/role-fixture.sql"
+          # Baseline verification proves every non-empty reference-data table is
+          # replaced by the controlled transfer; uncovered zero-row tables stay empty.
           docker run --rm \
             --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
             --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
@@ -110,7 +113,6 @@ jobs:
                 --command "begin" \
                 --file /trial/role-fixture.sql \
                 --file /trial/artifact/production-schema.sql \
-                --file /trial/artifact/production-reference-data.sql \
                 --file /trial/storage-fixture.sql \
                 --file /trial/artifact/migration-history-schema.sql \
                 --file /trial/artifact/migration-history-data.sql \
