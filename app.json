@@ -27,6 +27,7 @@
         "expo-camera",
         {
           "cameraPermission": "Stackr needs camera access so you can scan your Pokemon cards.",
+          "microphonePermission": false,
           "recordAudioAndroid": false
         }
       ],
@@ -40,7 +41,8 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Stackr needs camera access so you can scan your Pokémon cards."
+          "cameraPermission": "Stackr needs camera access so you can scan your Pokémon cards.",
+          "microphonePermission": false
         }
       ],
       "onnxruntime-react-native",
