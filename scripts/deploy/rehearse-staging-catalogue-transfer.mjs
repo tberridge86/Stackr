@@ -19,6 +19,10 @@ const TRANSFER_STATEMENT_TIMEOUT_MS = Number(
 const TRANSFER_ROW_BATCH_SIZE = Number(
   process.env.STACKR_TRANSFER_ROW_BATCH_SIZE ?? 250,
 );
+const DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW =
+  process.env.STACKR_TRANSFER_DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT ?? 'false';
+const DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT =
+  DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW === 'true';
 const TARGET_SCHEMA_STABILITY_SECONDS = Number(
   process.env.STACKR_TRANSFER_TARGET_STABILITY_SECONDS ?? 0,
 );
@@ -223,6 +227,9 @@ if (!Number.isInteger(TRANSFER_ROW_BATCH_SIZE)
     || TRANSFER_ROW_BATCH_SIZE > 5_000) {
   throw new Error('invalid_transfer_row_batch_size');
 }
+if (!['true', 'false'].includes(DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW)) {
+  throw new Error('invalid_defer_target_digest_until_precommit');
+}
 if (!Number.isInteger(TARGET_SCHEMA_STABILITY_SECONDS)
     || TARGET_SCHEMA_STABILITY_SECONDS < 0
     || TARGET_SCHEMA_STABILITY_SECONDS > 300) {
@@ -261,6 +268,12 @@ if (TRANSFER_MODE === 'commit') {
   if (PRODUCTION_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu') {
     throw new Error('committed_transfer_production_guard_mismatch');
   }
+}
+if (DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT
+    && (TRANSFER_MODE !== 'commit'
+      || TRANSFER_TARGET_PROFILE !== 'production-baseline-rehearsal'
+      || TARGET_PROJECT_REF !== 'isfybjkwvcuqpqtmkujo')) {
+  throw new Error('deferred_target_digest_not_isolated_baseline_rehearsal');
 }
 if (TRANSFER_MODE === 'promote') {
   if (TRANSFER_CONFIRMATION !== 'PROMOTE VERIFIED CATALOGUE TO PRODUCTION') {
@@ -1644,17 +1657,20 @@ try {
     const expectedFinalSha256 = expectedFinalHash
       ? expectedFinalHash.digest('hex')
       : sourceSha256;
-    const targetDuringTransfer = await digestTable(
-      target,
-      tableName,
-      targetMetadata.primaryKey,
-      contract.transferColumns,
-    );
-    const targetSequencesDuringRehearsal = await ownedSequenceStates(target, tableName, targetMetadata);
-    if (targetDuringTransfer.rowCount !== sourceRowCount
-        || targetDuringTransfer.sha256 !== sourceSha256) {
-      throw new Error(`target_transfer_mismatch:${tableName}`);
+    let targetDuringTransfer = null;
+    if (!DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT) {
+      targetDuringTransfer = await digestTable(
+        target,
+        tableName,
+        targetMetadata.primaryKey,
+        contract.transferColumns,
+      );
+      if (targetDuringTransfer.rowCount !== sourceRowCount
+          || targetDuringTransfer.sha256 !== sourceSha256) {
+        throw new Error(`target_transfer_mismatch:${tableName}`);
+      }
     }
+    const targetSequencesDuringRehearsal = await ownedSequenceStates(target, tableName, targetMetadata);
 
     plan.expectedFinalRowCount = sourceRowCount;
     plan.expectedFinalSha256 = expectedFinalSha256;
@@ -1668,10 +1684,12 @@ try {
       sourceRowCount,
       targetRowCountBefore: targetBefore.rowCount,
       targetRowCountAfterClear,
-      targetRowCountDuringRehearsal: targetDuringTransfer.rowCount,
-      matchedSourceRowCount: targetDuringTransfer.rowCount,
+      ...(targetDuringTransfer ? {
+        targetRowCountDuringRehearsal: targetDuringTransfer.rowCount,
+        matchedSourceRowCount: targetDuringTransfer.rowCount,
+        matchedTargetSha256: targetDuringTransfer.sha256,
+      } : {}),
       sourceSha256,
-      matchedTargetSha256: targetDuringTransfer.sha256,
       targetBeforeSha256: targetBefore.sha256,
       expectedFinalSha256,
       targetSequencesBefore,
@@ -1749,6 +1767,11 @@ try {
     result.targetRowCountBeforeFinalise = targetBeforeFinalise.rowCount;
     result.targetBeforeFinaliseSha256 = targetBeforeFinalise.sha256;
     result.targetSequencesBeforeFinalise = sequences;
+    if (DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT) {
+      result.targetRowCountDuringRehearsal = targetBeforeFinalise.rowCount;
+      result.matchedSourceRowCount = targetBeforeFinalise.rowCount;
+      result.matchedTargetSha256 = targetBeforeFinalise.sha256;
+    }
     result.preCommitMatched = targetBeforeFinalise.rowCount === plan.expectedFinalRowCount
       && result.targetBeforeFinaliseSha256 === result.expectedFinalSha256
       && stableJson(sequences) === stableJson(result.targetSequencesDuringRehearsal);
@@ -1896,6 +1919,9 @@ try {
     targetTransactionCommitted: TRANSFER_MODE !== 'rehearse',
     statementTimeoutMs: TRANSFER_STATEMENT_TIMEOUT_MS,
     rowBatchSize: TRANSFER_ROW_BATCH_SIZE,
+    targetDigestStrategy: DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT
+      ? 'complete_precommit_and_postcommit'
+      : 'per_table_transfer_then_complete_precommit_and_postcommit',
     targetSchemaStability,
     foreignKeySafety,
     selfReferentialForeignKeySafety,

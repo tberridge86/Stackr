@@ -461,6 +461,11 @@ assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-base
 assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_MODE: commit/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 900000/);
+assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_ROW_BATCH_SIZE: 1000/);
+assert.match(
+  baselineMigrationTrialWorkflow,
+  /STACKR_TRANSFER_DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT: 'true'/,
+);
 assert.match(baselineMigrationTrialWorkflow, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES:[^\n]*\bko\b/);
@@ -497,6 +502,17 @@ assert.match(catalogueTransferScript, /invalid_transfer_row_batch_size/);
 assert.match(catalogueTransferScript, /async function\* readRowBatches/);
 assert.match(catalogueTransferScript, /limit \$\{limitParameter\}/);
 assert.match(catalogueTransferScript, /async function digestTable/);
+assert.match(catalogueTransferScript, /DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT/);
+assert.match(catalogueTransferScript, /deferred_target_digest_not_isolated_baseline_rehearsal/);
+assert.match(catalogueTransferScript, /complete_precommit_and_postcommit/);
+assert.match(
+  catalogueTransferScript,
+  /result\.matchedSourceRowCount = targetBeforeFinalise\.rowCount/,
+);
+assert.match(
+  catalogueTransferScript,
+  /result\.matchedTargetSha256 = targetBeforeFinalise\.sha256/,
+);
 assert.doesNotMatch(catalogueTransferScript, /const snapshots = new Map\(\)/);
 assert.doesNotMatch(catalogueTransferScript, /sourceRows = await readRows|targetRowsBefore = await readRows/);
 assert.match(catalogueTransferScript, /for \(const tableName of \[\.\.\.tableConfig\.tables\]\.reverse\(\)\)/);
