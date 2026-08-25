@@ -12,7 +12,10 @@ export function isRetryableInitialPostgresConnectionError(error) {
   const combined = `${code} ${message}`;
   return (/\bECHECKOUTTIMEOUT\b/i.test(combined)
       && /unable to check out connection/i.test(message))
-    || /authentication did not complete within \d+ms(?: in Session mode)?/i.test(message);
+    || /authentication did not complete within \d+ms(?: in Session mode)?/i.test(message)
+    || (code === 'XX000'
+      && /\bEAUTHQUERY\b.*authentication query failed: connection to database not available/i
+        .test(message));
 }
 
 export async function connectPostgresWithRetry({

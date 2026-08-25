@@ -456,6 +456,7 @@ assert.match(baselineReplayJob, /every non-empty reference-data table/);
 assert.match(baselineReplayJob, /restore_database\(\)/);
 assert.match(baselineReplayJob, /for attempt in 1 2 3 4 5 6/);
 assert.match(baselineReplayJob, /ECHECKOUTTIMEOUT/);
+assert.match(baselineReplayJob, /EAUTHQUERY/);
 assert.match(baselineReplayJob, /authentication did not complete within/);
 assert.match(baselineReplayJob, /non-retryable database error/);
 assert.match(
@@ -550,6 +551,7 @@ assert.match(catalogueTransferScript, /baseline_target_not_empty/);
 assert.match(catalogueTransferScript, /baseline_target_adopted_migrations_present/);
 assert.match(catalogueTransferScript, /connectPostgresWithRetry/);
 assert.match(postgresInitialConnection, /ECHECKOUTTIMEOUT/);
+assert.match(postgresInitialConnection, /EAUTHQUERY/);
 assert.match(postgresInitialConnection, /authentication did not complete within/);
 assert.doesNotMatch(postgresInitialConnection, /23503|42601/);
 assert.match(catalogueTransferScript, /async function\* readRowBatches/);

@@ -15,6 +15,14 @@ assert.equal(isRetryableInitialPostgresConnectionError(new Error(
   'authentication did not complete within 15000ms in Session mode',
 )), true);
 assert.equal(isRetryableInitialPostgresConnectionError({
+  code: 'XX000',
+  message: '(EAUTHQUERY) authentication query failed: connection to database not available',
+}), true);
+assert.equal(isRetryableInitialPostgresConnectionError({
+  code: 'XX000',
+  message: 'unrelated internal database error',
+}), false);
+assert.equal(isRetryableInitialPostgresConnectionError({
   code: '23503',
   message: 'insert or update violates foreign key constraint',
 }), false);
@@ -123,7 +131,7 @@ assert.equal(exhaustedAttempts, 3);
 
 console.log(JSON.stringify({
   ok: true,
-  retryableErrorsTested: 3,
-  nonRetryableErrorsTested: 2,
+  retryableErrorsTested: 4,
+  nonRetryableErrorsTested: 3,
   boundedRetryAttemptsTested: 3,
 }));
