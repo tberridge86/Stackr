@@ -445,6 +445,11 @@ assert.match(
 );
 assert.doesNotMatch(baselineReplayJob, /--file \/trial\/artifact\/production-reference-data\.sql/);
 assert.match(baselineReplayJob, /every non-empty reference-data table/);
+assert.match(baselineReplayJob, /restore_database\(\)/);
+assert.match(baselineReplayJob, /for attempt in 1 2 3 4 5 6/);
+assert.match(baselineReplayJob, /ECHECKOUTTIMEOUT/);
+assert.match(baselineReplayJob, /authentication did not complete within/);
+assert.match(baselineReplayJob, /non-retryable database error/);
 assert.match(
   readFileSync('scripts/deploy/verify-production-schema-baseline.mjs', 'utf8'),
   /baseline_nonempty_reference_table_outside_transfer_allowlist/,

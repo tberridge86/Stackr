@@ -100,25 +100,45 @@ jobs:
             "$RUNNER_TEMP/stackr-baseline-trial/role-fixture.sql"
           # Baseline verification proves every non-empty reference-data table is
           # replaced by the controlled transfer; uncovered zero-row tables stay empty.
-          docker run --rm \
-            --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
-            --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
-            "$POSTGRES_IMAGE" \
-            sh -ceu '
-              psql --dbname "$TARGET_DB_URL" \
-                --variable ON_ERROR_STOP=1 \
-                --command "begin" \
-                --file /trial/cleanup.sql \
-                --command "commit" \
-                --command "begin" \
-                --file /trial/role-fixture.sql \
-                --file /trial/artifact/production-schema.sql \
-                --file /trial/storage-fixture.sql \
-                --file /trial/artifact/migration-history-schema.sql \
-                --file /trial/artifact/migration-history-data.sql \
-                --command "select 1 / ((count(*) = 106)::integer) from supabase_migrations.schema_migrations" \
-                --command "commit"
-            '
+          restore_database() {
+            local attempt_log="$1"
+            docker run --rm \
+              --env TARGET_DB_URL="$STACKR_RESTORE_DB_URL" \
+              --volume "$RUNNER_TEMP/stackr-baseline-trial:/trial:ro" \
+              "$POSTGRES_IMAGE" \
+              sh -ceu '
+                psql --dbname "$TARGET_DB_URL" \
+                  --variable ON_ERROR_STOP=1 \
+                  --command "begin" \
+                  --file /trial/cleanup.sql \
+                  --command "commit" \
+                  --command "begin" \
+                  --file /trial/role-fixture.sql \
+                  --file /trial/artifact/production-schema.sql \
+                  --file /trial/storage-fixture.sql \
+                  --file /trial/artifact/migration-history-schema.sql \
+                  --file /trial/artifact/migration-history-data.sql \
+                  --command "select 1 / ((count(*) = 106)::integer) from supabase_migrations.schema_migrations" \
+                  --command "commit"
+              ' 2>&1 | tee "$attempt_log"
+          }
+
+          for attempt in 1 2 3 4 5 6; do
+            attempt_log="$RUNNER_TEMP/stackr-baseline-trial/restore-attempt-$attempt.log"
+            if restore_database "$attempt_log"; then
+              break
+            fi
+            if ! grep -Eq 'ECHECKOUTTIMEOUT|authentication did not complete within|unable to check out connection|connection.*timed out|server closed the connection unexpectedly' "$attempt_log"; then
+              echo "::error::Isolated restore failed with a non-retryable database error."
+              exit 1
+            fi
+            if (( attempt == 6 )); then
+              echo "::error::Isolated restore could not obtain a healthy database connection after $attempt attempts."
+              exit 1
+            fi
+            echo "::warning::Isolated database connection attempt $attempt failed transiently; retrying in 20 seconds."
+            sleep 20
+          done
 
       - name: Commit canonical staging catalogue to isolated target
         env:
