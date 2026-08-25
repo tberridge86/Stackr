@@ -476,8 +476,9 @@ assert.match(baselineMigrationTrialWorkflow, /test "\$actual_migrations" = "\$ex
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /migration-count\.txt"\)" = '\d+'/);
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-baseline-trial"/);
 assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
+assert.match(baselineReplayJob, /node scripts\/test-raw-source-record-bulk-load\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_MODE: commit/);
-assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 900000/);
+assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 1200000/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_TRANSFER_ROW_BATCH_SIZE: 1000/);
 assert.match(baselineReplayJob, /STACKR_TRANSFER_INITIAL_CONNECTION_ATTEMPTS: 6/);
 assert.match(baselineReplayJob, /STACKR_TRANSFER_INITIAL_CONNECTION_RETRY_DELAY_MS: 20000/);
@@ -493,6 +494,10 @@ assert.match(
 assert.match(
   baselineMigrationTrialWorkflow,
   /STACKR_TRANSFER_DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT: 'true'/,
+);
+assert.match(
+  baselineReplayJob,
+  /STACKR_TRANSFER_OPTIMIZE_RAW_SOURCE_RECORD_LOAD: 'true'/,
 );
 assert.match(baselineMigrationTrialWorkflow, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn/);
@@ -524,6 +529,10 @@ assert.match(catalogueTransferWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue
 assert.doesNotMatch(catalogueTransferWorkflow, /pull_request:|push:|SUPABASE_ACCESS_TOKEN|db push|migration repair/);
 
 const catalogueTransferScript = readFileSync('scripts/deploy/rehearse-staging-catalogue-transfer.mjs', 'utf8');
+const rawSourceRecordBulkLoad = readFileSync(
+  'scripts/deploy/raw-source-record-bulk-load.mjs',
+  'utf8',
+);
 const postgresInitialConnection = readFileSync(
   'scripts/deploy/postgres-initial-connection.mjs',
   'utf8',
@@ -544,6 +553,19 @@ assert.match(catalogueTransferScript, /limit \$\{limitParameter\}/);
 assert.match(catalogueTransferScript, /async function digestTable/);
 assert.match(catalogueTransferScript, /DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT/);
 assert.match(catalogueTransferScript, /deferred_target_digest_not_isolated_baseline_rehearsal/);
+assert.match(catalogueTransferScript, /raw_source_record_optimization_not_isolated_baseline_rehearsal/);
+assert.match(catalogueTransferScript, /RAW_SOURCE_RECORD_JSON_BATCH_MAX_BYTES/);
+assert.match(catalogueTransferScript, /rawSourceRecordInsertSql/);
+assert.match(catalogueTransferScript, /raw_source_record_indexes_deferred/);
+assert.match(catalogueTransferScript, /raw_source_record_indexes_restored/);
+assert.match(catalogueTransferScript, /raw_source_record_indexes_postcommit_verified/);
+assert.match(catalogueTransferScript, /rawSourceRecordBulkLoad/);
+assert.match(rawSourceRecordBulkLoad, /jsonb_populate_recordset/);
+assert.match(rawSourceRecordBulkLoad, /not index_entry\.indisprimary/);
+assert.match(rawSourceRecordBulkLoad, /constraint_entry\.conindid = index_class\.oid/);
+assert.match(rawSourceRecordBulkLoad, /drop index/);
+assert.match(rawSourceRecordBulkLoad, /comment on index/);
+assert.match(rawSourceRecordBulkLoad, /raw_source_record_index_fingerprint_mismatch/);
 assert.match(catalogueTransferScript, /complete_precommit_and_postcommit/);
 assert.match(
   catalogueTransferScript,
@@ -661,6 +683,16 @@ assert.ok(
   catalogueTransferScript.indexOf('foreignKeySafety.transactionGuard = await lockAndVerifyExternalCatalogueForeignKeys')
     < catalogueTransferScript.indexOf("recordTransferPhase('transactions_open'"),
   'external dependency tables must stay write-locked through the target transaction',
+);
+assert.ok(
+  catalogueTransferScript.indexOf("recordTransferPhase('transactions_open'")
+    < catalogueTransferScript.indexOf('const dropped = await dropRawSourceRecordIndexes'),
+  'raw source record indexes may only be deferred inside the guarded target transaction',
+);
+assert.ok(
+  catalogueTransferScript.indexOf('const restored = await restoreRawSourceRecordIndexes')
+    < catalogueTransferScript.indexOf('preCommitAcceptanceVerified = true'),
+  'all deferred raw source record indexes must be restored before commit acceptance',
 );
 assert.ok(
   catalogueTransferScript.indexOf('sourceAdoptedMigrationRows = await migrationRows')

@@ -58,6 +58,9 @@ jobs:
       - name: Install pinned dependencies
         run: npm ci
 
+      - name: Validate isolated bulk-load safety
+        run: node scripts/test-raw-source-record-bulk-load.mjs
+
       - name: Download and verify private baseline artifact
         shell: bash
         env:
@@ -149,7 +152,7 @@ jobs:
           STACKR_TRANSFER_MODE: commit
           STACKR_TRANSFER_CONFIRMATION: COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE
           STACKR_TRANSFER_TARGET_PROFILE: production-baseline-rehearsal
-          STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 900000
+          STACKR_TRANSFER_STATEMENT_TIMEOUT_MS: 1200000
           STACKR_TRANSFER_INITIAL_CONNECTION_ATTEMPTS: 6
           STACKR_TRANSFER_INITIAL_CONNECTION_RETRY_DELAY_MS: 20000
           STACKR_TRANSFER_REQUIRE_EMPTY_BASELINE_TARGET: 'true'
@@ -160,6 +163,7 @@ jobs:
           STACKR_TRANSFER_TARGET_MINIMUM_MIGRATION_COUNT: 106
           STACKR_TRANSFER_ROW_BATCH_SIZE: 1000
           STACKR_TRANSFER_DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT: 'true'
+          STACKR_TRANSFER_OPTIMIZE_RAW_SOURCE_RECORD_LOAD: 'true'
           STACKR_TRANSFER_TABLE_CONFIG: deploy/production-catalogue-promotion-tables.json
           STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn
           STACKR_TRANSFER_EVIDENCE_PATH: ${{ runner.temp }}/stackr-baseline-trial/catalogue-transfer-evidence.json

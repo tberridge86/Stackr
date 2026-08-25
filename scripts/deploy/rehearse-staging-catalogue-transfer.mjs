@@ -4,6 +4,16 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { connectPostgresWithRetry } from './postgres-initial-connection.mjs';
 import { normalizePostgresUrl } from './prepare-postgres-urls.mjs';
+import {
+  RAW_SOURCE_RECORD_JSON_BATCH_MAX_BYTES,
+  RAW_SOURCE_RECORD_TABLE,
+  captureRawSourceRecordIndexes,
+  dropRawSourceRecordIndexes,
+  rawSourceRecordInsertSql,
+  rawSourceRecordJsonBatches,
+  restoreRawSourceRecordIndexes,
+  verifyRawSourceRecordIndexes,
+} from './raw-source-record-bulk-load.mjs';
 
 const SOURCE_PROJECT_REF = process.env.SUPABASE_PROJECT_REF;
 const TARGET_PROJECT_REF = process.env.SUPABASE_RESTORE_PROJECT_REF;
@@ -36,6 +46,9 @@ const DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW =
   process.env.STACKR_TRANSFER_DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT ?? 'false';
 const DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT =
   DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW === 'true';
+const OPTIMIZE_RAW_SOURCE_RECORD_LOAD_RAW =
+  process.env.STACKR_TRANSFER_OPTIMIZE_RAW_SOURCE_RECORD_LOAD ?? 'false';
+const OPTIMIZE_RAW_SOURCE_RECORD_LOAD = OPTIMIZE_RAW_SOURCE_RECORD_LOAD_RAW === 'true';
 const TARGET_SCHEMA_STABILITY_SECONDS = Number(
   process.env.STACKR_TRANSFER_TARGET_STABILITY_SECONDS ?? 0,
 );
@@ -259,6 +272,9 @@ if (!['true', 'false'].includes(RESUME_FROM_VERIFIED_BASELINE_RAW)) {
 if (!['true', 'false'].includes(DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW)) {
   throw new Error('invalid_defer_target_digest_until_precommit');
 }
+if (!['true', 'false'].includes(OPTIMIZE_RAW_SOURCE_RECORD_LOAD_RAW)) {
+  throw new Error('invalid_optimize_raw_source_record_load');
+}
 if (!Number.isInteger(TARGET_SCHEMA_STABILITY_SECONDS)
     || TARGET_SCHEMA_STABILITY_SECONDS < 0
     || TARGET_SCHEMA_STABILITY_SECONDS > 300) {
@@ -321,6 +337,15 @@ if (DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT
       || TARGET_PROJECT_REF !== 'isfybjkwvcuqpqtmkujo')) {
   throw new Error('deferred_target_digest_not_isolated_baseline_rehearsal');
 }
+if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+    && (TRANSFER_MODE !== 'commit'
+      || TRANSFER_TARGET_PROFILE !== 'production-baseline-rehearsal'
+      || SOURCE_PROJECT_REF !== 'lmwfhvexfcoyeuoyrlco'
+      || TARGET_PROJECT_REF !== 'isfybjkwvcuqpqtmkujo'
+      || PRODUCTION_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu'
+      || !REQUIRE_EMPTY_BASELINE_TARGET)) {
+  throw new Error('raw_source_record_optimization_not_isolated_baseline_rehearsal');
+}
 if (TRANSFER_MODE === 'promote') {
   if (TRANSFER_CONFIRMATION !== 'PROMOTE VERIFIED CATALOGUE TO PRODUCTION') {
     throw new Error('production_promotion_confirmation_missing');
@@ -344,6 +369,10 @@ if (![
   'stackr-production-catalogue-promotion-v1.0.0',
 ].includes(tableConfig.schemaVersion)) {
   throw new Error('invalid_table_config_version');
+}
+if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+    && !tableConfig.tables.includes(RAW_SOURCE_RECORD_TABLE)) {
+  throw new Error('raw_source_record_optimization_table_missing');
 }
 
 function quoteIdentifier(value) {
@@ -391,6 +420,16 @@ function digestRows(rows) {
   const hash = createHash('sha256');
   for (const row of rows) hash.update(stableJson(row)).update('\n');
   return hash.digest('hex');
+}
+
+function rawSourceRecordIndexEvidence(snapshot) {
+  return {
+    count: snapshot.count,
+    names: snapshot.names,
+    fingerprint: snapshot.fingerprint,
+    primaryKeyName: snapshot.primaryKey.index_name,
+    primaryKeyDefinition: snapshot.primaryKey.definition,
+  };
 }
 
 function wait(milliseconds) {
@@ -1457,6 +1496,21 @@ function compatibleTableContract(tableName, sourceMetadata, targetMetadata) {
 
 async function insertRows(client, tableName, metadata, columnNames, rows) {
   if (!rows.length) return;
+  if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD && tableName === RAW_SOURCE_RECORD_TABLE) {
+    const statement = rawSourceRecordInsertSql(metadata, columnNames);
+    const batches = rawSourceRecordJsonBatches(rows, columnNames);
+    for (const batch of batches) {
+      try {
+        await client.query(statement, [batch.payload]);
+      } catch (error) {
+        throw new Error(
+          `transfer_insert_failed:${tableName}:json_batch_${batch.startOffset}`
+          + `:postgres_${error.code ?? 'unknown'}`,
+        );
+      }
+    }
+    return;
+  }
   const columnSql = columnNames.map(quoteIdentifier).join(', ');
   const selectedColumns = new Set(columnNames);
   const metadataByName = new Map(
@@ -1646,6 +1700,20 @@ let targetSchemaStability = null;
 let foreignKeySafety = null;
 let selfReferentialForeignKeySafety = null;
 let baselineTargetVerification = null;
+let rawSourceRecordIndexSnapshot = null;
+const rawSourceRecordBulkLoad = {
+  enabled: OPTIMIZE_RAW_SOURCE_RECORD_LOAD,
+  insertStrategy: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+    ? 'bounded_jsonb_recordset_with_transactional_index_rebuild'
+    : 'parameterized_values',
+  jsonBatchMaximumBytes: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+    ? RAW_SOURCE_RECORD_JSON_BATCH_MAX_BYTES
+    : null,
+  before: null,
+  afterDrop: null,
+  preCommit: null,
+  postCommit: null,
+};
 
 try {
   const sourceConnection = await connect(
@@ -1741,6 +1809,22 @@ try {
       + `:multiple_import_run_groups_${rawRecordDuplicates.multiple_import_run_group_count}`,
     );
   }
+  if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD) {
+    rawSourceRecordIndexSnapshot = await captureRawSourceRecordIndexes(target);
+    rawSourceRecordBulkLoad.before = rawSourceRecordIndexEvidence(
+      rawSourceRecordIndexSnapshot,
+    );
+    const dropped = await dropRawSourceRecordIndexes(target, rawSourceRecordIndexSnapshot);
+    rawSourceRecordBulkLoad.afterDrop = {
+      droppedCount: dropped.droppedCount,
+      primaryKeyName: dropped.primaryKey.index_name,
+      primaryKeyDefinition: dropped.primaryKey.definition,
+    };
+    recordTransferPhase('raw_source_record_indexes_deferred', {
+      indexCount: dropped.droppedCount,
+      primaryKeyName: dropped.primaryKey.index_name,
+    });
+  }
 
   for (const tableName of tableConfig.excludedEmptyStagingOnlyTables) {
     if (!await tableExists(source, tableName)) {
@@ -1829,6 +1913,17 @@ try {
       await insertRows(target, tableName, targetMetadata, contract.transferColumns, sourceRows);
     }
     await restartOwnedSequences(target, tableName, targetMetadata);
+    if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD && tableName === RAW_SOURCE_RECORD_TABLE) {
+      const restored = await restoreRawSourceRecordIndexes(
+        target,
+        rawSourceRecordIndexSnapshot,
+      );
+      rawSourceRecordBulkLoad.preCommit = rawSourceRecordIndexEvidence(restored);
+      recordTransferPhase('raw_source_record_indexes_restored', {
+        indexCount: restored.count,
+        fingerprint: restored.fingerprint,
+      });
+    }
     const sourceSha256 = sourceHash.digest('hex');
     const expectedFinalSha256 = expectedFinalHash
       ? expectedFinalHash.digest('hex')
@@ -2002,6 +2097,19 @@ try {
   targetTransactionOpen = true;
   recordTransferPhase('postfinalise_verification_snapshot_open');
 
+  if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD) {
+    const postCommitIndexes = await verifyRawSourceRecordIndexes(
+      target,
+      rawSourceRecordIndexSnapshot,
+      'postcommit',
+    );
+    rawSourceRecordBulkLoad.postCommit = rawSourceRecordIndexEvidence(postCommitIndexes);
+    recordTransferPhase('raw_source_record_indexes_postcommit_verified', {
+      indexCount: postCommitIndexes.count,
+      fingerprint: postCommitIndexes.fingerprint,
+    });
+  }
+
   selfReferentialForeignKeySafety.postFinalise =
     await verifySelfReferentialForeignKeysAfterFinalise(
       target,
@@ -2105,6 +2213,7 @@ try {
     targetDigestStrategy: DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT
       ? 'complete_precommit_and_postcommit'
       : 'per_table_transfer_then_complete_precommit_and_postcommit',
+    rawSourceRecordBulkLoad,
     targetSchemaStability,
     foreignKeySafety,
     selfReferentialForeignKeySafety,
