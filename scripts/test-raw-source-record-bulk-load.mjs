@@ -7,11 +7,16 @@ import { connectPostgresWithRetry } from './deploy/postgres-initial-connection.m
 import { normalizePostgresUrl } from './deploy/prepare-postgres-urls.mjs';
 import {
   assertRawSourceRecordJsonContract,
+  assertRawSourceRecordDirectCopyContract,
   assertRawSourceRecordCanonicalTableRlsEnabled,
   captureRawSourceRecordIndexes,
+  captureRawSourceRecordRlsState,
   copyRawSourceRecordRows,
+  copyRawSourceRecordRowsDirectToCanonical,
+  disableRawSourceRecordRlsForIsolatedDirectCopy,
   dropRawSourceRecordIndexes,
   rawSourceRecordCopyBatches,
+  rawSourceRecordDirectCopySql,
   rawSourceRecordCopySql,
   rawSourceRecordCopyStageCreateSql,
   rawSourceRecordCopyStageInsertSql,
@@ -19,6 +24,9 @@ import {
   resetRawSourceRecordCopyStagePreparation,
   rawSourceRecordInsertSql,
   rawSourceRecordJsonBatches,
+  rawSourceRecordRlsPolicyFingerprint,
+  resetRawSourceRecordDirectCopyPreparation,
+  restoreRawSourceRecordRlsAfterIsolatedDirectCopy,
   restoreRawSourceRecordIndexes,
   verifyRawSourceRecordIndexes,
 } from './deploy/raw-source-record-bulk-load.mjs';
@@ -69,6 +77,24 @@ assert.equal(
   'insert into "ingest"."raw_source_records" ("id", "external_id", "retrieved_at", "raw_payload", "internal_notes") select "id", "external_id", "retrieved_at", "raw_payload", "internal_notes" from "stackr_raw_source_records_copy_stage"',
 );
 assert.equal(rawSourceRecordCopyStageTruncateSql(), 'truncate "stackr_raw_source_records_copy_stage"');
+assert.equal(
+  rawSourceRecordDirectCopySql(metadata, columnNames),
+  'copy "ingest"."raw_source_records" ("id", "external_id", "retrieved_at", "raw_payload", "internal_notes") from stdin with (format text)',
+);
+assert.throws(
+  () => assertRawSourceRecordDirectCopyContract(
+    { columns: [{ ...columns[0], is_identity: 'YES' }] },
+    ['id'],
+  ),
+  /raw_source_record_direct_copy_identity_unsupported:id/,
+);
+assert.throws(
+  () => assertRawSourceRecordDirectCopyContract(
+    { columns: [{ ...columns[0], is_generated: 'ALWAYS' }] },
+    ['id'],
+  ),
+  /raw_source_record_direct_copy_generated_unsupported:id/,
+);
 
 const rows = [
   {
@@ -250,6 +276,230 @@ await assert.rejects(
     && /raw_source_record_copy_failed:copy_batch_0:postgres_23503/.test(error.message),
 );
 
+const directCopyOptions = {
+  allowIsolatedDirectCopy: true,
+  isolatedTargetVerified: true,
+  copyFrom: fakeCopyFrom,
+};
+const directCopyPolicies = [{
+  policy_name: 'ingest service role manages raw records',
+  policy_command: '*',
+  policy_roles: '{16384}',
+  policy_permissive: true,
+  using_expression: 'true',
+  check_expression: 'true',
+}];
+
+class FakeDirectCopyClient {
+  constructor({ copyError = null, reportedRowCount = undefined, policies = directCopyPolicies } = {}) {
+    this.copyError = copyError;
+    this.reportedRowCount = reportedRowCount;
+    this.policies = structuredClone(policies);
+    this.rowSecurityEnabled = true;
+    this.forceRowSecurityEnabled = false;
+    this.copyPayloads = [];
+    this.queries = [];
+  }
+
+  query(statement) {
+    this.queries.push(statement);
+    if (typeof statement === 'string') {
+      if (statement.startsWith('lock table ')) return Promise.resolve({ rows: [], rowCount: 0 });
+      if (statement.includes('table_class.relforcerowsecurity')) {
+        return Promise.resolve({
+          rows: [{
+            row_security_enabled: this.rowSecurityEnabled,
+            force_row_security_enabled: this.forceRowSecurityEnabled,
+          }],
+          rowCount: 1,
+        });
+      }
+      if (statement.includes('from pg_policy policy_entry')) {
+        return Promise.resolve({ rows: structuredClone(this.policies), rowCount: this.policies.length });
+      }
+      if (statement.startsWith('alter table "ingest"."raw_source_records" disable row level security')) {
+        this.rowSecurityEnabled = false;
+        return Promise.resolve({ rows: [], rowCount: 0 });
+      }
+      if (statement.startsWith('alter table "ingest"."raw_source_records" enable row level security')) {
+        this.rowSecurityEnabled = true;
+        return Promise.resolve({ rows: [], rowCount: 0 });
+      }
+      throw new Error(`unexpected_direct_copy_query:${statement}`);
+    }
+    const chunks = [];
+    const client = this;
+    const stream = new Writable({
+      write(chunk, _encoding, callback) {
+        chunks.push(Buffer.from(chunk));
+        if (client.copyError) callback(client.copyError);
+        else callback();
+      },
+      final(callback) {
+        client.copyPayloads.push(Buffer.concat(chunks));
+        if (client.reportedRowCount !== undefined) stream.rowCount = client.reportedRowCount;
+        callback();
+      },
+    });
+    return stream;
+  }
+}
+
+const directRlsClient = new FakeDirectCopyClient();
+const rlsStateBefore = await captureRawSourceRecordRlsState(directRlsClient);
+assert.equal(rlsStateBefore.rowSecurityEnabled, true);
+assert.equal(rlsStateBefore.forceRowSecurityEnabled, false);
+assert.equal(rlsStateBefore.policyCount, 1);
+assert.equal(
+  rlsStateBefore.policyFingerprint,
+  rawSourceRecordRlsPolicyFingerprint([{
+    name: 'ingest service role manages raw records',
+    command: '*',
+    roles: '{16384}',
+    permissive: true,
+    usingExpression: 'true',
+    checkExpression: 'true',
+  }]),
+);
+await assert.rejects(
+  () => disableRawSourceRecordRlsForIsolatedDirectCopy(directRlsClient),
+  /raw_source_record_direct_copy_isolated_target_confirmation_required/,
+);
+const directRlsSnapshot = await disableRawSourceRecordRlsForIsolatedDirectCopy(
+  directRlsClient,
+  directCopyOptions,
+);
+assert.equal(directRlsClient.rowSecurityEnabled, false);
+const restoredRlsState = await restoreRawSourceRecordRlsAfterIsolatedDirectCopy(
+  directRlsClient,
+  directRlsSnapshot,
+  directCopyOptions,
+);
+assert.equal(restoredRlsState.rowSecurityEnabled, true);
+
+const changedPolicyClient = new FakeDirectCopyClient();
+const changedPolicySnapshot = await disableRawSourceRecordRlsForIsolatedDirectCopy(
+  changedPolicyClient,
+  directCopyOptions,
+);
+changedPolicyClient.policies[0].check_expression = 'false';
+await assert.rejects(
+  () => restoreRawSourceRecordRlsAfterIsolatedDirectCopy(
+    changedPolicyClient,
+    changedPolicySnapshot,
+    directCopyOptions,
+  ),
+  /raw_source_record_direct_copy_rls_restore_verification_failed/,
+);
+assert.equal(changedPolicyClient.rowSecurityEnabled, true);
+resetRawSourceRecordDirectCopyPreparation(changedPolicyClient);
+
+const noPolicyClient = new FakeDirectCopyClient({ policies: [] });
+await assert.rejects(
+  () => disableRawSourceRecordRlsForIsolatedDirectCopy(noPolicyClient, directCopyOptions),
+  /raw_source_record_direct_copy_policies_missing/,
+);
+
+const directCopyClient = new FakeDirectCopyClient({ reportedRowCount: 1 });
+await assert.rejects(
+  () => copyRawSourceRecordRowsDirectToCanonical(
+    directCopyClient,
+    metadata,
+    columnNames,
+    copyRows,
+    directCopyOptions,
+  ),
+  /raw_source_record_direct_copy_rls_preparation_required/,
+);
+const directCopyRlsSnapshot = await disableRawSourceRecordRlsForIsolatedDirectCopy(
+  directCopyClient,
+  directCopyOptions,
+);
+const directCopyResult = await copyRawSourceRecordRowsDirectToCanonical(
+  directCopyClient,
+  metadata,
+  columnNames,
+  copyRows,
+  directCopyOptions,
+);
+assert.equal(directCopyResult.rowCount, 1);
+assert.equal(directCopyResult.reportedCopyRowCount, 1);
+assert.equal(directCopyClient.rowSecurityEnabled, false);
+const secondDirectCopyResult = await copyRawSourceRecordRowsDirectToCanonical(
+  directCopyClient,
+  metadata,
+  columnNames,
+  copyRows,
+  directCopyOptions,
+);
+assert.equal(secondDirectCopyResult.rowCount, 1);
+assert.equal(directCopyClient.copyPayloads.length, 2);
+assert.match(directCopyClient.queries[0], /^lock table "ingest"."raw_source_records" in access exclusive mode$/);
+await restoreRawSourceRecordRlsAfterIsolatedDirectCopy(
+  directCopyClient,
+  directCopyRlsSnapshot,
+  directCopyOptions,
+);
+assert.equal(directCopyClient.rowSecurityEnabled, true);
+await assert.rejects(
+  () => copyRawSourceRecordRowsDirectToCanonical(
+    directCopyClient,
+    metadata,
+    columnNames,
+    copyRows,
+    directCopyOptions,
+  ),
+  /raw_source_record_direct_copy_rls_preparation_required/,
+);
+assert.equal(
+  directCopyClient.queries.filter((query) => typeof query === 'string'
+    && query.startsWith('lock table "ingest"."raw_source_records"')).length,
+  1,
+);
+assert.equal(
+  directCopyClient.queries.filter((query) => typeof query === 'string'
+    && query.startsWith('alter table "ingest"."raw_source_records"')).length,
+  2,
+);
+assert.ok(directCopyClient.queries.some((query) => query?.copySql === rawSourceRecordDirectCopySql(metadata, columnNames)));
+
+const directCopyMismatchClient = new FakeDirectCopyClient({ reportedRowCount: 2 });
+await disableRawSourceRecordRlsForIsolatedDirectCopy(
+  directCopyMismatchClient,
+  directCopyOptions,
+);
+await assert.rejects(
+  () => copyRawSourceRecordRowsDirectToCanonical(
+    directCopyMismatchClient,
+    metadata,
+    columnNames,
+    copyRows,
+    directCopyOptions,
+  ),
+  /raw_source_record_direct_copy_failed:copy_batch_0:postgres_unknown/,
+);
+assert.equal(directCopyMismatchClient.rowSecurityEnabled, false);
+resetRawSourceRecordDirectCopyPreparation(directCopyMismatchClient);
+
+const directCopyErrorClient = new FakeDirectCopyClient({ copyError: copyDatabaseError });
+await disableRawSourceRecordRlsForIsolatedDirectCopy(
+  directCopyErrorClient,
+  directCopyOptions,
+);
+await assert.rejects(
+  () => copyRawSourceRecordRowsDirectToCanonical(
+    directCopyErrorClient,
+    metadata,
+    columnNames,
+    copyRows,
+    directCopyOptions,
+  ),
+  (error) => error.code === '23503'
+    && /raw_source_record_direct_copy_failed:copy_batch_0:postgres_23503/.test(error.message),
+);
+assert.equal(directCopyErrorClient.rowSecurityEnabled, false);
+resetRawSourceRecordDirectCopyPreparation(directCopyErrorClient);
+
 const indexFixtures = [
   {
     schema_name: 'ingest',
@@ -389,8 +639,17 @@ async function runPostgresCopyIntegration() {
   try {
     await client.query('begin');
     transactionOpen = true;
-    await client.query("set local lock_timeout = '5s'");
+    await client.query("set local lock_timeout = '30s'");
     await assertRawSourceRecordCanonicalTableRlsEnabled(client);
+    const integrationRlsSnapshot =
+      await disableRawSourceRecordRlsForIsolatedDirectCopy(client, directCopyOptions);
+    const integrationRlsRestored =
+      await restoreRawSourceRecordRlsAfterIsolatedDirectCopy(
+        client,
+        integrationRlsSnapshot,
+        directCopyOptions,
+      );
+    assert.deepEqual(integrationRlsRestored, integrationRlsSnapshot);
     await client.query(rawSourceRecordCopyStageCreateSql(metadata, columnNames));
 
     const payloadJson = '{"large_integer":900719925474099312345,"nested":{"enabled":true}}';
@@ -433,9 +692,10 @@ async function runPostgresCopyIntegration() {
     transactionOpen = false;
   } finally {
     if (transactionOpen) await client.query('rollback').catch(() => {});
+    resetRawSourceRecordDirectCopyPreparation(client);
     await client.end();
   }
-  process.stdout.write('Isolated PostgreSQL COPY round-trip passed and rolled back.\n');
+  process.stdout.write('Isolated PostgreSQL COPY and RLS guard passed and rolled back.\n');
 }
 
 if (process.argv.includes('--postgres-integration')) {

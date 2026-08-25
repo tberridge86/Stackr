@@ -504,6 +504,10 @@ assert.match(
   baselineReplayJob,
   /STACKR_TRANSFER_OPTIMIZE_RAW_SOURCE_RECORD_LOAD: 'true'/,
 );
+assert.match(
+  baselineReplayJob,
+  /STACKR_TRANSFER_ALLOW_ISOLATED_DIRECT_RAW_COPY: 'true'/,
+);
 assert.match(baselineMigrationTrialWorkflow, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
 assert.match(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES: en,ja,zh-tw,zh-cn/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /STACKR_REQUIRED_CATALOGUE_LANGUAGES:[^\n]*\bko\b/);
@@ -560,6 +564,7 @@ assert.match(catalogueTransferScript, /async function digestTable/);
 assert.match(catalogueTransferScript, /DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT/);
 assert.match(catalogueTransferScript, /deferred_target_digest_not_isolated_baseline_rehearsal/);
 assert.match(catalogueTransferScript, /raw_source_record_optimization_not_isolated_baseline_rehearsal/);
+assert.match(catalogueTransferScript, /raw_source_record_direct_copy_not_isolated_baseline_rehearsal/);
 assert.match(catalogueTransferScript, /RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES/);
 assert.match(catalogueTransferScript, /copyRawSourceRecordRows/);
 assert.match(catalogueTransferScript, /preserveJsonbText/);
@@ -567,10 +572,16 @@ assert.match(catalogueTransferScript, /udt_name === 'jsonb'/);
 assert.match(catalogueTransferScript, /raw_source_record_indexes_deferred/);
 assert.match(catalogueTransferScript, /raw_source_record_indexes_restored/);
 assert.match(catalogueTransferScript, /raw_source_record_indexes_postcommit_verified/);
+assert.match(catalogueTransferScript, /raw_source_record_direct_copy_rls_postcommit_mismatch/);
 assert.match(catalogueTransferScript, /rawSourceRecordBulkLoad/);
 assert.match(rawSourceRecordBulkLoad, /from stdin with \(format text\)/);
 assert.match(rawSourceRecordBulkLoad, /raw_source_record_copy_rls_not_enabled/);
 assert.match(rawSourceRecordBulkLoad, /create temporary table/);
+assert.match(rawSourceRecordBulkLoad, /lock table[^\n]+access exclusive mode/);
+assert.match(rawSourceRecordBulkLoad, /disable row level security/);
+assert.match(rawSourceRecordBulkLoad, /enable row level security/);
+assert.match(rawSourceRecordBulkLoad, /raw_source_record_direct_copy_rls_restore_verification_failed/);
+assert.doesNotMatch(rawSourceRecordBulkLoad, /session_replication_role|disable trigger|drop constraint/);
 assert.match(rawSourceRecordBulkLoad, /not index_entry\.indisprimary/);
 assert.match(rawSourceRecordBulkLoad, /constraint_entry\.conindid = index_class\.oid/);
 assert.match(rawSourceRecordBulkLoad, /drop index/);

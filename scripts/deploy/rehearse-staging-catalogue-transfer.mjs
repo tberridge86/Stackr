@@ -8,9 +8,14 @@ import {
   RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES,
   RAW_SOURCE_RECORD_TABLE,
   captureRawSourceRecordIndexes,
+  captureRawSourceRecordRlsState,
   copyRawSourceRecordRows,
+  copyRawSourceRecordRowsDirectToCanonical,
+  disableRawSourceRecordRlsForIsolatedDirectCopy,
   dropRawSourceRecordIndexes,
+  resetRawSourceRecordDirectCopyPreparation,
   resetRawSourceRecordCopyStagePreparation,
+  restoreRawSourceRecordRlsAfterIsolatedDirectCopy,
   restoreRawSourceRecordIndexes,
   verifyRawSourceRecordIndexes,
 } from './raw-source-record-bulk-load.mjs';
@@ -49,6 +54,9 @@ const DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT =
 const OPTIMIZE_RAW_SOURCE_RECORD_LOAD_RAW =
   process.env.STACKR_TRANSFER_OPTIMIZE_RAW_SOURCE_RECORD_LOAD ?? 'false';
 const OPTIMIZE_RAW_SOURCE_RECORD_LOAD = OPTIMIZE_RAW_SOURCE_RECORD_LOAD_RAW === 'true';
+const ALLOW_ISOLATED_DIRECT_RAW_COPY_RAW =
+  process.env.STACKR_TRANSFER_ALLOW_ISOLATED_DIRECT_RAW_COPY ?? 'false';
+const ALLOW_ISOLATED_DIRECT_RAW_COPY = ALLOW_ISOLATED_DIRECT_RAW_COPY_RAW === 'true';
 const TARGET_SCHEMA_STABILITY_SECONDS = Number(
   process.env.STACKR_TRANSFER_TARGET_STABILITY_SECONDS ?? 0,
 );
@@ -275,6 +283,9 @@ if (!['true', 'false'].includes(DEFER_TARGET_DIGEST_UNTIL_PRECOMMIT_RAW)) {
 if (!['true', 'false'].includes(OPTIMIZE_RAW_SOURCE_RECORD_LOAD_RAW)) {
   throw new Error('invalid_optimize_raw_source_record_load');
 }
+if (!['true', 'false'].includes(ALLOW_ISOLATED_DIRECT_RAW_COPY_RAW)) {
+  throw new Error('invalid_allow_isolated_direct_raw_copy');
+}
 if (!Number.isInteger(TARGET_SCHEMA_STABILITY_SECONDS)
     || TARGET_SCHEMA_STABILITY_SECONDS < 0
     || TARGET_SCHEMA_STABILITY_SECONDS > 300) {
@@ -345,6 +356,16 @@ if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD
       || PRODUCTION_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu'
       || !REQUIRE_EMPTY_BASELINE_TARGET)) {
   throw new Error('raw_source_record_optimization_not_isolated_baseline_rehearsal');
+}
+if (ALLOW_ISOLATED_DIRECT_RAW_COPY
+    && (!OPTIMIZE_RAW_SOURCE_RECORD_LOAD
+      || TRANSFER_MODE !== 'commit'
+      || TRANSFER_TARGET_PROFILE !== 'production-baseline-rehearsal'
+      || SOURCE_PROJECT_REF !== 'lmwfhvexfcoyeuoyrlco'
+      || TARGET_PROJECT_REF !== 'isfybjkwvcuqpqtmkujo'
+      || PRODUCTION_PROJECT_REF !== 'oakdbbzdqwurpjnoqhmu'
+      || !REQUIRE_EMPTY_BASELINE_TARGET)) {
+  throw new Error('raw_source_record_direct_copy_not_isolated_baseline_rehearsal');
 }
 if (TRANSFER_MODE === 'promote') {
   if (TRANSFER_CONFIRMATION !== 'PROMOTE VERIFIED CATALOGUE TO PRODUCTION') {
@@ -1525,10 +1546,30 @@ function compatibleTableContract(tableName, sourceMetadata, targetMetadata) {
   };
 }
 
+function isolatedDirectRawCopyOptions() {
+  return {
+    allowIsolatedDirectCopy: ALLOW_ISOLATED_DIRECT_RAW_COPY,
+    isolatedTargetVerified: baselineTargetVerification?.required === true
+      && baselineTargetVerification.emptyTableCount === tableConfig.tables.length
+      && SOURCE_PROJECT_REF === 'lmwfhvexfcoyeuoyrlco'
+      && TARGET_PROJECT_REF === 'isfybjkwvcuqpqtmkujo'
+      && PRODUCTION_PROJECT_REF === 'oakdbbzdqwurpjnoqhmu',
+  };
+}
+
 async function insertRows(client, tableName, metadata, columnNames, rows) {
   if (!rows.length) return null;
   if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD && tableName === RAW_SOURCE_RECORD_TABLE) {
     try {
+      if (ALLOW_ISOLATED_DIRECT_RAW_COPY) {
+        return await copyRawSourceRecordRowsDirectToCanonical(
+          client,
+          metadata,
+          columnNames,
+          rows,
+          isolatedDirectRawCopyOptions(),
+        );
+      }
       return await copyRawSourceRecordRows(client, metadata, columnNames, rows);
     } catch (error) {
       throw new Error(
@@ -1727,10 +1768,13 @@ let foreignKeySafety = null;
 let selfReferentialForeignKeySafety = null;
 let baselineTargetVerification = null;
 let rawSourceRecordIndexSnapshot = null;
+let rawSourceRecordDirectCopyRlsSnapshot = null;
 const rawSourceRecordBulkLoad = {
   enabled: OPTIMIZE_RAW_SOURCE_RECORD_LOAD,
   insertStrategy: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
-    ? 'bounded_copy_to_transactional_stage_then_insert_with_index_rebuild'
+    ? ALLOW_ISOLATED_DIRECT_RAW_COPY
+      ? 'bounded_direct_copy_with_transactional_rls_restore_and_index_rebuild'
+      : 'bounded_copy_to_transactional_stage_then_insert_with_index_rebuild'
     : 'parameterized_values',
   copyBatchMaximumBytes: OPTIMIZE_RAW_SOURCE_RECORD_LOAD
     ? RAW_SOURCE_RECORD_COPY_BATCH_MAX_BYTES
@@ -1738,8 +1782,13 @@ const rawSourceRecordBulkLoad = {
   copiedRowCount: 0,
   copyBatchCount: 0,
   copyPayloadBytes: 0,
+  reportedCopyRowCount: ALLOW_ISOLATED_DIRECT_RAW_COPY ? 0 : null,
+  reportedCopyRowCountComplete: ALLOW_ISOLATED_DIRECT_RAW_COPY ? true : null,
   loadDurationMs: 0,
   rawTransferDurationMs: null,
+  rlsBefore: null,
+  rlsAfter: null,
+  rlsPostCommit: null,
   before: null,
   afterDrop: null,
   preCommit: null,
@@ -1929,6 +1978,19 @@ try {
     const rawCopyStartedAt = tableName === RAW_SOURCE_RECORD_TABLE ? Date.now() : null;
     const preserveRawJsonbText = OPTIMIZE_RAW_SOURCE_RECORD_LOAD
       && tableName === RAW_SOURCE_RECORD_TABLE;
+    if (ALLOW_ISOLATED_DIRECT_RAW_COPY && tableName === RAW_SOURCE_RECORD_TABLE) {
+      rawSourceRecordDirectCopyRlsSnapshot =
+        await disableRawSourceRecordRlsForIsolatedDirectCopy(
+          target,
+          isolatedDirectRawCopyOptions(),
+        );
+      rawSourceRecordBulkLoad.rlsBefore = rawSourceRecordDirectCopyRlsSnapshot;
+      recordTransferPhase('raw_source_record_direct_copy_prepared', {
+        rowSecurityEnabledBefore: rawSourceRecordDirectCopyRlsSnapshot.rowSecurityEnabled,
+        policyCount: rawSourceRecordDirectCopyRlsSnapshot.policyCount,
+        policyFingerprint: rawSourceRecordDirectCopyRlsSnapshot.policyFingerprint,
+      });
+    }
     for await (const sourceRows of readRowBatches(
       source,
       tableName,
@@ -1958,6 +2020,14 @@ try {
         rawSourceRecordBulkLoad.copiedRowCount += insertResult.rowCount;
         rawSourceRecordBulkLoad.copyBatchCount += insertResult.batchCount;
         rawSourceRecordBulkLoad.copyPayloadBytes += insertResult.payloadBytes;
+        if (ALLOW_ISOLATED_DIRECT_RAW_COPY) {
+          if (insertResult.reportedCopyRowCount === null) {
+            rawSourceRecordBulkLoad.reportedCopyRowCountComplete = false;
+          } else {
+            rawSourceRecordBulkLoad.reportedCopyRowCount +=
+              insertResult.reportedCopyRowCount;
+          }
+        }
         if (sourceRowCount === sourceRows.length || sourceRowCount % 25_000 === 0) {
           recordTransferPhase('raw_source_record_copy_progress', {
             copiedRowCount: rawSourceRecordBulkLoad.copiedRowCount,
@@ -1969,6 +2039,29 @@ try {
     }
     if (rawCopyStartedAt !== null) {
       rawSourceRecordBulkLoad.rawTransferDurationMs = Date.now() - rawCopyStartedAt;
+    }
+    if (ALLOW_ISOLATED_DIRECT_RAW_COPY && tableName === RAW_SOURCE_RECORD_TABLE) {
+      rawSourceRecordBulkLoad.rlsAfter =
+        await restoreRawSourceRecordRlsAfterIsolatedDirectCopy(
+          target,
+          rawSourceRecordDirectCopyRlsSnapshot,
+          isolatedDirectRawCopyOptions(),
+        );
+      rawSourceRecordDirectCopyRlsSnapshot = null;
+      if (rawSourceRecordBulkLoad.reportedCopyRowCountComplete
+          && rawSourceRecordBulkLoad.reportedCopyRowCount
+            !== rawSourceRecordBulkLoad.copiedRowCount) {
+        throw new Error('raw_source_record_direct_copy_total_count_mismatch');
+      }
+      recordTransferPhase('raw_source_record_direct_copy_protection_restored', {
+        rowSecurityEnabledAfter: rawSourceRecordBulkLoad.rlsAfter.rowSecurityEnabled,
+        policyCount: rawSourceRecordBulkLoad.rlsAfter.policyCount,
+        policyFingerprint: rawSourceRecordBulkLoad.rlsAfter.policyFingerprint,
+        copiedRowCount: rawSourceRecordBulkLoad.copiedRowCount,
+        reportedCopyRowCount: rawSourceRecordBulkLoad.reportedCopyRowCount,
+        reportedCopyRowCountComplete:
+          rawSourceRecordBulkLoad.reportedCopyRowCountComplete,
+      });
     }
     await restartOwnedSequences(target, tableName, targetMetadata);
     if (OPTIMIZE_RAW_SOURCE_RECORD_LOAD && tableName === RAW_SOURCE_RECORD_TABLE) {
@@ -2156,6 +2249,7 @@ try {
   else await target.query('rollback');
   targetTransactionOpen = false;
   resetRawSourceRecordCopyStagePreparation(target);
+  resetRawSourceRecordDirectCopyPreparation(target);
   recordTransferPhase('target_finalise_returned', { action: TRANSFER_MODE !== 'rehearse' ? 'commit' : 'rollback' });
 
   await target.query('begin transaction isolation level repeatable read read only');
@@ -2173,6 +2267,21 @@ try {
       indexCount: postCommitIndexes.count,
       fingerprint: postCommitIndexes.fingerprint,
     });
+    if (ALLOW_ISOLATED_DIRECT_RAW_COPY) {
+      rawSourceRecordBulkLoad.rlsPostCommit =
+        await captureRawSourceRecordRlsState(target);
+      if (stableJson(rawSourceRecordBulkLoad.rlsPostCommit)
+          !== stableJson(rawSourceRecordBulkLoad.rlsBefore)) {
+        throw new Error('raw_source_record_direct_copy_rls_postcommit_mismatch');
+      }
+      recordTransferPhase('raw_source_record_direct_copy_postcommit_protection_verified', {
+        rowSecurityEnabled:
+          rawSourceRecordBulkLoad.rlsPostCommit.rowSecurityEnabled,
+        policyCount: rawSourceRecordBulkLoad.rlsPostCommit.policyCount,
+        policyFingerprint:
+          rawSourceRecordBulkLoad.rlsPostCommit.policyFingerprint,
+      });
+    }
   }
 
   selfReferentialForeignKeySafety.postFinalise =
@@ -2358,6 +2467,7 @@ try {
 } finally {
   if (targetTransactionOpen && target) await target.query('rollback').catch(() => {});
   if (target) resetRawSourceRecordCopyStagePreparation(target);
+  if (target) resetRawSourceRecordDirectCopyPreparation(target);
   if (sourceTransactionOpen && source) await source.query('rollback').catch(() => {});
   await Promise.allSettled([
     source?.end() ?? Promise.resolve(),
