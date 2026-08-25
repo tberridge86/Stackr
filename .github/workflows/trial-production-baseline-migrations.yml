@@ -134,7 +134,7 @@ jobs:
             if restore_database "$attempt_log"; then
               break
             fi
-            if ! grep -Eq 'ECHECKOUTTIMEOUT|EAUTHQUERY.*authentication query failed: connection to database not available|authentication did not complete within|unable to check out connection|connection.*timed out|server closed the connection unexpectedly' "$attempt_log"; then
+            if ! grep -Eq 'ECHECKOUTTIMEOUT|EAUTHQUERY.*(authentication query failed: connection to database not available|auth_query secret check timed out)|authentication did not complete within|unable to check out connection|connection.*timed out|server closed the connection unexpectedly' "$attempt_log"; then
               echo "::error::Isolated restore failed with a non-retryable database error."
               exit 1
             fi

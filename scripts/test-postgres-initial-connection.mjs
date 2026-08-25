@@ -20,6 +20,10 @@ assert.equal(isRetryableInitialPostgresConnectionError({
 }), true);
 assert.equal(isRetryableInitialPostgresConnectionError({
   code: 'XX000',
+  message: '(EAUTHQUERY) auth_query secret check timed out',
+}), true);
+assert.equal(isRetryableInitialPostgresConnectionError({
+  code: 'XX000',
   message: 'unrelated internal database error',
 }), false);
 assert.equal(isRetryableInitialPostgresConnectionError({
@@ -131,7 +135,7 @@ assert.equal(exhaustedAttempts, 3);
 
 console.log(JSON.stringify({
   ok: true,
-  retryableErrorsTested: 4,
+  retryableErrorsTested: 5,
   nonRetryableErrorsTested: 3,
   boundedRetryAttemptsTested: 3,
 }));

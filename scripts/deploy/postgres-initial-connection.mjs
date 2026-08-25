@@ -14,7 +14,7 @@ export function isRetryableInitialPostgresConnectionError(error) {
       && /unable to check out connection/i.test(message))
     || /authentication did not complete within \d+ms(?: in Session mode)?/i.test(message)
     || (code === 'XX000'
-      && /\bEAUTHQUERY\b.*authentication query failed: connection to database not available/i
+      && /\bEAUTHQUERY\b.*(?:authentication query failed: connection to database not available|auth_query secret check timed out)/i
         .test(message));
 }
 
