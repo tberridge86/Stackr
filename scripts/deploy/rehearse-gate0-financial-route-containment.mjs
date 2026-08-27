@@ -33,6 +33,7 @@ const result = {
   appliedInsideTransaction: {},
   afterRollback: {},
   fullPostApplyProof: {},
+  transactionAttestation: {},
   rollbackVerified: false,
   errors: [],
 };
@@ -78,6 +79,18 @@ async function readRemoteHistory(client) {
     order by version
   `);
   return history.rows;
+}
+
+async function readTransactionIdentity(client) {
+  const identity = await client.query(`
+    select
+      pg_catalog.pg_backend_pid()::int as backend_pid,
+      pg_catalog.txid_current()::text as transaction_id
+  `);
+  if (identity.rowCount !== 1 || identity.rows.length !== 1) {
+    throw new Error('gate0_rehearsal_transaction_identity_invalid');
+  }
+  return identity.rows[0];
 }
 
 async function readGate0Snapshot(client) {
@@ -520,6 +533,8 @@ if (result.errors.length === 0) {
     await client.query('begin isolation level repeatable read');
     transactionOpen = true;
     transactionStarted = true;
+    const transactionIdentityBefore = await readTransactionIdentity(client);
+    result.transactionAttestation.before = transactionIdentityBefore;
     before = await readGate0Snapshot(client);
     beforeCatalog = await readCatalogSnapshot(client);
     safeTradeRowsBefore = await readSafeTradeRowDigests(client);
@@ -555,13 +570,25 @@ if (result.errors.length === 0) {
 
         const fullCounts = await readFinancialStateCounts(client);
         const fullCatalog = await readCatalogSnapshot(client);
+        const transactionIdentityAfterCatalog = await readTransactionIdentity(client);
+        result.transactionAttestation.afterCatalog = transactionIdentityAfterCatalog;
+        assertEqual(
+          transactionIdentityAfterCatalog.backend_pid,
+          transactionIdentityBefore.backend_pid,
+          'gate0_rehearsal_catalog_backend_changed',
+        );
+        assertEqual(
+          transactionIdentityAfterCatalog.transaction_id,
+          transactionIdentityBefore.transaction_id,
+          'gate0_rehearsal_catalog_transaction_changed',
+        );
         const catalogErrors = verifyCatalog(fullCatalog);
         verifyFullFinancialCounts(fullCounts);
-        result.errors.push(...catalogErrors.map((error) => (
-          `gate0_rehearsal_${error}`
-        )));
-        let probeErrors = [];
+        result.errors.push(...catalogErrors.map((error) => `gate0_rehearsal_${error}`));
+        let behaviorProbeRan = false;
+        let probeErrors = null;
         if (catalogErrors.length === 0) {
+          behaviorProbeRan = true;
           probeErrors = await runRollbackOnlyWriteProbe(client, {
             outerTransaction: true,
           });
@@ -572,7 +599,8 @@ if (result.errors.length === 0) {
         result.fullPostApplyProof = {
           catalogDigest: stableCatalogDigest(fullCatalog),
           catalogErrorCount: catalogErrors.length,
-          behaviorProbeErrorCount: probeErrors.length,
+          behaviorProbeRan,
+          behaviorProbeErrorCount: behaviorProbeRan ? probeErrors.length : null,
           financialStateCounts: fullCounts,
           safeTradeRowDigests: safeTradeRowsApplied,
         };

@@ -23,7 +23,9 @@ import {
 import {
   expectedProtectedFunctionAclMatrix,
   findUnsafeFinancialStateCounts,
+  hasExactPolicyRoles,
   requiresPreApplySenderOwnershipBaseline,
+  verifyAuthenticatedProfileAclMatrix,
   verifyGlobalFunctionDefaultContracts,
   verifyCatalog,
   verifyCatalogCardTradeAssociations,
@@ -41,6 +43,58 @@ const gate0Migration = read(gate0MigrationPath);
 const emergencyMigration = readFileSync(emergencyMigrationPath);
 const liveEmergencyOverride = readFileSync(
   'supabase/staging-migrations/overrides/20260827093108_emergency_client_write_containment.sql',
+);
+
+assert.equal(
+  hasExactPolicyRoles({ roles: ['authenticated'] }, ['authenticated']),
+  true,
+  'text[] policy roles must be accepted as a parsed array',
+);
+assert.equal(
+  hasExactPolicyRoles({ roles: '{authenticated}' }, ['authenticated']),
+  false,
+  'an unparsed name[] driver string must fail closed rather than mimic an array',
+);
+assert.equal(
+  hasExactPolicyRoles(
+    { roles: ['authenticated', 'anon'] },
+    ['anon', 'authenticated'],
+  ),
+  true,
+  'policy role order is not semantically significant',
+);
+
+const safeAuthenticatedProfileAcl = [
+  ['id', 'UPDATE'],
+  ['email', 'INSERT'],
+  ['email', 'UPDATE'],
+  ['role', 'INSERT'],
+  ['role', 'UPDATE'],
+  ['stripe_account_id', 'INSERT'],
+  ['stripe_account_id', 'UPDATE'],
+].map(([column_name, privilege_name]) => ({
+  column_name,
+  privilege_name,
+  allowed: false,
+}));
+assert.deepEqual(
+  verifyAuthenticatedProfileAclMatrix(safeAuthenticatedProfileAcl),
+  [],
+);
+assert.ok(
+  verifyAuthenticatedProfileAclMatrix(
+    safeAuthenticatedProfileAcl.map((row) => (
+      row.column_name === 'role' && row.privilege_name === 'UPDATE'
+        ? { ...row, allowed: true }
+        : row
+    )),
+  ).includes('gate0_authenticated_profile_column_privilege:role:UPDATE'),
+  'authenticated role self-promotion must fail the post-apply ACL proof',
+);
+assert.ok(
+  verifyAuthenticatedProfileAclMatrix(safeAuthenticatedProfileAcl.slice(1))
+    .includes('gate0_authenticated_profile_acl_matrix_incomplete'),
+  'a missing protected profile ACL row must fail closed',
 );
 
 const deniedTransactionStatements = [
@@ -512,6 +566,7 @@ function verifyCardTradeAssociationCatalog(overrides = {}) {
     ],
     tablePrivileges: [],
     columnPrivileges: [],
+    authenticatedProfileColumnPrivileges: safeAuthenticatedProfileAcl,
     safeTradeOfferColumnPrivileges: [],
     sequencePrivileges: [],
     sellerReceiptPrivileges: [],
@@ -790,6 +845,21 @@ assert.doesNotMatch(
   'orthogonal hostile probes require candidate cards unowned in every set',
 );
 assert.match(liveVerifier, /begin read only/);
+assert.match(
+  liveVerifier,
+  /roles::text\[\] AS roles/,
+  'pg policy name[] roles must be cast to a driver-parsed text[]',
+);
+assert.match(liveVerifier, /Array\.isArray\(policy\?\.roles\)/);
+assert.match(liveVerifier, /authenticatedProfileColumnPrivileges/);
+assert.match(liveVerifier, /\('id', 'UPDATE'\)/);
+assert.match(liveVerifier, /\('email', 'INSERT'\)/);
+assert.match(liveVerifier, /\('email', 'UPDATE'\)/);
+assert.match(liveVerifier, /\('role', 'INSERT'\)/);
+assert.match(liveVerifier, /\('role', 'UPDATE'\)/);
+assert.match(liveVerifier, /client_profile_id_update/);
+assert.match(liveVerifier, /client_profile_email_update/);
+assert.match(liveVerifier, /client_profile_role_update/);
 assert.match(liveVerifier, /rollbackOnlyWriteProbe/);
 assert.match(liveVerifier, /client_unentitled_active_listing/);
 assert.match(liveVerifier, /client_unentitled_seller_inventory/);
@@ -905,6 +975,15 @@ assert.match(rehearsal, /findUnsafeTopLevelMigrationStatements\(migrationSql\)/)
 assert.match(rehearsal, /await client\.query\(migrationSql\)/);
 assert.match(rehearsal, /runRollbackOnlyWriteProbe\(client,[\s\S]+outerTransaction: true/);
 assert.match(rehearsal, /verifyCatalog\(fullCatalog\)/);
+assert.match(rehearsal, /readTransactionIdentity\(client\)/);
+assert.match(rehearsal, /gate0_rehearsal_catalog_backend_changed/);
+assert.match(rehearsal, /gate0_rehearsal_catalog_transaction_changed/);
+assert.match(rehearsal, /behaviorProbeRan/);
+assert.match(
+  rehearsal,
+  /behaviorProbeErrorCount: behaviorProbeRan \? probeErrors\.length : null/,
+  'a skipped behavior probe must never be reported as zero errors',
+);
 assert.match(rehearsal, /gate0_rehearsal_rollback_catalog_drift/);
 assert.match(rehearsal, /await client\.query\('rollback'\)/);
 assert.match(rehearsal, /gate0_rehearsal_rollback_state_drift/);

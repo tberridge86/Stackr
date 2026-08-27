@@ -127,6 +127,38 @@ function mapBy(rows, rowKey) {
   return new Map(rows.map((row) => [rowKey(row), row]));
 }
 
+export function hasExactPolicyRoles(policy, expectedRoles) {
+  if (!Array.isArray(policy?.roles) || !Array.isArray(expectedRoles)) return false;
+  if (policy.roles.length !== expectedRoles.length) return false;
+  const actual = [...policy.roles].sort();
+  const expected = [...expectedRoles].sort();
+  return actual.every((role, index) => role === expected[index]);
+}
+
+const EXPECTED_AUTHENTICATED_PROFILE_ACL = new Set([
+  'id:UPDATE',
+  'email:INSERT',
+  'email:UPDATE',
+  'role:INSERT',
+  'role:UPDATE',
+  'stripe_account_id:INSERT',
+  'stripe_account_id:UPDATE',
+]);
+
+export function verifyAuthenticatedProfileAclMatrix(rows) {
+  const errors = [];
+  const acl = mapBy(rows ?? [], (row) => `${row.column_name}:${row.privilege_name}`);
+  if (acl.size !== EXPECTED_AUTHENTICATED_PROFILE_ACL.size) {
+    errors.push('gate0_authenticated_profile_acl_matrix_incomplete');
+  }
+  for (const contract of EXPECTED_AUTHENTICATED_PROFILE_ACL) {
+    if (acl.get(contract)?.allowed !== false) {
+      errors.push(`gate0_authenticated_profile_column_privilege:${contract}`);
+    }
+  }
+  return errors;
+}
+
 function canonicalJson(value) {
   if (Array.isArray(value)) {
     return value
@@ -786,7 +818,7 @@ export async function readCatalogSnapshot(client) {
       tablename as table_name,
       policyname as policy_name,
       permissive,
-      roles,
+      roles::text[] AS roles,
       cmd,
       qual,
       with_check
@@ -888,6 +920,29 @@ export async function readCatalogSnapshot(client) {
       ) as allowed
     from targets
     cross join roles
+  `);
+
+  const authenticatedProfileColumnPrivileges = await client.query(`
+    with targets(column_name, privilege_name) as (
+      values
+        ('id', 'UPDATE'),
+        ('email', 'INSERT'),
+        ('email', 'UPDATE'),
+        ('role', 'INSERT'),
+        ('role', 'UPDATE'),
+        ('stripe_account_id', 'INSERT'),
+        ('stripe_account_id', 'UPDATE')
+    )
+    select
+      targets.column_name,
+      targets.privilege_name,
+      pg_catalog.has_column_privilege(
+        'authenticated',
+        'public.profiles',
+        targets.column_name,
+        targets.privilege_name
+      ) as allowed
+    from targets
   `);
 
   const safeTradeOfferColumnPrivileges = await client.query(`
@@ -1176,6 +1231,8 @@ export async function readCatalogSnapshot(client) {
     policies: policies.rows,
     tablePrivileges: tablePrivileges.rows,
     columnPrivileges: columnPrivileges.rows,
+    authenticatedProfileColumnPrivileges:
+      authenticatedProfileColumnPrivileges.rows,
     safeTradeOfferColumnPrivileges: safeTradeOfferColumnPrivileges.rows,
     sequencePrivileges: sequencePrivileges.rows,
     sellerReceiptPrivileges: sellerReceiptPrivileges.rows,
@@ -1319,8 +1376,7 @@ export function verifyCatalog(snapshot) {
     const policy = policies.get(policyKey);
     if (!policy || policy.permissive !== 'RESTRICTIVE' || policy.cmd !== 'ALL'
       || policy.qual !== 'false' || policy.with_check !== 'false'
-      || policy.roles.length !== 2
-      || !policy.roles.includes('anon') || !policy.roles.includes('authenticated')) {
+      || !hasExactPolicyRoles(policy, ['anon', 'authenticated'])) {
       errors.push(`gate0_restrictive_policy_missing:${policyKey}`);
     }
   }
@@ -1329,8 +1385,7 @@ export function verifyCatalog(snapshot) {
   );
   if (!boundOfferPolicy || boundOfferPolicy.permissive !== 'RESTRICTIVE'
     || boundOfferPolicy.cmd !== 'INSERT'
-    || boundOfferPolicy.roles.length !== 1
-    || !boundOfferPolicy.roles.includes('authenticated')
+    || !hasExactPolicyRoles(boundOfferPolicy, ['authenticated'])
     || !/auth\.uid/.test(boundOfferPolicy.with_check ?? '')
     || !/sender_id/.test(boundOfferPolicy.with_check ?? '')
     || !/receiver_id/.test(boundOfferPolicy.with_check ?? '')
@@ -1347,8 +1402,7 @@ export function verifyCatalog(snapshot) {
   );
   if (!participantPolicy || participantPolicy.permissive !== 'RESTRICTIVE'
     || participantPolicy.cmd !== 'INSERT'
-    || participantPolicy.roles.length !== 1
-    || !participantPolicy.roles.includes('authenticated')
+    || !hasExactPolicyRoles(participantPolicy, ['authenticated'])
     || !/sender_id/.test(participantPolicy.with_check ?? '')
     || !/receiver_id/.test(participantPolicy.with_check ?? '')
     || !/owner_id/.test(participantPolicy.with_check ?? '')
@@ -1395,9 +1449,7 @@ export function verifyCatalog(snapshot) {
   if (!listingVisibilityPolicy
     || listingVisibilityPolicy.permissive !== 'RESTRICTIVE'
     || listingVisibilityPolicy.cmd !== 'SELECT'
-    || listingVisibilityPolicy.roles.length !== 2
-    || !listingVisibilityPolicy.roles.includes('anon')
-    || !listingVisibilityPolicy.roles.includes('authenticated')
+    || !hasExactPolicyRoles(listingVisibilityPolicy, ['anon', 'authenticated'])
     || !/stackr_gate0_user_has_premium_seller/.test(listingVisibilityPolicy.qual ?? '')
     || !/auth\.uid/.test(listingVisibilityPolicy.qual ?? '')
     || /auth\.jwt|user_metadata/.test(listingVisibilityPolicy.qual ?? '')) {
@@ -1411,8 +1463,7 @@ export function verifyCatalog(snapshot) {
     const policy = policies.get(policyKey);
     const entitlementExpression = policy?.with_check ?? '';
     if (!policy || policy.permissive !== 'RESTRICTIVE' || policy.cmd !== command
-      || policy.roles.length !== 1
-      || !policy.roles.includes('authenticated')
+      || !hasExactPolicyRoles(policy, ['authenticated'])
       || !/flag_type/.test(entitlementExpression)
       || !/listing_status/.test(entitlementExpression)
       || !/stackr_gate0_user_has_premium_seller/.test(entitlementExpression)
@@ -1437,8 +1488,7 @@ export function verifyCatalog(snapshot) {
       const policy = policies.get(`${tableName}.${policyName}`);
       const combinedExpression = `${policy?.qual ?? ''} ${policy?.with_check ?? ''}`;
       if (!policy || policy.permissive !== 'RESTRICTIVE' || policy.cmd !== command
-        || policy.roles.length !== 1
-        || !policy.roles.includes('authenticated')
+        || !hasExactPolicyRoles(policy, ['authenticated'])
         || (requiresUsing && !policy.qual)
         || (requiresCheck && !policy.with_check)
         || !/stackr_gate0_user_has_premium_seller/.test(combinedExpression)
@@ -1453,8 +1503,7 @@ export function verifyCatalog(snapshot) {
   if (!sellerBatchPolicy || sellerBatchPolicy.schema_name !== 'private'
     || sellerBatchPolicy.permissive !== 'RESTRICTIVE'
     || sellerBatchPolicy.cmd !== 'INSERT'
-    || sellerBatchPolicy.roles.length !== 1
-    || !sellerBatchPolicy.roles.includes('authenticated')
+    || !hasExactPolicyRoles(sellerBatchPolicy, ['authenticated'])
     || !/stackr_gate0_user_has_premium_seller/.test(sellerBatchPolicy.with_check ?? '')
     || /auth\.jwt|user_metadata/.test(sellerBatchPolicy.with_check ?? '')) {
     errors.push('gate0_seller_batch_entitlement_policy_missing');
@@ -1465,8 +1514,7 @@ export function verifyCatalog(snapshot) {
   if (!sellerBatchReadPolicy || sellerBatchReadPolicy.schema_name !== 'private'
     || sellerBatchReadPolicy.permissive !== 'RESTRICTIVE'
     || sellerBatchReadPolicy.cmd !== 'SELECT'
-    || sellerBatchReadPolicy.roles.length !== 1
-    || !sellerBatchReadPolicy.roles.includes('authenticated')
+    || !hasExactPolicyRoles(sellerBatchReadPolicy, ['authenticated'])
     || !/stackr_gate0_user_has_premium_seller/.test(sellerBatchReadPolicy.qual ?? '')
     || /auth\.jwt|user_metadata/.test(sellerBatchReadPolicy.qual ?? '')) {
     errors.push('gate0_seller_batch_read_entitlement_policy_missing');
@@ -1603,6 +1651,9 @@ export function verifyCatalog(snapshot) {
       );
     }
   }
+  errors.push(...verifyAuthenticatedProfileAclMatrix(
+    snapshot.authenticatedProfileColumnPrivileges,
+  ));
   for (const privilege of snapshot.safeTradeOfferColumnPrivileges) {
     if (privilege.allowed !== true) {
       errors.push(
@@ -2647,6 +2698,22 @@ export async function runRollbackOnlyWriteProbe(
       ['42501'],
       errors,
     );
+    for (const [label, query] of [
+      [
+        'client_profile_id_update',
+        'update public.profiles as profile set id = profile.id where profile.id = $1',
+      ],
+      [
+        'client_profile_email_update',
+        'update public.profiles as profile set email = profile.email where profile.id = $1',
+      ],
+      [
+        'client_profile_role_update',
+        'update public.profiles as profile set role = profile.role where profile.id = $1',
+      ],
+    ]) {
+      await expectRejected(client, label, query, [senderId], ['42501'], errors);
+    }
     await expectRejected(
       client,
       'client_legacy_fulfilment',
