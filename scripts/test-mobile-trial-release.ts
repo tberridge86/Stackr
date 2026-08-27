@@ -134,6 +134,7 @@ for (const permission of [
   'android.permission.WAKE_LOCK',
   'com.android.vending.BILLING',
   'com.google.android.c2dm.permission.RECEIVE',
+  'com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE',
   'com.sec.android.provider.badge.permission.READ',
   'com.sec.android.provider.badge.permission.WRITE',
   'com.htc.launcher.permission.READ_SETTINGS',

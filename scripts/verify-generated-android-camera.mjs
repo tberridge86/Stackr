@@ -49,6 +49,7 @@ if (expectUpdatesDisabled) {
     'com.anddoes.launcher.permission.UPDATE_COUNT',
     'com.android.vending.BILLING',
     'com.google.android.c2dm.permission.RECEIVE',
+    'com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE',
     'com.htc.launcher.permission.READ_SETTINGS',
     'com.htc.launcher.permission.UPDATE_SHORTCUT',
     'com.huawei.android.launcher.permission.CHANGE_BADGE',
