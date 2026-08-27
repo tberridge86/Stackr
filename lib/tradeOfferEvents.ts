@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { TRADE_CASH_TERMS_ENABLED } from './config';
 
 // All events read from trade_offer_events
 // Status changes also write there via logTradeEvent in tradeOffers.ts
@@ -48,6 +49,13 @@ export async function sendCounterOffer(
   note: string,
   cash?: number
 ): Promise<void> {
+  if (cash != null && !TRADE_CASH_TERMS_ENABLED) {
+    throw new Error('Cash counter-offers are disabled for this release.');
+  }
+  if (cash != null && (!Number.isFinite(cash) || cash <= 0)) {
+    throw new Error('Cash counter-offers require a positive finite amount.');
+  }
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 

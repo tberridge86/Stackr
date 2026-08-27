@@ -14,7 +14,8 @@ All of these must be true:
 - Stage 6 approved the production model and inactive index; `STACKR_MODEL_INDEX_RELEASE_APPROVED=true` is evidence-backed.
 - A valid inactive catalogue version UUID and embedding index UUID are recorded.
 - Railway rolling deployment compatibility has been reviewed.
-- The current gateway tag, Railway deployment IDs, catalogue version, index version and EAS update group are recorded for rollback.
+- The current gateway tag, recognition deployment ID, catalogue version, index version and EAS update group are recorded for rollback.
+- Catalogue API recovery is a forward redeploy of the exact commerce-locked merge SHA; rollback to a pre-lock backend deployment is disabled.
 
 Current status is **NO-GO**: all four release gates in `deploy/release-manifest.json` are false. Do not dispatch this workflow until staging has passed on the exact commit and each gate has evidence.
 
@@ -27,7 +28,6 @@ gh workflow run deploy-production.yml `
   --ref main `
   -f confirmation='DEPLOY PRODUCTION' `
   -f previous_gateway_tag='<known-good-tag>' `
-  -f previous_backend_deployment_id='<known-good-backend-deployment-id>' `
   -f previous_recognition_deployment_id='<known-good-recognition-deployment-id>' `
   -f previous_catalogue_version_id='<known-good-catalogue-uuid>' `
   -f previous_index_version_id='<known-good-index-uuid>' `
@@ -54,7 +54,7 @@ The workflow performs the deployment in this order:
 10. Wait for the observation window and repeat smoke tests.
 11. Promote only when the dispatch explicitly requested it.
 
-If any step after a component change fails, the workflow attempts rollback in reverse order: an in-progress EAS rollout, gateway traffic, index/model activation, catalogue activation, recognition deployment, then catalogue API deployment. Each rollback is attempted even if an earlier rollback action fails, and the workflow remains failed for incident review.
+If any step after a component change fails, the workflow attempts rollback in reverse order: an in-progress EAS rollout, gateway traffic, index/model activation, catalogue activation, then the recognition deployment. Each rollback is attempted even if an earlier rollback action fails, and the workflow remains failed for incident review. During commerce containment, recover the catalogue API only by redeploying the exact reviewed, commerce-locked merge SHA; never restore an older backend deployment ID.
 
 ## Monitoring Gate
 

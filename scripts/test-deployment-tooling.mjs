@@ -353,6 +353,14 @@ try {
   const scannedDiagnostic = run('scripts/deploy/secret-scan.mjs', [`--directory=${secretScanTemp}`]);
   assert.notEqual(scannedDiagnostic.status, 0, 'backup diagnostics containing a Supabase access token must not be uploaded');
   assert.match(scannedDiagnostic.stderr, /supabase_access_token/);
+
+  writeFileSync(
+    path.join(secretScanTemp, 'shippo-diagnostic.txt'),
+    `provider error: ${['shippo', 'live', 'A'.repeat(32)].join('_')}\n`,
+  );
+  const scannedShippoDiagnostic = run('scripts/deploy/secret-scan.mjs', [`--directory=${secretScanTemp}`]);
+  assert.notEqual(scannedShippoDiagnostic.status, 0, 'diagnostics containing a Shippo token must not be uploaded');
+  assert.match(scannedShippoDiagnostic.stderr, /shippo_api_token/);
 } finally {
   rmSync(secretScanTemp, { recursive: true, force: true });
 }
@@ -366,6 +374,10 @@ const backendServer = readFileSync('backend/server.js', 'utf8');
 assert.match(backendServer, /res\.setHeader\('X-Request-Id', requestId\)/);
 
 const rollbackTool = readFileSync('scripts/deploy/railway-rollback.mjs', 'utf8');
+assert.match(rollbackTool, /component !== 'recognition'/);
+assert.match(rollbackTool, /serviceId environmentId/);
+assert.match(rollbackTool, /RAILWAY_RECOGNITION_SERVICE_ID/);
+assert.match(rollbackTool, /RAILWAY_ENVIRONMENT_ID/);
 assert.match(
   rollbackTool,
   /mutation deploymentRollback\(\$id: String!\) \{ deploymentRollback\(id: \$id\) \}/,
@@ -383,6 +395,47 @@ assert.doesNotMatch(
   'Railway rollback must not select fields from a Boolean scalar',
 );
 assert.doesNotMatch(rollbackTool, /console\.log\([^\n]*(?:RAILWAY_TOKEN|RAILWAY_API_TOKEN)/);
+
+const rollbackMockImport = `--import=${path.resolve('scripts/test-fixtures/mock-railway-rollback-fetch.mjs')}`;
+const rollbackEnvironment = {
+  NODE_OPTIONS: [process.env.NODE_OPTIONS, rollbackMockImport].filter(Boolean).join(' '),
+  RAILWAY_API_TOKEN: 'test',
+  RAILWAY_RECOGNITION_SERVICE_ID: 'recognition-service',
+  RAILWAY_ENVIRONMENT_ID: 'staging-environment',
+  MOCK_RAILWAY_SERVICE_ID: 'recognition-service',
+  MOCK_RAILWAY_ENVIRONMENT_ID: 'staging-environment',
+};
+const backendRollback = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=catalogue-api', '--deployment=backend-deployment'],
+  { NODE_OPTIONS: rollbackMockImport },
+);
+assert.notEqual(backendRollback.status, 0, 'catalogue API rollback must remain source-locked');
+assert.match(backendRollback.stderr, /catalogue-api rollback is source-locked/);
+
+const disguisedBackendRollback = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=recognition', '--deployment=backend-deployment'],
+  { ...rollbackEnvironment, MOCK_RAILWAY_SERVICE_ID: 'backend-service' },
+);
+assert.notEqual(disguisedBackendRollback.status, 0, 'a backend deployment ID must not pass as recognition');
+assert.match(disguisedBackendRollback.stderr, /not a recognition deployment/);
+
+const crossedEnvironmentRollback = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=recognition', '--deployment=recognition-deployment'],
+  { ...rollbackEnvironment, MOCK_RAILWAY_ENVIRONMENT_ID: 'production-environment' },
+);
+assert.notEqual(crossedEnvironmentRollback.status, 0, 'recognition rollback must stay in its protected environment');
+assert.match(crossedEnvironmentRollback.stderr, /different environment/);
+
+const recognitionRollback = run(
+  'scripts/deploy/railway-rollback.mjs',
+  ['--component=recognition', '--deployment=recognition-deployment'],
+  { ...rollbackEnvironment, MOCK_RAILWAY_ALLOW_MUTATION: 'true' },
+);
+assert.equal(recognitionRollback.status, 0, recognitionRollback.stderr || recognitionRollback.stdout);
+assert.match(recognitionRollback.stdout, /"deploymentRollback": true/);
 
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
@@ -402,6 +455,27 @@ const productionCataloguePromotion = JSON.parse(
   readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
 );
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
+assert.match(stagingWorkflow, /github\.ref == 'refs\/heads\/main'/);
+assert.doesNotMatch(stagingWorkflow, /chore\/api-gateway-v1/);
+assert.match(stagingWorkflow, /Verify private service readiness[\s\S]*--require-commerce-disabled/);
+assert.match(productionWorkflow, /Verify service readiness before activation[\s\S]*--require-commerce-disabled/);
+assert.match(productionWorkflow, /smoke_args=\([\s\S]*--require-commerce-disabled/);
+assert.match(rollbackWorkflow, /Smoke-test surviving public paths[\s\S]*--require-commerce-disabled/);
+assert.match(stagingWorkflow, /Attest staging source revision[\s\S]*git rev-parse HEAD/);
+assert.match(productionWorkflow, /Attest production source revision[\s\S]*git rev-parse HEAD/);
+assert.match(stagingWorkflow, /Publish staging mobile configuration[\s\S]*EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'/);
+assert.match(productionWorkflow, /Publish matching mobile canary[\s\S]*EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'/);
+assert.doesNotMatch(rollbackWorkflow, /catalogue-api/);
+assert.match(rollbackWorkflow, /--component=recognition/);
+assert.match(rollbackWorkflow, /RAILWAY_RECOGNITION_SERVICE_ID/);
+assert.doesNotMatch(
+  productionWorkflow,
+  /previous_backend_deployment_id|PREVIOUS_BACKEND_DEPLOYMENT_ID|Roll back catalogue API deployment/,
+);
+assert.match(
+  productionWorkflow,
+  /railway-rollback\.mjs[\s\S]+--component=recognition[\s\S]+PREVIOUS_RECOGNITION_DEPLOYMENT_ID/,
+);
 for (const workflowName of readdirSync('.github/workflows').filter((name) => name.endsWith('.yml'))) {
   const workflow = readFileSync(`.github/workflows/${workflowName}`, 'utf8');
   assert.doesNotMatch(workflow, /uses:\s+actions\/(?:checkout|setup-node|setup-python)@v\d/, `${workflowName} must pin first-party actions`);

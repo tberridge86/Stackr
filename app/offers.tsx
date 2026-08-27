@@ -23,6 +23,7 @@ import {
   TradeOffer,
 } from '../lib/tradeOffers';
 import { fetchStackrCardRows } from '../lib/stackrDomainAdapter';
+import { TRADE_CASH_TERMS_ENABLED } from '../lib/config';
 
 type SegmentKey = 'received' | 'sent' | 'history';
 type OfferListConfirmAction = {
@@ -234,7 +235,9 @@ export default function OffersScreen() {
       (c) => c.owner_id === offer.receiver_id
     );
 
-    const cashTerms = offer.trade_cash_terms?.[0] ?? null;
+    const cashTerms = TRADE_CASH_TERMS_ENABLED
+      ? offer.trade_cash_terms?.[0] ?? null
+      : null;
 
     return (
       <TouchableOpacity

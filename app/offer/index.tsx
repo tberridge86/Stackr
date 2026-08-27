@@ -29,7 +29,7 @@ import {
   TradeOfferCard,
   TradeCashTerms,
 } from '../../lib/tradeOffers';
-import { BETA_TRADE_DEMO_MODE, PRICE_API_URL } from '../../lib/config';
+import { PRICE_API_URL, TRADE_CASH_TERMS_ENABLED } from '../../lib/config';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { StackrCenterModal } from '../../components/StackrModalSystem';
@@ -201,7 +201,7 @@ export default function OfferDetailScreen() {
   const theyHaveSent = isSender ? offer?.receiver_sent : offer?.sender_sent;
   const iHaveReceived = isSender ? offer?.sender_received : offer?.receiver_received;
   const theyHaveReceived = isSender ? offer?.receiver_received : offer?.sender_received;
-  const cashAmount = Number(cashTerms?.amount ?? 0);
+  const cashAmount = TRADE_CASH_TERMS_ENABLED ? Number(cashTerms?.amount ?? 0) : 0;
   const myCardsValue = useMemo(
     () => mySentCards.reduce((total, card) => {
       const quantity = Number(card.quantity ?? 1) || 1;
@@ -397,14 +397,16 @@ export default function OfferDetailScreen() {
   };
 
   const handleCounter = async () => {
-    const amount = counterAmount.trim() ? Number(counterAmount) : undefined;
+    const amount = TRADE_CASH_TERMS_ENABLED && counterAmount.trim()
+      ? Number(counterAmount)
+      : undefined;
 
     if (!message.trim() && amount === undefined) {
-      Alert.alert('Counter offer', 'Add a note or cash amount first.');
+      Alert.alert('Counter offer', 'Add a note first.');
       return;
     }
 
-    if (counterAmount.trim() && Number.isNaN(amount)) {
+    if (TRADE_CASH_TERMS_ENABLED && counterAmount.trim() && Number.isNaN(amount)) {
       Alert.alert('Invalid amount', 'Enter a valid cash amount.');
       return;
     }
@@ -484,10 +486,15 @@ export default function OfferDetailScreen() {
   const handleWithdrawOffer = () => setConfirmAction('withdraw');
 
   const handleAcceptCounter = async (event: TradeOfferEvent) => {
+    if (!TRADE_CASH_TERMS_ENABLED && Number(event.proposed_cash_amount ?? 0) > 0) {
+      Alert.alert('Cash terms unavailable', 'This release supports card-for-card counter offers only.');
+      return;
+    }
+
     try {
       setSending(true);
       const note = `Counter accepted${
-        event.proposed_cash_amount != null
+        TRADE_CASH_TERMS_ENABLED && event.proposed_cash_amount != null
           ? ` at £${Number(event.proposed_cash_amount).toFixed(2)}`
           : ''
       }.`;
@@ -709,7 +716,7 @@ export default function OfferDetailScreen() {
             </Text>
           )}
 
-          {item.proposed_cash_amount != null && (
+          {TRADE_CASH_TERMS_ENABLED && item.proposed_cash_amount != null && (
             <View style={[styles.cashPill, !mine && styles.cashPillOther]}>
               <Text style={[styles.cashPillText, !mine && styles.cashPillTextOther]}>
                 Cash: £{Number(item.proposed_cash_amount).toFixed(2)}
@@ -793,7 +800,7 @@ export default function OfferDetailScreen() {
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
-          {BETA_TRADE_DEMO_MODE && (
+          {!TRADE_CASH_TERMS_ENABLED && (
             <View style={{
               backgroundColor: '#FEF3C7',
               borderColor: '#F59E0B',
@@ -804,10 +811,10 @@ export default function OfferDetailScreen() {
               marginBottom: 12,
             }}>
               <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '900' }}>
-                DEMO TRADE MODE
+                CARD-ONLY TRADE BETA
               </Text>
               <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, marginTop: 3 }}>
-                This is a beta trade area. Cash terms are simulated only; no Stripe payment can be started here.
+                Cash top-ups and payment terms are hidden for this release.
               </Text>
             </View>
           )}
@@ -832,7 +839,7 @@ export default function OfferDetailScreen() {
                   <Text style={styles.dealMeta}>
                     {mySentCards.length > 0
                       ? mySentCards.map((card) => cardPreviews[card.card_id]?.name ?? 'Card').slice(0, 2).join(', ')
-                      : 'Cash or message only'}
+                      : 'Message only'}
                   </Text>
                 </View>
 
@@ -847,12 +854,12 @@ export default function OfferDetailScreen() {
                   <Text style={styles.dealMeta}>
                     {theirSentCards.length > 0
                       ? theirSentCards.map((card) => cardPreviews[card.card_id]?.name ?? 'Card').slice(0, 2).join(', ')
-                      : 'Cash or message only'}
+                      : 'Message only'}
                   </Text>
                 </View>
               </View>
 
-              {cashTerms && (
+              {TRADE_CASH_TERMS_ENABLED && cashTerms && (
                 <View style={styles.cashAdjustmentCard}>
                   <View style={styles.cashIcon}>
                     <Text style={styles.cashIconText}>£</Text>
@@ -955,7 +962,7 @@ export default function OfferDetailScreen() {
                 </View>
               )}
 
-              {cashTerms && (
+              {TRADE_CASH_TERMS_ENABLED && cashTerms && (
                 <View style={{
                   backgroundColor: '#FEF3C7',
                   borderRadius: 10,
@@ -969,7 +976,7 @@ export default function OfferDetailScreen() {
                     {cashTerms.payer_id === currentUserId ? 'you pay' : 'they pay'}
                   </Text>
                   <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
-                    Payment method: {BETA_TRADE_DEMO_MODE ? 'Demo only - no live payment' : 'Stripe'}
+                    Payment method: Stripe
                   </Text>
                   {cashTerms.payment_status && (
                     <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
@@ -1162,9 +1169,8 @@ export default function OfferDetailScreen() {
             <Text style={styles.trustTitle}>Trading on Stackr</Text>
             <Text style={styles.trustText}>
               Stackr connects collectors to arrange trades directly. Keep all communication
-              here so your trade history is recorded. {BETA_TRADE_DEMO_MODE
-                ? 'During beta, cash top-ups are demo records only and no money changes hands.'
-                : 'For cash top-ups, use Stripe inside the app and avoid sharing payment details in chat.'}
+              here so your trade history is recorded. This release supports card-for-card trades only;
+              do not arrange cash top-ups in chat.
             </Text>
           </View>
 
@@ -1194,14 +1200,16 @@ export default function OfferDetailScreen() {
           <View style={[styles.composerWrap, { bottom: Math.max(insets.bottom + 25, 32) }]}>
             {!isAcceptedOrBeyond && (
               <View style={styles.counterRow}>
-                <TextInput
-                  value={counterAmount}
-                  onChangeText={setCounterAmount}
-                  placeholder="Counter cash £"
-                  placeholderTextColor={theme.colors.textSoft}
-                  keyboardType="decimal-pad"
-                  style={styles.counterInput}
-                />
+                {TRADE_CASH_TERMS_ENABLED ? (
+                  <TextInput
+                    value={counterAmount}
+                    onChangeText={setCounterAmount}
+                    placeholder="Counter cash £"
+                    placeholderTextColor={theme.colors.textSoft}
+                    keyboardType="decimal-pad"
+                    style={styles.counterInput}
+                  />
+                ) : null}
                 <TouchableOpacity
                   onPress={handleCounter}
                   disabled={sending}

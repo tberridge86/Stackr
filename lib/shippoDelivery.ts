@@ -89,7 +89,7 @@ export const SHIPPO_DELIVERY_METHODS: ShippoDeliveryMethod[] = [
     priceGbp: 0,
     tracked: false,
     source: 'manual',
-    protectionHint: 'Manual arrangement. Not a Shippo label.',
+    protectionHint: 'Manual arrangement. No label is purchased.',
   },
 ];
 

@@ -46,6 +46,8 @@ test('Stripe operational routes are disabled by default', async () => {
       ['POST', '/api/stripe/create-account-link'],
       ['POST', '/api/stripe/create-payment-intent'],
       ['POST', '/api/stripe/create-trade-cash-payment-intent'],
+      ['GET', '/api/stripe/onboarding-complete'],
+      ['GET', '/api/stripe/onboarding-refresh'],
     ];
 
     for (const [method, path] of requests) {
@@ -62,11 +64,6 @@ test('Stripe operational routes are disabled by default', async () => {
       });
     }
 
-    for (const path of ['/api/stripe/onboarding-complete', '/api/stripe/onboarding-refresh']) {
-      const response = await fetch(`${app.baseUrl}${path}`);
-      assert.equal(response.status, 200, `GET ${path}`);
-      assert.match(response.headers.get('content-type') ?? '', /^text\/html/);
-    }
   } finally {
     await app.close();
   }
@@ -120,6 +117,11 @@ test('Stripe operational routes retain authentication and identity checks behind
         /requireMatchingAuthenticatedUser/,
         `${path} must bind caller identity to the authenticated user`,
       );
+    }
+
+    for (const path of ['/onboarding-complete', '/onboarding-refresh']) {
+      const middleware = routeMiddleware(router, path);
+      assert.equal(middleware[0]?.name, 'requireReleaseFeature', path);
     }
   } finally {
     delete process.env[paymentsEnabledEnv];

@@ -2,6 +2,86 @@ import { randomUUID } from 'node:crypto';
 
 const DEFAULT_REQUIRED_CATALOGUE_LANGUAGES = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
 
+const COMMERCE_DISABLED_ROUTES = [
+  {
+    name: 'stripe_create_connect_account_disabled',
+    method: 'POST',
+    path: '/api/stripe/create-connect-account',
+    code: 'payments_disabled',
+    message: 'Payments are disabled for this release.',
+  },
+  {
+    name: 'stripe_account_status_disabled',
+    method: 'GET',
+    path: '/api/stripe/account-status?userId=commerce-disabled-smoke',
+    code: 'payments_disabled',
+    message: 'Payments are disabled for this release.',
+  },
+  {
+    name: 'stripe_create_account_link_disabled',
+    method: 'POST',
+    path: '/api/stripe/create-account-link',
+    code: 'payments_disabled',
+    message: 'Payments are disabled for this release.',
+  },
+  {
+    name: 'stripe_create_payment_intent_disabled',
+    method: 'POST',
+    path: '/api/stripe/create-payment-intent',
+    code: 'payments_disabled',
+    message: 'Payments are disabled for this release.',
+  },
+  {
+    name: 'stripe_create_trade_cash_payment_intent_disabled',
+    method: 'POST',
+    path: '/api/stripe/create-trade-cash-payment-intent',
+    code: 'payments_disabled',
+    message: 'Payments are disabled for this release.',
+  },
+  {
+    name: 'stripe_onboarding_complete_disabled',
+    method: 'GET',
+    path: '/api/stripe/onboarding-complete',
+    code: 'payments_disabled',
+    message: 'Payments are disabled for this release.',
+  },
+  {
+    name: 'stripe_onboarding_refresh_disabled',
+    method: 'GET',
+    path: '/api/stripe/onboarding-refresh',
+    code: 'payments_disabled',
+    message: 'Payments are disabled for this release.',
+  },
+  {
+    name: 'shippo_status_disabled',
+    method: 'GET',
+    path: '/api/shippo/status',
+    code: 'shipping_disabled',
+    message: 'Shipping is disabled for this release.',
+  },
+  {
+    name: 'shippo_rates_disabled',
+    method: 'POST',
+    path: '/api/shippo/rates',
+    code: 'shipping_disabled',
+    message: 'Shipping is disabled for this release.',
+  },
+  {
+    name: 'shippo_labels_disabled',
+    method: 'POST',
+    path: '/api/shippo/labels',
+    code: 'shipping_disabled',
+    message: 'Shipping is disabled for this release.',
+  },
+  {
+    name: 'shippo_tracking_disabled',
+    method: 'GET',
+    path: '/api/shippo/track/smoke/smoke-commerce-disabled',
+    code: 'shipping_disabled',
+    message: 'Shipping is disabled for this release.',
+  },
+];
+
 function argument(name, fallback = null) {
   const prefix = `--${name}=`;
   return process.argv.find((value) => value.startsWith(prefix))?.slice(prefix.length) ?? fallback;
@@ -15,6 +95,7 @@ async function check(baseUrl, path, options = {}) {
     const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
       method: options.method ?? 'GET',
       headers: { 'x-request-id': requestId, ...(options.headers ?? {}) },
+      body: options.body,
       signal: controller.signal,
     });
     const returnedRequestId = response.headers.get('x-request-id');
@@ -64,6 +145,26 @@ async function check(baseUrl, path, options = {}) {
   }
 }
 
+function commerceDisabledResponseCheck(expectedCode, expectedMessage) {
+  return (body, response) => {
+    const headerRequestId = response.headers.get('x-request-id');
+    const bodyRequestId = typeof body?.requestId === 'string' ? body.requestId : null;
+    return {
+      ok: response.status === 503
+        && body?.code === expectedCode
+        && body?.error === expectedMessage
+        && Boolean(headerRequestId)
+        && bodyRequestId === headerRequestId,
+      expectedStatus: 503,
+      receivedStatus: response.status,
+      expectedCode,
+      receivedCode: body?.code ?? null,
+      headerRequestId,
+      bodyRequestId,
+    };
+  };
+}
+
 function manifestPublishedCheck(body) {
   const manifest = body?.data ?? body;
   const shards = Array.isArray(manifest?.availableLanguageShards)
@@ -91,6 +192,7 @@ const allowRecognitionNotReady = process.argv.includes('--allow-recognition-not-
 const allowMissingRequestId = process.argv.includes('--allow-missing-request-id');
 const fullGateway = process.argv.includes('--full-gateway');
 const requirePublishedCatalogue = process.argv.includes('--require-published-catalogue');
+const requireCommerceDisabled = process.argv.includes('--require-commerce-disabled');
 const requiredCatalogueLanguages = argument(
   'required-catalogue-languages',
   DEFAULT_REQUIRED_CATALOGUE_LANGUAGES.join(','),
@@ -100,7 +202,25 @@ const deniedOrigin = argument('denied-origin', 'https://not-stackr.invalid');
 const searchQuery = encodeURIComponent(argument('search-query', 'SV2a 157'));
 const checks = [];
 
+if (requireCommerceDisabled && !backendUrl) {
+  console.error('--require-commerce-disabled requires a backend URL via --backend or STACKR_BACKEND_URL.');
+  process.exit(1);
+}
+
 if (backendUrl) checks.push(await check(backendUrl, '/health'));
+if (backendUrl && requireCommerceDisabled) {
+  for (const route of COMMERCE_DISABLED_ROUTES) {
+    const isPost = route.method === 'POST';
+    checks.push(await check(backendUrl, route.path, {
+      name: route.name,
+      method: route.method,
+      headers: isPost ? { 'content-type': 'application/json' } : undefined,
+      body: isPost ? '{}' : undefined,
+      accept: [503],
+      inspectJson: commerceDisabledResponseCheck(route.code, route.message),
+    }));
+  }
+}
 if (backendUrl && fullGateway) {
   checks.push(await check(backendUrl, '/v1/health', {
     name: 'direct_origin_v1_health_without_gateway_key',

@@ -218,7 +218,7 @@ const COMMUNITY_CHANNELS: Record<Exclude<SocialTab, 'Local' | 'News'>, Community
   Trades: [
     { key: 'all', label: 'All trades', shortLabel: 'All', icon: 'swap-horizontal-outline', prompt: 'Talk through trades, offers, fairness checks and collector deal ideas.' },
     { key: 'trade_talk', label: 'Trade Talk', icon: 'chatbubble-ellipses-outline', prompt: 'Talk through a possible swap and what would make it fair.', postType: 'trade_discussion' },
-    { key: 'deal_check', label: 'Deal Check', icon: 'scale-outline', prompt: 'Ask if a deal, cash top-up, condition gap or trade value feels fair.', postType: 'deal_check' },
+    { key: 'deal_check', label: 'Deal Check', icon: 'scale-outline', prompt: 'Ask if a card-for-card deal, condition gap or trade value feels fair.', postType: 'deal_check' },
     { key: 'looking_for_trade', label: 'Looking For', icon: 'search-outline', prompt: 'Tell collectors what you want and what you might move.', postType: 'looking_for_trade' },
     { key: 'trade_win', label: 'Trade Wins', icon: 'trophy-outline', prompt: 'Show a completed trade and what made it work.', postType: 'trade_win' },
   ],
@@ -249,7 +249,7 @@ const DISCUSSION_STARTERS: Record<CommunityChannelKey, string[]> = {
   milestone: ['Next goal?', 'Best card in the run?', 'How long did it take?'],
   trade_talk: ['Fair swap?', 'Who adds cash?', 'Which side wins?'],
   deal_check: ['Condition gap?', 'Market value fair?', 'Would you accept?'],
-  looking_for_trade: ['What would you offer?', 'Any duplicates available?', 'Cash top-up needed?'],
+  looking_for_trade: ['What would you offer?', 'Any duplicates available?', 'Which card balances the trade?'],
   trade_win: ['Best part of the deal?', 'Would you do it again?', 'What did you move?'],
 };
 

@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, lstatSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 const binaryExtensions = new Set([
@@ -13,9 +13,10 @@ const rules = [
   ['github_token', /(?:github_pat_[A-Za-z0-9_]{40,}|ghp_[A-Za-z0-9]{36,})/g],
   ['aws_access_key', /AKIA[0-9A-Z]{16}/g],
   ['stripe_live_secret', /(?:sk|rk)_live_[A-Za-z0-9]{16,}/g],
+  ['shippo_api_token', /shippo_(?:live|test)_[A-Za-z0-9_-]{20,}/g],
   [
     'assigned_server_secret',
-    /(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RAILWAY_TOKEN|RAILWAY_API_TOKEN|CLOUDFLARE_API_TOKEN|EBAY_CLIENT_SECRET|XIMILAR_API_TOKEN|CARDSIGHT_API_KEY|POKEMON_TCG_API_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|SCRYDEX_API_KEY|POKEMON_PRICE_TRACKER_API_KEY|POKETRACE_API_KEY|CARDMATRIX_API_KEY|POKEWALLET_API_KEY)\s*[:=]\s*["'](?!\$|<|\{\{|REPLACE_|example|placeholder)[^"'\r\n]{12,}["']/gi,
+    /(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SECRET_KEY|RAILWAY_TOKEN|RAILWAY_API_TOKEN|CLOUDFLARE_API_TOKEN|EBAY_CLIENT_SECRET|XIMILAR_API_TOKEN|CARDSIGHT_API_KEY|POKEMON_TCG_API_KEY|STRIPE_SECRET_KEY|STRIPE_WEBHOOK_SECRET|SHIPPO_API_TOKEN|SHIPPO_API_KEY|SCRYDEX_API_KEY|POKEMON_PRICE_TRACKER_API_KEY|POKETRACE_API_KEY|CARDMATRIX_API_KEY|POKEWALLET_API_KEY)\s*[:=]\s*["'](?!\$|<|\{\{|REPLACE_|example|placeholder)[^"'\r\n]{12,}["']/gi,
   ],
 ];
 
@@ -83,7 +84,8 @@ if (directory) {
     const extension = path.extname(relativePath).toLowerCase();
     if (binaryExtensions.has(extension)) continue;
     const filePath = path.resolve(relativePath);
-    if (statSync(filePath).size > 4 * 1024 * 1024) continue;
+    const fileStats = lstatSync(filePath);
+    if (!fileStats.isFile() || fileStats.size > 4 * 1024 * 1024) continue;
     inspectSource(readFileSync(filePath, 'utf8'), relativePath, findings);
     repositoryFilesScanned += 1;
   }

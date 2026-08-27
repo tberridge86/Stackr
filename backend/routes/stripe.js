@@ -332,7 +332,7 @@ router.post('/create-trade-cash-payment-intent', ...protectedStripeRoute, async 
 // ONBOARDING REDIRECT PAGES
 // ===============================
 
-router.get('/onboarding-complete', (_req, res) => {
+router.get('/onboarding-complete', requireLivePaymentsEnabled, (_req, res) => {
   res.send(`<!DOCTYPE html>
 <html>
 <head>
@@ -354,7 +354,7 @@ router.get('/onboarding-complete', (_req, res) => {
 </html>`);
 });
 
-router.get('/onboarding-refresh', (_req, res) => {
+router.get('/onboarding-refresh', requireLivePaymentsEnabled, (_req, res) => {
   res.send(`<!DOCTYPE html>
 <html>
 <head>

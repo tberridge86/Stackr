@@ -22,10 +22,6 @@ on:
         description: Known-good Cloudflare version tag (leave blank for first release)
         required: false
         type: string
-      previous_backend_deployment_id:
-        description: Known-good Railway catalogue API deployment ID
-        required: false
-        type: string
       previous_recognition_deployment_id:
         description: Known-good Railway recognition deployment ID
         required: false
@@ -121,7 +117,6 @@ jobs:
       CATALOGUE_VERSION_ID: ${{ inputs.catalogue_version_id }}
       CATALOGUE_RELEASE_LABEL: ${{ inputs.catalogue_release_label }}
       INDEX_VERSION_ID: ${{ inputs.index_version_id }}
-      PREVIOUS_BACKEND_DEPLOYMENT_ID: ${{ inputs.previous_backend_deployment_id }}
       PREVIOUS_RECOGNITION_DEPLOYMENT_ID: ${{ inputs.previous_recognition_deployment_id }}
       PREVIOUS_CATALOGUE_VERSION_ID: ${{ inputs.previous_catalogue_version_id }}
       PREVIOUS_INDEX_VERSION_ID: ${{ inputs.previous_index_version_id }}
@@ -135,6 +130,11 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Attest production source revision
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+
       - name: Install pinned dependencies
         run: |
           npm ci
@@ -147,6 +147,7 @@ jobs:
           npm run typecheck
           npm run typecheck:backend
           npm test --prefix backend
+          npm run test:commerce-release-lock
           npm run check:api-contract
           npm run test:database-migrations
           npm run test:deployment
@@ -213,7 +214,7 @@ jobs:
               echo "Canary releases require PREVIOUS_GATEWAY_TAG."
               exit 1
             fi
-            for variable in PREVIOUS_BACKEND_DEPLOYMENT_ID PREVIOUS_CATALOGUE_VERSION_ID; do
+            for variable in PREVIOUS_CATALOGUE_VERSION_ID; do
               if [ -z "${!variable}" ]; then
                 echo "Canary releases require rollback value $variable."
                 exit 1
@@ -433,9 +434,9 @@ jobs:
         if: inputs.release_scope != 'catalogue_assets'
         run: |
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
-            npm run deploy:smoke -- --gateway= --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
+            npm run deploy:smoke -- --gateway= --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL" --require-commerce-disabled
           else
-            npm run deploy:smoke -- --gateway= --backend="$STACKR_BACKEND_URL"
+            npm run deploy:smoke -- --gateway= --backend="$STACKR_BACKEND_URL" --require-commerce-disabled
           fi
 
       - name: Atomically activate validated catalogue version
@@ -516,6 +517,7 @@ jobs:
         if: inputs.release_scope != 'catalogue_assets' && inputs.publish_mobile_update
         env:
           CANARY_PERCENT: ${{ inputs.canary_percent }}
+          EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'
         run: |
           npx --yes eas-cli@21.4.0 update \
             --channel production \
@@ -546,6 +548,7 @@ jobs:
             --allowed-origin=https://stackrtcg.com
             --full-gateway
             --require-published-catalogue
+            --require-commerce-disabled
           )
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
             smoke_args+=(--recognition="$STACKR_RECOGNITION_URL")
@@ -613,12 +616,10 @@ jobs:
       - name: Roll back recognition deployment after a release failure
         if: failure() && env.STACKR_RECOGNITION_DEPLOYED == 'true' && env.PREVIOUS_RECOGNITION_DEPLOYMENT_ID != ''
         continue-on-error: true
-        run: node scripts/deploy/railway-rollback.mjs --deployment="$PREVIOUS_RECOGNITION_DEPLOYMENT_ID"
-
-      - name: Roll back catalogue API deployment after a release failure
-        if: failure() && env.STACKR_BACKEND_DEPLOYED == 'true' && env.PREVIOUS_BACKEND_DEPLOYMENT_ID != ''
-        continue-on-error: true
-        run: node scripts/deploy/railway-rollback.mjs --deployment="$PREVIOUS_BACKEND_DEPLOYMENT_ID"
+        run: >-
+          node scripts/deploy/railway-rollback.mjs
+          --component=recognition
+          --deployment="$PREVIOUS_RECOGNITION_DEPLOYMENT_ID"
 
       - name: Remove ephemeral logical backups
         if: always()
