@@ -40,7 +40,7 @@ jobs:
   deploy:
     if: >-
       inputs.confirmation == 'DEPLOY STAGING' &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/chore/api-gateway-v1')
+      github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: staging

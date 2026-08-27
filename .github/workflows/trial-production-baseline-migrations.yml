@@ -204,7 +204,9 @@ jobs:
         run: rm -rf "$RUNNER_TEMP/stackr-catalogue-transfer"
 
   rebuild-staging:
-    if: inputs.confirmation == 'APPROVE DESTRUCTIVE STAGING REBUILD'
+    if: >-
+      inputs.confirmation == 'APPROVE DESTRUCTIVE STAGING REBUILD' &&
+      github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: staging

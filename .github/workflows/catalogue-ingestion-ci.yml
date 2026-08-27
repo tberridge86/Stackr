@@ -86,6 +86,7 @@ concurrency:
 
 jobs:
   ingest-staging:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     environment: staging
