@@ -7,32 +7,29 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { Text } from '../../components/Text';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import {
   fetchOfferEvents,
-  sendCounterOffer,
-  sendOfferMessage,
+  sanitizeGate0TradeOfferEvent,
   TradeOfferEvent,
 } from '../../lib/tradeOfferEvents';
 import {
+  fetchTradeOfferById,
+  sanitizeGate0TradeOffer,
   updateTradeOfferStatus,
-  markTradeSent,
-  markTradeReceived,
   TradeOffer,
   TradeOfferCard,
-  TradeCashTerms,
 } from '../../lib/tradeOffers';
-import { PRICE_API_URL, TRADE_CASH_TERMS_ENABLED } from '../../lib/config';
 import { fetchStackrCardRows, fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { StackrCenterModal } from '../../components/StackrModalSystem';
+import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
 
 // ===============================
 // CONSTANTS
@@ -65,7 +62,7 @@ function getOfferConfirmCopy(action: OfferConfirmAction | null) {
   if (action === 'accept') {
     return {
       title: 'Accept trade?',
-      body: 'This records the deal and moves both collectors into the protected trade flow.',
+      body: 'This records the card-only agreement and updates the offer status.',
       actionLabel: 'Accept Trade',
       destructive: false,
     };
@@ -88,7 +85,7 @@ function getOfferConfirmCopy(action: OfferConfirmAction | null) {
   }
   return {
     title: 'Raise dispute?',
-    body: 'Use this only when there is a serious problem with the trade. The trade will be marked as disputed.',
+    body: 'This flags a problem with the card-only agreement and keeps the negotiation record open.',
     actionLabel: 'Raise Dispute',
     destructive: true,
   };
@@ -112,37 +109,23 @@ const formatTime = (dateString: string): string => {
 const getEventLabel = (eventType: string): string => {
   const labels: Record<string, string> = {
     offer_created: 'Offer created',
-    counter_offer: 'Counter offer',
     pending: 'Offer pending',
     accepted: 'Offer accepted',
     declined: 'Offer declined',
     cancelled: 'Offer cancelled',
-    sent: 'Cards sent',
-    received: 'Cards received',
-    completed: 'Trade completed',
     disputed: 'Dispute raised',
-    payment_required: 'Payment required',
-    payment_sent: 'Payment sent',
-    payment_confirmed: 'Payment confirmed',
   };
   return labels[eventType] ?? 'Update';
 };
 
-async function sendPushNotification(
-  endpoint: string,
-  payload: Record<string, any>
-): Promise<void> {
-  if (!PRICE_API_URL) return;
-  try {
-    await fetch(`${PRICE_API_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-  } catch (err) {
-    console.log(`Push notification failed (${endpoint}):`, err);
-  }
-}
+const OFFER_STATUS_LABEL: Record<string, string> = {
+  pending: 'PENDING',
+  accepted: 'ACCEPTED',
+  declined: 'DECLINED',
+  cancelled: 'CANCELLED',
+  disputed: 'DISPUTED',
+  unavailable: 'UNAVAILABLE',
+};
 
 // ===============================
 // MAIN COMPONENT
@@ -154,28 +137,54 @@ export default function OfferDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const scrollRef = useRef<ScrollView>(null);
   const offerId = String(id);
-  const insets = useSafeAreaInsets();
-
   const [offer, setOffer] = useState<TradeOffer | null>(null);
   const [offerCards, setOfferCards] = useState<TradeOfferCard[]>([]);
-  const [cashTerms, setCashTerms] = useState<TradeCashTerms | null>(null);
   const [cardPreviews, setCardPreviews] = useState<Record<string, CardPreview>>({});
   const [events, setEvents] = useState<TradeOfferEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState('');
-  const [message, setMessage] = useState('');
-  const [counterAmount, setCounterAmount] = useState('');
   const [sending, setSending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<OfferConfirmAction | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const authUserIdRef = useRef('');
+  const authGenerationRef = useRef(0);
   const { new: isNew } = useLocalSearchParams<{ new?: string }>();
 
-  const showToast = (msg: string) => {
+  const isCurrentIdentity = useCallback((userId: string, generation: number) => (
+    authUserIdRef.current === userId && authGenerationRef.current === generation
+  ), []);
+
+  const resetPrivateOfferState = useCallback(() => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = null;
+    setOffer(null);
+    setOfferCards([]);
+    setCardPreviews({});
+    setEvents([]);
+    setToast(null);
+    setSending(false);
+    setConfirmAction(null);
+  }, []);
+
+  const bindIdentity = useCallback((userId: string) => {
+    if (authUserIdRef.current === userId) return authGenerationRef.current;
+    authUserIdRef.current = userId;
+    authGenerationRef.current += 1;
+    resetPrivateOfferState();
+    setCurrentUserId(userId);
+    setLoading(Boolean(userId));
+    return authGenerationRef.current;
+  }, [resetPrivateOfferState]);
+
+  const showToast = useCallback((msg: string, userId: string, generation: number) => {
+    if (!isCurrentIdentity(userId, generation)) return;
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast(msg);
-    toastTimer.current = setTimeout(() => setToast(null), 3000);
-  };
+    toastTimer.current = setTimeout(() => {
+      if (isCurrentIdentity(userId, generation)) setToast(null);
+    }, 3000);
+  }, [isCurrentIdentity]);
 
   // ===============================
   // DERIVED STATE
@@ -187,21 +196,14 @@ export default function OfferDetailScreen() {
 
   const isPending = offerStatus === 'pending';
   const isAccepted = offerStatus === 'accepted';
-  const isAcceptedOrBeyond = ['accepted', 'sent', 'received', 'completed'].includes(offerStatus);
-  const isSentOrBeyond = ['sent', 'received', 'completed'].includes(offerStatus);
-  const isReceivedOrBeyond = ['received', 'completed'].includes(offerStatus);
-  const isCompleted = offerStatus === 'completed';
   const isDisputed = offerStatus === 'disputed';
-  const isDeclinedOrCancelled = ['declined', 'cancelled'].includes(offerStatus);
+  const isTerminal = ['declined', 'cancelled', 'unavailable'].includes(offerStatus);
+  const isParticipant = isSender || isReceiver;
+  const displayEvents = events;
 
   const mySentCards = offerCards.filter((c) => c.owner_id === currentUserId);
   const theirSentCards = offerCards.filter((c) => c.owner_id !== currentUserId);
 
-  const iHaveSent = isSender ? offer?.sender_sent : offer?.receiver_sent;
-  const theyHaveSent = isSender ? offer?.receiver_sent : offer?.sender_sent;
-  const iHaveReceived = isSender ? offer?.sender_received : offer?.receiver_received;
-  const theyHaveReceived = isSender ? offer?.receiver_received : offer?.sender_received;
-  const cashAmount = TRADE_CASH_TERMS_ENABLED ? Number(cashTerms?.amount ?? 0) : 0;
   const myCardsValue = useMemo(
     () => mySentCards.reduce((total, card) => {
       const quantity = Number(card.quantity ?? 1) || 1;
@@ -216,8 +218,8 @@ export default function OfferDetailScreen() {
     }, 0),
     [cardPreviews, theirSentCards]
   );
-  const mySideValue = myCardsValue + (cashTerms?.payer_id === currentUserId ? cashAmount : 0);
-  const theirSideValue = theirCardsValue + (cashTerms && cashTerms.payer_id !== currentUserId ? cashAmount : 0);
+  const mySideValue = myCardsValue;
+  const theirSideValue = theirCardsValue;
   const tradeValueDifference = mySideValue - theirSideValue;
   const absoluteTradeDifference = Math.abs(tradeValueDifference);
   const comparisonBase = Math.max(mySideValue, theirSideValue, 1);
@@ -248,87 +250,148 @@ export default function OfferDetailScreen() {
   // LOAD
   // ===============================
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (
+    userId = authUserIdRef.current,
+    generation = authGenerationRef.current,
+  ) => {
+    if (!userId || !offerId || !isCurrentIdentity(userId, generation)) return;
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id ?? '');
+      setLoading(true);
 
-      const [eventsData, offerResult] = await Promise.all([
+      const [eventsData, offerData] = await Promise.all([
         fetchOfferEvents(offerId),
-        supabase
-          .from('trade_offers')
-          .select(`
-            *,
-            trade_offer_cards (*),
-            trade_cash_terms (*)
-          `)
-          .eq('id', offerId)
-          .maybeSingle(),
+        fetchTradeOfferById(offerId),
       ]);
+      if (!isCurrentIdentity(userId, generation)) return;
+      if (
+        !offerData
+        || (offerData.sender_id !== userId && offerData.receiver_id !== userId)
+      ) {
+        throw new Error('This offer is not available for this account.');
+      }
 
-      setEvents(eventsData ?? []);
+      let toastName: string | null = null;
+      if (isNew === '1' && offerData.receiver_id) {
+        const { data: receiverProfile } = await supabase
+          .from('profile_public_directory')
+          .select('collector_name')
+          .eq('id', offerData.receiver_id)
+          .maybeSingle();
+        if (!isCurrentIdentity(userId, generation)) return;
+        toastName = sanitizeGate0CommerceCopy(
+          receiverProfile?.collector_name,
+          'them',
+        ) ?? 'them';
+      }
 
-      if (offerResult.data) {
-        const offerData = offerResult.data as TradeOffer;
-        setOffer(offerData);
-        setOfferCards(offerData.trade_offer_cards ?? []);
-        setCashTerms(offerData.trade_cash_terms?.[0] ?? null);
+      const allCardIds = Array.from(new Set(
+        (offerData.trade_offer_cards ?? []).map((c) => c.card_id)
+      ));
+      const previewMap: Record<string, CardPreview> = {};
 
-        if (isNew === '1' && offerData.receiver_id) {
-          const { data: receiverProfile } = await supabase
-            .from('profile_public_directory')
-            .select('collector_name')
-            .eq('id', offerData.receiver_id)
-            .maybeSingle();
-          const name = receiverProfile?.collector_name ?? 'them';
-          showToast(`Offer sent to ${name}`);
-        }
-
-        const allCardIds = Array.from(new Set(
-          (offerData.trade_offer_cards ?? []).map((c) => c.card_id)
-        ));
-
-        if (allCardIds.length > 0) {
-          const [cards, prices] = await Promise.all([
-            fetchStackrCardRows(allCardIds),
-            fetchStackrPriceSnapshots(allCardIds),
-          ]);
-          const previewMap: Record<string, CardPreview> = {};
-          for (const legacyId of allCardIds) {
-            const card = cards.get(legacyId) as any;
-            if (!card) continue;
-            previewMap[legacyId] = {
-              card_id: legacyId,
-              name: card.name ?? null,
-              image_url: card.image_small ?? card.image_large ?? null,
-              set_name: card.set_name ?? card.raw_data?.set?.name ?? null,
-              estimated_value: prices.get(legacyId)?.market_central ?? null,
-            };
-          }
-
-          setCardPreviews(previewMap);
+      if (allCardIds.length > 0) {
+        const [cards, prices] = await Promise.all([
+          fetchStackrCardRows(allCardIds),
+          fetchStackrPriceSnapshots(allCardIds),
+        ]);
+        if (!isCurrentIdentity(userId, generation)) return;
+        for (const legacyId of allCardIds) {
+          const card = cards.get(legacyId) as any;
+          if (!card) continue;
+          previewMap[legacyId] = {
+            card_id: legacyId,
+            name: sanitizeGate0CommerceCopy(card.name, 'Collector card') ?? 'Collector card',
+            image_url: card.image_small ?? card.image_large ?? null,
+            set_name: sanitizeGate0CommerceCopy(
+              card.set_name ?? card.raw_data?.set?.name ?? null,
+              null,
+            ),
+            estimated_value: prices.get(legacyId)?.market_central ?? null,
+          };
         }
       }
 
+      if (!isCurrentIdentity(userId, generation)) return;
+      setEvents(eventsData ?? []);
+      setOffer(offerData);
+      setOfferCards(offerData.trade_offer_cards ?? []);
+      setCardPreviews(previewMap);
+      if (toastName) showToast(`Offer sent to ${toastName}`, userId, generation);
+
       setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true });
+        if (isCurrentIdentity(userId, generation)) {
+          scrollRef.current?.scrollToEnd({ animated: true });
+        }
       }, 150);
     } catch (error: any) {
+      if (!isCurrentIdentity(userId, generation)) return;
       console.log('Failed to load negotiation', error);
+      resetPrivateOfferState();
       Alert.alert('Could not load', error?.message ?? 'Something went wrong.');
+      router.replace('/offers');
     } finally {
-      setLoading(false);
+      if (isCurrentIdentity(userId, generation)) setLoading(false);
     }
-  }, [isNew, offerId]);
+  }, [isCurrentIdentity, isNew, offerId, resetPrivateOfferState, showToast]);
+
+  // ===============================
+  // AUTH IDENTITY + LOAD
+  // ===============================
+
+  useEffect(() => {
+    let mounted = true;
+    let authEventEpoch = 0;
+
+    const activate = (userId: string) => {
+      if (!mounted) return;
+      const generation = bindIdentity(userId);
+      if (!userId) {
+        setLoading(false);
+        router.replace('/offers');
+        return;
+      }
+      void load(userId, generation);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      authEventEpoch += 1;
+      activate(session?.user?.id ?? '');
+    });
+
+    const initialEpoch = authEventEpoch;
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (!mounted || initialEpoch !== authEventEpoch) return;
+      if (error) {
+        console.log('Offer detail account lookup failed', error);
+        activate('');
+        return;
+      }
+      activate(data.user?.id ?? '');
+    });
+
+    return () => {
+      mounted = false;
+      authGenerationRef.current += 1;
+      subscription.unsubscribe();
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, [bindIdentity, load]);
 
   // ===============================
   // REALTIME SUBSCRIPTION
   // ===============================
 
   useEffect(() => {
-    if (!offerId) return;
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
+    if (
+      !offerId
+      || !userId
+      || !offer
+      || (offer.sender_id !== userId && offer.receiver_id !== userId)
+      || !isCurrentIdentity(userId, generation)
+    ) return;
 
-    load();
 
     const channel = supabase
       .channel(`trade-offer-${offerId}`)
@@ -341,11 +404,18 @@ export default function OfferDetailScreen() {
           filter: `offer_id=eq.${offerId}`,
         },
         (payload) => {
+          if (!isCurrentIdentity(userId, generation)) return;
+          const event = sanitizeGate0TradeOfferEvent(payload.new as TradeOfferEvent);
+          if (!event) return;
           setEvents((prev) => {
-            if (prev.some((e) => e.id === payload.new.id)) return prev;
-            return [...prev, payload.new as TradeOfferEvent];
+            if (prev.some((item) => item.id === event.id)) return prev;
+            return [...prev, event];
           });
-          setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+          setTimeout(() => {
+            if (isCurrentIdentity(userId, generation)) {
+              scrollRef.current?.scrollToEnd({ animated: true });
+            }
+          }, 100);
         }
       )
       .on(
@@ -357,9 +427,14 @@ export default function OfferDetailScreen() {
           filter: `id=eq.${offerId}`,
         },
         (payload) => {
-          if (payload.new) {
-            setOffer((prev) => prev ? { ...prev, ...payload.new } : prev);
+          if (!payload.new || !isCurrentIdentity(userId, generation)) return;
+          const next = sanitizeGate0TradeOffer({ ...offer, ...payload.new } as TradeOffer);
+          if (next.sender_id !== userId && next.receiver_id !== userId) {
+            resetPrivateOfferState();
+            router.replace('/offers');
+            return;
           }
+          setOffer(next);
         }
       )
       .subscribe();
@@ -367,212 +442,101 @@ export default function OfferDetailScreen() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [offerId, load]);
+  }, [isCurrentIdentity, offer, offerId, resetPrivateOfferState]);
 
   // ===============================
   // HELPERS
   // ===============================
 
-  const getFirstCardName = (): string | undefined => {
-    const firstCard = offerCards[0];
-    if (!firstCard) return undefined;
-    return cardPreviews[firstCard.card_id]?.name ?? undefined;
-  };
-
   // ===============================
   // ACTIONS
   // ===============================
 
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
-    try {
-      setSending(true);
-      await sendOfferMessage(offerId, message.trim());
-      setMessage('');
-    } catch (error: any) {
-      Alert.alert('Could not send', error?.message ?? 'Something went wrong.');
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const handleCounter = async () => {
-    const amount = TRADE_CASH_TERMS_ENABLED && counterAmount.trim()
-      ? Number(counterAmount)
-      : undefined;
-
-    if (!message.trim() && amount === undefined) {
-      Alert.alert('Counter offer', 'Add a note first.');
-      return;
-    }
-
-    if (TRADE_CASH_TERMS_ENABLED && counterAmount.trim() && Number.isNaN(amount)) {
-      Alert.alert('Invalid amount', 'Enter a valid cash amount.');
-      return;
-    }
-
-    try {
-      setSending(true);
-      await sendCounterOffer(
-        offerId,
-        message.trim() || 'Counter offer proposed.',
-        amount
-      );
-      setMessage('');
-      setCounterAmount('');
-    } catch (error: any) {
-      Alert.alert('Could not send counter', error?.message ?? 'Something went wrong.');
-    } finally {
-      setSending(false);
-    }
-  };
-
   const performAcceptOffer = async () => {
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
+    if (!userId || offer?.receiver_id !== userId || !isCurrentIdentity(userId, generation)) return;
     try {
       setSending(true);
-      await updateTradeOfferStatus(offerId, 'accepted', 'Offer accepted.');
-
-      if (offer?.sender_id) {
-        sendPushNotification('/api/notify/trade-status', {
-          recipientUserId: offer.sender_id,
-          status: 'accepted',
-          cardName: getFirstCardName(),
-        });
-      }
-
-      await load();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id !== userId || !isCurrentIdentity(userId, generation)) return;
+      await updateTradeOfferStatus(offerId, 'accepted');
+      if (!isCurrentIdentity(userId, generation)) return;
+      await load(userId, generation);
     } catch (error: any) {
+      if (!isCurrentIdentity(userId, generation)) return;
       Alert.alert('Could not accept', error?.message ?? 'Something went wrong.');
     } finally {
-      setSending(false);
+      if (isCurrentIdentity(userId, generation)) setSending(false);
     }
   };
 
   const performDeclineOffer = async () => {
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
+    if (!userId || offer?.receiver_id !== userId || !isCurrentIdentity(userId, generation)) return;
     try {
       setSending(true);
-      await updateTradeOfferStatus(offerId, 'declined', 'Offer declined.');
-
-      if (offer?.sender_id) {
-        sendPushNotification('/api/notify/trade-status', {
-          recipientUserId: offer.sender_id,
-          status: 'declined',
-          cardName: getFirstCardName(),
-        });
-      }
-
-      await load();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id !== userId || !isCurrentIdentity(userId, generation)) return;
+      await updateTradeOfferStatus(offerId, 'declined');
+      if (!isCurrentIdentity(userId, generation)) return;
+      await load(userId, generation);
     } catch (error: any) {
+      if (!isCurrentIdentity(userId, generation)) return;
       Alert.alert('Error', error?.message ?? 'Could not decline.');
     } finally {
-      setSending(false);
+      if (isCurrentIdentity(userId, generation)) setSending(false);
     }
   };
 
   const performWithdrawOffer = async () => {
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
+    if (!userId || offer?.sender_id !== userId || !isCurrentIdentity(userId, generation)) return;
     try {
       setSending(true);
-      await updateTradeOfferStatus(offerId, 'cancelled', 'Offer withdrawn.');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id !== userId || !isCurrentIdentity(userId, generation)) return;
+      await updateTradeOfferStatus(offerId, 'cancelled');
+      if (!isCurrentIdentity(userId, generation)) return;
       router.replace('/offers');
     } catch (error: any) {
+      if (!isCurrentIdentity(userId, generation)) return;
       Alert.alert('Error', error?.message ?? 'Could not withdraw.');
     } finally {
-      setSending(false);
+      if (isCurrentIdentity(userId, generation)) setSending(false);
     }
   };
 
   const handleAcceptOffer = () => setConfirmAction('accept');
   const handleDeclineOffer = () => setConfirmAction('decline');
   const handleWithdrawOffer = () => setConfirmAction('withdraw');
-
-  const handleAcceptCounter = async (event: TradeOfferEvent) => {
-    if (!TRADE_CASH_TERMS_ENABLED && Number(event.proposed_cash_amount ?? 0) > 0) {
-      Alert.alert('Cash terms unavailable', 'This release supports card-for-card counter offers only.');
-      return;
-    }
-
-    try {
-      setSending(true);
-      const note = `Counter accepted${
-        TRADE_CASH_TERMS_ENABLED && event.proposed_cash_amount != null
-          ? ` at £${Number(event.proposed_cash_amount).toFixed(2)}`
-          : ''
-      }.`;
-      await updateTradeOfferStatus(offerId, 'accepted', note);
-
-      if (event.user_id && event.user_id !== currentUserId) {
-        sendPushNotification('/api/notify/trade-status', {
-          recipientUserId: event.user_id,
-          status: 'accepted',
-          cardName: getFirstCardName(),
-        });
-      }
-
-      await load();
-    } catch (error: any) {
-      Alert.alert('Could not accept counter', error?.message ?? 'Something went wrong.');
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const handleMarkSent = async () => {
-    try {
-      setSending(true);
-      await markTradeSent(offerId);
-
-      const recipientUserId = isSender ? offer?.receiver_id : offer?.sender_id;
-      if (recipientUserId) {
-        sendPushNotification('/api/notify/trade-status', {
-          recipientUserId,
-          status: 'sent',
-          cardName: getFirstCardName(),
-        });
-      }
-
-      await load();
-    } catch (error: any) {
-      Alert.alert('Could not mark as sent', error?.message ?? 'Something went wrong.');
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const handleMarkReceived = async () => {
-    try {
-      setSending(true);
-      await markTradeReceived(offerId);
-
-      const recipientUserId = isSender ? offer?.receiver_id : offer?.sender_id;
-      if (recipientUserId) {
-        sendPushNotification('/api/notify/trade-status', {
-          recipientUserId,
-          status: 'received',
-          cardName: getFirstCardName(),
-        });
-      }
-
-      await load();
-    } catch (error: any) {
-      Alert.alert('Could not mark as received', error?.message ?? 'Something went wrong.');
-    } finally {
-      setSending(false);
-    }
-  };
+  const handleRaiseDispute = () => setConfirmAction('dispute');
 
   const performRaiseDispute = async () => {
+    const userId = authUserIdRef.current;
+    const generation = authGenerationRef.current;
+    if (
+      !userId
+      || !offer
+      || (offer.sender_id !== userId && offer.receiver_id !== userId)
+      || !isCurrentIdentity(userId, generation)
+    ) return;
     try {
       setSending(true);
-      await updateTradeOfferStatus(offerId, 'disputed', 'Dispute raised.');
-      await load();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id !== userId || !isCurrentIdentity(userId, generation)) return;
+      await updateTradeOfferStatus(offerId, 'disputed');
+      if (!isCurrentIdentity(userId, generation)) return;
+      await load(userId, generation);
     } catch (error: any) {
-      Alert.alert('Error', error?.message ?? 'Could not raise dispute.');
+      if (!isCurrentIdentity(userId, generation)) return;
+      Alert.alert('Could not raise dispute', error?.message ?? 'Something went wrong.');
     } finally {
-      setSending(false);
+      if (isCurrentIdentity(userId, generation)) setSending(false);
     }
   };
-
-  const handleRaiseDispute = () => setConfirmAction('dispute');
 
   const runConfirmedOfferAction = async () => {
     const action = confirmAction;
@@ -629,7 +593,7 @@ export default function OfferDetailScreen() {
         )}
         <View>
           <Text style={{ color: theme.colors.text, fontSize: 13, fontWeight: '700', maxWidth: 140 }} numberOfLines={2}>
-            {preview?.name ?? card.card_id}
+            {preview?.name ?? 'Collector card'}
           </Text>
           {preview?.set_name && (
             <Text style={{ color: theme.colors.textSoft, fontSize: 11 }} numberOfLines={1}>
@@ -691,56 +655,11 @@ export default function OfferDetailScreen() {
   // ===============================
 
   const renderEvent = ({ item }: { item: TradeOfferEvent }) => {
-    const mine = item.user_id === currentUserId;
-    const isSystem = !['message', 'counter_offer'].includes(item.event_type);
-
-    if (isSystem) {
-      return (
-        <View style={styles.systemWrap}>
-          <Text style={styles.systemText}>{getEventLabel(item.event_type)}</Text>
-          {!!item.note && <Text style={styles.systemNote}>{item.note}</Text>}
-        </View>
-      );
-    }
-
     return (
-      <View style={[styles.messageRow, mine ? styles.messageRowMine : styles.messageRowOther]}>
-        <View style={[styles.bubble, mine ? styles.bubbleMine : styles.bubbleOther]}>
-          <Text style={[styles.bubbleType, mine ? styles.bubbleTypeMine : styles.bubbleTypeOther]}>
-            {item.event_type === 'counter_offer' ? 'Counter offer' : mine ? 'You' : 'Them'}
-          </Text>
-
-          {!!item.note && (
-            <Text style={[styles.bubbleText, mine ? styles.bubbleTextMine : styles.bubbleTextOther]}>
-              {item.note}
-            </Text>
-          )}
-
-          {TRADE_CASH_TERMS_ENABLED && item.proposed_cash_amount != null && (
-            <View style={[styles.cashPill, !mine && styles.cashPillOther]}>
-              <Text style={[styles.cashPillText, !mine && styles.cashPillTextOther]}>
-                Cash: £{Number(item.proposed_cash_amount).toFixed(2)}
-              </Text>
-            </View>
-          )}
-
-          {item.event_type === 'counter_offer' &&
-            !mine &&
-            !isAcceptedOrBeyond &&
-            !isDisputed && (
-              <TouchableOpacity
-                disabled={sending}
-                onPress={() => handleAcceptCounter(item)}
-                style={[styles.acceptCounterButton, sending && styles.disabled]}
-              >
-                <Text style={styles.acceptCounterText}>Accept Counter</Text>
-              </TouchableOpacity>
-            )}
-
-          <Text style={[styles.timeText, mine ? styles.timeTextMine : styles.timeTextOther]}>
-            {formatTime(item.created_at)}
-          </Text>
-        </View>
+      <View style={styles.systemWrap}>
+        <Text style={styles.systemText}>{getEventLabel(item.event_type)}</Text>
+        {!!item.note && <Text style={styles.systemNote}>{item.note}</Text>}
+        <Text style={styles.systemTime}>{formatTime(item.created_at)}</Text>
       </View>
     );
   };
@@ -775,7 +694,7 @@ export default function OfferDetailScreen() {
           <View style={{ flex: 1 }}>
             <Image source={stackrBrand.wordmark} style={styles.headerLogo} resizeMode="contain" />
             <Text style={styles.title}>Negotiation</Text>
-            <Text style={styles.subtitle}>Private trade discussion</Text>
+            <Text style={styles.subtitle}>Card-only offer status</Text>
           </View>
 
           <View style={{
@@ -787,7 +706,7 @@ export default function OfferDetailScreen() {
             borderColor: theme.colors.border,
           }}>
             <Text style={{ color: theme.colors.text, fontSize: 11, fontWeight: '800' }}>
-              {offerStatus.replace('_', ' ').toUpperCase()}
+              {OFFER_STATUS_LABEL[offerStatus] ?? 'UNAVAILABLE'}
             </Text>
           </View>
         </View>
@@ -800,37 +719,18 @@ export default function OfferDetailScreen() {
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
         >
-          {!TRADE_CASH_TERMS_ENABLED && (
-            <View style={{
-              backgroundColor: '#FEF3C7',
-              borderColor: '#F59E0B',
-              borderWidth: 1,
-              borderRadius: 12,
-              padding: 12,
-              marginHorizontal: 16,
-              marginBottom: 12,
-            }}>
-              <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '900' }}>
-                CARD-ONLY TRADE BETA
-              </Text>
-              <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, marginTop: 3 }}>
-                Cash top-ups and payment terms are hidden for this release.
-              </Text>
-            </View>
-          )}
-
           {offer && (
             <View style={styles.reviewHeroCard}>
-              <Text style={styles.heroEyebrow}>Review Deal</Text>
-              <Text style={styles.heroTitle}>Almost there!</Text>
+              <Text style={styles.heroEyebrow}>Review Offer</Text>
+              <Text style={styles.heroTitle}>Check both sides</Text>
               <Text style={styles.heroSubtitle}>
-                Review both sides before accepting, sending, or tracking this trade.
+                Review both sides before accepting this card-for-card offer.
               </Text>
 
               <View style={styles.dealSidesRow}>
                 <View style={styles.dealSideCard}>
                   <View style={styles.dealSideHeader}>
-                    <Text style={styles.dealSideTitle}>You send</Text>
+                    <Text style={styles.dealSideTitle}>Your side</Text>
                     <Text style={styles.dealCountPill}>
                       {mySentCards.length} card{mySentCards.length === 1 ? '' : 's'}
                     </Text>
@@ -839,13 +739,13 @@ export default function OfferDetailScreen() {
                   <Text style={styles.dealMeta}>
                     {mySentCards.length > 0
                       ? mySentCards.map((card) => cardPreviews[card.card_id]?.name ?? 'Card').slice(0, 2).join(', ')
-                      : 'Message only'}
+                      : 'No cards'}
                   </Text>
                 </View>
 
                 <View style={styles.dealSideCard}>
                   <View style={styles.dealSideHeader}>
-                    <Text style={styles.dealSideTitle}>You receive</Text>
+                    <Text style={styles.dealSideTitle}>Their side</Text>
                     <Text style={styles.dealCountPill}>
                       {theirSentCards.length} card{theirSentCards.length === 1 ? '' : 's'}
                     </Text>
@@ -854,37 +754,20 @@ export default function OfferDetailScreen() {
                   <Text style={styles.dealMeta}>
                     {theirSentCards.length > 0
                       ? theirSentCards.map((card) => cardPreviews[card.card_id]?.name ?? 'Card').slice(0, 2).join(', ')
-                      : 'Message only'}
+                      : 'No cards'}
                   </Text>
                 </View>
               </View>
-
-              {TRADE_CASH_TERMS_ENABLED && cashTerms && (
-                <View style={styles.cashAdjustmentCard}>
-                  <View style={styles.cashIcon}>
-                    <Text style={styles.cashIconText}>£</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.cashAdjustmentTitle}>Cash adjustment</Text>
-                    <Text style={styles.cashAdjustmentSub}>
-                      {cashTerms.payer_id === currentUserId ? 'You pay' : 'They pay'}
-                    </Text>
-                  </View>
-                  <Text style={styles.cashAdjustmentAmount}>
-                    £{Number(cashTerms.amount).toFixed(2)}
-                  </Text>
-                </View>
-              )}
 
               <View style={styles.valueComparisonCard}>
                 <Text style={styles.valueComparisonTitle}>Total Value Comparison</Text>
                 <View style={styles.valueComparisonGrid}>
                   <View style={[styles.valueComparisonCell, tradeFairnessState === 'your-heavy' && styles.valueComparisonCellWarn]}>
-                    <Text style={styles.valueComparisonLabel}>You send</Text>
+                    <Text style={styles.valueComparisonLabel}>Your side</Text>
                     <Text style={styles.valueComparisonAmount}>{money(mySideValue)}</Text>
                   </View>
                   <View style={[styles.valueComparisonCell, tradeFairnessState === 'their-heavy' && styles.valueComparisonCellWarn]}>
-                    <Text style={styles.valueComparisonLabel}>You receive</Text>
+                    <Text style={styles.valueComparisonLabel}>Their side</Text>
                     <Text style={styles.valueComparisonAmount}>{money(theirSideValue)}</Text>
                   </View>
                   <View style={styles.valueComparisonCell}>
@@ -946,7 +829,7 @@ export default function OfferDetailScreen() {
 
               {mySentCards.length > 0 && (
                 <View style={{ marginBottom: 10 }}>
-                  <Text style={styles.cardLabel}>You send:</Text>
+                  <Text style={styles.cardLabel}>You offer:</Text>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     {mySentCards.map(renderCardChip)}
                   </View>
@@ -955,212 +838,32 @@ export default function OfferDetailScreen() {
 
               {theirSentCards.length > 0 && (
                 <View style={{ marginBottom: 10 }}>
-                  <Text style={styles.cardLabel}>They send:</Text>
+                  <Text style={styles.cardLabel}>They offer:</Text>
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     {theirSentCards.map(renderCardChip)}
                   </View>
                 </View>
               )}
 
-              {TRADE_CASH_TERMS_ENABLED && cashTerms && (
-                <View style={{
-                  backgroundColor: '#FEF3C7',
-                  borderRadius: 10,
-                  padding: 10,
-                  marginTop: 4,
-                  borderWidth: 1,
-                  borderColor: '#FDE68A',
-                }}>
-                  <Text style={{ color: '#92400E', fontWeight: '800', fontSize: 13 }}>
-                    £{Number(cashTerms.amount).toFixed(2)} cash -{' '}
-                    {cashTerms.payer_id === currentUserId ? 'you pay' : 'they pay'}
-                  </Text>
-                  <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
-                    Payment method: Stripe
-                  </Text>
-                  {cashTerms.payment_status && (
-                    <Text style={{ color: '#92400E', fontSize: 12, marginTop: 2 }}>
-                      Status: {cashTerms.payment_status.replace('_', ' ')}
-                    </Text>
-                  )}
-                </View>
-              )}
-
             </View>
           )}
 
-          {/* Trade Progress */}
-          {isAcceptedOrBeyond && !isDeclinedOrCancelled && (
+          {isParticipant && isAccepted && (
+            <TouchableOpacity
+              onPress={handleRaiseDispute}
+              disabled={sending}
+              style={[styles.secondaryWideButton, { marginHorizontal: 12 }, sending && styles.disabled]}
+            >
+              <Text style={styles.secondaryWideButtonText}>Raise Dispute</Text>
+            </TouchableOpacity>
+          )}
+
+          {isDisputed && (
             <View style={styles.card}>
-              <View style={styles.progressHeader}>
-                <View style={styles.progressShield}>
-                  <Text style={styles.progressShieldText}>OK</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.progressTitle}>Trade Progress</Text>
-                  <Text style={styles.progressSub}>
-                    Your trade is protected until both sides confirm.
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.progressTimeline}>
-                <ProgressStep label="Offer accepted" done={true} />
-                <ProgressStep label="Condition check" done={isAcceptedOrBeyond} />
-                <ProgressStep label="Both sides confirmed" done={isAcceptedOrBeyond} />
-                <ProgressStep
-                  label="Cards sent"
-                  done={isSentOrBeyond}
-                  partial={!isSentOrBeyond && !!iHaveSent}
-                  partialLabel="Waiting for other side"
-                />
-                <ProgressStep
-                  label="Cards received"
-                  done={isReceivedOrBeyond}
-                  partial={!isReceivedOrBeyond && !!iHaveReceived}
-                  partialLabel="Waiting for confirmation"
-                />
-                <ProgressStep label="Trade completed" done={isCompleted} />
-              </View>
-
-              {isAccepted && (
-                <View style={{
-                  backgroundColor: theme.colors.surface,
-                  borderRadius: 10,
-                  padding: 10,
-                  marginTop: 8,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                  gap: 4,
-                }}>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginBottom: 4 }}>
-                    SENT STATUS
-                  </Text>
-                  <Text style={{ color: iHaveSent ? '#10B981' : theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                    {iHaveSent ? 'OK' : '-'} You - {iHaveSent ? 'sent' : 'not sent yet'}
-                  </Text>
-                  <Text style={{ color: theyHaveSent ? '#10B981' : theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                    {theyHaveSent ? 'OK' : '-'} Them - {theyHaveSent ? 'sent' : 'not sent yet'}
-                  </Text>
-                </View>
-              )}
-
-              {isSentOrBeyond && !isCompleted && (
-                <View style={{
-                  backgroundColor: theme.colors.surface,
-                  borderRadius: 10,
-                  padding: 10,
-                  marginTop: 8,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                  gap: 4,
-                }}>
-                  <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '700', marginBottom: 4 }}>
-                    RECEIVED STATUS
-                  </Text>
-                  <Text style={{ color: iHaveReceived ? '#10B981' : theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                    {iHaveReceived ? 'OK' : '-'} You - {iHaveReceived ? 'received' : 'not received yet'}
-                  </Text>
-                  <Text style={{ color: theyHaveReceived ? '#10B981' : theme.colors.textSoft, fontSize: 12, fontWeight: '700' }}>
-                    {theyHaveReceived ? 'OK' : '-'} Them - {theyHaveReceived ? 'received' : 'not received yet'}
-                  </Text>
-                </View>
-              )}
-
-              {!isCompleted && !isDisputed && (
-                <View style={{ gap: 8, marginTop: 12 }}>
-                  {isAccepted && !iHaveSent && (
-                    <TouchableOpacity
-                      disabled={sending}
-                      onPress={handleMarkSent}
-                      style={[{
-                        backgroundColor: theme.colors.primary,
-                        borderRadius: 12,
-                        paddingVertical: 12,
-                        alignItems: 'center',
-                      }, sending && styles.disabled]}
-                    >
-                      <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13 }}>
-                        Mark My Cards as Sent
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {isSentOrBeyond && !iHaveReceived && (
-                    <TouchableOpacity
-                      disabled={sending}
-                      onPress={handleMarkReceived}
-                      style={[{
-                        backgroundColor: '#8B5CF6',
-                        borderRadius: 12,
-                        paddingVertical: 12,
-                        alignItems: 'center',
-                      }, sending && styles.disabled]}
-                    >
-                      <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 13 }}>
-                        Mark Cards as Received
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-
-                  {isAcceptedOrBeyond && (
-                    <TouchableOpacity
-                      disabled={sending}
-                      onPress={handleRaiseDispute}
-                      style={[{
-                        backgroundColor: '#FEE2E2',
-                        borderRadius: 12,
-                        paddingVertical: 10,
-                        alignItems: 'center',
-                        borderWidth: 1,
-                        borderColor: '#FCA5A5',
-                      }, sending && styles.disabled]}
-                    >
-                      <Text style={{ color: '#991B1B', fontWeight: '900', fontSize: 12 }}>
-                        Raise Dispute
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-
-              {isDisputed && (
-                <Text style={{ color: '#EF4444', fontSize: 12, fontWeight: '800', marginTop: 8 }}>
-                  This trade has been marked as disputed.
-                </Text>
-              )}
-            </View>
-          )}
-
-          {/* Completed */}
-          {isCompleted && (
-            <View style={[styles.card, {
-              borderColor: '#10B981',
-              backgroundColor: '#F0FDF4',
-            }]}>
-              <Text style={{ color: '#065F46', fontWeight: '900', fontSize: 16, marginBottom: 6 }}>
-                Trade Complete!
+              <Text style={styles.cardTitle}>Dispute open</Text>
+              <Text style={styles.trustText}>
+                The card-only agreement is flagged for beta review.
               </Text>
-              <Text style={{ color: '#065F46', fontSize: 13, lineHeight: 18, marginBottom: 14 }}>
-                This trade has been completed successfully. Leave a review to help build trust in the community.
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push(
-                  `/offer/review?offerId=${offerId}&reviewUserId=${
-                    isSender ? offer?.receiver_id : offer?.sender_id
-                  }`
-                )}
-                style={{
-                  backgroundColor: '#10B981',
-                  borderRadius: 12,
-                  paddingVertical: 12,
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 14 }}>
-                  Leave a Review
-                </Text>
-              </TouchableOpacity>
             </View>
           )}
 
@@ -1168,25 +871,24 @@ export default function OfferDetailScreen() {
           <View style={styles.trustCard}>
             <Text style={styles.trustTitle}>Trading on Stackr</Text>
             <Text style={styles.trustText}>
-              Stackr connects collectors to arrange trades directly. Keep all communication
-              here so your trade history is recorded. This release supports card-for-card trades only;
-              do not arrange cash top-ups in chat.
+              Acceptance records a card-only agreement. Payments, shipping and free-form
+              messages are unavailable in this beta.
             </Text>
           </View>
 
-          {/* Messages */}
+          {/* Offer updates */}
           <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-            {events.length === 0 ? (
+            {displayEvents.length === 0 ? (
               <View style={{ alignItems: 'center', paddingTop: 40, paddingBottom: 20 }}>
                 <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 16 }}>
-                  No messages yet
+                  No offer updates yet
                 </Text>
                 <Text style={{ color: theme.colors.textSoft, textAlign: 'center', marginTop: 6, fontSize: 13 }}>
-                  Start the negotiation with a message or counter offer.
+                  Card selections and offer status changes appear here.
                 </Text>
               </View>
             ) : (
-              events.map((event) => (
+              displayEvents.map((event) => (
                 <React.Fragment key={event.id}>
                   {renderEvent({ item: event })}
                 </React.Fragment>
@@ -1195,60 +897,15 @@ export default function OfferDetailScreen() {
           </View>
         </ScrollView>
 
-        {/* Composer */}
-        {!isCompleted && !isDisputed && !isDeclinedOrCancelled ? (
-          <View style={[styles.composerWrap, { bottom: Math.max(insets.bottom + 25, 32) }]}>
-            {!isAcceptedOrBeyond && (
-              <View style={styles.counterRow}>
-                {TRADE_CASH_TERMS_ENABLED ? (
-                  <TextInput
-                    value={counterAmount}
-                    onChangeText={setCounterAmount}
-                    placeholder="Counter cash £"
-                    placeholderTextColor={theme.colors.textSoft}
-                    keyboardType="decimal-pad"
-                    style={styles.counterInput}
-                  />
-                ) : null}
-                <TouchableOpacity
-                  onPress={handleCounter}
-                  disabled={sending}
-                  style={[styles.counterButton, sending && styles.disabled]}
-                >
-                  <Text style={styles.counterButtonText}>Counter</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <View style={styles.messageInputRow}>
-              <TextInput
-                value={message}
-                onChangeText={setMessage}
-                placeholder="Message..."
-                placeholderTextColor={theme.colors.textSoft}
-                multiline
-                style={styles.messageInput}
-              />
-              <TouchableOpacity
-                onPress={handleSendMessage}
-                disabled={sending || !message.trim()}
-                style={[styles.sendButton, (sending || !message.trim()) && styles.disabled]}
-              >
-                <Text style={styles.sendButtonText}>Send</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
+        {isTerminal ? (
           <View style={styles.lockedComposer}>
             <Text style={styles.lockedText}>
-              {isCompleted
-                ? 'This trade is completed.'
-                : isDisputed
-                ? 'This trade is disputed. Keep records of all messages.'
+              {offerStatus === 'unavailable'
+                ? 'This legacy offer is unavailable in the current beta.'
                 : 'This offer has been declined or cancelled.'}
             </Text>
           </View>
-        )}
+        ) : null}
       </KeyboardAvoidingView>
 
       <StackrCenterModal
@@ -1350,45 +1007,6 @@ export default function OfferDetailScreen() {
         </View>
       )}
     </SafeAreaView>
-  );
-}
-
-// ===============================
-// SUB COMPONENTS
-// ===============================
-
-function ProgressStep({
-  label,
-  done,
-  partial,
-  partialLabel,
-}: {
-  label: string;
-  done: boolean;
-  partial?: boolean;
-  partialLabel?: string;
-}) {
-  const { theme } = useTheme();
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
-      <Text style={{ marginRight: 12, fontSize: 16, width: 30, textAlign: 'center' }}>
-        {done ? 'OK' : partial ? '...' : '-'}
-      </Text>
-      <View style={{ flex: 1 }}>
-        <Text style={{
-          color: done ? theme.colors.text : theme.colors.textSoft,
-          fontSize: 13,
-          fontWeight: done ? '900' : '700',
-        }}>
-          {label}
-        </Text>
-        {partial && partialLabel && (
-          <Text style={{ color: '#F59E0B', fontSize: 11, fontWeight: '600' }}>
-            {partialLabel}
-          </Text>
-        )}
-      </View>
-    </View>
   );
 }
 
@@ -1743,35 +1361,6 @@ function makeStyles(theme: any) {
     fontSize: 16,
     fontWeight: '900' as const,
   },
-  progressHeader: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: 12,
-    marginBottom: 16,
-  },
-  progressShield: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  progressShieldText: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: '900' as const,
-  },
-  progressTitle: {
-    color: theme.colors.text,
-    fontSize: 24,
-    fontWeight: '900' as const,
-  },
-  progressSub: {
-    color: theme.colors.textSoft,
-    fontSize: 13,
-    marginTop: 2,
-  },
   progressTimeline: {
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
@@ -1792,27 +1381,6 @@ function makeStyles(theme: any) {
   trustTitle: { color: theme.colors.text, fontWeight: '900' as const, fontSize: 13, marginBottom: 5 },
   trustText: { color: theme.colors.textSoft, fontSize: 11, lineHeight: 16 },
 
-  messageRow: { flexDirection: 'row' as const, marginBottom: 10 },
-  messageRowMine: { justifyContent: 'flex-end' as const },
-  messageRowOther: { justifyContent: 'flex-start' as const },
-  bubble: { maxWidth: '82%' as any, borderRadius: 18, padding: 12 },
-  bubbleMine: { backgroundColor: theme.colors.primary, borderBottomRightRadius: 4 },
-  bubbleOther: {
-    backgroundColor: theme.colors.card,
-    borderBottomLeftRadius: 4,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  bubbleType: { fontSize: 11, fontWeight: '900' as const, marginBottom: 4 },
-  bubbleTypeMine: { color: '#FFFFFF', opacity: 0.85 },
-  bubbleTypeOther: { color: theme.colors.primary },
-  bubbleText: { fontSize: 15, lineHeight: 21 },
-  bubbleTextMine: { color: '#FFFFFF' },
-  bubbleTextOther: { color: theme.colors.text },
-  timeText: { fontSize: 10, alignSelf: 'flex-end' as const, marginTop: 6 },
-  timeTextMine: { color: 'rgba(255,255,255,0.75)' },
-  timeTextOther: { color: theme.colors.textSoft },
-
   cashPill: {
     backgroundColor: 'rgba(255,255,255,0.18)',
     borderRadius: 999,
@@ -1823,16 +1391,6 @@ function makeStyles(theme: any) {
   cashPillOther: { backgroundColor: theme.colors.primary + '18' },
   cashPillText: { color: '#FFFFFF', fontWeight: '900' as const, fontSize: 12 },
   cashPillTextOther: { color: theme.colors.primary },
-
-  acceptCounterButton: {
-    backgroundColor: '#16A34A',
-    borderRadius: 12,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    marginTop: 8,
-    alignItems: 'center' as const,
-  },
-  acceptCounterText: { color: '#FFFFFF', fontWeight: '900' as const, fontSize: 12 },
 
   systemWrap: {
     alignSelf: 'center' as const,
@@ -1856,72 +1414,7 @@ function makeStyles(theme: any) {
     marginTop: 2,
     textAlign: 'center' as const,
   },
-
-  composerWrap: {
-    position: 'absolute' as const,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 10,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    backgroundColor: theme.colors.card,
-    zIndex: 20,
-    elevation: 20,
-  },
-  counterRow: { flexDirection: 'row' as const, gap: 8, marginBottom: 6 },
-  counterInput: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    color: theme.colors.text,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    minHeight: 46,
-    fontSize: 15,
-    fontWeight: '700' as const,
-  },
-  counterButton: {
-    backgroundColor: '#FACC15',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    minHeight: 46,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-  },
-  counterButtonText: { color: '#111827', fontWeight: '900' as const, fontSize: 14 },
-  messageInputRow: {
-    flexDirection: 'row' as const,
-    alignItems: 'flex-end' as const,
-    gap: 8,
-  },
-  messageInput: {
-    flex: 1,
-    maxHeight: 120,
-    minHeight: 48,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    color: theme.colors.text,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    textAlignVertical: 'top' as const,
-  },
-  sendButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 13,
-    minHeight: 48,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  sendButtonText: { color: '#FFFFFF', fontWeight: '900' as const, fontSize: 14 },
+  systemTime: { color: theme.colors.textSoft, fontSize: 10, marginTop: 2, textAlign: 'center' as const },
   lockedComposer: {
     padding: 14,
     borderTopWidth: 1,

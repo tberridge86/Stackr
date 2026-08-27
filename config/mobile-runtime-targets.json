@@ -1,0 +1,14 @@
+{
+  "staging": {
+    "supabaseUrl": "https://lmwfhvexfcoyeuoyrlco.supabase.co",
+    "supabasePublishableKey": "sb_publishable_5qRlv9bSq5vaz3zgDSpwIA_JayaHJGU",
+    "priceApiUrl": "https://stackr-backend-staging-staging.up.railway.app",
+    "stackrApiUrl": "https://stackr-api-gateway-staging.berridge14.workers.dev"
+  },
+  "production": {
+    "supabaseUrl": "https://oakdbbzdqwurpjnoqhmu.supabase.co",
+    "supabasePublishableKey": "sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt",
+    "priceApiUrl": "https://pocketvault-production.up.railway.app",
+    "stackrApiUrl": "https://api.stackrtcg.com"
+  }
+}

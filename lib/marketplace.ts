@@ -2,8 +2,10 @@ import { supabase } from './supabase';
 import { MARKETPLACE_STATUS_LABELS, normaliseMarketplaceStatus, type MarketplaceLifecycleStatus } from './transactionStates';
 import { getCachedOrFetch, invalidateRequestCache } from './requestCache';
 import { fetchStackrPriceSnapshots } from './stackrDomainAdapter';
+import { assertPremiumSellerWriteAccess } from './premiumSellerAccess';
+import { sanitizeGate0CommerceCopy } from './gate0CommerceCopy';
+import { sanitizeMarketplaceListingPresentationFields } from './marketplacePresentation';
 
-const API_URL = process.env.EXPO_PUBLIC_PRICE_API_URL ?? '';
 const ACTIVE_LISTING_STATUS_FILTER = 'listing_status.eq.active,listing_status.is.null';
 const MARKETPLACE_LISTINGS_CACHE_TTL_MS = 20 * 1000;
 
@@ -88,18 +90,19 @@ export type MarketplaceListing = {
 // ===============================
 
 function mapFlagToListing(row: any): MarketplaceListing {
+  const presentation = sanitizeMarketplaceListingPresentationFields(row);
   return {
     id: row.id,
     user_id: row.user_id,
     card_id: row.card_id,
-    set_id: row.set_id ?? null,
-    product_type: row.product_type ?? null,
-    product_name: row.product_name ?? null,
-    pricing_mode: row.pricing_mode ?? null,
-    grade_company: row.grade_company ?? null,
-    grade: row.grade ?? null,
+    set_id: presentation.set_id ?? null,
+    product_type: presentation.product_type ?? null,
+    product_name: presentation.product_name ?? 'Collector listing',
+    pricing_mode: presentation.pricing_mode ?? null,
+    grade_company: presentation.grade_company ?? null,
+    grade: presentation.grade ?? null,
     admin_review_required: Boolean(row.admin_review_required),
-    admin_review_reason: row.admin_review_reason ?? null,
+    admin_review_reason: sanitizeGate0CommerceCopy(row.admin_review_reason ?? null, null),
     custom_value:
       row.asking_price != null
         ? Number(row.asking_price)
@@ -109,15 +112,21 @@ function mapFlagToListing(row: any): MarketplaceListing {
     asking_price: row.asking_price != null ? Number(row.asking_price) : null,
     market_estimate:
       row.market_estimate != null ? Number(row.market_estimate) : null,
-    condition: row.condition ?? null,
-    notes: row.listing_notes ?? row.notes ?? null,
+    condition: presentation.condition ?? null,
+    notes: sanitizeGate0CommerceCopy(
+      row.listing_notes ?? row.notes ?? null,
+      'Listing details hidden during this beta.',
+    ),
     trade_only: Boolean(row.trade_only),
     has_damage: Boolean(row.has_damage),
-    damage_notes: row.damage_notes ?? null,
+    damage_notes: sanitizeGate0CommerceCopy(row.damage_notes ?? null, null),
     damage_image_url: row.damage_image_url ?? null,
-    listing_notes: row.listing_notes ?? null,
+    listing_notes: sanitizeGate0CommerceCopy(
+      row.listing_notes ?? null,
+      'Listing details hidden during this beta.',
+    ),
     listing_images: Array.isArray(row.listing_images) ? row.listing_images : null,
-    listing_media: Array.isArray(row.listing_media) ? row.listing_media : null,
+    listing_media: presentation.listing_media,
     official_image_url: row.official_image_url ?? null,
     seller_front_image_url: row.seller_front_image_url ?? null,
     seller_back_image_url: row.seller_back_image_url ?? null,
@@ -147,7 +156,7 @@ async function attachProfiles(
     (profiles ?? []).map((p: any) => [
       p.id,
       {
-        collector_name: p.collector_name ?? null,
+        collector_name: sanitizeGate0CommerceCopy(p.collector_name ?? null, 'Collector'),
         avatar_url: p.avatar_url ?? null,
         avatar_preset: p.avatar_preset ?? null,
         pokemon_type: p.pokemon_type ?? null,
@@ -188,38 +197,6 @@ async function attachPrices(listings: MarketplaceListing[]): Promise<Marketplace
     ...listing,
     prices: cardPriceMap[listing.card_id] || null,
   }));
-}
-
-async function notifyDiscordNewTradeListing(listingId: string) {
-  console.log('🔥 notifyDiscordNewTradeListing called');
-  console.log('API_URL:', API_URL);
-  console.log('Listing ID:', listingId);
-
-  if (!API_URL) {
-    console.log('❌ API_URL missing — check EXPO_PUBLIC_PRICE_API_URL in your env');
-    return;
-  }
-
-  const url = `${API_URL.replace(/\/$/, '')}/api/discord/new-trade-listing`;
-  console.log('📡 Posting to:', url);
-
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listingId }),
-    });
-
-    const text = await res.text();
-    console.log('✅ Discord status:', res.status);
-    console.log('✅ Discord response:', text);
-
-    if (!res.ok) {
-      console.log('❌ Discord backend returned an error');
-    }
-  } catch (error) {
-    console.log('❌ Discord listing notification failed:', error);
-  }
 }
 
 // ===============================
@@ -298,6 +275,7 @@ export async function deleteMarketplaceListing(listingId: string): Promise<void>
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError) throw new Error(userError.message);
   if (!user) throw new Error('You must be signed in to delete a listing.');
+  assertPremiumSellerWriteAccess(user);
 
   const { error } = await supabase
     .from('user_card_flags')
@@ -319,12 +297,12 @@ export async function createMarketplaceListing(input: {
 }): Promise<MarketplaceListing> {
   console.log('🔥 createMarketplaceListing called');
   console.log('Input:', input);
-  console.log('API_URL:', API_URL);
 
   // ── 1. Auth check ─────────────────────────────────────────────────
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError) throw new Error(userError.message);
   if (!user) throw new Error('You must be signed in to list a card.');
+  assertPremiumSellerWriteAccess(user);
 
   console.log('User ID:', user.id);
 
@@ -372,8 +350,6 @@ export async function createMarketplaceListing(input: {
   console.log('✅ Marketplace listing created in Supabase:', data.id);
 
   // ── 4. Notify Discord ─────────────────────────────────────────────
-  await notifyDiscordNewTradeListing(data.id);
-
   return mapFlagToListing(data);
 }
 
@@ -383,6 +359,7 @@ export async function archiveMarketplaceListing(
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError) throw new Error(userError.message);
   if (!user) throw new Error('You must be signed in to archive a listing.');
+  assertPremiumSellerWriteAccess(user);
 
   const { data: profile } = await supabase
     .from('profiles')

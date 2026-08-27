@@ -31,7 +31,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: stackr-${{ inputs.environment }}-rollback
+  group: stackr-${{ inputs.environment }}-deployment
   cancel-in-progress: false
 
 jobs:
@@ -53,6 +53,10 @@ jobs:
       STACKR_BACKEND_URL: ${{ vars.STACKR_BACKEND_URL }}
       STACKR_RECOGNITION_URL: ${{ vars.STACKR_RECOGNITION_URL }}
       STACKR_RELEASE_REQUEST_ID: rollback-${{ github.run_id }}-${{ github.run_attempt }}
+      STACKR_MOBILE_APP_VARIANT: ${{ inputs.environment }}
+      STACKR_MOBILE_ENVIRONMENT: ${{ inputs.environment }}
+      STACKR_ROLLBACK_COMPONENT: ${{ inputs.component }}
+      STACKR_ROLLBACK_ENVIRONMENT: ${{ inputs.environment }}
       STACKR_ROLLBACK_TARGET_ID: ${{ inputs.target_id }}
       STACKR_ROLLBACK_REASON: ${{ inputs.reason }}
     steps:
@@ -95,6 +99,64 @@ jobs:
           node scripts/deploy/release-database.mjs index rollback
           --id="$STACKR_ROLLBACK_TARGET_ID" --reason="$STACKR_ROLLBACK_REASON"
 
+      - name: Attest mobile rollback target
+        if: inputs.component == 'mobile-rollout' || inputs.component == 'mobile-update'
+        run: |
+          # Gate 0 rollback is deliberately limited to the current checked-out
+          # app runtime. Cross-runtime recovery requires a separately reviewed
+          # native build and must not be smuggled through an OTA rollback.
+          case "$STACKR_ROLLBACK_ENVIRONMENT" in
+            staging)
+              expected_runtime="$(node -p "require('./app.json').expo.version + '-staging'")"
+              ;;
+            production)
+              expected_runtime="$(node -p "require('./app.json').expo.version")"
+              ;;
+            *)
+              echo "Unsupported rollback environment." >&2
+              exit 1
+              ;;
+          esac
+          if ! [[ "$STACKR_ROLLBACK_TARGET_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+            echo "Mobile rollback target must be an exact EAS update group UUID." >&2
+            exit 1
+          fi
+          update_file="$RUNNER_TEMP/eas-rollback-update.json"
+          channel_file="$RUNNER_TEMP/eas-rollback-channel.json"
+          project_branch_file="$RUNNER_TEMP/eas-rollback-project-branch.json"
+          npx --yes eas-cli@21.4.0 update:view "$STACKR_ROLLBACK_TARGET_ID" --json > "$update_file"
+          npx --yes eas-cli@21.4.0 channel:view "$STACKR_ROLLBACK_ENVIRONMENT" \
+            --limit 100 --offset 0 --json --non-interactive > "$channel_file"
+          npx --yes eas-cli@21.4.0 update:list \
+            --branch "$STACKR_ROLLBACK_ENVIRONMENT" \
+            --runtime-version "$expected_runtime" \
+            --platform all --limit 50 --offset 0 --json --non-interactive \
+            > "$project_branch_file"
+          node scripts/deploy/verify-eas-rollback-target.mjs \
+            --update-file="$update_file" \
+            --channel-file="$channel_file" \
+            --project-branch-file="$project_branch_file" \
+            --expected-group="$STACKR_ROLLBACK_TARGET_ID" \
+            --expected-environment="$STACKR_ROLLBACK_ENVIRONMENT" \
+            --expected-channel="$STACKR_ROLLBACK_ENVIRONMENT" \
+            --expected-runtime="$expected_runtime" \
+            --expected-platforms=android,ios \
+            --expected-operation="$STACKR_ROLLBACK_COMPONENT" \
+            > "$RUNNER_TEMP/eas-rollback-target-attestation.json"
+
+      - name: Upload mobile rollback attestation
+        if: always() && (inputs.component == 'mobile-rollout' || inputs.component == 'mobile-update')
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: stackr-${{ inputs.environment }}-mobile-rollback-attestation-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/eas-rollback-update.json
+            ${{ runner.temp }}/eas-rollback-channel.json
+            ${{ runner.temp }}/eas-rollback-project-branch.json
+            ${{ runner.temp }}/eas-rollback-target-attestation.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Revert an in-progress EAS rollout
         if: inputs.component == 'mobile-rollout'
         run: >-
@@ -104,8 +166,6 @@ jobs:
 
       - name: Republish a known-good EAS update group
         if: inputs.component == 'mobile-update'
-        env:
-          STACKR_ROLLBACK_ENVIRONMENT: ${{ inputs.environment }}
         run: >-
           npx --yes eas-cli@21.4.0 update:republish
           --group "$STACKR_ROLLBACK_TARGET_ID"

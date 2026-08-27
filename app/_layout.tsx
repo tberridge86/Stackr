@@ -95,7 +95,6 @@ const TAB_ICONS: Record<string, any> = {
   dashboard: stackrIcons.hub,
   inventory: stackrIcons.stock,
   listings: stackrIcons.sellerMode,
-  orders: stackrIcons.trade,
 };
 
 const shouldHideShellControls = (pathname: string) =>
@@ -155,7 +154,6 @@ const PersistentTabBar = memo(function PersistentTabBar() {
         || pathname === '/seller/index';
     }
     if (tab.key === 'inventory') return pathname.startsWith('/(tabs)/inventory') || pathname.startsWith('/inventory');
-    if (tab.key === 'orders') return pathname.startsWith('/seller/orders');
     const publicRoute = route.replace('/(tabs)', '') || '/';
     return pathname === route
       || pathname.startsWith(`${route}/`)
@@ -359,7 +357,7 @@ function AppNavigation() {
                   <Stack.Screen name="offer/index" options={{ title: '' }} />
                   <Stack.Screen name="offer/[id]" options={{ title: '' }} />
                   <Stack.Screen name="offers" options={{ title: '' }} />
-                  <Stack.Screen name="orders" options={{ title: '' }} />
+                  <Stack.Screen name="orders" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="watchlist" options={{ title: '' }} />
                   <Stack.Screen name="value-history" options={{ title: 'Value History' }} />
                   <Stack.Screen name="listing/new" options={{ headerShown: false, title: '' }} />
@@ -367,8 +365,8 @@ function AppNavigation() {
                   <Stack.Screen name="listing/index" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="listing/camera" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="seller/index" options={{ headerShown: false, title: '' }} />
-                  <Stack.Screen name="seller/onboarding" options={{ title: '' }} />
-                  <Stack.Screen name="seller/orders" options={{ title: '' }} />
+                  <Stack.Screen name="seller/onboarding" options={{ headerShown: false, title: '' }} />
+                  <Stack.Screen name="seller/orders" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="binder/new" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="binder/[id]" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="binder/add-cards" options={{ title: '' }} />

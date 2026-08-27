@@ -11,9 +11,10 @@ import { InteractionManager } from 'react-native';
 import type { MarketplaceListing } from '../lib/marketplace';
 import { supabase } from '../lib/supabase';
 import { createActivityPost } from '../lib/activity';
-import { fetchStackrCard } from '../lib/stackrDomainAdapter';
 
-import { PRICE_API_URL } from '../lib/config';
+import { assertTradeFulfilmentEnabled } from '../lib/config';
+import { assertPremiumSellerWriteAccess } from '../lib/premiumSellerAccess';
+import type { User } from '@supabase/supabase-js';
 
 // ===============================
 // TYPES
@@ -69,6 +70,18 @@ type CreateTradeReviewInput = {
 };
 
 type FlagKey = string;
+
+type AuthScopedTradeRefresh = {
+  userId: string | null;
+  generation: number;
+  request: Promise<void>;
+};
+
+type VerifiedAuthIdentity = {
+  user: User | null;
+  userId: string | null;
+  generation: number;
+};
 
 // ===============================
 // CONTEXT TYPE
@@ -134,26 +147,6 @@ function invalidateMarketplaceCachesSoon() {
 }
 
 // ===============================
-// PUSH NOTIFICATION HELPER
-// ===============================
-
-async function sendPushNotification(
-  endpoint: string,
-  payload: Record<string, any>
-): Promise<void> {
-  if (!PRICE_API_URL) return;
-  try {
-    await fetch(`${PRICE_API_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-  } catch (err) {
-    console.log(`Push notification failed (${endpoint}):`, err);
-  }
-}
-
-// ===============================
 // CONTEXT
 // ===============================
 
@@ -170,31 +163,121 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
   const [myListings, setMyListings] = useState<MarketplaceListing[]>([]);
   const [tradeLoading, setTradeLoading] = useState(false);
   const [tradeError, setTradeError] = useState<string | null>(null);
-  const refreshTradeInFlightRef = useRef<Promise<void> | null>(null);
+  const mountedRef = useRef(true);
+  const trustedAuthUserIdRef = useRef<string | null>(null);
+  const authBoundaryInitializedRef = useRef(false);
+  const authGenerationRef = useRef(0);
+  const refreshTradeInFlightRef = useRef<AuthScopedTradeRefresh | null>(null);
   const marketListingsHydratedRef = useRef(false);
+
+  const clearAccountScopedTradeState = useCallback(() => {
+    setTradeCardIds([]);
+    setWishlistCardIds([]);
+    setTradeKeys([]);
+    setWishlistKeys([]);
+    setTradeMeta({});
+    setMarketplaceListings([]);
+    setMyListings([]);
+    setTradeError(null);
+    setTradeLoading(false);
+    marketListingsHydratedRef.current = false;
+  }, []);
+
+  const isCurrentAuthIdentity = useCallback((userId: string | null, generation: number) => {
+    return (
+      mountedRef.current
+      && trustedAuthUserIdRef.current === userId
+      && authGenerationRef.current === generation
+    );
+  }, []);
+
+  const bindTrustedAuthUser = useCallback((userId: string | null) => {
+    if (authBoundaryInitializedRef.current && trustedAuthUserIdRef.current === userId) {
+      return authGenerationRef.current;
+    }
+
+    authBoundaryInitializedRef.current = true;
+    trustedAuthUserIdRef.current = userId;
+    authGenerationRef.current += 1;
+    refreshTradeInFlightRef.current = null;
+    clearAccountScopedTradeState();
+    return authGenerationRef.current;
+  }, [clearAccountScopedTradeState]);
+
+  const invalidateTrustedAuthIdentity = useCallback(() => {
+    authBoundaryInitializedRef.current = true;
+    trustedAuthUserIdRef.current = null;
+    authGenerationRef.current += 1;
+    refreshTradeInFlightRef.current = null;
+    clearAccountScopedTradeState();
+  }, [clearAccountScopedTradeState]);
+
+  const verifyCurrentAuthIdentity = useCallback(async (
+    expectedGeneration: number,
+    expectedUserId?: string | null,
+  ): Promise<VerifiedAuthIdentity | null> => {
+    if (!mountedRef.current || authGenerationRef.current !== expectedGeneration) return null;
+
+    const boundaryWasInitialized = authBoundaryInitializedRef.current;
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    if (!mountedRef.current || authGenerationRef.current !== expectedGeneration) return null;
+
+    const verifiedUserId = user?.id ?? null;
+    if (expectedUserId !== undefined && verifiedUserId !== expectedUserId) return null;
+
+    if (boundaryWasInitialized) {
+      if (trustedAuthUserIdRef.current !== verifiedUserId) return null;
+      return { user, userId: verifiedUserId, generation: expectedGeneration };
+    }
+
+    const generation = bindTrustedAuthUser(verifiedUserId);
+    return { user, userId: verifiedUserId, generation };
+  }, [bindTrustedAuthUser]);
+
+  const requireVerifiedSignedInIdentity = useCallback(async () => {
+    const generation = authGenerationRef.current;
+    const expectedUserId = authBoundaryInitializedRef.current
+      ? trustedAuthUserIdRef.current
+      : undefined;
+    let identity: VerifiedAuthIdentity | null;
+    try {
+      identity = await verifyCurrentAuthIdentity(generation, expectedUserId);
+    } catch (error) {
+      if (
+        authGenerationRef.current === generation
+        && trustedAuthUserIdRef.current === (expectedUserId ?? null)
+      ) invalidateTrustedAuthIdentity();
+      throw error;
+    }
+    if (!identity) {
+      if (
+        authGenerationRef.current === generation
+        && trustedAuthUserIdRef.current === (expectedUserId ?? null)
+      ) invalidateTrustedAuthIdentity();
+      throw new Error('Your signed-in account changed. Please try again.');
+    }
+    if (!identity.user) throw new Error('You must be signed in.');
+    return { ...identity, user: identity.user, userId: identity.user.id };
+  }, [invalidateTrustedAuthIdentity, verifyCurrentAuthIdentity]);
 
   // ===============================
   // LOAD FLAGS FROM DB
   // ===============================
 
-  const loadFlags = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      setTradeCardIds([]);
-      setWishlistCardIds([]);
-      setTradeKeys([]);
-      setWishlistKeys([]);
-      setTradeMeta({});
-      return;
-    }
+  const loadFlags = useCallback(async (
+    userId = trustedAuthUserIdRef.current,
+    generation = authGenerationRef.current,
+  ) => {
+    if (!userId || !isCurrentAuthIdentity(userId, generation)) return;
 
     const { data, error } = await supabase
       .from('user_card_flags')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     if (error) throw error;
+    if (!isCurrentAuthIdentity(userId, generation)) return;
 
     const rows = data ?? [];
     const tradeRows = rows.filter((row) => row.flag_type === 'trade');
@@ -238,63 +321,163 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
     });
 
     setTradeMeta(nextMeta);
-  }, []);
+  }, [isCurrentAuthIdentity]);
 
   // ===============================
   // REFRESH TRADE
   // ===============================
 
-  const refreshTrade = useCallback(async () => {
-    if (refreshTradeInFlightRef.current) return refreshTradeInFlightRef.current;
+  const refreshTradeForIdentity = useCallback(async ({
+    userId,
+    generation,
+  }: VerifiedAuthIdentity) => {
+    const inFlight = refreshTradeInFlightRef.current;
+    if (inFlight?.userId === userId && inFlight.generation === generation) {
+      return inFlight.request;
+    }
 
     const request = (async () => {
       try {
+        if (!isCurrentAuthIdentity(userId, generation)) return;
         setTradeError(null);
         setTradeLoading(true);
 
-        await loadFlags();
+        if (userId) await loadFlags(userId, generation);
+        if (!isCurrentAuthIdentity(userId, generation)) return;
 
-        const { fetchMarketplaceListings, fetchMyListings } = await loadMarketplaceApi();
+        const {
+          fetchMarketplaceListings,
+          fetchMyListings,
+          invalidateMarketplaceListingCaches,
+        } = await loadMarketplaceApi();
+        if (!isCurrentAuthIdentity(userId, generation)) return;
+        invalidateMarketplaceListingCaches();
         const [marketplace, mine] = await Promise.all([
           fetchMarketplaceListings(),
-          fetchMyListings(),
+          userId ? fetchMyListings() : Promise.resolve([]),
         ]);
 
+        if (!isCurrentAuthIdentity(userId, generation)) return;
         setMarketplaceListings(marketplace ?? []);
         setMyListings(mine ?? []);
         marketListingsHydratedRef.current = true;
       } catch (error) {
         console.log('refreshTrade failed', error);
-        setTradeError(
-          error instanceof Error ? error.message : 'Failed to refresh trade data'
-        );
+        if (isCurrentAuthIdentity(userId, generation)) {
+          setTradeError(
+            error instanceof Error ? error.message : 'Failed to refresh trade data'
+          );
+        }
       } finally {
-        setTradeLoading(false);
-        refreshTradeInFlightRef.current = null;
+        if (isCurrentAuthIdentity(userId, generation)) setTradeLoading(false);
+        if (
+          refreshTradeInFlightRef.current?.userId === userId
+          && refreshTradeInFlightRef.current.generation === generation
+        ) {
+          refreshTradeInFlightRef.current = null;
+        }
       }
     })();
 
-    refreshTradeInFlightRef.current = request;
+    refreshTradeInFlightRef.current = { userId, generation, request };
     return request;
-  }, [loadFlags]);
+  }, [isCurrentAuthIdentity, loadFlags]);
+
+  const refreshTrade = useCallback(async () => {
+    const generation = authGenerationRef.current;
+    const expectedUserId = authBoundaryInitializedRef.current
+      ? trustedAuthUserIdRef.current
+      : undefined;
+    let identity: VerifiedAuthIdentity | null;
+    try {
+      identity = await verifyCurrentAuthIdentity(generation, expectedUserId);
+    } catch (error) {
+      if (
+        authGenerationRef.current === generation
+        && trustedAuthUserIdRef.current === (expectedUserId ?? null)
+      ) invalidateTrustedAuthIdentity();
+      throw error;
+    }
+    if (!identity) {
+      if (
+        authGenerationRef.current === generation
+        && trustedAuthUserIdRef.current === (expectedUserId ?? null)
+      ) invalidateTrustedAuthIdentity();
+      return;
+    }
+    return refreshTradeForIdentity(identity);
+  }, [invalidateTrustedAuthIdentity, refreshTradeForIdentity, verifyCurrentAuthIdentity]);
 
   useEffect(() => {
-    let cancelled = false;
+    mountedRef.current = true;
+    let interactionTask: ReturnType<typeof InteractionManager.runAfterInteractions> | null = null;
 
-    void loadFlags().catch((error) => {
-      console.log('Initial trade flags load failed', error);
-    });
+    const activateVerifiedIdentity = (identity: VerifiedAuthIdentity) => {
+      const { userId, generation } = identity;
+      if (!isCurrentAuthIdentity(userId, generation)) return;
+      interactionTask?.cancel?.();
 
-    const task = InteractionManager.runAfterInteractions(() => {
-      if (cancelled || marketListingsHydratedRef.current) return;
-      void refreshTrade();
+      if (userId) void loadFlags(userId, generation).catch((error) => {
+        if (isCurrentAuthIdentity(userId, generation)) {
+          console.log('Initial trade flags load failed', error);
+        }
+      });
+      interactionTask = InteractionManager.runAfterInteractions(() => {
+        if (!isCurrentAuthIdentity(userId, generation) || marketListingsHydratedRef.current) return;
+        void refreshTradeForIdentity(identity);
+      });
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const expectedUserId = session?.user?.id ?? null;
+      const generation = bindTrustedAuthUser(expectedUserId);
+      interactionTask?.cancel?.();
+      setTimeout(() => {
+        void verifyCurrentAuthIdentity(generation, expectedUserId)
+          .then((identity) => {
+            if (identity) {
+              activateVerifiedIdentity(identity);
+            } else if (isCurrentAuthIdentity(expectedUserId, generation)) {
+              invalidateTrustedAuthIdentity();
+            }
+          })
+          .catch((error) => {
+            if (isCurrentAuthIdentity(expectedUserId, generation)) {
+              console.log('Trade auth verification failed', error);
+              invalidateTrustedAuthIdentity();
+            }
+          });
+      }, 0);
     });
+    const initialGeneration = authGenerationRef.current;
+    void verifyCurrentAuthIdentity(initialGeneration)
+      .then((identity) => {
+        if (identity) activateVerifiedIdentity(identity);
+      })
+      .catch((error) => {
+        if (authGenerationRef.current === initialGeneration) {
+          console.log('Initial trade user lookup failed', error);
+          bindTrustedAuthUser(null);
+        }
+      });
 
     return () => {
-      cancelled = true;
-      task.cancel?.();
+      mountedRef.current = false;
+      interactionTask?.cancel?.();
+      subscription.unsubscribe();
+      trustedAuthUserIdRef.current = null;
+      authBoundaryInitializedRef.current = true;
+      authGenerationRef.current += 1;
+      refreshTradeInFlightRef.current = null;
     };
-  }, [loadFlags, refreshTrade]);
+  }, [
+    bindTrustedAuthUser,
+    invalidateTrustedAuthIdentity,
+    isCurrentAuthIdentity,
+    loadFlags,
+    refreshTradeForIdentity,
+    verifyCurrentAuthIdentity,
+  ]);
 
   // ===============================
   // ARCHIVE LISTING
@@ -332,32 +515,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
 
       // ── Notify Discord reviews channel ────────────────────────────
-      if (PRICE_API_URL) {
-        try {
-          const { data: tradeOffer } = await supabase
-            .from('trade_offers')
-            .select('card_name')
-            .eq('id', input.tradeId)
-            .maybeSingle();
-
-          await fetch(
-            `${PRICE_API_URL.replace(/\/$/, '')}/api/discord/new-review`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                reviewedUserId: input.reviewedUserId,
-                reviewerUserId: user.id,
-                rating: input.rating,
-                comment: input.comment ?? null,
-                cardName: tradeOffer?.card_name ?? null,
-              }),
-            }
-          );
-        } catch (discordErr) {
-          console.log('Review Discord notification failed:', discordErr);
-        }
-      }
       // ── End Discord ───────────────────────────────────────────────
     },
     []
@@ -397,6 +554,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
   const markTradeSent = useCallback(
     async (tradeId: string, userId: string) => {
+      assertTradeFulfilmentEnabled();
       const { data: trade, error: loadError } = await supabase
         .from('trade_offers')
         .select('id, sender_id, receiver_id, card_name')
@@ -417,21 +575,13 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
-      // Notify the other party
-      const recipientUserId =
-        trade.sender_id === userId ? trade.receiver_id : trade.sender_id;
-
-      sendPushNotification('/api/notify/trade-status', {
-        recipientUserId,
-        status: 'sent',
-        cardName: trade.card_name ?? undefined,
-      });
     },
     []
   );
 
   const markTradeReceived = useCallback(
     async (tradeId: string, userId: string) => {
+      assertTradeFulfilmentEnabled();
       const { data: trade, error: loadError } = await supabase
         .from('trade_offers')
         .select('id, sender_id, receiver_id, card_name')
@@ -451,16 +601,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         .eq('id', tradeId);
 
       if (error) throw error;
-
-      // Notify the other party
-      const recipientUserId =
-        trade.sender_id === userId ? trade.receiver_id : trade.sender_id;
-
-      sendPushNotification('/api/notify/trade-status', {
-        recipientUserId,
-        status: 'received',
-        cardName: trade.card_name ?? undefined,
-      });
 
       // Check if both sides complete
       const { data: updatedTrade, error: reloadError } = await supabase
@@ -488,17 +628,6 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
         if (completeError) throw completeError;
 
-        // Notify both parties the trade is complete
-        sendPushNotification('/api/notify/trade-status', {
-          recipientUserId: trade.sender_id,
-          status: 'completed',
-          cardName: trade.card_name ?? undefined,
-        });
-        sendPushNotification('/api/notify/trade-status', {
-          recipientUserId: trade.receiver_id,
-          status: 'completed',
-          cardName: trade.card_name ?? undefined,
-        });
       }
     },
     []
@@ -510,42 +639,56 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleFlag = useCallback(
     async (cardId: string, flag: 'trade' | 'wishlist', setId?: string | null) => {
+      const { user, userId, generation } = await requireVerifiedSignedInIdentity();
+      if (flag === 'trade') assertPremiumSellerWriteAccess(user);
+
       const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
       const key = makeFlagKey(cardId, resolvedSetId);
       const isTrade = flag === 'trade';
 
-      const currentKeys = isTrade ? tradeKeys : wishlistKeys;
       const setKeys = isTrade ? setTradeKeys : setWishlistKeys;
       const setIds = isTrade ? setTradeCardIds : setWishlistCardIds;
 
-      const exists = currentKeys.includes(key);
+      const { data: existingFlag, error: existingFlagError } = await supabase
+        .from('user_card_flags')
+        .select('id, set_id')
+        .eq('user_id', userId)
+        .eq('card_id', cardId)
+        .eq('flag_type', flag)
+        .maybeSingle();
+      if (existingFlagError) throw existingFlagError;
+      if (!isCurrentAuthIdentity(userId, generation)) {
+        throw new Error('Your signed-in account changed. Please try again.');
+      }
+
+      // The database row, scoped to the freshly verified user, is authoritative.
+      // React closures can still contain account A's keys until the A -> B clear renders.
+      const exists = Boolean(existingFlag);
+      const stateKey = existingFlag
+        ? makeFlagKey(cardId, existingFlag.set_id ?? getSetIdFromCardId(cardId))
+        : key;
 
       // Optimistic update
-      setKeys((prev) => exists ? prev.filter((k) => k !== key) : [...prev, key]);
-      setIds((prev) => exists ? prev.filter((id) => id !== cardId) : [...prev, cardId]);
+      setKeys((prev) => exists
+        ? prev.filter((existingKey) => existingKey !== stateKey)
+        : [...prev.filter((existingKey) => existingKey !== stateKey), stateKey]);
+      setIds((prev) => exists
+        ? prev.filter((id) => id !== cardId)
+        : [...prev.filter((id) => id !== cardId), cardId]);
 
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('You must be signed in.');
-
         if (exists) {
-          let query = supabase
+          const { error } = await supabase
             .from('user_card_flags')
             .delete()
-            .eq('user_id', user.id)
-            .eq('card_id', cardId)
+            .eq('id', existingFlag!.id)
+            .eq('user_id', userId)
             .eq('flag_type', flag);
-
-          if (resolvedSetId) {
-            query = query.eq('set_id', resolvedSetId);
-          }
-
-          const { error } = await query;
           if (error) throw error;
         } else {
           const { error } = await supabase.from('user_card_flags').upsert(
             {
-              user_id: user.id,
+              user_id: userId,
               card_id: cardId,
               set_id: resolvedSetId,
               flag_type: flag,
@@ -557,74 +700,76 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
           );
 
           if (error) throw error;
+        }
 
-          if (flag === 'trade') {
-            createActivityPost({
+        if (!isCurrentAuthIdentity(userId, generation)) return;
+
+        if (!exists && flag === 'trade') {
+          try {
+            await createActivityPost({
               type: 'trade_listed',
               title: 'Listed a card for trade',
               cardId,
               setId: resolvedSetId,
-            }).catch((err) => {
-              console.log('Failed to create trade activity post', err);
+            }, {
+              expectedUserId: userId,
             });
-
-            // Check for wishlist matches and notify via push
-            let wantedQuery = supabase
-              .from('user_card_flags')
-              .select('user_id')
-              .eq('card_id', cardId)
-              .eq('flag_type', 'wishlist')
-              .neq('user_id', user.id);
-
-            if (resolvedSetId) {
-              wantedQuery = wantedQuery.eq('set_id', resolvedSetId);
+          } catch (err) {
+            if (isCurrentAuthIdentity(userId, generation)) {
+              console.log('Failed to create trade activity post', err);
+              invalidateTrustedAuthIdentity();
             }
+            return;
+          }
+          if (!isCurrentAuthIdentity(userId, generation)) return;
 
-            const { data: wantedMatches, error: wantedError } = await wantedQuery;
+          // Check for wishlist matches and create in-app notifications.
+          let wantedQuery = supabase
+            .from('user_card_flags')
+            .select('user_id')
+            .eq('card_id', cardId)
+            .eq('flag_type', 'wishlist')
+            .neq('user_id', userId);
 
-            if (wantedError) {
-              console.log('Failed to check wishlist matches', wantedError);
-            }
+          if (resolvedSetId) {
+            wantedQuery = wantedQuery.eq('set_id', resolvedSetId);
+          }
 
-            if (wantedMatches?.length) {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('collector_name')
-                .eq('id', user.id)
-                .maybeSingle();
+          const { data: wantedMatches, error: wantedError } = await wantedQuery;
+          if (!isCurrentAuthIdentity(userId, generation)) return;
 
-              const sellerName = profile?.collector_name ?? 'Another collector';
-              const cardData = await fetchStackrCard(cardId).catch(() => null);
-              const cardName = cardData?.name ?? 'a card';
+          if (wantedError) {
+            console.log('Failed to check wishlist matches', wantedError);
+          }
 
-              // Insert in-app notifications
-              const notifications = wantedMatches.map((match) => ({
-                user_id: match.user_id,
-                type: 'wishlist_match',
-                title: 'Wishlist match found',
-                message: `${sellerName} just listed a card from your wishlist.`,
-                card_id: cardId,
-                set_id: resolvedSetId,
-                created_at: new Date().toISOString(),
-                read: false,
-              }));
+          if (wantedMatches?.length) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('collector_name')
+              .eq('id', userId)
+              .maybeSingle();
+            if (!isCurrentAuthIdentity(userId, generation)) return;
 
-              const { error: notifyError } = await supabase
-                .from('notifications')
-                .insert(notifications);
+            const sellerName = profile?.collector_name ?? 'Another collector';
+            // Insert in-app notifications
+            const notifications = wantedMatches.map((match) => ({
+              user_id: match.user_id,
+              type: 'wishlist_match',
+              title: 'Wishlist match found',
+              message: `${sellerName} just listed a card from your wishlist.`,
+              card_id: cardId,
+              set_id: resolvedSetId,
+              created_at: new Date().toISOString(),
+              read: false,
+            }));
 
-              if (notifyError) {
-                console.log('Failed to create wishlist notifications', notifyError);
-              }
+            const { error: notifyError } = await supabase
+              .from('notifications')
+              .insert(notifications);
+            if (!isCurrentAuthIdentity(userId, generation)) return;
 
-              // Send push notifications to each matched user
-              for (const match of wantedMatches) {
-                sendPushNotification('/api/notify/wishlist-match', {
-                  recipientUserId: match.user_id,
-                  listerUsername: sellerName,
-                  cardName,
-                });
-              }
+            if (notifyError) {
+              console.log('Failed to create wishlist notifications', notifyError);
             }
           }
         }
@@ -632,18 +777,29 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         if (flag === 'trade') {
           invalidateMarketplaceCachesSoon();
         }
-        await loadFlags();
+        if (isCurrentAuthIdentity(userId, generation)) {
+          await loadFlags(userId, generation);
+        }
       } catch (error) {
         console.log('Rollback triggered', error);
 
         // Rollback optimistic update
-        setKeys((prev) => exists ? [...prev, key] : prev.filter((k) => k !== key));
-        setIds((prev) => exists ? [...prev, cardId] : prev.filter((id) => id !== cardId));
+        if (isCurrentAuthIdentity(userId, generation)) {
+          setKeys((prev) => exists
+            ? [...prev.filter((existingKey) => existingKey !== stateKey), stateKey]
+            : prev.filter((existingKey) => existingKey !== stateKey));
+          setIds((prev) => exists ? [...prev, cardId] : prev.filter((id) => id !== cardId));
+        }
 
         throw error;
       }
     },
-    [tradeKeys, wishlistKeys, loadFlags]
+    [
+      invalidateTrustedAuthIdentity,
+      isCurrentAuthIdentity,
+      loadFlags,
+      requireVerifiedSignedInIdentity,
+    ]
   );
 
   // ===============================
@@ -652,14 +808,14 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
   const createTradeListing = useCallback(
     async (input: TradeListingInput) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('You must be signed in.');
+      const { user, userId, generation } = await requireVerifiedSignedInIdentity();
+      assertPremiumSellerWriteAccess(user);
 
       const resolvedSetId = input.setId ?? getSetIdFromCardId(input.cardId);
 
       const { error } = await supabase.from('user_card_flags').upsert(
         {
-          user_id: user.id,
+          user_id: userId,
           card_id: input.cardId,
           set_id: resolvedSetId,
           flag_type: 'trade',
@@ -683,78 +839,12 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
       invalidateMarketplaceCachesSoon();
 
  // ── Notify Discord ─────────────────────────────────────────────
-      console.log('🔥 createTradeListing — notifying Discord');
-      if (PRICE_API_URL) {
-        try {
-          // Get the listing ID we just upserted
-          const { data: flag } = await supabase
-            .from('user_card_flags')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('card_id', input.cardId)
-            .eq('flag_type', 'trade')
-            .maybeSingle();
-
-          if (flag?.id) {
-            console.log('📡 Posting listing to Discord:', flag.id);
-            const discordRes = await fetch(
-              `${PRICE_API_URL.replace(/\/$/, '')}/api/discord/new-trade-listing`,
-              {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ listingId: flag.id }),
-              }
-            );
-            console.log('✅ Discord status:', discordRes.status);
-          } else {
-            console.log('⚠️ Could not find listing ID for Discord notification');
-          }
-        } catch (discordErr) {
-          console.log('❌ Discord notification failed:', discordErr);
-        }
-      } else {
-        console.log('❌ PRICE_API_URL missing — Discord notification skipped');
-      }
       // ── End Discord ────────────────────────────────────────────────
 
       // Check for wishlist matches and send push notifications
-      let wantedQuery = supabase
-        .from('user_card_flags')
-        .select('user_id')
-        .eq('card_id', input.cardId)
-        .eq('flag_type', 'wishlist')
-        .neq('user_id', user.id);
-
-      if (resolvedSetId) {
-        wantedQuery = wantedQuery.eq('set_id', resolvedSetId);
-      }
-
-      const { data: wantedMatches } = await wantedQuery;
-
-      if (wantedMatches?.length) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('collector_name')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        const cardData = await fetchStackrCard(input.cardId).catch(() => null);
-
-        const sellerName = profile?.collector_name ?? 'Another collector';
-        const cardName = cardData?.name ?? 'a card';
-
-        for (const match of wantedMatches) {
-          sendPushNotification('/api/notify/wishlist-match', {
-            recipientUserId: match.user_id,
-            listerUsername: sellerName,
-            cardName,
-          });
-        }
-      }
-
-      await refreshTrade();
+      if (isCurrentAuthIdentity(userId, generation)) await refreshTrade();
     },
-    [refreshTrade]
+    [isCurrentAuthIdentity, refreshTrade, requireVerifiedSignedInIdentity]
   );
 
   // ===============================
@@ -783,8 +873,8 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
 
   const updateTradeMeta = useCallback(
     async (cardId: string, data: Partial<TradeMeta>, setId?: string | null) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('You must be signed in.');
+      const { user, userId, generation } = await requireVerifiedSignedInIdentity();
+      assertPremiumSellerWriteAccess(user);
 
       const resolvedSetId = setId ?? getSetIdFromCardId(cardId);
       const key = makeFlagKey(cardId, resolvedSetId);
@@ -819,7 +909,7 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         .from('user_card_flags')
         .upsert(
           {
-            user_id: user.id,
+            user_id: userId,
             card_id: cardId,
             set_id: resolvedSetId,
             flag_type: 'trade',
@@ -831,12 +921,14 @@ export function TradeProvider({ children }: { children: React.ReactNode }) {
         );
 
       if (error) {
-        await loadFlags();
+        if (isCurrentAuthIdentity(userId, generation)) {
+          await loadFlags(userId, generation);
+        }
         throw error;
       }
       invalidateMarketplaceCachesSoon();
     },
-    [loadFlags]
+    [isCurrentAuthIdentity, loadFlags, requireVerifiedSignedInIdentity]
   );
 
   // ===============================

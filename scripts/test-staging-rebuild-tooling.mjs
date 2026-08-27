@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const workflow = readFileSync(
+const trialWorkflow = readFileSync(
   '.github/workflows/trial-production-baseline-migrations.yml',
+  'utf8',
+);
+const breakGlassWorkflow = readFileSync(
+  '.github/workflows/rebuild-staging-break-glass.yml',
   'utf8',
 );
 const transfer = readFileSync(
@@ -21,16 +25,55 @@ const preservation = JSON.parse(
   readFileSync('deploy/staging-catalogue-preservation-tables.json', 'utf8'),
 );
 
-assert.match(workflow, /inputs\.confirmation == 'APPROVE DESTRUCTIVE STAGING REBUILD'/);
-assert.match(workflow, /SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco/);
-assert.match(workflow, /SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci/);
-assert.match(workflow, /SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu/);
-assert.match(workflow, /Create ephemeral rollback backup/);
-assert.match(workflow, /Restore rollback backup after a failed rebuild/);
-assert.match(workflow, /select count\(\*\) from auth\.users/);
-assert.match(workflow, /select count\(\*\) from storage\.objects/);
-assert.match(workflow, /supabase_migrations\.schema_migrations/);
-assert.doesNotMatch(workflow, /SUPABASE_PRODUCTION_DB_URL|--linked/);
+assert.match(trialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
+assert.match(trialWorkflow, /inputs\.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'/);
+assert.match(trialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
+assert.doesNotMatch(trialWorkflow, /APPROVE DESTRUCTIVE STAGING REBUILD/);
+assert.doesNotMatch(trialWorkflow, /rebuild-staging:|Rebuild canonical staging database/);
+assert.doesNotMatch(trialWorkflow, /STACKR_TRANSFER_MODE:\s*commit|mutation-started/);
+
+assert.match(breakGlassWorkflow, /name: Break Glass - Rebuild Canonical Staging Database/);
+assert.match(
+  breakGlassWorkflow,
+  /test "\$GITHUB_REF" = 'refs\/heads\/main'/,
+  'the destructive rebuild must only run from main',
+);
+assert.match(
+  breakGlassWorkflow,
+  /test "\$EXPECTED_COMMIT_SHA" = "\$GITHUB_SHA"/,
+  'the destructive rebuild must require the exact dispatched SHA',
+);
+assert.match(breakGlassWorkflow, /inputs\.expected_commit_sha/);
+assert.match(breakGlassWorkflow, /inputs\.approve_data_replacement/);
+assert.match(breakGlassWorkflow, /inputs\.incident_reference/);
+assert.match(
+  breakGlassWorkflow,
+  /REBUILD CANONICAL STAGING FROM ISOLATED CANDIDATE/,
+);
+assert.match(breakGlassWorkflow, /current_main_sha=.*commits\/main/);
+assert.match(breakGlassWorkflow, /test "\$current_main_sha" = "\$GITHUB_SHA"/);
+assert.match(breakGlassWorkflow, /rebuild-staging:\s+needs: authorize/);
+assert.match(
+  breakGlassWorkflow,
+  /rebuild-staging:[\s\S]*?github\.ref == 'refs\/heads\/main' &&[\s\S]*?inputs\.expected_commit_sha == github\.sha &&[\s\S]*?inputs\.approve_data_replacement/,
+);
+assert.match(breakGlassWorkflow, /environment: staging/);
+assert.match(breakGlassWorkflow, /group: stackr-staging-destructive-rebuild/);
+assert.match(breakGlassWorkflow, /SUPABASE_PROJECT_REF: lmwfhvexfcoyeuoyrlco/);
+assert.match(breakGlassWorkflow, /SUPABASE_RESTORE_PROJECT_REF: krjttpmthxkfsbqksxci/);
+assert.match(breakGlassWorkflow, /SUPABASE_PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu/);
+assert.match(breakGlassWorkflow, /Create ephemeral rollback backup/);
+assert.match(breakGlassWorkflow, /Restore rollback backup after a failed rebuild/);
+assert.match(breakGlassWorkflow, /select count\(\*\) from auth\.users/);
+assert.match(breakGlassWorkflow, /select count\(\*\) from storage\.objects/);
+assert.match(breakGlassWorkflow, /supabase_migrations\.schema_migrations/);
+assert.match(breakGlassWorkflow, /authorization\.json/);
+assert.match(breakGlassWorkflow, /npm run test:commerce-release-lock/);
+assert.match(breakGlassWorkflow, /npm run test:security-containment/);
+assert.doesNotMatch(
+  breakGlassWorkflow,
+  /environment: production|SUPABASE_PRODUCTION_DB_URL|--linked/,
+);
 
 assert.match(transfer, /COMMIT STAGING CATALOGUE TO ISOLATED CANDIDATE/);
 assert.match(transfer, /committed_transfer_source_not_canonical_staging/);

@@ -79,20 +79,22 @@ assert.notEqual(
 
 const catalogueWorkerSecretsTemp = mkdtempSync(path.join(tmpdir(), 'stackr-catalogue-worker-secrets-test-'));
 try {
-  const outputPath = path.join(catalogueWorkerSecretsTemp, 'worker-secrets.json');
   const catalogueSecrets = {
     BACKEND_ORIGIN_KEY: 'test-catalogue-origin-key',
     BACKEND_ADMIN_KEY: 'test-catalogue-admin-key',
   };
-  const workerSecrets = run(
-    'scripts/deploy/write-worker-secrets.mjs',
-    [`--output=${outputPath}`],
-    { ...catalogueSecrets, STACKR_DEPLOYMENT_SCOPE: 'catalogue_api' },
-  );
-  assert.equal(workerSecrets.status, 0, workerSecrets.stderr || workerSecrets.stdout);
-  assert.deepEqual(JSON.parse(readFileSync(outputPath, 'utf8')), catalogueSecrets);
-  for (const value of Object.values(catalogueSecrets)) {
-    assert.doesNotMatch(workerSecrets.stdout, new RegExp(value), 'worker secret values must not be logged');
+  for (const scope of ['gate0_hardening', 'catalogue_api']) {
+    const outputPath = path.join(catalogueWorkerSecretsTemp, `${scope}-worker-secrets.json`);
+    const workerSecrets = run(
+      'scripts/deploy/write-worker-secrets.mjs',
+      [`--output=${outputPath}`],
+      { ...catalogueSecrets, STACKR_DEPLOYMENT_SCOPE: scope },
+    );
+    assert.equal(workerSecrets.status, 0, workerSecrets.stderr || workerSecrets.stdout);
+    assert.deepEqual(JSON.parse(readFileSync(outputPath, 'utf8')), catalogueSecrets);
+    for (const value of Object.values(catalogueSecrets)) {
+      assert.doesNotMatch(workerSecrets.stdout, new RegExp(value), 'worker secret values must not be logged');
+    }
   }
 } finally {
   rmSync(catalogueWorkerSecretsTemp, { recursive: true, force: true });
@@ -160,12 +162,13 @@ if (migrationReconciliation.status === 0) {
   assert.equal(migrationAlignmentGate.status, 0, migrationAlignmentGate.stderr || migrationAlignmentGate.stdout);
   assert.doesNotMatch(migrationAlignmentGate.stdout, /migration_history_not_aligned/);
 } else {
-  // A migration PR is allowed to be exactly one reviewed migration ahead of
-  // the last aligned staging evidence. Normal staging/production workflows
-  // still invoke --require-aligned and remain fail-closed; only the dedicated,
-  // checksum-pinned migration workflow may apply this transition.
+  // The root production ledger is three reviewed migrations ahead of the last
+  // legacy reconciliation evidence: Premium Seller, the byte-identical
+  // emergency containment capture, and Gate 0. Normal production workflows
+  // remain fail-closed; staging applies Gate 0 only from its independent,
+  // checksum-pinned 146-row ledger.
   const reconciliation = JSON.parse(migrationReconciliation.stdout);
-  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 1);
+  assert.equal(reconciliation.localMigrationFileCount, reconciliation.stagingMigrationHistoryCount + 3);
   assert.deepEqual(reconciliation.errors, [
     'local_migration_count_drift',
     'staging_migration_count_drift',
@@ -177,7 +180,8 @@ if (migrationReconciliation.status === 0) {
   const localMigrations = readdirSync('supabase/migrations')
     .filter((name) => /^\d{14}_.+\.sql$/.test(name))
     .sort();
-  assert.equal(localMigrations.at(-1), '20260813135412_premium_seller_access_boundary.sql');
+  assert.equal(localMigrations.at(-1), '20260827124944_gate0_financial_route_containment.sql');
+  assert.ok(localMigrations.includes('20260827093110_emergency_client_write_containment.sql'));
   assert.notEqual(migrationAlignmentGate.status, 0, 'global deployment must remain blocked while staging evidence trails');
 }
 const stagingReleaseGate = run('scripts/deploy/verify-staging-readiness-evidence.mjs', ['--require-release-ready']);
@@ -372,6 +376,14 @@ assert.match(dockerfile, /chmod 0555 \/models/);
 
 const backendServer = readFileSync('backend/server.js', 'utf8');
 assert.match(backendServer, /res\.setHeader\('X-Request-Id', requestId\)/);
+assert.match(
+  backendServer,
+  /function getHealthRuntimeAttestation\(\) \{[\s\S]*gitCommit: getRailwayCommit\(\)[\s\S]*railwayEnvironment:[\s\S]*supabaseProjectRef: getSupabaseProjectRef\(\)/,
+  'backend health must always expose the minimal deployment attestation',
+);
+const backendHealthHandler = backendServer.match(/app\.get\(\['\/health', '\/api\/health'\][\s\S]*?\n\}\);/)?.[0] ?? '';
+assert.match(backendHealthHandler, /runtime: getHealthRuntimeAttestation\(\)/);
+assert.doesNotMatch(backendHealthHandler, /KeyPreview|publicPreview|STACKR_HEALTH_RUNTIME_DIAGNOSTICS/);
 
 const rollbackTool = readFileSync('scripts/deploy/railway-rollback.mjs', 'utf8');
 assert.match(rollbackTool, /component !== 'recognition'/);
@@ -438,13 +450,27 @@ assert.equal(recognitionRollback.status, 0, recognitionRollback.stderr || recogn
 assert.match(recognitionRollback.stdout, /"deploymentRollback": true/);
 
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
+const platformCiWorkflow = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
 const productionMonitorWorkflow = readFileSync('.github/workflows/production-api-monitor.yml', 'utf8');
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
 const recoveryWorkflow = readFileSync('.github/workflows/staging-recovery-drill.yml', 'utf8');
 const productionBaselineWorkflow = readFileSync('.github/workflows/capture-production-schema-baseline.yml', 'utf8');
 const baselineMigrationTrialWorkflow = readFileSync('.github/workflows/trial-production-baseline-migrations.yml', 'utf8');
+const stagingRebuildBreakGlassWorkflow = readFileSync('.github/workflows/rebuild-staging-break-glass.yml', 'utf8');
 const catalogueTransferWorkflow = readFileSync('.github/workflows/staging-catalogue-preservation-rehearsal.yml', 'utf8');
+const legacyCataloguePromotionWorkflow = readFileSync('.github/workflows/promote-catalogue-production.yml', 'utf8');
+const legacyCatalogueDataPromotionWorkflow = readFileSync('.github/workflows/promote-catalogue-data-production.yml', 'utf8');
+const normalizedCatalogueEvidenceWorkflow = readFileSync(
+  '.github/workflows/normalize-resumed-catalogue-backfill-evidence.yml',
+  'utf8',
+);
+const retiredCatalogueContinuationWorkflow = readFileSync(
+  '.github/workflows/continue-catalogue-production-after-resume.yml',
+  'utf8',
+);
+const pricingV2DeployScript = readFileSync('scripts/pricing-v2-deploy.mjs', 'utf8');
+const packageManifest = JSON.parse(readFileSync('package.json', 'utf8'));
 const sellerMigrationWorkflow = readFileSync('.github/workflows/deploy-seller-inventory-migration.yml', 'utf8');
 const premiumSellerRuntimeWorkflow = readFileSync('.github/workflows/manage-premium-seller-runtime.yml', 'utf8');
 const premiumSellerQaIdentityWorkflow = readFileSync(
@@ -455,16 +481,120 @@ const productionCataloguePromotion = JSON.parse(
   readFileSync('deploy/production-catalogue-promotion-tables.json', 'utf8'),
 );
 const ingestionWorkflow = readFileSync('.github/workflows/ingestion-workers.yml', 'utf8');
+
+for (const [workflowName, workflow] of [
+  ['promote-catalogue-production.yml', legacyCataloguePromotionWorkflow],
+  ['promote-catalogue-data-production.yml', legacyCatalogueDataPromotionWorkflow],
+]) {
+  assert.match(workflow, /name: Retired -/);
+  assert.match(workflow, /deploy-production\.yml/);
+  assert.match(workflow, /release_scope=catalogue_assets/);
+  assert.match(workflow, /apply_migrations=false/);
+  assert.match(workflow, /exit 1/);
+  assert.doesNotMatch(
+    workflow,
+    /environment:\s*production|actions\/checkout|db push|catalogue-production-snapshot\.mjs|rehearse-staging-catalogue-transfer\.mjs|promote-catalogue-storage\.mjs|@railway\/cli|wrangler\s|eas update|gh workflow run/,
+    `${workflowName} must remain an audit-only fail-closed handoff`,
+  );
+  assert.doesNotMatch(
+    workflow,
+    /secrets\.(?:SUPABASE|RAILWAY|CLOUDFLARE|EXPO|BACKEND)/,
+    `${workflowName} must never receive deployment credentials`,
+  );
+}
+assert.match(normalizedCatalogueEvidenceWorkflow, /actions: read/);
+assert.match(normalizedCatalogueEvidenceWorkflow, /No deployment was dispatched/);
+assert.match(normalizedCatalogueEvidenceWorkflow, /deploy-production\.yml/);
+assert.doesNotMatch(normalizedCatalogueEvidenceWorkflow, /actions: write|gh workflow run|promote-catalogue-data-production\.yml/);
+assert.match(retiredCatalogueContinuationWorkflow, /No deployment is dispatched/);
+assert.match(retiredCatalogueContinuationWorkflow, /deploy-production\.yml/);
+assert.match(retiredCatalogueContinuationWorkflow, /exit 1/);
+assert.doesNotMatch(retiredCatalogueContinuationWorkflow, /gh workflow run/);
+
+assert.match(pricingV2DeployScript, /manual_pricing_v2_production_deploy_retired/);
+assert.match(pricingV2DeployScript, /productionMutationPerformed: false/);
+assert.match(pricingV2DeployScript, /\.github\/workflows\/deploy-production\.yml/);
+assert.match(pricingV2DeployScript, /process\.exitCode = 1/);
+assert.doesNotMatch(
+  pricingV2DeployScript,
+  /dotenv|createClient|SUPABASE_(?:SERVICE_ROLE|SECRET|PROJECT_REF)|oakdbbzdqwurpjnoqhmu|spawnSync|skip-dry-run|skip-tests|pricing-v2:(?:backfill|refresh)/,
+  'the retired pricing deploy command must not read production credentials or invoke data writers',
+);
+assert.equal(
+  packageManifest.scripts['pricing-v2:deploy'],
+  'node scripts/pricing-v2-deploy.mjs',
+  'the public Pricing V2 deploy command must resolve only to the retired handoff',
+);
+const pricingDeployPlan = run('scripts/pricing-v2-deploy.mjs', ['--plan']);
+assert.equal(pricingDeployPlan.status, 0, pricingDeployPlan.stderr || pricingDeployPlan.stdout);
+assert.match(pricingDeployPlan.stdout, /productionMutationPerformed": false/);
+const blockedPricingDeploy = run('scripts/pricing-v2-deploy.mjs');
+assert.equal(blockedPricingDeploy.status, 1);
+assert.match(blockedPricingDeploy.stderr, /Retired command blocked/);
+
 assert.match(stagingWorkflow, /github\.ref == 'refs\/heads\/main'/);
 assert.doesNotMatch(stagingWorkflow, /chore\/api-gateway-v1/);
+assert.match(
+  stagingWorkflow,
+  /steps:\s*\n\s*- uses: actions\/checkout@[^\n]+\n\s+with:\s*\n\s+fetch-depth: 0/,
+  'staging must fetch provenance commits before verifying the exact migration ledger',
+);
+const databaseMigrationCiJob = platformCiWorkflow.slice(
+  platformCiWorkflow.indexOf('  database-migration-tests:'),
+  platformCiWorkflow.indexOf('  openapi-and-generated-client:'),
+);
+assert.match(
+  databaseMigrationCiJob,
+  /actions\/checkout@[^\n]+\n\s+with:\s*\n\s+fetch-depth: 0/,
+  'database CI must fetch provenance commits before verifying the exact migration ledger',
+);
 assert.match(stagingWorkflow, /Verify private service readiness[\s\S]*--require-commerce-disabled/);
+assert.match(
+  stagingWorkflow,
+  /Smoke-test the public staging contract[\s\S]*--gateway="\$STACKR_GATEWAY_URL"[\s\S]*--backend="\$STACKR_BACKEND_URL"[\s\S]*--require-commerce-disabled/,
+);
+const publicStagingSmoke = stagingWorkflow.slice(
+  stagingWorkflow.indexOf('Smoke-test the public staging contract'),
+  stagingWorkflow.indexOf('Prove Gate 0 database containment', stagingWorkflow.indexOf('Smoke-test the public staging contract')),
+);
+const publicStagingSmokeBranches = publicStagingSmoke.split(/\n\s*else\s*\n/);
+assert.equal(publicStagingSmokeBranches.length, 2, 'public staging smoke must have exact Gate 0 and non-Gate-0 branches');
+assert.match(publicStagingSmokeBranches[0], /gate0_hardening[\s\S]*--gateway-safety/);
+assert.doesNotMatch(publicStagingSmokeBranches[0], /--full-gateway|--require-published-catalogue/);
+assert.match(
+  publicStagingSmokeBranches[1],
+  /--full-gateway[\s\S]*--require-published-catalogue[\s\S]*--required-catalogue-languages=en,ja,zh-tw,zh-cn,ko/,
+);
+assert.doesNotMatch(publicStagingSmokeBranches[1], /--gateway-safety/);
+assert.equal(
+  [...stagingWorkflow.matchAll(/--expected-backend-commit="\$GITHUB_SHA"/g)].length,
+  4,
+  'every private and public staging scope branch must attest the deployed backend SHA',
+);
+assert.equal(
+  [...stagingWorkflow.matchAll(/--expected-backend-environment=staging/g)].length,
+  4,
+  'every staging backend attestation must bind the Railway environment',
+);
+assert.equal(
+  [...stagingWorkflow.matchAll(/--expected-backend-supabase-project-ref=lmwfhvexfcoyeuoyrlco/g)].length,
+  4,
+  'every staging backend attestation must bind the staging Supabase project',
+);
 assert.match(productionWorkflow, /Verify service readiness before activation[\s\S]*--require-commerce-disabled/);
 assert.match(productionWorkflow, /smoke_args=\([\s\S]*--require-commerce-disabled/);
+assert.match(
+  productionWorkflow,
+  /apply_migrations:[\s\S]*?default: false[\s\S]*?type: boolean/,
+  'production migrations must be an explicit opt-in',
+);
 assert.match(rollbackWorkflow, /Smoke-test surviving public paths[\s\S]*--require-commerce-disabled/);
 assert.match(stagingWorkflow, /Attest staging source revision[\s\S]*git rev-parse HEAD/);
 assert.match(productionWorkflow, /Attest production source revision[\s\S]*git rev-parse HEAD/);
-assert.match(stagingWorkflow, /Publish staging mobile configuration[\s\S]*EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'/);
-assert.match(productionWorkflow, /Publish matching mobile canary[\s\S]*EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'/);
+assert.match(stagingWorkflow, /EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'[\s\S]*Validate effective EAS preview environment/);
+assert.match(productionWorkflow, /EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'[\s\S]*Validate effective EAS production environment/);
+assert.match(stagingWorkflow, /env:exec preview[\s\S]*--require-safe-release-flags/);
+assert.match(productionWorkflow, /env:exec production[\s\S]*--require-safe-release-flags/);
 assert.doesNotMatch(rollbackWorkflow, /catalogue-api/);
 assert.match(rollbackWorkflow, /--component=recognition/);
 assert.match(rollbackWorkflow, /RAILWAY_RECOGNITION_SERVICE_ID/);
@@ -494,7 +624,7 @@ assert.match(productionWorkflow, /steps\.physical_backup_list\.outcome == 'failu
 assert.match(productionWorkflow, /secret-scan\.mjs[\s\S]+stackr-backup-diagnostics/);
 assert.match(productionWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-backup-diagnostics"/);
 assert.deepEqual(
-  [...stagingWorkflow.matchAll(/db push\s+--db-url "([^"]+)"/g)].map((match) => match[1]),
+  [...stagingWorkflow.matchAll(/db push\s*\\\s*\n\s*--db-url "([^"]+)"/g)].map((match) => match[1]),
   ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
   'staging migration dry-run and apply must use the validated, normalized source URL',
 );
@@ -572,6 +702,9 @@ assert.match(productionMonitorWorkflow, /STACKR_PRODUCTION_MONITOR_ENABLED == 't
 assert.match(productionMonitorWorkflow, /--full-gateway/);
 assert.match(productionMonitorWorkflow, /--require-published-catalogue/);
 assert.match(productionMonitorWorkflow, /--required-catalogue-languages=en,ja,zh-tw,zh-cn,ko/);
+assert.match(productionMonitorWorkflow, /STACKR_BACKEND_URL: \$\{\{ vars\.STACKR_BACKEND_URL \}\}/);
+assert.match(productionMonitorWorkflow, /--backend="\$STACKR_BACKEND_URL"/);
+assert.match(productionMonitorWorkflow, /--require-commerce-disabled/);
 assert.match(productionMonitorWorkflow, /issues: write/);
 assert.match(productionMonitorWorkflow, /if: failure\(\)[\s\S]+gh issue (?:comment|create)/);
 assert.match(productionMonitorWorkflow, /if: success\(\)[\s\S]+gh issue close/);
@@ -587,13 +720,23 @@ assert.match(
   /SUPABASE_ACCESS_TOKEN:\s+\$\{\{ secrets\.STACKR_GITHUB_PRODUCTION_BACKUPS \|\| secrets\.SUPABASE_ACCESS_TOKEN \}\}/,
   'production must prefer the dedicated backup-read token without removing the standard token fallback',
 );
-assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[catalogue_api, full_platform\]/);
+assert.match(stagingWorkflow, /release_scope:[\s\S]+options: \[gate0_hardening, catalogue_api, full_platform\]/);
+assert.match(
+  stagingWorkflow,
+  /if \[ "\$\{\{ inputs\.release_scope \}\}" != "gate0_hardening" \] && \[ "\$\{\{ inputs\.release_candidate \}\}" != "true" \]; then[\s\S]*Non-Gate-0 staging deployments require release_candidate=true and reviewed evidence\.[\s\S]*exit 1/,
+  'release_candidate=false must be accepted only for the isolated Gate 0 hardening scope',
+);
 assert.match(stagingWorkflow, /STACKR_STORAGE_BACKUP_APPROVED/);
 assert.match(stagingWorkflow, /verify-staging-migration-reconciliation\.mjs --require-aligned/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-catalogue-api-ready/);
 assert.match(stagingWorkflow, /verify-staging-readiness-evidence\.mjs --require-release-ready/);
 assert.match(stagingWorkflow, /deploy:preflight -- --catalogue-api-release/);
 assert.match(stagingWorkflow, /prepare-postgres-urls\.mjs --source-only/);
+assert.match(
+  stagingWorkflow,
+  /test "\$SUPABASE_PROJECT_REF" = "lmwfhvexfcoyeuoyrlco"[\s\S]*test "\$STACKR_SUPABASE_URL" = "https:\/\/lmwfhvexfcoyeuoyrlco\.supabase\.co"/,
+  'Gate 0 must pin both the staging database project ref and public Supabase URL',
+);
 assert.deepEqual(
   [...stagingWorkflow.matchAll(/db dump\s*\\\s*\n\s*--db-url "([^"]+)"/g)].map((match) => match[1]),
   ['$STACKR_SOURCE_DB_URL', '$STACKR_SOURCE_DB_URL'],
@@ -601,6 +744,119 @@ assert.deepEqual(
 );
 assert.match(stagingWorkflow, /Deploy recognition container[\s\S]+if: inputs\.release_scope == 'full_platform'/);
 assert.match(stagingWorkflow, /RECOGNITION_REQUIRED:\$\{\{ inputs\.release_scope/);
+assert.match(
+  stagingWorkflow,
+  /Validate staging mobile public configuration\s+if: inputs\.release_scope == 'gate0_hardening' \|\| inputs\.release_scope == 'full_platform'[\s\S]*npm run mobile:verify-runtime --[\s\S]*--expected-environment=staging[\s\S]*--expected-app-variant=staging[\s\S]*--require-explicit[\s\S]*--require-safe-release-flags/,
+  'Gate 0 and full staging deployments must validate the explicit safe mobile runtime even without publishing an update',
+);
+for (const [variable, expectedValue] of Object.entries({
+  STACKR_MOBILE_APP_VARIANT: 'staging',
+  STACKR_MOBILE_ENVIRONMENT: 'staging',
+  STACKR_MOBILE_PRICE_API_URL: '${{ vars.STACKR_BACKEND_URL }}',
+  STACKR_MOBILE_API_URL: '${{ vars.STACKR_GATEWAY_URL }}',
+  STACKR_MOBILE_SUPABASE_URL: '${{ vars.STACKR_SUPABASE_URL }}',
+  STACKR_MOBILE_SUPABASE_PUBLISHABLE_KEY: '${{ secrets.STACKR_SUPABASE_PUBLISHABLE_KEY }}',
+  EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: "'true'",
+  EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: "'false'",
+  EXPO_PUBLIC_STACKR_SCAN_LAB_ENABLED: "'false'",
+  EXPO_PUBLIC_SCANNER_DIAGNOSTICS_ENABLED: "'false'",
+  EXPO_PUBLIC_SCAN_QUALITY_DIAGNOSTICS: "'false'",
+  EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK: "'false'",
+  EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK: "'false'",
+})) {
+  assert.ok(
+    stagingWorkflow.includes(`${variable}: ${expectedValue}`),
+    `staging must pin ${variable} to its reviewed safe runtime value`,
+  );
+}
+assert.match(
+  stagingWorkflow,
+  /Verify the exact staging migration ledger[\s\S]+id: gate0_ledger_preflight[\s\S]+--phase=pre-apply[\s\S]+applyRequired[\s\S]+apply_required=\$apply_required[\s\S]+STACKR_GATE0_APPLY_REQUIRED=\$apply_required/,
+  'Gate 0 preflight must capture whether the exact migration is pending or already applied',
+);
+assert.doesNotMatch(
+  stagingWorkflow,
+  /--require-pending/,
+  'Gate 0 staging deploys must be safely resumable after the migration is already applied',
+);
+assert.match(stagingWorkflow, /Materialize the isolated staging migration ledger[\s\S]+stackr-staging-ledger/);
+assert.match(stagingWorkflow, /cd "\$RUNNER_TEMP\/stackr-staging-ledger"[\s\S]+db push/);
+assert.match(stagingWorkflow, /unexpected_staging_pending_migrations/);
+assert.match(
+  stagingWorkflow,
+  /const expected = process\.env\.STACKR_GATE0_APPLY_REQUIRED === 'true'[\s\S]+\? \['20260827124944_gate0_financial_route_containment\.sql'\][\s\S]+: \[\]/,
+  'Gate 0 dry-run must expect the migration only while the ledger says it is pending',
+);
+const gate0DryRunPosition = stagingWorkflow.indexOf('Dry-run backward-compatible migrations');
+const gate0RehearsalPosition = stagingWorkflow.indexOf('Rehearse Gate 0 migration in a rollback-only transaction');
+const gate0ApplyPosition = stagingWorkflow.indexOf('Apply backward-compatible migrations');
+const gate0ImmediateProofPosition = stagingWorkflow.indexOf(
+  'Prove Gate 0 database containment immediately after migration',
+);
+const stagingRailwayTargetPosition = stagingWorkflow.indexOf('Attest staging Railway deployment target');
+const stagingBackendDeployPosition = stagingWorkflow.indexOf('Deploy catalogue API behind the staging gateway');
+const stagingBackendRuntimePosition = stagingWorkflow.indexOf('Attest deployed staging backend runtime');
+assert.ok(
+  gate0DryRunPosition >= 0
+    && gate0DryRunPosition < gate0RehearsalPosition
+    && gate0RehearsalPosition < gate0ApplyPosition
+    && gate0ApplyPosition < gate0ImmediateProofPosition
+    && gate0ImmediateProofPosition < stagingRailwayTargetPosition
+    && stagingRailwayTargetPosition < stagingBackendDeployPosition
+    && stagingBackendDeployPosition < stagingBackendRuntimePosition,
+  'Gate 0 must prove the DB and Railway target before deployment, then attest the deployed runtime',
+);
+assert.match(
+  stagingWorkflow,
+  /Rehearse Gate 0 migration in a rollback-only transaction[\s\S]+steps\.gate0_ledger_preflight\.outputs\.apply_required == 'true'[\s\S]+rehearse-gate0-financial-route-containment\.mjs/,
+  'the rollback-only rehearsal must run only for the exact pending Gate 0 migration',
+);
+const gate0ApplySection = stagingWorkflow.slice(gate0ApplyPosition, gate0ImmediateProofPosition);
+assert.match(
+  gate0ApplySection,
+  /if: inputs\.apply_migrations && \(inputs\.release_scope != 'gate0_hardening' \|\| steps\.gate0_ledger_preflight\.outputs\.apply_required == 'true'\)/,
+  'a resumed Gate 0 deploy must skip the already-applied migration without skipping later proofs',
+);
+assert.match(
+  gate0ApplySection,
+  /db push[\s\S]+--include-all \\[\s\S]+--yes/,
+  'the reviewed live Supabase push must answer prompts explicitly',
+);
+assert.match(
+  stagingWorkflow,
+  /Prove Gate 0 database containment immediately after migration[\s\S]+--phase=post-apply[\s\S]+verify-gate0-financial-route-containment\.mjs[\s\S]+--phase=post-apply/,
+);
+assert.equal(
+  [...stagingWorkflow.matchAll(/verify-gate0-financial-route-containment\.mjs\s*\\?\s*\n\s*--phase=post-apply/g)].length,
+  2,
+  'Gate 0 database containment must be proved immediately after apply and again after public smoke tests',
+);
+assert.match(
+  stagingWorkflow,
+  /Attest staging Railway deployment target[\s\S]*@railway\/cli@5\.30\.1 list --json[\s\S]*@railway\/cli@5\.30\.1 service list[\s\S]*--project "\$RAILWAY_PROJECT_ID"[\s\S]*--environment "\$RAILWAY_ENVIRONMENT_ID"[\s\S]*--json/,
+  'the Railway target must be read and attested with the pinned CLI before upload',
+);
+for (const contract of [
+  /project\?\.id === expected\.projectId/,
+  /edge\?\.node\?\.id === expected\.environmentId/,
+  /environmentName: 'staging'/,
+  /service\?\.id === expected\.serviceId/,
+  /serviceName: 'stackr-backend-staging'/,
+  /summaryMatches\[0\]\?\.url !== expected\.serviceUrl/,
+  /edge\?\.node\?\.environmentId === expected\.environmentId/,
+]) {
+  assert.match(stagingWorkflow, contract, `missing fail-closed Railway target contract: ${contract}`);
+}
+assert.match(
+  stagingWorkflow,
+  /Attest deployed staging backend runtime[\s\S]*gitCommit: process\.env\.GITHUB_SHA\.slice\(0, 12\)[\s\S]*railwayEnvironment: 'staging'[\s\S]*supabaseProjectRef: 'lmwfhvexfcoyeuoyrlco'[\s\S]*new URL\('\/health', process\.env\.STACKR_BACKEND_URL\)/,
+  'the deployed backend health response must prove the exact source, environment, and staging database',
+);
+assert.ok(
+  stagingBackendRuntimePosition < stagingWorkflow.indexOf('Deploy recognition container behind the staging gateway'),
+  'backend runtime identity must be proved before continuing with later provider deploys',
+);
+assert.match(stagingWorkflow, /gate0_hardening[\s\S]+never publishes a mobile update/);
 assert.match(stagingWorkflow, /--require-published-catalogue/);
 assert.match(recoveryWorkflow, /inputs\.confirmation == 'RESTORE STAGING BACKUP'/);
 assert.doesNotMatch(recoveryWorkflow, /github\.event\.head_commit/);
@@ -640,6 +896,8 @@ assert.match(baselineMigrationTrialWorkflow, /lmwfhvexfcoyeuoyrlco/);
 assert.match(baselineMigrationTrialWorkflow, /oakdbbzdqwurpjnoqhmu/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REPLAY MIGRATIONS ON RESTORE TARGET'/);
 assert.match(baselineMigrationTrialWorkflow, /inputs\.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /APPROVE DESTRUCTIVE STAGING REBUILD/);
+assert.doesNotMatch(baselineMigrationTrialWorkflow, /rebuild-staging:|mutation-started/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /pull_request:/);
 assert.match(baselineMigrationTrialWorkflow, /prepare-isolated-reconciliation-url\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /verify-production-schema-baseline\.mjs/);
@@ -677,6 +935,19 @@ assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-base
 assert.match(baselineMigrationTrialWorkflow, /rehearse-staging-catalogue-transfer\.mjs/);
 assert.match(baselineMigrationTrialWorkflow, /rm -rf "\$RUNNER_TEMP\/stackr-catalogue-transfer"/);
 assert.doesNotMatch(baselineMigrationTrialWorkflow, /SUPABASE_ACCESS_TOKEN|--linked/);
+assert.match(stagingRebuildBreakGlassWorkflow, /test "\$GITHUB_REF" = 'refs\/heads\/main'/);
+assert.match(stagingRebuildBreakGlassWorkflow, /test "\$EXPECTED_COMMIT_SHA" = "\$GITHUB_SHA"/);
+assert.match(stagingRebuildBreakGlassWorkflow, /inputs\.approve_data_replacement/);
+assert.match(stagingRebuildBreakGlassWorkflow, /inputs\.incident_reference/);
+assert.match(stagingRebuildBreakGlassWorkflow, /current_main_sha=.*commits\/main/);
+assert.match(stagingRebuildBreakGlassWorkflow, /rebuild-staging:\s+needs: authorize/);
+assert.match(
+  stagingRebuildBreakGlassWorkflow,
+  /rebuild-staging:[\s\S]*?github\.ref == 'refs\/heads\/main' &&[\s\S]*?inputs\.expected_commit_sha == github\.sha &&[\s\S]*?inputs\.approve_data_replacement/,
+);
+assert.match(stagingRebuildBreakGlassWorkflow, /Create ephemeral rollback backup/);
+assert.match(stagingRebuildBreakGlassWorkflow, /Restore rollback backup after a failed rebuild/);
+assert.doesNotMatch(stagingRebuildBreakGlassWorkflow, /environment: production|SUPABASE_PRODUCTION_DB_URL|--linked/);
 assert.match(catalogueTransferWorkflow, /inputs\.confirmation == 'REHEARSE STAGING CATALOGUE TRANSFER'/);
 assert.match(catalogueTransferWorkflow, /SUPABASE_DB_URL: \$\{\{ secrets\.SUPABASE_DB_URL \}\}/);
 assert.match(catalogueTransferWorkflow, /SUPABASE_RESTORE_DB_URL: \$\{\{ secrets\.SUPABASE_RESTORE_DB_URL \}\}/);
@@ -3122,11 +3393,51 @@ const easTemp = mkdtempSync(path.join(tmpdir(), 'stackr-eas-test-'));
 try {
   const payloadPath = path.join(easTemp, 'update.json');
   const environmentPath = path.join(easTemp, 'github.env');
+  const publishEnvironmentPath = path.join(easTemp, 'publish-github.env');
   const groupId = '11111111-2222-4333-8444-555555555555';
-  writeFileSync(payloadPath, JSON.stringify([{ group: groupId }, { group: groupId }]));
+  const updateGitSha = 'a'.repeat(40);
+  const updateMessage = `Stackr staging ${updateGitSha}`;
+  writeFileSync(payloadPath, JSON.stringify([
+    {
+      id: '11111111-1111-4111-8111-111111111111',
+      group: groupId,
+      branch: 'staging',
+      message: updateMessage,
+      runtimeVersion: '1.0.3-staging',
+      platform: 'android',
+      manifestPermalink: 'https://u.expo.dev/updates/android',
+      isRollBackToEmbedded: false,
+      gitCommitHash: updateGitSha,
+    },
+    {
+      id: '22222222-2222-4222-8222-222222222222',
+      group: groupId,
+      branch: 'staging',
+      message: updateMessage,
+      runtimeVersion: '1.0.3-staging',
+      platform: 'ios',
+      manifestPermalink: 'https://u.expo.dev/updates/ios',
+      isRollBackToEmbedded: false,
+      gitCommitHash: updateGitSha,
+    },
+  ]));
+  const publishEvidence = run('scripts/deploy/capture-eas-update-group.mjs', [
+    `--file=${payloadPath}`,
+    `--github-env=${publishEnvironmentPath}`,
+    '--mode=publish-evidence',
+  ]);
+  assert.equal(publishEvidence.status, 0, publishEvidence.stderr || publishEvidence.stdout);
+  assert.equal(
+    readFileSync(publishEnvironmentPath, 'utf8'),
+    `STACKR_MOBILE_UPDATE_PUBLISHED=true\nSTACKR_EAS_UPDATE_GROUP_ID=${groupId}\n`,
+  );
   const captured = run('scripts/deploy/capture-eas-update-group.mjs', [
     `--file=${payloadPath}`,
     `--github-env=${environmentPath}`,
+    '--expected-runtime=1.0.3-staging',
+    `--expected-git-sha=${updateGitSha}`,
+    `--expected-message=${updateMessage}`,
+    '--expected-platforms=android,ios',
   ]);
   assert.equal(captured.status, 0, captured.stderr || captured.stdout);
   assert.equal(readFileSync(environmentPath, 'utf8'), `STACKR_EAS_UPDATE_GROUP_ID=${groupId}\n`);

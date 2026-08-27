@@ -91,7 +91,7 @@ type BinderOption = {
   language?: string | null;
 };
 
-type FlexPickerMode = 'binder' | 'chase' | 'trade' | 'slab' | null;
+type FlexPickerMode = 'binder' | 'chase' | null;
 
 type LocalStore = {
   id: string;
@@ -1054,9 +1054,7 @@ export default function CommunityScreen() {
   const openFlexPicker = (modeToOpen: Exclude<FlexPickerMode, null>) => {
     setActiveCategory(
       modeToOpen === 'binder' ? 'Binder Flex'
-        : modeToOpen === 'chase' ? 'Chase Cards'
-        : modeToOpen === 'trade' ? 'Trade Wins'
-        : 'Slabs'
+        : 'Chase Cards'
     );
     setFlexPickerMode(modeToOpen);
   };
@@ -1067,7 +1065,6 @@ export default function CommunityScreen() {
     if (activeSocialTab !== 'Flex') return;
     if (channel.key === 'binder_flex') openFlexPicker('binder');
     if (channel.key === 'chase_flex') openFlexPicker('chase');
-    if (channel.key === 'slab_flex') openFlexPicker('slab');
   };
 
   const chooseBinderFlex = (binder: BinderOption) => {
@@ -1442,31 +1439,7 @@ export default function CommunityScreen() {
       );
     }
 
-    if (flexPickerMode === 'trade') {
-      return (
-        <>
-          <Text style={styles.modalHeading}>Share a trade win</Text>
-          <Text style={styles.modalSubheading}>Recent completed trades will appear here once trade history is wired in.</Text>
-          <View style={styles.placeholderPanel}>
-            <Ionicons name="swap-horizontal-outline" size={28} color={theme.colors.primary} />
-            <Text style={styles.placeholderTitle}>Trade history coming soon</Text>
-            <Text style={styles.emptyText}>For now, write your trade win in the composer and attach a card.</Text>
-          </View>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <Text style={styles.modalHeading}>Share a slab return</Text>
-        <Text style={styles.modalSubheading}>Slabs are a placeholder until grading inventory is added.</Text>
-        <View style={styles.placeholderPanel}>
-          <Ionicons name="id-card-outline" size={28} color={theme.colors.primary} />
-          <Text style={styles.placeholderTitle}>Slab support coming soon</Text>
-          <Text style={styles.emptyText}>This will let users flex graded returns once slabs exist in inventory.</Text>
-        </View>
-      </>
-    );
+    return null;
   };
 
   return (

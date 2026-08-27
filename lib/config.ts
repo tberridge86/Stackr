@@ -1,15 +1,7 @@
-const DEFAULT_PRICE_API_URL = 'https://pocketvault-production.up.railway.app';
+import { MOBILE_RUNTIME_CONFIG } from './mobileRuntimeConfig';
 
-export const PRICE_API_URL = (
-  process.env.PRICE_API_URL
-  ?? process.env.EXPO_PUBLIC_PRICE_API_URL
-  ?? DEFAULT_PRICE_API_URL
-).replace(/\/$/, '');
-export const STACKR_API_URL = (
-  process.env.EXPO_PUBLIC_STACKR_API_URL
-  ?? process.env.STACKR_API_URL
-  ?? PRICE_API_URL
-).replace(/\/$/, '');
+export const PRICE_API_URL = MOBILE_RUNTIME_CONFIG.priceApiUrl;
+export const STACKR_API_URL = MOBILE_RUNTIME_CONFIG.stackrApiUrl;
 
 // This approval must be changed in source and reviewed before mobile commerce can run.
 // A public Expo environment variable is intentionally unable to enable payments alone.
@@ -25,6 +17,13 @@ export const BETA_TRADE_DEMO_MODE = isBetaTradeDemoMode();
 export const TRADE_CASH_TERMS_ENABLED = (
   LIVE_COMMERCE_RELEASE_APPROVED && !BETA_TRADE_DEMO_MODE
 );
+export const TRADE_FULFILMENT_ENABLED = LIVE_COMMERCE_RELEASE_APPROVED;
+
+export function assertTradeFulfilmentEnabled(): void {
+  if (!TRADE_FULFILMENT_ENABLED) {
+    throw new Error('Trade fulfilment is disabled for this release.');
+  }
+}
 export const CAPTURE_GEOMETRY_V2_ENABLED = process.env.EXPO_PUBLIC_CAPTURE_GEOMETRY_V2 !== 'false';
 export const CARD_LOCALISATION_ENABLED = process.env.EXPO_PUBLIC_CARD_LOCALISATION !== 'false';
 export const CARD_LOCALISATION_SAMPLE_FPS = Number(process.env.EXPO_PUBLIC_CARD_LOCALISATION_SAMPLE_FPS ?? 4);
@@ -44,16 +43,13 @@ export const SCAN_LAB_INTERNAL_ENABLED = (
   (typeof __DEV__ !== 'undefined' && __DEV__ === true)
 );
 export const SCAN_LAB_UPLOAD_API_URL = (
-  process.env.EXPO_PUBLIC_SCAN_LAB_UPLOAD_API_URL
-  ?? `${PRICE_API_URL}/api/scan-lab`
+  `${PRICE_API_URL}/api/scan-lab`
 ).replace(/\/$/, '');
 export const RECOGNITION_FEEDBACK_API_URL = (
-  process.env.EXPO_PUBLIC_RECOGNITION_FEEDBACK_API_URL
-  ?? `${PRICE_API_URL}/api/recognition-feedback`
+  `${PRICE_API_URL}/api/recognition-feedback`
 ).replace(/\/$/, '');
 export const SHADOW_MODE_PILOT_API_URL = (
-  process.env.EXPO_PUBLIC_SHADOW_MODE_PILOT_API_URL
-  ?? `${PRICE_API_URL}/api/recognition-shadow-mode`
+  `${PRICE_API_URL}/api/recognition-shadow-mode`
 ).replace(/\/$/, '');
 export const USD_TO_GBP = 0.79;
 export const EUR_TO_GBP = 0.85;

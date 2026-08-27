@@ -1126,7 +1126,7 @@ export function HomeOpportunitiesSection({
           icon: 'copy-outline' as IconName,
           imageIcon: stackrIcons.duplicates,
           title: `${duplicateSummary.count} duplicate cop${duplicateSummary.count === 1 ? 'y' : 'ies'} to review`,
-          subtitle: 'Sell, trade, or organise your extras',
+          subtitle: 'Sort, trade, or organise your extras',
           value: formatMoney(duplicateSummary.estimatedValue),
           onPress: onDuplicates,
         }
@@ -1346,11 +1346,11 @@ export function ChaseCardsSheet({
   const totalEstimated = estimatedValues.reduce((sum, value) => sum + value, 0);
 
   const renderListingCopy = (listing: HomeChaseListingSuggestion) => {
-    const price = listing.askingPrice != null ? formatMoney(listing.askingPrice) : listing.tradeOnly ? 'trade only' : 'available';
+    const price = listing.askingPrice != null ? `guide price ${formatMoney(listing.askingPrice)}` : listing.tradeOnly ? 'trade proposals' : 'offers open';
     if (listing.sellerDisplayName) {
-      return `${listing.sellerDisplayName} has ${selectedCard?.name ?? 'this card'} listed for ${price}.`;
+      return `${listing.sellerDisplayName} has a browse-only listing for ${selectedCard?.name ?? 'this card'} · ${price}.`;
     }
-    return `${selectedCard?.name ?? 'This card'} is listed for ${price}.`;
+    return `${selectedCard?.name ?? 'This card'} has a browse-only listing · ${price}.`;
   };
 
   return (
@@ -1606,7 +1606,7 @@ export function ChaseCardsSheet({
                             {renderListingCopy(listing)}
                           </Text>
                           <Text style={[styles.chaseListingMeta, { color: theme.colors.textSoft }]} numberOfLines={1}>
-                            {[listing.condition, listing.tradeOnly ? 'Trade' : 'Buy'].filter(Boolean).join(' - ')}
+                            {[listing.condition, listing.tradeOnly ? 'Trade' : 'Offers'].filter(Boolean).join(' - ')}
                           </Text>
                         </View>
                         <Text style={[styles.chaseListingActionText, { color: HOME_HERO_PRIMARY }]}>View</Text>

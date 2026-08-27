@@ -1,0 +1,1823 @@
+{
+  "schemaVersion": "stackr-staging-migration-ledger-v1.0.0",
+  "environment": "staging",
+  "projectRef": "lmwfhvexfcoyeuoyrlco",
+  "expectedCommonCount": 104,
+  "expectedCommonOrderedVersionNameMd5": "5a095f30a787e3a287c9b301e2c83ab8",
+  "expectedAppliedCount": 146,
+  "expectedAppliedOrderedVersionNameMd5": "1d5b748bff24c418d66a317952776033",
+  "expectedAppliedRemoteStatementLedgerSha256": "ff74f9f45a28d667e0480f30a0dfc492649490c61122715eca8f9f9ccab5d87a",
+  "gate0MigrationVersion": "20260827124944",
+  "expectedGate0RemoteStatementsSha256": "eae06d2b27c48aed98dfd8aacb242ff213a4c8bc207a61f67e6d0bd3352510a5",
+  "expectedMaterializedCount": 147,
+  "expectedMaterializedOrderedVersionNameMd5": "fafa08a45026a8a6a682a70129ebebd2",
+  "excludedFixtures": [
+    "supabase/staging-migrations/20260729191851_staging_critical_security_fixture.sql"
+  ],
+  "entries": [
+    {
+      "version": "20260513170000",
+      "name": "card_fingerprint_regions",
+      "file": "20260513170000_card_fingerprint_regions.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260513170000_card_fingerprint_regions.sql",
+      "sha256": "07742f27e8096c975253fa6b71eea1bf7566f1474637db0d1d21a728c2a82294",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260513213000",
+      "name": "card_clip_embeddings",
+      "file": "20260513213000_card_clip_embeddings.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260513213000_card_clip_embeddings.sql",
+      "sha256": "d7613b05c7b2544e1a40e1b9223eb877390936990291b0d25cdc86bafa87f1f5",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260516195500",
+      "name": "seller_inventory_sales",
+      "file": "20260516195500_seller_inventory_sales.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260516195500_seller_inventory_sales.sql",
+      "sha256": "04d1b00f4712f153b51f62776d737ccc332959f279053d8f22fd99c94defc33a",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260518120000",
+      "name": "local_postcode_distance",
+      "file": "20260518120000_local_postcode_distance.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260518120000_local_postcode_distance.sql",
+      "sha256": "05bd1cf97e9d5d64e07079b02fef6ba44638eb5cda45d6ae45874288aa74f625",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260518124500",
+      "name": "market_price_snapshots_read_policy",
+      "file": "20260518124500_market_price_snapshots_read_policy.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260518124500_market_price_snapshots_read_policy.sql",
+      "sha256": "27e29059151ad12849845935415569bb89ac31c7438450ea151093bd06878f10",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260518133000",
+      "name": "trade_listing_metadata",
+      "file": "20260518133000_trade_listing_metadata.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260518133000_trade_listing_metadata.sql",
+      "sha256": "1842660ff07b844d5b77f76ed28589cb779894af730e119512d8734bd1cf4dd6",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260518142000",
+      "name": "seller_inventory_products",
+      "file": "20260518142000_seller_inventory_products.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260518142000_seller_inventory_products.sql",
+      "sha256": "949c318b0f0ce5ff5707c7f476579af527440904e3b7997a973ba646912a2c0f",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260518145500",
+      "name": "market_products",
+      "file": "20260518145500_market_products.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260518145500_market_products.sql",
+      "sha256": "07c60e16ae5d524b75c8319109aa7e9e0787fc65d447cf04b195d1f3cd31a885",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260518150000",
+      "name": "seed_market_products",
+      "file": "20260518150000_seed_market_products.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260518150000_seed_market_products.sql",
+      "sha256": "b4cdc17a2152fcd6cb0be9e26e377be2021f758c90c7f7441e7513ca32f31de6",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260519102000",
+      "name": "seed_market_product_expansion",
+      "file": "20260519102000_seed_market_product_expansion.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260519102000_seed_market_product_expansion.sql",
+      "sha256": "f70e2e7318b2a2f819332fbdb28b3527f2c8134af35b9733c9f2f213bf7744f7",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260519124500",
+      "name": "market_product_tcgcsv_prices",
+      "file": "20260519124500_market_product_tcgcsv_prices.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260519124500_market_product_tcgcsv_prices.sql",
+      "sha256": "4e66c24982d6cfca03f0fb2660690898e4ebc9c002c15ccb4a59cf8609e21e23",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260521143000",
+      "name": "admin_social_content",
+      "file": "20260521143000_admin_social_content.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260521143000_admin_social_content.sql",
+      "sha256": "472613a47365e966aea1f3e074faaba0bf9011cdb7ae419df633cedab9de649c",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260521152000",
+      "name": "community_news_sources",
+      "file": "20260521152000_community_news_sources.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260521152000_community_news_sources.sql",
+      "sha256": "be9897d1f4cc63df0edf9ee76a5525cf45123b9c720ed242f1cdd5928a80d362",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260526170000",
+      "name": "user_pokedex_cards",
+      "file": "20260526170000_user_pokedex_cards.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260526170000_user_pokedex_cards.sql",
+      "sha256": "6f9f20f1102014f5de79120a6eb358f4be25b6a242b44f8a5c49e144aab00b20",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260526171500",
+      "name": "binder_cards_condition",
+      "file": "20260526171500_binder_cards_condition.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260526171500_binder_cards_condition.sql",
+      "sha256": "fbbc519a5d929375f7382b585f2cbf8144e91d4165e3570831fd6494830c1f2b",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260527120000",
+      "name": "explicit_data_api_grants",
+      "file": "20260527120000_explicit_data_api_grants.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260527120000_explicit_data_api_grants.sql",
+      "sha256": "8234d9a8aa7ad8c6d2d8d14cdb4b2626d037d0430ed4f646c53ac25ef9a94685",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260527123000",
+      "name": "repair_new_user_profile_trigger",
+      "file": "20260527123000_repair_new_user_profile_trigger.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260527123000_repair_new_user_profile_trigger.sql",
+      "sha256": "cd28e79a42fafa4322dfa1f253d7b5a461392ac724611af3341fb1795334af63",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260528100000",
+      "name": "binder_default_condition",
+      "file": "20260528100000_binder_default_condition.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260528100000_binder_default_condition.sql",
+      "sha256": "e23d62e896398ff1381940fe2950cfe36623448d6706ccf5f2b148f580901589",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260528103000",
+      "name": "binder_master_set_enabled",
+      "file": "20260528103000_binder_master_set_enabled.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260528103000_binder_master_set_enabled.sql",
+      "sha256": "023a20b436ed85e17af05c0a9c648b1c086584b7bb42a6ee25b135c8dec03b8e",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260528110000",
+      "name": "user_achievements",
+      "file": "20260528110000_user_achievements.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260528110000_user_achievements.sql",
+      "sha256": "5ef9f6d959ea290ff8678b5609f5b8e1036fcbb31972c2e69c4507eaac62235f",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260528113000",
+      "name": "user_coin_rewards",
+      "file": "20260528113000_user_coin_rewards.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260528113000_user_coin_rewards.sql",
+      "sha256": "d827341402200f3b1d689b843af72c77b86ad98f08d690de444a9f27c6009cca",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260528114500",
+      "name": "server_side_coin_awards",
+      "file": "20260528114500_server_side_coin_awards.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260528114500_server_side_coin_awards.sql",
+      "sha256": "1882f66de572cfe097dd8d200fa3e4d7534051758aa21ecfb2711a7a224c99b6",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260528120500",
+      "name": "remove_android_beta_email_opt_in",
+      "file": "20260528120500_remove_android_beta_email_opt_in.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260528120500_remove_android_beta_email_opt_in.sql",
+      "sha256": "cae0f6af904ddf8c1c3c1fc9fdc884fd76dfbc7fee5ed3689b0c27537cd5f3d0",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260529100000",
+      "name": "binder_owner_rls",
+      "file": "20260529100000_binder_owner_rls.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260529100000_binder_owner_rls.sql",
+      "sha256": "27a2a33b550481ad7f85bf04e91cfe733010ed86ebdad20066fe63c569162f14",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260529102000",
+      "name": "admin_binder_directory",
+      "file": "20260529102000_admin_binder_directory.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260529102000_admin_binder_directory.sql",
+      "sha256": "7ff3f026cd1a81e75952b821b683c7ae37a11b882ed5b3eac77269c41b4585f1",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260529103000",
+      "name": "admin_binder_directory_view",
+      "file": "20260529103000_admin_binder_directory_view.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260529103000_admin_binder_directory_view.sql",
+      "sha256": "d426dea4bdf489f5768524b70d296c4dab96657ec7b618284f1d74d1fa9d4145",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260529195500",
+      "name": "repair_user_pokedex_cards",
+      "file": "20260529195500_repair_user_pokedex_cards.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260529195500_repair_user_pokedex_cards.sql",
+      "sha256": "f71f11e2e9a5d06d802b13aae8f27d3c66c3ea9cc355662e919ea259d7f3ed5f",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260602120000",
+      "name": "user_card_variants_quantity",
+      "file": "20260602120000_user_card_variants_quantity.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260602120000_user_card_variants_quantity.sql",
+      "sha256": "1bd8d331b6b4095566a194c5a22032d95ae17a20e0a282518615fc744e979344",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260602133000",
+      "name": "binder_card_mode",
+      "file": "20260602133000_binder_card_mode.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260602133000_binder_card_mode.sql",
+      "sha256": "0592ee4bbae51b2f4ffd67fc5f5a027f05275ada34e9923738c26605f698ab53",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260603100000",
+      "name": "binder_card_grading",
+      "file": "20260603100000_binder_card_grading.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260603100000_binder_card_grading.sql",
+      "sha256": "02c13bb3fa4e0b3212301e8a8dda2694e3df5a32307a45ca12637436c61d25a6",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260605120000",
+      "name": "poketrace_api_cache",
+      "file": "20260605120000_poketrace_api_cache.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260605120000_poketrace_api_cache.sql",
+      "sha256": "945fff597f37cdd34723447169246df8c49d88217783d94c0cb10d38c8588335",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260605130000",
+      "name": "binder_card_owned_quantity",
+      "file": "20260605130000_binder_card_owned_quantity.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260605130000_binder_card_owned_quantity.sql",
+      "sha256": "236e3bbb7235a9d7254b7d4777853cfad7f0353a2fa4dfe1b7564225feef43e3",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260605133000",
+      "name": "user_card_variants_unique_key",
+      "file": "20260605133000_user_card_variants_unique_key.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260605133000_user_card_variants_unique_key.sql",
+      "sha256": "db24332b0025b7d7a06b36bac8fbc59c35018ffa77c453f629b9764a2048bec4",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260605214500",
+      "name": "user_card_variants_allow_multiple_variants",
+      "file": "20260605214500_user_card_variants_allow_multiple_variants.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260605214500_user_card_variants_allow_multiple_variants.sql",
+      "sha256": "d0ff2b2cdb6ffe393abdc74d12fa73df590eb4269099a8ebfb6b124f6bc6fc46",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260621170000",
+      "name": "rookie_accolade_rewards",
+      "file": "20260621170000_rookie_accolade_rewards.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260621170000_rookie_accolade_rewards.sql",
+      "sha256": "4f0fee0b37062026b9d3d745a0e079f4fd359a42a7bcb135c3a3f730b9256dd6",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260623120000",
+      "name": "binder_card_slab_metadata",
+      "file": "20260623120000_binder_card_slab_metadata.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260623120000_binder_card_slab_metadata.sql",
+      "sha256": "1e7f25ec698335f3b6e24fe7832f9674570678a0bb2638aef45ed4a6cfa11fa9",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260627120000",
+      "name": "inventory_movements_and_binder_schema_repair",
+      "file": "20260627120000_inventory_movements_and_binder_schema_repair.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260627120000_inventory_movements_and_binder_schema_repair.sql",
+      "sha256": "96ba7713bb4d2199b30b2caf84c11d7bb90a3e18fc6f38a559573b4756cf0c44",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260628100000",
+      "name": "listing_media_metadata",
+      "file": "20260628100000_listing_media_metadata.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260628100000_listing_media_metadata.sql",
+      "sha256": "ce70c7835b648bfe40760a9893abd28c49b3990a49629fdaa196691420e3ce86",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260628120000",
+      "name": "strong_goblin_achievement_rewards",
+      "file": "20260628120000_strong_goblin_achievement_rewards.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260628120000_strong_goblin_achievement_rewards.sql",
+      "sha256": "4a59c1b7deff2f7b57ba757e955b8e59deca2cc2d75ec02af0cd3e727e05ce9f",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260701195000",
+      "name": "marketplace_schema_repair",
+      "file": "20260701195000_marketplace_schema_repair.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260701195000_marketplace_schema_repair.sql",
+      "sha256": "10901d8e513bcf6589cd1304514b1a6856363569bd48dd238874b0d64737c53a",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260702120000",
+      "name": "owned_card_membership_model",
+      "file": "20260702120000_owned_card_membership_model.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260702120000_owned_card_membership_model.sql",
+      "sha256": "c94807d326a140325a8af6f0a848a9a2aa6c53794d00dcede4382f4aefdf7b7b",
+      "provenance": {
+        "kind": "historical-staging-override",
+        "commit": "2c30adcc252fca1c6fcff65491e66671098c8486"
+      }
+    },
+    {
+      "version": "20260707120000",
+      "name": "japanese_card_pricing_support",
+      "file": "20260707120000_japanese_card_pricing_support.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260707120000_japanese_card_pricing_support.sql",
+      "sha256": "08ebdaaabdd1b9f5ff68c36d458597fb47e6f126163c2cc949c19e0ee0a7c527",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260707123000",
+      "name": "price_refresh_scheduler",
+      "file": "20260707123000_price_refresh_scheduler.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260707123000_price_refresh_scheduler.sql",
+      "sha256": "efea53dd742e3bd32720716a21fd3b8a458cb8c355203356d3096bfde32b9c4d",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260714120000",
+      "name": "performance_pricing_indexes",
+      "file": "20260714120000_performance_pricing_indexes.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260714120000_performance_pricing_indexes.sql",
+      "sha256": "93efc865a41b56610485ba34b1aaf5c7da204b422997617645adaf60736e108e",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260715120000",
+      "name": "binder_language_support",
+      "file": "20260715120000_binder_language_support.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260715120000_binder_language_support.sql",
+      "sha256": "08e8f5afd7b8de07c9555003af62fdcdd68839e39c2680c355f4d0d4e72cd00d",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260715143000",
+      "name": "minty_insight_platform",
+      "file": "20260715143000_minty_insight_platform.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260715143000_minty_insight_platform.sql",
+      "sha256": "92d3a1629cb3b3cabff01d05c258d4d3e0e7a2011f4a34280f6a74fc7456215a",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260717120000",
+      "name": "phase1_app_performance_indexes",
+      "file": "20260717120000_phase1_app_performance_indexes.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260717120000_phase1_app_performance_indexes.sql",
+      "sha256": "53f05a51bcc70381efc4a455b380915b8859f298ef53e1f09e28010e481631f9",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260717143000",
+      "name": "japanese_catalogue_canonical_schema",
+      "file": "20260717143000_japanese_catalogue_canonical_schema.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260717143000_japanese_catalogue_canonical_schema.sql",
+      "sha256": "0f902b56a465eb74019e00f134195f80e82b4dafe2a2df6baa34accf8df7841a",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260718120000",
+      "name": "tcgdex_catalogue_repair",
+      "file": "20260718120000_tcgdex_catalogue_repair.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260718120000_tcgdex_catalogue_repair.sql",
+      "sha256": "bbfe692c4ba1464e25c8ecb01ee850aa55e6765f4c792c21a591b09dcaf1fa44",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260719110000",
+      "name": "fast_global_search_indexes",
+      "file": "20260719110000_fast_global_search_indexes.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260719110000_fast_global_search_indexes.sql",
+      "sha256": "f209c6f32a34477cf36323872b617bfd8ddcd9b9db769bdd8c6190953550c061",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260719123000",
+      "name": "scan_learning_events",
+      "file": "20260719123000_scan_learning_events.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260719123000_scan_learning_events.sql",
+      "sha256": "097d3c0c36881b7c2a9e2164a73648999f65bb2a717108cbb2adbada6f3217c5",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260719133000",
+      "name": "scan_learning_match_incorrect",
+      "file": "20260719133000_scan_learning_match_incorrect.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260719133000_scan_learning_match_incorrect.sql",
+      "sha256": "115807b883cb0476e19e21f118cb630a94bc3f79f323c63afa6a7213123608ac",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260720173000",
+      "name": "secure_scan_recognition",
+      "file": "20260720173000_secure_scan_recognition.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260720173000_secure_scan_recognition.sql",
+      "sha256": "945222c6bcaeeeb85ec83304c05e6da4abaefce5ee649086af43c0ea54758d47",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260720184000",
+      "name": "scan_grading_jobs",
+      "file": "20260720184000_scan_grading_jobs.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260720184000_scan_grading_jobs.sql",
+      "sha256": "64dfcdfffba06246557b47ff24a76f734d4031ea61a4a010a7d7afef6b0c948e",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260720235000",
+      "name": "scan_analytics_feedback",
+      "file": "20260720235000_scan_analytics_feedback.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260720235000_scan_analytics_feedback.sql",
+      "sha256": "51a9f7a70632e83f3fea3d24d944d44d4efd6ef95f0982e5b7e3db0248af9248",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260721090000",
+      "name": "scanner_calibration",
+      "file": "20260721090000_scanner_calibration.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260721090000_scanner_calibration.sql",
+      "sha256": "6271309c7753f44028c6b5ed7fdc5191dc55ca074decd363ad33cf3f0f6da28c",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260721123000",
+      "name": "tcg_set_cover_images",
+      "file": "20260721123000_tcg_set_cover_images.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260721123000_tcg_set_cover_images.sql",
+      "sha256": "5c194d74635d23a642510956c4bad6736a77948be4e88f3ae8c02386ed82cbcf",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260726103000",
+      "name": "scanner_recognition_rebuild",
+      "file": "20260726103000_scanner_recognition_rebuild.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260726103000_scanner_recognition_rebuild.sql",
+      "sha256": "80fcf14fd96158b50fa051b5b3704cead3529ffac23889aa8481992acc8fd834",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260726162000",
+      "name": "binder_set_branding_assets",
+      "file": "20260726162000_binder_set_branding_assets.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260726162000_binder_set_branding_assets.sql",
+      "sha256": "791e92a1396a889941dd42a139831d94bd6b25fe3243c721e3b3fa0c43d7d0fc",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260726210000",
+      "name": "pricing_engine_v2",
+      "file": "20260726210000_pricing_engine_v2.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260726210000_pricing_engine_v2.sql",
+      "sha256": "443507a6d7f2f356bf20d66eeda9aa21d812ebd1238f49947326a2d2429b8615",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260726223000",
+      "name": "scan_lab_capture_queue",
+      "file": "20260726223000_scan_lab_capture_queue.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260726223000_scan_lab_capture_queue.sql",
+      "sha256": "88bd6170efc8d1968649dc6cab3d0ba9560340ecc5325c42f739331d8b816626",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260726234500",
+      "name": "recognition_feedback_loop",
+      "file": "20260726234500_recognition_feedback_loop.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260726234500_recognition_feedback_loop.sql",
+      "sha256": "d515b4fbd03374ea4446c373be65c3ce95d3be6471df8da368c11d5464f14513",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260727090000",
+      "name": "shadow_mode_pilot",
+      "file": "20260727090000_shadow_mode_pilot.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260727090000_shadow_mode_pilot.sql",
+      "sha256": "13b224f11835fc370459f7179046d25905516ae32d513f368493c8f1b5b4f968",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260727212256",
+      "name": "canonical_stackr_catalogue_database",
+      "file": "20260727212256_canonical_stackr_catalogue_database.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260727212256_canonical_stackr_catalogue_database.sql",
+      "sha256": "f0c5251fee5a633311317f5c3d16a62c029400155d6eee3d66a379f94f33cc65",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260727213835",
+      "name": "stackr_data_ingestion_reconciliation",
+      "file": "20260727213835_stackr_data_ingestion_reconciliation.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260727213835_stackr_data_ingestion_reconciliation.sql",
+      "sha256": "e113d3f67aa1f69b340fa4ee3eb792b7b1319143428b11194411fef77bf5591e",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260728060617",
+      "name": "stackr_asset_repository_delivery_pipeline",
+      "file": "20260728060617_stackr_asset_repository_delivery_pipeline.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260728060617_stackr_asset_repository_delivery_pipeline.sql",
+      "sha256": "cdb23b125c3296342464e29af56c569ce14554154046b6d9225ec475c2686548",
+      "provenance": {
+        "kind": "historical-staging-override",
+        "commit": "7517667b07f49b9b4b80b8a7abddf728343647cf"
+      }
+    },
+    {
+      "version": "20260728064400",
+      "name": "embedding_model_registry_and_index_gates",
+      "file": "20260728064400_embedding_model_registry_and_index_gates.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260728064400_embedding_model_registry_and_index_gates.sql",
+      "sha256": "51805eceeb792de6dac9be5b74d78295fdc4f334a9a492a3563abd80db203182",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260728110000",
+      "name": "curated_corocoro_mew_promos",
+      "file": "20260728110000_curated_corocoro_mew_promos.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260728110000_curated_corocoro_mew_promos.sql",
+      "sha256": "3ea7c99ddebb437429c3869bf1f4c058505e1b511433c8a542a26347d62bc807",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260728152412",
+      "name": "recognition_service_scan_diagnostics",
+      "file": "20260728152412_recognition_service_scan_diagnostics.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260728152412_recognition_service_scan_diagnostics.sql",
+      "sha256": "615af9aeb141b005025f2a9feef28e17e0f503137386ad6212737ebbfaee9d1b",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260728171416",
+      "name": "stackr_market_pricing_service",
+      "file": "20260728171416_stackr_market_pricing_service.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260728171416_stackr_market_pricing_service.sql",
+      "sha256": "c36dbaf1511e6bd9d2c2ec02b3eb6559b87ac714d3d19ae1b58a5ef88cb7d40c",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260728173530",
+      "name": "stackr_api_gateway_controls",
+      "file": "20260728173530_stackr_api_gateway_controls.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260728173530_stackr_api_gateway_controls.sql",
+      "sha256": "d6f1bf50a5dee3b13b766a71ae085e4cfc19200568d8b541db53b350a766e59d",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260728182743",
+      "name": "stackr_quality_performance_observability",
+      "file": "20260728182743_stackr_quality_performance_observability.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260728182743_stackr_quality_performance_observability.sql",
+      "sha256": "9d55c0ad79c26ddba50ebfdd1d7fe135c7a02635eb9aa8d2607a4254ecf2a7cb",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260728202949",
+      "name": "stackr_application_migration_provider_retirement",
+      "file": "20260728202949_stackr_application_migration_provider_retirement.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260728202949_stackr_application_migration_provider_retirement.sql",
+      "sha256": "c3d88bab8230ff7538c75526eb917170fd610dfa142e5261b64900d08bb5a224",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260728203300",
+      "name": "stackr_release_activation_controls",
+      "file": "20260728203300_stackr_release_activation_controls.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260728203300_stackr_release_activation_controls.sql",
+      "sha256": "d1b3ec6b9ea08c6f9eefeb56eb46fc33d35d196b1d402335db68eab8e30c8763",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260729055239",
+      "name": "critical_security_containment",
+      "file": "20260729055239_critical_security_containment.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260729055239_critical_security_containment.sql",
+      "sha256": "18c8d38883cade1f85b86e8fac5b5f4ac727e5432755ffff5a05ae9f4b0d830c",
+      "provenance": {
+        "kind": "historical-staging-override",
+        "commit": "42ee5fcc13cd093b1fb4fec617b84b336ef873ad"
+      }
+    },
+    {
+      "version": "20260730080047",
+      "name": "reconcile_catalogue_seed_encoding_and_finish_taxonomy",
+      "file": "20260730080047_reconcile_catalogue_seed_encoding_and_finish_taxonomy.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260730080047_reconcile_catalogue_seed_encoding_and_finish_taxonomy.sql",
+      "sha256": "ea1a819ac8fa92cf381fcc55b718830d9af67ea1046d19fe01abe77a766c0a2f",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260730144626",
+      "name": "harden_legacy_catalogue_operational_access",
+      "file": "20260730144626_harden_legacy_catalogue_operational_access.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260730144626_harden_legacy_catalogue_operational_access.sql",
+      "sha256": "a67f68257ffc5d6c28300f5fc8a4c46173fbfe7a2036119c480914d0c9540845",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260730145958",
+      "name": "harden_function_and_storage_access",
+      "file": "20260730145958_harden_function_and_storage_access.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260730145958_harden_function_and_storage_access.sql",
+      "sha256": "b334188ec14ebd3f49d335aeb95677bb88ea681383f91d5de843c4acd7777ef8",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260730153923",
+      "name": "preserve_raw_source_record_history",
+      "file": "20260730153923_preserve_raw_source_record_history.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260730153923_preserve_raw_source_record_history.sql",
+      "sha256": "c06e1e7f54cc8e3f8be6d3342381b9ba20a1bdc2e6539994b38f98648fd136c3",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260801090000",
+      "name": "strict_foreign_catalogue_import_safety",
+      "file": "20260801090000_strict_foreign_catalogue_import_safety.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260801090000_strict_foreign_catalogue_import_safety.sql",
+      "sha256": "e397d646b130ed6275e5bac9abe8e8a8261179d1ab68a545ec76fed7371e5b5b",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260801103000",
+      "name": "catalogue_image_leftover_workflow",
+      "file": "20260801103000_catalogue_image_leftover_workflow.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260801103000_catalogue_image_leftover_workflow.sql",
+      "sha256": "399ccd07cd7ae112fa212b1a43a8258bcd06ebcab15b00284635af176e3f0a53",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260801120000",
+      "name": "language_catalogue_publication_snapshots",
+      "file": "20260801120000_language_catalogue_publication_snapshots.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260801120000_language_catalogue_publication_snapshots.sql",
+      "sha256": "b5830d80514e8a23774ec2416a15790adbaee43bc9e39de0c24477c0be570bbd",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260802160643",
+      "name": "production_critical_rls_storage_containment_20260802",
+      "file": "20260802160643_production_critical_rls_storage_containment_20260802.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260802160643_production_critical_rls_storage_containment_20260802.sql",
+      "sha256": "29235d8e72185d34dbbf50cb373a933937d585aae2340bf804ac28c03d1b61b7",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260805200000",
+      "name": "recognition_service_database_role",
+      "file": "20260805200000_recognition_service_database_role.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260805200000_recognition_service_database_role.sql",
+      "sha256": "c9a7a54866cac18a6163f00bb24b6a61823102c3e4ae66e28623ddba1ebe4cf1",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260806073146",
+      "name": "recognition_reference_asset_eligibility",
+      "file": "20260806073146_recognition_reference_asset_eligibility.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260806073146_recognition_reference_asset_eligibility.sql",
+      "sha256": "8ba8dc7f08033230e68af011560a1099d0eb6aa342a42df0bb6807d160bdb79d",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260806170203",
+      "name": "optimise_catalogue_quality_report",
+      "file": "20260806170203_optimise_catalogue_quality_report.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260806170203_optimise_catalogue_quality_report.sql",
+      "sha256": "1f85196c4c7c2fd18918c38114726861a93521a8b5294b37396ab5133fa22a26",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260806170501",
+      "name": "make_catalogue_quality_report_targeted",
+      "file": "20260806170501_make_catalogue_quality_report_targeted.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260806170501_make_catalogue_quality_report_targeted.sql",
+      "sha256": "af062f8c444d4fe47f2f0e85b361dda2990553e7fdebe78840b9a1394f913d3c",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260806171907",
+      "name": "resolve_asset_manifest_catalogue_identity",
+      "file": "20260806171907_resolve_asset_manifest_catalogue_identity.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260806171907_resolve_asset_manifest_catalogue_identity.sql",
+      "sha256": "0998c40186fda155ee055dd34ea3532706ab8495357962aa2fe7a11d6f750827",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260806174020",
+      "name": "materialize_dinov2_vits14_embedding_index",
+      "file": "20260806174020_materialize_dinov2_vits14_embedding_index.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260806174020_materialize_dinov2_vits14_embedding_index.sql",
+      "sha256": "fa49cb0727f22b2fa712b8c8492b996d50516ba3c80af18ca6e25ced10c5f4cd",
+      "provenance": {
+        "kind": "historical-staging-override",
+        "commit": "a3b74fb02d89d176eeeb78f3648c3c3ebfad5a96"
+      }
+    },
+    {
+      "version": "20260806183600",
+      "name": "index_dinov2_embedding_foreign_keys",
+      "file": "20260806183600_index_dinov2_embedding_foreign_keys.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260806183600_index_dinov2_embedding_foreign_keys.sql",
+      "sha256": "f2b65deb2f470c738d109a68cf73a5855e6f681dc51adc7064b8a522c44c637a",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260806212500",
+      "name": "expose_catalogue_artwork_fallbacks",
+      "file": "20260806212500_expose_catalogue_artwork_fallbacks.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260806212500_expose_catalogue_artwork_fallbacks.sql",
+      "sha256": "9d641f1ff31429fc70f88835cc4e7296ad9b3b7f161358b57630d4970dd90e55",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260806213000",
+      "name": "backfill_catalogue_native_image_states",
+      "file": "20260806213000_backfill_catalogue_native_image_states.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260806213000_backfill_catalogue_native_image_states.sql",
+      "sha256": "784ff8249ab4f546d91ace333e03e6f61af67e87e8ce1a0cd1f62b59652e7035",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260807034806",
+      "name": "repair_provider_variant_identity",
+      "file": "20260807034806_repair_provider_variant_identity.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260807034806_repair_provider_variant_identity.sql",
+      "sha256": "f803eb34ec2c06752c2a5242b337c5a506e0fd6fa0e4e73b3fa45a13f820952b",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260807173127",
+      "name": "register_private_scan_upload",
+      "file": "20260807173127_register_private_scan_upload.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260807173127_register_private_scan_upload.sql",
+      "sha256": "bccedecebea4630ac536925496483bee53117553a6289b57c20d8e833f1851b7",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260807174127",
+      "name": "allow_recognition_read_private_scan_uploads",
+      "file": "20260807174127_allow_recognition_read_private_scan_uploads.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260807174127_allow_recognition_read_private_scan_uploads.sql",
+      "sha256": "05aa3c91ac8c0ea84f97a42922e593529d500232595504f5472f1476831f4c7a",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260807180227",
+      "name": "allow_recognition_vector_extension_usage",
+      "file": "20260807180227_allow_recognition_vector_extension_usage.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260807180227_allow_recognition_vector_extension_usage.sql",
+      "sha256": "32f9f66d6bd07b9c6bf5c13a3ee76e516b86cf017e77f8792fa5840af9589dfa",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260807183118",
+      "name": "recognition_index_build_api",
+      "file": "20260807183118_recognition_index_build_api.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260807183118_recognition_index_build_api.sql",
+      "sha256": "fb3e2d767dfb2037a530a8bb9d6911417548175428ab30ebf2f1cde814a4041d",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260807184200",
+      "name": "search_recognition_candidate_index",
+      "file": "20260807184200_search_recognition_candidate_index.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260807184200_search_recognition_candidate_index.sql",
+      "sha256": "39a8a981b8c186aefbecd54101c7c32906bba0bc51563b3a3156d549e0b39ce0",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260809121525",
+      "name": "catalogue_asset_mirror_queue_index",
+      "file": "20260809121525_catalogue_asset_mirror_queue_index.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260809121525_catalogue_asset_mirror_queue_index.sql",
+      "sha256": "65fc83c7a46fac4a5bf08645c074c1a39f19e8c61cf82ae53dc456e054baaafd",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260809123804",
+      "name": "optimize_catalogue_asset_source_reuse",
+      "file": "20260809123804_optimize_catalogue_asset_source_reuse.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260809123804_optimize_catalogue_asset_source_reuse.sql",
+      "sha256": "47af9a46891075517f73fdd44b6a73c79b8f0aca3710ebc2418a5a32426e92ee",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260810070906",
+      "name": "optimize_published_asset_manifest_reads",
+      "file": "20260810070906_optimize_published_asset_manifest_reads.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260810070906_optimize_published_asset_manifest_reads.sql",
+      "sha256": "285b22b0acaa8b4c2b1a57c295efda18c34bb3d796816f57a88c9a41d52267a0",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260810071807",
+      "name": "add_stable_asset_manifest_cursor",
+      "file": "20260810071807_add_stable_asset_manifest_cursor.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260810071807_add_stable_asset_manifest_cursor.sql",
+      "sha256": "5945fe438928b25ac6de6a8fdfd1049b76bead548a786d647c6eb132a63a3c5e",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260810170607",
+      "name": "optimize_raw_source_publication_reads",
+      "file": "20260810170607_optimize_raw_source_publication_reads.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260810170607_optimize_raw_source_publication_reads.sql",
+      "sha256": "ca95f4d4433fb0de2ea693d9b5274d141ec5a61be0f6188b50424253c17c4d60",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260811165000",
+      "name": "repair_owned_card_membership_legacy_identity",
+      "file": "20260811165000_repair_owned_card_membership_legacy_identity.sql",
+      "state": "applied",
+      "source": "supabase/migrations/20260811165000_repair_owned_card_membership_legacy_identity.sql",
+      "sha256": "42f75e076f48ab38838f139f44c5b5d85744e51d08e71f2932552e7dce61b395",
+      "provenance": {
+        "kind": "merged-main",
+        "commit": "314e5e2f09b8cbbb7dc3b36469d373eb99a61980"
+      }
+    },
+    {
+      "version": "20260818191024",
+      "name": "add_catalogue_report_language_pagination_indexes",
+      "file": "20260818191024_add_catalogue_report_language_pagination_indexes.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260818191024_add_catalogue_report_language_pagination_indexes.sql",
+      "sha256": "9b0da18bff0fd8664e2d68d22e008c32248b00ca057bca468e369e9d1a10aacf",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260820104237",
+      "name": "add_catalogue_publication_identifier_covering_index",
+      "file": "20260820104237_add_catalogue_publication_identifier_covering_index.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260820104237_add_catalogue_publication_identifier_covering_index.sql",
+      "sha256": "c863a9ea2d467819bd1dea883a9755a0d6b49df0adedd114f5c7c59bc19f8071",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260820215422",
+      "name": "expand_pokemon_rarity_taxonomy",
+      "file": "20260820215422_expand_pokemon_rarity_taxonomy.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260820215422_expand_pokemon_rarity_taxonomy.sql",
+      "sha256": "d53b2ba7dafe63c4df48ad9d2038fde47116ef2e78b255107eabacfc5c4fb9dd",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260820222400",
+      "name": "backfill_catalogue_set_release_dates",
+      "file": "20260820222400_backfill_catalogue_set_release_dates.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260820222400_backfill_catalogue_set_release_dates.sql",
+      "sha256": "e9e77e3e0adf6210d1a007a2cb0e2a60788f2ed44c26b0c5a05c3ac3668c79d1",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260820223027",
+      "name": "backfill_chinese_catalogue_set_release_dates",
+      "file": "20260820223027_backfill_chinese_catalogue_set_release_dates.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260820223027_backfill_chinese_catalogue_set_release_dates.sql",
+      "sha256": "cde1e7b35646d7734bad6643a97d305f115a00779670ba675ce4b9680ab8bb8e",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260820224112",
+      "name": "backfill_exact_english_tcgdex_rarities",
+      "file": "20260820224112_backfill_exact_english_tcgdex_rarities.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260820224112_backfill_exact_english_tcgdex_rarities.sql",
+      "sha256": "36c9a1f4faa44dbde72c77d4d0ee9cedc6db8a9c4925d7514f111b0aeb5f7be8",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260820231128",
+      "name": "reuse_identical_catalogue_storage_objects",
+      "file": "20260820231128_reuse_identical_catalogue_storage_objects.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260820231128_reuse_identical_catalogue_storage_objects.sql",
+      "sha256": "6adccd628b8a83668e8d84acb07fa5bd8f21e6b4819540a2b8a1ce5a569d5eea",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260820233514",
+      "name": "backfill_exact_english_pokemontcg_metadata",
+      "file": "20260820233514_backfill_exact_english_pokemontcg_metadata.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260820233514_backfill_exact_english_pokemontcg_metadata.sql",
+      "sha256": "5cf257230c25b0d456d6ecb25512fac604fd56cde9ea2e7069c81df012db4d0e",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260820234322",
+      "name": "resolve_official_csm25_release_date",
+      "file": "20260820234322_resolve_official_csm25_release_date.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260820234322_resolve_official_csm25_release_date.sql",
+      "sha256": "2108702687ca25d5d3d07cd8526fe93664f0ead55aeebf6e3bc353e2540376a8",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821111626",
+      "name": "extend_recognition_embedding_batch_timeout",
+      "file": "20260821111626_extend_recognition_embedding_batch_timeout.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821111626_extend_recognition_embedding_batch_timeout.sql",
+      "sha256": "0c80477b723d971893e2d45be5987508b08f49afa546b4d647159548f346e560",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821140706",
+      "name": "extend_recognition_candidate_search_timeout",
+      "file": "20260821140706_extend_recognition_candidate_search_timeout.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821140706_extend_recognition_candidate_search_timeout.sql",
+      "sha256": "ec33615e60feb026e63851c20aca8a4e2134cf10b5349e24fcdf9f6d062e748b",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821150512",
+      "name": "optimize_recognition_candidate_search_hnsw_v2",
+      "file": "20260821150512_optimize_recognition_candidate_search_hnsw_v2.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821150512_optimize_recognition_candidate_search_hnsw_v2.sql",
+      "sha256": "94b1d954910f3dbf436192d659d8e7b988495795e3eaef85f5c65d8921671b83",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821151109",
+      "name": "optimize_recognition_candidate_search_hnsw_v3",
+      "file": "20260821151109_optimize_recognition_candidate_search_hnsw_v3.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821151109_optimize_recognition_candidate_search_hnsw_v3.sql",
+      "sha256": "5182cda7440f0a2a58c42e40a4d992e9cda4303a51298e0c10cbceac0f3395b6",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821155911",
+      "name": "tune_recognition_candidate_search_ef_v4",
+      "file": "20260821155911_tune_recognition_candidate_search_ef_v4.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821155911_tune_recognition_candidate_search_ef_v4.sql",
+      "sha256": "2dd10369080371124f799712a194bae5ef448a070ce04c02c4373c71f0539ac2",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821165027",
+      "name": "backfill_exact_english_tcgcsv_rarities",
+      "file": "20260821165027_backfill_exact_english_tcgcsv_rarities.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821165027_backfill_exact_english_tcgcsv_rarities.sql",
+      "sha256": "b7a3f768f9e76058f154679f4698db37fff6f9f94e587a94b0fa72f2ab639f23",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821170443",
+      "name": "use_exact_filtered_recognition_benchmark_v6",
+      "file": "20260821170443_use_exact_filtered_recognition_benchmark_v6.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821170443_use_exact_filtered_recognition_benchmark_v6.sql",
+      "sha256": "637b29e38592161d21907d5b9e1f0f536468edf4239aed0b1abe09a6093ca02c",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821212325",
+      "name": "family_accounts_and_purchase_requests",
+      "file": "20260821212325_family_accounts_and_purchase_requests.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821212325_family_accounts_and_purchase_requests.sql",
+      "sha256": "8466ccebf72c0968c85de3cfed8254ce64c588e2e6e60bc82db38e2c7f8849c6",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260821212418",
+      "name": "cover_family_child_parent_foreign_key",
+      "file": "20260821212418_cover_family_child_parent_foreign_key.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260821212418_cover_family_child_parent_foreign_key.sql",
+      "sha256": "ca96bb7a800b8199c4df7e963842e10add146d0bd081e08cae8a472aacc172ef",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822073501",
+      "name": "add_scoped_recognition_candidate_search",
+      "file": "20260822073501_add_scoped_recognition_candidate_search.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822073501_add_scoped_recognition_candidate_search.sql",
+      "sha256": "5e3422bf4f3780f5f8885a066b058432afe5bd649cd95649c5a7eb61e76ca296",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822075102",
+      "name": "require_published_variants_in_recognition_indexes",
+      "file": "20260822075102_require_published_variants_in_recognition_indexes.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822075102_require_published_variants_in_recognition_indexes.sql",
+      "sha256": "8e9756cb700929f4d1b474b60a83b8c78235f0cf7409ebacd1c4b757b7c3c345",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822075624",
+      "name": "batch_clone_published_recognition_index",
+      "file": "20260822075624_batch_clone_published_recognition_index.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822075624_batch_clone_published_recognition_index.sql",
+      "sha256": "3b97c8a3cc6c7fa8a8f9b77e8496cb7571910bb681d70044b6cfcf6c8f7c419c",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822075704",
+      "name": "fix_recognition_batch_uuid_cursor",
+      "file": "20260822075704_fix_recognition_batch_uuid_cursor.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822075704_fix_recognition_batch_uuid_cursor.sql",
+      "sha256": "48cae942867cd87469fe18c3ed75d852b857b723aff73a031d4ad04e60a9b3ff",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822075820",
+      "name": "resume_recognition_copy_from_target_cursor",
+      "file": "20260822075820_resume_recognition_copy_from_target_cursor.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822075820_resume_recognition_copy_from_target_cursor.sql",
+      "sha256": "de01c3a48806975fc0936211d0cac359b561a9211408910ded775d66ef495719",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822075930",
+      "name": "increase_recognition_copy_batch_bound",
+      "file": "20260822075930_increase_recognition_copy_batch_bound.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822075930_increase_recognition_copy_batch_bound.sql",
+      "sha256": "91a81648cec6f4603e5feb57c5136de0d86ca89bb2ff7a83df216f41828d117a",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822082835",
+      "name": "require_recognition_evidence_before_activation",
+      "file": "20260822082835_require_recognition_evidence_before_activation.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822082835_require_recognition_evidence_before_activation.sql",
+      "sha256": "8766fade493f05a1376a4017505680f6a0958ed37ec80d3d38a0924a972d7e58",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822160439",
+      "name": "add_bounded_recognition_fingerprint_asset_lookup",
+      "file": "20260822160439_add_bounded_recognition_fingerprint_asset_lookup.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822160439_add_bounded_recognition_fingerprint_asset_lookup.sql",
+      "sha256": "dc83e66c5e05831aacb207c89106ee465b4e21c8c01ee3093ea47395ef8fe42f",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822161133",
+      "name": "add_paged_recognition_fingerprint_context",
+      "file": "20260822161133_add_paged_recognition_fingerprint_context.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822161133_add_paged_recognition_fingerprint_context.sql",
+      "sha256": "23a87302ef5f701485cbbafde4ea1181a9d47e64e57299464d838942f87f4b77",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822161726",
+      "name": "use_invoker_security_for_recognition_fingerprint_reads",
+      "file": "20260822161726_use_invoker_security_for_recognition_fingerprint_reads.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822161726_use_invoker_security_for_recognition_fingerprint_reads.sql",
+      "sha256": "4401f95ae4395acd3e36b2d3b3c4667537e95eb45c34167e2deba9c4c6150570",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822161808",
+      "name": "restore_bounded_definer_fingerprint_reads",
+      "file": "20260822161808_restore_bounded_definer_fingerprint_reads.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822161808_restore_bounded_definer_fingerprint_reads.sql",
+      "sha256": "4a4fcd511ada82ca4f09f3a15a70e2ce2b17a78cff1d86ad6698cb9c1f8c9d10",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822223752",
+      "name": "add_bounded_recognition_fingerprint_asset_lookup",
+      "file": "20260822223752_add_bounded_recognition_fingerprint_asset_lookup.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822223752_add_bounded_recognition_fingerprint_asset_lookup.sql",
+      "sha256": "dc83e66c5e05831aacb207c89106ee465b4e21c8c01ee3093ea47395ef8fe42f",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822223756",
+      "name": "add_paged_recognition_fingerprint_context",
+      "file": "20260822223756_add_paged_recognition_fingerprint_context.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822223756_add_paged_recognition_fingerprint_context.sql",
+      "sha256": "23a87302ef5f701485cbbafde4ea1181a9d47e64e57299464d838942f87f4b77",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822223800",
+      "name": "use_invoker_security_for_recognition_fingerprint_reads",
+      "file": "20260822223800_use_invoker_security_for_recognition_fingerprint_reads.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822223800_use_invoker_security_for_recognition_fingerprint_reads.sql",
+      "sha256": "4401f95ae4395acd3e36b2d3b3c4667537e95eb45c34167e2deba9c4c6150570",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822223802",
+      "name": "restore_bounded_definer_fingerprint_reads",
+      "file": "20260822223802_restore_bounded_definer_fingerprint_reads.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822223802_restore_bounded_definer_fingerprint_reads.sql",
+      "sha256": "4a4fcd511ada82ca4f09f3a15a70e2ce2b17a78cff1d86ad6698cb9c1f8c9d10",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260822223828",
+      "name": "atomic_seller_inventory_batches",
+      "file": "20260822223828_atomic_seller_inventory_batches.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260822223828_atomic_seller_inventory_batches.sql",
+      "sha256": "8e4ea98ef3d5f5e7882a8ad3edf98b68b9d2af65638c1541a0d91e1c353199e1",
+      "provenance": {
+        "kind": "historical-staging-exception",
+        "commit": "413a1956eaf1e24b9f46ab392cde394941201760"
+      }
+    },
+    {
+      "version": "20260823094456",
+      "name": "add_paged_recognition_embedding_manifest_api",
+      "file": "20260823094456_add_paged_recognition_embedding_manifest_api.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260823094456_add_paged_recognition_embedding_manifest_api.sql",
+      "sha256": "6fd1f8c3bd517c7063f1f0b53b65a9488b34dce1c63a1109a75cf44a3618e986",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260823095317",
+      "name": "add_paged_ebay_recognition_evidence_api",
+      "file": "20260823095317_add_paged_ebay_recognition_evidence_api.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260823095317_add_paged_ebay_recognition_evidence_api.sql",
+      "sha256": "727795a5bb59f64538150f7e93a00f67c13dd5d2a6d74bd3824e72187809323b",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260823163044",
+      "name": "online_recognition_scaleup_v1",
+      "file": "20260823163044_online_recognition_scaleup_v1.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260823163044_online_recognition_scaleup_v1.sql",
+      "sha256": "e5303e6391cfffcefcb9bfcde1e1c72ba12458c50c4e70c003550161f3488749",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260823163657",
+      "name": "improve_online_recognition_scaleup_lookup",
+      "file": "20260823163657_improve_online_recognition_scaleup_lookup.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260823163657_improve_online_recognition_scaleup_lookup.sql",
+      "sha256": "50167c99c9f66a62c8d87b7c53b1dd86178a61f48918207f9b20769716a7f3df",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260823164436",
+      "name": "optimize_online_recognition_scaleup_lookup",
+      "file": "20260823164436_optimize_online_recognition_scaleup_lookup.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260823164436_optimize_online_recognition_scaleup_lookup.sql",
+      "sha256": "95b1525fd63eed31fbb36512da81f374f83d7dd3a73ac6e7eef3e619416d0ce8",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260823165543",
+      "name": "filter_scaleup_index_membership",
+      "file": "20260823165543_filter_scaleup_index_membership.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260823165543_filter_scaleup_index_membership.sql",
+      "sha256": "767a62771ab56a0e3c51f8b6dd90fffff3c2052a3969a6ef371eb69625513645",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260824073736",
+      "name": "expose_english_card_presentation",
+      "file": "20260824073736_expose_english_card_presentation.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260824073736_expose_english_card_presentation.sql",
+      "sha256": "c9e0eb36a9fe6ca193360c4361604de0ad372811033fe0d5e5cd2b197c508b03",
+      "provenance": {
+        "kind": "historical-staging-exception",
+        "commit": "1646d2c8493a5915db4cd5cde4b73c8d3616a58d"
+      }
+    },
+    {
+      "version": "20260827093108",
+      "name": "emergency_client_write_containment",
+      "file": "20260827093108_emergency_client_write_containment.sql",
+      "state": "applied",
+      "source": "supabase/staging-migrations/overrides/20260827093108_emergency_client_write_containment.sql",
+      "sha256": "79616c6b6c9b6edcae9dcf675c05766add935aa396f6d34e462008cf78359ac0",
+      "provenance": {
+        "kind": "live-staging-ledger-reconstruction",
+        "projectRef": "lmwfhvexfcoyeuoyrlco",
+        "capturedAt": "2026-08-27T15:27:57Z"
+      }
+    },
+    {
+      "version": "20260827124944",
+      "name": "gate0_financial_route_containment",
+      "file": "20260827124944_gate0_financial_route_containment.sql",
+      "state": "pending",
+      "source": "supabase/migrations/20260827124944_gate0_financial_route_containment.sql",
+      "sha256": "844ddedf9cfac768bad04c0cc448dddf1586d07ccfd3299d93be1faa97a5e536",
+      "provenance": {
+        "kind": "supabase-cli-generated-forward-migration",
+        "cliVersion": "2.110.0"
+      }
+    }
+  ]
+}

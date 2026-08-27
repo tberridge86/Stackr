@@ -372,6 +372,7 @@ export function SearchListingRailItem({
   onPress: () => void;
 }) {
   const { theme } = useTheme();
+  const safeModeLabel = modeLabel === 'Trade' ? 'Trade' : modeLabel ? 'Offers' : modeLabel;
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -394,7 +395,7 @@ export function SearchListingRailItem({
         {title}
       </Text>
       <RailMetaLine muted primary={subtitle ?? 'The Market'} />
-      <RailMetaLine primary={[modeLabel ?? 'Market listing', money(price)].filter(Boolean).join(' - ')} />
+      <RailMetaLine primary={[safeModeLabel ?? 'Market listing', money(price)].filter(Boolean).join(' - ')} />
     </TouchableOpacity>
   );
 }
@@ -634,6 +635,7 @@ export function SearchListingResult({
   onPress: () => void;
 }) {
   const { theme } = useTheme();
+  const safeModeLabel = modeLabel === 'Trade' ? 'Trade' : modeLabel ? 'Offers' : modeLabel;
   return (
     <SearchResultShell
       onPress={onPress}
@@ -646,7 +648,7 @@ export function SearchListingResult({
       <Text style={{ color: theme.colors.textSoft, fontSize: 12, fontWeight: '800', marginTop: 3 }} numberOfLines={1}>
         {subtitle ?? 'The Market'}
       </Text>
-      <MetaRow items={[modeLabel ?? 'Market listing', money(price)]} />
+      <MetaRow items={[safeModeLabel ?? 'Market listing', money(price)]} />
     </SearchResultShell>
   );
 }

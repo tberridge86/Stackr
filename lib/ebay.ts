@@ -1,3 +1,5 @@
+import { PRICE_API_URL } from './config';
+
 type FetchEbayPriceInput =
   | string
   | {
@@ -56,9 +58,7 @@ async function fetchCachedEbayJson(url: string) {
 }
 
 export async function fetchEbayPrice(input: FetchEbayPriceInput) {
-  const baseUrl =
-    process.env.PRICE_API_URL ||
-    process.env.EXPO_PUBLIC_PRICE_API_URL;
+  const baseUrl = PRICE_API_URL;
 
   if (!baseUrl) {
     throw new Error('Missing PRICE_API_URL');

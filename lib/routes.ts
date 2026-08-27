@@ -15,7 +15,6 @@ export const ROUTES = {
   sellerDashboard: '/seller' as Href,
   sellerInventory: '/(tabs)/inventory' as Href,
   sellerListings: { pathname: '/(tabs)/market', params: { segment: 'myListings' } } as Href,
-  sellerOrders: '/seller/orders' as Href,
   listingNew: '/listing/new' as Href,
   offers: '/offers' as Href,
   priceLookup: '/prices' as Href,

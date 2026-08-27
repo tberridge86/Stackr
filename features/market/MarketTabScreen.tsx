@@ -44,10 +44,10 @@ import { StackrImage, prefetchStackrImagesAfterInteractions } from '../../compon
 import { StackrScreen } from '../../components/StackrScreen';
 import { formatSlabCompanyLabel } from '../../components/SlabStickerLabel';
 import { useProfile } from '../../components/profile-context';
+import { useAppMode } from '../../components/app-mode-context';
 import { useTheme } from '../../components/theme-context';
 import { useTrade } from '../../components/trade-context';
 import {
-  LIVE_COMMERCE_RELEASE_APPROVED,
   PRICE_API_URL,
   TRADE_CASH_TERMS_ENABLED,
 } from '../../lib/config';
@@ -65,6 +65,7 @@ import {
 } from '../../lib/listingDrafts';
 import { fetchSavedMarketListingIds, toggleSavedMarketListing } from '../../lib/marketSavedItems';
 import { MarketplaceListing } from '../../lib/marketplace';
+import { sanitizeGate0CommerceCopy } from '../../lib/gate0CommerceCopy';
 import { marketIcons } from '../../lib/marketIcons';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { getPokemonSetLogoUrl } from '../../lib/pokemonTcg';
@@ -79,7 +80,6 @@ type SortKey = 'recommended' | 'recent' | 'priceAsc' | 'priceDesc' | 'bestValue'
 type MarketLanguageFilter = 'en' | 'ja' | 'zh-tw';
 type Workspace = 'discover' | 'myListings';
 type MarketLayoutMode = 'browse' | 'compact';
-type AvailabilityFilter = 'available' | 'reserved' | 'sold';
 type SellerFilter = { userId: string; name?: string | null } | null;
 type ParsedMarketQuery = {
   raw: string;
@@ -146,11 +146,6 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 const MARKET_GRADER_FILTERS = ['PSA', 'BGS', 'CGC', 'TAG', 'ACE'];
 const MARKET_GRADE_FILTERS = ['10', '9.5', '9', '8', '7 or lower'];
-const MARKET_AVAILABILITY_FILTERS: { key: AvailabilityFilter; label: string }[] = [
-  { key: 'available', label: 'Available' },
-  { key: 'reserved', label: 'Reserved' },
-  { key: 'sold', label: 'Sold' },
-];
 const MARKET_FALLBACK_RARITIES = ['Common', 'Uncommon', 'Rare', 'Double Rare', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Secret Rare', 'Promo'];
 const MARKET_LANGUAGE_FILTERS: { key: MarketLanguageFilter; label: string }[] = [
   { key: 'en', label: 'English' },
@@ -164,13 +159,10 @@ type MarketListingTypeFilter = {
   icon: keyof typeof Ionicons.glyphMap;
 };
 const MARKET_LISTING_TYPE_FILTERS: MarketListingTypeFilter[] = ([
-  { key: 'buy', label: 'Buy now', modes: ['buy'], icon: 'pricetag-outline' },
   { key: 'openToOffers', label: 'Offers', modes: ['buy', 'trade'], icon: 'chatbubbles-outline' },
   { key: 'trade', label: 'Trade only', modes: ['trade'], icon: 'swap-horizontal-outline' },
-  { key: 'tradePlusCash', label: 'Trade + cash', modes: ['trade'], icon: 'git-compare-outline' },
 ] as MarketListingTypeFilter[]).filter((filter) => (
-  (filter.key !== 'buy' || LIVE_COMMERCE_RELEASE_APPROVED)
-  && (filter.key !== 'tradePlusCash' || TRADE_CASH_TERMS_ENABLED)
+  filter.key !== 'tradePlusCash' || TRADE_CASH_TERMS_ENABLED
 ));
 const MARKET_PROTECTION_FILTERS: { key: MarketProtectionTier; label: string; imageIcon: ImageSourcePropType }[] = [
   { key: 'Bronze', label: 'Bronze', imageIcon: stackrIcons.protectionBronze },
@@ -199,6 +191,14 @@ const money = (value: number | null | undefined) =>
   typeof value === 'number' && Number.isFinite(value)
     ? `\u00A3${value.toFixed(2)}`
     : '--';
+
+function gate0MarketText(value: unknown, fallback: string) {
+  const sanitized = sanitizeGate0CommerceCopy(
+    typeof value === 'string' ? value : value == null ? null : String(value),
+    fallback,
+  );
+  return sanitized?.trim() || fallback;
+}
 
 function isProductListing(listing: MarketplaceListing) {
   return Boolean(
@@ -395,8 +395,8 @@ function getTradeTerms(listing: MarketplaceListing) {
     return `Trade + up to ${money(listing.asking_price)}`;
   }
   if (listing.trade_only) return 'Looking for a card-for-card trade';
-  if (listing.asking_price == null) return 'Open to purchase or trade offers';
-  return listing.listing_notes?.trim() || 'Purchase listing';
+  if (listing.asking_price == null) return 'Open to offers or trades';
+  return gate0MarketText(listing.listing_notes, 'Collector listing');
 }
 
 function normalise(value: string | null | undefined) {
@@ -510,8 +510,13 @@ function isCloseMatch(query: string, candidate: string) {
 }
 
 function getListingSearchMeta(listing: MarketplaceListing, card?: CardDetail | null) {
-  const seller = listing.profiles?.collector_name ?? '';
-  const cardName = isProductListing(listing) ? listing.product_name ?? '' : card?.name ?? listing.product_name ?? listing.card_id;
+  const seller = gate0MarketText(listing.profiles?.collector_name, 'Collector');
+  const cardName = gate0MarketText(
+    isProductListing(listing)
+      ? listing.product_name
+      : card?.name ?? listing.product_name ?? listing.card_id,
+    'Collector listing',
+  );
   const setName = card?.set?.name ?? listing.set_id ?? '';
   const japaneseNames = [
     card?.rawData?.japaneseName,
@@ -607,6 +612,8 @@ function isRecentlyAdded(value?: string | null) {
 
 export default function TheMarketTab() {
   const { theme } = useTheme();
+  const { hydrated: appModeHydrated, premiumSellerAccess } = useAppMode();
+  const canPublishListing = appModeHydrated && premiumSellerAccess.allowed;
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
@@ -630,7 +637,7 @@ export default function TheMarketTab() {
   } = useTrade();
 
   const [mode, setMode] = useState<MarketMode>(params.mode === 'trade' ? 'trade' : 'buy');
-  const [workspace, setWorkspace] = useState<Workspace>(params.segment === 'myListings' ? 'myListings' : 'discover');
+  const [workspace, setWorkspace] = useState<Workspace>(params.segment === 'myListings' && canPublishListing ? 'myListings' : 'discover');
   const [search, setSearch] = useState(params.q ? String(params.q) : '');
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const [suggestion, setSuggestion] = useState<string | null>(null);
@@ -648,7 +655,6 @@ export default function TheMarketTab() {
   const [selectedGraders, setSelectedGraders] = useState<string[]>([]);
   const [selectedGrades, setSelectedGrades] = useState<string[]>([]);
   const [selectedLanguages, setSelectedLanguages] = useState<MarketLanguageFilter[]>([]);
-  const [selectedAvailability, setSelectedAvailability] = useState<AvailabilityFilter[]>([]);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [photosOnly, setPhotosOnly] = useState(false);
@@ -659,8 +665,6 @@ export default function TheMarketTab() {
   const [cardDetails, setCardDetails] = useState<Record<string, CardDetail>>({});
   const [savedListingIds, setSavedListingIds] = useState<string[]>([]);
   const [favoriteBusyIds, setFavoriteBusyIds] = useState<string[]>([]);
-  const [hiddenListingIds, setHiddenListingIds] = useState<string[]>([]);
-  const [blockedSellerIds, setBlockedSellerIds] = useState<string[]>([]);
   const [sellerFilter, setSellerFilter] = useState<SellerFilter>(null);
   const [menuListing, setMenuListing] = useState<MarketplaceListing | null>(null);
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null);
@@ -669,6 +673,8 @@ export default function TheMarketTab() {
   const [detailCard, setDetailCard] = useState<CardDetail | null>(null);
   const [createCtaCollapsed, setCreateCtaCollapsed] = useState(false);
   const openedParamRef = useRef<string | null>(null);
+  const marketAuthUserIdRef = useRef('');
+  const marketAuthGenerationRef = useRef(0);
 
   const incomingOfferCount = offers.filter((offer) => offer.receiver_id === currentUserId && offer.status === 'pending').length;
   const marketColumnGap = 10;
@@ -707,7 +713,6 @@ export default function TheMarketTab() {
     + selectedGraders.length
     + selectedGrades.length
     + selectedLanguages.length
-    + selectedAvailability.length
     + Number(Boolean(minPrice.trim()))
     + Number(Boolean(maxPrice.trim()))
     + Number(photosOnly)
@@ -717,9 +722,13 @@ export default function TheMarketTab() {
 
   useEffect(() => {
     if (params.mode === 'trade' || params.mode === 'buy') setMode(params.mode);
-    if (params.segment === 'myListings') setWorkspace('myListings');
+    if (params.segment === 'myListings') setWorkspace(canPublishListing ? 'myListings' : 'discover');
     if (params.q != null) setSearch(String(params.q));
-  }, [params.mode, params.q, params.segment]);
+  }, [canPublishListing, params.mode, params.q, params.segment]);
+
+  useEffect(() => {
+    if (!canPublishListing) setWorkspace('discover');
+  }, [canPublishListing]);
 
   useEffect(() => {
     setSelectedListingTypes((current) => (
@@ -777,7 +786,7 @@ export default function TheMarketTab() {
           setLogoUrl: setId ? getPokemonSetLogoUrl(setId) : null,
           sourceLabel: 'Catalogue card',
           primaryActionLabel: 'View card',
-          secondaryActionLabel: 'Shop listings',
+          secondaryActionLabel: 'View listings',
           onSecondaryPress: () => setSearch([card.name ?? card.id, card.number].filter(Boolean).join(' ')),
           onPress: () => router.push({ pathname: '/card/[id]', params: { id: card.id, setId: setId ?? undefined } } as any),
         };
@@ -792,42 +801,125 @@ export default function TheMarketTab() {
     };
   }, [debouncedSearch, selectedLanguages]);
 
-  const loadOffers = useCallback(async () => {
+  const loadOffers = useCallback(async (userId: string, generation: number) => {
     try {
       const data = await fetchMyTradeOffers();
+      if (marketAuthUserIdRef.current !== userId || marketAuthGenerationRef.current !== generation) return;
       setOffers(data);
     } catch (error) {
       console.log('Failed to load Market offers', error);
-      setOffers([]);
+      if (marketAuthUserIdRef.current === userId && marketAuthGenerationRef.current === generation) {
+        setOffers([]);
+      }
     }
   }, []);
 
-  const loadSaved = useCallback(async () => {
-    try {
-      setSavedListingIds(await fetchSavedMarketListingIds());
-    } catch {
+  const loadSaved = useCallback(async (userId: string, generation = marketAuthGenerationRef.current) => {
+    if (!userId) {
       setSavedListingIds([]);
+      return;
+    }
+    try {
+      const saved = await fetchSavedMarketListingIds(userId);
+      if (marketAuthUserIdRef.current !== userId || marketAuthGenerationRef.current !== generation) return;
+      setSavedListingIds(saved);
+    } catch {
+      if (marketAuthUserIdRef.current === userId && marketAuthGenerationRef.current === generation) {
+        setSavedListingIds([]);
+      }
     }
   }, []);
 
-  const loadListingDraft = useCallback(async () => {
-    setListingDraft(await readCreateListingDraftSummary());
+  const loadListingDraft = useCallback(async (userId: string, generation: number) => {
+    if (!canPublishListing || !userId) {
+      setListingDraft(null);
+      return;
+    }
+    try {
+      const draft = await readCreateListingDraftSummary(userId);
+      if (marketAuthUserIdRef.current !== userId || marketAuthGenerationRef.current !== generation) return;
+      setListingDraft(draft);
+    } catch (error) {
+      if (marketAuthUserIdRef.current !== userId || marketAuthGenerationRef.current !== generation) return;
+      console.log('Failed to load Market listing draft', error);
+      setListingDraft(null);
+    }
+  }, [canPublishListing]);
+
+  const bindMarketIdentity = useCallback((userId: string) => {
+    if (marketAuthUserIdRef.current === userId) return marketAuthGenerationRef.current;
+    marketAuthUserIdRef.current = userId;
+    marketAuthGenerationRef.current += 1;
+    setCurrentUserId(userId);
+    setOffers([]);
+    setSavedListingIds([]);
+    setFavoriteBusyIds([]);
+    setListingDraft(null);
+    setMenuListing(null);
+    setSelectedListing(null);
+    setDetailCard(null);
+    openedParamRef.current = null;
+    return marketAuthGenerationRef.current;
   }, []);
+
+  const reloadMarketIdentity = useCallback(async (userId: string, generation: number) => {
+    if (!userId) return;
+    try {
+      await Promise.all([
+        refreshTrade(),
+        loadOffers(userId, generation),
+        loadSaved(userId, generation),
+        loadListingDraft(userId, generation),
+      ]);
+    } catch (error) {
+      if (marketAuthUserIdRef.current !== userId || marketAuthGenerationRef.current !== generation) return;
+      console.log('Failed to refresh Market account state', error);
+    }
+  }, [loadListingDraft, loadOffers, loadSaved, refreshTrade]);
+
+  useEffect(() => {
+    let mounted = true;
+    const activate = (userId: string) => {
+      if (!mounted) return;
+      const generation = bindMarketIdentity(userId);
+      void reloadMarketIdentity(userId, generation);
+    };
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      activate(session?.user?.id ?? '');
+    });
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [bindMarketIdentity, reloadMarketIdentity]);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
       const run = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!active) return;
-        setCurrentUserId(user?.id ?? '');
-        await Promise.all([refreshTrade(), loadOffers(), loadSaved(), loadListingDraft()]);
+        const startingUserId = marketAuthUserIdRef.current;
+        const startingGeneration = marketAuthGenerationRef.current;
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser();
+          if (error) throw error;
+          if (!active) return;
+          const userId = user?.id ?? '';
+          const generation = bindMarketIdentity(userId);
+          await reloadMarketIdentity(userId, generation);
+        } catch (error) {
+          if (!active) return;
+          if (
+            marketAuthUserIdRef.current === startingUserId
+            && marketAuthGenerationRef.current === startingGeneration
+          ) bindMarketIdentity('');
+          console.log('Failed to verify Market account state', error);
+        }
       };
       run();
       return () => {
         active = false;
       };
-    }, [loadListingDraft, loadOffers, loadSaved, refreshTrade])
+    }, [bindMarketIdentity, reloadMarketIdentity])
   );
 
   const sourceListings = useMemo(() => {
@@ -1009,7 +1101,6 @@ export default function TheMarketTab() {
     const max = Number(maxPrice);
 
     let data = sourceListings
-      .filter((listing) => !hiddenListingIds.includes(listing.id) && !blockedSellerIds.includes(listing.user_id))
       .map((listing) => {
         const card = cardDetails[listing.id];
         return { listing, searchScore: scoreListingSearch(listing, card, query) };
@@ -1024,14 +1115,6 @@ export default function TheMarketTab() {
       if (primaryFilter !== 'all' && getListingCategoryType(listing) !== primaryFilter) return false;
       if (sealedOnly && !isSealedListing(listing, card)) return false;
       if (recentlyAddedOnly && !isRecentlyAdded(listing.created_at)) return false;
-      if (selectedAvailability.length) {
-        const availability: AvailabilityFilter = variant === 'sold'
-          ? 'sold'
-          : variant === 'reserved' || variant === 'unavailable'
-            ? 'reserved'
-            : 'available';
-        if (!selectedAvailability.includes(availability)) return false;
-      }
       if (selectedProtectionTiers.length) {
         const protectionTier = getProtectionTier(listing);
         if (!protectionTier || !selectedProtectionTiers.includes(protectionTier)) return false;
@@ -1074,7 +1157,7 @@ export default function TheMarketTab() {
     });
 
     return data.map((item) => item.listing);
-  }, [blockedSellerIds, cardDetails, debouncedSearch, hiddenListingIds, maxPrice, minPrice, mode, photosOnly, primaryFilter, recentlyAddedOnly, sealedOnly, selectedAvailability, selectedConditions, selectedGrades, selectedGraders, selectedLanguages, selectedListingTypes, selectedProtectionTiers, selectedRarities, selectedSetFilter, sortBy, sourceListings]);
+  }, [cardDetails, debouncedSearch, maxPrice, minPrice, mode, photosOnly, primaryFilter, recentlyAddedOnly, sealedOnly, selectedConditions, selectedGrades, selectedGraders, selectedLanguages, selectedListingTypes, selectedProtectionTiers, selectedRarities, selectedSetFilter, sortBy, sourceListings]);
 
   useEffect(() => {
     setVisibleListingCount(Math.min(displayListings.length, marketWindow.initialCount));
@@ -1106,7 +1189,7 @@ export default function TheMarketTab() {
       sellers: [] as SearchSuggestion[],
     };
 
-    const searchableListings = sourceListings.filter((listing) => !hiddenListingIds.includes(listing.id) && !blockedSellerIds.includes(listing.user_id));
+    const searchableListings = sourceListings;
     const cards = new Map<string, SearchSuggestion>();
     const products = new Map<string, SearchSuggestion>();
     const sets = new Map<string, SearchSuggestion>();
@@ -1123,7 +1206,7 @@ export default function TheMarketTab() {
       if (setId) setListingCounts.set(setId, (setListingCounts.get(setId) ?? 0) + 1);
       if (listing.user_id) sellerListingCounts.set(listing.user_id, (sellerListingCounts.get(listing.user_id) ?? 0) + 1);
       if (isProductListing(listing)) {
-        const title = listing.product_name ?? 'Sealed product';
+        const title = gate0MarketText(listing.product_name, 'Sealed product');
         const productKey = normalise(`${title} ${listing.product_type ?? ''}`) || listing.id;
         productListingCounts.set(productKey, (productListingCounts.get(productKey) ?? 0) + 1);
       } else if (listing.card_id) {
@@ -1136,7 +1219,12 @@ export default function TheMarketTab() {
       const score = scoreListingSearch(listing, card, query);
       if (score <= 0) return;
       const meta = getListingSearchMeta(listing, card);
-      const title = isProductListing(listing) ? listing.product_name ?? 'Sealed product' : card?.name ?? listing.product_name ?? listing.card_id;
+      const title = gate0MarketText(
+        isProductListing(listing)
+          ? listing.product_name
+          : card?.name ?? listing.product_name ?? listing.card_id,
+        isProductListing(listing) ? 'Sealed product' : 'Collector listing',
+      );
       const imageUri = getListingImage(listing, card);
       const setId = card?.set?.id ?? listing.set_id ?? null;
       const setLogoUrl = setId ? getPokemonSetLogoUrl(setId) : null;
@@ -1151,7 +1239,7 @@ export default function TheMarketTab() {
           imageUri,
           listingCount,
           sourceLabel: 'Live product',
-          primaryActionLabel: 'Shop listings',
+          primaryActionLabel: 'View listings',
           onPress: () => setSearch(title),
         });
       }
@@ -1166,7 +1254,7 @@ export default function TheMarketTab() {
           setLogoUrl,
           listingCount,
           sourceLabel: 'Live listings',
-          primaryActionLabel: 'Shop listings',
+          primaryActionLabel: 'View listings',
           secondaryActionLabel: 'View card',
           onSecondaryPress: () => router.push({ pathname: '/card/[id]', params: { id: listing.card_id, setId: listing.set_id ?? setId ?? undefined } } as any),
           onPress: () => setSearch([title, card?.number].filter(Boolean).join(' ')),
@@ -1182,7 +1270,7 @@ export default function TheMarketTab() {
           setLogoUrl,
           listingCount,
           sourceLabel: 'Set code',
-          primaryActionLabel: 'Shop listings',
+          primaryActionLabel: 'View listings',
           onPress: () => setSearch(card?.set?.name ?? listing.set_id ?? ''),
         });
       }
@@ -1225,14 +1313,17 @@ export default function TheMarketTab() {
       sets: [...sets.values()].slice(0, 3),
       sellers: [...sellers.values()].slice(0, 3),
     };
-  }, [blockedSellerIds, cardDetails, catalogueCardSuggestions, debouncedSearch, hiddenListingIds, sourceListings]);
+  }, [cardDetails, catalogueCardSuggestions, debouncedSearch, sourceListings]);
 
   const mapListingCard = useCallback((listing: MarketplaceListing): MarketListingCardData => {
     const card = cardDetails[listing.id];
     const product = isProductListing(listing);
     const imageStrategy = getListingImageStrategy(listing, card);
     const fullImageStrategy = getListingImageStrategy(listing, card, true);
-    const title = product ? listing.product_name ?? 'Sealed product' : card?.name ?? listing.product_name ?? listing.card_id;
+    const title = gate0MarketText(
+      product ? listing.product_name : card?.name ?? listing.product_name ?? listing.card_id,
+      product ? 'Sealed product' : 'Collector listing',
+    );
     const setName = product
       ? listing.product_type?.replace(/_/g, ' ')
       : card?.set?.name ?? listing.set_id;
@@ -1262,7 +1353,7 @@ export default function TheMarketTab() {
       sellerName,
       sellerAvatarUrl: listing.profiles?.avatar_url ?? null,
       sellerUserId: listing.user_id,
-      verified: Boolean(listing.profiles?.collector_name),
+      verified: false,
       protectionTier: getProtectionTier(listing),
       protectionAgreementRequired: requiresSilverAgreement(listing),
       variantType: variant,
@@ -1329,6 +1420,12 @@ export default function TheMarketTab() {
 
   const handleToggleSaved = async (listing: MarketplaceListing) => {
     if (listing.user_id === currentUserId) return;
+    if (!currentUserId) {
+      Alert.alert('Sign in required', 'Sign in before favoriting a Market listing.');
+      return;
+    }
+    if (marketAuthUserIdRef.current !== currentUserId) return;
+    const actionGeneration = marketAuthGenerationRef.current;
     const listingId = listing.id;
     if (favoriteBusyIds.includes(listingId)) return;
     const previous = savedListingIds;
@@ -1338,9 +1435,24 @@ export default function TheMarketTab() {
     setSavedListingIds(next);
     setFavoriteBusyIds((current) => [...current, listingId]);
     try {
-      setSavedListingIds(await toggleSavedMarketListing(listingId));
+      const saved = await toggleSavedMarketListing(currentUserId, listingId);
+      if (
+        marketAuthUserIdRef.current === currentUserId
+        && marketAuthGenerationRef.current === actionGeneration
+      ) setSavedListingIds(saved);
     } catch (error) {
-      setSavedListingIds(previous);
+      const { data: { user } } = await supabase.auth.getUser();
+      const activeUserId = user?.id ?? '';
+      if (
+        activeUserId === currentUserId
+        && marketAuthUserIdRef.current === currentUserId
+        && marketAuthGenerationRef.current === actionGeneration
+      ) {
+        setSavedListingIds(previous);
+      } else {
+        const generation = bindMarketIdentity(activeUserId);
+        await loadSaved(activeUserId, generation);
+      }
       Alert.alert('Could not update favorites', error instanceof Error ? error.message : 'Please try again.');
     } finally {
       setFavoriteBusyIds((current) => current.filter((id) => id !== listingId));
@@ -1380,61 +1492,15 @@ export default function TheMarketTab() {
     });
   };
 
-  const readSellerReviews = (listing: MarketplaceListing) => {
-    Alert.alert(
-      listing.profiles?.collector_name ? `${listing.profiles.collector_name} reviews` : 'Seller reviews',
-      'Seller reviews are not available for this seller yet.'
-    );
-  };
-
   const shareListing = async (listing: MarketplaceListing) => {
     try {
       await Share.share({
         title: 'StackR Market listing',
-        message: `View this listing in The Market: ${listing.product_name ?? listing.card_id}`,
+        message: `View this listing in The Market: ${gate0MarketText(listing.product_name ?? listing.card_id, 'Collector listing')}`,
       });
     } catch (error) {
       Alert.alert('Could not share listing', error instanceof Error ? error.message : 'Please try again.');
     }
-  };
-
-  const reportListing = (listing: MarketplaceListing) => {
-    Alert.alert('Report this listing', 'Choose a reason and optionally provide supporting details.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Report listing',
-        style: 'destructive',
-        onPress: () => Alert.alert('Report received', 'Thanks. StackR will review this listing.'),
-      },
-    ]);
-  };
-
-  const hideListing = (listing: MarketplaceListing) => {
-    Alert.alert('Hide this listing?', 'You will no longer see this listing in your Market feed.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Hide listing',
-        style: 'destructive',
-        onPress: () => {
-          setHiddenListingIds((current) => [...new Set([...current, listing.id])]);
-          setMenuListing(null);
-        },
-      },
-    ]);
-  };
-
-  const blockSeller = (listing: MarketplaceListing) => {
-    Alert.alert('Block this seller?', 'You will no longer see listings or messages from this seller.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Block seller',
-        style: 'destructive',
-        onPress: () => {
-          setBlockedSellerIds((current) => [...new Set([...current, listing.user_id])]);
-          setMenuListing(null);
-        },
-      },
-    ]);
   };
 
   const openOfferBuilder = (listing: MarketplaceListing) => {
@@ -1450,13 +1516,6 @@ export default function TheMarketTab() {
     });
   };
 
-  const handleBuyNow = () => {
-    Alert.alert(
-      'Checkout not yet enabled',
-      'Stackr checkout, shipping and payment handling still need backend support. You can make an offer or propose a trade from this listing.'
-    );
-  };
-
   const clearFilters = () => {
     setPrimaryFilter('all');
     setSelectedListingTypes([]);
@@ -1467,7 +1526,6 @@ export default function TheMarketTab() {
     setSelectedGraders([]);
     setSelectedGrades([]);
     setSelectedLanguages([]);
-    setSelectedAvailability([]);
     setMinPrice('');
     setMaxPrice('');
     setPhotosOnly(false);
@@ -1488,8 +1546,15 @@ export default function TheMarketTab() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await clearCreateListingDraft();
-            setListingDraft(null);
+            if (!currentUserId) throw new Error('Your listing draft session is unavailable.');
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error) throw error;
+            if (
+              user?.id !== currentUserId
+              || marketAuthUserIdRef.current !== currentUserId
+            ) throw new Error('Your account changed before the draft could be removed.');
+            await clearCreateListingDraft(currentUserId);
+            if (marketAuthUserIdRef.current === currentUserId) setListingDraft(null);
           } catch (error) {
             Alert.alert('Could not discard draft', error instanceof Error ? error.message : 'Please try again.');
           }
@@ -1527,10 +1592,6 @@ export default function TheMarketTab() {
       const label = MARKET_LANGUAGE_FILTERS.find((filter) => filter.key === value)?.label ?? value;
       chips.push({ key: `language:${value}`, label, onRemove: () => setSelectedLanguages((current) => current.filter((item) => item !== value)) });
     });
-    selectedAvailability.forEach((value) => {
-      const label = MARKET_AVAILABILITY_FILTERS.find((filter) => filter.key === value)?.label ?? value;
-      chips.push({ key: `availability:${value}`, label, onRemove: () => setSelectedAvailability((current) => current.filter((item) => item !== value)) });
-    });
     if (minPrice.trim() || maxPrice.trim()) chips.push({ key: 'price', label: `${minPrice.trim() ? `£${minPrice.trim()}` : '£0'}-${maxPrice.trim() ? `£${maxPrice.trim()}` : 'Any'}`, onRemove: () => { setMinPrice(''); setMaxPrice(''); } });
     if (photosOnly) chips.push({ key: 'photos', label: 'Seller photos', onRemove: () => setPhotosOnly(false) });
     if (sealedOnly) chips.push({ key: 'sealed', label: 'Sealed', onRemove: () => setSealedOnly(false) });
@@ -1545,7 +1606,6 @@ export default function TheMarketTab() {
     primaryFilter,
     recentlyAddedOnly,
     sealedOnly,
-    selectedAvailability,
     selectedConditions,
     selectedGrades,
     selectedGraders,
@@ -1659,9 +1719,9 @@ export default function TheMarketTab() {
         onSaved={() => router.push('/watchlist' as any)}
         onOffers={() => router.push('/offers' as any)}
         onMyListings={() => setWorkspace('myListings')}
-        onOrders={() => router.push('/orders' as any)}
         onProfile={() => router.push('/(tabs)/profile' as any)}
         showShortcuts
+        showMyListings={canPublishListing}
       />
 
       <MarketSearch
@@ -1870,7 +1930,7 @@ export default function TheMarketTab() {
         </ScrollView>
       ) : null}
 
-      {workspace === 'myListings' ? (
+      {canPublishListing && workspace === 'myListings' ? (
         <>
           {renderListingDraftCard()}
           <TouchableOpacity
@@ -1917,13 +1977,9 @@ export default function TheMarketTab() {
           onSellerPress={() => {
             if (item.user_id) router.push({ pathname: '/user/[id]', params: { id: item.user_id } });
           }}
-          onMore={() => {
-            if (item.user_id === currentUserId) {
-              handleArchive(item);
-            } else {
-              setMenuListing(item);
-            }
-          }}
+          onMore={item.user_id === currentUserId
+            ? (canPublishListing ? () => handleArchive(item) : undefined)
+            : () => setMenuListing(item)}
         />
       </View>
     );
@@ -1960,14 +2016,14 @@ export default function TheMarketTab() {
             ListEmptyComponent={
               <View style={{ paddingTop: 10, paddingBottom: 64 }}>
                 <MarketEmptyState
-                  icon={mode === 'buy' ? marketIcons.buy : marketIcons.trade}
+                  icon={mode === 'buy' ? marketIcons.offer : marketIcons.trade}
                   title={
                     workspace === 'myListings'
                       ? 'No live listings yet'
                       : debouncedSearch || activeFilterCount > 0
                       ? 'No matching listings'
                       : mode === 'buy'
-                        ? 'No buy listings yet'
+                        ? 'No listings to browse yet'
                         : 'No trade listings yet'
                   }
                   body={
@@ -1976,14 +2032,24 @@ export default function TheMarketTab() {
                       : debouncedSearch || activeFilterCount > 0
                       ? 'Try changing your search or clearing filters.'
                       : mode === 'buy'
-                        ? 'Check back soon or create your own listing from a card detail page.'
-                        : 'Add cards to trade or browse buy listings while collectors add more.'
+                        ? canPublishListing
+                          ? 'Check back soon or create a browse-only beta listing from a card detail page.'
+                          : 'Check back soon while trusted beta sellers add more listings.'
+                        : 'Add cards to trade or browse listings while collectors add more.'
                   }
-                  actionLabel={workspace === 'myListings' && listingDraft ? 'Resume draft' : debouncedSearch || activeFilterCount > 0 ? 'Clear filters' : 'Create listing'}
-                  onAction={workspace === 'myListings' && listingDraft ? resumeListingDraft : debouncedSearch || activeFilterCount > 0 ? () => {
-                    setSearch('');
-                    clearFilters();
-                  } : () => router.push('/listing/new' as any)}
+                  actionLabel={workspace === 'myListings' && listingDraft
+                    ? 'Resume draft'
+                    : debouncedSearch || activeFilterCount > 0
+                      ? 'Clear filters'
+                      : canPublishListing ? 'Create beta listing' : undefined}
+                  onAction={workspace === 'myListings' && listingDraft
+                    ? resumeListingDraft
+                    : debouncedSearch || activeFilterCount > 0
+                      ? () => {
+                          setSearch('');
+                          clearFilters();
+                        }
+                      : canPublishListing ? () => router.push('/listing/new' as any) : undefined}
                 />
               </View>
             }
@@ -2004,6 +2070,7 @@ export default function TheMarketTab() {
         )}
       </View>
 
+      {canPublishListing ? (
       <TouchableOpacity
         onPress={() => router.push('/listing/new' as any)}
         activeOpacity={0.86}
@@ -2060,10 +2127,11 @@ export default function TheMarketTab() {
               fontWeight: '900',
             }}
           >
-            Create Listing
+            Create Beta Listing
           </Text>
         ) : null}
       </TouchableOpacity>
+      ) : null}
 
       <MarketFilterSheet
         visible={sortOpen}
@@ -2337,17 +2405,6 @@ export default function TheMarketTab() {
           </View>
         </FilterGroup>
 
-        <FilterGroup title="Delivery method">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            <MarketFilterChip
-              label="Delivery data pending"
-              icon="cube-outline"
-              disabled
-              onPress={() => {}}
-            />
-          </View>
-        </FilterGroup>
-
         <FilterGroup title="Listing type">
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {MARKET_LISTING_TYPE_FILTERS.map((filter) => {
@@ -2393,27 +2450,6 @@ export default function TheMarketTab() {
                   label={rarity}
                   active={active}
                   onPress={() => toggleStringFilter(setSelectedRarities, rarity)}
-                />
-              );
-            })}
-          </View>
-        </FilterGroup>
-
-        <FilterGroup title="Availability">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            <MarketFilterChip
-              label="Any availability"
-              active={!selectedAvailability.length}
-              onPress={() => setSelectedAvailability([])}
-            />
-            {MARKET_AVAILABILITY_FILTERS.map((filter) => {
-              const active = selectedAvailability.includes(filter.key);
-              return (
-                <MarketFilterChip
-                  key={filter.key}
-                  label={filter.label}
-                  active={active}
-                  onPress={() => toggleStringFilter(setSelectedAvailability, filter.key)}
                 />
               );
             })}
@@ -2470,11 +2506,7 @@ export default function TheMarketTab() {
         onClose={() => setMenuListing(null)}
         onViewProfile={openSellerProfile}
         onViewListings={viewSellerListings}
-        onReadReviews={readSellerReviews}
         onShare={shareListing}
-        onReport={reportListing}
-        onHide={hideListing}
-        onBlock={blockSeller}
       />
 
       <ListingDetailModal
@@ -2483,10 +2515,10 @@ export default function TheMarketTab() {
         loading={detailLoading}
         saved={selectedListing ? favoriteListingIds.includes(selectedListing.id) : false}
         currentUserId={currentUserId}
+        canManageOwnListing={canPublishListing}
         onClose={closeDetail}
         onSave={selectedListing && selectedListing.user_id !== currentUserId ? () => handleToggleSaved(selectedListing) : undefined}
         onOffer={() => selectedListing && openOfferBuilder(selectedListing)}
-        onBuyNow={handleBuyNow}
         onArchive={() => selectedListing && handleArchive(selectedListing)}
       />
     </StackrScreen>
@@ -2662,26 +2694,18 @@ function SellerOverflowSheet({
   onClose,
   onViewProfile,
   onViewListings,
-  onReadReviews,
   onShare,
-  onReport,
-  onHide,
-  onBlock,
 }: {
   listing: MarketplaceListing | null;
   onClose: () => void;
   onViewProfile: (listing: MarketplaceListing) => void;
   onViewListings: (listing: MarketplaceListing) => void;
-  onReadReviews: (listing: MarketplaceListing) => void;
   onShare: (listing: MarketplaceListing) => void;
-  onReport: (listing: MarketplaceListing) => void;
-  onHide: (listing: MarketplaceListing) => void;
-  onBlock: (listing: MarketplaceListing) => void;
 }) {
   const { theme } = useTheme();
   if (!listing) return null;
-  const sellerName = listing.profiles?.collector_name ?? 'Collector';
-  const listingTitle = listing.product_name ?? listing.card_id;
+  const sellerName = gate0MarketText(listing.profiles?.collector_name, 'Collector');
+  const listingTitle = gate0MarketText(listing.product_name ?? listing.card_id, 'Collector listing');
 
   const action = (
     label: string,
@@ -2754,19 +2778,11 @@ function SellerOverflowSheet({
             <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900', textTransform: 'uppercase' }}>Seller</Text>
             {action('View seller profile', 'person-circle-outline', () => onViewProfile(listing))}
             {action("View seller's other listings", 'storefront-outline', () => onViewListings(listing))}
-            {action('Read seller reviews', 'star-outline', () => onReadReviews(listing))}
           </View>
 
           <View style={{ gap: 8 }}>
             <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900', textTransform: 'uppercase' }}>Listing</Text>
             {action('Share listing', 'share-outline', () => onShare(listing))}
-            {action('Report listing', 'flag-outline', () => onReport(listing), true)}
-            {action('Hide this listing', 'eye-off-outline', () => onHide(listing))}
-          </View>
-
-          <View style={{ gap: 8 }}>
-            <Text style={{ color: theme.colors.textSoft, fontSize: 11, fontWeight: '900', textTransform: 'uppercase' }}>Safety</Text>
-            {action('Block seller', 'ban-outline', () => onBlock(listing), true)}
           </View>
         </View>
       </View>
@@ -2790,10 +2806,10 @@ function ListingDetailModal({
   loading,
   saved,
   currentUserId,
+  canManageOwnListing,
   onClose,
   onSave,
   onOffer,
-  onBuyNow,
   onArchive,
 }: {
   listing: MarketplaceListing | null;
@@ -2801,10 +2817,10 @@ function ListingDetailModal({
   loading?: boolean;
   saved?: boolean;
   currentUserId: string;
+  canManageOwnListing: boolean;
   onClose: () => void;
   onSave?: () => void;
   onOffer: () => void;
-  onBuyNow: () => void;
   onArchive: () => void;
 }) {
   const { theme } = useTheme();
@@ -2820,14 +2836,19 @@ function ListingDetailModal({
   const variant = getListingVariant(listing);
   const tier = getProtectionTier(listing);
   const product = isProductListing(listing);
-  const title = product ? listing.product_name ?? 'Sealed product' : card?.name ?? listing.card_id;
+  const title = gate0MarketText(
+    product ? listing.product_name : card?.name ?? listing.card_id,
+    product ? 'Sealed product' : 'Collector listing',
+  );
+  const listingNotes = listing.listing_notes
+    ? gate0MarketText(listing.listing_notes, 'Listing details hidden during this beta.')
+    : null;
   const setName = product ? listing.product_type?.replace(/_/g, ' ') : card?.set?.name ?? listing.set_id;
   const categoryType = getListingCategoryType(listing);
   const categoryLabel = getListingCategoryLabel(listing);
   const gallery = buildListingGallery(listing, card);
-  const isMine = listing.user_id === currentUserId;
-  const canBuy = LIVE_COMMERCE_RELEASE_APPROVED
-    && (variant === 'buy' || variant === 'openToOffers');
+  const isOwnedByCurrentUser = listing.user_id === currentUserId;
+  const isMine = isOwnedByCurrentUser && canManageOwnListing;
   const canTrade = variant === 'trade' || variant === 'tradePlusCash' || variant === 'openToOffers';
   const isUnavailable = ['sold', 'reserved', 'unavailable'].includes(variant);
   const status = normaliseTradeStatus((listing.status as any) ?? 'pending');
@@ -2838,20 +2859,12 @@ function ListingDetailModal({
     ? 'Mark unavailable'
     : isUnavailable
       ? 'Return to The Market'
-      : canBuy
-        ? 'Buy now'
-        : canTrade
-          ? 'Propose trade'
-          : 'Make offer';
-  const secondaryLabel = isMine || isUnavailable
-    ? undefined
-    : canBuy && canTrade
-      ? 'Propose trade'
-      : canBuy
-        ? 'Make offer'
-        : undefined;
+      : canTrade
+        ? 'Propose trade'
+        : 'Make offer';
+  const secondaryLabel = undefined;
   const detailVariantLabel = variant === 'buy'
-    ? LIVE_COMMERCE_RELEASE_APPROVED ? 'Buy' : 'Offers only'
+    ? 'Offers only'
     : variant === 'tradePlusCash'
       ? TRADE_CASH_TERMS_ENABLED ? 'Trade + cash' : 'Trade'
       : variant === 'openToOffers'
@@ -2859,9 +2872,7 @@ function ListingDetailModal({
         : variant === 'trade'
           ? 'Trade'
           : statusLabel;
-  const detailVariantIcon = variant === 'buy' && LIVE_COMMERCE_RELEASE_APPROVED
-    ? marketIcons.buy
-    : variant === 'openToOffers' || variant === 'buy'
+  const detailVariantIcon = variant === 'openToOffers' || variant === 'buy'
       ? marketIcons.offer
       : marketIcons.trade;
 
@@ -3034,18 +3045,18 @@ function ListingDetailModal({
                       ? 'Open to offers'
                       : getTradeTerms(listing)}
                 </Text>
-                {listing.listing_notes ? (
+                {listingNotes ? (
                   <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, fontWeight: '700' }}>
-                    {listing.listing_notes}
+                    {listingNotes}
                   </Text>
                 ) : null}
               </View>
 
               <SellerIdentityRow
                 avatarUrl={listing.profiles?.avatar_url ?? null}
-                name={listing.profiles?.collector_name ?? (isMine ? 'You' : 'Collector')}
-                verified={Boolean(listing.profiles?.collector_name)}
-                transactionCount={null}
+                name={isMine
+                  ? 'You'
+                  : gate0MarketText(listing.profiles?.collector_name, 'Collector')}
                 onPress={() => listing.user_id && router.push({ pathname: '/user/[id]', params: { id: listing.user_id } })}
               />
 
@@ -3063,13 +3074,13 @@ function ListingDetailModal({
                   }}
                 >
                   <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>
-                    {categoryType === 'graded_slab' ? 'Professional grade' : isSealedListing(listing, card) ? 'Sold as seen' : 'Seller evidence'}
+                    {categoryType === 'graded_slab' ? 'Professional grade' : isSealedListing(listing, card) ? 'Item evidence' : 'Seller evidence'}
                   </Text>
                   <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700' }}>
                     {categoryType === 'graded_slab'
                       ? 'The grader label is the condition source. Check the slab photos, certification label and case notes before making an offer.'
                       : isSealedListing(listing, card)
-                        ? 'Sealed products do not use Bronze, Silver or Gold protection tiers. Check actual-item photos, packaging notes and any seal or wrap close-ups before buying.'
+                        ? 'Sealed products do not use Bronze, Silver or Gold protection tiers. Check actual-item photos, packaging notes and any seal or wrap close-ups before making an offer.'
                         : 'This item is listed from seller photos and factual item details, without a raw-card protection tier.'}
                   </Text>
                 </View>
@@ -3115,7 +3126,6 @@ function ListingDetailModal({
                 recentRange={listing.prices?.ebay_average ? `around ${money(listing.prices.ebay_average)}` : null}
                 lastUpdated={listing.updated_at ? new Date(listing.updated_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) : null}
                 price={listing.asking_price}
-                deliveryIncluded={null}
               />
 
               <View
@@ -3128,9 +3138,9 @@ function ListingDetailModal({
                   gap: 6,
                 }}
               >
-                <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>Delivery and fulfilment</Text>
+                <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>Beta boundary</Text>
                 <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700' }}>
-                  Delivery, tracking, payment and fulfilment steps are confirmed after an offer or checkout flow is supported for this listing.
+                  Browse-only listings and card-only offers are available. Checkout, payment, shipping and fulfilment are unavailable.
                 </Text>
               </View>
 
@@ -3156,17 +3166,18 @@ function ListingDetailModal({
             </View>
           </ScrollView>
 
-          <StickyMarketActions
-            primaryLabel={primaryLabel}
-            secondaryLabel={secondaryLabel}
-            onPrimary={() => {
-              if (isMine) return onArchive();
-              if (isUnavailable) return onClose();
-              if (canBuy) return onBuyNow();
-              return onOffer();
-            }}
-            onSecondary={() => onOffer()}
-          />
+          {!isOwnedByCurrentUser || canManageOwnListing ? (
+            <StickyMarketActions
+              primaryLabel={primaryLabel}
+              secondaryLabel={secondaryLabel}
+              onPrimary={() => {
+                if (isMine) return onArchive();
+                if (isUnavailable) return onClose();
+                return onOffer();
+              }}
+              onSecondary={() => onOffer()}
+            />
+          ) : null}
         </View>
       </View>
     </Modal>

@@ -1,3 +1,5 @@
+import { gate0CopyContainsRestrictedCommerceLanguage } from './gate0CommerceCopy';
+
 export type CollectorIntent =
   | 'completing_set'
   | 'chasing_specific_card'
@@ -302,6 +304,173 @@ export const DEFAULT_MINTY_FEEDBACK_PROFILE: MintyFeedbackProfile = {
 };
 
 const DEFAULT_FEEDBACK_OPTIONS: MintyInsightFeedback[] = ['useful', 'not_relevant', 'show_more', 'show_less', 'hide'];
+
+export const mintyTextContainsGate0CommerceLanguage = (value: unknown) =>
+  gate0CopyContainsRestrictedCommerceLanguage(value);
+
+const GATE0_VISIBLE_ACTIVITY_TYPES = new Set([
+  'binder_add',
+  'binder_remove',
+  'quantity_reduced',
+  'value_change',
+]);
+
+export const isGate0CommerceActivity = (post: { type?: unknown; title?: unknown; subtitle?: unknown }) => {
+  const type = typeof post.type === 'string' ? post.type.trim().toLowerCase() : '';
+  return !GATE0_VISIBLE_ACTIVITY_TYPES.has(type)
+    || mintyTextContainsGate0CommerceLanguage([post.title, post.subtitle].join(' '));
+};
+
+const gate0SafeMintyText = (value: unknown, fallback: string) => {
+  const text = String(value ?? '').trim();
+  return text && !mintyTextContainsGate0CommerceLanguage(text) ? text : fallback;
+};
+
+const gate0SafeMintyList = (values: string[] | undefined, fallback: string) =>
+  (values ?? []).map((value) => gate0SafeMintyText(value, fallback));
+
+const gate0SafeMintySignal = <T extends { label: string; evidence: string; confidenceLabel?: string }>(signal: T): T => ({
+  ...signal,
+  label: gate0SafeMintyText(signal.label, 'Collection value signal'),
+  evidence: gate0SafeMintyText(signal.evidence, 'Recent collection and value data is available to review.'),
+  confidenceLabel: signal.confidenceLabel
+    ? gate0SafeMintyText(signal.confidenceLabel, 'Low')
+    : signal.confidenceLabel,
+}) as T;
+
+const MINTY_GATE0_BODY = 'Minty noticed a change in recent collection and value signals. Review the latest trend and keep watching how this card moves.';
+const MINTY_GATE0_ACTION = 'Review value trend';
+const MINTY_GATE0_SAFE_ROUTES = new Set<MintyRecommendedRoute>([
+  'watch_single_price',
+  'complete_with_singles',
+  'hold_and_watch',
+  'set_price_alert',
+  'protect_high_value_card',
+]);
+const MINTY_GATE0_SAFE_ACTION_KEYS = new Set([
+  'view_value_history',
+  'review_value_history',
+  'review_value_trend',
+  'set_price_alert',
+  'open_binder',
+  'review_collection',
+  'hold_and_watch',
+]);
+
+/**
+ * Gate 0 treats every Minty payload as untrusted display copy. This preserves the
+ * insight card and its collection context while replacing commerce, fulfilment or
+ * provider language from API responses, cached rows and local recommendations.
+ */
+export function sanitizeMintyInsightForGate0(insight: MintyInsight): MintyInsight {
+  const safeCardName = gate0SafeMintyText(
+    insight.card_name ?? insight.related_cards?.[0],
+    'this card'
+  );
+  const safeHeadline = `Collection value insight${safeCardName === 'this card' ? '' : `: ${safeCardName}`}`;
+  const safeEvidence = (insight.evidence ?? []).map(gate0SafeMintySignal);
+  const safeOpportunities = (insight.opportunities ?? []).map(gate0SafeMintySignal);
+  const safeRisks = (insight.risks ?? []).map(gate0SafeMintySignal);
+  const safeSupportingSignals = (insight.supporting_signals ?? []).map(gate0SafeMintySignal);
+  const safeRecommendedActions = (insight.recommended_actions ?? []).map((action, index) => ({
+    ...action,
+    key: MINTY_GATE0_SAFE_ACTION_KEYS.has(String(action.key))
+      ? String(action.key)
+      : `review_value_trend_${index + 1}`,
+    label: gate0SafeMintyText(action.label, MINTY_GATE0_ACTION),
+  }));
+  const recommendationIsCommerce = mintyTextContainsGate0CommerceLanguage(insight.recommendation);
+
+  return {
+    ...insight,
+    title: gate0SafeMintyText(insight.title, safeHeadline),
+    body: gate0SafeMintyText(insight.body, MINTY_GATE0_BODY),
+    explanation: gate0SafeMintyText(insight.explanation ?? insight.body, MINTY_GATE0_BODY),
+    action_label: gate0SafeMintyText(insight.action_label, MINTY_GATE0_ACTION),
+    evidence: safeEvidence,
+    confidence: ['Low', 'Medium', 'High'].includes(String(insight.confidence)) ? insight.confidence : 'Low',
+    confidence_label: insight.confidence_label
+      ? gate0SafeMintyText(insight.confidence_label, 'Low')
+      : insight.confidence_label,
+    personalisation_reason: gate0SafeMintyText(
+      insight.personalisation_reason,
+      'Minty connected recent collection and value signals to this card.'
+    ),
+    related_user_goal: mintyTextContainsGate0CommerceLanguage(insight.related_user_goal)
+      ? 'watching_market'
+      : insight.related_user_goal,
+    related_cards: gate0SafeMintyList(insight.related_cards, 'Related card'),
+    related_products: gate0SafeMintyList(insight.related_products, 'Collection reference'),
+    recommended_route: MINTY_GATE0_SAFE_ROUTES.has(insight.recommended_route)
+      ? insight.recommended_route
+      : 'hold_and_watch',
+    tags: (insight.tags ?? []).filter((tag) => !mintyTextContainsGate0CommerceLanguage(tag)),
+    insight_category: mintyTextContainsGate0CommerceLanguage(insight.insight_category)
+      ? 'collection_discovery'
+      : insight.insight_category,
+    recommendation: recommendationIsCommerce ? 'watch' : insight.recommendation,
+    recommendation_label: gate0SafeMintyText(insight.recommendation_label, 'Review recent value movement'),
+    card_name: gate0SafeMintyText(insight.card_name, safeCardName),
+    card_set_name: gate0SafeMintyText(insight.card_set_name, 'Collection set'),
+    opportunities: safeOpportunities,
+    risks: safeRisks,
+    supporting_signals: safeSupportingSignals,
+    why_minty_picked_this: gate0SafeMintyList(
+      insight.why_minty_picked_this,
+      'This card is connected to your collection and recent value activity.'
+    ),
+    price_outlook: insight.price_outlook
+      ? {
+          ...insight.price_outlook,
+          label: gate0SafeMintyText(insight.price_outlook.label, 'Keep watching recent value movement'),
+          confidenceLabel: gate0SafeMintyText(insight.price_outlook.confidenceLabel, 'Low'),
+        }
+      : undefined,
+    recommended_actions: safeRecommendedActions,
+    data_limitations: gate0SafeMintyList(
+      insight.data_limitations,
+      'Some collection or value signals may be incomplete.'
+    ),
+    forecast: insight.forecast
+      ? {
+          ...insight.forecast,
+          horizonLabel: gate0SafeMintyText(insight.forecast.horizonLabel, 'Recent trend'),
+          catalysts: gate0SafeMintyList(insight.forecast.catalysts, 'New collection-value data'),
+          basis: gate0SafeMintyList(insight.forecast.basis, 'Recent collection and value signals'),
+          caveat: gate0SafeMintyText(insight.forecast.caveat, 'Values can change as new data appears.'),
+        }
+      : undefined,
+    narrative: insight.narrative
+      ? {
+          ...insight.narrative,
+          headline: gate0SafeMintyText(insight.narrative.headline, safeHeadline),
+          recommendationSummary: gate0SafeMintyText(insight.narrative.recommendationSummary, MINTY_GATE0_BODY),
+          opportunities: gate0SafeMintyList(
+            insight.narrative.opportunities,
+            'Recent collection and value signals are available to review.'
+          ),
+          risks: gate0SafeMintyList(
+            insight.narrative.risks,
+            'Values can change as new information appears.'
+          ),
+          whyMintyPickedThis: gate0SafeMintyList(
+            insight.narrative.whyMintyPickedThis,
+            'This card is connected to your collection and recent value activity.'
+          ),
+          outlook: gate0SafeMintyText(
+            insight.narrative.outlook,
+            'Keep watching recent value movement as new data appears.'
+          ),
+          limitationText: insight.narrative.limitationText
+            ? gate0SafeMintyText(
+                insight.narrative.limitationText,
+                'Some collection or value signals may be incomplete.'
+              )
+            : undefined,
+        }
+      : undefined,
+  };
+}
 
 const clampScore = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
 
@@ -1435,7 +1604,9 @@ export function buildMintyHomeInsight(
     usePriceAlerts: false,
   });
 
-  return candidates[0]?.insight ?? fallbackCandidates[fallbackCandidates.length - 1];
+  return sanitizeMintyInsightForGate0(
+    candidates[0]?.insight ?? fallbackCandidates[fallbackCandidates.length - 1]
+  );
 }
 
 export function applyMintyInsightFeedback(

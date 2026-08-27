@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import {
   getMintyInsightCategory,
   getMintyRecommendedActionLabel,
+  sanitizeMintyInsightForGate0,
   type MintyInsight,
   type MintyInsightFeedback,
   type MintyInsightEvidenceSignal,
@@ -136,7 +137,7 @@ export function mintyInsightRowToHomeInsight(row: MintyInsightRow): MintyInsight
     recommendation_label: row.recommendation_label ?? recommendationLabel,
   });
 
-  return {
+  return sanitizeMintyInsightForGate0({
     id: row.id,
     title,
     body,
@@ -198,7 +199,7 @@ export function mintyInsightRowToHomeInsight(row: MintyInsightRow): MintyInsight
       limitationText: narrative.limitationText ?? narrative.limitation_text,
     },
     is_api_backed: true,
-  };
+  });
 }
 
 export async function fetchLatestCachedMintyInsight(): Promise<MintyInsight | null> {

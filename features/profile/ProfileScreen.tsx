@@ -26,6 +26,7 @@ import { useProfile } from '../../components/profile-context';
 import { useTheme } from '../../components/theme-context';
 import { ACHIEVEMENTS, type AchievementDefinition, type AchievementUnlock } from '../../lib/achievements';
 import { getCollectionSummary } from '../../lib/collectionSummary';
+import { sanitizeGate0Notification } from '../../lib/gate0CommerceCopy';
 import { readCreateListingDraftSummary } from '../../lib/listingDrafts';
 import { getPriceFromPokemonCard } from '../../lib/pricing';
 import {
@@ -725,9 +726,9 @@ function SellerModule({
           </Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 2 }}>
             {enabled
-              ? 'Professional stock workspace active'
+              ? 'Trusted beta inventory workspace active'
               : available
-                ? 'Open the professional inventory and sales workspace.'
+                ? 'Open trusted beta inventory and browse-only listing tools.'
                 : unavailableCopy}
           </Text>
         </View>
@@ -738,7 +739,7 @@ function SellerModule({
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginTop: 15 }}>
             <StatChip icon="market" label="Live" value={stats.sellerListings == null ? '--' : stats.sellerListings} />
             <StatChip icon="edit" label="Drafts" value={stats.sellerDrafts} />
-            <StatChip icon="trade" label="Sales" value={stats.sellerSales == null ? '--' : stats.sellerSales} />
+            <StatChip icon="trade" label="Stock out" value={stats.sellerSales == null ? '--' : stats.sellerSales} />
             <StatChip icon="cards" label="Inventory" value={stats.sellerInventory == null ? '--' : stats.sellerInventory} />
           </View>
           <View style={{ marginTop: 12, borderRadius: 18, backgroundColor: '#F7F3FF', borderWidth: 1, borderColor: '#E8E1FF', padding: 12 }}>
@@ -747,10 +748,10 @@ function SellerModule({
             </Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 16, fontWeight: '700', marginTop: 4 }}>
               {dataUnavailable
-                ? 'Some seller statistics are waiting on backend data. No payout or fulfilment totals are estimated here.'
+                ? 'Some inventory statistics are waiting on backend data. No payment, order, payout or shipping totals are estimated here.'
                 : stats.sellerDrafts
-                  ? 'Live listings are published in The Market. Draft listings can be resumed from My Listings.'
-                  : 'Live listings, inventory and completed sale totals are loaded from Stackr seller data.'}
+                  ? 'Browse-only beta listings are published in The Market. Stackr cannot execute a transaction.'
+                  : 'Browse-only listings, inventory and stock-out bookkeeping are loaded from Stackr seller data.'}
             </Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
@@ -1393,11 +1394,11 @@ export default function ProfileScreen() {
     ] = await Promise.all([
       getCollectionSummary({ forceRefresh: true, staleWhileRefresh: true }),
       supabase.from('trade_offers').select('status').or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
-      supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('read', false),
+      supabase.from('notifications').select('id, type, title, message').eq('user_id', userId).eq('read', false),
       supabase.from('user_card_flags').select('id, listing_status', { count: 'exact' }).eq('user_id', userId),
       supabase.from('seller_inventory_items').select('quantity').eq('user_id', userId),
       supabase.from('seller_sale_transactions').select('id', { count: 'exact', head: true }).eq('user_id', userId),
-      readCreateListingDraftSummary().catch(() => null),
+      readCreateListingDraftSummary(userId).catch(() => null),
     ]);
 
     const completedTrades = (tradesResult.data ?? []).filter((trade: any) => trade.status === 'completed').length;
@@ -1421,7 +1422,11 @@ export default function ProfileScreen() {
         sellerSales: sales,
         sellerInventory: inventoryQuantity,
       },
-      unreadCount: notificationsResult.count ?? 0,
+      unreadCount: notificationsResult.error
+        ? 0
+        : (notificationsResult.data ?? []).filter((notification) => (
+          sanitizeGate0Notification(notification) !== null
+        )).length,
     };
   }, []);
 
@@ -1783,21 +1788,21 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={{ marginBottom: 24 }}>
-          <SectionHeader title="Seller tools" />
-          <SellerModule
-            enabled={mode === 'seller' && premiumSellerAccess.allowed}
-            available={premiumSellerAccess.allowed}
-            unavailableCopy={premiumSellerAccess.reason === 'disabled'
-              ? 'Coming after the controlled stock and sales reliability release.'
-              : 'Premium access is required for the professional inventory workspace.'}
-            stats={stats}
-            onSetup={openPremiumSellerMode}
-            onOpen={openPremiumSellerMode}
-            onSettings={() => router.push(ROUTES.market as any)}
-            onExit={exitSellerMode}
-          />
-        </View>
+        {premiumSellerAccess.allowed ? (
+          <View style={{ marginBottom: 24 }}>
+            <SectionHeader title="Trusted seller beta" />
+            <SellerModule
+              enabled={mode === 'seller'}
+              available
+              unavailableCopy=""
+              stats={stats}
+              onSetup={openPremiumSellerMode}
+              onOpen={openPremiumSellerMode}
+              onSettings={() => router.push(ROUTES.market as any)}
+              onExit={exitSellerMode}
+            />
+          </View>
+        ) : null}
 
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 18, marginBottom: 18 }}>
           {['Settings', 'Privacy', 'Help'].map((label) => (

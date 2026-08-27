@@ -34,19 +34,16 @@ import {
   FieldLabel,
   ImageQualityIndicator,
   InlineRequirementMessage,
-  LabelPreview,
   ListingFlowHeader,
   ListingReviewSection,
   MarketplaceListingPreview,
   PressableChecklistItem,
   PrimaryFooter,
-  PrinterSelector,
   ProtectionTierReveal,
   STACKR_LISTING_INPUT_ACCESSORY_ID,
   StackrTextInput,
   ToggleCard,
   ValueComparisonCard,
-  VerificationStatusTimeline,
   XimilarAnalysisStatus,
 } from '../../components/listing/CreateListingFlowComponents';
 import {
@@ -69,13 +66,18 @@ import type { CapturedFrame, CaptureRect } from '../../lib/captureGeometry';
 import { USD_TO_GBP, EUR_TO_GBP } from '../../lib/config';
 import { fetchCachedPokemonCardDetails } from '../../lib/marketSearchDataCache';
 import { fetchOwnedCardRows } from '../../lib/ownership';
+import { assertPremiumSellerWriteAccess } from '../../lib/premiumSellerAccess';
+import { assertGate0UserCopyAllowed } from '../../lib/gate0CommerceCopy';
 import {
   searchForeignPokemonCards,
   type ForeignPokemonCard,
   type ForeignPokemonCardBrief,
   type ForeignPokemonLanguageCode,
 } from '../../lib/foreignPokemon';
-import { CREATE_LISTING_DRAFT_KEY } from '../../lib/listingDrafts';
+import {
+  clearLegacyCreateListingDraft,
+  getCreateListingDraftKey,
+} from '../../lib/listingDrafts';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
 import {
   getListingCategories,
@@ -87,7 +89,6 @@ import {
 } from '../../lib/listingCategoryRegistry';
 import {
   calculateListingProtectionTier,
-  createVerificationId,
   formatCurrency,
   formatProtectionTier,
   getCategoryEvidenceRequirements,
@@ -126,12 +127,6 @@ import {
   formatCardCenteringAssessment,
   type CardCenteringAssessment,
 } from '../../lib/cardCenteringAssessment';
-import {
-  SHIPPO_DELIVERY_METHODS,
-  getShippoDeliveryMethod,
-  getShippoDeliveryMethodByName,
-  type ShippoDeliveryMethod,
-} from '../../lib/shippoDelivery';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { supabase } from '../../lib/supabase';
 import { gradeCardWithXimilar, type XimilarGradeImage } from '../../lib/ximilar';
@@ -157,7 +152,6 @@ type IdentificationMethod = 'scan' | 'search' | 'collection' | 'manual';
 type ListingMode = 'sell' | 'trade' | 'both';
 type ListingSubjectType = ListingCategoryKey;
 type CatalogueProductListingSubjectType = Extract<ListingSubjectType, ProductLookupType>;
-type PrinterState = 'idle' | 'searching' | 'unavailable' | 'printed';
 
 type SelectedCard = {
   id: string;
@@ -276,10 +270,6 @@ type DraftState = {
   wantedCards: string;
   description: string;
   knownDefects: string;
-  shippingMethod: string;
-  deliveryMethodId: string;
-  postageCost: string;
-  dispatchTime: string;
   selectedProtectionTier: ListingProtectionTier | null;
   silverLiabilityAccepted: boolean;
   quantity: string;
@@ -290,13 +280,8 @@ type DraftState = {
   ximilarEstimate: XimilarEstimate | null;
   ximilarStatus: 'idle' | 'processing' | 'complete' | 'failed';
   conditionDiscrepancyReason: string;
-  verificationId: string | null;
-  printerState: PrinterState;
-  packagingConfirmed: string[];
-  trackingReference: string;
   sellerDeclarationAccepted: boolean;
   aiDeclarationAccepted: boolean;
-  goldDeclarationAccepted: boolean;
   updatedAt?: string;
 };
 
@@ -309,8 +294,8 @@ type ListingMediaItem = {
   metadata?: Record<string, any>;
 };
 
-const DRAFT_KEY = CREATE_LISTING_DRAFT_KEY;
 const AUTO_SAVE_DELAY_MS = 450;
+const GOLD_VERIFICATION_ENABLED = false;
 
 const LISTING_CATEGORIES = getListingCategories();
 const PRODUCT_TYPE_LABELS: Record<string, string> = Object.fromEntries(
@@ -349,15 +334,6 @@ const DEFAULT_PRICES: PriceState = {
   unavailable: false,
 };
 
-const PACKAGING_ITEMS = [
-  'Sleeve the card.',
-  'Place it in an appropriate rigid protector.',
-  'Do not tape directly to the card holder.',
-  'Protect it from movement and moisture.',
-  'Attach the verification label securely.',
-  'Retain proof of postage.',
-];
-
 const PROTECTION_TIER_RANK: Record<ListingProtectionTier, number> = {
   bronze: 1,
   silver: 2,
@@ -372,8 +348,8 @@ const PROTECTION_TIER_ARTWORK: Record<ListingProtectionTier, ImageSourcePropType
 
 const PROTECTION_TIER_CHOICE_COPY: Record<ListingProtectionTier, string> = {
   bronze: 'Fastest evidence flow for lower-value cards.',
-  silver: 'AI-assisted condition evidence. Buyer or trader agreement is required when Silver is manually selected.',
-  gold: 'Full Gold preparation and AGS verification status only after confirmation.',
+  silver: 'AI-assisted condition evidence. Collector agreement is required when Silver is manually selected.',
+  gold: 'Unavailable in the current beta.',
 };
 
 const SUCCESS_TIER_ARTWORK: Record<ListingProtectionTier, ImageSourcePropType> = {
@@ -416,9 +392,9 @@ const SLAB_CASE_CONDITION_OPTIONS = [
 ];
 
 function getSelectableProtectionTiers(recommended: ListingProtectionTier): ListingProtectionTier[] {
-  if (recommended === 'gold') return ['gold', 'silver'];
-  if (recommended === 'silver') return ['silver', 'gold'];
-  return ['bronze', 'silver', 'gold'];
+  if (!GOLD_VERIFICATION_ENABLED || recommended === 'gold') return ['silver', 'bronze'];
+  if (recommended === 'silver') return ['silver', 'bronze'];
+  return ['bronze', 'silver'];
 }
 
 const parseCurrency = (value: string) => {
@@ -776,6 +752,10 @@ export default function CreateListingScreen() {
   const isFocused = useIsFocused();
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
+  const [draftStorageKey, setDraftStorageKey] = useState<string | null>(null);
+  const [draftSessionUserId, setDraftSessionUserId] = useState<string | null | undefined>(undefined);
+  const draftAuthUserIdRef = useRef<string | null | undefined>(undefined);
+  const draftAuthGenerationRef = useRef(0);
   const [step, setStep] = useState<FlowStep>('category');
   const [identificationMethod, setIdentificationMethod] = useState<IdentificationMethod | null>(null);
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
@@ -797,11 +777,6 @@ export default function CreateListingScreen() {
   const [wantedCards, setWantedCards] = useState('');
   const [description, setDescription] = useState('');
   const [knownDefects, setKnownDefects] = useState('');
-  const [shippingMethod, setShippingMethod] = useState('Royal Mail tracked');
-  const [deliveryMethodId, setDeliveryMethodId] = useState('royal-mail-tracked-48');
-  const [deliveryPickerVisible, setDeliveryPickerVisible] = useState(false);
-  const [postageCost, setPostageCost] = useState('3.49');
-  const [dispatchTime, setDispatchTime] = useState('2 working days');
   const [selectedProtectionTier, setSelectedProtectionTier] = useState<ListingProtectionTier | null>(null);
   const [silverLiabilityAccepted, setSilverLiabilityAccepted] = useState(false);
   const [quantity, setQuantity] = useState('1');
@@ -824,19 +799,15 @@ export default function CreateListingScreen() {
   const [ximilarError, setXimilarError] = useState<string | null>(null);
   const [ximilarEstimate, setXimilarEstimate] = useState<XimilarEstimate | null>(null);
   const [conditionDiscrepancyReason, setConditionDiscrepancyReason] = useState('');
-  const [verificationId, setVerificationId] = useState<string | null>(null);
-  const [printerState, setPrinterState] = useState<PrinterState>('idle');
-  const [packagingConfirmed, setPackagingConfirmed] = useState<string[]>([]);
-  const [trackingReference, setTrackingReference] = useState('');
   const [sellerDeclarationAccepted, setSellerDeclarationAccepted] = useState(false);
   const [aiDeclarationAccepted, setAiDeclarationAccepted] = useState(false);
-  const [goldDeclarationAccepted, setGoldDeclarationAccepted] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchRequestIdRef = useRef(0);
+  const ownedCardsRequestIdRef = useRef(0);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressNextAutoSaveRef = useRef(false);
   const listingActionHandledRef = useRef<string | null>(null);
@@ -861,7 +832,11 @@ export default function CreateListingScreen() {
     listingValue: listingMode !== 'trade' ? listingValueNumber : null,
     tradeValue: listingMode !== 'sell' ? tradeValueNumber : null,
   }), [listingMode, listingValueNumber, prices.market, tradeValueNumber]);
-  const recommendedProtectionTier = tierDecision.tier;
+  const recommendedProtectionTier: ListingProtectionTier = (
+    !GOLD_VERIFICATION_ENABLED && tierDecision.tier === 'gold'
+      ? 'silver'
+      : tierDecision.tier
+  );
   const allowedProtectionTiers = useMemo(
     () => getSelectableProtectionTiers(recommendedProtectionTier),
     [recommendedProtectionTier]
@@ -883,14 +858,14 @@ export default function CreateListingScreen() {
     integrations: {
       ximilar: true,
       certificationLookup: false,
-      agsLabel: listingSubjectType === 'raw_card',
+      agsLabel: GOLD_VERIFICATION_ENABLED && listingSubjectType === 'raw_card',
       humanReview: !isGradedSlabListing,
     },
   }), [categoryProductFamily, evidenceTier, gradingCompany, isGradedSlabListing, listingSubjectType, sealedStatus]);
-  const requiresGoldReview = usesProtectionTier && protectionTier === 'gold'
+  const requiresGoldReview = GOLD_VERIFICATION_ENABLED && usesProtectionTier && protectionTier === 'gold'
     && (verificationRequirements.requiresAGSLabel || verificationRequirements.requiresHumanReview);
   const silverAgreementDisclosure = verificationRequirements.requiresXimilar
-    ? 'Silver uses AI-assisted condition evidence and seller photos. It does not include Gold AGS verification, so it is less secure for condition disputes than Gold. The listing will show that buyer or trader agreement is required before proceeding.'
+    ? 'Silver uses AI-assisted condition evidence and seller photos. The listing will show that collector agreement is required before proceeding.'
     : 'Silver was manually selected. Buyer or trader agreement is required before proceeding.';
   const protectionRevealCopy = useMemo(() => {
     if (listingSubjectType === 'raw_card') return null;
@@ -944,15 +919,8 @@ export default function CreateListingScreen() {
   const currentCaptureRequirement = captureRequirements[Math.min(activeEvidenceIndex, captureRequirements.length - 1)] ?? captureRequirements[0];
   const identityConfirmed = Boolean(selectedCard || selectedProduct || manualIdentity.cardName.trim());
   const identityPendingReview = Boolean(!selectedCard && !selectedProduct && manualIdentity.cardName.trim());
-  const detailsComplete = Boolean(
-    quantity.trim()
-    && (listingMode === 'trade' || shippingMethod.trim())
-    && (listingMode === 'trade' || dispatchTime.trim())
-  );
-  const goldReady = !requiresGoldReview
-    || (verificationRequirements.requiresAGSLabel
-      ? Boolean(verificationId && packagingConfirmed.length === PACKAGING_ITEMS.length)
-      : Boolean(verificationId));
+  const detailsComplete = Boolean(quantity.trim());
+  const goldReady = !requiresGoldReview;
   const valueEntered = listingMode === 'sell'
     ? listingValueNumber != null
     : listingMode === 'trade'
@@ -986,8 +954,7 @@ export default function CreateListingScreen() {
       goldReady: isGradedSlabListing ? true : goldReady,
       detailsComplete,
       sellerDeclarationAccepted: sellerDeclarationAccepted
-        && (!verificationRequirements.requiresXimilar || aiDeclarationAccepted)
-        && (!requiresGoldReview || goldDeclarationAccepted),
+        && (!verificationRequirements.requiresXimilar || aiDeclarationAccepted),
       requiredEvidence,
     });
     if (silverAgreementRequired && !silverLiabilityAccepted) {
@@ -999,7 +966,6 @@ export default function CreateListingScreen() {
     aiDeclarationAccepted,
     capturedEvidenceKeys,
     detailsComplete,
-    goldDeclarationAccepted,
     goldReady,
     identityConfirmed,
     evidenceTier,
@@ -1094,14 +1060,6 @@ export default function CreateListingScreen() {
     ? `${resolvedSlabCertification.certificationNumber} (${resolvedSlabCertification.captureMethod.toUpperCase()})`
     : certificationNumber || 'Seller-confirmed';
   const valueWarning = getValueWarning(prices.market, activeTransactionValue);
-  const selectedDeliveryMethod = useMemo(
-    () => getShippoDeliveryMethod(deliveryMethodId),
-    [deliveryMethodId]
-  );
-  const deliveryPostageLabel = selectedDeliveryMethod.priceGbp <= 0
-    ? 'No postage'
-    : formatCurrency(parseCurrency(postageCost) ?? selectedDeliveryMethod.priceGbp);
-
   useEffect(() => {
     return () => {
       if (searchTimer.current) clearTimeout(searchTimer.current);
@@ -1127,22 +1085,125 @@ export default function CreateListingScreen() {
     };
   }, []);
 
+  const resetListingDraftState = useCallback(() => {
+    searchRequestIdRef.current += 1;
+    ownedCardsRequestIdRef.current += 1;
+    photoCatalogueSuggestionRef.current += 1;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    suppressNextAutoSaveRef.current = true;
+    setStep('category');
+    setIdentificationMethod(null);
+    setSelectedCard(null);
+    setSelectedProduct(null);
+    setManualIdentity(DEFAULT_MANUAL_IDENTITY);
+    setListingSubjectType('raw_card');
+    setListingMode('sell');
+    setSellerCondition('');
+    setSealedStatus('Factory sealed');
+    setPackagingCondition('Excellent');
+    setSlabCaseCondition('Clean');
+    setCertificationNumber('');
+    setSlabCertification(null);
+    setAskingPrice('');
+    setTradeValue('');
+    setOffersAccepted(true);
+    setMinimumOffer('');
+    setWantedCards('');
+    setDescription('');
+    setKnownDefects('');
+    setCollectionSearchQuery('');
+    setRecentSearches([]);
+    setSelectedProtectionTier(null);
+    setSilverLiabilityAccepted(false);
+    setQuantity('1');
+    setGradingCompany('PSA');
+    setGrade('10');
+    setPrices(DEFAULT_PRICES);
+    setSearchQuery('');
+    setSearchResults([]);
+    setProductResults([]);
+    setOwnedCards([]);
+    setSearching(false);
+    setCollectionLoading(false);
+    setEvidencePhotos({});
+    setActiveEvidenceIndex(0);
+    setXimilarStatus('idle');
+    setXimilarError(null);
+    setXimilarEstimate(null);
+    setConditionDiscrepancyReason('');
+    setSellerDeclarationAccepted(false);
+    setAiDeclarationAccepted(false);
+    setDraftSaved(false);
+  }, []);
+
   useEffect(() => {
-    let cancelled = false;
-    const restoreDraft = async () => {
-      if (routeHasPrefill) {
-        setDraftLoaded(true);
+    let mounted = true;
+    let authEventEpoch = 0;
+    const bindDraftSession = (userId: string | null) => {
+      if (!mounted || draftAuthUserIdRef.current === userId) return;
+      draftAuthUserIdRef.current = userId;
+      draftAuthGenerationRef.current += 1;
+      resetListingDraftState();
+      setDraftSessionUserId(userId);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      authEventEpoch += 1;
+      bindDraftSession(session?.user?.id ?? null);
+    });
+
+    const initialAuthEventEpoch = authEventEpoch;
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (!mounted || initialAuthEventEpoch !== authEventEpoch) return;
+      if (error) {
+        console.log('Listing draft user lookup failed:', error.message);
+        bindDraftSession(null);
         return;
       }
+      bindDraftSession(data.user?.id ?? null);
+    });
 
+    return () => {
+      mounted = false;
+      draftAuthGenerationRef.current += 1;
+      subscription.unsubscribe();
+    };
+  }, [resetListingDraftState]);
+
+  useEffect(() => {
+    if (draftSessionUserId === undefined) return;
+    let cancelled = false;
+    const expectedUserId = draftSessionUserId;
+    const expectedGeneration = draftAuthGenerationRef.current;
+    const isCurrentDraftIdentity = () => (
+      !cancelled
+      && draftAuthUserIdRef.current === expectedUserId
+      && draftAuthGenerationRef.current === expectedGeneration
+    );
+    const verifyCurrentDraftIdentity = async () => {
+      if (!expectedUserId || !isCurrentDraftIdentity()) return false;
+      const { data: { user }, error } = await supabase.auth.getUser();
+      return !error && user?.id === expectedUserId && isCurrentDraftIdentity();
+    };
+    const restoreDraft = async () => {
       try {
-        const raw = await AsyncStorage.getItem(DRAFT_KEY);
-        if (!raw || cancelled) {
-          setDraftLoaded(true);
-          return;
-        }
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+        setDraftLoaded(false);
+        setDraftStorageKey(null);
+        resetListingDraftState();
+        await clearLegacyCreateListingDraft();
+        if (!isCurrentDraftIdentity() || !expectedUserId) return;
+        if (!await verifyCurrentDraftIdentity()) return;
+
+        const scopedDraftKey = getCreateListingDraftKey(expectedUserId);
+        setDraftStorageKey(scopedDraftKey);
+        if (routeHasPrefill) return;
+
+        const raw = await AsyncStorage.getItem(scopedDraftKey);
+        if (!raw || !await verifyCurrentDraftIdentity()) return;
 
         const draft = JSON.parse(raw) as DraftState;
+        if (!isCurrentDraftIdentity()) return;
         const restoredSelectedCard = draft.selectedCard ?? null;
         const restoredSelectedProduct = draft.selectedProduct ?? null;
         const restoredSubjectType = resolveListingSubjectTypeForSelection({
@@ -1174,10 +1235,6 @@ export default function CreateListingScreen() {
         setWantedCards(draft.wantedCards ?? '');
         setDescription(draft.description ?? '');
         setKnownDefects(draft.knownDefects ?? '');
-        setShippingMethod(draft.shippingMethod ?? 'Royal Mail tracked');
-        setDeliveryMethodId(draft.deliveryMethodId ?? getShippoDeliveryMethodByName(draft.shippingMethod).id);
-        setPostageCost(draft.postageCost ?? '3.49');
-        setDispatchTime(draft.dispatchTime ?? '2 working days');
         setSelectedProtectionTier(draft.selectedProtectionTier ?? null);
         setSilverLiabilityAccepted(draft.silverLiabilityAccepted ?? false);
         setQuantity(draft.quantity ?? '1');
@@ -1187,25 +1244,21 @@ export default function CreateListingScreen() {
         setXimilarEstimate(draft.ximilarEstimate ?? null);
         setXimilarStatus(draft.ximilarStatus ?? 'idle');
         setConditionDiscrepancyReason(draft.conditionDiscrepancyReason ?? '');
-        setVerificationId(draft.verificationId ?? null);
-        setPrinterState(draft.printerState ?? 'idle');
-        setPackagingConfirmed(draft.packagingConfirmed ?? []);
-        setTrackingReference(draft.trackingReference ?? '');
         setSellerDeclarationAccepted(draft.sellerDeclarationAccepted ?? false);
         setAiDeclarationAccepted(draft.aiDeclarationAccepted ?? false);
-        setGoldDeclarationAccepted(draft.goldDeclarationAccepted ?? false);
       } catch (error) {
         console.log('Listing draft restore failed:', error);
       } finally {
-        if (!cancelled) setDraftLoaded(true);
+        if (isCurrentDraftIdentity()) setDraftLoaded(true);
       }
     };
 
     void restoreDraft();
     return () => {
       cancelled = true;
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     };
-  }, [routeHasPrefill]);
+  }, [draftSessionUserId, resetListingDraftState, routeHasPrefill]);
 
   const buildDraftState = useCallback((): DraftState => ({
     step,
@@ -1227,10 +1280,6 @@ export default function CreateListingScreen() {
     wantedCards,
     description,
     knownDefects,
-    shippingMethod,
-    deliveryMethodId,
-    postageCost,
-    dispatchTime,
     selectedProtectionTier,
     silverLiabilityAccepted,
     quantity,
@@ -1241,13 +1290,8 @@ export default function CreateListingScreen() {
     ximilarEstimate,
     ximilarStatus,
     conditionDiscrepancyReason,
-    verificationId,
-    printerState,
-    packagingConfirmed,
-    trackingReference,
     sellerDeclarationAccepted,
     aiDeclarationAccepted,
-    goldDeclarationAccepted,
     updatedAt: new Date().toISOString(),
   }), [
     aiDeclarationAccepted,
@@ -1255,10 +1299,7 @@ export default function CreateListingScreen() {
     certificationNumber,
     conditionDiscrepancyReason,
     description,
-    deliveryMethodId,
-    dispatchTime,
     evidencePhotos,
-    goldDeclarationAccepted,
     grade,
     displayGradingCompany,
     identificationMethod,
@@ -1269,9 +1310,6 @@ export default function CreateListingScreen() {
     minimumOffer,
     offersAccepted,
     packagingCondition,
-    packagingConfirmed,
-    postageCost,
-    printerState,
     quantity,
     selectedCard,
     selectedProduct,
@@ -1279,35 +1317,41 @@ export default function CreateListingScreen() {
     sealedStatus,
     sellerCondition,
     sellerDeclarationAccepted,
-    shippingMethod,
     silverLiabilityAccepted,
     slabCertification,
     slabCaseCondition,
     step,
-    trackingReference,
     tradeValue,
-    verificationId,
     wantedCards,
     ximilarEstimate,
     ximilarStatus,
   ]);
 
   useEffect(() => {
-    if (!draftLoaded || step === 'success') return;
+    if (!draftLoaded || !draftSessionUserId || !draftStorageKey || step === 'success') return;
+    const authenticatedDraftKey = getCreateListingDraftKey(draftSessionUserId);
+    if (draftStorageKey !== authenticatedDraftKey) return;
     if (suppressNextAutoSaveRef.current) {
       suppressNextAutoSaveRef.current = false;
       return;
     }
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(() => {
-      AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(buildDraftState()))
-        .then(() => {
+      void (async () => {
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser();
+          if (error) throw error;
+          if (user?.id !== draftSessionUserId) return;
+          if (getCreateListingDraftKey(user.id) !== draftStorageKey) return;
+          await AsyncStorage.setItem(draftStorageKey, JSON.stringify(buildDraftState()));
           setDraftSaved(true);
           setTimeout(() => setDraftSaved(false), 1400);
-        })
-        .catch((error) => console.log('Listing draft save failed:', error));
+        } catch (error) {
+          console.log('Listing draft save failed:', error);
+        }
+      })();
     }, AUTO_SAVE_DELAY_MS);
-  }, [buildDraftState, draftLoaded, step]);
+  }, [buildDraftState, draftLoaded, draftSessionUserId, draftStorageKey, step]);
 
   useEffect(() => {
     setSelectedProtectionTier((current) => (
@@ -1320,7 +1364,9 @@ export default function CreateListingScreen() {
   }, [silverAgreementRequired]);
 
   useEffect(() => {
-    if (!usesProtectionTier && (step === 'protection' || step === 'ai' || step === 'gold')) {
+    if (step === 'gold') {
+      setStep('details');
+    } else if (!usesProtectionTier && (step === 'protection' || step === 'ai')) {
       setStep('evidence');
     }
   }, [step, usesProtectionTier]);
@@ -1581,10 +1627,30 @@ export default function CreateListingScreen() {
     }, 300);
   };
 
-  const loadOwnedCards = useCallback(async () => {
+  const loadOwnedCards = useCallback(async (
+    expectedUserId = draftAuthUserIdRef.current,
+    expectedGeneration = draftAuthGenerationRef.current,
+  ) => {
+    const requestId = ++ownedCardsRequestIdRef.current;
+    const isCurrentRequest = () => (
+      Boolean(expectedUserId)
+      && draftAuthUserIdRef.current === expectedUserId
+      && draftAuthGenerationRef.current === expectedGeneration
+      && ownedCardsRequestIdRef.current === requestId
+    );
+    if (!expectedUserId || !isCurrentRequest()) {
+      setOwnedCards([]);
+      setCollectionLoading(false);
+      return;
+    }
     setCollectionLoading(true);
     try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      if (user?.id !== expectedUserId || !isCurrentRequest()) return;
+
       const ownershipRows = await fetchOwnedCardRows();
+      if (!isCurrentRequest()) return;
       const ownershipByCard = new Map<string, { setId: string | null; quantity: number }>();
 
       ownershipRows.forEach((row) => {
@@ -1598,7 +1664,7 @@ export default function CreateListingScreen() {
 
       const ids = Array.from(ownershipByCard.keys());
       if (!ids.length) {
-        setOwnedCards([]);
+        if (isCurrentRequest()) setOwnedCards([]);
         return;
       }
 
@@ -1606,6 +1672,7 @@ export default function CreateListingScreen() {
         fetchCachedPokemonCardDetails(ids),
         fetchLatestMarketSnapshots(ids),
       ]);
+      if (!isCurrentRequest()) return;
 
       const nextCards = ids.map((cardId) => {
         const ownership = ownershipByCard.get(cardId);
@@ -1632,12 +1699,12 @@ export default function CreateListingScreen() {
         });
       });
 
-      setOwnedCards(sortOwnedCardsByValue(nextCards));
+      if (isCurrentRequest()) setOwnedCards(sortOwnedCardsByValue(nextCards));
     } catch (error) {
       console.log('Owned listing cards load failed:', error);
-      setOwnedCards([]);
+      if (isCurrentRequest()) setOwnedCards([]);
     } finally {
-      setCollectionLoading(false);
+      if (isCurrentRequest()) setCollectionLoading(false);
     }
   }, []);
 
@@ -1757,7 +1824,9 @@ export default function CreateListingScreen() {
       openListingScanner();
       return;
     }
-    if (method === 'collection') void loadOwnedCards();
+    if (method === 'collection') {
+      void loadOwnedCards(draftAuthUserIdRef.current, draftAuthGenerationRef.current);
+    }
     setStep(method === 'manual' ? 'manual' : 'identify');
   };
 
@@ -1772,56 +1841,8 @@ export default function CreateListingScreen() {
   };
 
   const resetListingFlowToCategory = useCallback(() => {
-    suppressNextAutoSaveRef.current = true;
-    setStep('category');
-    setIdentificationMethod(null);
-    setSelectedCard(null);
-    setSelectedProduct(null);
-    setManualIdentity(DEFAULT_MANUAL_IDENTITY);
-    setListingSubjectType('raw_card');
-    setListingMode('sell');
-    setSellerCondition('');
-    setSealedStatus('Factory sealed');
-    setPackagingCondition('Excellent');
-    setSlabCaseCondition('Clean');
-    setCertificationNumber('');
-    setSlabCertification(null);
-    setAskingPrice('');
-    setTradeValue('');
-    setOffersAccepted(true);
-    setMinimumOffer('');
-    setWantedCards('');
-    setDescription('');
-    setKnownDefects('');
-    setCollectionSearchQuery('');
-    setShippingMethod('Royal Mail tracked');
-    setDeliveryMethodId('royal-mail-tracked-48');
-    setPostageCost('3.49');
-    setDispatchTime('2 working days');
-    setSelectedProtectionTier(null);
-    setSilverLiabilityAccepted(false);
-    setQuantity('1');
-    setGradingCompany('PSA');
-    setGrade('10');
-    setPrices(DEFAULT_PRICES);
-    setSearchQuery('');
-    setSearchResults([]);
-    setProductResults([]);
-    setEvidencePhotos({});
-    setActiveEvidenceIndex(0);
-    setXimilarStatus('idle');
-    setXimilarError(null);
-    setXimilarEstimate(null);
-    setConditionDiscrepancyReason('');
-    setVerificationId(null);
-    setPrinterState('idle');
-    setPackagingConfirmed([]);
-    setTrackingReference('');
-    setSellerDeclarationAccepted(false);
-    setAiDeclarationAccepted(false);
-    setGoldDeclarationAccepted(false);
-    setDraftSaved(false);
-  }, []);
+    resetListingDraftState();
+  }, [resetListingDraftState]);
 
   const returnToMarketHome = useCallback(() => {
     router.replace('/(tabs)/market' as any);
@@ -1833,8 +1854,14 @@ export default function CreateListingScreen() {
 
   const saveAndExitDraft = useCallback(async () => {
     try {
+      if (!draftSessionUserId || !draftStorageKey) throw new Error('Listing draft session is unavailable.');
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (user?.id !== draftSessionUserId || getCreateListingDraftKey(user.id) !== draftStorageKey) {
+        throw new Error('Your account changed while this listing draft was open.');
+      }
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-      await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(buildDraftState()));
+      await AsyncStorage.setItem(draftStorageKey, JSON.stringify(buildDraftState()));
       setDraftSaved(true);
       Alert.alert('Listing saved as a draft', 'You can resume it from My Listings when you are ready.', [
         { text: 'OK', onPress: returnToMyListings },
@@ -1842,19 +1869,28 @@ export default function CreateListingScreen() {
     } catch {
       Alert.alert('Could not save draft', 'Please keep editing and try again.');
     }
-  }, [buildDraftState, returnToMyListings]);
+  }, [buildDraftState, draftSessionUserId, draftStorageKey, returnToMyListings]);
 
   const discardAndExitDraft = useCallback(async () => {
     try {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
-      await AsyncStorage.removeItem(DRAFT_KEY);
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (
+        draftSessionUserId
+        && draftStorageKey
+        && user?.id === draftSessionUserId
+        && getCreateListingDraftKey(user.id) === draftStorageKey
+      ) {
+        await AsyncStorage.removeItem(draftStorageKey);
+      }
     } catch (error) {
       console.log('Listing draft discard failed:', error);
     } finally {
       resetListingFlowToCategory();
       returnToMarketHome();
     }
-  }, [resetListingFlowToCategory, returnToMarketHome]);
+  }, [draftSessionUserId, draftStorageKey, resetListingFlowToCategory, returnToMarketHome]);
 
   const saveExitDraft = useCallback(() => {
     Alert.alert(
@@ -1885,7 +1921,7 @@ export default function CreateListingScreen() {
       evidence: usesProtectionTier ? 'protection' : 'value',
       ai: 'evidence',
       gold: verificationRequirements.requiresXimilar ? 'ai' : 'evidence',
-      details: requiresGoldReview ? 'gold' : verificationRequirements.requiresXimilar ? 'ai' : 'evidence',
+      details: verificationRequirements.requiresXimilar ? 'ai' : 'evidence',
       review: 'details',
       success: 'review',
     };
@@ -2331,15 +2367,6 @@ export default function CreateListingScreen() {
     }
   };
 
-  const selectDeliveryMethod = (method: ShippoDeliveryMethod) => {
-    setDeliveryMethodId(method.id);
-    setShippingMethod(method.displayName);
-    setPostageCost(method.priceGbp > 0 ? method.priceGbp.toFixed(2) : '');
-    setDispatchTime(method.eta);
-    setDeliveryPickerVisible(false);
-    void Haptics.selectionAsync();
-  };
-
   const selectProtectionTier = (tier: ListingProtectionTier) => {
     const nextOverride = tier === recommendedProtectionTier ? null : tier;
     const nextManualSilver = tier === 'silver' && nextOverride != null;
@@ -2423,13 +2450,6 @@ export default function CreateListingScreen() {
     }
   };
 
-  const togglePackaging = (item: string) => {
-    setPackagingConfirmed((current) => current.includes(item)
-      ? current.filter((entry) => entry !== item)
-      : [...current, item]
-    );
-  };
-
   const generateDescription = () => {
     const title = cardTitle || categoryConfig.title;
     const parts = [
@@ -2480,9 +2500,27 @@ export default function CreateListingScreen() {
 
     setPublishing(true);
     try {
+      const resolvedName = selectedCard?.name ?? selectedProduct?.name ?? manualIdentity.cardName.trim();
+      for (const [field, value] of [
+        ['Listing title', resolvedName],
+        ['Card name', manualIdentity.cardName],
+        ['Set name', manualIdentity.setName],
+        ['Listing description', description],
+        ['Known defects', knownDefects],
+        ['Wanted cards', wantedCards],
+        ['Listing notes', manualIdentity.notes],
+      ] as const) {
+        assertGate0UserCopyAllowed(value, field);
+      }
+
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) throw new Error('You must be signed in to publish a listing.');
+      assertPremiumSellerWriteAccess(user);
+      const authenticatedDraftKey = getCreateListingDraftKey(user.id);
+      if (draftStorageKey !== authenticatedDraftKey) {
+        throw new Error('Your account changed while this listing draft was open. Reopen the listing flow.');
+      }
 
       let certificationReviewWarning: string | null = null;
       if (isGradedSlabListing && resolvedSlabCertification) {
@@ -2543,7 +2581,6 @@ export default function CreateListingScreen() {
       const uploadResult = await uploadPhotos(user.id);
       setUploading(false);
 
-      const resolvedName = selectedCard?.name ?? selectedProduct?.name ?? manualIdentity.cardName.trim();
       const cardId = selectedCard
         ? selectedCard.id
         : selectedProduct
@@ -2632,11 +2669,9 @@ export default function CreateListingScreen() {
         selectedCard,
         selectedProduct,
       });
-      const goldPending = usesProtectionTier && requiresGoldReview;
-      const reviewRequired = identityPendingReview || goldPending || protectionTierIsDowngraded || Boolean(valueWarning) || Boolean(certificationReviewWarning);
+      const reviewRequired = identityPendingReview || protectionTierIsDowngraded || Boolean(valueWarning) || Boolean(certificationReviewWarning);
       const adminReasons = [
         identityPendingReview ? 'Card identity pending Stackr review' : null,
-        goldPending ? 'Gold verification pending confirmation' : null,
         protectionTierIsDowngraded ? `Seller selected ${formatProtectionTier(protectionTier)} below Stackr recommendation ${formatProtectionTier(recommendedProtectionTier)}` : null,
         valueWarning ? valueWarning : null,
         certificationReviewWarning,
@@ -2663,9 +2698,6 @@ export default function CreateListingScreen() {
           description.trim(),
           knownDefects.trim() ? `Known defects: ${knownDefects.trim()}` : null,
           wantedCards.trim() ? `Wanted in trade: ${wantedCards.trim()}` : null,
-          listingMode !== 'trade'
-            ? `Delivery: ${shippingMethod} · ${dispatchTime} · ${deliveryPostageLabel} · Manual delivery estimate.`
-            : null,
           selectedProduct ? 'Catalogue media attached as reference imagery. Seller photos show the actual item.' : null,
           resolvedListingSubjectType === 'graded_slab' ? `Certification number: ${certificationNumber || 'seller-confirmed, not provided'}. Slab case condition: ${slabCaseCondition}.` : null,
           resolvedListingSubjectType === 'graded_slab' && resolvedSlabCertification ? `Certification capture: ${resolvedSlabCertification.captureMethod.toUpperCase()} confirmed by seller.` : null,
@@ -2677,14 +2709,11 @@ export default function CreateListingScreen() {
           protectionTierIsDowngraded
             ? 'Protection disclosure: selected protection is lower than Stackr recommendation for this value.'
             : null,
-          usesProtectionTier && (protectionTier === 'silver' || protectionTier === 'gold')
+          usesProtectionTier && protectionTier === 'silver'
             ? `Seller condition: ${declaredCondition}. Stackr AI estimate: ${ximilarEstimate?.condition ?? 'pending'}.`
             : null,
           ximilarEstimate?.centeringAssessment
             ? `Visible centering guidance: ${ximilarEstimate.centeringAssessment.summary} ${ximilarEstimate.centeringAssessment.disclaimer}`
-            : null,
-          usesProtectionTier && protectionTier === 'gold'
-            ? `Verification ID: ${verificationId}. Status: verification pending.`
             : null,
         ].filter(Boolean).join('\n\n') || null,
         notes: manualIdentity.notes.trim() || null,
@@ -2706,7 +2735,7 @@ export default function CreateListingScreen() {
       }
       if (error) throw error;
 
-      await AsyncStorage.removeItem(DRAFT_KEY);
+      await AsyncStorage.removeItem(authenticatedDraftKey);
       setStep('success');
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (error: any) {
@@ -2799,11 +2828,9 @@ export default function CreateListingScreen() {
     }
 
     if (step === 'protection') {
-      const label = requiresGoldReview
-        ? verificationRequirements.requiresAGSLabel ? 'Start Gold verification' : 'Start verification review'
-        : protectionTier === 'silver' && verificationRequirements.requiresXimilar
-          ? 'Begin condition check'
-          : 'Capture listing photos';
+      const label = protectionTier === 'silver' && verificationRequirements.requiresXimilar
+        ? 'Begin condition check'
+        : 'Capture listing photos';
       return <PrimaryFooter compact={keyboardVisible} label={label} onPress={() => setStep('evidence')} />;
     }
 
@@ -2813,16 +2840,14 @@ export default function CreateListingScreen() {
         ? protectionTier === 'silver'
           ? 'Begin AI condition check'
           : 'Continue to AI condition check'
-        : requiresGoldReview
-          ? 'Continue to verification review'
-          : 'Continue to listing details';
+        : 'Continue to listing details';
       return (
         <PrimaryFooter
           compact={keyboardVisible}
           label={requiredDone ? nextLabel : currentCaptureRequirement ? `Capture ${currentCaptureRequirement.label.toLowerCase()}` : 'Capture evidence'}
           onPress={() => {
             if (requiredDone) {
-              setStep(verificationRequirements.requiresXimilar ? 'ai' : requiresGoldReview ? 'gold' : 'details');
+              setStep(verificationRequirements.requiresXimilar ? 'ai' : 'details');
             } else if (currentCaptureRequirement) {
               void capturePhoto(currentCaptureRequirement.id, true);
             }
@@ -2835,7 +2860,7 @@ export default function CreateListingScreen() {
 
     if (step === 'ai') {
       if (ximilarStatus === 'complete') {
-        return <PrimaryFooter compact={keyboardVisible} label={requiresGoldReview ? 'Prepare Gold verification' : 'Accept estimate'} onPress={() => setStep(requiresGoldReview ? 'gold' : 'details')} />;
+        return <PrimaryFooter compact={keyboardVisible} label="Accept estimate" onPress={() => setStep('details')} />;
       }
       return (
         <PrimaryFooter
@@ -2850,25 +2875,17 @@ export default function CreateListingScreen() {
     }
 
     if (step === 'gold') {
-      const missing: MissingRequirement[] = goldReady ? [] : [{
-        key: 'gold',
-        label: verificationRequirements.requiresAGSLabel
-          ? 'Create the verification record and confirm packaging steps'
-          : 'Create the verification review record',
-      }];
-      return <PrimaryFooter compact={keyboardVisible} label="Continue to listing details" onPress={() => setStep('details')} disabled={missing.length > 0} missing={missing} />;
+      return <PrimaryFooter compact={keyboardVisible} label="Continue to listing details" onPress={() => setStep('details')} />;
     }
 
     if (step === 'details') {
-      const missing: MissingRequirement[] = detailsComplete ? [] : [{ key: 'details', label: 'Complete quantity, delivery and dispatch details' }];
+      const missing: MissingRequirement[] = detailsComplete ? [] : [{ key: 'details', label: 'Complete quantity and item details' }];
       return <PrimaryFooter compact={keyboardVisible} label="Review listing" onPress={() => setStep('review')} disabled={missing.length > 0} missing={missing} />;
     }
 
     if (step === 'review') {
       const label = !usesProtectionTier
         ? 'Publish listing'
-        : requiresGoldReview
-        ? 'Publish as verification pending'
         : protectionTier === 'silver'
           ? 'Publish Silver listing'
           : 'Publish listing';
@@ -3600,13 +3617,14 @@ export default function CreateListingScreen() {
           : usesProtectionTier
             ? 'Stackr uses the highest relevant value to assign the raw-card protection tier automatically.'
             : isSealedLikeCategory(listingSubjectType)
-              ? 'Set the price or trade value. Sealed products are sold as seen with clear actual-item and seal photos.'
+              ? 'Set the price or trade value using clear actual-item and seal photos as evidence.'
               : 'Set the price or trade value. This item will be listed from seller photos and factual details.'}
       </Text>
+      <InlineRequirementMessage message="This publishes a browse-only listing. It does not create a Stackr transaction." />
       <View style={styles.modeGrid}>
-        <ToggleCard active={listingMode === 'sell'} title="Sell" body="Set an asking price and optional offers." icon="pricetag-outline" onPress={() => setListingMode('sell')} />
-        <ToggleCard active={listingMode === 'trade'} title="Trade" body="Set a trade value and what you want." icon="swap-horizontal-outline" onPress={() => setListingMode('trade')} />
-        <ToggleCard active={listingMode === 'both'} title="Open to either" body="Accept buy interest or trade proposals." icon="git-compare-outline" onPress={() => setListingMode('both')} />
+        <ToggleCard active={listingMode === 'sell'} title="Price & offers" body="Publish a guide price and invite offers. No checkout." icon="pricetag-outline" onPress={() => setListingMode('sell')} />
+        <ToggleCard active={listingMode === 'trade'} title="Trade proposals" body="Set an indicative trade value and what you want." icon="swap-horizontal-outline" onPress={() => setListingMode('trade')} />
+        <ToggleCard active={listingMode === 'both'} title="Offers or trade" body="Invite offer or trade proposals. No Stackr transaction." icon="git-compare-outline" onPress={() => setListingMode('both')} />
       </View>
       <ValueComparisonCard
         estimate={prices.market}
@@ -3617,7 +3635,7 @@ export default function CreateListingScreen() {
       />
       {(listingMode === 'sell' || listingMode === 'both') ? (
         <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-          <FieldLabel label="Your listing price" required />
+          <FieldLabel label="Guide price (no checkout)" required />
           <StackrTextInput value={askingPrice} onChangeText={setAskingPrice} placeholder="0.00" keyboardType="decimal-pad" />
           <PressableChecklistItem label="Offers accepted" checked={offersAccepted} onPress={() => setOffersAccepted((value) => !value)} />
           {offersAccepted ? (
@@ -3637,7 +3655,7 @@ export default function CreateListingScreen() {
         </View>
       ) : null}
       {prices.unavailable ? (
-        <InlineRequirementMessage message="Market value unavailable. Stackr will use your entered transaction value and may review the listing." tone="warning" />
+        <InlineRequirementMessage message="Market value unavailable. Stackr will use your entered guide value and may review the listing." tone="warning" />
       ) : null}
     </View>
   );
@@ -3917,71 +3935,6 @@ export default function CreateListingScreen() {
     </View>
   );
 
-  const renderGold = () => {
-    if (!verificationRequirements.requiresAGSLabel) {
-      const checklist = [
-        { label: 'Product confirmed', complete: identityConfirmed },
-        { label: 'Seller photos complete', complete: captureProgress.requiredDone },
-        { label: listingSubjectType === 'graded_slab' ? 'Certification seller-confirmed' : 'Packaging evidence complete', complete: conditionSelected },
-        { label: 'Verification review ID created', complete: Boolean(verificationId), current: !verificationId },
-      ];
-      return (
-        <View style={styles.stepContent}>
-          <Text style={[styles.stepTitle, { color: theme.colors.text }]}>Prepare verification review</Text>
-          <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>
-            {listingSubjectType === 'graded_slab'
-              ? 'High-value slabs are sent to Stackr review with seller photos and certification evidence. They are not described as verified until review is complete.'
-              : 'High-value sealed products use seller photos, sealed status and packaging notes. Seal close-ups stay optional unless Stackr separately requests a review.'}
-          </Text>
-          <VerificationStatusTimeline items={checklist} />
-          {!verificationId ? (
-            <TouchableOpacity onPress={() => setVerificationId(createVerificationId())} style={[styles.primaryActionFull, { backgroundColor: theme.colors.primary }]}>
-              <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>Create review record</Text>
-            </TouchableOpacity>
-          ) : (
-            <InlineRequirementMessage message={`Verification review ID: ${verificationId}. Listing can be created as pending verification.`} />
-          )}
-        </View>
-      );
-    }
-
-    const checklist = [
-      { label: 'Card confirmed', complete: identityConfirmed },
-      { label: 'Listing photos complete', complete: captureProgress.requiredDone },
-      { label: 'Ximilar condition estimate complete', complete: ximilarStatus === 'complete' },
-      { label: 'Seller details confirmed', complete: detailsComplete || Boolean(quantity) },
-      { label: 'Verification ID created', complete: Boolean(verificationId), current: !verificationId },
-      { label: 'Label printed or saved', complete: printerState === 'printed', current: Boolean(verificationId) && printerState !== 'printed' },
-      { label: 'Packaging confirmed', complete: packagingConfirmed.length === PACKAGING_ITEMS.length, current: printerState === 'printed' && packagingConfirmed.length < PACKAGING_ITEMS.length },
-    ];
-    return (
-      <View style={styles.stepContent}>
-        <Text style={[styles.stepTitle, { color: theme.colors.text }]}>Prepare for AGS verification</Text>
-        <Text style={[styles.stepBody, { color: theme.colors.textSoft }]}>Gold Verified status is applied only after AGS confirmation is complete.</Text>
-        <VerificationStatusTimeline items={checklist} />
-        {!verificationId ? (
-          <TouchableOpacity onPress={() => setVerificationId(createVerificationId())} style={[styles.primaryActionFull, { backgroundColor: theme.colors.primary }]}>
-            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '900' }}>Create verification record</Text>
-          </TouchableOpacity>
-        ) : (
-          <>
-            <LabelPreview verificationId={verificationId} cardName={cardTitle || manualIdentity.cardName} setName={selectedCard?.set_name ?? manualIdentity.setName} number={selectedCard?.number ?? manualIdentity.cardNumber} />
-            <PrinterSelector state={printerState} onStateChange={setPrinterState} />
-            <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-              <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 20, fontWeight: '900', marginBottom: 8 }}>Packaging checklist</Text>
-              {PACKAGING_ITEMS.map((item) => (
-                <PressableChecklistItem key={item} label={item} checked={packagingConfirmed.includes(item)} onPress={() => togglePackaging(item)} />
-              ))}
-              <FieldLabel label="Tracking reference" />
-              <StackrTextInput value={trackingReference} onChangeText={setTrackingReference} placeholder="Optional until sent" autoCapitalize="characters" />
-            </View>
-            <InlineRequirementMessage message="Gold verification pending listings must not be described as AGS Verified until confirmation is returned." tone="warning" />
-          </>
-        )}
-      </View>
-    );
-  };
-
   const renderDetails = () => (
     <View style={styles.stepContent}>
       <Text style={[styles.stepTitle, { color: theme.colors.text }]}>Listing details</Text>
@@ -3989,46 +3942,6 @@ export default function CreateListingScreen() {
       <View style={[styles.sectionCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
         <FieldLabel label="Quantity" required />
         <StackrTextInput value={quantity} onChangeText={setQuantity} placeholder="1" keyboardType="numeric" />
-        {listingMode !== 'trade' ? (
-          <>
-            <FieldLabel label="Delivery method" required />
-            <TouchableOpacity
-              onPress={() => setDeliveryPickerVisible(true)}
-              activeOpacity={0.84}
-              accessibilityRole="button"
-              accessibilityLabel="Choose delivery method"
-              style={[styles.deliverySelectCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-            >
-              <View style={[styles.deliveryCarrierMark, { backgroundColor: theme.colors.primary + '12', borderColor: theme.colors.primary + '25' }]}>
-                <Text style={{ color: theme.colors.primary, fontSize: 13, fontWeight: '900' }}>
-                  {selectedDeliveryMethod.carrier.slice(0, 2).toUpperCase()}
-                </Text>
-              </View>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <View style={styles.deliveryTitleRow}>
-                  <Text style={{ color: theme.colors.text, fontSize: 15, lineHeight: 19, fontWeight: '900' }} numberOfLines={1}>
-                    {selectedDeliveryMethod.displayName}
-                  </Text>
-                  {selectedDeliveryMethod.recommended ? (
-                    <View style={[styles.deliveryBadge, { backgroundColor: theme.colors.primary + '14', borderColor: theme.colors.primary + '30' }]}>
-                      <Text style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '900' }}>Recommended</Text>
-                    </View>
-                  ) : null}
-                </View>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 3 }} numberOfLines={2}>
-                  {selectedDeliveryMethod.eta} · {selectedDeliveryMethod.tracked ? 'Tracked' : 'Manual'} · {deliveryPostageLabel}
-                </Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: 4 }} numberOfLines={2}>
-                  {selectedDeliveryMethod.protectionHint}
-                </Text>
-              </View>
-              <Ionicons name="chevron-down" size={20} color={theme.colors.primary} />
-            </TouchableOpacity>
-            <InlineRequirementMessage
-              message="Delivery prices are manual estimates only. Live rates and label purchase are unavailable for this release."
-            />
-          </>
-        ) : null}
         <FieldLabel label="Known defects" />
         <StackrTextInput value={knownDefects} onChangeText={setKnownDefects} placeholder="Disclose whitening, scratches, bends or dents." multiline />
         <View style={styles.descriptionHeader}>
@@ -4115,19 +4028,12 @@ export default function CreateListingScreen() {
         {ximilarEstimate?.condition ? <ReviewRow label="Stackr AI estimate" value={ximilarEstimate.condition} /> : null}
         {ximilarEstimate?.centeringAssessment ? <ReviewRow label="Visible centering" value={ximilarEstimate.centeringAssessment.label} /> : null}
       </ListingReviewSection>
-      <ListingReviewSection title="Price and trade" onEdit={() => setStep('value')}>
-        <ReviewRow label="Mode" value={listingMode === 'both' ? 'Sell or trade' : listingMode === 'sell' ? 'Sell' : 'Trade'} />
-        {listingMode !== 'trade' ? <ReviewRow label="Your listing price" value={formatCurrency(listingValueNumber)} /> : null}
+      <ListingReviewSection title="Offers and trade" onEdit={() => setStep('value')}>
+        <ReviewRow label="Mode" value={listingMode === 'both' ? 'Offers or trade' : listingMode === 'sell' ? 'Price & offers' : 'Trade proposals'} />
+        {listingMode !== 'trade' ? <ReviewRow label="Guide price (no checkout)" value={formatCurrency(listingValueNumber)} /> : null}
         {listingMode !== 'sell' ? <ReviewRow label="Trade value" value={formatCurrency(tradeValueNumber)} /> : null}
         {wantedCards.trim() ? <ReviewRow label="Wanted" value={wantedCards.trim()} /> : null}
-      </ListingReviewSection>
-      <ListingReviewSection title="Delivery" onEdit={() => setStep('details')}>
-        <ReviewRow label="Shipping" value={listingMode === 'trade' ? 'Agreed during trade' : shippingMethod} />
-        <ReviewRow label="Postage" value={listingMode === 'trade' ? 'Agreed during trade' : deliveryPostageLabel} />
-        <ReviewRow label="Dispatch" value={listingMode === 'trade' ? 'Agreed during trade' : dispatchTime} />
-        {listingMode !== 'trade' ? (
-          <ReviewRow label="Rate source" value="Manual estimate" />
-        ) : null}
+        <ReviewRow label="Stackr transaction" value="Not available in this release" />
       </ListingReviewSection>
       {usesProtectionTier ? (
         <ListingReviewSection title="Protection" onEdit={() => setStep('protection')}>
@@ -4135,7 +4041,6 @@ export default function CreateListingScreen() {
           <ReviewRow label="Stackr recommendation" value={formatProtectionTier(recommendedProtectionTier)} />
           <ReviewRow label="Value used" value={formatCurrency(tierDecision.calculationValue)} />
           {silverAgreementRequired ? <ReviewRow label="Buyer agreement" value="Required for Silver" /> : null}
-          {requiresGoldReview ? <ReviewRow label="Verification status" value="Gold verification pending" /> : null}
         </ListingReviewSection>
       ) : isGradedSlabListing ? (
         <ListingReviewSection title="Professional grade" onEdit={() => setStep('condition')}>
@@ -4145,7 +4050,7 @@ export default function CreateListingScreen() {
           <ReviewRow label="Case condition" value={slabCaseCondition} />
         </ListingReviewSection>
       ) : isSealedLikeCategory(listingSubjectType) ? (
-        <ListingReviewSection title="Sold as seen evidence" onEdit={() => setStep('evidence')}>
+        <ListingReviewSection title="Item evidence" onEdit={() => setStep('evidence')}>
           <ReviewRow label="Basis" value="Seller photos and sealed-product disclosure" />
           <ReviewRow label="Seal photos" value="Encouraged where visible" />
           <ReviewRow label="Protection tier" value="Not applied to sealed products" />
@@ -4176,13 +4081,6 @@ export default function CreateListingScreen() {
             label={`I understand that ${silverAgreementDisclosure.charAt(0).toLowerCase()}${silverAgreementDisclosure.slice(1)}`}
           />
         ) : null}
-        {requiresGoldReview ? (
-          <PressableChecklistItem
-            checked={goldDeclarationAccepted}
-            onPress={() => setGoldDeclarationAccepted((value) => !value)}
-            label="I understand that Gold Verified status is applied only after AGS verification is completed."
-          />
-        ) : null}
       </ListingReviewSection>
     </View>
     );
@@ -4191,22 +4089,18 @@ export default function CreateListingScreen() {
   const renderSuccess = () => {
     const successTier = evidenceTier;
     const tierTone = SUCCESS_TIER_TONES[successTier];
-    const successTitle = usesProtectionTier && requiresGoldReview
-      ? 'Gold verification created'
-      : usesProtectionTier && protectionTier === 'silver'
-        ? 'Silver listing published'
-        : 'Listing published';
-    const successBody = usesProtectionTier && requiresGoldReview
-      ? 'Your listing is saved and the Gold verification path is ready. Print the label and send the card to AGS to continue.'
-      : usesProtectionTier && protectionTier === 'silver'
-        ? verificationRequirements.requiresXimilar
-          ? 'Your condition evidence and AI estimate are attached, so buyers can review the Silver requirements with confidence.'
-          : 'Your Silver evidence is attached and ready for buyers or traders to review.'
-        : 'Your listing evidence is attached, polished, and ready for buyers to review in The Market.';
-    const successStatus = requiresGoldReview ? 'Verification pending' : 'Live in Market';
+    const successTitle = usesProtectionTier && protectionTier === 'silver'
+      ? 'Silver listing published'
+      : 'Listing published';
+    const successBody = usesProtectionTier && protectionTier === 'silver'
+      ? verificationRequirements.requiresXimilar
+        ? 'Your condition evidence and AI estimate are attached for collectors to review.'
+        : 'Your Silver evidence is attached for collectors to review.'
+      : 'Your listing evidence is attached and ready for collectors to review in The Market.';
+    const successStatus = 'Live in Market';
     const successProtectionLabel = usesProtectionTier ? 'Tier' : 'Evidence';
     const successProtection = usesProtectionTier ? formatProtectionTier(protectionTier) : 'Seller photos';
-    const successMode = listingMode === 'both' ? 'Sell or trade' : listingMode === 'trade' ? 'Trade listing' : 'Sell listing';
+    const successMode = listingMode === 'both' ? 'Offers or trade' : listingMode === 'trade' ? 'Trade proposals' : 'Price & offers';
     const successValue = listingMode === 'trade' ? formatCurrency(tradeValueNumber) : formatCurrency(listingValueNumber);
     const successItemName = cardTitle || categoryConfig.title;
 
@@ -4280,7 +4174,7 @@ export default function CreateListingScreen() {
     if (step === 'protection') return renderProtection();
     if (step === 'evidence') return renderEvidence();
     if (step === 'ai') return renderAi();
-    if (step === 'gold') return renderGold();
+    if (step === 'gold') return renderDetails();
     if (step === 'details') return renderDetails();
     if (step === 'review') return renderReview();
     return renderSuccess();
@@ -4457,78 +4351,6 @@ export default function CreateListingScreen() {
         </View>
       </Modal>
 
-      <Modal visible={deliveryPickerVisible} transparent animationType="slide" onRequestClose={() => setDeliveryPickerVisible(false)}>
-        <View style={styles.modalRoot}>
-          <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setDeliveryPickerVisible(false)} />
-          <View style={[styles.modalSheet, { backgroundColor: theme.colors.bg, paddingBottom: insets.bottom + 24 }]}>
-            <View style={styles.modalHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900' }}>Choose delivery</Text>
-                <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 2 }}>
-                  Manual delivery estimates only. Confirm the actual method and price outside Stackr.
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => setDeliveryPickerVisible(false)} style={styles.modalClose}>
-                <Ionicons name="close" size={20} color={theme.colors.text} />
-              </TouchableOpacity>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 9, paddingBottom: 8 }}>
-              {SHIPPO_DELIVERY_METHODS.map((method) => {
-                const selected = method.id === deliveryMethodId;
-                const postageLabel = method.priceGbp <= 0 ? 'No postage' : formatCurrency(method.priceGbp);
-                return (
-                  <TouchableOpacity
-                    key={method.id}
-                    onPress={() => selectDeliveryMethod(method)}
-                    activeOpacity={0.84}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    style={[
-                      styles.deliveryOptionRow,
-                      {
-                        backgroundColor: selected ? theme.colors.primary + '10' : theme.colors.card,
-                        borderColor: selected ? theme.colors.primary : theme.colors.border,
-                      },
-                    ]}
-                  >
-                    <View style={[styles.deliveryCarrierMark, { backgroundColor: selected ? theme.colors.primary : theme.colors.surface, borderColor: selected ? theme.colors.primary : theme.colors.border }]}>
-                      <Text style={{ color: selected ? '#FFFFFF' : theme.colors.primary, fontSize: 13, fontWeight: '900' }}>
-                        {method.carrier.slice(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <View style={styles.deliveryTitleRow}>
-                        <Text style={{ color: theme.colors.text, fontSize: 14, lineHeight: 18, fontWeight: '900' }} numberOfLines={1}>
-                          {method.displayName}
-                        </Text>
-                        {method.recommended ? (
-                          <View style={[styles.deliveryBadge, { backgroundColor: theme.colors.primary + '14', borderColor: theme.colors.primary + '30' }]}>
-                            <Text style={{ color: theme.colors.primary, fontSize: 10, fontWeight: '900' }}>Best fit</Text>
-                          </View>
-                        ) : null}
-                      </View>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 16, marginTop: 3 }}>
-                        {method.service} · {method.eta} · {method.tracked ? 'Tracked' : 'Manual'}
-                      </Text>
-                      <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 15, marginTop: 4 }} numberOfLines={2}>
-                        {method.protectionHint}
-                      </Text>
-                    </View>
-                    <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                      <Text style={{ color: theme.colors.text, fontSize: 14, fontWeight: '900' }}>{postageLabel}</Text>
-                      <Ionicons
-                        name={selected ? 'checkmark-circle' : 'ellipse-outline'}
-                        size={20}
-                        color={selected ? theme.colors.primary : theme.colors.textSoft}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </StackrScreen>
   );
 }
@@ -4802,43 +4624,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-  },
-  deliverySelectCard: {
-    minHeight: 92,
-    borderRadius: 18,
-    borderWidth: 1,
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  deliveryOptionRow: {
-    minHeight: 92,
-    borderRadius: 18,
-    borderWidth: 1.5,
-    padding: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  deliveryCarrierMark: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  deliveryTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-  deliveryBadge: {
-    borderRadius: 999,
-    borderWidth: 1,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
   },
   protectionChoiceHeader: {
     flexDirection: 'row',

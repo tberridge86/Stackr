@@ -11,5 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Explain the replacement
-        run: >-
-          echo "Retired: normalize-resumed-catalogue-backfill-evidence.yml now independently validates the five language artifacts and dispatches the guarded production controller."
+        run: |
+          echo 'Retired: normalize-resumed-catalogue-backfill-evidence.yml only validates and records evidence.'
+          echo 'No deployment is dispatched. Use deploy-production.yml from main with release_scope=catalogue_assets and all unrelated mutation inputs disabled.'
+          exit 1

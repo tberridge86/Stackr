@@ -99,22 +99,96 @@ function confidenceLabel(score: number) {
 function recommendationLabel(recommendation: Recommendation) {
   switch (recommendation) {
     case 'strong_buy':
-      return 'Strong opportunity';
+      return 'Strong value signal';
     case 'buy':
-      return 'Buy';
+      return 'Positive value signal';
     case 'watch':
       return 'Worth watching';
     case 'hold':
-      return 'Hold';
+      return 'Steady value signal';
     case 'consider_selling':
-      return 'Consider selling';
+      return 'Value shift to review';
     case 'sell':
-      return 'Sell';
+      return 'Value trend to review';
     case 'avoid':
-      return 'Avoid for now';
+      return 'Use caution for now';
     default:
       return 'Not enough reliable data';
   }
+}
+
+const MINTY_GATE0_COMMERCE_LANGUAGE = /\b(?:buy(?:s|ing)?|bought|sell(?:s|ing)?|sold|sales?|purchas(?:e|es|ed|ing)|checkout|payments?|payouts?|order(?:s|ed|ing)?|ship(?:s|ping|ped|ments?)|deliver(?:y|ies|ed|ing)|carriers?|postage|labels?|tracking|fulfil(?:ment|ments|led|ling)?|fulfill(?:ment|ments|ed|ing)?|shippo|stripe)\b/i;
+const MINTY_GATE0_SUMMARY = 'Minty noticed a change in recent collection and value signals. Review the latest trend and keep watching how this card moves.';
+
+function hasGate0CommerceLanguage(value: unknown) {
+  return MINTY_GATE0_COMMERCE_LANGUAGE.test(
+    String(value ?? '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim()
+  );
+}
+
+function gate0SafeText(value: unknown, fallback: string) {
+  const text = String(value ?? '').trim();
+  return text && !hasGate0CommerceLanguage(text) ? text : fallback;
+}
+
+function gate0SafeList(value: unknown, fallback: string) {
+  return Array.isArray(value) ? value.map((item) => gate0SafeText(item, fallback)) : [];
+}
+
+function sanitizeMintyNarrative(value: unknown, cardName: string) {
+  const narrative = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+  const safeName = gate0SafeText(cardName, 'this card');
+  return {
+    headline: gate0SafeText(narrative.headline, `Collection value insight: ${safeName}`),
+    recommendationSummary: gate0SafeText(narrative.recommendationSummary, MINTY_GATE0_SUMMARY),
+    opportunities: gate0SafeList(narrative.opportunities, 'Recent collection and value signals are available to review.'),
+    risks: gate0SafeList(narrative.risks, 'Values can change as new information appears.'),
+    whyMintyPickedThis: gate0SafeList(
+      narrative.whyMintyPickedThis,
+      'This card is connected to your collection and recent value activity.'
+    ),
+    outlook: gate0SafeText(narrative.outlook, 'Keep watching recent value movement as new data appears.'),
+    limitationText: narrative.limitationText
+      ? gate0SafeText(narrative.limitationText, 'Some collection or value signals may be incomplete.')
+      : undefined,
+  };
+}
+
+function sanitizeMintySignal(value: unknown) {
+  const signal = value && typeof value === 'object' ? value as Record<string, unknown> : {};
+  return {
+    type: signal.type === 'positive' || signal.type === 'negative' ? signal.type : 'neutral',
+    label: gate0SafeText(signal.label, 'Collection value signal'),
+    evidence: gate0SafeText(signal.evidence, 'Recent collection and value data is available to review.'),
+    confidenceScore: numeric(signal.confidenceScore),
+    confidenceLabel: gate0SafeText(signal.confidenceLabel, 'Low'),
+  };
+}
+
+function sanitizeMintyEdgeInsight(value: unknown) {
+  if (!value || typeof value !== 'object') return value;
+  const insight = value as Record<string, unknown>;
+  const cardSnapshot = insight.card_snapshot && typeof insight.card_snapshot === 'object'
+    ? insight.card_snapshot as Record<string, unknown>
+    : {};
+  const safeCardName = gate0SafeText(cardSnapshot.name, 'this card');
+  return {
+    ...insight,
+    recommendation: hasGate0CommerceLanguage(insight.recommendation) ? 'watch' : insight.recommendation,
+    recommendation_label: gate0SafeText(insight.recommendation_label, 'Review recent value movement'),
+    recommended_route: 'hold_and_watch',
+    structured_signals: Array.isArray(insight.structured_signals)
+      ? insight.structured_signals.map(sanitizeMintySignal)
+      : [],
+    narrative: sanitizeMintyNarrative(insight.narrative, safeCardName),
+    recommended_actions: [{ key: 'view_value_history', label: 'Review Value History', primary: true }],
+    data_limitations: gate0SafeList(insight.data_limitations, 'Some collection or value signals may be incomplete.'),
+    card_snapshot: {
+      ...cardSnapshot,
+      name: safeCardName,
+      setName: gate0SafeText(cardSnapshot.setName, 'Collection set'),
+    },
+  };
 }
 
 function makeSignal(type: Signal['type'], label: string, evidence: string, confidenceScore: number): Signal {
@@ -397,15 +471,15 @@ function buildSignals(metrics: Record<string, unknown>, marketplace: Record<stri
     ));
   }
   if (numeric(metrics.confirmedSales30d) > 0) {
-    signals.push(makeSignal('positive', 'Recent sold data exists', `${metrics.confirmedSales30d} confirmed sales in the last 30 days.`, 62 + Math.min(25, numeric(metrics.confirmedSales30d) * 2)));
+    signals.push(makeSignal('positive', 'Recent value observations exist', `${metrics.confirmedSales30d} verified value observations are available from the last 30 days.`, 62 + Math.min(25, numeric(metrics.confirmedSales30d) * 2)));
   } else {
-    signals.push(makeSignal('negative', 'Sold-data coverage is limited', 'No confirmed sold listings were found in the current 30-day window.', 36));
+    signals.push(makeSignal('negative', 'Recent value coverage is limited', 'No verified value observations were found in the current 30-day window.', 36));
   }
   if (numeric(metrics.activeSupply) > 0) {
     signals.push(makeSignal(
       numeric(metrics.activeSupply) > numeric(metrics.confirmedSales30d) * 2 ? 'negative' : 'neutral',
       'Active supply check',
-      `${metrics.activeSupply} active listings against ${metrics.confirmedSales30d} recent sales.`,
+      `${metrics.activeSupply} active references against ${metrics.confirmedSales30d} recent value observations.`,
       54
     ));
   }
@@ -432,19 +506,19 @@ function buildFallbackNarrative(input: {
   const positives = input.signals.filter((item) => item.type === 'positive').slice(0, 3);
   const negatives = input.signals.filter((item) => item.type === 'negative').slice(0, 3);
   return {
-    headline: `${input.recommendationLabel}: ${input.name}`,
+    headline: `Collection value insight: ${input.name}`,
     recommendationSummary: input.recommendationLabel === 'Not enough reliable data'
-      ? `${input.name} is relevant, but Minty does not have enough confirmed sold-price evidence to recommend an action yet.`
-      : `${input.recommendationLabel} for ${input.name}. Minty is using confirmed sales, active supply, StackR interest and source-quality signals.`,
+      ? `${input.name} is relevant, but Minty needs stronger recent value evidence before drawing a firmer conclusion.`
+      : `${input.name} has a collection-value pattern worth reviewing. Minty is using recent observations, current availability, StackR interest and source-quality signals.`,
     opportunities: positives.length ? positives.map((item) => `${item.label}: ${item.evidence}`) : ['No strong positive signal is confirmed yet.'],
-    risks: negatives.length ? negatives.map((item) => `${item.label}: ${item.evidence}`) : ['No major risk signal is dominant, but fresh sold comps should still be checked before acting.'],
+    risks: negatives.length ? negatives.map((item) => `${item.label}: ${item.evidence}`) : ['No major risk signal is dominant, but fresh value references should still be reviewed.'],
     whyMintyPickedThis: [
       input.ownsCard ? 'It is connected to your collection.' : 'It is connected to your StackR activity.',
       input.signals[0]?.evidence ?? 'Minty ranked it from available market and collection signals.',
     ],
     outlook: input.limitations.length
       ? 'Highly uncertain until stronger market coverage appears.'
-      : 'Likely to remain stable unless fresh sales shift the trend.',
+      : 'Likely to remain stable unless fresh value observations shift the trend.',
     limitationText: input.limitations.join(' ') || undefined,
   };
 }
@@ -465,7 +539,8 @@ async function generateNarrative(payload: Record<string, unknown>, fallback: Rec
             role: 'system',
             content: [
               'You write concise Pokemon collector recommendations for StackR.',
-              'Use only the structured payload. Do not change recommendation, confidence or metrics.',
+              'Use only the structured payload and preserve confidence and metrics.',
+              'Frame every response as collection and value monitoring only. Never recommend a transaction, fulfilment step or external provider.',
               'Return valid JSON with headline, recommendationSummary, opportunities, risks, whyMintyPickedThis, outlook and optional limitationText.',
             ].join(' '),
           },
@@ -510,7 +585,7 @@ Deno.serve(async (req) => {
 
     if (!force) {
       const cached = await rest(`minty_insights?select=*&user_id=eq.${encodeURIComponent(user.id)}&expires_at=gt.${encodeURIComponent(now)}&stale=eq.false&order=relevance_score.desc,generated_at.desc&limit=1`).catch(() => []);
-      if (Array.isArray(cached) && cached[0]) return json({ insight: cached[0], source: 'cache' });
+      if (Array.isArray(cached) && cached[0]) return json({ insight: sanitizeMintyEdgeInsight(cached[0]), source: 'cache' });
     }
 
     const ownedRows = await rest(`user_card_variants?select=*&user_id=eq.${encodeURIComponent(user.id)}&order=updated_at.desc&limit=50`).catch(() => []);
@@ -527,7 +602,7 @@ Deno.serve(async (req) => {
       return json({
         insight: null,
         source: 'none',
-        message: 'No collection, watchlist or listing card was available for Minty to score.',
+        message: 'No collection or watchlist card was available for Minty to score.',
       });
     }
 
@@ -581,7 +656,7 @@ Deno.serve(async (req) => {
     const signals = buildSignals(metrics, marketplace);
     const limitations = [
       ...ebayResult.warnings,
-      !hasSoldData ? 'Confirmed sold-price coverage is limited.' : null,
+      !hasSoldData ? 'Verified recent value coverage is limited.' : null,
       language.toLowerCase().startsWith('ja') && numeric(metrics.sourceCount) < 2 ? 'Japanese pricing is available from limited source coverage.' : null,
       EBAY_BROWSE_TOKEN ? null : 'eBay active-listing supply is not configured on this environment.',
     ].filter(Boolean);
@@ -623,7 +698,10 @@ Deno.serve(async (req) => {
       },
       dataLimitations: limitations,
     };
-    const narrative = await generateNarrative(narrativePayload, fallbackNarrative);
+    const narrative = sanitizeMintyNarrative(
+      await generateNarrative(narrativePayload, fallbackNarrative),
+      cardName
+    );
 
     const snapshotRowsInserted = await rest('market_snapshots', {
       method: 'POST',
@@ -657,11 +735,7 @@ Deno.serve(async (req) => {
         Math.min(12, Math.max(0, numeric(candidateRow.quantity, 1) - 1) * 4) +
         recommendationScore * 0.25
     );
-    const actions = recommendation === 'sell' || recommendation === 'consider_selling'
-      ? [{ key: 'list_mine', label: 'List Mine', primary: true }, { key: 'view_price_history', label: 'View Price History' }]
-      : recommendation === 'buy' || recommendation === 'strong_buy'
-        ? [{ key: 'view_listings', label: 'View Listings', primary: true }, { key: 'set_price_alert', label: 'Set Price Alert' }]
-        : [{ key: 'set_price_alert', label: 'Set Price Alert', primary: true }, { key: 'view_price_history', label: 'View Price History' }];
+    const actions = [{ key: 'view_value_history', label: 'Review Value History', primary: true }];
 
     const inserted = await rest('minty_insights', {
       method: 'POST',
@@ -701,9 +775,8 @@ Deno.serve(async (req) => {
       }).catch(() => null);
     }
 
-    return json({ insight, source: 'refreshed' });
+    return json({ insight: sanitizeMintyEdgeInsight(insight), source: 'refreshed' });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : 'Minty insight refresh failed' }, 500);
   }
 });
-

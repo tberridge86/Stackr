@@ -1,4 +1,4 @@
-name: Promote StackR Catalogue to Production
+name: Retired - Promote StackR Catalogue to Production
 
 on:
   issue_comment:
@@ -6,301 +6,65 @@ on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: Type PROMOTE STACKR CATALOGUE
+        description: This workflow is retired; use deploy-production.yml with catalogue_assets
         required: true
         type: string
       backfill_run_id:
-        description: Successful full multilingual backfill run ID
-        required: true
-        default: '32295826189'
+        description: Legacy evidence run ID recorded for audit only
+        required: false
         type: string
 
 permissions:
-  actions: read
   contents: read
   issues: write
-  pull-requests: write
+  pull-requests: read
 
 concurrency:
-  group: stackr-production-catalogue-promotion
+  group: stackr-retired-catalogue-production-promotion
   cancel-in-progress: false
 
-env:
-  STACKR_BACKFILL_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.backfill_run_id || '32295826189' }}
-  STACKR_SOURCE_BRANCH: backend/release-hardening-2026-08-19
-  STAGING_PROJECT_REF: lmwfhvexfcoyeuoyrlco
-  PRODUCTION_PROJECT_REF: oakdbbzdqwurpjnoqhmu
-  EXPECTED_PROVIDER_RECORDS: '44717'
-  DO_NOT_TRACK: '1'
-
 jobs:
-  snapshot:
+  retired:
     if: >-
-      (github.event_name == 'workflow_dispatch' && inputs.confirmation == 'PROMOTE STACKR CATALOGUE') ||
+      github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
       github.event.issue.number == 48 &&
-      github.actor == 'tberridge86' &&
       github.event.comment.body == '/promote-stackr-catalogue-production-2026-08-19')
     runs-on: ubuntu-latest
-    timeout-minutes: 360
-    environment: staging
-    outputs:
-      source_sha: ${{ steps.source.outputs.sha }}
-    env:
-      GH_TOKEN: ${{ github.token }}
-      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
-      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
-      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
+    timeout-minutes: 5
     steps:
-      - name: Announce guarded production promotion
-        run: >-
-          gh api repos/${{ github.repository }}/issues/48/comments
-          --method POST
-          --field body="StackR catalogue production promotion run **${GITHUB_RUN_ID}** started. It will wait for multilingual backfill run **${STACKR_BACKFILL_RUN_ID}**, export only canonical \`catalog\` data from staging, then perform an upsert-only production promotion."
-
-      - name: Resolve and lock the reviewed source branch
-        id: source
-        shell: bash
-        run: |
-          set -euo pipefail
-          sha="$(gh api "repos/${GITHUB_REPOSITORY}/commits/${STACKR_SOURCE_BRANCH}" --jq .sha)"
-          test -n "$sha"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "Locked reviewed source commit $sha"
-
-      - name: Check out the locked reviewed source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ steps.source.outputs.sha }}
-          persist-credentials: false
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install pinned StackR dependencies
-        run: npm ci
-
-      - name: Wait for and require a successful multilingual backfill
-        id: backfill
-        shell: bash
-        run: |
-          set -euo pipefail
-          completed=false
-          for attempt in $(seq 1 240); do
-            status="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STACKR_BACKFILL_RUN_ID}" --jq .status)"
-            conclusion="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${STACKR_BACKFILL_RUN_ID}" --jq '.conclusion // ""')"
-            echo "Backfill ${STACKR_BACKFILL_RUN_ID}: status=$status conclusion=${conclusion:-pending}"
-            if [ "$status" = "completed" ]; then
-              test "$conclusion" = "success"
-              completed=true
-              break
-            fi
-            sleep 60
-          done
-          test "$completed" = "true"
-
-          mkdir -p reports/backfill-evidence
-          gh run download "$STACKR_BACKFILL_RUN_ID" \
-            --repo "$GITHUB_REPOSITORY" \
-            --name "stackr-full-catalogue-metadata-${STACKR_BACKFILL_RUN_ID}" \
-            --dir reports/backfill-evidence
-
-          evidence="$(find reports/backfill-evidence -name full-metadata-backfill.json -type f -print -quit)"
-          test -n "$evidence"
-          echo "evidence=$evidence" >> "$GITHUB_OUTPUT"
-
-      - name: Enforce the full five-language evidence gate
+      - name: Record fail-closed canonical handoff
         env:
-          EVIDENCE_PATH: ${{ steps.backfill.outputs.evidence }}
-        run: |
-          node - <<'NODE'
-          const fs = require('node:fs');
-          const evidence = JSON.parse(fs.readFileSync(process.env.EVIDENCE_PATH, 'utf8'));
-          const requiredLanguages = ['en', 'ja', 'zh-tw', 'zh-cn', 'ko'];
-          const actualLanguages = [...new Set(evidence.languages || [])].sort();
-          const expectedLanguages = [...requiredLanguages].sort();
-          const lanes = Array.isArray(evidence.lanes) ? evidence.lanes : [];
-          const summary = evidence.summary || {};
-          const failures = [];
-          if (evidence.ok !== true) failures.push('backfill report is not successful');
-          if (summary.failures !== 0) failures.push(`reported failures=${summary.failures}`);
-          if (summary.batchesFailed !== 0) failures.push(`failed batches=${summary.batchesFailed}`);
-          if (summary.recordsCovered !== Number(process.env.EXPECTED_PROVIDER_RECORDS)) {
-            failures.push(`recordsCovered=${summary.recordsCovered}, expected=${process.env.EXPECTED_PROVIDER_RECORDS}`);
-          }
-          if (JSON.stringify(actualLanguages) !== JSON.stringify(expectedLanguages)) {
-            failures.push(`languages=${actualLanguages.join(',')}`);
-          }
-          for (const language of requiredLanguages) {
-            const lane = lanes.find((item) => item.source === 'tcgdex' && item.language === language);
-            if (!lane) failures.push(`missing lane ${language}`);
-            else if (lane.status !== 'completed' || lane.batchesFailed !== 0) failures.push(`lane ${language} is not complete`);
-          }
-          if (failures.length) {
-            console.error(JSON.stringify({ ok: false, failures }, null, 2));
-            process.exit(1);
-          }
-          console.log(JSON.stringify({
-            ok: true,
-            version: evidence.version,
-            recordsCovered: summary.recordsCovered,
-            batchesCompleted: summary.batchesCompleted,
-            languages: actualLanguages,
-          }, null, 2));
-          NODE
-
-      - name: Require the canonical staging Railway database context
+          LEGACY_CONFIRMATION: ${{ github.event_name == 'workflow_dispatch' && inputs.confirmation || github.event.comment.body }}
+          LEGACY_EVIDENCE_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.backfill_run_id || '' }}
         shell: bash
         run: |
           set -euo pipefail
-          test -n "$RAILWAY_API_TOKEN"
-          test -n "$RAILWAY_PROJECT_ID"
-          test -n "$RAILWAY_ENVIRONMENT_ID"
-          test -n "$RAILWAY_BACKEND_SERVICE_ID"
-          npx --yes @railway/cli@5.30.1 run \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_BACKEND_SERVICE_ID" \
-            --no-local \
-            node -e '
-              const url = String(process.env.SUPABASE_URL || "");
-              const result = {
-                canonicalStaging: url.includes("lmwfhvexfcoyeuoyrlco"),
-                serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
-              };
-              console.log(JSON.stringify(result));
-              if (!result.canonicalStaging || !result.serviceCredential) process.exit(1);
-            '
+          canonical_url="https://github.com/${GITHUB_REPOSITORY}/actions/workflows/deploy-production.yml"
+          {
+            echo '## Retired catalogue production workflow blocked'
+            echo
+            echo 'This legacy entry point cannot check out code, access production credentials, dispatch another workflow, or mutate production.'
+            echo
+            echo "Use the canonical production deployment workflow: ${canonical_url}"
+            echo
+            echo 'Required catalogue-only settings: `release_scope=catalogue_assets`, `apply_migrations=false`, `publish_mobile_update=false`, `promote_gateway=false`, and `gateway_bootstrap=false`.'
+            echo
+            printf '%s\n' "Legacy confirmation: ${LEGACY_CONFIRMATION:-not supplied}"
+            printf '%s\n' "Legacy evidence run ID: ${LEGACY_EVIDENCE_RUN_ID:-not supplied}"
+            printf '%s\n' "Blocked run: ${GITHUB_RUN_ID}; source SHA: ${GITHUB_SHA}; actor: ${GITHUB_ACTOR}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo '::error title=Retired production workflow::No production action was taken. Use deploy-production.yml with release_scope=catalogue_assets.'
+          exit 1
 
-      - name: Export the canonical catalogue snapshot from staging
+      - name: Record legacy comment handoff
+        if: always() && github.event_name == 'issue_comment'
         env:
-          EVIDENCE_PATH: ${{ steps.backfill.outputs.evidence }}
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf reports/catalogue/production-snapshot
-          npx --yes @railway/cli@5.30.1 run \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_BACKEND_SERVICE_ID" \
-            --no-local \
-            node scripts/catalogue-production-snapshot.mjs export \
-              --directory=reports/catalogue/production-snapshot \
-              "--evidence=$EVIDENCE_PATH"
-
-      - name: Reject secret-bearing snapshot content
-        run: node scripts/deploy/secret-scan.mjs --directory=reports/catalogue/production-snapshot
-
-      - name: Upload the immutable canonical snapshot
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: stackr-production-catalogue-snapshot-${{ github.run_id }}
-          path: reports/catalogue/production-snapshot
-          if-no-files-found: error
-          retention-days: 7
-          compression-level: 9
-
-  promote:
-    needs: snapshot
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
-    environment: production
-    env:
-      GH_TOKEN: ${{ github.token }}
-      RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
-      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
-      RAILWAY_BACKEND_SERVICE_ID: ${{ vars.RAILWAY_BACKEND_SERVICE_ID }}
-    steps:
-      - name: Check out the exact reviewed promotion source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: ${{ needs.snapshot.outputs.source_sha }}
-          persist-credentials: false
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install pinned StackR dependencies
-        run: npm ci
-
-      - name: Download the canonical staging snapshot
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-        with:
-          name: stackr-production-catalogue-snapshot-${{ github.run_id }}
-          path: reports/catalogue/production-snapshot
-
-      - name: Require the canonical production Railway database context
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "$RAILWAY_API_TOKEN"
-          test -n "$RAILWAY_PROJECT_ID"
-          test -n "$RAILWAY_ENVIRONMENT_ID"
-          test -n "$RAILWAY_BACKEND_SERVICE_ID"
-          npx --yes @railway/cli@5.30.1 run \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_BACKEND_SERVICE_ID" \
-            --no-local \
-            node -e '
-              const url = String(process.env.SUPABASE_URL || "");
-              const result = {
-                canonicalProduction: url.includes("oakdbbzdqwurpjnoqhmu"),
-                serviceCredential: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY),
-              };
-              console.log(JSON.stringify(result));
-              if (!result.canonicalProduction || !result.serviceCredential) process.exit(1);
-            '
-
-      - name: Upsert the canonical catalogue into production
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p reports/catalogue/production-promotion
-          npx --yes @railway/cli@5.30.1 run \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_BACKEND_SERVICE_ID" \
-            --no-local \
-            node scripts/catalogue-production-snapshot.mjs import \
-              --directory=reports/catalogue/production-snapshot \
-              --report=reports/catalogue/production-promotion/import-report.json
-
-      - name: Verify production table coverage after promotion
-        shell: bash
-        run: |
-          set -euo pipefail
-          npx --yes @railway/cli@5.30.1 run \
-            --project "$RAILWAY_PROJECT_ID" \
-            --environment "$RAILWAY_ENVIRONMENT_ID" \
-            --service "$RAILWAY_BACKEND_SERVICE_ID" \
-            --no-local \
-            node scripts/catalogue-production-snapshot.mjs verify \
-              --directory=reports/catalogue/production-snapshot \
-              --report=reports/catalogue/production-promotion/verification-report.json
-
-      - name: Upload production promotion evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: stackr-production-catalogue-promotion-${{ github.run_id }}
-          path: reports/catalogue/production-promotion
-          if-no-files-found: warn
-          retention-days: 30
-          compression-level: 9
-
-      - name: Report production promotion result
-        if: always()
-        env:
-          JOB_STATUS: ${{ job.status }}
-        run: >-
-          gh api repos/${{ github.repository }}/issues/48/comments
-          --method POST
-          --field body="StackR catalogue production promotion run **${GITHUB_RUN_ID}** finished with status **${JOB_STATUS}**. The operation was canonical \`catalog\` upsert-only; it did not copy raw ingestion payloads or delete production rows."
+          gh api "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            --method POST \
+            --field body="Legacy catalogue promotion run **${GITHUB_RUN_ID}** was blocked without production access or mutation. Use **Deploy Stackr Production Canary** from \`deploy-production.yml\` with \`release_scope=catalogue_assets\` and all migration/mobile/gateway mutation inputs disabled."

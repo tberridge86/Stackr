@@ -6,7 +6,7 @@ on:
     types: [completed]
 
 permissions:
-  actions: write
+  actions: read
   contents: read
   issues: write
   pull-requests: write
@@ -37,7 +37,7 @@ jobs:
         run: >-
           gh api repos/${{ github.repository }}/issues/48/comments
           --method POST
-          --field body="StackR is normalising and independently validating the five lane artifacts from resumable run **${SOURCE_RUN_ID}** into production-controller evidence run **${GITHUB_RUN_ID}**."
+          --field body="StackR is independently validating the five lane artifacts from resumable run **${SOURCE_RUN_ID}** into evidence-only run **${GITHUB_RUN_ID}**. This workflow cannot dispatch or mutate production."
 
       - name: Download all immutable language lane reports
         shell: bash
@@ -144,7 +144,7 @@ jobs:
           if (!combined.ok) process.exit(1);
           NODE
 
-      - name: Upload the production-controller evidence artifact
+      - name: Upload the normalized catalogue evidence artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: stackr-full-catalogue-metadata-${{ github.run_id }}
@@ -153,18 +153,8 @@ jobs:
           retention-days: 30
           compression-level: 9
 
-      - name: Dispatch guarded staging finalisation and production promotion
-        shell: bash
-        run: |
-          set -euo pipefail
-          gh workflow run promote-catalogue-data-production.yml \
-            --repo "$GITHUB_REPOSITORY" \
-            --ref main \
-            --field confirmation='PROMOTE VERIFIED CATALOGUE TO PRODUCTION' \
-            --field staging_run_id="$GITHUB_RUN_ID"
-
       - name: Record the immutable evidence handoff
         run: >-
           gh api repos/${{ github.repository }}/issues/48/comments
           --method POST
-          --field body="Five-language catalogue evidence from resumable run **${SOURCE_RUN_ID}** passed independent normalisation in accepted run **${GITHUB_RUN_ID}**. The guarded production controller has been dispatched against that exact evidence artifact."
+          --field body="Five-language catalogue evidence from resumable run **${SOURCE_RUN_ID}** passed independent normalisation in accepted run **${GITHUB_RUN_ID}** for release label **${EXPECTED_VERSION}**. No deployment was dispatched. If promotion is approved, manually use the main-branch Deploy Stackr Production Canary workflow from deploy-production.yml with release_scope=catalogue_assets and every migration, mobile, and gateway mutation input disabled."

@@ -15,6 +15,7 @@ import { StackrCardIdentity } from '../../components/StackrCardIdentity';
 import { StackrCardActionIcon } from '../../components/StackrScreen';
 import { useProfile } from '../../components/profile-context';
 import { useTrade } from '../../components/trade-context';
+import { useAppMode } from '../../components/app-mode-context';
 import EditionAwareCardImage from '../../components/EditionAwareCardImage';
 import PokeTraceMarketInsights from '../../components/PokeTraceMarketInsights';
 import { RARITY_SYMBOL_CARD_OVERLAY, RaritySymbol } from '../../components/RaritySymbol';
@@ -24,7 +25,7 @@ import {
   TrustBadge,
 } from '../../components/PremiumUI';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, Stack, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { fetchBinders } from '../../lib/binders';
 import { fetchStackrPrice } from '../../lib/stackrDomainAdapter';
@@ -60,6 +61,7 @@ import {
 } from '../../lib/recognitionShadowModePilot';
 import {
   getScanIntentConfig,
+  isListingScanRequest,
   isListingScanIntent,
   resolveScanIntent,
 } from '../../lib/scanIntent';
@@ -298,7 +300,25 @@ type BinderOption = {
   cover_key: string | null;
 };
 
-export default function ScanResultScreen() {
+export default function ScanResultRoute() {
+  const params = useLocalSearchParams<{
+    intent?: string | string[];
+    mode?: string | string[];
+    flow?: string | string[];
+    type?: string | string[];
+    binderId?: string | string[];
+  }>();
+  const { hydrated, premiumSellerAccess } = useAppMode();
+  const requestedListingMode = isListingScanRequest(params);
+
+  if (requestedListingMode && !hydrated) return null;
+  if (requestedListingMode && !premiumSellerAccess.allowed) {
+    return <Redirect href="/(tabs)/market" />;
+  }
+  return <ScanResultScreen />;
+}
+
+function ScanResultScreen() {
   const { theme } = useTheme();
   const { profile } = useProfile();
   const { isWanted, toggleWishlistCard } = useTrade();

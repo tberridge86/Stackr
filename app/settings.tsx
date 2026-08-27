@@ -14,6 +14,7 @@ import { StackrBackdrop } from '../components/StackrBackdrop';
 import { StackrBackButton } from '../components/StackrBackButton';
 import { StackrPageTitle } from '../components/StackrScreen';
 import { Text } from '../components/Text';
+import { useAppMode } from '../components/app-mode-context';
 import { useTheme } from '../components/theme-context';
 import { supabase } from '../lib/supabase';
 
@@ -23,7 +24,6 @@ const SETTINGS_ICONS = {
   notifications: require('../assets/rev2/03-ui-illustrations/hero-icons/notifications.png'),
   market: require('../assets/rev2/03-ui-illustrations/hero-icons/marketplace.png'),
   seller: require('../assets/rev2/03-ui-illustrations/hero-icons/seller-mode.png'),
-  payments: require('../assets/rev2/03-ui-illustrations/hero-icons/price-builder.png'),
   privacy: require('../assets/rev2/03-ui-illustrations/hero-icons/protect.png'),
   support: require('../assets/rev2/03-ui-illustrations/hero-icons/info.png'),
 } as const;
@@ -35,13 +35,13 @@ const settingsSections: {
   body: string;
   icon: SettingsIconKey;
   items: string[];
+  sellerOnly?: boolean;
 }[] = [
   { title: 'General', icon: 'account', body: 'Account identity and app defaults.', items: ['Email and password', 'Authentication and sessions', 'Profile visibility', 'Account deletion'] },
   { title: 'Appearance', icon: 'appearance', body: 'Display preferences and accessibility.', items: ['Dynamic text', 'Reduced motion', 'Camera and photo permissions'] },
   { title: 'Notifications', icon: 'notifications', body: 'Choose the alerts Stackr can send.', items: ['The Market alerts', 'Trade and offer updates', 'Community updates', 'Price movement alerts'] },
-  { title: 'Marketplace', icon: 'market', body: 'Buying, trading and delivery preferences.', items: ['The Market preferences', 'Trade preferences', 'Delivery addresses', 'Payment methods'] },
-  { title: 'Seller', icon: 'seller', body: 'Operational settings for Seller Mode.', items: ['Seller payout settings', 'Inventory defaults', 'CSV import and export', 'Fulfilment preferences'] },
-  { title: 'Payments', icon: 'payments', body: 'Payment and payout surfaces appear only when live.', items: ['Payment methods', 'Seller payout methods', 'Subscription and premium access'] },
+  { title: 'Marketplace', icon: 'market', body: 'Listing, offer and trade preferences.', items: ['The Market preferences', 'Trade preferences', 'Saved listing preferences'] },
+  { title: 'Seller', icon: 'seller', body: 'Operational settings for card inventory.', items: ['Inventory defaults', 'Scan In and Scan Out defaults', 'CSV import and export'], sellerOnly: true },
   { title: 'Privacy', icon: 'privacy', body: 'Control visibility, data and community safety.', items: ['Binder visibility defaults', 'Blocked users', 'Data export', 'Community safety controls'] },
   { title: 'Legal & Support', icon: 'support', body: 'Help, release notes and legal information.', items: ['Help and support', 'Report a problem', 'Legal information', 'App version'] },
 ];
@@ -60,7 +60,9 @@ function SettingsIcon({ source }: { source: ImageSourcePropType }) {
 export default function SettingsScreen() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { hydrated, premiumSellerAccess } = useAppMode();
   const [loggingOut, setLoggingOut] = useState(false);
+  const showSellerSettings = hydrated && premiumSellerAccess.allowed;
 
   const handleLogout = useCallback(async () => {
     try {
@@ -94,7 +96,7 @@ export default function SettingsScreen() {
           <View style={{ flex: 1 }}>
             <StackrPageTitle title="Settings" accentText="ings" />
             <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 18, fontWeight: '700', marginTop: 2 }}>
-              Account, privacy, marketplace and seller controls.
+              Account, privacy and collector preferences.
             </Text>
           </View>
         </View>
@@ -120,12 +122,14 @@ export default function SettingsScreen() {
               Settings are separated from Profile
             </Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 3 }}>
-              Sensitive marketplace, payout and account controls remain here and only become active when the supporting services are live.
+              {showSellerSettings
+                ? 'Account, marketplace, seller inventory and privacy controls are kept in one place.'
+                : 'Account, marketplace and privacy controls are kept in one place.'}
             </Text>
           </View>
         </View>
 
-        {settingsSections.map((section) => (
+        {settingsSections.filter((section) => !section.sellerOnly || showSellerSettings).map((section) => (
           <View
             key={section.title}
             style={{
