@@ -132,6 +132,7 @@ assert.match(appConfigSource, /allowBackup: sellerTrialMode \? false/);
 assert.match(appConfigSource, /android\.permission\.SYSTEM_ALERT_WINDOW/);
 for (const permission of [
   'android.permission.WAKE_LOCK',
+  'com.android.vending.BILLING',
   'com.google.android.c2dm.permission.RECEIVE',
   'com.sec.android.provider.badge.permission.READ',
   'com.sec.android.provider.badge.permission.WRITE',
@@ -178,6 +179,7 @@ const appLayoutSource = fs.readFileSync('app/_layout.tsx', 'utf8');
 assert.match(appLayoutSource, /void stackrHaptics\.selection\(\)/);
 assert.match(workflowSource, /android\.permission\.CAMERA/);
 assert.match(workflowSource, /android\.permission\.VIBRATE/);
+assert.match(workflowSource, /DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION/);
 assert.match(workflowSource, /android\.permission\.RECORD_AUDIO/);
 assert.match(workflowSource, /expo\.modules\.updates\.ENABLED/);
 assert.match(workflowSource, /sha256sum/);

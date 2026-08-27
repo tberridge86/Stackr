@@ -39,6 +39,7 @@ if (expectUpdatesDisabled) {
   );
   for (const permission of [
     'android.permission.POST_NOTIFICATIONS',
+    'android.permission.READ_APP_BADGE',
     'android.permission.READ_EXTERNAL_STORAGE',
     'android.permission.RECEIVE_BOOT_COMPLETED',
     'android.permission.RECORD_AUDIO',
@@ -46,6 +47,7 @@ if (expectUpdatesDisabled) {
     'android.permission.WAKE_LOCK',
     'android.permission.WRITE_EXTERNAL_STORAGE',
     'com.anddoes.launcher.permission.UPDATE_COUNT',
+    'com.android.vending.BILLING',
     'com.google.android.c2dm.permission.RECEIVE',
     'com.htc.launcher.permission.READ_SETTINGS',
     'com.htc.launcher.permission.UPDATE_SHORTCUT',

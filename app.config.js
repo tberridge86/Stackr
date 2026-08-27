@@ -82,9 +82,10 @@ module.exports = ({ config }) => ({
             'android.permission.RECEIVE_BOOT_COMPLETED',
             // Seller Trial does not register for push notifications or badges.
             // Remove transitive permissions contributed by Firebase Messaging
-            // and ShortcutBadger so the packaged APK stays on the four-item
-            // CAMERA/NETWORK/INTERNET/VIBRATE allowlist.
+            // and ShortcutBadger so the packaged APK stays on the minimal
+            // platform-plus-app-scoped permission allowlist.
             'android.permission.WAKE_LOCK',
+            'com.android.vending.BILLING',
             'com.google.android.c2dm.permission.RECEIVE',
             'com.sec.android.provider.badge.permission.READ',
             'com.sec.android.provider.badge.permission.WRITE',
