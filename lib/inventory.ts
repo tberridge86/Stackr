@@ -8,6 +8,7 @@ import {
   SellerInventoryCommitReconciliationRequiredError,
 } from './sellerBatchCommit';
 import { loadRemoteWithCache } from './sellerRemoteCache';
+import { isSellerTrialModeEnabled } from './sellerTrial';
 
 export { sellerCacheKey } from './sellerCache';
 
@@ -148,6 +149,21 @@ export type SellerInventoryBatchResult = {
 const STORAGE_KEY = 'stackr:inventory-items:v2';
 const SALES_STORAGE_KEY = 'stackr:inventory-sales:v2';
 const MOVEMENTS_STORAGE_KEY = 'stackr:inventory-movements:v2';
+const TRIAL_LEDGER_STORAGE_KEY = 'stackr:seller-trial-ledger:v1';
+let sellerTrialCommitQueue: Promise<void> = Promise.resolve();
+let sellerTrialResetGeneration = 0;
+
+async function withSellerTrialCommitLock<T>(operation: () => Promise<T>): Promise<T> {
+  const previous = sellerTrialCommitQueue;
+  let release!: () => void;
+  sellerTrialCommitQueue = new Promise<void>((resolve) => { release = resolve; });
+  await previous;
+  try {
+    return await operation();
+  } finally {
+    release();
+  }
+}
 
 async function authenticatedUser() {
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -188,6 +204,150 @@ function parseCachedArray<T>(raw: string | null): T[] {
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
+  }
+}
+
+type SellerTrialLedger = {
+  schemaVersion: 1;
+  appVariant: 'staging';
+  userId: string;
+  updatedAt: string;
+  latestRequestId: string | null;
+  receipts: SellerTrialReceipt[];
+  items: InventoryItem[];
+  movements: InventoryMovement[];
+  sales: InventorySaleTransaction[];
+};
+
+type SellerTrialReceipt = {
+  requestId: string;
+  fingerprint: string;
+  inventoryItemCount: number;
+  movementCount: number;
+  saleRecorded: boolean;
+};
+
+function emptySellerTrialLedger(userId: string): SellerTrialLedger {
+  return {
+    schemaVersion: 1,
+    appVariant: 'staging',
+    userId,
+    updatedAt: new Date(0).toISOString(),
+    latestRequestId: null,
+    receipts: [],
+    items: [],
+    movements: [],
+    sales: [],
+  };
+}
+
+function parseSellerTrialLedger(raw: string | null, userId: string): SellerTrialLedger {
+  if (!raw) return emptySellerTrialLedger(userId);
+  try {
+    const parsed = JSON.parse(raw) as Partial<SellerTrialLedger>;
+    if (
+      parsed.schemaVersion !== 1
+      || parsed.appVariant !== 'staging'
+      || parsed.userId !== userId
+      || !Array.isArray(parsed.items)
+      || !Array.isArray(parsed.movements)
+      || !Array.isArray(parsed.sales)
+      || !Array.isArray(parsed.receipts)
+      || !parsed.receipts.every((receipt) => (
+        typeof receipt === 'object'
+        && receipt != null
+        && typeof receipt.requestId === 'string'
+        && typeof receipt.fingerprint === 'string'
+      ))
+    ) {
+      return emptySellerTrialLedger(userId);
+    }
+    return parsed as SellerTrialLedger;
+  } catch {
+    return emptySellerTrialLedger(userId);
+  }
+}
+
+function sellerTrialPayloadFingerprint(input: {
+  expectedItems: InventoryItem[];
+  items: InventoryItem[];
+  movements?: InventoryMovementDraft[];
+  sale?: InventorySaleTransaction | null;
+}) {
+  const serialized = JSON.stringify({
+    expectedItems: comparableTrialInventory(input.expectedItems),
+    items: comparableTrialInventory(input.items),
+    movements: input.movements ?? [],
+    sale: input.sale ?? null,
+  });
+  let hash = 2166136261;
+  for (let index = 0; index < serialized.length; index += 1) {
+    hash ^= serialized.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
+function sellerTrialLedgerKey(userId: string) {
+  return sellerCacheKey(TRIAL_LEDGER_STORAGE_KEY, userId);
+}
+
+async function loadSellerTrialLedger(userId: string) {
+  return parseSellerTrialLedger(
+    await AsyncStorage.getItem(sellerTrialLedgerKey(userId)),
+    userId,
+  );
+}
+
+async function currentSellerTrialUser() {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  if (!session?.user) throw new Error('Sign in before using Seller Trial.');
+  return session.user;
+}
+
+async function currentSellerTrialIdentityMatches(expectedUserId: string) {
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  return session?.user?.id === expectedUserId;
+}
+
+function comparableTrialInventory(items: InventoryItem[]) {
+  return inventoryPayload(items, false)
+    .slice()
+    .sort((left, right) => left.id.localeCompare(right.id));
+}
+
+function assertValidSellerTrialCommit({
+  ledger,
+  expectedItems,
+  nextItems,
+  movements,
+}: {
+  ledger: SellerTrialLedger;
+  expectedItems: InventoryItem[];
+  nextItems: InventoryItem[];
+  movements: InventoryMovement[];
+}) {
+  if (
+    JSON.stringify(comparableTrialInventory(ledger.items))
+    !== JSON.stringify(comparableTrialInventory(expectedItems))
+  ) {
+    throw new Error('Seller Trial inventory changed. Refresh the trial ledger before saving again.');
+  }
+
+  const itemIds = new Set<string>();
+  for (const item of nextItems) {
+    if (!item.id || itemIds.has(item.id)) throw new Error('Seller Trial inventory contains a duplicate item.');
+    itemIds.add(item.id);
+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+      throw new Error('Seller Trial inventory quantities must be positive whole numbers.');
+    }
+  }
+  for (const movement of movements) {
+    if (!Number.isInteger(movement.quantity) || movement.quantity <= 0) {
+      throw new Error('Seller Trial movement quantities must be positive whole numbers.');
+    }
   }
 }
 
@@ -268,6 +428,11 @@ type SellerInventoryLoadOptions = {
 };
 
 export async function loadInventoryItems(options: SellerInventoryLoadOptions = {}): Promise<InventoryItem[]> {
+  if (isSellerTrialModeEnabled()) {
+    const user = await currentSellerTrialUser();
+    return (await loadSellerTrialLedger(user.id)).items;
+  }
+
   const { user, cached, key: storageKey } = await currentUserAndCache<InventoryItem>(STORAGE_KEY);
   if (!user || !storageKey) return [];
 
@@ -325,6 +490,11 @@ export async function loadVerifiedSellerInventorySnapshot(): Promise<{
   userId: string;
   items: InventoryItem[];
 }> {
+  if (isSellerTrialModeEnabled()) {
+    const user = await currentSellerTrialUser();
+    return { userId: user.id, items: (await loadSellerTrialLedger(user.id)).items };
+  }
+
   const [{ data: sessionData, error: sessionError }, { data: { user }, error: userError }] = await Promise.all([
     supabase.auth.getSession(),
     supabase.auth.getUser(),
@@ -371,21 +541,125 @@ export async function commitSellerInventoryBatch(input: {
   binderDeltas?: SellerBinderDelta[];
   requestId?: string;
 }) {
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError) throw userError;
+  const sellerTrialMode = isSellerTrialModeEnabled();
+  const trialResetGeneration = sellerTrialMode ? sellerTrialResetGeneration : null;
+  const user = sellerTrialMode
+    ? await currentSellerTrialUser()
+    : await authenticatedUser();
   if (!user) throw new Error('Sign in before changing seller inventory.');
   if (input.expectedUserId && user.id !== input.expectedUserId) {
     throw new SellerInventoryCommitAccountChangedError();
   }
-  assertPremiumSellerWriteAccess(user);
 
   const requestToken = input.requestId ?? createBatchId('request');
   const requestId = sellerBatchRequestId(user.id, requestToken);
+  const trialFingerprint = sellerTrialMode ? sellerTrialPayloadFingerprint(input) : null;
   const movements = (input.movements ?? []).map((movement): InventoryMovement => ({
     ...movement,
     id: movement.id ?? createBatchId('movement'),
     created_at: movement.created_at ?? new Date().toISOString(),
   }));
+
+  if (sellerTrialMode) {
+    return withSellerTrialCommitLock(async () => {
+    if (trialResetGeneration !== sellerTrialResetGeneration) {
+      throw new Error('Seller Trial data was cleared while this save was starting. Scan the item again.');
+    }
+    if (input.binderDeltas?.length) {
+      throw new Error('Binder changes are disabled in Seller Trial. Use the device-only trial inventory.');
+    }
+    if (!await currentSellerTrialIdentityMatches(user.id)) {
+      throw new SellerInventoryCommitAccountChangedError();
+    }
+
+    const existingLedger = await loadSellerTrialLedger(user.id);
+    const existingReceipt = existingLedger.receipts.find((receipt) => receipt.requestId === requestId);
+    if (existingReceipt) {
+      if (existingReceipt.fingerprint !== trialFingerprint) {
+        throw new Error('Seller Trial request ID was reused with different inventory data. Refresh before retrying.');
+      }
+      const replayedResult: SellerInventoryBatchResult = {
+        requestId,
+        inventoryItemCount: existingReceipt.inventoryItemCount,
+        movementCount: existingReceipt.movementCount,
+        binderDeltaCount: 0,
+        saleRecorded: existingReceipt.saleRecorded,
+        replayed: true,
+      };
+      return { result: replayedResult, movements: [], items: existingLedger.items, userId: user.id };
+    }
+
+    assertValidSellerTrialCommit({
+      ledger: existingLedger,
+      expectedItems: input.expectedItems,
+      nextItems: input.items,
+      movements,
+    });
+
+    const committedItems = input.items.map((item) => ({
+      ...item,
+      persisted_card_snapshot: item.card,
+    }));
+    const movementIds = new Set(movements.map((movement) => movement.id));
+    const nextMovements = [
+      ...movements,
+      ...existingLedger.movements.filter((movement) => !movementIds.has(movement.id)),
+    ].slice(0, 100);
+    const nextSales = input.sale
+      ? [input.sale, ...existingLedger.sales.filter((sale) => sale.id !== input.sale?.id)]
+      : existingLedger.sales;
+    const nextLedger: SellerTrialLedger = {
+      schemaVersion: 1,
+      appVariant: 'staging',
+      userId: user.id,
+      updatedAt: new Date().toISOString(),
+      latestRequestId: requestId,
+      receipts: [{
+        requestId,
+        fingerprint: trialFingerprint!,
+        inventoryItemCount: committedItems.length,
+        movementCount: movements.length,
+        saleRecorded: Boolean(input.sale),
+      }, ...existingLedger.receipts.filter((receipt) => receipt.requestId !== requestId)].slice(0, 100),
+      items: committedItems,
+      movements: nextMovements,
+      sales: nextSales,
+    };
+
+    // A single envelope prevents inventory, history and sale records from
+    // drifting apart if the app is interrupted during a trial save.
+    await AsyncStorage.setItem(sellerTrialLedgerKey(user.id), JSON.stringify(nextLedger));
+    const readBackLedger = await loadSellerTrialLedger(user.id);
+    const readBackReceipt = readBackLedger.receipts.find((receipt) => receipt.requestId === requestId);
+    if (
+      readBackLedger.latestRequestId !== requestId
+      || readBackReceipt?.fingerprint !== trialFingerprint
+    ) {
+      throw new SellerInventoryCommitReconciliationRequiredError(
+        requestId,
+        'committed_identity_unverified',
+      );
+    }
+    if (!await currentSellerTrialIdentityMatches(user.id)) {
+      throw new SellerInventoryCommitReconciliationRequiredError(
+        requestId,
+        'committed_identity_unverified',
+      );
+    }
+
+    const result: SellerInventoryBatchResult = {
+      requestId,
+      inventoryItemCount: committedItems.length,
+      movementCount: movements.length,
+      binderDeltaCount: 0,
+      saleRecorded: Boolean(input.sale),
+      replayed: false,
+    };
+    return { result, movements, items: committedItems, userId: user.id };
+    });
+  }
+
+  assertPremiumSellerWriteAccess(user);
 
   const rpcInput = {
     p_request_id: requestId,
@@ -479,12 +753,43 @@ export async function commitSellerInventoryBatch(input: {
 }
 
 export async function loadInventorySales(): Promise<InventorySaleTransaction[]> {
+  if (isSellerTrialModeEnabled()) {
+    const user = await currentSellerTrialUser();
+    return (await loadSellerTrialLedger(user.id)).sales;
+  }
   const { user, cached } = await currentUserAndCache<InventorySaleTransaction>(SALES_STORAGE_KEY);
   if (!user) return [];
   return cached;
 }
 
+export async function clearSellerTrialLedger() {
+  if (!isSellerTrialModeEnabled()) {
+    throw new Error('Seller Trial data can only be cleared from the staging trial app.');
+  }
+  // Increment before the first await so a reset wins over an earlier save that
+  // is still resolving its local session and has not entered the commit queue.
+  sellerTrialResetGeneration += 1;
+  return withSellerTrialCommitLock(async () => {
+    const user = await currentSellerTrialUser();
+    if (!await currentSellerTrialIdentityMatches(user.id)) {
+      throw new Error('Seller Trial account changed before local data could be cleared.');
+    }
+    const storageKey = sellerTrialLedgerKey(user.id);
+    await AsyncStorage.removeItem(storageKey);
+    if (await AsyncStorage.getItem(storageKey) !== null) {
+      throw new Error('Seller Trial data could not be verified as deleted.');
+    }
+    if (!await currentSellerTrialIdentityMatches(user.id)) {
+      throw new Error('Seller Trial account changed while local data was being cleared.');
+    }
+  });
+}
+
 export async function loadInventoryMovements(options: SellerInventoryLoadOptions = {}): Promise<InventoryMovement[]> {
+  if (isSellerTrialModeEnabled()) {
+    const user = await currentSellerTrialUser();
+    return (await loadSellerTrialLedger(user.id)).movements;
+  }
   const { user, cached, key: movementsStorageKey } = await currentUserAndCache<InventoryMovement>(MOVEMENTS_STORAGE_KEY);
   if (!user || !movementsStorageKey) return [];
 

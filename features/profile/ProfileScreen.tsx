@@ -49,6 +49,8 @@ import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { stackrQueryClient, stackrQueryKeys, stackrQueryTiming } from '../../lib/stackrQuery';
 import { supabase } from '../../lib/supabase';
+import { loadInventoryItems, loadInventorySales } from '../../lib/inventory';
+import { isSellerTrialModeEnabled } from '../../lib/sellerTrial';
 
 const IDENTITY_ONBOARDING_KEY = 'stackr:identity-onboarding:v2';
 const USD_TO_GBP = 0.79;
@@ -668,6 +670,7 @@ function AchievementBadge({
 function SellerModule({
   enabled,
   available,
+  trialMode,
   unavailableCopy,
   stats,
   onSetup,
@@ -677,6 +680,7 @@ function SellerModule({
 }: {
   enabled: boolean;
   available: boolean;
+  trialMode: boolean;
   unavailableCopy: string;
   stats: ProfileStats;
   onSetup: () => void;
@@ -685,7 +689,7 @@ function SellerModule({
   onExit: () => void;
 }) {
   const { theme } = useTheme();
-  const dataUnavailable = enabled && [stats.sellerListings, stats.sellerSales, stats.sellerInventory].some((value) => value == null);
+  const dataUnavailable = !trialMode && enabled && [stats.sellerListings, stats.sellerSales, stats.sellerInventory].some((value) => value == null);
 
   return (
     <View
@@ -721,13 +725,13 @@ function SellerModule({
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900' }}>
-            Premium Seller Mode
+            {trialMode ? 'Seller Trial' : 'Premium Seller Mode'}
           </Text>
           <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, fontWeight: '700', marginTop: 2 }}>
             {enabled
-              ? 'Professional stock workspace active'
+              ? trialMode ? 'Device-only stock workspace active' : 'Professional stock workspace active'
               : available
-                ? 'Open the professional inventory and sales workspace.'
+                ? trialMode ? 'Open the device-only inventory trial.' : 'Open the professional inventory and sales workspace.'
                 : unavailableCopy}
           </Text>
         </View>
@@ -736,17 +740,19 @@ function SellerModule({
       {enabled && (
         <>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginTop: 15 }}>
-            <StatChip icon="market" label="Live" value={stats.sellerListings == null ? '--' : stats.sellerListings} />
+            <StatChip icon="market" label={trialMode ? 'Listings' : 'Live'} value={trialMode ? 0 : stats.sellerListings == null ? '--' : stats.sellerListings} />
             <StatChip icon="edit" label="Drafts" value={stats.sellerDrafts} />
-            <StatChip icon="trade" label="Sales" value={stats.sellerSales == null ? '--' : stats.sellerSales} />
+            <StatChip icon="trade" label={trialMode ? 'Stock-outs' : 'Sales'} value={stats.sellerSales == null ? '--' : stats.sellerSales} />
             <StatChip icon="cards" label="Inventory" value={stats.sellerInventory == null ? '--' : stats.sellerInventory} />
           </View>
           <View style={{ marginTop: 12, borderRadius: 18, backgroundColor: '#F7F3FF', borderWidth: 1, borderColor: '#E8E1FF', padding: 12 }}>
             <Text style={{ color: theme.colors.text, fontSize: 12.5, lineHeight: 16, fontWeight: '900' }}>
-              Premium Seller Mode active
+              {trialMode ? 'Seller Trial active' : 'Premium Seller Mode active'}
             </Text>
             <Text style={{ color: theme.colors.textSoft, fontSize: 11.5, lineHeight: 16, fontWeight: '700', marginTop: 4 }}>
-              {dataUnavailable
+              {trialMode
+                ? 'Inventory and stock-out notes stay on this device. No listing, order, payment, shipping label or payout is created.'
+                : dataUnavailable
                 ? 'Some seller statistics are waiting on backend data. No payout or fulfilment totals are estimated here.'
                 : stats.sellerDrafts
                   ? 'Live listings are published in The Market. Draft listings can be resumed from My Listings.'
@@ -758,12 +764,12 @@ function SellerModule({
               onPress={onOpen}
               activeOpacity={0.84}
               accessibilityRole="button"
-              accessibilityLabel="Open Premium Seller Mode"
+              accessibilityLabel={trialMode ? 'Open Seller Trial' : 'Open Premium Seller Mode'}
               style={{ flex: 1, minHeight: 44, borderRadius: 16, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 16, fontWeight: '900' }}>Open Premium Seller Mode</Text>
+              <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 16, fontWeight: '900' }}>{trialMode ? 'Open Seller Trial' : 'Open Premium Seller Mode'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            {!trialMode ? <TouchableOpacity
               onPress={onSettings}
               activeOpacity={0.84}
               accessibilityRole="button"
@@ -771,7 +777,7 @@ function SellerModule({
               style={{ flex: 1, minHeight: 44, borderRadius: 16, backgroundColor: '#F7F3FF', borderWidth: 1, borderColor: '#E8E1FF', alignItems: 'center', justifyContent: 'center' }}
             >
               <Text style={{ color: theme.colors.primary, fontSize: 13, lineHeight: 16, fontWeight: '900' }}>The Market</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> : null}
           </View>
           <TouchableOpacity
             onPress={onExit}
@@ -789,11 +795,11 @@ function SellerModule({
           onPress={onSetup}
           activeOpacity={0.84}
           accessibilityRole="button"
-          accessibilityLabel="Learn about Premium Seller Mode"
+          accessibilityLabel={trialMode ? 'Open Seller Trial' : 'Learn about Premium Seller Mode'}
           style={{ marginTop: 14, minHeight: 46, borderRadius: 17, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center' }}
         >
           <Text style={{ color: '#FFFFFF', fontSize: 13, lineHeight: 16, fontWeight: '900' }}>
-            {available ? 'Open Premium Seller Mode' : 'Learn about Premium Seller Mode'}
+            {trialMode ? 'Open Seller Trial' : available ? 'Open Premium Seller Mode' : 'Learn about Premium Seller Mode'}
           </Text>
         </TouchableOpacity>
       ) : null}
@@ -1192,6 +1198,7 @@ function IdentityFlowModal({
 export default function ProfileScreen() {
   const { theme } = useTheme();
   const { mode, premiumSellerAccess, setMode } = useAppMode();
+  const sellerTrialMode = isSellerTrialModeEnabled();
   const { profile, loading, refreshProfile, updateProfile } = useProfile();
   const { unlocks, refreshAchievements } = useAchievements();
 
@@ -1382,6 +1389,12 @@ export default function ProfileScreen() {
   }, []);
 
   const fetchProfileStatsSnapshot = useCallback(async (userId: string): Promise<ProfileStatsSnapshot> => {
+    const inventoryPromise = sellerTrialMode
+      ? loadInventoryItems().then((items) => ({ data: items, error: null }))
+      : supabase.from('seller_inventory_items').select('quantity').eq('user_id', userId);
+    const salesPromise = sellerTrialMode
+      ? loadInventorySales().then((sales) => ({ count: sales.length, error: null }))
+      : supabase.from('seller_sale_transactions').select('id', { count: 'exact', head: true }).eq('user_id', userId);
     const [
       collectionSummary,
       tradesResult,
@@ -1395,8 +1408,8 @@ export default function ProfileScreen() {
       supabase.from('trade_offers').select('status').or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
       supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('read', false),
       supabase.from('user_card_flags').select('id, listing_status', { count: 'exact' }).eq('user_id', userId),
-      supabase.from('seller_inventory_items').select('quantity').eq('user_id', userId),
-      supabase.from('seller_sale_transactions').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      inventoryPromise,
+      salesPromise,
       readCreateListingDraftSummary().catch(() => null),
     ]);
 
@@ -1423,7 +1436,7 @@ export default function ProfileScreen() {
       },
       unreadCount: notificationsResult.count ?? 0,
     };
-  }, []);
+  }, [sellerTrialMode]);
 
   const loadStats = useCallback(async (forceRefresh = false) => {
     const shouldForceRefresh = forceRefresh === true;
@@ -1788,6 +1801,7 @@ export default function ProfileScreen() {
           <SellerModule
             enabled={mode === 'seller' && premiumSellerAccess.allowed}
             available={premiumSellerAccess.allowed}
+            trialMode={sellerTrialMode}
             unavailableCopy={premiumSellerAccess.reason === 'disabled'
               ? 'Coming after the controlled stock and sales reliability release.'
               : 'Premium access is required for the professional inventory workspace.'}

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, RefreshControl, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { StackrPageTitle } from '../../components/StackrScreen';
@@ -13,6 +13,7 @@ import { useTheme } from '../../components/theme-context';
 import {
   InventoryItem,
   InventoryMovement,
+  clearSellerTrialLedger,
   loadInventoryItems,
   loadInventoryMovements,
 } from '../../lib/inventory';
@@ -20,6 +21,11 @@ import { ROUTES } from '../../lib/routes';
 import { SELLER_WORKSPACE_ITEMS, getSellerWorkspaceSummary, type SellerCapabilityStatus } from '../../lib/sellerWorkspace';
 import { stackrTabContentPadding } from '../../lib/stackrSizing';
 import { PremiumSellerGate } from '../../components/PremiumSellerGate';
+import {
+  isSellerTrialModeEnabled,
+  SELLER_TRIAL_BODY,
+  SELLER_TRIAL_TITLE,
+} from '../../lib/sellerTrial';
 
 const money = (value: number) => `£${value.toFixed(2)}`;
 
@@ -32,6 +38,7 @@ const statusCopy: Record<SellerCapabilityStatus, { label: string; icon: keyof ty
 function SellerDashboardContent() {
   const { theme } = useTheme();
   const { setMode } = useAppMode();
+  const sellerTrialMode = isSellerTrialModeEnabled();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [movements, setMovements] = useState<InventoryMovement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,12 +98,43 @@ function SellerDashboardContent() {
     return { stock, value, awaitingAction };
   }, [items, movements]);
 
-  const workspaceSummary = getSellerWorkspaceSummary();
+  const workspaceItems = useMemo(() => sellerTrialMode
+    ? SELLER_WORKSPACE_ITEMS.map((item) => item.key === 'listings'
+        ? {
+            ...item,
+            description: 'Marketplace publishing is outside this device-only trial.',
+            status: 'backend_required' as const,
+            route: undefined,
+            backendDependency: 'Listing creation is disabled throughout this Seller Trial build. It creates no listings, offers or orders.',
+          }
+        : item)
+    : SELLER_WORKSPACE_ITEMS,
+  [sellerTrialMode]);
+  const workspaceSummary = getSellerWorkspaceSummary(workspaceItems);
 
   const exitSellerMode = useCallback(async () => {
     await setMode('collector');
     router.replace(ROUTES.home as any);
   }, [setMode]);
+
+  const deleteTrialData = useCallback(() => {
+    Alert.alert(
+      'Delete Seller Trial data?',
+      'This removes the device-only trial inventory, movement history and local stock-out notes for this account. It cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete trial data',
+          style: 'destructive',
+          onPress: () => {
+            void clearSellerTrialLedger()
+              .then(() => load(true))
+              .catch(() => setDashboardErrors(['Seller Trial data could not be cleared.']));
+          },
+        },
+      ],
+    );
+  }, [load]);
 
   if (loading) {
     return (
@@ -111,7 +149,7 @@ function SellerDashboardContent() {
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: theme.colors.bg }}>
       <StackrBackdrop />
       <FlatList
-        data={SELLER_WORKSPACE_ITEMS}
+        data={workspaceItems}
         keyExtractor={(item) => item.key}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={theme.colors.primary} />}
         contentContainerStyle={{ padding: 16, paddingBottom: stackrTabContentPadding.standard, gap: 10 }}
@@ -121,7 +159,9 @@ function SellerDashboardContent() {
               <View style={{ flex: 1, minWidth: 0 }}>
                 <StackrPageTitle title="Seller Dashboard" accentText="Dashboard" />
                 <Text style={{ color: theme.colors.textSoft, fontSize: 13, lineHeight: 19, fontWeight: '700', marginTop: 4 }}>
-                  Operational tools for stock intake, stock removal, listings and fulfilment.
+                  {sellerTrialMode
+                    ? 'Device-only tools for trial stock intake and stock-out.'
+                    : 'Operational tools for stock intake, stock removal, listings and fulfilment.'}
                 </Text>
               </View>
               <TouchableOpacity
@@ -150,13 +190,30 @@ function SellerDashboardContent() {
               ))}
             </View>
             <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 16, fontWeight: '700' }}>
-              Activity totals cover up to the 50 most recent movements.
+              Activity totals cover up to the {sellerTrialMode ? '100 device-only trial' : '50 most recent'} movements.
             </Text>
 
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <StackrButton label="Scan In" icon="archive-outline" variant="primary" onPress={() => router.push(ROUTES.scanSellerIn as any)} style={{ flex: 1 }} />
               <StackrButton label="Scan Out" icon="exit-outline" variant="secondary" onPress={() => router.push(ROUTES.scanSellerOut as any)} style={{ flex: 1 }} />
             </View>
+
+            {sellerTrialMode ? (
+              <View style={{ gap: 8 }}>
+                <StackrStateBlock
+                  tone="info"
+                  icon="flask-outline"
+                  title={SELLER_TRIAL_TITLE}
+                  body={SELLER_TRIAL_BODY}
+                />
+                <StackrButton
+                  label="Delete trial data"
+                  icon="trash-outline"
+                  variant="destructive"
+                  onPress={deleteTrialData}
+                />
+              </View>
+            ) : null}
 
             {dashboardErrors.length ? (
               <StackrErrorState
@@ -172,8 +229,12 @@ function SellerDashboardContent() {
             <StackrStateBlock
               tone={workspaceSummary.backendRequired > 0 ? 'info' : 'success'}
               icon="business-outline"
-              title={`${workspaceSummary.available} live tools, ${workspaceSummary.partial} partial, ${workspaceSummary.backendRequired} waiting on backend`}
-              body="Stackr only marks seller features as available when the service boundary exists. Fulfilment, payouts and disputes remain explicit backend dependencies."
+              title={sellerTrialMode
+                ? `${workspaceSummary.available} trial tools, ${workspaceSummary.backendRequired} intentionally unavailable`
+                : `${workspaceSummary.available} live tools, ${workspaceSummary.partial} partial, ${workspaceSummary.backendRequired} waiting on backend`}
+              body={sellerTrialMode
+                ? 'Only local inventory, Scan In and Scan Out are enabled. Commerce and fulfilment remain outside this trial.'
+                : 'Stackr only marks seller features as available when the service boundary exists. Fulfilment, payouts and disputes remain explicit backend dependencies.'}
             />
           </View>
         }

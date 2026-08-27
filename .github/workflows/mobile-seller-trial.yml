@@ -1,0 +1,124 @@
+name: Stackr Android Seller Trial
+
+on:
+  push:
+    branches:
+      - codex/mobile-release-candidate-*
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stackr-mobile-seller-trial-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-seller-trial-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      APP_VARIANT: staging
+      EXPO_PUBLIC_APP_VARIANT: staging
+      EXPO_PUBLIC_PRICE_API_URL: https://stackr-api-gateway-staging.berridge14.workers.dev
+      EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: "false"
+      EXPO_PUBLIC_SELLER_TRIAL_MODE: "true"
+      EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: "true"
+      EXPO_PUBLIC_CARD_LOCALISATION_SAMPLE_FPS: "2"
+      EXPO_PUBLIC_STACKR_API_ENABLED: "false"
+      EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED: "false"
+      EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED: "false"
+      EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY: "false"
+      EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK: "false"
+      EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK: "false"
+      EXPO_PUBLIC_SCAN_FEEDBACK_ENABLED: "false"
+      EXPO_PUBLIC_RECOGNITION_FEEDBACK_ENABLED: "false"
+      SHIPPO_ALLOW_LABEL_PURCHASES: "false"
+      EXPECTED_ANDROID_PACKAGE: com.tommo86.Stackr.staging
+      EXPECT_EXPO_UPDATES_DISABLED: "true"
+      EXPO_PUBLIC_SUPABASE_URL: https://lmwfhvexfcoyeuoyrlco.supabase.co
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_5qRlv9bSq5vaz3zgDSpwIA_JayaHJGU
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
+      - name: Install JavaScript dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify mobile code and guarded trial boundaries
+        run: |
+          npm run typecheck
+          npm run test:premium-seller-access
+          npm run test:mobile-trial-release
+          npm run test:seller-trial-ledger
+          npm run test:haptics-runtime
+          npm run test:seller-trial-telemetry
+          npm run test:scanner-pipeline
+      - name: Verify embedded Seller Trial flags
+        run: |
+          mkdir -p /tmp/stackr-seller-trial-assets
+          npx expo export:embed --platform android --dev false --minify false --reset-cache --max-workers 2 --bundle-output /tmp/stackr-seller-trial.js --assets-dest /tmp/stackr-seller-trial-assets
+          node scripts/verify-seller-trial-bundle.mjs /tmp/stackr-seller-trial.js
+      - name: Generate staging Android project
+        run: npx expo prebuild --clean --platform android --no-install
+      - name: Verify generated camera permissions
+        run: node scripts/verify-generated-android-camera.mjs
+      - name: Allocate memory for the release dex merge
+        run: >-
+          sed -i
+          's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m/'
+          android/gradle.properties
+      - name: Build installable Seller Trial APK
+        working-directory: android
+        run: >-
+          ./gradlew :app:assembleRelease
+          --no-daemon
+          --max-workers=2
+          -PreactNativeArchitectures=armeabi-v7a,arm64-v8a
+      - name: Verify packaged permissions and checksum
+        shell: bash
+        run: |
+          aapt_path="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          apksigner_path="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)"
+          test -x "$aapt_path"
+          test -x "$apksigner_path"
+          "$aapt_path" dump permissions android/app/build/outputs/apk/release/app-release.apk > android/app/build/outputs/apk/release/permissions.txt
+          "$aapt_path" dump xmltree android/app/build/outputs/apk/release/app-release.apk AndroidManifest.xml > android/app/build/outputs/apk/release/packaged-manifest.txt
+          "$aapt_path" dump badging android/app/build/outputs/apk/release/app-release.apk > android/app/build/outputs/apk/release/badging.txt
+          "$apksigner_path" verify --verbose --print-certs android/app/build/outputs/apk/release/app-release.apk > android/app/build/outputs/apk/release/signing-certificate.txt
+          grep -q "android.permission.CAMERA" android/app/build/outputs/apk/release/permissions.txt
+          grep -q "android.permission.VIBRATE" android/app/build/outputs/apk/release/permissions.txt
+          ! grep -q "android.permission.RECORD_AUDIO" android/app/build/outputs/apk/release/permissions.txt
+          grep -A 3 "expo.modules.updates.ENABLED" android/app/build/outputs/apk/release/packaged-manifest.txt | grep -Eq '0x0|="false"'
+          sed -n "s/.*name='\([^']*\)'.*/\1/p" android/app/build/outputs/apk/release/permissions.txt | sort -u > android/app/build/outputs/apk/release/permission-names.txt
+          printf '%s\n' android.permission.ACCESS_NETWORK_STATE android.permission.CAMERA android.permission.INTERNET android.permission.VIBRATE | sort -u > android/app/build/outputs/apk/release/allowed-permissions.txt
+          comm -23 android/app/build/outputs/apk/release/permission-names.txt android/app/build/outputs/apk/release/allowed-permissions.txt > android/app/build/outputs/apk/release/unexpected-permissions.txt
+          test ! -s android/app/build/outputs/apk/release/unexpected-permissions.txt
+          grep -q "package: name='com.tommo86.Stackr.staging' versionCode='9' versionName='1.0.4'" android/app/build/outputs/apk/release/badging.txt
+          grep -q "stackr-staging" android/app/build/outputs/apk/release/packaged-manifest.txt
+          grep -q "CN=Android Debug" android/app/build/outputs/apk/release/signing-certificate.txt
+          sha256sum android/app/build/outputs/apk/release/app-release.apk > android/app/build/outputs/apk/release/SHA256SUMS.txt
+          git rev-parse HEAD > android/app/build/outputs/apk/release/COMMIT_SHA.txt
+      - name: Upload Seller Trial APK and provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: stackr-android-seller-trial-${{ github.sha }}
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/release/SHA256SUMS.txt
+            android/app/build/outputs/apk/release/COMMIT_SHA.txt
+            android/app/build/outputs/apk/release/permissions.txt
+            android/app/build/outputs/apk/release/packaged-manifest.txt
+            android/app/build/outputs/apk/release/permission-names.txt
+            android/app/build/outputs/apk/release/allowed-permissions.txt
+            android/app/build/outputs/apk/release/badging.txt
+            android/app/build/outputs/apk/release/signing-certificate.txt
+          if-no-files-found: error
+          retention-days: 30

@@ -1,3 +1,5 @@
+import { isSellerTrialModeEnabled } from './sellerTrial';
+
 export const PREMIUM_SELLER_ENTITLEMENT_KEY = 'stackr_premium_seller';
 
 export type PremiumSellerAccess = {
@@ -8,11 +10,15 @@ export type PremiumSellerAccess = {
 };
 
 type UserLike = {
+  id?: string;
   app_metadata?: Record<string, unknown> | null;
 } | null | undefined;
 
 type PremiumSellerEnvironment = {
+  APP_VARIANT?: string;
+  EXPO_PUBLIC_APP_VARIANT?: string;
   EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED?: string;
+  EXPO_PUBLIC_SELLER_TRIAL_MODE?: string;
 };
 
 export function isPremiumSellerModeEnabled(
@@ -34,7 +40,8 @@ export function getPremiumSellerAccess(
 ): PremiumSellerAccess {
   const enabled = isPremiumSellerModeEnabled(env);
   const entitled = hasPremiumSellerEntitlement(user);
-  const allowed = enabled && entitled;
+  const trialAllowed = Boolean(user?.id) && isSellerTrialModeEnabled(env);
+  const allowed = (enabled && entitled) || trialAllowed;
 
   return {
     enabled,
@@ -63,7 +70,9 @@ export function assertPremiumSellerWriteAccess(
   user: UserLike,
   env?: PremiumSellerEnvironment,
 ) {
-  if (!getPremiumSellerAccess(user, env).allowed) {
+  // A staging Seller Trial may open the UI, but it must never cross the live
+  // seller RPC boundary. Only the server-recognised entitlement unlocks it.
+  if (!isPremiumSellerModeEnabled(env) || !hasPremiumSellerEntitlement(user)) {
     throw new Error('Premium Seller Mode is not available for this account.');
   }
 }

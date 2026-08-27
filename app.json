@@ -2,7 +2,7 @@
   "expo": {
     "name": "Stackr",
     "slug": "Stackr",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -84,7 +84,7 @@
       },
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "resize",
-      "versionCode": 8,
+      "versionCode": 9,
       "package": "com.tommo86.Stackr"
     },
     "web": {

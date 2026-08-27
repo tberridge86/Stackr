@@ -38,6 +38,7 @@ import { StackrBackdrop } from '../../components/StackrBackdrop';
 import { getPokemonCardImageUrls } from '../../lib/pokemonTcg';
 import { stackrBrand } from '../../lib/stackrBrand';
 import { stackrIcons } from '../../lib/stackrIcons';
+import { isSellerTrialModeEnabled } from '../../lib/sellerTrial';
 import { getStackrHomeWordmarkWidth, stackrLogoSizes, stackrTabContentPadding } from '../../lib/stackrSizing';
 import {
   ContinueBinderCard,
@@ -604,6 +605,7 @@ const enrichActivityItemsWithCardImages = async (items: HomeActivityItem[]): Pro
 export default function HubScreen() {
   const { theme, isDark } = useTheme();
   const { hasChosenMode, hydrated: appModeHydrated, premiumSellerAccess, setMode } = useAppMode();
+  const sellerTrialMode = isSellerTrialModeEnabled();
   const { profile: myProfile } = useProfile();
   const { width: screenWidth } = useWindowDimensions();
   const homeScreenPadding = screenWidth < 360
@@ -2172,17 +2174,23 @@ export default function HubScreen() {
                 </View>
               </View>
 
-              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', textAlign: 'center' }}>Premium Seller Mode</Text>
+              <Text style={{ color: theme.colors.text, fontSize: 24, fontWeight: '900', textAlign: 'center' }}>{sellerTrialMode ? 'Seller Trial' : 'Premium Seller Mode'}</Text>
               <Text style={{ color: theme.colors.textSoft, fontSize: 14, fontWeight: '700', textAlign: 'center', marginTop: 8, lineHeight: 20 }}>
-                Keep using Stackr to collect, scan, trade and create ordinary listings. Premium Seller Mode adds a separate professional workspace for repeated stock and sales operations.
+                {sellerTrialMode
+                  ? 'Try stock intake and stock-out in a device-only staging workspace. Trial data has no sync or backup and creates no listing, order, payment, shipment or payout.'
+                  : 'Keep using Stackr to collect, scan, trade and create ordinary listings. Premium Seller Mode adds a separate professional workspace for repeated stock and sales operations.'}
               </Text>
             </View>
 
-            {[
+            {(sellerTrialMode ? [
+              { icon: 'scan-outline' as const, text: 'Use the camera or in-flow manual search to add and remove trial stock' },
+              { icon: 'phone-portrait-outline' as const, text: 'Keep the trial ledger on this signed-in device only' },
+              { icon: 'shield-checkmark-outline' as const, text: 'Leave production inventory, binders and commerce untouched' },
+            ] : [
               { icon: 'scan-outline' as const, text: 'Scan sold cards to remove them from your collection' },
               { icon: 'bar-chart-outline' as const, text: 'Keep inventory accurate on the go' },
               { icon: 'storefront-outline' as const, text: 'Built for conventions, events and higher-volume sellers' },
-            ].map((item) => (
+            ]).map((item) => (
               <View key={item.text} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                 <View style={{ width: 38, height: 38, borderRadius: 12, backgroundColor: `${theme.colors.primary}12`, alignItems: 'center', justifyContent: 'center' }}>
                   <Ionicons name={item.icon} size={20} color={theme.colors.primary} />
@@ -2194,7 +2202,9 @@ export default function HubScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: `${theme.colors.primary}12`, borderRadius: 14, padding: 12, marginTop: 2, marginBottom: 12 }}>
               <Ionicons name="sparkles-outline" size={18} color={theme.colors.primary} />
               <Text style={{ flex: 1, color: theme.colors.text, fontSize: 12, fontWeight: '800' }}>
-                Collecting and ordinary Market listings remain available outside Premium Seller Mode.
+                {sellerTrialMode
+                  ? 'Deleting the trial data or uninstalling the staging app removes this ledger.'
+                  : 'Collecting and ordinary Market listings remain available outside Premium Seller Mode.'}
               </Text>
             </View>
 
@@ -2207,7 +2217,7 @@ export default function HubScreen() {
               style={{ backgroundColor: theme.colors.primary, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginBottom: 10 }}
               activeOpacity={0.86}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>Open Premium Seller Mode</Text>
+              <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '900' }}>{sellerTrialMode ? 'Start Seller Trial' : 'Open Premium Seller Mode'}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity

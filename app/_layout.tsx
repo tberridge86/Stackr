@@ -33,6 +33,8 @@ import { COLLECTOR_TABS, SELLER_TABS } from '../lib/routes';
 import { StackrCardActionIcon } from '../components/StackrScreen';
 import { stackrTabBarSizes } from '../lib/stackrSizing';
 import { installRuntimeFetchDiagnostics } from '../lib/runtimeFetchDiagnostics';
+import { isSellerTrialModeEnabled } from '../lib/sellerTrial';
+import { stackrHaptics } from '../lib/haptics';
 
 installRuntimeFetchDiagnostics();
 void SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -112,7 +114,11 @@ const PersistentTabBar = memo(function PersistentTabBar() {
   const { mode } = useAppMode();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-  const tabs = mode === 'seller' ? SELLER_TABS : COLLECTOR_TABS;
+  const tabs = mode === 'seller'
+    ? isSellerTrialModeEnabled()
+      ? SELLER_TABS.filter((tab) => tab.key !== 'listings')
+      : SELLER_TABS
+    : COLLECTOR_TABS;
 
   const tabBarHeight = Platform.OS === 'android'
     ? TAB_BAR_HEIGHT_ANDROID + insets.bottom
@@ -205,7 +211,10 @@ const PersistentTabBar = memo(function PersistentTabBar() {
         return (
           <TouchableOpacity
             key={tab.key}
-            onPress={() => router.push(tab.route as any)}
+            onPress={() => {
+              void stackrHaptics.selection();
+              router.push(tab.route as any);
+            }}
             activeOpacity={0.82}
             accessibilityRole="tab"
             accessibilityLabel={tab.label}
@@ -402,7 +411,7 @@ function AppNavigation() {
                   <Stack.Screen name="admin/recognition-feedback" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="admin/social-content" options={{ headerShown: false, title: '' }} />
                   <Stack.Screen name="camera" options={legacyRedirectScreenOptions} />
-                  <Stack.Screen name="scan/card-camera" options={{ title: '' }} />
+                  <Stack.Screen name="scan/card-camera" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="binder-legacy" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="collection" options={legacyRedirectScreenOptions} />
                   <Stack.Screen name="marketplace" options={legacyRedirectScreenOptions} />

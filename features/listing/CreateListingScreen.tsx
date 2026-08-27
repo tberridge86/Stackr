@@ -136,6 +136,7 @@ import { stackrIcons } from '../../lib/stackrIcons';
 import { supabase } from '../../lib/supabase';
 import { gradeCardWithXimilar, type XimilarGradeImage } from '../../lib/ximilar';
 import { fetchStackrPriceSnapshots } from '../../lib/stackrDomainAdapter';
+import { isSellerTrialModeEnabled } from '../../lib/sellerTrial';
 
 type FlowStep =
   | 'category'
@@ -770,6 +771,7 @@ async function fetchCertificationDuplicateReview(
 }
 
 export default function CreateListingScreen() {
+  const sellerTrialMode = isSellerTrialModeEnabled();
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ cardId?: string; setId?: string; type?: string; productName?: string; listingAction?: string; q?: string }>();
@@ -2472,6 +2474,13 @@ export default function CreateListingScreen() {
   };
 
   const publishListing = async (skipDuplicateWarning = false, skipCertificationWarning = false) => {
+    if (sellerTrialMode) {
+      Alert.alert(
+        'Listings are unavailable in Seller Trial',
+        'No listing, offer or order was created. Return to Seller Trial Inventory to test local stock workflows.',
+      );
+      return;
+    }
     const missing = missingPublicationRequirements;
     if (missing.length) {
       Alert.alert('Listing not ready', missing[0].label);

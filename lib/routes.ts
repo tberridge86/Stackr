@@ -6,8 +6,10 @@ export const ROUTES = {
   scan: '/scan' as Href,
   scanCollection: { pathname: '/scan', params: { mode: 'market' } } as Href,
   scanBinder: '/scan' as Href,
-  scanSellerIn: { pathname: '/scan', params: { mode: 'inventory', flow: 'stock_in' } } as Href,
-  scanSellerOut: { pathname: '/scan', params: { mode: 'inventory', flow: 'stock_out' } } as Href,
+  // Seller scans must enter through Inventory so the account-scoped callback
+  // is installed before the camera returns a recognised or manually selected card.
+  scanSellerIn: { pathname: '/(tabs)/inventory', params: { startScan: 'stock_in' } } as Href,
+  scanSellerOut: { pathname: '/(tabs)/inventory', params: { startScan: 'stock_out' } } as Href,
   market: '/(tabs)/market' as Href,
   search: '/(tabs)/search' as Href,
   community: '/(tabs)/community' as Href,

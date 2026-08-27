@@ -15,6 +15,7 @@ import {
   Alert,
   AppState,
   Image,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -25,6 +26,8 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../components/Text';
+import { getCameraPermissionAction } from '../../lib/cameraAccess';
+import { isSellerTrialModeEnabled } from '../../lib/sellerTrial';
 import { useTheme } from '../../components/theme-context';
 import { identifyCardsDetailed, type IdentifiedCard, type ScanIdentifyDiagnostics } from '../../lib/recognition/orchestrator';
 import { getRecognitionFeatureFlags } from '../../lib/recognition/featureFlags';
@@ -193,8 +196,18 @@ const OCR_REGION_SPECS: TargetedOcrRegionSpec[] = [
 function getLocalisationSampleIntervalMs() {
   const fps = Number.isFinite(CARD_LOCALISATION_SAMPLE_FPS)
     ? Math.max(1, Math.min(8, CARD_LOCALISATION_SAMPLE_FPS))
-    : 4;
+    : 2;
   return Math.max(160, Math.round(1000 / fps));
+}
+
+async function deleteTemporaryCameraCacheFile(uri: string | null | undefined) {
+  const cacheDirectory = FileSystem.cacheDirectory;
+  if (!uri || !cacheDirectory || !uri.startsWith(cacheDirectory)) return;
+  try {
+    await FileSystem.deleteAsync(uri, { idempotent: true });
+  } catch {
+    // Temporary cache cleanup must not interrupt the active camera session.
+  }
 }
 
 type DiagnosticLogPayload = Record<string, unknown>;
@@ -1184,6 +1197,7 @@ export default function ScanScreen() {
   const autoCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoReadyFrames = useRef(0);
   const autoCheckBusy = useRef(false);
+  const autoFrameCheckFailureCount = useRef(0);
   const lastAutoCaptureAt = useRef(0);
   const frameAssessmentRef = useRef<FrameAssessment | null>(null);
   const localisationRef = useRef<CardLocalisationResult | null>(null);
@@ -1200,9 +1214,10 @@ export default function ScanScreen() {
   const sweepAwaitingClearRef = useRef(false);
   renderCount.current += 1;
 
-  const [permission, requestPermission] = useCameraPermissions();
+  const [permission, requestPermission, refreshPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<CameraType>('back');
   const [cameraReady, setCameraReady] = useState(false);
+  const [cameraRestartKey, setCameraRestartKey] = useState(0);
   const [mountError, setMountError] = useState<string | null>(null);
   const [permissionRequesting, setPermissionRequesting] = useState(false);
   const [scannerState, setScannerStateValue] = useState<ScannerCaptureState>('INITIALISING');
@@ -1212,7 +1227,16 @@ export default function ScanScreen() {
   const returnReason = getParamValue(params.reason);
   const requestedScanMode = getParamValue(params.scanMode);
   const returnedFromRejectedMatches = returnReason === 'none_correct';
-  const initialScanMode: ScanMode = requestedScanMode === 'manual' || returnedFromRejectedMatches ? 'manual' : 'auto';
+  const sellerTrialInventoryScan = isSellerTrialModeEnabled()
+    && isPremiumSellerInventoryScan({
+      mode: getParamValue(params.mode),
+      flow: getParamValue(params.flow),
+    });
+  const initialScanMode: ScanMode = sellerTrialInventoryScan
+    || requestedScanMode === 'manual'
+    || returnedFromRejectedMatches
+    ? 'manual'
+    : 'auto';
   const initialQuery = getParamValue(params.q) ?? '';
   const [scanMode, setScanMode] = useState<ScanMode>(initialScanMode);
   const [binderPageLayout, setBinderPageLayout] = useState<BinderPageLayout>(DEFAULT_BINDER_PAGE_LAYOUT);
@@ -1364,6 +1388,7 @@ export default function ScanScreen() {
 
   const permissionStatus = permission?.status ?? 'loading';
   const permissionGranted = Boolean(permission?.granted);
+  const permissionAction = getCameraPermissionAction(permission);
   const shouldRenderCamera = permissionGranted;
   const captureBusy = scannerState === 'CAPTURING'
     || scannerState === 'CAPTURED'
@@ -1395,7 +1420,7 @@ export default function ScanScreen() {
     && !isSweepScan
     && isPremiumSellerInventoryScan({ mode, flow });
   const localQuickScanExperienceEnabled = recognitionFeatureFlags.localRecognitionEnabled && !isBinderPageScan;
-  const inlineManualSearchEnabled = (localQuickScanExperienceEnabled || isSweepScan) && !isInventoryFlow;
+  const inlineManualSearchEnabled = localQuickScanExperienceEnabled || isSweepScan || isInventoryFlow;
   const sweepCaptureUx = useMemo(() => deriveSweepCaptureUxState({
     capturedCopies: sweepSummary.totalCopies,
     captureBusy: scanControlsLocked,
@@ -1657,6 +1682,15 @@ export default function ScanScreen() {
     setCameraReady(false);
 
     try {
+      if (permissionAction === 'open-settings') {
+        logCameraDiagnostic('opening app settings for camera permission', {
+          routeInstanceId: routeInstanceId.current,
+          status: permission?.status,
+          canAskAgain: permission?.canAskAgain,
+        });
+        await Linking.openSettings();
+        return;
+      }
       const result = await requestPermission();
       logCameraDiagnostic('permission requested', {
         routeInstanceId: routeInstanceId.current,
@@ -1665,10 +1699,23 @@ export default function ScanScreen() {
         canAskAgain: result.canAskAgain,
         expires: result.expires,
       });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logCameraDiagnostic('camera permission action failed', {
+        routeInstanceId: routeInstanceId.current,
+        action: permissionAction,
+        error: message,
+      });
+      Alert.alert(
+        'Camera access could not be changed',
+        permissionAction === 'open-settings'
+          ? 'Open your device settings and allow Camera for Stackr, then return to the scanner.'
+          : 'Please try again. If camera access is blocked, open Stackr in your device settings.',
+      );
     } finally {
       setPermissionRequesting(false);
     }
-  }, [requestPermission]);
+  }, [permission?.canAskAgain, permission?.status, permissionAction, requestPermission]);
 
   const handleCameraReady = useCallback(() => {
     setCameraReady(true);
@@ -1697,6 +1744,35 @@ export default function ScanScreen() {
       rawError: error,
     });
   }, [facing, setScannerState]);
+
+  const handleRetryCamera = useCallback(() => {
+    cameraInitialisationMsRef.current = null;
+    setCameraReady(false);
+    setMountError(null);
+    setTorchEnabled(false);
+    setCameraRestartKey((current) => current + 1);
+    setScannerState({ type: 'camera_paused' });
+    setScanMessage('Restarting camera...');
+    logCameraDiagnostic('camera retry requested', {
+      routeInstanceId: routeInstanceId.current,
+      facing,
+    });
+  }, [facing, setScannerState]);
+
+  useEffect(() => {
+    if (!shouldRenderCamera || !appActive || cameraReady || mountError) return;
+    const timeout = setTimeout(() => {
+      const message = 'Camera did not start in time. Retry the preview or check camera access in Settings.';
+      setMountError(message);
+      setScannerState({ type: 'error' });
+      setScanMessage('Camera preview did not start. Tap Retry camera.');
+      logCameraDiagnostic('camera start timeout', {
+        routeInstanceId: routeInstanceId.current,
+        facing,
+      });
+    }, 12_000);
+    return () => clearTimeout(timeout);
+  }, [appActive, cameraReady, facing, mountError, setScannerState, shouldRenderCamera]);
 
   const switchCamera = useCallback(() => {
     setCameraReady(false);
@@ -2040,19 +2116,33 @@ export default function ScanScreen() {
         return;
       }
 
-      if (!wasActive && isActive && permissionGranted && cameraReady && !mountError && !navigatingAwayRef.current) {
-        setScannerState({ type: 'search' });
-        setScanMessage(scanMode === 'auto'
-          ? isSweepScan
-            ? 'Sweep a card into the frame and hold briefly.'
-            : 'Centre one card. Keep other cards in the dim area.'
-          : 'Manual mode. Centre one card in the window, then tap scan.'
-        );
+      if (!wasActive && isActive) {
+        void refreshPermission().then((result) => {
+          logCameraDiagnostic('camera permission refreshed after settings or background', {
+            routeInstanceId: routeInstanceId.current,
+            status: result.status,
+            granted: result.granted,
+            canAskAgain: result.canAskAgain,
+          });
+          if (!result.granted || navigatingAwayRef.current) return;
+          cameraInitialisationMsRef.current = null;
+          setCameraReady(false);
+          setMountError(null);
+          setTorchEnabled(false);
+          setCameraRestartKey((current) => current + 1);
+          setScannerState({ type: 'camera_paused' });
+          setScanMessage('Restarting camera...');
+        }).catch((error) => {
+          logCameraDiagnostic('camera permission refresh failed', {
+            routeInstanceId: routeInstanceId.current,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
       }
     });
 
     return () => subscription.remove();
-  }, [cameraReady, isSweepScan, mountError, permissionGranted, scanMode, setScannerState, stopAutoScanner]);
+  }, [refreshPermission, setScannerState, stopAutoScanner]);
 
   const closeScanner = useCallback(() => {
     if (!guardScanNavigation()) return;
@@ -2158,7 +2248,7 @@ export default function ScanScreen() {
     }
   }, [cameraReady, captureBusy, guardScanNavigation, mountError, permissionGranted, scanMode, setScannerState]);
 
-  const handleInlineManualSearchSelect = useCallback((card: ScanResultCard) => {
+  const handleInlineManualSearchSelect = useCallback(async (card: ScanResultCard) => {
     if (!guardScanNavigation()) return;
     setLastQuery(`${card.name} ${card.set_name} ${card.number}`.trim());
     if (isSweepScan) {
@@ -2172,6 +2262,16 @@ export default function ScanScreen() {
       setAcceptedPreviewUri(null);
       setScannerState({ type: 'search' });
       setScanMessage(`${getSweepScanSummary(result.session).totalCopies} captured. Ready for the next card.`);
+      return;
+    }
+    if (isInventoryFlow) {
+      setInlineManualSearchOpen(false);
+      setInlineManualSearchResults([]);
+      await scanStore.triggerCallback('', card);
+      if (!scanContinuationActive()) return;
+      navigatingAwayRef.current = true;
+      stopAutoScanner();
+      router.back();
       return;
     }
     navigatingAwayRef.current = true;
@@ -2189,7 +2289,7 @@ export default function ScanScreen() {
         q: `${card.name} ${card.set_name} ${card.number}`.trim(),
       },
     });
-  }, [binderId, flow, guardScanNavigation, isSweepScan, mode, scanIntent, scanIntentConfig.itemType, setScannerState, stopAutoScanner]);
+  }, [binderId, flow, guardScanNavigation, isInventoryFlow, isSweepScan, mode, scanContinuationActive, scanIntent, scanIntentConfig.itemType, setScannerState, stopAutoScanner]);
 
   useEffect(() => {
     if (!inlineManualSearchOpen) return;
@@ -3645,6 +3745,28 @@ export default function ScanScreen() {
       if (!scanContinuationActive()) return;
       const resolvedCard = cards[0] ?? identified[0] ?? null;
 
+      if (isInventoryFlow && !resolvedCard) {
+        saveDiagnostics('no_match', ['inventory-no-resolved-card']);
+        setScannerState({ type: 'error' });
+        setScanMessage('I could not identify this one. Try again or search manually.');
+        Alert.alert(
+          'Could not identify card',
+          'No inventory change was made. Try another scan or search manually.',
+          [
+            {
+              text: 'Try again',
+              style: 'cancel',
+              onPress: () => {
+                setAcceptedPreviewUri(null);
+                setScannerState({ type: 'search' });
+              },
+            },
+            { text: 'Search manually', onPress: openManualSearch },
+          ],
+        );
+        return;
+      }
+
       if (isInventoryFlow) {
         saveDiagnostics('inventory_callback');
         await scanStore.triggerCallback(base64Images[0] ?? '', resolvedCard);
@@ -3941,18 +4063,23 @@ export default function ScanScreen() {
     if (!camera) return;
 
     autoCheckBusy.current = true;
+    let samplePhotoUri: string | null = null;
+    let samplePreviewUri: string | null = null;
+    let samplePromotedToCapture = false;
     try {
       const photo = await camera.takePictureAsync({
         quality: 0.46,
         base64: false,
         exif: false,
       });
+      samplePhotoUri = photo.uri;
       if (!scanContinuationActive()) return;
       const capturedFrame = createScanCapturedFrame(photo);
       const preview = await preparePhotoForFrameCheck(photo, capturedFrame, CARD_LOCALISATION_ENABLED
         ? { paddingRatio: 0, width: LOCALISATION_FRAME_CHECK_WIDTH, compress: 0.48 }
         : undefined
       );
+      samplePreviewUri = preview.uri;
       if (!scanContinuationActive()) return;
       const previousLocalisation = localisationRef.current;
       const rawLocalisation = CARD_LOCALISATION_ENABLED && preview.base64
@@ -3985,6 +4112,7 @@ export default function ScanScreen() {
         ? frameAssessmentFromScanQuality(quality)
         : assessFrameImage(preview.base64 ?? '');
       applyFrameAssessment(assessment);
+      autoFrameCheckFailureCount.current = 0;
 
       logCameraDiagnostic('auto frame assessment', {
         routeInstanceId: routeInstanceId.current,
@@ -4069,6 +4197,7 @@ export default function ScanScreen() {
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         if (!scanContinuationActive()) return;
         setScanMessage('Card locked. Scanning...');
+        samplePromotedToCapture = true;
         await handleCapture('auto', undefined, photo);
         return;
       }
@@ -4098,10 +4227,12 @@ export default function ScanScreen() {
       setScanMessage('Card locked. Scanning...');
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
       if (!scanContinuationActive()) return;
+      samplePromotedToCapture = true;
       await handleCapture('auto', photo);
     } catch (error) {
       if (!scanContinuationActive()) return;
       autoReadyFrames.current = 0;
+      autoFrameCheckFailureCount.current += 1;
       applyLocalisationResult(null);
       applyScanQualityResult(null);
       applyFrameAssessment(buildFrameAssessment({
@@ -4110,15 +4241,27 @@ export default function ScanScreen() {
           : 'Centre one card. Keep other cards in the dim area.',
         reason: 'frame-check-failed',
       }));
-      setScanMessage(isSweepScan
-        ? 'Sweep a card into the frame and hold briefly.'
-        : 'Centre one card. Keep other cards in the dim area.'
-      );
+      if (autoFrameCheckFailureCount.current >= 3) {
+        setScanMode('manual');
+        setScannerStateDirect('SEARCHING');
+        setScanMessage('Auto scan paused after repeated camera frame errors. Use Scan card or retry the camera.');
+      } else {
+        setScanMessage(isSweepScan
+          ? 'Sweep a card into the frame and hold briefly.'
+          : 'Centre one card. Keep other cards in the dim area.'
+        );
+      }
       logCameraDiagnostic('auto frame check failed', {
         routeInstanceId: routeInstanceId.current,
         error: error instanceof Error ? error.message : String(error),
       });
     } finally {
+      if (!samplePromotedToCapture) {
+        await Promise.all(
+          [...new Set([samplePhotoUri, samplePreviewUri].filter((uri): uri is string => Boolean(uri)))]
+            .map((uri) => deleteTemporaryCameraCacheFile(uri))
+        );
+      }
       autoCheckBusy.current = false;
     }
   }, [
@@ -4222,7 +4365,7 @@ export default function ScanScreen() {
 
       {shouldRenderCamera ? (
         <CameraView
-          key={facing}
+          key={`${facing}-${cameraRestartKey}`}
           ref={cameraRef}
           style={StyleSheet.absoluteFill}
           facing={facing}
@@ -4340,7 +4483,8 @@ export default function ScanScreen() {
               style={[styles.iconButton, (!permissionGranted || facing !== 'back') && styles.disabledButton]}
               hitSlop={12}
               accessibilityRole="button"
-              accessibilityLabel="Toggle torch"
+              accessibilityLabel={torchEnabled ? 'Turn torch off' : 'Turn torch on'}
+              accessibilityState={{ disabled: !permissionGranted || facing !== 'back', checked: torchEnabled }}
             >
               <Ionicons name={torchEnabled ? 'flash' : 'flash-outline'} size={22} color="#FFFFFF" />
             </TouchableOpacity>
@@ -4393,7 +4537,13 @@ export default function ScanScreen() {
         ) : null}
 
         {acceptedPreviewUri && (scannerState === 'CAPTURED' || scannerState === 'IDENTIFYING' || scannerState === 'CONFIRMING') ? (
-          <View pointerEvents="none" style={styles.acceptedPreviewWrap}>
+          <View
+            pointerEvents="none"
+            accessible
+            accessibilityLiveRegion="polite"
+            accessibilityLabel={scannerState === 'IDENTIFYING' ? 'Card captured. Identifying this card.' : 'Card captured and ready for confirmation.'}
+            style={styles.acceptedPreviewWrap}
+          >
             <Text style={styles.acceptedPreviewLabel}>
               {scannerState === 'IDENTIFYING' ? 'Identifying this card' : 'Captured crop'}
             </Text>
@@ -4402,31 +4552,59 @@ export default function ScanScreen() {
         ) : null}
 
         {!permissionGranted ? (
-          <View style={styles.permissionCard}>
+          <View
+            accessible
+            accessibilityRole="alert"
+            accessibilityLiveRegion="polite"
+            style={styles.permissionCard}
+          >
             <Ionicons name="camera-outline" size={30} color={theme.colors.primary} />
             <Text style={styles.permissionTitle}>Camera access needed</Text>
             <Text style={styles.permissionBody}>
-              Stackr needs camera permission to scan cards.
+              {permissionAction === 'open-settings'
+                ? 'Camera access is blocked. Open Stackr settings, allow Camera, then return here.'
+                : permissionAction === 'loading'
+                  ? 'Checking camera access...'
+                  : 'Stackr needs camera permission to scan cards.'}
             </Text>
-            <Pressable
-              onPress={handleRequestPermission}
-              disabled={permissionRequesting}
-              style={[styles.permissionButton, permissionRequesting && styles.disabledButton]}
-              accessibilityRole="button"
-              accessibilityLabel="Enable camera access"
-            >
-              <Text style={styles.permissionButtonText}>
-                {permissionRequesting ? 'Requesting...' : 'Enable camera'}
-              </Text>
-            </Pressable>
+            {permissionAction === 'loading' ? (
+              <ActivityIndicator color={theme.colors.primary} style={{ marginTop: 14 }} />
+            ) : (
+              <Pressable
+                onPress={handleRequestPermission}
+                disabled={permissionRequesting}
+                style={[styles.permissionButton, permissionRequesting && styles.disabledButton]}
+                accessibilityRole="button"
+                accessibilityLabel={permissionAction === 'open-settings' ? 'Open camera settings' : 'Enable camera access'}
+              >
+                <Text style={styles.permissionButtonText}>
+                  {permissionRequesting
+                    ? permissionAction === 'open-settings' ? 'Opening settings...' : 'Requesting...'
+                    : permissionAction === 'open-settings' ? 'Open Settings' : 'Enable camera'}
+                </Text>
+              </Pressable>
+            )}
             <Text style={styles.permissionStatus}>Status: {permissionStatus}</Text>
           </View>
         ) : null}
 
         {mountError ? (
-          <View style={styles.errorCard}>
+          <View
+            accessible
+            accessibilityRole="alert"
+            accessibilityLiveRegion="assertive"
+            style={styles.errorCard}
+          >
             <Text style={styles.errorTitle}>Camera issue</Text>
             <Text style={styles.errorBody}>{mountError}</Text>
+            <Pressable
+              onPress={handleRetryCamera}
+              style={styles.errorRetryButton}
+              accessibilityRole="button"
+              accessibilityLabel="Retry camera preview"
+            >
+              <Text style={styles.errorRetryButtonText}>Retry camera</Text>
+            </Pressable>
           </View>
         ) : null}
 
@@ -4576,17 +4754,17 @@ export default function ScanScreen() {
             <View style={styles.modeToggle}>
               <TouchableOpacity
                 onPress={() => setScanModePreference('auto')}
-                disabled={scanControlsLocked}
+                disabled={scanControlsLocked || sellerTrialInventoryScan}
                 activeOpacity={0.82}
                 style={[
                   styles.modeSegment,
                   scanMode === 'auto' && styles.modeSegmentActive,
-                  scanControlsLocked && styles.disabledButton,
+                  (scanControlsLocked || sellerTrialInventoryScan) && styles.disabledButton,
                   MOBILE_FLOW_RENDERED_CONTROL_STYLE_LAYERS.sweepCapture.scanModeTab[1],
                 ]}
                 accessibilityRole="button"
-                accessibilityState={{ selected: scanMode === 'auto', disabled: scanControlsLocked }}
-                accessibilityLabel="Use auto scan"
+                accessibilityState={{ selected: scanMode === 'auto', disabled: scanControlsLocked || sellerTrialInventoryScan }}
+                accessibilityLabel={sellerTrialInventoryScan ? 'Auto scan unavailable in Seller Trial' : 'Use auto scan'}
               >
                 <Ionicons name="sparkles-outline" size={17} color={scanMode === 'auto' ? '#FFFFFF' : '#DDD6FE'} />
                 <Text
@@ -4595,7 +4773,7 @@ export default function ScanScreen() {
                   adjustsFontSizeToFit
                   minimumFontScale={0.78}
                 >
-                  Auto scan
+                  {sellerTrialInventoryScan ? 'Auto later' : 'Auto scan'}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -4973,6 +5151,22 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     fontWeight: '700',
     marginTop: 4,
+  },
+  errorRetryButton: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    marginTop: 10,
+    borderRadius: 13,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorRetryButtonText: {
+    color: '#7F1D1D',
+    fontSize: 13,
+    lineHeight: 17,
+    fontWeight: '900',
   },
   inlineManualSearchPanel: {
     position: 'absolute',

@@ -1,7 +1,7 @@
 {
   "name": "Stackr-native",
   "main": "expo-router/entry",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "start": "expo start",
     "build:web": "expo export --platform web --output-dir dist",
@@ -31,7 +31,11 @@
     "test:pricing-v2": "tsx scripts/test-pricing-v2.ts",
     "test:ebay-sold-import": "node scripts/test-ebay-sold-import.mjs",
     "test:seller-stock-out-routing": "tsx scripts/test-seller-stock-out-routing.ts",
-    "test:premium-seller-access": "tsx scripts/test-premium-seller-access.ts",
+    "test:premium-seller-access": "node --import tsx scripts/test-premium-seller-access.ts",
+    "test:mobile-trial-release": "node --import tsx scripts/test-mobile-trial-release.ts",
+    "test:seller-trial-ledger": "node --import tsx scripts/test-seller-trial-ledger.ts",
+    "test:haptics-runtime": "node --import tsx scripts/test-haptics-runtime.ts",
+    "test:seller-trial-telemetry": "node --import tsx scripts/test-seller-trial-telemetry.ts",
     "sync-market-products-tcgcsv": "tsx scripts/sync-market-products-tcgcsv.ts",
     "sync-japanese-catalogue": "tsx scripts/catalogue-ingest.ts run-language --source=tcgdex --language=ja --target=staging",
     "sync-tcgdex-english": "tsx scripts/catalogue-ingest.ts run-language --source=tcgdex --language=en --target=staging",

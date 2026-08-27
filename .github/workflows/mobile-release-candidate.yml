@@ -1,9 +1,6 @@
 name: Stackr Internal Android Release Candidate
 
 on:
-  push:
-    branches:
-      - codex/mobile-release-candidate-*
   workflow_dispatch:
 
 permissions:
@@ -22,7 +19,9 @@ jobs:
       EXPO_PUBLIC_APP_VARIANT: production
       EXPO_PUBLIC_PRICE_API_URL: https://pocketvault-production.up.railway.app
       EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: "false"
+      EXPO_PUBLIC_CARD_LOCALISATION_SAMPLE_FPS: "2"
       EXPO_PUBLIC_SCAN_PROVIDER: local-ai
+      EXPECTED_ANDROID_PACKAGE: com.tommo86.Stackr
       EXPO_PUBLIC_SUPABASE_URL: https://oakdbbzdqwurpjnoqhmu.supabase.co
       EXPO_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_utiXk-8YPG57MWlrYdWgvg_7xaufYYt
     steps:
@@ -39,8 +38,18 @@ jobs:
       - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407
       - name: Install JavaScript dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify mobile code and release boundaries
+        run: |
+          npm run typecheck
+          npm run test:premium-seller-access
+          npm run test:mobile-trial-release
+          npm run test:seller-trial-ledger
+          npm run test:haptics-runtime
+          npm run test:scanner-pipeline
       - name: Generate production Android project
         run: npx expo prebuild --clean --platform android --no-install
+      - name: Verify generated camera permissions
+        run: node scripts/verify-generated-android-camera.mjs
       - name: Allocate memory for the release dex merge
         run: >-
           sed -i
@@ -53,10 +62,25 @@ jobs:
           --no-daemon
           --max-workers=2
           -PreactNativeArchitectures=armeabi-v7a,arm64-v8a
-      - name: Upload internal APK
+      - name: Verify packaged permissions and checksum
+        shell: bash
+        run: |
+          aapt_path="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -1)"
+          test -x "$aapt_path"
+          "$aapt_path" dump permissions android/app/build/outputs/apk/release/app-release.apk > android/app/build/outputs/apk/release/permissions.txt
+          grep -q "android.permission.CAMERA" android/app/build/outputs/apk/release/permissions.txt
+          grep -q "android.permission.VIBRATE" android/app/build/outputs/apk/release/permissions.txt
+          ! grep -q "android.permission.RECORD_AUDIO" android/app/build/outputs/apk/release/permissions.txt
+          sha256sum android/app/build/outputs/apk/release/app-release.apk > android/app/build/outputs/apk/release/SHA256SUMS.txt
+          git rev-parse HEAD > android/app/build/outputs/apk/release/COMMIT_SHA.txt
+      - name: Upload internal APK and provenance
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: stackr-android-release-candidate-${{ github.sha }}
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/release/SHA256SUMS.txt
+            android/app/build/outputs/apk/release/COMMIT_SHA.txt
+            android/app/build/outputs/apk/release/permissions.txt
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30

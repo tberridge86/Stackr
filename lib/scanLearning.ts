@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from './supabase';
 import { getScannerClientContext } from './scannerClientContext';
+import { isSellerTrialModeEnabled } from './sellerTrial';
 
 export type ScanLearningEventType =
   | 'attempt'
@@ -210,6 +211,10 @@ export async function logScanLearningEvent(input: ScanLearningInput) {
   // Tactile confirmation belongs to the local user action and must not depend
   // on authentication, connectivity or the analytics insert succeeding.
   playScanLearningHaptic(input.eventType);
+
+  // Seller Trial is deliberately free of scanner telemetry writes and offline
+  // telemetry queues. Only the account-scoped trial inventory ledger persists.
+  if (isSellerTrialModeEnabled()) return;
 
   let payload: ReturnType<typeof buildPayload> | null = buildPayload(input, null);
 

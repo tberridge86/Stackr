@@ -7,6 +7,7 @@ import {
   hasPremiumSellerEntitlement,
   isPremiumSellerModeEnabled,
 } from '../lib/premiumSellerAccess';
+import { isSellerTrialModeEnabled } from '../lib/sellerTrial';
 import { isPremiumSellerInventoryScan } from '../lib/sellerScanAccess';
 import { isVerifiedSellerSessionIdentity, sellerBatchRequestId, sellerCacheKey } from '../lib/sellerCache';
 import { loadRemoteWithCache } from '../lib/sellerRemoteCache';
@@ -20,12 +21,36 @@ async function main() {
 
 const entitledUser = { app_metadata: { stackr_premium_seller: true } };
 const unentitledUser = { app_metadata: {} };
+const trialUser = { id: 'trial-user', app_metadata: {} };
+const sellerTrialEnvironment = {
+  APP_VARIANT: 'staging',
+  EXPO_PUBLIC_APP_VARIANT: 'staging',
+  EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'false',
+  EXPO_PUBLIC_SELLER_TRIAL_MODE: 'true',
+};
 
 assert.equal(isPremiumSellerModeEnabled({}), false);
 assert.equal(isPremiumSellerModeEnabled({ EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'false' }), false);
 assert.equal(isPremiumSellerModeEnabled({ EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'true' }), true);
 assert.equal(hasPremiumSellerEntitlement(entitledUser), true);
 assert.equal(hasPremiumSellerEntitlement(unentitledUser), false);
+assert.equal(isSellerTrialModeEnabled(sellerTrialEnvironment), true);
+assert.equal(isSellerTrialModeEnabled({
+  ...sellerTrialEnvironment,
+  EXPO_PUBLIC_APP_VARIANT: 'production',
+}), false);
+assert.deepEqual(getPremiumSellerAccess(trialUser, sellerTrialEnvironment), {
+  enabled: false,
+  entitled: false,
+  allowed: true,
+  reason: 'available',
+});
+assert.throws(
+  () => assertPremiumSellerWriteAccess(trialUser, sellerTrialEnvironment),
+  /Premium Seller Mode is not available/,
+  'local trial UI access must never unlock the live seller write boundary',
+);
+assert.equal(getPremiumSellerAccess(null, sellerTrialEnvironment).allowed, false);
 assert.throws(
   () => assertPremiumSellerWriteAccess(entitledUser, { EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED: 'false' }),
   /Premium Seller Mode is not available/,
@@ -233,14 +258,29 @@ const easConfig = JSON.parse(fs.readFileSync('eas.json', 'utf8')) as {
   build: Record<string, { env?: Record<string, string> }>;
 };
 for (const [profileName, profile] of Object.entries(easConfig.build)) {
+  const sellerTrialProfile = profileName === 'seller-canary' || profileName === 'seller-trial';
   assert.equal(
     profile.env?.EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED,
-    profileName === 'seller-canary' ? 'true' : 'false',
+    'false',
     `unexpected Premium Seller flag for ${profileName}`,
   );
+  assert.equal(
+    profile.env?.EXPO_PUBLIC_SELLER_TRIAL_MODE,
+    sellerTrialProfile ? 'true' : undefined,
+    `unexpected Seller Trial flag for ${profileName}`,
+  );
+  if (sellerTrialProfile) {
+    assert.equal(profile.env?.EXPO_PUBLIC_APP_VARIANT, 'staging');
+    assert.equal(profile.env?.EXPO_PUBLIC_BETA_TRADE_DEMO_MODE, 'true');
+    assert.equal(profile.env?.EXPO_PUBLIC_STACKR_API_ENABLED, 'false');
+    assert.equal(profile.env?.EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED, 'false');
+    assert.equal(profile.env?.EXPO_PUBLIC_SCAN_FEEDBACK_ENABLED, 'false');
+    assert.equal(profile.env?.EXPO_PUBLIC_RECOGNITION_FEEDBACK_ENABLED, 'false');
+  }
 }
 const appConfigSource = fs.readFileSync('app.config.js', 'utf8');
-assert.match(appConfigSource, /googleServicesFile: variantSuffix \? undefined/);
+assert.match(appConfigSource, /const googleServicesFile = fs\.existsSync\(resolvedGoogleServicesFile\)/);
+assert.match(appConfigSource, /googleServicesFile,/);
 assert.match(appConfigSource, /slug: config\.slug/);
 assert.doesNotMatch(appConfigSource, /slug: isDevApp|slug: isStagingApp/);
 

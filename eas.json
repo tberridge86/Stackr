@@ -66,7 +66,45 @@
       "env": {
         "APP_VARIANT": "staging",
         "EXPO_PUBLIC_APP_VARIANT": "staging",
-        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "true",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
+        "EXPO_PUBLIC_SELLER_TRIAL_MODE": "true",
+        "EXPO_PUBLIC_BETA_TRADE_DEMO_MODE": "true",
+        "EXPO_PUBLIC_CARD_LOCALISATION_SAMPLE_FPS": "2",
+        "EXPO_PUBLIC_STACKR_API_ENABLED": "false",
+        "EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED": "false",
+        "EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED": "false",
+        "EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY": "false",
+        "EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK": "false",
+        "EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK": "false",
+        "EXPO_PUBLIC_SCAN_FEEDBACK_ENABLED": "false",
+        "EXPO_PUBLIC_RECOGNITION_FEEDBACK_ENABLED": "false",
+        "EXPO_PUBLIC_PRICE_API_URL": "https://stackr-api-gateway-staging.berridge14.workers.dev",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://lmwfhvexfcoyeuoyrlco.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5qRlv9bSq5vaz3zgDSpwIA_JayaHJGU"
+      }
+    },
+    "seller-trial": {
+      "distribution": "internal",
+      "environment": "preview",
+      "channel": "seller-trial",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "APP_VARIANT": "staging",
+        "EXPO_PUBLIC_APP_VARIANT": "staging",
+        "EXPO_PUBLIC_PREMIUM_SELLER_MODE_ENABLED": "false",
+        "EXPO_PUBLIC_SELLER_TRIAL_MODE": "true",
+        "EXPO_PUBLIC_BETA_TRADE_DEMO_MODE": "true",
+        "EXPO_PUBLIC_CARD_LOCALISATION_SAMPLE_FPS": "2",
+        "EXPO_PUBLIC_STACKR_API_ENABLED": "false",
+        "EXPO_PUBLIC_LOCAL_RECOGNITION_ENABLED": "false",
+        "EXPO_PUBLIC_ON_DEVICE_EMBEDDING_ENABLED": "false",
+        "EXPO_PUBLIC_STACKR_RECOGNITION_PRIMARY": "false",
+        "EXPO_PUBLIC_XIMILAR_EMERGENCY_FALLBACK": "false",
+        "EXPO_PUBLIC_SCAN_XIMILAR_FALLBACK": "false",
+        "EXPO_PUBLIC_SCAN_FEEDBACK_ENABLED": "false",
+        "EXPO_PUBLIC_RECOGNITION_FEEDBACK_ENABLED": "false",
         "EXPO_PUBLIC_PRICE_API_URL": "https://stackr-api-gateway-staging.berridge14.workers.dev",
         "EXPO_PUBLIC_SUPABASE_URL": "https://lmwfhvexfcoyeuoyrlco.supabase.co",
         "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_5qRlv9bSq5vaz3zgDSpwIA_JayaHJGU"

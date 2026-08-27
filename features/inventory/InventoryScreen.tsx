@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -67,6 +67,11 @@ import {
   isSellerInventoryCommitReconciliationRequired,
   SellerInventoryCommitReconciliationRequiredError,
 } from '../../lib/sellerBatchCommit';
+import {
+  isSellerTrialModeEnabled,
+  SELLER_TRIAL_BODY,
+  SELLER_TRIAL_TITLE,
+} from '../../lib/sellerTrial';
 
 const cardShadow = {
   shadowColor: '#000',
@@ -1109,11 +1114,13 @@ const toCardSnapshot = (row: any, snapshot?: any): InventoryCardSnapshot => {
 };
 
 export default function InventoryScreen() {
+  const routeParams = useLocalSearchParams<{ startScan?: string | string[] }>();
   const { user } = useAuth();
   const currentUserIdRef = useRef<string | null>(user?.id ?? null);
   currentUserIdRef.current = user?.id ?? null;
   const { theme } = useTheme();
   const { setMode } = useAppMode();
+  const sellerTrialMode = isSellerTrialModeEnabled();
   const { width } = useWindowDimensions();
   const isWideLayout = width >= 620;
   const columns = width >= 900 ? 3 : isWideLayout ? 2 : 1;
@@ -1157,21 +1164,26 @@ export default function InventoryScreen() {
   const [productAskingPrice, setProductAskingPrice] = useState('');
   const [scanFeedback, setScanFeedback] = useState<{ mode: VaultModeKey; text: string } | null>(null);
   const [inventoryDataStale, setInventoryDataStale] = useState(false);
-  const [inventoryLoadError, setInventoryLoadError] = useState<string | null>('Verifying live seller inventory before changes are allowed.');
+  const [inventoryHydrated, setInventoryHydrated] = useState(false);
+  const [inventoryLoadError, setInventoryLoadError] = useState<string | null>(
+    sellerTrialMode ? null : 'Verifying live seller inventory before changes are allowed.'
+  );
   const reconciliationRequiredRef = useRef(false);
   const unconfirmedRequestIdRef = useRef<string | null>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inventoryResultLongPressRef = useRef<string | null>(null);
+  const startedRouteScanRef = useRef<string | null>(null);
   const feedbackAnim = useRef(new Animated.Value(0)).current;
 
   const load = useCallback(async () => {
+    setInventoryHydrated(false);
     const reconciliationWasRequired = reconciliationRequiredRef.current;
     let sellerDataWasStale = false;
     setInventoryDataStale(false);
-    setInventoryLoadError('Verifying live seller inventory before changes are allowed.');
+    setInventoryLoadError(sellerTrialMode ? null : 'Verifying live seller inventory before changes are allowed.');
     const [inventoryResult, binderResult, movementResult] = await Promise.allSettled([
       loadInventoryItems({ onStale: () => { sellerDataWasStale = true; } }),
-      fetchBinders(),
+      sellerTrialMode ? Promise.resolve([] as BinderRecord[]) : fetchBinders(),
       loadInventoryMovements({ onStale: () => { sellerDataWasStale = true; } }),
     ]);
 
@@ -1217,7 +1229,8 @@ export default function InventoryScreen() {
       nextLoadError = 'A previous save remains unconfirmed. Connect and refresh live stock before making another change.';
     }
     setInventoryLoadError(nextLoadError);
-  }, []);
+    setInventoryHydrated(true);
+  }, [sellerTrialMode]);
 
   useFocusEffect(useCallback(() => {
     void load();
@@ -1549,7 +1562,9 @@ export default function InventoryScreen() {
 
     const productForInventory: InventoryCardSnapshot = {
       ...selectedProduct,
-      inventory_binder_name: askingPrice != null ? 'Sell/Trade inventory' : null,
+      inventory_binder_name: sellerTrialMode
+        ? 'Seller Trial inventory'
+        : askingPrice != null ? 'Sell/Trade inventory' : null,
     };
     const next = addStockLine(items, productForInventory, 'Sealed', quantity, askingPrice);
     const addedItem = next.find((item) => (
@@ -1567,7 +1582,7 @@ export default function InventoryScreen() {
           set_id: selectedProduct.set_id,
           card_name: selectedProduct.name,
           quantity,
-          reason: askingPrice != null ? 'Added to Sell/Trade' : 'Added to Collection',
+          reason: sellerTrialMode || askingPrice != null ? 'Added to Sell/Trade' : 'Added to Collection',
           value_at_time: getPreferredPrice(selectedProduct),
           image_small: selectedProduct.image_small,
         }],
@@ -1579,10 +1594,13 @@ export default function InventoryScreen() {
       console.log('Product inventory commit failed', error);
       alertSellerCommitFailure(error, 'Could not add product', 'The change was rejected. Refresh and try again.');
     }
-  }, [addStockLine, commitInventoryChange, items, productAskingPrice, productQuantity, selectedProduct]);
+  }, [addStockLine, commitInventoryChange, items, productAskingPrice, productQuantity, selectedProduct, sellerTrialMode]);
 
   const addAllDrafts = useCallback(async () => {
-    if (scanInDestination === 'binder' && !selectedBinder) {
+    const effectiveScanInDestination: ScanInDestination = sellerTrialMode
+      ? 'sell_trade'
+      : scanInDestination;
+    if (effectiveScanInDestination === 'binder' && !selectedBinder) {
       Alert.alert('Choose a binder', 'Select the binder this scan-in should update before confirming.');
       return;
     }
@@ -1603,10 +1621,10 @@ export default function InventoryScreen() {
       const parsedAskingPrice = Number.parseFloat(draft.askingPrice);
       const askingPrice = Number.isFinite(parsedAskingPrice) ? parsedAskingPrice : null;
       const draftTotal = getDraftConditions(draft.card).reduce((sum, condition) => sum + (draft.quantities[condition] ?? 0), 0);
-      const canUseBinder = scanInDestination === 'binder'
+      const canUseBinder = effectiveScanInDestination === 'binder'
         && Boolean(selectedBinder)
         && Boolean(draft.card.set_id);
-      if (scanInDestination === 'binder' && !draft.card.set_id) {
+      if (effectiveScanInDestination === 'binder' && !draft.card.set_id) {
         Alert.alert('Binder not updated', `${draft.card.name} has no set id, so it will be added to Inventory only.`);
       }
       const cardForInventory: InventoryCardSnapshot = {
@@ -1614,7 +1632,7 @@ export default function InventoryScreen() {
         inventory_binder_id: canUseBinder ? selectedBinder?.id ?? null : null,
         inventory_binder_name: canUseBinder
           ? selectedBinder?.name ?? null
-          : scanInDestination === 'sell_trade'
+          : effectiveScanInDestination === 'sell_trade'
             ? 'Sell/Trade inventory'
             : null,
       };
@@ -1629,7 +1647,7 @@ export default function InventoryScreen() {
           && (item.card.inventory_binder_id ?? null) === (cardForInventory.inventory_binder_id ?? null)
         ));
         if (!inventoryItem) continue;
-        const destination = scanInDestinations.find((item) => item.key === scanInDestination);
+        const destination = scanInDestinations.find((item) => item.key === effectiveScanInDestination);
         movements.push({
           inventory_item_id: inventoryItem.id,
           action_type: 'scan_in',
@@ -1668,7 +1686,7 @@ export default function InventoryScreen() {
       console.log('Inventory scan-in batch failed', error);
       alertSellerCommitFailure(error, 'Could not add batch', 'The batch was rejected. Refresh and try again.');
     }
-  }, [addStockLine, commitInventoryChange, drafts, items, scanInDestination, selectedBinder]);
+  }, [addStockLine, commitInventoryChange, drafts, items, scanInDestination, selectedBinder, sellerTrialMode]);
 
   const updateQuantity = useCallback(async (id: string, change: number) => {
     const current = items.find((item) => item.id === id);
@@ -1948,6 +1966,28 @@ export default function InventoryScreen() {
     });
   }, [findStockOutCandidates, identifyScannedCard, openStockOutPicker, searchCards, stockInReasonLabel, stockOutReason, stockScanMode]);
 
+  useEffect(() => {
+    const requestedValue = Array.isArray(routeParams.startScan)
+      ? routeParams.startScan[0]
+      : routeParams.startScan;
+    if (
+      !inventoryHydrated
+      || inventoryLoadError
+    ) {
+      return;
+    }
+    if (requestedValue !== 'stock_in' && requestedValue !== 'stock_out') {
+      startedRouteScanRef.current = null;
+      return;
+    }
+
+    const requestKey = `${user?.id ?? 'signed-out'}:${requestedValue}`;
+    if (startedRouteScanRef.current === requestKey) return;
+    startedRouteScanRef.current = requestKey;
+    router.setParams({ startScan: undefined });
+    scanToInventory(requestedValue === 'stock_out' ? 'remove' : 'add');
+  }, [inventoryHydrated, inventoryLoadError, routeParams.startScan, scanToInventory, user?.id]);
+
   const filteredItems = useMemo(() => {
     const min = Number.parseFloat(minPrice);
     const max = Number.parseFloat(maxPrice);
@@ -2213,12 +2253,17 @@ export default function InventoryScreen() {
       setSaleOpen(false);
       setSaleCart([]);
       setSalePrice('');
-      Alert.alert('Sale completed', 'Inventory and the sale report were saved together.');
+      Alert.alert(
+        sellerTrialMode ? 'Local stock-out recorded' : 'Sale completed',
+        sellerTrialMode
+          ? 'The device-only inventory and stock-out note were saved. No order, payment, shipping label or payout was created.'
+          : 'Inventory and the sale report were saved together.',
+      );
     } catch (error) {
       console.log('Seller sale commit failed', error);
       alertSellerCommitFailure(error, 'Could not complete sale', 'The sale was rejected. Refresh and try again.');
     }
-  }, [commitInventoryChange, items, saleCart, saleEstimatedValue, salePrice]);
+  }, [commitInventoryChange, items, saleCart, saleEstimatedValue, salePrice, sellerTrialMode]);
 
   const renderInventoryItem = ({ item }: { item: InventoryItem }) => {
     const price = getPreferredPrice(item.card);
@@ -2452,6 +2497,21 @@ export default function InventoryScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        {sellerTrialMode ? (
+          <View
+            accessible
+            accessibilityRole="summary"
+            accessibilityLabel={`${SELLER_TRIAL_TITLE}. ${SELLER_TRIAL_BODY}`}
+            style={{ borderRadius: 14, borderWidth: 1, borderColor: theme.colors.semantic.information, backgroundColor: `${theme.colors.semantic.information}12`, padding: 10, marginBottom: 10 }}
+          >
+            <Text style={{ color: theme.colors.text, fontSize: 12, lineHeight: 17, fontWeight: '900' }}>
+              {SELLER_TRIAL_TITLE}
+            </Text>
+            <Text style={{ color: theme.colors.textSoft, fontSize: 11, lineHeight: 16, fontWeight: '700', marginTop: 3 }}>
+              {SELLER_TRIAL_BODY}
+            </Text>
+          </View>
+        ) : null}
         {inventoryDataStale ? (
           <View style={{ borderRadius: 14, borderWidth: 1, borderColor: theme.colors.semantic.warning, backgroundColor: `${theme.colors.semantic.warning}12`, padding: 10, marginBottom: 10 }}>
             <Text style={{ color: theme.colors.text, fontSize: 12, lineHeight: 17, fontWeight: '800' }}>
@@ -2813,8 +2873,14 @@ export default function InventoryScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 8 }}>
-              {scanInDestinations.map((destination) => {
+            {sellerTrialMode ? (
+              <View style={{ borderRadius: 12, paddingHorizontal: 11, paddingVertical: 9, marginBottom: 8, backgroundColor: `${theme.colors.semantic.information}12`, borderWidth: 1, borderColor: theme.colors.semantic.information }}>
+                <Text style={{ color: theme.colors.text, fontWeight: '900', fontSize: 12 }}>Destination: device-only Trial inventory</Text>
+                <Text style={{ color: theme.colors.textSoft, fontWeight: '700', fontSize: 11, lineHeight: 15, marginTop: 2 }}>Collection and binder records are not changed.</Text>
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 8 }}>
+                {scanInDestinations.map((destination) => {
                 const active = scanInDestination === destination.key;
                 return (
                   <TouchableOpacity
@@ -2826,10 +2892,11 @@ export default function InventoryScreen() {
                     <Text style={{ color: active ? theme.colors.primary : theme.colors.text, fontWeight: '900', fontSize: 12 }}>{destination.label}</Text>
                   </TouchableOpacity>
                 );
-              })}
-            </ScrollView>
+                })}
+              </ScrollView>
+            )}
 
-            {scanInDestination === 'binder' && (
+            {!sellerTrialMode && scanInDestination === 'binder' && (
               <View style={{ marginBottom: 8 }}>
                 {binders.length ? (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
@@ -3346,7 +3413,9 @@ export default function InventoryScreen() {
                 <Text style={{ color: theme.colors.primary, fontWeight: '900' }}>Scan More</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={completeSale} style={{ flex: 1, borderRadius: 14, backgroundColor: theme.colors.primary, paddingVertical: 13, alignItems: 'center', shadowColor: theme.colors.primary, shadowOpacity: 0.20, shadowRadius: 10, shadowOffset: { width: 0, height: 5 } }}>
-                <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>Complete Sale</Text>
+                <Text style={{ color: '#FFFFFF', fontWeight: '900' }}>
+                  {sellerTrialMode ? 'Record local stock-out' : 'Complete Sale'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -3394,7 +3463,7 @@ export default function InventoryScreen() {
         <TextInput
           value={salePrice}
           onChangeText={setSalePrice}
-          placeholder="Actual sold price"
+          placeholder={sellerTrialMode ? 'Local sold-price note (optional)' : 'Actual sold price'}
           placeholderTextColor={theme.colors.textSoft}
           keyboardType="decimal-pad"
           style={{ borderRadius: 14, borderWidth: 1, borderColor: '#E3DAFF', backgroundColor: theme.colors.surface, paddingHorizontal: 14, paddingVertical: 12, color: theme.colors.text, fontWeight: '900' }}
@@ -3403,4 +3472,3 @@ export default function InventoryScreen() {
     </SafeAreaView>
   );
 }
-

@@ -25,7 +25,9 @@ if (IS_STAGING_APP && configuredPublicApiUrls.some((url) => url === PRODUCTION_P
 export const BETA_TRADE_DEMO_MODE = process.env.EXPO_PUBLIC_BETA_TRADE_DEMO_MODE !== 'false';
 export const CAPTURE_GEOMETRY_V2_ENABLED = process.env.EXPO_PUBLIC_CAPTURE_GEOMETRY_V2 !== 'false';
 export const CARD_LOCALISATION_ENABLED = process.env.EXPO_PUBLIC_CARD_LOCALISATION !== 'false';
-export const CARD_LOCALISATION_SAMPLE_FPS = Number(process.env.EXPO_PUBLIC_CARD_LOCALISATION_SAMPLE_FPS ?? 4);
+// Still-photo frame analysis is intentionally conservative until the physical
+// low/mid/high Android performance matrix has passed.
+export const CARD_LOCALISATION_SAMPLE_FPS = Number(process.env.EXPO_PUBLIC_CARD_LOCALISATION_SAMPLE_FPS ?? 2);
 export const CARD_LOCALISATION_SAFETY_MARGIN = Number(process.env.EXPO_PUBLIC_CARD_LOCALISATION_SAFETY_MARGIN ?? 0.025);
 export const SCAN_QUALITY_ENABLED = process.env.EXPO_PUBLIC_SCAN_QUALITY !== 'false';
 export const SCAN_QUALITY_DEVICE_PROFILE = process.env.EXPO_PUBLIC_SCAN_QUALITY_DEVICE_PROFILE ?? 'balanced';
