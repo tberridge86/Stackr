@@ -46,7 +46,11 @@ import { formatSlabCompanyLabel } from '../../components/SlabStickerLabel';
 import { useProfile } from '../../components/profile-context';
 import { useTheme } from '../../components/theme-context';
 import { useTrade } from '../../components/trade-context';
-import { PRICE_API_URL } from '../../lib/config';
+import {
+  LIVE_COMMERCE_RELEASE_APPROVED,
+  PRICE_API_URL,
+  TRADE_CASH_TERMS_ENABLED,
+} from '../../lib/config';
 import { searchLocalPokemonCards } from '../../lib/cardSearch';
 import { fetchCachedPokemonCardDetails } from '../../lib/marketSearchDataCache';
 import { getCachedCardsForSet, getCachedCardSync } from '../../lib/pokemonTcgCache';
@@ -153,12 +157,21 @@ const MARKET_LANGUAGE_FILTERS: { key: MarketLanguageFilter; label: string }[] = 
   { key: 'ja', label: 'Japanese' },
   { key: 'zh-tw', label: 'Traditional Chinese' },
 ];
-const MARKET_LISTING_TYPE_FILTERS: { key: MarketListingVariant; label: string; modes: MarketMode[]; icon: keyof typeof Ionicons.glyphMap }[] = [
+type MarketListingTypeFilter = {
+  key: MarketListingVariant;
+  label: string;
+  modes: MarketMode[];
+  icon: keyof typeof Ionicons.glyphMap;
+};
+const MARKET_LISTING_TYPE_FILTERS: MarketListingTypeFilter[] = ([
   { key: 'buy', label: 'Buy now', modes: ['buy'], icon: 'pricetag-outline' },
   { key: 'openToOffers', label: 'Offers', modes: ['buy', 'trade'], icon: 'chatbubbles-outline' },
   { key: 'trade', label: 'Trade only', modes: ['trade'], icon: 'swap-horizontal-outline' },
   { key: 'tradePlusCash', label: 'Trade + cash', modes: ['trade'], icon: 'git-compare-outline' },
-];
+] as MarketListingTypeFilter[]).filter((filter) => (
+  (filter.key !== 'buy' || LIVE_COMMERCE_RELEASE_APPROVED)
+  && (filter.key !== 'tradePlusCash' || TRADE_CASH_TERMS_ENABLED)
+));
 const MARKET_PROTECTION_FILTERS: { key: MarketProtectionTier; label: string; imageIcon: ImageSourcePropType }[] = [
   { key: 'Bronze', label: 'Bronze', imageIcon: stackrIcons.protectionBronze },
   { key: 'Silver', label: 'Silver', imageIcon: stackrIcons.protectionSilver },
@@ -378,7 +391,9 @@ function requiresSilverAgreement(listing: MarketplaceListing) {
 }
 
 function getTradeTerms(listing: MarketplaceListing) {
-  if (listing.trade_only && listing.asking_price != null) return `Trade + up to ${money(listing.asking_price)}`;
+  if (TRADE_CASH_TERMS_ENABLED && listing.trade_only && listing.asking_price != null) {
+    return `Trade + up to ${money(listing.asking_price)}`;
+  }
   if (listing.trade_only) return 'Looking for a card-for-card trade';
   if (listing.asking_price == null) return 'Open to purchase or trade offers';
   return listing.listing_notes?.trim() || 'Purchase listing';
@@ -2811,7 +2826,8 @@ function ListingDetailModal({
   const categoryLabel = getListingCategoryLabel(listing);
   const gallery = buildListingGallery(listing, card);
   const isMine = listing.user_id === currentUserId;
-  const canBuy = variant === 'buy' || variant === 'openToOffers';
+  const canBuy = LIVE_COMMERCE_RELEASE_APPROVED
+    && (variant === 'buy' || variant === 'openToOffers');
   const canTrade = variant === 'trade' || variant === 'tradePlusCash' || variant === 'openToOffers';
   const isUnavailable = ['sold', 'reserved', 'unavailable'].includes(variant);
   const status = normaliseTradeStatus((listing.status as any) ?? 'pending');
@@ -2824,7 +2840,9 @@ function ListingDetailModal({
       ? 'Return to The Market'
       : canBuy
         ? 'Buy now'
-        : 'Propose trade';
+        : canTrade
+          ? 'Propose trade'
+          : 'Make offer';
   const secondaryLabel = isMine || isUnavailable
     ? undefined
     : canBuy && canTrade
@@ -2832,6 +2850,20 @@ function ListingDetailModal({
       : canBuy
         ? 'Make offer'
         : undefined;
+  const detailVariantLabel = variant === 'buy'
+    ? LIVE_COMMERCE_RELEASE_APPROVED ? 'Buy' : 'Offers only'
+    : variant === 'tradePlusCash'
+      ? TRADE_CASH_TERMS_ENABLED ? 'Trade + cash' : 'Trade'
+      : variant === 'openToOffers'
+        ? 'Open to offers'
+        : variant === 'trade'
+          ? 'Trade'
+          : statusLabel;
+  const detailVariantIcon = variant === 'buy' && LIVE_COMMERCE_RELEASE_APPROVED
+    ? marketIcons.buy
+    : variant === 'openToOffers' || variant === 'buy'
+      ? marketIcons.offer
+      : marketIcons.trade;
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
@@ -2976,7 +3008,7 @@ function ListingDetailModal({
               </View>
 
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                <DetailBadge label={variant === 'buy' ? 'Buy' : variant === 'tradePlusCash' ? 'Trade + cash' : variant === 'openToOffers' ? 'Open to offers' : variant === 'trade' ? 'Trade' : statusLabel} icon={variant === 'buy' ? marketIcons.buy : marketIcons.trade} />
+                <DetailBadge label={detailVariantLabel} icon={detailVariantIcon} />
                 <DetailBadge label={categoryLabel} icon={categoryType === 'graded_slab' ? marketIcons.graded : categoryType === 'raw_card' ? marketIcons.raw : marketIcons.sealed} imageIcon={listingCategoryIcons[categoryType]} />
                 <DetailBadge label={listing.grade_company || listing.grade ? `${formatSlabCompanyLabel(listing.grade_company ?? 'Graded')} ${listing.grade ?? ''}`.trim() : listing.condition ?? 'Condition in photos'} icon={listing.grade_company || listing.grade ? marketIcons.graded : marketIcons.raw} />
                 <DetailBadge label={getRecentLabel(listing.created_at)} icon="time-outline" />

@@ -15,7 +15,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import { createTradeOffer } from '../../lib/tradeOffers';
 import { getCachedCardSync } from '../../lib/pokemonTcgCache';
-import { BETA_TRADE_DEMO_MODE, PRICE_API_URL } from '../../lib/config';
+import { PRICE_API_URL, TRADE_CASH_TERMS_ENABLED } from '../../lib/config';
 import { fetchUserCardAvailability } from '../../lib/cardOwnership';
 import { fetchOwnedCardRows } from '../../lib/ownership';
 import { stackrBrand } from '../../lib/stackrBrand';
@@ -263,7 +263,7 @@ export default function NewOfferScreen() {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
   }, [cashAmount]);
 
-  const cashInvolved = cashAmountNumber > 0;
+  const cashInvolved = TRADE_CASH_TERMS_ENABLED && cashAmountNumber > 0;
   const selectedTradeCards = useMemo(
     () => myTradeCards.filter((card) => selectedCardIds.includes(card.id)),
     [myTradeCards, selectedCardIds]
@@ -798,7 +798,7 @@ export default function NewOfferScreen() {
           setId: card.set_id,
           quantity: 1,
         })),
-        cash: cashInvolved
+        cash: TRADE_CASH_TERMS_ENABLED && cashInvolved
           ? {
               amount: cashAmountNumber,
               currency: 'GBP',
@@ -855,11 +855,11 @@ export default function NewOfferScreen() {
       <Image source={stackrBrand.wordmark} style={styles.brandLogo} resizeMode="contain" />
       <Text style={styles.title}>Build an Offer</Text>
       <Text style={styles.subtitle}>
-        Add cards, cash or a message
+        Add cards or a message
         {targetUserName ? ` to ${targetUserName}` : ''}.
       </Text>
 
-      {BETA_TRADE_DEMO_MODE && (
+      {!TRADE_CASH_TERMS_ENABLED && (
         <View style={{
           backgroundColor: '#FEF3C7',
           borderColor: '#F59E0B',
@@ -869,10 +869,10 @@ export default function NewOfferScreen() {
           marginBottom: 14,
         }}>
           <Text style={{ color: '#92400E', fontSize: 12, fontWeight: '900' }}>
-            DEMO TRADE MODE
+            CARD-ONLY TRADE BETA
           </Text>
           <Text style={{ color: '#92400E', fontSize: 12, lineHeight: 17, marginTop: 3 }}>
-            Beta Market offers are for testing only. Cash top-ups are recorded as demo terms and no real payment is taken.
+            Cash top-ups and payment terms are hidden for this release. Offers can contain cards and a message only.
           </Text>
         </View>
       )}
@@ -1158,7 +1158,8 @@ export default function NewOfferScreen() {
         )}
       </Section>
 
-      {/* Cash offer */}
+      {/* Cash terms stay absent until source approval and payment contracts are reviewed. */}
+      {TRADE_CASH_TERMS_ENABLED ? (
       <Section title="Cash top-up (optional)">
         <TextInput
           value={cashAmount}
@@ -1193,11 +1194,12 @@ export default function NewOfferScreen() {
           <View style={styles.cashSummary}>
             <Text style={styles.cashSummaryText}>
               {cashPayer === 'sender' ? 'You' : 'They'} pay{' '}
-              £{cashAmountNumber.toFixed(2)} {BETA_TRADE_DEMO_MODE ? 'as demo cash only' : 'via Stripe'}
+              £{cashAmountNumber.toFixed(2)} via Stripe
             </Text>
           </View>
         )}
       </Section>
+      ) : null}
 
       {/* Message */}
       <Section title="Message (optional)">

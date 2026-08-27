@@ -10,7 +10,21 @@ export const STACKR_API_URL = (
   ?? process.env.STACKR_API_URL
   ?? PRICE_API_URL
 ).replace(/\/$/, '');
-export const BETA_TRADE_DEMO_MODE = process.env.EXPO_PUBLIC_BETA_TRADE_DEMO_MODE !== 'false';
+
+// This approval must be changed in source and reviewed before mobile commerce can run.
+// A public Expo environment variable is intentionally unable to enable payments alone.
+export const LIVE_COMMERCE_RELEASE_APPROVED = false;
+
+export function isBetaTradeDemoMode(
+  configuredMode = process.env.EXPO_PUBLIC_BETA_TRADE_DEMO_MODE,
+): boolean {
+  return !LIVE_COMMERCE_RELEASE_APPROVED || configuredMode !== 'false';
+}
+
+export const BETA_TRADE_DEMO_MODE = isBetaTradeDemoMode();
+export const TRADE_CASH_TERMS_ENABLED = (
+  LIVE_COMMERCE_RELEASE_APPROVED && !BETA_TRADE_DEMO_MODE
+);
 export const CAPTURE_GEOMETRY_V2_ENABLED = process.env.EXPO_PUBLIC_CAPTURE_GEOMETRY_V2 !== 'false';
 export const CARD_LOCALISATION_ENABLED = process.env.EXPO_PUBLIC_CARD_LOCALISATION !== 'false';
 export const CARD_LOCALISATION_SAMPLE_FPS = Number(process.env.EXPO_PUBLIC_CARD_LOCALISATION_SAMPLE_FPS ?? 4);

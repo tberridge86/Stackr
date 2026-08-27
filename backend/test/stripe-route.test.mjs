@@ -4,9 +4,16 @@ import express from 'express';
 
 const supabaseSecretEnv = ['SUPABASE', 'SECRET', 'KEY'].join('_');
 const stripeSecretEnv = ['STRIPE', 'SECRET', 'KEY'].join('_');
+const paymentsEnabledEnv = ['STACKR', 'LIVE', 'PAYMENTS', 'ENABLED'].join('_');
 
 process.env.SUPABASE_URL = 'https://stripe-route-test.supabase.co';
 process.env[supabaseSecretEnv] = ['stripe', 'route', 'test', 'secret'].join('-');
+
+function routeMiddleware(router, path) {
+  const layer = router.stack.find((candidate) => candidate.route?.path === path);
+  assert.ok(layer, `missing route ${path}`);
+  return layer.route.stack.map((candidate) => candidate.handle);
+}
 
 async function startApp(router) {
   const app = express();
@@ -26,9 +33,10 @@ async function startApp(router) {
   };
 }
 
-test('Stripe routes boot without a secret and fail dependent endpoints closed', async () => {
+test('Stripe operational routes are disabled by default', async () => {
   delete process.env[stripeSecretEnv];
-  const { default: router } = await import('../routes/stripe.js?stripe-missing');
+  delete process.env[paymentsEnabledEnv];
+  const { default: router } = await import('../routes/stripe.js?payments-disabled');
   const app = await startApp(router);
 
   try {
@@ -38,6 +46,8 @@ test('Stripe routes boot without a secret and fail dependent endpoints closed', 
       ['POST', '/api/stripe/create-account-link'],
       ['POST', '/api/stripe/create-payment-intent'],
       ['POST', '/api/stripe/create-trade-cash-payment-intent'],
+      ['GET', '/api/stripe/onboarding-complete'],
+      ['GET', '/api/stripe/onboarding-refresh'],
     ];
 
     for (const [method, path] of requests) {
@@ -48,23 +58,21 @@ test('Stripe routes boot without a secret and fail dependent endpoints closed', 
       });
       assert.equal(response.status, 503, `${method} ${path}`);
       assert.deepEqual(await response.json(), {
-        error: 'Payments are temporarily unavailable.',
+        error: 'Payments are disabled for this release.',
+        code: 'payments_disabled',
+        requestId: null,
       });
     }
 
-    for (const path of ['/api/stripe/onboarding-complete', '/api/stripe/onboarding-refresh']) {
-      const response = await fetch(`${app.baseUrl}${path}`);
-      assert.equal(response.status, 200, `GET ${path}`);
-      assert.match(response.headers.get('content-type') ?? '', /^text\/html/);
-    }
   } finally {
     await app.close();
   }
 });
 
-test('a configured Stripe route continues to its normal request validation', async () => {
+test('a Railway environment variable alone cannot unlock Stripe operations', async () => {
+  process.env[paymentsEnabledEnv] = 'true';
   process.env[stripeSecretEnv] = ['sk', 'test', 'stripe', 'route', 'configured'].join('_');
-  const { default: router } = await import('../routes/stripe.js?stripe-configured');
+  const { default: router } = await import('../routes/stripe.js?payments-code-locked');
   const app = await startApp(router);
 
   try {
@@ -73,11 +81,49 @@ test('a configured Stripe route continues to its normal request validation', asy
       headers: { 'content-type': 'application/json' },
       body: '{}',
     });
-    assert.equal(response.status, 400);
+    assert.equal(response.status, 503);
     assert.deepEqual(await response.json(), {
-      error: 'userId and email are required',
+      error: 'Payments are disabled for this release.',
+      code: 'payments_disabled',
+      requestId: null,
     });
   } finally {
+    delete process.env[paymentsEnabledEnv];
     await app.close();
+  }
+});
+
+test('Stripe operational routes retain authentication and identity checks behind the code lock', async () => {
+  process.env[paymentsEnabledEnv] = 'true';
+  process.env[stripeSecretEnv] = ['sk', 'test', 'stripe', 'route', 'guard-order'].join('_');
+  const { default: router } = await import('../routes/stripe.js?payments-guard-order');
+
+  try {
+    for (const path of [
+      '/create-connect-account',
+      '/account-status',
+      '/create-account-link',
+      '/create-payment-intent',
+      '/create-trade-cash-payment-intent',
+    ]) {
+      const middleware = routeMiddleware(router, path);
+      assert.deepEqual(
+        middleware.slice(0, 3).map((handler) => handler.name),
+        ['requireReleaseFeature', 'requireAuthenticatedUser', 'requireStripeConfigured'],
+        path,
+      );
+      assert.match(
+        middleware.at(-1).toString(),
+        /requireMatchingAuthenticatedUser/,
+        `${path} must bind caller identity to the authenticated user`,
+      );
+    }
+
+    for (const path of ['/onboarding-complete', '/onboarding-refresh']) {
+      const middleware = routeMiddleware(router, path);
+      assert.equal(middleware[0]?.name, 'requireReleaseFeature', path);
+    }
+  } finally {
+    delete process.env[paymentsEnabledEnv];
   }
 });

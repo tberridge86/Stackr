@@ -1,5 +1,9 @@
 import { supabase } from './supabase';
-import { BETA_TRADE_DEMO_MODE, PRICE_API_URL } from './config';
+import {
+  BETA_TRADE_DEMO_MODE,
+  PRICE_API_URL,
+  TRADE_CASH_TERMS_ENABLED,
+} from './config';
 
 // ===============================
 // TYPES
@@ -17,6 +21,12 @@ export type TradeOfferStatus =
   | 'received'
   | 'completed'
   | 'disputed';
+
+const PAYMENT_TRADE_STATUSES = new Set<TradeOfferStatus>([
+  'payment_required',
+  'payment_sent',
+  'payment_confirmed',
+]);
 
 export type TradeCardInput = {
   cardId: string;
@@ -93,6 +103,16 @@ export async function createTradeOffer(input: {
   cash?: TradeCashInput | null;
   message?: string | null;
 }): Promise<TradeOffer> {
+  if (input.cash != null && !TRADE_CASH_TERMS_ENABLED) {
+    throw new Error('Cash terms are disabled for this release. Card-for-card offers only.');
+  }
+
+  const cashAmount = input.cash == null ? null : Number(input.cash.amount);
+  if (cashAmount != null && (!Number.isFinite(cashAmount) || cashAmount <= 0)) {
+    throw new Error('Cash terms require a positive finite amount.');
+  }
+  const hasCash = cashAmount != null;
+
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError) throw userError;
   if (!user) throw new Error('You must be signed in.');
@@ -101,8 +121,6 @@ export async function createTradeOffer(input: {
   const receiverId = input.receiverUserId ?? input.receiverId;
 
   if (!receiverId) throw new Error('Missing receiver user ID.');
-
-  const hasCash = !!input.cash && Number(input.cash.amount) > 0;
 
   // Create the offer — always starts as 'pending'
   const { data: offer, error: offerError } = await supabase
@@ -224,6 +242,10 @@ export async function updateTradeOfferStatus(
   status: TradeOfferStatus,
   note?: string | null
 ): Promise<void> {
+  if (!TRADE_CASH_TERMS_ENABLED && PAYMENT_TRADE_STATUSES.has(status)) {
+    throw new Error('Payment trade statuses are disabled for this release.');
+  }
+
   const { data: { user } } = await supabase.auth.getUser();
 
   const extraFields: Record<string, any> = {
@@ -355,6 +377,10 @@ export async function updateCashPaymentStatus(
   offerId: string,
   paymentStatus: 'required' | 'sent' | 'confirmed' | 'failed'
 ): Promise<void> {
+  if (!TRADE_CASH_TERMS_ENABLED) {
+    throw new Error('Cash payment status updates are disabled for this release.');
+  }
+
   const { error } = await supabase
     .from('trade_cash_terms')
     .update({
@@ -424,12 +450,24 @@ export async function logTradeEvent(input: {
   note?: string | null;
   proposedCashAmount?: number | null;
 }): Promise<void> {
+  if (!TRADE_CASH_TERMS_ENABLED && input.proposedCashAmount != null) {
+    throw new Error('Cash counter-offers are disabled for this release.');
+  }
+  if (!TRADE_CASH_TERMS_ENABLED && PAYMENT_TRADE_STATUSES.has(input.eventType as TradeOfferStatus)) {
+    throw new Error('Payment trade events are disabled for this release.');
+  }
+
+  const cashAmount = input.proposedCashAmount == null ? null : Number(input.proposedCashAmount);
+  if (cashAmount != null && (!Number.isFinite(cashAmount) || cashAmount <= 0)) {
+    throw new Error('Cash counter-offers require a positive finite amount.');
+  }
+
   const { error } = await supabase.from('trade_offer_events').insert({
     offer_id: input.offerId,
     user_id: input.userId ?? null,
     event_type: input.eventType,
     note: input.note ?? null,
-    proposed_cash_amount: input.proposedCashAmount ?? null,
+    proposed_cash_amount: cashAmount,
   });
 
   if (error) throw error;

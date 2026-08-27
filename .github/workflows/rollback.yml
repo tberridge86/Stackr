@@ -13,7 +13,7 @@ on:
         description: Component to roll back
         required: true
         type: choice
-        options: [gateway, catalogue-api, recognition, catalogue, embedding-index, mobile-rollout, mobile-update]
+        options: [gateway, recognition, catalogue, embedding-index, mobile-rollout, mobile-update]
       target_id:
         description: Version tag, deployment ID, database UUID, or EAS update group ID
         required: true
@@ -36,7 +36,7 @@ concurrency:
 
 jobs:
   rollback:
-    if: inputs.confirmation == 'ROLLBACK STACKR'
+    if: inputs.confirmation == 'ROLLBACK STACKR' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: ${{ inputs.environment }}
@@ -44,6 +44,8 @@ jobs:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
       RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_ENVIRONMENT_ID: ${{ vars.RAILWAY_ENVIRONMENT_ID }}
+      RAILWAY_RECOGNITION_SERVICE_ID: ${{ vars.RAILWAY_RECOGNITION_SERVICE_ID }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -74,9 +76,12 @@ jobs:
           --message "$STACKR_ROLLBACK_REASON"
           --yes
 
-      - name: Roll back Railway deployment
-        if: inputs.component == 'catalogue-api' || inputs.component == 'recognition'
-        run: node scripts/deploy/railway-rollback.mjs --deployment="$STACKR_ROLLBACK_TARGET_ID"
+      - name: Roll back Railway recognition deployment
+        if: inputs.component == 'recognition'
+        run: >-
+          node scripts/deploy/railway-rollback.mjs
+          --component=recognition
+          --deployment="$STACKR_ROLLBACK_TARGET_ID"
 
       - name: Roll back catalogue activation
         if: inputs.component == 'catalogue'
@@ -114,4 +119,5 @@ jobs:
           --gateway="$STACKR_GATEWAY_URL"
           --backend="$STACKR_BACKEND_URL"
           --recognition="$STACKR_RECOGNITION_URL"
+          --require-commerce-disabled
           --allow-recognition-not-ready

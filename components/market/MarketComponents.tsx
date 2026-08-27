@@ -15,6 +15,7 @@ import { StackrBottomSheet } from '../StackrModalSystem';
 import { StackrProfileAvatar } from '../StackrProfileAvatar';
 import { useTheme } from '../theme-context';
 import { marketIcons, type MarketIconName } from '../../lib/marketIcons';
+import { LIVE_COMMERCE_RELEASE_APPROVED, TRADE_CASH_TERMS_ENABLED } from '../../lib/config';
 import { stackrIcons } from '../../lib/stackrIcons';
 import { stackrSellCategoryIconSizes } from '../../lib/stackrSizing';
 
@@ -85,7 +86,10 @@ function getVariantCopy(variant: MarketListingVariant) {
     case 'trade':
       return { label: 'Trade', icon: marketIcons.trade };
     case 'tradePlusCash':
-      return { label: 'Trade + cash', icon: marketIcons.trade };
+      return {
+        label: TRADE_CASH_TERMS_ENABLED ? 'Trade + cash' : 'Trade',
+        icon: marketIcons.trade,
+      };
     case 'openToOffers':
       return { label: 'Open to offers', icon: marketIcons.offer };
     case 'sold':
@@ -95,7 +99,10 @@ function getVariantCopy(variant: MarketListingVariant) {
     case 'unavailable':
       return { label: 'Unavailable', icon: marketIcons.error };
     default:
-      return { label: 'Buy', icon: marketIcons.buy };
+      return {
+        label: LIVE_COMMERCE_RELEASE_APPROVED ? 'Buy' : 'Offers only',
+        icon: LIVE_COMMERCE_RELEASE_APPROVED ? marketIcons.buy : marketIcons.offer,
+      };
   }
 }
 
@@ -563,6 +570,14 @@ function getListingTransaction(item: MarketListingCardData, variant: ReturnType<
   }
 
   if (item.variantType === 'tradePlusCash') {
+    if (!TRADE_CASH_TERMS_ENABLED) {
+      return {
+        badge: 'Trade only',
+        primary: 'Open to trade',
+        secondary: estimate ? `Estimated trade value ${estimate}` : null,
+        state: 'Offer trade',
+      };
+    }
     return {
       badge: 'Trade + cash',
       primary: item.terms ?? 'Trade + cash',
@@ -577,6 +592,15 @@ function getListingTransaction(item: MarketListingCardData, variant: ReturnType<
       primary: price ?? 'Offers invited',
       secondary: estimate ? `Est. market ${estimate}` : null,
       state: price ? 'Make offer' : 'Make purchase offer',
+    };
+  }
+
+  if (!LIVE_COMMERCE_RELEASE_APPROVED) {
+    return {
+      badge: 'Offers only',
+      primary: 'Offers invited',
+      secondary: estimate ? `Est. market ${estimate}` : null,
+      state: 'Make offer',
     };
   }
 

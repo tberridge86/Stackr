@@ -2664,7 +2664,7 @@ export default function CreateListingScreen() {
           knownDefects.trim() ? `Known defects: ${knownDefects.trim()}` : null,
           wantedCards.trim() ? `Wanted in trade: ${wantedCards.trim()}` : null,
           listingMode !== 'trade'
-            ? `Delivery: ${shippingMethod} · ${dispatchTime} · ${deliveryPostageLabel}${selectedDeliveryMethod.source === 'shippo_preview' ? ' · Shippo rate preview' : ''}.`
+            ? `Delivery: ${shippingMethod} · ${dispatchTime} · ${deliveryPostageLabel} · Manual delivery estimate.`
             : null,
           selectedProduct ? 'Catalogue media attached as reference imagery. Seller photos show the actual item.' : null,
           resolvedListingSubjectType === 'graded_slab' ? `Certification number: ${certificationNumber || 'seller-confirmed, not provided'}. Slab case condition: ${slabCaseCondition}.` : null,
@@ -4025,7 +4025,7 @@ export default function CreateListingScreen() {
               <Ionicons name="chevron-down" size={20} color={theme.colors.primary} />
             </TouchableOpacity>
             <InlineRequirementMessage
-              message="Shippo-ready delivery options are shown as preview rates. Live Shippo rates and label purchase need a backend Shippo endpoint."
+              message="Delivery prices are manual estimates only. Live rates and label purchase are unavailable for this release."
             />
           </>
         ) : null}
@@ -4126,7 +4126,7 @@ export default function CreateListingScreen() {
         <ReviewRow label="Postage" value={listingMode === 'trade' ? 'Agreed during trade' : deliveryPostageLabel} />
         <ReviewRow label="Dispatch" value={listingMode === 'trade' ? 'Agreed during trade' : dispatchTime} />
         {listingMode !== 'trade' ? (
-          <ReviewRow label="Rate source" value={selectedDeliveryMethod.source === 'shippo_preview' ? 'Shippo preview' : 'Manual'} />
+          <ReviewRow label="Rate source" value="Manual estimate" />
         ) : null}
       </ListingReviewSection>
       {usesProtectionTier ? (
@@ -4465,7 +4465,7 @@ export default function CreateListingScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={{ color: theme.colors.text, fontSize: 18, lineHeight: 23, fontWeight: '900' }}>Choose delivery</Text>
                 <Text style={{ color: theme.colors.textSoft, fontSize: 12, lineHeight: 17, marginTop: 2 }}>
-                  Shippo-ready methods. Rates are preview values until live Shippo labels are connected.
+                  Manual delivery estimates only. Confirm the actual method and price outside Stackr.
                 </Text>
               </View>
               <TouchableOpacity onPress={() => setDeliveryPickerVisible(false)} style={styles.modalClose}>

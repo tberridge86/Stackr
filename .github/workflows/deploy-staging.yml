@@ -40,7 +40,7 @@ jobs:
   deploy:
     if: >-
       inputs.confirmation == 'DEPLOY STAGING' &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/chore/api-gateway-v1')
+      github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: staging
@@ -76,6 +76,11 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Attest staging source revision
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git diff --exit-code
+
       - name: Install pinned dependencies
         run: |
           npm ci
@@ -84,6 +89,12 @@ jobs:
 
       - name: Verify repository structure
         run: npm run deploy:preflight
+
+      - name: Verify commerce release locks
+        run: |
+          npm test --prefix backend
+          npm run test:commerce-release-lock
+          npm run test:deployment-commerce-disabled-smoke
 
       - name: Validate staging release mode
         run: |
@@ -201,9 +212,9 @@ jobs:
       - name: Verify private service readiness
         run: |
           if [ "${{ inputs.release_scope }}" = "full_platform" ]; then
-            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL"
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --recognition="$STACKR_RECOGNITION_URL" --require-commerce-disabled
           else
-            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL"
+            npm run deploy:smoke -- --backend="$STACKR_BACKEND_URL" --require-commerce-disabled
           fi
 
       - name: Upload and activate the staging gateway version
@@ -237,6 +248,8 @@ jobs:
 
       - name: Publish staging mobile configuration
         if: inputs.publish_mobile_update && inputs.release_scope == 'full_platform'
+        env:
+          EXPO_PUBLIC_BETA_TRADE_DEMO_MODE: 'true'
         run: >-
           npx --yes eas-cli@21.4.0 update
           --channel staging
