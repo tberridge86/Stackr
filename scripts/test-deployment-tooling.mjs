@@ -450,6 +450,7 @@ assert.equal(recognitionRollback.status, 0, recognitionRollback.stderr || recogn
 assert.match(recognitionRollback.stdout, /"deploymentRollback": true/);
 
 const stagingWorkflow = readFileSync('.github/workflows/deploy-staging.yml', 'utf8');
+const platformCiWorkflow = readFileSync('.github/workflows/platform-ci.yml', 'utf8');
 const productionWorkflow = readFileSync('.github/workflows/deploy-production.yml', 'utf8');
 const productionMonitorWorkflow = readFileSync('.github/workflows/production-api-monitor.yml', 'utf8');
 const rollbackWorkflow = readFileSync('.github/workflows/rollback.yml', 'utf8');
@@ -533,6 +534,20 @@ assert.match(blockedPricingDeploy.stderr, /Retired command blocked/);
 
 assert.match(stagingWorkflow, /github\.ref == 'refs\/heads\/main'/);
 assert.doesNotMatch(stagingWorkflow, /chore\/api-gateway-v1/);
+assert.match(
+  stagingWorkflow,
+  /steps:\s*\n\s*- uses: actions\/checkout@[^\n]+\n\s+with:\s*\n\s+fetch-depth: 0/,
+  'staging must fetch provenance commits before verifying the exact migration ledger',
+);
+const databaseMigrationCiJob = platformCiWorkflow.slice(
+  platformCiWorkflow.indexOf('  database-migration-tests:'),
+  platformCiWorkflow.indexOf('  openapi-and-generated-client:'),
+);
+assert.match(
+  databaseMigrationCiJob,
+  /actions\/checkout@[^\n]+\n\s+with:\s*\n\s+fetch-depth: 0/,
+  'database CI must fetch provenance commits before verifying the exact migration ledger',
+);
 assert.match(stagingWorkflow, /Verify private service readiness[\s\S]*--require-commerce-disabled/);
 assert.match(
   stagingWorkflow,
