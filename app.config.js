@@ -80,6 +80,28 @@ module.exports = ({ config }) => ({
             'android.permission.SYSTEM_ALERT_WINDOW',
             'android.permission.POST_NOTIFICATIONS',
             'android.permission.RECEIVE_BOOT_COMPLETED',
+            // Seller Trial does not register for push notifications or badges.
+            // Remove transitive permissions contributed by Firebase Messaging
+            // and ShortcutBadger so the packaged APK stays on the four-item
+            // CAMERA/NETWORK/INTERNET/VIBRATE allowlist.
+            'android.permission.WAKE_LOCK',
+            'com.google.android.c2dm.permission.RECEIVE',
+            'com.sec.android.provider.badge.permission.READ',
+            'com.sec.android.provider.badge.permission.WRITE',
+            'com.htc.launcher.permission.READ_SETTINGS',
+            'com.htc.launcher.permission.UPDATE_SHORTCUT',
+            'com.sonyericsson.home.permission.BROADCAST_BADGE',
+            'com.sonymobile.home.permission.PROVIDER_INSERT_BADGE',
+            'com.anddoes.launcher.permission.UPDATE_COUNT',
+            'com.majeur.launcher.permission.UPDATE_BADGE',
+            'com.huawei.android.launcher.permission.CHANGE_BADGE',
+            'com.huawei.android.launcher.permission.READ_SETTINGS',
+            'com.huawei.android.launcher.permission.WRITE_SETTINGS',
+            'android.permission.READ_APP_BADGE',
+            'com.oppo.launcher.permission.READ_SETTINGS',
+            'com.oppo.launcher.permission.WRITE_SETTINGS',
+            'me.everything.badger.permission.BADGE_COUNT_READ',
+            'me.everything.badger.permission.BADGE_COUNT_WRITE',
           ]),
         ]
       : config.android.blockedPermissions,

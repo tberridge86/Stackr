@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
+import { isSellerTrialModeEnabled } from '../lib/sellerTrial';
 
 type AuthContextType = {
   user: any;
@@ -38,6 +39,8 @@ async function getNotificationModules() {
 }
 
 async function registerPushToken(userId: string) {
+  if (isSellerTrialModeEnabled()) return;
+
   try {
     const { Notifications, Device } = await getNotificationModules();
     if (!Device.isDevice) return; // won't work on simulator

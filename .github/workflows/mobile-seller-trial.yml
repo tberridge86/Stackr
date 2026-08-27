@@ -100,6 +100,10 @@ jobs:
           sed -n "s/.*name='\([^']*\)'.*/\1/p" android/app/build/outputs/apk/release/permissions.txt | sort -u > android/app/build/outputs/apk/release/permission-names.txt
           printf '%s\n' android.permission.ACCESS_NETWORK_STATE android.permission.CAMERA android.permission.INTERNET android.permission.VIBRATE | sort -u > android/app/build/outputs/apk/release/allowed-permissions.txt
           comm -23 android/app/build/outputs/apk/release/permission-names.txt android/app/build/outputs/apk/release/allowed-permissions.txt > android/app/build/outputs/apk/release/unexpected-permissions.txt
+          if test -s android/app/build/outputs/apk/release/unexpected-permissions.txt; then
+            echo "Unexpected Seller Trial permissions:"
+            cat android/app/build/outputs/apk/release/unexpected-permissions.txt
+          fi
           test ! -s android/app/build/outputs/apk/release/unexpected-permissions.txt
           grep -q "package: name='com.tommo86.Stackr.staging' versionCode='9' versionName='1.0.4'" android/app/build/outputs/apk/release/badging.txt
           grep -q "stackr-staging" android/app/build/outputs/apk/release/packaged-manifest.txt
